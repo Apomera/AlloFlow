@@ -24,15 +24,18 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { sliceBetween } from './helpers/anchored_slice.js';
+
+const source = readFileSync('word_sounds_module.js', 'utf8');
+const selection = sliceBetween(source, 'const getAdaptiveRandomWord = React.useCallback(', 'const [soundChips', {file:'word_sounds_module.js'});
 
 // The selection + removal, as the module now performs it.
 function takeNextWord(queue, currentWord) {
-  let fIdx = queue.findIndex((w) => String(w).toLowerCase() !== String(currentWord || '').toLowerCase());
-  if (fIdx < 0) fIdx = 0;
-  const word = queue[fIdx];
-  const remaining = queue.slice();
-  remaining.splice(fIdx, 1);
-  return { word, remaining };
+  const sessionQueueRef={current:{counting:[...queue]}};
+  const take=new Function('React','sessionQueueRef','wordSoundsActivity','isFixedForm',selection+';return getAdaptiveRandomWord;')(
+    {useCallback:fn=>fn},sessionQueueRef,'counting',false);
+  const word=take(currentWord);
+  return {word,remaining:sessionQueueRef.current.counting};
 }
 
 describe('taking from the refilled queue', () => {
@@ -92,16 +95,14 @@ describe('taking from the refilled queue', () => {
 describe('the module carries it', () => {
   const module = readFileSync('word_sounds_module.js', 'utf8');
 
-  it('removes the selected index rather than index 0', () => {
-    expect(module).toContain('regenRemaining.splice(fIdx, 1);');
-    expect(module).toContain('sessionQueueRef.current[fallbackActId] = regenRemaining;');
+  it('uses the same exact-item initializer for ordinary progression and refill', () => {
+    expect(module).toContain('let nextItem = getAdaptiveRandomWord(currentWordSoundsWord, actId);');
+    expect(module).toContain('startActivity(actId, nextItem, null, 0, true);');
   });
 
-  it('no longer pairs an indexed take with a slice(1) removal', () => {
-    const at = module.indexOf('word = regenQueue[fIdx];');
-    expect(at).toBeGreaterThan(-1);
-    const block = module.slice(at, at + 900);
-    expect(block).not.toContain('regenQueue.slice(1)');
+  it('removes a selected item by its index and has no separate legacy refill take', () => {
+    expect(selection).toContain('remaining.splice(selectedIndex, 1);');
+    expect(module).not.toContain('word = regenQueue[fIdx];');
   });
 
   it('drops the write-only sessionWordLists mirror', () => {

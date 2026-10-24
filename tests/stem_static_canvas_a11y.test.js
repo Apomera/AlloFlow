@@ -42,8 +42,19 @@ describe('STEM static canvas accessibility contract', () => {
     expect(source).toContain("'aria-describedby': 'mm-profile-description'");
     expect(source).toContain("'aria-describedby': 'mm-launch-description'");
     expect(source).toContain("'aria-describedby': 'mm-earth-orbit-description'");
-    expect(source).toContain("'aria-describedby': 'mm-transit-description'");
-    expect(source).toContain("'aria-describedby': 'mm-lunar-orbit-description'");
+    // 6722a20d2 rebuilt the transit and lunar-orbit views as a moving-Moon trajectory and a
+    // lunar atlas; both are still static images, described by their new notes.
+    for (const [marker, describedBy] of [
+      ['data-transit-canvas', 'mm-transit-light-note'],
+      ['data-lunar-atlas', 'mm-lunar-orbit-description mm-lunar-atlas-selection mm-lunar-light-note'],
+    ]) {
+      const line = source.split(/\r?\n/).find((text) => text.includes("h('canvas', { '" + marker + "': true"));
+      expect(line, marker).toBeTruthy();
+      for (const part of ["role: 'img'", "'data-a11y-static': 'true'", "'aria-describedby': '" + describedBy + "'", "'aria-label':"]) {
+        expect(line.includes(part), marker + ' ' + part).toBe(true);
+      }
+      for (const id of describedBy.split(' ')) expect(source.includes("id: '" + id + "'"), id).toBe(true);
+    }
     expect(source).toContain("role: 'application'");
   });
 

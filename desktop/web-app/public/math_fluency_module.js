@@ -519,6 +519,11 @@
       }
       var key = a + '_' + op + '_' + b;
       var allowRepeat = attempt > Math.max(300, requested * 12);
+      // Never the same fact (or its turnaround) twice in a row: the answer is
+      // still in working memory, which inflates practice DCPM. Smart Review
+      // applies the same rule.
+      var previous = problems[problems.length - 1];
+      if (previous && getFactKey(previous) === getFactKey({ a: a, b: b, op: op })) continue;
       if (!used[key] || allowRepeat) {
         used[key] = true;
         problems.push({ a: a, b: b, op: op, symbol: _practiceSymbol(op), answer: answer, studentAnswer: null, correct: null, responseMs: null });
@@ -813,6 +818,15 @@
     });
   }
 
+  // A session with nothing attempted has no accuracy (0 of 0), so it must not
+  // enter averages, tables or exports as 0%. Rows saved without totalAttempted
+  // keep their stored value.
+  function sessionAccuracy(item) {
+    if (!item || item.accuracy == null || !Number.isFinite(Number(item.accuracy))) return null;
+    if (item.totalAttempted != null && Number(item.totalAttempted) === 0) return null;
+    return Number(item.accuracy);
+  }
+
   function buildTeacherReport(history, mastery, filters, grade, mazeLifetime, nowValue) {
     var options = filters || {};
     var now = nowValue instanceof Date ? nowValue : new Date(nowValue || Date.now());
@@ -833,8 +847,8 @@
     }).slice().sort(function (a, b) { return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime(); });
     var attempted = sessions.reduce(function (sum, item) { return sum + (Number(item.totalAttempted) || 0); }, 0);
     var correct = sessions.reduce(function (sum, item) { return sum + (Number(item.totalCorrect) || 0); }, 0);
-    var accuracyItems = sessions.filter(function (item) { return item.accuracy != null && Number.isFinite(Number(item.accuracy)); });
-    var avgAccuracy = accuracyItems.length ? Math.round(accuracyItems.reduce(function (sum, item) { return sum + Number(item.accuracy); }, 0) / accuracyItems.length) : null;
+    var accuracyItems = sessions.filter(function (item) { return sessionAccuracy(item) != null; });
+    var avgAccuracy = accuracyItems.length ? Math.round(accuracyItems.reduce(function (sum, item) { return sum + sessionAccuracy(item); }, 0) / accuracyItems.length) : null;
     var comparable = sessions.filter(function (item) { return item.validForComparison && item.dcpm != null && Number.isFinite(Number(item.dcpm)); });
     var goalSessions = sessions.filter(function (item) { return item.goalResult && (item.goalResult.status === 'met' || item.goalResult.status === 'building'); });
     var goalsMet = goalSessions.filter(function (item) { return item.goalResult.met; }).length;
@@ -846,6 +860,7 @@
       generatedAt: now.toISOString(), grade: grade || 'Unknown', filters: { days: days, mode: options.mode || 'all', operation: options.operation || 'all' },
       sessions: sessions, sessionCount: sessions.length, avgAccuracy: avgAccuracy,
       latestDcpm: comparable.length ? Number(comparable[0].dcpm) : null,
+      latestDcpmProrated: comparable.length ? isProratedBenchmark(comparable[0]) : false,
       totalCorrect: correct, totalAttempted: attempted, goalsMet: goalsMet, goalSessions: goalSessions.length,
       goalRate: goalSessions.length ? Math.round((goalsMet / goalSessions.length) * 100) : null,
       dashboard: dashboard, reviewSchedule: schedule, suggestedTargets: suggestedTargets,
@@ -879,9 +894,9 @@
         var complete = item.completionStatus == null || item.completionStatus === 'complete';
         return complete && Number.isFinite(when) && when >= cutoff;
       }).slice().sort(function (a, b) { return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime(); });
-      var accuracySessions = sessions.filter(function (item) { return item.accuracy != null && Number.isFinite(Number(item.accuracy)); });
+      var accuracySessions = sessions.filter(function (item) { return sessionAccuracy(item) != null; });
       var recentAccuracy = accuracySessions.length
-        ? Math.round(accuracySessions.reduce(function (sum, item) { return sum + Number(item.accuracy); }, 0) / accuracySessions.length)
+        ? Math.round(accuracySessions.reduce(function (sum, item) { return sum + sessionAccuracy(item); }, 0) / accuracySessions.length)
         : null;
       var comparable = sessions.filter(function (item) { return item.validForComparison && item.dcpm != null && Number.isFinite(Number(item.dcpm)); });
       var latestDcpm = comparable.length ? Number(comparable[0].dcpm) : null;
@@ -905,7 +920,8 @@
         op: op, label: labels[op], totalFacts: facts.length, secureFacts: counts.secure,
         developingFacts: counts.developing, slowFacts: counts.slow, focusFacts: counts.focus,
         dueFacts: dueFacts.length, recentSessions: sessions.length, recentAccuracy: recentAccuracy,
-        latestDcpm: latestDcpm, trendDelta: trendDelta, recommendation: recommendation,
+        latestDcpm: latestDcpm, latestProrated: comparable.length ? isProratedBenchmark(comparable[0]) : false,
+        trendDelta: trendDelta, recommendation: recommendation,
         priority: priority, targetFacts: targetFacts.slice(0, 12), allFacts: facts.slice(0, 12)
       };
     });
@@ -982,7 +998,9 @@
   }
 
   function buildTeacherReportCsv(report) {
-    var headers = ['Date', 'Mode', 'Operation', 'Practice Set', 'Timing', 'Accuracy', 'DCPM', 'Correct', 'Attempted', 'Completion', 'Goal', 'Goal Result'];
+    // Form, Form Version and Rate Prorated go last so readers that index the
+    // original columns by position still line up.
+    var headers = ['Date', 'Mode', 'Operation', 'Practice Set', 'Timing', 'Accuracy', 'DCPM', 'Correct', 'Attempted', 'Completion', 'Goal', 'Goal Result', 'Form', 'Form Version', 'Rate Prorated'];
     function quote(value) {
       var text = value == null ? '' : String(value);
       return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
@@ -992,10 +1010,12 @@
       return [
         item.date || '', mode, item.operation || '', item.practiceSet || item.difficulty || '',
         item.untimed ? 'Untimed' : ((item.timeLimit || '') + (item.timeLimit ? ' seconds' : '')),
-        item.accuracy != null && Number.isFinite(Number(item.accuracy)) ? Number(item.accuracy) + '%' : '',
+        sessionAccuracy(item) != null ? sessionAccuracy(item) + '%' : '',
         item.dcpm != null && Number.isFinite(Number(item.dcpm)) ? item.dcpm : '', item.totalCorrect == null ? '' : item.totalCorrect,
         item.totalAttempted == null ? '' : item.totalAttempted, item.completionStatus || '',
-        item.goal && item.goal.label || '', item.goalResult ? (item.goalResult.met ? 'Met' : item.goalResult.status) : ''
+        item.goal && item.goal.label || '', item.goalResult ? (item.goalResult.met ? 'Met' : item.goalResult.status) : '',
+        item.mode === 'benchmark' ? item.form || '' : '', item.mode === 'benchmark' && item.form ? fluencyFormVersion(item.formVersion) : '',
+        isProratedBenchmark(item) ? 'Yes' : ''
       ].map(quote).join(',');
     });
     return [headers.join(',')].concat(rows).join('\r\n');
@@ -1045,8 +1065,12 @@
 
   function countDigits(n) { return Math.max(1, String(Math.abs(n)).length); }
 
+  // CBM digits correct: each correct digit in its place value. An answer with
+  // the opposite sign is a different number, so it earns no digit credit (the
+  // keypad's minus key let 12 answered as -12 score 2 of 2). Zero has no sign.
   function countCorrectDigits(expected, actual) {
     if (!Number.isFinite(Number(expected)) || !Number.isFinite(Number(actual))) return 0;
+    if (Number(expected) * Number(actual) < 0) return 0;
     var expectedDigits = String(Math.abs(Math.trunc(Number(expected))));
     var actualDigits = String(Math.abs(Math.trunc(Number(actual))));
     var len = Math.max(expectedDigits.length, actualDigits.length);
@@ -1108,6 +1132,25 @@
     for (var c = 0; c < serialized.length; c++) { hash ^= serialized.charCodeAt(c); hash = Math.imul(hash, 16777619); }
     return { valid: true, hash: 'form-v1-' + (hash >>> 0).toString(16), itemCount: bank.problems.length };
   }
+  // Aaron, 2026-10-19: finishing every item of a fixed form before the limit is
+  // scored as practice always was, digits correct over the minutes used, and is
+  // comparable. Under this many seconds the sample is too short to scale to a
+  // minute (25 typed answers in under 20 s is skipping, not retrieval), so that
+  // run stays non-comparable. scoringVersion 3 marks rates scored this way.
+  var MF_MIN_PRORATED_SECONDS = 20;
+  var MF_SCORING_VERSION = 3;
+  // Fixed forms carry a numeric version (MATH_PROBE_BANKS[grade][form].version).
+  // A form or record from before versions existed is version 1.
+  function fluencyFormVersion(value) {
+    var n = Number(value);
+    return Number.isInteger(n) && n > 0 ? n : 1;
+  }
+  function fluencyFormLabel(form, version) {
+    return tt('math_fluency.form_with_version', '{form} v{version}', { form: form || '-', version: fluencyFormVersion(version) });
+  }
+  function isProratedBenchmark(item) {
+    return !!item && item.mode === 'benchmark' && item.prorated === true;
+  }
   function chooseAdaptiveFact(nextProblem, config, level) {
     if (!nextProblem || level === 'steady') return nextProblem;
     var pool = generatePracticeProblems(nextProblem.op, config.practiceSet || config.difficulty || 'recommended', config.grade, 40);
@@ -1138,6 +1181,9 @@
     var onProbeComplete = props.onProbeComplete || function () { };
     var storageDB = props.storageDB;
     var handleScoreUpdate = props.handleScoreUpdate || function () { };
+    // Set by MathFluencyPanel once a run starts; hides teacher-only controls.
+    var studentLocked = !!props.studentLocked;
+    var studentLockedSince = Number(props.studentLockedSince) || 0;
 
     // ── UI localization (student's interface language, runtime-translated) ──
     var langCtx = React.useContext(LANG_CTX);
@@ -1442,11 +1488,17 @@
       var finishReason = reason || 'early';
       var wasInterrupted = config.mode === 'benchmark' && interruptionStatsRef.current.count > 0;
       var completionStatus = finishReason === 'early' ? 'incomplete' : (wasInterrupted ? 'interrupted' : 'complete');
-      var formExhausted = config.mode === 'benchmark' && finishReason === 'complete' && elapsedSeconds < config.timeLimit;
-      var validForComparison = completionStatus === 'complete' && !isUntimed && !formExhausted && !config.adaptivePractice && !config.readAloud;
+      // Every item answered before the limit: the rate is prorated over the time
+      // actually used. A fixed form finished under MF_MIN_PRORATED_SECONDS has
+      // no meaningful rate, so it gets none and stays out of comparisons.
+      var completedEarly = !isUntimed && finishReason === 'complete' && elapsedSeconds < config.timeLimit;
+      var formExhausted = config.mode === 'benchmark' && completedEarly;
+      var belowProrationMinimum = formExhausted && elapsedSeconds < MF_MIN_PRORATED_SECONDS;
+      var validForComparison = completionStatus === 'complete' && !isUntimed && !belowProrationMinimum && !config.adaptivePractice && !config.readAloud;
       var elapsedMinutes = Math.max(1 / 60, elapsedSeconds / 60);
       var calculatedDcpm = Math.round(totalDigitsCorrect / elapsedMinutes);
-      var dcpm = completionStatus === 'complete' && !isUntimed ? calculatedDcpm : null;
+      var dcpm = completionStatus === 'complete' && !isUntimed && !belowProrationMinimum ? calculatedDcpm : null;
+      var prorated = completedEarly && dcpm != null;
       var strategyCoach = !!config.strategyCoach;
       var firstTryCorrect = attempted.filter(function (problem) { return problem.correct && (!problem.attemptLog || problem.attemptLog.length === 0); });
       var accuracyCorrect = strategyCoach ? firstTryCorrect.length : correct.length;
@@ -1455,7 +1507,7 @@
       var referenceResult = isUntimed && completionStatus === 'complete'
         ? { label: tt('math_fluency.accuracy_focus_practice', 'Accuracy Focus Practice'), color: '#6d28d9', emoji: '\uD83C\uDFAF', tier: 'accuracy-focus' }
         : completionStatus === 'complete' && !validForComparison
-          ? { label: formExhausted ? tt('math_fluency.form_exhausted', 'Form completed before the time limit — descriptive rate only') : tt('math_fluency.descriptive_practice', 'Descriptive practice rate'), tier: 'descriptive', color: '#475569', emoji: '📋' }
+          ? { label: belowProrationMinimum ? tt('math_fluency.form_too_fast_label', 'Finished too fast to score') : tt('math_fluency.descriptive_practice', 'Descriptive practice rate'), tier: 'descriptive', color: '#475569', emoji: '📋' }
           : validForComparison
           ? getBenchmarkLabel(dcpm, reference)
           : {
@@ -1480,6 +1532,7 @@
         sessionId: config.sessionId,
         formHash: config.formHash || null,
         form: config.form,
+        formVersion: config.mode === 'benchmark' ? fluencyFormVersion(config.formVersion) : null,
         grade: config.grade,
         // Present only on a handed-off standardized administration; the host
         // writes the record to this learner's probe history on completion.
@@ -1502,7 +1555,11 @@
         completionStatus: completionStatus,
         validForComparison: validForComparison,
         formExhausted: formExhausted,
-        scoringVersion: 2,
+        completedEarly: completedEarly,
+        prorated: prorated,
+        belowProrationMinimum: belowProrationMinimum,
+        prorationMinimumSeconds: MF_MIN_PRORATED_SECONDS,
+        scoringVersion: MF_SCORING_VERSION,
         itemResults: snapshot,
         interruptionCount: interruptionStatsRef.current.count,
         interruptedSeconds: Math.round(interruptionStatsRef.current.seconds * 10) / 10,
@@ -1595,6 +1652,11 @@
       setCoachAttempts(restoredDraft && nextProblems[resumeIndex] && Array.isArray(nextProblems[resumeIndex].attemptLog) ? nextProblems[resumeIndex].attemptLog.length : 0);
       setConfirmEndEarly(false);
       setPracticePaused(false);
+      // The keyboard goes to a student: teacher-only controls stay hidden from
+      // here until the teacher presses Return to teacher (MathFluencyPanel).
+      setShowTeacherReport(false);
+      setConfirmClearHistory(false);
+      if (typeof props.onStudentLock === 'function') props.onStudentLock();
       setActive(true);
 
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -1634,7 +1696,7 @@
         }
         nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null, responseMs: null }); });
         config = {
-          mode: 'benchmark', form: probeForm, formHash: validateFluencyForm(bank).hash, grade: normalizedGrade,
+          mode: 'benchmark', form: probeForm, formVersion: fluencyFormVersion(bank.version), formHash: validateFluencyForm(bank).hash, grade: normalizedGrade,
           // Carried into the result so a completed benchmark can be written to
           // this learner's probe history. Practice runs leave it null.
           student: probeStudent || null,
@@ -1737,6 +1799,70 @@
       } catch (e) {
         addToast(tt('math_fluency.report_export_failed', 'The teacher report could not be exported.'), 'warning');
       }
+    }
+
+    // window.print() is ignored inside Gemini Canvas (a sandboxed iframe without
+    // allow-modals), so Print did nothing there. Print the rendered report from a
+    // window this module writes (the Symbol Studio pattern), with the panel's
+    // styles and the chosen filters as text. With no window, print in place (the
+    // panel's print CSS isolates the report) and say so if that is refused too.
+    function printTeacherReport() {
+      var region = document.getElementById('mf-teacher-report');
+      if (!region) return false;
+      function esc(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      var clone = region.cloneNode(true);
+      var liveSelects = region.querySelectorAll('select');
+      Array.prototype.forEach.call(clone.querySelectorAll('select'), function (select, index) {
+        var live = liveSelects[index];
+        var chosen = live && live.options[live.selectedIndex];
+        var label = document.createElement('strong');
+        label.textContent = chosen ? chosen.textContent : '';
+        select.parentNode.replaceChild(label, select);
+      });
+      Array.prototype.forEach.call(clone.querySelectorAll('.mf-teacher-report-actions'), function (node) { node.parentNode.removeChild(node); });
+      Array.prototype.forEach.call(clone.querySelectorAll('button'), function (button) {
+        var text = document.createElement('span');
+        text.className = 'mf-print-chip';
+        text.textContent = button.textContent;
+        button.parentNode.replaceChild(text, button);
+      });
+      var panelCss = '';
+      Array.prototype.forEach.call(document.querySelectorAll('style'), function (style) {
+        if (!panelCss && String(style.textContent || '').indexOf('.mf-teacher-report{') >= 0) panelCss = style.textContent;
+      });
+      var title = tt('math_fluency.teacher_report_center', 'Teacher Report Center');
+      var html = '<!DOCTYPE html><html lang="' + esc(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>'
+        + 'body{margin:0;padding:24px;color:#111;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}'
+        + '.mf-print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font:14px system-ui,sans-serif;color:#374151}'
+        + '.mf-print-bar button{font:600 15px system-ui,sans-serif;padding:10px 18px;border:0;border-radius:8px;background:#1e40af;color:#fff;cursor:pointer}'
+        + '.mf-print-chip{display:inline-block;margin:2px;padding:3px 7px;border:1px solid #bfdbfe;border-radius:7px;font-size:10px}'
+        + panelCss.replace(/<\/style/gi, '')
+        + '@media print{.mf-print-bar{display:none!important}body{padding:0}}'
+        + '</style></head><body><div class="mf-print-bar"><button type="button" onclick="window.print()">' + esc(tt('math_fluency.print', 'Print')) + '</button><span>'
+        + esc(tt('math_fluency.print_window_hint', 'If the print dialog does not open, press Ctrl+P (Cmd+P on a Mac).')) + '</span></div>'
+        + clone.outerHTML + '</body></html>';
+      var win = null;
+      try { win = window.open('', '_blank'); } catch (_) { win = null; }
+      if (win) {
+        try {
+          win.document.open(); win.document.write(html); win.document.close();
+          try { win.focus(); } catch (_) {}
+          try { win.print(); } catch (_) { /* refused: the window's own bar says what to do */ }
+          return true;
+        } catch (_) { /* could not write the window: fall through */ }
+      }
+      var fired = false;
+      var onBefore = function () { fired = true; };
+      window.addEventListener('beforeprint', onBefore);
+      try { window.print(); } catch (_) {}
+      window.removeEventListener('beforeprint', onBefore);
+      if (fired) return true;
+      addToast(tt('math_fluency.print_blocked', 'Printing is blocked here. Allow pop-ups for this page, then press Print again.'), 'error');
+      return false;
     }
 
     var pauseAccuracyPractice = useCallback(function () {
@@ -2231,9 +2357,12 @@
       var bm = results.benchmarkResult;
       var ea = results.errorAnalysis;
       var studentReview = buildStudentSessionReview(results);
+      // While a student has the keyboard, the trend shows only this sitting's
+      // runs: earlier rows on a shared learner can be another student's.
       var comparisonHistory = history.filter(function (item) {
         return item.comparisonKey && item.comparisonKey === results.comparisonKey
-          && item.validForComparison !== false && Number.isFinite(item.dcpm);
+          && item.validForComparison !== false && Number.isFinite(item.dcpm)
+          && (!studentLocked || new Date(item.date || 0).getTime() >= studentLockedSince);
       });
       var maxDcpm = Math.max.apply(null, comparisonHistory.map(function (x) { return x.dcpm; }).concat([1]));
       var resultAccuracy = Math.max(0, Math.min(100, Number(results.accuracy) || 0));
@@ -2243,8 +2372,9 @@
         mul: { accent: '#0f766e', strong: '#115e59', soft: '#f0fdfa', border: '#99f6e4' },
         div: { accent: '#d97706', strong: '#b45309', soft: '#fffbeb', border: '#fcd34d' }
       }[results.operation] || { accent: '#475569', strong: '#334155', soft: '#f8fafc', border: '#cbd5e1' };
+      var resultFormLabel = fluencyFormLabel(results.form, results.formVersion);
       var resultModeLabel = results.mode === 'benchmark'
-        ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: results.form || '-' })
+        ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: resultFormLabel })
         : results.untimed ? tt('math_fluency.accuracy_focus', 'Accuracy Focus') : tt('math_fluency.timed_practice', 'Timed practice');
 
       return h('div', { className: 'mf-results-panel' + (reducedMotion ? ' mf-reduce-motion' : '') + (highContrast ? ' mf-high-contrast' : ''), role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
@@ -2285,18 +2415,24 @@
                   ? tt('math_fluency.accuracy_focus_result_detail', 'Completed without a countdown or speed score. Accuracy and fact practice are still recorded.')
                   : results.completionStatus === 'interrupted'
                     ? tt('math_fluency.interrupted_result_detail', 'The page was left during this fixed form, so the run is not comparable.')
-                    : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
+                    : results.completionStatus === 'complete' && results.belowProrationMinimum
+                      ? tt('math_fluency.too_fast_result_detail', 'All items were finished in under {seconds} seconds, too fast to prorate to a full minute. Re-administer for a comparable score.', { seconds: results.prorationMinimumSeconds || MF_MIN_PRORATED_SECONDS })
+                      : results.completionStatus === 'complete'
+                        ? tt('math_fluency.descriptive_result_detail', 'Completed with adaptive practice or read-aloud on, so the rate is descriptive only.')
+                        : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
                 : (results.benchmark.available
                   ? tt('math_fluency.instructional_reference_detail', 'Grade {grade} {season} instructional reference: {target} DCPM', { grade: results.benchmark.grade, season: results.benchmark.season, target: results.benchmark.target })
                   : (results.mode === 'benchmark'
-                    ? tt('math_fluency.fixed_form_detail', 'Fixed Form {form} completed for Grade {grade}', { form: results.form || '-', grade: results.grade })
+                    ? tt('math_fluency.fixed_form_detail', 'Fixed Form {form} completed for Grade {grade}', { form: resultFormLabel, grade: results.grade })
                     : tt('math_fluency.practice_result_detail', 'Practice result for Grade {grade}', { grade: results.grade })))),
             h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '3px' } },
               results.validForComparison
                 ? tt('math_fluency.reference_disclaimer', 'Instructional reference only - not a diagnostic or standardized classification.')
                 : results.untimed && results.completionStatus === 'complete'
                   ? tt('math_fluency.accuracy_focus_excluded_detail', 'Accuracy Focus is saved for practice review and excluded from speed trends and instructional references.')
-                  : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.'))
+                  : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.')),
+            isProratedBenchmark(results) ? h('div', { className: 'mf-prorated-note', role: 'note', style: { fontSize: '11px', color: '#92400e', fontWeight: 750, marginTop: '4px' } },
+              tt('math_fluency.prorated_note', 'Finished all items early ({seconds} s); rate prorated to a full minute.', { seconds: Math.round(Number(results.elapsedSeconds) || 0) })) : null
             )
           ),
           h('div', {
@@ -2511,7 +2647,7 @@
               boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }
           }, h(RefreshCw, { size: 14 }), tt('math_fluency.run_again', ' Run Again')),
-          history.length > 0 ? (confirmClearHistory ? h('div', {
+          history.length > 0 && !studentLocked ? (confirmClearHistory ? h('div', {
             role: 'alertdialog',
             'aria-labelledby': 'mf-clear-history-title',
             'aria-describedby': 'mf-clear-history-description',
@@ -2537,7 +2673,7 @@
                 style: { flex: '1 1 120px', padding: '9px', borderRadius: '9px', border: '1px solid #b91c1c', background: '#b91c1c', color: '#fff', fontWeight: 850, cursor: 'pointer' }
               }, tt('math_fluency.clear_history_confirm', 'Yes, clear history'))
             )
-          ) : h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'),
+          ) : h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'), 'data-mf-teacher-tool': 'true',
             type: 'button', onClick: function () { setConfirmClearHistory(true); },
             style: {
               padding: '10px 16px', background: '#f1f5f9', color: '#475569',
@@ -2690,7 +2826,7 @@
             type: 'button', 'aria-label': tt('math_fluency.resume_saved_accuracy_focus', 'Resume saved Accuracy Focus'), onClick: resumeSavedAccuracyFocus,
             style: { flex: '1 1 150px', padding: '9px 12px', border: 'none', borderRadius: '9px', background: '#7c3aed', color: '#fff', fontWeight: 850, cursor: 'pointer' }
           }, '▶ ' + tt('math_fluency.resume_session', 'Resume Session')),
-          h('button', {
+          studentLocked ? null : h('button', {
             type: 'button', 'aria-label': tt('math_fluency.discard_saved_session', 'Discard saved session'), onClick: discardSavedAccuracyFocus,
             style: { flex: '1 1 120px', padding: '9px 12px', border: '1px solid #c4b5fd', borderRadius: '9px', background: '#fff', color: '#6d28d9', fontWeight: 800, cursor: 'pointer' }
           }, tt('math_fluency.discard', 'Discard'))
@@ -2930,17 +3066,19 @@
         );
       })(),
 
-      h('button', {
-        type: 'button', onClick: function () { setShowTeacherReport(!showTeacherReport); },
+      // Hidden from a student at the keyboard: it lists every saved session.
+      studentLocked ? null : h('button', {
+        type: 'button', onClick: function () { setShowTeacherReport(!showTeacherReport); }, 'data-mf-teacher-tool': 'true',
         'aria-expanded': showTeacherReport, 'aria-controls': 'mf-teacher-report',
         style: { width: '100%', padding: '9px', marginBottom: showTeacherReport ? '0' : '8px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #93c5fd', borderRadius: showTeacherReport ? '10px 10px 0 0' : '10px', fontSize: '12px', fontWeight: 850, cursor: 'pointer' }
       }, 'Teacher Report - ' + (showTeacherReport ? 'Hide' : 'Show')),
-      showTeacherReport && (function () {
+      !studentLocked && showTeacherReport && (function () {
         var report = getTeacherReport();
+        var proratedTag = ' (' + tt('math_fluency.prorated_short', 'prorated') + ')';
         var metricCards = [
           { label: 'Sessions', value: report.sessionCount },
           { label: 'Avg Accuracy', value: report.avgAccuracy == null ? 'N/A' : report.avgAccuracy + '%' },
-          { label: 'Latest DCPM', value: report.latestDcpm == null ? 'N/A' : report.latestDcpm },
+          { label: 'Latest DCPM' + (report.latestDcpmProrated ? proratedTag : ''), value: report.latestDcpm == null ? 'N/A' : report.latestDcpm },
           { label: 'Facts Due', value: report.reviewSchedule.dueCount },
           { label: 'Goals Met', value: report.goalRate == null ? 'N/A' : report.goalRate + '%' }
         ];
@@ -2960,7 +3098,7 @@
             ),
             h('div', { className: 'mf-teacher-report-actions' },
               h('button', { type: 'button', onClick: exportTeacherReport }, 'CSV'),
-              h('button', { type: 'button', onClick: function () { window.print(); } }, 'Print')
+              h('button', { type: 'button', onClick: printTeacherReport }, 'Print')
             )
           ),
           h('div', { className: 'mf-teacher-report-filters', 'aria-label': 'Report filters' },
@@ -2991,7 +3129,7 @@
                   h('td', null, row.totalFacts ? row.secureFacts + '/' + row.totalFacts + ' secure' : 'Not tracked'),
                   h('td', null, String(row.dueFacts)),
                   h('td', null, row.recentAccuracy == null ? 'N/A' : row.recentAccuracy + '%'),
-                  h('td', null, row.latestDcpm == null ? 'N/A' : row.latestDcpm + trend),
+                  h('td', null, row.latestDcpm == null ? 'N/A' : row.latestDcpm + (row.latestProrated ? proratedTag : '') + trend),
                   h('td', null, row.recommendation)
                 );
               }))
@@ -3017,10 +3155,17 @@
               h('caption', null, 'Recent filtered sessions'),
               h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Date'), h('th', { scope: 'col' }, 'Type'), h('th', { scope: 'col' }, 'Operation'), h('th', { scope: 'col' }, 'Accuracy'), h('th', { scope: 'col' }, 'DCPM'))),
               h('tbody', null, report.sessions.length ? report.sessions.slice(0, 8).map(function (item, index) {
-                var type = item.mode === 'benchmark' ? 'Benchmark' : (item.untimed ? 'Accuracy Focus' : 'Timed Practice');
+                // Form letter with its version, so rebuilt forms are not mixed up
+                // with the ones they replaced.
+                var type = item.mode === 'benchmark'
+                  ? 'Benchmark' + (item.form ? ' (' + tt('math_fluency.form_named', 'Form {form}', { form: fluencyFormLabel(item.form, item.formVersion) }) + ')' : '')
+                  : (item.untimed ? 'Accuracy Focus' : 'Timed Practice');
+                var hasDcpm = item.dcpm != null && Number.isFinite(Number(item.dcpm));
                 return h('tr', { key: (item.date || '') + '-' + index },
                   h('td', null, item.date ? new Date(item.date).toLocaleDateString() : 'N/A'), h('td', null, type), h('td', null, item.operation || 'N/A'),
-                  h('td', null, item.accuracy != null && Number.isFinite(Number(item.accuracy)) ? item.accuracy + '%' : 'N/A'), h('td', null, item.dcpm != null && Number.isFinite(Number(item.dcpm)) ? item.dcpm : 'N/A'));
+                  h('td', null, sessionAccuracy(item) != null ? sessionAccuracy(item) + '%' : 'N/A'),
+                  h('td', isProratedBenchmark(item) ? { title: tt('math_fluency.prorated_note', 'Finished all items early ({seconds} s); rate prorated to a full minute.', { seconds: Math.round(Number(item.elapsedSeconds) || 0) }) } : null,
+                    hasDcpm ? item.dcpm + (isProratedBenchmark(item) ? proratedTag : '') : 'N/A'));
               }) : h('tr', null, h('td', { colSpan: 5 }, 'No sessions match these filters.')))
             )
           )
@@ -6166,6 +6311,25 @@
     var who = _who[0], setWho = _who[1];
     var _name = React.useState(who.name), name = _name[0], setName = _name[1];
     var _active = React.useState(false), active = _active[0], setActive = _active[1];
+    // Aaron, 2026-10-19: once any run starts the keyboard is a student's. The
+    // Teacher Report, Clear History, draft Discard and the learner switch stay
+    // hidden or disabled until the teacher presses Return to teacher (no PIN,
+    // by decision). Held here so it survives the session remounting for a new
+    // learner or an Assessment Center handoff.
+    var _lock = React.useState(null), studentLock = _lock[0], setStudentLock = _lock[1];
+    var lockForStudent = React.useCallback(function () {
+      setStudentLock(function (previous) { return previous || { since: Date.now() }; });
+    }, []);
+    var panelRef = React.useRef(null);
+    var wasLockedRef = React.useRef(false);
+    React.useEffect(function () {
+      // Returning hands focus to the first control it revealed.
+      if (wasLockedRef.current && !studentLock && panelRef.current) {
+        var target = panelRef.current.querySelector('[data-mf-teacher-tool]') || panelRef.current.querySelector('#mf-learner-name:not([disabled])');
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      wasLockedRef.current = !!studentLock;
+    }, [studentLock]);
     React.useEffect(function () {
       delete window.__alloFluencyPendingConfig;
       function receive() {
@@ -6187,13 +6351,28 @@
       setActive(false);
       setName(props.learnerName || '');
     }, [props.learnerId, props.learnerName]);
-    return h('div', null,
+    var locked = !!studentLock;
+    return h('div', { ref: panelRef },
+      locked && !active ? h('section', {
+        className: 'mf-student-mode mb-3 rounded-lg p-3', role: 'region', 'aria-labelledby': 'mf-student-mode-title',
+        style: { border: '2px solid #f59e0b', background: '#fffbeb', color: '#78350f' }
+      },
+        h('strong', { id: 'mf-student-mode-title', style: { display: 'block', fontSize: '14px', fontWeight: 900 } }, tt('math_fluency.student_mode_title', 'Student mode')),
+        h('p', { id: 'mf-student-mode-detail', style: { margin: '4px 0 8px', fontSize: '13px', lineHeight: 1.4 } },
+          tt('math_fluency.student_mode_detail', 'Teacher tools (the report, clearing history, switching learners) are hidden while a student uses this device.')),
+        h('button', {
+          type: 'button', className: 'mf-return-to-teacher min-h-11 rounded px-3', 'aria-describedby': 'mf-student-mode-detail',
+          onClick: function () { setStudentLock(null); },
+          style: { minHeight: '44px', border: 0, background: '#92400e', color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
+        }, tt('math_fluency.return_to_teacher', 'Return to teacher'))
+      ) : null,
       h('div', { className: 'mb-3 rounded-lg border border-slate-300 p-3' },
         h('label', { htmlFor: 'mf-learner-name' }, tt('math_fluency.learner_name', 'Learner name or unique classroom identifier')),
-        h('input', { id: 'mf-learner-name', value: name, disabled: active || !!props.learnerId, onChange: function (e) { setName(e.target.value); }, className: 'ml-2 min-h-11 border border-slate-400 rounded p-2' }),
-        !props.learnerId && h('button', { type: 'button', disabled: active, className: 'ml-2 min-h-11 rounded bg-indigo-700 text-white px-3', onClick: function () { var clean = name.trim(); setWho(function (previous) { return { id: clean ? 'name:' + clean.toLowerCase() : null, name: clean, pending: null, epoch: previous.epoch + 1 }; }); } }, tt('math_fluency.use_learner', 'Use learner')),
+        h('input', { id: 'mf-learner-name', value: name, disabled: active || locked || !!props.learnerId, onChange: function (e) { setName(e.target.value); }, className: 'ml-2 min-h-11 border border-slate-400 rounded p-2' }),
+        !props.learnerId && h('button', { type: 'button', disabled: active || locked, className: 'ml-2 min-h-11 rounded bg-indigo-700 text-white px-3', onClick: function () { var clean = name.trim(); setWho(function (previous) { return { id: clean ? 'name:' + clean.toLowerCase() : null, name: clean, pending: null, epoch: previous.epoch + 1 }; }); } }, tt('math_fluency.use_learner', 'Use learner')),
         h('p', { role: 'status', className: 'mt-2 text-sm text-slate-600' }, who.id ? tt('math_fluency.learner_separate', 'Progress is kept separately for this learner: ') + who.name : tt('math_fluency.anonymous_session', 'Unnamed practice stays in this session. Choose a learner to save separate progress.'))),
-      h(MathFluencySession, Object.assign({}, props, { key: (who.id || 'session') + ':' + who.epoch, learnerId: who.id, learnerName: who.name, initialPendingConfig: who.pending, onActiveChange: setActive })));
+      h(MathFluencySession, Object.assign({}, props, { key: (who.id || 'session') + ':' + who.epoch, learnerId: who.id, learnerName: who.name, initialPendingConfig: who.pending, onActiveChange: setActive,
+        studentLocked: locked, studentLockedSince: studentLock ? studentLock.since : 0, onStudentLock: lockForStudent })));
   }
 
   window.AlloModules = window.AlloModules || {};

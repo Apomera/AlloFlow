@@ -276,63 +276,41 @@ function _searchTrace(event, detail) {
 const ALLO_SOURCE_SCHEME = 'allo-source:';
 
 // BEGIN PUBLIC SEARCH POLICY
-/* Automatic contextual search accepts only canonical public reference queries.
- * This is an allowlist, not a PII detector or a claim of FERPA compliance.
- * Never add arbitrary user text, model output, school names or identifiers here.
+/* One search-query rule for every transport: the browser, the Canvas Worker and the
+ * Firebase proxy. Any subject may be searched; there is no topic list. The rule only
+ * tidies the query and refuses one that looks like it carries a personal identifier
+ * (an email address, a phone number, a Social Security-style number or a student ID
+ * number), so a pasted student detail is not sent to Serper. Names are not detected.
  */
 function publicSearchQuery(value) {
-  if (typeof value !== 'string' || value.length > 200) return '';
-  const q = value.trim().replace(/\s+/g, ' ');
-  const udl = q.match(/^site:udlguidelines\.cast\.org UDL Guidelines (3\.0|2\.2)((?: (?:engagement|representation|action and expression|feedback|choice|identity|belonging|collaboration|reflection|language|perception|goals)){0,3})$/i);
-  if (udl) return 'site:udlguidelines.cast.org UDL Guidelines ' + udl[1] + udl[2].toLowerCase();
-  const standard = q.match(/^site:(thecorestandards\.org|nextgenscience\.org) (.+) official standard$/i);
-  if (standard) {
-    const codes = standard[2].toUpperCase().split(' ');
-    const ela = /^(?:CCSS\.ELA-LITERACY\.)?(?:RL|RI|RF|W|SL|L)\.(?:K|[1-9]|1[0-2]|9-10|11-12)\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const math = /^(?:CCSS\.MATH\.CONTENT\.)?(?:K|[1-9]|1[0-2])\.(?:CC|OA|NBT|NF|MD|G|RP|NS|EE|SP|F)\.[A-F]\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const ngss = /^(?:K|[1-8]|MS|HS)-(?:PS|LS|ESS|ETS)[1-4]-[1-9][0-9]?$/;
-    const isNgss = standard[1].toLowerCase() === 'nextgenscience.org';
-    if (codes.length <= 3 && codes.every(code => isNgss ? ngss.test(code) : ela.test(code) || math.test(code)))
-      return 'site:' + standard[1].toLowerCase() + ' ' + codes.join(' ') + ' official standard';
-  }
-  // Closed jurisdiction names plus one fixed public rule query. Never append
-  // document text, student details, notes, or model output to this query.
-  const sld = q.match(/^(.+) department of education specific learning disability eligibility requirements official state rule$/i);
-  if (sld) {
-    const state = publicSearchQuery.sldStates.find(name => name.toLowerCase() === sld[1].toLowerCase());
-    if (state) return state + ' department of education specific learning disability eligibility requirements official state rule';
-  }
-  // Exact matches only: never extract vocabulary from a private narrative.
-
-  return publicSearchQuery.topics.includes(q.toLowerCase()) ? q.toLowerCase() : '';
+  return publicSearchQuery.reason(value) ? '' : value.trim().replace(/\s+/g, ' ');
 }
-publicSearchQuery.sldStates = Object.freeze([
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
-  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
-  "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming", "District of Columbia"
-]);
-publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather fronts', 'main idea', 'photosynthesis', 'water cycle', 'plate tectonics', 'fractions',
-    'formative assessment', 'retrieval practice', 'spaced practice', 'explicit instruction',
-    'universal design for learning', 'differentiated instruction', 'reading comprehension',
-    'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
-    'common core reading standards grade 3',
-    'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
-// Explicit research uses only the user's separate topic field. This normalizer
-// bounds transport input; it must never be used to extract a query from context.
-publicSearchQuery.userTopic = function (value) {
-  if (typeof value !== 'string' || value.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) return '';
-  const query = value.trim().replace(/\s+/g, ' ');
-  return query;
+publicSearchQuery.MAX_LENGTH = 500;
+// '' when the query may be sent; otherwise why it may not.
+publicSearchQuery.reason = function (value) {
+  if (typeof value !== 'string' || !value.trim()) return 'empty';
+  if (value.length > publicSearchQuery.MAX_LENGTH) return 'too-long';
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value)) return 'control-characters';
+  const q = value.trim().replace(/\s+/g, ' ');
+  if (/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.test(q)) return 'email';
+  if (/\b\d{3}-\d{2}-\d{4}\b/.test(q) || /\b(?:student|pupil|learner)\s*(?:id|#|number|no\.?)\s*[:#]?\s*\d{3,}/i.test(q)) return 'id-number';
+  // Grouped like a phone number (555-123-4567, (555) 123 4567); bare long numbers are allowed.
+  if (/(?:^|\D)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(?!\d)/.test(q)) return 'phone';
+  return '';
 };
-publicSearchQuery.forIntent = function (value, intent) {
-  return intent === 'user-topic' ? publicSearchQuery.userTopic(value) : publicSearchQuery(value);
+// A sentence a teacher can act on, or '' when the query is fine.
+publicSearchQuery.explain = function (value) {
+  const reason = publicSearchQuery.reason(value);
+  if (!reason) return '';
+  if (reason === 'email') return 'This search looks like it contains an email address, so it was not sent. Remove it and try again.';
+  if (reason === 'phone') return 'This search looks like it contains a phone number, so it was not sent. Remove it and try again.';
+  if (reason === 'id-number') return 'This search looks like it contains an ID number, so it was not sent. Remove it and try again.';
+  if (reason === 'too-long') return 'This search is longer than 500 characters. Shorten it and try again.';
+  return 'Enter a search of 1 to 500 characters.';
 };
+// Every intent follows the same rule; these names stay so callers need no change.
+publicSearchQuery.userTopic = function (value) { return publicSearchQuery(value); };
+publicSearchQuery.forIntent = function (value) { return publicSearchQuery(value); };
 // END PUBLIC SEARCH POLICY
 const WebSearchProvider = {
     publicSearchQuery,
@@ -426,8 +404,9 @@ const WebSearchProvider = {
 
     async _fetchSerperDirect(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery.forIntent(query, intent);
-        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
+        const checkedQuery = publicSearchQuery(query);
+        if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
+        query = checkedQuery;
         const key = this._serperDirectKey();
         if (!key) throw new Error('No Serper key configured.');
         const safeQuery = query;
@@ -520,11 +499,16 @@ const WebSearchProvider = {
         }
 
         try {
-            const searchQuery = publicSearchQuery.forIntent(searchQueryOverride || query, intent);
+            // The caller's query wins. Without one, a short query is extracted from the prompt
+            // (check_search_queries.cjs lists the few callers that rely on that).
+            const candidate = searchQueryOverride || (intent === 'user-topic' ? query : this._extractSearchQuery(query));
+            if (typeof candidate !== 'string' || !candidate.trim()) return { results: [], contextPrompt: '', groundingMetadata: null, noQuery: true };
+            const searchQuery = publicSearchQuery(candidate);
             if (!searchQuery) {
-                if (intent === 'user-topic') return { results: [], contextPrompt: '', groundingMetadata: null, invalidQuery: true };
-                _searchTrace('search-blocked', 'Public query allowlist rejected request');
-                return { results: [], contextPrompt: 'External search was not performed: this query is outside the approved public topic list. Do not claim web verification.', groundingMetadata: null, privacyBlocked: true };
+                const blockedReason = publicSearchQuery.reason(candidate);
+                if (intent === 'user-topic') return { results: [], contextPrompt: '', groundingMetadata: null, invalidQuery: true, blockedReason, message: publicSearchQuery.explain(candidate) };
+                _searchTrace('search-blocked', 'Query refused: ' + blockedReason);
+                return { results: [], contextPrompt: 'External search was not performed (' + publicSearchQuery.explain(candidate) + ') Do not claim web verification.', groundingMetadata: null, privacyBlocked: true, blockedReason, message: publicSearchQuery.explain(candidate) };
             }
             console.log('[WebSearch] Searching validated query');
 
@@ -663,6 +647,8 @@ const WebSearchProvider = {
      * Matches the Topic/Query field patterns used in callGemini callers.
      * Logs extraction method to aid debugging.
      */
+    // Only explicit template fields (what the teacher typed) become a query. Sentences, quoted
+    // strings and document text are never scraped; no field means no search.
     _extractSearchQuery(prompt) {
         if (prompt.length <= 100) return prompt;
 
@@ -672,9 +658,7 @@ const WebSearchProvider = {
             [/Topic:\s*'([^']{2,120})'/i,                "Topic:'...'"],
             [/User Query\/Skill:\s*"([^"]{2,120})"/i,    'UserQuery/Skill'],
             [/Learning Goal:\s*"([^"]{2,120})"/i,        'LearningGoal'],
-            [/Verify\s+(?:the\s+)?(?:factual\s+)?accuracy.*?Text\s+Segment:\s*"([^"]{3,120})/is, 'Verify-text-segment'],
             [/article\s+about\s+"([^"]{2,120})"/i,       'article about'],
-            [/Verify\s+(?:the\s+)?(?:factual\s+)?accuracy.*?Text\s+Segment:\s*"([^"]{3,120})/is, 'Verify-text-segment'],
             [/article\s+about\s+"([^"]{2,120})"/i,       'article about'],
             [/resources?\s+about:?\s+(.{3,100}?)(?:\.\s|\.\s*$|$)/im, 'resources about'],
             [/(?:text|content)\s+about\s*:?\s*"([^"]{2,120})"/i, 'content about'],
@@ -689,59 +673,11 @@ const WebSearchProvider = {
                 const extracted = match[1].trim();
                 // Reject if the extracted text looks like more template boilerplate
                 if (/^(the following|this|these|a |an )\b/i.test(extracted)) continue;
-                console.log(`[WebSearch] Query extracted via ${label}: "${extracted}"`);
+                console.log(`[WebSearch] Query extracted via ${label}`);
                 return extracted;
             }
         }
-
-        // Priority 2: Generic "about/regarding" with quoted or unquoted content
-        const genericPatterns = [
-            [/(?:about|regarding)\s+[""\u201C]([^""\u201D]{3,80})[""\u201D]/i, 'about "..."'],
-            [/(?:about|regarding)\s+([^.,\n"]{3,60}?)(?:\.|,|\n|$)/im, 'about ...'],
-        ];
-
-        for (const [pattern, label] of genericPatterns) {
-            const match = prompt.match(pattern);
-            if (match && match[1]) {
-                const extracted = match[1].trim();
-                // Reject boilerplate-looking matches
-                if (/^(the following|this|these|a |an )\b/i.test(extracted)) continue;
-                if (extracted.length < 3) continue;
-                console.log(`[WebSearch] Query extracted via ${label}: "${extracted}"`);
-                return extracted;
-            }
-        }
-
-        // Priority 3: First short quoted string in the prompt (authors often quote the actual topic)
-        const quotedMatch = prompt.match(/"([^"]{3,80})"/);
-        if (quotedMatch && quotedMatch[1]) {
-            const q = quotedMatch[1].trim();
-            // Reject if it looks like a JSON key, instruction, or template placeholder
-            if (!/^(code|description|framework|name|role|text|task|format|return|here|source|the |a )(?:\b|$)/i.test(q) && q.length >= 3) {
-                console.log(`[WebSearch] Query extracted via first-quoted: "${q}"`);
-                return q;
-            }
-        }
-
-        // Priority 4: First meaningful sentence (skip template/instruction boilerplate)
-        const skipLine = /^(research|write|generate|task|you are|instructions?|system|note|critical|important|verification|synthesis|strict|do not|return only|use google|find\s+official|find\s+high|identify|extract|cross-reference|verify|base your|also use|focus on|ensure|the following|include|keep|webb|target|return|use |if |for |---|format|output|rules?|text segment|\*|✓|✗|#|\d+[.)]\s)/i;
-        const sentences = prompt.split(/[.\n]/).map(s => s.trim()).filter(s => s.length > 10 && s.length < 120);
-        for (const s of sentences) {
-            if (!skipLine.test(s)) {
-                console.log(`[WebSearch] Query extracted via first-sentence: "${s.slice(0, 100)}"`);
-                return s.slice(0, 100);
-            }
-        }
-
-        // Final fallback: shortest non-trivial sentence (avoids long template lines)
-        const byLength = sentences.slice().sort((a, b) => a.length - b.length);
-        const shortest = byLength.find(s => s.length > 10 && s.length < 100 && !skipLine.test(s));
-        if (shortest) {
-            console.log(`[WebSearch] Query extracted via shortest-sentence: "${shortest}"`);
-            return shortest;
-        }
-        console.warn('[WebSearch] Query extraction: all methods failed, using truncated prompt');
-        return sentences[0]?.slice(0, 100) || prompt.slice(0, 80);
+        return '';
     },
 
     // ─── SearXNG (Primary) ──────────────────────────────────────────────
@@ -752,8 +688,9 @@ const WebSearchProvider = {
      */
     async _fetchSearXNG(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery.forIntent(query, intent);
-        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
+        const checkedQuery = publicSearchQuery(query);
+        if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
+        query = checkedQuery;
         const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
 
         const response = await fetch(url, {
@@ -795,8 +732,9 @@ const WebSearchProvider = {
      */
     async _fetchDuckDuckGo(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery.forIntent(query, intent);
-        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
+        const checkedQuery = publicSearchQuery(query);
+        if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
+        query = checkedQuery;
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
         const response = await fetch(url, {
@@ -883,8 +821,9 @@ const WebSearchProvider = {
      */
     async _fetchSerper(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery.forIntent(query, intent);
-        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
+        const checkedQuery = publicSearchQuery(query);
+        if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
+        query = checkedQuery;
         const url = this._serperProxyUrl;
         const isCanvasCompatibility = this._isCanvas
             && this._serperProxyMode === 'canvas-compat-get';
@@ -1144,7 +1083,7 @@ const WebSearchProvider = {
                 reason: out?.privacyBlocked ? 'privacy-blocked' : count > 0 ? 'ok' : 'no-results',
                 message: count > 0
                     ? `${count} result(s) via ${out.source}.`
-                    : out?.privacyBlocked ? 'Search was blocked: use an approved public topic.' : 'The search ran but returned no results.',
+                    : out?.privacyBlocked ? (out.message || 'Search was not sent: the query looked like it contained a personal identifier.') : 'The search ran but returned no results.',
                 source: out && out.source || null,
                 sample: count > 0 ? out.results.slice(0, 3).map(r => ({ title: r.title, url: r.url })) : [],
                 transports,

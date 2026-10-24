@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-21",
+  "finding": "The catalog bridge discarded the project loader ownership result. The lesson host advanced role selection immediately, before FileReader and Builder restoration completed.",
+  "fix": "Project load owners expose a completion Promise that settles for success, validation/read/restore failure, and cancellation independently from lifecycle acquisition. The catalog bridge awaits the owner and its completion; lesson-link role selection advances only after success.",
+  "scope": [
+    "misc_handlers_source.jsx operation manager and exact generated/public counterparts",
+    "host_handlers_source.jsx loadProjectFromJson and exact generated/public counterparts",
+    "AlloFlowANTI.txt LESSON_DEEP_LINK_IMPORT block and two desktop source counterparts"
+  ],
+  "validation": {
+    "native": {
+      "command": "node --test tests/catalog_import_completion.test.cjs tests/lesson_deep_link_host.test.cjs tests/blueprint_module_preflight.test.cjs",
+      "passed": 24,
+      "failed": 0,
+      "exitCode": 0,
+      "covers": ["source and compiled runtime", "pending file read", "pending asynchronous Builder restore", "read/parse/schema/restore failure", "cancellation before validation and during restore", "lazy module bridge", "missing legacy completion", "role gating", "module mirror parity"]
+    },
+    "existing": {
+      "command": "node node_modules/vitest/vitest.mjs run tests/project_load_async_ownership.test.js tests/catalog_lesson_permalink.test.js tests/catalog_download_load.test.js --maxWorkers=1 --testTimeout=30000",
+      "tempDirectory": "tmp/novak-import-tests",
+      "passed": 38,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "scopeProof": "tmp/novak-host-release/check-import-module-scope.cjs confirms reversing only the intended manager/function changes recreates exact clean HEAD2f69704 bytes for all six module/source files; all parse.",
+    "cleanHostOutputSha256": "cd4a5439d30d12898d2eff05daa59f429e5c35f6907cd92a5cdd20dc5e1eef85"
+  },
+  "implementationNotes": [
+    "Lifecycle callbacks retain their original acquisition rules; prevalidation failures resolve completion without invoking a lifecycle that never started.",
+    "This adds an accurate completion signal; it does not introduce transactional rollback for an existing importer failure after workspace setters have run.",
+    "One multi-file apply_patch returned a context error after applying the first two source files; a subsequent host write failed transiently. Files were reread, intended blocks verified, and scoped update-import-contract.cjs completed all exact replacements successfully. No test failures remained."
+  ]
+}

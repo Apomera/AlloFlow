@@ -80,16 +80,33 @@ function plumeCommands(record) {
   });
 }
 function withoutSun(geometry) { const { sunlight, ...other } = geometry; return other; }
+// One assertion per scene: an expect() per number made a 54-scene test exceed 5 s.
 function finiteCalls(commands) {
-  for (const row of commands) for (const value of row) if (typeof value === 'number') expect(Number.isFinite(value), row[0]).toBe(true);
+  const bad = commands.filter(row => row.some(value => typeof value === 'number' && !Number.isFinite(value)));
+  expect(bad, 'Canvas calls with non-finite numbers').toEqual([]);
 }
 
-// Captured before editing accepted pass55 source, SHA-256 ca9fcdfaed952c2c342bc3f11d44161760cd3e91811a81e574c9d66d5b75818e.
+// Recaptured after pass76 added Saturn hull detail and curved engine bells; the
+// returned stack geometry is unchanged from the pass76 baseline (before/after compared).
 const legacyCases = [
-  ['burning', 0.71, 78, 1, '8502c43c3920242aa388f1e3f849f9e81006a5da1c17e35b15b300d3eeffd3ca'],
-  ['coasting', -1.4, 54, 0, '04dbe24180586f8b7ee99ba206a7a706378e99d67ed1138f85c638dee50cb2c4'],
-  ['quarter thrust', Math.PI / 2, 64, 0.25, '74d82f02b038545dff110d45f37d57aef70449d786977598815e809d93e3163a'],
+  ['burning', 0.71, 78, 1, '23ab28faefdb8b308f70500c197a9a35a1cdc15a22a0b44900f756844f03f3e2'],
+  ['coasting', -1.4, 54, 0, 'f771db92b6d9f59b95ec361111d956832c54159f0a1ffa6926d44063e845b06f'],
+  ['quarter thrust', Math.PI / 2, 64, 0.25, '2f4a12ca6912755aa6991e54e6cf34a645f2ea3ac89fd703d79e4ddcb358ee68'],
 ];
+// Replay save/restore and count opaque hull material (a gradient fill) painted while
+// globalAlpha is below 1. The faint detail strokes may fade; the hull may not.
+function hullFillsUnderPartialAlpha(record) {
+  let state = { alpha: 1, fill: null }; const stack = []; let count = 0;
+  for (const [kind, key, value] of record.commands) {
+    if (kind === 'set' && key === 'globalAlpha') state.alpha = value;
+    if (kind === 'set' && key === 'fillStyle') state.fill = value;
+    if (kind === 'call' && key === 'save') stack.push({ ...state });
+    if (kind === 'call' && key === 'restore') state = stack.pop() || { alpha: 1, fill: null };
+    if (kind === 'call' && (key === 'fill' || key === 'fillRect') && state.alpha < 1 && state.fill && typeof state.fill === 'object') count++;
+  }
+  return count;
+}
+const opacityWrites = record => record.commands.filter(row => row[0] === 'set' && ['globalAlpha', 'globalCompositeOperation'].includes(row[1]));
 
 describe('TLI world illumination', () => {
   it('uses the fixed +X Sun at every saved parking-orbit orientation without mutating samples', () => {
@@ -218,7 +235,9 @@ describe('TLI opaque stack lighting', () => {
       expect(materialColors[0].length).toBeGreaterThan(40);
       expect(materialColors[1]).toHaveLength(materialColors[0].length);
       for (const rec of [full, dark, partial]) {
-        expect(rec.commands.some(row => row[0] === 'set' && ['globalAlpha', 'globalCompositeOperation'].includes(row[1]))).toBe(false);
+        // Sunlight never changes opacity: every alpha the detail layer sets is the unlit one.
+        expect(opacityWrites(rec)).toEqual(opacityWrites(baseline));
+        expect(hullFillsUnderPartialAlpha(rec), 'opaque hull under partial alpha').toBe(0);
         for (const gradient of hull(rec)) for (const [, color] of gradient.stops) expect(color).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
       }
       for (let i = 0; i < materialColors[0].length; i++) {

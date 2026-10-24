@@ -87,7 +87,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
   function minimumLeftRiemannSubdivisions(a, b, c, xMax, threshold, maxN) {
     var exactValue = (a / 3) * xMax * xMax * xMax + (b / 2) * xMax * xMax + c * xMax;
-    for (var n = 2; n <= maxN; n++) {
+    // From n = 1: one rectangle is a Left sum too, and starting at 2 called 2 the
+    // smallest n when 1 already met the target (f = -x^2 + x on [0, 2], error < 1).
+    for (var n = 1; n <= maxN; n++) {
       if (Math.abs(leftRiemannEstimate(a, b, c, xMax, n) - exactValue) < threshold) return n;
     }
     return null;
@@ -109,7 +111,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     color: 'red',
     category: 'math',
     questHooks: [
-      { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return (d.n || 20) !== 20 || d.mode !== 'left'; }, progress: function(d) { return d.mode && d.mode !== 'left' ? 'Exploring!' : 'Adjust rectangles'; } },
+      { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return Object.keys(d.methodsUsed || {}).length > 0 || !!d.nExplored; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length > 0 || d.nExplored ? 'Exploring!' : 'Adjust rectangles'; } },
       { id: 'try_all_methods', label: 'Try left, right, midpoint, and trapezoid methods', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.methodsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length + '/4 methods'; } },
       { id: 'predict_correctly', label: 'Complete an integral estimate comparison', icon: '\uD83D\uDCCF', check: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)); }, progress: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)) ? 'Compared!' : 'Try estimating'; } } // Legacy id retained for saved quest compatibility.
     ],
@@ -145,6 +147,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, { [key]: val }) });
           });
+        };
+        // Mission rewards sit in the render tree, so paying them there paid again on every
+        // re-render (one mission reached the 100 XP cap). Pay each mission once.
+        var _missionPaid = React.useRef({});
+        var awardMissionOnce = function(key, xp, label) {
+          var paid = d.missionXP && typeof d.missionXP === 'object' ? d.missionXP : {};
+          if (paid[key] || _missionPaid.current[key] || typeof awardStemXP !== 'function') return null;
+          _missionPaid.current[key] = true;
+          upd('missionXP', Object.assign({}, paid, { [key]: true }));
+          awardStemXP('calculus', xp, label);
+          return null;
         };
 
         // ── VISUALIZE: canvas hooks (declared at IIFE top so they fire every render) ──
@@ -1729,7 +1742,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         if (Math.abs(rawXMax - rawXMin) < 0.0001) rawXMax = rawXMin + 1;
         var xMin = Math.min(rawXMin, rawXMax);
         var xMax2 = Math.max(rawXMin, rawXMax);
-        var mode = d.mode || 'left';
+        // Allow-list the MODES ids: the host's starter state sends mode 'riemann', which
+        // drew the midpoint sum labelled "Riemann (riemann)" with no method pressed.
+        var mode = ['left', 'midpoint', 'right', 'trapezoid', 'simpson'].indexOf(d.mode) !== -1 ? d.mode : 'left';
         var nRects = normalizeCalculusSubdivisions(finiteNum(d.n, 20), mode);
         // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
         // id this build does not know matched NONE of them: the tool rendered its
@@ -1968,7 +1983,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var qxMax=[2,3][Math.floor(Math.random()*2)], thr=[1,0.5,0.25][Math.floor(Math.random()*3)];
           var minN=minimumLeftRiemannSubdivisions(qa,qb,0,qxMax,thr,200);
           if(minN===null){thr=0.5;minN=minimumLeftRiemannSubdivisions(qa,qb,0,qxMax,thr,200);}
-          var opts=[minN],cands=[minN-5,minN-3,minN-2,minN-1,minN+1,minN+2,minN+3,minN+5,Math.ceil(minN*1.5),Math.min(200,minN*2)].filter(function(v,i,arr){return v>=2&&v<=200&&v!==minN&&arr.indexOf(v)===i;});
+          var opts=[minN],cands=[minN-5,minN-3,minN-2,minN-1,minN+1,minN+2,minN+3,minN+5,Math.ceil(minN*1.5),Math.min(200,minN*2)].filter(function(v,i,arr){return v>=1&&v<=200&&v!==minN&&arr.indexOf(v)===i;});
           while(opts.length<4&&cands.length>0){var ci=Math.floor(Math.random()*cands.length);opts.push(cands.splice(ci,1)[0]);}
           opts.sort(function(a,b){return a-b;});
           return {mode:'minN',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,answer:minN,threshold:thr,opts:opts,answered:false,
@@ -1993,9 +2008,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           return {mode:'deriv',a:qa,b:qb,c:0,x0:qx,answer:qSlope,opts:opts,answered:false,
             question:"For f(x)="+buildFStr(qa,qb,0)+", apply the power rule to find f\u2032("+qx+")."};
         }
-        function startCalcChallenge() {
+        // autoMode: the auto-advance after a correct answer. It runs 2 s later from this
+        // render's closure, so it must not fire after the student switched challenge type
+        // (an estimate quiz appeared under OVER/EXACT/UNDER) or left the tab (it rewrote
+        // the Integral tab's function and bounds).
+        function startCalcChallenge(autoMode) {
           var q = cMode==='method'?makeMethodQuiz():cMode==='minN'?makeMinNQuiz():cMode==='exact'?makeExactQuiz():cMode==='deriv'?makeDerivQuiz():cMode==='overunder'?makeOverUnderQuiz():makeEstimateQuiz();
           setLabToolData(function(prev){
+            var pc = prev.calculus || {};
+            if (typeof autoMode === 'string' && ((pc.calcChallengeMode || 'estimate') !== autoMode || (pc.tab && pc.tab !== 'challenge'))) return prev;
             var patch={calcQuiz:q,calcHint:'',_calcExactInput:'',a:q.a,b:q.b,c:q.c};
             if(q.xMin!==undefined)patch.xMin=q.xMin;
             if(q.xMax!==undefined)patch.xMax=q.xMax;
@@ -2018,7 +2039,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               calcHint:hintMsg
             })});
           });
-          if(correct){stemBeep&&stemBeep('success');if(typeof awardStemXP==='function')awardStemXP('calculus',5,cMode);addToast('\u2705 Correct! +5 XP','success');if(newStreak>=3){stemCelebrate&&stemCelebrate();awardStemXP&&awardStemXP('calculus',5,'streak');addToast('\uD83D\uDD25 '+newStreak+'-streak! +5 bonus XP','success');}setTimeout(startCalcChallenge,2000);}
+          if(correct){stemBeep&&stemBeep('success');if(typeof awardStemXP==='function')awardStemXP('calculus',5,cMode);addToast('\u2705 Correct! +5 XP','success');if(newStreak>=3){stemCelebrate&&stemCelebrate();awardStemXP&&awardStemXP('calculus',5,'streak');addToast('\uD83D\uDD25 '+newStreak+'-streak! +5 bonus XP','success');}setTimeout(function(){startCalcChallenge(cMode);},2000);}
           else{stemBeep&&stemBeep('error');addToast('\u274C Not quite \u2014 see explanation below','error');}
         }
 
@@ -2366,7 +2387,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'Lower a',min:-3,max:4,step:0.5},{k:'xMax',label:'Upper b',min:1,max:10,step:0.5},{k:'n',label:'n (subdivisions)',min:2,max:50,step:mode==='simpson'?2:1}].map(function(s){
                 return h('div',{ key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
                   h('label',{className:'text-[0.6875rem] font-bold text-red-600'},s.label+': '+(s.k==='n'?nRects:d[s.k])),
-                  h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:s.k==='n'?nRects:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
+                  h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:s.k==='n'?nRects:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));if(s.k==='n')upd('nExplored',true);upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
                 );
               })
             ),
@@ -2677,7 +2698,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         h('p',{className:'text-xs text-slate-700 mb-1'},'In this smooth example, the leading Left Riemann-sum error behaves roughly like 1/n, so doubling n approximately halves it.'),
                         h('p',{className:'text-xs text-slate-700'},'For smooth functions, the composite trapezoid rule often has leading error proportional to 1/n\u00B2; doubling n then reduces that error to roughly one quarter.'),
                         h('p',{className:'text-xs font-bold text-red-600 mt-2'},"And Simpson's? Test it on your own!"),
-                        awardStemXP&&awardStemXP('calculus',15,'Mission 1 complete')
+                        awardMissionOnce('m1',15,'Mission 1 complete')
                       )
                     );
                   })()
@@ -2742,7 +2763,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:'text-xs text-amber-800 mb-1'},"Since f(x) = x\u00B2 IS already a parabola, Simpson's rule fits it perfectly \u2014 giving zero error!"),
                     h('p',{className:'text-xs text-amber-800 mb-1'},"In fact: Simpson's rule is EXACT for any polynomial of degree \u2264 3."),
                     h('p',{className:'text-xs font-bold text-amber-900 mt-2'},"Test it: set Simpson's with n=2. Is the error 0? Now try n=4. What pattern do you see?"),
-                    awardStemXP&&awardStemXP('calculus',15,'Mission 2 complete')
+                    awardMissionOnce('m2',15,'Mission 2 complete')
                   )
                 )
               );
@@ -2811,7 +2832,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:'text-xs text-violet-800 mb-1'},'General rule: d/dx[ax\u00B2 + bx + c] = 2ax + b'),
                     h('p',{className:'text-xs text-violet-800 mb-2'},'The constant c vanishes because a horizontal line has zero slope.'),
                     h('p',{className:'text-xs font-bold text-violet-900'},'Try: add b=3. What is f\u2032(0) now? What does f\u2032(0) equal in terms of b? (Answer: b itself!)'),
-                    awardStemXP&&awardStemXP('calculus',15,'Mission 3 complete')
+                    awardMissionOnce('m3',15,'Mission 3 complete')
                   )
                 )
               );
@@ -2875,7 +2896,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:'text-[0.6875rem] text-emerald-800 mb-1'},'This numerical comparison is descriptive and ungraded; completion comes from making and checking the estimate.'),
                     h('p',{className:'text-xs text-emerald-800 mb-2'},'The Fundamental Theorem of Calculus says: \u222B\u2080\u1D57 v(t) dt = position at time t \u2212 position at t=0.'),
                     h('p',{className:'text-xs font-bold text-emerald-900'},"Real applications: physicists use this to calculate trajectories, economists to find accumulated profit, biologists to model population growth. The area under ANY rate curve gives the total accumulated quantity."),
-                    awardStemXP&&awardStemXP('calculus',20,'Mission 4 complete')
+                    awardMissionOnce('m4',20,'Mission 4 complete')
                   )
                 )
               );

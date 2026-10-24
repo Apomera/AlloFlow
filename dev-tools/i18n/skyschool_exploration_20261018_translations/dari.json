@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "نتیجه‌های جستجو: {cards} کارت در {topics} موضوع.",
+  "stem.flightsim.learn_library_counts": "{cards} کارت · {topics} موضوع",
+  "stem.flightsim.learn_search_clear": "پاک کردن جستجو",
+  "stem.flightsim.learn_search_empty": "هیچ کارت آموزشی با «{query}» مطابقت ندارد. واژۀ دیگری را امتحان کنید یا جستجو را پاک کنید.",
+  "stem.flightsim.learn_search_none": "هیچ کارت آموزشی مطابقت ندارد",
+  "stem.flightsim.learn_search_cards": "{count} کارت آموزشی",
+  "stem.flightsim.quiz_review_progress": "به {answered} پرسش از {total} پرسش پاسخ داده شده · {missed} پاسخ نادرست",
+  "stem.flightsim.quiz_review_missed": "مرور پاسخ‌های نادرست",
+  "stem.flightsim.quiz_next_unanswered": "پرسش بی‌پاسخ بعدی",
+  "stem.flightsim.quiz_review_all_answered": "هر پرسش یک پاسخ نخست دارد. پرسش‌های نادرست را برای تمرین بدون نمره مرور کنید یا تلاش تازه‌ای آغاز کنید.",
+  "stem.flightsim.planner_drone_agl": "{ft} فوت بالاتر از سطح زمین",
+  "stem.flightsim.sprint_native_title": "چالش سریع جغرافیه",
+  "stem.flightsim.sprint_timed_hint": "هنگام پاسخ دادن، مسیر ادامه می‌یابد. برای خواندن توقف موقت کنید؛ پیش از انتخاب پاسخ دوباره ادامه دهید.",
+  "stem.flightsim.sprint_warp_reference": "در این فعالیت جغرافیایی، سفر سریع‌تر شده است. نشانگرهای سرعت، سرعت اعلام‌شدۀ پرواز را نشان می‌دهند؛ این مسیر کارکرد طیاره را اندازه نمی‌گیرد.",
+  "stem.flightsim.sprint_save_menu": "ذخیرۀ چالش و برگشت به فهرست",
+  "stem.flightsim.sprint_next_stop": "ایستگاه بعدی: {place}",
+  "stem.flightsim.geoq_approaching_city": "به کدام شهر نزدیک می‌شوید؟",
+  "stem.flightsim.sprint_time_remaining": "وقت باقی‌مانده: {seconds} ثانیه"
+}

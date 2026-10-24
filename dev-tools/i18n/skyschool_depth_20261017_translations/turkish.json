@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Mevcut uçuş durumunu koru",
+  "stem.flightsim.flight_assistance_targets": "Baş {hdg}° · İrtifa {alt} ft MSL · Hız {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Baş {hdg}° · İrtifa {alt} ft MSL · İleri hareket hızı {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} yönüne doğru sola {degrees}° dön.",
+  "stem.flightsim.challenge_turn_right": "{airport} yönüne doğru sağa {degrees}° dön.",
+  "stem.flightsim.challenge_course_aligned": "{airport} yönünde uçuyorsun. Rota işaretini takip et.",
+  "stem.flightsim.challenge_runway_reference": "Eğitim pisti {runway}: baş {heading}°. İniş için alçalmadan önce pistle hizalan."
+}

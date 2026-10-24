@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Ujeeddooyinka caqabadda waa la arkay. Marka xigta, layliga maaraynta tamarta ku barbar dhig hoos-u-degidda iyadoo matoorku si tartiib ah u shaqaynayo iyo kor-u-kicidda iyadoo la adeegsanayo awoodda matoorka.",
+  "stem.flightsim.coaching_energy_complete": "Ujeeddooyinka maaraynta tamarta waa la arkay. Marka xigta, ku tababar xakamaynta tamarta markaad masaafo gaaban uga soo dhowaanayso garoonka, dabadeed barbar dhig heerka hoos-u-degidda iyo taabashada dhulka.",
+  "stem.flightsim.drone_battery_low": "Baytarigu wuu hooseeyaa: {pct}% ayaa hadhay. Ku noqo goobtii aad ka kacday oo dhaqso u deg.",
+  "stem.flightsim.drone_battery_depleted_title": "Baytariga droonka ayaa dhammaaday",
+  "stem.flightsim.drone_battery_depleted_body": "Duulimaadka waa la hakiyey markii baytarigu gaaray 0%. Dhammee hawlgalka si aad dib ugu eegto isku daygan, dabadeed bilow hawlgal cusub oo baytarigu buuxo.",
+  "stem.flightsim.end_drone_mission": "Dhammee hawlgalka oo dib u eeg",
+  "stem.flightsim.geoq_nearest_place": "Goobtee ayaa kuugu dhow meesha aad hadda joogto?",
+  "stem.flightsim.geoq_paused": "Duulimaadka waa loo hakiyey su'aashan. Xir su'aalaha, dabadeed dooro Sii wad markaad diyaar u tahay duulimaadka.",
+  "stem.flightsim.geoq_close": "Xir su'aalaha",
+  "stem.flightsim.geoq_unavailable": "Su'aal juqraafi ah lagama heli karo agagaarka. Sii wad sahminta oo mar kale isku day.",
+  "stem.flightsim.geoq_answer_feedback": "Jawaabtaada: {answer}. Jawaabta saxda ah: {expected}."
+}

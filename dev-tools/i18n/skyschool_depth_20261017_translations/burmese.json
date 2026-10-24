@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "လက်ရှိပျံသန်းမှုအခြေအနေကို ထိန်းထားပါ",
+  "stem.flightsim.flight_assistance_targets": "ဦးတည်ရာ {hdg}° · အမြင့် {alt} ft MSL · အမြန်နှုန်း {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ဦးတည်ရာ {hdg}° · အမြင့် {alt} ft MSL · ရှေ့သို့ရွေ့လျားနှုန်း {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} ဘက်သို့ ဘယ်ဘက် {degrees}° ကွေ့ပါ။",
+  "stem.flightsim.challenge_turn_right": "{airport} ဘက်သို့ ညာဘက် {degrees}° ကွေ့ပါ။",
+  "stem.flightsim.challenge_course_aligned": "{airport} ဘက်သို့ ဦးတည်နေသည်။ လမ်းကြောင်းအမှတ်အသားကို လိုက်ပါ။",
+  "stem.flightsim.challenge_runway_reference": "လေ့ကျင့်ရေးပြေးလမ်း {runway}၊ ဦးတည်ရာ {heading}°။ ဆင်းသက်ရန် အမြင့်မလျှော့မီ လေယာဉ်ကို ပြေးလမ်းနှင့် တည့်အောင် ညှိပါ။"
+}

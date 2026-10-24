@@ -29,6 +29,13 @@ const ids = [
 const expectedKeys = [3, 3, 3, 1, 2, 2, 2, 1];
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|without|regardless|automatically|guarantee(?:d|s)?|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim)\b/i;
+// Question-quality wave 44 deliberately re-authored this wave-12 item (same key) and now owns
+// its stem; see eppp_question_quality_audit_wave_44.json. Because the full replay re-applies
+// wave 12 to the near-final bank, the wave-12 audit records a semantic-duplicate pair for it
+// that wave 44's rewrite resolves.
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-intervention-064', 'eppp-native-quality-wave-44'],
+]);
 
 describe('EPPP distractor-quality repair wave 12', () => {
   it('contains eight source-backed application or analysis rewrites with preserved keys', () => {
@@ -41,7 +48,7 @@ describe('EPPP distractor-quality repair wave 12', () => {
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(['application', 'analysis']).toContain(item.cognitiveProcess);
-      expect(item.wordingReviewWave).toBe('eppp-native-quality-wave-12');
+      expect(item.wordingReviewWave, id).toBe(supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-12');
       expect(item.prompt).not.toMatch(/^complete the statement\b/i);
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices.map((choice) => choice.toLowerCase())).size).toBe(4);
@@ -60,9 +67,9 @@ describe('EPPP distractor-quality repair wave 12', () => {
 
   it('records a passing audit and clears every selected warning family', () => {
     const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
-    expect(audit.summary).toMatchObject({totalItems: 1500, rewrittenItems: 8, domainsCovered: 3, appliedOrAnalysisItems: 8, keyPositionsPreserved: 8, optionSpecificExplanations: 32, selectedItemsWithWarningsAfter: 0, selectedWarningIdsAfter: [], status: 'pass'});
+    expect(audit.summary).toMatchObject({totalItems: 1500, rewrittenItems: 8, domainsCovered: 3, appliedOrAnalysisItems: 8, keyPositionsPreserved: 8, optionSpecificExplanations: 32, selectedItemsWithWarningsAfter: 1, selectedWarningIdsAfter: ['eppp-v3-intervention-064'], status: 'review-required'});
     expect(audit.items.map((item) => item.id)).toEqual(ids);
-    expect(audit.items.every((item) => item.diagnosticsAfter.length === 0)).toBe(true);
+    expect(audit.items.every((item) => item.diagnosticsAfter.length === 0 || supersedingReviewWaveById.has(item.id))).toBe(true);
     const diagnostics = JSON.parse(fs.readFileSync(diagnosticsPath, 'utf8'));
     const selected = new Set(ids);
     expect(diagnostics.uniqueKeyStemLexicalLeakage.some((item) => selected.has(item.id))).toBe(false);
@@ -91,7 +98,12 @@ describe('EPPP distractor-quality repair wave 12', () => {
     expect(byId.get('eppp-v2-cognitive-affective-001').prompt).not.toMatch(/emotional intelligence/i);
     expect(byId.get('eppp-v3-cognitive-affective-001').prompt).not.toMatch(/source monitoring/i);
     expect(byId.get('eppp-b020-intervention-2').prompt).not.toMatch(/\bREBT\b|ABCDE/i);
-    expect(byId.get('eppp-v3-intervention-064').prompt).not.toMatch(/interpersonal therapy|\bIPT\b/i);
+    // Wave 44's stem names IPT (all four options are IPT problem areas); it must still not
+    // name the keyed area.
+    const ipt = byId.get('eppp-v3-intervention-064');
+    expect(ipt.wordingReviewWave).toBe(supersedingReviewWaveById.get('eppp-v3-intervention-064'));
+    expect(ipt.choices[ipt.answerIndex]).toMatch(/role dispute/i);
+    expect(ipt.prompt).not.toMatch(/role dispute|dispute/i);
   });
 
   it('publishes synchronized source records through the reusable wave runner', () => {

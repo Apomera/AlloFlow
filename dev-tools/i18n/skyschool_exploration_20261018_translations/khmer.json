@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "លទ្ធផលស្វែងរក៖ កាត {cards} ក្នុងប្រធានបទ {topics}។",
+  "stem.flightsim.learn_library_counts": "កាត {cards} · ប្រធានបទ {topics}",
+  "stem.flightsim.learn_search_clear": "សម្អាតការស្វែងរក",
+  "stem.flightsim.learn_search_empty": "គ្មានកាតសិក្សាដែលត្រូវនឹង “{query}” ទេ។ សាកល្បងពាក្យផ្សេង ឬសម្អាតការស្វែងរក។",
+  "stem.flightsim.learn_search_none": "គ្មានកាតសិក្សាដែលត្រូវគ្នា",
+  "stem.flightsim.learn_search_cards": "កាតសិក្សា {count}",
+  "stem.flightsim.quiz_review_progress": "បានឆ្លើយ {answered} ក្នុងចំណោម {total} សំណួរ · ខុស {missed}",
+  "stem.flightsim.quiz_review_missed": "រំលឹកសំណួរដែលឆ្លើយខុស",
+  "stem.flightsim.quiz_next_unanswered": "សំណួរមិនទាន់ឆ្លើយបន្ទាប់",
+  "stem.flightsim.quiz_review_all_answered": "គ្រប់សំណួរមានចម្លើយដំបូងរួចហើយ។ រំលឹកសំណួរដែលឆ្លើយខុសដើម្បីហាត់ដោយមិនគិតពិន្ទុ ឬចាប់ផ្តើមការសាកល្បងថ្មី។",
+  "stem.flightsim.planner_drone_agl": "{ft} ហ្វីតពីលើផ្ទៃដី",
+  "stem.flightsim.sprint_native_title": "ការប្រកួតភូមិសាស្ត្ររហ័ស",
+  "stem.flightsim.sprint_timed_hint": "ផ្លូវនៅតែបន្តទៅមុខពេលអ្នកឆ្លើយ។ ផ្អាកដើម្បីអាន ហើយបន្តវិញមុនជ្រើសចម្លើយ។",
+  "stem.flightsim.sprint_warp_reference": "ការធ្វើដំណើរត្រូវបានបង្កើនល្បឿនសម្រាប់សកម្មភាពភូមិសាស្ត្រនេះ។ តួលេខល្បឿនបង្ហាញល្បឿនហោះបរដែលបានកំណត់។ ផ្លូវនេះមិនវាស់សមត្ថភាពយន្តហោះទេ។",
+  "stem.flightsim.sprint_save_menu": "រក្សាទុកការប្រកួត ហើយត្រឡប់ទៅម៉ឺនុយ",
+  "stem.flightsim.sprint_next_stop": "ចំណតបន្ទាប់៖ {place}",
+  "stem.flightsim.geoq_approaching_city": "តើអ្នកកំពុងខិតជិតទីក្រុងណា?",
+  "stem.flightsim.sprint_time_remaining": "ពេលនៅសល់៖ {seconds} វិនាទី"
+}

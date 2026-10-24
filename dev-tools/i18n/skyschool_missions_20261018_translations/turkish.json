@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Görev gözlemleri",
+  "stem.flightsim.mission_journal_targets": "Görüntülenen hedefler: {total} hedefin {captured} tanesi.",
+  "stem.flightsim.mission_journal_complete": "Tüm görev hedefleri ve dönüş inişi kaydedildi.",
+  "stem.flightsim.mission_journal_ended": "Tamamlanmaya ilişkin tüm kanıtlar kaydedilmeden görev sona erdi.",
+  "stem.flightsim.mission_journal_recovery": "Kazazedenin kurtarılma kaydı: {value}.",
+  "stem.flightsim.mission_journal_return": "Üsse dönüş inişi kaydı: {value}.",
+  "stem.flightsim.mission_guidance_title": "Görev rehberi",
+  "stem.flightsim.mission_route": "{target} · kerteriz {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Kalkış noktası",
+  "stem.flightsim.mission_read_status": "Görev durumunu oku",
+  "stem.flightsim.mission_return_criterion": "{target} noktasının {distance} nm yakınında, yer hızı {speed} kt ve alçalma hızı {fpm} fpm değerinin altında olacak şekilde iniş yapın.",
+  "stem.flightsim.mission_unavailable": "Görev hedefi verileri kullanılamıyor. Bu uçuşu bitirip yeni bir görev başlatın.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft içinde, yerden {min} ft üzerinde ve {max} ft altında, yer hızı {speed} kt altında olacak şekilde {hold} s kalın."
+}

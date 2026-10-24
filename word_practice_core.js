@@ -2,17 +2,132 @@
 (function (root) {
   'use strict';
   function createWordPracticeCore() {
-    const LIMITS = Object.freeze({ words: 200, wordLength: 120, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024 });
+    const LIMITS = Object.freeze({ words: 200, wordLength: 120, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024 });
     const own = (obj, key) => obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
     const text = (value, max = 2000) => typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max) : '';
     const key = value => text(value).normalize('NFC').toLocaleLowerCase().replace(/\s+/g, ' ');
     const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
     const safeJson = value => JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    function instructionText(value, field, word) {
+      const clean = text(value, LIMITS.instructionChars + 1);
+      if (clean.length > LIMITS.instructionChars) throw new Error('The ' + field + ' for “' + text(word, LIMITS.wordLength) + '” must be 12,000 characters or fewer. Shorten the field or split it into separate practice items.');
+      return clean;
+    }
+    // These names and BCP 47 tags work in the dependency-free offline player.
+    // Unknown names remain untagged; never relabel a translation as English.
+    const languageNames = {
+      english: 'en', spanish: 'es', 'spanish (latin america)': 'es-419', 'spanish (castilian)': 'es-ES',
+      french: 'fr', 'french (canadian)': 'fr-CA', german: 'de', italian: 'it', portuguese: 'pt',
+      'portuguese (brazil)': 'pt-BR', 'portuguese (portugal)': 'pt-PT', 'portuguese (angola)': 'pt-AO',
+      arabic: 'ar', hebrew: 'he', persian: 'fa', farsi: 'fa', urdu: 'ur', pashto: 'ps', sindhi: 'sd',
+      uyghur: 'ug', yiddish: 'yi', dhivehi: 'dv', sorani: 'ckb', 'kurdish (sorani)': 'ckb',
+      chinese: 'zh', mandarin: 'zh', 'chinese (simplified)': 'zh-Hans', 'chinese (traditional)': 'zh-Hant',
+      hindi: 'hi', japanese: 'ja', korean: 'ko', russian: 'ru', ukrainian: 'uk', vietnamese: 'vi',
+      somali: 'so', 'haitian creole': 'ht', bengali: 'bn', punjabi: 'pa', tamil: 'ta', telugu: 'te',
+      turkish: 'tr', polish: 'pl', dutch: 'nl', swedish: 'sv', norwegian: 'no', danish: 'da',
+      finnish: 'fi', greek: 'el', romanian: 'ro', hungarian: 'hu', czech: 'cs', slovak: 'sk',
+      swahili: 'sw', indonesian: 'id', malay: 'ms', thai: 'th', tagalog: 'tl', filipino: 'fil',
+      afrikaans: 'af', amharic: 'am', albanian: 'sq', armenian: 'hy', azerbaijani: 'az',
+      basque: 'eu', belarusian: 'be', bosnian: 'bs', bulgarian: 'bg', catalan: 'ca',
+      croatian: 'hr', estonian: 'et', georgian: 'ka', gujarati: 'gu', icelandic: 'is',
+      irish: 'ga', kannada: 'kn', kazakh: 'kk', khmer: 'km', lao: 'lo', latvian: 'lv',
+      lithuanian: 'lt', macedonian: 'mk', malayalam: 'ml', maltese: 'mt', marathi: 'mr',
+      mongolian: 'mn', nepali: 'ne', serbian: 'sr', sinhala: 'si', slovenian: 'sl',
+      uzbek: 'uz', welsh: 'cy', zulu: 'zu'
+    };
+    function languageInfo(value) {
+      const original = text(value, 80), name = original.toLowerCase();
+      let tag = own(languageNames, name) || original.replace(/_/g, '-');
+      if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/i.test(tag)) return { tag: '', dir: 'auto' };
+      try { if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') tag = Intl.getCanonicalLocales(tag)[0] || ''; }
+      catch (_) { return { tag: '', dir: 'auto' }; }
+      // Script subtags precede extension/private-use singletons. A Latin
+      // numbering extension (ar-u-nu-latn) does not change the writing script.
+      const subtags = tag.split('-').slice(1);
+      const extension = subtags.findIndex(part => part.length === 1);
+      const script = (extension < 0 ? subtags : subtags.slice(0, extension)).find(part => /^[a-z]{4}$/i.test(part));
+      const rtl = script ? /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) : /^(ar|fa|he|iw|ur|ps|sd|ug|yi|dv|ckb|syr)(-|$)/i.test(tag);
+      return { tag, dir: rtl ? 'rtl' : 'ltr' };
+    }
+    // Recording identity follows the originating Word Sounds defaults. This is
+    // deliberately separate from the shorter HTML language-of-parts tag.
+    const audioLanguageNames = {english:'en-US',spanish:'es-ES','spanish (latin america)':'es-419','spanish (castilian)':'es-ES',french:'fr-FR','french (canadian)':'fr-CA',german:'de-DE',portuguese:'pt-BR','portuguese (brazil)':'pt-BR','portuguese (angola)':'pt-AO','portuguese (portugal)':'pt-PT',mandarin:'zh-CN',chinese:'zh-CN','chinese (mandarin)':'zh-CN','chinese (simplified)':'zh-CN','chinese (traditional)':'zh-TW',arabic:'ar-SA',vietnamese:'vi-VN',russian:'ru-RU',japanese:'ja-JP',italian:'it-IT',korean:'ko-KR',hindi:'hi-IN',dutch:'nl-NL',polish:'pl-PL',indonesian:'id-ID',turkish:'tr-TR',hebrew:'he-IL',swedish:'sv-SE',danish:'da-DK',norwegian:'no-NO',finnish:'fi-FI',greek:'el-GR',thai:'th-TH',czech:'cs-CZ',hungarian:'hu-HU',romanian:'ro-RO',ukrainian:'uk-UA',cantonese:'zh-HK',tagalog:'fil-PH',filipino:'fil-PH',bengali:'bn-IN',urdu:'ur-PK',malay:'ms-MY',swahili:'sw-KE',bulgarian:'bg-BG',croatian:'hr-HR',serbian:'sr-RS',slovak:'sk-SK',persian:'fa-IR',farsi:'fa-IR',tamil:'ta-IN',amharic:'am-ET',afrikaans:'af-ZA',kurdish:'ku-TR',somali:'so-SO','haitian creole':'ht-HT',haitian:'ht-HT',khmer:'km-KH',cambodian:'km-KH',lao:'lo-LA',burmese:'my-MM',myanmar:'my-MM',nepali:'ne-NP',marathi:'mr-IN',gujarati:'gu-IN',punjabi:'pa-IN',telugu:'te-IN',kannada:'kn-IN',malayalam:'ml-IN',sinhala:'si-LK',yoruba:'yo-NG',igbo:'ig-NG',hausa:'ha-NG',kinyarwanda:'rw-RW',kirundi:'rn-BI',lingala:'ln-CD',tigrinya:'ti-ET',oromo:'om-ET',mongolian:'mn-MN',hmong:'hmn',esperanto:'eo',latin:'la',pashto:'ps-AF',pushto:'ps-AF',dari:'prs-AF',georgian:'ka-GE',armenian:'hy-AM',albanian:'sq-AL',macedonian:'mk-MK',acholi:'ach-UG',karen:'kar-MM','chin (hakha)':'cnh-MM','chin (falam)':'cfm-MM','maay maay':'ymm-SO',marshallese:'mh-MH'};
+    const audioLanguageDefaults = Object.create(null);
+    Object.values(audioLanguageNames).forEach(value => { const primary = value.split('-')[0]; if (!audioLanguageDefaults[primary]) audioLanguageDefaults[primary] = value.toLowerCase(); });
+    function audioLanguageKey(value) {
+      if (typeof value !== 'string') return '';
+      const raw = value.trim().replace(/_/g, '-').replace(/\s+/g, ' ').toLowerCase();
+      if (!raw || raw.length > 256 || /[\u0000-\u001f\u007f]/.test(raw)) return '';
+      const parts = raw.split('\u241f'); if (parts.length > 3) return '';
+      let base = parts[0].trim(), locale = (parts[1] || '').trim(), dialect = (parts[2] || '').trim();
+      const parenthetical = base.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+      if (parenthetical) { base = parenthetical[1].trim(); dialect = dialect || parenthetical[2].trim(); }
+      const tag = input => {
+        if (!/^[a-z]{2,3}(?:-[a-z0-9]{1,8})*$/.test(input)) return '';
+        try { if (typeof Intl !== 'undefined' && Intl.getCanonicalLocales) input = Intl.getCanonicalLocales(input)[0].toLowerCase(); } catch (_) { return ''; }
+        return own(audioLanguageDefaults, input) || input;
+      };
+      const alias = input => own(audioLanguageNames, input) ? tag(audioLanguageNames[input].toLowerCase()) : '';
+      const named = base.startsWith('name:') ? (base.slice(5).trim() ? base : '') : null;
+      if (named === '') return '';
+      if (parts.length === 2 && (named || tag(base) === base)) { dialect = locale; locale = ''; }
+      const dialectLocale = dialect ? alias(base + ' (' + dialect + ')') : '';
+      const baseKey = named || alias(base) || tag(base) || (base ? 'name:' + base : '');
+      if (!baseKey || (locale && !tag(locale))) return '';
+      const resolved = locale ? tag(locale) : dialectLocale || baseKey;
+      return dialect && dialectLocale !== resolved ? resolved + '\u241f' + dialect : resolved;
+    }
+    function fieldLanguage(item, field, fallback = 'en') {
+      const record = item && typeof item === 'object' ? item : {};
+      const language = field === 'term' ? record.termLanguage || record.wordLanguage || record.language
+        : field === 'definition' ? record.definitionLanguage
+        : field === 'example' ? record.exampleLanguage || record.definitionLanguage
+        : field === 'sentence' ? (record.sentenceActivity && record.sentenceActivity.language) || record.sentenceLanguage || record.termLanguage || record.wordLanguage || record.language : '';
+      return text(language, 80) || text(fallback, 80) || 'en';
+    }
+    function audioProvenance(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+      const output = {};
+      ['language','requestedLanguage','provider','engine','resolvedVoice','voice','model','source'].forEach(name => {
+        const clean = text(value[name], name === 'language' || name === 'requestedLanguage' ? 256 : 160);
+        if (clean) output[name] = clean;
+      });
+      return output;
+    }
+    function audioCompatibility(source, expectedLanguage, provenance) {
+      const object = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
+      const supplied = audioProvenance(provenance);
+      const profile = Object.keys(supplied).length ? supplied : audioProvenance(object.provenance || object.synthesisProfile || object.metadata);
+      const audio = safeAudio(object.audio || object.asset || source);
+      const sourceLanguage = profile.language || '', expected = text(expectedLanguage, 256);
+      const actualKey = audioLanguageKey(sourceLanguage), expectedKey = audioLanguageKey(expected);
+      const status = !audio ? 'missing' : actualKey && expectedKey ? actualKey === expectedKey ? 'ready' : 'stale-language' : 'legacy';
+      return { status, audio, provenance: profile, sourceLanguage, expectedLanguage: expected };
+    }
+    function normalizedAudio(source, expectedLanguage, provenance, original) {
+      let current = audioCompatibility(source, expectedLanguage, provenance);
+      const retained = audioCompatibility(original, expectedLanguage);
+      if (retained.audio && current.audio === retained.audio && !current.sourceLanguage && retained.sourceLanguage) current = retained;
+      let backup = retained.audio ? { audio: retained.audio, provenance: retained.provenance } : null;
+      if (current.status === 'stale-language') backup = { audio: current.audio, provenance: current.provenance };
+      if (!current.audio && retained.audio) current = retained;
+      const audio = current.status === 'stale-language' ? '' : current.audio;
+      if (backup && backup.audio === audio) backup = null;
+      return { audio, provenance: current.provenance, status: current.status, original: backup };
+    }
+    function audioIssueCounts(pack) {
+      let staleLanguage = 0;
+      (pack && pack.items || []).forEach(item => { if (item.wordAudioStatus === 'stale-language') staleLanguage++; (item.phonemes || []).forEach(sound => { if (sound.audioStatus === 'stale-language') staleLanguage++; }); });
+      return { staleLanguage };
+    }
     function safeAudio(value) {
       let candidate = typeof value === 'string' ? value : value && typeof value.mime === 'string' && typeof value.base64 === 'string'
         ? 'data:' + value.mime + ';base64,' + value.base64 : '';
       if (candidate.length > LIMITS.audioChars) return '';
-      const match = /^data:(audio\/(?:mpeg|mp3|wav|x-wav|wave|ogg|webm|mp4|x-m4a|aac|flac));base64,([a-z0-9+/]*={0,2})$/i.exec(candidate);
+      // MediaRecorder includes codec parameters (for example WebM/Opus).
+      // Strip well-formed MIME parameters, not the recording bytes, before
+      // applying the same allowlist, base64 and container checks below.
+      const match = /^data:(audio\/(?:mpeg|mp3|wav|x-wav|wave|ogg|webm|mp4|x-m4a|aac|flac))(?:;[ \t]*[a-z][a-z0-9_-]*[ \t]*=[ \t]*(?:[a-z0-9._+\/-]+|"[a-z0-9._+\/, -]+")[ \t]*)*;base64,([a-z0-9+/]*={0,2})$/i.exec(candidate);
       if (!match || match[2].length < 12 || match[2].length % 4 !== 0) return '';
       try {
         const bytes = atob(match[2].slice(0, 80));
@@ -27,10 +142,43 @@
         return valid ? 'data:' + mime + ';base64,' + match[2] : '';
       } catch (_) { return ''; }
     }
-    function parseWords(value) {
+    // Keep the portable player independent of the live Word Sounds module.
+    // These are its canonical phonics/IPA mappings, parity-checked against
+    // word_sounds_core.js. Resolve the original object before dropping its IPA
+    // provenance: explicit IPA i/u/j mean ee/oo/y, unlike app strings i/u/j.
+    const normalizeSound = value => text(value, 40).normalize('NFC').toLowerCase().replace(/^\/+|\/+$/g, '');
+    const soundAliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
+    const ipaExtraKeys = {'ɜr':'er','ɜː':'er','ɜ':'er','ɑr':'ar','ɑːr':'ar','ɔr':'or','ɔːr':'or','ɔ':'aw','ɔː':'aw','ɐ':'u'};
+    function soundKey(value) {
+      const record = value && typeof value === 'object' ? value : null;
+      const explicitIpa = record && typeof record.ipa === 'string' && !!normalizeSound(record.ipa);
+      let token = typeof value === 'string' ? normalizeSound(value) : '';
+      if (record) {
+        // soundKey is the already-resolved app notation in saved portable sets.
+        const fields = explicitIpa ? ['ipa'] : ['soundKey', 'phoneme', 'sound', 'grapheme', 'label', 'text'];
+        token = fields.map(field => normalizeSound(record[field])).find(Boolean) || '';
+      }
+      token = token.replace(/[\u02c8\u02cc\u0361]/g, '');
+      if (explicitIpa && token === 'i') return 'ee';
+      if (explicitIpa && token === 'u') return 'oo';
+      if (explicitIpa && token === 'j') return 'y';
+      const resolved = own(ipaExtraKeys, token) || token;
+      return own(soundAliases, resolved) || resolved;
+    }
+    function soundBankSources(bank, value) {
+      if (!bank || typeof bank !== 'object' || Array.isArray(bank)) return [];
+      const resolved = soundKey(value);
+      if (!resolved) return [];
+      // Prefer a canonical entry, then equivalent caller spellings. Bank keys
+      // use app notation: a raw key "i" must never supply explicit IPA /i/,
+      // which has already resolved to "ee" before this lookup.
+      const aliases = Object.keys(bank).filter(name => name !== resolved && soundKey(name) === resolved);
+      return [resolved, ...aliases].map(name => own(bank, name)).filter(Boolean);
+    }
+    function parseWords(value, { lineSeparated = false } = {}) {
       const input = typeof value === 'string' ? value : '';
       if (input.length > 100000) throw new Error('Use up to 200 words in one practice set.');
-      return input.split(/[,\r\n]+/).map(word => word.trim()).filter(Boolean);
+      return input.split(lineSeparated ? /[\r\n]+/ : /[,\r\n]+/).map(word => word.trim()).filter(Boolean);
     }
     const bounded = (value, fallback, min, max) => Number.isFinite(Number(value)) ? Math.max(min, Math.min(max, Number(value))) : fallback;
     function normalizeOptions(value = {}) {
@@ -46,17 +194,34 @@
         includeAudio: options.includeAudio !== false
       };
     }
-    function translationsFor(value) {
-      if (typeof value === 'string') return value ? [{ language: '', text: text(value, 1000) }] : [];
-      if (Array.isArray(value)) return value.slice(0, 20).map(item => typeof item === 'string'
-        ? { language: '', text: text(item, 1000) }
-        : { language: text(item && (item.language || item.lang), 60), text: text(item && (item.text || item.term || item.translation || item.word), 1000) }).filter(item => item.text);
+    function translationText(value, word) {
+      const string = value => typeof value === 'string' ? value.trim() : '';
+      let full = '';
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // A normalized text/translation wrapper already holds the full spoken
+        // passage. Otherwise preserve both pieces of a structured glossary pair.
+        full = string(value.text) || string(value.translation);
+        if (!full) {
+          const term = string(value.term) || string(value.word);
+          const definition = string(value.def) || string(value.definition) || string(value.meaning);
+          full = [term, definition].filter(Boolean).join(': ');
+        }
+      } else full = string(value);
+      // Validate the complete passage, including the joining punctuation. Never
+      // shorten the term or meaning independently before checking this bound.
+      return instructionText(full, 'translation', word);
+    }
+    function translationsFor(value, word) {
+      if (typeof value === 'string') { const clean = translationText(value, word); return clean ? [{ language: '', text: clean }] : []; }
+      if (Array.isArray(value)) return value.slice(0, 20).map(item => ({
+        language: text(item && typeof item === 'object' && (item.language || item.lang), 60), text: translationText(item, word)
+      })).filter(item => item.text);
       if (!value || typeof value !== 'object') return [];
       return Object.keys(value).slice(0, 20).filter(language => !['__proto__', 'constructor', 'prototype'].includes(language)).map(language => ({
-        language: text(language, 60), text: text(typeof value[language] === 'string' ? value[language] : value[language] && (value[language].term || value[language].translation || value[language].word || value[language].text), 1000)
+        language: text(language, 60), text: translationText(value[language], word)
       })).filter(item => item.text);
     }
-    function sentenceActivityFor(record, word) {
+    function sentenceActivityFor(record, word, language) {
       const saved = record.sentenceActivity;
       const board = record.activityItems && record.activityItems.read_sentence;
       const source = saved || board;
@@ -66,7 +231,7 @@
       const answer = choices.find(value => key(value) === key(saved ? saved.answer : word));
       if (choices.length < 2 || choices.length > 6 || !answer) return null;
       let prompt;
-      if (saved) prompt = text(saved.prompt);
+      if (saved) prompt = instructionText(saved.prompt, 'sentence prompt', word);
       else {
         if (typeof board.before !== 'string' || typeof board.after !== 'string' || typeof board.sentence !== 'string') return null;
         // Preserve the teacher's prepared blank and choices. Do not invent a
@@ -74,9 +239,9 @@
         const before = board.before.trim(), after = board.after.trim();
         const join = target => (before + ' ' + target + (/^[.,!?]/.test(after) ? '' : ' ') + after).trim();
         if (key(join(word)) !== key(board.sentence)) return null;
-        prompt = text(join('____'));
+        prompt = instructionText(join('____'), 'sentence prompt', word);
       }
-      return prompt ? { prompt, choices, answer } : null;
+      return prompt ? { prompt, choices, answer, language: text(source.language || record.sentenceLanguage || language, 80) || 'en' } : null;
     }
     function normalizeInput(input = {}) {
       if (Array.isArray(input)) input = { words: input };
@@ -84,53 +249,92 @@
       const supplied = input.words == null ? (input.items == null ? input.data : input.items) : input.words;
       const words = typeof supplied === 'string' ? parseWords(supplied) : Array.isArray(supplied) ? supplied : [];
       if (words.length > 2000) throw new Error('Use up to 200 different words in one practice set.');
+      const language = text(input.language, 80) || 'en';
+      const stableText = (value, max) => {
+        const clean = text(value, max + 1);
+        if (clean.length > max) throw new Error('Practice item IDs must be ' + max + ' characters or fewer.');
+        return clean;
+      };
+      const authoredId = record => stableText(record && record.entryId, 160);
+      const portableId = record => stableText(record && record.id, 200);
+      const reserved = new Set(words.map(raw => raw && typeof raw === 'object' ? authoredId(raw) ? 'entry:' + authoredId(raw) : portableId(raw) : '').filter(Boolean));
+      let nextId = 1;
+      const makeId = () => { while (reserved.has('w' + nextId)) nextId++; const id = 'w' + nextId++; reserved.add(id); return id; };
       const assets = Object.create(null);
-      function addAssets(source) {
+      function addAssets(source, destination = assets) {
         if (!source || typeof source !== 'object') return;
-        Object.keys(source).forEach(name => { if (!['__proto__', 'constructor', 'prototype'].includes(name)) assets[key(name)] = source[name]; });
+        Object.keys(source).forEach(name => { if (!['__proto__', 'constructor', 'prototype'].includes(name)) destination[key(name)] = source[name]; });
       }
       addAssets(input.ttsAssets);
       words.forEach(item => { if (item && typeof item === 'object') addAssets(item._ttsAssets); });
-      const bank = input.phonemeBank && typeof input.phonemeBank === 'object' ? input.phonemeBank : {};
-      const items = [], seen = new Map();
+      const banks = [{ bank: input.phonemeBank, language: input.bankLanguage || language }];
+      if (input.phonemeBanks && typeof input.phonemeBanks === 'object' && !Array.isArray(input.phonemeBanks)) Object.keys(input.phonemeBanks).forEach(name => { banks.push({ bank: input.phonemeBanks[name], language: name }); });
+      const bankSource = (sound, expected) => {
+        for (const scoped of banks) {
+          for (const source of soundBankSources(scoped.bank, sound)) {
+            const state = audioCompatibility(source, expected);
+            if (state.audio && (audioLanguageKey(scoped.language) === audioLanguageKey(expected) || state.status === 'ready')) return { audio: state.audio, provenance: { ...state.provenance, language: state.sourceLanguage || text(scoped.language, 256), source: state.provenance.source || 'recorded_bank' } };
+          }
+        }
+        return '';
+      };
+      const items = [], seen = new Map(), usedIds = new Map();
       words.forEach(raw => {
         const record = typeof raw === 'string' ? { word: raw } : raw && typeof raw === 'object' ? raw : {};
         const original = text(record.targetWord || record.word || record.term, 10000).normalize('NFC');
         if (!original) return;
         if (original.length > LIMITS.wordLength) throw new Error('Each word or short phrase must be 120 characters or fewer.');
         const itemKey = key(original);
+        const entryId = authoredId(record), suppliedId = portableId(record);
+        const identity = entryId ? 'entry:' + entryId : suppliedId ? 'id:' + suppliedId : 'word:' + itemKey;
+        const existing = seen.get(identity);
+        if (existing && key(existing.word) !== itemKey) throw new Error('One practice entry ID refers to different words. Give each distinct entry its own ID.');
+        const id = existing ? existing.id : entryId ? 'entry:' + entryId : suppliedId || makeId();
+        if (usedIds.has(id) && usedIds.get(id) !== identity) throw new Error('Each distinct practice entry needs its own stable ID.');
+        const termLanguage = fieldLanguage(record, 'term', language), definitionLanguage = fieldLanguage(record, 'definition', language);
+        const exampleLanguage = fieldLanguage(record, 'example', definitionLanguage);
+        const ownAssets = Object.create(null); addAssets(record._ttsAssets, ownAssets);
+        const directWord = record.wordAudio || record.audio || record.audioUrl || record.pronunciationAudio;
+        const wordSource = safeAudio(directWord && (directWord.audio || directWord.asset || directWord)) ? directWord : own(ownAssets, itemKey) || own(assets, itemKey) || '';
+        const wordState = normalizedAudio(wordSource, termLanguage, wordSource === directWord ? record.wordAudioProvenance : undefined, record.wordAudioOriginal);
         const phonemes = (Array.isArray(record.phonemes) ? record.phonemes : []).slice(0, 40).map(phoneme => {
-          const label = text(typeof phoneme === 'string' ? phoneme : phoneme && (phoneme.label || phoneme.grapheme || phoneme.ipa || phoneme.text || phoneme.phoneme), 40);
-          const soundKey = text(phoneme && typeof phoneme === 'object' && (phoneme.soundKey || phoneme.ipa || phoneme.phoneme), 40) || label;
-          const bankKey = soundKey.replace(/^\/+|\/+$/g, '').trim().toLowerCase();
-          return { label, soundKey, audio: safeAudio(phoneme && typeof phoneme === 'object' && (phoneme.audio || phoneme.asset)) || safeAudio(own(bank, bankKey)) };
+          const label = text(typeof phoneme === 'string' ? phoneme : phoneme && (phoneme.label || phoneme.grapheme || phoneme.ipa || phoneme.text || phoneme.phoneme || phoneme.sound), 40);
+          const bankKey = soundKey(phoneme) || soundKey(label);
+          const object = phoneme && typeof phoneme === 'object' ? phoneme : {};
+          const direct = object.audio || object.asset;
+          const source = safeAudio(direct && (direct.audio || direct.asset || direct)) ? direct : object.audioOriginal ? '' : bankSource(bankKey, termLanguage);
+          const state = normalizedAudio(source, termLanguage, source === direct ? object.provenance : undefined, object.audioOriginal);
+          return { label, soundKey: bankKey, audio: state.audio, provenance: state.provenance, audioStatus: state.status, ...(state.original ? { audioOriginal: state.original } : {}) };
         }).filter(phoneme => phoneme.label);
         const item = {
-          id: 'w' + (items.length + 1), word: original,
-          definition: text(record.definition || record.def || record.meaning),
-          example: text(record.example || record.exampleSentence || record.sentence),
-          translations: translationsFor(record.translations || record.translation),
-          wordAudio: safeAudio(record.wordAudio || record.audio || record.audioUrl || record.pronunciationAudio) || safeAudio(assets[itemKey]),
+          id, ...(entryId ? { entryId } : {}), word: original, termLanguage, definitionLanguage, exampleLanguage,
+          definition: instructionText(record.definition || record.def || record.meaning, 'definition', original),
+          example: instructionText(record.example || record.exampleSentence || record.sentence, 'example', original),
+          translations: translationsFor(record.translations || record.translation, original),
+          wordAudio: wordState.audio, wordAudioProvenance: wordState.provenance, wordAudioStatus: wordState.status, ...(wordState.original ? { wordAudioOriginal: wordState.original } : {}),
           phonemes,
-          sentenceActivity: sentenceActivityFor(record, original)
+          sentenceActivity: sentenceActivityFor(record, original, termLanguage)
         };
-        if (seen.has(itemKey)) {
-          const existing = seen.get(itemKey);
-          ['definition', 'example', 'wordAudio'].forEach(field => { if (!existing[field]) existing[field] = item[field]; });
+        if (existing) {
+          ['definition', 'example'].forEach(field => { if (!existing[field] && item[field]) { existing[field] = item[field]; existing[field + 'Language'] = item[field + 'Language']; } });
+          if (!existing.wordAudio && item.wordAudio) { existing.wordAudio = item.wordAudio; existing.wordAudioProvenance = item.wordAudioProvenance; existing.wordAudioStatus = item.wordAudioStatus; }
+          if (!existing.wordAudioOriginal && item.wordAudioOriginal) existing.wordAudioOriginal = item.wordAudioOriginal;
           if (!existing.phonemes.length) existing.phonemes = item.phonemes;
           if (!existing.translations.length) existing.translations = item.translations;
           if (!existing.sentenceActivity) existing.sentenceActivity = item.sentenceActivity;
           return;
         }
-        seen.set(itemKey, item); items.push(item);
+        seen.set(identity, item); usedIds.set(id, identity); items.push(item);
       });
       if (items.length > LIMITS.words) throw new Error('Use up to 200 different words in one practice set.');
+      const instructionChars = items.reduce((sum, item) => sum + item.definition.length + item.example.length + item.translations.reduce((n, translation) => n + translation.text.length, 0) + (item.sentenceActivity ? item.sentenceActivity.prompt.length : 0), 0);
+      if (instructionChars > LIMITS.totalInstructionChars) throw new Error('This practice set has too much instructional text. Use up to 524,288 characters across definitions, examples, translations and sentence prompts, or split it into smaller lists.');
       // Count references, not just unique strings: standalone JSON embeds each
       // referenced clip, even when many words share a phoneme recording.
       let audioChars = 0;
-      items.forEach(item => { audioChars += item.wordAudio.length; item.phonemes.forEach(sound => { audioChars += sound.audio.length; }); });
+      items.forEach(item => { audioChars += item.wordAudio.length + (item.wordAudioOriginal ? item.wordAudioOriginal.audio.length : 0); item.phonemes.forEach(sound => { audioChars += sound.audio.length + (sound.audioOriginal ? sound.audioOriginal.audio.length : 0); }); });
       if (audioChars > LIMITS.totalAudioChars) throw new Error('This practice set has too much audio. Split it into smaller word lists.');
-      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language: text(input.language, 80) || 'en', items, options: normalizeOptions(input.options) };
+      return { version: 1, title: text(input.title, 160) || 'Word Fluency Pop-Up', language, items, options: normalizeOptions(input.options) };
     }
     function createSequence(pack, value = {}, rng = Math.random) {
       const options = normalizeOptions(value);
@@ -164,7 +368,7 @@
       return result;
     }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, escapeHtml, safeJson, parseWords, normalizeInput, normalizeOptions, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator

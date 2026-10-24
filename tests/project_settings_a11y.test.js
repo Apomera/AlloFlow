@@ -89,6 +89,7 @@ afterEach(() => {
   opener = null;
   window.__alloFocusTrapStack = [];
   delete window.__alloMakeQrSvg;
+  delete window.AlloModules.ErrorReporter;
   vi.restoreAllMocks();
 });
 
@@ -184,5 +185,23 @@ describe('Project Settings accessibility', () => {
     expect(feedback.hasAttribute('aria-label')).toBe(false);
     expect(source).toContain('<code className="break-all">apps_script/educator_evaluation/README.md</code>');
     expect(source).toContain('className="allo-docsuite flex max-h-[92vh]');
+  });
+
+  it.each([true, false])('opens a manual report before closing settings (manual API: %s)', async (manualApi) => {
+    const openManualReport = vi.fn();
+    const openPanel = vi.fn();
+    window.AlloModules.ErrorReporter = manualApi ? { openManualReport, openPanel } : { openPanel };
+    const { dialog, close } = await renderDialog();
+    const feedback = Array.from(dialog.querySelectorAll('button'))
+      .find((button) => button.textContent.includes('Report a problem or send feedback'));
+    await act(async () => feedback.click());
+    if (manualApi) {
+      expect(openManualReport).toHaveBeenCalledOnce();
+      expect(openPanel).not.toHaveBeenCalled();
+    } else {
+      expect(openPanel).toHaveBeenCalledExactlyOnceWith('errors');
+    }
+    expect(close).toHaveBeenCalledOnce();
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
   });
 });

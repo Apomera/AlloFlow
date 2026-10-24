@@ -27,7 +27,8 @@ const mdInline = (content) => {
 describe('M8 — figcaption description/purpose are escaped', () => {
   it('escapes desc and purpose in the figcaption (not just the alt)', () => {
     expect(src).toContain("<span aria-hidden=\"true\">${desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>");
-    expect(src).toContain("Purpose: ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')");
+    // (2026-10-19: the "Purpose:" label is wrapped <span lang="en">; the purpose text stays escaped)
+    expect(src.includes("Purpose:</span> ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')"), 'purpose escaped').toBe(true);
   });
 });
 

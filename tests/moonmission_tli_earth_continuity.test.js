@@ -93,9 +93,9 @@ describe('TLI Earth clock continuity', () => {
           const scene = P.drawTliScene(record.ctx, 984, 360, sample, profile, { orbitTime, view });
           expect(scene.earthTick).toBeCloseTo(P.earthRotationTick(orbitTime + time), 12);
           if (time === 0) expect(scene.earthTick).toBe(P.earthRotationTick(P.orbitSnapshot(orbitTime).time));
-          for (const command of record.commands) for (const arg of command) {
-            if (typeof arg === 'number') expect(Number.isFinite(arg)).toBe(true);
-          }
+          // One assertion per scene: an expect() per number made 30 scenes exceed 5 s.
+          const bad = record.commands.filter(command => command.some(arg => typeof arg === 'number' && !Number.isFinite(arg)));
+          expect(bad, 'Canvas calls with non-finite numbers').toEqual([]);
         }
       }
     }

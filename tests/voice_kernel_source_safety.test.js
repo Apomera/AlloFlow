@@ -16,7 +16,10 @@ beforeAll(() => {
     useMemo: noop,
     useCallback: (fn) => fn,
   });
-  const source = readFileSync(resolve(process.cwd(), 'allo_commands_source.jsx'), 'utf8')
+  // The build embeds the School Store recognition grammar ahead of the source; without it
+  // the command router fails closed and treats every utterance as a private award request.
+  const source = ['school_store_recognition.js', 'school_store_setup_guide.js', 'allo_commands_source.jsx']
+    .map((file) => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n')
     + '\n;globalThis.__alloVoiceSafetySource = { createCommandKernel, registerCommandScope, routeUtterance, createVoiceLoop };';
   const compiled = execFileSync(process.execPath, ['-e',
     "const fs=require('fs'),e=require('esbuild');process.stdout.write(e.transformSync(fs.readFileSync(0,'utf8'),{loader:'jsx',target:'es2020'}).code)"

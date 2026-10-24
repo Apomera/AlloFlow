@@ -4,13 +4,14 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { setupWordSounds, baseProps, React } from './helpers/word_sounds_harness.js';
 import { installCanvasStub } from './helpers/word_sounds_pack_fixture.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const require = createRequire(import.meta.url);
 const { renderToStaticMarkup } = require(resolve('desktop/web-app/node_modules/react-dom/server'));
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const act = React.act || require(resolve('desktop/web-app/node_modules/react-dom/test-utils')).act;
 const source = readFileSync('word_sounds_module.js', 'utf8');
-const helpers = source.slice(source.indexOf('// BEGIN WORD SOUNDS COUNT RESULTS'), source.indexOf('// END WORD SOUNDS COUNT RESULTS'));
+const helpers = sliceBetween(source, '// BEGIN WORD SOUNDS COUNT RESULTS', '// END WORD SOUNDS COUNT RESULTS', { file: 'word_sounds_module.js' });
 const { rowsFor, summaryFor, Results } = new Function('React', helpers + '\nreturn { rowsFor: wordSoundsCountResultRows, summaryFor: wordSoundsCountResultSummary, Results: WordSoundsCountResults };')(React);
 const countRow = (extra = {}) => ({ activity: 'syllable_counting', word: 'banana', correct: true, attempts: 2,
   submittedCount: 3, expectedCount: 3, deliveryMode: 'recorded_audio', countResponses: [
@@ -85,16 +86,17 @@ describe('adult count-results UI', () => {
   });
 
   it('includes the same adult-only detail component in the actual sequential probe result renderer', () => {
-    const start = source.indexOf('const renderProbeResults = () => {');
-    const probe = source.slice(start, source.indexOf('React.useEffect(', start));
+    const probe = sliceBetween(source, 'const renderProbeResults = () => {', 'React.useEffect(', { file: 'word_sounds_module.js', label: 'probe results renderer' });
     const render = new Function('React', 'WordSoundsCountResults', 'bindings', `
-      const { probeStartTimeRef, wordSoundsScore, learnerScopedHistory, effectiveProbeGrade, wordSoundsActivity,
+      const { buildProbePayload, probeStartTimeRef, probeEndTimeRef, wordSoundsScore, learnerScopedHistory, effectiveProbeGrade, wordSoundsActivity,
         probeResultsDialogRef, handleDialogKeyDown, t, ts, probeHiddenMs, PROBE_INTERRUPTION_MS,
         sessionWordResults, isTeacherMode, isParentMode } = bindings;
       ${probe}
       return renderProbeResults();
     `);
-    const bindings = { probeStartTimeRef: { current: Date.now() - 2000 }, wordSoundsScore: { correct: 1, total: 1 },
+    const bindings = { probeStartTimeRef: { current: Date.now() - 2000 }, probeEndTimeRef: { current: null }, wordSoundsScore: { correct: 1, total: 1 },
+      buildProbePayload: score => ({...score, duration: 2, accuracy: 100, itemsPerMin: 30,
+        byDifficulty: {easy: {c: 0, t: 0}, medium: {c: 0, t: 0}, hard: {c: 0, t: 0}}}),
       learnerScopedHistory: [], effectiveProbeGrade: 'K', wordSoundsActivity: 'syllable_counting',
       probeResultsDialogRef: { current: null }, handleDialogKeyDown() {}, t: key => key, ts: key => key,
       probeHiddenMs: () => 0, PROBE_INTERRUPTION_MS: 1000, sessionWordResults: { current: [countRow()] },

@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Trade school / community college",
+    "icon": "🎓",
+    "desc": "Eastern Maine Community College (EMCC) in Bangor offers a 2-year Welding Technology AAS program (and a shorter 1-year certificate). Hands-on shop time, AWS certification testing built in. Pell-eligible.",
+    "pros": [
+      "Structured curriculum, immediate AWS testing",
+      "Career-services help finding shops",
+      "Pell Grant + state aid often covers most cost"
+    ],
+    "cons": [
+      "Takes 1-2 years before earning full wage",
+      "Tuition + supplies (~$5-10K total at EMCC)"
+    ],
+    "maine": "EMCC Welding Technology — emcc.edu/welding-technology"
+  },
+  {
+    "name": "Apprenticeship",
+    "icon": "🛠️",
+    "desc": "Earn while you learn. Registered apprenticeships at unions (Iron Workers Local 7), at shops (Cianbro, BIW), or via Maine Apprenticeship Program (state-registered). Paid wages from day one, escalating as you certify.",
+    "pros": [
+      "Paid full-time from day 1",
+      "No tuition debt",
+      "Direct path to specific employer"
+    ],
+    "cons": [
+      "Fewer slots — competitive",
+      "Locked into one shop's techniques while training",
+      "Some unions require dues"
+    ],
+    "maine": "Maine Apprenticeship Program — maine.gov/labor/jobs_training/apprenticeship"
+  },
+  {
+    "name": "Military",
+    "icon": "⚓",
+    "desc": "U.S. Navy Hull Maintenance Technician (HT) rate is essentially a paid welding career — Navy pays for training, gives you 4-6 years of experience welding on ships. After service, BIW, Portsmouth Naval, and civilian shipyards actively recruit Navy HTs.",
+    "pros": [
+      "No tuition; salary + benefits during training",
+      "GI Bill for follow-on education",
+      "Direct hiring pipeline to BIW after service"
+    ],
+    "cons": [
+      "Multi-year service commitment",
+      "Deployments / location not your choice",
+      "Requires meeting military entry standards"
+    ],
+    "maine": "Bath Iron Works actively recruits former Navy HTs — biw.com/careers"
+  },
+  {
+    "name": "Self-taught + certified",
+    "icon": "📚",
+    "desc": "Buy a welder, watch hours of YouTube (Weld.com, Tim Welds, Pacific Arc Tig), practice on scrap. When ready, walk into an AWS-accredited test facility and pay to test. Pass D1.1 = certified, regardless of how you learned.",
+    "pros": [
+      "Lowest cost path if disciplined",
+      "Self-paced",
+      "Builds the actual skill, not just paper"
+    ],
+    "cons": [
+      "No structured feedback — easy to learn bad habits",
+      "No school / job placement help",
+      "Burns through equipment and consumables"
+    ],
+    "maine": "AWS-accredited test facilities in Maine — aws.org/certification"
+  }
+]

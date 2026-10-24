@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "搜尋結果：{topics} 個主題中有 {cards} 張卡片。",
+  "stem.flightsim.learn_library_counts": "{cards} 張卡片 · {topics} 個主題",
+  "stem.flightsim.learn_search_clear": "清除搜尋",
+  "stem.flightsim.learn_search_empty": "沒有與「{query}」相符的學習卡片。請嘗試其他詞語或清除搜尋。",
+  "stem.flightsim.learn_search_none": "沒有相符的學習卡片",
+  "stem.flightsim.learn_search_cards": "{count} 張學習卡片",
+  "stem.flightsim.quiz_review_progress": "已回答 {total} 道題中的 {answered} 道 · 答錯 {missed} 道",
+  "stem.flightsim.quiz_review_missed": "複習錯題",
+  "stem.flightsim.quiz_next_unanswered": "下一道未答題",
+  "stem.flightsim.quiz_review_all_answered": "每道題都已記錄首次回答。你可以進行不計分的錯題練習，或開始新一輪答題。",
+  "stem.flightsim.planner_drone_agl": "離地 {ft} 英呎",
+  "stem.flightsim.sprint_native_title": "地理衝刺",
+  "stem.flightsim.sprint_timed_hint": "答題時航線仍會繼續推進。請暫停後閱讀，選擇答案前先恢復執行。",
+  "stem.flightsim.sprint_warp_reference": "本地理活動加快了旅行進程。速度讀數顯示設定的巡航速度；這條航線不用於測量飛機性能。",
+  "stem.flightsim.sprint_save_menu": "儲存衝刺進度並返回選單",
+  "stem.flightsim.sprint_next_stop": "下一站：{place}",
+  "stem.flightsim.geoq_approaching_city": "你正在接近哪座城市？",
+  "stem.flightsim.sprint_time_remaining": "剩餘時間：{seconds} 秒"
+}

@@ -54,16 +54,26 @@ describe('calm History/Create navigation lane', () => {
 
   it('retains the Create/History tab contract with visible fallback labels and roving focus', () => {
     expect(tabsSource).toContain("translatedLabel('sidebar.create_tab', 'Create')");
-    expect(tabsSource).toContain("translatedLabel('sidebar.history_tab', 'History')");
+    // a023e75fa (2026-10-16): the History tab is named for the role (rendered behavior in
+    // sidebar_tabs_navigation_a11y.test.js); every name keeps a visible English fallback.
+    for (const [key, fallback] of [['sidebar.class_materials_tab', 'Class & Materials'], ['sidebar.materials_tab', 'Materials'], ['sidebar.my_resources_tab', 'My Resources']]) {
+      expect(tabsSource).toContain(`translatedLabel('${key}', '${fallback}')`);
+    }
     expect(tabsSource).toContain('role="tablist"');
     expect(tabsSource).toContain('id="tab-create"');
     expect(tabsSource).toContain('id="tab-history"');
-    expect(tabsSource).toContain('aria-controls="tour-input-panel"');
-    expect(tabsSource).toContain('aria-controls="ui-roster-strip"');
+    // f5b045fc9 (2026-09-20): each tab controls a whole sidebar panel that names it back.
+    expect(tabsSource).toContain('aria-controls="sidebar-create-panel"');
+    expect(tabsSource).toContain('aria-controls="sidebar-history-panel"');
+    const host = read('AlloFlowANTI.txt');
+    expect(host).toContain("id=\"sidebar-create-panel\"\n            role={isWide ? 'tabpanel' : undefined}\n            aria-labelledby={isWide ? 'tab-create' : undefined}");
+    expect(host).toContain("id={isTeacherMode ? 'sidebar-history-panel' : undefined}\n            role={isTeacherMode && isWide ? 'tabpanel' : undefined}\n            aria-labelledby={isTeacherMode && isWide ? 'tab-history' : undefined}");
     expect(tabsSource).toContain("tabIndex={activeSidebarTab === 'create' ? 0 : -1}");
     expect(tabsSource).toContain("tabIndex={activeSidebarTab === 'history' ? 0 : -1}");
-    expect(tabsSource).toContain("event.key === 'ArrowRight' || event.key === 'End'");
-    expect(tabsSource).toContain("event.key === 'ArrowLeft' || event.key === 'Home'");
+    // Arrow keys now wrap both ways between the two tabs; the keyboard behavior itself is
+    // exercised on the rendered module in sidebar_tabs_navigation_a11y.test.js.
+    expect(tabsSource).toContain("if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'End') focusSiblingTab(event, historyTabRef);");
+    expect(tabsSource).toContain("if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Home') focusSiblingTab(event, createTabRef);");
     expect(tabsSource).not.toContain('pulse-history');
   });
 

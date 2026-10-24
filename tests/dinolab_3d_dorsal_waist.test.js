@@ -8,8 +8,9 @@ const source = readFileSync(process.env.DINO_DORSAL_WAIST_SOURCE || resolve('ste
 const registration = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(registration)) throw new Error('Dino Lab registration missing');
 window.StemLab = { registerTool() {} };
+const nativeHelpers = [...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match => match[1]))];
 new Function(source.replace(registration,
-  'globalThis.__dorsalWaist = { DINOS, postcranialSurfaceProfileFor, dinoSurfaceGeometry, dinoCranialGeometry, dinoTorsoRadii };' + registration))();
+  'globalThis.__dorsalWaist = { DINOS, skeletalAnatomyProfileFor, ' + nativeHelpers.join(',') + ' };' + registration))();
 const art = globalThis.__dorsalWaist;
 delete globalThis.__dorsalWaist;
 const vec = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -32,17 +33,27 @@ function build(id, scale = 1, showBody = true, suppressProfileGate = false) {
   const model = new THREE.Group(), material = new THREE.MeshPhongMaterial();
   const context = {
     THREE, vec, ...art, model, bodyMat: material, props: { showBody }, dn,
+    len: 8 * scale, ht: 3 * scale, detailScale: Math.min(1, 3 * scale / 2),
+    skeletalProfile: art.skeletalAnatomyProfileFor(dn), posture: art.postureProfileFor(dn),
     bodyLen: 2.88 * scale, bodyHeight: .58 * scale, bodyDepth: .70 * scale,
     shoulder: vec(-1.44, 1.45, 0).multiplyScalar(scale), hip: vec(1.44, 1.30, 0).multiplyScalar(scale),
     postcranialSurface: profile, isSauropod: dn.group === 'sauropod',
     surfaceHypothesis: { bodyHeightScale: 1, bodyDepthScale: 1 }, idleMotion: {}
   };
+  const head = context.shoulder.clone().add(vec(-3, .3, 0).multiplyScalar(scale));
+  context.lambeosaurBody = art.dinoLambeosaurBodyFrame(THREE, dn, {
+    len: context.len, ht: context.ht, headScale: art.reconstructionProfileFor(dn).head,
+    shoulder: context.shoulder, hip: context.hip, head,
+    snout: head.clone().add(vec(-.6, -.06, 0).multiplyScalar(scale)),
+    tail: context.hip.clone().add(vec(2.7, -.3, 0).multiplyScalar(scale)),
+    bodyHeight: context.bodyHeight, bodyDepth: context.bodyDepth
+  });
   const calls = [];
   context.addSoftTissueChain = (...args) => {
     calls.push(args);
     return inContext(chainCode, 'addSoftTissueChain', context)(...args);
   };
-  const result = inContext(torsoCode, '({ bodyShell, torsoPoints, torsoRadii, surfaceBodyHeight, surfaceBodyDepth })', context);
+  const result = inContext(torsoCode, '({ bodyShell, torsoPoints, torsoRadii, surfaceBodyHeight, surfaceBodyDepth, theropodTorso: typeof theropodTorso === "undefined" ? null : theropodTorso })', context);
   return { ...result, context, calls, model, material, originalProfile,
     dispose() { model.children.forEach(m => m.geometry?.dispose()); material.dispose(); } };
 }
@@ -121,11 +132,16 @@ function checkClosedOutward(g, scale) {
 }
 
 describe('Dino Lab bounded tyrannosauroid dorsal torso surface', () => {
-  for (const id of ['tyrannosaurus', 'yutyrannus', 'dilong']) for (const scale of [.03, 1, 12]) {
+  // T.rex now uses its reviewed sculpted body arc (covered by the native
+  // caller checks in dinolab_3d_chest_profile.test.js). Tarbosaurus retains
+  // this explicit seven-station powerful-theropod dorsal bridge.
+  for (const id of ['tarbosaurus', 'yutyrannus', 'dilong']) for (const scale of [.03, 1, 12]) {
     it('raises only the dorsal waist while preserving native construction for ' + id + ' at scale ' + scale, () => {
       const actual = build(id, scale), legacy = build(id, scale, true, true);
       try {
         expect(actual.context.postcranialSurface.id).toBe('powerful-theropod');
+        expect(art.dinoTheropodBodyProfileFor(actual.context.dn)).toBeNull();
+        expect(actual.torsoPoints).toHaveLength(7);
         expect(actual.bodyShell.geometry.userData.dinoDorsalWaist).toBeTruthy();
         expect(legacy.bodyShell.geometry.userData.dinoDorsalWaist).toBeFalsy();
         expect(actual.torsoPoints.map(p => p.toArray())).toEqual(legacy.torsoPoints.map(p => p.toArray()));
@@ -151,9 +167,18 @@ describe('Dino Lab bounded tyrannosauroid dorsal torso surface', () => {
   }
 
   for (const id of ['brachiosaurus', 'diplodocus', 'triceratops', 'spinosaurus', 'therizinosaurus', 'velociraptor']) {
-    it('retains the original native torso geometry and options for ' + id, () => {
-      const actual = build(id);
-      const options = id === 'diplodocus' ? { smoothProfile: true, compactChest: true } : { smoothProfile: true };
+    it('retains the native torso buffers without extra waist inflation for ' + id, () => {
+      const actual = build(id), reviewed = id === 'velociraptor';
+      // The reviewed dromaeosaur body already has its own sculpted envelope.
+      // This suite excludes an additional dorsal-waist pass; native body
+      // suites separately verify that envelope's anatomical shape.
+      const options = reviewed ? actual.theropodTorso.options : id === 'diplodocus' ? { smoothProfile: true, compactChest: true } : { smoothProfile: true };
+      if (reviewed) {
+        expect(art.dinoTheropodBodyProfileFor(actual.context.dn)).not.toBeNull();
+        expect(actual.torsoPoints).toHaveLength(11); expect(actual.torsoRadii).toHaveLength(11);
+        expect(options.smoothProfile).toBe(true); expect(options.rings).toBe(80);
+        expect(options.sculptCaps).toBe(true); expect(typeof options.sculpt).toBe('function');
+      }
       const original = art.dinoSurfaceGeometry(THREE, actual.torsoPoints, actual.torsoRadii, options);
       original.translate(-actual.torsoPoints[0].x, -actual.torsoPoints[0].y, -actual.torsoPoints[0].z);
       try {

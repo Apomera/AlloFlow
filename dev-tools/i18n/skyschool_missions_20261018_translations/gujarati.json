@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "મિશનનાં અવલોકનો",
+  "stem.flightsim.mission_journal_targets": "નોંધાયેલા લક્ષ્યો: {total}માંથી {captured}.",
+  "stem.flightsim.mission_journal_complete": "મિશનના તમામ ઉદ્દેશો અને પાછા આવીને કરેલું ઉતરાણ નોંધાયાં છે.",
+  "stem.flightsim.mission_journal_ended": "પૂર્ણતાના બધા પુરાવા નોંધાય તે પહેલાં મિશન સમાપ્ત થયું.",
+  "stem.flightsim.mission_journal_recovery": "બચી ગયેલી વ્યક્તિનો બચાવ નોંધાયો: {value}.",
+  "stem.flightsim.mission_journal_return": "મથકે પાછા આવીને કરેલું ઉતરાણ નોંધાયું: {value}.",
+  "stem.flightsim.mission_guidance_title": "મિશન માર્ગદર્શન",
+  "stem.flightsim.mission_route": "{target} · દિશાકોણ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "ઉડાનનું પ્રસ્થાનસ્થળ",
+  "stem.flightsim.mission_read_status": "મિશનની સ્થિતિ વાંચી સંભળાવો",
+  "stem.flightsim.mission_return_criterion": "{target}થી {distance} nmની અંદર ઉતરાણ કરો; જમીનની સરખામણીમાં ગતિ {speed} ktથી ઓછી અને નીચે ઊતરવાનો દર {fpm} fpmથી ઓછો રાખો.",
+  "stem.flightsim.mission_unavailable": "મિશનના લક્ષ્યનો ડેટા ઉપલબ્ધ નથી. આ ઉડાન સમાપ્ત કરીને નવું મિશન શરૂ કરો.",
+  "stem.flightsim.mission_capture_criterion": "{hold} s સુધી {distance} ftની અંદર રહો, જમીનથી ઊંચાઈ {min} ftથી વધુ અને {max} ftથી ઓછી તથા જમીનની સાપેક્ષ ગતિ {speed} ktથી ઓછી રાખો."
+}

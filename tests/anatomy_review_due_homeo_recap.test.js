@@ -42,14 +42,18 @@ describe('Anatomy review scheduling', () => {
     const source = fs.readFileSync(filePath, 'utf8');
     expect(source).toContain("nextConfidence[id]=nextLevel;nextAt[id]=now;");
     expect(source).toContain("return {_structureConfidence:nextConfidence,_confidenceAt:nextAt,_retrievalEvidence:nextEvidence};");
-    expect(source).toContain("{ _structureConfidence: nextConfidence, _confidenceAt: stampConfidence(structureId) }");
+    // b19751ec9: a rating writes the structure and its concept peers, stamping each with the same time.
+    expect(source.includes('anatomyConceptPeers(structureId, knownStructureIds).forEach(function(id) { nextConfidence[id] = level; nextAt[id] = now; });'), 'peers stamped').toBe(true);
+    expect(source.includes('return { _structureConfidence: nextConfidence, _confidenceAt: nextAt };'), 'stamps written with the rating').toBe(true);
     expect(source).toContain('var ANATOMY_REVIEW_DUE_DAYS = { learning: 2, mastered: 7 };');
   });
 
   it.each(ANATOMY_PATHS)('puts a stale Got it at the front of the card deck and says so in %s', (filePath) => {
     const deck = render(filePath, { _activeTab: 'flashcards', ...RATINGS }, OLDER);
-    const front = deck.querySelector('[role="group"][aria-label^="Flashcard"] h3');
-    expect(front?.textContent).toBe('Skull (Cranium)');
+    // b19751ec9 moved the card name into the card's live content region as an h5.
+    const card = deck.querySelector('[data-anatomy-recall-card]');
+    expect(card?.getAttribute('data-anatomy-recall-card')).toBe('skull');
+    expect(card.querySelector('#anatomy-flashcard-content h5')?.textContent).toBe('Skull (Cranium)');
     const notice = deck.querySelector('p[role="status"].text-rose-700');
     expect(notice?.textContent).toMatch(/^1 card\(s\) marked Need practice or due for a re-check/);
 

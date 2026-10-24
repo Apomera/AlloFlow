@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 const React=window.React;
 
 // These toy blueprints identify a saved construction assignment. They are not
@@ -35,7 +36,7 @@ export function CommissionMarker({projectId,theme='river'}){
   </svg></span>;
 }
 
-export function CommissionStyles(){return <style>{`
+export function CommissionStyles(){return addBoardStyle(`
 .lb .lb-commission-miniature,.lb .lb-commission-marker{--commission-desk:#d6b986;--commission-desk-side:#8a6640;--commission-paper:#e7f1ef;--commission-paper-edge:#7d9992;--commission-ink:#365e58;--commission-seal:#aa7132;--commission-seal-ink:#fff4d5;--commission-ribbon:#e3bd6b}
 .lb [data-commission-miniature=garden],.lb [data-commission-theme=garden]{--commission-desk:#c4c99a;--commission-desk-side:#727d4e;--commission-paper:#eff1d9;--commission-paper-edge:#8b9a68;--commission-ink:#4c653d}
 .lb [data-commission-miniature=workshop],.lb [data-commission-theme=workshop]{--commission-desk:#d6b29a;--commission-desk-side:#86614e;--commission-paper:#e0e9f0;--commission-paper-edge:#839aa9;--commission-ink:#456477}
@@ -46,4 +47,4 @@ export function CommissionStyles(){return <style>{`
 .dark .lb .lb-commission-shadow{fill:#0005}.dark .lb .lb-commission-miniature,.dark .lb .lb-commission-marker{--commission-seal:#af8245}.dark .lb [data-commission-miniature=space],.dark .lb [data-commission-theme=space]{--commission-seal:#8e75ad}
 @media(max-width:600px){.lb .lb-commission-marker{right:-6px;top:-13px;width:25px;height:24px}.lb [data-encounter-compact=true] .lb-event-commission{clear:both;padding:5px 0}.lb .lb-event-commission button{width:100%}.lb .lb-event-commission strong{font-size:.9em}.lb [data-encounter-compact=true] .lb-event-commission .lb-commission-miniature{width:35px;height:30px}}
 @media(forced-colors:active){.lb .lb-commission-miniature,.lb .lb-commission-marker,.dark .lb .lb-commission-miniature,.dark .lb .lb-commission-marker{--commission-desk:Canvas;--commission-desk-side:CanvasText;--commission-paper:Canvas;--commission-paper-edge:CanvasText;--commission-ink:CanvasText;--commission-seal:Highlight;--commission-seal-ink:HighlightText;--commission-ribbon:Canvas}.lb .lb-commission-shadow{display:none}.lb .lb-commission-marker{filter:none}.lb .lb-event-commission,.lb .lb-spatial-commission-note{background:Canvas;border-color:Highlight}.lb .lb-commission-list-label{color:CanvasText}.lb .lb-spatial-project[data-commission-project=true]{outline-color:Highlight}.lb .lb-spatial-project[data-commission-project=true][aria-pressed=true]{outline-color:Highlight}}
-`}</style>;}
+`);}

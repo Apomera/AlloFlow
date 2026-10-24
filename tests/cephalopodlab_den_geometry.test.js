@@ -192,7 +192,7 @@ describe('Cephalopod Hunter natural den stones', () => {
           const shader = { vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader, uniforms: {} };
           material.onBeforeCompile(shader);
           if (derivatives || webgl2) {
-            assert.equal(material.customProgramCacheKey(), 'cl-rock-surface-v1');assert.equal(material.extensions.derivatives, true);
+            assert.equal(material.customProgramCacheKey(), 'cl-rock-minerals-v2');assert.equal(material.extensions.derivatives, true);
             assert.ok(shader.vertexShader.includes('clRockPosition'));assert.ok(shader.fragmentShader.includes('clRockCoarseField'));
           } else { assert.equal(material.onBeforeCompile.name, 'reefSurface');assert.ok(shader.vertexShader.includes('clReefPos')); }
           assert.deepEqual(shader.uniforms, {});

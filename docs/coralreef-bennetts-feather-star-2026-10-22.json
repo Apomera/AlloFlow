@@ -1,0 +1,156 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional living crinoid for the guide, illustrative reef encounters and optional identification activity. The model depicts one yellow-brown Australian adult with 50 arm tips as an example, not a universal arm count or colour key. All new copy is paraphrased from museum, government, specialist and primary-research sources.",
+  "iucnYearConvention": "Use NE and null assessment/publication dates. SeaLifeBase's current indexed IUCN 2025-2 export explicitly says Not Evaluated. WA Museum has a Least Concern field without a named assessment system, citation or year; that field is not evidence of a global IUCN assessment and is not imported. No reliable current global assessment or assessment date was located. NE does not imply that populations are secure.",
+  "specimens": [
+    {
+      "id": "bennetts_feather_star",
+      "name": "Bennett’s feather star",
+      "scientific": "Anneissia bennetti",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnPublishedYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": ["christmas_tree_worm"],
+      "marks": [
+        "Dozens of long arms spread upward and outward into a feeding crown",
+        "Fine side branches called pinnules give each arm a feather-like outline",
+        "The small central body has no long adult stalk",
+        "Strong, jointed gripping appendages called cirri cluster beneath the body"
+      ],
+      "role": "Suspension feeder that gathers tiny food particles from flowing reef water.",
+      "fact": "Its plant-like crown belongs to an animal: a feather star is an echinoderm, related to sea stars and sea urchins.",
+      "habitat": "Tropical Indo-West Pacific reefs and sponge gardens, often perched above the surrounding bottom where water flows past exposed coral heads or sponges.",
+      "diet": "Suspended plankton and fine organic particles. Tiny tube feet along the arms and pinnules capture food and pass it toward the mouth.",
+      "behavior": "Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night.",
+      "observe": "Follow one main arm into its fine pinnules, then look underneath for the thicker gripping cirri. Compare this whole animal with the Christmas tree worm’s paired spiral crowns: they are unrelated forms. Yellow and brown are only one appearance; colour alone does not identify this feather star.",
+      "sources": [
+        "dx-wam-bennetts_feather_star",
+        "dx-lifg-bennetts_feather_star",
+        "dx-kogo-bennetts_feather_star",
+        "dx-messing-bennetts_feather_star",
+        "dx-morphology-bennetts_feather_star",
+        "dx-worms-bennetts_feather_star",
+        "dx-sealifebase-bennetts_feather_star",
+        "dx-umich-bennetts_feather_star"
+      ],
+      "claimSupport": {
+        "acceptedName": "Current WoRMS accepts Anneissia bennetti (Müller, 1841), AphiaID 828992. CSIRO CAAB independently accepts this name and cites Summers, Messing and Rouse (2014). Comanthus bennetti and Oxycomanthus bennetti are older combinations, not additional specimens to blend into the model.",
+        "marks": "Australian Museum's species account supports the upward/outward posture, numerous arms and large strong cirri. Kogo et al. describe branched arm division series and the stout segmented cirri. University of Michigan's museum account supplies the shared comatulid adult anatomy: no persistent stalk, with grasping cirri below the central body.",
+        "roleDiet": "WA Museum identifies benthic suspension feeding. Messing's diets synthesis documents varied plankton and organic particles, including diatoms and dinoflagellates in A. bennetti samples, and discusses limits of nutritional inference. His morphology introduction describes food-collecting tube feet and ciliated grooves leading to the mouth. The guide makes no exclusive-diet or numerical filtration-rate claim.",
+        "fact": "The museum and government taxonomic accounts place this animal in Echinodermata. The University of Michigan museum page explains feather stars alongside other echinoderm groups, supporting the broad relationship rather than a claim that they are true sea stars.",
+        "habitatBehavior": "WA Museum documents exposed reef and sponge-garden perches in currents, visible by day and night. The Lizard Island guide supports hard-coral attachment and feeding-arm posture. 'Often' is used because the SeaLifeBase account also notes incompletely exposed individuals; no universal exposure rule is imposed.",
+        "colourCountSize": "Both museum accounts give arm lengths up to 20 cm and emphasize variable colour. The Lizard Island account explicitly warns that colour is not useful for identifying the species. Kogo et al.'s eight specimens had 40–80 arms. Fifty rendered arm tips and a nominal 32 cm crown spread are illustrative choices within this general adult scale; arm length is not central-body diameter or a measured universal spread.",
+        "depth": "Kogo et al. (2019), A. bennetti account on p. 239, explicitly reports 0–50 m and documents examined specimens from 10 and 15 m. SeaLifeBase independently lists 0–50 m. This is a reported interval rather than an experimentally established limit or a uniform abundance estimate.",
+        "iucn": "Current indexed SeaLifeBase summary explicitly labels its IUCN export Version 2025-2 (Global) and reports Not Evaluated. WA Museum's unreferenced Least Concern field has no identified scheme or date and is not converted into an IUCN category.",
+        "comparison": "One-way christmas_tree_worm link contrasts a crinoid's arms, pinnules and gripping cirri with the existing annelid's paired spiral branchial crowns and tube. The comparison is an observation exercise between unrelated forms, not a taxonomic or closest-lookalike claim. Its existing record is preserved exactly."
+      },
+      "caution": "Colour, apparent arm count and a simplified feather-star silhouette cannot establish a wild species identification. Fine pinnule combs and skeletal characters used by specialists are not fully reproduced. The 50-arm example must retain branching near the body rather than appearing as 50 separate unbranched fern leaves. Cirri are gripping structures, not roots, and the crown is an animal rather than a coral colony or plant. No fixed sex, reproductive state, fluorescence, bioluminescence, cleaning service or continuous-swimming behavior is claimed. General class-level reproductive boilerplate from databases is not imported as species-specific evidence."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-wam-bennetts_feather_star",
+      "text": "Western Australian Museum. Bennett’s multi-armed feather star, Anneissia bennetti: Online Collections species account. Accessed October 2026.",
+      "url": "https://museum.wa.gov.au/online-collections/names/Anneissia-bennetti",
+      "urlLabel": "museum.wa.gov.au",
+      "supports": ["Identified living appearance, feathery arms, robust cirri, adult arm-length scale, suspension feeding and exposed reef/sponge habitat"],
+      "access": "Full primary museum account opened successfully. Its separate Least Concern field provides neither a named assessment scheme nor a year; it is not used as global IUCN evidence."
+    },
+    {
+      "id": "dx-lifg-bennetts_feather_star",
+      "text": "Australian Museum / Lizard Island Research Station. Anneissia bennetti: Lizard Island Field Guide species account, with identified photographs by Anne Hoggett and Lyle Vail. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=pZetwEQT",
+      "urlLabel": "lifg.australian.museum",
+      "supports": ["Upward/outward arm posture, strong gripping cirri, variable colour and arm length up to 20 cm"],
+      "access": "Detailed current indexed museum account and identified photo captions read. Direct page returned 403. Its depth field explicitly has no data; no depth interval is attributed to this page."
+    },
+    {
+      "id": "dx-kogo-bennetts_feather_star",
+      "text": "Kogo, I., Fujita, T. & Kubodera, T. (2019). Shallow-water Comatulids (Echinodermata: Crinoidea) from Ambon and Lombok Islands, Indonesia. Species Diversity 24: 229–246. Anneissia bennetti account, p. 239. DOI: 10.12782/specdiv.24.229.",
+      "url": "https://www.jstage.jst.go.jp/article/specdiv/24/2/24_240215/_pdf",
+      "urlLabel": "jstage.jst.go.jp (museum research)",
+      "supports": ["Primary specimen anatomy, branched division series, 40–80 arms in examined material, stout cirri, range and explicit 0–50 m interval"],
+      "access": "Full primary museum research PDF opened successfully. Eight A. bennetti specimens are described on p. 239. The adjacent Himerometra robustipinna account has a different arm count and is not confused with this species."
+    },
+    {
+      "id": "dx-messing-bennetts_feather_star",
+      "text": "Messing, C.G. Charles Messing’s Crinoid Pages: Crinoid Diets. Nova Southeastern University. Updated 20 June 2025; accessed October 2026.",
+      "url": "https://libguides.nova.edu/crinoids/diets",
+      "urlLabel": "libguides.nova.edu",
+      "supports": ["Specialist synthesis of crinoid feeding and A. bennetti dietary evidence; limits of gut/fecal composition estimates"],
+      "access": "Full university-hosted specialist account and cited primary research read. It is treated as an expert synthesis, not a new species-specific feeding experiment. Numerical diet fractions and unsupported claims about nutritional completeness are omitted."
+    },
+    {
+      "id": "dx-morphology-bennetts_feather_star",
+      "text": "Messing, C.G. Charles Messing’s Crinoid Pages: Morphology—Introduction. Nova Southeastern University. Accessed October 2026.",
+      "url": "https://libguides.nova.edu/crinoids/morphologyintroduction",
+      "urlLabel": "libguides.nova.edu",
+      "supports": ["Shared crinoid five-ray organization, food-collecting tube feet, central body and food grooves"],
+      "access": "Full current university-hosted specialist explanation opened successfully. General crinoid anatomy is distinguished from a species-level arm-count or branching key."
+    },
+    {
+      "id": "dx-worms-bennetts_feather_star",
+      "text": "Messing, C. et al. (2026). World List of Crinoidea: Anneissia bennetti (Müller, 1841), AphiaID 828992. World Register of Marine Species. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=828992",
+      "urlLabel": "marinespecies.org",
+      "supports": ["Accepted species name, authority and older Comanthus/Oxycomanthus combinations"],
+      "access": "Detailed current indexed taxon record read, explicitly marked accepted; direct record returned 403. Current government CAAB record corroborates the name and the 2014 classification source."
+    },
+    {
+      "id": "dx-sealifebase-bennetts_feather_star",
+      "text": "SeaLifeBase. Anneissia bennetti, species 86679: summary and IUCN 2025-2 export. Accessed October 2026.",
+      "url": "https://www.sealifebase.ca/summary/SpeciesSummary.php?genusname=Anneissia&id=86679&speciesname=bennetti",
+      "urlLabel": "sealifebase.ca",
+      "supports": ["Explicit Not Evaluated global export, 0–50 m reported depth interval and qualified exposure observations"],
+      "access": "Detailed current indexed full summary read, explicitly labelled IUCN Version 2025-2 (Global). Direct page variants returned cache/access failures. No successful direct full-page access or actual IUCN assessment is claimed. Modelled habitat maps and class-level reproductive boilerplate are not used."
+    },
+    {
+      "id": "dx-umich-bennetts_feather_star",
+      "text": "University of Michigan Museum of Paleontology. Phylum Echinodermata: crinoids and feather-star anatomy. University of Michigan Online Repository of Fossils. Accessed October 2026.",
+      "url": "https://umorf.ummp.lsa.umich.edu/wp/invertebrate/phylum-echinodermata/",
+      "urlLabel": "umorf.ummp.lsa.umich.edu",
+      "supports": ["Shared comatulid adult loss of stalk and grasping cirri; broad echinoderm relationships"],
+      "access": "Current indexed museum explanation read; direct page returned an origin-server error. This supports general comatulid anatomy only, not an A. bennetti species key."
+    },
+    {
+      "id": "dx-csiro-bennetts_feather_star",
+      "text": "CSIRO. Codes for Australian Aquatic Biota: Anneissia bennetti (Müller, 1841), CAAB 25 030036. Accessed October 2026.",
+      "url": "https://www.cmar.csiro.au/data/caab/taxon_report.cfm?caab_code=25030036",
+      "urlLabel": "cmar.csiro.au",
+      "supports": ["Independent government corroboration of accepted name and Oxycomanthus synonym"],
+      "access": "Detailed current indexed government taxon report read. It names the 2014 Summers, Messing and Rouse classification as its scientific-name verification source; direct page returned a cache miss."
+    },
+    {
+      "id": "dx-bismal-bennetts_feather_star",
+      "text": "JAMSTEC. Biological Information System for Marine Life: Anneissia bennetti, taxon 9045157. Accessed October 2026.",
+      "url": "https://www.godac.jamstec.go.jp/bismal/e/view/9045157",
+      "urlLabel": "godac.jamstec.go.jp",
+      "supports": ["Government occurrence-database corroboration of name and shallow-water specimen records"],
+      "access": "Full government taxon page opened successfully. Its occurrence records span 1–40 m and are not substituted for the species' full depth interval or an abundance estimate."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.32,
+    "nominalDimension": "Approximate displayed adult crown spread, not central-disc diameter or individual arm length",
+    "maximumLengthM": null,
+    "maximumReportedArmLengthM": 0.20,
+    "depictedTerminalArmCount": 50,
+    "depth": [0, 50],
+    "origin": "base",
+    "habit": "bottom",
+    "zone": "bommie",
+    "representative": "One unsexed yellow-brown Australian adult appearance informed by the WA Museum and Lizard Island museum accounts. Natural adults vary widely; neither colour nor the 50-arm example is a universal diagnostic character.",
+    "basis": "A 32 cm open-crown spread is an illustrative model scale consistent with arms reported up to 20 cm long, not a directly published maximum span. The small central body and gripping cirri have different dimensions. Kogo et al. describe 40–80 arms in their examined A. bennetti, while WA Museum says 50 or more may occur. Use the primary research and SeaLifeBase reported interval of 0–50 m without asserting complete physiological limits or equal habitat suitability throughout it.",
+    "anatomy": "Small central disc/centrodorsal; five shared basal radial origins followed by successive near-base arm divisions; 50 terminal arm tips in this illustrative adult; many fine alternating lateral pinnules along each arm; numerous thicker segmented gripping cirri below the body, with curved grasping ends. Hold the arms upward/outward, with varied curvature and spacing rather than one flat wheel or tangled coral branches. A small subordinate reef perch may make the fixed cirral grip visible.",
+    "anatomyLimits": "Do not render 50 independent unbranched fern leaves emerging from one whorl, or confuse the fine pinnules with the thicker gripping cirri. The five-ray/50-tip branching layout is schematic; specialist skeletal counts and pinnule combs are simplified. No permanent adult stalk, plant roots, flower petals, worm tube or paired spiral crowns. No sex-specific or reproductive structure is assigned. Colour represents pigmentation, not fluorescence or bioluminescence.",
+    "motion": "Conservative perched bottom encounter with fixed contact between cirri and substrate. Gentle, phase-varied arm/pinnule motion may convey flowing water while basal grip and perch remain stable. This posed suspension-feeding illustration does not imply that adults are plants, permanently cemented in place or always swimming. No new locomotion simulation is required."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Inspection, identification and optional recall must not award dive discoveries or persist session-only answers/reflections.",
+    "lookalikeNote": "One-way christmas_tree_worm comparison teaches the difference between superficially feathery unrelated forms. Preserve the existing annelid record exactly; it is not a claim of close relationship or the closest field-identification alternative.",
+    "identificationLimit": "Combine arm arrangement, pinnules, cirri and locality. The simplified model supports observation and learning; detailed morphology is needed for reliable wild species identification."
+  }
+}

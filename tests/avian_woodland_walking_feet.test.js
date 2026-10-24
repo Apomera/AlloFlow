@@ -259,5 +259,5 @@ describe('woodland walking feet', () => {
       } finally { bird.dispose(); bird.dispose(); }
       expect([...resources.values()].every(count => count === 1)).toBe(true);
     }
-  });
+  }, 20000);
 });

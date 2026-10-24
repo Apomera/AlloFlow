@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "प्रश्नमंजुषेतील आधीचे प्रयत्न",
+  "stem.flightsim.quiz_history_scope": "नवीन प्रयत्न सुरू केल्यावर पहिली उत्तरे नोंदवलेले आधीचे जास्तीत जास्त चार प्रयत्न जतन होतात. त्यांचे पुनरावलोकन केल्याने तुमची सध्याची प्रश्नमंजुषा बदलत नाही.",
+  "stem.flightsim.quiz_history_empty": "प्रश्नमंजुषेतील कोणतेही आधीचे प्रयत्न अद्याप जतन केलेले नाहीत.",
+  "stem.flightsim.quiz_history_attempt": "{date} रोजी जतन केले · पहिल्या उत्तरांपैकी {score}/{answered} बरोबर",
+  "stem.flightsim.quiz_history_progress": "{total} प्रश्नांपैकी {answered} नोंदवले · {unanswered} अनुत्तरित",
+  "stem.flightsim.quiz_history_question": "प्रश्न {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "बरोबर उत्तर: {answer}",
+  "stem.flightsim.quiz_history_changed": "जतन केलेले {count} प्रश्न आता या प्रश्नमंजुषेशी जुळत नाहीत. गुणांसाठी फक्त जुळणाऱ्या प्रश्नांच्या नोंदी वापरल्या जातात."
+}

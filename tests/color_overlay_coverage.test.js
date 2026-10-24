@@ -28,7 +28,8 @@ let block;
 function overlayBlock(source) {
   const normalized = source.replace(/\r\n/g, "\n");
   const start = normalized.indexOf("{colorOverlay !== 'none'");
-  const endMarker = "\n            document.body\n        )}";
+  // The portal target is <body>, or the full-screen element while one is open (2026-10-20).
+  const endMarker = "\n            (readerLayerHost && readerLayerHost.isConnected) ? readerLayerHost : document.body\n        )}";
   const end = normalized.indexOf(endMarker, start);
   expect(start, "the colour-overlay block should exist").toBeGreaterThan(-1);
   expect(end, "the portal block should close").toBeGreaterThan(start);
@@ -46,6 +47,11 @@ describe('colour overlay', () => {
     expect(block).toContain('document.body');
     // Guarded so a non-browser render cannot throw on a missing document.
     expect(block).toContain("typeof document !== 'undefined' && document.body");
+  });
+
+  it('follows the full-screen element, where nothing outside it is drawn', () => {
+    expect(block).toContain('(readerLayerHost && readerLayerHost.isConnected) ? readerLayerHost : document.body');
+    expect(anti.includes("const sync = () => setReaderLayerHost(document.fullscreenElement || null);"), 'the host tracks fullscreenchange').toBe(true);
   });
 
   it('is fixed to the viewport rather than clipped to a container', () => {

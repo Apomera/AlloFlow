@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Obsèvasyon misyon an",
+  "stem.flightsim.mission_journal_targets": "Sib yo anrejistre: {captured} sou {total}.",
+  "stem.flightsim.mission_journal_complete": "Yo anrejistre tout objektif misyon an ak aterisaj apre retou a.",
+  "stem.flightsim.mission_journal_ended": "Misyon an fini anvan yo te anrejistre tout prèv ki montre li konplete.",
+  "stem.flightsim.mission_journal_recovery": "Sovtaj moun ki siviv la anrejistre: {value}.",
+  "stem.flightsim.mission_journal_return": "Aterisaj lè w retounen nan baz la anrejistre: {value}.",
+  "stem.flightsim.mission_guidance_title": "Gid pou misyon an",
+  "stem.flightsim.mission_route": "{target} · direksyon {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Pwen dekolaj la",
+  "stem.flightsim.mission_read_status": "Li eta misyon an awotvwa",
+  "stem.flightsim.mission_return_criterion": "Ateri a mwens pase {distance} nm de {target}, ak vitès parapò ak tè a anba {speed} kt epi yon vitès desant anba {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Done sou sib misyon an pa disponib. Fini vòl sa a epi kòmanse yon nouvo misyon.",
+  "stem.flightsim.mission_capture_criterion": "Rete a mwens pase {distance} ft, pi wo pase {min} epi pi ba pase {max} ft anwo tè a, ak vitès parapò ak tè a anba {speed} kt pandan {hold} s."
+}

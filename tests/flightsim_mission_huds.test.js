@@ -26,7 +26,7 @@ const PATHS = [
 const eachSource = (fn) => PATHS.forEach((p) => fn(readFileSync(p, 'utf8'), p));
 
 const OVERLAYS = [
-  'drawForces', 'checkMilestones', 'drawLandingScore', 'drawAchievementPopup',
+  'drawForces', 'drawLandingScore',
   'drawRescueOverlay', 'drawSurveyOverlay', 'drawSprintHUD',
 ];
 
@@ -86,8 +86,10 @@ describe('flightsim mission HUDs', () => {
       // The logic must read the object, not literals.
       expect(source, `${path}: the hoist condition hard-codes its thresholds again`)
         .not.toMatch(/rDist < 0\.05 && rAgl < 100/);
-      expect(source, `${path}: the hoist condition no longer reads RESCUE_HOVER`)
-        .toContain('rDist < RESCUE_HOVER.distNm');
+      expect(source, `${path}: the shared hoist profile no longer reads RESCUE_HOVER`)
+        .toContain('radiusFt: RESCUE_HOVER.distNm * 6076.12');
+      expect(source, `${path}: the hoist condition no longer uses the shared readiness gates`)
+        .toContain("rescueGuide.phase === 'target' && rescueGuide.ready");
       // ...and so must the caption, which used to state only two of the five.
       expect(source, `${path}: the rescue target caption is a hard-coded pair again`)
         .not.toContain('TGT < 100 ft AGL, < 10 kts');

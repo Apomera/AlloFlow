@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import * as engine from './lesson_board_engine.js';
 import { Amounts } from './lesson_board_play_extras.jsx';
 import { tr } from './lesson_board_strings.js';
@@ -13,7 +14,7 @@ import {EncounterDecision} from './lesson_board_encounter_decision_ui.jsx';
 const React = window.React;
 
 function FieldStyles() {
-  return <style>{`
+  return addBoardStyle(`
 .lb .lb-field-card{min-width:0;padding:14px;margin:14px 0;border:2px solid var(--gold);border-radius:14px;background:var(--gold-soft);overflow-wrap:anywhere}
 .lb .lb-field-card h4,.lb .lb-field-note h4{margin:0 0 6px}.lb .lb-field-card p{margin:6px 0 10px}.lb .lb-field-card .lb-field-kicker{font-size:.78em;letter-spacing:.05em;text-transform:uppercase;font-weight:750;color:var(--gold)}
 .lb .lb-field-story-heading{display:flex;align-items:center;gap:12px;margin-bottom:8px}.lb .lb-field-story-heading>svg{width:64px;height:64px;flex-shrink:0}.lb .lb-field-story-heading h4{margin:0}.lb [data-field-panel]:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:12px}.lb .lb-field-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:9px;margin-top:12px}.lb .lb-field-choices button{display:flex;flex-direction:column;align-items:flex-start;text-align:start;gap:7px;white-space:normal;min-height:44px;width:100%;padding:12px;background:var(--panel)}
@@ -21,7 +22,7 @@ function FieldStyles() {
 .lb .lb-field-note{min-width:0;margin:12px 0;padding:10px 12px;border-inline-start:4px solid var(--route);border-radius:0 9px 9px 0;background:var(--route-soft);overflow-wrap:anywhere}.lb .lb-field-note p{margin:3px 0 7px}.lb .lb-field-note .lb-tokens{margin-top:6px}
 .lb .lb-next-opportunity{padding-top:10px;margin:12px 0;border-top:1px dashed var(--line)}.lb .lb-next-opportunity p{margin:0 0 8px}.lb .lb-next-opportunity .lb-row{align-items:stretch}.lb .lb-next-opportunity button{white-space:normal;text-align:start;flex:1 1 180px;min-height:44px}
 @media(forced-colors:active){.lb .lb-field-card{border-color:CanvasText}.lb .lb-field-note{border-color:Highlight}.lb .lb-field-card .lb-field-kicker{color:CanvasText}}
-`}</style>;
+`);
 }
 
 export function FieldEncounter({ board, run, role = 'solo', onChoose, onInspect, locked = false, t }) {

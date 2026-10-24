@@ -1092,13 +1092,17 @@ describe('space station idealized impact conservation',()=>{
   });
 });
 
-let cleanups,frames,nextFrame,clock;
+// jsdom 29 keeps the sheet of a <style> removed inside an unmounted subtree; each mount
+// left ~2,000 rules that every later getComputedStyle call matched. Detach styles first.
+// Mounting re-parses ~250 KB of CSS; css-tree formats a source-mapped stack for every value it
+// rejects (~45% of a mount, never read), so the first render captures no frames.
+let cleanups,frames,nextFrame,clock,sheetsBefore;
 function advance(seconds){for(let i=0;i<=Math.round(seconds*50);i++){if(i)clock+=20;const callbacks=[...frames.values()];frames.clear();act(()=>callbacks.forEach(fn=>fn(clock)));}}
 function mountDebris(seed={}){
   const cfg=window.StemLab._registry.spaceStation,host=document.createElement('div');document.body.appendChild(host);
   const root=createRoot(host);let data,setData;
   function Harness(){const [toolData,setToolData]=React.useState({spaceStation:{tab:'operations',opsMode:'debris',...seed}});data=toolData.spaceStation;setData=setToolData;return cfg.render({React,toolData,setToolData,update(){},updateMulti(){},addToast(){},announceToSR(){},awardXP(){},setStemLabTool(){},aiHintsEnabled:false,gradeLevel:'7th Grade',t:(key,fallback)=>fallback??key});}
-  act(()=>root.render(React.createElement(Harness)));cleanups.push(()=>{act(()=>root.unmount());host.remove();});
+  const limit=Error.stackTraceLimit;Error.stackTraceLimit=0;try{act(()=>root.render(React.createElement(Harness)));}finally{Error.stackTraceLimit=limit;}cleanups.push(()=>{host.querySelectorAll('style').forEach(style=>style.remove());act(()=>root.unmount());host.remove();});
   return {host,get time(){return data.opsDebrisTime||0;},get data(){return data;},get playing(){return host.querySelector('[data-iss-playback-toggle="debris"]').getAttribute('aria-pressed')==='true';},
     patch(patch){act(()=>setData(prev=>({...prev,spaceStation:{...prev.spaceStation,...patch}})));},
     click(selector){act(()=>host.querySelector(selector).click());},change(id,value){act(()=>Simulate.change(host.querySelector('#'+id),{target:{value:String(value)}}));},
@@ -1106,8 +1110,8 @@ function mountDebris(seed={}){
 }
 
 describe('space station interactive shield lab',()=>{
-  beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_spacestation.js','spaceStation');cleanups=[];frames=new Map();nextFrame=0;clock=0;vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);vi.stubGlobal('requestAnimationFrame',fn=>{const id=++nextFrame;frames.set(id,fn);return id;});vi.stubGlobal('cancelAnimationFrame',id=>frames.delete(id));vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(null);Object.defineProperty(document,'hidden',{configurable:true,value:false});});
-  afterEach(()=>{cleanups.forEach(fn=>fn());vi.restoreAllMocks();vi.unstubAllGlobals();});
+  beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_spacestation.js','spaceStation');sheetsBefore=document.styleSheets.length;cleanups=[];frames=new Map();nextFrame=0;clock=0;vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);vi.stubGlobal('requestAnimationFrame',fn=>{const id=++nextFrame;frames.set(id,fn);return id;});vi.stubGlobal('cancelAnimationFrame',id=>frames.delete(id));vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(null);Object.defineProperty(document,'hidden',{configurable:true,value:false});});
+  afterEach(()=>{cleanups.forEach(fn=>fn());vi.restoreAllMocks();vi.unstubAllGlobals();expect(document.styleSheets.length,'stylesheets left behind by this test').toBe(sheetsBefore);});
 
   it('animates actual contact phases and reassigns the energy budget at the bumper',()=>{
     const view=mountDebris();expect(view.read('mass')).toBe('1.414 mg');expect(view.read('energy')).toBe('101.8 J');expect(view.read('incoming')).toBe('101.8 J');

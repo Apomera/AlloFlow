@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Gumisha indege mu miterere iriho",
+  "stem.flightsim.flight_assistance_targets": "Icyerekezo {hdg}° · Ubutumburuke {alt} ft MSL · Umuvuduko {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Icyerekezo {hdg}° · Ubutumburuke {alt} ft MSL · Umuvuduko wo kujya imbere {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Hindukira ibumoso ho {degrees}° werekeza kuri {airport}.",
+  "stem.flightsim.challenge_turn_right": "Hindukira iburyo ho {degrees}° werekeza kuri {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Urigana kuri {airport}. Kurikira ikimenyetso cy’inzira y’indege.",
+  "stem.flightsim.challenge_runway_reference": "Inzira y’imyitozo yo kugwaho {runway}: icyerekezo {heading}°. Huza indege n’inzira yo kugwaho mbere yo kumanuka ngo igwe."
+}

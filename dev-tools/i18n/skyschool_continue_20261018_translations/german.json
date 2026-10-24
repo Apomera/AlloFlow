@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Die Beobachtungen bestätigen, dass die Ziele der Herausforderung erfüllt wurden. Vergleiche nun in der Übung zum Energiemanagement einen Sinkflug mit Leerlaufleistung mit einem Steigflug unter Motorleistung.",
+  "stem.flightsim.coaching_energy_complete": "Die Beobachtungen bestätigen, dass die Ziele zum Energiemanagement erfüllt wurden. Übe nun die Energiesteuerung bei einem kurzen Anflug auf einen Flughafen und vergleiche anschließend Sinkrate und Aufsetzen.",
+  "stem.flightsim.drone_battery_low": "Akku fast leer: noch {pct}%. Kehre zum Startpunkt zurück und lande bald.",
+  "stem.flightsim.drone_battery_depleted_title": "Drohnenakku leer",
+  "stem.flightsim.drone_battery_depleted_body": "Der Flug wurde bei 0% Akkuladung angehalten. Beende die Mission, um diesen Versuch auszuwerten, und starte dann eine neue Mission mit vollem Akku.",
+  "stem.flightsim.end_drone_mission": "Mission beenden und auswerten",
+  "stem.flightsim.geoq_nearest_place": "Welcher Ort liegt deiner aktuellen Position am nächsten?",
+  "stem.flightsim.geoq_paused": "Der Flug wurde für diese Frage angehalten. Schließe das Quiz und wähle Fortsetzen, wenn du bereit bist weiterzufliegen.",
+  "stem.flightsim.geoq_close": "Quiz schließen",
+  "stem.flightsim.geoq_unavailable": "Für die nähere Umgebung ist keine Geografiefrage verfügbar. Erkunde weiter und versuche es erneut.",
+  "stem.flightsim.geoq_answer_feedback": "Deine Antwort: {answer}. Richtige Antwort: {expected}."
+}

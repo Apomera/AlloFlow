@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
-function solve(id,prediction=2,mode='demonstrate'){let s=R.startRescue(id,prediction,mode);if(id==='dry'){s=R.act(s,'pour',50);s=R.act(s,'stirSweep','button');}else for(let i=0;i<12;i++)s=R.act(s,'advance',15);for(const a of [['panHeat',0],['taste'],['plate']])s=R.act(s,...a);return R.submit({...s,answers:[id==='dry'?0:1,null]});}
+function solve(id,prediction=2,mode='demonstrate'){let s=R.startRescue(id,prediction,mode);if(id==='dry'){s=R.act(s,'pour',50);for(let fold=0;fold<8&&R.needsMixing(s);fold++)s=R.act(s,'stirSweep','button');expect(R.needsMixing(s)).toBe(false);}else for(let i=0;i<12;i++)s=R.act(s,'advance',15);for(const a of [['panHeat',0],['taste'],['plate']])s=R.act(s,...a);return R.submit({...s,answers:[id==='dry'?0:1,null]});}
 describe('Recipe rescue challenges',()=>{
  it('requires a known problem and a recorded prediction',()=>{expect(R.startRescue('unknown',0)).toBe(null);for(const p of [-1,3,undefined,'0',NaN])expect(R.startRescue('dry',p)).toBe(null);});
  it('provides a clearly scoped starting dish without inventing learner actions',()=>{for(const id of ['dry','watery']){const s=R.startRescue(id,0);expect(s.log).toEqual([]);expect(s.prep.cutMethod).toBe('provided');expect(s.time).toBe(0);expect(s.pan.combined).toBe(true);expect(R.evidence(s).scope).toContain('supplied');expect(R.criteria(s)).toHaveLength(3);expect(R.criteria(s)[0].met).toBe(false);}});

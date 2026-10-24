@@ -250,7 +250,8 @@ function captureCanvas() {
   });
   return { commands, context };
 }
-async function mountPaint({ webgl = false, chase = false, width = 320, height = 763, pitch = 10, bank = 30, parked = false, flight = {} } = {}) {
+async function mountPaint({ webgl = false, chase = false, width = 320, height = 763, pitch = 10, bank = 30,
+  parked = false, ordinary = false, noticeTitle = null, flight = {} } = {}) {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   window.__testHooks = {};
   vi.useFakeTimers();
@@ -275,15 +276,21 @@ async function mountPaint({ webgl = false, chase = false, width = 320, height = 
   mountedHost = document.createElement('div'); document.body.appendChild(mountedHost);
   mountedRoot = ReactDOMClient.createRoot(mountedHost);
   const tool = window.StemLab._registry.flightSim;
+  let latest;
   function App() {
-    const [data, setData] = React.useState({ flightSim: { view: 'menu', thirdPerson: chase, railCollapsed: true, takeoffTutorialDismissed: true, flightDetails: true } });
+    const [data, setData] = React.useState({ flightSim: { view: 'menu', thirdPerson: chase, railCollapsed: true,
+      takeoffTutorialDismissed: true, landingTutorialDismissed: true, flightDetails: true,
+      ...(ordinary ? { earnedBadges: Object.fromEntries(helpers().ACHIEVEMENTS.map(item => [item.id, true])) } : {}) } });
+    latest = data.flightSim;
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
+      t: (key, fallback) => key === 'stem.flightsim.notice_discovery' && noticeTitle ? noticeTitle : fallback,
       update: (id, key, value) => setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })),
       updateMulti: (id, patch) => setData(old => ({ ...old, [id]: { ...old[id], ...patch } })),
     }));
   }
   await React.act(async () => mountedRoot.render(React.createElement(App)));
-  await React.act(async () => window.__testHooks.flightSim.startFlightChallenge('energy_management'));
+  if (ordinary) await React.act(async () => mountedHost.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
+  else await React.act(async () => window.__testHooks.flightSim.startFlightChallenge('energy_management'));
   const hooks = window.__testHooks.flightSim;
   const airport = helpers().WAYPOINTS[0];
   Object.assign(hooks.flightRef.current, {
@@ -292,7 +299,14 @@ async function mountPaint({ webgl = false, chase = false, width = 320, height = 
   });
   Object.assign(hooks.controlsRef.current, { throttle: 0.4, pitch, bank, flaps: 0, brake: 0 });
   Object.assign(hooks.getWeatherRef().current, { wind: 0, turbulence: 0 });
-  hooks.pausedRef.current = true;
+  hooks.pausedRef.current = !ordinary;
+  if (ordinary) {
+    // The notice belongs to ordinary active flight. Keep only motion fixed so
+    // production recording and notice arbitration run without challenge or
+    // pause guards, while the world still paints the supplied bank and pitch.
+    vi.spyOn(helpers().Physics, 'step').mockImplementation(state => ({ ...state,
+      forces: { lift: helpers().Physics.WEIGHT, weight: helpers().Physics.WEIGHT, drag: 0, thrust: 0 } }));
+  }
   const resize = (nextWidth, nextHeight) => {
     for (const canvas of mountedHost.querySelectorAll('canvas')) {
       Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: nextWidth });
@@ -302,7 +316,7 @@ async function mountPaint({ webgl = false, chase = false, width = 320, height = 
   resize(width, height);
   const frame = async () => { wallTime += 100; expect(callback).toBeTypeOf('function'); await React.act(async () => callback()); };
   await frame();
-  return { ...capture, renderer, errors, hooks, frame, resize };
+  return { ...capture, renderer, errors, hooks, frame, resize, getSaved: () => latest };
 }
 function expectUntransformed(command) {
   for (let i = 0; i < 6; i++) expect(command.matrix[i]).toBeCloseTo([1, 0, 0, 1, 0, 0][i], 10);
@@ -387,55 +401,103 @@ describe('SkySchool mounted flight cues and Canvas world', () => {
 });
 
 
-describe('SkySchool screen-space discovery cards', () => {
-  it('keeps the discovery card upright and fully inside the phone above the instruments in a banked turn', async () => {
+describe('SkySchool screen-space discovery notices', () => {
+  it('keeps the shared title upright and inside the phone while saving complete facts for live notes and debrief', async () => {
     const place = helpers().GEO_PLACES.find(item => item.name === 'Washington D.C.');
     expect(place).toBeTruthy();
-    const { commands, context, errors } = await mountPaint({ bank: 35, pitch: 10, flight: { lat: place.lat, lon: place.lon, altitude: 5000 } });
-    const header = commands.find(command => command.method === 'fillText' && String(command.args[0]).includes('DISCOVERED:'));
+    // A banked chase camera has no cockpit pitch ladder over this title slot.
+    // Keep the world rotated while proving that screen-space UI stays upright.
+    const { commands, context, errors, getSaved } = await mountPaint({ ordinary: true, chase: true, bank: 35, pitch: 0,
+      flight: { lat: place.lat, lon: place.lon, altitude: 5000 } });
+    const header = commands.find(command => command.method === 'fillText' && String(command.args[0]).includes('Discovered:'));
     expect(header).toBeTruthy(); expectUntransformed(header);
     const headerIndex = commands.indexOf(header);
     const card = commands.slice(0, headerIndex).findLast(command => ['roundRect', 'fillRect'].includes(command.method)
-      && command.fill === 'rgba(15,23,42,0.92)' && command.args[3] > 22);
+      && command.fill === 'rgba(2,6,23,0.85)' && command.args[3] > 22);
     expect(card).toBeTruthy(); expectUntransformed(card);
     const [x, y, width, height] = card.args;
-    expect(x).toBeGreaterThanOrEqual(12);
-    expect(x + width).toBeLessThanOrEqual(308);
-    expect(width).toBeGreaterThanOrEqual(280);
-    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x).toBeGreaterThanOrEqual(52);
+    expect(x + width).toBeLessThanOrEqual(268);
+    expect(width).toBeGreaterThanOrEqual(160);
+    expect(y).toBeGreaterThanOrEqual(64);
     expect(height).toBeGreaterThan(22);
-    const layout = helpers().getFlightInstrumentLayout(320, 763, false);
+    const layout = helpers().getFlightInstrumentLayout(320, 763, true);
     expect(y + height).toBeLessThanOrEqual(layout.vsi.y - layout.vsi.r - 8);
     expect(y + height).toBeLessThanOrEqual(layout.auxiliary.y - 42 - 8);
     expect(header.args[1]).toBeGreaterThanOrEqual(x + 8);
     expect(header.args[1]).toBeLessThanOrEqual(x + width - 8);
     expect(header.args[2]).toBeGreaterThan(y);
     expect(header.args[2]).toBeLessThan(y + height);
-    const facts = commands.slice(headerIndex + 1).filter(command => command.method === 'fillText' && command.fill === '#94a3b8' && command.font === '11px system-ui' && command.args[1] === x + 12 && command.args[2] > y + 40 && command.args[2] < y + height);
-    expect(facts.length).toBeGreaterThan(1);
-    expect(facts.map(command => command.args[0]).join(' ')).toBe(place.fact);
-    for (const line of facts) {
-      expectUntransformed(line);
-      expect(line.args[1] + context.measureText(line.args[0]).width).toBeLessThanOrEqual(x + width - 12);
-      expect(line.args[2]).toBeLessThanOrEqual(y + height - 8);
-    }
+    expect(header.font).toBe('bold 12px system-ui');
+    expect(context.measureText(header.args[0]).width).toBeLessThanOrEqual(width - 24);
+    const paintedText = commands.filter(command => command.method === 'fillText').map(command => String(command.args[0])).join(' ');
+    expect(paintedText).not.toContain(place.fact);
+    expect(paintedText).not.toContain('DISCOVERED:');
     const worldRect = commands.find(command => command.method === 'fillRect' && Math.abs(command.matrix[1]) > 0.1 && command.args[0] === 0 && command.args[1] === 0);
     expect(worldRect).toBeTruthy();
     const worldEnd = commands.findIndex((command, index) => index > commands.indexOf(worldRect) && command.method === 'restore' && command.depth === worldRect.depth);
     expect(headerIndex).toBeGreaterThan(worldEnd);
+    const expand = mountedHost.querySelector('button[aria-label="Expand the flight deck controls"]');
+    expect(expand).toBeTruthy(); await React.act(async () => expand.click());
+    const liveNotes = mountedHost.querySelector('[data-flight-notes-scope="live"]');
+    expect(liveNotes.textContent).toContain(place.name);
+    expect(liveNotes.textContent).toContain(place.fact);
+    const exit = [...mountedHost.querySelectorAll('button')].find(button => /Exit$/.test(button.textContent));
+    expect(exit).toBeTruthy(); await React.act(async () => exit.click());
+    expect(getSaved().view).toBe('debrief');
+    expect(getSaved().lastDebrief.discoveredPlaces).toContainEqual(expect.objectContaining({ name: place.name, fact: place.fact, country: place.country }));
+    expect(mountedHost.querySelector('[data-flight-notes-scope="latest"]').textContent).toContain(place.fact);
+    expect(errors).not.toHaveBeenCalled();
+  });
+
+  it('yields a long cockpit title to an actually painted pitch rung without dimming subsequent instruments', async () => {
+    const place = helpers().GEO_PLACES.find(item => item.name === 'Washington D.C.');
+    const title = 'Discovered: {place}. Compare the observed coast, rivers, landmarks, and changing terrain; record a question to investigate on your next flight.';
+    const { commands, hooks, frame, errors } = await mountPaint({ ordinary: true, width: 1280, height: 1000,
+      bank: 0, pitch: 0, noticeTitle: title, flight: { lat: place.lat, lon: place.lon, altitude: 5000 } });
+    const assertYield = () => {
+      // This is the wide cockpit's actual projected 20-degree rung, not the
+      // small attitude gauge ladder. It crosses the long title's otherwise
+      // available center lane, well above the main instrument band.
+      const crossing = commands.find((command, index) => command.method === 'moveTo'
+        && command.stroke === 'rgba(230,240,255,0.55)'
+        && command.args[1] > 174 && command.args[1] < 222
+        && commands[index + 1]?.method === 'lineTo'
+        && Math.min(command.args[0], commands[index + 1].args[0]) < 820
+        && Math.max(command.args[0], commands[index + 1].args[0]) > 460);
+      expect(crossing).toBeTruthy(); expectUntransformed(crossing);
+      expect(commands.some(command => command.method === 'roundRect' && command.fill === 'rgba(2,6,23,0.85)')).toBe(false);
+      expect(commands.some(command => command.method === 'fillText' && String(command.args[0]).includes('Discovered:'))).toBe(false);
+      const attitudeSky = commands.find(command => command.method === 'fillRect' && command.fill === '#1e40af');
+      expect(attitudeSky).toBeTruthy(); expect(attitudeSky.alpha).toBe(1);
+      const fpv = commands.find(command => command.method === 'arc' && command.stroke === '#4ade80' && command.args[2] === 6);
+      expect(fpv).toBeTruthy(); expect(fpv.alpha).toBe(1);
+    };
+    expect(helpers().getFlightInstrumentLayout(1280, 1000, false).atis.y).toBeGreaterThan(300);
+    assertYield();
+    hooks.timeRef.current = 7; commands.length = 0; await frame();
+    assertYield();
+    await React.act(async () => mountedHost.querySelector('button[aria-label="Expand the flight deck controls"]').click());
+    expect(mountedHost.querySelector('[data-flight-notes-scope="live"]').textContent).toContain(place.fact);
     expect(errors).not.toHaveBeenCalled();
   });
 });
 
 
-it('does not let a fading hidden discovery card dim the cockpit in a short phone window', async () => {
+it('does not let an active fading discovery notice dim the cockpit when the short phone has no safe title slot', async () => {
   const place = helpers().GEO_PLACES.find(item => item.name === 'Washington D.C.');
-  const { commands, hooks, resize, frame, errors } = await mountPaint({ height: 500, bank: 35, pitch: 10, flight: { lat: place.lat, lon: place.lon, altitude: 5000 } });
-  expect(commands.some(command => command.method === 'fillText' && String(command.args[0]).includes('DISCOVERED:'))).toBe(false);
+  const { commands, hooks, resize, frame, errors } = await mountPaint({ ordinary: true, height: 500, bank: 35, pitch: 10,
+    flight: { lat: place.lat, lon: place.lon, altitude: 5000 } });
+  expect(commands.some(command => command.method === 'fillText' && String(command.args[0]).includes('Discovered:'))).toBe(false);
+  const expand = mountedHost.querySelector('button[aria-label="Expand the flight deck controls"]');
+  expect(expand).toBeTruthy(); await React.act(async () => expand.click());
+  expect(mountedHost.querySelector('[data-flight-notes-scope="live"]').textContent).toContain(place.fact);
+  await React.act(async () => mountedHost.querySelector('button[aria-label="Collapse the flight deck controls"]').click());
   hooks.timeRef.current = 7;
   commands.length = 0;
   resize(320, 501); await frame();
-  expect(commands.some(command => command.method === 'fillText' && String(command.args[0]).includes('DISCOVERED:'))).toBe(false);
+  expect(commands.some(command => command.method === 'fillText' && String(command.args[0]).includes('Discovered:'))).toBe(false);
+  expect(commands.some(command => command.method === 'roundRect' && command.fill === 'rgba(2,6,23,0.85)')).toBe(false);
   const attitudeSky = commands.find(command => command.method === 'fillRect' && command.fill === '#1e40af');
   expect(attitudeSky).toBeTruthy();
   expect(attitudeSky.alpha).toBe(1);

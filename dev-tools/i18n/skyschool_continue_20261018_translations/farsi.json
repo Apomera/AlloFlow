@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "برآورده‌شدن اهداف چالش مشاهده شد. اکنون در تمرین مدیریت انرژی، کاهش ارتفاع با موتور در دور آرام را با اوج‌گیری به کمک توان موتور مقایسه کنید.",
+  "stem.flightsim.coaching_energy_complete": "برآورده‌شدن اهداف مدیریت انرژی مشاهده شد. اکنون کنترل انرژی را هنگام یک تقرب کوتاه به فرودگاه تمرین کنید، سپس نرخ کاهش ارتفاع و تماس با زمین را مقایسه کنید.",
+  "stem.flightsim.drone_battery_low": "باتری کم است: {pct}% باقی مانده. به محل برخاستن برگردید و به‌زودی فرود بیایید.",
+  "stem.flightsim.drone_battery_depleted_title": "باتری پهپاد تمام شد",
+  "stem.flightsim.drone_battery_depleted_body": "پرواز در شارژ 0% باتری متوقف شده است. مأموریت را پایان دهید تا این تلاش را مرور کنید، سپس مأموریت تازه‌ای را با باتری پُر آغاز کنید.",
+  "stem.flightsim.end_drone_mission": "پایان مأموریت و مرور",
+  "stem.flightsim.geoq_nearest_place": "کدام مکان به موقعیت فعلی شما نزدیک‌تر است؟",
+  "stem.flightsim.geoq_paused": "پرواز برای این پرسش متوقف شده است. آزمون را ببندید و وقتی آمادهٔ پرواز شدید، ادامه را انتخاب کنید.",
+  "stem.flightsim.geoq_close": "بستن آزمون",
+  "stem.flightsim.geoq_unavailable": "در نزدیکی شما پرسش جغرافیایی در دسترس نیست. به کاوش ادامه دهید و دوباره تلاش کنید.",
+  "stem.flightsim.geoq_answer_feedback": "پاسخ شما: {answer}. پاسخ درست: {expected}."
+}

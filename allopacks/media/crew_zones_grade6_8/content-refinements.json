@@ -1,0 +1,50 @@
+[
+  {
+    "resourceId": "cz-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "YELLOW",
+      "bullets": [
+        "Excited, nervous, frustrated, silly",
+        "Near the top of the window",
+        "Move: slow breaths, drop shoulders"
+      ],
+      "iconPrompt": "a yellow circle with a wavy line"
+    },
+    "to": {
+      "label": "YELLOW",
+      "bullets": [
+        "Excited, nervous, frustrated, silly",
+        "Near the top of the window",
+        "Move: slow breaths, drop shoulders"
+      ],
+      "iconPrompt": "a yellow circle with a wavy line",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cz-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "BLUE",
+      "bullets": [
+        "Tired, sad, bored, foggy",
+        "Below the window",
+        "Move: stand, stretch, cold water, light"
+      ],
+      "iconPrompt": "a blue circle with a low flat line"
+    },
+    "to": {
+      "label": "BLUE",
+      "bullets": [
+        "Tired, sad, bored, foggy",
+        "Below the window",
+        "Move: stand, stretch, cold water, light"
+      ],
+      "iconPrompt": "a blue circle with a low flat line",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

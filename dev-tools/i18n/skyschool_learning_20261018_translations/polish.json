@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Zapisano ukończenie misji i lądowanie po powrocie. Powtórz tę misję, celowo zmieniając jeden element sterowania lub trasy, a następnie porównaj zapisane obserwacje.",
+  "stem.flightsim.coaching_mission_depleted": "Akumulator drona się rozładował. Rozpocznij nową misję, wybieraj krótkie trasy i zaplanuj powrót, zanim poziom naładowania będzie niski.",
+  "stem.flightsim.coaching_mission_unknown": "Dowody z tej misji są niepełne lub sprzeczne. Przejrzyj zapisane dane, a następnie rozpocznij nową próbę.",
+  "stem.flightsim.coaching_mission_capture": "Niektóre cele nadal nie zostały sfotografowane. W nowej misji podchodź do jednego celu naraz i utrzymuj się w wyświetlanych granicach wysokości i prędkości względem ziemi, aż wykonanie zdjęcia zostanie zapisane.",
+  "stem.flightsim.coaching_mission_recovery": "Rozbitek nie został podjęty. W nowej misji ratunkowej przed powrotem do bazy przećwicz stabilny zawis w wyświetlanych granicach wysokości, znoszenia i prędkości pionowej.",
+  "stem.flightsim.coaching_mission_return": "Zapisano wykonanie celów dotyczących podjęcia rozbitka lub fotografowania; pozostało lądowanie po powrocie. Rozpocznij nową misję i zachowaj czas oraz zapas energii na powrót do bazy.",
+  "stem.flightsim.mission_reflection_prompt": "Którą decyzję dotyczącą celu, zawisu lub powrotu zmienisz? Wyjaśnij swój wybór na podstawie obserwacji z misji i zaplanuj jedną zmianę na kolejną próbę. Twoje wyjaśnienie zapisze się razem z tym lotem.",
+  "stem.flightsim.journal_different_airport": "Te podejścia wykonano na różnych lotniskach. Przejrzyj ich obserwacje osobno; różnice między pomiarami nie są obliczane.",
+  "stem.flightsim.journal_approach_airport": "Lotnisko podejścia: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "DOWODY Z MISJI",
+  "stem.flightsim.challenge_brake_release": "Przed zwiększeniem mocy puść klawisz X i wyłącz hamulce kół w panelu sterowania."
+}

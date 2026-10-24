@@ -18,8 +18,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const dp =readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
 
@@ -29,7 +30,8 @@ describe('M3 — busy gate keeps its earned storm state at run entry', () => {
     expect(dp).toContain('Run-entry breaker reset SKIPPED');
     const at = dp.indexOf('Run-entry breaker reset SKIPPED');
     const after = dp.slice(at, at + 400);
-    expect(after).toContain('_resetGeminiBreaker();'); // the else branch still resets
+    // the else branch still resets (it now passes the run's pacing preference along)
+    expect(after).toContain('} else {\n      _resetGeminiBreaker(typeof batchOverrides?.extraRequestPacing === \'boolean\' ? batchOverrides.extraRequestPacing : _run.extraRequestPacing);');
   });
 });
 
@@ -114,9 +116,15 @@ describe('M10 — settings honesty', () => {
     expect(view).toContain('<span>95 (default)</span>');
     expect(view).not.toContain('<span>90 (default)</span>');
   });
+  // f5b045fc9 (2026-09-20) replaced the "applies to the NEXT run" notice with a real lock: the
+  // settings fieldsets are disabled while any run is busy, under a standing note.
   it('the settings-lock disclosure renders while a run is active', () => {
-    expect(view).toContain('(pdfFixLoading || pdfAutoContinueRunning) && (');
-    expect(view).toContain('changes here apply to the NEXT run; the current run keeps the settings it started with');
+    const panel = sliceBetween(view, '<details data-help-key="pdf_audit_view_settings_panel"', null, { file: 'view_pdf_audit_source.jsx', label: 'settings panel' });
+    expect(panel.slice(0, 600)).toContain('<p>Settings are kept for the current run. Saved batches resume with their original pacing choice.</p>');
+    expect(panel.slice(0, 900)).toContain('<fieldset disabled={_modalDismissBusy || pdfAuditLoading}>');
+    expect(view).toContain('const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;');
+    expect(view).toContain('const _remediationBusy = pdfFixLoading || pipelineRunActive;');
+    expect(/const _modalWorkBusy = [^;]*\b_remediationBusy \|\| pdfAutoContinueRunning\b/.test(view), 'busy covers fix + auto-continue').toBe(true);
   });
 });
 
@@ -138,7 +146,8 @@ describe('M21/M22 — fidelity panel honesty', () => {
 
 describe('M25 — a skipped auto-veraPDF is disclosed, not silent', () => {
   it('records WHY it was skipped (transport blocked vs validation failed) and clears at run entry', () => {
-    expect(view).toContain("if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');");
+    // A user's own Stop is now recorded as such rather than as a blocked transport.
+    expect(view).toContain("if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped(_stopped() ? 'user-stopped' : 'transport-blocked');");
     expect(view).toContain("if (!_validated && _attemptCurrent) { try { setVeraPdfAutoSkipped('validation-failed'); } catch (_) {} }");
     expect(view).toContain('setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); _selectTaggedArtifact(null);');
   });

@@ -15,7 +15,9 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { transformSync } from '@babel/core';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const SOURCE = read('word_sounds_setup_source.jsx');
@@ -115,14 +117,66 @@ describe('it runs where the generated words land', () => {
     expect(SOURCE).toMatch(/item\._unverifiedWords = unverified;/);
   });
 
-  it('the teacher sees the list, and it is not presented as an error', () => {
-    const misc = read('misc_components_source.jsx');
-    expect(misc).toMatch(/key: 'unverified'/);
-    expect(misc).toMatch(/not in the K-2 word lists/);
-    expect(misc).toMatch(/Worth a look before teaching them/);
-    // No fix button: this is a judgement, not a repair.
-    const gap = misc.slice(misc.indexOf("key: 'unverified'"), misc.indexOf("key: 'edited'"));
-    expect(gap).toMatch(/each: null/);
+  /** Renders the canonical review panel, as the teacher sees it, and hands
+   *  the unverified-word line (or null) to `check`. */
+  async function withUnverifiedGap(preloadedWords, activitySequence, check) {
+    const require = createRequire(import.meta.url);
+    const React = require(resolve('desktop/web-app/node_modules/react'));
+    const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
+    const act = React.act || require(resolve('desktop/web-app/node_modules/react-dom/test-utils')).act;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const code = transformSync(read('misc_components_source.jsx'), { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code;
+    const Panel = new Function('React', `
+      const Ban = () => null, CheckCircle2 = Ban, ChevronDown = Ban, ChevronLeft = Ban,
+        ImageIcon = Ban, Play = Ban, RefreshCw = Ban, Send = Ban, Sparkles = Ban, Volume2 = Ban;
+      ${code}
+      return WordSoundsReviewPanel;`)(React);
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    try {
+      await act(async () => root.render(React.createElement(Panel, {
+        t: () => '', onClose: () => {}, onStartActivity: () => {}, activitySequence,
+        // Every fixer is available, so a button wired to this line would render.
+        onRegenerateWord: () => {}, onCheckPhonemes: () => {}, onRegenerateManipulationTask: () => {},
+        onRetryFailedTTS: () => {}, onGenerateImage: () => {},
+        preloadedWords,
+      })));
+      check(container.querySelector('[data-review-gap="unverified"]'));
+    } finally {
+      act(() => root.unmount());
+      container.remove();
+    }
+  }
+
+  it('the teacher sees the list, and it is not presented as an error', async () => {
+    await withUnverifiedGap([
+      { id: 'bun', word: 'bun', ttsReady: true, rhymeWord: 'sun', _unverifiedWords: ['hon'] },
+      { id: 'fun', word: 'fun', ttsReady: true, rhymeWord: 'run' },
+    ], ['rhyming'], (gap) => {
+      expect(gap, 'the unverified-word line must be shown').not.toBeNull();
+      expect(gap.textContent).toContain('outside the K-2 word lists: 1');
+      expect(gap.textContent).toContain('Examples: hon');
+      expect(gap.textContent).toContain('Worth a look before teaching them');
+      // No fix button: this is a judgement, not a repair. And not an alert.
+      expect(gap.querySelector('button')).toBeNull();
+      expect(gap.closest('[role="alert"]')).toBeNull();
+    });
+  });
+
+  it('a lesson is shown only the generated words its activities use', async () => {
+    const tagged = [{ id: 'bun', word: 'bun', ttsReady: true, rhymeWord: 'sun',
+      _unverifiedWords: ['hon', 'zorp', 'vog'], _unverifiedBySource: { rhyme: ['hon'], sentence: ['zorp'], blending: ['vog'] } }];
+    const examples = (gap) => gap && gap.textContent.match(/Examples: ([^.]*)\./)[1];
+    await withUnverifiedGap(tagged, ['rhyming'], (gap) => expect(examples(gap)).toBe('hon'));
+    await withUnverifiedGap(tagged, ['read_sentence'], (gap) => expect(examples(gap)).toBe('zorp, vog'));
+    await withUnverifiedGap(tagged, ['read_passage'], (gap) => expect(examples(gap)).toBe('zorp, vog'));
+    await withUnverifiedGap(tagged, ['blending'], (gap) => expect(examples(gap)).toBe('vog'));
+    await withUnverifiedGap(tagged, ['word_families', 'syllable_counting'], (gap) => expect(gap).toBeNull());
+    // A pack prepared before the source tags still warns sentence lessons.
+    const legacy = [{ id: 'bun', word: 'bun', ttsReady: true, rhymeWord: 'sun', _unverifiedWords: ['zorp'] }];
+    await withUnverifiedGap(legacy, ['read_passage'], (gap) => expect(examples(gap)).toBe('zorp'));
+    await withUnverifiedGap(legacy, ['blending'], (gap) => expect(gap).toBeNull());
   });
 
   it('the built modules carry it', () => {

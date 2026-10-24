@@ -322,7 +322,8 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     // a paused run as finished.
     // A third condition was added: only clear when nothing is still pending, so
     // a batch that ends with queued files keeps the state it promised to resume.
-    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped && pending\.length === 0\) \{\s*\n\s*_clearActiveBatch\(_batchId, _batchRootWriteId\)/);
+    // b4d7ed714 (2026-09-13) also keeps the state after a handoff stop or any failed file.
+    expect(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped && !_batchHandoffStopped && pending\.length === 0 && failed\.length === 0\) \{\s*\n\s*_clearActiveBatch\(_batchId, _batchRootWriteId\)/.test(dpNow), 'batch state cleared only when nothing remains to resume').toBe(true);
     expect(dpNow).toMatch(/Batch paused at the AI quota/);
     // the paused toast must be the quota branch, and the "complete" toast must be its else
     // Two more stop reasons were added between this branch and the final else

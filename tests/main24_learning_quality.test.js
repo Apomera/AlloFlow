@@ -124,10 +124,16 @@ describe('DBQ printable packet integrity', () => {
     expect(printed.body.textContent).not.toContain('undefined');
   });
   it('keeps usable HTTP sources and excludes executable and malformed source links', () => {
+    // Since 6a0c48749 (2026-10-05) a link prints only when the document carries matching
+    // source provenance; a bare sourceUrl (e.g. one a model wrote) is never linked.
+    const provenance = url => ({ version: 1, origin: 'retrieved', recordId: 'rec-' + url.length, url });
     const data = makeData();
     data.documents[0].sourceUrl = 'https://example.org/document?q="quoted"&page=2';
-    data.documents.push({ id: 'B', sourceUrl: 'javascript:alert(1)', excerpt: 'Unsafe link' });
-    data.documents.push({ id: 'C', sourceUrl: 'not a URL', excerpt: 'Malformed link' });
+    data.documents[0].sourceProvenance = provenance(data.documents[0].sourceUrl);
+    data.documents.push({ id: 'B', sourceUrl: 'javascript:alert(1)', sourceProvenance: provenance('javascript:alert(1)'), excerpt: 'Unsafe link' });
+    data.documents.push({ id: 'C', sourceUrl: 'not a URL', sourceProvenance: provenance('not a URL'), excerpt: 'Malformed link' });
+    data.documents.push({ id: 'D', sourceUrl: 'https://example.org/unverified', excerpt: 'No provenance' });
+    data.documents.push({ id: 'E', sourceUrl: 'https://example.org/swapped', sourceProvenance: provenance('https://example.org/recorded'), excerpt: 'Mismatched provenance' });
     render(data);
     const printed = printPacket();
     const links = [...printed.querySelectorAll('a')];

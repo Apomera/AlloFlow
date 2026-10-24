@@ -6,8 +6,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const pipe = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const pipe =readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 
@@ -64,8 +65,11 @@ const flush = async () => { for (let i = 0; i < 6; i++) await Promise.resolve();
 
 describe('the retry path pulses the dead-man watchdog (fix A)', () => {
   it('defines _pulsePipelineWatchdog that dispatches alloflow:pipeline-warn', () => {
-    expect(pipe).toMatch(/var _pulsePipelineWatchdog = function \(owner\) \{/);
-    expect(pipe).toMatch(/_pulsePipelineWatchdog[\s\S]{0,900}new CustomEvent\('alloflow:pipeline-warn'/);
+    // f5b045fc9 (2026-09-20) added an optional queued-wait state argument for the heartbeat.
+    expect(pipe).toMatch(/var _pulsePipelineWatchdog = function \(owner(?:, waitState)?\) \{/);
+    // The body grew (queue/pacing/recovery wording), so check the dispatch inside the function itself.
+    const body = sliceBetween(pipe, 'var _pulsePipelineWatchdog = function', '\n  };', { file: 'doc_pipeline_source.jsx', label: '_pulsePipelineWatchdog body' });
+    expect(body.includes("window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn'"), 'pulse dispatches the heartbeat').toBe(true);
   });
   it('is called on BOTH the canvas-auth retry and the generic transient retry', () => {
     // canvas-auth retry branch (before the backoff sleep)

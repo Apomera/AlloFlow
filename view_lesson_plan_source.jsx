@@ -251,6 +251,17 @@ function LessonPlanView(props) {
   var handleToggleIsEditingLessonPlan = props.handleToggleIsEditingLessonPlan;
   var handleCopyToClipboard = props.handleCopyToClipboard;
   var handleExportPDF = props.handleExportPDF;
+  // One Edit toggle covers the plan and its teaching script; Done saves the script draft first
+  // and stays in edit mode when the script's checks fail (the panel shows what to fix).
+  var scriptEditBridge = React.useRef(null);
+  var toggleLessonPlanEditing = async () => {
+    if (isEditingLessonPlan && typeof scriptEditBridge.current === 'function') {
+      let finished = false;
+      try { finished = await scriptEditBridge.current(); } catch (_) { finished = false; }
+      if (!finished) return;
+    }
+    handleToggleIsEditingLessonPlan();
+  };
   var handleLessonPlanChange = (field, value, index = null) => {
     // Merge text into the latest saved value so arriving metadata survives.
     props.handleLessonPlanChange(field, typeof value === 'string' ? previous => _lessonPlanEditedText(previous, value) : value, index);
@@ -299,7 +310,7 @@ function LessonPlanView(props) {
                                     {!audienceView && (
                                         <button
                                             aria-pressed={!!isEditingLessonPlan}
-                                            onClick={handleToggleIsEditingLessonPlan}
+                                            onClick={toggleLessonPlanEditing}
                                             className={`flex min-h-11 items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`}
                                             title={t('lesson_plan.edit_plan')}
                                         >
@@ -337,6 +348,7 @@ function LessonPlanView(props) {
                                          history: props.teachingScriptMaterials || [], isTeacherMode, isParentMode, isIndependentMode, t,
                                          capabilities: props.capabilities, defaultSettings: props.defaultSettings,
                                          scriptRun: props.scriptRun, draftScope: props.teachingScriptDraftScope,
+                                         planEditing: !!isEditingLessonPlan, planEditBridge: scriptEditBridge,
                                            createTeachingScriptAudio: props.createTeachingScriptAudio, audioProfile: props.teachingScriptAudioProfile,
                                            audioVoice: props.teachingScriptVoice, audioSpeed: props.teachingScriptSpeed, onOpenVoiceSettings: props.onOpenTeachingScriptVoiceSettings, onDeleteTeachingScript: props.onDeleteTeachingScript,
                                          onGenerateTeachingScript: props.onGenerateTeachingScript,
@@ -672,7 +684,7 @@ function LessonPlanView(props) {
                                                 return;
                                             }
                                             setActiveStation && setActiveStation(station);
-                                            addToast && addToast(tl('lesson_plan.stem_station_created', 'STEAM station created. Open STEAM Lab to see your curated tools.'));
+                                            addToast && addToast(t('lesson_plan.stem_station_created'));
                                         }}
                                         className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
                                     >

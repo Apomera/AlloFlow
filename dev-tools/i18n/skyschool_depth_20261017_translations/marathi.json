@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "सध्याची उड्डाणस्थिती कायम ठेवा",
+  "stem.flightsim.flight_assistance_targets": "विमानाची दिशा {hdg}° · उंची {alt} ft MSL · वेग {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "विमानाची दिशा {hdg}° · उंची {alt} ft MSL · पुढे जाण्याचा वेग {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} च्या दिशेने डावीकडे {degrees}° वळा.",
+  "stem.flightsim.challenge_turn_right": "{airport} च्या दिशेने उजवीकडे {degrees}° वळा.",
+  "stem.flightsim.challenge_course_aligned": "{airport} च्या दिशेने जात आहात. मार्ग दाखवणाऱ्या चिन्हाचे अनुसरण करा.",
+  "stem.flightsim.challenge_runway_reference": "सरावाची धावपट्टी {runway}: दिशा {heading}°. उतरण्यासाठी उंची कमी करण्यापूर्वी विमान धावपट्टीच्या सरळ रेषेत आणा."
+}

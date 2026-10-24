@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "مشن کے مشاہدات",
+  "stem.flightsim.mission_journal_targets": "تصویر لیے گئے اہداف: {total} میں سے {captured}۔",
+  "stem.flightsim.mission_journal_complete": "مشن کے تمام مقاصد اور واپسی کی لینڈنگ ریکارڈ ہو گئی۔",
+  "stem.flightsim.mission_journal_ended": "تکمیل کے تمام شواہد ریکارڈ ہونے سے پہلے مشن ختم ہو گیا۔",
+  "stem.flightsim.mission_journal_recovery": "زندہ بچ جانے والے شخص کے بچاؤ کا ریکارڈ: {value}۔",
+  "stem.flightsim.mission_journal_return": "اڈے پر واپسی کی لینڈنگ کا ریکارڈ: {value}۔",
+  "stem.flightsim.mission_guidance_title": "مشن کی رہنمائی",
+  "stem.flightsim.mission_route": "{target} · سمتی زاویہ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "اڑان شروع کرنے کا مقام",
+  "stem.flightsim.mission_read_status": "مشن کی حالت پڑھیں",
+  "stem.flightsim.mission_return_criterion": "{target} سے {distance} nm کے اندر اتریں؛ زمین کے لحاظ سے رفتار {speed} kt سے کم اور نیچے اترنے کی شرح {fpm} fpm سے کم رکھیں۔",
+  "stem.flightsim.mission_unavailable": "مشن کے ہدف کا ڈیٹا دستیاب نہیں۔ یہ پرواز ختم کریں اور نیا مشن شروع کریں۔",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft کے اندر، زمین سے {min} ft سے اوپر اور {max} ft سے نیچے رہیں، زمینی رفتار {speed} kt سے کم رکھتے ہوئے {hold} s تک ٹھہریں۔"
+}

@@ -27,8 +27,8 @@ Application status: applied to the project and desktop copy. No commit was creat
 ## Examples
 
 - [Exported size-and-surroundings PNG](drawing-ebbinghaus.png)
-- [Exported moiré PNG](drawing-moire.png)
-- [Exported brightness PNG](drawing-brightness.png)
+- [Exported moiré PNG](rotation-frame.png)
+- [Exported brightness PNG](large-text.png)
 - [Export controls in the focused workspace](workspace-1600.png)
 - [Phone export controls](workspace-390.png)
 - [Controls at 200% text](workspace-large-text.png)

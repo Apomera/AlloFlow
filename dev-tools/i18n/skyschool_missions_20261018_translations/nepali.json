@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "अभियानका अवलोकनहरू",
+  "stem.flightsim.mission_journal_targets": "तस्बिर लिइएका लक्ष्यहरू: {total} मध्ये {captured}।",
+  "stem.flightsim.mission_journal_complete": "अभियानका सबै उद्देश्य र फर्केर गरिएको अवतरण अभिलेख गरियो।",
+  "stem.flightsim.mission_journal_ended": "पूरा भएको सबै प्रमाण अभिलेख हुनुअघि अभियान समाप्त भयो।",
+  "stem.flightsim.mission_journal_recovery": "बाँचेका व्यक्तिको उद्धार अभिलेख: {value}।",
+  "stem.flightsim.mission_journal_return": "आधारमा फर्केर गरिएको अवतरण अभिलेख: {value}।",
+  "stem.flightsim.mission_guidance_title": "अभियान मार्गदर्शन",
+  "stem.flightsim.mission_route": "{target} · दिशा कोण {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "उडान सुरु भएको स्थान",
+  "stem.flightsim.mission_read_status": "अभियानको स्थिति पढ्नुहोस्",
+  "stem.flightsim.mission_return_criterion": "{target} बाट {distance} nm भित्र अवतरण गर्नुहोस्; जमिनको सापेक्ष गति {speed} kt भन्दा कम र तल झर्ने दर {fpm} fpm भन्दा कम राख्नुहोस्।",
+  "stem.flightsim.mission_unavailable": "अभियानको लक्ष्यसम्बन्धी डेटा उपलब्ध छैन। यो उडान समाप्त गरी नयाँ अभियान सुरु गर्नुहोस्।",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft भित्र, जमिनबाट {min} ft माथि र {max} ft मुनि रहनुहोस्; जमिनको सापेक्ष गति {speed} kt भन्दा कम राखी {hold} s टिक्नुहोस्।"
+}

@@ -72,9 +72,15 @@ describe('EPPP incorrect-option explanation repair wave 11', () => {
       "runReplayScript('./audit_eppp_option_feedback.cjs')",
       "runReplayScript('./audit_eppp_distractor_quality.cjs')",
     ];
-    const positions = steps.map((step) => builder.indexOf(step));
-    expect(positions.every((position) => position >= 0)).toBe(true);
-    expect(positions).toEqual([...positions].sort((left, right) => left - right));
+    // The current-quality fast path (runCurrentQualityReplay) also calls the audits and is defined
+    // first, so locate each step after the previous one inside the full editorial replay chain.
+    let cursor = builder.indexOf('const runLatestEditorialReplay=');
+    expect(cursor).toBeGreaterThanOrEqual(0);
+    for (const step of steps) {
+      const position = builder.indexOf(step, cursor);
+      expect(position, step).toBeGreaterThan(cursor);
+      cursor = position;
+    }
   });
 
   it('replaces all 48 selected explanations without changing answer positions', () => {

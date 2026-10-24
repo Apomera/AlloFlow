@@ -366,7 +366,7 @@ Free exploration now offers **In your view**, a compact card for a generated lan
 
 Verification passes **139 tests in five files**, seven discovery browser check groups, 18 existing flyby preview selections and 18 scoped accessibility checks. Coverage includes moving inspection, stable focused targets, all three model scales, automatic arrival, already-nearby approaches, paused pixels, desktop/fullscreen, 320-pixel phone and 568-pixel landscape layouts, text spacing and system colors. Source and desktop copies match.
 
-Review [desktop discovery](discovery/discovery-desktop.png), [phone discovery](discovery/discovery-320.png), [short landscape](discovery/discovery-568.png), and [system colors](discovery/discovery-forced-colors.png).
+Review [desktop discovery](inspector/discovery/discovery-desktop.png), [phone discovery](inspector/discovery/discovery-320.png), [short landscape](discovery/discovery-568.png), and [system colors](discovery/discovery-forced-colors.png).
 
 ### Cinematic arrivals and cloud depth pass
 
@@ -398,7 +398,7 @@ The twelve 480 × 300 WebP previews total **92,548 bytes** and load lazily. They
 
 All **12 focused tests across three files** pass in 20.87 seconds. Browser verification covers **18 preview selections**, all twelve served image hashes, keyboard and touch input, retained lens settings, fullscreen focus, image failure and recovery, and ten accessibility scopes. The timeline regression also passes all seven groups, 26 seeks and nine accessibility scopes, including graphics cleanup. The renderer retains its accepted bytes.
 
-Review the [twelve rendered views](storyboard/contact-sheet.png), [preview cards](storyboard/storyboard-normal.png), [phone layout](storyboard/storyboard-320.png), and [short landscape layout](storyboard/storyboard-568.png).
+Review the [twelve rendered views](highlight-stops/contact-sheet.png), [preview cards](storyboard/storyboard-normal.png), [phone layout](storyboard/storyboard-320.png), and [short landscape layout](storyboard/storyboard-568.png).
 
 ### Scenic route timeline pass
 
@@ -418,7 +418,7 @@ The renderer reuses all 570 blue and 430 violet source records. One additive bat
 
 Verification covers 187 tests across 14 files in 56.31 seconds. Five new cases exercise the static source suffix, draw-state restoration, cap and observer limits, native controls and cleanup. Browser checks pass 12 baseline and 15 refined groups, with 58 stable captures per phase and 56 paired views. They verify exact unresolved and isolated stellar pixels, smooth handoffs, DPR and hardware-cap agreement, overlapping offscreen rims, extreme observer poses, native approach/orbit controls and complete resource release. The renderer audit preserves all 1,704 authored route samples. The stellar flight regression retains 10 groups, nine scoped accessibility checks and 13 captures. Workers received extra startup time; test and hook limits remained 30 and 60 seconds.
 
-Blue cloud: [before](cloud-surfaces/cloud-baseline-blue-close.png) · [after](cloud-surfaces/cloud-refined-blue-close.png). Violet cloud: [before](cloud-surfaces/cloud-baseline-violet-close.png) · [after](cloud-surfaces/cloud-refined-violet-close.png). These checks validate rendering and controls; they do not measure frame rate or establish physically calibrated nebula appearance.
+Blue cloud: [before](cloud-surfaces/cloud-baseline-reopened.png) · [after](cloud-surfaces/cloud-refined-reopened.png). Violet cloud: [before](cloud-surfaces/cloud-baseline-violet-close.png) · [after](cloud-surfaces/cloud-refined-violet-close.png). These checks validate rendering and controls; they do not measure frame rate or establish physically calibrated nebula appearance.
 
 ### Sculpted barred spirals pass
 

@@ -154,7 +154,7 @@ describe('word practice presenter', () => {
     expect(win.document.getElementById(mode.getAttribute('aria-labelledby')).textContent).toBe('Practice activity');
   });
 
-  it.each([['fr', false], ['en-GB', true]])('uses launcher audio banks only for the imported teaching language (%s)', async (language, matching) => {
+  it.each([['fr', false], ['en', true], ['en-GB', false]])('uses launcher audio banks only for the imported teaching language (%s)', async (language, matching) => {
     const phonemeBank = { a: wav }, wordBank = { ami: wav };
     let received;
     win.AlloWordPracticeMedia = { async prepareAudio(pack, context) { received = { pack, context }; return pack; } };

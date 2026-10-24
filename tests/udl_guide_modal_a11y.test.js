@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { sliceBetween } from './helpers/anchored_slice.js';
 
-const source = fs.readFileSync('view_misc_modals_source.jsx', 'utf8');
+const source = fs.readFileSync('view_misc_modals_source.jsx', 'utf8').replace(/\r\n/g, '\n');
 const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
 
 // Only the UDL guide panel is under test. A whole-file regex would pass for

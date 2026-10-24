@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "תוצאות חיפוש: {cards} כרטיסים ב־{topics} נושאים.",
+  "stem.flightsim.learn_library_counts": "{cards} כרטיסים · {topics} נושאים",
+  "stem.flightsim.learn_search_clear": "ניקוי החיפוש",
+  "stem.flightsim.learn_search_empty": "לא נמצאו כרטיסי לימוד התואמים ל־„{query}”. נסו מונח אחר או נקו את החיפוש.",
+  "stem.flightsim.learn_search_none": "אין כרטיסי לימוד תואמים",
+  "stem.flightsim.learn_search_cards": "{count} כרטיסי לימוד",
+  "stem.flightsim.quiz_review_progress": "נענו {answered} מתוך {total} שאלות · {missed} תשובות שגויות",
+  "stem.flightsim.quiz_review_missed": "חזרה על שאלות שגויות",
+  "stem.flightsim.quiz_next_unanswered": "השאלה הבאה שטרם נענתה",
+  "stem.flightsim.quiz_review_all_answered": "לכל שאלה ניתנה תשובה ראשונה. חזרו על השאלות השגויות לתרגול ללא ניקוד, או התחילו ניסיון חדש.",
+  "stem.flightsim.planner_drone_agl": "{ft} רגל מעל פני הקרקע",
+  "stem.flightsim.sprint_native_title": "אתגר גאוגרפיה מהיר",
+  "stem.flightsim.sprint_timed_hint": "המסלול ממשיך בזמן שאתם עונים. השהו כדי לקרוא; המשיכו לפני בחירת תשובה.",
+  "stem.flightsim.sprint_warp_reference": "התנועה מואצת בפעילות הגאוגרפיה הזו. מדדי המהירות מציגים את מהירות השיוט המוצהרת; המסלול אינו מודד את ביצועי המטוס.",
+  "stem.flightsim.sprint_save_menu": "שמירת האתגר וחזרה לתפריט",
+  "stem.flightsim.sprint_next_stop": "התחנה הבאה: {place}",
+  "stem.flightsim.geoq_approaching_city": "לאיזו עיר אתם מתקרבים?",
+  "stem.flightsim.sprint_time_remaining": "הזמן שנותר: {seconds} שניות"
+}

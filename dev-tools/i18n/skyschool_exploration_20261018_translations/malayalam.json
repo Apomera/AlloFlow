@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "തിരയൽ ഫലങ്ങൾ: {topics} വിഷയങ്ങളിലായി {cards} കാർഡുകൾ.",
+  "stem.flightsim.learn_library_counts": "{cards} കാർഡുകൾ · {topics} വിഷയങ്ങൾ",
+  "stem.flightsim.learn_search_clear": "തിരയൽ മായ്ക്കുക",
+  "stem.flightsim.learn_search_empty": "“{query}” എന്നതുമായി പൊരുത്തപ്പെടുന്ന പഠന കാർഡുകളില്ല. മറ്റൊരു പദം പരീക്ഷിക്കുക അല്ലെങ്കിൽ തിരയൽ മായ്ക്കുക.",
+  "stem.flightsim.learn_search_none": "പൊരുത്തപ്പെടുന്ന പഠന കാർഡുകളില്ല",
+  "stem.flightsim.learn_search_cards": "{count} പഠന കാർഡുകൾ",
+  "stem.flightsim.quiz_review_progress": "{total} ചോദ്യങ്ങളിൽ {answered} എണ്ണത്തിന് ഉത്തരം നൽകി · {missed} തെറ്റുകൾ",
+  "stem.flightsim.quiz_review_missed": "തെറ്റായ ഉത്തരങ്ങൾ അവലോകനം ചെയ്യുക",
+  "stem.flightsim.quiz_next_unanswered": "അടുത്ത ഉത്തരം നൽകാത്ത ചോദ്യം",
+  "stem.flightsim.quiz_review_all_answered": "എല്ലാ ചോദ്യങ്ങളുടെയും ആദ്യ ഉത്തരം രേഖപ്പെടുത്തിയിട്ടുണ്ട്. മാർക്കില്ലാത്ത പരിശീലനത്തിനായി തെറ്റായി ഉത്തരം നൽകിയ ചോദ്യങ്ങൾ അവലോകനം ചെയ്യുക അല്ലെങ്കിൽ പുതിയ ശ്രമം ആരംഭിക്കുക.",
+  "stem.flightsim.planner_drone_agl": "നിലത്തിന് മുകളിൽ {ft} അടി",
+  "stem.flightsim.sprint_native_title": "ഭൂമിശാസ്ത്ര വേഗ വെല്ലുവിളി",
+  "stem.flightsim.sprint_timed_hint": "നിങ്ങൾ ഉത്തരം നൽകുമ്പോഴും യാത്ര തുടരും. വായിക്കാൻ താൽക്കാലികമായി നിർത്തുക; ഉത്തരം തിരഞ്ഞെടുക്കുന്നതിന് മുമ്പ് പുനരാരംഭിക്കുക.",
+  "stem.flightsim.sprint_warp_reference": "ഈ ഭൂമിശാസ്ത്ര പ്രവർത്തനത്തിൽ യാത്ര വേഗത്തിലാക്കിയിരിക്കുന്നു. വേഗത്തിന്റെ അളവുകൾ നിശ്ചയിച്ച ക്രൂസ് വേഗം കാണിക്കുന്നു; ഈ പാത വിമാനത്തിന്റെ പ്രകടനം അളക്കുന്നില്ല.",
+  "stem.flightsim.sprint_save_menu": "വെല്ലുവിളി സംരക്ഷിച്ച് മെനുവിലേക്ക് മടങ്ങുക",
+  "stem.flightsim.sprint_next_stop": "അടുത്ത ഇടം: {place}",
+  "stem.flightsim.geoq_approaching_city": "നിങ്ങൾ ഏത് നഗരത്തെയാണ് സമീപിക്കുന്നത്?",
+  "stem.flightsim.sprint_time_remaining": "ശേഷിക്കുന്ന സമയം: {seconds} സെക്കൻഡ്"
+}

@@ -11,8 +11,9 @@
 //      this app is for.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { indexOfOrThrow } from './helpers/anchored_slice.js';
 
-const SRC = readFileSync('view_header_source.jsx', 'utf8');
+const SRC =readFileSync('view_header_source.jsx', 'utf8');
 const MODULE = readFileSync('view_header_module.js', 'utf8');
 
 describe('the header costs less space by default', () => {
@@ -62,7 +63,15 @@ describe('collapsing is explicit and remembered', () => {
 
   it('exposes state to assistive tech', () => {
     expect(SRC).toContain('aria-expanded={!headerCollapsed}');
-    expect(SRC).toMatch(/aria-label=\{headerCollapsed \?/);
+    // b4d7ed714 (2026-09-13): the toggles are named by their visible More/Less text (label in
+    // name), so no aria-label override; every toggle still reports its expanded state.
+    const toggles = SRC.split('onClick={toggleHeaderCollapsed}').slice(1).map((rest) => rest.slice(0, indexOfOrThrow(rest, '>', { file: 'view_header_source.jsx', label: 'end of a toggle tag' })));
+    expect(toggles.length).toBeGreaterThanOrEqual(2);
+    for (const attrs of toggles) {
+      expect(attrs).toContain('aria-expanded={!headerCollapsed}');
+      expect(attrs).not.toContain('aria-label=');
+    }
+    expect(SRC).toContain("{headerCollapsed ? (t('common.more_information') || 'More') : (t('common.collapse') || 'Less')}");
   });
 });
 

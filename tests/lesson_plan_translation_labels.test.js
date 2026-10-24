@@ -34,8 +34,10 @@ function render(resource, t = translator) {
     // The current workspace deliberately disagrees with every saved fixture.
     state: { currentUiLanguage: 'English', leveledTextLanguage: 'Hebrew', translationTarget: 'German', translationMode: 'off', isParentMode: false, isIndependentMode: false }
   });
+  // Since 6a0c48749 a no-key copy is a learner copy that drops teacher narrative unless the export
+  // is explicitly teacher-scoped; these fixtures check every narrative field, so scope to the teacher.
   const html = pipeline.generateFullPackHTML([prepared.resource], prepared.topic, false, {}, {
-    includeLessonPlan: true, includeTeacherKey: false, assessmentMode: false, includeStudentResponses: false, annotations: []
+    includeLessonPlan: true, includeTeacherKey: false, assessmentMode: false, includeStudentResponses: false, annotations: [], audience: 'teacher'
   });
   return new DOMParser().parseFromString(html, 'text/html').getElementById(resource.id);
 }

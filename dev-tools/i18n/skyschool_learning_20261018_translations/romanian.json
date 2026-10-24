@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Au fost înregistrate îndeplinirea misiunii și aterizarea la întoarcere. Repetă această misiune cu o singură modificare intenționată a comenzilor sau a rutei, apoi compară observațiile salvate.",
+  "stem.flightsim.coaching_mission_depleted": "Drona a rămas fără baterie. Începe o misiune nouă, folosește rute scurte și planifică întoarcerea înainte ca bateria să ajungă la un nivel scăzut.",
+  "stem.flightsim.coaching_mission_unknown": "Această misiune are dovezi incomplete sau contradictorii. Verifică ce s-a înregistrat, apoi începe o încercare nouă.",
+  "stem.flightsim.coaching_mission_capture": "Unele obiective încă nu au fost fotografiate. Într-o misiune nouă, apropie-te de câte un obiectiv și menține înălțimea și viteza față de sol în limitele afișate până când captura este înregistrată.",
+  "stem.flightsim.coaching_mission_recovery": "Supraviețuitorul nu a fost recuperat. Într-o nouă misiune de salvare, exersează zborul staționar stabil în limitele afișate pentru înălțime, derivă și viteză verticală înainte de a reveni la bază.",
+  "stem.flightsim.coaching_mission_return": "Au fost înregistrate obiectivele de recuperare sau fotografiere; mai rămâne aterizarea la întoarcere. Începe o misiune nouă și păstrează timp și baterie pentru revenirea la bază.",
+  "stem.flightsim.mission_reflection_prompt": "Ce decizie privind un obiectiv, zborul staționar sau întoarcerea ai schimba? Folosește observațiile misiunii pentru a-ți explica alegerea și a planifica o schimbare pentru o încercare nouă. Explicația ta se salvează împreună cu acest zbor.",
+  "stem.flightsim.journal_different_airport": "Aceste apropieri au folosit aeroporturi diferite. Verifică observațiile separat; diferențele dintre măsurători nu sunt calculate.",
+  "stem.flightsim.journal_approach_airport": "Aeroportul apropierii: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "DOVEZI ALE MISIUNII",
+  "stem.flightsim.challenge_brake_release": "Eliberează tasta X și dezactivează frânele roților din panoul de comenzi înainte de a crește puterea."
+}

@@ -201,10 +201,19 @@ describe('Area Model representation and submission integrity', () => {
         muted: true,
       },
     };
+    // Since 09-05 the hero states the active challenge's factors but withholds the
+    // product until the learner solves it (it used to print the answer beside the
+    // question), then shows it once feedback is correct.
+    const hero = (markup) => (markup.match(/<section id="stem-areamodel-panel-multidigit"[\s\S]*?<\/section>/) || [''])[0];
     const html = renderTool('areamodel', state);
-    expect(html).toContain('31 × 12 = 372');
-    expect(html).toContain('31 rows by 12 columns');
+    expect(hero(html)).toContain('31 × 12 = ?');
+    expect(hero(html)).not.toContain('372');
+    expect(hero(html)).not.toContain('23 × 14');
     expect(html).not.toContain('23 × 14 = 322');
+    resetStemLab();
+    loadTool(AREA_FILE, 'areamodel');
+    const solved = renderTool('areamodel', { _areamodel: { ...state._areamodel, feedback: { correct: true } } });
+    expect(hero(solved)).toContain('31 × 12 = 372');
 
     resetStemLab();
     const tool = loadTool(AREA_FILE, 'areamodel');
@@ -284,11 +293,18 @@ describe('Coordinate Grid and Angle Explorer localized locks', () => {
     expect(latest._coordGrid.gridFeedback.correct).toBe(false);
     expect(awardXP).not.toHaveBeenCalled();
 
+    // That wrong check showed the answer, so this pair is locked (10-20: lock after
+    // reveal); the correct attempts below use fresh pairs.
+    const second = {
+      type: 'slope', p1: { x: 1, y: 1 }, p2: { x: 4, y: 5 },
+      slopeData: { rise: 4, run: 3, value: 4 / 3, display: '4/3' },
+    };
     await React.act(async () => {
       setData((prev) => ({
         ...prev,
         _coordGrid: {
           ...prev._coordGrid,
+          gridChallenge: second,
           gridFeedback: { riseAnswer: '4', runAnswer: '3', slopeAnswer: '4/3' },
         },
       }));
@@ -299,13 +315,17 @@ describe('Coordinate Grid and Angle Explorer localized locks', () => {
     expect(latest._coordGrid.slopesSolved).toBe(1);
 
     // A new challenge receives its own lock; the previous solve does not freeze the tool.
+    const third = {
+      type: 'slope', p1: { x: 0, y: 0 }, p2: { x: 2, y: 6 },
+      slopeData: { rise: 6, run: 2, value: 3, display: '3' },
+    };
     await React.act(async () => {
       setData((prev) => ({
         ...prev,
         _coordGrid: {
           ...prev._coordGrid,
-          gridChallenge: challenge,
-          gridFeedback: { riseAnswer: '4', runAnswer: '3', slopeAnswer: '4/3' },
+          gridChallenge: third,
+          gridFeedback: { riseAnswer: '6', runAnswer: '2', slopeAnswer: '3' },
         },
       }));
     });
@@ -329,7 +349,8 @@ describe('Coordinate Grid and Angle Explorer localized locks', () => {
       const [toolData, setToolData] = React.useState({
         protractor: {
           activeTab: 'challenges', estimateActive: true, estimateTarget: 60,
-          estimateGuess: '60.5', estimateResult: null, estimateCount: 0,
+          // A blank box is "no guess yet" (a decimal like 60.5 now rounds to a whole degree and is graded).
+          estimateGuess: '', estimateResult: null, estimateCount: 0,
           earnedBadges: { first_angle: 1 }, soundEnabled: false,
         },
       });

@@ -111,8 +111,8 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain("canvasCoarsePointer ? 'select to expand' : 'hover to expand'");
       expect(source).toContain('var fullLabel = !d.quizMode &&');
       expect(source).toContain('if (!d.quizMode && screenCompactCount > 0) {');
-      expect(source).toContain('} else if (!d.quizMode) {');
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*var leaderStartX/);
+      expect(source).toContain('} else if (!d.quizMode && layout.showCallout) {');
+      expect(source).toMatch(/var calloutLeader = !d\.quizMode && layout\.showCallout \? dissectionCalloutLeader\(layout, labelUiScale, specimenTextScaleX\) : null;\s*if \(calloutLeader\) \{/);
       expect(source).toContain('!d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen');
       expect(source).toContain('!d.quizMode && React.createElement(React.Fragment, null,');
       expect(source).toContain("touchAction: (d.canvasZoom || 1) <= 1.01 && (d.quizMode || guidedMode || currentLearningGate.required || !currentToolReadiness.safeToAct || procedureNext.action === 'complete') ? 'pan-y'");
@@ -146,7 +146,9 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('if (!d.quizMode && macroInset && lensTargetInFrame && lensCtx) {');
       expect(source).toContain('if (!d.quizMode && _incisionAnim && _incisionAnim.active) {');
       expect(source).toContain('if (!d.quizMode && liveDemo && liveDemo.layer === activeLayer');
-      expect(source).toContain('if (!d.quizMode && liveReplay && liveReplay.layer === activeLayer');
+      // 79e3e5eae moved the replay gate into procedureReplayIsActive (quiz mode still suppresses it).
+      expect(source.includes('return !!(!quizMode && replay && replay.layer === layer'), 'replay gate suppresses quiz mode').toBe(true);
+      expect(source.includes('var replayIsActive = procedureReplayIsActive(liveReplay, Date.now(), specimen, activeLayer, d.quizMode);'), 'canvas passes quiz mode to the gate').toBe(true);
       expect(source).toContain('var heartMotionActive = livingFunctionEnabled && !dissMotionReduced;');
       expect(source).toContain('var heartScale = heartMotionActive ? 1 + livingWave * 0.018 : 1;');
       expect(source).toContain("if (!d.quizMode && (activeLayer === 'nervous' || activeLayer === 'conduction'");
@@ -218,7 +220,7 @@ describe('dissection canvas animation loop', () => {
       expect(finalGuidanceSource).not.toContain('screenPromptText');
       expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font='6px Inter, system-ui';ctx\.fillStyle='rgba\(254,226,226,0\.58\)';fillReadableSpecimenText\('thorax'/);
       expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '6px Inter, system-ui'; ctx\.fillStyle = 'rgba\(254,240,138,0\.58\)';\s*fillReadableSpecimenText\('Area centralis'/);
-      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24';[\s\S]{0,1500}fillReadableSpecimenText\(refractedLabel, refractedAnchorX/);
+      expect(source).toMatch(/if \(!d\.quizMode\) \{\s*ctx\.font = '7px Inter, system-ui'; ctx\.fillStyle = '#fbbf24';\s*drawClampedSpecimenCaption\(ctx, canvas, 'Refracted light'/);
       expect(source).toContain("if (spec.bodyShape !== 'heart' || !d.livingFunctionEnabled || d.quizMode || (activeCanvasTraceKey && activeLayer === 'organs')) return;");
       expect(source).toMatch(/Compact labels remain inside the specimen[\s\S]{0,180}if \(!d\.quizMode\) \{/);
       expect(source).toContain('W = canvas._logicalW || canvas.width;');

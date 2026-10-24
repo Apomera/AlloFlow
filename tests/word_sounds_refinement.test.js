@@ -83,6 +83,12 @@ describe('Word Sounds honest text evidence and spelling coverage',()=>{
     expect(core.profileCheck('the ship',profile).status).toBe('within_taught_spellings');
     expect(core.profileCheck('the dog',profile).untaughtWords).toEqual(['dog']);
     expect(core.profileCheck('the cat',{}).status).toBe('not_configured');
-    expect(compileWords(pack,profile)[0]._instructionalCoverage.status).toBe('review');
+    // Coverage reads the word plus its reviewed sentence and story. Since
+    // a9ae02cb5 there is no frame-sentence fallback, so the untaught words
+    // must come from a reviewed sentence; 'the' is a known word, not untaught.
+    const reviewed=compileWords([{...pack[0],sentence:'I can see the cat.'},...pack.slice(1)],profile,'en',null,{SIGHT_WORD_PRESETS:{fixture:['can','see','the']}})[0];
+    expect(reviewed.activityItems.read_sentence.sentence).toBe('I can see the cat.');
+    expect(reviewed._instructionalCoverage).toEqual({status:'review',untaughtWords:['can','see']});
+    expect(compileWords(pack,profile)[0]._instructionalCoverage.status).toBe('within_taught_spellings');
   });
 });

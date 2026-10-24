@@ -100,21 +100,36 @@ async function draw() {
   textureCommands.push(...commands);
   expect(errors).not.toHaveBeenCalled();
 }
+// The loop advances the sim clock by one frame step before painting, which is far
+// larger than the boundary offsets. Measure that step, start one step early, and
+// confirm the painted frame is at the requested hour so samples straddle it.
+async function drawAtSolarHour(hooks, hour) {
+  await draw();
+  setSolarHour(hooks, hour); const target = hooks.timeRef.current;
+  await draw(); const step = hooks.timeRef.current - target;
+  expect(step).toBeGreaterThan(0);
+  hooks.timeRef.current = target - step; await draw();
+  expect(Math.abs(hooks.timeRef.current - target)).toBeLessThan(1e-9);
+}
 
 function canvasCloudPaint() {
-  // The volume pass paints an underside, then its full ellipse and three lobes.
-  // Read the real paint calls rather than extracting source formulas.
+  // Each volume pass paints an underside, a body and two lobes in one tint, then a
+  // white top highlight. Exposure scales every color, so find passes by that paint
+  // sequence and read the real paint calls rather than extracting source formulas.
   const result = [];
-  commands.forEach((command, index) => {
-    if (command.method !== 'fill' || typeof command.fill !== 'string'
-      || !command.fill.startsWith('rgba(92,110,132,')
-      || !command.path.some(part => part.method === 'ellipse')) return;
-    const top = commands[index + 1], highlight = commands[index + 4];
-    expect(top?.method).toBe('fill'); expect(highlight?.method).toBe('fill');
-    const undersideRGBA = parseRGBA(command.fill), topRGBA = parseRGBA(top.fill), highlightRGBA = parseRGBA(highlight.fill);
+  const ellipseFill = command => command?.method === 'fill' && typeof command.fill === 'string'
+    && command.path.length === 1 && command.path[0].method === 'ellipse';
+  for (let index = 0; index + 4 < commands.length; index++) {
+    const pass = commands.slice(index, index + 5);
+    if (!pass.every(ellipseFill)) continue;
+    const [underside, top, lobeA, lobeB, highlight] = pass;
+    if (lobeA.fill !== top.fill || lobeB.fill !== top.fill || underside.fill === top.fill
+      || !highlight.fill.startsWith('rgba(255,255,255,')) continue;
+    const [undersideRGBA, topRGBA, highlightRGBA] = [underside, top, highlight].map(command => parseRGBA(command.fill));
     expect(undersideRGBA).toHaveLength(4); expect(topRGBA).toHaveLength(4); expect(highlightRGBA).toHaveLength(4);
     result.push({ underside: undersideRGBA, top: topRGBA, highlight: highlightRGBA });
-  });
+    index += 4;
+  }
   expect(result).toHaveLength(11);
   return result;
 }
@@ -170,7 +185,7 @@ describe('SkySchool continuous cloud appearance', () => {
     const hooks = await mountFlight();
     const samples = [];
     for (const requested of [hour - 0.00001, hour + 0.00001]) {
-      setSolarHour(hooks, requested); await draw(); samples.push(canvasCloudPaint());
+      await drawAtSolarHour(hooks, requested); samples.push(canvasCloudPaint());
     }
     for (let index = 0; index < samples[0].length; index++) {
       const a = samples[0][index], b = samples[1][index];
@@ -180,16 +195,22 @@ describe('SkySchool continuous cloud appearance', () => {
       }
     }
   });
-  it.each([{ hour: 12, tint: [255, 255, 255], undersideRatio: 0.25, alphaMin: 0.37, alphaMax: 0.47 },
-    { hour: 0, tint: [220, 225, 240], undersideRatio: 0.34, alphaMin: 0.17, alphaMax: 0.27 }])(
-    'retains readable Canvas cloud limits at hour $hour', async ({ hour, tint, undersideRatio, alphaMin, alphaMax }) => {
+  // Clear clouds are white at noon; at midnight exposure dims them to a dark neutral
+  // gray (the WebGL midnight limit) with no sunlit highlight, rather than a moonlit tint.
+  it.each([{ hour: 12, tintMin: 255, tintMax: 255, undersideRatio: 0.25, alphaMin: 0.37, alphaMax: 0.47, sunlit: true },
+    { hour: 0, tintMin: 1, tintMax: 0.4 * 255, undersideRatio: 0.34, alphaMin: 0.17, alphaMax: 0.27, sunlit: false }])(
+    'retains readable Canvas cloud limits at hour $hour', async ({ hour, tintMin, tintMax, undersideRatio, alphaMin, alphaMax, sunlit }) => {
       const hooks = await mountFlight(); setSolarHour(hooks, hour); await draw();
       const clouds = canvasCloudPaint();
       for (const cloud of clouds) {
-        expect(cloud.top.slice(0, 3)).toEqual(tint);
+        const [red, green, blue] = cloud.top;
+        expect(green).toBe(red); expect(blue).toBe(red);
+        expect(red).toBeGreaterThanOrEqual(tintMin); expect(red).toBeLessThanOrEqual(tintMax);
+        cloud.underside.slice(0, 3).forEach(channel => expect(channel).toBeLessThan(red));
         expect(cloud.underside[3] / cloud.top[3]).toBeCloseTo(undersideRatio, 10);
         expect(cloud.top[3]).toBeGreaterThan(0); expect(cloud.top[3]).toBeLessThanOrEqual(alphaMax);
-        expect(cloud.highlight[3]).toBeGreaterThan(0); expect(cloud.highlight[3]).toBeLessThan(cloud.top[3]);
+        if (sunlit) { expect(cloud.highlight[3]).toBeGreaterThan(0); expect(cloud.highlight[3]).toBeLessThan(cloud.top[3]); }
+        else expect(cloud.highlight[3]).toBe(0);
       }
       expect(clouds[0].top[3]).toBeGreaterThanOrEqual(alphaMin);
     });
@@ -197,7 +218,7 @@ describe('SkySchool continuous cloud appearance', () => {
     const hooks = await mountFlight(true);
     const samples = [];
     for (const requested of [hour - 0.00001, hour + 0.00001]) {
-      setSolarHour(hooks, requested); await draw(); samples.push(webglClouds());
+      await drawAtSolarHour(hooks, requested); samples.push(webglClouds());
     }
     expect(samples[0]).toHaveLength(samples[1].length);
     for (let index = 0; index < samples[0].length; index++) {

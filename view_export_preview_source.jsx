@@ -3603,7 +3603,8 @@ function _builderH5PCompatibility(item) {
           && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
         if (ready) adapted += 1;
       } else if (kind === 'numeric-response') {
-        ready = !!prompt && Number.isFinite(Number(question.correctValue));
+        ready = !!prompt && (typeof question.correctValue === 'number' || typeof question.correctValue === 'string')
+          && String(question.correctValue).trim() !== '' && Number.isFinite(Number(question.correctValue));
         if (ready) {
           adapted += 1;
           if (Number(question.tolerance) > 0) manualReview += 1;
@@ -4335,6 +4336,30 @@ function ExportPreviewView(props) {
   React.useEffect(() => {
     if (isRemediationDocument && exportPreviewMode === 'worksheet') setExportPreviewMode('print');
   }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
+  // "Use my reading settings" (exportConfig.useReadingSettings, off by default). The
+  // remediated document and slides are not built by generateFullPackHTML, so not offered there.
+  let readingSettingsReady = false;
+  try { readingSettingsReady = !isRemediationDocument && exportPreviewMode !== 'slides' && !!window.AlloModules?.UIFontLibrary?.readingSettingsAvailable?.(); } catch (_) { readingSettingsReady = false; }
+  const usingReadingSettings = readingSettingsReady && exportConfig?.useReadingSettings === true;
+  const builderText = (key, english) => { let value = ''; try { value = t(key); } catch (_) { value = ''; } return typeof value === 'string' && value && value !== key ? value : english; };
+  const readerRefreshRef = React.useRef(updateExportPreview);
+  readerRefreshRef.current = updateExportPreview;
+  // The preview (and so the export) follows a change made while the option is on.
+  React.useEffect(() => {
+    const api = usingReadingSettings ? window.__alloReadingSettings : null;
+    if (!api || typeof api.subscribe !== 'function') return undefined;
+    const keyOf = (s) => s ? [s.fontId, s.baseFontSize, s.lineHeight, s.letterSpacing].join('|') : '';
+    let last = keyOf(api.get());
+    let timer = null;
+    const off = api.subscribe((next) => {
+      const key = keyOf(next || api.get());
+      if (key === last) return;
+      last = key;
+      clearTimeout(timer);
+      timer = setTimeout(() => { try { if (typeof readerRefreshRef.current === 'function') readerRefreshRef.current(); } catch (_) {} }, 400);
+    });
+    return () => { clearTimeout(timer); try { if (typeof off === 'function') off(); } catch (_) {} };
+  }, [usingReadingSettings]);
   // BrandProfile inline integration — replaces the standalone Educator Hub tool.
   // Read the user's saved brand profiles so they can be picked as export themes
   // alongside the built-in STYLE_SEEDS, and surface a "Manage" button + first-
@@ -8387,7 +8412,9 @@ function ExportPreviewView(props) {
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error('The export did not produce a file.');
     const clean = getCleanBuilderDocument();
-    const safeTitle = String(clean?.title || 'document').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'document';
+    // Letters in any script survive: an ASCII-only filter turned "Fotosíntesis"
+    // into "Fotos-ntesis" and a Cyrillic, Chinese or Arabic title into nothing.
+    const safeTitle = String(clean?.title || 'document').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'document';
     const extension = String(options.extension || 'bin').replace(/^\./, '');
     const fileName = options.fileName || `${safeTitle}${options.suffix || ''}.${extension}`;
     const url = URL.createObjectURL(blob);
@@ -8559,7 +8586,11 @@ function ExportPreviewView(props) {
         const clean = teacherOnly.length ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
         if (succeeded !== true) return;
-        if (teacherOnly.length) addToast && addToast((t && t('export_preview.ims_student_copy_only')) || 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.', 'info');
+        if (teacherOnly.length && addToast) {
+          // English fallback for a cached strings bank that predates the key.
+          const __t = (key, english) => (t && t(key)) || english;
+          addToast(__t('export_preview.ims_student_copy_only', 'The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.'), 'info');
+        }
       }
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'package', format: kind }); } catch (_) {}
     }
@@ -8993,7 +9024,9 @@ function ExportPreviewView(props) {
                             const doc = exportPreviewRef.current?.contentDocument;
                             const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
                             const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
-                            const today = new Date().toISOString().split('T')[0];
+                            // The local date: toISOString() is UTC, so after 8 pm Eastern it read tomorrow.
+                            const now = new Date();
+                            const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                             const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
                             const esc = (v) => (v == null ? '' : String(v));
                             const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
@@ -9057,7 +9090,10 @@ function ExportPreviewView(props) {
                                     if (!c || typeof c !== 'object') return;
                                     out.push('### ' + (ci + 1) + '. ' + esc(c.target || maT('memory_target', 'Memory target')), '');
                                     const cueBlock = maRules && typeof maRules.cueBlock === 'function' ? maRules.cueBlock(c) : null;
-                                    const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
+                                    const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim();
+                                    if (c.cueNeedsReview) out.push('**' + maT('cue_review_required', 'Cue review required') + ':** ' + (c.studentCueNeedsReview && !c.teacherCueNeedsReview
+                                      ? maT('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.')
+                                      : maT('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.')), '');
                                     if (cue) out.push('**' + maT('export_memory_cue_label', 'Memory cue:') + '** ' + esc(cue), '');
                                     // Exactly one rung is filled, so a card with no drafted
                                     // cue still reaches the notebook with something to study.
@@ -9075,7 +9111,15 @@ function ExportPreviewView(props) {
                                     const verified = !!(maRules && typeof maRules.isCardVerified === 'function' && maRules.isCardVerified(c));
                                     out.push('**' + (verified ? maT('facts_student_heading', 'Facts to remember') : maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + ':**');
                                     (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach(f => { if (f) out.push('- ' + esc(f)); });
-                                    if (c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
+                                    const currentLinks = maRules && typeof maRules.activeConnections === 'function' ? maRules.activeConnections(c) : [];
+                                    const customCue = !(maRules && typeof maRules.customCue === 'function') || maRules.customCue(c);
+                                    if (!c.cueNeedsReview && currentLinks.length) {
+                                      out.push('', '**' + maT('mapping_heading', 'How the cue connects') + ':**');
+                                      currentLinks.forEach(link => {
+                                        const fact = (c.essentialFacts || [])[link.factIndex];
+                                        if (fact) out.push('- **' + esc(link.cue) + '**: ' + esc(fact) + (link.explanation ? ' ' + esc(link.explanation) : ''));
+                                      });
+                                    } else if (!c.cueNeedsReview && !customCue && c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
                                     const hook = maRules && typeof maRules.hookFact === 'function' ? maRules.hookFact(c) : null;
                                     if (hook) {
                                       // The lane-wide esc is a pass-through, so escape the
@@ -9742,6 +9786,19 @@ const _downloadBRF = (brf) => {
                 {/* Font */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Typography</div>
+                  {/* While on, the reader's font, size and spacing replace the Font and Size below. */}
+                  {readingSettingsReady && (
+                    <label className="flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer" data-export-reading-settings>
+                      <input type="checkbox" className="mt-0.5 accent-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        checked={exportConfig.useReadingSettings === true}
+                        onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, useReadingSettings: e.target.checked }))}
+                        aria-describedby="doc-builder-reading-settings-help" />
+                      <span>
+                        <span className="font-bold">{builderText('reading_settings.use_mine', 'Use my reading settings')}</span>
+                        <span id="doc-builder-reading-settings-help" className="block text-slate-600">{builderText('reading_settings.use_mine_help', 'Prints with your font, text size and spacing.')}</span>
+                      </span>
+                    </label>
+                  )}
                   {/* Font dropdown (2026-06-11): the builder previously had NO
                       font picker — only the use-app-font checkbox. Values:
                       'theme' = the theme's own font, 'app' = follow the app
@@ -9754,7 +9811,8 @@ const _downloadBRF = (brf) => {
                     <select
                       value={exportConfig.fontId || (exportConfig.useAppFont ? 'app' : 'theme')}
                       onChange={(e) => { const v = e.target.value; setExportConfigAndRefresh(p => ({ ...p, fontId: v, useAppFont: v === 'app' })); }}
-                      className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+                      disabled={usingReadingSettings}
+                      className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white disabled:opacity-60"
                       data-help-key="doc_builder_font_select" aria-label={t('a11y.export_font') || 'Export font family'}
                     >
                       <option value="theme">Theme font (default)</option>
@@ -9785,7 +9843,8 @@ const _downloadBRF = (brf) => {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
-                      className="flex-1 accent-indigo-600" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
+                      disabled={usingReadingSettings}
+                      className="flex-1 accent-indigo-600 disabled:opacity-60" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
                     <span className="text-xs font-mono text-slate-600 w-8">{exportConfig.fontSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -10028,10 +10087,17 @@ const _downloadBRF = (brf) => {
                     <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Display modes</div>
 
                     {/* Glossary display: table / flash cards / language cards */}
-                    {hasGlossary && (
+                    {hasGlossary && (() => {
+                      const glText = (key, english) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value && value !== key ? value : english; };
+                      const glossaryLangs = [];
+                      (history || []).forEach(h => { if (h && h.type === 'glossary' && Array.isArray(h.data)) h.data.forEach(term => { const tr = term && term.translations; if (tr && typeof tr === 'object' && !Array.isArray(tr)) Object.keys(tr).forEach(lang => { if (String(tr[lang] || '').trim() && !glossaryLangs.includes(lang)) glossaryLangs.push(lang); }); }); });
+                      const bilingualLangs = Array.isArray(exportConfig.glossaryBilingualLanguages) ? exportConfig.glossaryBilingualLanguages : glossaryLangs;
+                      const glOption = 'flex min-h-11 items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 focus-within:ring-2 focus-within:ring-emerald-600';
+                      return (
                       <div className={`mb-2 ${exportConfig.includeGlossary ? '' : 'opacity-50'}`}>
-                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
-                        <div className="space-y-0.5">
+                        <div id="export-glossary-display-label" className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
+                        {/* Named group: the three radios had no group label for screen readers. */}
+                        <div className="space-y-0.5" role="radiogroup" aria-labelledby="export-glossary-display-label">
                           <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                             <input type="radio" name="glossaryDisplayMode" checked={(exportConfig.glossaryDisplayMode || 'table') === 'table'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'table' }))} disabled={!exportConfig.includeGlossary} />
                             Table (default)
@@ -10045,7 +10111,60 @@ const _downloadBRF = (brf) => {
                             🌐 Language cards (emphasizes translations)
                             {!hasGlossaryTranslations && <span className="text-[11px] text-slate-600">— add translations first</span>}
                           </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'bilingual'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'bilingual' }))} disabled={!exportConfig.includeGlossary || !hasGlossaryTranslations} />
+                            {glText('export.glossary_mode_bilingual', 'Bilingual table (a column per language)')}
+                          </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'word-wall'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'word-wall' }))} disabled={!exportConfig.includeGlossary} />
+                            {glText('export.glossary_mode_word_wall', 'Word wall cards (large print)')}
+                          </label>
+                          <label className={glOption}>
+                            <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'worksheet'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'worksheet' }))} disabled={!exportConfig.includeGlossary} />
+                            {glText('export.glossary_mode_worksheet', 'Student worksheet (no answers)')}
+                          </label>
                         </div>
+                        {exportConfig.glossaryDisplayMode === 'bilingual' && glossaryLangs.length > 0 && (
+                          <fieldset className="mt-2 pl-1 border-0 p-0 m-0" data-export-glossary-languages>
+                            <legend className="text-[10px] font-semibold text-slate-600 mb-1">{glText('export.glossary_bilingual_languages', 'Languages to include')}</legend>
+                            {glossaryLangs.map(lang => (
+                              <label key={lang} className={glOption}>
+                                <input type="checkbox" className="rounded" checked={bilingualLangs.includes(lang)} disabled={!exportConfig.includeGlossary} onChange={(e) => { const on = e.target.checked; setExportConfigAndRefresh(p => { const current = Array.isArray(p.glossaryBilingualLanguages) ? p.glossaryBilingualLanguages : glossaryLangs; return { ...p, glossaryBilingualLanguages: glossaryLangs.filter(l => (l === lang ? on : current.includes(l))) }; }); }} />
+                                <span dir="auto">{lang}</span>
+                              </label>
+                            ))}
+                          </fieldset>
+                        )}
+                        {exportConfig.glossaryDisplayMode === 'word-wall' && (
+                          <div className="mt-2 pl-1" data-export-glossary-word-wall>
+                            <label className={glOption}>
+                              <input type="checkbox" className="rounded" checked={exportConfig.glossaryWordWallDefinition === true} disabled={!exportConfig.includeGlossary} onChange={(e) => { const on = e.target.checked; setExportConfigAndRefresh(p => ({ ...p, glossaryWordWallDefinition: on })); }} />
+                              {glText('export.glossary_word_wall_definition', 'Add a short definition')}
+                            </label>
+                            <label className={glOption}>
+                              {glText('export.glossary_word_wall_per_page', 'Cards per printed page')}
+                              <select className="min-h-9 rounded border border-slate-300 bg-white px-1 text-xs focus-visible:ring-2 focus-visible:ring-emerald-600" value={String([2, 3, 4].includes(Number(exportConfig.glossaryWordWallPerPage)) ? Number(exportConfig.glossaryWordWallPerPage) : 2)} disabled={!exportConfig.includeGlossary} onChange={(e) => { const n = Number(e.target.value); setExportConfigAndRefresh(p => ({ ...p, glossaryWordWallPerPage: n })); }}>
+                                {[2, 3, 4].map(n => <option key={n} value={String(n)}>{n}</option>)}
+                              </select>
+                            </label>
+                          </div>
+                        )}
+                        {exportConfig.glossaryDisplayMode === 'worksheet' && (
+                          <div className="mt-2 pl-1" data-export-glossary-worksheet>
+                            <div id="export-glossary-worksheet-label" className="text-[10px] font-semibold text-slate-600 mb-1">{glText('export.glossary_worksheet_type', 'Worksheet type')}</div>
+                            <div role="radiogroup" aria-labelledby="export-glossary-worksheet-label">
+                              <label className={glOption}>
+                                <input type="radio" name="glossaryWorksheetVariant" checked={exportConfig.glossaryWorksheetVariant !== 'matching'} disabled={!exportConfig.includeGlossary} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryWorksheetVariant: 'lines' }))} />
+                                {glText('export.glossary_worksheet_lines', 'Write the definition')}
+                              </label>
+                              <label className={glOption}>
+                                <input type="radio" name="glossaryWorksheetVariant" checked={exportConfig.glossaryWorksheetVariant === 'matching'} disabled={!exportConfig.includeGlossary} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryWorksheetVariant: 'matching' }))} />
+                                {glText('export.glossary_worksheet_matching', 'Match words to definitions')}
+                              </label>
+                            </div>
+                            <p className="text-[10px] leading-snug text-slate-600 px-1">{glText('export.glossary_worksheet_key_note', 'The answer key goes only in the teacher copy, when Teacher Key is on.')}</p>
+                          </div>
+                        )}
                         {/* Image size — only relevant for table mode (cards have their own sizing). */}
                         {(exportConfig.glossaryDisplayMode || 'table') === 'table' && (
                           <div className="mt-2 pl-1">
@@ -10080,7 +10199,8 @@ const _downloadBRF = (brf) => {
                           </div>
                         )}
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Timeline display: list / cuttable strips */}
                     {hasTimeline && (

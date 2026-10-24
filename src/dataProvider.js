@@ -20,6 +20,21 @@
  */
 
 // ─── Field Operation Sentinels ──────────────────────────────────────────────
+// Credentials and session codes must not come from Math.random(), which is not a CSPRNG.
+function _secureRandomInt(maxExclusive) {
+    const c = typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.getRandomValues ? globalThis.crypto : null;
+    if (!c) return Math.floor(Math.random() * maxExclusive);
+    const limit = Math.floor(0x100000000 / maxExclusive) * maxExclusive; // reject the biased tail
+    const buf = new Uint32Array(1);
+    do { c.getRandomValues(buf); } while (buf[0] >= limit);
+    return buf[0] % maxExclusive;
+}
+function _secureToken(length) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let out = '';
+    for (let i = 0; i < length; i++) out += chars[_secureRandomInt(chars.length)];
+    return out;
+}
 // These are sentinel objects used to represent Firestore field operations.
 // Each backend adapter interprets them during write operations.
 const _FIELD_OPS = {
@@ -331,8 +346,8 @@ class PocketBaseAdapter {
     async signInAnonymously() {
         // PocketBase: create an anonymous user via the users collection
         try {
-            const uid = 'anon_' + Math.random().toString(36).substring(2, 12);
-            const password = Math.random().toString(36).substring(2, 18);
+            const uid = 'anon_' + _secureToken(10);
+            const password = _secureToken(24);
             // Create user
             await this._fetch('/api/collections/users/records', {
                 method: 'POST',
@@ -708,7 +723,7 @@ class DataProvider {
 
     // ─── Session Codes (4-digit) ───────────────────────────────────────────
     generateSessionCode() {
-        return String(Math.floor(1000 + Math.random() * 9000)); // 4-digit code
+        return String(1000 + _secureRandomInt(9000)); // 4-digit code
     }
 
     // ─── Connection Test ──────────────────────────────────────────────────

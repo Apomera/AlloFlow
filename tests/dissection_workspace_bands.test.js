@@ -18,6 +18,15 @@ const DISSECTION_PATHS = [
 
 const BASE = { specimen: 'frog', activeLayer: 'skin', anatomicalView: 'ventral', _dissLoadedSpec: 'frog' };
 
+function canvasProduction(source, name) {
+  const matches = [...source.matchAll(new RegExp('^([ \\t]*)function ' + name + '\\(', 'gm'))];
+  if (matches.length !== 1) throw Error('Expected one production function: ' + name);
+  const match = matches[0], start = match.index + match[1].length, ending = '\n' + match[1] + '}';
+  const end = source.indexOf(ending, start);
+  if (end < start) throw Error('Missing production function ending: ' + name);
+  return new Function('return (' + source.slice(start, end + ending.length) + ');')();
+}
+
 function parse(html) {
   const root = document.createElement('div');
   root.innerHTML = html;
@@ -477,10 +486,9 @@ describe('dissection workspace bands', () => {
       expect(source, label).not.toContain('ctx.fillText(' + label + ',');
       expect(source, label).toContain('fillReadableSpecimenText(' + label + ',');
     }
-    // The ray label and the ECG readout live in the same transform. Both were moved off a
-    // literal argument (one is clamped to the tray frame, the other right-aligned
-    // inside its own panel), so these assertions check their calculated anchors.
-    expect(source).toContain('fillReadableSpecimenText(refractedLabel, refractedAnchorX');
+    // The ray caption now cancels the full current transform in CSS screen space;
+    // the ECG readout remains right-aligned inside its own panel.
+    expect(source).toContain("drawClampedSpecimenCaption(ctx, canvas, 'Refracted light',");
     expect(source).toContain('ctx.fillText(ecgLabel, ecgX + ecgW - 6 - ecgLabelWidth, ecgY + 13);');
     expect(source).not.toContain("ctx.fillText(bpm + ' BPM'");
     expect(source).not.toContain("ctx.fillText('Refracted light'");
@@ -506,10 +514,14 @@ describe('dissection workspace bands', () => {
 
     // The panels themselves, so a new one cannot quietly skip the helper.
     for (const panel of ['tractionLabelX', 'forecastLabelX', 'wickLabelX', 'palpationLabelX',
-      'pinLabelX', 'replayLabelX', 'clearLabelX', 'probeLabelX']) {
+      'pinLabelX', 'clearLabelX', 'probeLabelX']) {
       expect(source, panel).toContain('fillPanelText(');
       expect(inside, panel).toContain(panel + ',');
     }
+    // 79e3e5eae replaced the in-transform replay panel (replayLabelX) with a screen-fixed
+    // caption drawn after the transform restore, so it cannot mirror.
+    expect(inside.includes('replayLabelX'), 'no replay panel inside the transform').toBe(false);
+    expect(source.indexOf('if (replayCaption && !specimenEvidenceCapture) {'), 'replay caption after the restore').toBeGreaterThan(close);
   }, 60_000);
 
   // 2026-09-05, measured by hooking every panel-sized fill and comparing boxes in screen space:
@@ -675,10 +687,36 @@ describe('dissection workspace bands', () => {
   // letter still sat on the border. Measured landing: screenX 587 of a 650px buffer before.
   it.each(DISSECTION_PATHS)('clamps the eye ray label inside the tray frame in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
-    expect(source).toContain('var refractedScreenX = specimenScale.x < 0 ? 2 * cx - refractedAnchorX : refractedAnchorX;');
-    expect(source).toContain('refractedScreenX = Math.max(20, Math.min(W - refractedWidth - 20, refractedScreenX));');
-    // Clamped in screen space, then mapped back, or the clamp would be mirrored too.
-    expect(source).toContain('refractedAnchorX = specimenScale.x < 0 ? 2 * cx - refractedScreenX : refractedScreenX;');
+    const drawCaption = canvasProduction(source, 'drawClampedSpecimenCaption');
+    const host = { width: 1000, height: 1200, getBoundingClientRect: () => ({ width: 320, height: 384 }) };
+    for (const mirror of [-1, 1]) for (const anchor of [-10000, 10000]) {
+      const initial = { a: mirror * 6, b: .12, c: .2, d: 6, e: 1800, f: -400 };
+      const ctx = {
+        matrix: { ...initial }, stack: [], draws: [], font: '12px Inter',
+        getTransform() { return { ...this.matrix }; },
+        save() { this.stack.push({ ...this.matrix }); },
+        restore() { this.matrix = this.stack.pop(); },
+        measureText(text) { const size = Number(this.font.match(/([\d.]+)px/)[1]);
+          return { width: text.length * size * .55, actualBoundingBoxLeft: 0, actualBoundingBoxRight: text.length * size * .55,
+            actualBoundingBoxAscent: size * .8, actualBoundingBoxDescent: size * .2 }; },
+        transform(a, b, c, d, e, f) { const m = this.matrix;
+          this.matrix = { a: m.a * a + m.c * b, b: m.b * a + m.d * b,
+            c: m.a * c + m.c * d, d: m.b * c + m.d * d,
+            e: m.a * e + m.c * f + m.e, f: m.b * e + m.d * f + m.f }; },
+        translate(x, y) { this.transform(1, 0, 0, 1, x, y); },
+        fillText(text) { this.draws.push({ text, matrix: { ...this.matrix } }); }
+      };
+      const result = drawCaption(ctx, host, 'Refracted light', anchor, anchor, { fontSize: 14, padding: 12 });
+      expect(result.clamped).toBe(true); expect(ctx.draws).toHaveLength(1);
+      expect(ctx.draws[0].text).toBe('Refracted light');
+      expect(result.x).toBeGreaterThanOrEqual(12 - 1e-7); expect(result.y).toBeGreaterThanOrEqual(12 - 1e-7);
+      expect(result.x + result.width).toBeLessThanOrEqual(320 - 12 + 1e-7);
+      expect(result.y + result.height).toBeLessThanOrEqual(384 - 12 + 1e-7);
+      expect(ctx.draws[0].matrix.a).toBeCloseTo(1000 / 320, 10);
+      expect(ctx.draws[0].matrix.d).toBeCloseTo(1200 / 384, 10);
+      expect(ctx.draws[0].matrix.b).toBeCloseTo(0, 10); expect(ctx.draws[0].matrix.c).toBeCloseTo(0, 10);
+      expect(ctx.matrix).toEqual(initial); expect(ctx.stack).toEqual([]);
+    }
     expect(source).not.toContain("fillReadableSpecimenText('Refracted light', eyeCx - eyeRx * 1.46");
   }, 60_000);
 
@@ -723,7 +761,7 @@ describe('dissection workspace bands', () => {
     expect(source).toContain('var corridorLabelClampX = function (value) {');
     expect(source).toContain('var corridorLabelClampY = function (value) {');
     // The badge box must use the same height the overlap test assumes.
-    expect(source).toContain('var corridorLabelHeight = 17;');
+    expect(source).toContain('var corridorLabelHeight = 24 * corridorTypeScale / specimenTextScaleY;');
     expect(source).toContain('ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight, 5)');
     expect(source).not.toContain('ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, 17, 5)');
   }, 60_000);
@@ -765,10 +803,18 @@ describe('dissection workspace bands', () => {
     expect(source).toContain("ctx.font = 'bold ' + (9 * canvasHudScale) + 'px Inter, system-ui';");
     expect(source).toContain('var legendRowHeight = 13 * canvasHudScale;');
     expect(source).toContain('ctx.beginPath(); ctx.arc(lx, ly, 3.2 * canvasHudScale, 0, Math.PI * 2);');
-    // Compass: width follows its reading-size text and retains the authored width floor.
-    expect(source).toContain('var hudCompassTitleWidth = 0;');
-    expect(source).toContain('? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)');
-    expect(source).toContain(': Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);');
+    // The shared sizing helper preserves desktop floors and a readable compact phone card.
+    const layout = canvasProduction(source, 'canvasOrientationHudLayout');
+    for (const axis of ['horizontal', 'vertical']) {
+      const desktop = layout(null, 500, 650, axis, 1, 1, 'INTERNAL · TARGET VENTRAL', 'ANTERIOR', 'POSTERIOR');
+      expect(desktop.compact).toBe(false);
+      expect(desktop.width).toBeGreaterThanOrEqual(axis === 'horizontal' ? 188 : 126);
+      expect(desktop.height).toBe(axis === 'horizontal' ? 80 : 116);
+      const phone = layout(null, 500, 320, axis, 2.1, 1.8, 'INTERNAL · TARGET VENTRAL', 'ANTERIOR', 'POSTERIOR');
+      expect(phone.compact).toBe(true); expect(phone.width).toBeLessThanOrEqual(500 - 28);
+      expect(phone.height / (500 / 320)).toBeCloseTo(70, 10);
+      expect(10 * phone.typeScale / (500 / 320)).toBeGreaterThanOrEqual(12);
+    }
     expect(source).not.toContain("var compassW = compass.axis === 'horizontal' ? 188 : 126;");
     // One derivation: the compass reads the box published before the corridor label runs.
     expect(source).toContain('var compassW = hudCompassW;');

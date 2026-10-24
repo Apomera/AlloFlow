@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Suchergebnisse: {cards} Karten in {topics} Themen.",
+  "stem.flightsim.learn_library_counts": "{cards} Karten · {topics} Themen",
+  "stem.flightsim.learn_search_clear": "Suche löschen",
+  "stem.flightsim.learn_search_empty": "Keine Lernkarten passen zu „{query}“. Versuche einen anderen Begriff oder lösche die Suche.",
+  "stem.flightsim.learn_search_none": "Keine passenden Lernkarten",
+  "stem.flightsim.learn_search_cards": "{count} Lernkarten",
+  "stem.flightsim.quiz_review_progress": "{answered} von {total} Fragen beantwortet · {missed} falsch",
+  "stem.flightsim.quiz_review_missed": "Fehler wiederholen",
+  "stem.flightsim.quiz_next_unanswered": "Nächste unbeantwortete Frage",
+  "stem.flightsim.quiz_review_all_answered": "Jede Frage hat eine erste Antwort. Wiederhole die falsch beantworteten Fragen ohne Punkte oder beginne einen neuen Versuch.",
+  "stem.flightsim.planner_drone_agl": "{ft} Fuß über Grund",
+  "stem.flightsim.sprint_native_title": "Geografiesprint",
+  "stem.flightsim.sprint_timed_hint": "Die Reise geht weiter, während du antwortest. Pausiere zum Lesen; setze die Reise fort, bevor du eine Antwort auswählst.",
+  "stem.flightsim.sprint_warp_reference": "Die Reise wird für diese Geografieübung beschleunigt. Die Geschwindigkeitsanzeigen zeigen die angegebene Reisegeschwindigkeit; diese Route misst keine Flugzeugleistung.",
+  "stem.flightsim.sprint_save_menu": "Sprint speichern und zum Menü zurückkehren",
+  "stem.flightsim.sprint_next_stop": "Nächster Halt: {place}",
+  "stem.flightsim.geoq_approaching_city": "Welcher Stadt näherst du dich?",
+  "stem.flightsim.sprint_time_remaining": "Verbleibende Zeit: {seconds} Sekunden"
+}

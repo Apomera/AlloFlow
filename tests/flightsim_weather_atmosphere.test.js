@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const source = readFileSync('stem_lab/stem_tool_flightsim.js', 'utf8');
-const start = source.indexOf('  function getFlightSolarFrame(');
-const end = source.indexOf('  // BEGIN GENERATED ATMOSPHERE', start);
-if (start < 0 || end <= start) throw new Error('Production solar and lighting helpers were not found');
+const solarHelpers = sliceBetween(source, '  function getFlightSolarFrame(', '  // BEGIN GENERATED ATMOSPHERE',
+  { file: 'stem_lab/stem_tool_flightsim.js', label: 'production solar and lighting helpers' });
 const api = {};
-runInNewContext(source.slice(start, end) + '\n' + readFileSync('dev-tools/skyschool-atmosphere.js', 'utf8') + '\n' +
+runInNewContext(solarHelpers + '\n' + readFileSync('dev-tools/skyschool-atmosphere.js', 'utf8') + '\n' +
   readFileSync('dev-tools/skyschool-celestial.js', 'utf8'), api);
 const appearance = api.getFlightWeatherAppearance, fog = api.getFlightFogFrame, sky = api.getFlightSkyPalette;
 const environment = Object.freeze({ haze: [151, 184, 166], visibilityFactor: 0.91 });
@@ -63,21 +63,28 @@ describe('shared visual weather appearance', () => {
 describe('visibility scales the capped fog range', () => {
   it('keeps noon fog ordered across clear, overcast and storm instead of saturating them at the same cap', () => {
     const clear = fog(12, { visibility: 1 }, environment);
-    expect(clear).toEqual({ near: 23750, far: 95000 });
-    for (const visibility of [0.25, 0.4, 0.7, 0.9, 1]) {
+    // A clear day reaches about 74 nm now that distant terrain is drawn to 105 nm.
+    expect(clear).toEqual({ near: 112500, far: 450000 });
+    // Murky air keeps its short ranges exactly; only clean air above 0.7 opens out.
+    const smooth = t => { const x = Math.max(0, Math.min(1, t)); return x * x * (3 - 2 * x); };
+    for (const visibility of [0.25, 0.4, 0.55, 0.7, 0.8, 0.9, 1]) {
       const current = fog(12, { visibility }, environment);
-      expect(current.far).toBeCloseTo(clear.far * visibility, 10);
+      expect(current.far).toBeCloseTo(95000 * visibility + 355000 * smooth((visibility - 0.7) / 0.3), 6);
       expect(current.near).toBe(current.far * 0.25);
     }
     expect(fog(12, { type: 'stormy', visibility: 0.4 }, environment).far).toBe(38000);
+    expect(fog(12, { type: 'overcast', visibility: 0.7 }, environment).far).toBe(66500);
+    expect(fog(12, { type: 'foggy', visibility: 0.25 }, environment).far).toBe(23750);
   });
 
-  it('is monotonic with visibility at noon and midnight and remains inside the terrain edge', () => {
+  it('is monotonic with visibility at noon and midnight and remains inside the distant terrain ring', () => {
+    // The ring reaches 640,000 ft and rebuilds after 24,000 ft of travel, so
+    // fully fogged distance (450,000 ft) must stay well inside 616,000 ft from the aircraft.
     for (const hour of [0, 6, 12, 18]) for (const visibilityFactor of [0.25, 0.7, 1]) {
       let previous = 0;
       for (let index = 0; index <= 20; index++) {
         const result = fog(hour, { visibility: index / 20 }, { visibilityFactor });
-        expect(result.far).toBeGreaterThanOrEqual(previous); expect(result.far).toBeLessThanOrEqual(95000);
+        expect(result.far).toBeGreaterThanOrEqual(previous); expect(result.far).toBeLessThanOrEqual(450000);
         expect(result.near).toBeGreaterThan(0); expect(result.near).toBeLessThan(result.far);
         previous = result.far;
       }

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ການລອງເຮັດແບບທົດສອບກ່ອນໜ້າ",
+  "stem.flightsim.quiz_history_scope": "ການເລີ່ມລອງໃໝ່ຈະບັນທຶກການລອງກ່ອນໜ້າທີ່ມີຄຳຕອບຄັ້ງທຳອິດໄວ້ ສູງສຸດສີ່ຄັ້ງ. ການທົບທວນພວກມັນບໍ່ປ່ຽນແປງແບບທົດສອບປັດຈຸບັນຂອງທ່ານ.",
+  "stem.flightsim.quiz_history_empty": "ຍັງບໍ່ມີການລອງເຮັດແບບທົດສອບກ່ອນໜ້າທີ່ບັນທຶກໄວ້.",
+  "stem.flightsim.quiz_history_attempt": "ບັນທຶກເມື່ອ {date} · ຄຳຕອບຄັ້ງທຳອິດຖືກ {score}/{answered}",
+  "stem.flightsim.quiz_history_progress": "ບັນທຶກ {answered} ຈາກ {total} ຄຳຖາມ · {unanswered} ຍັງບໍ່ໄດ້ຕອບ",
+  "stem.flightsim.quiz_history_question": "ຄຳຖາມ {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ຄຳຕອບທີ່ຖືກ: {answer}",
+  "stem.flightsim.quiz_history_changed": "ຄຳຖາມທີ່ບັນທຶກໄວ້ {count} ຂໍ້ບໍ່ກົງກັບແບບທົດສອບນີ້ອີກແລ້ວ. ຄະແນນໃຊ້ສະເພາະບັນທຶກຄຳຖາມທີ່ກົງກັນເທົ່ານັ້ນ."
+}

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Conatus quaestionarii priores",
+  "stem.flightsim.quiz_history_scope": "Novo conatu incepto, usque ad quattuor conatus priores cum primis responsis relatis servantur. Eos recensere quaestionarium tuum praesens non mutat.",
+  "stem.flightsim.quiz_history_empty": "Nulli conatus quaestionarii priores adhuc servati sunt.",
+  "stem.flightsim.quiz_history_attempt": "Servatum die {date} · {score}/{answered} prima responsa recta",
+  "stem.flightsim.quiz_history_progress": "{answered} ex {total} quaestionibus relatae · {unanswered} sine responso",
+  "stem.flightsim.quiz_history_question": "Quaestio {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Responsum rectum: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} quaestiones servatae huic quaestionario iam non congruunt. Summae tantum ex monumentis quaestionum congruentium computantur."
+}

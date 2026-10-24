@@ -1,3 +1,4 @@
+import { historicalReviewedCranialProjection } from './fixtures/dinolab_historical_cranial_profiles.js';
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -9,7 +10,8 @@ const source=readFileSync(process.env.DINO_SLENDER_ROSTRUM_SOURCE||resolve('stem
 const registration="window.StemLab.registerTool('dinoLab'";
 if(!source.includes(registration))throw Error('Missing Dino Lab registration');
 window.StemLab={registerTool(){}};
-new Function(source.replace(registration,'globalThis.__slenderRostrum={DINOS,cranialSurfaceProfileFor,dinoTheropodCranialRadii,dinoCranialGeometry,dinoSurfaceGeometry,dinoSurfaceAnchor,dinoCoatGeometry};'+registration))();
+const nativeHelpers=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__slenderRostrum={DINOS,skeletalAnatomyProfileFor,'+nativeHelpers.join(',')+'};'+registration))();
 const art=globalThis.__slenderRostrum;delete globalThis.__slenderRostrum;
 const vector=(a,i)=>new T.Vector3().fromBufferAttribute(a,i);
 const bytes=a=>new Uint8Array(a.array.buffer,a.array.byteOffset,a.array.byteLength);
@@ -115,8 +117,30 @@ describe('Cranial detail attachment and opt-in integration',()=>{
   });
   it('covers every affected catalog species while retaining the complete profile and radius inputs',()=>{
     const affected=art.DINOS.filter(d=>art.cranialSurfaceProfileFor(d).id==='slender-theropod');
-    expect(affected.map(d=>d.id).sort()).toEqual(['coelophysis','compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'].sort());
-    for(const dn of art.DINOS)expect(art.cranialSurfaceProfileFor(dn),dn.id).toEqual(baselineCranialProfile(dn));
+    expect(affected.map(d=>d.id).sort()).toEqual(['compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'].sort());
+    const coelophysis=art.DINOS.find(d=>d.id==='coelophysis');
+    expect(art.cranialSurfaceProfileFor(coelophysis).id).toBe(art.dinoTheropodCraniumProfileFor(coelophysis).id);
+    // Native Coelophysis frame/proxy absence is covered in dinolab_3d_slender_skull.
+    // Later mature-tyrannosaur metadata and the two reviewed Alioramini envelopes
+    // have their own form tests. Retain the frozen source and pin every other
+    // species/property here, including all original slender-theropod inputs.
+    const reviewedMatureIds=new Set(['tyrannosaurus','tarbosaurus','gorgosaurus','daspletosaurus','nanuqsaurus','lythronax','teratophoneus','albertosaurus','thanatotheristes']);
+    for(const dn of art.DINOS){
+      const expected=baselineCranialProfile(dn),actual=historicalReviewedCranialProjection(art,dn,art.cranialSurfaceProfileFor(dn),expected);
+      if(reviewedMatureIds.has(dn.id)){
+        expect(dn.clade).toBe('Tyrannosauridae');expect(actual.matureTyrannosaur).toBe(true);
+        for(const key of ['note','matureTyrannosaur']){
+          if(Object.prototype.hasOwnProperty.call(expected,key))actual[key]=expected[key];else delete actual[key];
+        }
+      }
+      if(['alioramus','qianzhousaurus'].includes(dn.id)){
+        expect(actual.id).toBe('alioramin-long-low');
+        // Only the reviewed labels and eighteen shape inputs are restored for
+        // this historical comparison; dino_3d_alioramin_form pins the new vector.
+        for(const key of ('id shortLabel label note headLengthScale headHeightScale headDepthScale muzzleLengthScale muzzleBaseScale muzzleTipScale muzzleHeightScale muzzleDepthScale jawHeightScale jawDepthScale cheekScale browScale eyeScale eyeForwardScale eyeHeightScale nostrilPosition nostrilHeightScale nostrilScale').split(' '))actual[key]=expected[key];
+      }
+      expect(actual,dn.id).toEqual(expected);
+    }
     for(const dn of affected){const s=specimen(1,new T.Vector3(),dn.id),{before,after}=pair(s);expect(s.radii,dn.id).toEqual(baselineCranialRadii(.4,.26,.12,baselineCranialProfile(dn)));expect(after.attributes.position.count,dn.id).toBe(before.attributes.position.count);exactAttribute(after.index,before.index);exactAttribute(after.attributes.uv,before.attributes.uv);let changes=0;
       for(let i=0;i<after.attributes.position.count;i++){const a=vector(after.attributes.position,i),b=vector(before.attributes.position,i);expect(a.y,dn.id).toBe(b.y);expect(a.z,dn.id).toBe(b.z);expect(a.x,dn.id).toBeGreaterThanOrEqual(b.x);if(a.x>b.x)changes++;}
       expect(changes,dn.id).toBeGreaterThan(100);before.dispose();after.dispose();}

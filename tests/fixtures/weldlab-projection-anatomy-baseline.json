@@ -1,0 +1,51 @@
+{
+  "anatomy": [
+    {
+      "part": "Title block (lower right corner)",
+      "detail": "Drawing number, revision letter (A, B, C...), date, drawn-by, checked-by, scale, material specification, weight. ALWAYS check revision letter — old prints have killed parts."
+    },
+    {
+      "part": "Revision block (upper right or in title block)",
+      "detail": "Lists each revision with date + description + initials. Compare to your drawing — if the part you're holding doesn't match the print revision, STOP."
+    },
+    {
+      "part": "Bill of Materials (BOM)",
+      "detail": "Lists every part by number + quantity + material spec. Cross-reference part labels in the drawing."
+    },
+    {
+      "part": "Views — top/front/side (orthographic)",
+      "detail": "Standard arrangement: top view above front view, right side view to the right of front view. Third-angle projection (US standard) vs first-angle (European) — verify symbol in title block."
+    },
+    {
+      "part": "Section views",
+      "detail": "Cutaway showing internal features. Section line on parent view, \"A-A\" or \"B-B\" labels identify which cutting plane."
+    },
+    {
+      "part": "Dimensions",
+      "detail": "In inches (or mm for international). Dimensions to important features, not to arbitrary points. \"TYP\" or \"TYPICAL\" = applies to multiple similar features."
+    },
+    {
+      "part": "Tolerance block",
+      "detail": "Default tolerances stated near title block (e.g., \"X.XX = ±0.030 unless noted\"). Specific tolerances override defaults."
+    },
+    {
+      "part": "Weld symbols",
+      "detail": "Per AWS A2.4. Symbol direction matters — see Symbols module. Multiple welds get multiple symbols."
+    },
+    {
+      "part": "Notes (general + local)",
+      "detail": "GENERAL NOTES near title block apply to whole drawing. LOCAL notes near specific features apply only there. Read them ALL before starting."
+    }
+  ],
+  "checklist": [
+    "1. ✓ Revision letter matches BOM + work order",
+    "2. ✓ Material spec matches stock you're cutting from",
+    "3. ✓ All dimensions noted (no missing measurements)",
+    "4. ✓ Tolerance understood (default or specific)",
+    "5. ✓ Weld symbols clear (process, size, length, location)",
+    "6. ✓ Cut + drill operations sequenced (some must precede others)"
+  ],
+  "intro": "Most welding mistakes are misread prints, not bad welding. Knowing the conventions saves time + scrap.",
+  "crosslink": "Try it on a real layout: the Symbols Reader has a three-view bracket drawing with four symbols to read.",
+  "crosslinkButton": "Open the mini blueprint →"
+}

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "क्विज़ के पिछले प्रयास",
+  "stem.flightsim.quiz_history_scope": "नया प्रयास शुरू करने पर पहले उत्तर दर्ज किए गए पिछले अधिकतम चार प्रयास सहेजे जाते हैं। उनकी समीक्षा करने से आपकी वर्तमान क्विज़ नहीं बदलती।",
+  "stem.flightsim.quiz_history_empty": "अभी क्विज़ का कोई पिछला प्रयास सहेजा नहीं गया है।",
+  "stem.flightsim.quiz_history_attempt": "{date} को सहेजा गया · पहले उत्तरों में {score}/{answered} सही",
+  "stem.flightsim.quiz_history_progress": "{total} में से {answered} प्रश्न दर्ज · {unanswered} अनुत्तरित",
+  "stem.flightsim.quiz_history_question": "प्रश्न {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "सही उत्तर: {answer}",
+  "stem.flightsim.quiz_history_changed": "सहेजे गए {count} प्रश्न अब इस क्विज़ से मेल नहीं खाते। अंकों के लिए केवल मेल खाने वाले प्रश्नों के रिकॉर्ड का उपयोग होता है।"
+}

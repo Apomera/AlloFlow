@@ -432,9 +432,242 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     // Font loading must never change whether an application control is enabled.
 })();
 
+
+  // ── Reading settings panel and export helpers (2026-10-20) ──
+  // One "Aa" panel any screen can open, including full-screen activities that
+  // cover the header and overlays attached to <body>. It reads and writes the
+  // host's saved settings through window.__alloReadingSettings (AlloFlowANTI),
+  // so a change applies everywhere at once.
+  var RS_CSS = '.allo-reading-settings{position:fixed;z-index:2147483000;box-sizing:border-box;width:min(23rem,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;background:#fff;color:#0f172a;border:1px solid #94a3b8;border-radius:14px;box-shadow:0 18px 50px rgba(15,23,42,.35);padding:14px 16px;text-align:start}'
+    + '.allo-reading-settings h2{margin:0;font-size:1.1rem;font-weight:800}'
+    + '.allo-reading-settings .rs-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}'
+    + '.allo-reading-settings .rs-row{display:grid;gap:4px;margin:10px 0}'
+    + '.allo-reading-settings .rs-label{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:.9rem}'
+    + '.allo-reading-settings .rs-line{display:flex;align-items:center;gap:8px}'
+    + '.allo-reading-settings input[type=range]{flex:1;min-width:0;min-height:44px;accent-color:#4338ca}'
+    + '.allo-reading-settings select{min-height:44px;width:100%;border:1px solid #64748b;border-radius:8px;padding:4px 8px;background:#fff;color:#0f172a;font:inherit}'
+    + '.allo-reading-settings button{min-height:44px;min-width:44px;border:1px solid #64748b;border-radius:8px;background:#f8fafc;color:#0f172a;font:inherit;font-weight:700;padding:4px 10px;cursor:pointer}'
+    + '.allo-reading-settings button:focus-visible,.allo-reading-settings input:focus-visible,.allo-reading-settings select:focus-visible{outline:3px solid #4338ca;outline-offset:2px}'
+    + '.allo-reading-settings fieldset{border:0;padding:0;margin:10px 0}.allo-reading-settings legend{font-weight:700;font-size:.9rem;margin-bottom:4px}'
+    + '.allo-reading-settings .rs-choices{display:flex;flex-wrap:wrap;gap:6px}.allo-reading-settings .rs-choices label,.allo-reading-settings .rs-check{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 8px;border:1px solid #cbd5e1;border-radius:8px}'
+    + '@media (max-width:520px){.allo-reading-settings{left:8px!important;right:8px!important;top:auto!important;bottom:8px!important;width:auto}}'
+    + '@media (prefers-color-scheme:dark){.allo-reading-settings.rs-follow-dark{background:#0f172a;color:#f8fafc;border-color:#475569}}';
+  var rsActive = null;
+  function readingSettingsAvailable() {
+    return !!(window.__alloReadingSettings && typeof window.__alloReadingSettings.get === 'function' && typeof window.__alloReadingSettings.set === 'function');
+  }
+  function rsText(t, key, fallback) {
+    var value = '';
+    try { value = typeof t === 'function' ? t(key) : ''; } catch (_) { value = ''; }
+    return typeof value === 'string' && value && value !== key ? value : fallback;
+  }
+  function closeReadingSettings() { if (rsActive) rsActive.close(true); }
+  // options: { opener, container?, t?, onClose? }. Opening again from the same opener closes it (a toggle).
+  function openReadingSettings(options) {
+    options = options || {};
+    var api = window.__alloReadingSettings;
+    if (!readingSettingsAvailable()) return null;
+    var opener = options.opener || null;
+    if (rsActive) { var same = rsActive.opener && rsActive.opener === opener; rsActive.close(!same); if (same) return null; }
+    var doc = document;
+    if (!doc.getElementById('allo-reading-settings-css')) {
+      var st = doc.createElement('style'); st.id = 'allo-reading-settings-css'; st.textContent = RS_CSS; doc.head.appendChild(st);
+    }
+    var t = options.t;
+    var tx = function (k, en) { return rsText(t, k, en); };
+    // Inside the opener's dialog: a modal's focus trap or inert siblings must not cut the panel off.
+    var container = options.container || (opener && opener.closest && opener.closest('[role="dialog"],[aria-modal="true"]')) || doc.body;
+    if (doc.fullscreenElement && !doc.fullscreenElement.contains(container)) container = doc.fullscreenElement;
+    var uid = 'allo-rs-' + Math.random().toString(36).slice(2, 8);
+    var el = function (tag, attrs, kids) {
+      var n = doc.createElement(tag);
+      Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]); });
+      (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+      return n;
+    };
+    var s = api.get();
+    var panel = el('div', { 'class': 'allo-reading-settings', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': uid + '-title', 'data-allo-reading-settings': 'true', id: uid });
+    var closeBtn = el('button', { type: 'button', 'aria-label': tx('common.close', 'Close'), text: '×' });
+    panel.appendChild(el('div', { 'class': 'rs-head' }, [el('h2', { id: uid + '-title', text: tx('reading_settings.title', 'Reading settings') }), closeBtn]));
+    // Font
+    var fontSel = el('select', { id: uid + '-font' });
+    (s.fonts || []).forEach(function (f) { var o = el('option', { value: f.id, text: f.label }); fontSel.appendChild(o); });
+    fontSel.value = s.fontId;
+    panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'for': uid + '-font', 'class': 'rs-label', text: tx('settings.text.font_family', 'Font Family') }), fontSel]));
+    // Ranges
+    var range = function (key, label, min, max, step, value, format) {
+      var out = el('output', { id: uid + '-' + key + '-out', 'for': uid + '-' + key });
+      var input = el('input', { type: 'range', id: uid + '-' + key, min: String(min), max: String(max), step: String(step), value: String(value), 'aria-describedby': uid + '-' + key + '-out' });
+      out.textContent = format(value);
+      var row = el('div', { 'class': 'rs-row' }, [el('div', { 'class': 'rs-label' }, [el('label', { 'for': uid + '-' + key, text: label }), out])]);
+      return { row: row, input: input, out: out, format: format };
+    };
+    var size = range('size', tx('settings.text.size', 'Size'), 10, 48, 1, s.baseFontSize, function (v) { return Math.round(v) + ' px'; });
+    var smaller = el('button', { type: 'button', 'aria-label': tx('reading_settings.smaller', 'Smaller text'), text: 'A−' });
+    var larger = el('button', { type: 'button', 'aria-label': tx('reading_settings.larger', 'Larger text'), text: 'A+' });
+    size.row.appendChild(el('div', { 'class': 'rs-line' }, [smaller, size.input, larger]));
+    panel.appendChild(size.row);
+    var lh = range('line', tx('settings.text.line_height', 'Line Height'), 1, 2.5, 0.1, s.lineHeight, function (v) { return Number(v).toFixed(1); });
+    lh.row.appendChild(lh.input); panel.appendChild(lh.row);
+    var ls = range('spacing', tx('settings.text.spacing', 'Letter Spacing'), 0, 0.2, 0.01, s.letterSpacing, function (v) { return Number(v).toFixed(2) + ' em'; });
+    ls.row.appendChild(ls.input); panel.appendChild(ls.row);
+    // Color overlay
+    var overlayNames = { none: tx('header.overlay_none', 'None'), blue: tx('header.reading_theme_blue', 'Blue'), peach: tx('header.overlay_peach', 'Peach'), yellow: tx('header.overlay_yellow', 'Yellow') };
+    var choices = el('div', { 'class': 'rs-choices' });
+    var radios = {};
+    Object.keys(overlayNames).forEach(function (k) {
+      var r = el('input', { type: 'radio', name: uid + '-overlay', value: k });
+      r.checked = s.colorOverlay === k;
+      radios[k] = r;
+      choices.appendChild(el('label', null, [r, el('span', { text: overlayNames[k] })]));
+    });
+    panel.appendChild(el('fieldset', null, [el('legend', { text: tx('reading_settings.overlay', 'Color overlay') }), choices]));
+    // Ruler
+    var ruler = el('input', { type: 'checkbox', id: uid + '-ruler' });
+    ruler.checked = !!s.readingRuler;
+    panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-ruler' }, [ruler, el('span', { text: tx('reading_settings.ruler', 'Reading ruler') })])]));
+    var reset = el('button', { type: 'button', text: tx('header.reset_size_spacing', 'Reset size & spacing') });
+    panel.appendChild(reset);
+    // Wiring: every change applies at once; the host echo refreshes the readouts.
+    fontSel.addEventListener('change', function () { api.set({ fontId: fontSel.value }); });
+    size.input.addEventListener('input', function () { api.set({ baseFontSize: Number(size.input.value) }); });
+    smaller.addEventListener('click', function () { api.set({ baseFontSize: Number(size.input.value) - 1 }); });
+    larger.addEventListener('click', function () { api.set({ baseFontSize: Number(size.input.value) + 1 }); });
+    lh.input.addEventListener('input', function () { api.set({ lineHeight: Number(lh.input.value) }); });
+    ls.input.addEventListener('input', function () { api.set({ letterSpacing: Number(ls.input.value) }); });
+    Object.keys(radios).forEach(function (k) { radios[k].addEventListener('change', function () { if (radios[k].checked) api.set({ colorOverlay: k }); }); });
+    ruler.addEventListener('change', function () { api.set({ readingRuler: ruler.checked }); });
+    reset.addEventListener('click', function () { api.set({ baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0 }); });
+    var refresh = function (n) {
+      n = n || api.get();
+      if (fontSel.value !== n.fontId) fontSel.value = n.fontId;
+      [[size, n.baseFontSize], [lh, n.lineHeight], [ls, n.letterSpacing]].forEach(function (pair) {
+        if (doc.activeElement !== pair[0].input) pair[0].input.value = String(pair[1]);
+        pair[0].out.textContent = pair[0].format(pair[1]);
+      });
+      Object.keys(radios).forEach(function (k) { radios[k].checked = n.colorOverlay === k; });
+      ruler.checked = !!n.readingRuler;
+    };
+    var unsubscribe = typeof api.subscribe === 'function' ? api.subscribe(refresh) : function () {};
+    container.appendChild(panel);
+    // Place it by the opener (bottom sheet on narrow screens, by CSS).
+    var place = function () {
+      var w = panel.offsetWidth || 360, h = panel.offsetHeight || 420;
+      var vw = window.innerWidth || 1024, vh = window.innerHeight || 768;
+      var r = opener && opener.getBoundingClientRect ? opener.getBoundingClientRect() : null;
+      var top = r ? r.bottom + 8 : 16, left = r ? r.right - w : vw - w - 16;
+      if (top + h > vh - 8) top = r ? Math.max(8, r.top - h - 8) : 8;
+      panel.style.top = Math.max(8, Math.min(top, vh - h - 8)) + 'px';
+      panel.style.left = Math.max(8, Math.min(left, vw - w - 8)) + 'px';
+    };
+    place();
+    if (opener) { opener.setAttribute('aria-expanded', 'true'); opener.setAttribute('aria-controls', uid); }
+    var focusables = function () { return Array.prototype.slice.call(panel.querySelectorAll('button,select,input')).filter(function (n) { return !n.disabled; }); };
+    var onKey = function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handle.close(true); return; }
+      if (e.key !== 'Tab') return;
+      var f = focusables(); if (!f.length) return;
+      // Arrow keys in a radio group stay native; Tab cycles inside the panel.
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      e.stopPropagation();
+    };
+    var onDown = function (e) { if (!panel.contains(e.target) && !(opener && opener.contains(e.target))) handle.close(false); };
+    panel.addEventListener('keydown', onKey);
+    doc.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('resize', place);
+    closeBtn.addEventListener('click', function () { handle.close(true); });
+    var handle = {
+      opener: opener,
+      element: panel,
+      close: function (returnFocus) {
+        if (rsActive !== handle) return;
+        rsActive = null;
+        unsubscribe();
+        doc.removeEventListener('pointerdown', onDown, true);
+        window.removeEventListener('resize', place);
+        panel.remove();
+        if (opener) { opener.setAttribute('aria-expanded', 'false'); }
+        if (returnFocus && opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+        if (typeof options.onClose === 'function') { try { options.onClose(); } catch (_) {} }
+      },
+    };
+    rsActive = handle;
+    fontSel.focus();
+    return handle;
+  }
+
+  // Exports and printouts. The reader's font, size and spacing as CSS for a printed
+  // or exported document, plus the font face itself: a <link> for print windows,
+  // embedded data for offline files (their security policy blocks remote fonts).
+  var OPEN_DYSLEXIC = [['400', 'https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-400-normal.woff'], ['700', 'https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-700-normal.woff']];
+  function readerSettingsNow() { return readingSettingsAvailable() ? window.__alloReadingSettings.get() : null; }
+  function readerExportCss(settings, options) {
+    var s = settings || readerSettingsNow();
+    if (!s) return '';
+    options = options || {};
+    var scope = options.scope || 'body';
+    var skip = ':not(svg):not(svg *):not(math):not(math *)';
+    var rules = [];
+    if (s.fontFamily) rules.push(scope + ',' + scope + ' *' + skip + '{font-family:' + s.fontFamily + ' !important}');
+    if (s.fontClass === 'font-andika-italic' || s.fontClass === 'font-andika-bold-italic') rules.push(scope + ' *' + skip + '{font-style:italic}');
+    if (Number.isFinite(s.baseFontSize) && options.size !== false) rules.push('html{font-size:' + Math.max(10, Math.min(48, s.baseFontSize)) + 'px}');
+    rules.push(scope + ' :is(p,li,dd,dt,td,th,h1,h2,h3,h4,h5,h6,span,div,label,figcaption,button,a)' + skip + '{line-height:' + (Number(s.lineHeight) || 1.6) + ' !important;letter-spacing:' + (Number(s.letterSpacing) || 0) + 'em !important}');
+    return rules.join('\n');
+  }
+  function fontOption(fontId) {
+    var id = fontId === 'andika-italic' || fontId === 'andika-bold-italic' ? 'andika' : fontId;
+    return FONT_OPTIONS.find(function (f) { return f.id === id; }) || null;
+  }
+  function bytesToBase64(buffer) {
+    var bytes = new Uint8Array(buffer), out = '', chunk = 0x8000;
+    for (var i = 0; i < bytes.length; i += chunk) out += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    return btoa(out);
+  }
+  // Resolves to { head, css }: head = <link> markup for documents that may load remote
+  // fonts; css = @font-face rules with the font embedded (embed: true). Falls back to
+  // { head: '', css: '' } (system fonts) when the font is a system font or cannot be fetched.
+  function exportFontFaceCss(fontId, options) {
+    options = options || {};
+    var o = fontOption(fontId || (readerSettingsNow() || {}).fontId);
+    var none = { head: '', css: '' };
+    if (!o || (o.id !== 'opendyslexic' && !o.googleFont)) return Promise.resolve(none);
+    var cssUrl = o.googleFont ? 'https://fonts.googleapis.com/css2?family=' + o.googleFont + '&display=swap' : '';
+    if (!options.embed) {
+      if (o.id === 'opendyslexic') return Promise.resolve({ head: '', css: OPEN_DYSLEXIC.map(function (w) { return "@font-face{font-family:'OpenDyslexic';src:url('" + w[1] + "') format('woff');font-weight:" + w[0] + ';font-display:swap}'; }).join('') });
+      return Promise.resolve({ head: '<link rel="stylesheet" href="' + cssUrl + '">', css: '' });
+    }
+    var limit = options.maxBytes || 3 * 1024 * 1024, used = 0;
+    var fetchFont = function (url) {
+      return fetch(url).then(function (r) { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); }).then(function (buf) {
+        used += buf.byteLength; if (used > limit) throw new Error('font too large to embed');
+        return bytesToBase64(buf);
+      });
+    };
+    var mime = function (url) { return /\.woff2(\?|$)/.test(url) ? 'font/woff2' : 'font/woff'; };
+    var job = o.id === 'opendyslexic'
+      ? Promise.all(OPEN_DYSLEXIC.map(function (w) { return fetchFont(w[1]).then(function (b64) { return "@font-face{font-family:'OpenDyslexic';src:url(data:font/woff;base64," + b64 + ") format('woff');font-weight:" + w[0] + ';font-display:swap}'; }); })).then(function (parts) { return parts.join(''); })
+      : fetch(cssUrl).then(function (r) { if (!r.ok) throw new Error('css ' + r.status); return r.text(); }).then(function (css) {
+          var urls = []; css.replace(/url\((['"]?)([^'")]+)\1\)/g, function (m, q, u) { if (urls.indexOf(u) < 0) urls.push(u); return m; });
+          return Promise.all(urls.map(function (u) { return fetchFont(u).then(function (b64) { return [u, 'data:' + mime(u) + ';base64,' + b64]; }); })).then(function (pairs) {
+            pairs.forEach(function (p) { css = css.split(p[0]).join(p[1]); });
+            return css;
+          });
+        });
+    return job.then(function (css) { return { head: '', css: css }; }, function () { return none; });
+  }
+
   // Register on AlloModules so callers + the host upgrade hook can find us.
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.UIFontLibrary = { FONT_OPTIONS: FONT_OPTIONS };
+  window.AlloModules.UIFontLibrary = {
+    FONT_OPTIONS: FONT_OPTIONS,
+    readingSettingsAvailable: readingSettingsAvailable,
+    openReadingSettings: openReadingSettings,
+    closeReadingSettings: closeReadingSettings,
+    readerExportCss: readerExportCss,
+    exportFontFaceCss: exportFontFaceCss,
+  };
 
   // Trigger the host-scope upgrade hook if the monolith set one up.
   // Pattern: feedback_iife_lazy_lookup.md — re-points the monolith's var

@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Panatilihin ang kasalukuyang kalagayan ng paglipad",
+  "stem.flightsim.flight_assistance_targets": "Direksiyon {hdg}° · Altitud {alt} ft MSL · Bilis {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Direksiyon {hdg}° · Altitud {alt} ft MSL · Bilis pasulong {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Lumiko nang {degrees}° pakaliwa patungo sa {airport}.",
+  "stem.flightsim.challenge_turn_right": "Lumiko nang {degrees}° pakanan patungo sa {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Patungo ka sa {airport}. Sundan ang pananda ng ruta.",
+  "stem.flightsim.challenge_runway_reference": "Landasan para sa pagsasanay {runway}: direksiyon {heading}°. Ihanay ang eroplano sa landasan bago bumaba upang lumapag."
+}

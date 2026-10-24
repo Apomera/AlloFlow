@@ -42,7 +42,10 @@
     "5x faster"
   ],
   "stem_tool_cell.js": [
-    "1000x more"
+    "about 1,000 times",
+    "about 200 times",
+    "about 50 times",
+    "roughly 1,100 times"
   ],
   "stem_tool_cephalopodlab.js": [
     "1000x larger",
@@ -57,6 +60,9 @@
   ],
   "stem_tool_companionplanting.js": [
     "43x less"
+  ],
+  "stem_tool_coralreef.js": [
+    "about 5 times"
   ],
   "stem_tool_dissection.js": [
     "about 100,000 times"
@@ -79,7 +85,6 @@
     "50x more"
   ],
   "stem_tool_flightsim.js": [
-    "100x more",
     "10x more",
     "4x more"
   ],
@@ -148,6 +153,7 @@
     "3x more"
   ],
   "stem_tool_scaleexplorer.js": [
+    "about 3.5 times",
     "about 7.8 times",
     "about 887 times"
   ],
@@ -168,11 +174,19 @@
   ],
   "stem_tool_universe.js": [
     "1,000x smaller",
-    "10,000x stronger",
-    "100x smaller"
+    "100x smaller",
+    "about 1.07 times",
+    "about 100 times",
+    "about 109 times",
+    "about 120,000 times",
+    "about 250 times",
+    "about 28 times",
+    "about 340 times",
+    "about 60,000 times",
+    "about 9 times"
   ],
   "stem_tool_weldlab.js": [
     "5x faster",
-    "8x faster"
+    "about 25 times"
   ]
 }

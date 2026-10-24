@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ਖੋਜ ਨਤੀਜੇ: {topics} ਵਿਸ਼ਿਆਂ ਵਿੱਚ {cards} ਕਾਰਡ।",
+  "stem.flightsim.learn_library_counts": "{cards} ਕਾਰਡ · {topics} ਵਿਸ਼ੇ",
+  "stem.flightsim.learn_search_clear": "ਖੋਜ ਸਾਫ਼ ਕਰੋ",
+  "stem.flightsim.learn_search_empty": "“{query}” ਨਾਲ ਕੋਈ ਸਿੱਖਣ ਵਾਲਾ ਕਾਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ। ਹੋਰ ਸ਼ਬਦ ਅਜ਼ਮਾਓ ਜਾਂ ਖੋਜ ਸਾਫ਼ ਕਰੋ।",
+  "stem.flightsim.learn_search_none": "ਕੋਈ ਮੇਲ ਖਾਂਦੇ ਸਿੱਖਣ ਵਾਲੇ ਕਾਰਡ ਨਹੀਂ",
+  "stem.flightsim.learn_search_cards": "ਸਿੱਖਣ ਵਾਲੇ {count} ਕਾਰਡ",
+  "stem.flightsim.quiz_review_progress": "{total} ਵਿੱਚੋਂ {answered} ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਦਿੱਤੇ · {missed} ਗ਼ਲਤ",
+  "stem.flightsim.quiz_review_missed": "ਗ਼ਲਤ ਜਵਾਬਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ",
+  "stem.flightsim.quiz_next_unanswered": "ਅਗਲਾ ਅਣਜਵਾਬਿਆ ਸਵਾਲ",
+  "stem.flightsim.quiz_review_all_answered": "ਹਰੇਕ ਸਵਾਲ ਦਾ ਪਹਿਲਾ ਜਵਾਬ ਦਰਜ ਹੈ। ਬਿਨਾਂ ਅੰਕਾਂ ਦੇ ਅਭਿਆਸ ਲਈ ਗ਼ਲਤ ਜਵਾਬ ਦਿੱਤੇ ਸਵਾਲਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ ਜਾਂ ਨਵੀਂ ਕੋਸ਼ਿਸ਼ ਸ਼ੁਰੂ ਕਰੋ।",
+  "stem.flightsim.planner_drone_agl": "ਜ਼ਮੀਨ ਤੋਂ {ft} ਫੁੱਟ ਉੱਪਰ",
+  "stem.flightsim.sprint_native_title": "ਭੂਗੋਲ ਦੀ ਤੇਜ਼ ਚੁਣੌਤੀ",
+  "stem.flightsim.sprint_timed_hint": "ਤੁਹਾਡੇ ਜਵਾਬ ਦੇਣ ਵੇਲੇ ਵੀ ਰੂਟ ਉੱਤੇ ਯਾਤਰਾ ਜਾਰੀ ਰਹਿੰਦੀ ਹੈ। ਪੜ੍ਹਨ ਲਈ ਰੋਕੋ; ਜਵਾਬ ਚੁਣਨ ਤੋਂ ਪਹਿਲਾਂ ਮੁੜ ਚਲਾਓ।",
+  "stem.flightsim.sprint_warp_reference": "ਇਸ ਭੂਗੋਲ ਗਤੀਵਿਧੀ ਲਈ ਯਾਤਰਾ ਤੇਜ਼ ਕੀਤੀ ਗਈ ਹੈ। ਗਤੀ ਦੇ ਅੰਕ ਨਿਰਧਾਰਤ ਕਰੂਜ਼ ਗਤੀ ਦਿਖਾਉਂਦੇ ਹਨ; ਇਹ ਰੂਟ ਜਹਾਜ਼ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਨਹੀਂ ਮਾਪਦਾ।",
+  "stem.flightsim.sprint_save_menu": "ਚੁਣੌਤੀ ਸੁਰੱਖਿਅਤ ਕਰੋ ਅਤੇ ਮੀਨੂ ਵਿੱਚ ਵਾਪਸ ਜਾਓ",
+  "stem.flightsim.sprint_next_stop": "ਅਗਲਾ ਪੜਾਅ: {place}",
+  "stem.flightsim.geoq_approaching_city": "ਤੁਸੀਂ ਕਿਹੜੇ ਸ਼ਹਿਰ ਦੇ ਨੇੜੇ ਪਹੁੰਚ ਰਹੇ ਹੋ?",
+  "stem.flightsim.sprint_time_remaining": "ਬਾਕੀ ਸਮਾਂ: {seconds} ਸਕਿੰਟ"
+}

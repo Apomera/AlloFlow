@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "মিশনের পর্যবেক্ষণ",
+  "stem.flightsim.mission_journal_targets": "লক্ষ্য ধারণ করা হয়েছে: {total}টির মধ্যে {captured}টি।",
+  "stem.flightsim.mission_journal_complete": "মিশনের সব উদ্দেশ্য এবং ফিরে এসে অবতরণ নথিভুক্ত হয়েছে।",
+  "stem.flightsim.mission_journal_ended": "সম্পূর্ণ হওয়ার সব প্রমাণ নথিভুক্ত হওয়ার আগেই মিশন শেষ হয়েছে।",
+  "stem.flightsim.mission_journal_recovery": "বেঁচে থাকা ব্যক্তিকে উদ্ধার নথিভুক্ত হয়েছে: {value}।",
+  "stem.flightsim.mission_journal_return": "ঘাঁটিতে ফিরে অবতরণ নথিভুক্ত হয়েছে: {value}।",
+  "stem.flightsim.mission_guidance_title": "মিশনের নির্দেশনা",
+  "stem.flightsim.mission_route": "{target} · দিক {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "উড্ডয়নের স্থান",
+  "stem.flightsim.mission_read_status": "মিশনের অবস্থা পড়ে শোনান",
+  "stem.flightsim.mission_return_criterion": "{target} থেকে {distance} nm-এর মধ্যে অবতরণ করুন, ভূমির তুলনায় গতি {speed} kt-এর নিচে এবং নামার হার {fpm} fpm-এর নিচে রেখে।",
+  "stem.flightsim.mission_unavailable": "মিশনের লক্ষ্যের তথ্য পাওয়া যাচ্ছে না। এই উড্ডয়ন শেষ করে নতুন মিশন শুরু করুন।",
+  "stem.flightsim.mission_capture_criterion": "{hold} s ধরে {distance} ft-এর মধ্যে থাকুন, মাটি থেকে উচ্চতা {min} ft-এর বেশি ও {max} ft-এর কম এবং ভূমির সাপেক্ষে গতি {speed} kt-এর কম রাখুন।"
+}

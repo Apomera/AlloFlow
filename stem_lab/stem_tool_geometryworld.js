@@ -18288,7 +18288,7 @@
                 if (worldTransitionNotice.confirming) {
                   var pending = worldTransitionConfirmRef.current;
                   if (engine && engine.discardWorldTransition && engine.discardWorldTransition(pending) === false) {
-                    if (addToast) addToast('The workspace or destination changed. Choose the next world again; your build is still here.', 'info');
+                    if (addToast) addToast(__alloT('stem.geometryworld.toast_the_workspace_or_destination_changed_choose_the', 'The workspace or destination changed. Choose the next world again; your build is still here.'), 'info');
                     setTimeout(function() { if (pending && pending.opener && pending.opener.isConnected) pending.opener.focus(); else focusWorldSurface(); }, 0);
                   }
                 } else { worldTransitionConfirmRef.current = engine && engine._pendingWorldTransition; upd('worldTransitionNotice', Object.assign({}, worldTransitionNotice, { confirming: true })); }

@@ -1,3 +1,5 @@
+import { installShadowDomHelpers } from './stem_wcag_browser_checks.js';
+
 const FOCUSABLE_SELECTOR = [
   'a[href]',
   'button',
@@ -35,14 +37,19 @@ const VISUAL_STYLE_KEYS = [
 // Geometry is intersected with viewport and author-created clipping ancestors.
 // Hit testing remains advisory because transparent/canvas/tutorial layers can
 // intercept elementFromPoint without visually obscuring the focus indicator.
+// Open shadow roots are walked as part of the composed tree (installShadowDomHelpers).
 export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {}) {
+  await page.evaluate(installShadowDomHelpers);
   const setup = await page.evaluate(({ selector, styleKeys }) => {
     const root = document.querySelector('#tool-root');
     if (!root) throw new Error('Focus audit requires #tool-root.');
+    const { composedClosest, composedContains, composedParent, deepQueryAll } = window.__alloShadowDom;
 
+    // Shadow-tree nodes get a '#shadow-root' step after their host's path; ids are
+    // only shortcuts in the light tree, where root.querySelectorAll can see them.
     const elementPath = (element) => {
       if (element === root) return '#tool-root';
-      if (element.id) {
+      if (element.id && element.getRootNode() === root.getRootNode()) {
         const idSelector = '#' + CSS.escape(element.id);
         try {
           if (root.querySelectorAll(idSelector).length === 1) return idSelector;
@@ -52,7 +59,14 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       let node = element;
       while (node && node !== root) {
         const parent = node.parentElement;
-        if (!parent) break;
+        if (!parent) {
+          const scope = node.parentNode;
+          if (!(scope instanceof ShadowRoot)) break;
+          parts.unshift(node.tagName.toLowerCase() + ':nth-child(' + ([...scope.children].indexOf(node) + 1) + ')');
+          parts.unshift('#shadow-root');
+          node = scope.host;
+          continue;
+        }
         const index = [...parent.children].indexOf(node) + 1;
         parts.unshift(node.tagName.toLowerCase() + ':nth-child(' + index + ')');
         node = parent;
@@ -77,10 +91,10 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       const layers = [];
       let node = element;
       let depth = 0;
-      while (node && root.contains(node) && depth < 4) {
+      while (node && composedContains(root, node) && depth < 4) {
         layers.push({ path: elementPath(node), styles: nodeSnapshot(node) });
         if (node === root) break;
-        node = node.parentElement;
+        node = composedParent(node);
         depth += 1;
       }
       const adjacentProxy = element.nextElementSibling;
@@ -94,35 +108,34 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
     const isRendered = (element, { allowImplicitScroll = false } = {}) => {
       if (!(element instanceof HTMLElement || element instanceof SVGElement)) return false;
       if (element.matches(':disabled') || (!allowImplicitScroll && element.tabIndex < 0)) return false;
-      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
-      let closedDisclosure = element.closest('details:not([open])');
+      if (composedClosest(element, '[hidden], [inert], [aria-hidden="true"]')) return false;
+      let closedDisclosure = composedClosest(element, 'details:not([open])');
       while (closedDisclosure) {
         const summary = closedDisclosure.querySelector(':scope > summary');
-        if (!summary || (element !== summary && !summary.contains(element))) return false;
-        closedDisclosure = closedDisclosure.parentElement
-          ? closedDisclosure.parentElement.closest('details:not([open])')
-          : null;
+        if (!summary || (element !== summary && !composedContains(summary, element))) return false;
+        const outer = composedParent(closedDisclosure);
+        closedDisclosure = outer ? composedClosest(outer, 'details:not([open])') : null;
       }
       let node = element;
-      while (node && root.contains(node)) {
+      while (node && composedContains(root, node)) {
         const styles = getComputedStyle(node);
         if (styles.display === 'none' || styles.visibility === 'hidden' ||
             styles.visibility === 'collapse' ||
             (node !== element && Number(styles.opacity) === 0)) return false;
         if (node === root) break;
-        node = node.parentElement;
+        node = composedParent(node);
       }
       return true;
     };
 
-    const renderedCandidates = [...root.querySelectorAll(selector)].filter((element) =>
+    const renderedCandidates = deepQueryAll(root, selector).filter((element) =>
       isRendered(element, { allowImplicitScroll: true }));
     const explicitCandidates = renderedCandidates.filter((element) => isRendered(element));
     // Chromium makes an overflow:auto/scroll container a sequential Tab stop
     // when it has no sequentially focusable descendants, even though its DOM
     // tabIndex remains -1. Include those implicit stops so zero-size scrollers
     // and their native focus indicators cannot escape the audit baseline.
-    const scrollableElements = [...root.querySelectorAll('*')].filter((element) => {
+    const scrollableElements = deepQueryAll(root, '*').filter((element) => {
       if (!isRendered(element, { allowImplicitScroll: true }) || element.hasAttribute('tabindex')) return false;
       const styles = getComputedStyle(element);
       const scrollsX = /^(auto|scroll)$/.test(styles.overflowX) &&
@@ -133,9 +146,9 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
     });
     const implicitScrollers = scrollableElements.filter((element) => {
       const hasExplicitStop = explicitCandidates.some((candidate) =>
-        candidate !== element && element.contains(candidate));
+        candidate !== element && composedContains(element, candidate));
       const hasNestedScroller = scrollableElements.some((candidate) =>
-        candidate !== element && element.contains(candidate));
+        candidate !== element && composedContains(element, candidate));
       return !hasExplicitStop && !hasNestedScroller;
     });
     const candidates = [...new Set([...explicitCandidates, ...implicitScrollers])];
@@ -185,7 +198,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
     document.body.setAttribute('tabindex', '-1');
     document.body.focus({ preventScroll: true });
     window.scrollTo(0, 0);
-    window.__alloFocusAudit = { baselines, descriptions, bodyTabIndex, scrollBehavior };
+    window.__alloFocusAudit = { baselines, descriptions, bodyTabIndex, scrollBehavior, elementPath };
 
     return { candidateCount: normalized.length, paths: normalized.map(elementPath), descriptions };
   }, { selector: FOCUSABLE_SELECTOR, styleKeys: VISUAL_STYLE_KEYS });
@@ -201,8 +214,9 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
     await page.keyboard.press('Tab');
     const result = await page.evaluate((styleKeys) => {
       const root = document.querySelector('#tool-root');
-      const active = document.activeElement;
-      if (!root || !active || !root.contains(active)) return { inRoot: false };
+      const { composedContains, composedParent, deepActiveElement, deepElementFromPoint } = window.__alloShadowDom;
+      const active = deepActiveElement();
+      if (!root || !active || !composedContains(root, active)) return { inRoot: false };
 
       // Sample the settled focus state. Utility classes commonly transition
       // outline/ring properties from a transparent first frame; reading that
@@ -210,7 +224,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       // animations on the target and focus-within ancestors are advanced.
       let animationNode = active;
       let animationDepth = 0;
-      while (animationNode && root.contains(animationNode) && animationDepth < 4) {
+      while (animationNode && composedContains(root, animationNode) && animationDepth < 4) {
         for (const animation of animationNode.getAnimations()) {
           const timing = animation.effect && animation.effect.getComputedTiming();
           if (timing && Number.isFinite(timing.endTime)) {
@@ -218,29 +232,12 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
           }
         }
         if (animationNode === root) break;
-        animationNode = animationNode.parentElement;
+        animationNode = composedParent(animationNode);
         animationDepth += 1;
       }
 
-      const elementPath = (element) => {
-        if (element === root) return '#tool-root';
-      if (element.id) {
-        const idSelector = '#' + CSS.escape(element.id);
-        try {
-          if (root.querySelectorAll(idSelector).length === 1) return idSelector;
-        } catch (_) {}
-      }
-        const parts = [];
-        let node = element;
-        while (node && node !== root) {
-          const parent = node.parentElement;
-          if (!parent) break;
-          const index = [...parent.children].indexOf(node) + 1;
-          parts.unshift(node.tagName.toLowerCase() + ':nth-child(' + index + ')');
-          node = parent;
-        }
-        return '#tool-root>' + parts.join('>');
-      };
+      // The same composed-tree path builder recorded the unfocused baselines.
+      const elementPath = window.__alloFocusAudit.elementPath;
 
       const styleSnapshot = (element, pseudo) => {
         const styles = getComputedStyle(element, pseudo || null);
@@ -256,10 +253,10 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       const layers = [];
       let layerNode = active;
       let depth = 0;
-      while (layerNode && root.contains(layerNode) && depth < 4) {
+      while (layerNode && composedContains(root, layerNode) && depth < 4) {
         layers.push({ path: elementPath(layerNode), styles: nodeSnapshot(layerNode) });
         if (layerNode === root) break;
-        layerNode = layerNode.parentElement;
+        layerNode = composedParent(layerNode);
         depth += 1;
       }
       const adjacentProxy = active.nextElementSibling;
@@ -291,7 +288,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       let visibleRight = Math.min(innerWidth, rect.right);
       let visibleBottom = Math.min(innerHeight, rect.bottom);
       const clippedBy = [];
-      let ancestor = active.parentElement;
+      let ancestor = composedParent(active);
       while (ancestor && ancestor !== document.documentElement) {
         const styles = getComputedStyle(ancestor);
         const clipsX = /^(auto|scroll|hidden|clip)$/.test(styles.overflowX);
@@ -302,7 +299,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
         const closedSummary = ancestor instanceof HTMLDetailsElement && !ancestor.open
           ? ancestor.querySelector(':scope > summary') : null;
         const isVisibleClosedSummary = !!closedSummary &&
-          (active === closedSummary || closedSummary.contains(active));
+          (active === closedSummary || composedContains(closedSummary, active));
         if ((clipsX || clipsY) && !isVisibleClosedSummary) {
           const box = ancestor.getBoundingClientRect();
           const left = box.left + ancestor.clientLeft;
@@ -319,7 +316,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
             (typeof ancestor.className === 'string' && ancestor.className
               ? '.' + ancestor.className.trim().replace(/\s+/g, '.') : ''));
         }
-        ancestor = ancestor.parentElement;
+        ancestor = composedParent(ancestor);
       }
 
       const visibleWidth = Math.max(0, visibleRight - visibleLeft);
@@ -371,7 +368,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
           let proxyTop = Math.max(0, proxyRect.top);
           let proxyRight = Math.min(innerWidth, proxyRect.right);
           let proxyBottom = Math.min(innerHeight, proxyRect.bottom);
-          let proxyAncestor = proxyElement.parentElement;
+          let proxyAncestor = composedParent(proxyElement);
           while (proxyAncestor && proxyAncestor !== document.documentElement) {
             const styles = getComputedStyle(proxyAncestor);
             const clipsX = /^(auto|scroll|hidden|clip)$/.test(styles.overflowX);
@@ -379,7 +376,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
             const closedSummary = proxyAncestor instanceof HTMLDetailsElement && !proxyAncestor.open
               ? proxyAncestor.querySelector(':scope > summary') : null;
             const isVisibleClosedSummary = !!closedSummary &&
-              (proxyElement === closedSummary || closedSummary.contains(proxyElement));
+              (proxyElement === closedSummary || composedContains(closedSummary, proxyElement));
             if ((clipsX || clipsY) && !isVisibleClosedSummary) {
               const box = proxyAncestor.getBoundingClientRect();
               const left = box.left + proxyAncestor.clientLeft;
@@ -393,7 +390,7 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
                 proxyBottom = Math.min(proxyBottom, top + proxyAncestor.clientHeight);
               }
             }
-            proxyAncestor = proxyAncestor.parentElement;
+            proxyAncestor = composedParent(proxyAncestor);
           }
           const proxyWidth = Math.max(0, proxyRight - proxyLeft);
           const proxyHeight = Math.max(0, proxyBottom - proxyTop);
@@ -439,9 +436,9 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       }
       const pointerEvents = getComputedStyle(geometryElement).pointerEvents;
       const hitRecords = points.map(([x, y]) => {
-        const hit = document.elementFromPoint(x, y);
-        const uncovered = !!hit && (hit === geometryElement || geometryElement.contains(hit) ||
-          hit.contains(geometryElement));
+        const hit = deepElementFromPoint(x, y);
+        const uncovered = !!hit && (hit === geometryElement || composedContains(geometryElement, hit) ||
+          composedContains(hit, geometryElement));
         return { hit, uncovered };
       });
       const hasUncoveredPoint = pointerEvents === 'none' || hitRecords.some((record) => record.uncovered);
@@ -497,7 +494,10 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
             if (matchedFocusRules.length >= 12) return;
           }
         };
-        [...document.styleSheets].forEach((sheet, sheetIndex) => {
+        const scope = active.getRootNode();
+        const scopedSheets = scope instanceof ShadowRoot
+          ? [...scope.styleSheets, ...(scope.adoptedStyleSheets || [])] : [];
+        [...document.styleSheets, ...scopedSheets].forEach((sheet, sheetIndex) => {
           if (matchedFocusRules.length >= 12) return;
           try { inspectRules(sheet.cssRules, sheetIndex); } catch (_) {}
         });
@@ -574,7 +574,8 @@ export async function auditFocusVisibility(page, { maxSteps = 400, onVisit } = {
       else document.body.setAttribute('tabindex', state.bodyTabIndex);
       document.documentElement.style.scrollBehavior = state.scrollBehavior;
     }
-    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    const active = window.__alloShadowDom ? window.__alloShadowDom.deepActiveElement() : document.activeElement;
+    if (active && active !== document.body) active.blur();
     delete window.__alloFocusAudit;
   });
 

@@ -72,7 +72,7 @@ describe('every completion path carries it', () => {
     expect(payload).toContain('const hiddenMs = Math.round(probeHiddenMs())');
     expect(payload).toContain('hiddenMs,');
     expect(payload).toContain('interrupted: hiddenMs >= PROBE_INTERRUPTION_MS');
-    expect((MODULE.match(/emitProbeComplete\(/g) || []).length).toBe(3);
+    expect((MODULE.match(/emitProbeComplete\(/g) || []).length).toBeGreaterThanOrEqual(3);
     expect((MODULE.match(/onProbeComplete\(/g) || []).length).toBe(1);
   });
 

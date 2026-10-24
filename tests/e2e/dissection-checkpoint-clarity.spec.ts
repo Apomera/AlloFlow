@@ -196,11 +196,13 @@ test('guided observation browsing and coaching require explicit evidence confirm
   const before = await evidence(page);
   await choices.first().focus(); await page.keyboard.press('ArrowRight');
   await expect(choices.nth(1)).toBeFocused(); expect(await evidence(page)).toEqual(before);
-  await page.keyboard.press('Enter');
-  await expect(choices.nth(1).locator('.diss-learning-check__marker')).toHaveText('Review choice');
-  await expect(choices.nth(1)).toHaveAttribute('aria-describedby', 'diss-guided-observation-feedback');
+  const correct = choices.filter({ hasText: 'Lighter, thinner ventral surface' });
+  const wrong = choices.filter({ hasNotText: 'Lighter, thinner ventral surface' }).first();
+  await wrong.focus(); await page.keyboard.press('Enter');
+  await expect(wrong.locator('.diss-learning-check__marker')).toHaveText('Review choice');
+  await expect(wrong).toHaveAttribute('aria-describedby', 'diss-guided-observation-feedback');
   expect(await evidence(page)).toEqual(before);
-  await choices.first().focus(); await page.keyboard.press('Enter');
+  await correct.focus(); await page.keyboard.press('Enter');
   await expect(panel).toHaveCount(0);
   await expect(page.locator('#diss-canvas')).toBeFocused();
   const after = await evidence(page);

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Naobserbahan ang mga layunin ng hamon. Susunod, sa pagsasanay sa pamamahala ng enerhiya, ihambing ang pagbaba sa pinakamababang takbo ng makina at ang pag-akyat gamit ang lakas ng makina.",
+  "stem.flightsim.coaching_energy_complete": "Naobserbahan ang mga layunin sa pamamahala ng enerhiya. Susunod, magsanay sa pagkontrol ng enerhiya sa maikling paglapit sa paliparan, pagkatapos ay ihambing ang bilis ng pagbaba at ang pagdampi sa lupa.",
+  "stem.flightsim.drone_battery_low": "Mahina na ang baterya: {pct}% ang natitira. Bumalik sa pinanggalingan at lumapag sa lalong madaling panahon.",
+  "stem.flightsim.drone_battery_depleted_title": "Naubos ang baterya ng drone",
+  "stem.flightsim.drone_battery_depleted_body": "Nakahinto ang paglipad dahil 0% na ang baterya. Tapusin ang misyon upang suriin ang pagsubok na ito, pagkatapos ay magsimula ng bagong misyon na may punong baterya.",
+  "stem.flightsim.end_drone_mission": "Tapusin ang misyon at suriin",
+  "stem.flightsim.geoq_nearest_place": "Aling lugar ang pinakamalapit sa kasalukuyan mong posisyon?",
+  "stem.flightsim.geoq_paused": "Nakahinto ang paglipad para sa tanong na ito. Isara ang pagsusulit, pagkatapos ay piliin ang Ipagpatuloy kapag handa ka nang lumipad.",
+  "stem.flightsim.geoq_close": "Isara ang pagsusulit",
+  "stem.flightsim.geoq_unavailable": "Walang makukuhang tanong sa heograpiya sa malapit. Magpatuloy sa paggalugad at subukan muli.",
+  "stem.flightsim.geoq_answer_feedback": "Sagot mo: {answer}. Tamang sagot: {expected}."
+}

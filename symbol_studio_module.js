@@ -2954,11 +2954,11 @@
         setSelectedId(entry.id);
         finishSymbolWork(work);
         setPhotoOpen(false);
-        saved && addToast && addToast('Added photo "' + label + '" (Wikimedia Commons). Its credit is drawn under it. Review it before classroom use.', 'success');
+        saved && addToast && addToast(String(t('symbol_studio.photo_added') || '').replace('{label}', function () { return label; }), 'success');
       }).catch(function () {
         if (!symbolWorkIsCurrent(work)) return;
         finishSymbolWork(work);
-        addToast && addToast('Could not add that photo. Try another one.', 'error');
+        addToast && addToast(t('symbol_studio.photo_add_failed', 'Could not add that photo. Try another one.'), 'error');
       });
     };
     var openMulberryPicker = function () {

@@ -12853,7 +12853,8 @@ var EXPEDITION_CONNECTIONS = [
                 setHowl({ howlPreset: key, howls: preset.howls, activeHowls: preset.howls.map(function(h2) { return h2.id; }) });
                 if (typeof announceToSR === 'function') announceToSR('HOWL set changed to ' + preset.label);
               },
-              style: { minHeight: 36, borderRadius: 8, padding: '4px 8px', fontSize: 13, background: _howBg('#0f172a'), color: _howFg('#f1f5f9'), border: '1px solid ' + _howBd('#475569') }
+              // maxWidth: the longest preset label made this 551px wide, so a 320px screen scrolled sideways (WCAG 1.4.10).
+              style: { minHeight: 36, maxWidth: '100%', minWidth: 0, borderRadius: 8, padding: '4px 8px', fontSize: 13, background: _howBg('#0f172a'), color: _howFg('#f1f5f9'), border: '1px solid ' + _howBd('#475569') }
             },
               Object.keys(HOWL_PRESETS).map(function(key) { return h('option', { key: key, value: key }, HOWL_PRESETS[key].label); })
             ),

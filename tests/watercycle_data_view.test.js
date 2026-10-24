@@ -11,8 +11,9 @@ describe('Water Cycle semantic Data view', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('className: "wc-data-view wc-focus-secondary"');
-      const detailsStart = source.indexOf('className: "wc-data-view wc-focus-secondary"');
+      // 6a0c48749 (live transfer clarity) added the wc-live-data theme hook to the same details element.
+      expect(source.includes('className: "wc-data-view wc-focus-secondary wc-live-data"'), 'data view details').toBe(true);
+      const detailsStart = source.indexOf('className: "wc-data-view wc-focus-secondary wc-live-data"');
       const summaryStart = source.indexOf('React.createElement("summary"', detailsStart);
       const detailsProps = source.slice(detailsStart, summaryStart);
       expect(detailsProps).not.toContain('role:');
@@ -49,7 +50,8 @@ describe('Water Cycle semantic Data view', () => {
       expect(source).toContain('var wcDataTrailStatus = wcReplayedObservation');
       expect(source).toContain('Replay active; ');
       expect(source).toContain('scope: "row"');
-      expect(source).toContain('currentStageCue || "The selected process is highlighted in the model."');
+      // The current-process row now reads the live transfer (6a0c48749), same fallback cue.
+      expect(source.includes('wcLiveTransfer.cue || "The selected process is highlighted in the model."'), 'current process cue').toBe(true);
       expect(source).toContain('var journeyDataContext = journeyChosenRoute');
       expect(source).toContain('journeyDataContext)');
     });
@@ -67,7 +69,7 @@ describe('Water Cycle semantic Data view', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('var wcDataViewStatus = currentStageLabel +');
+      expect(source.includes("var wcDataViewStatus = wcLiveTransfer.label + '. ' +"), 'live summary starts with the current transfer').toBe(true);
       expect(source).toContain('id: "wcDataViewStatus"');
       expect(source).toContain('"aria-describedby": "wcDataViewStatus"');
       expect(source).toContain('role: "status"');

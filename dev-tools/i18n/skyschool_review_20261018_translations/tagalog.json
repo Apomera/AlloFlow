@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Mga naunang pagsubok sa pagsusulit",
+  "stem.flightsim.quiz_history_scope": "Kapag nagsimula ng bagong pagsubok, isi-save ang hanggang apat na naunang pagsubok na may naitalang unang sagot. Hindi mababago ang kasalukuyan mong pagsusulit kapag nirepaso ang mga ito.",
+  "stem.flightsim.quiz_history_empty": "Wala pang naka-save na naunang pagsubok sa pagsusulit.",
+  "stem.flightsim.quiz_history_attempt": "Na-save noong {date} · {score}/{answered} unang sagot ang tama",
+  "stem.flightsim.quiz_history_progress": "Naitala ang {answered} sa {total} tanong · {unanswered} ang hindi pa nasasagot",
+  "stem.flightsim.quiz_history_question": "Tanong {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Tamang sagot: {answer}",
+  "stem.flightsim.quiz_history_changed": "Hindi na tumutugma sa pagsusulit na ito ang {count} naka-save na tanong. Mga tala lamang ng tumutugmang tanong ang ginagamit sa pagkalkula ng marka."
+}

@@ -1994,7 +1994,10 @@ window.StemLab = window.StemLab || {
       while (d % 2 === 0) d /= 2;
       while (d % 5 === 0) d /= 5;
       if (d === 1) return result.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
-      return result.toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + '...';
+      // Long division, truncated: toFixed(8) ROUNDED, printing 2/3 as 0.66666667...
+      var ldNum = Math.abs(num), ldDen = Math.abs(den), ldRem = ldNum % ldDen, ldDigits = '';
+      for (var ldi = 0; ldi < 8; ldi++) { ldRem *= 10; ldDigits += Math.floor(ldRem / ldDen); ldRem %= ldDen; }
+      return (result < 0 ? '-' : '') + Math.floor(ldNum / ldDen) + '.' + ldDigits + '...';
     };
 
     // Decimal to fraction approximation
@@ -2802,6 +2805,8 @@ window.StemLab = window.StemLab || {
       } else if (type === 'simplify') {
         var base_d = pick([2, 3, 4, 5, 6]);
         var base_n = randInt(1, base_d - 1);
+        // Reduce the base first: 2/4 x 3 = 6/12 was keyed 2 with "GCD = 3".
+        var baseLowest = simplify(base_n, base_d); base_n = baseLowest[0]; base_d = baseLowest[1];
         var mult2 = randInt(2, 5);
         var bigN = base_n * mult2;
         var bigD = base_d * mult2;
@@ -2830,8 +2835,9 @@ window.StemLab = window.StemLab || {
         };
 
       } else if (type === 'toDecimal') {
-        var td = pick([2, 4, 5, 8, 10, 20, 25]);
-        var tn = randInt(1, td - 1);
+        // Only fractions with a whole-number percentage: 5/8 = 62.5% was keyed 63.
+        var td, tn;
+        do { td = pick([2, 4, 5, 8, 10, 20, 25]); tn = randInt(1, td - 1); } while ((tn * 100) % td !== 0);
         var decVal = tn / td;
         var decStr = decVal.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
         // Ask for percentage as integer
@@ -3784,8 +3790,11 @@ window.StemLab = window.StemLab || {
           h('button', { 'aria-label': __alloT('stem.fractions.log_this_conversion', 'Log This Conversion'),
             onClick: function() {
               sfxComplete();
-              var newCount = (_f.convertCount || 0) + 1;
-              upd({ convertCount: newCount });
+              // Count each fraction once: logging 3/4 five times earned "Convert 5 fractions".
+              var convKey = convNum + '/' + convDen;
+              var convSeen = _f.convertSeen || {};
+              var newCount = (_f.convertCount || 0) + (convSeen[convKey] ? 0 : 1);
+              if (!convSeen[convKey]) { var nextConvSeen = Object.assign({}, convSeen); nextConvSeen[convKey] = true; upd({ convertCount: newCount, convertSeen: nextConvSeen }); }
               addToast('\uD83D\uDD04 Converted: ' + convNum + '/' + convDen + ' = ' + cDecStr, 'success');
               checkBadges({
                 correct: score.correct, streak: streak,
@@ -3869,10 +3878,14 @@ window.StemLab = window.StemLab || {
           var sB = simplify(num, den);
           if (sA[0] === sB[0] && sA[1] === sB[1] && (a.n !== num || a.d !== den)) {
             sfxCorrect();
-            var newPairs = (_f.wallPairsFound || 0) + 1;
-            upd({ wallPairsFound: newPairs });
+            // Count each pair once (either click order): re-clicking 1/2 + 2/4 earned "3 pairs".
+            var pairKey = [a.n + '/' + a.d, num + '/' + den].sort().join('=');
+            var wallSeen = _f.wallPairsSeen || {};
+            var isNewPair = !wallSeen[pairKey];
+            var newPairs = (_f.wallPairsFound || 0) + (isNewPair ? 1 : 0);
+            if (isNewPair) { var nextWallSeen = Object.assign({}, wallSeen); nextWallSeen[pairKey] = true; upd({ wallPairsFound: newPairs, wallPairsSeen: nextWallSeen }); }
             addToast('\u2705 ' + a.n + '/' + a.d + ' = ' + num + '/' + den + ' — Equivalent!', 'success');
-            awardXP('fractionWall', 10, 'equivalent pair');
+            if (isNewPair) awardXP('fractionWall', 10, 'equivalent pair');
             checkBadges({
               correct: score.correct, streak: streak,
               typesUsed: Object.keys(challengeTypesUsed).length,
@@ -4395,9 +4408,12 @@ window.StemLab = window.StemLab || {
     };
 
     // Helper: check word problem answer
+    var wordProblemSubmissionPending = false;
     var checkWordProblem = function(problem, response) {
       var trimmed = String(response || '').trim();
-      if (!trimmed) return;
+      // A solved problem stays solved: each extra Check click re-scored it (+1 correct, +15 XP).
+      if (!trimmed || wordProblemSubmissionPending || (_f.wpFeedback && _f.wpFeedback.correct)) return;
+      wordProblemSubmissionPending = true;
       var evaluation = evaluateRationalAnswer(trimmed, problem.answer);
       var ok = evaluation.correct;
       if (ok) {
@@ -4766,10 +4782,12 @@ window.StemLab = window.StemLab || {
         // Build `count` pairs of equivalent fractions, return shuffled cards.
         var pairs = [];
         var used = {};
-        while (pairs.length < count) {
+        // `pairs` holds CARDS (two per pair): `< count` dealt 3 of the promised 6 pairs.
+        // Key by VALUE so no two pairs are equal (1/2 + 4/8 was graded "not a pair").
+        while (pairs.length < count * 2) {
           var d = pick([2, 3, 4, 5, 6, 8]);
           var n = randInt(1, d - 1);
-          var k = n + '/' + d;
+          var k = simplify(n, d).join('/');
           if (used[k]) continue;
           var mult = randInt(2, 4);
           var equivN = n * mult;
@@ -5211,14 +5229,19 @@ window.StemLab = window.StemLab || {
               [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22], [3, 8, 13, 18, 23], [4, 9, 14, 19, 24],
               [0, 6, 12, 18, 24], [4, 8, 12, 16, 20]
             ];
+            // Award each line ONCE per card: a finished line re-paid 75 XP on every later mark,
+            // and unmark + re-mark of one cell farmed it.
+            var paidLines = Array.isArray(bg.bingoLines) ? bg.bingoLines : [];
+            var newLines = [];
             for (var l = 0; l < lines.length; l++) {
-              if (lines[l].every(function(i) { return newMarked.indexOf(i) >= 0; })) {
-                sfxComplete();
-                addToast('🎉 BINGO!', 'success');
-                upd({ bgGame: Object.assign({}, bg, { marked: newMarked, bingoCount: (bg.bingoCount || 0) + 1 }) });
-                awardXP('fractionBingo', 75, 'Bingo!');
-                return;
-              }
+              if (paidLines.indexOf(l) < 0 && lines[l].every(function(i) { return newMarked.indexOf(i) >= 0; })) newLines.push(l);
+            }
+            if (newLines.length) {
+              sfxComplete();
+              addToast('🎉 BINGO!', 'success');
+              upd({ bgGame: Object.assign({}, bg, { marked: newMarked, bingoCount: (bg.bingoCount || 0) + newLines.length, bingoLines: paidLines.concat(newLines) }) });
+              awardXP('fractionBingo', 75, 'Bingo!');
+              return;
             }
           } else {
             sfxWrong();
@@ -5264,6 +5287,7 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: 'bc-' + i,
                 onClick: function() { markCell(i); },
+                'aria-pressed': marked,
                 className: 'aspect-square rounded text-sm font-bold font-mono border-2 transition-all ' +
                   (marked ? 'bg-yellow-800 text-white border-yellow-900' : 'bg-white text-yellow-900 border-yellow-300 hover:bg-yellow-50')
               }, cell.n + '/' + cell.d);
@@ -6047,6 +6071,7 @@ window.StemLab = window.StemLab || {
           } else if (ws.topic === 'simplify') {
             var bd = pick([2, 3, 4, 5, 6]);
             var bn = randInt(1, bd - 1);
+            var bLowest = simplify(bn, bd); bn = bLowest[0]; bd = bLowest[1]; // key must be lowest terms (15/30 was keyed 3/6)
             var mult = randInt(2, 5);
             p = { q: 'Simplify ' + (bn * mult) + '/' + (bd * mult), answer: bn + '/' + bd };
           } else if (ws.topic === 'add') {
@@ -8996,8 +9021,11 @@ window.StemLab = window.StemLab || {
       var storyAnswer = _f.storyAnswer || '';
       var storyFeedback = _f.storyFeedback || null;
       var chapter = BAKERY_STORY.find(function(c) { return c.chapter === storyCh; }) || BAKERY_STORY[0];
+      var storySubmissionPending = false;
       var checkStory = function() {
-        if (!storyAnswer.trim()) return;
+        // A solved chapter stays solved: each extra Submit re-awarded 25 XP.
+        if (!storyAnswer.trim() || storySubmissionPending || (storyFeedback && storyFeedback.correct)) return;
+        storySubmissionPending = true;
         var evaluation = evaluateRationalAnswer(storyAnswer, chapter.answer);
         var ok = evaluation.correct;
         if (ok) {
@@ -9121,6 +9149,20 @@ window.StemLab = window.StemLab || {
             }
           }
           if (item) {
+            // One choice per value: drop repeats and distractors EQUAL to the key (4/4: 5/5 was a
+            // second right answer graded wrong; 1/2 - 1/4 listed 1/4 twice), then refill.
+            var keyPair = /^\d+\/\d+$/.test(item.answer) ? item.answer.split('/').map(Number) : null;
+            var sameAsKey = function(c) {
+              if (!keyPair || c === item.answer || !/^\d+\/\d+$/.test(c)) return false;
+              var cp = c.split('/').map(Number);
+              return cp[0] * keyPair[1] === keyPair[0] * cp[1];
+            };
+            var wanted = Math.min(4, item.choices.length);
+            item.choices = item.choices.filter(function(c, ci, all) { return all.indexOf(c) === ci && !sameAsKey(c); });
+            for (var fill = 1; keyPair && item.choices.length < wanted && fill < 12; fill++) {
+              var extra = (keyPair[0] + fill) + '/' + keyPair[1];
+              if (item.choices.indexOf(extra) < 0) item.choices.push(extra);
+            }
             item.choices = item.choices.slice(0, 4);
             // Shuffle
             fyShuffle(item.choices);
@@ -9266,9 +9308,10 @@ window.StemLab = window.StemLab || {
     var FRACTION_MAGIC = [
       {
         id: 'always-half', title: __alloT('stem.fractions.the_1_2_trick', 'The 1/2 trick'),
-        setup: 'Pick any number. Add 1. Multiply by 2. Add 4. Subtract 6. Divide by 2. Subtract the original number.',
+        // "Subtract 6" made the trick land on 0, contradicting its own reveal; the explanation key is new because the old one stores that contradiction.
+        setup: 'Pick any number. Add 1. Multiply by 2. Add 4. Subtract 4. Divide by 2. Subtract the original number.',
         reveal: 'The answer is always 1!',
-        explanation: __alloT('stem.fractions.let_your_number_be_n_the_sequence_n_1_', 'Let your number be n. The sequence: (n+1) × 2 + 4 − 6 = 2n + 2 + 4 − 6 = 2n. Divide by 2 → n. Subtract original → 0. Wait — that gives 0, not 1. Try: n → (n+1)×2 = 2n+2 → +4 = 2n+6 → −6 = 2n → ÷2 = n → −original = 0. The "trick" relies on hidden constants in the sequence.')
+        explanation: __alloT('stem.fractions.magic_always_one_explanation', 'Let your number be n. (n + 1) × 2 = 2n + 2. Add 4: 2n + 6. Subtract 4: 2n + 2. Divide by 2: n + 1. Subtract the original n: 1. Each n you add is taken away again, so only the hidden + 1 survives, whatever number you pick.')
       },
       {
         id: 'sum-unit', title: __alloT('stem.fractions.sum_of_unit_fractions', 'Sum of unit fractions'),
@@ -10777,8 +10820,11 @@ window.StemLab = window.StemLab || {
       if (problem && problem.steps) { if (msStep > problem.steps.length - 1) msStep = problem.steps.length - 1; if (msStep < 0) msStep = 0; }
       var step = problem.steps[msStep];
 
+      var msSubmissionPending = false;
       var checkMS = function() {
-        if (!msAnswer.trim()) return;
+        // Every step answered = problem done; re-checking the last step re-awarded 40 XP.
+        if (!msAnswer.trim() || msSubmissionPending || msAnswers.length >= problem.steps.length) return;
+        msSubmissionPending = true;
         var evaluation = evaluateRationalAnswer(msAnswer, step.a);
         var ok = evaluation.correct;
         if (ok) {

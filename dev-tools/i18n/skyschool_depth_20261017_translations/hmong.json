@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Khaws txoj kev ya tam sim no",
+  "stem.flightsim.flight_assistance_targets": "Kev taw {hdg}° · Qhov siab {alt} ft MSL · Ceev {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Kev taw {hdg}° · Qhov siab {alt} ft MSL · Ceev mus tom ntej {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Tig mus rau sab laug {degrees}° rau {airport}.",
+  "stem.flightsim.challenge_turn_right": "Tig mus rau sab xis {degrees}° rau {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Koj tab tom ya rau {airport}. Ua raws tus cim qhia kev ya.",
+  "stem.flightsim.challenge_runway_reference": "Txoj kev khiav dav hlau rau kev xyaum {runway}: kev taw {heading}°. Tig lub dav hlau kom ncaj nrog txoj kev khiav ua ntej nqis los tsaws."
+}

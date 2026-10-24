@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "हाजिरीजवाफका अघिल्ला प्रयासहरू",
+  "stem.flightsim.quiz_history_scope": "नयाँ प्रयास सुरु गर्दा पहिलो जवाफ अभिलेख गरिएका अघिल्ला बढीमा चार प्रयास सुरक्षित हुन्छन्। तिनको समीक्षा गर्दा तपाईंको हालको हाजिरीजवाफ परिवर्तन हुँदैन।",
+  "stem.flightsim.quiz_history_empty": "हाजिरीजवाफका कुनै अघिल्ला प्रयासहरू अहिलेसम्म सुरक्षित गरिएका छैनन्।",
+  "stem.flightsim.quiz_history_attempt": "{date} मा सुरक्षित गरिएको · पहिलो जवाफमध्ये {score}/{answered} सही",
+  "stem.flightsim.quiz_history_progress": "{total} प्रश्नमध्ये {answered} अभिलेख गरिएका · {unanswered} अनुत्तरित",
+  "stem.flightsim.quiz_history_question": "प्रश्न {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "सही जवाफ: {answer}",
+  "stem.flightsim.quiz_history_changed": "सुरक्षित गरिएका {count} प्रश्न अब यो हाजिरीजवाफसँग मिल्दैनन्। अङ्कका लागि मिल्ने प्रश्नका अभिलेख मात्र प्रयोग गरिन्छ।"
+}

@@ -4,10 +4,10 @@
 // Canvas-compatible: NO localStorage dependency for flags/transcripts.
 // Uses in-memory storage + integrates with the existing safety pipeline:
 //   - SafetyContentChecker (regex-based immediate checking)
-//   - handleAiSafetyFlag callback (feeds aiSafetyFlags state)
-//   - syncProgressToFirestore (60s count-summary pipeline to the teacher
-//     dashboard — LIVE WEB SESSIONS ONLY; the sync is disabled on Canvas
-//     hosts and in solo mode, where flags reach no adult automatically)
+//   - handleAiSafetyFlag callback (feeds aiSafetyFlags state, on this device)
+//   - NO flag reaches a teacher in any mode: the 60s progress sync writes
+//     sessions/{code}/studentProgress, which firestore.rules denies and no
+//     teacher view reads. So student copy never promises an alert.
 //
 // Architecture:
 //   - Consent: in-memory per session (re-shown each Canvas session = more protective)
@@ -74,11 +74,12 @@
     } catch (_) { return false; }
   }
 
-  // TRUE only when a safety flag can actually reach a teacher: a live session
-  // code is set AND we are not on a Canvas host (where the sync is disabled).
-  // Every promise-making surface below branches on this, so the copy can
-  // never promise adult notification a code path cannot deliver.
-  function _liveFlagsReachTeacher(activeSessionCode) {
+  // A live session (code set, not Canvas) changes only what the teacher can
+  // see of saved/submitted work. It does NOT deliver safety flags: no path
+  // carries them to a teacher yet (the studentProgress write is denied by
+  // firestore.rules and nothing reads it). So no copy here promises an alert
+  // in any mode. Add alert copy only together with a path that delivers it.
+  function _inLiveSession(activeSessionCode) {
     return !!(activeSessionCode && String(activeSessionCode).trim()) && !_isCanvasHost();
   }
   // Transient snapshot of the most recent flagged snippet. Single string,
@@ -102,8 +103,8 @@
    * The old copy promised unconditionally that "a caring adult at your school
    * will be told" and "may see what you wrote." Neither is deliverable in
    * solo/Canvas mode (no sync, save files exclude flags, no scanner reads SEL
-   * chats), and even in live sessions the teacher receives an alert COUNT,
-   * never the words. A student deciding what to disclose must not be told an
+   * chats), and no live-session path delivers a flag to the teacher either.
+   * A student deciding what to disclose must not be told an
    * adult is coming when none is. The copy now states only what each mode
    * actually does, and in every mode tells the student the one thing that is
    * always true: an adult can only help if a person tells them.
@@ -116,7 +117,7 @@
    */
   window.SelHub.renderConsentScreen = function(h, band, onConsent, activeSessionCode) {
     var isYoung = band === 'elementary';
-    var live = _liveFlagsReachTeacher(activeSessionCode);
+    var live = _inLiveSession(activeSessionCode);
     var intro = live
       ? (isYoung
         ? 'You\u2019re in a class session with your teacher. Work you save or turn in can be seen by them.'
@@ -124,20 +125,13 @@
       : (isYoung
         ? 'This is a private space to think about how you feel. What you write here is not sent to your teacher or any adult.'
         : 'This is a private space. What you write here is not sent to your teacher or school \u2014 no adult is automatically notified.');
-    var safetyBox = live
-      ? (isYoung
-        ? 'If what you write sounds like you might be in danger, this app shows your teacher an alert so they can check on you \u2014 they see the alert, not your words. And if you are in danger, don\u2019t wait: tell a trusted adult right away.'
-        : 'If what you write suggests serious danger \u2014 to you or someone else \u2014 the app raises an alert on your teacher\u2019s dashboard. The alert is a flag, not your words. If you\u2019re in danger right now, don\u2019t wait for software: tell a trusted adult, or call or text 988.')
-      : (isYoung
-        ? 'This app cannot tell an adult for you. If you are in danger, or someone is hurting you or someone else, tell a trusted adult right away \u2014 a parent, a teacher, or a counselor. If what you write sounds serious, this app will show you ways to get help.'
-        : 'This app cannot notify an adult on its own. If what you write suggests danger, it will show you crisis resources right away \u2014 but reaching an adult is up to you. If you\u2019re dealing with harm, abuse, or thoughts of hurting yourself, please tell a trusted adult directly, or call or text 988.');
-    var closing = live
-      ? (isYoung
-        ? 'Asking for help is always okay. A grown-up would rather know.'
-        : 'We tell you this up front so you can make an informed choice about what to share.')
-      : (isYoung
-        ? 'A grown-up can only help if a person tells them. You can always ask a trusted adult for help \u2014 about anything.'
-        : 'We tell you this up front so you can make an informed choice about what to share \u2014 and so you never assume an adult has been told when they haven\u2019t.');
+    // Same in every mode: no path delivers an alert to an adult (see _inLiveSession).
+    var safetyBox = isYoung
+      ? 'This app cannot tell an adult for you. If you are in danger, or someone is hurting you or someone else, tell a trusted adult right away \u2014 a parent, a teacher, or a counselor. If what you write sounds serious, this app will show you ways to get help.'
+      : 'This app cannot notify an adult on its own. If what you write suggests danger, it will show you crisis resources right away \u2014 but reaching an adult is up to you. If you\u2019re dealing with harm, abuse, or thoughts of hurting yourself, please tell a trusted adult directly, or call or text 988.';
+    var closing = isYoung
+      ? 'A grown-up can only help if a person tells them. You can always ask a trusted adult for help \u2014 about anything.'
+      : 'We tell you this up front so you can make an informed choice about what to share \u2014 and so you never assume an adult has been told when they haven\u2019t.';
     // Light-designed card: give it its own white surface, or its dark ink lands on the tool's dark shell (1.22:1).
     return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center', background: '#ffffff', borderRadius: '16px' } },
       h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83D\uDD12'),
@@ -445,9 +439,8 @@
   //     is close to real, talk to a trusted adult" reminder after.
   //   - 'continue' → no safety signal. Proceed normally.
   //
-  // Also fires onSafetyFlag (writes to localStorage via the same pipeline
-  // as safeCoach), so the flag is visible to a hosting teacher in live
-  // sessions.
+  // Also fires onSafetyFlag (the same on-device pipeline as safeCoach; no
+  // flag reaches a teacher, see _inLiveSession).
   window.SelHub.safeRehearseCheck = function(message, opts) {
     opts = opts || {};
     var result = { action: 'continue', severity: 'none', flag: null };
@@ -465,8 +458,7 @@
     result.flag = top;
     result.severity = top.severity;
     // Fire the flag through the same pipeline as safeCoach / adventure /
-    // socratic. In solo mode this writes to localStorage only; in live
-    // session the teacher dashboard can see it.
+    // socratic. It is stored on this device only, in every mode.
     if (opts.onSafetyFlag) {
       try {
         opts.onSafetyFlag(Object.assign({}, top, {
@@ -504,12 +496,11 @@
   //     this device; NO adult is notified automatically; crisis words surface
   //     help resources.
   //   Live session (non-Canvas): same, plus saved/submitted work is teacher-
-  //     visible and serious safety flags raise a count-alert on the teacher
-  //     dashboard.
+  //     visible. No safety alert reaches the teacher (see _inLiveSession).
   window.SelHub.renderSafetyDisclosure = function(h, band, activeSessionCode) {
-    var live = _liveFlagsReachTeacher(activeSessionCode);
+    var live = _inLiveSession(activeSessionCode);
     var body = live
-      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them, and serious safety concerns raise an alert on their dashboard (an alert, not your words). Your words are sent to the AI service to write its replies. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.'
+      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them. Your words are sent to the AI service to write its replies. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.'
       : 'Your words are sent to the AI service to write its replies, and your conversation is saved with your project on this device. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.';
     var flags = (window.SelHub && window.SelHub._themeFlags) || {};
     var ink = flags.isContrast ? '#ffff00' : (flags.isDark !== false ? '#94a3b8' : '#64748b');   // shell is dark by default

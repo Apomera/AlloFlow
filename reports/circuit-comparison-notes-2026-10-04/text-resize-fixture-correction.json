@@ -1,9 +1,0 @@
-{
-  "before": "const fonts=double?await review.locator('summary,p,h5,button').evaluateAll(nodes=>nodes.map(el=>{const before=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=before*2+'px';return{tag:el.tagName,text:el.textContent,before,after:parseFloat(getComputedStyle(el).fontSize)};})):[];\n      await settle();",
-  "after": "const normalFonts=double?await review.locator('summary,p,h5,button').evaluateAll(nodes=>nodes.map(el=>parseFloat(getComputedStyle(el).fontSize))):[];\n      if(double)await review.locator('summary,p,h5,button').evaluateAll((nodes,sizes)=>nodes.forEach((el,index)=>{el.style.setProperty('transition','none','important');el.style.setProperty('animation','none','important');el.style.setProperty('font-size',sizes[index]*2+'px','important');}),normalFonts);\n      await settle();\n      const fonts=double?await review.locator('summary,p,h5,button').evaluateAll((nodes,sizes)=>nodes.map((el,index)=>({tag:el.tagName,text:el.textContent,before:sizes[index],after:parseFloat(getComputedStyle(el).fontSize)})),normalFonts):[];",
-  "beforeScriptSha256": "30e98fa33c65aa6c2d2bf5c7389067d2a53a97d4a31f6ebe0bf906780dff4fc3",
-  "afterScriptSha256": "8683cfc14604943bfc32be2905e9e0b29d3c6c22933beaad943ae1e6d7803fe5",
-  "productChanged": false,
-  "assertionsRetained": true,
-  "archiveReceiptSha256": "bfbdf7dd090d494f2144b2777928e153426dff669bae0fc5e6359e5d113a7813"
-}

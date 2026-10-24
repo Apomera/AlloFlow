@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Görevin tamamlanması ve dönüşte yapılan iniş kaydedildi. Kumandada veya rotada bilinçli bir değişiklik yaparak bu görevi tekrar deneyin, ardından kaydedilen gözlemleri karşılaştırın.",
+  "stem.flightsim.coaching_mission_depleted": "Dronun şarjı bitti. Yeni bir görev başlatın, kısa rotalar kullanın ve pil azalmadan önce dönüşü planlayın.",
+  "stem.flightsim.coaching_mission_unknown": "Bu görevin kanıtları eksik veya birbiriyle çelişiyor. Kaydedilenleri inceleyin, ardından yeni bir deneme başlatın.",
+  "stem.flightsim.coaching_mission_capture": "Bazı hedeflerin fotoğrafı henüz çekilmedi. Yeni bir görevde hedeflere tek tek yaklaşın ve çekim kaydedilene kadar gösterilen yükseklik ve yer hızı sınırları içinde kalın.",
+  "stem.flightsim.coaching_mission_recovery": "Kazazede alınamadı. Yeni bir kurtarma görevinde üsse dönmeden önce gösterilen yükseklik, sürüklenme ve dikey hız sınırları içinde kararlı biçimde havada sabit kalma çalışması yapın.",
+  "stem.flightsim.coaching_mission_return": "Kazazedeyi alma veya fotoğraf çekme hedefleri kaydedildi; dönüş inişi henüz yapılmadı. Yeni bir görev başlatın ve üsse dönmek için zaman ve pil ayırın.",
+  "stem.flightsim.mission_reflection_prompt": "Hedef, havada sabit kalma veya dönüşle ilgili hangi kararınızı değiştirirdiniz? Seçiminizi açıklamak ve yeni bir deneme için tek bir değişiklik planlamak üzere görev gözlemlerini kullanın. Açıklamanız bu uçuşla birlikte kaydedilir.",
+  "stem.flightsim.journal_different_airport": "Bu yaklaşmalarda farklı havaalanları kullanıldı. Gözlemlerini ayrı ayrı inceleyin; ölçüm farkları hesaplanmaz.",
+  "stem.flightsim.journal_approach_airport": "Yaklaşma havaalanı: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "GÖREV KANITLARI",
+  "stem.flightsim.challenge_brake_release": "Gücü artırmadan önce X tuşunu bırakın ve kumanda panelindeki tekerlek frenlerini kapatın."
+}

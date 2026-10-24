@@ -1,0 +1,93 @@
+{
+  "separateReleaseGatesStillRequired": true,
+  "after": "after.json",
+  "failure": null,
+  "success": true,
+  "scope": "Local combined-source build readiness only; not deployment or full CI",
+  "before": "before.json",
+  "publishOrAuthCommandsExecuted": false,
+  "expectedDinoSHA256": "AB6B09823E2E937A7D099259803F21C77FEBB085E1F0D7DF7E0DF51B03475585",
+  "startedAtUTC": "2026-10-22T03:26:56.9820056Z",
+  "phases": [
+    {
+      "finishedAtUTC": "2026-10-22T03:27:23.7305928Z",
+      "program": "C:\\Program Files\\nodejs\\node.exe",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+      "arguments": [
+        "build.js",
+        "--mode=prod",
+        "--force"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:26:58.1586469Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\01-root-prod.log",
+      "name": "01-root-prod"
+    },
+    {
+      "finishedAtUTC": "2026-10-22T03:31:58.7148354Z",
+      "program": "C:\\Program Files\\nodejs\\npm.cmd",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app",
+      "arguments": [
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:27:24.2829734Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\02-hosted-build.log",
+      "name": "02-hosted-build"
+    },
+    {
+      "finishedAtUTC": "2026-10-22T03:31:59.6899967Z",
+      "program": "C:\\Program Files\\nodejs\\node.exe",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+      "arguments": [
+        "dev-tools/check_desktop_build_space.cjs"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:31:59.0765981Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\03-desktop-space.log",
+      "name": "03-desktop-space"
+    },
+    {
+      "finishedAtUTC": "2026-10-22T03:37:12.6683147Z",
+      "program": "C:\\Program Files\\nodejs\\npm.cmd",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop",
+      "arguments": [
+        "run",
+        "web:build:isolated"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:31:59.8961216Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\04-desktop-isolated.log",
+      "name": "04-desktop-isolated"
+    },
+    {
+      "finishedAtUTC": "2026-10-22T03:37:13.6828086Z",
+      "program": "C:\\Program Files\\nodejs\\npm.cmd",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop",
+      "arguments": [
+        "run",
+        "verify:web-build"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:37:12.9702614Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\05-desktop-verify.log",
+      "name": "05-desktop-verify"
+    },
+    {
+      "finishedAtUTC": "2026-10-22T03:37:19.2474374Z",
+      "program": "C:\\Program Files\\nodejs\\node.exe",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+      "arguments": [
+        "dev-tools/check_deploy_mirror.cjs",
+        "--quiet"
+      ],
+      "exitCode": 0,
+      "startedAtUTC": "2026-10-22T03:37:13.8468366Z",
+      "log": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tmp\\shared-release\\combined-build-only-3\\06-mirror-verify.log",
+      "name": "06-mirror-verify"
+    }
+  ],
+  "finishedAtUTC": "2026-10-22T03:37:21.0684388Z",
+  "gitMutationCommandsExecuted": false
+}

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "ተልዕኮው መጠናቀቁ እና ተመልሶ ማረፍ ተመዝግበዋል። አንድ የመቆጣጠሪያ ወይም የመንገድ ለውጥ አስበው በማድረግ ይህን ተልዕኮ እንደገና ይሞክሩ፤ ከዚያም የተቀመጡትን ምልከታዎች ያነጻጽሩ።",
+  "stem.flightsim.coaching_mission_depleted": "የድሮኑ ባትሪ አልቋል። አዲስ ተልዕኮ ይጀምሩ፣ አጭር መንገዶችን ይጠቀሙ፣ እና ባትሪው ከመዳከሙ በፊት መመለስን ያቅዱ።",
+  "stem.flightsim.coaching_mission_unknown": "ይህ ተልዕኮ ያልተሟላ ወይም የሚጋጭ ማስረጃ አለው። የተመዘገበውን ይገምግሙ፣ ከዚያም አዲስ ሙከራ ይጀምሩ።",
+  "stem.flightsim.coaching_mission_capture": "አንዳንድ ዒላማዎች ገና አልተመዘገቡም። በአዲስ ተልዕኮ ውስጥ ዒላማዎቹን በአንድ በአንድ ይቅረቡ፣ እና መመዝገባቸው እስኪታይ ድረስ በሚታዩት የከፍታና የመሬት ፍጥነት ገደቦች ውስጥ ይቆዩ።",
+  "stem.flightsim.coaching_mission_recovery": "ከአደጋ የተረፈው ሰው አልዳነም። በአዲስ የማዳን ተልዕኮ፣ ወደ መሠረት ከመመለስዎ በፊት በሚታዩት የከፍታ፣ የመንሸራተትና የቁም ፍጥነት ገደቦች ውስጥ በአንድ ቦታ የተረጋጋ በረራ ይለማመዱ።",
+  "stem.flightsim.coaching_mission_return": "የማዳን ወይም የዒላማ መመዝገብ ዓላማዎች ተመዝግበዋል፤ ተመልሶ ማረፍ ይቀራል። አዲስ ተልዕኮ ይጀምሩ፣ ከዚያም ወደ መሠረት ለመመለስ ጊዜና ባትሪ ይቆጥቡ።",
+  "stem.flightsim.mission_reflection_prompt": "ስለ ዒላማ፣ በአንድ ቦታ ስለ መብረር ወይም ስለ መመለስ የትኛውን ውሳኔ ይቀይራሉ? ምርጫዎን ለማብራራትና ለአዲስ ሙከራ አንድ ለውጥ ለማቀድ የተልዕኮውን ምልከታዎች ይጠቀሙ። ማብራሪያዎ ከዚህ በረራ ጋር ይቀመጣል።",
+  "stem.flightsim.journal_different_airport": "እነዚህ የማረፊያ መቅረቦች በተለያዩ አየር ማረፊያዎች ተደርገዋል። ምልከታዎቻቸውን በተናጠል ይገምግሙ፤ የመለኪያ ለውጦች አይሰሉም።",
+  "stem.flightsim.journal_approach_airport": "የመቅረቢያ አየር ማረፊያ፦ {airport}።",
+  "stem.flightsim.mission_evidence_heading": "የተልዕኮ ማስረጃ",
+  "stem.flightsim.challenge_brake_release": "ኃይል ከመጨመርዎ በፊት Xን ይልቀቁ እና በDeck ውስጥ የጎማ ፍሬኖችን ያጥፉ።"
+}

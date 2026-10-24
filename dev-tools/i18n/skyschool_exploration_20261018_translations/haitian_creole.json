@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Rezilta rechèch: {cards} kat nan {topics} sijè.",
+  "stem.flightsim.learn_library_counts": "{cards} kat · {topics} sijè",
+  "stem.flightsim.learn_search_clear": "Efase rechèch la",
+  "stem.flightsim.learn_search_empty": "Pa gen kat aprantisaj ki koresponn ak “{query}”. Eseye yon lòt mo oswa efase rechèch la.",
+  "stem.flightsim.learn_search_none": "Pa gen kat aprantisaj ki koresponn",
+  "stem.flightsim.learn_search_cards": "{count} kat aprantisaj",
+  "stem.flightsim.quiz_review_progress": "Ou reponn {answered} sou {total} kesyon · {missed} repons ki pa kòrèk",
+  "stem.flightsim.quiz_review_missed": "Revize repons ki pa kòrèk yo",
+  "stem.flightsim.quiz_next_unanswered": "Pwochen kesyon san repons",
+  "stem.flightsim.quiz_review_all_answered": "Chak kesyon gen yon premye repons. Revize kesyon ou te rate yo pou pratike san nòt, oswa kòmanse yon nouvo esè.",
+  "stem.flightsim.planner_drone_agl": "{ft} pye anwo tè a",
+  "stem.flightsim.sprint_native_title": "Defi jewografi rapid",
+  "stem.flightsim.sprint_timed_hint": "Wout la kontinye pandan w ap reponn. Mete l sou poz pou li; rekòmanse anvan ou chwazi yon repons.",
+  "stem.flightsim.sprint_warp_reference": "Vwayaj la akselere pou aktivite jewografi sa a. Vitès ki parèt yo se vitès kwazyè ki anonse a; wout sa a pa mezire pèfòmans avyon an.",
+  "stem.flightsim.sprint_save_menu": "Sove defi a epi retounen nan meni an",
+  "stem.flightsim.sprint_next_stop": "Pwochen arè: {place}",
+  "stem.flightsim.geoq_approaching_city": "Ki vil ou ap pwoche?",
+  "stem.flightsim.sprint_time_remaining": "Tan ki rete: {seconds} segonn"
+}

@@ -11,7 +11,7 @@ describe('Butterfly evidence notebook',()=>{
  it('restores earlier saves with an empty notebook, and preserves writing and citations independently',()=>{
    const s=compare();s.notebook={claim:'needs-both',interpretation:'supports',evidence:['brood:milkweed','brood:bergamot'],reasoning:'The milkweed patch carried the generation through. Bergamot alone did not.',question:'What changes when the same patch is cut?'};
    const saved=BF.save(s),restored=BF.freshState(JSON.parse(JSON.stringify(saved)));
-   expect(saved.version).toBe(5);expect(restored.notebook).toEqual(s.notebook);expect(BF.notebookReady(restored)).toBe(true);
+   expect(saved.version).toBe(6);expect(restored.notebook).toEqual(s.notebook);expect(BF.notebookReady(restored)).toBe(true);
    saved.notebook.evidence.push('patch:lawn');expect(s.notebook.evidence).toHaveLength(2);
    expect(BF.freshState({version:4,observations:['milkweed']}).notebook.evidence).toEqual([]);
  });

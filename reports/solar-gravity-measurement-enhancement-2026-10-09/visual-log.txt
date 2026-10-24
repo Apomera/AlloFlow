@@ -1,8 +1,0 @@
-Starting gravity-measurement-1060-dark
-Checked gravity-measurement-1060-dark
-Starting gravity-measurement-1060-light
-Checked gravity-measurement-1060-light
-Starting gravity-measurement-320-dark
-Checked gravity-measurement-320-dark
-Starting gravity-measurement-320-light
-Checked gravity-measurement-320-light

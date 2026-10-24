@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "മുമ്പത്തെ ക്വിസ് ശ്രമങ്ങൾ",
+  "stem.flightsim.quiz_history_scope": "പുതിയ ശ്രമം ആരംഭിക്കുമ്പോൾ ആദ്യ ഉത്തരങ്ങൾ രേഖപ്പെടുത്തിയിട്ടുള്ള മുമ്പത്തെ നാല് ശ്രമങ്ങൾ വരെ സൂക്ഷിക്കുന്നു. അവ പരിശോധിക്കുന്നത് നിങ്ങളുടെ നിലവിലെ ക്വിസിൽ മാറ്റം വരുത്തില്ല.",
+  "stem.flightsim.quiz_history_empty": "മുമ്പത്തെ ക്വിസ് ശ്രമങ്ങളൊന്നും ഇതുവരെ സൂക്ഷിച്ചിട്ടില്ല.",
+  "stem.flightsim.quiz_history_attempt": "{date}-ന് സൂക്ഷിച്ചു · ആദ്യ ഉത്തരങ്ങളിൽ {score}/{answered} ശരി",
+  "stem.flightsim.quiz_history_progress": "{total} ചോദ്യങ്ങളിൽ {answered} രേഖപ്പെടുത്തി · {unanswered} ഉത്തരം നൽകിയിട്ടില്ല",
+  "stem.flightsim.quiz_history_question": "ചോദ്യം {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ശരിയായ ഉത്തരം: {answer}",
+  "stem.flightsim.quiz_history_changed": "സൂക്ഷിച്ച {count} ചോദ്യങ്ങൾ ഇനി ഈ ക്വിസുമായി പൊരുത്തപ്പെടുന്നില്ല. പൊരുത്തപ്പെടുന്ന ചോദ്യങ്ങളുടെ രേഖകൾ മാത്രമാണ് സ്കോറിനായി ഉപയോഗിക്കുന്നത്."
+}

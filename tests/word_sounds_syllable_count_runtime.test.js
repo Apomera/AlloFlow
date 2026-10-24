@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 
 const source = readFileSync('word_sounds_module.js', 'utf8').replace(/\r\n/g, '\n');
 const createCore = new Function(readFileSync('word_sounds_core.js', 'utf8') + '\nreturn createWordSoundsCore;')();
-function between(startMarker, endMarker) {
-  const start = source.indexOf(startMarker);
+function between(startMarker, endMarker, afterMarker) {
+  const start = source.indexOf(startMarker, afterMarker ? source.indexOf(afterMarker) : 0);
   const end = source.indexOf(endMarker, start + startMarker.length);
   if (start < 0 || end < 0) throw new Error(`Missing production boundary: ${startMarker}`);
   return source.slice(start, end);
@@ -15,7 +15,8 @@ const helpers = makeHelpers(createCore(), {});
 const generationSource = between('      const generateSyllableData = React.useCallback(', '      // Trigger syllable data generation');
 const effectSource = between('      // Trigger syllable data generation', '      // Trigger generation whenever the word changes while in manipulation mode.');
 const viewSource = between('    const SyllableCountingView =', '    // BEGIN WORD SOUNDS TILE ANSWER LIFECYCLE');
-const renderSource = between('          case "syllable_counting": {', '          case "rhyming": {');
+// The activity renderer's own case: the Present-to-class view has one with the same text.
+const renderSource = between('          case "syllable_counting": {', '          case "rhyming": {', 'const renderActivityContent = () => {');
 const React = {
   useCallback: fn => fn, useEffect: fn => fn(), memo: fn => fn,
   useRef: value => ({ current: value }), useLayoutEffect: () => {},
@@ -43,7 +44,7 @@ function runtime(initialItem, { language = 'en', voice = '', core = createCore({
   const localHelpers = makeHelpers(core, {});
   const env = {
     React, ...localHelpers, WS_CORE: core, wordSoundsActivity: 'syllable_counting', wordSoundsLanguage: language, selectedVoice: voice,
-    currentWordSoundsWord: initialItem.word, wordSoundsPhonemes: initialItem, preloadedWords: [initialItem],
+    currentWordSoundsWord: initialItem.word, wordSoundsPhonemes: initialItem, preloadedWords: [initialItem], itemPresentation: 0,
     syllableData: null, syllableDataRef: { current: null }, lastWordForSyllable: { current: null },
     syllableGenInFlightRef: { current: null }, syllableCountContextRef: { current: null }, syllableCountAudioRef: { current: null }, isMountedRef: { current: true },
     syllableCountDelivery: null, syllableCountDeliveryRef: { current: null }, syllableCountAttemptRef: { current: 0 },

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Đã quan sát thấy các mục tiêu của thử thách được thực hiện. Tiếp theo, trong bài tập quản lý năng lượng, hãy so sánh việc hạ độ cao khi động cơ chạy không tải với việc tăng độ cao bằng công suất động cơ.",
+  "stem.flightsim.coaching_energy_complete": "Đã quan sát thấy các mục tiêu quản lý năng lượng được thực hiện. Tiếp theo, hãy luyện kiểm soát năng lượng trong một chặng tiếp cận sân bay ngắn, rồi so sánh tốc độ hạ độ cao và lần tiếp đất.",
+  "stem.flightsim.drone_battery_low": "Pin yếu: còn {pct}%. Hãy quay về điểm cất cánh và sớm hạ cánh.",
+  "stem.flightsim.drone_battery_depleted_title": "Pin máy bay không người lái đã cạn",
+  "stem.flightsim.drone_battery_depleted_body": "Chuyến bay tạm dừng khi pin còn 0%. Kết thúc nhiệm vụ để xem lại lần thử này, rồi bắt đầu nhiệm vụ mới với pin đầy.",
+  "stem.flightsim.end_drone_mission": "Kết thúc nhiệm vụ và xem lại",
+  "stem.flightsim.geoq_nearest_place": "Địa điểm nào gần vị trí hiện tại của bạn nhất?",
+  "stem.flightsim.geoq_paused": "Chuyến bay tạm dừng để trả lời câu hỏi này. Đóng bài đố, rồi chọn Tiếp tục khi bạn sẵn sàng bay.",
+  "stem.flightsim.geoq_close": "Đóng bài đố",
+  "stem.flightsim.geoq_unavailable": "Không có câu hỏi địa lý nào ở gần đây. Hãy tiếp tục khám phá rồi thử lại.",
+  "stem.flightsim.geoq_answer_feedback": "Câu trả lời của bạn: {answer}. Đáp án đúng: {expected}."
+}

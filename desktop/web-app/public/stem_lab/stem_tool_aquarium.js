@@ -2190,7 +2190,7 @@ window.StemLab = window.StemLab || {
     {
       zone: 'Hadalpelagic / Hadal trenches',
       depth: '6000-11000 m',
-      example: 'Mariana Trench (10,994 m)',
+      example: 'Mariana Trench (about 10,935 m)',
       life: 'Specialized fish, amphipods, microorganisms',
     },
     {
@@ -2209,7 +2209,7 @@ window.StemLab = window.StemLab || {
       ecosystem: 'Mangrove forests',
       where: 'Tropical/subtropical coastal areas',
       role: 'Nursery for many fish; coastal protection',
-      threats: 'Aquaculture, coastal development; ~1/3 lost since 1980',
+      threats: 'Aquaculture, coastal development; about 1/5 lost from 1980 to 2005',
     },
     {
       ecosystem: 'Seagrass meadows',
@@ -2220,7 +2220,7 @@ window.StemLab = window.StemLab || {
       ecosystem: 'Hydrothermal vents',
       where: 'Mid-ocean ridges, deep water',
       energy: 'Chemosynthetic — bacteria use sulfur compounds for energy',
-      life: 'Tube worms, vent crabs, mussels — entirely independent of sunlight',
+      life: 'Tube worms, vent crabs, mussels; fed by chemistry, but they still need oxygen made by sunlit life',
     },
     {
       ecosystem: 'Estuaries',
@@ -2976,7 +2976,7 @@ window.StemLab = window.StemLab || {
     },
     {
       type: 'Mushroom coral',
-      look: 'Round, polypless discs in various colors',
+      look: 'Round, flat discs; each disc is one large polyp',
       difficulty: 'Beginner',
       reproduction: 'Easy; some species split',
     },
@@ -2999,7 +2999,7 @@ window.StemLab = window.StemLab || {
   var REEF_TANK = [
     {
       param: 'Salinity',
-      target: '1.025 SG (35 ppt)',
+      target: '1.026 SG (35 ppt)',
       tools: 'Refractometer (more accurate than hydrometer)',
     },
     {
@@ -3235,7 +3235,7 @@ window.StemLab = window.StemLab || {
       issue: 'Coral bleaching',
       cause: 'Rising sea temperatures + acidification (CO₂ → carbonic acid)',
       consequence: 'Coral expels zooxanthellae symbionts; turns white; dies if prolonged',
-      scale: '~14% of world\'s reefs lost since 2009',
+      scale: 'About 14% of the world\'s coral was lost from 2009 to 2018',
       response: 'Climate action, coral restoration projects, no-take zones',
     },
     {
@@ -3247,7 +3247,7 @@ window.StemLab = window.StemLab || {
     },
     {
       issue: 'Overfishing',
-      stats: '~33% of fish stocks overfished; 60% fully fished',
+      stats: 'About 35% of fish stocks overfished; about 65% fished within sustainable limits',
       examples: 'Atlantic cod (collapse 1992), bluefin tuna, sharks, swordfish',
       response: 'Sustainable seafood certifications (MSC), no-take zones, quotas, technology to reduce bycatch',
     },
@@ -3260,7 +3260,7 @@ window.StemLab = window.StemLab || {
     {
       issue: 'Dead zones',
       cause: 'Agricultural runoff → algae blooms → bacteria decompose → oxygen depleted',
-      examples: ['Gulf of Mexico (size of New Jersey)', 'Baltic Sea', 'Chesapeake Bay'],
+      examples: ['Gulf of Mexico (up to the size of New Jersey)', 'Baltic Sea', 'Chesapeake Bay'],
       response: 'Reduce fertilizer runoff, wetland restoration, sustainable agriculture',
     },
     {
@@ -3294,7 +3294,7 @@ window.StemLab = window.StemLab || {
     {
       issue: 'Shark finning',
       what: 'Cutting fins for shark fin soup, discarding rest at sea',
-      scale: '~73 million sharks killed annually',
+      scale: 'About 26 to 73 million sharks killed each year for their fins',
       response: 'Avoid shark fin soup, support international bans, restore shark populations',
     },
     {
@@ -3422,7 +3422,7 @@ window.StemLab = window.StemLab || {
     },
     {
       concept: 'Zooplankton',
-      explanation: 'Microscopic animals (krill, copepods, larvae). Eat phytoplankton; eaten by fish.',
+      explanation: 'Small drifting animals (krill, copepods, larvae). Eat phytoplankton; eaten by fish.',
       diel: 'Many migrate vertically — up to surface at night, down by day',
     },
     {
@@ -3463,7 +3463,7 @@ window.StemLab = window.StemLab || {
     {
       concept: 'Upwelling',
       what: 'Wind/currents bringing nutrient-rich deep water to surface',
-      productivity: 'Massive fisheries — Peruvian anchoveta, Atlantic herring',
+      productivity: 'Massive fisheries, like Peruvian anchoveta and sardines',
       climate: 'El Niño / La Niña affect upwelling globally',
     },
     {
@@ -3478,12 +3478,12 @@ window.StemLab = window.StemLab || {
     {
       concept: 'Sound underwater',
       explanation: 'Sound travels 4x faster in water than air',
-      use: 'Whales communicate over thousands of miles; sonar; submarine detection',
+      use: 'Whale calls can carry hundreds of miles, maybe up to 1,000; sonar; submarine detection',
     },
     {
       concept: 'Bioaccumulation',
       what: 'Toxins (mercury, PCBs) concentrate up the food chain',
-      example: 'Tuna at top of chain accumulate mercury 1000s of times higher than seawater',
+      example: 'Tuna at top of chain can hold mercury up to millions of times higher than seawater',
       health: 'Why pregnant women advised to limit tuna consumption',
     },
     {
@@ -3559,12 +3559,13 @@ window.StemLab = window.StemLab || {
       contribution: 'Deep-sea biology; documented many new species. Pioneer of ROV biology.',
     },
     {
-      name: 'Marla Sokolowski',
-      contribution: 'Behavioral genetics in zebrafish; advances in understanding animal behavior at molecular level.',
+      name: 'William Beebe',
+      lived: '1877-1962',
+      contribution: 'American naturalist and explorer. In 1934 he and Otis Barton dove to 3,028 ft (923 m) in the Bathysphere, a depth record that lasted until 1949.',
     },
     {
       name: 'Boris Worm',
-      contribution: 'Studies fisheries decline; warned of fish stock collapse by 2048 if trends continue.',
+      contribution: 'Studies fisheries decline; warned in 2006 of collapse by 2048, then his 2009 study with Ray Hilborn found some fisheries improving.',
     },
     {
       name: 'Daniel Pauly',
@@ -3590,8 +3591,9 @@ window.StemLab = window.StemLab || {
       contribution: 'Solo dive to Challenger Deep (Mariana Trench) in 2012, in custom submersible.',
     },
     {
-      name: 'Hervé Bourgeon',
-      contribution: 'Marine ecology; fish population dynamics.',
+      name: 'Ray Hilborn',
+      lived: '1947-',
+      contribution: 'Canadian fisheries scientist at the University of Washington. Models fish population dynamics; his 2009 study with Boris Worm showed how good management can rebuild fisheries.',
     },
     {
       name: 'Edith Widder',
@@ -3789,7 +3791,7 @@ window.StemLab = window.StemLab || {
     },
     {
       label: 'Avoid (overfished or environmentally damaging)',
-      examples: ['Atlantic cod (overfished)', 'Atlantic bluefin tuna', 'Caviar from wild-caught sturgeon', 'Imported shrimp (mangroves destroyed)', 'Chilean sea bass (slow-growing)', 'Orange roughy (slow-growing, deep-water bycatch)', 'Bluefin tuna'],
+      examples: ['Atlantic cod (overfished)', 'Atlantic bluefin tuna', 'Caviar from wild-caught sturgeon', 'Imported shrimp (mangroves destroyed)', 'Chilean sea bass (unless MSC certified)', 'Orange roughy (slow-growing, deep-water bycatch)', 'Bluefin tuna'],
     },
     {
       certification: 'MSC (Marine Stewardship Council)',
@@ -3824,7 +3826,7 @@ window.StemLab = window.StemLab || {
     {
       principle: 'Aquaculture is part of the solution',
       explanation: 'Carefully managed farming can supply protein with lower environmental impact than wild fishing.',
-      examples: 'Mussel farming improves water quality. Seaweed farming sequesters carbon.',
+      examples: 'Mussel farming improves water quality. Seaweed farming absorbs carbon, but how much stays stored long term is still uncertain.',
     },
     {
       principle: 'Wild salmon recovery',
@@ -5533,11 +5535,11 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Salinity and refractometers',
-          body: 'Natural seawater is 35 parts per thousand (ppt) \u2014 specific gravity ~1.025. Use a refractometer (not a hydrometer; hydrometers drift) calibrated weekly with 35 ppt calibration fluid. Off-the-shelf salt mixes (Red Sea, Instant Ocean Reef Crystals, Tropic Marin) target 35 ppt at the recommended dosage; weigh, do not eyeball.'
+          body: 'Natural seawater is 35 parts per thousand (ppt) \u2014 specific gravity about 1.026. Use a refractometer (not a hydrometer; hydrometers drift) calibrated weekly with 35 ppt calibration fluid. Off-the-shelf salt mixes (Red Sea, Instant Ocean Reef Crystals, Tropic Marin) target 35 ppt at the recommended dosage; weigh, do not eyeball.'
         },
         {
           heading: 'The two-part calcium/alkalinity dosing',
-          body: 'Corals build calcium carbonate skeletons (CaCO\u2083). They pull calcium AND carbonate from water at a 1:1 molar ratio. Calcium chloride (raises Ca, lowers Alk via chloride loading) plus sodium carbonate (raises Alk, balances chloride) keep the ratio stable. Target Ca: 410-450 ppm. Target Alk: 8-11 dKH. Either Bulk Reef Supply 2-part or kalkwasser (calcium hydroxide) auto-dosed at night.'
+          body: 'Corals build calcium carbonate skeletons (CaCO\u2083). They pull calcium AND carbonate from water at a 1:1 molar ratio. Calcium chloride (raises Ca) plus sodium carbonate (raises Alk), dosed in matched amounts, keep the ratio stable; the leftover sodium and chloride form ordinary salt. Target Ca: 410-450 ppm. Target Alk: 8-11 dKH. Either Bulk Reef Supply 2-part or kalkwasser (calcium hydroxide) auto-dosed at night.'
         },
         {
           heading: 'Magnesium \u2014 the third leg',
@@ -5569,7 +5571,7 @@ window.StemLab = window.StemLab || {
         }
       ],
       furtherReading: [
-        'Bob Goemans \u2014 "Aquarist\'s Guide to Refractometers"',
+        'Bulk Reef Supply: "How to Use a Refractometer to Measure Salinity"',
         'Eric Borneman \u2014 "Aquarium Corals"',
         'BulkReefSupply YouTube channel (52 Weeks of Reefing)'
       ]
@@ -5982,7 +5984,7 @@ window.StemLab = window.StemLab || {
     { id: 'q-32', category: 'Marine',    difficulty: 'medium', question: 'Ocean acidification has dropped surface pH by approximately how much since 1900?', options: ['1.0', '0.5', '0.1', '0.001'], correct: 2, explanation: 'Surface ocean pH has dropped ~0.1 pH units since pre-industrial times. Because pH is logarithmic, that\'s a 30% increase in hydrogen ion concentration. The geological rate of change is unprecedented.' },
     { id: 'q-33', category: 'Marine',    difficulty: 'medium', question: 'What is "coral bleaching"?', options: ['Coral skeletons turning white from direct sun exposure at low tide', 'Loss of symbiotic algae (zooxanthellae) due to stress', 'Coral being washed by waves', 'Coral attacked by fish'], correct: 1, explanation: 'Reef corals host symbiotic algae (zooxanthellae) that provide most of their nutrition via photosynthesis. Heat stress causes corals to expel the algae, revealing white calcium skeletons. Bleached corals can recover IF temperature normalizes within weeks.' },
     { id: 'q-34', category: 'Marine',    difficulty: 'hard',   question: 'The "twilight zone" of the ocean is called what, and at what depth?', options: ['Abyssopelagic, 4000-6000 m', 'Mesopelagic, 200-1000 m', 'Hadalpelagic, 6000+ m', 'Epipelagic, 0-200 m'], correct: 1, explanation: 'Mesopelagic ("middle") zone: 200-1000 m. Light fades, photosynthesis impossible, but enough light for vision. Hosts daily vertical migrations of zooplankton \u2014 the planet\'s largest animal movement.' },
-    { id: 'q-35', category: 'Conservation', difficulty: 'easy', question: 'Which fish species is commercially extinct due to overharvest from coral reefs for aquariums?', options: ['Banggai cardinalfish', 'Common goldfish', 'Wild Discus', 'Apistogramma cacatuoides'], correct: 0, explanation: 'The Banggai cardinalfish (Pterapogon kauderni) was nearly wiped out in its tiny native range (Banggai Islands, Indonesia) by aquarium trade. Captive breeding programs now supply most aquarium stock.' },
+    { id: 'q-35', category: 'Conservation', difficulty: 'easy', question: 'Which fish species became endangered mainly because of collection from coral reefs for aquariums?', options: ['Banggai cardinalfish', 'Common goldfish', 'Wild Discus', 'Apistogramma cacatuoides'], correct: 0, explanation: 'The Banggai cardinalfish (Pterapogon kauderni) has a tiny native range (Banggai Islands, Indonesia). Collection for the aquarium trade cut its wild numbers by about 90%, and it was listed as Endangered in 2007. Choose captive-bred fish when you can.' },
     { id: 'q-36', category: 'Conservation', difficulty: 'medium', question: 'What is "cyanide fishing"?', options: ['Fishing with explosives', 'Spraying sodium cyanide to stun reef fish for collection', 'Polluting reef water with cyanide-based agricultural pesticide runoff', 'Catching fish with traps'], correct: 1, explanation: 'Cyanide squirted onto reef fish stuns them for easy capture. Most die within days of collection. Common in southeast Asia despite being illegal. Reputable suppliers use net-caught fish.' },
     { id: 'q-37', category: 'Stocking',   difficulty: 'easy',  question: 'Why are fish best added to a tank gradually?', options: ['They get lonely', 'Bacteria need days to adjust to bioload increase', 'They fight in groups', 'New fish need to learn the tank shape before others arrive'], correct: 1, explanation: 'Bacteria scale with food (ammonia) availability over days. Adding 20 fish at once spikes ammonia faster than the colony can grow. Add no more than 25% of total stocking at a time.' },
     { id: 'q-38', category: 'Plants',     difficulty: 'medium', question: 'What does "EI" stand for in planted-tank fertilizer dosing?', options: ['Easy Insertion', 'Estimative Index', 'Extreme Iron', 'External Indicator'], correct: 1, explanation: 'Estimative Index (Tom Barr): dose excess macros deliberately, do 50% weekly water changes to reset. Premise: keep nutrients non-limiting so plants outcompete algae.' },
@@ -5990,8 +5992,8 @@ window.StemLab = window.StemLab || {
     { id: 'q-40', category: 'Equipment',  difficulty: 'medium', question: 'When should activated carbon NOT be in the filter?', options: ['When using medications you want active', 'When tannins are wanted', 'When trying to remove specific contaminants', 'Both A and B'], correct: 3, explanation: 'Activated carbon adsorbs medications (rendering treatments ineffective) and tannins (the yellow blackwater look). Remove carbon when treating with meds; remove if you WANT a tannin tank.' },
     { id: 'q-41', category: 'Saltwater',  difficulty: 'medium', question: 'What is a "protein skimmer" in a saltwater tank?', options: ['A net for surface food', 'A device that creates bubbles to remove dissolved organics via foam fractionation', 'A surface-feeding fish', 'A type of filter cartridge that strains protein-rich food particles from the water column'], correct: 1, explanation: 'Protein skimmers use fine air bubbles to attract dissolved organic compounds. The foam (skimmate) overflows into a collection cup and is discarded. Essential in saltwater because salt water foams readily; rarely used in freshwater (too dilute).' },
     { id: 'q-42', category: 'Stocking',   difficulty: 'medium', question: 'A pair of angelfish should typically be kept with:', options: ['Neon tetras and other nano fish (which they will eventually eat)', 'Larger community fish (rams, larger tetras, cories)', 'African cichlids', 'Saltwater fish'], correct: 1, explanation: 'Angelfish view neon tetras as food (a wild diet item). Better tankmates: rams, rainbow fish, larger tetras (lemon, rummynose), corydoras. Discus is a related concern \u2014 same family, similar issue.' },
-    { id: 'q-43', category: 'Marine',     difficulty: 'hard',  question: 'What is the "dead zone" in the Gulf of Mexico caused by?', options: ['Coral bleaching', 'Nitrogen runoff from Mississippi River creating hypoxic conditions', 'Oil spills', 'Plastic pollution accumulating in a gyre off the Louisiana coastline'], correct: 1, explanation: 'Mississippi watershed agriculture dumps nitrogen into the Gulf, fueling algae blooms. When the algae die, decomposition consumes oxygen, creating a hypoxic dead zone of ~6,500 sq miles each summer. Solution requires upstream nutrient management.' },
-    { id: 'q-44', category: 'Conservation', difficulty: 'medium', question: 'Why is the Banggai cardinalfish a conservation success in aquaria?', options: ['Wild stocks have recovered', 'Captive breeding now supplies the aquarium trade', 'It went extinct', 'It was reintroduced to the wild from public aquarium stocks'], correct: 1, explanation: 'Banggai cardinals breed reliably in captivity. Most aquarium specimens today are tank-bred, not wild-caught \u2014 reducing pressure on the small wild population in the Banggai Islands.' },
+    { id: 'q-43', category: 'Marine',     difficulty: 'hard',  question: 'What is the "dead zone" in the Gulf of Mexico caused by?', options: ['Coral bleaching', 'Nitrogen runoff from Mississippi River creating hypoxic conditions', 'Oil spills', 'Plastic pollution accumulating in a gyre off the Louisiana coastline'], correct: 1, explanation: 'Mississippi watershed agriculture dumps nitrogen into the Gulf, fueling algae blooms. When the algae die, decomposition consumes oxygen, creating a hypoxic dead zone of several thousand sq miles each summer. Solution requires upstream nutrient management.' },
+    { id: 'q-44', category: 'Conservation', difficulty: 'medium', question: 'How does captive breeding help the endangered Banggai cardinalfish?', options: ['It has fully restored the wild stocks in Indonesia', 'Tank-bred fish can replace some wild-caught ones', 'It brought the species back from extinction', 'It restocked the wild with public aquarium fish'], correct: 1, explanation: 'Banggai cardinals breed reliably in captivity. Buying tank-bred fish instead of wild-caught ones reduces pressure on the small, endangered wild population in the Banggai Islands, where collection still continues.' },
     { id: 'q-45', category: 'Plants',     difficulty: 'hard',  question: 'The maximum dissolved CO\u2082 from atmospheric equilibrium alone is approximately:', options: ['1-2 ppm', '5-10 ppm', '25-30 ppm', '100+ ppm'], correct: 0, explanation: 'Atmospheric CO\u2082 equilibrium with surface water gives 1-3 ppm. To reach 25-30 ppm (target for high-tech planted tanks), you must inject CO\u2082. Liquid carbon supplements add some but not the full 25-30 ppm range.' },
     { id: 'q-46', category: 'Cycle',      difficulty: 'hard',  question: '"Old tank syndrome" is the result of:', options: ['A sudden ammonia spike after the filter bacteria die off during a power outage', 'Years of neglected water changes leading to nitrate >80 ppm and crashed KH/pH', 'Filter failure', 'Heater malfunction'], correct: 1, explanation: 'Long-term lack of water changes lets nitrate climb, KH deplete buffering acids, pH drop. The tank "looks fine" until a single missed feeding or dying fish tips it past the buffering threshold and crashes.' },
     { id: 'q-47', category: 'Equipment',  difficulty: 'medium', question: 'What is "drip acclimation"?', options: ['Letting fish dry briefly', 'Slowly mixing new tank water into a holding container with a fish over 30-60 minutes', 'Adding dechlorinator and medication to the shipping bag as slow drips over 30-60 minutes', 'A type of fish disease'], correct: 1, explanation: 'Drip acclimation: tubing siphoned from new tank drips slowly into a bucket holding the fish. Allows the fish to adjust to new pH, GH, temperature gradually. Standard for sensitive species and saltwater.' },
@@ -6351,7 +6353,7 @@ window.StemLab = window.StemLab || {
       field: 'Marine biology, exploration, conservation',
       affiliation: 'NOAA (first female Chief Scientist), Mission Blue Foundation',
       famousWork: 'Deepest untethered dive (1,250 ft, 1979) wearing a JIM suit',
-      contribution: 'Pioneer in deep ocean exploration. Founded Deep Ocean Engineering and Deep Ocean Exploration & Research. Mission Blue established marine protected areas ("Hope Spots") globally.',
+      contribution: 'Pioneer in deep ocean exploration. Founded Deep Ocean Engineering and Deep Ocean Exploration & Research. Mission Blue names "Hope Spots," special ocean places it campaigns to protect.',
       legacy: 'TIME magazine "Hero for the Planet" (1998). National Geographic Explorer-in-Residence. Inspired countless women into oceanography.',
       keyQuote: '"No water, no life. No blue, no green." \u2014 Mission Blue',
       whyMatters: 'Active scientist-advocate; demonstrates that scientists can engage in public policy without sacrificing credibility.'
@@ -6365,8 +6367,7 @@ window.StemLab = window.StemLab || {
       affiliation: 'University of Maryland; Mote Marine Laboratory (founder)',
       famousWork: 'Lady with a Spear (1953), shark behavior studies',
       contribution: 'Dispelled myths about sharks as mindless killers; demonstrated they are intelligent, learn, and play. Trained sharks to associate visual targets with food, proving they can be conditioned.',
-      legacy: 'Founded Mote Marine Laboratory in Sarasota, FL. "Shark Lady" \u2014 popular and academic. First to dive in pressurized submersibles for shark observation.',
-      keyQuote: '"The sea is part of all of us. We came from it." (paraphrasing)',
+      legacy: 'Founded Mote Marine Laboratory in Sarasota, FL. "Shark Lady" \u2014 popular and academic. Made 72 deep submersible dives to study sharks and deep-sea fish.',
       whyMatters: 'Changed public perception of sharks from monsters to misunderstood predators worthy of protection.'
     },
     {
@@ -6377,9 +6378,9 @@ window.StemLab = window.StemLab || {
       field: 'Sociobiology, biodiversity, conservation',
       affiliation: 'Harvard University',
       famousWork: 'The Diversity of Life (1992), Biophilia (1984), Sociobiology (1975)',
-      contribution: 'Coined "biodiversity" as a public concept. Half-Earth proposal: dedicate 50% of Earth\'s surface to wildlife to prevent mass extinction. Pioneered island biogeography (with Robert MacArthur).',
+      contribution: 'Popularized the word "biodiversity" (coined by Walter G. Rosen in 1985). Half-Earth proposal: dedicate 50% of Earth\'s surface to wildlife to prevent mass extinction. Pioneered island biogeography (with Robert MacArthur).',
       legacy: 'E.O. Wilson Biodiversity Foundation. Mentored generations in biology. Bridged academic science and public policy.',
-      keyQuote: '"If we save the living environment, the biodiversity that we have left today, then everything else will follow."',
+      keyQuote: '"If you save the living environment and the biodiversity that we have left, you will also automatically save the physical environment, too."',
       whyMatters: 'Quantified biodiversity loss and proposed concrete conservation targets \u2014 work that influences marine and terrestrial protected area planning today.'
     },
     {
@@ -6389,24 +6390,23 @@ window.StemLab = window.StemLab || {
       nationality: 'American',
       field: 'Marine ecology, biology of intertidal zones',
       affiliation: 'Pacific Biological Laboratories, Cannery Row, Monterey',
-      famousWork: 'Between Pacific Tides (1939, with Jack Calvin and Joel W. Hedgpeth)',
+      famousWork: 'Between Pacific Tides (1939, with Jack Calvin; later editions revised by Joel W. Hedgpeth)',
       contribution: 'Pioneered ecological field guides \u2014 organized intertidal life by ECOLOGICAL ZONE rather than taxonomic family. Influenced modern community ecology. Friend and inspiration to John Steinbeck (model for "Doc" in Cannery Row and Sweet Thursday).',
-      legacy: 'Between Pacific Tides remains a foundational text. Influenced Steinbeck\'s "Sea of Cortez" (1941). Cannery Row, his lab, is now a museum.',
+      legacy: 'Between Pacific Tides remains a foundational text. Co-wrote "Sea of Cortez" (1941) with John Steinbeck. Cannery Row, his lab, is now a museum.',
       keyQuote: '"It is advisable to look from the tide pool to the stars and then back to the tide pool again." (with Steinbeck, Log from the Sea of Cortez)',
       whyMatters: 'Showed that marine biology could be observational, holistic, and accessible without sacrificing rigor.'
     },
     {
-      id: 'eugene-clark-shoals',
-      name: 'Eugene Hutchinson Clark',
-      lived: '1937\u2013',
-      nationality: 'American',
-      field: 'Coral reef ecology, herbivore-algae dynamics',
-      affiliation: 'Smithsonian Institution',
-      famousWork: 'Studies of herbivorous reef fishes and the trophic cascade on coral reefs',
-      contribution: 'Showed how loss of herbivorous fish (parrotfish, surgeonfish) triggers algal overgrowth that smothers coral. Foundational work for fisheries management on reefs.',
-      legacy: 'Influenced no-take marine protected area design globally.',
-      keyQuote: '"You cannot manage what you do not measure."',
-      whyMatters: 'Connected ecological theory to fisheries policy and reef management.'
+      id: 'terry-hughes',
+      name: 'Terry Hughes',
+      lived: 'Born 1956',
+      nationality: 'Irish (born in Dublin), working in Australia',
+      field: 'Coral reef ecology',
+      affiliation: 'James Cook University, Queensland, Australia',
+      famousWork: 'Catastrophes, Phase Shifts, and Large-Scale Degradation of a Caribbean Coral Reef (Science, 1994)',
+      contribution: 'Showed how overfishing, hurricane damage, and the 1983 die-off of grazing sea urchins combined to wreck Jamaican reefs. Coral cover fell from more than 50% to under 5%, and seaweed took over.',
+      legacy: 'Directed the ARC Centre of Excellence for Coral Reef Studies. Lead author of a 2017 Nature study on global warming and repeated mass bleaching of corals. Joint winner of the 2018 John Maddox Prize.',
+      whyMatters: 'Showed that local threats like overfishing and global threats like warming both drive reef decline.'
     },
     {
       id: 'enric-sala',
@@ -6418,7 +6418,6 @@ window.StemLab = window.StemLab || {
       famousWork: 'Pristine Seas project (helped designate >6 million km\u00B2 as marine protected areas)',
       contribution: 'Founded the Pristine Seas initiative documenting remote, near-pristine ocean environments to advocate for their protection. Has helped establish marine reserves around the world.',
       legacy: 'Shifted conservation from "save what\'s left" to "protect what\'s still healthy." Working scientific basis for "Half Earth" ocean protection.',
-      keyQuote: '"A no-take marine reserve is the most powerful conservation tool we have."',
       whyMatters: 'Translates science into protected-area policy in real time.'
     },
     {
@@ -6429,9 +6428,8 @@ window.StemLab = window.StemLab || {
       field: 'Marine conservation biology',
       affiliation: 'University of Exeter',
       famousWork: 'The Unnatural History of the Sea (2007), Ocean of Life (2012)',
-      contribution: 'Historical baselines: documented how depleted "normal" marine ecosystems are compared to pre-industrial states. Coined the "shifting baseline" critique \u2014 each generation accepts a more depleted ocean as normal.',
+      contribution: 'Historical baselines: documented how depleted "normal" marine ecosystems are compared to pre-industrial states. Championed the "shifting baseline" idea, which Daniel Pauly named in 1995 \u2014 each generation accepts a more depleted ocean as normal.',
       legacy: 'Influential in marine reserve design and historical ecology.',
-      keyQuote: '"What we accept as a reasonable abundance of fish today would have been considered evidence of catastrophe a century ago."',
       whyMatters: 'Forces honest accounting of how depleted ocean ecosystems are.'
     },
     {
@@ -6445,7 +6443,6 @@ window.StemLab = window.StemLab || {
       famousWork: 'Wave forecasting for D-Day Normandy landings (1944), Munk-Anderson theory',
       contribution: 'Predicted optimal landing wave heights for D-Day. Mid-century work on ocean tides, currents, and acoustic tomography. Sometimes called "the Einstein of the oceans."',
       legacy: 'Established ocean physics as a quantitative discipline. National Medal of Science. Crafoord Prize (oceanography\'s Nobel equivalent).',
-      keyQuote: 'On a long career: "If you live long enough, you see almost everything."',
       whyMatters: 'Bridged WWII military oceanography and modern climate science.'
     },
     {
@@ -6458,7 +6455,6 @@ window.StemLab = window.StemLab || {
       famousWork: 'Discovery that Sri Lankan blue whales are a unique non-migratory population',
       contribution: 'First Sri Lankan with a PhD in marine mammals. Showed that "blue whales migrate to feed in polar waters" is not universal \u2014 northern Indian Ocean blue whales feed year-round near Sri Lanka. Established Oceanswell to mentor scientists in conservation-rich-but-resources-poor countries.',
       legacy: 'Pew Marine Fellow, National Geographic Emerging Explorer. Voice for diversity in ocean science. TED speaker.',
-      keyQuote: '"You cannot do marine biology only from a Western perspective."',
       whyMatters: 'Decolonizes marine science; mentors local researchers in biodiverse but under-represented regions.'
     },
     {
@@ -6469,9 +6465,8 @@ window.StemLab = window.StemLab || {
       field: 'Deep-sea biology, bioluminescence',
       affiliation: 'ORCA (Ocean Research & Conservation Association)',
       famousWork: 'First scientist to film the giant squid in its natural habitat (2012)',
-      contribution: 'Pioneered the use of unobtrusive low-light cameras to observe deep-sea creatures without scaring them with bright lights. Designed the Eye-in-the-Sea camera that captured the giant squid.',
+      contribution: 'Pioneered the use of unobtrusive low-light cameras to observe deep-sea creatures without scaring them with bright lights. Designed the Eye-in-the-Sea camera; Medusa, a more advanced version of it, filmed the giant squid.',
       legacy: 'Founded ORCA, a non-profit focused on ocean pollution. MacArthur Fellow.',
-      keyQuote: '"If we want to find life on other planets, we need to know more about life on our own."',
       whyMatters: 'Demonstrates that there is still fundamental discovery to be made on Earth, in our oceans.'
     },
     {
@@ -6480,11 +6475,10 @@ window.StemLab = window.StemLab || {
       lived: '1976\u2013',
       nationality: 'American',
       field: 'Deep-sea biology, biodiversity',
-      affiliation: 'Louisiana Universities Marine Consortium (LUMCON)',
-      famousWork: 'Deep-Sea News blog; whale-fall ecology research',
-      contribution: 'Brought deep-sea biology to public awareness. Studies how whale carcasses ("whale falls") sustain entire ecosystems on the abyssal seafloor for decades.',
-      legacy: 'Influential science communicator; whale-fall research changed thinking about deep-sea trophic dynamics.',
-      keyQuote: '"The deep sea isn\'t empty. It\'s just patient."',
+      affiliation: 'University of Louisiana at Lafayette',
+      famousWork: 'Deep-Sea News blog; wood-fall experiments on the deep seafloor',
+      contribution: 'Brought deep-sea biology to public awareness. Studies "wood falls," sunken logs that bring rare food to the dark deep sea, and the animals that colonize them.',
+      legacy: 'Influential science communicator; his wood-fall experiments test how the amount of food shapes deep-sea biodiversity.',
       whyMatters: 'Demystifies the deep ocean for public audiences while doing rigorous science.'
     },
     {
@@ -6497,7 +6491,7 @@ window.StemLab = window.StemLab || {
       famousWork: 'Founded the Census of Marine Life Coral Reef program',
       contribution: 'Documented "cryptic species" in coral reefs \u2014 distinct species that look identical without DNA testing. Showed reef biodiversity is far higher than morphological taxonomy suggests.',
       legacy: '"Earth Optimism" movement to counter conservation despair with solution-focused conservation success stories.',
-      keyQuote: '"We need to give equal time to conservation successes, not just to failures."',
+      keyQuote: '"There are a lot of successes out there, and most people don\'t know about them." (Knowable Magazine, 2021)',
       whyMatters: 'Quantifies what we are losing and what we have saved.'
     }
   ];
@@ -6508,12 +6502,12 @@ window.StemLab = window.StemLab || {
   var CONSERVATION_CASE_STUDIES = [
     {
       id: 'banggai-cardinalfish',
-      title: 'Banggai Cardinalfish \u2014 from near-extinction to captive breeding success',
+      title: 'Banggai Cardinalfish \u2014 aquarium favorite, still endangered in the wild',
       species: 'Pterapogon kauderni',
       location: 'Banggai Islands, Indonesia',
       threat: 'Aquarium trade \u2014 small native range (~5,500 km\u00B2) collapsed within a decade',
-      timeline: '1995: 5+ million wild collected annually. 2007: IUCN listed as Endangered. 2010s: Captive breeding programs scale up. 2020s: Most aquarium stock is captive-bred.',
-      outcome: 'A textbook case for "captive breeding alleviates wild-collection pressure." Wild populations have stabilized in some Banggai island areas, though localized depletion persists.',
+      timeline: '1990s onward: Heavy wild collection, an estimated 500,000 to 900,000 fish a year. 2007: IUCN listed as Endangered. 2010s: Captive breeding programs scale up. 2020s: Captive-bred fish are sold, but wild collection continues.',
+      outcome: 'Captive breeding helps only when buyers choose it. Wild numbers have dropped sharply since the 1990s, and the U.S. listed the species as threatened in 2016.',
       lesson: 'Aquarium hobbyists CAN drive demand and conservation when they choose captive-bred stock. Asking the supplier matters.'
     },
     {
@@ -6533,7 +6527,7 @@ window.StemLab = window.StemLab || {
       location: 'Florida and southeastern US coast',
       threat: 'Overfishing \u2014 slow-growing (~7 ft, 800 lb adults take 20+ years) and easily harvested at spawning aggregations',
       timeline: '1990: U.S. moratorium on harvest. 1990s: Population begins to recover. 2010s: Now numerous in many Florida reefs and wrecks.',
-      outcome: 'Recovery led to a recent debate about reopening limited harvest \u2014 ecologists divided.',
+      outcome: 'Florida reopened a small recreational harvest (up to 200 fish a year) in 2023; ecologists remain divided.',
       lesson: 'Top predators recover when fishing pressure removed, but slowly. Decisions to reopen fisheries are political AND ecological.'
     },
     {
@@ -6541,18 +6535,18 @@ window.StemLab = window.StemLab || {
       title: 'Chinese Paddlefish \u2014 extinction documented in 2020',
       species: 'Psephurus gladius',
       location: 'Yangtze River, China',
-      threat: 'Habitat fragmentation by Three Gorges Dam (1997), overfishing, pollution',
-      timeline: '1970s: Common. 1990s: Rare. 2003: Last confirmed sighting. 2020: Functionally extinct declaration (Chinese Academy of Fishery Sciences).',
-      outcome: 'Extinct. The first declared 21st-century freshwater fish extinction.',
+      threat: 'Habitat fragmentation by Gezhouba Dam (1981), overfishing, pollution',
+      timeline: '1970s: Common. 1990s: Rare. 2003: Last confirmed sighting. 2020: A Chinese Academy of Fishery Sciences study concludes it is extinct. 2022: IUCN lists it as Extinct.',
+      outcome: 'Extinct. It was one of the largest freshwater fish on Earth.',
       lesson: 'Megafaunal river fish are vulnerable to habitat fragmentation and overfishing. Yangtze ecosystems face similar threats \u2014 finless porpoise next?'
     },
     {
       id: 'great-barrier-reef-bleaching',
-      title: 'Great Barrier Reef \u2014 five mass bleaching events',
+      title: 'Great Barrier Reef \u2014 eight mass bleaching events since 1998',
       species: 'Acropora and reef-building coral species',
       location: 'Australia',
       threat: 'Ocean warming (and ocean acidification compounding stress)',
-      timeline: '1998: First mass bleaching event. 2002: 2nd. 2016 + 2017: Catastrophic back-to-back. 2020 + 2022 + 2024: Continued bleaching.',
+      timeline: '1998: First mass bleaching event. 2002: 2nd. 2016 + 2017: Catastrophic back-to-back. 2020 + 2022: Continued bleaching. 2024 + 2025: Back-to-back again.',
       outcome: '50%+ of shallow-water corals dead. Recovery slowed. Recent calls to reclassify GBR as "in danger" by UNESCO.',
       lesson: 'Iconic ecosystems can collapse within decades. Local management cannot solve climate-driven impacts.'
     },
@@ -6560,30 +6554,30 @@ window.StemLab = window.StemLab || {
       id: 'mediterranean-monk-seal',
       title: 'Mediterranean Monk Seal \u2014 slow Mediterranean comeback',
       species: 'Monachus monachus',
-      location: 'Greek and Turkish coast, Madeira',
-      threat: 'Habitat disturbance, fisheries bycatch \u2014 once numerous, now ~600-700 individuals',
-      timeline: '1976: Greek protected status. 2010s: Established colonies recover in eastern Aegean. 2020s: Range expansion continues slowly.',
-      outcome: 'Slow positive trend; still critically endangered.',
+      location: 'Greece, Turkey, Cyprus, Madeira, and Cap Blanc (Mauritania)',
+      threat: 'Habitat disturbance, fisheries bycatch \u2014 once numerous, now about 800 to 1,000 individuals',
+      timeline: '1980s: Greek law bans killing or harassing monk seals. 2010s: Established colonies recover in eastern Aegean. 2020s: Range expansion continues slowly.',
+      outcome: 'Slow positive trend; IUCN moved it from Endangered to Vulnerable in 2023.',
       lesson: 'Coastal cetacean/pinniped recovery requires undisturbed birthing caves, fisheries reform, and decades.'
     },
     {
       id: 'humpback-comeback',
-      title: 'Humpback Whales \u2014 from <450 to ~25,000 in 60 years',
+      title: 'Humpback Whales \u2014 from under 1,500 to ~25,000 in 60 years',
       species: 'Megaptera novaeangliae',
       location: 'Pacific Ocean',
       threat: 'Commercial whaling (mid-20th century)',
-      timeline: '1966: International whaling moratorium for humpbacks. 1970s: Population <450 in North Pacific. 2010s: ~25,000.',
-      outcome: 'Robust recovery \u2014 IUCN reclassified from Endangered to Least Concern.',
+      timeline: '1966: International ban on hunting humpbacks; fewer than 1,500 left in the North Pacific. 2010s: ~25,000.',
+      outcome: 'Robust recovery \u2014 IUCN reclassified from Vulnerable to Least Concern in 2008.',
       lesson: 'Cetaceans CAN recover dramatically when killing stops. Strongest evidence we have that megafauna are not lost causes.'
     },
     {
       id: 'totoaba-vaquita',
-      title: 'Vaquita and Totoaba \u2014 collapse of two species linked by poaching',
+      title: 'Vaquita and Totoaba \u2014 two species linked by poaching',
       species: 'Phocoena sinus (vaquita) and Totoaba macdonaldi',
       location: 'Northern Gulf of California, Mexico',
       threat: 'Illegal totoaba swim-bladder fishery; vaquita bycatch in gillnets',
-      timeline: '1997: ~600 vaquita. 2008: ~245. 2015: 60. 2019: ~9. 2023: ~10.',
-      outcome: 'Near-extinct. Conservation effort has failed despite international attention.',
+      timeline: '1997: ~600 vaquita. 2008: ~245. 2015: 60. 2019: ~9. 2023: ~10. 2025: Calves seen; gillnets nearly gone from the sanctuary.',
+      outcome: 'Near-extinct, but the last vaquitas are still breeding and gillnets have been nearly cleared from their sanctuary.',
       lesson: 'Without enforcement, marine protected areas and species protections are theoretical. Illegal markets drive extinction.'
     },
     {
@@ -6592,8 +6586,8 @@ window.StemLab = window.StemLab || {
       species: 'Anguilla anguilla',
       location: 'Europe',
       threat: 'Migration barriers (dams), overfishing, parasites, possibly climate change',
-      timeline: '1980: Recruitment baseline. 2000s: Recruitment falls to <5% of baseline. 2008: IUCN Critically Endangered.',
-      outcome: 'Stocks still falling. Reintroduction and trap-and-truck programs partial success.',
+      timeline: '1960 to 1979: Recruitment baseline. 2000s: Recruitment falls to <5% of baseline. 2008: IUCN Critically Endangered.',
+      outcome: 'Young eel numbers stopped falling around 2011 but remain far below the baseline. Reintroduction and trap-and-truck programs partial success.',
       lesson: 'Migratory species are sensitive to barriers \u2014 and the European eel migrates from European rivers to Sargasso Sea spawning grounds, a journey of thousands of miles.'
     },
     {
@@ -7324,7 +7318,7 @@ window.StemLab = window.StemLab || {
       sections: [
         {
           heading: 'Why aquaculture matters',
-          body: 'Wild fisheries peaked in 1990s and have been mostly flat or declining since. Aquaculture has filled the gap \u2014 and as of 2020, over 50% of seafood consumed globally comes from farms, not wild catch. The FAO projects 75% by 2050.'
+          body: 'Wild fisheries peaked in 1990s and have been mostly flat or declining since. Aquaculture has filled the gap \u2014 and as of 2020, over 50% of seafood consumed globally comes from farms, not wild catch. A World Bank and FAO study projected 62% of food fish by 2030.'
         },
         {
           heading: 'Major species',
@@ -7336,7 +7330,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Methods \u2014 recirculating aquaculture systems (RAS)',
-          body: 'Land-based closed-loop systems that filter and reuse water. High initial cost but zero discharge, no escape, year-round production in any climate. Growing trend for Atlantic salmon in places like Maine (American Aquafarms, Whole Oceans, Kingfish Maine) and the Northeast.'
+          body: 'Land-based closed-loop systems that filter and reuse water. High initial cost but zero discharge, no escape, year-round production in any climate. Projects have been proposed in Maine (Whole Oceans for salmon, Kingfish Maine for yellowtail), though many have stalled.'
         },
         {
           heading: 'Methods \u2014 integrated multi-trophic aquaculture (IMTA)',
@@ -7366,7 +7360,7 @@ window.StemLab = window.StemLab || {
       furtherReading: [
         'FAO State of World Fisheries and Aquaculture report (annual)',
         'NOAA Sea Grant aquaculture resources',
-        '"Carp to Cod" by P. Lugones \u2014 aquaculture history'
+        'C. E. Nash, "The History of Aquaculture" (Wiley-Blackwell)'
       ]
     },
     {
@@ -7384,7 +7378,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Stock assessments',
-          body: 'Scientists model fish populations using catch data, length-frequency surveys, age structure (otolith reading), spawning indices, and tagging studies. NOAA Stock Assessment Reports update biennially for U.S. fisheries. Stock assessments are imperfect \u2014 uncertainty leads to political fights over quotas.'
+          body: 'Scientists model fish populations using catch data, length-frequency surveys, age structure (otolith reading), spawning indices, and tagging studies. NOAA updates U.S. fish stock assessments on a schedule that differs by stock. Stock assessments are imperfect \u2014 uncertainty leads to political fights over quotas.'
         },
         {
           heading: 'Total Allowable Catch (TAC)',
@@ -7396,7 +7390,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Marine Protected Areas (MPAs)',
-          body: 'Areas where fishing is limited or prohibited. No-take MPAs (full reserves) often outperform managed fisheries \u2014 fish biomass is 6x higher inside reserves on average. The "spillover effect" means adjacent waters benefit from healthy reserve populations. 8% of oceans are protected; UN goal is 30% by 2030.'
+          body: 'Areas where fishing is limited or prohibited. No-take MPAs (full reserves) often outperform managed fisheries \u2014 fish biomass is 6x higher inside reserves on average. The "spillover effect" means adjacent waters benefit from healthy reserve populations. About 10% of the ocean was protected by 2026; the global goal is 30% by 2030.'
         },
         {
           heading: 'Illegal, Unreported, and Unregulated (IUU) fishing',
@@ -7404,7 +7398,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Indigenous and small-scale fisheries',
-          body: 'Half of the world\'s fish catch comes from small-scale and artisanal fisheries supporting 90% of fishing employment. Yet most policy is written for industrial fleets. Recognition of traditional knowledge and rights is improving in some regions (NZ, Norway, parts of Pacific) but remains contested.'
+          body: 'At least 40% of the world\'s fish catch comes from small-scale and artisanal fisheries supporting 90% of fishing employment. Yet most policy is written for industrial fleets. Recognition of traditional knowledge and rights is improving in some regions (NZ, Norway, parts of Pacific) but remains contested.'
         },
         {
           heading: 'Career paths',
@@ -7524,7 +7518,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Zooxanthellae symbiosis',
-          body: 'Hard corals host single-celled algae (Symbiodinium / Zooxanthellae) inside their tissue. The algae photosynthesize and provide 80-95% of the coral\'s energy in exchange for shelter and nutrients (the coral\'s waste = the algae\'s fertilizer). This is why corals need bright light \u2014 to feed their resident algae.'
+          body: 'Hard corals host single-celled algae (family Symbiodiniaceae, called zooxanthellae) inside their tissue. The algae photosynthesize and provide 80-95% of the coral\'s energy in exchange for shelter and nutrients (the coral\'s waste = the algae\'s fertilizer). This is why corals need bright light \u2014 to feed their resident algae.'
         },
         {
           heading: 'Coral types \u2014 SPS, LPS, softies',
@@ -7532,7 +7526,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Bleaching \u2014 the mechanism',
-          body: 'Under thermal stress (1-2\u00B0C above summer maximum for weeks), corals expel their zooxanthellae. Without the algae, corals lose 80%+ of energy income and starve. They appear white (the calcium skeleton showing through transparent tissue). Bleached corals CAN recover if temperatures normalize within 6-8 weeks; longer = death.'
+          body: 'Under thermal stress (1-2\u00B0C above summer maximum for weeks), corals expel their zooxanthellae. Without the algae, corals lose 80%+ of energy income and starve. They appear white (the calcium skeleton showing through transparent tissue). Bleached corals CAN recover if the water cools in time; some species die within weeks, others last months.'
         },
         {
           heading: 'Reef tank parameters',
@@ -7560,7 +7554,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Sustainable coral sourcing',
-          body: 'Aquacultured (frags grown in tanks): most ethical, common, slightly more expensive. Maricultured (grown on lines in tropical lagoons): conservation positive (employs local communities, replaces wild harvest). Wild-collected: discouraged for most species; some legal harvest of soft corals only.'
+          body: 'Aquacultured (frags grown in tanks): most ethical, common, slightly more expensive. Maricultured (grown on lines in tropical lagoons): conservation positive (employs local communities, replaces wild harvest). Wild-collected: still legal under permits for many hard and soft corals; choose aquacultured when you can.'
         }
       ],
       furtherReading: [
@@ -7628,15 +7622,15 @@ window.StemLab = window.StemLab || {
       sections: [
         {
           heading: 'What is a watershed?',
-          body: 'All land that drains to a single waterway. The Mississippi River watershed = the central third of the U.S. Smaller subwatersheds nest inside larger ones. Every fish has a watershed \u2014 they cannot survive outside it.'
+          body: 'All land that drains to a single waterway. The Mississippi River watershed = about 40% of the lower 48 states. Smaller subwatersheds nest inside larger ones. Every fish has a watershed \u2014 they cannot survive outside it.'
         },
         {
           heading: 'Dams \u2014 the megapressure',
-          body: 'Dams fragment rivers, blocking fish migration. The Yangtze\'s Three Gorges Dam ended the Chinese paddlefish migration (functionally extinct by 2020). The Columbia and Snake River dams collapsed Pacific salmon runs (recovery ongoing). Dam removal is increasing \u2014 Klamath, Penobscot, Elwha.'
+          body: 'Dams fragment rivers, blocking fish migration. The Yangtze\'s Gezhouba Dam (1981) blocked the Chinese paddlefish migration (declared extinct in 2022). The Columbia and Snake River dams collapsed Pacific salmon runs (recovery ongoing). Dam removal is increasing \u2014 Klamath, Penobscot, Elwha.'
         },
         {
           heading: 'Agricultural runoff',
-          body: 'Nitrate from fertilizers, phosphate from waste, sediment from tilled fields \u2014 all flow downstream. Gulf of Mexico\'s annual "dead zone" (hypoxic, fishless) is 6,500-8,000 sq miles, fed by Mississippi nitrogen. Lake Erie\'s 2014 toxic algal bloom shut down Toledo\'s drinking water.'
+          body: 'Nitrate from fertilizers, phosphate from waste, sediment from tilled fields \u2014 all flow downstream. Gulf of Mexico\'s annual "dead zone" (hypoxic, fishless) averages about 4,800 sq miles (record 8,776 in 2017), fed by Mississippi nitrogen. Lake Erie\'s 2014 toxic algal bloom shut down Toledo\'s drinking water.'
         },
         {
           heading: 'Plastic pollution',
@@ -7652,7 +7646,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Local action',
-          body: 'Adopt-a-stream programs. River cleanups. Native fish ID surveys (USGS NAS, iNaturalist). Public comment on proposed dam decisions. Supporting fishery management decisions. Many hobbyists transition into freshwater conservation work after years of keeping fish \u2014 the next logical step.'
+          body: 'Adopt-a-stream programs. River cleanups. Fish ID surveys (iNaturalist; report non-native fish to USGS NAS). Public comment on proposed dam decisions. Supporting fishery management decisions. Many hobbyists transition into freshwater conservation work after years of keeping fish \u2014 the next logical step.'
         }
       ],
       furtherReading: [
@@ -8100,7 +8094,7 @@ window.StemLab = window.StemLab || {
       question: 'Which is the deepest ocean zone?',
       options: ['Abyssopelagic (4000-6000m)', 'Mesopelagic (200-1000m)', 'Bathypelagic (1000-4000m)', 'Hadalpelagic (6000-11000m)'],
       correct: 3,
-      explanation: 'Hadal zone (Greek "hades" \u2014 underworld): deepest, 6000-11000+ m. Includes the Mariana Trench (10,994 m). Pressure 1,100x surface; specialized fauna like amphipods and Mariana snailfish.'
+      explanation: 'Hadal zone (Greek "hades" \u2014 underworld): deepest, about 6,000 to 11,000 m. Includes the Mariana Trench (about 10,935 m). Pressure up to about 1,100x surface; specialized fauna like amphipods and Mariana snailfish.'
     },
     {
       id: 'q-94',
@@ -9497,8 +9491,8 @@ window.StemLab = window.StemLab || {
     },
     {
       action: 'Support sustainable wild collection',
-      impact: 'Some collection IS sustainable and provides local livelihoods. Project Piaba cardinal tetras protect Amazon forest by giving villagers income for not deforesting.',
-      howTo: 'Look for "Piaba Project" or "P3M3" certified suppliers. Tag your fish purchase choices.',
+      impact: 'Some collection IS sustainable and provides local livelihoods. Project Piaba cardinal tetras protect Amazon forest by giving villagers fishing income instead of farming or logging.',
+      howTo: 'Ask suppliers whether their cardinal tetras come from Project Piaba fisheries on the Rio Negro. Tag your fish purchase choices.',
       effort: 'Low \u2014 research one-time.'
     },
     {
@@ -9510,7 +9504,7 @@ window.StemLab = window.StemLab || {
     {
       action: 'Join a local aquarium society',
       impact: 'Aquarium clubs trade fish + plants, share knowledge, support beginners. Reduces wild collection demand.',
-      howTo: 'AAAA (Aquarium Association of America), state-level clubs (Maine ABA), regional cichlid societies, online groups.',
+      howTo: 'FAAS (Federation of American Aquarium Societies), state and local clubs, regional cichlid societies, online groups.',
       effort: 'Low \u2014 find a club, attend meetings.'
     },
     {
@@ -9546,7 +9540,7 @@ window.StemLab = window.StemLab || {
     {
       action: 'Avoid harvesting from sensitive habitats',
       impact: 'Avoid buying corals, clams, or fish from cyanide-fished or wild-collected sources.',
-      howTo: 'Buy aquacultured/captive-bred corals. Many sustainable suppliers (Aquatic Reef Habitats, Aquarium Connection) document source.',
+      howTo: 'Buy aquacultured/captive-bred corals. Many sustainable suppliers document where their corals come from.',
       effort: 'Low \u2014 knowledge-based purchase decisions.'
     }
   ];
@@ -9924,7 +9918,7 @@ window.StemLab = window.StemLab || {
       common: 'Acropora (SPS)',
       sci: 'Acropora spp.',
       type: 'SPS \u2014 Small Polyp Stony',
-      growth: 'Fast \u2014 1-3 inches per year (branching colonies)',
+      growth: 'Fast; branches can grow 4 to 8 inches a year on wild reefs',
       light: 'High (300-450+ PAR)',
       flow: 'High and turbulent',
       placement: 'Top third of reef',
@@ -9945,7 +9939,7 @@ window.StemLab = window.StemLab || {
     },
     {
       id: 'coral-pocillopora',
-      common: 'Pocillopora (Birds Nest)',
+      common: 'Pocillopora (Cauliflower Coral)',
       sci: 'Pocillopora damicornis',
       type: 'SPS',
       growth: 'Moderate to fast',
@@ -9970,7 +9964,7 @@ window.StemLab = window.StemLab || {
     {
       id: 'coral-euphyllia',
       common: 'Torch / Hammer / Frogspawn',
-      sci: 'Euphyllia glabrescens / E. ancora / E. divisa',
+      sci: 'Euphyllia glabrescens / Fimbriaphyllia ancora / F. divisa',
       type: 'LPS \u2014 Large Polyp Stony',
       growth: 'Moderate \u2014 branching colonies',
       light: 'Moderate (100-200 PAR)',
@@ -9982,7 +9976,7 @@ window.StemLab = window.StemLab || {
     {
       id: 'coral-acan',
       common: 'Acan (Acanthastrea)',
-      sci: 'Acanthastrea lordhowensis',
+      sci: 'Micromussa lordhowensis (formerly Acanthastrea)',
       type: 'LPS',
       growth: 'Slow',
       light: 'Low to moderate',
@@ -10013,7 +10007,7 @@ window.StemLab = window.StemLab || {
       flow: 'Moderate',
       placement: 'Mid-tank',
       careLevel: 'Beginner',
-      notes: 'Highly variable colors. Each polyp can be expensive. WARNING: many Zoanthus species contain palytoxin \u2014 extremely dangerous if handled improperly (always wear gloves and eye protection when fragging).'
+      notes: 'Highly variable colors. Each polyp can be expensive. WARNING: some zoanthids, especially Palythoa, contain palytoxin \u2014 extremely dangerous if handled improperly (always wear gloves and eye protection when fragging).'
     },
     {
       id: 'coral-mushroom',
@@ -10073,7 +10067,7 @@ window.StemLab = window.StemLab || {
       flow: 'Low',
       placement: 'Sand bed',
       careLevel: 'Intermediate (declining captive survival rate)',
-      notes: 'Once popular but recently many specimens die within months. May be cyanide-collected wild stock; choose carefully.'
+      notes: 'Once popular but recently many specimens die within months. Losses are linked to a wasting disease in some wild stock; choose healthy, well-sourced pieces.'
     },
     {
       id: 'coral-orange-cup',
@@ -10097,7 +10091,7 @@ window.StemLab = window.StemLab || {
       flow: 'High',
       placement: 'Top third',
       careLevel: 'Advanced',
-      notes: 'Often comes in stunning pink, purple, green forms. The "table top" species. Demanding chemistry and water flow.'
+      notes: 'Often comes in stunning pink, purple, green forms. A bushy, short-branched species. Demanding chemistry and water flow.'
     }
   ];
 
@@ -10246,9 +10240,9 @@ window.StemLab = window.StemLab || {
       zone: 'Epipelagic / Sunlight Zone',
       depthRange: '0\u2013200 meters',
       lightLevel: 'Abundant \u2014 photosynthesis is possible throughout',
-      temperature: 'Variable: 4\u00B0C in poles to 30\u00B0C in tropics; surface temperature follows season',
+      temperature: 'Variable: about -2\u00B0C near the poles to 30\u00B0C in tropics; surface temperature follows season',
       pressure: '1\u201320 atmospheres',
-      biodiversity: '90% of marine species live here. Coral reefs, kelp forests, mangroves, seagrass beds, open-water schools.',
+      biodiversity: 'Most ocean food production happens here. Coral reefs, kelp forests, mangroves, seagrass beds, open-water schools.',
       keySpecies: ['Tuna', 'Mackerel', 'Anchovies', 'Sardines', 'Whale shark', 'Dolphins', 'Sea turtles', 'Most game fish'],
       energySources: 'Photosynthesis by phytoplankton + benthic algae + reef coral zooxanthellae',
       humanImpact: 'Most overfishing happens here. Plastic pollution. Acidification. Coral bleaching. Most marine aquaculture occurs here.'
@@ -10257,11 +10251,11 @@ window.StemLab = window.StemLab || {
       zone: 'Mesopelagic / Twilight Zone',
       depthRange: '200\u20131,000 meters',
       lightLevel: 'Dim \u2014 declining with depth. Only enough for vision, not photosynthesis.',
-      temperature: '5\u201310\u00B0C (gradual decline)',
+      temperature: 'Falls quickly with depth (the thermocline) toward the cold of the deep sea',
       pressure: '20\u2013100 atmospheres',
       biodiversity: 'Large fish biomass \u2014 many studies estimate twilight zone fish biomass equals all other ocean zones combined.',
       keySpecies: ['Lanternfish', 'Bristlemouth (most abundant vertebrates on Earth)', 'Hatchetfish', 'Mesopelagic squid', 'Vampire squid'],
-      energySources: 'Marine snow (decomposing material falling from above); diel vertical migration of zooplankton brings food down at night',
+      energySources: 'Marine snow (decomposing material falling from above); zooplankton that feed near the surface at night carry food down by day',
       humanImpact: 'Industrial fishing now reaching this zone (lanternfish for fishmeal). Climate change altering food supply.'
     },
     {
@@ -10284,18 +10278,18 @@ window.StemLab = window.StemLab || {
       biodiversity: 'Limited but distinctive: deep-sea fish with unusual adaptations',
       keySpecies: ['Tripod fish', 'Amphipods', 'Sea cucumbers', 'Glass sponges'],
       energySources: 'Marine snow; near hydrothermal vents \u2014 chemosynthetic bacteria',
-      humanImpact: 'Few species observed. Deep-sea mining contracts in Pacific Clarion-Clipperton zone are active concerns.'
+      humanImpact: 'Thousands of species found, most new to science. Deep-sea mining contracts in Pacific Clarion-Clipperton zone are active concerns.'
     },
     {
       zone: 'Hadal Zone',
       depthRange: '6,000\u201311,000 meters',
       lightLevel: 'Total darkness',
       temperature: '1\u20134\u00B0C',
-      pressure: '600\u20131,100+ atmospheres',
+      pressure: '600 to about 1,100 atmospheres',
       biodiversity: 'Unique deep-sea trench species; very limited',
-      keySpecies: ['Mariana snailfish (deepest fish, 8,000+ m)', 'Amphipods', 'Specialized polychaete worms'],
+      keySpecies: ['Snailfish (deepest fish ever filmed, 8,336 m)', 'Amphipods', 'Specialized polychaete worms'],
       energySources: 'Particulate matter; some chemosynthesis',
-      humanImpact: 'Recently discovered plastic in the Mariana Trench (2019). Climate change effects reaching even here.'
+      humanImpact: 'Plastic has been found in the Mariana Trench almost 11 km down (reported 2018). Climate change effects reaching even here.'
     }
   ];
 
@@ -10415,51 +10409,51 @@ window.StemLab = window.StemLab || {
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   var LANDMARK_RESEARCH_PAPERS = [
     {
-      title: 'Revelle & Suess (1957) \u2014 On the increase of atmospheric carbon dioxide',
+      title: 'Revelle & Suess (1957) \u2014 Carbon dioxide exchange between atmosphere and ocean',
       journal: 'Tellus',
-      keyFinding: 'Oceans cannot absorb anthropogenic CO\u2082 as fast as humans emit it; CO\u2082 will accumulate in the atmosphere with climate consequences.',
-      significance: 'First scientific prediction of climate change. Direct line to modern climate science.',
-      relevanceToAquaria: 'Ocean acidification (-0.1 pH since 1900) means future reef tank parameters will need management for stable seawater chemistry.'
+      keyFinding: 'The ocean cannot absorb CO\u2082 from burning fossil fuels as fast as people release it, so CO\u2082 will build up in the air. People are running "a large scale geophysical experiment."',
+      significance: 'Helped launch modern carbon dioxide monitoring, including the Mauna Loa record begun in 1958. Earlier scientists such as Arrhenius (1896) had already linked CO\u2082 to warming.',
+      relevanceToAquaria: 'The same CO\u2082 is acidifying the ocean (pH down about 0.1 since the industrial era began), which is why reef tank keepers track pH and alkalinity.'
     },
     {
-      title: 'Hovanec et al. (1998) \u2014 Identification of nitrifying bacteria in freshwater aquaria',
-      journal: 'Aquaculture',
-      keyFinding: 'Nitrospira, not Nitrobacter, is the dominant nitrite-oxidizing bacterium in freshwater aquaria.',
-      significance: 'Reversed decades of misidentification. Many commercial "bacteria" products still feature Nitrobacter (which fails).',
-      relevanceToAquaria: 'Why some bottled bacteria don\'t cycle tanks \u2014 they have the wrong species. Tetra SafeStart and Dr. Tim\'s contain Nitrospira.'
+      title: 'Hovanec et al. (1998) \u2014 Nitrospira-like bacteria associated with nitrite oxidation in freshwater aquaria',
+      journal: 'Applied and Environmental Microbiology',
+      keyFinding: 'Bacteria related to Nitrospira, not Nitrobacter as long assumed, turn nitrite into nitrate in freshwater aquaria.',
+      significance: 'Corrected a long-held assumption about which bacteria cycle a tank. Some bottled starter products still list Nitrobacter.',
+      relevanceToAquaria: 'Why some bottled bacteria do not cycle tanks well: they may hold the wrong nitrite-oxidizing bacteria. Products based on this research use Nitrospira.'
     },
     {
       title: 'Sneddon, Braithwaite, Gentle (2003) \u2014 Do fish have nociceptors?',
       journal: 'Proc. R. Soc. Lond. B',
       keyFinding: 'Yes \u2014 fish possess nociceptors (pain receptors), respond to noxious stimuli, and modify behavior to avoid them.',
-      significance: 'Founded modern fish welfare science. EU recognized fish as sentient in 2010 based partly on this and follow-up work.',
-      relevanceToAquaria: 'Welfare implications: fish DO feel pain. Husbandry must accommodate this.'
+      significance: 'A founding paper of fish welfare science. EU law treats animals as sentient beings (Lisbon Treaty, 2009), and its 2010 rules for animals used in science cover fish.',
+      relevanceToAquaria: 'Most researchers now conclude fish can feel pain, though a few still dispute it. Good husbandry assumes they can.'
     },
     {
-      title: 'Roberts (1995, 2007) \u2014 Historical baselines',
-      journal: 'Nature (1995), Unnatural History of the Sea (2007)',
-      keyFinding: 'Modern "normal" fish abundances are 5-50% of pre-industrial levels. Shifting baselines mean each generation accepts a more depleted ocean.',
+      title: 'Pauly (1995) and Roberts (2007) \u2014 Shifting baselines',
+      journal: 'Trends in Ecology & Evolution (1995); The Unnatural History of the Sea (book, 2007)',
+      keyFinding: 'Each generation treats the ocean it first knew as normal, so slow losses go unnoticed: the "shifting baseline syndrome." Historical records show many seas once held far more large fish.',
       significance: 'Forced honest accounting of how depleted modern ecosystems are.',
-      relevanceToAquaria: 'Captive populations may eventually contain more genetic diversity than wild populations for some species.'
+      relevanceToAquaria: 'A reef that looks healthy today may already be missing much of its old life. Old photos and records show what a full reef looked like.'
     },
     {
-      title: 'Stoner (2014) \u2014 Wild caught and aquaculture',
-      journal: 'Aquaculture Reports',
-      keyFinding: 'Captive-bred fish are typically less aggressive, more disease-resistant, and easier to acclimate than wild-caught equivalents.',
-      significance: 'Major argument for captive breeding programs in conservation and aquarium trade.',
-      relevanceToAquaria: 'Why tank-bred clownfish thrive without anemones (wild-bred reflex evolved away in captivity).'
+      title: 'Rhyne et al. (2012) \u2014 Revealing the appetite of the marine aquarium fish trade',
+      journal: 'PLoS ONE',
+      keyFinding: 'About 11 million saltwater aquarium fish of 1,802 species entered the United States in one year (2004 to 2005), more kinds than earlier estimates.',
+      significance: 'Measured how big the saltwater aquarium trade is and showed that import records need better reporting.',
+      relevanceToAquaria: 'Most saltwater aquarium fish are still caught on wild reefs: a 2026 study found about 90% of those sold online in the US were wild-caught. Choosing captive-bred fish eases pressure on reefs.'
     },
     {
-      title: 'Pauly et al. (2002) \u2014 Shifting baselines and the catch of small fish',
-      journal: 'Nature',
-      keyFinding: 'Global fishing has progressively shifted from larger fish to smaller fish as larger species are depleted. "Fishing down the food chain."',
+      title: 'Pauly et al. (1998) \u2014 Fishing down marine food webs',
+      journal: 'Science',
+      keyFinding: 'From 1950 to 1994, the world catch shifted from large predatory fish toward smaller fish and invertebrates lower in the food web: "fishing down the food web."',
       significance: 'Quantitative documentation of how fishing depletes marine food webs.',
       relevanceToAquaria: 'Connects aquarium hobby to broader fisheries: ornamental trade affects different species but is part of the same global system.'
     },
     {
       title: 'Walstad (1999/2013) \u2014 Ecology of the Planted Aquarium',
       journal: 'Book',
-      keyFinding: 'Aquarium plants are primary nutrient absorbers in stable tanks. With sufficient plant biomass, fish waste is fully metabolized without bacterial filtration.',
+      keyFinding: 'Plants take up much of the ammonia and other nutrients fish produce, so a well-planted tank on a soil base can stay stable with little or no filtration.',
       significance: 'Foundational text for low-tech planted aquariums. The Walstad method.',
       relevanceToAquaria: 'Direct guide for sustainable, low-maintenance home aquariums.'
     },
@@ -10467,13 +10461,13 @@ window.StemLab = window.StemLab || {
       title: 'Amano (1992) \u2014 Nature Aquarium World',
       journal: 'Book',
       keyFinding: 'Aquariums can be approached as art with composition principles from landscape and photography.',
-      significance: 'Codified Nature Aquarium aesthetic; founded ADA and global aquascape movement.',
+      significance: 'Spread the Nature Aquarium style and the global aquascaping movement. Amano had founded the company Aqua Design Amano (ADA) in 1982.',
       relevanceToAquaria: 'Permanently changed how aquariums are designed and displayed.'
     },
     {
-      title: 'Hughes et al. (2017) \u2014 Global warming and recurrent mass bleaching of corals',
-      journal: 'Nature',
-      keyFinding: 'Coral bleaching events are accelerating: from once per 25-30 years (1980s) to every 6 years (2010s).',
+      title: 'Hughes et al. (2018) \u2014 Spatial and temporal patterns of mass bleaching of corals in the Anthropocene',
+      journal: 'Science',
+      keyFinding: 'Severe bleaching is returning faster: across 100 reef locations, from about once every 25 to 30 years in the early 1980s to about once every 6 years by 2016.',
       significance: 'Documented climate change impacts on coral reefs. Influenced global policy on emissions and conservation.',
       relevanceToAquaria: 'Reef-tank keepers experience local versions of this stress \u2014 heat events from heater failure, lighting problems. Husbandry is real-time climate impact education.'
     },
@@ -10535,7 +10529,7 @@ window.StemLab = window.StemLab || {
     {
       trend: 'Welfare-driven legislation',
       timeline: '2025-2040',
-      drivers: 'Public welfare science, EU precedent (2010 fish-as-sentient), declining tolerance for poor conditions',
+      drivers: 'Public welfare science, EU law treating animals as sentient (2009), declining tolerance for poor conditions',
       impact: 'Minimum tank sizes mandated by law in some jurisdictions. Wild-collection restrictions expanding. Aquarium industry adapting.'
     },
     {
@@ -10563,19 +10557,19 @@ window.StemLab = window.StemLab || {
       readMinutes: 9,
       level: 'Advanced',
       keyIdea: 'Coral reefs face an existential climate threat. Reef tanks at home are micro-laboratories for understanding what is at stake globally.',
-      summary: 'Coral reefs are vanishing within a single human generation. Understanding the mechanism, the timeline, and the response options is foundational for the next generation of marine scientists.',
+      summary: 'Coral reefs are changing fast within a single human generation. Understanding the mechanism, the timeline, and what helps reefs recover is foundational for the next generation of marine scientists.',
       sections: [
         {
           heading: 'The vulnerability',
-          body: 'Reef-building corals (Acropora, Montipora, brain corals, etc.) live within 1-2\u00B0C of their thermal maximum. A summer heatwave of +1.5\u00B0C above normal for 4+ weeks triggers bleaching. Recovery requires sustained cool periods (months). With successive bleaching events, recovery becomes impossible.'
+          body: 'Reef-building corals (Acropora, Montipora, brain corals, etc.) live within 1-2\u00B0C of their thermal maximum. A heatwave about 1\u00B0C above the normal summer maximum for 4 weeks or more can trigger bleaching. Bleached corals can regain their algae within weeks to months if the water cools, but a reef that loses many corals needs 10 to 15 years to regrow. When heatwaves return faster than that, reefs fall behind.'
         },
         {
           heading: 'Degree Heating Weeks (DHW)',
-          body: 'NOAA Coral Reef Watch uses DHW as a bleaching predictor: number of weeks at >1\u00B0C above climatology. DHW = 4: bleaching expected. DHW = 8: severe bleaching, mortality. DHW = 12+: mass mortality. The 2016 GBR bleaching was DHW = 6-10 across vast areas.'
+          body: 'NOAA Coral Reef Watch predicts bleaching with Degree Heating Weeks: over the last 12 weeks, it adds up how far the sea ran above its normal warmest month, counting only times it was at least 1\u00B0C above. The unit is \u00B0C-weeks, so 4 weeks at 1\u00B0C above, or 2 weeks at 2\u00B0C above, both make DHW = 4. Alert Level 1 (DHW 4): risk of reef-wide bleaching. Level 2 (8): bleaching plus death of heat-sensitive corals. Level 3 (12): death across many coral species. Level 4 (16): severe death across many species, over half the corals. Level 5 (20+): nearly all corals die, over 80%. NOAA added Levels 3 to 5 in December 2023 after record ocean heat. On the Great Barrier Reef in 2016, corals began dying once heat stress passed about 3 to 4 DHW (Hughes et al. 2018).'
         },
         {
           heading: 'Ocean acidification',
-          body: 'CO\u2082 + H\u2082O \u2192 H\u2082CO\u2083 (carbonic acid) in seawater. Lowers ocean pH; surface ocean has dropped ~0.1 pH since 1900 (30% more acidic in H+ ion concentration). Reduces carbonate availability for coral skeleton formation. By 2100, may make calcification impossible for many species.'
+          body: 'CO\u2082 + H\u2082O \u2192 H\u2082CO\u2083 (carbonic acid) in seawater. Lowers ocean pH; surface ocean has dropped ~0.1 pH since the industrial era began (30% more acidic in H+ ion concentration). Reduces carbonate availability for coral skeleton formation. If emissions stay high, reef sand and rubble could start dissolving faster than it forms around 2050 (Eyre et al. 2018).'
         },
         {
           heading: 'Compounding stressors',
@@ -10587,7 +10581,7 @@ window.StemLab = window.StemLab || {
         },
         {
           heading: 'Restoration efforts',
-          body: 'Coral nurseries grow fragments on underwater lines. Out-planting restores degraded areas. Active programs in Caribbean (Reef Foundation Hub), Australia (Great Barrier Reef Foundation), Pacific (Mars Sustainable Solutions Reef Star program).'
+          body: 'Coral nurseries grow fragments on underwater lines and frames, then divers plant them back onto damaged reefs. Large programs include the Coral Restoration Foundation in Florida, the Great Barrier Reef Foundation in Australia, and the Mars Reef Stars program in Indonesia, where rubble fields left by blast fishing grew back into living reef within about four years (Lange et al. 2024).'
         },
         {
           heading: 'Selective breeding for heat tolerance',
@@ -10654,12 +10648,12 @@ window.StemLab = window.StemLab || {
       summary: 'Some fish exist today because aquarists and aquaculturists bred them when wild populations collapsed. Understanding these stories illustrates the conservation potential of careful breeding.',
       sections: [
         {
-          heading: 'Banggai cardinalfish \u2014 model success',
-          body: 'Wild-caught Pterapogon kauderni nearly extinct by mid-2000s. Captive breeding established in U.S. (Florida) and Asia. Now most aquarium specimens are tank-bred. Wild populations stabilizing.'
+          heading: 'Banggai cardinalfish \u2014 a partial success',
+          body: 'Collection for the aquarium trade cut wild Pterapogon kauderni numbers by about 90%, and it was listed as Endangered in 2007. Captive breeding established in U.S. (Florida) and Asia. Many aquarium specimens are now tank-bred, but wild catch continues and wild numbers are still falling.'
         },
         {
           heading: 'Yellow tang \u2014 Hawaiian success',
-          body: 'Wild collection in Hawaii moratorium 2017-2021 forced industry to develop captive breeding. Oceanic Institute (Hawaii) achieved consistent breeding in 2019-2020. Reduced pressure on Hawaiian reefs.'
+          body: 'Oceanic Institute (Hawaii) first raised yellow tangs in captivity in 2015. A 2017 court ruling halted commercial aquarium collecting in Hawaii, and it was still halted in 2026. Reduced pressure on Hawaiian reefs.'
         },
         {
           heading: 'Clownfish \u2014 long-standing success',
@@ -10670,7 +10664,7 @@ window.StemLab = window.StemLab || {
           body: 'When Nile perch was introduced to Lake Victoria in the 1950s, ~200+ haplochromine cichlid species declined or went extinct. Aquarists who had kept these species before the collapse maintain genetic diversity. Some species now exist ONLY in hobbyist tanks.'
         },
         {
-          heading: 'Axolotl \u2014 captive abundance amid wild extinction',
+          heading: 'Axolotl \u2014 captive abundance while nearly gone in the wild',
           body: 'Wild Ambystoma mexicanum population <1000. Captive populations: tens of thousands worldwide. Hobbyist + lab-maintained genetic diversity may exceed wild population by orders of magnitude.'
         },
         {
@@ -10686,7 +10680,7 @@ window.StemLab = window.StemLab || {
           body: 'Maintaining specific lines (Class N Endlers, wild-type apistos, specific killifish populations) preserves genetics. Documentation matters. Joining societies and breeders programs makes hobbyists part of formal conservation infrastructure.'
         }
       ],
-      furtherReading: ['IUCN Captive Breeding Specialist Group', 'AZA Species Survival Plans', 'Sustainable Aquatics (Tennessee) breeding programs']
+      furtherReading: ['IUCN Conservation Planning Specialist Group', 'AZA Species Survival Plans', 'Sustainable Aquatics (Tennessee) breeding programs']
     },
     {
       id: 'aquarium-photography-101',

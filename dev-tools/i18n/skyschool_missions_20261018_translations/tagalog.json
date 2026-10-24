@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Mga obserbasyon sa misyon",
+  "stem.flightsim.mission_journal_targets": "Mga target na nakunan: {captured} sa {total}.",
+  "stem.flightsim.mission_journal_complete": "Naitala ang lahat ng layunin ng misyon at ang paglapag matapos bumalik.",
+  "stem.flightsim.mission_journal_ended": "Natapos ang misyon bago maitala ang lahat ng ebidensiya ng pagkumpleto.",
+  "stem.flightsim.mission_journal_recovery": "Naitalang pagsagip sa nakaligtas: {value}.",
+  "stem.flightsim.mission_journal_return": "Naitalang paglapag pabalik sa base: {value}.",
+  "stem.flightsim.mission_guidance_title": "Gabay sa misyon",
+  "stem.flightsim.mission_route": "{target} · direksiyon {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Lugar ng paglipad",
+  "stem.flightsim.mission_read_status": "Basahin ang kalagayan ng misyon",
+  "stem.flightsim.mission_return_criterion": "Lumapag sa loob ng {distance} nm mula sa {target}, na may bilis kaugnay ng lupa na mas mababa sa {speed} kt at bilis ng pagbaba na mas mababa sa {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Hindi makuha ang datos ng target ng misyon. Tapusin ang paglipad na ito at magsimula ng bagong misyon.",
+  "stem.flightsim.mission_capture_criterion": "Manatili sa loob ng {distance} ft, higit sa {min} at mas mababa sa {max} ft mula sa lupa, na may bilis kaugnay ng lupa na mas mababa sa {speed} kt sa loob ng {hold} s."
+}

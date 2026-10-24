@@ -12,6 +12,7 @@ Claude Code, and other MCP-compatible tools) talk to the AlloFlow Agent Core.
 | `resource_pack_validate` | Validate renderer shapes, privacy, and size | read-only |
 | `resource_pack_preview` | Create a teacher-review preview | read-only |
 | `resource_pack_export` | Serialize a validated .allopack.json payload | external-effect |
+| `resource_pack_attach_image` | Attach an embedded image and accessibility metadata to a copy of an illustrated AlloPack | external-effect |
 | `blueprint_create` | Create a deterministic draft from an explicit plan | draft-writing |
 | `blueprint_revise` | Apply explicit pure changes to a draft | draft-writing |
 | `blueprint_preview` | Preview ordered steps and missing capabilities | read-only |
@@ -26,6 +27,67 @@ its result or accepts agent-supplied pricing. The Task C
 draft operations use the deterministic headless service: they do not invoke a
 model, analyze source text, spend quota, or execute artifacts. `blueprint_execute`
 is deliberately not registered pending permission-model review.
+
+## Illustrated AlloPacks
+
+The resource-pack tools have two explicit profiles. Omitting `profile` keeps the
+existing text profile and its 12 resource types. Use `profile: "illustrated"`
+when validating, reviewing, exporting, or adding images to an illustrated pack:
+
+```js
+await callTool('resource_pack_validate', { pack, profile: 'illustrated' });
+await callTool('resource_pack_preview', { pack, profile: 'illustrated' });
+await callTool('resource_pack_export', { pack, profile: 'illustrated' });
+```
+
+These are illustrative MCP client calls; `pack` is the complete parsed AlloPack,
+not only its `history`. Validation and export preserve the accepted pack's native
+fields, including credits, accessibility metadata, and lesson configuration.
+For an existing pack, use these tools rather than passing its history through
+`resource_pack_generate`, which composes a new envelope. For a new pack, put
+`profile: "illustrated"` inside the generation `request`; this also permits
+authored `image`, `memory-aid`, and `applied-challenge` resources.
+
+The calling agent or host generates or obtains the image and reviews its actual
+contents. The connector then attaches supplied bytes without image generation,
+URL fetching, or image-file access:
+
+```js
+const result = await callTool('resource_pack_attach_image', {
+  pack,
+  profile: 'illustrated',
+  attachment: {
+    resourceId: 'water-cycle-glossary',
+    slot: 'glossary',
+    index: 0,
+    dataUrl: reviewedImageDataUrl,
+    alt: 'Two views of the same pavement show a puddle becoming smaller.',
+    altSource: 'vision'
+  }
+});
+// On success, result.value is the updated pack; the input pack is unchanged.
+```
+
+Attachment slots are `glossary`, `panel`, `anchor`, and `sort`; `index` is
+zero-based. Images must be self-contained base64 PNG, JPEG, or WebP data URLs.
+Remote URLs, local paths, SVG, and GIF are not accepted as image payloads.
+This initial still-image profile also rejects animation frames and nonempty
+saved image-view annotations, including image overrides. Attach reviewed artwork
+to native panel fields and edit the panels' captions and labels instead; the
+validator reports unsupported saved states rather than removing them.
+`decorative: true` identifies a decorative image; use empty alt text for it.
+Otherwise supply meaningful alt text of at most 250 characters. `altSource` is
+`vision`, `author`, or `planning`; it defaults to `planning`, which does not claim
+that someone inspected the image. The attachment operation calculates the hash
+that associates the alt metadata with the image. Keep these fields when editing or
+exporting; changing image bytes requires renewed alt-text review.
+
+The illustrated profile bounds embedded media, dimensions, placement count,
+non-image text, and serialized pack size. See the
+[authoring reference](../../docs/AGENT_CORE_RESOURCE_PACK_AUTHORING.md) for limits
+and workflow details. A tool preview is a structured review summary, not a
+rendered student view. Import and inspect the exported pack in AlloFlow before
+calling it classroom-ready.
 
 ## Requirements
 
@@ -94,8 +156,9 @@ envelopes so clients can use the same polling/result shape as future asynchronou
 adapters. Up to 256 jobs/results are retained in memory and are cleared when the
 connector exits.
 
-Every `blueprint_create`, `blueprint_revise`, and `job_cancel` attempt appends one
-JSON line to:
+Every `blueprint_create`, `blueprint_revise`, `resource_pack_generate`,
+`resource_pack_attach_image`, `resource_pack_export`, and `job_cancel` attempt
+appends one redacted JSON line to:
 
 ```text
 <desktop data dir>/agent-core/mcp-audit.jsonl

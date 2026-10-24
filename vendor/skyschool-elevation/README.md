@@ -1,15 +1,21 @@
 # SkySchool offline real elevation
 
 This package is derived from the NOAA NCEI **ETOPO 2022 v1 Ice Surface Global
-Relief Model**, using the official 60 arc-second surface NetCDF. The source grid
-contains topography, ice surfaces and bathymetry. Horizontal coordinates are
-WGS84 (EPSG:4326); heights are metres relative to EGM2008 (EPSG:3855), positive up.
+Relief Model**, using the official 60 arc-second surface NetCDF for the global
+grid and airport regions, and the native 15 arc-second surface tiles for
+fourteen mountain and canyon patches (Grand Canyon, Everest/Khumbu, Annapurna,
+the Colorado Front Range, the Matterhorn/Mont Blanc Alps, Yosemite,
+Rainier/St Helens, Mount Washington, Denali, Fuji, Kilimanjaro, Aconcagua,
+Table Mountain and Mauna Kea). The source grid contains topography, ice surfaces
+and bathymetry. Horizontal coordinates are WGS84 (EPSG:4326); heights are metres
+relative to EGM2008 (EPSG:3855), positive up.
 
 Sources:
 
 - [NOAA ETOPO product page](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
 - [NOAA dataset metadata and CC0 declaration](https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem%3Aetopo_2022)
 - [Official surface dataset](https://www.ngdc.noaa.gov/thredds/catalog/global/ETOPO2022/60s/60s_surface_elev_netcdf/catalog.html?dataset=globalDatasetScan/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc)
+- [Official 15 arc-second surface tiles](https://www.ngdc.noaa.gov/thredds/catalog/global/ETOPO2022/15s/15s_surface_elev_netcdf/catalog.html)
 - [ETOPO 2022 user guide](https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/docs/1.2%20ETOPO%202022%20User%20Guide.pdf)
 
 ## Package and reproducibility
@@ -30,7 +36,8 @@ out-of-range values, unexpected response dimensions and altered cached data.
 The Natural Earth mask is pinned by hash. Each encoded row is decoded and
 compared with its original integer samples while building. The builder changes
 only files in this package. Run `node dev-tools/embed_skyschool_elevation.cjs`
-to embed the rebuilt data in both simulator source copies, or use `--check`
+to embed the rebuilt data in both copies of `stem_lab/stem_data_skyschool_geo.js`
+(the simulator's loader dependency), or use `--check`
 to verify that the committed data and embedded payloads agree.
 Run `python dev-tools/build_skyschool_elevation.verify.py` to validate those
 independent checks offline, or add `--download` to refresh the small source
@@ -61,6 +68,21 @@ at each stride; they are not area averages. Training/scenic patches retain the
 60-second source spacing. Runtime bilinear interpolation and blending at patch
 borders provide continuity without inventing fine geographic detail.
 
+Mountain patches (`*-15s`, `sourceArcSeconds: 15`) come from the 15 arc-second
+tiles, each a 15-degree square named by its north-west corner (`N45W120` spans
+30-45 N and 120-105 W). Their indices are recorded in a global 15-second frame,
+with the request's tile-local indices kept as `tileRowStart`/`tileColStart`:
+
+```
+latitude  = -90  + (sourceRow + 0.5) / 240
+longitude = -180 + (sourceColumn + 0.5) / 240
+```
+
+The simulator layers patches from coarse to fine: the global grid, then any
+airport region, then any mountain patch, each fading in over 0.15 degrees from
+its own edge. A 15-second node does not coincide with a 60-second node, so
+within a mountain patch the coarser samples are replaced rather than reproduced.
+
 Each row is an independent base64 string containing unsigned LEB128 tokens.
 The previous height begins at zero. A nonzero token represents a zigzag signed
 delta plus one; add its decoded delta to the previous height and emit that
@@ -79,7 +101,9 @@ fixtures preserve the original floating-point values before water masking.
 
 This is measured geographic relief, with deliberate sampling limits. A
 five-arc-minute global grid has about 9.3 km north/south spacing; one-arc-minute
-regional data has about 1.85 km spacing. East/west spacing decreases toward the
+regional data has about 1.85 km spacing; the 15 arc-second mountain patches have
+about 0.46 km spacing, so their summits read a few percent below the surveyed
+heights (Everest 8,586 m against 8,849 m). East/west spacing decreases toward the
 poles. Runtime interpolation cannot recover smaller peaks, cliffs, channels or
 runway features. Fine coastline shapes come from the separate Natural Earth
 map, whose scale and grid are also generalized.

@@ -16,6 +16,7 @@
  * Props:
  *   isOpen: boolean
  *   onClose: () => void
+ *   selectedSlug?: string   open an approved lesson preview without importing it
  *   addToast: (msg, type) => void
  *   loadProjectFromJson?: (parsed) => void   optional; if provided,
  *     the "Load in AlloFlow" button on each card calls it instead of just
@@ -58,6 +59,7 @@
   var WORKER_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submit';
   var MANIFEST_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/catalog/index.json';
   var ENTRY_BASE_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/';
+  var LESSON_APP_URL = 'https://alloflow-cdn.pages.dev/app/';
   var SCHEMA_VERSION = '1.0';
   var PENDING_SUBMISSION_KEY = 'alloflow_pending_submission';
 
@@ -492,6 +494,81 @@
     return data.entries;
   }
 
+  function catalogLessonPermalink(slug, shareSlug) {
+    if (typeof slug !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,127}$/i.test(slug)) throw new Error('This lesson has no valid share link.');
+    if (typeof shareSlug === 'string' && /^[a-z0-9][a-z0-9-]{0,127}$/.test(shareSlug)) return 'https://alloflow.dev/p/' + shareSlug;
+    return LESSON_APP_URL + '?lesson=' + encodeURIComponent(slug);
+  }
+
+  function catalogEntryPath(entry) {
+    var path = entry && entry.path;
+    if (typeof path !== 'string' || !/^[a-z0-9_-]+(?:\/[a-z0-9_.-]+)+\.json$/i.test(path) || path.split('/').some(function (part) { return part === '.' || part === '..'; })) throw new Error('This catalog entry has no valid lesson file.');
+    return path;
+  }
+
+  function catalogPreviewTranslate(key, values) {
+    var result;
+    try { if (typeof window.__alloT === 'function') result = window.__alloT(key, values); } catch (_) {}
+    if (!result || result === key) {
+      var english = { 'export.title': 'Lesson', 'export.default_lesson_title': 'Lesson', 'export.student_copy': 'Student resources: ', 'export.teacher_copy': 'Teacher resources: ', 'export.table_of_contents': 'Contents', 'export.toc': 'Contents', 'export.html_page_title': 'AlloFlow Resource Pack', 'export.generated_date_label': 'Generated:', 'export.name_label': 'Name', 'export.date_label': 'Date', 'export.period_label': 'Period', 'export.topic': 'Topic', 'export_status.no_content': 'No content to preview.' };
+      result = english[key] || String(key).split('.').pop().replace(/_/g, ' ');
+      result = result.charAt(0).toUpperCase() + result.slice(1);
+    }
+    return String(result).replace(/\{([^}]+)\}/g, function (match, name) { return values && values[name] != null ? String(values[name]) : match; });
+  }
+
+  async function generateCatalogPreview(lesson, entry) {
+    var history = lesson && Array.isArray(lesson.history) ? lesson.history : lesson && lesson.payload && lesson.payload.history;
+    if (!Array.isArray(history) || !history.length) throw new Error('This lesson uses an interactive format. Download it or load it in AlloFlow to explore its content.');
+    var factory = window.AlloModules && window.AlloModules.createDocPipeline;
+    if (!factory) {
+      if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('The lesson preview renderer is unavailable. Reload AlloFlow and try again.');
+      factory = await window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
+    }
+    if (typeof factory !== 'function') throw new Error('The lesson preview renderer did not finish loading.');
+    var settings = lesson.settings || {};
+    var languageCodes = { en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian', pt: 'Portuguese', ar: 'Arabic', he: 'Hebrew', fa: 'Farsi', ur: 'Urdu', ru: 'Russian', uk: 'Ukrainian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', hi: 'Hindi', bn: 'Bengali', pa: 'Punjabi', ta: 'Tamil', vi: 'Vietnamese', th: 'Thai', tr: 'Turkish', pl: 'Polish', so: 'Somali', sw: 'Swahili' };
+    var language = settings.leveledTextLanguage || (lesson.allopack && lesson.allopack.language) || 'English';
+    language = languageCodes[String(language).toLowerCase().split(/[-_]/)[0]] || language;
+    var questions = history.filter(function (item) { return item.type === 'quiz'; }).reduce(function (items, item) { return items.concat(item.data && Array.isArray(item.data.questions) ? item.data.questions : []); }, []);
+    var openQuestions = questions.length > 0 && questions.every(function (question) { return /^(shortanswer|short-answer|open|openended|essay)$/i.test(String(question.type || '')); });
+    var previewTranslate = function (key, values) {
+      // The native formatter uses this key for every question set, including
+      // open responses. Keep the preview heading true to the saved resources.
+      return key === 'output.quiz_mcq' ? (openQuestions ? 'Open responses' : 'Questions') : catalogPreviewTranslate(key, values);
+    };
+    var previewCss = '.export-header{background:#f1f5f9!important}.export-header h1.export-title,.export-header p.export-meta{color:#1e3a5f!important}.resource-header span{color:#475569!important}.alloflow-reading-tools-shell,button,select{display:none!important}';
+    var pipeline = factory({
+      addToast: function () {}, t: previewTranslate, isRtlLang: function (language) { return /^(ar|he|fa|ur|arabic|hebrew|farsi|urdu)(?:[-_ ]|$)/i.test(String(language || '')); },
+      updateExportPreview: function () {}, getDefaultTitle: function (type) { return String(type || 'Resource').replace(/-/g, ' '); },
+      state: { leveledTextLanguage: language, currentUiLanguage: 'English', exportConfig: {}, customExportCSS: previewCss },
+    });
+    // This reads completed resources only. No AI providers or workspace setters
+    // are supplied. Scriptless sandboxing applies even to authored HTML fields.
+    var html = pipeline.generateFullPackHTML(history, entry.title || lesson.title || 'Lesson', true, {}, { includeTeacherKey: false });
+    if (typeof html !== 'string' || !html.trim()) throw new Error('This lesson has no printable resources to preview.');
+    return '<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'none\'; style-src \'unsafe-inline\'; img-src https: data: blob:; font-src data:; connect-src \'none\'; frame-src \'none\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">' + html;
+  }
+
+  function LessonLinkButton(props) {
+    var linkState = useState(''), manualLink = linkState[0], setManualLink = linkState[1];
+    async function copy() {
+      try {
+        var link = catalogLessonPermalink(props.entry.slug, props.entry.share_slug);
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(link);
+        setManualLink('');
+        if (props.addToast) props.addToast('Lesson link copied.', 'success');
+      } catch (_) {
+        try { setManualLink(catalogLessonPermalink(props.entry.slug, props.entry.share_slug)); } catch (error) { if (props.addToast) props.addToast(error.message, 'error'); }
+      }
+    }
+    return e('div', { className: 'flex flex-col gap-2' },
+      e('button', { type: 'button', onClick: copy, className: 'min-h-11 px-3 py-2 text-sm font-semibold text-indigo-700 border border-indigo-300 rounded-md' }, tr('catalog_copy_lesson_link', 'Copy lesson link')),
+      manualLink && e('label', { className: 'text-xs text-slate-700' }, 'Copy this lesson link:', e('input', { readOnly: true, value: manualLink, className: 'w-full p-2 border rounded text-sm', onFocus: function (event) { event.target.select(); }, ref: function (node) { if (node) { node.focus(); node.select(); } } }))
+    );
+  }
+
   function parseCatalogLesson(fetched, entry) {
     var wrapped = fetched && typeof fetched === 'object' && Object.prototype.hasOwnProperty.call(fetched, 'lesson_payload');
     var lesson = wrapped ? fetched.lesson_payload : fetched;
@@ -512,8 +589,8 @@
   }
 
   async function fetchCatalogLesson(entry, fetcher, signal) {
-    if (!entry || typeof entry.path !== 'string' || !entry.path.trim()) throw new Error('This catalog entry has no lesson file.');
-    var response = await fetcher(ENTRY_BASE_URL + entry.path + '?t=' + Date.now(), { signal: signal });
+    var path = catalogEntryPath(entry);
+    var response = await fetcher(ENTRY_BASE_URL + path + '?t=' + Date.now(), { signal: signal });
     if (!response.ok) throw new Error('The lesson request failed (HTTP ' + response.status + '). Please try again.');
     var fetched;
     try { fetched = JSON.parse((await response.text()).replace(/^\uFEFF/, '')); }
@@ -535,12 +612,17 @@
     var actionState = useState(null), activeAction = actionState[0], setActiveAction = actionState[1];
     var actionRef = React.useRef(null), mountedRef = React.useRef(true);
     var errorState = useState(''), actionError = errorState[0], setActionError = errorState[1];
+    var selectionState = useState(props.selectedSlug || ''), selectedSlug = selectionState[0], setSelectedSlug = selectionState[1];
+    var previewState = useState({ status: 'idle' }), preview = previewState[0], setPreview = previewState[1];
+    var previewRetryState = useState(0), previewRetry = previewRetryState[0], setPreviewRetry = previewRetryState[1];
+    useEffect(function () { setSelectedSlug(props.selectedSlug || ''); }, [props.selectedSlug]);
     useEffect(function () { mountedRef.current = true; return function () { mountedRef.current = false; if (actionRef.current) actionRef.current.abort(); }; }, []);
 
     useEffect(function () {
-      var cancelled = false;
+      var cancelled = false, controller = new AbortController(), timedOut = false;
+      var timeout = setTimeout(function () { timedOut = true; controller.abort(); }, 25000);
       setState({ status: 'loading', entries: [], error: null });
-      fetch(MANIFEST_URL + '?t=' + Date.now())
+      fetch(MANIFEST_URL + '?t=' + Date.now(), { signal: controller.signal })
         .then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
           return r.json();
@@ -551,10 +633,32 @@
         })
         .catch(function (err) {
           if (cancelled) return;
-          setState({ status: 'error', entries: [], error: err.message });
-        });
-      return function () { cancelled = true; };
+          setState({ status: 'error', entries: [], error: timedOut ? 'The catalog request timed out. Please try again.' : err.message });
+        }).finally(function () { clearTimeout(timeout); });
+      return function () { cancelled = true; clearTimeout(timeout); controller.abort(); };
     }, [retryVersion]);
+
+    useEffect(function () {
+      if (!selectedSlug || state.status !== 'ok') return;
+      var entry = state.entries.find(function (candidate) { return candidate.slug === selectedSlug; });
+      if (!entry) { setPreview({ status: 'missing' }); return; }
+      var cancelled = false, controller = new AbortController(), timedOut = false, lesson = null;
+      var timeout = setTimeout(function () { timedOut = true; controller.abort(); }, 25000);
+      setPreview({ status: 'loading', entry: entry });
+      (async function () {
+        try {
+          lesson = await fetchCatalogLesson(entry, fetch, controller.signal);
+          clearTimeout(timeout);
+          if (cancelled) return;
+          setPreview({ status: 'rendering', entry: entry, lesson: lesson });
+          var html = await generateCatalogPreview(lesson, entry);
+          if (!cancelled) setPreview({ status: 'ready', entry: entry, lesson: lesson, html: html });
+        } catch (error) {
+          if (!cancelled) setPreview({ status: 'error', entry: entry, lesson: lesson, error: timedOut ? 'The lesson request timed out. Please try again.' : error.message });
+        } finally { clearTimeout(timeout); }
+      })();
+      return function () { cancelled = true; clearTimeout(timeout); controller.abort(); };
+    }, [selectedSlug, state.status, state.entries, previewRetry]);
 
     var filteredEntries = useMemo(function () {
       return state.entries.filter(function (entry) { return catalogEntryMatches(entry, filters); });
@@ -566,21 +670,22 @@
       if (searchInputRef.current) searchInputRef.current.focus();
     }
 
-    async function runEntryAction(entry, kind) {
+    async function runEntryAction(entry, kind, preparedLesson) {
       if (actionRef.current) return;
       var controller = new AbortController();
       actionRef.current = controller;
       setActionError('');
       setActiveAction({ path: entry.path, kind: kind });
       try {
-        var lesson = await fetchCatalogLesson(entry, fetch, controller.signal);
+        var lesson = preparedLesson || await fetchCatalogLesson(entry, fetch, controller.signal);
         if (controller.signal.aborted || !mountedRef.current) return;
         if (kind === 'load' && typeof loadProjectFromJson === 'function') {
           var result = await loadProjectFromJson(lesson);
           if (result === false || (result && (result.success === false || result.ok === false))) throw new Error('AlloFlow could not open this lesson.');
-          // The current host starts a FileReader import and returns undefined.
-          // Its own completion/error notifications are authoritative.
+          // Only explicit importer confirmation completes the handoff. Older
+          // hosts may return undefined; keep their preview open in that case.
           if (mountedRef.current && (result === true || (result && (result.success === true || result.ok === true)))) addToast && addToast('Loaded "' + entry.title + '" into AlloFlow.', 'success');
+          if (mountedRef.current && (result === true || (result && (result.success === true || result.ok === true))) && typeof props.onLessonImported === 'function') props.onLessonImported();
         } else {
           downloadJsonFile(lesson, entry.slug);
           addToast && addToast('Downloaded "' + entry.title + '". Use Load Project to open it in AlloFlow.', 'info');
@@ -595,6 +700,30 @@
         if (actionRef.current === controller) actionRef.current = null;
         if (mountedRef.current) setActiveAction(null);
       }
+    }
+
+    if (selectedSlug) {
+      return e('section', { className: 'flex flex-col gap-4', 'aria-label': tr("catalog.a11y_published_lesson_preview", "Published lesson preview") },
+        e('button', { type: 'button', className: 'self-start min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { setSelectedSlug(''); setActionError(''); } }, 'Back to catalog'),
+        state.status === 'loading' && e('p', { role: 'status' }, 'Finding the published lesson…'),
+        state.status === 'error' && e('div', { role: 'alert' }, e('p', null, 'Could not load catalog: ' + state.error), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setRetryVersion(function (v) { return v + 1; }); } }, 'Retry loading catalog')),
+        state.status === 'ok' && preview.status === 'missing' && e('div', { role: 'alert' }, e('h3', { className: 'text-xl font-bold' }, 'Lesson not found'), e('p', null, 'This link does not match a published lesson. Browse the catalog to find another lesson.'), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setRetryVersion(function (v) { return v + 1; }); } }, 'Check again')),
+        state.status === 'ok' && preview.entry && preview.entry.slug === selectedSlug && e(React.Fragment, null,
+          e('h3', { className: 'text-2xl font-bold text-slate-900' }, preview.entry.title),
+          e('p', { className: 'text-sm text-slate-600' }, [preview.entry.subject, preview.entry.grade_level ? 'Grade ' + preview.entry.grade_level : '', preview.entry.credit ? 'Credit: ' + preview.entry.credit : ''].filter(Boolean).join(' · ')),
+          e('p', { className: 'text-sm text-slate-600' }, 'Preview the completed student resources. Load the lesson in AlloFlow to use its interactive tools.'),
+          e('div', { className: 'flex flex-wrap gap-3 items-start' },
+            e(LessonLinkButton, { entry: preview.entry, addToast: addToast }),
+            preview.lesson && e('button', { type: 'button', disabled: !!activeAction, className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { runEntryAction(preview.entry, 'download', preview.lesson); } }, 'Download JSON'),
+            preview.lesson && loadProjectFromJson && e('button', { type: 'button', disabled: !!activeAction, className: 'min-h-11 px-3 py-2 rounded bg-indigo-600 text-white font-semibold', onClick: function () { runEntryAction(preview.entry, 'load', preview.lesson); } }, activeAction ? 'Opening…' : 'Load in AlloFlow')
+          ),
+          preview.lesson && loadProjectFromJson && e('p', { className: 'text-sm text-slate-600' }, 'Loading this lesson replaces the current workspace. Save your current project first if you want to keep it.'),
+          (preview.status === 'loading' || preview.status === 'rendering') && e('p', { role: 'status' }, preview.status === 'loading' ? 'Loading the published lesson…' : 'Preparing the lesson preview…'),
+          preview.status === 'error' && e('div', { role: 'alert', className: 'p-3 rounded border border-red-300 text-red-800' }, e('p', null, preview.error), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setPreviewRetry(function (v) { return v + 1; }); } }, 'Retry lesson preview')),
+          preview.status === 'ready' && e('iframe', { title: 'Completed lesson: ' + preview.entry.title, srcDoc: preview.html, sandbox: '', referrerPolicy: 'no-referrer', tabIndex: 0, className: 'w-full border border-slate-300 rounded-lg bg-white', style: { height: '65vh', minHeight: '360px' } })
+        ),
+        actionError && e('p', { role: 'alert', className: 'text-red-800' }, actionError)
+      );
     }
 
     return e('div', { className: 'flex flex-col gap-4' },
@@ -617,7 +746,7 @@
           e('input', {
             id: 'cat-filter-grade',
             type: 'text',
-            placeholder: 'e.g., 3, 6-8, K',
+            placeholder: tr("catalog.a11y_e_g_3_6_8_k", "e.g., 3, 6-8, K"),
             className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
             value: filters.grade,
             onChange: function (ev) { setFilters(Object.assign({}, filters, { grade: ev.target.value })); },
@@ -664,6 +793,8 @@
             ),
             entry.credit && e('div', { className: 'text-xs text-slate-500' }, 'Credit: ' + entry.credit),
             e('div', { className: 'text-[10px] text-slate-600 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
+            e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { setSelectedSlug(entry.slug); } }, 'Preview lesson'),
+            e(LessonLinkButton, { entry: entry, addToast: addToast }),
             e('div', { className: 'flex gap-2 mt-auto pt-2' },
               e('button', {
                 type: 'button', disabled: !!activeAction,
@@ -816,7 +947,7 @@
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-grade' }, 'Grade level *'),
-          e('input', { id: 'cat-grade', type: 'text', placeholder: 'e.g., 3, 6-8, K-2', className: inputClass, value: meta.grade_level, onChange: function (ev) { setMeta(Object.assign({}, meta, { grade_level: ev.target.value })); } })
+          e('input', { id: 'cat-grade', type: 'text', placeholder: tr("catalog.a11y_e_g_3_6_8_k_2", "e.g., 3, 6-8, K-2"), className: inputClass, value: meta.grade_level, onChange: function (ev) { setMeta(Object.assign({}, meta, { grade_level: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-tags' }, 'Tags ',
@@ -3977,7 +4108,7 @@
 
     var pdIntent$ = useState(function () { return prefill ? false : readPdIntent(); });
     var pdIntent = pdIntent$[0];
-    var tab$ = useState(prefill ? 'submit' : (pdIntent ? 'pd' : 'browse'));
+    var tab$ = useState(props.selectedSlug ? 'browse' : (prefill ? 'submit' : (pdIntent ? 'pd' : 'browse')));
     var tab = tab$[0], setTab = tab$[1];
     var dialogRef = React.useRef ? React.useRef(null) : { current: null };
     useEffect(function () { var el = dialogRef.current; if (el && el.focus) { try { el.focus(); } catch (_e) { /* no-op */ } } }, []);
@@ -4067,7 +4198,7 @@
           tab === 'pd'
             ? e(PdHome, { addToast: props.addToast, learner: props.learner, initialGuideline: (pdIntent && pdIntent.guideline) || null })
             : tab === 'browse'
-              ? e(BrowseTab, { addToast: props.addToast, loadProjectFromJson: props.loadProjectFromJson })
+              ? e(BrowseTab, { addToast: props.addToast, loadProjectFromJson: props.loadProjectFromJson, selectedSlug: props.selectedSlug, onLessonImported: props.onClose })
               : e(SubmitTab, { addToast: props.addToast, initialJson: initialJson, initialTitle: initialTitle })
         )
       )
@@ -4115,6 +4246,10 @@
   CommunityCatalog._parseCatalogLesson = parseCatalogLesson;
   CommunityCatalog._catalogEntryMatches = catalogEntryMatches;
   CommunityCatalog._catalogGradeSet = catalogGradeSet;
+  CommunityCatalog._catalogLessonPermalink = catalogLessonPermalink;
+  CommunityCatalog._generateCatalogPreview = generateCatalogPreview;
+  CommunityCatalog.BrowseTab = BrowseTab;
+  CommunityCatalog.LessonLinkButton = LessonLinkButton;
   CommunityCatalog.PdSubmit = PdSubmit;
   CommunityCatalog.PdGenerate = PdGenerate;
   CommunityCatalog.ReadActivity = ReadActivity;

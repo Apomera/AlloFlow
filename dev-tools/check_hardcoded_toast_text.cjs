@@ -49,7 +49,8 @@ const argFiles = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 // and mixing the two would make this baseline move for unrelated reasons.
 const TOAST_FN = /^(addToast|showToast|toast)$/;
 const SKIP_KEYS = new Set(['type', 'start', 'end', 'loc']);
-const T_FN = /^(__alloT|t|tr|__t|translate)$/;
+// tt(key, english, params): Behavior Lens / School Rewards translator (2026-10-16).
+const T_FN = /^(__alloT|t|tt|tr|__t|translate)$/;
 
 function defaultFiles() {
   const files = [];

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Kết quả tìm kiếm: {cards} thẻ trong {topics} chủ đề.",
+  "stem.flightsim.learn_library_counts": "{cards} thẻ · {topics} chủ đề",
+  "stem.flightsim.learn_search_clear": "Xóa tìm kiếm",
+  "stem.flightsim.learn_search_empty": "Không có thẻ học tập nào khớp với “{query}”. Hãy thử từ khác hoặc xóa tìm kiếm.",
+  "stem.flightsim.learn_search_none": "Không có thẻ học tập phù hợp",
+  "stem.flightsim.learn_search_cards": "{count} thẻ học tập",
+  "stem.flightsim.quiz_review_progress": "Đã trả lời {answered} trên {total} câu · sai {missed} câu",
+  "stem.flightsim.quiz_review_missed": "Ôn lại câu trả lời sai",
+  "stem.flightsim.quiz_next_unanswered": "Câu chưa trả lời tiếp theo",
+  "stem.flightsim.quiz_review_all_answered": "Mỗi câu hỏi đều đã có câu trả lời đầu tiên. Ôn lại các câu sai để luyện tập không tính điểm hoặc bắt đầu lượt làm mới.",
+  "stem.flightsim.planner_drone_agl": "{ft} foot trên mặt đất",
+  "stem.flightsim.sprint_native_title": "Thử thách địa lý tốc độ",
+  "stem.flightsim.sprint_timed_hint": "Hành trình vẫn tiếp tục trong lúc bạn trả lời. Tạm dừng để đọc; tiếp tục trước khi chọn đáp án.",
+  "stem.flightsim.sprint_warp_reference": "Hành trình được tăng tốc cho hoạt động địa lý này. Số đo tốc độ hiển thị tốc độ hành trình đã định; tuyến đường này không dùng để đo hiệu suất máy bay.",
+  "stem.flightsim.sprint_save_menu": "Lưu thử thách và trở về trình đơn",
+  "stem.flightsim.sprint_next_stop": "Điểm dừng tiếp theo: {place}",
+  "stem.flightsim.geoq_approaching_city": "Bạn đang đến gần thành phố nào?",
+  "stem.flightsim.sprint_time_remaining": "Thời gian còn lại: {seconds} giây"
+}

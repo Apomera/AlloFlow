@@ -8,7 +8,7 @@ function extractAssessHelpers() {
   const start = quizSource.indexOf("var _QUIZ_DRAFT_STORAGE_PREFIX");
   const end = quizSource.indexOf('function _quizUseDraftField', start);
   if (start < 0 || end <= start) throw new Error('Could not extract Assess lifecycle helpers');
-  return new Function(quizSource.slice(start, end) + `
+  return new Function('_quizIsAnswerKeyDisputed', quizSource.slice(start, end) + `
     return {
       _quizDraftNamespace,
       _quizWriteDraftField,
@@ -20,7 +20,7 @@ function extractAssessHelpers() {
       _quizClearAttemptReceipt,
       _quizNormalizeDeliverySettings
     };
-  `)();
+  `)(aggregators.isAnswerKeyDisputed);
 }
 
 function loadAggregators() {
@@ -29,8 +29,8 @@ function loadAggregators() {
   return fakeWindow.AlloModules.QuizLiveAggregators;
 }
 
-const helpers = extractAssessHelpers();
 const aggregators = loadAggregators();
+const helpers = extractAssessHelpers();
 
 function assessment() {
   return {

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Isku dayadii hore ee imtixaanka",
+  "stem.flightsim.quiz_history_scope": "Bilaabidda isku day cusub waxay kaydisaa ilaa afar isku day oo hore oo jawaabahoodii koowaad la diiwaangeliyey. Dib u eegiddoodu ma beddesho imtixaankaaga hadda.",
+  "stem.flightsim.quiz_history_empty": "Weli lama kaydin isku dayo hore oo imtixaanka ah.",
+  "stem.flightsim.quiz_history_attempt": "La kaydiyey {date} · {score}/{answered} jawaabood oo koowaad ayaa sax ah",
+  "stem.flightsim.quiz_history_progress": "{answered} ka mid ah {total} su'aalood ayaa la diiwaangeliyey · {unanswered} lama jawaabin",
+  "stem.flightsim.quiz_history_question": "Su'aasha {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Jawaabta saxda ah: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} su'aalood oo kaydsan ma waafaqsana imtixaankan hadda. Dhibcaha waxaa laga xisaabiyaa oo keliya diiwaannada su'aalaha iswaafaqa."
+}

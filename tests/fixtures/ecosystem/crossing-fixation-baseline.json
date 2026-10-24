@@ -1,0 +1,3815 @@
+{
+  "sourceSha256": "01ce1156a7152b8d6326ecf44552d12c5ec3d002da02cc5fd04c768b5e75d993",
+  "fixture": {
+    "episode": {
+      "step": 63,
+      "index": 6,
+      "sourceIndex": 1,
+      "start": 61
+    },
+    "run": "{\"config\":{\"initial\":{\"plants\":110,\"rabbits\":0,\"voles\":0,\"foxes\":20,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"enabled\":{\"plants\":true,\"rabbits\":false,\"voles\":false,\"foxes\":true,\"owls\":false,\"caterpillars\":false,\"bluetits\":false},\"soil\":{\"enabled\":false,\"detritus\":30,\"nutrients\":4,\"decomposers\":8},\"capacity\":160,\"cover\":0,\"event\":\"none\",\"target\":\"foxes\",\"eventStep\":80},\"prediction\":\"\",\"investigation\":null}",
+    "population": "{\"baseline\":[{\"step\":0,\"time\":0,\"values\":{\"plants\":110,\"rabbits\":0,\"voles\":0,\"foxes\":20,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":1,\"time\":0.1,\"values\":{\"plants\":112.38212013483779,\"rabbits\":0,\"voles\":0,\"foxes\":19.804777390139478,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":2,\"time\":0.2,\"values\":{\"plants\":114.69808050712378,\"rabbits\":0,\"voles\":0,\"foxes\":19.611613285558963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":3,\"time\":0.3,\"values\":{\"plants\":116.9451112312344,\"rabbits\":0,\"voles\":0,\"foxes\":19.420483015199764,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":4,\"time\":0.4,\"values\":{\"plants\":119.12093199387913,\"rabbits\":0,\"voles\":0,\"foxes\":19.231362261455317,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":5,\"time\":0.5,\"values\":{\"plants\":121.22374268019907,\"rabbits\":0,\"voles\":0,\"foxes\":19.044227053986106,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":6,\"time\":0.6,\"values\":{\"plants\":123.25220840102392,\"rabbits\":0,\"voles\":0,\"foxes\":18.859053763664836,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":7,\"time\":0.7,\"values\":{\"plants\":125.20543967429981,\"rabbits\":0,\"voles\":0,\"foxes\":18.675819096648606,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":8,\"time\":0.8,\"values\":{\"plants\":127.08296855357618,\"rabbits\":0,\"voles\":0,\"foxes\":18.494500088574984,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":9,\"time\":0.9,\"values\":{\"plants\":128.88472150790724,\"rabbits\":0,\"voles\":0,\"foxes\":18.31507409887898,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":10,\"time\":1,\"values\":{\"plants\":130.6109898438156,\"rabbits\":0,\"voles\":0,\"foxes\":18.137518805227966,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":11,\"time\":1.1,\"values\":{\"plants\":132.26239842497216,\"rabbits\":0,\"voles\":0,\"foxes\":17.961812198071645,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":12,\"time\":1.2,\"values\":{\"plants\":133.83987339320205,\"rabbits\":0,\"voles\":0,\"foxes\":17.787932575304346,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":13,\"time\":1.3,\"values\":{\"plants\":135.3446095296398,\"rabbits\":0,\"voles\":0,\"foxes\":17.615858537036907,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":14,\"time\":1.4,\"values\":{\"plants\":136.778037821481,\"rabbits\":0,\"voles\":0,\"foxes\":17.445568980475514,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":15,\"time\":1.5,\"values\":{\"plants\":138.1417937216227,\"rabbits\":0,\"voles\":0,\"foxes\":17.27704309490497,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":16,\"time\":1.6,\"values\":{\"plants\":139.43768650891013,\"rabbits\":0,\"voles\":0,\"foxes\":17.110260356773843,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":17,\"time\":1.7,\"values\":{\"plants\":140.6676700785289,\"rabbits\":0,\"voles\":0,\"foxes\":16.94520052487915,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":18,\"time\":1.8,\"values\":{\"plants\":141.8338154175602,\"rabbits\":0,\"voles\":0,\"foxes\":16.781843635648166,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":19,\"time\":1.9,\"values\":{\"plants\":142.93828495155057,\"rabbits\":0,\"voles\":0,\"foxes\":16.62016999851507,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":20,\"time\":2,\"values\":{\"plants\":143.98330888532053,\"rabbits\":0,\"voles\":0,\"foxes\":16.460160191390234,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":21,\"time\":2.1,\"values\":{\"plants\":144.97116360586077,\"rabbits\":0,\"voles\":0,\"foxes\":16.301795056219948,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":22,\"time\":2.2,\"values\":{\"plants\":145.90415216735994,\"rabbits\":0,\"voles\":0,\"foxes\":16.145055694634486,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":23,\"time\":2.3,\"values\":{\"plants\":146.78458683815666,\"rabbits\":0,\"voles\":0,\"foxes\":15.98992346368246,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":24,\"time\":2.4,\"values\":{\"plants\":147.61477365644714,\"rabbits\":0,\"voles\":0,\"foxes\":15.836379971649434,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":25,\"time\":2.5,\"values\":{\"plants\":148.3969989154438,\"rabbits\":0,\"voles\":0,\"foxes\":15.684407073958884,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":26,\"time\":2.6,\"values\":{\"plants\":149.13351747878048,\"rabbits\":0,\"voles\":0,\"foxes\":15.533986869153601,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":27,\"time\":2.7,\"values\":{\"plants\":149.82654281263132,\"rabbits\":0,\"voles\":0,\"foxes\":15.385101694955653,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":28,\"time\":2.8,\"values\":{\"plants\":150.47823861154026,\"rabbits\":0,\"voles\":0,\"foxes\":15.237734124403167,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":29,\"time\":2.9,\"values\":{\"plants\":151.09071188965245,\"rabbits\":0,\"voles\":0,\"foxes\":15.091866962062117,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":30,\"time\":3,\"values\":{\"plants\":151.66600740720332,\"rabbits\":0,\"voles\":0,\"foxes\":14.947483240311461,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":31,\"time\":3.1,\"values\":{\"plants\":152.20610330312675,\"rabbits\":0,\"voles\":0,\"foxes\":14.80456621569994,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":32,\"time\":3.2,\"values\":{\"plants\":152.71290780790213,\"rabbits\":0,\"voles\":0,\"foxes\":14.663099365372924,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":33,\"time\":3.3,\"values\":{\"plants\":153.18825691575032,\"rabbits\":0,\"voles\":0,\"foxes\":14.523066383567734,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":34,\"time\":3.4,\"values\":{\"plants\":153.6339129015548,\"rabbits\":0,\"voles\":0,\"foxes\":14.384451178175887,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":35,\"time\":3.5,\"values\":{\"plants\":154.0515635750335,\"rabbits\":0,\"voles\":0,\"foxes\":14.24723786737079,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":36,\"time\":3.6,\"values\":{\"plants\":154.44282217238845,\"rabbits\":0,\"voles\":0,\"foxes\":14.111410776299412,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":37,\"time\":3.7,\"values\":{\"plants\":154.8092277936431,\"rabbits\":0,\"voles\":0,\"foxes\":13.976954433836493,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":38,\"time\":3.8,\"values\":{\"plants\":155.1522463019177,\"rabbits\":0,\"voles\":0,\"foxes\":13.843853569399947,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":39,\"time\":3.9,\"values\":{\"plants\":155.47327160882128,\"rabbits\":0,\"voles\":0,\"foxes\":13.71209310982607,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":40,\"time\":4,\"values\":{\"plants\":155.77362727781696,\"rabbits\":0,\"voles\":0,\"foxes\":13.581658176303245,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":41,\"time\":4.1,\"values\":{\"plants\":156.05456838475078,\"rabbits\":0,\"voles\":0,\"foxes\":13.452534081362884,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":42,\"time\":4.2,\"values\":{\"plants\":156.3172835816517,\"rabbits\":0,\"voles\":0,\"foxes\":13.324706325926318,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":43,\"time\":4.3,\"values\":{\"plants\":156.562897316368,\"rabbits\":0,\"voles\":0,\"foxes\":13.19816059640643,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":44,\"time\":4.4,\"values\":{\"plants\":156.79247216657808,\"rabbits\":0,\"voles\":0,\"foxes\":13.072882761862873,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":45,\"time\":4.5,\"values\":{\"plants\":157.00701125219243,\"rabbits\":0,\"voles\":0,\"foxes\":12.948858871209646,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":46,\"time\":4.6,\"values\":{\"plants\":157.20746069515204,\"rabbits\":0,\"voles\":0,\"foxes\":12.826075150473963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":47,\"time\":4.7,\"values\":{\"plants\":157.3947121001393,\"rabbits\":0,\"voles\":0,\"foxes\":12.704518000105258,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":48,\"time\":4.8,\"values\":{\"plants\":157.56960503376948,\"rabbits\":0,\"voles\":0,\"foxes\":12.584173992333296,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":49,\"time\":4.9,\"values\":{\"plants\":157.73292948345104,\"rabbits\":0,\"voles\":0,\"foxes\":12.465029868574304,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":50,\"time\":5,\"values\":{\"plants\":157.8854282803154,\"rabbits\":0,\"voles\":0,\"foxes\":12.347072536884113,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":51,\"time\":5.1,\"values\":{\"plants\":158.02779947345434,\"rabbits\":0,\"voles\":0,\"foxes\":12.230289069457303,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":52,\"time\":5.2,\"values\":{\"plants\":158.16069864519338,\"rabbits\":0,\"voles\":0,\"foxes\":12.114666700171401,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":53,\"time\":5.3,\"values\":{\"plants\":158.28474115930496,\"rabbits\":0,\"voles\":0,\"foxes\":12.000192822175132,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":54,\"time\":5.4,\"values\":{\"plants\":158.40050433595235,\"rabbits\":0,\"voles\":0,\"foxes\":11.886854985519848,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":55,\"time\":5.5,\"values\":{\"plants\":158.5085295487851,\"rabbits\":0,\"voles\":0,\"foxes\":11.774640894833192,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":56,\"time\":5.6,\"values\":{\"plants\":158.60932424100446,\"rabbits\":0,\"voles\":0,\"foxes\":11.663538407034125,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":57,\"time\":5.7,\"values\":{\"plants\":158.70336385840815,\"rabbits\":0,\"voles\":0,\"foxes\":11.553535529088455,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":58,\"time\":5.8,\"values\":{\"plants\":158.79109369843124,\"rabbits\":0,\"voles\":0,\"foxes\":11.44462041580402,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":59,\"time\":5.9,\"values\":{\"plants\":158.8729306750449,\"rabbits\":0,\"voles\":0,\"foxes\":11.336781367664699,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":60,\"time\":6,\"values\":{\"plants\":158.94926500007804,\"rabbits\":0,\"voles\":0,\"foxes\":11.230006828702471,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":61,\"time\":6.1,\"values\":{\"plants\":159.0204617821046,\"rabbits\":0,\"voles\":0,\"foxes\":11.124285384406692,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":62,\"time\":6.2,\"values\":{\"plants\":159.086862544508,\"rabbits\":0,\"voles\":0,\"foxes\":11.019605759669878,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":63,\"time\":6.3,\"values\":{\"plants\":159.14878666471026,\"rabbits\":0,\"voles\":0,\"foxes\":10.915956816769198,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":64,\"time\":6.4,\"values\":{\"plants\":159.20653273684528,\"rabbits\":0,\"voles\":0,\"foxes\":10.813327553382994,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":65,\"time\":6.5,\"values\":{\"plants\":159.26037986038014,\"rabbits\":0,\"voles\":0,\"foxes\":10.711707100641563,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":66,\"time\":6.6,\"values\":{\"plants\":159.31058885735195,\"rabbits\":0,\"voles\":0,\"foxes\":10.61108472121155,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":67,\"time\":6.7,\"values\":{\"plants\":159.35740342099953,\"rabbits\":0,\"voles\":0,\"foxes\":10.511449807413252,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":68,\"time\":6.8,\"values\":{\"plants\":159.4010511986407,\"rabbits\":0,\"voles\":0,\"foxes\":10.412791879370149,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":69,\"time\":6.9,\"values\":{\"plants\":159.44174481167727,\"rabbits\":0,\"voles\":0,\"foxes\":10.315100583190068,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":70,\"time\":7,\"values\":{\"plants\":159.47968281561717,\"rabbits\":0,\"voles\":0,\"foxes\":10.218365689177277,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":71,\"time\":7.1,\"values\":{\"plants\":159.51505060297805,\"rabbits\":0,\"voles\":0,\"foxes\":10.12257709007495,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":72,\"time\":7.2,\"values\":{\"plants\":159.54802125189934,\"rabbits\":0,\"voles\":0,\"foxes\":10.027724799337346,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":73,\"time\":7.3,\"values\":{\"plants\":159.5787563232295,\"rabbits\":0,\"voles\":0,\"foxes\":9.933798949431159,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":74,\"time\":7.4,\"values\":{\"plants\":159.60740660878741,\"rabbits\":0,\"voles\":0,\"foxes\":9.840789790165418,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":75,\"time\":7.5,\"values\":{\"plants\":159.6341128334145,\"rabbits\":0,\"voles\":0,\"foxes\":9.748687687049408,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":76,\"time\":7.6,\"values\":{\"plants\":159.6590063133478,\"rabbits\":0,\"voles\":0,\"foxes\":9.657483119678025,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":77,\"time\":7.7,\"values\":{\"plants\":159.68220957335075,\"rabbits\":0,\"voles\":0,\"foxes\":9.567166680144055,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":78,\"time\":7.8,\"values\":{\"plants\":159.70383692494175,\"rabbits\":0,\"voles\":0,\"foxes\":9.477729071476835,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":79,\"time\":7.9,\"values\":{\"plants\":159.723995007961,\"rabbits\":0,\"voles\":0,\"foxes\":9.389161106106783,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":80,\"time\":8,\"values\":{\"plants\":159.7427832976171,\"rabbits\":0,\"voles\":0,\"foxes\":9.301453704355287,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":81,\"time\":8.1,\"values\":{\"plants\":159.76029457905483,\"rabbits\":0,\"voles\":0,\"foxes\":9.214597892949472,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":82,\"time\":8.2,\"values\":{\"plants\":159.77661539138623,\"rabbits\":0,\"voles\":0,\"foxes\":9.128584803561356,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":83,\"time\":8.3,\"values\":{\"plants\":159.79182644303026,\"rabbits\":0,\"voles\":0,\"foxes\":9.043405671370916,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":84,\"time\":8.4,\"values\":{\"plants\":159.80600300011105,\"rabbits\":0,\"voles\":0,\"foxes\":8.959051833652627,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":85,\"time\":8.5,\"values\":{\"plants\":159.819215249572,\"rabbits\":0,\"voles\":0,\"foxes\":8.875514728384987,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":86,\"time\":8.6,\"values\":{\"plants\":159.83152863857376,\"rabbits\":0,\"voles\":0,\"foxes\":8.792785892882634,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":87,\"time\":8.7,\"values\":{\"plants\":159.84300419165655,\"rabbits\":0,\"voles\":0,\"foxes\":8.710856962450569,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":88,\"time\":8.8,\"values\":{\"plants\":159.85369880706526,\"rabbits\":0,\"voles\":0,\"foxes\":8.629719669060114,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":89,\"time\":8.9,\"values\":{\"plants\":159.8636655335545,\"rabbits\":0,\"voles\":0,\"foxes\":8.549365840046168,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":90,\"time\":9,\"values\":{\"plants\":159.8729538289158,\"rabbits\":0,\"voles\":0,\"foxes\":8.469787396825348,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":91,\"time\":9.1,\"values\":{\"plants\":159.88160980139443,\"rabbits\":0,\"voles\":0,\"foxes\":8.390976353634647,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":92,\"time\":9.2,\"values\":{\"plants\":159.88967643509545,\"rabbits\":0,\"voles\":0,\"foxes\":8.312924816290204,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":93,\"time\":9.3,\"values\":{\"plants\":159.89719380041166,\"rabbits\":0,\"voles\":0,\"foxes\":8.23562498096581,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":94,\"time\":9.4,\"values\":{\"plants\":159.90419925044318,\"rabbits\":0,\"voles\":0,\"foxes\":8.159069132990785,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":95,\"time\":9.5,\"values\":{\"plants\":159.91072760431982,\"rabbits\":0,\"voles\":0,\"foxes\":8.083249645666873,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":96,\"time\":9.6,\"values\":{\"plants\":159.91681131828005,\"rabbits\":0,\"voles\":0,\"foxes\":8.008158979103777,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":97,\"time\":9.7,\"values\":{\"plants\":159.92248064530824,\"rabbits\":0,\"voles\":0,\"foxes\":7.933789679072999,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":98,\"time\":9.8,\"values\":{\"plants\":159.92776378408058,\"rabbits\":0,\"voles\":0,\"foxes\":7.860134375879669,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":99,\"time\":9.9,\"values\":{\"plants\":159.93268701792363,\"rabbits\":0,\"voles\":0,\"foxes\":7.787185783251996,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":100,\"time\":10,\"values\":{\"plants\":159.93727484444435,\"rabbits\":0,\"voles\":0,\"foxes\":7.71493669724803,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":101,\"time\":10.1,\"values\":{\"plants\":159.94155009644828,\"rabbits\":0,\"voles\":0,\"foxes\":7.643379995179426,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":102,\"time\":10.2,\"values\":{\"plants\":159.94553405472345,\"rabbits\":0,\"voles\":0,\"foxes\":7.5725086345518875,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":103,\"time\":10.3,\"values\":{\"plants\":159.9492465532299,\"rabbits\":0,\"voles\":0,\"foxes\":7.502315652021987,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":104,\"time\":10.4,\"values\":{\"plants\":159.95270607720033,\"rabbits\":0,\"voles\":0,\"foxes\":7.432794162370072,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":105,\"time\":10.5,\"values\":{\"plants\":159.95592985462412,\"rabbits\":0,\"voles\":0,\"foxes\":7.363937357488954,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":106,\"time\":10.6,\"values\":{\"plants\":159.95893394155638,\"rabbits\":0,\"voles\":0,\"foxes\":7.295738505388103,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":107,\"time\":10.7,\"values\":{\"plants\":159.96173330166488,\"rabbits\":0,\"voles\":0,\"foxes\":7.228190949213067,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":108,\"time\":10.8,\"values\":{\"plants\":159.9643418804004,\"rabbits\":0,\"voles\":0,\"foxes\":7.1612881062798355,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":109,\"time\":10.9,\"values\":{\"plants\":159.96677267415131,\"rabbits\":0,\"voles\":0,\"foxes\":7.095023467123886,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":110,\"time\":11,\"values\":{\"plants\":159.96903779471813,\"rabbits\":0,\"voles\":0,\"foxes\":7.029390594563645,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":111,\"time\":11.1,\"values\":{\"plants\":159.97114852942363,\"rabbits\":0,\"voles\":0,\"foxes\":6.964383122778117,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":112,\"time\":11.2,\"values\":{\"plants\":159.97311539715082,\"rabbits\":0,\"voles\":0,\"foxes\":6.899994756398408,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":113,\"time\":11.3,\"values\":{\"plants\":159.9749482005837,\"rabbits\":0,\"voles\":0,\"foxes\":6.83621926961292,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":114,\"time\":11.4,\"values\":{\"plants\":159.97665607490643,\"rabbits\":0,\"voles\":0,\"foxes\":6.773050505285964,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":115,\"time\":11.5,\"values\":{\"plants\":159.97824753319952,\"rabbits\":0,\"voles\":0,\"foxes\":6.710482374089543,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":116,\"time\":11.6,\"values\":{\"plants\":159.97973050875595,\"rabbits\":0,\"voles\":0,\"foxes\":6.648508853648105,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":117,\"time\":11.7,\"values\":{\"plants\":159.98111239452564,\"rabbits\":0,\"voles\":0,\"foxes\":6.587123987695995,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":118,\"time\":11.8,\"values\":{\"plants\":159.98240007988187,\"rabbits\":0,\"voles\":0,\"foxes\":6.526321885247427,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":119,\"time\":11.9,\"values\":{\"plants\":159.98359998489067,\"rabbits\":0,\"voles\":0,\"foxes\":6.466096719778714,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":120,\"time\":12,\"values\":{\"plants\":159.98471809225262,\"rabbits\":0,\"voles\":0,\"foxes\":6.406442728422591,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":121,\"time\":12.1,\"values\":{\"plants\":159.98575997707414,\"rabbits\":0,\"voles\":0,\"foxes\":6.3473542111743715,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":122,\"time\":12.2,\"values\":{\"plants\":159.9867308346154,\"rabbits\":0,\"voles\":0,\"foxes\":6.2888255301097695,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":123,\"time\":12.3,\"values\":{\"plants\":159.98763550615215,\"rabbits\":0,\"voles\":0,\"foxes\":6.230851108614167,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":124,\"time\":12.4,\"values\":{\"plants\":159.9884785030789,\"rabbits\":0,\"voles\":0,\"foxes\":6.173425430623131,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":125,\"time\":12.5,\"values\":{\"plants\":159.98926402937317,\"rabbits\":0,\"voles\":0,\"foxes\":6.116543039873996,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":126,\"time\":12.6,\"values\":{\"plants\":159.9899960025318,\"rabbits\":0,\"voles\":0,\"foxes\":6.060198539168309,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":127,\"time\":12.7,\"values\":{\"plants\":159.99067807308265,\"rabbits\":0,\"voles\":0,\"foxes\":6.004386589644969,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":128,\"time\":12.8,\"values\":{\"plants\":159.99131364276928,\"rabbits\":0,\"voles\":0,\"foxes\":5.949101910063851,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":129,\"time\":12.9,\"values\":{\"plants\":159.99190588149764,\"rabbits\":0,\"voles\":0,\"foxes\":5.8943392760997675,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":130,\"time\":13,\"values\":{\"plants\":159.99245774312973,\"rabbits\":0,\"voles\":0,\"foxes\":5.840093519646573,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":131,\"time\":13.1,\"values\":{\"plants\":159.99297198020216,\"rabbits\":0,\"voles\":0,\"foxes\":5.786359528131242,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":132,\"time\":13.2,\"values\":{\"plants\":159.99345115764262,\"rabbits\":0,\"voles\":0,\"foxes\":5.733132243837756,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":133,\"time\":13.3,\"values\":{\"plants\":159.9938976655528,\"rabbits\":0,\"voles\":0,\"foxes\":5.680406663240634,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":134,\"time\":13.4,\"values\":{\"plants\":159.99431373112046,\"rabbits\":0,\"voles\":0,\"foxes\":5.62817783634794,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":135,\"time\":13.5,\"values\":{\"plants\":159.9947014297209,\"rabbits\":0,\"voles\":0,\"foxes\":5.57644086605362,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":136,\"time\":13.6,\"values\":{\"plants\":159.99506269526182,\"rabbits\":0,\"voles\":0,\"foxes\":5.5251909074989936,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":137,\"time\":13.7,\"values\":{\"plants\":159.9953993298241,\"rabbits\":0,\"voles\":0,\"foxes\":5.4744231674432715,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":138,\"time\":13.8,\"values\":{\"plants\":159.9957130126457,\"rabbits\":0,\"voles\":0,\"foxes\":5.424132903642928,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":139,\"time\":13.9,\"values\":{\"plants\":159.99600530849358,\"rabbits\":0,\"voles\":0,\"foxes\":5.374315424239791,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":140,\"time\":14,\"values\":{\"plants\":159.99627767546545,\"rabbits\":0,\"voles\":0,\"foxes\":5.324966087157709,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":141,\"time\":14.1,\"values\":{\"plants\":159.99653147225973,\"rabbits\":0,\"voles\":0,\"foxes\":5.276080299507648,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":142,\"time\":14.2,\"values\":{\"plants\":159.99676796495066,\"rabbits\":0,\"voles\":0,\"foxes\":5.227653517001081,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":143,\"time\":14.3,\"values\":{\"plants\":159.9969883333014,\"rabbits\":0,\"voles\":0,\"foxes\":5.179681243371531,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":144,\"time\":14.4,\"values\":{\"plants\":159.99719367664707,\"rabbits\":0,\"voles\":0,\"foxes\":5.132159029804147,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":145,\"time\":14.5,\"values\":{\"plants\":159.997385019377,\"rabbits\":0,\"voles\":0,\"foxes\":5.0850824743731575,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":146,\"time\":14.6,\"values\":{\"plants\":159.99756331604337,\"rabbits\":0,\"voles\":0,\"foxes\":5.0384472214871066,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":147,\"time\":14.7,\"values\":{\"plants\":159.99772945612173,\"rabbits\":0,\"voles\":0,\"foxes\":4.992248961341713,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":148,\"time\":14.8,\"values\":{\"plants\":159.99788426844705,\"rabbits\":0,\"voles\":0,\"foxes\":4.946483429380251,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":149,\"time\":14.9,\"values\":{\"plants\":159.9980285253474,\"rabbits\":0,\"voles\":0,\"foxes\":4.901146405761324,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":150,\"time\":15,\"values\":{\"plants\":159.9981629464961,\"rabbits\":0,\"voles\":0,\"foxes\":4.85623371483391,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":151,\"time\":15.1,\"values\":{\"plants\":159.99828820250116,\"rabbits\":0,\"voles\":0,\"foxes\":4.811741224619567,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":152,\"time\":15.2,\"values\":{\"plants\":159.99840491824997,\"rabbits\":0,\"voles\":0,\"foxes\":4.767664846301681,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":153,\"time\":15.3,\"values\":{\"plants\":159.9985136760264,\"rabbits\":0,\"voles\":0,\"foxes\":4.724000533721642,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":154,\"time\":15.4,\"values\":{\"plants\":159.99861501841505,\"rabbits\":0,\"voles\":0,\"foxes\":4.680744282881844,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":155,\"time\":15.5,\"values\":{\"plants\":159.99870945100773,\"rabbits\":0,\"voles\":0,\"foxes\":4.637892131455387,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":156,\"time\":15.6,\"values\":{\"plants\":159.9987974449254,\"rabbits\":0,\"voles\":0,\"foxes\":4.595440158302398,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":157,\"time\":15.7,\"values\":{\"plants\":159.99887943916818,\"rabbits\":0,\"voles\":0,\"foxes\":4.553384482992841,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":158,\"time\":15.8,\"values\":{\"plants\":159.99895584280532,\"rabbits\":0,\"voles\":0,\"foxes\":4.511721265335726,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":159,\"time\":15.9,\"values\":{\"plants\":159.99902703701562,\"rabbits\":0,\"voles\":0,\"foxes\":4.470446704914626,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":160,\"time\":16,\"values\":{\"plants\":159.99909337698907,\"rabbits\":0,\"voles\":0,\"foxes\":4.4295570406293745,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":161,\"time\":16.1,\"values\":{\"plants\":159.99915519369856,\"rabbits\":0,\"voles\":0,\"foxes\":4.389048550243881,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":162,\"time\":16.2,\"values\":{\"plants\":159.9992127955509,\"rabbits\":0,\"voles\":0,\"foxes\":4.348917549939941,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":163,\"time\":16.3,\"values\":{\"plants\":159.9992664699256,\"rabbits\":0,\"voles\":0,\"foxes\":4.309160393876963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":164,\"time\":16.4,\"values\":{\"plants\":159.99931648460807,\"rabbits\":0,\"voles\":0,\"foxes\":4.269773473757522,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":165,\"time\":16.5,\"values\":{\"plants\":159.99936308912592,\"rabbits\":0,\"voles\":0,\"foxes\":4.230753218398626,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":166,\"time\":16.6,\"values\":{\"plants\":159.99940651599346,\"rabbits\":0,\"voles\":0,\"foxes\":4.192096093308647,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":167,\"time\":16.7,\"values\":{\"plants\":159.99944698187187,\"rabbits\":0,\"voles\":0,\"foxes\":4.153798600269785,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":168,\"time\":16.8,\"values\":{\"plants\":159.99948468864991,\"rabbits\":0,\"voles\":0,\"foxes\":4.115857276926016,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":169,\"time\":16.9,\"values\":{\"plants\":159.99951982445114,\"rabbits\":0,\"voles\":0,\"foxes\":4.078268696376422,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":170,\"time\":17,\"values\":{\"plants\":159.9995525645725,\"rabbits\":0,\"voles\":0,\"foxes\":4.041029466773816,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":171,\"time\":17.1,\"values\":{\"plants\":159.99958307235883,\"rabbits\":0,\"voles\":0,\"foxes\":4.004136230928601,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":172,\"time\":17.2,\"values\":{\"plants\":159.99961150001772,\"rabbits\":0,\"voles\":0,\"foxes\":3.9675856659177584,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":173,\"time\":17.3,\"values\":{\"plants\":159.9996379893788,\"rabbits\":0,\"voles\":0,\"foxes\":3.9313744826989176,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":174,\"time\":17.4,\"values\":{\"plants\":159.99966267260146,\"rabbits\":0,\"voles\":0,\"foxes\":3.8954994257293922,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":175,\"time\":17.5,\"values\":{\"plants\":159.99968567283406,\"rabbits\":0,\"voles\":0,\"foxes\":3.8599572725901443,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":176,\"time\":17.6,\"values\":{\"plants\":159.9997071048285,\"rabbits\":0,\"voles\":0,\"foxes\":3.8247448336145795,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":177,\"time\":17.7,\"values\":{\"plants\":159.99972707551242,\"rabbits\":0,\"voles\":0,\"foxes\":3.789858951522109,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":178,\"time\":17.8,\"values\":{\"plants\":159.9997456845229,\"rabbits\":0,\"voles\":0,\"foxes\":3.7552965010564017,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":179,\"time\":17.9,\"values\":{\"plants\":159.99976302470353,\"rabbits\":0,\"voles\":0,\"foxes\":3.721054388628266,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":180,\"time\":18,\"values\":{\"plants\":159.9997791825674,\"rabbits\":0,\"voles\":0,\"foxes\":3.687129551963081,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":181,\"time\":18.1,\"values\":{\"plants\":159.99979423872904,\"rabbits\":0,\"voles\":0,\"foxes\":3.6535189597527142,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":182,\"time\":18.2,\"values\":{\"plants\":159.99980826830628,\"rabbits\":0,\"voles\":0,\"foxes\":3.6202196113118608,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":183,\"time\":18.3,\"values\":{\"plants\":159.99982134129525,\"rabbits\":0,\"voles\":0,\"foxes\":3.5872285362387353,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":184,\"time\":18.4,\"values\":{\"plants\":159.99983352291954,\"rabbits\":0,\"voles\":0,\"foxes\":3.5545427940800547,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":185,\"time\":18.5,\"values\":{\"plants\":159.99984487395557,\"rabbits\":0,\"voles\":0,\"foxes\":3.522159474000245,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":186,\"time\":18.6,\"values\":{\"plants\":159.9998554510358,\"rabbits\":0,\"voles\":0,\"foxes\":3.4900756944548155,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":187,\"time\":18.7,\"values\":{\"plants\":159.99986530693133,\"rabbits\":0,\"voles\":0,\"foxes\":3.4582886028678326,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":188,\"time\":18.8,\"values\":{\"plants\":159.99987449081513,\"rabbits\":0,\"voles\":0,\"foxes\":3.4267953753134397,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":189,\"time\":18.9,\"values\":{\"plants\":159.9998830485074,\"rabbits\":0,\"voles\":0,\"foxes\":3.3955932162013576,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":190,\"time\":19,\"values\":{\"plants\":159.99989102270416,\"rabbits\":0,\"voles\":0,\"foxes\":3.3646793579663137,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":191,\"time\":19.1,\"values\":{\"plants\":159.99989845319027,\"rabbits\":0,\"voles\":0,\"foxes\":3.3340510607613383,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":192,\"time\":19.2,\"values\":{\"plants\":159.9999053770379,\"rabbits\":0,\"voles\":0,\"foxes\":3.3037056121548716,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":193,\"time\":19.3,\"values\":{\"plants\":159.99991182879154,\"rabbits\":0,\"voles\":0,\"foxes\":3.2736403268316305,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":194,\"time\":19.4,\"values\":{\"plants\":159.99991784064034,\"rabbits\":0,\"voles\":0,\"foxes\":3.243852546297179,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":195,\"time\":19.5,\"values\":{\"plants\":159.99992344257856,\"rabbits\":0,\"voles\":0,\"foxes\":3.2143396385861447,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":196,\"time\":19.6,\"values\":{\"plants\":159.99992866255545,\"rabbits\":0,\"voles\":0,\"foxes\":3.1850989979740345,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":197,\"time\":19.7,\"values\":{\"plants\":159.99993352661457,\"rabbits\":0,\"voles\":0,\"foxes\":3.156128044692596,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":198,\"time\":19.8,\"values\":{\"plants\":159.99993805902372,\"rabbits\":0,\"voles\":0,\"foxes\":3.127424224648675,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":199,\"time\":19.9,\"values\":{\"plants\":159.99994228239598,\"rabbits\":0,\"voles\":0,\"foxes\":3.098985009146515,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":200,\"time\":20,\"values\":{\"plants\":159.99994621780272,\"rabbits\":0,\"voles\":0,\"foxes\":3.070807894613453,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":201,\"time\":20.1,\"values\":{\"plants\":159.99994988487848,\"rabbits\":0,\"voles\":0,\"foxes\":3.0428904023289656,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":202,\"time\":20.2,\"values\":{\"plants\":159.99995330191908,\"rabbits\":0,\"voles\":0,\"foxes\":3.0152300781570127,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":203,\"time\":20.3,\"values\":{\"plants\":159.99995648597286,\"rabbits\":0,\"voles\":0,\"foxes\":2.9878244922816357,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":204,\"time\":20.4,\"values\":{\"plants\":159.9999594529257,\"rabbits\":0,\"voles\":0,\"foxes\":2.960671238945763,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":205,\"time\":20.5,\"values\":{\"plants\":159.99996221758042,\"rabbits\":0,\"voles\":0,\"foxes\":2.9337679361931777,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":206,\"time\":20.6,\"values\":{\"plants\":159.99996479373047,\"rabbits\":0,\"voles\":0,\"foxes\":2.9071122256136053,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":207,\"time\":20.7,\"values\":{\"plants\":159.99996719422876,\"rabbits\":0,\"voles\":0,\"foxes\":2.880701772090872,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":208,\"time\":20.8,\"values\":{\"plants\":159.9999694310519,\"rabbits\":0,\"voles\":0,\"foxes\":2.854534263554097,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":209,\"time\":20.9,\"values\":{\"plants\":159.9999715153599,\"rabbits\":0,\"voles\":0,\"foxes\":2.8286074107318746,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":210,\"time\":21,\"values\":{\"plants\":159.99997345755182,\"rabbits\":0,\"voles\":0,\"foxes\":2.8029189469094007,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":211,\"time\":21.1,\"values\":{\"plants\":159.99997526731767,\"rabbits\":0,\"voles\":0,\"foxes\":2.7774666276885087,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":212,\"time\":21.2,\"values\":{\"plants\":159.99997695368677,\"rabbits\":0,\"voles\":0,\"foxes\":2.752248230750572,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":213,\"time\":21.3,\"values\":{\"plants\":159.99997852507278,\"rabbits\":0,\"voles\":0,\"foxes\":2.727261555622228,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":214,\"time\":21.4,\"values\":{\"plants\":159.99997998931565,\"rabbits\":0,\"voles\":0,\"foxes\":2.7025044234438993,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":215,\"time\":21.5,\"values\":{\"plants\":159.99998135372084,\"rabbits\":0,\"voles\":0,\"foxes\":2.677974676741053,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":216,\"time\":21.6,\"values\":{\"plants\":159.9999826250957,\"rabbits\":0,\"voles\":0,\"foxes\":2.6536701791981807,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":217,\"time\":21.7,\"values\":{\"plants\":159.99998380978334,\"rabbits\":0,\"voles\":0,\"foxes\":2.629588815435449,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":218,\"time\":21.8,\"values\":{\"plants\":159.99998491369448,\"rabbits\":0,\"voles\":0,\"foxes\":2.6057284907879876,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":219,\"time\":21.9,\"values\":{\"plants\":159.99998594233668,\"rabbits\":0,\"voles\":0,\"foxes\":2.582087131087781,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":220,\"time\":22,\"values\":{\"plants\":159.9999869008421,\"rabbits\":0,\"voles\":0,\"foxes\":2.558662682448125,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":221,\"time\":22.1,\"values\":{\"plants\":159.99998779399297,\"rabbits\":0,\"voles\":0,\"foxes\":2.5354531110506184,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":222,\"time\":22.2,\"values\":{\"plants\":159.9999886262454,\"rabbits\":0,\"voles\":0,\"foxes\":2.5124564029346454,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":223,\"time\":22.3,\"values\":{\"plants\":159.99998940175163,\"rabbits\":0,\"voles\":0,\"foxes\":2.489670563789331,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":224,\"time\":22.4,\"values\":{\"plants\":159.9999901243809,\"rabbits\":0,\"voles\":0,\"foxes\":2.467093618747917,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":225,\"time\":22.5,\"values\":{\"plants\":159.99999079773852,\"rabbits\":0,\"voles\":0,\"foxes\":2.444723612184545,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":226,\"time\":22.6,\"values\":{\"plants\":159.99999142518405,\"rabbits\":0,\"voles\":0,\"foxes\":2.422558607513396,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":227,\"time\":22.7,\"values\":{\"plants\":159.99999200984792,\"rabbits\":0,\"voles\":0,\"foxes\":2.4005966869901725,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":228,\"time\":22.8,\"values\":{\"plants\":159.99999255464718,\"rabbits\":0,\"voles\":0,\"foxes\":2.378835951515876,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":229,\"time\":22.9,\"values\":{\"plants\":159.99999306229992,\"rabbits\":0,\"voles\":0,\"foxes\":2.3572745204428625,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":230,\"time\":23,\"values\":{\"plants\":159.99999353533897,\"rabbits\":0,\"voles\":0,\"foxes\":2.3359105313831354,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":231,\"time\":23.1,\"values\":{\"plants\":159.9999939761244,\"rabbits\":0,\"voles\":0,\"foxes\":2.31474214001885,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":232,\"time\":23.2,\"values\":{\"plants\":159.99999438685538,\"rabbits\":0,\"voles\":0,\"foxes\":2.293767519915007,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":233,\"time\":23.3,\"values\":{\"plants\":159.99999476958115,\"rabbits\":0,\"voles\":0,\"foxes\":2.272984862334292,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":234,\"time\":23.4,\"values\":{\"plants\":159.9999951262112,\"rabbits\":0,\"voles\":0,\"foxes\":2.2523923760540447,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":235,\"time\":23.5,\"values\":{\"plants\":159.99999545852486,\"rabbits\":0,\"voles\":0,\"foxes\":2.2319882871853247,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":236,\"time\":23.6,\"values\":{\"plants\":159.9999957681801,\"rabbits\":0,\"voles\":0,\"foxes\":2.211770838994047,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":237,\"time\":23.7,\"values\":{\"plants\":159.99999605672184,\"rabbits\":0,\"voles\":0,\"foxes\":2.1917382917241603,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":238,\"time\":23.8,\"values\":{\"plants\":159.9999963255897,\"rabbits\":0,\"voles\":0,\"foxes\":2.1718889224228413,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":239,\"time\":23.9,\"values\":{\"plants\":159.99999657612514,\"rabbits\":0,\"voles\":0,\"foxes\":2.152221024767678,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":240,\"time\":24,\"values\":{\"plants\":159.99999680957808,\"rabbits\":0,\"voles\":0,\"foxes\":2.132732908895818,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0}],\"experiment\":[{\"step\":0,\"time\":0,\"values\":{\"plants\":110,\"rabbits\":0,\"voles\":0,\"foxes\":20,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":1,\"time\":0.1,\"values\":{\"plants\":112.38212013483779,\"rabbits\":0,\"voles\":0,\"foxes\":19.804777390139478,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":2,\"time\":0.2,\"values\":{\"plants\":114.69808050712378,\"rabbits\":0,\"voles\":0,\"foxes\":19.611613285558963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":3,\"time\":0.3,\"values\":{\"plants\":116.9451112312344,\"rabbits\":0,\"voles\":0,\"foxes\":19.420483015199764,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":4,\"time\":0.4,\"values\":{\"plants\":119.12093199387913,\"rabbits\":0,\"voles\":0,\"foxes\":19.231362261455317,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":5,\"time\":0.5,\"values\":{\"plants\":121.22374268019907,\"rabbits\":0,\"voles\":0,\"foxes\":19.044227053986106,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":6,\"time\":0.6,\"values\":{\"plants\":123.25220840102392,\"rabbits\":0,\"voles\":0,\"foxes\":18.859053763664836,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":7,\"time\":0.7,\"values\":{\"plants\":125.20543967429981,\"rabbits\":0,\"voles\":0,\"foxes\":18.675819096648606,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":8,\"time\":0.8,\"values\":{\"plants\":127.08296855357618,\"rabbits\":0,\"voles\":0,\"foxes\":18.494500088574984,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":9,\"time\":0.9,\"values\":{\"plants\":128.88472150790724,\"rabbits\":0,\"voles\":0,\"foxes\":18.31507409887898,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":10,\"time\":1,\"values\":{\"plants\":130.6109898438156,\"rabbits\":0,\"voles\":0,\"foxes\":18.137518805227966,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":11,\"time\":1.1,\"values\":{\"plants\":132.26239842497216,\"rabbits\":0,\"voles\":0,\"foxes\":17.961812198071645,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":12,\"time\":1.2,\"values\":{\"plants\":133.83987339320205,\"rabbits\":0,\"voles\":0,\"foxes\":17.787932575304346,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":13,\"time\":1.3,\"values\":{\"plants\":135.3446095296398,\"rabbits\":0,\"voles\":0,\"foxes\":17.615858537036907,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":14,\"time\":1.4,\"values\":{\"plants\":136.778037821481,\"rabbits\":0,\"voles\":0,\"foxes\":17.445568980475514,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":15,\"time\":1.5,\"values\":{\"plants\":138.1417937216227,\"rabbits\":0,\"voles\":0,\"foxes\":17.27704309490497,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":16,\"time\":1.6,\"values\":{\"plants\":139.43768650891013,\"rabbits\":0,\"voles\":0,\"foxes\":17.110260356773843,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":17,\"time\":1.7,\"values\":{\"plants\":140.6676700785289,\"rabbits\":0,\"voles\":0,\"foxes\":16.94520052487915,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":18,\"time\":1.8,\"values\":{\"plants\":141.8338154175602,\"rabbits\":0,\"voles\":0,\"foxes\":16.781843635648166,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":19,\"time\":1.9,\"values\":{\"plants\":142.93828495155057,\"rabbits\":0,\"voles\":0,\"foxes\":16.62016999851507,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":20,\"time\":2,\"values\":{\"plants\":143.98330888532053,\"rabbits\":0,\"voles\":0,\"foxes\":16.460160191390234,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":21,\"time\":2.1,\"values\":{\"plants\":144.97116360586077,\"rabbits\":0,\"voles\":0,\"foxes\":16.301795056219948,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":22,\"time\":2.2,\"values\":{\"plants\":145.90415216735994,\"rabbits\":0,\"voles\":0,\"foxes\":16.145055694634486,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":23,\"time\":2.3,\"values\":{\"plants\":146.78458683815666,\"rabbits\":0,\"voles\":0,\"foxes\":15.98992346368246,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":24,\"time\":2.4,\"values\":{\"plants\":147.61477365644714,\"rabbits\":0,\"voles\":0,\"foxes\":15.836379971649434,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":25,\"time\":2.5,\"values\":{\"plants\":148.3969989154438,\"rabbits\":0,\"voles\":0,\"foxes\":15.684407073958884,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":26,\"time\":2.6,\"values\":{\"plants\":149.13351747878048,\"rabbits\":0,\"voles\":0,\"foxes\":15.533986869153601,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":27,\"time\":2.7,\"values\":{\"plants\":149.82654281263132,\"rabbits\":0,\"voles\":0,\"foxes\":15.385101694955653,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":28,\"time\":2.8,\"values\":{\"plants\":150.47823861154026,\"rabbits\":0,\"voles\":0,\"foxes\":15.237734124403167,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":29,\"time\":2.9,\"values\":{\"plants\":151.09071188965245,\"rabbits\":0,\"voles\":0,\"foxes\":15.091866962062117,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":30,\"time\":3,\"values\":{\"plants\":151.66600740720332,\"rabbits\":0,\"voles\":0,\"foxes\":14.947483240311461,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":31,\"time\":3.1,\"values\":{\"plants\":152.20610330312675,\"rabbits\":0,\"voles\":0,\"foxes\":14.80456621569994,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":32,\"time\":3.2,\"values\":{\"plants\":152.71290780790213,\"rabbits\":0,\"voles\":0,\"foxes\":14.663099365372924,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":33,\"time\":3.3,\"values\":{\"plants\":153.18825691575032,\"rabbits\":0,\"voles\":0,\"foxes\":14.523066383567734,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":34,\"time\":3.4,\"values\":{\"plants\":153.6339129015548,\"rabbits\":0,\"voles\":0,\"foxes\":14.384451178175887,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":35,\"time\":3.5,\"values\":{\"plants\":154.0515635750335,\"rabbits\":0,\"voles\":0,\"foxes\":14.24723786737079,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":36,\"time\":3.6,\"values\":{\"plants\":154.44282217238845,\"rabbits\":0,\"voles\":0,\"foxes\":14.111410776299412,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":37,\"time\":3.7,\"values\":{\"plants\":154.8092277936431,\"rabbits\":0,\"voles\":0,\"foxes\":13.976954433836493,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":38,\"time\":3.8,\"values\":{\"plants\":155.1522463019177,\"rabbits\":0,\"voles\":0,\"foxes\":13.843853569399947,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":39,\"time\":3.9,\"values\":{\"plants\":155.47327160882128,\"rabbits\":0,\"voles\":0,\"foxes\":13.71209310982607,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":40,\"time\":4,\"values\":{\"plants\":155.77362727781696,\"rabbits\":0,\"voles\":0,\"foxes\":13.581658176303245,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":41,\"time\":4.1,\"values\":{\"plants\":156.05456838475078,\"rabbits\":0,\"voles\":0,\"foxes\":13.452534081362884,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":42,\"time\":4.2,\"values\":{\"plants\":156.3172835816517,\"rabbits\":0,\"voles\":0,\"foxes\":13.324706325926318,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":43,\"time\":4.3,\"values\":{\"plants\":156.562897316368,\"rabbits\":0,\"voles\":0,\"foxes\":13.19816059640643,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":44,\"time\":4.4,\"values\":{\"plants\":156.79247216657808,\"rabbits\":0,\"voles\":0,\"foxes\":13.072882761862873,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":45,\"time\":4.5,\"values\":{\"plants\":157.00701125219243,\"rabbits\":0,\"voles\":0,\"foxes\":12.948858871209646,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":46,\"time\":4.6,\"values\":{\"plants\":157.20746069515204,\"rabbits\":0,\"voles\":0,\"foxes\":12.826075150473963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":47,\"time\":4.7,\"values\":{\"plants\":157.3947121001393,\"rabbits\":0,\"voles\":0,\"foxes\":12.704518000105258,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":48,\"time\":4.8,\"values\":{\"plants\":157.56960503376948,\"rabbits\":0,\"voles\":0,\"foxes\":12.584173992333296,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":49,\"time\":4.9,\"values\":{\"plants\":157.73292948345104,\"rabbits\":0,\"voles\":0,\"foxes\":12.465029868574304,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":50,\"time\":5,\"values\":{\"plants\":157.8854282803154,\"rabbits\":0,\"voles\":0,\"foxes\":12.347072536884113,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":51,\"time\":5.1,\"values\":{\"plants\":158.02779947345434,\"rabbits\":0,\"voles\":0,\"foxes\":12.230289069457303,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":52,\"time\":5.2,\"values\":{\"plants\":158.16069864519338,\"rabbits\":0,\"voles\":0,\"foxes\":12.114666700171401,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":53,\"time\":5.3,\"values\":{\"plants\":158.28474115930496,\"rabbits\":0,\"voles\":0,\"foxes\":12.000192822175132,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":54,\"time\":5.4,\"values\":{\"plants\":158.40050433595235,\"rabbits\":0,\"voles\":0,\"foxes\":11.886854985519848,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":55,\"time\":5.5,\"values\":{\"plants\":158.5085295487851,\"rabbits\":0,\"voles\":0,\"foxes\":11.774640894833192,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":56,\"time\":5.6,\"values\":{\"plants\":158.60932424100446,\"rabbits\":0,\"voles\":0,\"foxes\":11.663538407034125,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":57,\"time\":5.7,\"values\":{\"plants\":158.70336385840815,\"rabbits\":0,\"voles\":0,\"foxes\":11.553535529088455,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":58,\"time\":5.8,\"values\":{\"plants\":158.79109369843124,\"rabbits\":0,\"voles\":0,\"foxes\":11.44462041580402,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":59,\"time\":5.9,\"values\":{\"plants\":158.8729306750449,\"rabbits\":0,\"voles\":0,\"foxes\":11.336781367664699,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":60,\"time\":6,\"values\":{\"plants\":158.94926500007804,\"rabbits\":0,\"voles\":0,\"foxes\":11.230006828702471,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":61,\"time\":6.1,\"values\":{\"plants\":159.0204617821046,\"rabbits\":0,\"voles\":0,\"foxes\":11.124285384406692,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":62,\"time\":6.2,\"values\":{\"plants\":159.086862544508,\"rabbits\":0,\"voles\":0,\"foxes\":11.019605759669878,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":63,\"time\":6.3,\"values\":{\"plants\":159.14878666471026,\"rabbits\":0,\"voles\":0,\"foxes\":10.915956816769198,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":64,\"time\":6.4,\"values\":{\"plants\":159.20653273684528,\"rabbits\":0,\"voles\":0,\"foxes\":10.813327553382994,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":65,\"time\":6.5,\"values\":{\"plants\":159.26037986038014,\"rabbits\":0,\"voles\":0,\"foxes\":10.711707100641563,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":66,\"time\":6.6,\"values\":{\"plants\":159.31058885735195,\"rabbits\":0,\"voles\":0,\"foxes\":10.61108472121155,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":67,\"time\":6.7,\"values\":{\"plants\":159.35740342099953,\"rabbits\":0,\"voles\":0,\"foxes\":10.511449807413252,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":68,\"time\":6.8,\"values\":{\"plants\":159.4010511986407,\"rabbits\":0,\"voles\":0,\"foxes\":10.412791879370149,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":69,\"time\":6.9,\"values\":{\"plants\":159.44174481167727,\"rabbits\":0,\"voles\":0,\"foxes\":10.315100583190068,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":70,\"time\":7,\"values\":{\"plants\":159.47968281561717,\"rabbits\":0,\"voles\":0,\"foxes\":10.218365689177277,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":71,\"time\":7.1,\"values\":{\"plants\":159.51505060297805,\"rabbits\":0,\"voles\":0,\"foxes\":10.12257709007495,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":72,\"time\":7.2,\"values\":{\"plants\":159.54802125189934,\"rabbits\":0,\"voles\":0,\"foxes\":10.027724799337346,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":73,\"time\":7.3,\"values\":{\"plants\":159.5787563232295,\"rabbits\":0,\"voles\":0,\"foxes\":9.933798949431159,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":74,\"time\":7.4,\"values\":{\"plants\":159.60740660878741,\"rabbits\":0,\"voles\":0,\"foxes\":9.840789790165418,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":75,\"time\":7.5,\"values\":{\"plants\":159.6341128334145,\"rabbits\":0,\"voles\":0,\"foxes\":9.748687687049408,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":76,\"time\":7.6,\"values\":{\"plants\":159.6590063133478,\"rabbits\":0,\"voles\":0,\"foxes\":9.657483119678025,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":77,\"time\":7.7,\"values\":{\"plants\":159.68220957335075,\"rabbits\":0,\"voles\":0,\"foxes\":9.567166680144055,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":78,\"time\":7.8,\"values\":{\"plants\":159.70383692494175,\"rabbits\":0,\"voles\":0,\"foxes\":9.477729071476835,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":79,\"time\":7.9,\"values\":{\"plants\":159.723995007961,\"rabbits\":0,\"voles\":0,\"foxes\":9.389161106106783,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":80,\"time\":8,\"values\":{\"plants\":159.7427832976171,\"rabbits\":0,\"voles\":0,\"foxes\":9.301453704355287,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":81,\"time\":8.1,\"values\":{\"plants\":159.76029457905483,\"rabbits\":0,\"voles\":0,\"foxes\":9.214597892949472,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":82,\"time\":8.2,\"values\":{\"plants\":159.77661539138623,\"rabbits\":0,\"voles\":0,\"foxes\":9.128584803561356,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":83,\"time\":8.3,\"values\":{\"plants\":159.79182644303026,\"rabbits\":0,\"voles\":0,\"foxes\":9.043405671370916,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":84,\"time\":8.4,\"values\":{\"plants\":159.80600300011105,\"rabbits\":0,\"voles\":0,\"foxes\":8.959051833652627,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":85,\"time\":8.5,\"values\":{\"plants\":159.819215249572,\"rabbits\":0,\"voles\":0,\"foxes\":8.875514728384987,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":86,\"time\":8.6,\"values\":{\"plants\":159.83152863857376,\"rabbits\":0,\"voles\":0,\"foxes\":8.792785892882634,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":87,\"time\":8.7,\"values\":{\"plants\":159.84300419165655,\"rabbits\":0,\"voles\":0,\"foxes\":8.710856962450569,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":88,\"time\":8.8,\"values\":{\"plants\":159.85369880706526,\"rabbits\":0,\"voles\":0,\"foxes\":8.629719669060114,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":89,\"time\":8.9,\"values\":{\"plants\":159.8636655335545,\"rabbits\":0,\"voles\":0,\"foxes\":8.549365840046168,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":90,\"time\":9,\"values\":{\"plants\":159.8729538289158,\"rabbits\":0,\"voles\":0,\"foxes\":8.469787396825348,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":91,\"time\":9.1,\"values\":{\"plants\":159.88160980139443,\"rabbits\":0,\"voles\":0,\"foxes\":8.390976353634647,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":92,\"time\":9.2,\"values\":{\"plants\":159.88967643509545,\"rabbits\":0,\"voles\":0,\"foxes\":8.312924816290204,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":93,\"time\":9.3,\"values\":{\"plants\":159.89719380041166,\"rabbits\":0,\"voles\":0,\"foxes\":8.23562498096581,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":94,\"time\":9.4,\"values\":{\"plants\":159.90419925044318,\"rabbits\":0,\"voles\":0,\"foxes\":8.159069132990785,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":95,\"time\":9.5,\"values\":{\"plants\":159.91072760431982,\"rabbits\":0,\"voles\":0,\"foxes\":8.083249645666873,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":96,\"time\":9.6,\"values\":{\"plants\":159.91681131828005,\"rabbits\":0,\"voles\":0,\"foxes\":8.008158979103777,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":97,\"time\":9.7,\"values\":{\"plants\":159.92248064530824,\"rabbits\":0,\"voles\":0,\"foxes\":7.933789679072999,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":98,\"time\":9.8,\"values\":{\"plants\":159.92776378408058,\"rabbits\":0,\"voles\":0,\"foxes\":7.860134375879669,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":99,\"time\":9.9,\"values\":{\"plants\":159.93268701792363,\"rabbits\":0,\"voles\":0,\"foxes\":7.787185783251996,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":100,\"time\":10,\"values\":{\"plants\":159.93727484444435,\"rabbits\":0,\"voles\":0,\"foxes\":7.71493669724803,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":101,\"time\":10.1,\"values\":{\"plants\":159.94155009644828,\"rabbits\":0,\"voles\":0,\"foxes\":7.643379995179426,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":102,\"time\":10.2,\"values\":{\"plants\":159.94553405472345,\"rabbits\":0,\"voles\":0,\"foxes\":7.5725086345518875,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":103,\"time\":10.3,\"values\":{\"plants\":159.9492465532299,\"rabbits\":0,\"voles\":0,\"foxes\":7.502315652021987,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":104,\"time\":10.4,\"values\":{\"plants\":159.95270607720033,\"rabbits\":0,\"voles\":0,\"foxes\":7.432794162370072,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":105,\"time\":10.5,\"values\":{\"plants\":159.95592985462412,\"rabbits\":0,\"voles\":0,\"foxes\":7.363937357488954,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":106,\"time\":10.6,\"values\":{\"plants\":159.95893394155638,\"rabbits\":0,\"voles\":0,\"foxes\":7.295738505388103,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":107,\"time\":10.7,\"values\":{\"plants\":159.96173330166488,\"rabbits\":0,\"voles\":0,\"foxes\":7.228190949213067,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":108,\"time\":10.8,\"values\":{\"plants\":159.9643418804004,\"rabbits\":0,\"voles\":0,\"foxes\":7.1612881062798355,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":109,\"time\":10.9,\"values\":{\"plants\":159.96677267415131,\"rabbits\":0,\"voles\":0,\"foxes\":7.095023467123886,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":110,\"time\":11,\"values\":{\"plants\":159.96903779471813,\"rabbits\":0,\"voles\":0,\"foxes\":7.029390594563645,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":111,\"time\":11.1,\"values\":{\"plants\":159.97114852942363,\"rabbits\":0,\"voles\":0,\"foxes\":6.964383122778117,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":112,\"time\":11.2,\"values\":{\"plants\":159.97311539715082,\"rabbits\":0,\"voles\":0,\"foxes\":6.899994756398408,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":113,\"time\":11.3,\"values\":{\"plants\":159.9749482005837,\"rabbits\":0,\"voles\":0,\"foxes\":6.83621926961292,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":114,\"time\":11.4,\"values\":{\"plants\":159.97665607490643,\"rabbits\":0,\"voles\":0,\"foxes\":6.773050505285964,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":115,\"time\":11.5,\"values\":{\"plants\":159.97824753319952,\"rabbits\":0,\"voles\":0,\"foxes\":6.710482374089543,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":116,\"time\":11.6,\"values\":{\"plants\":159.97973050875595,\"rabbits\":0,\"voles\":0,\"foxes\":6.648508853648105,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":117,\"time\":11.7,\"values\":{\"plants\":159.98111239452564,\"rabbits\":0,\"voles\":0,\"foxes\":6.587123987695995,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":118,\"time\":11.8,\"values\":{\"plants\":159.98240007988187,\"rabbits\":0,\"voles\":0,\"foxes\":6.526321885247427,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":119,\"time\":11.9,\"values\":{\"plants\":159.98359998489067,\"rabbits\":0,\"voles\":0,\"foxes\":6.466096719778714,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":120,\"time\":12,\"values\":{\"plants\":159.98471809225262,\"rabbits\":0,\"voles\":0,\"foxes\":6.406442728422591,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":121,\"time\":12.1,\"values\":{\"plants\":159.98575997707414,\"rabbits\":0,\"voles\":0,\"foxes\":6.3473542111743715,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":122,\"time\":12.2,\"values\":{\"plants\":159.9867308346154,\"rabbits\":0,\"voles\":0,\"foxes\":6.2888255301097695,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":123,\"time\":12.3,\"values\":{\"plants\":159.98763550615215,\"rabbits\":0,\"voles\":0,\"foxes\":6.230851108614167,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":124,\"time\":12.4,\"values\":{\"plants\":159.9884785030789,\"rabbits\":0,\"voles\":0,\"foxes\":6.173425430623131,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":125,\"time\":12.5,\"values\":{\"plants\":159.98926402937317,\"rabbits\":0,\"voles\":0,\"foxes\":6.116543039873996,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":126,\"time\":12.6,\"values\":{\"plants\":159.9899960025318,\"rabbits\":0,\"voles\":0,\"foxes\":6.060198539168309,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":127,\"time\":12.7,\"values\":{\"plants\":159.99067807308265,\"rabbits\":0,\"voles\":0,\"foxes\":6.004386589644969,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":128,\"time\":12.8,\"values\":{\"plants\":159.99131364276928,\"rabbits\":0,\"voles\":0,\"foxes\":5.949101910063851,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":129,\"time\":12.9,\"values\":{\"plants\":159.99190588149764,\"rabbits\":0,\"voles\":0,\"foxes\":5.8943392760997675,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":130,\"time\":13,\"values\":{\"plants\":159.99245774312973,\"rabbits\":0,\"voles\":0,\"foxes\":5.840093519646573,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":131,\"time\":13.1,\"values\":{\"plants\":159.99297198020216,\"rabbits\":0,\"voles\":0,\"foxes\":5.786359528131242,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":132,\"time\":13.2,\"values\":{\"plants\":159.99345115764262,\"rabbits\":0,\"voles\":0,\"foxes\":5.733132243837756,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":133,\"time\":13.3,\"values\":{\"plants\":159.9938976655528,\"rabbits\":0,\"voles\":0,\"foxes\":5.680406663240634,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":134,\"time\":13.4,\"values\":{\"plants\":159.99431373112046,\"rabbits\":0,\"voles\":0,\"foxes\":5.62817783634794,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":135,\"time\":13.5,\"values\":{\"plants\":159.9947014297209,\"rabbits\":0,\"voles\":0,\"foxes\":5.57644086605362,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":136,\"time\":13.6,\"values\":{\"plants\":159.99506269526182,\"rabbits\":0,\"voles\":0,\"foxes\":5.5251909074989936,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":137,\"time\":13.7,\"values\":{\"plants\":159.9953993298241,\"rabbits\":0,\"voles\":0,\"foxes\":5.4744231674432715,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":138,\"time\":13.8,\"values\":{\"plants\":159.9957130126457,\"rabbits\":0,\"voles\":0,\"foxes\":5.424132903642928,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":139,\"time\":13.9,\"values\":{\"plants\":159.99600530849358,\"rabbits\":0,\"voles\":0,\"foxes\":5.374315424239791,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":140,\"time\":14,\"values\":{\"plants\":159.99627767546545,\"rabbits\":0,\"voles\":0,\"foxes\":5.324966087157709,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":141,\"time\":14.1,\"values\":{\"plants\":159.99653147225973,\"rabbits\":0,\"voles\":0,\"foxes\":5.276080299507648,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":142,\"time\":14.2,\"values\":{\"plants\":159.99676796495066,\"rabbits\":0,\"voles\":0,\"foxes\":5.227653517001081,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":143,\"time\":14.3,\"values\":{\"plants\":159.9969883333014,\"rabbits\":0,\"voles\":0,\"foxes\":5.179681243371531,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":144,\"time\":14.4,\"values\":{\"plants\":159.99719367664707,\"rabbits\":0,\"voles\":0,\"foxes\":5.132159029804147,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":145,\"time\":14.5,\"values\":{\"plants\":159.997385019377,\"rabbits\":0,\"voles\":0,\"foxes\":5.0850824743731575,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":146,\"time\":14.6,\"values\":{\"plants\":159.99756331604337,\"rabbits\":0,\"voles\":0,\"foxes\":5.0384472214871066,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":147,\"time\":14.7,\"values\":{\"plants\":159.99772945612173,\"rabbits\":0,\"voles\":0,\"foxes\":4.992248961341713,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":148,\"time\":14.8,\"values\":{\"plants\":159.99788426844705,\"rabbits\":0,\"voles\":0,\"foxes\":4.946483429380251,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":149,\"time\":14.9,\"values\":{\"plants\":159.9980285253474,\"rabbits\":0,\"voles\":0,\"foxes\":4.901146405761324,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":150,\"time\":15,\"values\":{\"plants\":159.9981629464961,\"rabbits\":0,\"voles\":0,\"foxes\":4.85623371483391,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":151,\"time\":15.1,\"values\":{\"plants\":159.99828820250116,\"rabbits\":0,\"voles\":0,\"foxes\":4.811741224619567,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":152,\"time\":15.2,\"values\":{\"plants\":159.99840491824997,\"rabbits\":0,\"voles\":0,\"foxes\":4.767664846301681,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":153,\"time\":15.3,\"values\":{\"plants\":159.9985136760264,\"rabbits\":0,\"voles\":0,\"foxes\":4.724000533721642,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":154,\"time\":15.4,\"values\":{\"plants\":159.99861501841505,\"rabbits\":0,\"voles\":0,\"foxes\":4.680744282881844,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":155,\"time\":15.5,\"values\":{\"plants\":159.99870945100773,\"rabbits\":0,\"voles\":0,\"foxes\":4.637892131455387,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":156,\"time\":15.6,\"values\":{\"plants\":159.9987974449254,\"rabbits\":0,\"voles\":0,\"foxes\":4.595440158302398,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":157,\"time\":15.7,\"values\":{\"plants\":159.99887943916818,\"rabbits\":0,\"voles\":0,\"foxes\":4.553384482992841,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":158,\"time\":15.8,\"values\":{\"plants\":159.99895584280532,\"rabbits\":0,\"voles\":0,\"foxes\":4.511721265335726,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":159,\"time\":15.9,\"values\":{\"plants\":159.99902703701562,\"rabbits\":0,\"voles\":0,\"foxes\":4.470446704914626,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":160,\"time\":16,\"values\":{\"plants\":159.99909337698907,\"rabbits\":0,\"voles\":0,\"foxes\":4.4295570406293745,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":161,\"time\":16.1,\"values\":{\"plants\":159.99915519369856,\"rabbits\":0,\"voles\":0,\"foxes\":4.389048550243881,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":162,\"time\":16.2,\"values\":{\"plants\":159.9992127955509,\"rabbits\":0,\"voles\":0,\"foxes\":4.348917549939941,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":163,\"time\":16.3,\"values\":{\"plants\":159.9992664699256,\"rabbits\":0,\"voles\":0,\"foxes\":4.309160393876963,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":164,\"time\":16.4,\"values\":{\"plants\":159.99931648460807,\"rabbits\":0,\"voles\":0,\"foxes\":4.269773473757522,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":165,\"time\":16.5,\"values\":{\"plants\":159.99936308912592,\"rabbits\":0,\"voles\":0,\"foxes\":4.230753218398626,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":166,\"time\":16.6,\"values\":{\"plants\":159.99940651599346,\"rabbits\":0,\"voles\":0,\"foxes\":4.192096093308647,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":167,\"time\":16.7,\"values\":{\"plants\":159.99944698187187,\"rabbits\":0,\"voles\":0,\"foxes\":4.153798600269785,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":168,\"time\":16.8,\"values\":{\"plants\":159.99948468864991,\"rabbits\":0,\"voles\":0,\"foxes\":4.115857276926016,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":169,\"time\":16.9,\"values\":{\"plants\":159.99951982445114,\"rabbits\":0,\"voles\":0,\"foxes\":4.078268696376422,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":170,\"time\":17,\"values\":{\"plants\":159.9995525645725,\"rabbits\":0,\"voles\":0,\"foxes\":4.041029466773816,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":171,\"time\":17.1,\"values\":{\"plants\":159.99958307235883,\"rabbits\":0,\"voles\":0,\"foxes\":4.004136230928601,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":172,\"time\":17.2,\"values\":{\"plants\":159.99961150001772,\"rabbits\":0,\"voles\":0,\"foxes\":3.9675856659177584,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":173,\"time\":17.3,\"values\":{\"plants\":159.9996379893788,\"rabbits\":0,\"voles\":0,\"foxes\":3.9313744826989176,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":174,\"time\":17.4,\"values\":{\"plants\":159.99966267260146,\"rabbits\":0,\"voles\":0,\"foxes\":3.8954994257293922,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":175,\"time\":17.5,\"values\":{\"plants\":159.99968567283406,\"rabbits\":0,\"voles\":0,\"foxes\":3.8599572725901443,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":176,\"time\":17.6,\"values\":{\"plants\":159.9997071048285,\"rabbits\":0,\"voles\":0,\"foxes\":3.8247448336145795,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":177,\"time\":17.7,\"values\":{\"plants\":159.99972707551242,\"rabbits\":0,\"voles\":0,\"foxes\":3.789858951522109,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":178,\"time\":17.8,\"values\":{\"plants\":159.9997456845229,\"rabbits\":0,\"voles\":0,\"foxes\":3.7552965010564017,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":179,\"time\":17.9,\"values\":{\"plants\":159.99976302470353,\"rabbits\":0,\"voles\":0,\"foxes\":3.721054388628266,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":180,\"time\":18,\"values\":{\"plants\":159.9997791825674,\"rabbits\":0,\"voles\":0,\"foxes\":3.687129551963081,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":181,\"time\":18.1,\"values\":{\"plants\":159.99979423872904,\"rabbits\":0,\"voles\":0,\"foxes\":3.6535189597527142,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":182,\"time\":18.2,\"values\":{\"plants\":159.99980826830628,\"rabbits\":0,\"voles\":0,\"foxes\":3.6202196113118608,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":183,\"time\":18.3,\"values\":{\"plants\":159.99982134129525,\"rabbits\":0,\"voles\":0,\"foxes\":3.5872285362387353,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":184,\"time\":18.4,\"values\":{\"plants\":159.99983352291954,\"rabbits\":0,\"voles\":0,\"foxes\":3.5545427940800547,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":185,\"time\":18.5,\"values\":{\"plants\":159.99984487395557,\"rabbits\":0,\"voles\":0,\"foxes\":3.522159474000245,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":186,\"time\":18.6,\"values\":{\"plants\":159.9998554510358,\"rabbits\":0,\"voles\":0,\"foxes\":3.4900756944548155,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":187,\"time\":18.7,\"values\":{\"plants\":159.99986530693133,\"rabbits\":0,\"voles\":0,\"foxes\":3.4582886028678326,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":188,\"time\":18.8,\"values\":{\"plants\":159.99987449081513,\"rabbits\":0,\"voles\":0,\"foxes\":3.4267953753134397,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":189,\"time\":18.9,\"values\":{\"plants\":159.9998830485074,\"rabbits\":0,\"voles\":0,\"foxes\":3.3955932162013576,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":190,\"time\":19,\"values\":{\"plants\":159.99989102270416,\"rabbits\":0,\"voles\":0,\"foxes\":3.3646793579663137,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":191,\"time\":19.1,\"values\":{\"plants\":159.99989845319027,\"rabbits\":0,\"voles\":0,\"foxes\":3.3340510607613383,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":192,\"time\":19.2,\"values\":{\"plants\":159.9999053770379,\"rabbits\":0,\"voles\":0,\"foxes\":3.3037056121548716,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":193,\"time\":19.3,\"values\":{\"plants\":159.99991182879154,\"rabbits\":0,\"voles\":0,\"foxes\":3.2736403268316305,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":194,\"time\":19.4,\"values\":{\"plants\":159.99991784064034,\"rabbits\":0,\"voles\":0,\"foxes\":3.243852546297179,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":195,\"time\":19.5,\"values\":{\"plants\":159.99992344257856,\"rabbits\":0,\"voles\":0,\"foxes\":3.2143396385861447,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":196,\"time\":19.6,\"values\":{\"plants\":159.99992866255545,\"rabbits\":0,\"voles\":0,\"foxes\":3.1850989979740345,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":197,\"time\":19.7,\"values\":{\"plants\":159.99993352661457,\"rabbits\":0,\"voles\":0,\"foxes\":3.156128044692596,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":198,\"time\":19.8,\"values\":{\"plants\":159.99993805902372,\"rabbits\":0,\"voles\":0,\"foxes\":3.127424224648675,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":199,\"time\":19.9,\"values\":{\"plants\":159.99994228239598,\"rabbits\":0,\"voles\":0,\"foxes\":3.098985009146515,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":200,\"time\":20,\"values\":{\"plants\":159.99994621780272,\"rabbits\":0,\"voles\":0,\"foxes\":3.070807894613453,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":201,\"time\":20.1,\"values\":{\"plants\":159.99994988487848,\"rabbits\":0,\"voles\":0,\"foxes\":3.0428904023289656,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":202,\"time\":20.2,\"values\":{\"plants\":159.99995330191908,\"rabbits\":0,\"voles\":0,\"foxes\":3.0152300781570127,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":203,\"time\":20.3,\"values\":{\"plants\":159.99995648597286,\"rabbits\":0,\"voles\":0,\"foxes\":2.9878244922816357,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":204,\"time\":20.4,\"values\":{\"plants\":159.9999594529257,\"rabbits\":0,\"voles\":0,\"foxes\":2.960671238945763,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":205,\"time\":20.5,\"values\":{\"plants\":159.99996221758042,\"rabbits\":0,\"voles\":0,\"foxes\":2.9337679361931777,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":206,\"time\":20.6,\"values\":{\"plants\":159.99996479373047,\"rabbits\":0,\"voles\":0,\"foxes\":2.9071122256136053,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":207,\"time\":20.7,\"values\":{\"plants\":159.99996719422876,\"rabbits\":0,\"voles\":0,\"foxes\":2.880701772090872,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":208,\"time\":20.8,\"values\":{\"plants\":159.9999694310519,\"rabbits\":0,\"voles\":0,\"foxes\":2.854534263554097,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":209,\"time\":20.9,\"values\":{\"plants\":159.9999715153599,\"rabbits\":0,\"voles\":0,\"foxes\":2.8286074107318746,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":210,\"time\":21,\"values\":{\"plants\":159.99997345755182,\"rabbits\":0,\"voles\":0,\"foxes\":2.8029189469094007,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":211,\"time\":21.1,\"values\":{\"plants\":159.99997526731767,\"rabbits\":0,\"voles\":0,\"foxes\":2.7774666276885087,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":212,\"time\":21.2,\"values\":{\"plants\":159.99997695368677,\"rabbits\":0,\"voles\":0,\"foxes\":2.752248230750572,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":213,\"time\":21.3,\"values\":{\"plants\":159.99997852507278,\"rabbits\":0,\"voles\":0,\"foxes\":2.727261555622228,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":214,\"time\":21.4,\"values\":{\"plants\":159.99997998931565,\"rabbits\":0,\"voles\":0,\"foxes\":2.7025044234438993,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":215,\"time\":21.5,\"values\":{\"plants\":159.99998135372084,\"rabbits\":0,\"voles\":0,\"foxes\":2.677974676741053,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":216,\"time\":21.6,\"values\":{\"plants\":159.9999826250957,\"rabbits\":0,\"voles\":0,\"foxes\":2.6536701791981807,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":217,\"time\":21.7,\"values\":{\"plants\":159.99998380978334,\"rabbits\":0,\"voles\":0,\"foxes\":2.629588815435449,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":218,\"time\":21.8,\"values\":{\"plants\":159.99998491369448,\"rabbits\":0,\"voles\":0,\"foxes\":2.6057284907879876,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":219,\"time\":21.9,\"values\":{\"plants\":159.99998594233668,\"rabbits\":0,\"voles\":0,\"foxes\":2.582087131087781,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":220,\"time\":22,\"values\":{\"plants\":159.9999869008421,\"rabbits\":0,\"voles\":0,\"foxes\":2.558662682448125,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":221,\"time\":22.1,\"values\":{\"plants\":159.99998779399297,\"rabbits\":0,\"voles\":0,\"foxes\":2.5354531110506184,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":222,\"time\":22.2,\"values\":{\"plants\":159.9999886262454,\"rabbits\":0,\"voles\":0,\"foxes\":2.5124564029346454,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":223,\"time\":22.3,\"values\":{\"plants\":159.99998940175163,\"rabbits\":0,\"voles\":0,\"foxes\":2.489670563789331,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":224,\"time\":22.4,\"values\":{\"plants\":159.9999901243809,\"rabbits\":0,\"voles\":0,\"foxes\":2.467093618747917,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":225,\"time\":22.5,\"values\":{\"plants\":159.99999079773852,\"rabbits\":0,\"voles\":0,\"foxes\":2.444723612184545,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":226,\"time\":22.6,\"values\":{\"plants\":159.99999142518405,\"rabbits\":0,\"voles\":0,\"foxes\":2.422558607513396,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":227,\"time\":22.7,\"values\":{\"plants\":159.99999200984792,\"rabbits\":0,\"voles\":0,\"foxes\":2.4005966869901725,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":228,\"time\":22.8,\"values\":{\"plants\":159.99999255464718,\"rabbits\":0,\"voles\":0,\"foxes\":2.378835951515876,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":229,\"time\":22.9,\"values\":{\"plants\":159.99999306229992,\"rabbits\":0,\"voles\":0,\"foxes\":2.3572745204428625,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":230,\"time\":23,\"values\":{\"plants\":159.99999353533897,\"rabbits\":0,\"voles\":0,\"foxes\":2.3359105313831354,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":231,\"time\":23.1,\"values\":{\"plants\":159.9999939761244,\"rabbits\":0,\"voles\":0,\"foxes\":2.31474214001885,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":232,\"time\":23.2,\"values\":{\"plants\":159.99999438685538,\"rabbits\":0,\"voles\":0,\"foxes\":2.293767519915007,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":233,\"time\":23.3,\"values\":{\"plants\":159.99999476958115,\"rabbits\":0,\"voles\":0,\"foxes\":2.272984862334292,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":234,\"time\":23.4,\"values\":{\"plants\":159.9999951262112,\"rabbits\":0,\"voles\":0,\"foxes\":2.2523923760540447,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":235,\"time\":23.5,\"values\":{\"plants\":159.99999545852486,\"rabbits\":0,\"voles\":0,\"foxes\":2.2319882871853247,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":236,\"time\":23.6,\"values\":{\"plants\":159.9999957681801,\"rabbits\":0,\"voles\":0,\"foxes\":2.211770838994047,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":237,\"time\":23.7,\"values\":{\"plants\":159.99999605672184,\"rabbits\":0,\"voles\":0,\"foxes\":2.1917382917241603,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":238,\"time\":23.8,\"values\":{\"plants\":159.9999963255897,\"rabbits\":0,\"voles\":0,\"foxes\":2.1718889224228413,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":239,\"time\":23.9,\"values\":{\"plants\":159.99999657612514,\"rabbits\":0,\"voles\":0,\"foxes\":2.152221024767678,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0},{\"step\":240,\"time\":24,\"values\":{\"plants\":159.99999680957808,\"rabbits\":0,\"voles\":0,\"foxes\":2.132732908895818,\"owls\":0,\"caterpillars\":0,\"bluetits\":0},\"capacity\":160,\"cover\":0}],\"soilEnabled\":false,\"species\":[\"plants\",\"rabbits\",\"voles\",\"foxes\",\"owls\"]}"
+  },
+  "samples": [
+    {
+      "step": 63,
+      "eyeAim": 0,
+      "eyeOpen": 0.9999270183640576,
+      "look": 1,
+      "stage": "watch",
+      "target": null,
+      "fixed": {
+        "root": {
+          "position": [
+            4.3739524328942565,
+            0.2542944771978279,
+            -3.4160861486454417
+          ],
+          "rotation": [
+            0,
+            -2.401545269310146,
+            0,
+            "XYZ"
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "body": [
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "head": [
+          0.9637708963658905,
+          0.005400942454628219,
+          -0.266676750277728,
+          0,
+          4.336808689942018e-19,
+          0.9997949757562065,
+          0.020248616067437747,
+          0,
+          0.2667314366888311,
+          -0.01951502685748325,
+          0.9635732999666728,
+          0,
+          0.24,
+          0.58,
+          0,
+          1
+        ],
+        "ears": [
+          [
+            0.9804468391905009,
+            -0.034992854604336196,
+            -0.1936478650747172,
+            0,
+            0.034329658460471216,
+            0.9993875625234886,
+            -0.006780444185126058,
+            0,
+            0.19376653496242197,
+            0,
+            0.9810476695495772,
+            0,
+            0.06,
+            0.15800000000000003,
+            -0.096,
+            1
+          ],
+          [
+            0.9804468391905009,
+            -0.034992854604336196,
+            -0.1936478650747172,
+            0,
+            0.034329658460471216,
+            0.9993875625234886,
+            -0.006780444185126058,
+            0,
+            0.19376653496242197,
+            0,
+            0.9810476695495772,
+            0,
+            0.06,
+            0.15800000000000003,
+            0.096,
+            1
+          ]
+        ],
+        "feet": [
+          {
+            "world": [
+              -0.05574412035165078,
+              0.0014858629990923417,
+              0.050904216656074766,
+              0,
+              0.0005908084171733737,
+              0.040648126744922616,
+              -0.0005395123195111189,
+              0,
+              -0.033942717628890264,
+              0,
+              -0.03716994506271728,
+              0,
+              4.659010366263918,
+              0.2710071401200931,
+              -3.5304443702432673,
+              1
+            ],
+            "plant": {
+              "x": 4.659010366263918,
+              "z": -3.5304443702432673,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.0557294412513207,
+              0.0022822451540326963,
+              0.050890812047681915,
+              0,
+              0.0009074656599426254,
+              0.04063742287289173,
+              -0.0008286762490871259,
+              0,
+              -0.033942717628890264,
+              0,
+              -0.03716994506271728,
+              0,
+              4.350412506422506,
+              0.2927597538340072,
+              -3.0434004881512577,
+              1
+            ],
+            "plant": {
+              "x": 4.350412506422506,
+              "z": -3.0434004881512577,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.055743283117275715,
+              0.001542389784756578,
+              0.050903452113379495,
+              0,
+              0.0006132845813867578,
+              0.0406475162409129,
+              -0.0005600370228430207,
+              0,
+              -0.033942717628890264,
+              0,
+              -0.03716994506271728,
+              0,
+              4.414444679722696,
+              0.25646127597140633,
+              -3.7205466652494583,
+              1
+            ],
+            "plant": {
+              "x": 4.414444679722696,
+              "z": -3.7205466652494583,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.05572721392727176,
+              0.00237989634072189,
+              0.05088877810786486,
+              0,
+              0.0009462936966311968,
+              0.0406357987276066,
+              -0.0008641330969027633,
+              0,
+              -0.033942717628890264,
+              0,
+              -0.03716994506271728,
+              0,
+              4.022190205734206,
+              0.2735928285405448,
+              -3.3046055892308024,
+              1
+            ],
+            "plant": {
+              "x": 4.022190205734206,
+              "z": -3.304605589230802,
+              "planted": true,
+              "held": false,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          }
+        ],
+        "source": {
+          "position": [
+            4.205279231988581,
+            0.3320990571401972,
+            -2.046231634088988
+          ],
+          "rotation": [
+            0,
+            0.5741488713820657,
+            0,
+            "XYZ"
+          ]
+        },
+        "camera": {
+          "world": [
+            0.7960837985490558,
+            -4.163336342344337e-17,
+            -0.6051864057360395,
+            0,
+            -0.2343478353910951,
+            0.9219821056073614,
+            -0.30826950706698925,
+            0,
+            0.5579710366454648,
+            0.38723248435509167,
+            0.733975016826165,
+            0,
+            7.61545772871821,
+            3.0213345296776923,
+            1.6437722456623773,
+            1
+          ],
+          "projection": [
+            1.2848400435577196,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.0011117287381879,
+            -1,
+            0,
+            0,
+            -0.20011117287381877,
+            0
+          ]
+        },
+        "eyes": [
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              -0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              -0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          },
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          }
+        ],
+        "resources": {
+          "geometries": 176,
+          "textures": 20,
+          "programs": 23,
+          "eyeGroups": 2,
+          "layers": 6,
+          "sharedLayerGeometries": 1
+        }
+      },
+      "eyes": [
+        {
+          "side": -1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "drawError": 9.850117166365635e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "drawError": 6.646598471604648e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                -0.019
+              ],
+              "drawError": 4.1982286980157824e-8
+            }
+          }
+        },
+        {
+          "side": 1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                0.013
+              ],
+              "drawError": 9.665970868155682e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "drawError": 2.0958678970117717e-7
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                0.019
+              ],
+              "drawError": 1.678071797073244e-7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 65,
+      "eyeAim": 0,
+      "eyeOpen": 0.9999999976165991,
+      "look": 1,
+      "stage": "watch",
+      "target": null,
+      "fixed": {
+        "root": {
+          "position": [
+            4.3739524328942565,
+            0.2542944771978279,
+            -3.4160861486454417
+          ],
+          "rotation": [
+            0,
+            -2.7415452693101456,
+            0,
+            "XYZ"
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "body": [
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "head": [
+          0.9130889403123083,
+          0.012842330225133314,
+          -0.40755816963193686,
+          0,
+          8.673617379884035e-19,
+          0.9995039160219791,
+          0.03149479094594091,
+          0,
+          0.40776045305957026,
+          -0.02875754529018687,
+          0.9126359715185113,
+          0,
+          0.24,
+          0.58,
+          0,
+          1
+        ],
+        "ears": [
+          [
+            0.947070349595316,
+            -0.0349928546043362,
+            -0.3191132291899628,
+            0,
+            0.033161004085127226,
+            0.9993875625234886,
+            -0.011173525917381157,
+            0,
+            0.319308785857001,
+            -1.734723475976807e-18,
+            0.9476507264148157,
+            0,
+            0.06,
+            0.15800000000000003,
+            -0.096,
+            1
+          ],
+          [
+            0.947070349595316,
+            -0.0349928546043362,
+            -0.3191132291899628,
+            0,
+            0.033161004085127226,
+            0.9993875625234886,
+            -0.011173525917381157,
+            0,
+            0.319308785857001,
+            -1.734723475976807e-18,
+            0.9476507264148157,
+            0,
+            0.06,
+            0.15800000000000003,
+            0.096,
+            1
+          ]
+        ],
+        "feet": [
+          {
+            "world": [
+              -0.06954231677860202,
+              0.00011396043173151538,
+              0.02940590427251927,
+              0,
+              0.00005651821838753402,
+              0.040655953691240115,
+              -0.000023898676324635633,
+              0,
+              -0.019603958511348135,
+              0,
+              -0.046361597326724416,
+              0,
+              4.659010366263918,
+              0.2709879785241891,
+              -3.5304443702432673,
+              1
+            ],
+            "plant": {
+              "x": 4.659010366263918,
+              "z": -3.5304443702432673,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.06953659032572107,
+              0.0009756117701677136,
+              0.029403482847219706,
+              0,
+              0.0004838507388046145,
+              0.04065260588210853,
+              -0.000204595836989057,
+              0,
+              -0.019603958511348135,
+              0,
+              -0.046361597326724416,
+              0,
+              4.175569177758029,
+              0.2871183977985009,
+              -3.104945242197006,
+              1
+            ],
+            "plant": {
+              "x": 4.175569177758029,
+              "z": -3.104945242197006,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.06954221051789974,
+              0.0001743810305026575,
+              0.029405859340279675,
+              0,
+              0.000086483571664696,
+              0.04065589156891817,
+              -0.00003656949821809958,
+              0,
+              -0.019603958511348135,
+              0,
+              -0.046361597326724416,
+              0,
+              4.414444679722696,
+              0.256440772435498,
+              -3.7205466652494588,
+              1
+            ],
+            "plant": {
+              "x": 4.414444679722696,
+              "z": -3.7205466652494583,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.06953687665616717,
+              0.0009512503959815068,
+              0.02940360392178377,
+              0,
+              0.0004717688131260567,
+              0.04065277327712635,
+              -0.000199487005900465,
+              0,
+              -0.019603958511348135,
+              0,
+              -0.046361597326724416,
+              0,
+              4.022190205734206,
+              0.27355129947383783,
+              -3.3046055892308015,
+              1
+            ],
+            "plant": {
+              "x": 4.022190205734206,
+              "z": -3.304605589230802,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          }
+        ],
+        "source": {
+          "position": [
+            4.205279231988581,
+            0.3320990571401972,
+            -2.046231634088988
+          ],
+          "rotation": [
+            0,
+            0.5741488713820657,
+            0,
+            "XYZ"
+          ]
+        },
+        "camera": {
+          "world": [
+            0.6743229026718506,
+            -2.7755575615628914e-17,
+            0.7384366072536017,
+            0,
+            0.2250575538957676,
+            0.9524241471993242,
+            -0.2055172529645472,
+            0,
+            -0.7033048559242738,
+            0.3047757271037837,
+            0.6422414155142102,
+            0,
+            3.241513038665155,
+            1.220138855460457,
+            -2.471262075083102,
+            1
+          ],
+          "projection": [
+            1.2848400435577196,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.0011117287381879,
+            -1,
+            0,
+            0,
+            -0.20011117287381877,
+            0
+          ]
+        },
+        "eyes": [
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              -0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              -0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          },
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          }
+        ],
+        "resources": {
+          "geometries": 176,
+          "textures": 20,
+          "programs": 23,
+          "eyeGroups": 2,
+          "layers": 6,
+          "sharedLayerGeometries": 1
+        }
+      },
+      "eyes": [
+        {
+          "side": -1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "drawError": 1.1519127252057615e-7
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "drawError": 2.3628197620695346e-7
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                -0.019
+              ],
+              "drawError": 1.532536435533416e-7
+            }
+          }
+        },
+        {
+          "side": 1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                0.013
+              ],
+              "drawError": 6.702423860360796e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "drawError": 1.1601210836431619e-7
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                0.019
+              ],
+              "drawError": 1.0945194617306697e-7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 69,
+      "eyeAim": 0,
+      "eyeOpen": 1,
+      "look": 0.8,
+      "stage": "release",
+      "target": null,
+      "fixed": {
+        "root": {
+          "position": [
+            4.343077213974262,
+            0.25334329838907205,
+            -3.424495717994845
+          ],
+          "rotation": [
+            0,
+            -3.4075147263285466,
+            0,
+            "XYZ"
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "body": [
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "head": [
+          0.9440801932710637,
+          0.007362145862656983,
+          -0.32963371714915307,
+          0,
+          0.001285386807504681,
+          0.9996609049015249,
+          0.026008133193664167,
+          0,
+          0.3297134156415628,
+          -0.024977470243426284,
+          0.9437505970997914,
+          0,
+          0.24,
+          0.58,
+          0,
+          1
+        ],
+        "ears": [
+          [
+            0.8923930117684759,
+            -0.034992854604336196,
+            -0.44990022524269624,
+            0,
+            0.031246515447810583,
+            0.9993875625234886,
+            -0.015752940859723535,
+            0,
+            0.4501759298531617,
+            1.734723475976807e-18,
+            0.8929398816162493,
+            0,
+            0.06,
+            0.15800000000000003,
+            -0.096,
+            1
+          ],
+          [
+            0.8977108994612149,
+            -0.034992854604336196,
+            -0.4391931706153641,
+            0,
+            0.031432717555793924,
+            0.9993875625234886,
+            -0.01537804085109339,
+            0,
+            0.4394623138058532,
+            8.673617379884035e-19,
+            0.8982610281785611,
+            0,
+            0.06,
+            0.15800000000000003,
+            0.096,
+            1
+          ]
+        ],
+        "feet": [
+          {
+            "world": [
+              -0.07281910550710965,
+              -0.00220150239151127,
+              -0.019833942532048565,
+              0,
+              -0.0011437573991240548,
+              0.04063871436297746,
+              -0.0003115283875962611,
+              0,
+              0.013228252586612038,
+              0,
+              -0.04856671936115092,
+              0,
+              4.561813113664634,
+              0.2865674389569224,
+              -3.204395749302812,
+              1
+            ],
+            "plant": {
+              "x": 4.561813113664634,
+              "z": -3.204395749302812,
+              "planted": true,
+              "held": false,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07282481371830364,
+              -0.001988358623805944,
+              -0.019835497293426017,
+              0,
+              -0.0010330217658900689,
+              0.0406418999879947,
+              -0.00028136701482852673,
+              0,
+              0.013228252586612038,
+              0,
+              -0.04856671936115092,
+              0,
+              4.048922625462579,
+              0.27763125862138305,
+              -3.241385822758722,
+              1
+            ],
+            "plant": {
+              "x": 4.048922625462579,
+              "z": -3.241385822758722,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07281208582481737,
+              -0.0024381832666467247,
+              -0.01983203056163629,
+              0,
+              -0.0012667213819074258,
+              0.0406347968352681,
+              -0.0003450204299806463,
+              0,
+              0.013228252586612038,
+              0,
+              -0.04856671936115092,
+              0,
+              4.626440702736334,
+              0.2733752692182255,
+              -3.516407296272263,
+              1
+            ],
+            "plant": {
+              "x": 4.626440702736334,
+              "z": -3.516407296272263,
+              "planted": false,
+              "held": false,
+              "releaseX": -0.032021640510395244,
+              "releaseZ": -0.12019811608930864
+            }
+          },
+          {
+            "world": [
+              -0.07282047907878073,
+              -0.0021521444056269547,
+              -0.01983431665558933,
+              0,
+              -0.0011181142011976236,
+              0.04063948092261053,
+              -0.0003045438783734563,
+              0,
+              0.013228252586612038,
+              0,
+              -0.04856671936115092,
+              0,
+              4.072890059488243,
+              0.25399582245894153,
+              -3.6586096082217843,
+              1
+            ],
+            "plant": {
+              "x": 4.072890059488243,
+              "z": -3.6586096082217843,
+              "planted": true,
+              "held": false,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          }
+        ],
+        "source": {
+          "position": [
+            4.205279231988581,
+            0.3320990571401972,
+            -2.046231634088988
+          ],
+          "rotation": [
+            0,
+            0.5741488713820657,
+            0,
+            "XYZ"
+          ]
+        },
+        "camera": {
+          "world": [
+            0.6743229026718506,
+            -2.7755575615628914e-17,
+            0.7384366072536017,
+            0,
+            0.2250575538957676,
+            0.9524241471993242,
+            -0.2055172529645472,
+            0,
+            -0.7033048559242738,
+            0.3047757271037837,
+            0.6422414155142102,
+            0,
+            3.1495323140305387,
+            1.218294215600959,
+            -2.7397965721568855,
+            1
+          ],
+          "projection": [
+            1.2848400435577196,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.0011117287381879,
+            -1,
+            0,
+            0,
+            -0.20011117287381877,
+            0
+          ]
+        },
+        "eyes": [
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              -0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              -0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          },
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          }
+        ],
+        "resources": {
+          "geometries": 176,
+          "textures": 20,
+          "programs": 23,
+          "eyeGroups": 2,
+          "layers": 6,
+          "sharedLayerGeometries": 1
+        }
+      },
+      "eyes": [
+        {
+          "side": -1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "drawError": 7.835342374917786e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "drawError": 7.564653792258014e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                -0.019
+              ],
+              "drawError": 9.521457933203692e-8
+            }
+          }
+        },
+        {
+          "side": 1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                0.013
+              ],
+              "drawError": 4.5465751163931145e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "drawError": 2.612009497582335e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                0.019
+              ],
+              "drawError": 7.641087229615096e-8
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 72,
+      "eyeAim": 0,
+      "eyeOpen": 1,
+      "look": 0.20000000000000007,
+      "stage": "release",
+      "target": null,
+      "fixed": {
+        "root": {
+          "position": [
+            4.25008500789149,
+            0.2505953637480609,
+            -3.448331875923601
+          ],
+          "rotation": [
+            0,
+            -3.3856236372727913,
+            0,
+            "XYZ"
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "body": [
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "head": [
+          0.9964647584142212,
+          0.004393164798628207,
+          -0.08389687325246353,
+          0,
+          -0.0043087521521426204,
+          0.9999900125714727,
+          0.0011871866733042485,
+          0,
+          0.08390125084514083,
+          -0.000821498848422112,
+          0.9964737353519474,
+          0,
+          0.24,
+          0.58,
+          0,
+          1
+        ],
+        "ears": [
+          [
+            0.9626556922418821,
+            -0.0349928546043362,
+            -0.26845766578911967,
+            0,
+            0.03370671392747603,
+            0.9993875625234886,
+            -0.009399856891012043,
+            0,
+            0.26862218007922234,
+            -8.673617379884035e-19,
+            0.9632456199586302,
+            0,
+            0.06,
+            0.15800000000000003,
+            -0.096,
+            1
+          ],
+          [
+            0.9657981246949786,
+            -0.0349928546043362,
+            -0.25692310612769415,
+            0,
+            0.03381674399594866,
+            0.9993875625234886,
+            -0.008995982373964692,
+            0,
+            0.2570805518921551,
+            -8.673617379884035e-19,
+            0.9663899781345132,
+            0,
+            0.06,
+            0.15800000000000003,
+            0.096,
+            1
+          ]
+        ],
+        "feet": [
+          {
+            "world": [
+              -0.07323805611966248,
+              -0.00212066267401158,
+              -0.01823578738733867,
+              0,
+              -0.0011080631102688265,
+              0.04063996076715377,
+              -0.000275900322335161,
+              0,
+              0.012161989628343906,
+              0,
+              -0.048844640486752015,
+              0,
+              4.561813113664634,
+              0.28656439084672336,
+              -3.2043957493028117,
+              1
+            ],
+            "plant": {
+              "x": 4.561813113664634,
+              "z": -3.204395749302812,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07324404132597964,
+              -0.0018884198824049812,
+              -0.018237277663783077,
+              0,
+              -0.0009867144049048005,
+              0.04064328197149479,
+              -0.00024568530424222315,
+              0,
+              0.012161989628343906,
+              0,
+              -0.048844640486752015,
+              0,
+              3.945377198482074,
+              0.26889186419642497,
+              -3.3691459504291075,
+              1
+            ],
+            "plant": {
+              "x": 3.945377198482074,
+              "z": -3.369145950429107,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07323162594927297,
+              -0.0023446590697165566,
+              -0.0182341863178087,
+              0,
+              -0.0012251030082005131,
+              0.040636392651256084,
+              -0.0003050424761224048,
+              0,
+              0.012161989628343906,
+              0,
+              -0.048844640486752015,
+              0,
+              4.585140524626859,
+              0.2700869270914825,
+              -3.5208657004604205,
+              1
+            ],
+            "plant": {
+              "x": 4.58514052462686,
+              "z": -3.5208657004604205,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07324236679240045,
+              -0.0019561783838128502,
+              -0.01823686071609302,
+              0,
+              -0.0010221187606928516,
+              0.04064235276907507,
+              -0.00025450075264355355,
+              0,
+              0.012161989628343906,
+              0,
+              -0.048844640486752015,
+              0,
+              3.9197893843326606,
+              0.25013838425201873,
+              -3.6901821896998666,
+              1
+            ],
+            "plant": {
+              "x": 3.9197893843326606,
+              "z": -3.6901821896998666,
+              "planted": true,
+              "held": false,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          }
+        ],
+        "source": {
+          "position": [
+            4.229535077552322,
+            0.3312822935226782,
+            -2.061365121426893
+          ],
+          "rotation": [
+            0,
+            0.5512670812064937,
+            0,
+            "XYZ"
+          ]
+        },
+        "camera": {
+          "world": [
+            0.6743229026718506,
+            0,
+            0.7384366072536017,
+            0,
+            0.22505755389576762,
+            0.9524241471993242,
+            -0.20551725296454726,
+            0,
+            -0.7033048559242738,
+            0.30477572710378376,
+            0.6422414155142102,
+            0,
+            3.0568942676103155,
+            1.2150752271283995,
+            -2.7950961735115394,
+            1
+          ],
+          "projection": [
+            1.2848400435577196,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.0011117287381879,
+            -1,
+            0,
+            0,
+            -0.20011117287381877,
+            0
+          ]
+        },
+        "eyes": [
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              -0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              -0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          },
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          }
+        ],
+        "resources": {
+          "geometries": 176,
+          "textures": 20,
+          "programs": 23,
+          "eyeGroups": 2,
+          "layers": 6,
+          "sharedLayerGeometries": 1
+        }
+      },
+      "eyes": [
+        {
+          "side": -1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "drawError": 9.37092745623147e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "drawError": 5.5022163714113503e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                -0.019
+              ],
+              "drawError": 1.1632442786790875e-7
+            }
+          }
+        },
+        {
+          "side": 1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                0.013
+              ],
+              "drawError": 7.517577715887569e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "drawError": 4.475596027120332e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                0.019
+              ],
+              "drawError": 1.044257684768013e-7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 77,
+      "eyeAim": 0,
+      "eyeOpen": 1,
+      "look": 0,
+      "stage": null,
+      "target": null,
+      "fixed": {
+        "root": {
+          "position": [
+            4.093965300589477,
+            0.24640019858268356,
+            -3.483303565296074
+          ],
+          "rotation": [
+            0,
+            -3.3446531653444493,
+            0,
+            "XYZ"
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "body": [
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          0.968,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "head": [
+          0.9999870173037017,
+          -0.005095607478275706,
+          0.000002910937399076734,
+          0,
+          0.005095608309732592,
+          0.9999868541345488,
+          -0.0005712565468779717,
+          0,
+          0,
+          0.0005712639634245151,
+          0.9999998368287287,
+          0,
+          0.24,
+          0.58,
+          0,
+          1
+        ],
+        "ears": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0.06,
+            0.15800000000000003,
+            -0.096,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0.06,
+            0.15800000000000003,
+            0.096,
+            1
+          ]
+        ],
+        "feet": [
+          {
+            "world": [
+              -0.0739287054768835,
+              -0.001922887334003544,
+              -0.015221794467569934,
+              0,
+              -0.0010141274833448924,
+              0.04064281339959058,
+              -0.00020880712053340125,
+              0,
+              0.01015115546241126,
+              0,
+              -0.04930179447827388,
+              0,
+              4.400938402107644,
+              0.34082702165856704,
+              -3.2508820044896862,
+              1
+            ],
+            "plant": {
+              "x": 4.400938402107645,
+              "z": -3.2508820044896862,
+              "planted": false,
+              "held": false,
+              "releaseX": 0.14631419670659085,
+              "releaseZ": 0.05148695737899445
+            }
+          },
+          {
+            "world": [
+              -0.07393644546354211,
+              -0.0015825619850713282,
+              -0.015223388117632368,
+              0,
+              -0.0008346404777736816,
+              0.040647068510395665,
+              -0.0001718510519700363,
+              0,
+              0.01015115546241126,
+              0,
+              -0.04930179447827388,
+              0,
+              3.735977997746147,
+              0.2645889037476179,
+              -3.4058086428450496,
+              1
+            ],
+            "plant": {
+              "x": 3.735977997746147,
+              "z": -3.405808642845049,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07392380179525466,
+              -0.0021102734344453995,
+              -0.01522078480787947,
+              0,
+              -0.001112954591462168,
+              0.04064011756694849,
+              -0.00022915545367249403,
+              0,
+              0.01015115546241126,
+              0,
+              -0.04930179447827388,
+              0,
+              4.386912125455622,
+              0.2634770289500098,
+              -3.5771334492912223,
+              1
+            ],
+            "plant": {
+              "x": 4.386912125455622,
+              "z": -3.5771334492912223,
+              "planted": true,
+              "held": true,
+              "releaseX": 0,
+              "releaseZ": 0
+            }
+          },
+          {
+            "world": [
+              -0.07393409962221474,
+              -0.0016929527388679824,
+              -0.015222905112900875,
+              0,
+              -0.0008928603720715283,
+              0.040645778868020385,
+              -0.0001838384289869726,
+              0,
+              0.01015115546241126,
+              0,
+              -0.04930179447827388,
+              0,
+              3.7957344471317342,
+              0.30394625130445485,
+              -3.7068633719665613,
+              1
+            ],
+            "plant": {
+              "x": 3.7957344471317342,
+              "z": -3.7068633719665613,
+              "planted": false,
+              "held": false,
+              "releaseX": 0.032587391727912696,
+              "releaseZ": -0.003588203733066564
+            }
+          }
+        ],
+        "source": {
+          "position": [
+            4.309147474040518,
+            0.32875006538768625,
+            -2.108948505915575
+          ],
+          "rotation": [
+            0,
+            0.5366659877919275,
+            0,
+            "XYZ"
+          ]
+        },
+        "camera": {
+          "world": [
+            0.6743229026718506,
+            0,
+            0.7384366072536017,
+            0,
+            0.22505755389576762,
+            0.9524241471993242,
+            -0.20551725296454726,
+            0,
+            -0.7033048559242738,
+            0.30477572710378376,
+            0.6422414155142102,
+            0,
+            2.8994337896209395,
+            1.209318421441953,
+            -2.8277698464644088,
+            1
+          ],
+          "projection": [
+            1.2848400435577196,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.0011117287381879,
+            -1,
+            0,
+            0,
+            -0.20011117287381877,
+            0
+          ]
+        },
+        "eyes": [
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              -0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              -0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          },
+          {
+            "group": [
+              0.9915618937147881,
+              0.12963414261969486,
+              0,
+              0,
+              -0.12963414261969486,
+              0.9915618937147881,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0.191,
+              0.09500000000000008,
+              0.09357866192104321,
+              1
+            ],
+            "globe": [
+              0.021,
+              0,
+              0,
+              0,
+              0,
+              0.013,
+              0,
+              0,
+              0,
+              0,
+              0.007,
+              0,
+              0.003,
+              0,
+              0.008,
+              1
+            ],
+            "globeGeometry": {
+              "hash": "7a106d37",
+              "vertices": 540,
+              "triangles": 0
+            },
+            "layers": {
+              "iris": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.48514994004665124,
+                    0.3005437944049895,
+                    0.054480276435339814
+                  ],
+                  "ocular": true
+                }
+              },
+              "pupil": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.22,
+                  "map": false,
+                  "color": [
+                    0.02217388478862708,
+                    0.024157632443547246,
+                    0.02028856305209031
+                  ],
+                  "ocular": true
+                }
+              },
+              "glint": {
+                "geometry": {
+                  "hash": "7a106d37",
+                  "vertices": 540,
+                  "triangles": 0
+                },
+                "material": {
+                  "roughness": 0.8,
+                  "map": false,
+                  "color": [
+                    0.9559733532482866,
+                    0.9473065367320066,
+                    0.8468732315065057
+                  ],
+                  "ocular": false
+                }
+              }
+            }
+          }
+        ],
+        "resources": {
+          "geometries": 176,
+          "textures": 20,
+          "programs": 23,
+          "eyeGroups": 2,
+          "layers": 6,
+          "sharedLayerGeometries": 1
+        }
+      },
+      "eyes": [
+        {
+          "side": -1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                -0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                -0.013
+              ],
+              "drawError": 7.21982349460859e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                -0.016
+              ],
+              "drawError": 7.331961748846538e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                -0.019
+              ],
+              "drawError": 2.6690520904537607e-8
+            }
+          }
+        },
+        {
+          "side": 1,
+          "expected": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "applied": {
+            "amount": 0,
+            "offset": 0,
+            "cue": null,
+            "positions": {
+              "iris": [
+                0.005,
+                0,
+                0.013
+              ],
+              "pupil": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "glint": [
+                0.009,
+                0.005,
+                0.019
+              ]
+            },
+            "source": "neutral",
+            "alpha": null,
+            "endpoints": null
+          },
+          "layers": {
+            "iris": {
+              "position": [
+                0.005,
+                0,
+                0.013
+              ],
+              "drawError": 8.976474230593112e-8
+            },
+            "pupil": {
+              "position": [
+                0.007,
+                0.001,
+                0.016
+              ],
+              "drawError": 8.901141601569407e-8
+            },
+            "glint": {
+              "position": [
+                0.009,
+                0.005,
+                0.019
+              ],
+              "drawError": 9.674160716954816e-8
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "visualProof": {
+    "step": 65,
+    "eyeAim": 0,
+    "eyeOpen": 0.9999999976165991,
+    "look": 1,
+    "stage": "watch",
+    "target": null,
+    "fixed": {
+      "root": {
+        "position": [
+          4.3739524328942565,
+          0.2542944771978279,
+          -3.4160861486454417
+        ],
+        "rotation": [
+          0,
+          -2.7415452693101456,
+          0,
+          "XYZ"
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "body": [
+        0.968,
+        0,
+        0,
+        0,
+        0,
+        0.968,
+        0,
+        0,
+        0,
+        0,
+        0.968,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "head": [
+        0.9130889403123083,
+        0.012842330225133314,
+        -0.40755816963193686,
+        0,
+        8.673617379884035e-19,
+        0.9995039160219791,
+        0.03149479094594091,
+        0,
+        0.40776045305957026,
+        -0.02875754529018687,
+        0.9126359715185113,
+        0,
+        0.24,
+        0.58,
+        0,
+        1
+      ],
+      "ears": [
+        [
+          0.947070349595316,
+          -0.0349928546043362,
+          -0.3191132291899628,
+          0,
+          0.033161004085127226,
+          0.9993875625234886,
+          -0.011173525917381157,
+          0,
+          0.319308785857001,
+          -1.734723475976807e-18,
+          0.9476507264148157,
+          0,
+          0.06,
+          0.15800000000000003,
+          -0.096,
+          1
+        ],
+        [
+          0.947070349595316,
+          -0.0349928546043362,
+          -0.3191132291899628,
+          0,
+          0.033161004085127226,
+          0.9993875625234886,
+          -0.011173525917381157,
+          0,
+          0.319308785857001,
+          -1.734723475976807e-18,
+          0.9476507264148157,
+          0,
+          0.06,
+          0.15800000000000003,
+          0.096,
+          1
+        ]
+      ],
+      "feet": [
+        {
+          "world": [
+            -0.06954231677860202,
+            0.00011396043173151538,
+            0.02940590427251927,
+            0,
+            0.00005651821838753402,
+            0.040655953691240115,
+            -0.000023898676324635633,
+            0,
+            -0.019603958511348135,
+            0,
+            -0.046361597326724416,
+            0,
+            4.659010366263918,
+            0.2709879785241891,
+            -3.5304443702432673,
+            1
+          ],
+          "plant": {
+            "x": 4.659010366263918,
+            "z": -3.5304443702432673,
+            "planted": true,
+            "held": true,
+            "releaseX": 0,
+            "releaseZ": 0
+          }
+        },
+        {
+          "world": [
+            -0.06953659032572107,
+            0.0009756117701677136,
+            0.029403482847219706,
+            0,
+            0.0004838507388046145,
+            0.04065260588210853,
+            -0.000204595836989057,
+            0,
+            -0.019603958511348135,
+            0,
+            -0.046361597326724416,
+            0,
+            4.175569177758029,
+            0.2871183977985009,
+            -3.104945242197006,
+            1
+          ],
+          "plant": {
+            "x": 4.175569177758029,
+            "z": -3.104945242197006,
+            "planted": true,
+            "held": true,
+            "releaseX": 0,
+            "releaseZ": 0
+          }
+        },
+        {
+          "world": [
+            -0.06954221051789974,
+            0.0001743810305026575,
+            0.029405859340279675,
+            0,
+            0.000086483571664696,
+            0.04065589156891817,
+            -0.00003656949821809958,
+            0,
+            -0.019603958511348135,
+            0,
+            -0.046361597326724416,
+            0,
+            4.414444679722696,
+            0.256440772435498,
+            -3.7205466652494588,
+            1
+          ],
+          "plant": {
+            "x": 4.414444679722696,
+            "z": -3.7205466652494583,
+            "planted": true,
+            "held": true,
+            "releaseX": 0,
+            "releaseZ": 0
+          }
+        },
+        {
+          "world": [
+            -0.06953687665616717,
+            0.0009512503959815068,
+            0.02940360392178377,
+            0,
+            0.0004717688131260567,
+            0.04065277327712635,
+            -0.000199487005900465,
+            0,
+            -0.019603958511348135,
+            0,
+            -0.046361597326724416,
+            0,
+            4.022190205734206,
+            0.27355129947383783,
+            -3.3046055892308015,
+            1
+          ],
+          "plant": {
+            "x": 4.022190205734206,
+            "z": -3.304605589230802,
+            "planted": true,
+            "held": true,
+            "releaseX": 0,
+            "releaseZ": 0
+          }
+        }
+      ],
+      "source": {
+        "position": [
+          4.205279231988581,
+          0.3320990571401972,
+          -2.046231634088988
+        ],
+        "rotation": [
+          0,
+          0.5741488713820657,
+          0,
+          "XYZ"
+        ]
+      },
+      "camera": {
+        "world": [
+          -0.1232372969206641,
+          8.326672684688674e-17,
+          0.9923772310203858,
+          0,
+          0.30245249214547765,
+          0.9524241471993242,
+          0.03755973677530028,
+          0,
+          -0.9451640379546176,
+          0.3047757271037837,
+          -0.11737417742281342,
+          0,
+          2.964497579611539,
+          1.220138855460457,
+          -3.3412942169900997,
+          1
+        ],
+        "projection": [
+          1.2848400435577196,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.0011117287381879,
+          -1,
+          0,
+          0,
+          -0.20011117287381877,
+          0
+        ]
+      },
+      "eyes": [
+        {
+          "group": [
+            0.9915618937147881,
+            0.12963414261969486,
+            0,
+            0,
+            -0.12963414261969486,
+            0.9915618937147881,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0.191,
+            0.09500000000000008,
+            -0.09357866192104321,
+            1
+          ],
+          "globe": [
+            0.021,
+            0,
+            0,
+            0,
+            0,
+            0.013,
+            0,
+            0,
+            0,
+            0,
+            0.007,
+            0,
+            0.003,
+            0,
+            -0.008,
+            1
+          ],
+          "globeGeometry": {
+            "hash": "7a106d37",
+            "vertices": 540,
+            "triangles": 0
+          },
+          "layers": {
+            "iris": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.22,
+                "map": false,
+                "color": [
+                  0.48514994004665124,
+                  0.3005437944049895,
+                  0.054480276435339814
+                ],
+                "ocular": true
+              }
+            },
+            "pupil": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.22,
+                "map": false,
+                "color": [
+                  0.02217388478862708,
+                  0.024157632443547246,
+                  0.02028856305209031
+                ],
+                "ocular": true
+              }
+            },
+            "glint": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.8,
+                "map": false,
+                "color": [
+                  0.9559733532482866,
+                  0.9473065367320066,
+                  0.8468732315065057
+                ],
+                "ocular": false
+              }
+            }
+          }
+        },
+        {
+          "group": [
+            0.9915618937147881,
+            0.12963414261969486,
+            0,
+            0,
+            -0.12963414261969486,
+            0.9915618937147881,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0.191,
+            0.09500000000000008,
+            0.09357866192104321,
+            1
+          ],
+          "globe": [
+            0.021,
+            0,
+            0,
+            0,
+            0,
+            0.013,
+            0,
+            0,
+            0,
+            0,
+            0.007,
+            0,
+            0.003,
+            0,
+            0.008,
+            1
+          ],
+          "globeGeometry": {
+            "hash": "7a106d37",
+            "vertices": 540,
+            "triangles": 0
+          },
+          "layers": {
+            "iris": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.22,
+                "map": false,
+                "color": [
+                  0.48514994004665124,
+                  0.3005437944049895,
+                  0.054480276435339814
+                ],
+                "ocular": true
+              }
+            },
+            "pupil": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.22,
+                "map": false,
+                "color": [
+                  0.02217388478862708,
+                  0.024157632443547246,
+                  0.02028856305209031
+                ],
+                "ocular": true
+              }
+            },
+            "glint": {
+              "geometry": {
+                "hash": "7a106d37",
+                "vertices": 540,
+                "triangles": 0
+              },
+              "material": {
+                "roughness": 0.8,
+                "map": false,
+                "color": [
+                  0.9559733532482866,
+                  0.9473065367320066,
+                  0.8468732315065057
+                ],
+                "ocular": false
+              }
+            }
+          }
+        }
+      ],
+      "resources": {
+        "geometries": 176,
+        "textures": 20,
+        "programs": 23,
+        "eyeGroups": 2,
+        "layers": 6,
+        "sharedLayerGeometries": 1
+      }
+    },
+    "eyes": [
+      {
+        "side": -1,
+        "expected": {
+          "amount": 0,
+          "offset": 0,
+          "cue": null,
+          "positions": {
+            "iris": [
+              0.005,
+              0,
+              -0.013
+            ],
+            "pupil": [
+              0.007,
+              0.001,
+              -0.016
+            ],
+            "glint": [
+              0.009,
+              0.005,
+              -0.019
+            ]
+          },
+          "source": "neutral",
+          "alpha": null,
+          "endpoints": null
+        },
+        "applied": {
+          "amount": 0,
+          "offset": 0,
+          "cue": null,
+          "positions": {
+            "iris": [
+              0.005,
+              0,
+              -0.013
+            ],
+            "pupil": [
+              0.007,
+              0.001,
+              -0.016
+            ],
+            "glint": [
+              0.009,
+              0.005,
+              -0.019
+            ]
+          },
+          "source": "neutral",
+          "alpha": null,
+          "endpoints": null
+        },
+        "layers": {
+          "iris": {
+            "position": [
+              0.005,
+              0,
+              -0.013
+            ],
+            "drawError": 1.1519127252057615e-7
+          },
+          "pupil": {
+            "position": [
+              0.007,
+              0.001,
+              -0.016
+            ],
+            "drawError": 2.3628197620695346e-7
+          },
+          "glint": {
+            "position": [
+              0.009,
+              0.005,
+              -0.019
+            ],
+            "drawError": 1.532536435533416e-7
+          }
+        }
+      },
+      {
+        "side": 1,
+        "expected": {
+          "amount": 0,
+          "offset": 0,
+          "cue": null,
+          "positions": {
+            "iris": [
+              0.005,
+              0,
+              0.013
+            ],
+            "pupil": [
+              0.007,
+              0.001,
+              0.016
+            ],
+            "glint": [
+              0.009,
+              0.005,
+              0.019
+            ]
+          },
+          "source": "neutral",
+          "alpha": null,
+          "endpoints": null
+        },
+        "applied": {
+          "amount": 0,
+          "offset": 0,
+          "cue": null,
+          "positions": {
+            "iris": [
+              0.005,
+              0,
+              0.013
+            ],
+            "pupil": [
+              0.007,
+              0.001,
+              0.016
+            ],
+            "glint": [
+              0.009,
+              0.005,
+              0.019
+            ]
+          },
+          "source": "neutral",
+          "alpha": null,
+          "endpoints": null
+        },
+        "layers": {
+          "iris": {
+            "position": [
+              0.005,
+              0,
+              0.013
+            ],
+            "drawError": 6.702423860360796e-8
+          },
+          "pupil": {
+            "position": [
+              0.007,
+              0.001,
+              0.016
+            ],
+            "drawError": 1.1601210836431619e-7
+          },
+          "glint": {
+            "position": [
+              0.009,
+              0.005,
+              0.019
+            ],
+            "drawError": 1.0945194617306697e-7
+          }
+        }
+      }
+    ],
+    "visibility": [
+      {
+        "side": -1,
+        "visible": 0,
+        "hits": [
+          "eco-foxes-eyelid-skin",
+          "eco-foxes-eyelid-skin",
+          "eco-foxes-eyelid-skin",
+          "eco-foxes-eyelid-skin",
+          "eco-foxes-eyelid-skin",
+          "eco-foxes-eyelid-skin"
+        ]
+      },
+      {
+        "side": 1,
+        "visible": 6,
+        "hits": [
+          "eco-foxes-iris-1",
+          "eco-foxes-iris-1",
+          "eco-foxes-pupil-1",
+          "eco-foxes-glint-1",
+          "eco-foxes-pupil-1",
+          "eco-foxes-glint-1"
+        ]
+      }
+    ]
+  }
+}

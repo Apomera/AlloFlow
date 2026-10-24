@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Aktuelle Flugwerte halten",
+  "stem.flightsim.flight_assistance_targets": "Steuerkurs {hdg}° · Höhe {alt} ft MSL · Geschwindigkeit {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Steuerkurs {hdg}° · Höhe {alt} ft MSL · Vorwärtsgeschwindigkeit {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Drehe um {degrees}° nach links in Richtung {airport}.",
+  "stem.flightsim.challenge_turn_right": "Drehe um {degrees}° nach rechts in Richtung {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Du fliegst in Richtung {airport}. Folge der Kursmarkierung.",
+  "stem.flightsim.challenge_runway_reference": "Übungslandebahn {runway}: Steuerkurs {heading}°. Richte das Flugzeug auf die Landebahn aus, bevor du zum Landen sinkst."
+}

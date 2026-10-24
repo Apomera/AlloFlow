@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "د ازموینې پخوانۍ هڅې",
+  "stem.flightsim.quiz_history_scope": "د نوې هڅې په پیلولو سره، تر څلورو پورې هغه پخوانۍ هڅې خوندي کېږي چې لومړني ځوابونه یې ثبت شوي وي. د هغو بیاکتنه ستاسو اوسنۍ ازموینه نه بدلوي.",
+  "stem.flightsim.quiz_history_empty": "تر اوسه د ازموینې هېڅ پخوانۍ هڅه نه ده خوندي شوې.",
+  "stem.flightsim.quiz_history_attempt": "په {date} خوندي شوې · له {answered} لومړنیو ځوابونو څخه {score} سم دي",
+  "stem.flightsim.quiz_history_progress": "له {total} پوښتنو څخه {answered} ثبت شوې · {unanswered} بې ځوابه",
+  "stem.flightsim.quiz_history_question": "پوښتنه {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "سم ځواب: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} خوندي شوې پوښتنې نور له دې ازموینې سره سمون نه لري. نمرې یوازې د سمون لرونکو پوښتنو له ثبتونو څخه حسابېږي."
+}

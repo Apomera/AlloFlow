@@ -48,7 +48,7 @@ const SERVER_INFO = { name: 'alloflow-agent-core', title: 'AlloFlow Agent Core (
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_JOBS = 256;
-const AUDITED_TOOLS = new Set(['blueprint_create', 'blueprint_revise', 'resource_pack_generate', 'resource_pack_export', 'job_cancel']);
+const AUDITED_TOOLS = new Set(['blueprint_create', 'blueprint_revise', 'resource_pack_generate', 'resource_pack_attach_image', 'resource_pack_export', 'job_cancel']);
 
 function log(msg) {
   process.stderr.write('[alloflow-mcp] ' + msg + '\n');
@@ -376,18 +376,33 @@ const MEDIA_BATCH_INPUT_SCHEMA = {
   }, additionalProperties: false
 };
 
+const PACK_PROFILE_SCHEMA = { type: 'string', enum: ['text', 'illustrated'], default: 'text', description: 'Text: original 12-type, 500K-character authoring subset. Illustrated: 15 types, 2M compact characters, validated self-contained PNG/JPEG/WebP images, full metadata preserved on validate/export.' };
 const RESOURCE_PACK_REQUEST_INPUT_SCHEMA = {
   type: 'object', required: ['requestId', 'sourceTopic', 'learningGoal', 'history', 'privacy'],
   properties: {
+    profile: PACK_PROFILE_SCHEMA,
     requestId: { type: 'string', minLength: 1, maxLength: 128 }, title: { type: 'string', maxLength: 240 },
     sourceTopic: { type: 'string', minLength: 1, maxLength: 1000 }, gradeLevel: { type: 'string', maxLength: 200 },
     language: { type: 'string', maxLength: 100 }, standards: { type: 'string', maxLength: 4000 },
     learningGoal: { type: 'string', minLength: 1, maxLength: 1000 }, author: { type: 'string', maxLength: 200 },
-    history: { type: 'array', minItems: 1, maxItems: 24, items: { type: 'object', required: ['id', 'type', 'title', 'data'], properties: { id: { type: 'string', maxLength: 200 }, type: { type: 'string', enum: ResourcePackService.MAX_TYPES }, title: { type: 'string', maxLength: 240 }, timestamp: { type: 'string', maxLength: 80 }, data: {}, meta: { type: 'string', maxLength: 500 } }, additionalProperties: true } },
+    history: { type: 'array', minItems: 1, maxItems: 24, items: { type: 'object', required: ['id', 'type', 'title', 'data'], properties: { id: { type: 'string', maxLength: 200 }, type: { type: 'string', enum: ResourcePackService.ILLUSTRATED_TYPES, description: 'image, memory-aid and applied-challenge require profile: illustrated.' }, title: { type: 'string', maxLength: 240 }, timestamp: { type: 'string', maxLength: 80 }, data: {}, meta: { type: 'string', maxLength: 500 } }, additionalProperties: true } },
     privacy: { type: 'object', required: ['confirmNoStudentPii', 'confirmSourcePermission'], properties: { confirmNoStudentPii: { type: 'boolean', const: true }, confirmSourcePermission: { type: 'boolean', const: true } }, additionalProperties: false }
   }, additionalProperties: false
 };
-const RESOURCE_PACK_INPUT_SCHEMA = { type: 'object', description: 'A normalized AlloPack envelope.', required: ['allopack', 'sourceTopic', 'history'], properties: { allopack: { type: 'object' }, sourceTopic: { type: 'string' }, history: { type: 'array' } }, additionalProperties: true };
+const RESOURCE_PACK_INPUT_SCHEMA = { type: 'object', description: 'A native AlloPack envelope; validation/export preserve all accepted metadata and history fields.', required: ['allopack', 'sourceTopic', 'history'], properties: { allopack: { type: 'object' }, sourceTopic: { type: 'string' }, history: { type: 'array' } }, additionalProperties: true };
+const PACK_ARGUMENT_SCHEMA = { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA, profile: PACK_PROFILE_SCHEMA }, required: ['pack'], additionalProperties: false };
+const IMAGE_ATTACHMENT_SCHEMA = {
+  type: 'object', required: ['resourceId', 'slot', 'index', 'dataUrl', 'alt'], additionalProperties: false,
+  properties: {
+    resourceId: { type: 'string', minLength: 1, maxLength: 200 },
+    slot: { type: 'string', enum: ['glossary', 'panel', 'anchor', 'sort'] },
+    index: { type: 'integer', minimum: 0 },
+    dataUrl: { type: 'string', maxLength: 1333400, description: 'Self-contained PNG/JPEG/WebP base64 data URL supplied by the host. Maximum 1,000,000 decoded bytes; no network URL or filesystem path.' },
+    alt: { type: 'string', maxLength: 250, description: 'Image-specific description. Empty only when decorative is true.' },
+    decorative: { type: 'boolean', default: false },
+    altSource: { type: 'string', enum: ['vision', 'author', 'planning'], default: 'planning', description: 'vision means reviewed against the actual image; author means human-written; planning is an unverified draft.' }
+  }
+};
 const TOOLS = [
   toolEntry(
     'capabilities',
@@ -439,23 +454,28 @@ const TOOLS = [
   ),
   toolEntry(
     'resource_pack_generate',
-    'Finalize agent-authored resources into a validated text-only AlloPack draft. This authoring subset supports 12 resource types, at most 500,000 serialized characters, and no embedded images; it is not a round-trip editor for existing illustrated catalog packs. The calling agent supplies the generated history; this connector performs no model call, network request, or hidden data transfer. Returns a completed local job; call job_get_result for the pack.',
+    'Assemble a fresh agent-authored AlloPack. Default text profile supports 12 types/500K characters. request.profile=illustrated adds image, memory-aid and applied-challenge, validated PNG/JPEG/WebP artwork, and a 2M compact-character limit. For existing packs use validate/export to preserve their envelope and credits. The host supplies content and images; no model call, image generation, file read, or network request. Returns a completed job; call job_get_result.',
     { type: 'object', properties: { request: RESOURCE_PACK_REQUEST_INPUT_SCHEMA }, required: ['request'], additionalProperties: false }
   ),
   toolEntry(
     'resource_pack_validate',
-    'Validate a text-only authoring draft against supported renderer shapes, privacy safeguards, size limits, and teacher-review warnings. This subset validator is not the general app-import validator and rejects illustrated catalog packs. Read-only.',
-    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
+    'Validate renderer shapes, references, privacy and size. Opt into profile=illustrated for native illustrated packs: checks embedded raster structure/dimensions, byte budgets and image-specific alt metadata while preserving the complete accepted pack. Default text retains its original subset. Validation does not establish visual correctness or educator approval. Read-only.',
+    PACK_ARGUMENT_SCHEMA
   ),
   toolEntry(
     'resource_pack_preview',
-    'Create a side-effect-free teacher review preview of an AlloPack, including resource order, types, warnings, and approval checklist.',
-    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
+    'Return a structured teacher-review summary with resource order, media statistics, warnings and a review checklist. Use profile=illustrated for image packs. This is not a rendered student preview. Read-only.',
+    PACK_ARGUMENT_SCHEMA
   ),
   toolEntry(
     'resource_pack_export',
-    'Serialize a validated AlloPack as a downloadable .allopack.json payload. The connector does not write arbitrary filesystem paths.',
-    { type: 'object', properties: { pack: RESOURCE_PACK_INPUT_SCHEMA }, required: ['pack'], additionalProperties: false }
+    'Export a validated AlloPack as a .allopack.json payload. profile=illustrated returns compact JSON, preserving images, captions, labels, credits, provenance and all accepted fields without normalizing them away. The connector does not write files or publish.',
+    PACK_ARGUMENT_SCHEMA
+  ),
+  toolEntry(
+    'resource_pack_attach_image',
+    'Attach host-supplied PNG/JPEG/WebP artwork to an existing glossary row, image panel, anchor-chart section or concept-sort card. Requires profile=illustrated. Returns an independently validated copy, updates matching native alt/hash fields, preserves other fields, and never mutates the input. No image generation, network fetch or file reads. Default altSource=planning does not claim visual review.',
+    { type: 'object', required: ['pack', 'profile', 'attachment'], properties: { pack: RESOURCE_PACK_INPUT_SCHEMA, profile: { type: 'string', const: 'illustrated' }, attachment: IMAGE_ATTACHMENT_SCHEMA }, additionalProperties: false }
   )
 ];
 
@@ -464,7 +484,8 @@ function reportPayload(report) {
     ok: report.ok,
     errors: report.errors || [],
     warnings: report.warnings || [],
-    value: report.ok ? report.value : null
+    value: report.ok ? report.value : null,
+    media: report.media
   };
 }
 
@@ -533,28 +554,37 @@ const TOOL_HANDLERS = {
     const report = ResourcePackService.compose(args.request);
     if (!report.ok) throw invalidParams('Resource-pack draft failed validation: ' + report.errors.map((e) => e.code).join(', '));
     const job = createCompletedJob(args.request.requestId);
-    const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: report.warnings, preview: ResourcePackService.previewPack(report.value) } };
+    const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: report.warnings, preview: ResourcePackService.previewPack(report.value, { profile: args.request.profile }) } };
     return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, blueprintId: args.request.requestId }, () => storeJob(record));
   },
   resource_pack_validate(args) {
-    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
-    return reportPayload(ResourcePackService.validatePack(args.pack, { strict: true }));
+    return reportPayload(ResourcePackService.validatePack(args.pack, { strict: true, profile: args.profile }));
   },
   resource_pack_preview(args) {
-    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
-    const report = ResourcePackService.previewPack(args.pack);
+    const report = ResourcePackService.previewPack(args.pack, { profile: args.profile });
     if (!report.ok) return report;
     return report;
   },
   resource_pack_export(args) {
-    assertAllowedKeys(args, ['pack'], 'arguments');
+    assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
-    const result = ResourcePackService.exportPack(args.pack);
+    const result = ResourcePackService.exportPack(args.pack, { profile: args.profile });
     if (!result.ok) throw invalidParams('Resource-pack export failed validation: ' + result.errors.map((e) => e.code).join(', '));
     return pendingWrite(result, { blueprintId: args.pack.allopack && args.pack.allopack.title ? String(args.pack.allopack.title) : '' }, () => {});
-  },  artifact_validate(args) {
+  },
+  resource_pack_attach_image(args) {
+    assertAllowedKeys(args, ['pack', 'profile', 'attachment'], 'arguments');
+    assertObject(args.pack, 'arguments.pack');
+    assertObject(args.attachment, 'arguments.attachment');
+    const report = ResourcePackService.attachImage(args.pack, args.attachment, { profile: args.profile });
+    if (!report.ok) throw invalidParams('Image attachment failed validation: ' + report.errors.map((e) => e.code).join(', '));
+    return pendingWrite(reportPayload(report), { blueprintId: String(args.pack.allopack && args.pack.allopack.title || '') }, () => {});
+  },
+  artifact_validate(args) {
     assertAllowedKeys(args, ['artifact'], 'arguments');
     assertObject(args.artifact, 'arguments.artifact');
     return reportPayload(Contracts.validateArtifact(args.artifact));

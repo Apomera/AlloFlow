@@ -131,7 +131,7 @@ window.StemLab = window.StemLab || {
     '6x12': { trick: '6×12 = 72. Split: 6×12 = 6×10 + 6×2 = 60 + 12 = 72.', icon: '✂️' },
     '7x12': { trick: '7×12 = 84. Split: 7×12 = 7×10 + 7×2 = 70 + 14 = 84.', icon: '✂️' },
     '8x12': { trick: '8×12 = 96. Split: 8×12 = 8×10 + 8×2 = 80 + 16 = 96.', icon: '✂️' },
-    '9x11': { trick: '9×11 = 99. 9s digits sum to 9 AND 11s repeat the digit.', icon: '🎯' },
+    '9x11': { trick: '9×11 = 99. 11s repeat the digit (9 and 9), and 99 is one less than 100.', icon: '🎯' },
     '9x12': { trick: '9×12 = 108. Split: 9×12 = 9×10 + 9×2 = 90 + 18 = 108.', icon: '✂️' },
     '11x12':{ trick: '11×12 = 132. Split: 11×12 = 11×10 + 11×2 = 110 + 22 = 132.', icon: '✂️' },
     '12x12':{ trick: '12×12 = 144. A gross. Worth memorizing.',     icon: '⭐' }
@@ -417,6 +417,12 @@ window.StemLab = window.StemLab || {
         var timer = labToolData._multAdvanceTimer;
         return function() { if (timer) clearTimeout(timer); };
       }, [labToolData._multAdvanceTimer]);
+      // "50 correct in one session" means this visit: one token per opening of the tool.
+      // A saved sessionCorrect from an earlier visit (or an old save with no token) starts at 0.
+      var mtVisitRef = React.useRef(null);
+      if (!mtVisitRef.current) mtVisitRef.current = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      var mtVisit = mtVisitRef.current;
+      var sessionCorrectNow = _ext.sessionVisit === mtVisit ? (_ext.sessionCorrect || 0) : 0;
       var setInputDisabled = function(val) {
         setLabToolData(function(prev) { return Object.assign({}, prev, { _multInputDisabled: val }); });
       };
@@ -572,7 +578,7 @@ window.StemLab = window.StemLab || {
         // Badge checks
         if (ok) {
           var newTotal = (_ext.totalCorrect || 0) + 1;
-          var newSession = (_ext.sessionCorrect || 0) + 1;
+          var newSession = sessionCorrectNow + 1;
           var newHidden = multTableHidden ? (_ext.hiddenCorrect || 0) + 1 : (_ext.hiddenCorrect || 0);
           var newSquares = Object.assign({}, _ext.squaresAnswered || {});
           if (multTableChallenge.a === multTableChallenge.b) newSquares[multTableChallenge.a] = true;
@@ -581,7 +587,7 @@ window.StemLab = window.StemLab || {
           newRows[multTableChallenge.b] = true;
           var newTricky = (_ext.trickySolved || 0) + (isTrickyFact(multTableChallenge.a, multTableChallenge.b) ? 1 : 0);
 
-          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows, trickySolved: newTricky, factScores: newFactScores });
+          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, sessionVisit: mtVisit, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows, trickySolved: newTricky, factScores: newFactScores });
 
           // Check adaptive reaching hard
           var reachedHard = exploreDifficulty === 'adaptive' && getAdaptiveRange(newHistory) === DIFFICULTY.hard;

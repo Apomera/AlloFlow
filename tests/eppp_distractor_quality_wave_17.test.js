@@ -90,6 +90,10 @@ describe('EPPP distractor-quality repair wave 17', () => {
     const auditText = read('test_prep/eppp_native_quality_audit_wave_17.json');
     expect(read('desktop/web-app/public/test_prep/eppp_native_quality_audit_wave_17.json')).toBe(auditText);
     const audit = JSON.parse(auditText);
+    // The full replay re-runs wave 17 while eppp-v3-biological-046 still carries its wave-09 text,
+    // which pairs with biological-033 on "left-hemisphere"; the later wave-49 cleanup of
+    // biological-046 resolves it, and the live diagnostics below must be clean.
+    const replayPairPartner = 'eppp-v3-biological-046';
     expect(audit.summary).toMatchObject({
       totalItems: 1500,
       rewrittenItems: 10,
@@ -97,17 +101,23 @@ describe('EPPP distractor-quality repair wave 17', () => {
       appliedOrAnalysisItems: 10,
       keyPositionsPreserved: 10,
       optionSpecificExplanations: 40,
-      selectedItemsWithWarningsAfter: 0,
-      selectedWarningIdsAfter: [],
+      selectedItemsWithWarningsAfter: 1,
+      selectedWarningIdsAfter: ['eppp-v2-biological-033'],
       warningCountContext: {
         before: expect.stringContaining('not recomputed'),
         after: expect.stringContaining('before the downstream distractor-halving campaign'),
         interpretation: expect.stringContaining('item-level'),
       },
-      status: 'pass',
+      status: 'review-required',
     });
+    expect(json('test_prep/eppp_native_items.json').find((item) => item.id === replayPairPartner).wordingCleanupWave)
+      .toBe('eppp-native-quality-wave-49');
     expect(audit.items.map((item) => item.id)).toEqual(ids);
-    expect(audit.items.every((item) => item.diagnosticsAfter.length === 0)).toBe(true);
+    expect(audit.items.every((item) => (
+      item.diagnosticsAfter.length === 0
+      || (item.id === 'eppp-v2-biological-033'
+        && item.diagnosticsAfter.join() === 'semantic-concept-duplicate-candidate')
+    ))).toBe(true);
 
     const diagnostics = json('test_prep/eppp_distractor_quality_diagnostics.json');
     const selected = new Set(ids);

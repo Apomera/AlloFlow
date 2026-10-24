@@ -43,11 +43,11 @@ describe('universal settings panel — measured honesty', () => {
     expect(baked.allTypes, 'allTypes drifted from docs/resource_setting_coverage.json').toEqual(local.map((r) => r.type));
   });
 
-  it('renders an applicability chip for every universal control', () => {
+  it('shows no per-control applicability chips and keeps the scope note to one sentence', () => {
     const body = componentBody(panelSrc, 'UniversalSettingsPanel', 'AdventurePanel');
-    for (const key of ['grade', 'language', 'standards', 'interests', 'dok', 'emoji']) {
-      expect(body).toContain(`<UniversalApplicability settingKey="${key}"`);
-    }
+    expect(body).not.toContain('UniversalApplicability');
+    expect(panelSrc).not.toContain('exactly as written');
+    expect(body).toContain("t('universal.scope_note') || 'These steer what AlloFlow writes for you.'");
   });
 });
 
@@ -199,7 +199,9 @@ describe('universal settings panel — wiring', () => {
     for (const f of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
       const u = JSON.parse(readFileSync(f, 'utf8'));
       expect(u.universal && u.universal.title, f).toBe('Universal Settings');
-      expect(u.universal.applies).toContain('{n}');
+      expect(u.universal.scope_note).toBe('These steer what AlloFlow writes for you.');
+      expect(u.universal.applies).toBeUndefined();
+      expect(u.universal.not_used_by).toBeUndefined();
     }
   });
 });

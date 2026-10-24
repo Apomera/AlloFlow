@@ -53,19 +53,16 @@ afterEach(() => {
 });
 
 describe('worker GET /search', () => {
-  it('accepts arbitrary topics only with explicit user-topic intent', async () => {
+  it('accepts any topic, with or without an intent', async () => {
     vi.stubGlobal('caches', cacheStub());
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ organic: [] }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const topic = 'How clouds form over mountains';
     const url = 'https://w.dev/search?q=' + encodeURIComponent(topic);
-    for (const suffix of ['', '&intent=automatic', '&intent=USER-TOPIC']) {
-      const blocked = await worker.fetch(get(url + suffix), { SERPER_API_KEY: 'k' });
-      expect(blocked.status).toBe(400);
+    for (const suffix of ['', '&intent=automatic', '&intent=USER-TOPIC', '&intent=user-topic']) {
+      const res = await worker.fetch(get(url + suffix), { SERPER_API_KEY: 'k' });
+      expect(res.status, suffix || 'no intent').toBe(200);
     }
-    expect(fetchMock).not.toHaveBeenCalled();
-    const allowed = await worker.fetch(get(url + '&intent=user-topic'), { SERPER_API_KEY: 'k' });
-    expect(allowed.status).toBe(200);
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ q: topic, num: 5 });
   });
 
@@ -76,7 +73,7 @@ describe('worker GET /search', () => {
     for (const topic of ['', ' \t ', 'clouds\u0000private', 'x'.repeat(501)]) {
       const res = await worker.fetch(get('https://w.dev/search?intent=user-topic&q=' + encodeURIComponent(topic)), { SERPER_API_KEY: 'k' });
       expect(res.status).toBe(400);
-      expect((await res.json()).error).toBe('user-topic-required');
+      expect((await res.json()).error).toBe('query-refused');
     }
     expect(match).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -108,11 +105,11 @@ describe('worker GET /search', () => {
     expect((await res.json()).error).toBe('search-disabled');
   });
 
-  it('rejects a too-short query before spending an API credit', async () => {
+  it('rejects an empty query before spending an API credit', async () => {
     vi.stubGlobal('caches', cacheStub());
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const res = await worker.fetch(get('https://w.dev/search?q=a'), { SERPER_API_KEY: 'k' });
+    const res = await worker.fetch(get('https://w.dev/search?q=%20'), { SERPER_API_KEY: 'k' });
     expect(res.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();
   });

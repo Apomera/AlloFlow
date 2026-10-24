@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "過去のクイズの記録",
+  "stem.flightsim.quiz_history_scope": "新しいクイズを始めると、初回の回答が記録された過去の挑戦を最大4回分保存します。これらを見直しても、現在のクイズは変わりません。",
+  "stem.flightsim.quiz_history_empty": "過去のクイズの記録はまだ保存されていません。",
+  "stem.flightsim.quiz_history_attempt": "保存日 {date} · 初回の回答で {answered} 問中 {score} 問正解",
+  "stem.flightsim.quiz_history_progress": "全 {total} 問中 {answered} 問を記録 · 未回答 {unanswered} 問",
+  "stem.flightsim.quiz_history_question": "問題 {number}：{question}",
+  "stem.flightsim.quiz_history_correct_answer": "正解：{answer}",
+  "stem.flightsim.quiz_history_changed": "保存済みの {count} 問が現在のクイズと一致しなくなりました。得点は一致する問題の記録だけで計算します。"
+}

@@ -40,7 +40,8 @@ async function paint(page: Page) {
     ctx.fillText = function (value: string, x: number, y: number, ...args: any[]) {
       if (card) {
         const m = this.getTransform(), p = new DOMPoint(x, y).matrixTransform(m);
-        card.lines.push({ text: String(value), x: p.x / el.width, y: p.y / el.height, w: this.measureText(value).width * m.a / el.width, font: parseFloat(this.font.replace(/^bold /, '')) * m.a / el._dpr });
+        const fontSize = /([\d.]+)px/.exec(this.font);
+        card.lines.push({ text: String(value), x: p.x / el.width, y: p.y / el.height, w: this.measureText(value).width * m.a / el.width, font: Number(fontSize?.[1] || 0) * m.a / el._dpr });
       }
       return text.call(this, value, x, y, ...args);
     };

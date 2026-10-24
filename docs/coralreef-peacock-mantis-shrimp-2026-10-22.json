@@ -1,0 +1,155 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional stomatopod for the species guide, illustrative reef encounters and optional identification/recall activities. The model depicts one green, gold and red adult appearance without assigning sex or reproductive state. New copy is paraphrased from primary taxonomic/experimental research and museum, university and aquarium accounts.",
+  "iucnYearConvention": "Use NE and null assessment/publication dates. SeaLifeBase's current indexed IUCN 2025-2 export explicitly reports Not Evaluated, corroborated by Georgia Aquarium and Tennessee Aquarium. No actual global assessment or assessment year was located. General aquarium statements that the animal is not threatened are not treated as an IUCN Least Concern assessment. NE is not evidence that populations are secure.",
+  "specimens": [
+    {
+      "id": "peacock_mantis_shrimp",
+      "name": "Peacock mantis shrimp",
+      "scientific": "Odontodactylus scyllarus",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnPublishedYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": ["harlequin_shrimp"],
+      "marks": [
+        "Large stalked compound eyes sit high above the head",
+        "Club-bearing striking limbs fold beneath the front of the body",
+        "Pale-edged dark spots mark the front sides of the carapace",
+        "The segmented abdomen ends in a broad fan of telson and paired uropods"
+      ],
+      "role": "Predator of hard-shelled invertebrates in reef food webs.",
+      "fact": "A strike can create cavitation bubbles; their collapse adds another brief force pulse after the club’s impact.",
+      "habitat": "Indo-West Pacific coral and rocky reefs, with shelters among rubble or adjoining sand and gravel. It often occupies burrows near the base of reefs.",
+      "diet": "Crabs, snails and other mollusks. Club-like striking limbs help it break hard shells rather than grasp prey with ordinary pincers.",
+      "behavior": "Often shelters in a burrow and emerges to forage. Its eyes can move independently while the striking limbs remain folded beneath the body between strikes.",
+      "observe": "Compare its folded clubs, prominent stalked eyes and broad tail fan with the harlequin shrimp’s flattened paddle-like claws. Look for pale-edged spots on the carapace sides. Green, red and gold are one appearance; body colour varies, so use several structures together.",
+      "sources": [
+        "dx-lifg-peacock_mantis_shrimp",
+        "dx-ahyong-peacock_mantis_shrimp",
+        "dx-brokensha-peacock_mantis_shrimp",
+        "dx-eyes-peacock_mantis_shrimp",
+        "dx-patek-peacock_mantis_shrimp",
+        "dx-georgia-peacock_mantis_shrimp",
+        "dx-worms-peacock_mantis_shrimp",
+        "dx-sealifebase-peacock_mantis_shrimp"
+      ],
+      "claimSupport": {
+        "acceptedName": "Current WoRMS accepts Odontodactylus scyllarus (Linnaeus, 1758), AphiaID 220297, in Stomatopoda. The 2025 primary treatment independently uses this name. Cancer scyllarus is the original combination; the illustrated animal is not a decapod shrimp despite the common name.",
+        "marks": "Australian Museum's Lizard Island account identifies lateral leopard-like carapace spots and a smashing club. Ahyong's primary taxonomic descriptions support pale-edged spots, rounded compound eyes, segmented abdomen, telson and paired uropods. The 2009 primary eye study's Fig. 1 shows the large independent eyes and folded striking limbs. None of these broad learning marks is claimed to diagnose every wild specimen alone.",
+        "roleDiet": "Georgia Aquarium documents a diet of crustaceans and mollusks. National Aquarium corroborates crabs and gastropods. Patek and Caldwell's experiments establish shell-breaking impact/cavitation mechanics; these experimental prey observations are not treated as a complete wild diet inventory.",
+        "fact": "Patek and Caldwell (2005) measured direct limb-impact and subsequent bubble-collapse force peaks. The guide makes a qualitative statement only, without universal force/speed numbers, a guaranteed bubble on every strike or a claim of the fastest punch among all animals.",
+        "habitatBehavior": "Ahyong's Taiwan account describes reef-flat to reef-base shelters beneath coral and boulders. Lizard Island records rubble-constructed burrows at 10–20 m. University of Texas DigiMorph describes U-shaped gravel burrows. Georgia Aquarium supports emergence to forage; the eye study supports independent eye movement and resting folded appendages.",
+        "colourStageSex": "Primary life-colour accounts describe reddish-brown through green bodies, pale-edged dark carapace spots, orange-yellow antennal scales, red limb/segment accents and blue uropods with red marginal setae. Large males may be deep green, but the model does not assign reproductive anatomy or offer a colour-only sex key. One adult palette is illustrated rather than a juvenile sequence or fixed geographic colour morph.",
+        "sizeDepth": "Nominal 14 cm refers to approximate body length, not antenna-tip span. Primary revisions record individuals around this scale and report a specimen length of 171 mm; aquarium/museum summaries round the upper size to 18 cm. The 2025 primary species treatment explicitly reports 0–100 m, matching current SeaLifeBase. Ahyong's older account says to 30 m; Georgia Aquarium gives to 40 m; Lizard Island's 10–20 m is local observation, not a global range. No 100 m individual was independently verified here.",
+        "iucn": "SeaLifeBase explicitly labels Not Evaluated in its current indexed IUCN Version 2025-2 (Global) export. Georgia Aquarium also states NE. No category or assessment date is inferred from availability in the aquarium trade or from generic population-security statements.",
+        "comparison": "The one-way harlequin_shrimp link compares two colourful crustacean body plans: folded striking clubs and a broad stomatopod tail fan versus the existing harlequin shrimp's flattened paddle-like claws. It does not assert that the two are close relatives or the nearest species-level lookalikes. Preserve the existing record exactly."
+      },
+      "caution": "The simplified model is a learning aid, not a definitive wild species or sex key. Fine ocular scales, tail ridges and claw teeth used in taxonomic diagnoses may be simplified. Do not locate the characteristic leopard pattern on the clubs instead of the carapace sides. Avoid boxy hammerhead eyes, a fish-like tail, oversized ordinary pincers or a decapod walking-leg layout. Colour varies with individuals, size and sex. No claim that this animal sees more colours than humans, detects infrared, has a fixed number of perceptual colour dimensions or experiences the tool's vivid view is made. No lifelong-pairing, universal aggression, population-security or aquarium-care claim is imported."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-lifg-peacock_mantis_shrimp",
+      "text": "Australian Museum / Lizard Island Research Station. Odontodactylus scyllarus: Lizard Island Field Guide account, with observations and photographs by Roy Caldwell and Sue Churchill. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=a6HkPlCX&hierarchyId=PVWrQCLG",
+      "urlLabel": "lifg.australian.museum",
+      "supports": ["Lateral carapace spots, club-like appendages, 3–18 cm length scale and specifically local rubble-burrow observations"],
+      "access": "Detailed current indexed museum account read. Caldwell's 1986–1997 Lizard Island list is explicitly quoted as rubble-built burrows at 10–20 m; that local observation is not substituted for the full published depth interval."
+    },
+    {
+      "id": "dx-ahyong-peacock_mantis_shrimp",
+      "text": "Ahyong, S.T., Chan, T.-Y. & Liao, Y.-C. (2008). A Catalog of the Mantis Shrimps (Stomatopoda) of Taiwan. National Taiwan Ocean University, Keelung. Odontodactylus scyllarus account, pp. 29–30, Fig. 23.",
+      "url": "https://www.vliz.be/imisdocs/publications/245752.pdf",
+      "urlLabel": "vliz.be (primary taxonomy)",
+      "supports": ["Primary live-colour description, folded club/tail anatomy, individual size, shelter habitat and older depth statement"],
+      "access": "Detailed indexed primary species text and figure caption read. Direct full-PDF attempts timed out. The live-colour account is distinguished from preserved colour. Its approximately 30 m habitat statement is disclosed alongside the broader later account."
+    },
+    {
+      "id": "dx-brokensha-peacock_mantis_shrimp",
+      "text": "Brokensha, R., Landschoff, J. & Griffiths, C. (2025). Taxonomic guide to the mantis shrimps (Crustacea: Stomatopoda) of South Africa. Zootaxa 5713(1): 1–93. Odontodactylus scyllarus account, pp. 31–33, Fig. 12. DOI: 10.11646/zootaxa.5713.1.1.",
+      "url": "https://zenodo.org/records/18270187",
+      "urlLabel": "zenodo.org (primary taxonomic treatment)",
+      "supports": ["Current primary diagnosis and accepted name, qualified adult live colours, sizes, range and explicit published 0–100 m interval"],
+      "access": "Full extracted primary taxonomic treatment read on Zenodo/Plazi, with parent-publication DOI and page range verified. The examined South African and Mozambican specimens have unknown collection depths, so the reported 0–100 m interval is not claimed as a new measured deep specimen from this study. Life colours are explicitly adapted from Ahyong (2012)."
+    },
+    {
+      "id": "dx-eyes-peacock_mantis_shrimp",
+      "text": "Kleinlogel, S. & Marshall, N.J. (2009). Ultraviolet polarisation sensitivity in the stomatopod crustacean Odontodactylus scyllarus. Journal of Comparative Physiology A 195: 1153–1162. DOI: 10.1007/s00359-009-0491-y. Fig. 1.",
+      "url": "https://link.springer.com/content/pdf/10.1007/s00359-009-0491-y.pdf",
+      "urlLabel": "link.springer.com (primary research)",
+      "supports": ["Identified living animal and eye photographs, independent eyes, folded appendages and qualified visual-system context"],
+      "access": "Full open-access primary paper opened successfully. The guide uses only observed eye/appendage anatomy and independence; photoreceptor counts are not equated with superior colour discrimination or a literal simulated animal viewpoint."
+    },
+    {
+      "id": "dx-patek-peacock_mantis_shrimp",
+      "text": "Patek, S.N. & Caldwell, R.L. (2005). Extreme impact and cavitation forces of a biological hammer: strike forces of the peacock mantis shrimp Odontodactylus scyllarus. Journal of Experimental Biology 208: 3655–3664. DOI: 10.1242/jeb.01831.",
+      "url": "https://escholarship.org/uc/item/9938507n",
+      "urlLabel": "escholarship.org (primary research)",
+      "supports": ["Measured shell-breaking limb impacts and subsequent cavitation-bubble collapse"],
+      "access": "University-hosted primary abstract and detailed indexed paper read, including the authors' university PDF. The guide keeps the result qualitative and experimental, with no universal numerical strength/speed claim."
+    },
+    {
+      "id": "dx-georgia-peacock_mantis_shrimp",
+      "text": "Georgia Aquarium. Peacock Mantis Shrimp, Odontodactylus scyllarus: animal guide. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/peacock-mantis-shrimp/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": ["Crustacean/mollusk diet, shelter and foraging behavior, approximate adult scale and explicit Not Evaluated status"],
+      "access": "Full official aquarium account opened successfully. Its general vision, pairing and aquarium-glass claims are not imported. Its depth to 40 m is treated as a source difference, not a hard limit."
+    },
+    {
+      "id": "dx-worms-peacock_mantis_shrimp",
+      "text": "WoRMS (2026). Odontodactylus scyllarus (Linnaeus, 1758), AphiaID 220297. World Register of Marine Species. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=220297",
+      "urlLabel": "marinespecies.org",
+      "supports": ["Current accepted name, original combination and stomatopod classification"],
+      "access": "Detailed current indexed taxon record read, explicitly marked accepted. Accepted name is independently corroborated by the primary 2025 treatment and Australian Museum collection records."
+    },
+    {
+      "id": "dx-sealifebase-peacock_mantis_shrimp",
+      "text": "SeaLifeBase. Odontodactylus scyllarus: species summary and IUCN 2025-2 export. Accessed October 2026.",
+      "url": "https://www.sealifebase.org/summary/Odontodactylus-scyllarus",
+      "urlLabel": "sealifebase.org",
+      "supports": ["Explicit Not Evaluated export and broader reported depth interval, qualified against primary accounts"],
+      "access": "Detailed current indexed summary read, explicitly labelled IUCN Version 2025-2 (Global). Direct summary returned 403. Its 0–100 m entry cites Ahyong's 2007 shallow-water New Caledonia compendium; the compendium's survey scope is not itself proof of a specimen at the deepest endpoint. Modelled maps and order-level reproductive boilerplate are not used."
+    },
+    {
+      "id": "dx-digimorph-peacock_mantis_shrimp",
+      "text": "Patek, S.N. & Summers, A. / University of Texas at Austin DigiMorph (2005). Odontodactylus scyllarus: annotated anatomical specimen and CT study. Published 18 November 2005.",
+      "url": "https://digimorph.geo.utexas.edu/specimens/Odontodactylus_scyllarus/head/",
+      "urlLabel": "digimorph.geo.utexas.edu",
+      "supports": ["Expert anatomical context, rounded striking heel, stomatopod identity and U-shaped gravel burrows"],
+      "access": "Full university expert annotation opened successfully. The scanned specimen is female; it supplies structural context, not the model's reproductive state or exact living colours."
+    },
+    {
+      "id": "dx-national-peacock_mantis_shrimp",
+      "text": "National Aquarium. Peacock Mantis Shrimp, Odontodactylus scyllarus: animal guide. Accessed October 2026.",
+      "url": "https://aqua.org/explore/animals/peacock-mantis-shrimp",
+      "urlLabel": "aqua.org",
+      "supports": ["Independent eyes, folded club appendages, colourful adult appearance and crab/gastropod prey"],
+      "access": "Full official aquarium account opened successfully. The taxonomic primary sources determine the location of lateral carapace spots. The aquarium's unassessed population-security and generalized colour-vision claims are not used as IUCN or perceptual evidence."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.14,
+    "nominalDimension": "Approximate body length along the head-to-telson axis, excluding antenna and fringe extent",
+    "maximumLengthM": 0.18,
+    "primaryReportedLengthM": 0.171,
+    "depth": [0, 100],
+    "origin": "base",
+    "habit": "bottom",
+    "zone": "rubble",
+    "representative": "One illustrative green/green-brown adult with gold/orange antennal scales, pale-edged dark carapace spots, red limb/segment accents and blue tail paddles. Colour sources note sex and size variation, including deep green large males. The simplified model assigns no sex or reproductive anatomy and is not a colour-only sex key.",
+    "basis": "Nominal 14 cm body length lies within the measured adult scale in primary revisions. Their reported 171 mm specimen and the museum/aquarium rounded maximum of 18 cm are not claimed as identical exact limits. Depth follows the explicit 0–100 m species interval in the primary 2025 treatment and current SeaLifeBase; older primary shelter accounts to 30 m, aquarium accounts to 40 m and local Lizard Island observations at 10–20 m remain disclosed. The model represents a shallow reef encounter, not equal habitat suitability throughout that interval.",
+    "anatomy": "Broad rounded/oval compound corneas on separate stalks with a restrained mid-band; antennules distinct from plate-like antennal scales; small triangular rostral plate; a carapace with pale-edged lateral dark spotting; folded stout raptorial appendages with a rounded striking heel; smaller feeding appendages; three posterior walking-leg pairs; six abdominal somites with subtle pleopods beneath; a distinct ridged telson between paired uropods, each bearing an inner and outer paddle. Blue tail paddles carry restrained red marginal setae.",
+    "anatomyLimits": "Do not use rectangular eye bars, exaggerated human-like pupils, oversized ordinary lobster pincers, four or five posterior walking pairs, a single fish tail, or leopard spots displaced onto the clubs. Fine mouthparts, claw teeth, ocular scales and tail ridge counts may be simplified and are not a wild species key. No eggs, gonopores or other sex-specific structures. Pigmentation and modest material highlights do not represent fluorescence, bioluminescence or the animal's spectral perception.",
+    "motion": "Conservative bottom pose near rubble, with planted posterior walking legs, slow independent eye/stalk movements and subtle antennular motion. Resting clubs remain folded rather than striking continuously. This illustrative pose does not claim the animal never walks, swims, hunts or leaves its burrow. No new locomotion or combat/cavitation simulation is required."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Inspection, identification and optional mixed-order recall must not award dive discoveries or persist session-only card order, answers or reflections.",
+    "lookalikeNote": "One-way harlequin_shrimp link contrasts colourful crustacean structures and feeding appendages. Preserve its existing record exactly; this is not a claim of close taxonomic relationship or a complete stomatopod identification key.",
+    "identificationLimit": "Combine eye, limb, carapace and tail characters with locality and specialist resources. A simplified model alone cannot establish a wild species, sex or reproductive state."
+  }
+}

@@ -41,12 +41,9 @@ afterEach(async () => {
 function configure() {
   const aircraft = FS.AIRCRAFT.find(item => item.id === 'cessna172');
   expect(aircraft).toBeTruthy();
-  Object.assign(FS.Physics, {
-    WING_AREA: aircraft.wingArea, WEIGHT: aircraft.weight, MAX_THRUST: aircraft.maxThrust,
-    CL0: aircraft.cl0, CL_PER_AOA: aircraft.clPerAoa, CD0: aircraft.cd0, CD_INDUCED_K: aircraft.cdK,
-    IS_HELICOPTER: false, IS_DRONE: false, MAX_SPEED_KTS: aircraft.maxSpeed,
-    AGL_CEILING: null, SPRINT_MODE: false,
-  });
+  // The same engine and speed-limit model the cockpit configures for this aircraft.
+  FS.Physics.configureAircraft(aircraft);
+  Object.assign(FS.Physics, { AGL_CEILING: null, SPRINT_MODE: false });
   return aircraft;
 }
 
@@ -67,8 +64,10 @@ function bisect(residual, low, high) {
 function cruiseTrim(current = flight()) {
   const powerAt = pitch => bisect(throttle =>
     FS.Physics.step(current, 1 / 60, input({ pitch, throttle })).speed - current.speed, 0, 1);
+  // A propeller's thrust falls with airspeed, so at 4 degrees full power can no
+  // longer hold 100 KIAS; the level-flight trim (about 1.3 degrees) lies well inside.
   const pitch = bisect(angle =>
-    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 4);
+    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 3);
   const trim = input({ pitch, throttle: powerAt(pitch) });
   const next = FS.Physics.step(current, 1 / 60, trim);
   expect(trim.pitch).toBeGreaterThan(1);
@@ -243,7 +242,7 @@ async function mountCruise() {
   await act(async () => launch.click());
   cockpit = host.querySelector('canvas[role="application"]');
   expect(cockpit).toBeTruthy();
-  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600 });
+  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600, right: 1100, bottom: 650 });
   cockpit.focus();
   const aircraft = configure();
   // An integer indicated speed makes rounded B capture an exact equilibrium.

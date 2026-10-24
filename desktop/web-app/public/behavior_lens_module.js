@@ -5400,10 +5400,37 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
     // 30,000, and a longer document is summarized with a notice to the model and the
     // teacher. The summary is kept with the workspace (it was lost on close).
     const RECORD_REVIEW_MAX_CHARS = 30000;
+    // Pasted IEPs and evaluations carry real names, IDs and dates, and Behavior Lens only knows
+    // the codename. Scrub with the shared IdentifierRedaction (as Report Writer and Dynamic
+    // Assessment do) before the text leaves the browser. Typed names stay in component state only.
+    const blRecordNames = (raw) => String(raw || '').split(/[,;\n]+/).map(s => s.trim()).filter(s => s.length > 1).slice(0, 20);
+    const blRedactRecordText = (text, rawNames) => {
+        const list = blRecordNames(rawNames);
+        const opts = { studentName: list[0] || '', people: list.slice(1).map(name => ({ name, role: 'Name' })) };
+        const api = window.AlloModules && window.AlloModules.IdentifierRedaction;
+        const parts = list.join(' ').toLowerCase().split(/\s+/);
+        if (api && typeof api.scrubIdentifiers === 'function') {
+            const report = typeof api.analyzeRedaction === 'function' ? api.analyzeRedaction(text, opts) : null;
+            return {
+                text: api.scrubIdentifiers(text, opts),
+                hasStudentName: list.length > 0,
+                unlisted: report ? (report.unlistedTitledNames || []).filter(n => parts.indexOf(n.toLowerCase()) === -1) : [],
+                risky: report ? (report.riskyNameParts || []) : [],
+            };
+        }
+        // Module missing: still strip what patterns can rather than send the text untouched.
+        let out = String(text || '');
+        list.forEach(n => { out = out.replace(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '[NAME]'); });
+        out = out.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]').replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]')
+            .replace(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, '[PHONE]').replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '[DATE]');
+        return { text: out, hasStudentName: list.length > 0, unlisted: [], risky: [] };
+    };
     const RecordReview = ({ studentName, callGemini, t, addToast }) => {
         const [text, setText] = useState('');
+        const [names, setNames] = useState('');
         const [summary, setSummary] = useDurableToolState('recordReviewSummary', null);
         const [loading, setLoading] = useState(false);
+        const redaction = useMemo(() => (text.trim().length >= 50 ? blRedactRecordText(text.substring(0, RECORD_REVIEW_MAX_CHARS), names) : null), [text, names]);
 
         const handleSummarize = async () => {
             if (!callGemini || text.trim().length < 50) return;
@@ -5412,8 +5439,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 const prompt = `You are a school psychologist reviewing educational documents for a student (codename: "${studentName || 'Student'}").
 ${RESTORATIVE_PREAMBLE}
 
-PASTED DOCUMENT TEXT${text.length > RECORD_REVIEW_MAX_CHARS ? ` (only the first ${RECORD_REVIEW_MAX_CHARS.toLocaleString()} of ${text.length.toLocaleString()} characters; say that sections after this point were not reviewed)` : ''}:
-${text.substring(0, RECORD_REVIEW_MAX_CHARS)}
+PASTED DOCUMENT TEXT${text.length > RECORD_REVIEW_MAX_CHARS ? ` (only the first ${RECORD_REVIEW_MAX_CHARS.toLocaleString()} of ${text.length.toLocaleString()} characters; say that sections after this point were not reviewed)` : ''}. Names and identifiers appear as [Student], [Name], [DATE] and similar placeholders:
+${blRedactRecordText(text.substring(0, RECORD_REVIEW_MAX_CHARS), names).text}
 
 Analyze this document and return ONLY valid JSON:
 {
@@ -5464,6 +5491,16 @@ Analyze this document and return ONLY valid JSON:
                     rows: 8,
                     className: 'w-full border border-slate-400 rounded-lg px-4 py-3 text-sm resize-y focus:ring-2 focus:ring-cyan-400 outline-none'
                 }),
+                h('label', { className: 'block text-xs font-bold text-slate-700' },
+                    tt('behavior_lens.record.names_label', 'Names in this document, student first (removed before sending, never saved)'),
+                    h('input', { type: 'text', value: names, onChange: (e) => setNames(e.target.value), autoComplete: 'off', 'data-record-names': 'true', 'aria-describedby': 'bl-record-redaction-note',
+                        placeholder: tt('behavior_lens.record.names_placeholder', 'For example: Jordan Rivera, Maria Rivera, Ms. Chen'),
+                        className: 'mt-1 w-full border border-slate-400 rounded-lg px-3 py-2 text-sm font-normal focus:ring-2 focus:ring-cyan-400 outline-none' })),
+                h('p', { id: 'bl-record-redaction-note', className: 'text-xs text-slate-600', 'data-record-redaction': 'true' },
+                    tt('behavior_lens.record.redaction_always', 'Emails, phone numbers, ID numbers, addresses and dates are removed before the text is sent.'),
+                    redaction && !redaction.hasStudentName ? ' ' + tt('behavior_lens.record.redaction_add_student', "Add the student's name above so it is removed too.") : '',
+                    redaction && redaction.unlisted.length ? ' ' + tt('behavior_lens.record.redaction_unlisted', 'Also named and not removed yet: {names}.', { names: redaction.unlisted.join(', ') }) : '',
+                    redaction && redaction.risky.length ? ' ' + tt('behavior_lens.record.redaction_risky', 'Kept because they are also common words: {names}.', { names: redaction.risky.join(', ') }) : ''),
                 h('button', { onClick: handleSummarize,
                     disabled: loading || text.trim().length < 50, 'aria-busy': loading,
                     className: 'w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2'

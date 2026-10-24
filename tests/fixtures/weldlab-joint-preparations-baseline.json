@@ -1,0 +1,61 @@
+{
+  "preparations": [
+    {
+      "id": "square",
+      "name": "Square groove",
+      "description": "Square edges with a root opening and no machining. For thin material, roughly up to 1/4 in (6 mm) welded from one side; the welding procedure sets the limit.",
+      "paths": [
+        "M 20 40 L 97 40 L 97 74 L 20 74 Z",
+        "M 103 40 L 180 40 L 180 74 L 103 74 Z",
+        "M 91 40 Q 100 31 109 40 L 103 40 L 103 74 L 106 74 Q 100 81 94 74 L 97 74 L 97 40 Z"
+      ]
+    },
+    {
+      "id": "v",
+      "name": "Single-V groove",
+      "description": "Both edges beveled (here 30° each, a 60° groove angle) above a small root face. The common prep for plate and pipe from about 1/4 in up; pipe bevels are often 37.5° per side.",
+      "paths": [
+        "M 20 40 L 80.8 40 L 97 68 L 97 74 L 20 74 Z",
+        "M 119.2 40 L 180 40 L 180 74 L 103 74 L 103 68 Z",
+        "M 78 40 Q 100 28 122 40 L 119.2 40 L 103 68 L 103 74 L 105 74 Q 100 80 95 74 L 97 74 L 97 68 L 80.8 40 Z"
+      ]
+    },
+    {
+      "id": "bevel",
+      "name": "Single-bevel groove",
+      "description": "Only one edge is beveled (here 45°). Used when only one piece can be cut, as on the upright plate of a T-joint.",
+      "paths": [
+        "M 20 40 L 69 40 L 97 68 L 97 74 L 20 74 Z",
+        "M 103 40 L 180 40 L 180 74 L 103 74 Z",
+        "M 66 40 Q 86 28 107 40 L 103 40 L 103 74 L 105 74 Q 100 80 95 74 L 97 74 L 97 68 L 69 40 Z"
+      ]
+    },
+    {
+      "id": "j",
+      "name": "J-groove",
+      "description": "One edge cut to a curved J. It needs less weld metal than a bevel on thick plate, but costs more to machine.",
+      "paths": [
+        "M 20 40 L 83.6 40 L 89 60 A 8 8 0 0 0 97 68 L 97 74 L 20 74 Z",
+        "M 103 40 L 180 40 L 180 74 L 103 74 Z",
+        "M 80 40 Q 94 30 107 40 L 103 40 L 103 74 L 105 74 Q 100 80 95 74 L 97 74 L 97 68 A 8 8 0 0 1 89 60 L 83.6 40 Z"
+      ]
+    },
+    {
+      "id": "u",
+      "name": "U-groove",
+      "description": "Both edges cut to a J, making a U. The least filler on very thick sections, and the most machining.",
+      "paths": [
+        "M 20 40 L 83.6 40 L 89 60 A 8 8 0 0 0 97 68 L 97 74 L 20 74 Z",
+        "M 116.4 40 L 180 40 L 180 74 L 103 74 L 103 68 A 8 8 0 0 0 111 60 Z",
+        "M 80 40 Q 100 29 120 40 L 116.4 40 L 111 60 A 8 8 0 0 1 103 68 L 103 74 L 105 74 Q 100 80 95 74 L 97 74 L 97 68 A 8 8 0 0 1 89 60 L 83.6 40 Z"
+      ]
+    }
+  ],
+  "letters": [
+    "R = root opening (the gap)",
+    "f = root face, or land (the flat at the bottom of a bevel)",
+    "α = groove angle, between the two bevels",
+    "β = bevel angle of one edge",
+    "r = groove radius (J and U)"
+  ]
+}

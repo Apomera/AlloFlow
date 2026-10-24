@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Kev tshawb pom: {cards} daim ntawv kawm hauv {topics} lub ntsiab lus.",
+  "stem.flightsim.learn_library_counts": "{cards} daim ntawv kawm · {topics} lub ntsiab lus",
+  "stem.flightsim.learn_search_clear": "Tshem kev tshawb nrhiav",
+  "stem.flightsim.learn_search_empty": "Tsis muaj daim ntawv kawm phim “{query}”. Sim lwm lo lus lossis tshem kev tshawb nrhiav.",
+  "stem.flightsim.learn_search_none": "Tsis muaj daim ntawv kawm phim",
+  "stem.flightsim.learn_search_cards": "{count} daim ntawv kawm",
+  "stem.flightsim.quiz_review_progress": "Teb lawm {answered} ntawm {total} lo lus nug · yuam kev {missed} lo",
+  "stem.flightsim.quiz_review_missed": "Rov kawm cov lus teb yuam kev",
+  "stem.flightsim.quiz_next_unanswered": "Lo lus nug tom ntej uas tsis tau teb",
+  "stem.flightsim.quiz_review_all_answered": "Txhua lo lus nug twb muaj thawj lo lus teb lawm. Rov kawm cov lus teb yuam kev kom xyaum yam tsis suav qhab nia, lossis pib sim dua tshiab.",
+  "stem.flightsim.planner_drone_agl": "{ft} fij saum npoo av",
+  "stem.flightsim.sprint_native_title": "Kev sib tw kawm thaj av ceev",
+  "stem.flightsim.sprint_timed_hint": "Txoj kev tseem txav thaum koj teb. Nres ib pliag kom nyeem; rov pib ua ntej xaiv lus teb.",
+  "stem.flightsim.sprint_warp_reference": "Kev taug kev raug ua kom ceev rau txoj haujlwm kawm thaj av no. Tus lej ceev qhia qhov ceev ya ruaj uas tau teev tseg; txoj kev no tsis ntsuas lub dav hlau txoj kev ua haujlwm.",
+  "stem.flightsim.sprint_save_menu": "Khaws kev sib tw thiab rov mus rau daim ntawv xaiv",
+  "stem.flightsim.sprint_next_stop": "Chaw nres tom ntej: {place}",
+  "stem.flightsim.geoq_approaching_city": "Koj tab tom mus ze lub nroog twg?",
+  "stem.flightsim.sprint_time_remaining": "Sijhawm seem: {seconds} vib nas this"
+}

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Quan sát nhiệm vụ",
+  "stem.flightsim.mission_journal_targets": "Mục tiêu đã chụp: {captured} trên {total}.",
+  "stem.flightsim.mission_journal_complete": "Đã ghi nhận tất cả mục tiêu nhiệm vụ và lần hạ cánh khi quay về.",
+  "stem.flightsim.mission_journal_ended": "Nhiệm vụ kết thúc trước khi ghi nhận đầy đủ bằng chứng hoàn thành.",
+  "stem.flightsim.mission_journal_recovery": "Ghi nhận đưa người sống sót lên máy bay: {value}.",
+  "stem.flightsim.mission_journal_return": "Ghi nhận hạ cánh trở về căn cứ: {value}.",
+  "stem.flightsim.mission_guidance_title": "Hướng dẫn nhiệm vụ",
+  "stem.flightsim.mission_route": "{target} · phương vị {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Điểm cất cánh",
+  "stem.flightsim.mission_read_status": "Đọc trạng thái nhiệm vụ",
+  "stem.flightsim.mission_return_criterion": "Hạ cánh trong phạm vi {distance} nm tính từ {target}, với tốc độ so với mặt đất dưới {speed} kt và tốc độ hạ xuống dưới {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Không có dữ liệu mục tiêu nhiệm vụ. Hãy kết thúc chuyến bay này và bắt đầu nhiệm vụ mới.",
+  "stem.flightsim.mission_capture_criterion": "Giữ trong phạm vi {distance} ft, cao hơn {min} và thấp hơn {max} ft so với mặt đất, với tốc độ so với mặt đất dưới {speed} kt trong {hold} s."
+}

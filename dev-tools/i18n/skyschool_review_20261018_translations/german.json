@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Frühere Quizversuche",
+  "stem.flightsim.quiz_history_scope": "Beim Start eines neuen Versuchs werden bis zu vier frühere Versuche mit aufgezeichneten Erstantworten gespeichert. Beim Ansehen bleibt dein aktuelles Quiz unverändert.",
+  "stem.flightsim.quiz_history_empty": "Es sind noch keine früheren Quizversuche gespeichert.",
+  "stem.flightsim.quiz_history_attempt": "Gespeichert am {date} · {score}/{answered} Erstantworten richtig",
+  "stem.flightsim.quiz_history_progress": "{answered} von {total} Fragen aufgezeichnet · {unanswered} unbeantwortet",
+  "stem.flightsim.quiz_history_question": "Frage {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Richtige Antwort: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} gespeicherte Fragen stimmen nicht mehr mit diesem Quiz überein. Für die Punktzahl zählen nur passende Frageaufzeichnungen."
+}

@@ -1,0 +1,231 @@
+{
+  "sourceSha": "c6560db2261655ec44aaa41a4b91d993034b5bdf549ed982e37c04b5019e8afd",
+  "complete": true,
+  "files": [
+    {
+      "name": "flightsim_city_selection.test.js",
+      "sha": "8995d28cb008139c054fb3a207ad55ac93b510b70c0ea238b53af806c75d372e",
+      "exitCode": 0,
+      "count": 10,
+      "durationMs": 4817,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_selection.test.js\n[PureHelpers] 7 helpers registered\n\n··········\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  15:43:53\n   Duration  3.76s (transform 175ms, setup 190ms, import 37ms, tests 6ms, environment 3.27s)\n\n"
+    },
+    {
+      "name": "flightsim_city_facade_bounds.test.js",
+      "sha": "4355c87f557f0ee94029a8d5da06b0692699069865ef5e9b564135cc41cb600a",
+      "exitCode": 0,
+      "count": 7,
+      "durationMs": 3839,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_facade_bounds.test.js\n[PureHelpers] 7 helpers registered\n\n·······\n\n Test Files  1 passed (1)\n      Tests  7 passed (7)\n   Start at  15:43:58\n   Duration  2.67s (transform 56ms, setup 65ms, import 62ms, tests 11ms, environment 2.24s)\n\n"
+    },
+    {
+      "name": "flightsim_city_coverage.test.js",
+      "sha": "d010a79daa0b8d8bf74737d39ac713a6df0306dfa1088ced11f469da19cf660f",
+      "exitCode": 0,
+      "count": 12,
+      "durationMs": 4632,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_coverage.test.js\n[PureHelpers] 7 helpers registered\n\n············\n\n Test Files  1 passed (1)\n      Tests  12 passed (12)\n   Start at  15:44:02\n   Duration  3.58s (transform 46ms, setup 60ms, import 34ms, tests 775ms, environment 2.45s)\n\n"
+    },
+    {
+      "name": "flightsim_city_roads.test.js",
+      "sha": "6767b2b7bee780c147f1e0fe6325c6a2bacace39445318bf5fccafd3d99467f2",
+      "exitCode": 0,
+      "count": 39,
+      "durationMs": 5890,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_roads.test.js\n[PureHelpers] 7 helpers registered\n\n·······································\n\n Test Files  1 passed (1)\n      Tests  39 passed (39)\n   Start at  15:44:06\n   Duration  4.88s (transform 113ms, setup 104ms, import 95ms, tests 321ms, environment 4.04s)\n\n"
+    },
+    {
+      "name": "flightsim_city_worker.test.js",
+      "sha": "17cc66723cbca86f02f64c76d3c2412d3e1b44f68a919e98fcd268a75cc4ba22",
+      "exitCode": 0,
+      "count": 25,
+      "durationMs": 5622,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_worker.test.js\n[PureHelpers] 7 helpers registered\n\n·························\n\n Test Files  1 passed (1)\n      Tests  25 passed (25)\n   Start at  15:44:13\n   Duration  4.01s (transform 58ms, setup 59ms, import 54ms, tests 575ms, environment 2.87s)\n\n"
+    },
+    {
+      "name": "flightsim_city_reveal.test.js",
+      "sha": "27baab10d33465cbdde67aba2fa88b2b23c9728c9f7bac29f7d5416c21a46e55",
+      "exitCode": 0,
+      "count": 7,
+      "durationMs": 8139,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_reveal.test.js\n[PureHelpers] 7 helpers registered\n\n·······\n\n Test Files  1 passed (1)\n      Tests  7 passed (7)\n   Start at  15:44:19\n   Duration  5.96s (transform 177ms, setup 71ms, import 412ms, tests 15ms, environment 5.03s)\n\n"
+    },
+    {
+      "name": "flightsim_city_vector.test.js",
+      "sha": "636aca72620753aa74642102c93d123313589f348875ae9e7768cf935b2b1952",
+      "exitCode": 0,
+      "count": 10,
+      "durationMs": 12050,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_vector.test.js\n[PureHelpers] 7 helpers registered\n\n··········\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  15:44:27\n   Duration  10.21s (transform 64ms, setup 64ms, import 53ms, tests 6.94s, environment 2.86s)\n\n"
+    },
+    {
+      "name": "flightsim_city_provider.test.js",
+      "sha": "95872a55d3611c2b989f15826d178361ee5185582bd63e62312f3b1c6fdefe64",
+      "exitCode": 0,
+      "count": 38,
+      "durationMs": 5720,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_provider.test.js\n[PureHelpers] 7 helpers registered\n\n······································\n\n Test Files  1 passed (1)\n      Tests  38 passed (38)\n   Start at  15:44:39\n   Duration  4.30s (transform 92ms, setup 77ms, import 81ms, tests 126ms, environment 3.32s)\n\n"
+    },
+    {
+      "name": "flightsim_city_converter.test.js",
+      "sha": "8c03baefe13734742ef5d1465a01dd4a9aea451b93b15410c07b6278ed7645b3",
+      "exitCode": 0,
+      "count": 34,
+      "durationMs": 5159,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_converter.test.js\n[PureHelpers] 7 helpers registered\n\n··································\n\n Test Files  1 passed (1)\n      Tests  34 passed (34)\n   Start at  15:44:44\n   Duration  4.00s (transform 53ms, setup 62ms, import 44ms, tests 380ms, environment 3.11s)\n\n"
+    },
+    {
+      "name": "flightsim_city_online.test.js",
+      "sha": "80f16a6d283097014798fa9f659168bfb8415133fdc756422302b6635fb797f7",
+      "exitCode": 0,
+      "count": 59,
+      "durationMs": 7406,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_online.test.js\n[PureHelpers] 7 helpers registered\n\n···························································\n\n Test Files  1 passed (1)\n      Tests  59 passed (59)\n   Start at  15:44:50\n   Duration  5.43s (transform 341ms, setup 324ms, import 107ms, tests 1.23s, environment 2.87s)\n\n"
+    },
+    {
+      "name": "flightsim_city_start.test.js",
+      "sha": "c80adbd4173b8730bf38d27bb698489d211507adf894e4a45af3cbd1e1a9a148",
+      "exitCode": 0,
+      "count": 8,
+      "durationMs": 4509,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_start.test.js\n[PureHelpers] 7 helpers registered\n\n········\n\n Test Files  1 passed (1)\n      Tests  8 passed (8)\n   Start at  15:44:58\n   Duration  2.89s (transform 50ms, setup 66ms, import 38ms, tests 8ms, environment 2.46s)\n\n"
+    },
+    {
+      "name": "flightsim_city_planner.test.js",
+      "sha": "cd766f87b6a08a2884d4ca44669f2cddd33d5c0ce14f187ed62d4c92ce27d5c7",
+      "exitCode": 0,
+      "count": 12,
+      "durationMs": 10699,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_planner.test.js\n[PureHelpers] 7 helpers registered\n\n············\n\n Test Files  1 passed (1)\n      Tests  12 passed (12)\n   Start at  15:45:02\n   Duration  9.42s (transform 283ms, setup 159ms, import 372ms, tests 4.69s, environment 3.65s)\n\n"
+    },
+    {
+      "name": "flightsim_city_detail.test.js",
+      "sha": "1164fc96c32bd996b3948b709178d56e4a2fe0c4a6914dbe01a24fb83e40b9a8",
+      "exitCode": 0,
+      "count": 7,
+      "durationMs": 8744,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_detail.test.js\n[PureHelpers] 7 helpers registered\n\n·······\n\n Test Files  1 passed (1)\n      Tests  7 passed (7)\n   Start at  15:45:13\n   Duration  7.17s (transform 118ms, setup 67ms, import 207ms, tests 3.00s, environment 3.39s)\n\n"
+    },
+    {
+      "name": "flightsim_city_geography.test.js",
+      "sha": "d552512a8ac7a2feadcf5fbc6c9d0e22779c5b620597b9a864d5ef8f1d88c6c6",
+      "exitCode": 0,
+      "count": 23,
+      "durationMs": 35326,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_city_geography.test.js\n[PureHelpers] 7 helpers registered\n\n·······················\n\n Test Files  1 passed (1)\n      Tests  23 passed (23)\n   Start at  15:45:22\n   Duration  33.87s (transform 176ms, setup 95ms, import 326ms, tests 28.01s, environment 4.79s)\n\n"
+    },
+    {
+      "name": "flightsim_water_material.test.js",
+      "sha": "d16ec1220b058a17edcc726150599ac6076a82e779c9a6f31236897d62504cdb",
+      "exitCode": 0,
+      "count": 11,
+      "durationMs": 30150,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_water_material.test.js\n[PureHelpers] 7 helpers registered\n\n···········\n\n Test Files  1 passed (1)\n      Tests  11 passed (11)\n   Start at  15:45:58\n   Duration  26.17s (transform 391ms, setup 339ms, import 329ms, tests 21.12s, environment 3.80s)\n\n"
+    },
+    {
+      "name": "flightsim_world_longitude.test.js",
+      "sha": "a770dba380bb72b324274025540a06dc5f6d1e41db3c11d7d4eda7489dfdfc04",
+      "exitCode": 0,
+      "count": 13,
+      "durationMs": 65601,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_world_longitude.test.js\n[PureHelpers] 7 helpers registered\n\n·············\n\n Test Files  1 passed (1)\n      Tests  13 passed (13)\n   Start at  15:46:34\n   Duration  58.89s (transform 261ms, setup 290ms, import 348ms, tests 44.84s, environment 10.66s)\n\n"
+    },
+    {
+      "name": "flightsim_scenery_parallax.test.js",
+      "sha": "b98bb6bb02a365b31687a4014353c82c85c1db35da95adee9fc606c0562a14dc",
+      "exitCode": 0,
+      "count": 11,
+      "durationMs": 72226,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_scenery_parallax.test.js\n[PureHelpers] 7 helpers registered\n\n···········\n\n Test Files  1 passed (1)\n      Tests  11 passed (11)\n   Start at  15:47:49\n   Duration  60.96s (transform 333ms, setup 602ms, import 685ms, tests 37.97s, environment 20.40s)\n\n"
+    },
+    {
+      "name": "flightsim_terrain_camera.test.js",
+      "sha": "72bc408383debc6ca7cd020dddb89ea713f23d2e9171e5129c17c7d6453ecdeb",
+      "exitCode": 0,
+      "count": 12,
+      "durationMs": 23427,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_terrain_camera.test.js\n[PureHelpers] 7 helpers registered\n\n············\n\n Test Files  1 passed (1)\n      Tests  12 passed (12)\n   Start at  15:48:51\n   Duration  22.34s (transform 81ms, setup 76ms, import 173ms, tests 19.55s, environment 2.22s)\n\n"
+    },
+    {
+      "name": "flightsim_elevation_integration.test.js",
+      "sha": "f06f734d7cad68beb485cef3ea06ec52e0717cca7e5d7b9610aaaa405cd7827b",
+      "exitCode": 0,
+      "count": 14,
+      "durationMs": 12364,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_elevation_integration.test.js\n[PureHelpers] 7 helpers registered\n\n··············\n\n Test Files  1 passed (1)\n      Tests  14 passed (14)\n   Start at  15:49:15\n   Duration  10.95s (transform 78ms, setup 68ms, import 192ms, tests 8.17s, environment 2.25s)\n\n"
+    },
+    {
+      "name": "flightsim_elevation_material.test.js",
+      "sha": "33fe801371bad1b3921f44221fd041241e314e50cc0263a12a2e8ab5ad533631",
+      "exitCode": 0,
+      "count": 4,
+      "durationMs": 16531,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_elevation_material.test.js\n[PureHelpers] 7 helpers registered\n\n····\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  15:49:27\n   Duration  15.45s (transform 91ms, setup 77ms, import 187ms, tests 12.81s, environment 2.00s)\n\n"
+    },
+    {
+      "name": "flightsim_cockpit_clearance.test.js",
+      "sha": "a12f539775dd43719e629110b63053d9c696abc9ae716b360a65f6e7fe173778",
+      "exitCode": 0,
+      "count": 24,
+      "durationMs": 69611,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_cockpit_clearance.test.js\n[PureHelpers] 7 helpers registered\n\n························\n\n Test Files  1 passed (1)\n      Tests  24 passed (24)\n   Start at  15:49:45\n   Duration  66.84s (transform 77ms, setup 62ms, import 119ms, tests 63.14s, environment 3.24s)\n\n"
+    },
+    {
+      "name": "flightsim_cockpit_disclosure.test.js",
+      "sha": "0761235473602d612a2098d448ac3399513bce783661f6ac14bf5e38a8bba6ef",
+      "exitCode": 0,
+      "count": 39,
+      "durationMs": 92589,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_cockpit_disclosure.test.js\n[PureHelpers] 7 helpers registered\n\n·······································\n\n Test Files  1 passed (1)\n      Tests  39 passed (39)\n   Start at  15:50:55\n   Duration  90.22s (transform 5.22s, setup 6.69s, import 1.48s, tests 48.60s, environment 28.57s)\n\n"
+    },
+    {
+      "name": "flightsim_help_accessibility.test.js",
+      "sha": "ac392fe248aebc4ab2a8ac802b5f7abde9d0687d481e4f0b6001d95720f83813",
+      "exitCode": 0,
+      "count": 6,
+      "durationMs": 87823,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_help_accessibility.test.js\n[PureHelpers] 7 helpers registered\n\n······\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  15:52:35\n   Duration  74.37s (transform 2.94s, setup 4.02s, import 3.23s, tests 16.78s, environment 47.10s)\n\n"
+    },
+    {
+      "name": "flightsim_keyboard_controls.test.js",
+      "sha": "6522060f3da7f02f2de81d5642114bbbf74d8e27974abd63a5a0f84d1ef15108",
+      "exitCode": 0,
+      "count": 21,
+      "durationMs": 25661,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_keyboard_controls.test.js\n[PureHelpers] 7 helpers registered\n\n·····················\n\n Test Files  1 passed (1)\n      Tests  21 passed (21)\n   Start at  15:54:12\n   Duration  15.32s (transform 306ms, setup 144ms, import 435ms, tests 11.20s, environment 3.15s)\n\n"
+    },
+    {
+      "name": "flightsim_views_smoke.test.js",
+      "sha": "164375616512948143c47154fb58f562138a153babd5b73cd0c3d0e5d764dc9f",
+      "exitCode": 0,
+      "count": 117,
+      "durationMs": 30222,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_views_smoke.test.js\n[PureHelpers] 7 helpers registered\n\n·····················································································································\n\n Test Files  1 passed (1)\n      Tests  117 passed (117)\n   Start at  15:54:28\n   Duration  28.98s (transform 198ms, setup 223ms, import 789ms, tests 23.61s, environment 3.89s)\n\n"
+    },
+    {
+      "name": "flightsim_ui_strings_consistency.test.js",
+      "sha": "c73a39629b509925c0f7d5ef3eb415e789957f6ceb412d4f23cc9621a2aff3f4",
+      "exitCode": 0,
+      "count": 5,
+      "durationMs": 14131,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_ui_strings_consistency.test.js\n[PureHelpers] 7 helpers registered\n\n·····\n\n Test Files  1 passed (1)\n      Tests  5 passed (5)\n   Start at  15:55:00\n   Duration  11.43s (transform 276ms, setup 931ms, import 1.79s, tests 635ms, environment 7.29s)\n\n"
+    },
+    {
+      "name": "flightsim_dynamic_key_sync.test.js",
+      "sha": "a2e6a736304fd46f994cbe9066c70e14b5f4da8d7bd8fa0f22a5f715e0b64118",
+      "exitCode": 0,
+      "count": 3,
+      "durationMs": 7031,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_dynamic_key_sync.test.js\n[PureHelpers] 7 helpers registered\n\n···\n\n Test Files  1 passed (1)\n      Tests  3 passed (3)\n   Start at  15:55:13\n   Duration  5.60s (transform 103ms, setup 171ms, import 725ms, tests 5ms, environment 4.12s)\n\n"
+    },
+    {
+      "name": "flightsim_template_placeholders.test.js",
+      "sha": "705206703acdeaecb605f77a4e404fd6498bff7299f0a54ee4279c9881f469ca",
+      "exitCode": 0,
+      "count": 4,
+      "durationMs": 5842,
+      "output": "\n RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated\n\nstdout | tests/flightsim_template_placeholders.test.js\n[PureHelpers] 7 helpers registered\n\n····\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  15:55:21\n   Duration  3.75s (transform 53ms, setup 75ms, import 108ms, tests 183ms, environment 3.10s)\n\n"
+    }
+  ],
+  "total": 575
+}

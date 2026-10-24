@@ -1068,6 +1068,23 @@
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
         },
+        // Optional asset catalog: metadata and adapters only; no provider is fetched here.
+        // Existing tool factories remain usable if an older/offline bundle lacks it.
+        ensureSimulationAssets: function () {
+          function ready() { var a=window.StemSimAssets;return !!(a&&a.version==='1.0.0'&&typeof a.available==='function'&&typeof a.create==='function'); }
+          if(ready())return Promise.resolve(window.StemSimAssets);
+          var urls=[];
+          Array.prototype.forEach.call(document.getElementsByTagName('script'),function(script){
+            var src=script.src||'';
+            if(/\/stem_lab\/(stem_lab_module|stem_tool_birdlab|stem_tool_raptorhunt)\.js(?:[?#]|$)/.test(src)){
+              var url=new URL('stem_sim_assets.js',src);url.search=new URL(src).search;urls.push(url.href);
+            }
+          });
+          if(!urls.length)urls.push(new URL('stem_lab/stem_sim_assets.js',document.baseURI).href);
+          return this.loadScriptResilient(urls.filter(function(url,i){return urls.indexOf(url)===i;}),{
+            cacheKey:'stem-sim-assets-v1',timeoutMs:4000,check:ready,failMessage:'The shared asset catalog could not load.'
+          }).then(function(){return window.StemSimAssets;});
+        },
         // Small shared scene kit, loaded only by meadow consumers. Resolve beside the
         // actual script so bundled, local-preview and CDN paths all behave alike.
         ensureMeadow: function () {
@@ -3463,10 +3480,140 @@
     window.AlloModules = window.AlloModules || {};
     // STEM_AUTOSAVE_START
     // Keep the illusion gallery's progress and observations across visits.
-    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
+    var _STEM_SAVED_KEYS = ['wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
     // Kitchen Lab keeps progress and preferences only: never a live cook, its
     // timers or dialogs. The tool type-checks what comes back (klCleanState).
     var _KITCHEN_LAB_SAVED = ['recipeHistory', 'recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements', 'competitionBests', 'tournamentBestTotal', 'tournamentLastTotal', 'tournamentsCompleted', 'klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns', 'klUnits', 'klAltitudeFt', 'klIndependent', 'klRealKitchen', 'klPanMaterial', 'sandboxFood', 'klHandwashCompleted', 'maillardHunt'];
+    // Math tools save PROGRESS only: badges, counters, bests and the seen-maps
+    // that stop double credit. Never answers, inputs, plotted points, built
+    // models or feedback, so the next student on a shared device sees none.
+    // Calculus used to save its whole bucket (typed answers, reflections).
+    // Keyed by toolData bucket; checked on save AND restore. 'count' = finite
+    // number >= 0; 'flag' = true; 'flags' = map kept as true (a RegExp limits
+    // keys where some keys carry typed text); 'counts' = map of counts;
+    // 'tallies' = map of {attempts, correct}; 'ids' = unique ids; {..} = a
+    // nested record of counts (a bad count reads as 0).
+    var _MP_SCORE = { correct: 'count', total: 'count' };
+    var _MATH_PROGRESS_SAVED = {
+      _fractions: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', tabsVisited: 'flags', tabScores: 'counts', equivSolved: 'count', simplifySolved: 'count', convertCount: 'count', convertSeen: 'flags', wallPairsFound: 'count', wallPairsSeen: 'flags', opsSolved: 'count', aiAsked: 'count', stripEquivFound: 'count', stripPairsSeen: 'flags', signChecks: 'flags', signCorrectCount: 'count', signAttemptCount: 'count', signBestStreak: 'count', plateGame: { totalServed: 'count', bestCombo: 'count' } },
+      _numberline: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', roundingSolved: 'count', fractionSolved: 'count', negativeSolved: 'count', placeSolved: 'count', aiAsked: 'count', independentCorrect: 'count', supportedCorrect: 'count' },
+      _manipulatives: { earnedBadges: 'flags', score: _MP_SCORE, modesVisited: 'flags', regroupCount: 'count', blocksSolved: 'count', abacusSolved: 'count', slideSolved: 'count', quizSolved: 'count', counterSolved: 'count', nbSolved: 'count', hubSolved: 'count', speedBest: 'count' },
+      _moneyMath: { moneyAwardSeen: 'flags', moneyAnswerShown: 'flags', moneyRoundIds: 'counts', crBest: 'count' },
+      _areamodel: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', basicSolved: 'count', distSolved: 'count', multiSolved: 'count', wordSolved: 'count', aiAsked: 'count', usedCommutative: 'flag' },
+      _multExt: { badges: 'flags', totalCorrect: 'count', hiddenCorrect: 'count', trickySolved: 'count', squaresAnswered: 'flags', rowsAnswered: 'flags', patternsExplored: 'flags', visualExplored: 'flags', factScores: 'tallies' },
+      algebraCAS: { _badgesEarned: 'ids', _solveCount: 'count', _factorCount: 'count', _scaleSolves: 'count', _maxStreak: 'count', _aiQuestions: 'count', practiceScore: 'count', _modesUsed: 'flags', _builderUsed: 'flag', _triedAdvanced: 'flag' },
+      funcGrapher: { familiesTried: 'flags', fgScore: 'count', fgMythsDone: 'count', overlaysUsed: 'flags' },
+      graphCalc: { badges: 'ids', _graphsDrawn: 'count', _multiGraphCount: 'count', _challengesCompleted: 'count', _challengesDone: 'ids', aiQuestions: 'count', _analyzed: 'flag', _foundZero: 'flag', _foundIntersection: 'flag', _usedTrig: 'flag', _usedTable: 'flag', _usedSliders: 'flag', _usedDeriv: 'flag' },
+      _coordGrid: { badges: 'flags', bestStreak: 'count', plotsSolved: 'count', slopesSolved: 'count', distanceSolved: 'count', linesMade: 'count', chessSolved: 'count', worldSolved: 'count', bsBest: 'count', aiAsked: 'count', revealedItems: 'flags' },
+      inequality: { badges: 'flags', modesUsed: 'flags', tiersUsed: 'flags', tiersSolved: 'flags', quizCorrectTotal: 'count', solverCount: 'count', testCount: 'count' },
+      logicLab: { score: 'count', bestStreak: 'count', solvedProofs: ['flags', /^L\d+$/], xpCredited: ['flags', /^(?:(?:fallacy|quickfire|detective):\d+|learn|preset:.{1,80})$/] },
+      _ratioLab: { modesVisited: 'flags', solvedChallenges: 'flags', challengeAttempts: 'count' },
+      _volume: { badges: 'flags', score: _MP_SCORE, totalPlaced: 'count', wpSolved: 'count', wpExplored: 'flags', wpSolvedKeys: 'flags', dispSolved: 'count', layerUsed: 'flag', revealedItems: 'flags' },
+      protractor: { earnedBadges: 'flags', bestStreak: 'count', estimateCount: 'count', polygonsExplored: 'flags', typesSeen: 'counts' },
+      statsLab: { testsRun: 'count', compareMeansRun: 'flag', correlationRun: 'flag', regressionRun: 'flag', significantResult: 'flag', largeEffectFound: 'flag', powerRun: 'flag', apaCopied: 'count', aiGradeOpens: 'count', quizCompletedCount: 'count', quizCorrect: 'count', quizMastery: 'flags' },
+      probability: { totalTrials: 'count', experimentsUsed: 'flags', _awardedTrialMilestones: 'ids', _completedChallenges: 'ids', _bestStreak: 'count' },
+      unitConvert: { badges: 'flags', score: 'count', bestStreak: 'count', catsUsed: 'flags', tempUnitsUsed: 'flags', quizTotal: 'count', historySaveCount: 'count' },
+      _timeSchedule: { score: _MP_SCORE, bestStreak: 'count', clockAdjustments: 'count', modesUsed: 'flags', solvedChallenges: 'flags', scheduleSolvedKeys: 'flags', challengeAttempts: 'counts', challengeTypesUsed: 'flags', elapsedModelSignatures: ['flags', /^\d+\|\d+\|-?1$/] },
+      dataPlot: { earnedBadges: 'flags', dpScore: 'count', chartsViewed: 'flags', quizTypesUsed: 'flags' },
+      _areaPerimeter: { score: { correct: 'count', attempts: 'count' }, bestStreak: 'count', revealedBest: 'count', modeVisits: 'flags', solvedChallenges: 'flags', targetsExplored: 'flags', compositeMethods: 'flags' },
+      calculus: { calcScore: 'count', methodsUsed: 'flags', nExplored: 'flag', missionXP: 'flags' }
+    };
+    // These seed their defaults only while their bucket is missing (a
+    // progress-only bucket left Function Grapher plotting NaN), so a missing
+    // bucket's progress waits in _stemProgressPending until the tool makes it.
+    var _MATH_PROGRESS_DEFER = ['statsLab', 'funcGrapher'];
+    function _mpPlain(v) { return !!v && typeof v === 'object' && Object.prototype.toString.call(v) === '[object Object]'; }
+    function _mpCount(v) { return typeof v === 'number' && isFinite(v) && v >= 0 && v <= 1e9; }
+    function _mpMap(v, re, each) {
+      if (!_mpPlain(v)) return undefined;
+      var out = {}, n = 0;
+      Object.keys(v).forEach(function (k) {
+        if (n >= 2000 || !k || k.length > 300 || k === '__proto__' || k === 'constructor' || k === 'prototype' || (re && !re.test(k))) return;
+        var c = each(v[k]);
+        if (c !== undefined) { out[k] = c; n++; }
+      });
+      return out;
+    }
+    function _mpClean(type, v) {
+      var re = null;
+      if (Array.isArray(type)) { re = type[1]; type = type[0]; }
+      if (type === 'count') return _mpCount(v) ? v : undefined;
+      if (type === 'flag') return v === true ? true : undefined;
+      // Some badges hold Date.now(): keep only that it was earned.
+      if (type === 'flags') return _mpMap(v, re, function (x) { return x === true || (typeof x === 'number' && isFinite(x) && x > 0) ? true : undefined; });
+      if (type === 'counts') return _mpMap(v, re, function (x) { return _mpCount(x) ? x : undefined; });
+      if (type === 'tallies') return _mpMap(v, re, function (x) {
+        return _mpPlain(x) && _mpCount(x.attempts) && _mpCount(x.correct) && x.correct <= x.attempts ? { attempts: x.attempts, correct: x.correct } : undefined;
+      });
+      if (type === 'ids') {
+        if (!Array.isArray(v)) return undefined;
+        var seen = {}, list = [];
+        v.forEach(function (x) {
+          var ok = typeof x === 'string' ? x.length > 0 && x.length <= 120 : _mpCount(x);
+          if (ok && list.length < 500 && !seen[typeof x + x]) { seen[typeof x + x] = true; list.push(x); }
+        });
+        return list;
+      }
+      if (_mpPlain(type)) {
+        if (!_mpPlain(v)) return undefined;
+        var rec = {};
+        Object.keys(type).forEach(function (f) { var c = _mpClean(type[f], v[f]); rec[f] = c === undefined ? 0 : c; });
+        return rec;
+      }
+      return undefined;
+    }
+    function _mpRecord(v, spec) {
+      if (!_mpPlain(v)) return null;
+      var out = {}, any = false;
+      Object.keys(spec).forEach(function (f) {
+        if (!Object.prototype.hasOwnProperty.call(v, f)) return;
+        var c = _mpClean(spec[f], v[f]);
+        if (c !== undefined) { out[f] = c; any = true; }
+      });
+      return any ? out : null;
+    }
+    function _mpMerge(bucket, clean, spec) {
+      var out = Object.assign({}, bucket);
+      Object.keys(clean).forEach(function (f) {
+        out[f] = _mpPlain(spec[f]) && _mpPlain(bucket[f]) ? Object.assign({}, bucket[f], clean[f]) : clean[f];
+      });
+      return out;
+    }
+    // Saved progress joins a fresh bucket field by field: the tool keeps its
+    // own defaults for everything else.
+    function _stemRestoreMathProgress(next, saved) {
+      var pend = _mpPlain(next._stemProgressPending) ? Object.assign({}, next._stemProgressPending) : {};
+      Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
+        var spec = _MATH_PROGRESS_SAVED[k];
+        var clean = _mpPlain(saved) ? _mpRecord(saved[k], spec) : null;
+        if (!clean) return;
+        if (_mpPlain(next[k])) next[k] = _mpMerge(next[k], clean, spec);
+        else if (_MATH_PROGRESS_DEFER.indexOf(k) !== -1) pend[k] = clean;
+        else next[k] = clean;
+      });
+      if (Object.keys(pend).length) next._stemProgressPending = pend; else delete next._stemProgressPending;
+      return next;
+    }
+    function _stemHydrateLabToolData(prev, parsed) {
+      var _parsedForHydration = Object.assign({}, parsed);
+      Object.keys(_MATH_PROGRESS_SAVED).concat('_stemProgressPending').forEach(function (k) { delete _parsedForHydration[k]; });
+      return _stemRestoreMathProgress(Object.assign({}, prev, _parsedForHydration, { _persisted: true }), parsed);
+    }
+    function _stemApplyPendingProgress(prev) {
+      var pend = prev && prev._stemProgressPending;
+      if (!_mpPlain(pend)) return prev;
+      var next = null, left = {}, kept = 0;
+      Object.keys(pend).forEach(function (k) {
+        var spec = Object.prototype.hasOwnProperty.call(_MATH_PROGRESS_SAVED, k) ? _MATH_PROGRESS_SAVED[k] : null;
+        if (spec && !_mpPlain(prev[k])) { left[k] = pend[k]; kept++; return; }
+        next = next || Object.assign({}, prev);
+        var clean = spec && _mpRecord(pend[k], spec);
+        if (clean) next[k] = _mpMerge(prev[k], clean, spec);
+      });
+      if (!next) return prev;
+      if (kept) next._stemProgressPending = left; else delete next._stemProgressPending;
+      return next;
+    }
     function _stemPersistencePayload(labToolData) {
           var _toSave = {};
           // @tool waterCycle
@@ -3496,11 +3643,20 @@
             });
             _toSave.kitchenLab = _klSave;
           }
+          // Progress still waiting for its bucket counts as that tool's state.
+          var _pend = _mpPlain(labToolData._stemProgressPending) ? labToolData._stemProgressPending : {};
+          Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
+            var spec = _MATH_PROGRESS_SAVED[k], src = labToolData[k];
+            var waiting = _mpRecord(_pend[k], spec);
+            if (waiting) src = _mpMerge(_mpPlain(src) ? src : {}, waiting, spec);
+            var clean = _mpRecord(src, spec);
+            if (clean) _toSave[k] = clean;
+          });
           return _toSave;
     }
     function _createStemAutosave() {
       var key = 'alloflow_stemlab_v2';
-      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab']);
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
       var previousRefs = null, pending = null, timer = null, disposed = false;
       var lastSaved = null;
       try { lastSaved = localStorage.getItem(key); } catch (_) {}
@@ -3711,6 +3867,10 @@
       } = props;
       // t (translation function) — pulled from props with a safe fallback
       var t = props.t || function (k) { return k; };
+      // Builders and setup are teacher tools: students get the labs. Classroom stations
+      // are also left out of independent-learner and family use.
+      var _stemTeacherView = !!isTeacherMode;
+      var _stemClassAuthoring = _stemTeacherView && !props.isIndependentMode && !props.isParentMode;
 
       // -- Theme Detection (must precede theme-dependent effects) --
       var _stemTheme = (_themeProp === 'light' || _themeProp === 'dark' || _themeProp === 'contrast')
@@ -5280,7 +5440,7 @@
                 var _hydratedBeehive = _deserializeBeehiveFromPersistence(_parsed.beehive);
                 _parsedForHydration = Object.assign({}, _parsed, { beehive: _hydratedBeehive });
               }
-              setLabToolData(function (prev) { return Object.assign({}, prev, _parsedForHydration, { _persisted: true }); });
+              setLabToolData(function (prev) { return _stemHydrateLabToolData(prev, _parsedForHydration); });
             } else {
               setLabToolData(function (prev) { return Object.assign({}, prev, { _persisted: true }); });
             }
@@ -5300,6 +5460,10 @@
       }, []);
       React.useEffect(function () {
         if (_stemAutosaveRef.current) _stemAutosaveRef.current.queue(labToolData);
+      }, [labToolData]);
+      // Deferred math progress joins its bucket once the tool has created it.
+      React.useEffect(function () {
+        if (labToolData._stemProgressPending) setLabToolData(_stemApplyPendingProgress);
       }, [labToolData]);
 
       // ── Tutorial Overlay Helper ──
@@ -6351,7 +6515,7 @@
           className: "text-xs text-white/70"
         }, t('stem.solver.manipulatives') || "Interactive tools & labs"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
-        }, /*#__PURE__*/React.createElement("button", {
+        }, _stemTeacherView && /*#__PURE__*/React.createElement("button", {
           // Math Studio pointer, relocated from the retired tab row. Compact:
           // icon-only on phones (the label span is hidden by the 640px block).
           onClick: () => { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); },
@@ -6383,7 +6547,7 @@
         // without AI, and a deep-link visitor reading "AI DISABLED" would take
         // it as breakage. Click opens AI Backend Settings (incl. the Canvas
         // path) via the host callback.
-        !callGemini && /*#__PURE__*/React.createElement("button", {
+        _stemTeacherView && !callGemini && /*#__PURE__*/React.createElement("button", {
           onClick: function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": 'AI extras are off. No AI backend is set up. Click to see the ways to turn AI on.',
@@ -6724,7 +6888,7 @@
               // Label + icon lookup for friendly display; any activityId not in this map
               // gets an auto-generated label from its camelCase/snake_case id
               var _xpLabelMap = {
-                behaviorLab: ['Behavior Lab', '\uD83D\uDC2D'], aquarium: ['Aquarium', '\uD83D\uDC20'],
+                behaviorLab: ['Behavior Lab', '\uD83D\uDC2D'], aquarium: ['Aquarium', '\uD83D\uDC20'], coralReef: ['Coral Reef Survey Lab', '\uD83E\uDEB8'],
                 ocean: ['Ocean', '\uD83D\uDC0B'], 'wave-match': ['Waves', '\uD83C\uDF0A'],
                 'wave-quiz': ['Wave Quiz', '\uD83C\uDFB6'], galaxy_quiz: ['Galaxy Quiz', '\uD83C\uDF0C'],
                 galaxy_explore: ['Galaxy Explorer', '\u2B50'], universe_explore: ['Universe', '\uD83C\uDF20'],
@@ -7282,12 +7446,17 @@
                 color: 'cyan', ready: true
               },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: t('stem.tools_menu.birdlab_i_spy_ornithology') || 'BirdLab: I-Spy Ornithology', desc: t('stem.tools_menu.layered_habitat_i_spy_with_animated') || 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
-              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: t('stem.raptorhunt.raptor_hunt_predator_physics_biology') || 'Raptor Hunt: Predator Physics + Biology', desc: t('stem.tools_menu.three_js_stoop_simulator_deep_science') || 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 8 species + 12 sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
+              { id: 'raptorHunt', icon: '\uD83E\uDD85', label: t('stem.raptorhunt.raptor_hunt_predator_physics_biology') || 'Raptor Hunt: Predator Physics + Biology', desc: t('stem.tools_menu.three_js_stoop_simulator_deep_science') || 'Three.js stoop simulator + deep science of raptor hunt mechanics. Fly as a peregrine at 240 mph, a harpy with 530 psi talons, or a silent great horned owl. 20 species + many sections covering talon force, vision (4-8\u00D7 human, UV in kestrels), flight physics, owl silent flight, terminal-velocity calculator, DDT recovery + ongoing conservation crises, field ID by silhouette + gestalt.', color: 'amber', ready: true },
               { id: 'migration', icon: '\uD83E\uDDED', label: t('stem.tools_menu.animal_migration_lab') || 'Animal Migration Lab', desc: t('stem.tools_menu.explore_3d_migration_routes_navigation_climate') || 'Explore 3D migration routes, navigation, climate triggers, conservation challenges, and an explicit monarch butterfly simulation.', color: 'teal', ready: true },
               {
                 id: 'cephalopodLab', icon: '🐙', label: t('stem.cephalopodlab.cephalopod_lab') || 'Cephalopod Lab',
                 desc: t('stem.tools_menu.marine_biology_behavioral_science_of_octopuses') || 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
                 color: 'indigo', ready: true
+              },
+              {
+                id: 'coralReef', icon: '\uD83E\uDEB8', label: t('stem.tools_menu.coral_reef_survey_lab') || 'Coral Reef Survey Lab',
+                desc: t('stem.tools_menu.coral_reef_survey_lab_desc') || 'Survey a reef along a 20 m tape with the point-intercept and belt transect methods reef monitors use, then model how heatwaves, grazing fish and runoff change it over 30 years. Optional 3D dive.',
+                color: 'cyan', ready: true
               },
               {
                 id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.science_of_pets_lab') || 'Science of Pets Lab',
@@ -7712,6 +7881,7 @@
               { id: 'spaceExplorer', label: t('stem.allobotsage.space_explorer') || 'Space Explorer', icon: '🛸', desc: t('stem.tools_menu.roguelike_missions_across_the_solar_system') || 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
               { id: 'alloBotSage', label: t('stem.allobotsage.allobot_starbound_sage') || 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: t('stem.tools_menu.cozy_sci_fi_roguelite_allobot_s') || 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEAM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
+            if (!_stemTeacherView) _allStemTools = _allStemTools.filter(function (tool) { return tool.id !== 'forge'; });
 
             // Category palettes are the visual source of truth. Cycling a small
             // subject family keeps neighboring cards distinct while making each
@@ -7751,6 +7921,7 @@
               // Tools renamed 2026-08-03 keep their FORMER labels as aliases so an
               // existing lesson plan or a teacher's memory still finds them.
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
+              coralReef: 'coral reef survey lab coral reef bleaching bleached coral transect point intercept belt transect reef check reef health reef monitoring marine heatwave degree heating weeks parrotfish surgeonfish butterflyfish seaweed macroalgae ocean acidification coral restoration',
               dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
               paperTrail: 'papertrail paper trail forms form documents official documents job application w4 w-4 tax withholding lease rental apartment medical intake permit drivers permit iep meeting invitation signature ssn social security identity theft paperwork fill out transition life skills self advocacy',
               lawNavigator: 'law legal education law special education law idea part b section 504 cfr regulation regulations statute muser maine chapter 101 iep 504 plan rights procedural safeguards child find manifestation determination prior written notice iee due process federal state ecfr',
@@ -8117,8 +8288,8 @@
             var _atlasEntries = [
               { id: 'birdLab', icon: '🪶', label: t('stem.tools_menu.birdlab_life_list') || 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
-                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
-                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 15); } },
+                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 20,
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'), 'lifeList'), 20); } },
               { id: 'petsLab', icon: '🐾', label: t('stem.tools_menu.petslab_decoder') || 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
@@ -8412,7 +8583,7 @@
           // ── Station Controls ──
           React.createElement("div", { className: "flex items-center gap-2 mb-4" },
             // Create Station button
-            React.createElement("button", { "aria-label": "Toggle station builder",
+            _stemClassAuthoring && React.createElement("button", { "aria-label": "Toggle station builder",
               onClick: function() { _setShowStationBuilder(!_showStationBuilder); },
               className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                 (_showStationBuilder ? "bg-indigo-600 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100")
@@ -8459,7 +8630,7 @@
 
 
           // ── Station Builder Panel ──
-          _showStationBuilder ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
+          (_stemClassAuthoring && _showStationBuilder) ? React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4" },
             React.createElement("h3", { className: "text-sm font-black text-indigo-800 mb-3 flex items-center gap-2" }, "\uD83D\uDCCC Station Builder"),
 
             // Station name
@@ -9355,6 +9526,7 @@
             musicSynth: true,
             beehive: true,
             butterfly: true,
+            coralReef: true,
             echolocation: true,
             echoTrainer: true,
             oratory: true,

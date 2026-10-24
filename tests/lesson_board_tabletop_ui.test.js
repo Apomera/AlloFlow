@@ -1,6 +1,8 @@
 import {beforeAll,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
-import * as engine from '../lesson_board_engine.js';
+import * as engine from '../lesson_board_engine.js';// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
+
 const require=createRequire(import.meta.url),{makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs'),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 let UI,root,element;
 const restoreBrowserAPIs=[];
@@ -62,7 +64,7 @@ describe('Physical tabletop board',()=>{
     await render({board:b,run,progress:p,onSelect,selected:'bridge'});
     const bridge=find('[data-built-route="bridge"]');expect(bridge.dataset.routeFrom).toBe(site);expect(bridge.dataset.routeTo).toBe('sequence');
     expect(find('[data-map-construction="bridge"]').closest('[data-build-site]').dataset.buildSite).toBe(site);
-    expect(find('[data-map-construction="bridge"]').getAttribute('aria-label')).toContain(b.locations.find(node=>node.id===site).name);
+    expect(spoken(find('[data-map-construction="bridge"]'))).toContain(b.locations.find(node=>node.id===site).name);
     await click('[data-map-construction="bridge"]');expect(onSelect).toHaveBeenCalledWith('bridge');expect(p.built).toEqual(['bridge']);
   });
   it('previews real multi-space travel and prevents map selection from becoming a move',async()=>{
@@ -166,10 +168,10 @@ describe('Physical tabletop board',()=>{
   it('distinguishes connected destinations beyond tactical travel range from unexplored route blockers',async()=>{
     const b={...board(),travelLimit:3},progress={...engine.derive(b,engine.emptyRun()),position:'heater',visited:['heater','river','lake','cooler']},onSelect=vi.fn(),before=JSON.stringify({b,progress});
     await render({board:b,progress,selected:'weather',view:'tabletop',onSelect});
-    expect(find('[data-location="weather"]').dataset.outOfRange).toBe('true');expect(find('[data-location="weather"]').getAttribute('aria-label')).toContain('Beyond travel range · 4 spaces away');
+    expect(find('[data-location="weather"]').dataset.outOfRange).toBe('true');expect(spoken(find('[data-location="weather"]'))).toContain('Beyond travel range · 4 spaces away');
     expect(find('[data-location="weather"] [data-range-distance]').textContent).toBe('4 away');expect(find('[data-spatial-readout]').textContent).toContain('Beyond travel range · 4 spaces away');
     expect(find('[data-spatial-selection]').textContent).toContain('This expedition allows 3 spaces per turn.');expect(find('[data-destination-ring]')).toBeNull();expect(find('[data-route-step]')).toBeNull();
-    expect(find('[data-location="sequence"]').dataset.outOfRange).toBe('false');expect(find('[data-location="sequence"]').getAttribute('aria-label')).toContain('Explore a connected space first');
+    expect(find('[data-location="sequence"]').dataset.outOfRange).toBe('false');expect(spoken(find('[data-location="sequence"]'))).toContain('Explore a connected space first');
     expect(find('[data-location="cooler"]').dataset.outOfRange).toBe('false');
     await click('[data-location="weather"]');expect(onSelect).toHaveBeenCalledWith('weather');
     await render({board:b,progress:{...progress,visited:[...progress.visited,'weather']},selected:'weather',view:'list'});
@@ -187,7 +189,7 @@ describe('Physical tabletop board',()=>{
     const b=board(),run=engine.emptyRun(),progress=engine.derive(b,run),planned=['weather','bridge','river'],before=JSON.stringify({b,run,progress,planned});
     await render({board:b,run,progress,view:'tabletop',selected:'weather',planned});
     expect(find('[data-location="weather"] [data-plan-pin]').textContent).toBe('1');expect(find('[data-map-construction="bridge"] [data-plan-pin]').textContent).toBe('2');expect(find('[data-location="river"] [data-plan-pin]').textContent).toBe('3');
-    expect(find('[data-location="weather"]').getAttribute('aria-label')).toContain('Planned stop 1');expect(find('[data-map-construction="bridge"]').getAttribute('aria-label')).toContain('Planned stop 2');
+    expect(spoken(find('[data-location="weather"]'))).toContain('Planned stop 1');expect(spoken(find('[data-map-construction="bridge"]'))).toContain('Planned stop 2');
     expect(find('[data-spatial-readout]').textContent).toContain('Planned stop 1');expect(find('[data-route-step]')).toBeNull();expect(find('[data-route-preview="true"]')).toBeNull();
     await render({board:b,run,progress,view:'list',selected:'weather',planned});expect(find('[data-location="weather"]').textContent).toContain('Planned stop 1');expect(find('[data-map-construction="bridge"]').textContent).toContain('Planned stop 2');
     expect(JSON.stringify({b,run,progress,planned})).toBe(before);
@@ -205,10 +207,10 @@ describe('Physical tabletop board',()=>{
   it('shows construction availability, completion and actual use in both map and list',async()=>{
     const b=board(),progress=engine.derive(b,engine.emptyRun());
     await render({board:b,progress,ready:[]});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('blueprint');
-    await render({board:b,progress,ready:['bridge']});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('ready');expect(find('[data-map-construction="bridge"]').getAttribute('aria-label')).toContain('Ready to build');
+    await render({board:b,progress,ready:['bridge']});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('ready');expect(spoken(find('[data-map-construction="bridge"]'))).toContain('Ready to build');
     const built={...progress,built:['bridge']};await render({board:b,progress:built});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('built');
     expect(find('[data-map-construction="bridge"] [data-constructed="true"]')).toBeTruthy();
-    const used={...built,usedProjects:['bridge']};await render({board:b,progress:used});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('used');expect(find('[data-map-construction="bridge"]').getAttribute('aria-label')).toContain('Used on this expedition');
+    const used={...built,usedProjects:['bridge']};await render({board:b,progress:used});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('used');expect(spoken(find('[data-map-construction="bridge"]'))).toContain('Used on this expedition');
     await render({board:b,progress:used,view:'list'});expect(find('[data-map-construction="bridge"]').dataset.constructionState).toBe('used');expect(find('[data-map-construction="bridge"]').textContent).toContain('Used on this expedition');expect(built.usedProjects||[]).toEqual([]);
   });
   it('previews an unbuilt shortcut without adding a legal route, travelling or moving focus',async()=>{
@@ -220,7 +222,7 @@ describe('Physical tabletop board',()=>{
     expect(preview.querySelector('[data-route-from]')).toBeNull();expect(element.querySelectorAll('[data-route-from]')).toHaveLength(b.edges.length);
     expect(find('[data-built-route="bridge"]')).toBeNull();expect(find('[data-shortcut-model]')).toBeNull();expect(find('[data-route-step]')).toBeNull();
     expect([...element.querySelectorAll('[data-construction-endpoint="true"]')].map(node=>node.dataset.location)).toEqual([site,'sequence']);
-    expect(find('[data-location="sequence"]').getAttribute('aria-label')).toContain('Endpoint of the construction preview');
+    expect(spoken(find('[data-location="sequence"]'))).toContain('Endpoint of the construction preview');
     expect(find('[data-construction-preview-label]').textContent).toContain('Not built yet.');
     expect(find('[data-shortcut-before]').textContent).toBe('3 spaces away');expect(find('[data-shortcut-after]').textContent).toBe('1 space · direct route');
     expect(find('[data-shortcut-benefit]').textContent).toContain('2 fewer spaces');expect(find('[data-shortcut-range-benefit]')).toBeNull();
@@ -324,7 +326,7 @@ describe('Physical tabletop board',()=>{
   });
   it('shows contract destinations and challenge identities without turning selection into a game action',async()=>{
     const b=board(),onSelect=vi.fn(),run=engine.emptyRun(),before=JSON.stringify(run);
-    await render({board:b,run,contractTargets:['river'],onSelect});expect(find('[data-location="river"]').getAttribute('aria-label')).toContain('Contract destination');
+    await render({board:b,run,contractTargets:['river'],onSelect});expect(spoken(find('[data-location="river"]'))).toContain('Contract destination');
     expect(find('[data-location="river"] [data-challenge-type="choice"]')).toBeTruthy();expect(find('[data-location="river"] .lb-spatial-contract')).toBeTruthy();
     expect(find('[data-board-terrain="river"]')).toBeTruthy();expect(find('[data-location="river"] [data-landmark="water"]')).toBeTruthy();
     await click('[data-location="river"]');expect(onSelect).toHaveBeenCalledWith('river');expect(JSON.stringify(run)).toBe(before);
@@ -333,8 +335,8 @@ describe('Physical tabletop board',()=>{
   it('identifies supply allocation and repair challenges consistently on the board and in the list',async()=>{
     const b=board();Object.assign(b.locations[2],{kind:'allocate',needs:['Greenhouse','Seed bed','Nursery'],budget:6,constraints:['Give the greenhouse three tokens, the seed bed two, and nursery one.'],allocation:[3,2,1]});
     Object.assign(b.locations[3],{kind:'repair',items:['Water vapour is a gas.','Ice is liquid water.','Evaporation makes vapour.'],repairs:[0,1,0],corrections:['','Ice is solid water.','']});
-    await render({board:b,selected:'river'});expect(find('[data-location="river"] [data-challenge-type="allocate"]')).toBeTruthy();expect(find('[data-location="river"]').getAttribute('aria-label')).toContain('Distribute supplies');
-    expect(find('[data-location="rain"] [data-challenge-type="repair"]')).toBeTruthy();expect(find('[data-location="rain"]').getAttribute('aria-label')).toContain('Find and repair faults');expect(find('[data-spatial-selection]').textContent).toContain('Distribute supplies');
+    await render({board:b,selected:'river'});expect(find('[data-location="river"] [data-challenge-type="allocate"]')).toBeTruthy();expect(spoken(find('[data-location="river"]'))).toContain('Distribute supplies');
+    expect(find('[data-location="rain"] [data-challenge-type="repair"]')).toBeTruthy();expect(spoken(find('[data-location="rain"]'))).toContain('Find and repair faults');expect(find('[data-spatial-selection]').textContent).toContain('Distribute supplies');
     await render({board:b,view:'list'});expect(find('[data-location="river"]').textContent).toContain('Distribute supplies');expect(find('[data-location="rain"]').textContent).toContain('Find and repair faults');
   });
   it('shows authored base supplies in caches, accessible labels and the list, without including conditional bonuses',async()=>{
@@ -342,7 +344,7 @@ describe('Physical tabletop board',()=>{
     await render({board:b,run,progress,selected:'river',view:'tabletop'});
     const cache=find('[data-resource-cache="river"]');expect(cache).toBeTruthy();expect(cache.getAttribute('aria-hidden')).toBe('true');
     expect([...cache.querySelectorAll('[data-resource-amount]')].map(node=>node.dataset.resourceAmount)).toEqual(['3','0']);expect(cache.querySelectorAll('.lb-resource-pips i')).toHaveLength(3);
-    expect(find('[data-location="river"]').getAttribute('aria-label')).toContain('Base supplies on success: 3 Observation tokens · 0 Connection tokens');
+    expect(spoken(find('[data-location="river"]'))).toContain('Base supplies on success: 3 Observation tokens · 0 Connection tokens');
     expect(find('[data-spatial-selection] [data-resource-summary="river"]').textContent).toContain('3 Observation tokens');
     const saved=JSON.stringify({b,run,progress});await render({board:b,run,progress,selected:'river',view:'list'});
     expect(find('[data-location="river"] [data-resource-summary]').textContent).toContain('3 Observation tokens · 0 Connection tokens');expect(find('[data-resource-cache]')).toBeNull();expect(JSON.stringify({b,run,progress})).toBe(saved);
@@ -351,7 +353,7 @@ describe('Physical tabletop board',()=>{
     const b=board(),progress=engine.derive(b,engine.emptyRun()),onSelect=vi.fn();
     await render({board:b,progress,onSelect});expect(element.querySelectorAll('[data-resource-cache]')).toHaveLength(b.locations.length);
     await click('[data-location="river"]');expect(onSelect).toHaveBeenCalledWith('river');expect(find('[data-resource-cache="river"]')).toBeTruthy();
-    const cleared={...progress,visited:['river']};await render({board:b,progress:cleared,selected:'river'});expect(find('[data-resource-cache="river"]')).toBeNull();expect(find('[data-resource-summary="river"]')).toBeNull();expect(find('[data-location="river"]').getAttribute('aria-label')).not.toContain('Base supplies');
+    const cleared={...progress,visited:['river']};await render({board:b,progress:cleared,selected:'river'});expect(find('[data-resource-cache="river"]')).toBeNull();expect(find('[data-resource-summary="river"]')).toBeNull();expect(spoken(find('[data-location="river"]'))).not.toContain('Base supplies');
     await render({board:b,progress:cleared,selected:'river',view:'list'});expect(find('[data-location="river"] [data-resource-summary]')).toBeNull();
     await render({board:b,progress});expect(find('[data-resource-cache="river"]')).toBeTruthy();expect(cleared.visited).toEqual(['river']);
   });
@@ -383,7 +385,7 @@ describe('Physical tabletop board',()=>{
     const blueprint=find('[data-map-construction="bridge"]');expect(blueprint.querySelector('[data-miniature-foundation="blueprint"]')).toBeTruthy();expect(blueprint.querySelector('.lb-model-scaffold')).toBeTruthy();expect(blueprint.querySelector('[data-project-material="blueprint"]')).toBeTruthy();
     await render({board:b,progress:{...progress,built:['bridge'],usedProjects:['bridge']},selected:'bridge',view:'tabletop'});
     const built=find('[data-map-construction="bridge"]');expect(built.querySelector('[data-miniature-foundation="built"]')).toBeTruthy();expect(built.querySelector('.lb-model-scaffold')).toBeNull();expect(built.querySelector('[data-project-material="used"]')).toBeTruthy();
-    expect(find('[data-spatial-selection]').textContent).toContain('Connects');expect(built.getAttribute('aria-label')).toContain('Used on this expedition');
+    expect(find('[data-spatial-selection]').textContent).toContain('Connects');expect(spoken(built)).toContain('Used on this expedition');
     await render({board:b,progress,selected:'bridge',view:'list'});expect(find('[data-miniature-foundation]')).toBeNull();expect(find('[data-map-construction="bridge"]').textContent).toContain('Cost:');expect(JSON.stringify({b,progress})).toBe(before);
   });
   it('constructs a physical shortcut only on the built engine edge and preserves a fixed home landmark',async()=>{

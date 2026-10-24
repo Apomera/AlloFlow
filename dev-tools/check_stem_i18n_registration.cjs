@@ -35,7 +35,8 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const TOOL_DIR = path.join(ROOT, 'stem_lab');
-const BASELINE = path.join(ROOT, 'dev-tools', 'stem_i18n_registration_baseline.json');
+// STEM_I18N_BASELINE points the gate at another baseline (mutation checks).
+const BASELINE = process.env.STEM_I18N_BASELINE || path.join(ROOT, 'dev-tools', 'stem_i18n_registration_baseline.json');
 const UPDATE = process.argv.includes('--update');
 const SELFTEST = process.argv.includes('--selftest');
 
@@ -49,10 +50,14 @@ function keysCalledBy(src) {
   // Keys may nest deeper than two levels: machinelab and gisstudio use
   // stem.<tool>.<group>.<key> (e.g. stem.machinelab.windlass.copy_g68).
   // Stopping at two levels made 129 call sites invisible to this gate.
-  const re = /__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+(?:\.[a-z0-9_]+)*)'/g;
+  // Both quote styles and camelCase segments (stem.paperTrail.*): lowercase
+  // single-quoted keys alone missed ~700 call sites in 15 tools.
+  // A quoted prefix followed by + is a computed key, not a literal call site.
+  // Require the complete first argument; comments may separate it from the comma.
+  const re = /__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\1(?=(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r?\n|$))*[,\)])/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
-    if (!byNs.has(m[1])) byNs.set(m[1], new Set());
-    byNs.get(m[1]).add(m[2]);
+    if (!byNs.has(m[2])) byNs.set(m[2], new Set());
+    byNs.get(m[2]).add(m[3]);
   }
   return byNs;
 }
@@ -91,11 +96,11 @@ function unregisteredCount(src, stemRegistry) {
  */
 function collidingKeys(src) {
   const byKey = new Map();
-  const re = /(.{0,40})__alloT\('stem\.([a-z0-9_]+)\.([a-z0-9_]+(?:\.[a-z0-9_]+)*)',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
+  const re = /(.{0,40})__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\2,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
-    const key = m[2] + '.' + m[3];
+    const key = m[3] + '.' + m[4];
     let val;
-    try { val = JSON.parse(toJsonLiteral(m[4])); } catch (e) { continue; }
+    try { val = JSON.parse(toJsonLiteral(m[5])); } catch (e) { continue; }
     if (!byKey.has(key)) byKey.set(key, { vals: new Set(), aria: false });
     const rec = byKey.get(key);
     rec.vals.add(val);
@@ -141,6 +146,11 @@ if (SELFTEST) {
   const dBad = unregisteredCount("__alloT('stem.demo.grp.ghost', 'G')", deepReg);
   const okG = dOk.called === 1 && dOk.missing === 0;
   const okH = dBad.called === 1 && dBad.missing === 1;
+  // camelCase namespaces and double-quoted keys must be seen too.
+  const camelReg = { paperTrail: { known: 'K' } };
+  const cOk = unregisteredCount("__alloT('stem.paperTrail.known', 'K')", camelReg);
+  const cBad = unregisteredCount('__alloT("stem.paperTrail.ghost", "G") __alloT("stem.demo.dq", "D")', camelReg);
+  const okI = cOk.called === 1 && cOk.missing === 0 && cBad.called === 2 && cBad.missing === 2;
   // Collision detection must fire on two texts and stay quiet on one.
   const same = "__alloT('stem.demo.k', 'One') __alloT('stem.demo.k', 'One')";
   const diff = "'aria-label': __alloT('stem.demo.k', 'One') __alloT('stem.demo.k', 'Two')";
@@ -150,6 +160,14 @@ if (SELFTEST) {
   // and it must handle BOTH quote styles, incl. an apostrophe in double quotes
   const dq = '__alloT(\'stem.demo.q\', "Predator\'s eye") __alloT(\'stem.demo.q\', \'Other\')';
   const okF = collidingKeys(dq).length === 1;
+  // Dynamic expansions are registered as concrete keys, never fake prefix labels.
+  // Keep detecting a genuinely missing complete key, including after a comment.
+  const computed = "__alloT('stem.demo.prefix_' + id, 'X') " +
+    "__alloT(\"stem.demo.other_\" /* field */ + i + '_title', 'Y') " +
+    "__alloT('stem.demo.third_' // field\n + id, 'Z')";
+  const okJ = unregisteredCount(computed, registry).called === 0;
+  const complete = unregisteredCount("__alloT('stem.demo.ghost' /* field */, 'G') __alloT(\"stem.demo.deep.ghost\" // field\n, 'G')", registry);
+  const okK = complete.called === 2 && complete.missing === 2;
   console.log(
     'SELFTEST: registered ' + (okA ? 'quiet OK' : 'FAIL') +
     ' | unregistered ' + (okB ? 'CAUGHT' : 'MISSED') +
@@ -158,9 +176,12 @@ if (SELFTEST) {
     ' | colliding ' + (okE ? 'CAUGHT+ARIA' : 'MISSED') +
     ' | both quote styles ' + (okF ? 'OK' : 'FAIL') +
     ' | deep key ' + (okG ? 'seen' : 'FAIL') +
-    ' | deep missing ' + (okH ? 'CAUGHT' : 'MISSED')
+    ' | deep missing ' + (okH ? 'CAUGHT' : 'MISSED') +
+    ' | camelCase + double quotes ' + (okI ? 'seen' : 'MISSED') +
+    ' | computed prefixes ' + (okJ ? 'ignored' : 'FALSE POSITIVE') +
+    ' | complete commented keys ' + (okK ? 'CAUGHT' : 'MISSED')
   );
-  process.exit(okA && okB && okC && okD && okE && okF && okG && okH ? 0 : 1);
+  process.exit(okA && okB && okC && okD && okE && okF && okG && okH && okI && okJ && okK ? 0 : 1);
 }
 
 const registry = loadRegistry();

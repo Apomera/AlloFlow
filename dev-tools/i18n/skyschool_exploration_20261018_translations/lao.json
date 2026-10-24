@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ຜົນການຄົ້ນຫາ: {cards} ບັດໃນ {topics} ຫົວຂໍ້.",
+  "stem.flightsim.learn_library_counts": "{cards} ບັດ · {topics} ຫົວຂໍ້",
+  "stem.flightsim.learn_search_clear": "ລ້າງການຄົ້ນຫາ",
+  "stem.flightsim.learn_search_empty": "ບໍ່ມີບັດຮຽນຮູ້ທີ່ກົງກັບ “{query}”. ລອງໃຊ້ຄຳອື່ນ ຫຼືລ້າງການຄົ້ນຫາ.",
+  "stem.flightsim.learn_search_none": "ບໍ່ມີບັດຮຽນຮູ້ທີ່ກົງກັນ",
+  "stem.flightsim.learn_search_cards": "{count} ບັດຮຽນຮູ້",
+  "stem.flightsim.quiz_review_progress": "ຕອບແລ້ວ {answered} ຈາກ {total} ຄຳຖາມ · ຜິດ {missed}",
+  "stem.flightsim.quiz_review_missed": "ທົບທວນຄຳຕອບທີ່ຜິດ",
+  "stem.flightsim.quiz_next_unanswered": "ຄຳຖາມທີ່ຍັງບໍ່ຕອບຕໍ່ໄປ",
+  "stem.flightsim.quiz_review_all_answered": "ທຸກຄຳຖາມມີຄຳຕອບຄັ້ງທຳອິດແລ້ວ. ທົບທວນຂໍ້ທີ່ຕອບຜິດເພື່ອຝຶກໂດຍບໍ່ຄິດຄະແນນ ຫຼືເລີ່ມການລອງໃໝ່.",
+  "stem.flightsim.planner_drone_agl": "{ft} ຟຸດເໜືອພື້ນດິນ",
+  "stem.flightsim.sprint_native_title": "ການທ້າທາຍພູມສາດແບບໄວ",
+  "stem.flightsim.sprint_timed_hint": "ເສັ້ນທາງຍັງສືບຕໍ່ໃນຂະນະທີ່ທ່ານຕອບ. ຢຸດຊົ່ວຄາວເພື່ອອ່ານ ແລະສືບຕໍ່ກ່ອນເລືອກຄຳຕອບ.",
+  "stem.flightsim.sprint_warp_reference": "ການເດີນທາງຖືກເລັ່ງສຳລັບກິດຈະກຳພູມສາດນີ້. ຕົວເລກຄວາມໄວສະແດງຄວາມໄວບິນເດີນທາງທີ່ກຳນົດໄວ້; ເສັ້ນທາງນີ້ບໍ່ໄດ້ວັດສະມັດຖະພາບຂອງເຮືອບິນ.",
+  "stem.flightsim.sprint_save_menu": "ບັນທຶກການທ້າທາຍ ແລະກັບໄປເມນູ",
+  "stem.flightsim.sprint_next_stop": "ຈຸດຢຸດຕໍ່ໄປ: {place}",
+  "stem.flightsim.geoq_approaching_city": "ທ່ານກຳລັງເຂົ້າໃກ້ເມືອງໃດ?",
+  "stem.flightsim.sprint_time_remaining": "ເວລາທີ່ເຫຼືອ: {seconds} ວິນາທີ"
+}

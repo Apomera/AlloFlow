@@ -251,7 +251,8 @@ describe('First Response patient skin finish', () => {
         }
         dispose(before); dispose(after);
       }
-    });
+    // 8 builds and up to 40 whole-scene fingerprints: ~4 s alone, 7 s under load.
+    }, 60000);
     it(age + ' creates independent finishes on rebuild and disposes each unique resource once', () => {
       const first = createModel(newConfig, age, 5, false), second = createModel(newConfig, age, 8, false);
       const firstSkin = assertScope(first, true), secondSkin = assertScope(second, true);

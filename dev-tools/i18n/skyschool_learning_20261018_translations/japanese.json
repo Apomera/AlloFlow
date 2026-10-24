@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "ミッションの完了と帰還後の着陸が記録されました。操作または経路を一つ意図的に変えてこのミッションを再度試し、保存された観察記録を比較しましょう。",
+  "stem.flightsim.coaching_mission_depleted": "ドローンのバッテリーが切れました。新しいミッションを開始し、短い経路を使って、バッテリー残量が少なくなる前に帰還する計画を立てましょう。",
+  "stem.flightsim.coaching_mission_unknown": "このミッションには不完全または矛盾する証拠があります。記録を確認してから、新しくやり直しましょう。",
+  "stem.flightsim.coaching_mission_capture": "まだ記録されていない目標があります。新しいミッションでは一度に一つの目標に近づき、記録されるまで表示された高度と対地速度の制限内を維持しましょう。",
+  "stem.flightsim.coaching_mission_recovery": "生存者を救助できませんでした。新しい救助ミッションでは、基地に戻る前に、表示された高度、流される動き、垂直速度の制限内で安定したホバリングを練習しましょう。",
+  "stem.flightsim.coaching_mission_return": "救助または撮影の目標は記録されましたが、帰還後の着陸が残っています。新しいミッションを開始し、基地への帰還に必要な時間とバッテリーを確保しましょう。",
+  "stem.flightsim.mission_reflection_prompt": "目標、ホバリング、帰還について、どの判断を変えますか？ ミッションの観察記録を使って選択の理由を説明し、次の挑戦で変えることを一つ計画しましょう。説明はこの飛行とともに保存されます。",
+  "stem.flightsim.journal_different_airport": "これらの進入では異なる空港を使用しました。観察記録を個別に確認してください。測定値の変化は計算されません。",
+  "stem.flightsim.journal_approach_airport": "進入先の空港：{airport}。",
+  "stem.flightsim.mission_evidence_heading": "ミッションの証拠",
+  "stem.flightsim.challenge_brake_release": "パワーを上げる前にXを離し、Deckで車輪ブレーキをオフにしてください。"
+}

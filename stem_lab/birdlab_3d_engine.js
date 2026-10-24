@@ -231,6 +231,27 @@
     return ((unshiftedWingPhase(elapsed)+launchPhaseOffset)%TAU+TAU)%TAU;
   }
 
+  // The articulated bird starts its downstroke at phase + .21. Invert the
+  // existing smooth phase clock, rather than advancing a separate wing timer.
+  function wingbeatClock(elapsed){return (unshiftedWingPhase(elapsed)+launchPhaseOffset)/TAU+.21;}
+  function wingbeatTime(clock,low,high){
+    for(var i=0;i<42;i++){var middle=(low+high)/2;if(wingbeatClock(middle)<clock)low=middle;else high=middle;}
+    return (low+high)/2;
+  }
+  function sampleWingbeatWindow(elapsed){
+    if(!Number.isFinite(elapsed)||elapsed<0)return null;
+    var lap=Math.floor(elapsed/DURATION),low=lap*DURATION,high=low+DURATION;
+    var cycle=Math.floor(wingbeatClock(elapsed)),start=wingbeatTime(cycle,low,high),end=wingbeatTime(cycle+1,low,high);
+    // A complete powered cycle is required. A glide or a partially folded
+    // transition must not be labeled as a full downstroke / recovery pair.
+    if(end-start<.15||end-start>.65||wingbeatClock(start)>cycle+1e-7||wingbeatClock(end)<cycle+1-1e-7)return null;
+    for(var i=0;i<=8;i++){
+      var pose=sampleFlight(start+(end-start)*i/8).pose;
+      if(pose.flapAmplitude<.18||pose.fold>.12)return null;
+    }
+    return {start:start,end:end,cycle:cycle};
+  }
+
   // Follow framing uses the horizontal heading, so a climbing bird does not
   // pull the camera below its tail. Reuse the output in the render loop.
   function sampleFollowFrame(flight,out) {
@@ -517,13 +538,14 @@
           var box=object.geometry.boundingBox.clone().applyMatrix4(world);
           if(box.max.x< -23||box.min.x>23||box.max.z< -23||box.min.z>23)continue;
           var proxy=new THREE.Mesh(object.geometry,object.material);proxy.matrixAutoUpdate=false;proxy.matrixWorld.copy(world);
-          solids.push({mesh:proxy,box:box});
+          solids.push({mesh:proxy,box:box,source:object});
         }
       });
     }
     function visible(position,distance) {
       targetDirection.subVectors(position,origin).normalize();raycaster.set(origin,targetDirection);raycaster.near=.02;raycaster.far=Math.max(.02,distance-.025);
       for(var i=0;i<solids.length;i++) {
+        var shown=true;for(var node=solids[i].source;node;node=node.parent)if(node.visible===false){shown=false;break;}if(!shown)continue;
         if(!raycaster.ray.intersectsBox(solids[i].box))continue;
         hits.length=0;raycaster.intersectObject(solids[i].mesh,false,hits);if(hits.length)return false;
       }
@@ -558,7 +580,77 @@
       if(observation){observation.progress=held/1.25;observation.identified=held>=1.25;}
       return observation;
     }
-    return {update:update,reset:reset,getObservation:function(){return observation?Object.assign({},observation):null;},needsFrame:function(){return !!observation&&!observation.identified;}};
+    return {update:update,reset:reset,getObservation:function(){return observation?Object.assign({},observation):null;},needsFrame:function(){return !!observation&&!observation.identified;},hasClearLine:function(from,to){origin.copy(from);return visible(to,from.distanceTo(to));}};
+  }
+
+  function createWoodlandSky(THREE,quality) {
+    // A single packed, repeating weather field gives the existing sky dome
+    // slow cloud movement without particles, extra draw calls or ray marching.
+    // The lattice wraps before interpolation, so drifting across its boundary
+    // cannot reveal a seam. Its seed is independent of habitat placement.
+    var size=quality==='low'?128:256, pixels=new Uint8Array(size*size*4), weatherCells={};
+    function weatherHash(x,y) {var n=Math.sin(x*127.1+y*311.7+17.43)*43758.5453;return n-Math.floor(n);}
+    [4,8,16,32].forEach(function(period){
+      var cells=new Float32Array(period*period);
+      for(var y=0;y<period;y++)for(var x=0;x<period;x++)cells[y*period+x]=weatherHash(x,y);
+      weatherCells[period]=cells;
+    });
+    function weatherNoise(u,v,period) {
+      var x=u*period,y=v*period,ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
+      fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+      var cells=weatherCells[period];
+      function cell(dx,dy){return cells[(((iy+dy)%period+period)%period)*period+((ix+dx)%period+period)%period];}
+      return (cell(0,0)*(1-fx)+cell(1,0)*fx)*(1-fy)+(cell(0,1)*(1-fx)+cell(1,1)*fx)*fy;
+    }
+    for(var y=0;y<size;y++)for(var x=0;x<size;x++) {
+      var u=(x+.5)/size,v=(y+.5)/size,offset=(y*size+x)*4;
+      pixels[offset]=Math.round(255*(weatherNoise(u,v,4)*.61+weatherNoise(u,v,8)*.25+weatherNoise(u,v,16)*.10+weatherNoise(u,v,32)*.04));
+      pixels[offset+1]=Math.round(255*(weatherNoise(u+.37,v+.19,8)*.70+weatherNoise(u+.37,v+.19,16)*.30));
+      pixels[offset+2]=0;pixels[offset+3]=255;
+    }
+    var weather=new THREE.DataTexture(pixels,size,size,THREE.RGBAFormat);
+    weather.name='birdlab-seamless-cloud-field';weather.wrapS=weather.wrapT=THREE.RepeatWrapping;
+    weather.magFilter=THREE.LinearFilter;weather.minFilter=THREE.LinearMipmapLinearFilter;
+    weather.generateMipmaps=true;weather.needsUpdate=true;
+    var sky=new THREE.Mesh(new THREE.SphereGeometry(190,24,12),new THREE.ShaderMaterial({
+      uniforms:{top:{value:new THREE.Color('#739bb4')},bottom:{value:new THREE.Color('#e3e7df')},
+        cloudField:{value:weather},cloudOffset:{value:new THREE.Vector2()},
+        cloudLight:{value:new THREE.Color('#fff8e9')},cloudShade:{value:new THREE.Color('#bbcbd3')},
+        sunDirection:{value:new THREE.Vector3(-18,31,14).normalize()},sunTint:{value:new THREE.Color('#fff1d6')}},
+      // Camera-relative sightlines keep the distant sun and clouds from
+      // sliding against the horizon when the observer walks around the wood.
+      vertexShader:'varying vec3 vPosition; void main(){vPosition=(modelMatrix*vec4(position,1.0)).xyz-cameraPosition;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      // r128 applies fog in output space. These sky colours intentionally stay
+      // in that same space and all weather fades into the matched horizon.
+      fragmentShader:[
+        'uniform vec3 top; uniform vec3 bottom; uniform sampler2D cloudField; uniform vec2 cloudOffset;',
+        'uniform vec3 cloudLight; uniform vec3 cloudShade; uniform vec3 sunDirection; uniform vec3 sunTint;',
+        'varying vec3 vPosition;',
+        'void main(){',
+        'vec3 ray=normalize(vPosition); float altitude=max(0.0,ray.y);',
+        'float horizon=smoothstep(.025,.20,altitude);',
+        'vec3 sky=mix(bottom,top,smoothstep(.05,.8,altitude));',
+        'float sunward=max(0.0,dot(ray,sunDirection));',
+        'float glow=pow(sunward,14.0)*.19+pow(sunward,160.0)*.26;',
+        'sky=mix(sky,sunTint,glow*horizon);',
+        'vec2 uv=ray.xz/max(.09,altitude)*.085+vec2(.38,.22)-cloudOffset;',
+        'float density=texture2D(cloudField,uv).r;',
+        'float cover=smoothstep(.46,.67,density);',
+        'float sunSide=texture2D(cloudField,uv+sunDirection.xz*.024).r;',
+        'float relief=clamp(.88+(density-sunSide)*3.6-cover*.30,0.0,1.0);',
+        'vec3 cloud=mix(cloudShade,cloudLight,relief);',
+        'float silver=pow(sunward,24.0)*(1.0-cover)*.42;',
+        'cloud=mix(cloud,sunTint,silver);',
+        'float wisps=texture2D(cloudField,uv*vec2(.48,1.8)+vec2(.26,.47)-cloudOffset*.16).g;',
+        'sky=mix(sky,cloudLight,smoothstep(.61,.81,wisps)*.16*horizon);',
+        'sky=mix(sky,cloud,cover*.92*horizon);',
+        'float disc=smoothstep(.99972,.99993,sunward)*(1.0-cover*.94)*horizon;',
+        'gl_FragColor=vec4(mix(sky,sunTint,disc),1.0);',
+        '}'
+      ].join('\n'),
+      side:THREE.BackSide,depthWrite:false,fog:false,toneMapped:false
+    }));
+    sky.name='birdlab-sky';return sky;
   }
 
   function mount(canvas,options) {
@@ -569,13 +661,30 @@
     var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(40,1,.03,240), renderer;
     var disposed=false, contextLost=false, raf=0, lastStamp=null, time=0, wingPhase=0, frames=0;
     var paused=!!options.reducedMotion, speed=1, cameraMode='orbit', lighting='daylight', stateStamp=-1, dirty=true, repeatFlights=false;
+    var studyOverlay=false, flightStudy=null, wingbeatStudy=null;
+    var wingtipPaths=false,wingtipTrace=null;
+    var wingtipPinned=null,wingbeatView='free';
+    var courseLens=false,coursePin=null,courseSamples=null,courseReview=null;
+    var attitudeLens=false,attitudeView='oblique',attitudeGuide=null;
+    var lightStudy=false,lightPin=null,lightingDirectionCustom=false;
+    var perspectiveStudy=false,perspectiveDistance=3.2,perspectiveFov=40,perspectiveLinked=false,perspectiveScale=null,perspectivePin=null;
+    var anatomyStudy=false,anatomyPart='leftWing',anatomyIsolate=false,anatomyView='oblique',anatomyZoom=1,anatomyCache=null,anatomySavedOrbit=null,anatomyVisibility=[],anatomyPin=null;
+    var anatomyFrozenData=null,anatomyFrozenGuide=null,anatomyFrozenEnabled=false,anatomyFrozenUsed=false,anatomyFrozenOpacity=.35;
+    var residentPart='whole',residentView='free',residentActive=false,residentZoom=1,residentCache=null;
+    var residentAzimuth=90,residentElevation=0;
+    var residentPresentation='woodland',residentBackdrop='teal',residentStudioLight='soft',residentStudioUsed=false,residentStudioRig=null,residentStudioBackdrops={};
+    var residentPin=null,residentFrozenGuide=null,residentComparisonUsed=false,residentFrozenEnabled=false,residentFrozenOpacity=.25;
+    var residentDirection=new THREE.Vector3(),residentUp=new THREE.Vector3(),residentPoint=new THREE.Vector3(),residentDelta=new THREE.Vector3(),residentBase=new THREE.Vector3(),residentQuaternion=new THREE.Quaternion();
     var mode='guided',savedGuided=null,binoculars=false,freeHawk=null,fieldObserver=null,sightings=[],observationKey='',fieldVisitTime=0;
     var observer={position:new THREE.Vector3(1.8,1.65,4.8),speed:0,crouching:false},walk={yaw:.36,pitch:-.20,eyeHeight:1.65},moveKeys=Object.create(null);
     var quality=selectQuality(options.quality);
-    var listeners=[], resizeObserver=null, habitat=null, bird=null, wildlife=null, mammals=null;
+    var listeners=[], resizeObserver=null, visibilityObserver=null, habitat=null, bird=null, wildlife=null, mammals=null;
     var orbit={yaw:2.4,pitch:.21,distance:2.65}, pointerMap=new Map(), pinchDistance=0;
+    var scenePickRay=new THREE.Raycaster(),scenePickPoint=new THREE.Vector2(),scenePickMeshes=[],scenePickOwners=new Map();
+    var surfaceRuler=false,surfacePoints=[],surfaceTime=null,surfaceGuide=null,surfaceMeasureMode='distance';
     var poseState=sampleFlight(0), followTarget=new THREE.Vector3(), cameraGoal=new THREE.Vector3(), targetGoal=new THREE.Vector3();
     var birdTarget=new THREE.Vector3(), ground=0, attitude=new THREE.Quaternion(), habitatWind=new THREE.Vector3();
+    var wingCameraDirection=new THREE.Vector3(),wingCameraUp=new THREE.Vector3();
     var followFrame={positionOffset:[0,0,0],targetOffset:[0,0,0]};
     function listen(target,name,fn,opts) { target.addEventListener(name,fn,opts); listeners.push(function(){target.removeEventListener(name,fn,opts);}); }
     function releaseResources(root) {
@@ -583,19 +692,27 @@
       root.traverse(function(obj){
         if(obj.geometry) geometries.add(obj.geometry);
         var list=Array.isArray(obj.material)?obj.material:obj.material?[obj.material]:[];
-        list.forEach(function(mat){materials.add(mat);Object.keys(mat).forEach(function(key){if(mat[key]&&mat[key].isTexture)textures.add(mat[key]);});});
+        list.forEach(function(mat){
+          materials.add(mat);Object.keys(mat).forEach(function(key){if(mat[key]&&mat[key].isTexture)textures.add(mat[key]);});
+          if(mat.uniforms)Object.keys(mat.uniforms).forEach(function(key){var value=mat.uniforms[key].value;if(value&&value.isTexture)textures.add(value);});
+        });
       });
       geometries.forEach(function(g){g.dispose();}); textures.forEach(function(t){t.dispose();}); materials.forEach(function(m){m.dispose();});
     }
     function dispose() {
       if(disposed) return; disposed=true;
+      leaveSurfaceRuler();
+      anatomyPin=null;anatomyFrozenData=null;residentPin=null;restoreAnatomyVisibility();
       global.cancelAnimationFrame(raf); listeners.forEach(function(fn){fn();});
       if(resizeObserver) resizeObserver.disconnect();
+      if(visibilityObserver) visibilityObserver.disconnect();
       clearMovement();exitPointerLock();
+      scenePickMeshes.length=0;scenePickOwners.clear();
       if(habitat&&habitat.dispose) habitat.dispose();
       if(bird&&bird.dispose) bird.dispose();
       if(wildlife&&wildlife.dispose) wildlife.dispose();
       if(mammals&&mammals.dispose) mammals.dispose();
+      Object.keys(residentStudioBackdrops).forEach(function(key){residentStudioBackdrops[key].dispose();});residentStudioBackdrops={};
       releaseResources(scene);
       if(renderer) { renderer.dispose(); if(!contextLost) renderer.forceContextLoss(); }
       scene.clear();
@@ -610,20 +727,13 @@
       renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
       scene.background=new THREE.Color('#b9ccd0'); scene.fog=new THREE.FogExp2('#b4c8cc',.009);
       var hemi=new THREE.HemisphereLight('#d7e9f5','#615e35',.8); scene.add(hemi);
-      var sun=new THREE.DirectionalLight('#fff0d7',2.1); sun.position.set(-18,31,14); sun.castShadow=true;
+      var sun=new THREE.DirectionalLight('#fff0d7',2.1); sun.name='birdlab-key-sun';sun.position.set(-18,31,14); sun.castShadow=true;
       sun.shadow.mapSize.set(quality==='low'?1024:2048,quality==='low'?1024:2048);
       Object.assign(sun.shadow.camera,{left:-44,right:44,top:44,bottom:-44,near:1,far:135});
       sun.shadow.bias=-.00035; sun.shadow.normalBias=.025; sun.shadow.radius=2;
       scene.add(sun); scene.add(sun.target);
       var rim=new THREE.DirectionalLight('#d3e6f2',.75); rim.position.set(12,15,-24); scene.add(rim);
-      var sky=new THREE.Mesh(new THREE.SphereGeometry(190,24,12),new THREE.ShaderMaterial({
-        uniforms:{top:{value:new THREE.Color('#739bb4')},bottom:{value:new THREE.Color('#e3e7df')}},
-        vertexShader:'varying vec3 vPosition; void main(){vPosition=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-        // r128 applies fog in output space. Keep this sky in the same space,
-        // with a broad horizon gradient that merges into the distant haze.
-        fragmentShader:'uniform vec3 top; uniform vec3 bottom; varying vec3 vPosition; void main(){float h=smoothstep(0.05,0.8,max(0.0,normalize(vPosition).y));gl_FragColor=vec4(mix(bottom,top,h),1.0);}',
-        side:THREE.BackSide,depthWrite:false,fog:false,toneMapped:false
-      })); sky.name='birdlab-sky'; scene.add(sky);
+      var sky=createWoodlandSky(THREE,quality);scene.add(sky);
       habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality});
       if(habitat.root&&!habitat.root.parent) scene.add(habitat.root);
       bird=global.BirdLab3DBird.create(THREE); bird.root.name='birdlab-red-tailed-hawk'; scene.add(bird.root);
@@ -631,6 +741,33 @@
       if(global.BirdLab3DMammals&&global.BirdLab3DMammals.create)mammals=global.BirdLab3DMammals.create(THREE,scene,{quality:quality,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
       if(!habitat.perch) habitat.perch=new THREE.Vector3(0,3.2,0);
       ground=habitat.perch.y-(Number.isFinite(bird.footOffsetY)?bird.footOffsetY:-.185);
+      // Study geometry samples the existing course; it never drives the bird.
+      // Allocate once and dispose with the scene, including when never enabled.
+      var studyRoot=new THREE.Group();studyRoot.name='birdlab-flight-study-overlay';studyRoot.visible=false;scene.add(studyRoot);
+      var studyCurve=new THREE.Curve();
+      studyCurve.getPoint=studyCurve.getPointAt=function(u,out){
+        var point=sampleCourse(3+35*clamp(u,0,1)).position;
+        return (out||new THREE.Vector3()).set(habitat.perch.x+point[0],ground+point[1],habitat.perch.z+point[2]);
+      };
+      studyCurve.getTangentAt=function(u,out){return studyCurve.getPoint(clamp(u+.0001,0,1),out).sub(studyCurve.getPoint(clamp(u-.0001,0,1))).normalize();};
+      function studyTube(name,radius,color,opacity){
+        var mesh=new THREE.Mesh(new THREE.TubeGeometry(studyCurve,280,radius,4,false),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:opacity,depthWrite:false,toneMapped:false,fog:false}));
+        mesh.name=name;studyRoot.add(mesh);return mesh;
+      }
+      studyTube('birdlab-study-course-backing',.105,'#142c29',.72).renderOrder=1;
+      var studyCourse=studyTube('birdlab-study-course',.065,'#37ded4',.92);studyCourse.renderOrder=2;
+      studyCourse.geometry.computeBoundingSphere();
+      var studyFlown=studyTube('birdlab-study-flown',.075,'#ffc145',1);studyFlown.renderOrder=3;
+      var studyHeight=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineDashedMaterial({color:'#fff4b8',dashSize:.14,gapSize:.1,transparent:true,opacity:1,depthWrite:false,toneMapped:false,fog:false}));
+      studyHeight.name='birdlab-study-height';studyRoot.add(studyHeight);
+      var studyGround=new THREE.Mesh(new THREE.RingGeometry(.23,.31,32),new THREE.MeshBasicMaterial({color:'#ffc145',side:THREE.DoubleSide,transparent:true,opacity:1,depthWrite:false,toneMapped:false,fog:false}));
+      studyGround.name='birdlab-study-ground';studyGround.rotation.x=-Math.PI/2;studyRoot.add(studyGround);
+      var studyHeading=new THREE.ArrowHelper(new THREE.Vector3(0,0,-1),new THREE.Vector3(),1.5,0xbcece5,.32,.17);
+      studyHeading.name='birdlab-study-heading';studyRoot.add(studyHeading);
+      studyHeading.line.material.toneMapped=false;studyHeading.line.material.fog=false;studyHeading.cone.material.toneMapped=false;studyHeading.cone.material.fog=false;
+      var studyMarker=new THREE.Mesh(new THREE.TorusGeometry(.6,.035,6,40),new THREE.MeshBasicMaterial({color:'#fff2b0',toneMapped:false,fog:false}));
+      studyMarker.name='birdlab-study-marker';studyRoot.add(studyMarker);
+      flightStudy={root:studyRoot,flown:studyFlown,height:studyHeight,ground:studyGround,heading:studyHeading,marker:studyMarker,courseBounds:studyCourse.geometry.boundingSphere.clone(),direction:new THREE.Vector3(),flownBase:studyFlown.geometry.attributes.position.array.slice(),terminalRing:-1,curve:studyCurve,terminalPoint:new THREE.Vector3()};
       freeHawk=createFreeHawk(habitat.perches||[habitat.perch],Number.isFinite(bird.footOffsetY)?bird.footOffsetY:-.185);
       var subjects=wildlife.snapshot().map(function(resident){return {id:resident.id,name:resident.name,scientificName:resident.scientificName,
         getPosition:function(out){return wildlife.getFocus(resident.id,out);},getBehavior:function(){var current=wildlife.snapshot().filter(function(value){return value.id===resident.id;})[0];return current?current.behavior:'';}};});
@@ -638,28 +775,715 @@
         getPosition:function(out){return mammals.getFocus(resident.id,out);},getBehavior:function(){var current=mammals.snapshot().filter(function(value){return value.id===resident.id;})[0];return current?current.behavior:'';}});});
       subjects.push({id:'redTailedHawk',name:'Red-tailed hawk',scientificName:'Buteo jamaicensis',getPosition:function(out){out.copy(bird.root.position);out.y+=.055;return out;},getBehavior:function(){return poseState.label;}});
       fieldObserver=createFieldObserver(THREE,habitat.root,subjects);
+      // Resolve actual drawable meshes once. Ownership follows existing stable
+      // resident roots; no proxy bird geometry or additional visual resources.
+      function addPickRoot(root,id){if(root)root.traverse(function(mesh){if(mesh.isMesh){scenePickMeshes.push(mesh);scenePickOwners.set(mesh,id);}});}
+      addPickRoot(bird.root,'orbit');wildlife.snapshot().forEach(function(resident){addPickRoot(wildlife.root.getObjectByName('woodland-'+resident.id),resident.id);});
       applyHeightFog(scene);
     } catch(error) { dispose(); throw new Error('This device could not start the 3D habitat. '+(error.message||'Please use the 2D lab.')); }
 
     function snapshot() {
       var phase=poseState;
-      return {ready:!disposed&&!contextLost,phase:phase.phase,label:phase.label,paused:paused,speed:speed,camera:cameraMode,time:time,lighting:lighting,repeatFlights:repeatFlights,
+      var beat=null;
+      if(wingbeatStudy){
+        var progress=clamp(wingbeatClock(time)-wingbeatStudy.cycle,0,1);
+        beat={start:wingbeatStudy.start,end:wingbeatStudy.end,cycle:wingbeatStudy.cycle,progress:progress,
+          stroke:progress<.00001||progress>.99999?'top':Math.abs(progress-.42)<.00001?'bottom':progress<.42?'downstroke':'upstroke'};
+      }
+      return {ready:!disposed&&!contextLost,canSelectBird:canSelectSceneBird(),canMeasureSurfaces:canUseSurfaceRuler(),surfaceRuler:surfaceRuler,surfaceMeasurement:surfaceSnapshot(),phase:phase.phase,label:phase.label,paused:paused,speed:speed,camera:cameraMode,time:time,lighting:lighting,lightingDirectionCustom:lightingDirectionCustom,lightStudy:lightStudy,lightInvestigation:lightSnapshot(),perspectiveStudy:perspectiveStudy,perspectiveInvestigation:perspectiveSnapshot(),anatomyStudy:anatomyStudy,anatomyInvestigation:anatomySnapshot(),repeatFlights:repeatFlights,studyOverlay:studyOverlay,studyOverlayVisible:!!(flightStudy&&flightStudy.root.visible),courseLens:courseLens,courseStudy:courseSnapshot(),attitudeLens:attitudeLens,attitudeStudy:attitudeSnapshot(),
+        wingbeatStudy:beat,wingtipPaths:wingtipPaths,wingtipPathsVisible:!!(wingtipTrace&&wingtipTrace.root.visible),wingtipStudy:beat&&wingtipTrace?{paths:wingtipTrace.sides.map(function(side){return Array.from(side.line.geometry.attributes.position.array);}),current:wingtipTrace.sides.map(function(side){return side.marker.position.toArray();}),pinned:wingtipPinned?{progress:wingtipPinned.progress,points:wingtipPinned.points.map(function(point){return point.slice();})}:null,radius:wingtipTrace.radius}:null,wingbeatView:beat?wingbeatView:'free',canInspectWingbeat:mode==='guided'&&!isResidentCamera(cameraMode)&&!!sampleWingbeatWindow(time),
         mode:mode,binoculars:binoculars,crouching:observer.crouching,fieldVisitTime:fieldVisitTime,observation:fieldObserver?fieldObserver.getObservation():null,sightings:sightings.map(function(entry){return Object.assign({},entry);}),observerPosition:observer.position.toArray(),observerSpeed:observer.speed,fieldOfView:camera.fov,pointerLocked:document.pointerLockElement===canvas,
-        altitude:bird.root.position.y-(habitat.groundHeight?habitat.groundHeight(bird.root.position.x,bird.root.position.z):0),
+        altitude:bird.root.position.y-terrain(bird.root.position.x,bird.root.position.z),
         airspeed:phase.airspeed,wingbeat:phase.wingbeat,position:bird.root.position.toArray(),orientation:bird.root.quaternion.toArray(),wind:phase.wind.slice(),
         cameraPosition:camera.position.toArray(),cameraTarget:followTarget.toArray(),pose:Object.assign({},phase.pose,{flapPhase:wingPhase}),
-        wildlife:wildlife.snapshot(),animals:mammals&&mode==='free'?mammals.snapshot():[],
+        wildlife:wildlife.snapshot(),residentInspection:residentInspectionSnapshot(),animals:mammals&&mode==='free'?mammals.snapshot():[],
         frames:frames,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:quality,hidden:!!document.hidden};
     }
-    function notify(force) { if(!options.onState||disposed) return; if(force||time-stateStamp>=.2||stateStamp<0){stateStamp=time;options.onState(snapshot());} }
+    function notify(force) { if(disposed)return;updateWingtipPaths();updateSurfaceRuler();updateAnatomyFrozenSurface();updateResidentFrozenSurface();if(force){updateCourseLens();updateAttitudeGuide();}if(!options.onState) return; if(force||time-stateStamp>=.2||stateStamp<0){stateStamp=time;options.onState(snapshot());} }
+    function setWingtipPaths(value){wingtipPaths=!!value;notify(true);refresh();}
+    function createWingtipPaths(){
+      var root=new THREE.Group();root.name='birdlab-wingtip-paths';root.visible=false;scene.add(root);
+      var cylinder=new THREE.CylinderGeometry(1,1,1,6,1,true),sphere=new THREE.SphereGeometry(.014,10,8);
+      var sides=['left','right'].map(function(name,index){
+        var color=index===0?0xffca65:0x58e5dd;
+        var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(65*3),3));
+        var line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:color,fog:false,toneMapped:false}));line.name='birdlab-wingtip-'+name;line.frustumCulled=false;root.add(line);
+        var outline=new THREE.InstancedMesh(cylinder,new THREE.MeshBasicMaterial({color:0x153331,depthWrite:false,fog:false,toneMapped:false}),64);
+        var stroke=new THREE.InstancedMesh(cylinder,new THREE.MeshBasicMaterial({color:color,depthWrite:false,fog:false,toneMapped:false}),64);
+        outline.name='birdlab-wingtip-outline-'+name;stroke.name='birdlab-wingtip-stroke-'+name;
+        outline.renderOrder=20;stroke.renderOrder=21;line.renderOrder=22;
+        outline.frustumCulled=stroke.frustumCulled=false;root.add(outline);root.add(stroke);
+        var marker=new THREE.Mesh(sphere,new THREE.MeshBasicMaterial({color:color,fog:false,toneMapped:false}));marker.name='birdlab-wingtip-current-'+name;root.add(marker);
+        return {line:line,outline:outline,stroke:stroke,marker:marker,vane:bird.joints.wings[index].primaries[0].userData.vane};
+      });
+      wingtipTrace={root:root,sides:sides,key:null,inverse:new THREE.Matrix4(),base:new THREE.Vector3(),morph:new THREE.Vector3(),point:new THREE.Vector3(),from:new THREE.Vector3(),to:new THREE.Vector3(),mid:new THREE.Vector3(),direction:new THREE.Vector3(),axis:new THREE.Vector3(0,1,0),scale:new THREE.Vector3(),rotation:new THREE.Quaternion(),matrix:new THREE.Matrix4()};
+    }
+    function readWingtip(vane,out){
+      var trace=wingtipTrace,position=vane.geometry.attributes.position,index=position.count-3;
+      trace.base.fromBufferAttribute(position,index);out.copy(trace.base);
+      (vane.geometry.morphAttributes.position||[]).forEach(function(target,i){
+        var weight=vane.morphTargetInfluences[i]||0;if(!weight)return;
+        trace.morph.fromBufferAttribute(target,index);if(!vane.geometry.morphTargetsRelative)trace.morph.sub(trace.base);out.addScaledVector(trace.morph,weight);
+      });
+      return out.applyMatrix4(vane.matrixWorld).applyMatrix4(trace.inverse);
+    }
+    function updateWingtipPaths(){
+      var active=!!wingbeatStudy&&mode==='guided'&&!isResidentCamera(cameraMode);
+      if(!wingtipTrace){if(!active)return;createWingtipPaths();}
+      var trace=wingtipTrace;trace.root.visible=active&&wingtipPaths;if(!active)return;
+      trace.root.position.copy(bird.root.position);trace.root.quaternion.copy(bird.root.quaternion);trace.root.scale.copy(bird.root.scale);
+      bird.root.updateMatrixWorld(true);trace.inverse.copy(bird.root.matrixWorld).invert();
+      var key=[wingbeatStudy.cycle,wingbeatStudy.start,wingbeatStudy.end].join(':');
+      if(trace.key!==key){
+        // Sample only the articulated bird, never the woodland, flight clock or
+        // wildlife. Remove whole-body travel and restore the exact current pose.
+        try{
+          for(var sample=0;sample<=64;sample++){
+            var sampleTime=wingbeatTime(wingbeatStudy.cycle+sample/64,wingbeatStudy.start,wingbeatStudy.end),pose=sampleFlight(sampleTime);
+            bird.update(Object.assign({},pose.pose,{flapPhase:sampleWingPhase(sampleTime),elapsedTime:sampleTime}),0);bird.root.updateMatrixWorld(true);
+            trace.sides.forEach(function(side){readWingtip(side.vane,trace.point);side.line.geometry.attributes.position.setXYZ(sample,trace.point.x,trace.point.y,trace.point.z);});
+          }
+        }finally{bird.update(Object.assign({},poseState.pose,{flapPhase:wingPhase,elapsedTime:time}),0);bird.root.updateMatrixWorld(true);}
+        trace.sides.forEach(function(side){
+          var points=side.line.geometry.attributes.position;points.needsUpdate=true;
+          for(var segment=0;segment<64;segment++){
+            trace.from.fromBufferAttribute(points,segment);trace.to.fromBufferAttribute(points,segment+1);trace.direction.subVectors(trace.to,trace.from);
+            var length=trace.direction.length();trace.rotation.setFromUnitVectors(trace.axis,length>1e-9?trace.direction.multiplyScalar(1/length):trace.axis);trace.mid.addVectors(trace.from,trace.to).multiplyScalar(.5);
+            trace.scale.set(.0065,length,.0065);trace.matrix.compose(trace.mid,trace.rotation,trace.scale);side.outline.setMatrixAt(segment,trace.matrix);
+            trace.scale.x=trace.scale.z=.0036;trace.matrix.compose(trace.mid,trace.rotation,trace.scale);side.stroke.setMatrixAt(segment,trace.matrix);
+          }
+          side.outline.instanceMatrix.needsUpdate=true;side.stroke.instanceMatrix.needsUpdate=true;
+        });trace.radius=.5;
+        trace.sides.forEach(function(side){var points=side.line.geometry.attributes.position;for(var i=0;i<points.count;i++)trace.radius=Math.max(trace.radius,Math.hypot(points.getX(i),points.getY(i),points.getZ(i)));});
+        trace.radius+=.12;trace.key=key;
+      }
+      trace.sides.forEach(function(side){readWingtip(side.vane,side.marker.position);});
+    }
     function requestFrame() { if(!disposed&&!contextLost&&!document.hidden&&!raf) raf=global.requestAnimationFrame(tick); }
     function refresh() { dirty=true; requestFrame(); }
-    function setPaused(value) { paused=!!value;if(paused)clearMovement();lastStamp=null;notify(true);refresh(); }
+    function setPaused(value) { paused=!!value;if(!paused){wingbeatStudy=null;if(residentLensVisible()){resetResidentLens();updateCamera(1,true);}if(mode==='guided'&&anatomyStudy){leaveAnatomy();updateCamera(1,true);}}if(paused)clearMovement();lastStamp=null;notify(true);refresh(); }
+    function pinWingtipPose(){
+      if(disposed||!wingbeatStudy)return;
+      updateWingtipPaths();wingtipPinned={progress:clamp(wingbeatClock(time)-wingbeatStudy.cycle,0,1),points:wingtipTrace.sides.map(function(side){return side.marker.position.toArray();})};notify(true);refresh();
+    }
+    function clearWingtipPose(){wingtipPinned=null;notify(true);refresh();}
+    function setWingbeatView(value){
+      if(disposed||!wingbeatStudy||['front','side','above','free'].indexOf(value)<0)return;
+      wingbeatView=value;cameraMode='orbit';updateCamera(1,true);notify(true);refresh();
+    }
+    function inspectWingbeat(){
+      if(disposed||mode!=='guided'||isResidentCamera(cameraMode))return false;
+      var window=sampleWingbeatWindow(time);if(!window)return false;
+      leaveAnatomy();
+      leavePerspective();
+      wingbeatStudy=window;wingtipPinned=null;wingbeatView='free';attitudeLens=false;lightStudy=false;paused=true;repeatFlights=false;lastStamp=null;
+      // A close orbit reveals the articulation; retain the observer's orbit
+      // direction and leave all other camera choices available afterward.
+      if(cameraMode==='wide')cameraMode='orbit';
+      if(cameraMode==='orbit')orbit.distance=Math.min(orbit.distance,2.65);
+      updateBird(0,true);updateWingtipPaths();updateCamera(1,true);notify(true);refresh();return true;
+    }
+    function seekWingbeat(value){
+      if(disposed||!wingbeatStudy||!Number.isFinite(Number(value)))return;
+      var progress=clamp(Number(value),0,1);
+      time=wingbeatTime(wingbeatStudy.cycle+progress,wingbeatStudy.start,wingbeatStudy.end);
+      paused=true;lastStamp=null;stateStamp=-1;updateBird(0,true);updateCamera(1,true);notify(true);refresh();
+    }
+    function closeWingbeat(){wingbeatStudy=null;wingtipPinned=null;wingbeatView='free';updateCamera(1,true);notify(true);refresh();}
+    function setStudyOverlay(value){var wasAnatomy=anatomyVisible();if(value)leaveAnatomy();studyOverlay=!!value;if(wasAnatomy)updateCamera(1,true);updateStudyOverlay();notify(true);refresh();}
+    function updateStudyOverlay(){
+      if(!flightStudy)return;
+      flightStudy.root.visible=studyOverlay&&mode==='guided'&&!isResidentCamera(cameraMode);
+      if(!flightStudy.root.visible)return;
+      var courseTime=((time%DURATION)+DURATION)%DURATION;
+      if(paused&&time>0&&courseTime<.000001)courseTime=DURATION;
+      var position=bird.root.position, floor=terrain(position.x,position.z);
+      // Preserve the sampled tube, moving only its final ring to this exact
+      // frame. Restore the previous ring first so seeks and loop restarts
+      // cannot leave a kink behind. Five vertices replace extra tessellation.
+      var progress=clamp((courseTime-3)/35,0,1),terminalRing=Math.ceil(progress*280-1e-9);
+      var flownPositions=flightStudy.flown.geometry.attributes.position,base=flightStudy.flownBase;
+      if(flightStudy.terminalRing>=0){
+        var previousOffset=flightStudy.terminalRing*5*3;
+        for(var restoreIndex=0;restoreIndex<15;restoreIndex++)flownPositions.array[previousOffset+restoreIndex]=base[previousOffset+restoreIndex];
+      }
+      if(terminalRing>0){
+        flightStudy.curve.getPoint(terminalRing/280,flightStudy.terminalPoint);
+        var offset=terminalRing*5*3,dx=position.x-flightStudy.terminalPoint.x,dy=position.y-flightStudy.terminalPoint.y,dz=position.z-flightStudy.terminalPoint.z;
+        for(var ringVertex=0;ringVertex<5;ringVertex++){
+          var vertexOffset=offset+ringVertex*3;
+          flownPositions.array[vertexOffset]=base[vertexOffset]+dx;flownPositions.array[vertexOffset+1]=base[vertexOffset+1]+dy;flownPositions.array[vertexOffset+2]=base[vertexOffset+2]+dz;
+        }
+      }
+      flownPositions.needsUpdate=true;flightStudy.terminalRing=terminalRing>0?terminalRing:-1;
+      flightStudy.flown.geometry.setDrawRange(0,terminalRing*4*6);
+      var positions=flightStudy.height.geometry.attributes.position;
+      positions.setXYZ(0,position.x,floor,position.z);positions.setXYZ(1,position.x,position.y,position.z);positions.needsUpdate=true;
+      flightStudy.height.geometry.computeBoundingSphere();flightStudy.height.computeLineDistances();
+      flightStudy.ground.position.set(position.x,floor+.025,position.z);
+      flightStudy.marker.position.copy(position);
+      flightStudy.direction.fromArray(sampleCourse(courseTime).velocity);
+      flightStudy.heading.visible=flightStudy.direction.lengthSq()>.04;
+      if(flightStudy.heading.visible){flightStudy.heading.position.copy(position);flightStudy.heading.setDirection(flightStudy.direction.normalize());}
+    }
     function setSpeed(value) {if(mode==='free')return;var next=Number(value); if([.25,.5,1].indexOf(next)>=0) speed=next; notify(true); }
-    function isResidentCamera(mode) { return ['robin','chickadee','mourningDove','grouse','blueJay','northernCardinal'].indexOf(mode)>=0; }
+    var SHARED_RESIDENT_CAMERAS=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow'];
+    function isResidentCamera(mode) { return mode==='robin'||mode==='chickadee'||SHARED_RESIDENT_CAMERAS.indexOf(mode)>=0; }
+    function residentLensVisible(){return !disposed&&mode==='guided'&&isResidentCamera(cameraMode)&&residentActive;}
+    function resetResidentLens(){residentPresentation='woodland';residentPart='whole';residentView='free';residentActive=false;residentZoom=1;residentCache=null;}
+    function residentSelection(root,shared){
+      return residentPart==='whole'?root:root.getObjectByName(shared?({head:'woodland-head',wing:'woodland-right-wing',tail:'woodland-tail'})[residentPart]:cameraMode+({head:'-head',wing:'-wing-1',tail:'-tail'})[residentPart]);
+    }
+    function residentGeometry(){
+      if(residentCache)return residentCache;
+      var root=wildlife.root.getObjectByName('woodland-'+cameraMode);if(!root)return null;
+      root.updateMatrixWorld(true);
+      var shared=wildlife.isShared&&wildlife.isShared(cameraMode),partRoot=residentSelection(root,shared);
+      if(!partRoot)return null;
+      var bounds=new THREE.Box3(),meshes=[],vertices=0;
+      partRoot.traverse(function(mesh){
+        if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.attributes.position)return;
+        for(var parent=mesh;parent;parent=parent.parent)if(!parent.visible)return;
+        var g=mesh.geometry,p=g.attributes.position,index=g.index,total=index?index.count:p.count,start=Math.max(0,g.drawRange.start||0),end=Math.min(total,start+g.drawRange.count),materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+        var ranges=Array.isArray(mesh.material)?g.groups:[{start:0,count:total,materialIndex:0}],used=false;
+        ranges.forEach(function(group){
+          var mat=materials[group.materialIndex||0];if(!mat||!mat.visible)return;
+          var first=Math.max(start,group.start),last=Math.min(end,group.start+group.count);
+          for(var face=first;face+2<last;face+=3)for(var corner=0;corner<3;corner++){
+            var i=index?index.getX(face+corner):face+corner;residentBase.fromBufferAttribute(p,i);residentPoint.copy(residentBase);
+            var morphs=g.morphAttributes.position||[];
+            for(var m=0;m<morphs.length;m++){var weight=mesh.morphTargetInfluences&&mesh.morphTargetInfluences[m]||0;if(!weight)continue;residentDelta.fromBufferAttribute(morphs[m],i);if(!g.morphTargetsRelative)residentDelta.sub(residentBase);residentPoint.addScaledVector(residentDelta,weight);}
+            residentPoint.applyMatrix4(mesh.matrixWorld);bounds.expandByPoint(residentPoint);vertices++;used=true;
+          }
+        });
+        if(used)meshes.push(mesh.uuid);
+      });
+      if(bounds.isEmpty())return null;
+      var center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),radius=Math.max(.004,size.length()*.5);
+      residentCache={root:root,shared:shared,min:bounds.min.toArray(),max:bounds.max.toArray(),center:center,size:size.toArray(),radius:radius,meshes:meshes,vertices:vertices};return residentCache;
+    }
+    function residentMinimumDistance(data){var half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return Math.max(camera.near+data.radius+.01,data.radius*1.10/Math.sin(half));}
+    function residentPinMatches(){return !!residentPin&&residentPin.species===cameraMode&&residentPin.part===residentPart;}
+    function residentFrameGeometry(data){
+      if(!data||!residentFrozenEnabled||!residentPinMatches())return data;
+      var bounds=new THREE.Box3(new THREE.Vector3().fromArray(data.min),new THREE.Vector3().fromArray(data.max)),point=new THREE.Vector3();
+      // The saved envelope follows the current body transform, rather than the
+      // old world position. Its transformed corners conservatively frame every
+      // frozen triangle alongside the current native surfaces.
+      data.root.updateMatrixWorld(true);
+      for(var corner=0;corner<8;corner++){
+        point.set(residentPin.bounds[corner&1?'max':'min'][0],residentPin.bounds[corner&2?'max':'min'][1],residentPin.bounds[corner&4?'max':'min'][2]).applyMatrix4(data.root.matrixWorld);bounds.expandByPoint(point);
+      }
+      var center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
+      return {root:data.root,shared:data.shared,min:bounds.min.toArray(),max:bounds.max.toArray(),center:center,size:size.toArray(),radius:Math.max(.004,size.length()*.5)};
+    }
+    function residentInspectionSnapshot(){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode))return null;
+      var data=residentActive?residentGeometry():null,frame=residentFrameGeometry(data);
+      var result={species:cameraMode,part:residentPart,view:residentView,active:residentActive,zoom:residentZoom,
+        bounds:data?{min:data.min.slice(),max:data.max.slice(),center:data.center.toArray(),size:data.size.slice()}:null,
+        meshes:data?data.meshes.slice():[],vertices:data?data.vertices:0,
+        cameraFit:frame?{radius:frame.radius,minimumDistance:residentMinimumDistance(frame),distance:camera.position.distanceTo(frame.center)}:null};
+      // Leave the original snapshot untouched until this optional comparison
+      // is used. A pin survives camera changes, play and free-roam sessions.
+      if(residentStudioUsed)result.studio={presentation:residentPresentation,backdrop:residentBackdrop,light:residentStudioLight,active:residentLensVisible()&&residentPresentation==='studio'};
+      if(residentComparisonUsed)result.comparison={pinned:residentPin?{species:residentPin.species,part:residentPin.part,time:residentPin.time,bounds:copyAnatomyBounds(residentPin.bounds),triangles:residentPin.positions.length/9,sources:residentPin.sources.map(function(source){return {name:source.name,triangles:source.count/3};})}:null,
+        matching:residentPinMatches(),enabled:residentFrozenEnabled,opacity:residentFrozenOpacity,visible:!!(residentFrozenGuide&&residentFrozenGuide.root.visible),
+        framing:frame&&residentFrozenEnabled&&residentPinMatches()?{min:frame.min.slice(),max:frame.max.slice(),center:frame.center.toArray(),size:frame.size.slice()}:null};
+      if(data){
+        // Read the actual camera in the bird's body frame, including manual
+        // orbit. Shared and legacy residents face opposite local Z axes.
+        var local=camera.position.clone().sub(followTarget).normalize();
+        local.applyQuaternion(data.root.getWorldQuaternion(new THREE.Quaternion()).invert());
+        var horizontal=Math.hypot(local.x,local.z),forward=data.shared?1:-1;
+        result.orientation={azimuth:horizontal<1e-8?(residentView==='custom'?residentAzimuth:0):Math.atan2(local.x,local.z*forward)*180/Math.PI,
+          elevation:Math.asin(clamp(local.y,-1,1))*180/Math.PI};
+      }
+      return result;
+    }
+    function captureResidentShape(){
+      var data=residentGeometry();if(!data)return null;
+      var root=data.root,partRoot=residentSelection(root,data.shared);if(!partRoot)return null;
+      root.updateMatrixWorld(true);
+      var inverse=root.matrixWorld.clone().invert(),positions=[],sources=[],base=new THREE.Vector3(),point=new THREE.Vector3(),delta=new THREE.Vector3();
+      partRoot.traverse(function(mesh){
+        if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.attributes.position)return;
+        for(var ancestor=mesh;ancestor;ancestor=ancestor.parent)if(ancestor.visible===false)return;
+        var geometry=mesh.geometry,attribute=geometry.attributes.position,index=geometry.index,morphs=geometry.morphAttributes.position||[],limit=index?index.count:attribute.count,draw=geometry.drawRange||{start:0,count:Infinity},ranges=[];
+        if(Array.isArray(mesh.material)){geometry.groups.forEach(function(group){var material=mesh.material[group.materialIndex||0];if(material&&material.visible!==false)ranges.push(group);});}
+        else if(mesh.material&&mesh.material.visible!==false)ranges.push({start:0,count:limit});
+        var start=positions.length/3;
+        ranges.forEach(function(range){
+          var first=Math.max(0,draw.start,range.start),end=Math.min(limit,draw.start+draw.count,range.start+range.count);
+          for(var triangle=first;triangle+2<end;triangle+=3)for(var corner=0;corner<3;corner++){
+            var vertex=index?index.getX(triangle+corner):triangle+corner;
+            base.fromBufferAttribute(attribute,vertex);point.copy(base);
+            for(var m=0;m<morphs.length;m++){var weight=mesh.morphTargetInfluences&&mesh.morphTargetInfluences[m]||0;if(!weight)continue;delta.fromBufferAttribute(morphs[m],vertex);if(!geometry.morphTargetsRelative)delta.sub(base);point.addScaledVector(delta,weight);}
+            point.applyMatrix4(mesh.matrixWorld).applyMatrix4(inverse);positions.push(point.x,point.y,point.z);
+          }
+        });
+        if(positions.length/3>start)sources.push({name:mesh.name,start:start,count:positions.length/3-start});
+      });
+      if(!positions.length)return null;
+      var frozen=new Float32Array(positions),bounds=new THREE.Box3();
+      for(var i=0;i<frozen.length;i+=3)bounds.expandByPoint(point.set(frozen[i],frozen[i+1],frozen[i+2]));
+      return {species:cameraMode,part:residentPart,time:time,positions:frozen,sources:sources,bounds:{min:bounds.min.toArray(),max:bounds.max.toArray(),size:bounds.getSize(new THREE.Vector3()).toArray()}};
+    }
+    function releaseResidentFrozenGeometry(){
+      if(!residentFrozenGuide)return;
+      [residentFrozenGuide.surface,residentFrozenGuide.edges].forEach(function(object){if(object.geometry){object.geometry.dispose();object.geometry=null;}});
+      residentFrozenGuide.root.visible=false;residentFrozenGuide.data=null;
+    }
+    function createResidentFrozenSurface(){
+      if(!residentPin||residentFrozenGuide&&residentFrozenGuide.data===residentPin)return;
+      releaseResidentFrozenGeometry();
+      var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(residentPin.positions,3));geometry.computeBoundingSphere();
+      var edgePositions=[];
+      // Feather layers retain their own crease boundaries. Combining their
+      // triangles before extracting edges would cancel coincident boundaries.
+      residentPin.sources.forEach(function(source){
+        var temporary=new THREE.BufferGeometry();temporary.setAttribute('position',new THREE.BufferAttribute(residentPin.positions.subarray(source.start*3,(source.start+source.count)*3),3));
+        var crease=new THREE.EdgesGeometry(temporary,28),values=crease.attributes.position.array;for(var i=0;i<values.length;i++)edgePositions.push(values[i]);crease.dispose();temporary.dispose();
+      });
+      var outline=new THREE.BufferGeometry();outline.setAttribute('position',new THREE.Float32BufferAttribute(edgePositions,3));outline.computeBoundingSphere();
+      if(!residentFrozenGuide){
+        var root=new THREE.Group();root.name='birdlab-resident-frozen-surface';root.matrixAutoUpdate=false;root.visible=false;scene.add(root);
+        var surface=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:'#91e9f3',side:THREE.DoubleSide,transparent:true,opacity:residentFrozenOpacity,depthTest:true,depthWrite:false,toneMapped:false,fog:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));
+        surface.name='birdlab-resident-frozen-triangles';surface.renderOrder=4;root.add(surface);
+        var edges=new THREE.LineSegments(outline,new THREE.LineBasicMaterial({color:'#b9f8ff',transparent:true,opacity:Math.min(1,residentFrozenOpacity*2.2),depthTest:true,depthWrite:false,toneMapped:false,fog:false}));
+        edges.name='birdlab-resident-frozen-creases';edges.renderOrder=5;root.add(edges);
+        residentFrozenGuide={root:root,surface:surface,edges:edges,data:null};
+      }
+      residentFrozenGuide.surface.geometry=geometry;residentFrozenGuide.edges.geometry=outline;residentFrozenGuide.data=residentPin;
+    }
+    function updateResidentFrozenSurface(){
+      var visible=residentFrozenEnabled&&residentLensVisible()&&residentPinMatches();
+      if(visible)createResidentFrozenSurface();
+      if(!residentFrozenGuide)return;
+      residentFrozenGuide.root.visible=!!visible&&residentFrozenOpacity>0;
+      if(visible){var root=wildlife.root.getObjectByName('woodland-'+cameraMode);if(root){root.updateMatrixWorld(true);residentFrozenGuide.root.matrix.copy(root.matrixWorld);residentFrozenGuide.root.matrixWorldNeedsUpdate=true;}else residentFrozenGuide.root.visible=false;}
+      residentFrozenGuide.surface.material.opacity=residentFrozenOpacity;residentFrozenGuide.edges.material.opacity=Math.min(1,residentFrozenOpacity*2.2);
+    }
+    function pinResidentShape(){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode))return false;
+      if(!residentActive)setResidentPart(residentPart);
+      var captured=captureResidentShape();if(!captured)return false;
+      residentPin=captured;residentComparisonUsed=true;releaseResidentFrozenGeometry();updateCamera(1,true);notify(true);refresh();return true;
+    }
+    function clearResidentShape(){
+      if(disposed)return;residentPin=null;residentComparisonUsed=true;residentFrozenEnabled=false;releaseResidentFrozenGeometry();if(residentLensVisible())updateCamera(1,true);notify(true);refresh();
+    }
+    function setResidentFrozenSurface(value){
+      if(disposed||!residentPin)return false;
+      residentFrozenEnabled=!!value;residentComparisonUsed=true;if(residentLensVisible()&&residentPinMatches())updateCamera(1,true);notify(true);refresh();return true;
+    }
+    function setResidentFrozenOpacity(value){
+      if(disposed||!residentComparisonUsed||typeof value!=='number'||!Number.isFinite(value))return;
+      residentFrozenOpacity=clamp(value,0,.7);notify(true);refresh();
+    }
+    function setResidentPart(value){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode)||['whole','head','wing','tail'].indexOf(value)<0)return;
+      var first=!residentActive;leaveSurfaceRuler();paused=true;clearMovement();lastStamp=null;residentPart=value;residentActive=true;residentZoom=1;residentCache=null;if(first)residentView='side';
+      updateCamera(1,true);notify(true);refresh();
+    }
+    function setResidentStudio(value){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode)||!value)return false;
+      if(value.presentation!==undefined&&['woodland','studio'].indexOf(value.presentation)<0||value.backdrop!==undefined&&['teal','paper'].indexOf(value.backdrop)<0||value.light!==undefined&&['soft','side'].indexOf(value.light)<0)return false;
+      residentStudioUsed=true;
+      if(value.presentation!==undefined)residentPresentation=value.presentation;
+      if(value.backdrop!==undefined)residentBackdrop=value.backdrop;
+      if(value.light!==undefined)residentStudioLight=value.light;
+      if(residentPresentation==='studio'&&!residentActive)setResidentPart(residentPart);
+      notify(true);refresh();return true;
+    }
+    function ensureResidentStudio(){
+      if(residentStudioRig)return;
+      var rig=new THREE.Group();rig.name='birdlab-resident-studio-lights';rig.visible=false;
+      var fill=new THREE.HemisphereLight('#e6eff4','#50615c',.8);
+      var key=new THREE.DirectionalLight('#fff3e4',2.2),edge=new THREE.DirectionalLight('#cfebf4',.8);
+      key.name='birdlab-resident-studio-key';edge.name='birdlab-resident-studio-edge';
+      rig.add(fill,key,key.target,edge,edge.target);scene.add(rig);
+      residentStudioRig={root:rig,key:key,fill:fill,edge:edge,forward:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3()};
+      ['teal','paper'].forEach(function(id){
+        var plate=document.createElement('canvas');plate.width=plate.height=128;var ctx=plate.getContext('2d');
+        var wash=ctx.createRadialGradient(64,52,5,64,64,90);
+        wash.addColorStop(0,id==='paper'?'#f8f3e7':'#315865');wash.addColorStop(1,id==='paper'?'#c4d0cd':'#0a212c');
+        ctx.fillStyle=wash;ctx.fillRect(0,0,128,128);
+        var texture=new THREE.CanvasTexture(plate);texture.encoding=THREE.sRGBEncoding;texture.name='birdlab-resident-backdrop-'+id;residentStudioBackdrops[id]=texture;
+      });
+    }
+    function renderResidentScene(){
+      if(!residentLensVisible()||residentPresentation!=='studio'){renderer.render(scene,camera);return;}
+      var data=residentGeometry();if(!data){renderer.render(scene,camera);return;}
+      ensureResidentStudio();
+      var rig=residentStudioRig,changed=[],keep=new Set([data.root,rig.root]);
+      if(residentFrozenGuide&&residentFrozenGuide.root.visible)keep.add(residentFrozenGuide.root);
+      var ancestors=new Set();keep.forEach(function(root){for(var p=root.parent;p;p=p.parent)ancestors.add(p);});
+      function isolate(parent){parent.children.forEach(function(child){
+        if(keep.has(child))return;
+        if(ancestors.has(child)){isolate(child);return;}
+        changed.push([child,child.visible]);child.visible=false;
+      });}
+      var saved={background:scene.background,fog:scene.fog,exposure:renderer.toneMappingExposure,visible:rig.root.visible};
+      try{
+        isolate(scene);rig.root.visible=true;
+        rig.forward.copy(camera.position).sub(followTarget).normalize();
+        rig.right.set(1,0,0).applyQuaternion(camera.quaternion);rig.up.set(0,1,0).applyQuaternion(camera.quaternion);
+        var side=residentStudioLight==='side';
+        rig.key.position.copy(followTarget).addScaledVector(rig.forward,side?.7:3).addScaledVector(rig.right,side?-3:-1.7).addScaledVector(rig.up,side?.7:2.1);
+        rig.edge.position.copy(followTarget).addScaledVector(rig.forward,-2).addScaledVector(rig.right,2).addScaledVector(rig.up,1.4);
+        rig.key.target.position.copy(followTarget);rig.edge.target.position.copy(followTarget);
+        rig.key.intensity=side?2.8:2.2;rig.fill.intensity=side?.35:.8;rig.edge.intensity=side?.55:.8;
+        scene.background=residentStudioBackdrops[residentBackdrop];scene.fog=null;renderer.toneMappingExposure=1;
+        renderer.render(scene,camera);
+      }finally{
+        changed.forEach(function(pair){pair[0].visible=pair[1];});rig.root.visible=saved.visible;
+        scene.background=saved.background;scene.fog=saved.fog;renderer.toneMappingExposure=saved.exposure;
+      }
+    }
+
+    function releaseResidentView(){
+      if(!residentLensVisible()||residentView==='free')return;
+      residentDirection.copy(camera.position).sub(followTarget).normalize();orbit.yaw=Math.atan2(residentDirection.x,residentDirection.z);orbit.pitch=clamp(Math.asin(clamp(residentDirection.y,-1,1)),-Math.PI/2+.001,Math.PI/2-.001);residentView='free';
+    }
+    function setResidentView(value){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode)||['free','side','opposite','front','rear','above'].indexOf(value)<0)return;
+      leaveSurfaceRuler();paused=true;clearMovement();lastStamp=null;
+      if(value==='free')releaseResidentView();residentActive=true;residentView=value;residentZoom=1;residentCache=null;updateCamera(1,true);notify(true);refresh();
+    }
+    function setResidentAngle(value){
+      if(disposed||mode!=='guided'||!isResidentCamera(cameraMode)||!value||
+        typeof value.azimuth!=='number'||!Number.isFinite(value.azimuth)||typeof value.elevation!=='number'||!Number.isFinite(value.elevation))return;
+      leaveSurfaceRuler();paused=true;clearMovement();lastStamp=null;residentActive=true;residentView='custom';
+      residentAzimuth=clamp(value.azimuth,-180,180);residentElevation=clamp(value.elevation,-90,90);
+      residentCache=null;updateCamera(1,true);notify(true);refresh();
+    }
     function clearMovement(){Object.keys(moveKeys).forEach(function(key){delete moveKeys[key];});observer.speed=0;pointerMap.clear();}
     function exitPointerLock(){if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();}
     function terrain(x,z){var sampler=habitat.groundSurfaceHeight||habitat.groundHeight;return sampler?sampler(x,z):0;}
+    function courseVisible(){return courseLens&&mode==='guided'&&!isResidentCamera(cameraMode)&&!wingbeatStudy;}
+    function courseTime(){var value=((time%DURATION)+DURATION)%DURATION;return paused&&time>0&&value<.000001?DURATION:value;}
+    function courseStation(value){
+      var t=clamp(value,0,DURATION),p=sampleCourse(t).position;
+      var position=[habitat.perch.x+p[0],ground+p[1],habitat.perch.z+p[2]];
+      return {t:t,position:position,ground:terrain(position[0],position[2])};
+    }
+    function ensureCourseSamples(){if(!courseSamples){courseSamples=[];for(var i=0;i<=176;i++)courseSamples.push(courseStation(i*.25));}return courseSamples;}
+    function copyCourseStation(value){return {t:value.t,position:value.position.slice(),ground:value.ground};}
+    function courseInterval(a,b){
+      var lo=Math.min(a,b),hi=Math.max(a,b),points=[courseStation(lo)];
+      ensureCourseSamples().forEach(function(point){if(point.t>lo&&point.t<hi)points.push(point);});
+      if(hi>lo)points.push(courseStation(hi));return points;
+    }
+    function courseSnapshot(){
+      if(!courseVisible())return null;
+      var selected=courseStation(courseTime()),pinned=coursePin===null?null:courseStation(coursePin);
+      var interval=pinned?courseInterval(pinned.t,selected.t):[],comparison=null;
+      if(pinned){
+        var length=0;for(var i=1;i<interval.length;i++){var a=interval[i-1].position,b=interval[i].position;length+=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);}
+        comparison={elapsed:Math.abs(selected.t-pinned.t),routeLength:length,separation:Math.hypot(selected.position[0]-pinned.position[0],selected.position[1]-pinned.position[1],selected.position[2]-pinned.position[2]),heightChange:selected.position[1]-pinned.position[1],clearanceChange:(selected.position[1]-selected.ground)-(pinned.position[1]-pinned.ground)};
+      }
+      return {duration:DURATION,samples:ensureCourseSamples().map(copyCourseStation),selected:selected,pinned:pinned,interval:interval.map(copyCourseStation),comparison:comparison};
+    }
+    function createCourseReview(){
+      if(courseReview)return;
+      var root=new THREE.Group();root.name='birdlab-course-comparison';root.visible=false;scene.add(root);
+      var cylinder=new THREE.CylinderGeometry(1,1,1,6,1,true);
+      var outline=new THREE.InstancedMesh(cylinder,new THREE.MeshBasicMaterial({color:0x17352e,depthWrite:false,fog:false,toneMapped:false}),178);
+      var interval=new THREE.InstancedMesh(cylinder,new THREE.MeshBasicMaterial({color:0xffce79,fog:false,toneMapped:false}),178);
+      outline.name='birdlab-course-interval-outline';interval.name='birdlab-course-interval';outline.frustumCulled=interval.frustumCulled=false;
+      outline.renderOrder=24;interval.renderOrder=25;outline.count=interval.count=0;root.add(outline);root.add(interval);
+      var anchor=new THREE.Mesh(new THREE.TorusGeometry(1,.14,6,40),new THREE.MeshBasicMaterial({color:0xffce79,fog:false,toneMapped:false}));anchor.name='birdlab-course-anchor';root.add(anchor);
+      var tether=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineDashedMaterial({color:0xffce79,dashSize:.18,gapSize:.13,fog:false,toneMapped:false}));tether.name='birdlab-course-anchor-height';root.add(tether);
+      courseReview={root:root,outline:outline,interval:interval,anchor:anchor,tether:tether,from:new THREE.Vector3(),to:new THREE.Vector3(),mid:new THREE.Vector3(),direction:new THREE.Vector3(),axis:new THREE.Vector3(0,1,0),scale:new THREE.Vector3(),rotation:new THREE.Quaternion(),matrix:new THREE.Matrix4()};
+    }
+    function updateCourseLens(){
+      if(!courseReview)return;var review=courseReview;review.root.visible=courseVisible();
+      // Gold has one meaning in the comparison: A and its selected interval.
+      // Restore the older start-to-current trace outside this lens.
+      flightStudy.flown.visible=!review.root.visible;
+      flightStudy.marker.scale.setScalar(review.root.visible?Math.max(1,camera.position.distanceTo(bird.root.position)*2*Math.tan(camera.fov*Math.PI/360)/Math.max(1,canvas.clientHeight)*6/.6):1);
+      if(!review.root.visible)return;
+      var pinned=coursePin===null?null:courseStation(coursePin),points=pinned?courseInterval(pinned.t,courseTime()):[];
+      review.anchor.visible=review.tether.visible=!!pinned;
+      var pixel=2*Math.tan(camera.fov*Math.PI/360)/Math.max(1,canvas.clientHeight);
+      if(pinned){
+        review.anchor.position.fromArray(pinned.position);review.anchor.quaternion.copy(camera.quaternion);
+        review.anchor.scale.setScalar(Math.max(.24,camera.position.distanceTo(review.anchor.position)*pixel*6));
+        var positions=review.tether.geometry.attributes.position;
+        positions.setXYZ(0,pinned.position[0],pinned.ground,pinned.position[2]);positions.setXYZ(1,pinned.position[0],pinned.position[1],pinned.position[2]);positions.needsUpdate=true;
+        review.tether.geometry.computeBoundingSphere();review.tether.computeLineDistances();
+      }
+      review.interval.count=review.outline.count=Math.max(0,points.length-1);
+      for(var i=1;i<points.length;i++){
+        review.from.fromArray(points[i-1].position);review.to.fromArray(points[i].position);review.mid.addVectors(review.from,review.to).multiplyScalar(.5);review.direction.subVectors(review.to,review.from);
+        var length=review.direction.length();review.rotation.setFromUnitVectors(review.axis,length>1e-10?review.direction.multiplyScalar(1/length):review.axis);
+        // Stay outside the existing .105m course backing in close views too.
+        var radius=Math.max(.16,camera.position.distanceTo(review.mid)*pixel*1.6);
+        review.scale.set(radius*1.8,length,radius*1.8);review.matrix.compose(review.mid,review.rotation,review.scale);review.outline.setMatrixAt(i-1,review.matrix);
+        review.scale.x=review.scale.z=radius;review.matrix.compose(review.mid,review.rotation,review.scale);review.interval.setMatrixAt(i-1,review.matrix);
+      }
+      review.interval.instanceMatrix.needsUpdate=true;review.outline.instanceMatrix.needsUpdate=true;
+    }
+    function setCourseLens(value){
+      if(disposed||mode!=='guided'||isResidentCamera(cameraMode))return;
+      courseLens=!!value;
+      if(courseLens){leaveAnatomy();leavePerspective();createCourseReview();ensureCourseSamples();wingbeatStudy=null;attitudeLens=false;lightStudy=false;paused=true;repeatFlights=false;lastStamp=null;studyOverlay=true;cameraMode='wide';updateBird(0,true);updateCamera(1,true);}
+      updateCourseLens();notify(true);refresh();
+    }
+    function pinCourseStation(){if(!courseVisible())return;coursePin=courseTime();updateCourseLens();notify(true);refresh();}
+    function clearCourseStation(){coursePin=null;updateCourseLens();notify(true);refresh();}
+    function attitudeVisible(){return attitudeLens&&mode==='guided'&&!isResidentCamera(cameraMode)&&!wingbeatStudy&&!courseLens;}
+    function attitudeSnapshot(){
+      if(!attitudeVisible())return null;
+      // Read the displayed body frame, never write a second pose or clock.
+      var forward=new THREE.Vector3(0,0,-1).applyQuaternion(bird.root.quaternion),right=new THREE.Vector3(1,0,0).applyQuaternion(bird.root.quaternion),up=new THREE.Vector3(0,1,0).applyQuaternion(bird.root.quaternion);
+      return {position:bird.root.position.toArray(),forward:forward.toArray(),right:right.toArray(),up:up.toArray(),worldUp:[0,1,0],heading:Math.atan2(-forward.x,-forward.z)*180/Math.PI,pitch:Math.asin(clamp(forward.y,-1,1))*180/Math.PI,bank:Math.atan2(right.y,up.y)*180/Math.PI,view:attitudeView};
+    }
+    function createAttitudeGuide(){
+      if(attitudeGuide)return;
+      var root=new THREE.Group();root.name='birdlab-attitude-guide';root.visible=false;scene.add(root);
+      var body=new THREE.Group();body.name='birdlab-attitude-body-frame';root.add(body);
+      var stemGeometry=new THREE.CylinderGeometry(1,1,1,8,1,true),tipGeometry=new THREE.ConeGeometry(1,1,10);
+      [['forward',[0,0,-1],0xffcf76],['right',[1,0,0],0x5be5da],['up',[0,1,0],0xffa8bd]].forEach(function(spec){
+        var axis=new THREE.Group();axis.name='birdlab-attitude-'+spec[0];axis.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3().fromArray(spec[1]));body.add(axis);
+        var material=new THREE.MeshBasicMaterial({color:spec[2],fog:false,toneMapped:false});
+        var stem=new THREE.Mesh(stemGeometry,material);stem.name=axis.name+'-stem';stem.scale.set(.012,1.27,.012);stem.position.y=.635;axis.add(stem);
+        var tip=new THREE.Mesh(tipGeometry,material);tip.name=axis.name+'-tip';tip.scale.set(.075,.18,.075);tip.position.y=1.36;axis.add(tip);
+      });
+      var white=new THREE.MeshBasicMaterial({color:0xf6f3dc,transparent:true,opacity:.88,depthWrite:false,fog:false,toneMapped:false});
+      var horizon=new THREE.Mesh(new THREE.TorusGeometry(1.2,.012,6,96),white);horizon.name='birdlab-attitude-horizon';horizon.rotation.x=Math.PI/2;root.add(horizon);
+      var worldUp=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,1.45,0)]),new THREE.LineDashedMaterial({color:0xf6f3dc,dashSize:.08,gapSize:.06,transparent:true,opacity:.9,depthWrite:false,fog:false,toneMapped:false}));worldUp.name='birdlab-attitude-world-up';worldUp.computeLineDistances();root.add(worldUp);
+      var worldTip=new THREE.Mesh(tipGeometry,white);worldTip.name='birdlab-attitude-world-tip';worldTip.scale.set(.065,.18,.065);worldTip.position.y=1.36;root.add(worldTip);
+      attitudeGuide={root:root,body:body};
+    }
+    function updateAttitudeGuide(){if(!attitudeGuide)return;attitudeGuide.root.visible=attitudeVisible();if(!attitudeGuide.root.visible)return;attitudeGuide.root.position.copy(bird.root.position);attitudeGuide.body.quaternion.copy(bird.root.quaternion);}
+    function releaseAttitudeCamera(){
+      if(!attitudeVisible()||attitudeView==='free')return;
+      var offset=camera.position.clone().sub(bird.root.position);offset.y-=.055;
+      orbit.distance=clamp(offset.length(),1.1,12);orbit.yaw=Math.atan2(offset.x,offset.z);orbit.pitch=clamp(Math.asin(clamp(offset.y/Math.max(.001,offset.length()),-1,1)),-.55,1.25);attitudeView='free';
+    }
+    function setAttitudeLens(value){
+      if(disposed||mode!=='guided'||isResidentCamera(cameraMode))return;
+      if(!value)releaseAttitudeCamera();
+      attitudeLens=!!value;
+      if(attitudeLens){leaveAnatomy();leavePerspective();createAttitudeGuide();courseLens=false;wingbeatStudy=null;lightStudy=false;studyOverlay=false;attitudeView='oblique';cameraMode='orbit';paused=true;repeatFlights=false;lastStamp=null;updateBird(0,true);updateCamera(1,true);}
+      updateAttitudeGuide();notify(true);refresh();
+    }
+    function setAttitudeView(value){if(!attitudeVisible()||['oblique','x','z','above','free'].indexOf(value)<0)return;if(value==='free')releaseAttitudeCamera();attitudeView=value;cameraMode='orbit';updateCamera(1,true);notify(true);refresh();}
+    function lightVisible(){return lightStudy&&mode==='guided'&&!isResidentCamera(cameraMode)&&!wingbeatStudy&&!courseLens&&!attitudeLens;}
+    function lightDirection(){
+      var direction=sun.position.clone().sub(sun.target.position).normalize();
+      return {azimuth:Math.atan2(direction.x,direction.z)*180/Math.PI,elevation:Math.asin(clamp(direction.y,-1,1))*180/Math.PI,direction:direction.toArray()};
+    }
+    function lightSnapshot(){
+      if(!lightVisible())return null;
+      var current=lightDirection();current.palette=lighting;
+      current.pinned=lightPin?{azimuth:lightPin.azimuth,elevation:lightPin.elevation,direction:lightPin.direction.slice()}:null;return current;
+    }
+    function setLightStudy(value){
+      if(disposed||mode!=='guided'||isResidentCamera(cameraMode))return;
+      if(value){
+        leaveAnatomy();
+        leavePerspective();
+        if(attitudeLens)releaseAttitudeCamera();
+        lightStudy=true;attitudeLens=false;courseLens=false;wingbeatStudy=null;studyOverlay=false;paused=true;repeatFlights=false;lastStamp=null;cameraMode='orbit';
+        updateBird(0,true);updateCamera(1,true);
+      }else lightStudy=false;
+      notify(true);refresh();
+    }
+    function setLightDirection(value){
+      if(disposed||!lightVisible()||!value||typeof value!=='object'||Array.isArray(value))return;
+      if((value.azimuth!==undefined&&(typeof value.azimuth!=='number'||!Number.isFinite(value.azimuth)))||(value.elevation!==undefined&&(typeof value.elevation!=='number'||!Number.isFinite(value.elevation))))return;
+      if(value.azimuth===undefined&&value.elevation===undefined)return;
+      var current=lightDirection(),azimuth=clamp(value.azimuth===undefined?current.azimuth:value.azimuth,-180,180)*Math.PI/180;
+      var elevation=clamp(value.elevation===undefined?current.elevation:value.elevation,5,85)*Math.PI/180;
+      var distance=Math.max(1,sun.position.distanceTo(sun.target.position));
+      sun.position.set(Math.sin(azimuth)*Math.cos(elevation),Math.sin(elevation),Math.cos(azimuth)*Math.cos(elevation)).multiplyScalar(distance).add(sun.target.position);
+      sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;notify(true);refresh();
+    }
+    function pinLightDirection(){if(!lightVisible())return;lightPin=lightDirection();notify(true);}
+    function clearLightDirection(){lightPin=null;notify(true);}
+    function restoreLightDirection(){if(lightPin)setLightDirection({azimuth:lightPin.azimuth,elevation:lightPin.elevation});}
+    function perspectiveVisible(){return perspectiveStudy&&mode==='guided'&&cameraMode==='orbit'&&!wingbeatStudy&&!courseLens&&!attitudeLens&&!lightStudy;}
+    function perspectiveBounds(){
+      if(!perspectiveLinked)return {distance:[1.8,10],fov:[25,70]};
+      return {distance:[Math.max(1.8,perspectiveScale/Math.tan(35*Math.PI/180)),Math.min(10,perspectiveScale/Math.tan(12.5*Math.PI/180))],fov:[Math.max(25,2*Math.atan(perspectiveScale/10)*180/Math.PI),Math.min(70,2*Math.atan(perspectiveScale/1.8)*180/Math.PI)]};
+    }
+    function perspectiveSnapshot(){
+      if(!perspectiveVisible())return null;
+      camera.updateMatrixWorld(true);
+      var distance=camera.position.distanceTo(followTarget),fieldHeight=2*distance*Math.tan(camera.fov*Math.PI/360),bounds=perspectiveBounds();
+      var right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+      var center=followTarget.clone().addScaledVector(right,-.84*fieldHeight*camera.aspect/2),top=center.clone().addScaledVector(up,.25),bottom=center.clone().addScaledVector(up,-.25);
+      var pinned=perspectivePin?{distance:perspectivePin.distance,fov:perspectivePin.fov,fieldHeight:2*perspectivePin.distance*Math.tan(perspectivePin.fov*Math.PI/360)}:null;
+      if(pinned)pinned.fraction=.5/pinned.fieldHeight;
+      return {distance:distance,fov:camera.fov,linked:perspectiveLinked,lockedScale:perspectiveLinked?perspectiveScale:null,fieldHeight:fieldHeight,distanceBounds:bounds.distance,fovBounds:bounds.fov,viewport:{width:canvasWidth,height:canvasHeight},ruler:{length:.5,world:[top.toArray(),bottom.toArray()],ndc:[top.clone().project(camera).toArray(),bottom.clone().project(camera).toArray()],fraction:.5/fieldHeight},pinned:pinned};
+    }
+    function leavePerspective(){if(perspectiveStudy)orbit.distance=perspectiveDistance;perspectiveStudy=false;}
+    function setPerspectiveStudy(value){
+      if(disposed||value&&(mode!=='guided'||isResidentCamera(cameraMode)))return;
+      if(value){
+        if(attitudeLens)releaseAttitudeCamera();
+        leaveAnatomy();perspectiveStudy=true;lightStudy=false;attitudeLens=false;courseLens=false;wingbeatStudy=null;studyOverlay=false;paused=true;repeatFlights=false;lastStamp=null;cameraMode='orbit';updateBird(0,true);
+      }else leavePerspective();
+      updateCamera(1,true);notify(true);refresh();
+    }
+    function setPerspectiveDistance(value){
+      if(disposed||!perspectiveVisible()||typeof value!=='number'||!Number.isFinite(value))return;
+      var bounds=perspectiveBounds();perspectiveDistance=clamp(value,bounds.distance[0],bounds.distance[1]);
+      if(perspectiveLinked)perspectiveFov=2*Math.atan(perspectiveScale/perspectiveDistance)*180/Math.PI;
+      updateCamera(1,true);notify(true);refresh();
+    }
+    function setPerspectiveFov(value){
+      if(disposed||!perspectiveVisible()||typeof value!=='number'||!Number.isFinite(value))return;
+      var bounds=perspectiveBounds();perspectiveFov=clamp(value,bounds.fov[0],bounds.fov[1]);
+      if(perspectiveLinked)perspectiveDistance=perspectiveScale/Math.tan(perspectiveFov*Math.PI/360);
+      updateCamera(1,true);notify(true);refresh();
+    }
+    function setPerspectiveLinked(value){if(disposed||!perspectiveVisible())return;perspectiveLinked=!!value;perspectiveScale=perspectiveLinked?perspectiveDistance*Math.tan(perspectiveFov*Math.PI/360):null;notify(true);}
+    function pinPerspectiveSettings(){if(disposed||!perspectiveVisible())return;perspectivePin={distance:camera.position.distanceTo(followTarget),fov:camera.fov};notify(true);}
+    function clearPerspectiveSettings(){if(disposed)return;perspectivePin=null;notify(true);}
+    function restorePerspectiveSettings(){if(disposed||!perspectiveVisible()||!perspectivePin)return;perspectiveDistance=perspectivePin.distance;perspectiveFov=perspectivePin.fov;if(perspectiveLinked)perspectiveScale=perspectiveDistance*Math.tan(perspectiveFov*Math.PI/360);updateCamera(1,true);notify(true);refresh();}
+    function anatomyVisible(){return !disposed&&anatomyStudy&&mode==='guided'&&cameraMode==='orbit'&&!wingbeatStudy&&!courseLens&&!attitudeLens&&!lightStudy&&!perspectiveStudy;}
+    function anatomyContains(mesh){
+      if(anatomyPart==='whole')return true;
+      var roots=anatomyPart==='head'?[bird.joints.head]:anatomyPart==='tail'?[bird.joints.tail]:anatomyPart==='feet'?bird.joints.feet:[bird.joints.wings[anatomyPart==='leftWing'?0:1].shoulder];
+      for(var node=mesh;node&&node!==bird.root;node=node.parent)if(roots.indexOf(node)>=0)return true;return false;
+    }
+    function restoreAnatomyVisibility(){anatomyVisibility.forEach(function(entry){entry.mesh.visible=entry.visible;});anatomyVisibility=[];}
+    function applyAnatomyVisibility(){
+      restoreAnatomyVisibility();if(!anatomyVisible()||!anatomyIsolate)return;
+      bird.root.traverse(function(mesh){if(mesh.isMesh&&!anatomyContains(mesh)){anatomyVisibility.push({mesh:mesh,visible:mesh.visible});mesh.visible=false;}});
+    }
+    function anatomyGeometry(){
+      if(anatomyCache)return anatomyCache;
+      bird.root.updateMatrixWorld(true);
+      var inverse=bird.root.matrixWorld.clone().invert(),whole=new THREE.Box3(),selected=new THREE.Box3(),base=new THREE.Vector3(),point=new THREE.Vector3(),delta=new THREE.Vector3(),ids=[];
+      bird.root.traverse(function(mesh){
+        // This eyelid replaces its vertex positions in a custom shader. Keep
+        // its rendering, but do not present its CPU buffer as a measurement.
+        if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.attributes.position||mesh.name==='curved-lower-eyelid')return;
+        var positions=mesh.geometry.attributes.position,morphs=mesh.geometry.morphAttributes.position||[],chosen=anatomyContains(mesh);
+        if(chosen)ids.push(mesh.uuid);
+        for(var i=0;i<positions.count;i++){
+          base.fromBufferAttribute(positions,i);point.copy(base);
+          for(var m=0;m<morphs.length;m++){var weight=mesh.morphTargetInfluences&&mesh.morphTargetInfluences[m]||0;if(!weight)continue;delta.fromBufferAttribute(morphs[m],i);if(!mesh.geometry.morphTargetsRelative)delta.sub(base);point.addScaledVector(delta,weight);}
+          point.applyMatrix4(mesh.matrixWorld).applyMatrix4(inverse);whole.expandByPoint(point);if(chosen)selected.expandByPoint(point);
+        }
+      });
+      function values(box){return {min:box.min.toArray(),max:box.max.toArray(),size:box.getSize(new THREE.Vector3()).toArray()};}
+      var corners=[];for(var c=0;c<8;c++)corners.push(new THREE.Vector3(c&1?selected.max.x:selected.min.x,c&2?selected.max.y:selected.min.y,c&4?selected.max.z:selected.min.z).applyMatrix4(bird.root.matrixWorld));
+      var center=selected.getCenter(new THREE.Vector3()).applyMatrix4(bird.root.matrixWorld),radius=0;corners.forEach(function(corner){radius=Math.max(radius,corner.distanceTo(center));});
+      anatomyCache={meshes:ids,bounds:values(selected),whole:values(whole),corners:corners,center:center,radius:Math.max(.005,radius)};return anatomyCache;
+    }
+    function copyAnatomyBounds(bounds){return {min:bounds.min.slice(),max:bounds.max.slice(),size:bounds.size.slice()};}
+    function anatomyCorners(bounds){var points=[];for(var c=0;c<8;c++)points.push(new THREE.Vector3(bounds[c&1?'max':'min'][0],bounds[c&2?'max':'min'][1],bounds[c&4?'max':'min'][2]).applyMatrix4(bird.root.matrixWorld));return points;}
+    function anatomyFrameGeometry(){
+      var bounds=copyAnatomyBounds(anatomyGeometry().bounds);
+      if(anatomyPin&&anatomyPin.part===anatomyPart)for(var axis=0;axis<3;axis++){bounds.min[axis]=Math.min(bounds.min[axis],anatomyPin.bounds.min[axis]);bounds.max[axis]=Math.max(bounds.max[axis],anatomyPin.bounds.max[axis]);bounds.size[axis]=bounds.max[axis]-bounds.min[axis];}
+      var corners=anatomyCorners(bounds),center=new THREE.Vector3((bounds.min[0]+bounds.max[0])/2,(bounds.min[1]+bounds.max[1])/2,(bounds.min[2]+bounds.max[2])/2).applyMatrix4(bird.root.matrixWorld),radius=0;
+      corners.forEach(function(point){radius=Math.max(radius,point.distanceTo(center));});return {bounds:bounds,center:center,corners:corners,radius:Math.max(.005,radius)};
+    }
+    function anatomyFit(){var data=anatomyFrameGeometry(),half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return {center:data.center.toArray(),radius:data.radius,minimumDistance:Math.max(camera.near+data.radius+.01,data.radius*1.08/Math.sin(half))};}
+    function anatomySnapshot(){
+      if(!anatomyVisible())return null;
+      var data=anatomyGeometry(),frame=anatomyFrameGeometry(),fit=anatomyFit(),pin=null,change=null;camera.updateMatrixWorld(true);fit.distance=camera.position.distanceTo(frame.center);
+      if(anatomyPin){
+        var matching=anatomyPin.part===anatomyPart,points=matching?anatomyCorners(anatomyPin.bounds):[];
+        pin={part:anatomyPin.part,time:anatomyPin.time,bounds:copyAnatomyBounds(anatomyPin.bounds),matching:matching,corners:points.map(function(point){return point.toArray();}),ndc:points.map(function(point){return point.clone().project(camera).toArray();})};
+        if(matching)change=data.bounds.size.map(function(value,index){return value-anatomyPin.bounds.size[index];});
+      }
+      var result={part:anatomyPart,isolate:anatomyIsolate,view:anatomyView,zoom:anatomyZoom,meshes:data.meshes.slice(),bounds:copyAnatomyBounds(data.bounds),whole:copyAnatomyBounds(data.whole),framing:copyAnatomyBounds(frame.bounds),pinned:pin,delta:change,corners:data.corners.map(function(point){return point.toArray();}),ndc:data.corners.map(function(point){return point.clone().project(camera).toArray();}),viewport:{width:canvasWidth,height:canvasHeight},cameraFit:fit};
+      // Preserve the legacy snapshot until this optional display is used.
+      if(anatomyFrozenUsed)result.frozenSurface={enabled:anatomyFrozenEnabled,opacity:anatomyFrozenOpacity,visible:!!(anatomyFrozenGuide&&anatomyFrozenGuide.root.visible),triangles:anatomyFrozenData?anatomyFrozenData.positions.length/9:0,sourceMeshes:anatomyFrozenData?anatomyFrozenData.sources.map(function(source){return {id:source.id,name:source.name,triangles:source.count/3};}):[],edgeSegments:anatomyFrozenGuide&&anatomyFrozenGuide.edges.geometry?anatomyFrozenGuide.edges.geometry.attributes.position.count/2:0};
+      return result;
+    }
+    function captureAnatomyFrozenSurface(){
+      // Capture only native, drawable surface triangles, with joint matrices
+      // and CPU morphs baked into the bird's body frame. No THREE resources
+      // are allocated by a legacy pin. The shader-shaped eyelid is excluded.
+      bird.root.updateMatrixWorld(true);
+      var inverse=bird.root.matrixWorld.clone().invert(),positions=[],sources=[],base=new THREE.Vector3(),point=new THREE.Vector3(),delta=new THREE.Vector3();
+      bird.root.traverse(function(mesh){
+        if(!mesh.isMesh||!anatomyContains(mesh)||!mesh.geometry||!mesh.geometry.attributes.position||mesh.name==='curved-lower-eyelid')return;
+        for(var ancestor=mesh;ancestor;ancestor=ancestor.parent)if(ancestor.visible===false)return;
+        var geometry=mesh.geometry,attribute=geometry.attributes.position,index=geometry.index,morphs=geometry.morphAttributes.position||[],limit=index?index.count:attribute.count,draw=geometry.drawRange||{start:0,count:Infinity},ranges=[];
+        if(Array.isArray(mesh.material)){geometry.groups.forEach(function(group){var material=mesh.material[group.materialIndex];if(material&&material.visible!==false)ranges.push(group);});}
+        else if(mesh.material&&mesh.material.visible!==false)ranges.push({start:0,count:limit});
+        var start=positions.length/3;
+        ranges.forEach(function(range){
+          var first=Math.max(0,draw.start,range.start),end=Math.min(limit,draw.start+draw.count,range.start+range.count);
+          for(var triangle=first;triangle+2<end;triangle+=3)for(var corner=0;corner<3;corner++){
+            var vertex=index?index.getX(triangle+corner):triangle+corner;
+            base.fromBufferAttribute(attribute,vertex);point.copy(base);
+            for(var m=0;m<morphs.length;m++){var weight=mesh.morphTargetInfluences&&mesh.morphTargetInfluences[m]||0;if(!weight)continue;delta.fromBufferAttribute(morphs[m],vertex);if(!geometry.morphTargetsRelative)delta.sub(base);point.addScaledVector(delta,weight);}
+            point.applyMatrix4(mesh.matrixWorld).applyMatrix4(inverse);positions.push(point.x,point.y,point.z);
+          }
+        });
+        if(positions.length/3>start)sources.push({id:mesh.uuid,name:mesh.name,start:start,count:positions.length/3-start});
+      });
+      return {part:anatomyPart,positions:new Float32Array(positions),sources:sources};
+    }
+    function releaseAnatomyFrozenGeometry(){
+      if(!anatomyFrozenGuide)return;
+      [anatomyFrozenGuide.surface,anatomyFrozenGuide.edges].forEach(function(object){if(object.geometry){object.geometry.dispose();object.geometry=null;}});
+      anatomyFrozenGuide.root.visible=false;anatomyFrozenGuide.data=null;
+    }
+    function createAnatomyFrozenSurface(){
+      if(!anatomyFrozenData)return;
+      if(anatomyFrozenGuide&&anatomyFrozenGuide.data===anatomyFrozenData)return;
+      releaseAnatomyFrozenGeometry();
+      var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(anatomyFrozenData.positions,3));geometry.computeBoundingSphere();
+      var edgePositions=[];
+      // Resolve creases within each original mesh. Coincident vertices from
+      // different feather layers must not cancel each other's boundaries.
+      anatomyFrozenData.sources.forEach(function(source){
+        var temporary=new THREE.BufferGeometry();temporary.setAttribute('position',new THREE.BufferAttribute(anatomyFrozenData.positions.subarray(source.start*3,(source.start+source.count)*3),3));
+        var crease=new THREE.EdgesGeometry(temporary,28),values=crease.attributes.position.array;for(var i=0;i<values.length;i++)edgePositions.push(values[i]);crease.dispose();temporary.dispose();
+      });
+      var outline=new THREE.BufferGeometry();outline.setAttribute('position',new THREE.Float32BufferAttribute(edgePositions,3));outline.computeBoundingSphere();
+      if(!anatomyFrozenGuide){
+        var root=new THREE.Group();root.name='birdlab-anatomy-frozen-surface';root.matrixAutoUpdate=false;root.visible=false;scene.add(root);
+        var surface=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:'#91e9f3',side:THREE.DoubleSide,transparent:true,opacity:anatomyFrozenOpacity,depthTest:true,depthWrite:false,toneMapped:false,fog:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));
+        surface.name='birdlab-anatomy-frozen-triangles';surface.renderOrder=4;root.add(surface);
+        var edges=new THREE.LineSegments(outline,new THREE.LineBasicMaterial({color:'#b9f8ff',transparent:true,opacity:Math.min(1,anatomyFrozenOpacity*2.2),depthTest:true,depthWrite:false,toneMapped:false,fog:false}));
+        edges.name='birdlab-anatomy-frozen-creases';edges.renderOrder=5;root.add(edges);
+        anatomyFrozenGuide={root:root,surface:surface,edges:edges,data:null};
+      }
+      anatomyFrozenGuide.surface.geometry=geometry;anatomyFrozenGuide.edges.geometry=outline;anatomyFrozenGuide.data=anatomyFrozenData;
+    }
+    function updateAnatomyFrozenSurface(){
+      var visible=anatomyFrozenEnabled&&anatomyVisible()&&anatomyPin&&anatomyPin.part===anatomyPart&&anatomyFrozenData&&anatomyFrozenData.positions.length>0;
+      if(visible)createAnatomyFrozenSurface();
+      if(!anatomyFrozenGuide)return;
+      anatomyFrozenGuide.root.visible=!!visible&&anatomyFrozenOpacity>0;
+      if(visible){bird.root.updateMatrixWorld(true);anatomyFrozenGuide.root.matrix.copy(bird.root.matrixWorld);anatomyFrozenGuide.root.matrixWorldNeedsUpdate=true;}
+      anatomyFrozenGuide.surface.material.opacity=anatomyFrozenOpacity;anatomyFrozenGuide.edges.material.opacity=Math.min(1,anatomyFrozenOpacity*2.2);
+    }
+    function setAnatomyFrozenSurface(value){if(disposed||!anatomyVisible()||!anatomyPin||anatomyPin.part!==anatomyPart)return false;anatomyFrozenEnabled=!!value;anatomyFrozenUsed=true;notify(true);refresh();return true;}
+    function setAnatomyFrozenOpacity(value){if(disposed||!anatomyVisible()||!anatomyFrozenUsed||typeof value!=='number'||!Number.isFinite(value))return;anatomyFrozenOpacity=clamp(value,0,.7);notify(true);refresh();}
+    function pinAnatomyShape(){if(!anatomyVisible())return;anatomyPin={part:anatomyPart,time:time,bounds:copyAnatomyBounds(anatomyGeometry().bounds)};anatomyFrozenData=captureAnatomyFrozenSurface();releaseAnatomyFrozenGeometry();updateCamera(1,true);notify(true);refresh();}
+    function clearAnatomyShape(){if(disposed)return;anatomyPin=null;anatomyFrozenData=null;releaseAnatomyFrozenGeometry();if(anatomyVisible())updateCamera(1,true);notify(true);refresh();}
+    function leaveAnatomy(){
+      if(!anatomyStudy)return;anatomyStudy=false;restoreAnatomyVisibility();anatomyCache=null;
+      if(anatomySavedOrbit){orbit.yaw=anatomySavedOrbit.yaw;orbit.pitch=anatomySavedOrbit.pitch;orbit.distance=anatomySavedOrbit.distance;anatomySavedOrbit=null;}
+    }
+    function setAnatomyStudy(value){
+      if(disposed||value&&(mode!=='guided'||isResidentCamera(cameraMode)))return;
+      if(value){
+        if(attitudeLens)releaseAttitudeCamera();leavePerspective();
+        if(!anatomyStudy)anatomySavedOrbit={yaw:orbit.yaw,pitch:orbit.pitch,distance:orbit.distance};
+        anatomyStudy=true;anatomyCache=null;lightStudy=false;attitudeLens=false;courseLens=false;wingbeatStudy=null;studyOverlay=false;cameraMode='orbit';paused=true;repeatFlights=false;lastStamp=null;
+        updateBird(0,true);applyAnatomyVisibility();
+      }else leaveAnatomy();
+      updateCamera(1,true);notify(true);refresh();
+    }
+    function setAnatomyPart(value){if(!anatomyVisible()||['whole','head','leftWing','rightWing','tail','feet'].indexOf(value)<0)return;anatomyPart=value;anatomyCache=null;anatomyZoom=1;applyAnatomyVisibility();updateCamera(1,true);notify(true);refresh();}
+    function setAnatomyIsolate(value){if(!anatomyVisible())return;anatomyIsolate=!!value;applyAnatomyVisibility();notify(true);refresh();}
+    function frameAnatomyPart(){if(!anatomyVisible())return;anatomyZoom=1;updateCamera(1,true);notify(true);refresh();}
+    function releaseAnatomyCamera(){if(!anatomyVisible()||anatomyView==='free')return;var offset=camera.position.clone().sub(anatomyFrameGeometry().center).applyQuaternion(bird.root.quaternion.clone().invert()).normalize();orbit.yaw=Math.atan2(offset.x,offset.z);orbit.pitch=Math.asin(clamp(offset.y,-1,1));anatomyView='free';}
+    function setAnatomyView(value){if(!anatomyVisible()||['oblique','front','side','above','free'].indexOf(value)<0)return;if(value==='free')releaseAnatomyCamera();anatomyView=value;updateCamera(1,true);notify(true);refresh();}
     function blocked(x,z){return Math.hypot(x,z)>17.5||!!(habitat.isBlocked&&habitat.isBlocked(x,z,.28));}
     function resetObserver(){
       var x=1.8,z=4.8;
@@ -668,6 +1492,7 @@
     }
     function setMode(value){
       if(disposed||['guided','free'].indexOf(value)<0||value===mode)return;
+      wingbeatStudy=null;
       clearMovement();exitPointerLock();binoculars=false;observer.crouching=false;fieldObserver.reset();observationKey='';
       if(value==='free'){
         savedGuided={time:time,paused:paused,speed:speed,camera:cameraMode,repeat:repeatFlights,yaw:orbit.yaw,pitch:orbit.pitch,distance:orbit.distance};
@@ -712,23 +1537,30 @@
       repeatFlights=next;notify(true);refresh();
     }
     function setCamera(mode) {
-      if(cameraMode==='walk'||['orbit','follow','wide','robin','chickadee','mourningDove','grouse','blueJay','northernCardinal'].indexOf(mode)===-1)return;
+      if(cameraMode==='walk'||(['orbit','follow','wide'].indexOf(mode)===-1&&!isResidentCamera(mode)))return;
+      if(mode!==cameraMode)resetResidentLens();
+      var wasPerspective=perspectiveVisible(),wasAnatomy=anatomyVisible();if(mode==='follow'||mode==='wide'){leavePerspective();leaveAnatomy();}
+      wingbeatView='free';
+      if(attitudeLens&&!isResidentCamera(mode)){if(mode==='orbit')releaseAttitudeCamera();attitudeView='free';}
       if(mode!==cameraMode)repeatFlights=false;
-      if(mode!==cameraMode && (mode==='mourningDove'||mode==='grouse'||mode==='blueJay'||mode==='northernCardinal')) {
+      if(mode!==cameraMode && isResidentCamera(mode) && (SHARED_RESIDENT_CAMERAS.indexOf(mode)>=0 || (wildlife.isShared&&wildlife.isShared(mode)))) {
         var resident=wildlife.snapshot().filter(function(value){return value.id===mode;})[0];
         orbit.yaw=(resident?resident.heading:0)+.85;orbit.pitch=.10;orbit.distance=2.65;
       }
-      cameraMode=mode;pointerMap.clear();notify(true);refresh();
+      if(isResidentCamera(mode))wingbeatStudy=null;
+      cameraMode=mode;pointerMap.clear();applyAnatomyVisibility();if(wasPerspective||perspectiveVisible()||wasAnatomy||anatomyVisible())updateCamera(1,true);updateStudyOverlay();notify(true);refresh();
     }
-    function resetView() {if(mode==='free'){clearMovement();resetObserver();binoculars=false;fieldObserver.reset();observationKey='';}else{orbit.yaw=2.4;orbit.pitch=.21;orbit.distance=2.65;cameraMode='orbit';repeatFlights=false;}notify(true);refresh(); }
+    function resetView() {if(anatomyVisible()){anatomyZoom=1;setAnatomyView('oblique');return;}if(mode==='guided')resetResidentLens();wingbeatView='free';if(attitudeLens)attitudeView='oblique';if(mode==='free'){clearMovement();resetObserver();binoculars=false;fieldObserver.reset();observationKey='';}else{orbit.yaw=2.4;orbit.pitch=.21;orbit.distance=2.65;cameraMode='orbit';repeatFlights=false;}updateStudyOverlay();notify(true);refresh(); }
     function seek(value) {
       if(disposed||mode==='free'||!Number.isFinite(Number(value)))return;
+      leaveSurfaceRuler();
+      wingbeatStudy=null;
       paused=true;repeatFlights=false;time=clamp(Number(value),0,DURATION);stateStamp=-1;lastStamp=null;
       updateBird(0,true);updateCamera(1,true);notify(true);refresh();
     }
     function setLighting(value) {
       if(disposed||['daylight','golden'].indexOf(value)===-1)return;
-      lighting=value;var warm=value==='golden';
+      lighting=value;lightingDirectionCustom=false;var warm=value==='golden';
       // Keep enough sky fill to read the shaded underside, while letting the
       // sun reveal overlapping feathers, bark ridges and the canopy shadows.
       hemi.color.set(warm?'#c1d1e1':'#d5e8f4');hemi.groundColor.set(warm?'#6d5138':'#4c5938');hemi.intensity=warm?.64:.60;
@@ -740,15 +1572,31 @@
       scene.background.copy(scene.fog.color);
       sky.material.uniforms.top.value.set(warm?'#7594ad':'#749bb4');
       sky.material.uniforms.bottom.value.copy(scene.fog.color);
+      sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();
+      sky.material.uniforms.sunTint.value.set(warm?'#ffe0ad':'#fff1d6');
+      sky.material.uniforms.cloudLight.value.set(warm?'#f6dec1':'#f5f5ec');
+      sky.material.uniforms.cloudShade.value.set(warm?'#aeb4bd':'#b4c6d0');
       renderer.toneMappingExposure=warm?1.03:1.0;notify(true);refresh();
     }
-    function restart() {if(mode==='free')return;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
-    var controller={setMode:setMode,setBinoculars:setBinoculars,setCrouching:setCrouching,recordSighting:recordSighting,setMove:setMove,stepMove:stepMove,lockPointer:lockPointer,setPaused:setPaused,setSpeed:setSpeed,setCamera:setCamera,setLighting:setLighting,setRepeatFlights:setRepeatFlights,seek:seek,resetView:resetView,restart:restart,dispose:dispose,getState:snapshot};
+    function restart() {if(mode==='free')return;leaveSurfaceRuler();wingbeatStudy=null;coursePin=null;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
+    var controller={inspectWingbeat:inspectWingbeat,seekWingbeat:seekWingbeat,closeWingbeat:closeWingbeat,pinWingtipPose:pinWingtipPose,clearWingtipPose:clearWingtipPose,setWingbeatView:setWingbeatView,setStudyOverlay:setStudyOverlay,setMode:setMode,setBinoculars:setBinoculars,setCrouching:setCrouching,recordSighting:recordSighting,setMove:setMove,stepMove:stepMove,lockPointer:lockPointer,setPaused:setPaused,setSpeed:setSpeed,setCamera:setCamera,setLighting:setLighting,setRepeatFlights:setRepeatFlights,seek:seek,resetView:resetView,restart:restart,dispose:dispose,getState:snapshot};
+    controller.setResidentStudio=setResidentStudio;
+    controller.setResidentPart=setResidentPart;controller.setResidentView=setResidentView;controller.setResidentAngle=setResidentAngle;
+    controller.pinResidentShape=pinResidentShape;controller.clearResidentShape=clearResidentShape;controller.setResidentFrozenSurface=setResidentFrozenSurface;controller.setResidentFrozenOpacity=setResidentFrozenOpacity;
+    controller.setWingtipPaths=setWingtipPaths;
+    controller.setSurfaceRuler=setSurfaceRuler;controller.setSurfaceMeasureMode=setSurfaceMeasureMode;controller.clearSurfaceRuler=clearSurfaceRuler;controller.undoSurfacePoint=undoSurfacePoint;controller.placeSurfaceCenter=placeSurfaceCenter;
+    controller.setAnatomyFrozenSurface=setAnatomyFrozenSurface;controller.setAnatomyFrozenOpacity=setAnatomyFrozenOpacity;
+    controller.setCourseLens=setCourseLens;controller.pinCourseStation=pinCourseStation;controller.clearCourseStation=clearCourseStation;
+    controller.setAttitudeLens=setAttitudeLens;controller.setAttitudeView=setAttitudeView;
+    controller.setLightStudy=setLightStudy;controller.setLightDirection=setLightDirection;controller.pinLightDirection=pinLightDirection;controller.clearLightDirection=clearLightDirection;controller.restoreLightDirection=restoreLightDirection;
+    controller.setPerspectiveStudy=setPerspectiveStudy;controller.setPerspectiveDistance=setPerspectiveDistance;controller.setPerspectiveFov=setPerspectiveFov;controller.setPerspectiveLinked=setPerspectiveLinked;controller.pinPerspectiveSettings=pinPerspectiveSettings;controller.clearPerspectiveSettings=clearPerspectiveSettings;controller.restorePerspectiveSettings=restorePerspectiveSettings;
+    controller.setAnatomyStudy=setAnatomyStudy;controller.setAnatomyPart=setAnatomyPart;controller.setAnatomyIsolate=setAnatomyIsolate;controller.frameAnatomyPart=frameAnatomyPart;controller.setAnatomyView=setAnatomyView;controller.pinAnatomyShape=pinAnatomyShape;controller.clearAnatomyShape=clearAnatomyShape;
     canvas._birdlab3d=controller;
     canvas.setAttribute('data-birdlab-3d-ready','true');
     canvas.style.touchAction='none';
 
     function updateBird(dt,snap) {
+      restoreAnatomyVisibility();
       poseState=mode==='free'?freeHawk.update(dt,observer):sampleFlight(time);
       var p=poseState.position;
       if(mode==='free')bird.root.position.fromArray(p);else bird.root.position.set(habitat.perch.x+p[0],ground+p[1],habitat.perch.z+p[2]);
@@ -760,27 +1608,104 @@
       bird.update(Object.assign({},poseState.pose,{flapPhase:wingPhase,elapsedTime:time}),dt);
       habitatWind.fromArray(poseState.wind);
       habitat.update(time,options.reducedMotion?0:habitatWind);
+      // Use the simulation clock: pause, seek, restart and hidden-tab handling
+      // all work without an independent timer. Reduced motion stays still.
+      var weatherTime=options.reducedMotion?0:time;
+      sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
       wildlife.update(time,dt,mode==='free'?observer:null);
       if(mammals)mammals.update(time,dt,mode==='free'?observer:null);
+      updateStudyOverlay();anatomyCache=null;residentCache=null;applyAnatomyVisibility();
     }
     function updateCamera(dt,snap) {
-      var fov=mode==='free'?(binoculars?22:60):40;
-      if(camera.fov!==fov){camera.fov=snap?fov:camera.fov+(fov-camera.fov)*damping(12,dt);if(Math.abs(camera.fov-fov)<.01)camera.fov=fov;camera.updateProjectionMatrix();}
+      var fov=mode==='free'?(binoculars?22:60):perspectiveVisible()?perspectiveFov:40;
+      if(camera.fov!==fov){camera.fov=snap||perspectiveVisible()||anatomyVisible()?fov:camera.fov+(fov-camera.fov)*damping(12,dt);if(Math.abs(camera.fov-fov)<.01)camera.fov=fov;camera.updateProjectionMatrix();}
       if(mode==='free'){
         var eyeHeight=observer.crouching?1.03:1.65;
+        if(camera.far!==240){camera.far=240;camera.updateProjectionMatrix();}
         walk.eyeHeight=snap?eyeHeight:walk.eyeHeight+(eyeHeight-walk.eyeHeight)*damping(9,dt);if(Math.abs(walk.eyeHeight-eyeHeight)<.001)walk.eyeHeight=eyeHeight;
         observer.position.y=terrain(observer.position.x,observer.position.z)+walk.eyeHeight;
         camera.position.copy(observer.position);targetGoal.set(-Math.sin(walk.yaw)*Math.cos(walk.pitch),Math.sin(walk.pitch),-Math.cos(walk.yaw)*Math.cos(walk.pitch)).add(observer.position);
         followTarget.copy(targetGoal);camera.up.set(0,1,0);camera.lookAt(followTarget);return camera.fov!==fov||walk.eyeHeight!==eyeHeight;
       }
+      if(anatomyVisible()){
+        var fit=anatomyFit(),direction=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
+        if(anatomyView==='above'){direction.set(0,1,0);up.set(0,0,-1);}else if(anatomyView==='front')direction.set(0,0,-1);else if(anatomyView==='side')direction.set(1,0,0);else if(anatomyView==='oblique')direction.set(1,.65,1.5).normalize();else direction.set(Math.sin(orbit.yaw)*Math.cos(orbit.pitch),Math.sin(orbit.pitch),Math.cos(orbit.yaw)*Math.cos(orbit.pitch));
+        direction.applyQuaternion(bird.root.quaternion);up.applyQuaternion(bird.root.quaternion);followTarget.fromArray(fit.center);camera.position.copy(followTarget).addScaledVector(direction,fit.minimumDistance*anatomyZoom);camera.up.copy(up);camera.far=240;camera.updateProjectionMatrix();camera.lookAt(followTarget);camera.updateMatrixWorld(true);return false;
+      }
+      if(residentLensVisible()){
+        var residentData=residentFrameGeometry(residentGeometry());if(residentData){
+          // This ideal inspection camera can sit below the walking-camera floor.
+          // Current surfaces and an enabled frozen body envelope determine
+          // framing; the original bird and its authored pose are never moved.
+          residentUp.set(0,1,0);
+          if(residentView==='free')residentDirection.set(Math.sin(orbit.yaw)*Math.cos(orbit.pitch),Math.sin(orbit.pitch),Math.cos(orbit.yaw)*Math.cos(orbit.pitch));
+          else{
+            var forward=residentData.shared?1:-1;
+            if(residentView==='custom'){
+              var azimuth=residentAzimuth*Math.PI/180,elevation=residentElevation*Math.PI/180;
+              residentDirection.set(Math.sin(azimuth)*Math.cos(elevation),Math.sin(elevation),forward*Math.cos(azimuth)*Math.cos(elevation));
+              // Continue the camera's vertical axis smoothly through the poles.
+              residentUp.set(-Math.sin(azimuth)*Math.sin(elevation),Math.cos(elevation),-forward*Math.cos(azimuth)*Math.sin(elevation));
+            }else{
+              residentDirection.set(residentView==='side'?1:residentView==='opposite'?-1:0,residentView==='above'?1:0,residentView==='front'?forward:residentView==='rear'?-forward:0);
+              if(residentView==='above')residentUp.set(0,0,forward);
+            }
+            residentData.root.getWorldQuaternion(residentQuaternion);residentDirection.applyQuaternion(residentQuaternion);residentUp.applyQuaternion(residentQuaternion);
+          }
+          followTarget.copy(residentData.center);targetGoal.copy(followTarget);
+          var residentDistance=Math.max(camera.near+residentData.radius+.01,residentMinimumDistance(residentData)*residentZoom);
+          camera.position.copy(followTarget).addScaledVector(residentDirection,residentDistance);cameraGoal.copy(camera.position);camera.up.copy(residentUp);camera.far=240;camera.updateProjectionMatrix();camera.lookAt(followTarget);camera.updateMatrixWorld(true);return false;
+        }
+      }
+      if(perspectiveVisible()){
+        // An ideal study camera uses the exact requested distance. It may pass
+        // through scenery; the ordinary walking/orbit camera keeps its floor.
+        targetGoal.copy(bird.root.position);targetGoal.y+=.055;followTarget.copy(targetGoal);
+        cameraGoal.set(Math.sin(orbit.yaw)*Math.cos(orbit.pitch),Math.sin(orbit.pitch),Math.cos(orbit.yaw)*Math.cos(orbit.pitch)).multiplyScalar(perspectiveDistance).add(targetGoal);
+        camera.position.copy(cameraGoal);camera.up.set(0,1,0);camera.far=240;camera.updateProjectionMatrix();camera.lookAt(followTarget);camera.updateMatrixWorld(true);return false;
+      }
+      if(attitudeVisible()&&attitudeView!=='free'){
+        // Fixed world viewpoints make the changing body frame comparable.
+        var attitudeHalfVertical=camera.fov*Math.PI/360,attitudeHalfHorizontal=Math.atan(Math.tan(attitudeHalfVertical)*camera.aspect);
+        var attitudeDistance=1.7*1.12/Math.sin(Math.min(attitudeHalfVertical,attitudeHalfHorizontal));
+        targetGoal.copy(bird.root.position);followTarget.copy(targetGoal);
+        var attitudeDirection=new THREE.Vector3();
+        if(attitudeView==='x')attitudeDirection.set(1,0,0);else if(attitudeView==='z')attitudeDirection.set(0,0,1);else if(attitudeView==='above')attitudeDirection.set(0,1,0);else attitudeDirection.set(1,.65,1.5).normalize();
+        camera.position.copy(targetGoal).addScaledVector(attitudeDirection,attitudeDistance);cameraGoal.copy(camera.position);
+        camera.up.set(0,attitudeView==='above'?0:1,attitudeView==='above'?-1:0);camera.far=Math.max(240,attitudeDistance+3.4);camera.updateProjectionMatrix();camera.lookAt(followTarget);camera.updateMatrixWorld(true);return false;
+      }
+      if(wingbeatStudy&&wingbeatView!=='free'){
+        // Keep the whole captured sweep in frame at every phase and panel size.
+        // These viewpoints follow the bird's body axes, including its bank.
+        var wingRadius=(wingtipTrace?wingtipTrace.radius:.9)*Math.max(bird.root.scale.x,bird.root.scale.y,bird.root.scale.z);
+        var wingHalfVertical=camera.fov*Math.PI/360,wingHalfHorizontal=Math.atan(Math.tan(wingHalfVertical)*camera.aspect);
+        var wingDistance=wingRadius*1.08/Math.sin(Math.min(wingHalfVertical,wingHalfHorizontal));
+        targetGoal.copy(bird.root.position);followTarget.copy(targetGoal);
+        wingCameraDirection.set(wingbeatView==='side'?1:0,wingbeatView==='above'?1:0,wingbeatView==='front'?-1:0).applyQuaternion(bird.root.quaternion);
+        wingCameraUp.set(0,wingbeatView==='above'?0:1,wingbeatView==='above'?-1:0).applyQuaternion(bird.root.quaternion);
+        camera.position.copy(targetGoal).addScaledVector(wingCameraDirection,wingDistance);cameraGoal.copy(camera.position);camera.up.copy(wingCameraUp);
+        camera.far=Math.max(240,wingDistance+wingRadius*2);camera.updateProjectionMatrix();camera.lookAt(followTarget);camera.updateMatrixWorld(true);
+        if(flightStudy&&flightStudy.root.visible)flightStudy.marker.quaternion.copy(camera.quaternion);
+        return false;
+      }
       birdTarget.copy(bird.root.position); birdTarget.y+=.055;
+      var desiredFar=240;
       if(isResidentCamera(cameraMode)) {
         wildlife.getFocus(cameraMode,targetGoal);
-        var viewingDistance=({robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75}[cameraMode])*orbit.distance/2.65;
+        var viewingDistance=({robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75,darkEyedJunco:.66,tuftedTitmouse:.66,easternTowhee:.80,americanGoldfinch:.62,easternBluebird:.76,whiteThroatedSparrow:.72}[cameraMode])*orbit.distance/2.65;
         var viewingPitch=clamp(orbit.pitch+.17,-.35,1.35);
         cameraGoal.set(Math.sin(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance,Math.sin(viewingPitch)*viewingDistance,Math.cos(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance).add(targetGoal);
       } else if(cameraMode==='wide') {
-        targetGoal.set(-1,ground+2,-5);cameraGoal.set(22,17,31);
+        if(studyOverlay&&flightStudy){
+          // Fit the complete course to the tighter screen dimension. The
+          // existing habitat camera remains unchanged when guides are off.
+          var halfVertical=camera.fov*Math.PI/360,halfHorizontal=Math.atan(Math.tan(halfVertical)*camera.aspect);
+          var radius=(flightStudy.courseBounds.radius+1.5)*1.12;
+          var distance=radius/Math.sin(Math.min(halfVertical,halfHorizontal));
+          targetGoal.copy(flightStudy.courseBounds.center);
+          cameraGoal.set(23,24,36).normalize().multiplyScalar(distance).add(targetGoal);
+          desiredFar=Math.max(240,distance+radius*2);
+        }else{targetGoal.set(-1,ground+2,-5);cameraGoal.set(22,17,31);}
       } else if(cameraMode==='follow') {
         sampleFollowFrame(poseState,followFrame);
         targetGoal.fromArray(followFrame.targetOffset).add(birdTarget);
@@ -789,6 +1714,7 @@
         targetGoal.copy(birdTarget);
         cameraGoal.set(Math.sin(orbit.yaw)*Math.cos(orbit.pitch)*orbit.distance,Math.sin(orbit.pitch)*orbit.distance,Math.cos(orbit.yaw)*Math.cos(orbit.pitch)*orbit.distance).add(targetGoal);
       }
+      if(camera.far!==desiredFar){camera.far=desiredFar;camera.updateProjectionMatrix();}
       var floor=(habitat.groundHeight?habitat.groundHeight(cameraGoal.x,cameraGoal.z):0)+.24;
       cameraGoal.y=Math.max(cameraGoal.y,floor);
       // Let the camera travel on a softer arc while the aim keeps up with the
@@ -799,6 +1725,7 @@
       else {camera.position.lerp(cameraGoal,alpha);followTarget.lerp(targetGoal,aimAlpha);}
       if(cameraMode==='follow'&&habitat.groundHeight)camera.position.y=Math.max(camera.position.y,habitat.groundHeight(camera.position.x,camera.position.z)+.24);
       camera.up.set(0,1,0);camera.lookAt(followTarget);
+      if(flightStudy&&flightStudy.root.visible)flightStudy.marker.quaternion.copy(camera.quaternion);
       return camera.position.distanceToSquared(cameraGoal)+followTarget.distanceToSquared(targetGoal)>.000003;
     }
     var canvasWidth=0,canvasHeight=0;
@@ -808,7 +1735,7 @@
       // ResizeObserver's initial notification can arrive after a paused render.
       if(w===canvasWidth&&h===canvasHeight)return;
       canvasWidth=w;canvasHeight=h;
-      renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();refresh();
+      renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(perspectiveVisible()||anatomyVisible()||residentLensVisible()){updateCamera(1,true);notify(true);}refresh();
     }
     function tick(stamp) {
       raf=0;if(disposed||contextLost||document.hidden)return;
@@ -824,31 +1751,136 @@
         var observed=fieldObserver.update(dt,camera,mode==='free'&&binoculars,observer.speed,paused);
         var nextKey=observed?[observed.id,Math.floor(observed.progress*10),observed.identified,Math.round(observed.distance*10),observed.behavior].join('|'):'';
         var observationChanged=nextKey!==observationKey;observationKey=nextKey;
-        dirty=dirty||fieldObserver.needsFrame();renderer.render(scene,camera);frames++;notify(observationChanged);
+        dirty=dirty||fieldObserver.needsFrame();updateCourseLens();updateAttitudeGuide();updateSurfaceRuler();updateAnatomyFrozenSurface();updateResidentFrozenSurface();renderResidentScene();frames++;notify(observationChanged);
       }
       if(!paused||dirty)requestFrame();
     }
-    function orbitBy(dx,dy) {if(mode==='free'){var sensitivity=binoculars?.0014:.0035;walk.yaw-=dx*sensitivity;walk.pitch=clamp(walk.pitch-dy*sensitivity,-1.25,1.25);}else{if(!isResidentCamera(cameraMode))cameraMode='orbit';orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,-.55,1.25);}refresh();}
-    function zoomBy(amount) {if(mode==='free')return;orbit.distance=clamp(orbit.distance*Math.exp(amount),1.1,12);if(!isResidentCamera(cameraMode))cameraMode='orbit';refresh();}
+    function orbitBy(dx,dy) {wingbeatView='free';if(residentLensVisible()){releaseResidentView();orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,-Math.PI/2+.001,Math.PI/2-.001);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible())releaseAnatomyCamera();if(attitudeLens)releaseAttitudeCamera();if(mode==='free'){var sensitivity=binoculars?.0014:.0035;walk.yaw-=dx*sensitivity;walk.pitch=clamp(walk.pitch-dy*sensitivity,-1.25,1.25);}else{if(!isResidentCamera(cameraMode))cameraMode='orbit';orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,anatomyVisible()?-Math.PI/2+.001:-.55,anatomyVisible()?Math.PI/2-.001:1.25);}if(anatomyVisible())updateCamera(1,true);refresh();}
+    function zoomBy(amount) {if(mode==='free')return;if(residentLensVisible()){residentZoom=clamp(residentZoom*Math.exp(amount),.65,3);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible()){anatomyZoom=clamp(anatomyZoom*Math.exp(amount),1,3);updateCamera(1,true);notify(true);refresh();return;}if(perspectiveVisible()){setPerspectiveDistance(perspectiveDistance*Math.exp(amount));return;}wingbeatView='free';if(attitudeLens)releaseAttitudeCamera();orbit.distance=clamp(orbit.distance*Math.exp(amount),1.1,12);if(!isResidentCamera(cameraMode))cameraMode='orbit';refresh();}
+    function canUseSurfaceRuler(){return !disposed&&!contextLost&&mode==='guided'&&!studyOverlay&&!courseLens&&!attitudeLens&&!lightStudy&&!perspectiveStudy&&!anatomyStudy&&!wingbeatStudy;}
+    function canSelectSceneBird(){return canUseSurfaceRuler()&&!surfaceRuler;}
+    function surfaceSnapshot(){
+      if(!surfaceRuler)return null;
+      var a=surfacePoints[0],b=surfacePoints[1],delta=a&&b?b.position.map(function(value,index){return value-a.position[index];}):null;
+      var result={time:surfaceTime,next:surfacePoints.length===0?'a':surfacePoints.length===1?'b':surfaceMeasureMode==='angle'&&surfacePoints.length===2?'c':'done',points:surfacePoints.map(function(point){return {bird:point.bird,mesh:point.mesh,meshName:point.meshName,position:point.position.slice()};}),delta:delta,distance:delta?Math.hypot(delta[0],delta[1],delta[2]):null};
+      // The default two-point snapshot retains its original shape. Angle mode
+      // extends it with the included angle between BA and BC, in world space.
+      if(surfaceMeasureMode==='angle'){
+        var c=surfacePoints[2],bc=b&&c?c.position.map(function(value,index){return value-b.position[index];}):null,bcLength=bc?Math.hypot(bc[0],bc[1],bc[2]):null,angle=null,plane=false;
+        if(delta&&bc&&result.distance>1e-9&&bcLength>1e-9){
+          var u=delta.map(function(value){return -value/result.distance;}),v=bc.map(function(value){return value/bcLength;}),dot=clamp(u[0]*v[0]+u[1]*v[1]+u[2]*v[2],-1,1),cross=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+          angle=Math.atan2(Math.hypot(cross[0],cross[1],cross[2]),dot)*180/Math.PI;plane=Math.hypot(cross[0],cross[1],cross[2])>1e-7;
+        }
+        result.mode='angle';result.angle=angle;result.bcDistance=bcLength;result.arcVisible=plane;result.arcRadius=plane?Math.min(result.distance,bcLength)*.28:null;
+      }
+      return result;
+    }
+    function leaveSurfaceRuler(){surfaceRuler=false;surfacePoints.length=0;surfaceTime=null;surfaceMeasureMode='distance';if(surfaceGuide)surfaceGuide.root.visible=false;}
+    function setSurfaceRuler(value){
+      if(disposed)return false;
+      if(!value){leaveSurfaceRuler();notify(true);refresh();return true;}
+      if(!canUseSurfaceRuler())return false;
+      paused=true;repeatFlights=false;clearMovement();lastStamp=null;surfaceRuler=true;surfaceMeasureMode='distance';surfaceTime=time;surfacePoints.length=0;updateSurfaceRuler();notify(true);refresh();return true;
+    }
+    function clearSurfaceRuler(){if(!surfaceRuler)return;surfacePoints.length=0;notify(true);refresh();}
+    function undoSurfacePoint(){if(!surfaceRuler)return;surfacePoints.pop();notify(true);refresh();}
+    function setSurfaceMeasureMode(value){
+      if(!surfaceRuler||!canUseSurfaceRuler()||(value!=='distance'&&value!=='angle'))return false;
+      if(value!==surfaceMeasureMode){surfaceMeasureMode=value;surfacePoints.length=0;notify(true);refresh();}return true;
+    }
+    function createSurfaceGuide(){
+      var root=new THREE.Group();root.name='birdlab-surface-ruler';root.visible=false;scene.add(root);
+      // A single allocation belongs to this scene. Clearing and placing points
+      // only changes transforms; releaseResources disposes it on unmount.
+      var sphere=new THREE.SphereGeometry(1,12,8),cylinder=new THREE.CylinderGeometry(1,1,1,8,1,true);
+      var colors=[0xffca65,0x58e5dd],ends=colors.map(function(color,index){var mesh=new THREE.Mesh(sphere,new THREE.MeshBasicMaterial({color:color,toneMapped:false,fog:false}));mesh.name='birdlab-surface-point-'+(index?'b':'a');mesh.renderOrder=32;root.add(mesh);return mesh;});
+      var segment=new THREE.Mesh(cylinder,new THREE.MeshBasicMaterial({color:0xfff0b7,toneMapped:false,fog:false}));segment.name='birdlab-surface-segment';segment.renderOrder=31;root.add(segment);
+      surfaceGuide={root:root,ends:ends,segment:segment,a:new THREE.Vector3(),b:new THREE.Vector3(),mid:new THREE.Vector3(),direction:new THREE.Vector3(),axis:new THREE.Vector3(0,1,0)};
+    }
+    function createSurfaceAngleGuide(){
+      var guide=surfaceGuide,point=new THREE.Mesh(guide.ends[0].geometry,new THREE.MeshBasicMaterial({color:0xd6b3ff,toneMapped:false,fog:false}));point.name='birdlab-surface-point-c';point.renderOrder=32;guide.root.add(point);
+      var segment=new THREE.Mesh(guide.segment.geometry,new THREE.MeshBasicMaterial({color:0xd6b3ff,toneMapped:false,fog:false}));segment.name='birdlab-surface-segment-bc';segment.renderOrder=31;guide.root.add(segment);
+      var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(65*3),3));
+      var arc=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:0xffffff,toneMapped:false,fog:false}));arc.name='birdlab-surface-angle-arc';arc.renderOrder=33;arc.frustumCulled=false;guide.root.add(arc);
+      guide.angle={point:point,segment:segment,arc:arc,c:new THREE.Vector3(),u:new THREE.Vector3(),v:new THREE.Vector3(),sample:new THREE.Vector3()};
+    }
+    function placeSurfaceSegment(mesh,a,b,pixel){
+      var guide=surfaceGuide;guide.direction.subVectors(b,a);var length=guide.direction.length();guide.mid.addVectors(a,b).multiplyScalar(.5);mesh.position.copy(guide.mid);mesh.quaternion.setFromUnitVectors(guide.axis,length>1e-9?guide.direction.multiplyScalar(1/length):guide.axis);
+      var radius=Math.max(.0003,camera.position.distanceTo(guide.mid)*pixel*1.7);mesh.scale.set(radius,length,radius);
+    }
+    function updateSurfaceRuler(){
+      if(surfaceRuler&&(!canUseSurfaceRuler()||!paused||repeatFlights||surfaceTime!==time))leaveSurfaceRuler();
+      if(!surfaceRuler){if(surfaceGuide)surfaceGuide.root.visible=false;return;}
+      if(!surfaceGuide)createSurfaceGuide();
+      var guide=surfaceGuide,pixel=2*Math.tan(camera.fov*Math.PI/360)/Math.max(1,canvas.clientHeight);
+      guide.root.visible=surfacePoints.length>0;
+      guide.ends.forEach(function(mesh,index){var point=surfacePoints[index];mesh.visible=!!point;if(point){mesh.position.fromArray(point.position);mesh.scale.setScalar(Math.max(.0005,camera.position.distanceTo(mesh.position)*pixel*5.5));}});
+      guide.segment.visible=surfacePoints.length>=2;
+      if(guide.segment.visible){
+        guide.a.fromArray(surfacePoints[0].position);guide.b.fromArray(surfacePoints[1].position);placeSurfaceSegment(guide.segment,guide.a,guide.b,pixel);
+      }
+      if(surfaceMeasureMode==='angle'&&!guide.angle)createSurfaceAngleGuide();
+      if(guide.angle){
+        var angleGuide=guide.angle,complete=surfaceMeasureMode==='angle'&&surfacePoints.length===3;angleGuide.point.visible=complete;angleGuide.segment.visible=complete;angleGuide.arc.visible=false;
+        if(complete){
+          angleGuide.c.fromArray(surfacePoints[2].position);angleGuide.point.position.copy(angleGuide.c);angleGuide.point.scale.setScalar(Math.max(.0005,camera.position.distanceTo(angleGuide.c)*pixel*5.5));placeSurfaceSegment(angleGuide.segment,guide.b,angleGuide.c,pixel);
+          var measured=surfaceSnapshot();angleGuide.arc.visible=measured.arcVisible;
+          if(measured.arcVisible){
+            angleGuide.u.subVectors(guide.a,guide.b).normalize();angleGuide.v.subVectors(angleGuide.c,guide.b).normalize();angleGuide.v.addScaledVector(angleGuide.u,-angleGuide.v.dot(angleGuide.u)).normalize();
+            var positions=angleGuide.arc.geometry.attributes.position;
+            for(var i=0;i<positions.count;i++){var phase=measured.angle*Math.PI/180*i/(positions.count-1);angleGuide.sample.copy(guide.b).addScaledVector(angleGuide.u,Math.cos(phase)*measured.arcRadius).addScaledVector(angleGuide.v,Math.sin(phase)*measured.arcRadius);positions.setXYZ(i,angleGuide.sample.x,angleGuide.sample.y,angleGuide.sample.z);}positions.needsUpdate=true;
+          }
+        }
+      }
+    }
+    function visibleBirdHit(clientX,clientY){
+      var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+      scenePickPoint.set((clientX-rect.left)/rect.width*2-1,1-(clientY-rect.top)/rect.height*2);
+      if(Math.abs(scenePickPoint.x)>1||Math.abs(scenePickPoint.y)>1)return null;
+      scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);scenePickRay.setFromCamera(scenePickPoint,camera);
+      var hits=scenePickRay.intersectObjects(scenePickMeshes,false);
+      for(var i=0;i<hits.length;i++){
+        var mesh=hits[i].object,shown=true;for(var node=mesh;node;node=node.parent)if(node.visible===false){shown=false;break;}if(!shown)continue;
+        // Reuse the field observer's native ground/trunk/rock blockers. Foliage
+        // is deliberately not treated as a solid wall or an opaque billboard.
+        if(!fieldObserver.hasClearLine(scenePickRay.ray.origin,hits[i].point))return null;
+        return hits[i];
+      }
+      return null;
+    }
+    function selectSceneBird(clientX,clientY){
+      if(!canSelectSceneBird())return false;
+      var hit=visibleBirdHit(clientX,clientY);if(hit){setCamera(scenePickOwners.get(hit.object));return true;}
+      return false;
+    }
+    function placeSurfacePoint(clientX,clientY){
+      if(!surfaceRuler||!canUseSurfaceRuler()||!paused||surfaceTime!==time||surfacePoints.length>=(surfaceMeasureMode==='angle'?3:2))return false;
+      var hit=visibleBirdHit(clientX,clientY);if(!hit)return false;
+      surfacePoints.push({bird:scenePickOwners.get(hit.object),mesh:hit.object.uuid,meshName:hit.object.name||'Bird surface',position:hit.point.toArray()});notify(true);refresh();return true;
+    }
+    function placeSurfaceCenter(){var rect=canvas.getBoundingClientRect();return placeSurfacePoint(rect.left+rect.width/2,rect.top+rect.height/2);}
     function pointerDown(event) {
       if(event.button&&event.pointerType!=='touch')return;
-      pointerMap.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      pointerMap.set(event.pointerId,{x:event.clientX,y:event.clientY,moved:0,solo:true});
       try{canvas.setPointerCapture(event.pointerId);}catch(e){}
       if(canvas.focus)canvas.focus({preventScroll:true});
+      if(pointerMap.size>1)pointerMap.forEach(function(point){point.solo=false;});
       if(pointerMap.size===2){var pts=Array.from(pointerMap.values());pinchDistance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);}
     }
     function pointerMove(event) {
       if(mode==='free'&&document.pointerLockElement===canvas){orbitBy(event.movementX||0,event.movementY||0);return;}
       var old=pointerMap.get(event.pointerId);if(!old)return;
-      var dx=event.clientX-old.x,dy=event.clientY-old.y;pointerMap.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      var dx=event.clientX-old.x,dy=event.clientY-old.y;old.x=event.clientX;old.y=event.clientY;old.moved+=Math.hypot(dx,dy);
       if(pointerMap.size>1){var pts=Array.from(pointerMap.values()),distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);if(pinchDistance>0&&distance>0)zoomBy(Math.log(pinchDistance/distance));pinchDistance=distance;}
       else orbitBy(dx,dy);
       notify(true);
     }
-    function pointerUp(event) {pointerMap.delete(event.pointerId);pinchDistance=0;}
+    function pointerUp(event) {var point=pointerMap.get(event.pointerId),tap=event.type==='pointerup'&&point&&point.solo&&point.moved<=6&&pointerMap.size===1;pointerMap.delete(event.pointerId);pinchDistance=0;try{canvas.releasePointerCapture(event.pointerId);}catch(ignore){}if(tap){if(surfaceRuler)placeSurfacePoint(event.clientX,event.clientY);else selectSceneBird(event.clientX,event.clientY);}}
     listen(canvas,'pointerdown',pointerDown);listen(canvas,'pointermove',pointerMove);listen(canvas,'pointerup',pointerUp);listen(canvas,'pointercancel',pointerUp);listen(canvas,'lostpointercapture',pointerUp);
     listen(canvas,'wheel',function(event){event.preventDefault();zoomBy(clamp(event.deltaY,-180,180)*.0016);notify(true);},{passive:false});
     listen(canvas,'keydown',function(event){
+      if(surfaceRuler&&(event.key==='Enter'||event.key==='Escape'||event.key==='Backspace')){if(event.key==='Enter')placeSurfaceCenter();else if(event.key==='Backspace')undoSurfacePoint();else setSurfaceRuler(false);event.preventDefault();return;}
+      if(event.key==='Enter'&&canSelectSceneBird()){var rect=canvas.getBoundingClientRect();selectSceneBird(rect.left+rect.width/2,rect.top+rect.height/2);event.preventDefault();return;}
       if(mode==='free'){
         var direction={KeyW:'forward',KeyS:'back',KeyA:'left',KeyD:'right'}[event.code];
         if(direction){setMove(direction,true);event.preventDefault();return;}
@@ -870,8 +1902,11 @@
       if(reduce.addEventListener)listen(reduce,'change',function(event){if(event.matches)setPaused(true);});
     }
     if(global.ResizeObserver){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(canvas);}else listen(global,'resize',resize);
-    updateBird(0,true);updateCamera(1,true);setLighting('daylight');resize();renderer.render(scene,camera);frames++;notify(true);requestFrame();
+    // Browsers may discard a paused WebGL surface while its canvas is offscreen.
+    // Repaint once on re-entry, without resuming the authored movement.
+    if(global.IntersectionObserver){visibilityObserver=new global.IntersectionObserver(function(entries){if(entries.some(function(entry){return entry.isIntersecting;}))refresh();});visibilityObserver.observe(canvas);}
+    updateBird(0,true);updateCamera(1,true);setLighting('daylight');resize();renderResidentScene();frames++;notify(true);requestFrame();
     return controller;
   }
-  global.BirdLab3D={mount:mount,sampleFlight:sampleFlight,sampleWingPhase:sampleWingPhase,sampleFollowFrame:sampleFollowFrame,createFreeHawk:createFreeHawk,createFieldObserver:createFieldObserver,courseDuration:DURATION};
+  global.BirdLab3D={mount:mount,sampleFlight:sampleFlight,sampleWingPhase:sampleWingPhase,sampleWingbeatWindow:sampleWingbeatWindow,sampleFollowFrame:sampleFollowFrame,createFreeHawk:createFreeHawk,createFieldObserver:createFieldObserver,courseDuration:DURATION};
 })(window);

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ናይ ተልእኾ ትዕዝብትታት",
+  "stem.flightsim.mission_journal_targets": "ስእሊ ዝተወስዱ ዕላማታት፦ ካብ {total}፣ {captured}።",
+  "stem.flightsim.mission_journal_complete": "ኩሎም ዕላማታት ተልእኾን ናይ ምምላስ ምዕላብን ተመዝጊቦም።",
+  "stem.flightsim.mission_journal_ended": "ኩሉ ናይ ምዝዛም መርትዖ ቅድሚ ምምዝጋቡ ተልእኾ ተወዲኡ።",
+  "stem.flightsim.mission_journal_recovery": "ምድሓን ብህይወት ዝተረፈ ሰብ ተመዝጊቡ፦ {value}።",
+  "stem.flightsim.mission_journal_return": "ናብ መደበር ተመሊስካ ምዕላብ ተመዝጊቡ፦ {value}።",
+  "stem.flightsim.mission_guidance_title": "መምርሒ ተልእኾ",
+  "stem.flightsim.mission_route": "{target} · ኣንፈት {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "መበገሲ ቦታ",
+  "stem.flightsim.mission_read_status": "ኩነታት ተልእኾ ኣንብብ",
+  "stem.flightsim.mission_return_criterion": "ካብ {target} ኣብ ውሽጢ {distance} nm ዕለብ፤ ፍጥነት ብመንጽር መሬት ካብ {speed} kt፣ ፍጥነት ምውራድ ድማ ካብ {fpm} fpm ንታሕቲ ይኹን።",
+  "stem.flightsim.mission_unavailable": "ናይ ተልእኾ ዕላማ ሓበሬታ የለን። ነዚ በረራ ወድእ እሞ ሓድሽ ተልእኾ ጀምር።",
+  "stem.flightsim.mission_capture_criterion": "ኣብ ውሽጢ {distance} ft፣ ልዕሊ {min}ን ትሕቲ {max} ftን ካብ መሬት ብትሕቲ {speed} kt ናይ መሬት ፍጥነት ን{hold} s ጽናሕ።"
+}

@@ -13,7 +13,11 @@ async function mount(initial) {
   const render = () => root.render(api.tool.cfg.render({ React: api.React, toolData: { dinoLab: data }, updateMulti: (_, patch) => { data = { ...data, ...patch }; render(); }, announceToSR() {} }));
   await api.React.act(async () => render());
 }
-const button = text => [...host.querySelectorAll('button')].find(n => n.textContent.replace(/^[●○] /, '') === text);
+const button = text => [...host.querySelectorAll('button')].find(node => {
+  const label = node.cloneNode(true);
+  label.querySelectorAll('[aria-hidden="true"]').forEach(decoration => decoration.remove());
+  return label.textContent.trim().replace(/^[●○] /, '') === text;
+});
 async function click(text) { const node = button(text); expect(node).toBeTruthy(); await api.React.act(async () => node.click()); }
 async function fill(value) {
   await api.React.act(async () => {

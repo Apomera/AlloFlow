@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "ಹುಡುಕಾಟದ ಫಲಿತಾಂಶಗಳು: {topics} ವಿಷಯಗಳಲ್ಲಿ {cards} ಕಾರ್ಡ್‌ಗಳು.",
+  "stem.flightsim.learn_library_counts": "{cards} ಕಾರ್ಡ್‌ಗಳು · {topics} ವಿಷಯಗಳು",
+  "stem.flightsim.learn_search_clear": "ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ",
+  "stem.flightsim.learn_search_empty": "“{query}” ಗೆ ಹೊಂದುವ ಕಲಿಕಾ ಕಾರ್ಡ್‌ಗಳಿಲ್ಲ. ಬೇರೆ ಪದವನ್ನು ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ.",
+  "stem.flightsim.learn_search_none": "ಹೊಂದುವ ಕಲಿಕಾ ಕಾರ್ಡ್‌ಗಳಿಲ್ಲ",
+  "stem.flightsim.learn_search_cards": "{count} ಕಲಿಕಾ ಕಾರ್ಡ್‌ಗಳು",
+  "stem.flightsim.quiz_review_progress": "{total} ಪ್ರಶ್ನೆಗಳಲ್ಲಿ {answered}ಕ್ಕೆ ಉತ್ತರಿಸಲಾಗಿದೆ · {missed} ತಪ್ಪುಗಳು",
+  "stem.flightsim.quiz_review_missed": "ತಪ್ಪಾದ ಉತ್ತರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ",
+  "stem.flightsim.quiz_next_unanswered": "ಮುಂದಿನ ಉತ್ತರಿಸದ ಪ್ರಶ್ನೆ",
+  "stem.flightsim.quiz_review_all_answered": "ಪ್ರತಿ ಪ್ರಶ್ನೆಯ ಮೊದಲ ಉತ್ತರ ದಾಖಲಾಗಿದೆ. ಅಂಕವಿಲ್ಲದ ಅಭ್ಯಾಸಕ್ಕಾಗಿ ತಪ್ಪಾಗಿ ಉತ್ತರಿಸಿದ ಪ್ರಶ್ನೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹೊಸ ಪ್ರಯತ್ನವನ್ನು ಪ್ರಾರಂಭಿಸಿ.",
+  "stem.flightsim.planner_drone_agl": "ನೆಲದಿಂದ {ft} ಅಡಿ ಎತ್ತರದಲ್ಲಿ",
+  "stem.flightsim.sprint_native_title": "ಭೂಗೋಳದ ವೇಗದ ಸವಾಲು",
+  "stem.flightsim.sprint_timed_hint": "ನೀವು ಉತ್ತರಿಸುವಾಗಲೂ ಮಾರ್ಗದಲ್ಲಿ ಪ್ರಯಾಣ ಮುಂದುವರಿಯುತ್ತದೆ. ಓದಲು ವಿರಾಮಗೊಳಿಸಿ; ಉತ್ತರ ಆಯ್ಕೆ ಮಾಡುವ ಮೊದಲು ಮತ್ತೆ ಮುಂದುವರಿಸಿ.",
+  "stem.flightsim.sprint_warp_reference": "ಈ ಭೂಗೋಳ ಚಟುವಟಿಕೆಯಲ್ಲಿ ಪ್ರಯಾಣವನ್ನು ವೇಗಗೊಳಿಸಲಾಗಿದೆ. ವೇಗದ ಅಳತೆಗಳು ನಿಗದಿತ ಕ್ರೂಸ್ ವೇಗವನ್ನು ತೋರಿಸುತ್ತವೆ; ಈ ಮಾರ್ಗವು ವಿಮಾನದ ಕಾರ್ಯಕ್ಷಮತೆಯನ್ನು ಅಳೆಯುವುದಿಲ್ಲ.",
+  "stem.flightsim.sprint_save_menu": "ಸವಾಲನ್ನು ಉಳಿಸಿ ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+  "stem.flightsim.sprint_next_stop": "ಮುಂದಿನ ನಿಲ್ದಾಣ: {place}",
+  "stem.flightsim.geoq_approaching_city": "ನೀವು ಯಾವ ನಗರದ ಸಮೀಪ ಬರುತ್ತಿದ್ದೀರಿ?",
+  "stem.flightsim.sprint_time_remaining": "ಉಳಿದ ಸಮಯ: {seconds} ಸೆಕೆಂಡುಗಳು"
+}

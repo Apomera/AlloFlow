@@ -3,6 +3,8 @@ import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
 import {destinationJourney} from '../lesson_board_journey.js';
 import {spatialState} from '../lesson_board_spatial.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -39,7 +41,7 @@ describe('Destination journey on the tabletop',()=>{
     }
     expect(all('[data-journey-current="false"]').length).toBeGreaterThan(0);
     expect(find('[data-location="cooler"]').dataset.state).toBe('locked');
-    expect(find('[data-location="'+route.nextId+'"]').getAttribute('aria-label')).toContain('Next journey waypoint');
+    expect(spoken(find('[data-location="'+route.nextId+'"]'))).toContain('Next journey waypoint');
     expect(find('[data-journey-map-help]').textContent).toContain('Dots suggest later travel');
     expect(JSON.stringify(p)).toBe(before);
   });

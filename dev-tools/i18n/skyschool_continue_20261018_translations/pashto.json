@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "د ننګونې موخې ولیدل شوې. اوس د انرژۍ د مدیریت په تمرین کې د انجن په لږ ځواک راکوزېدل له هغه پورته ختلو سره پرتله کړئ چې د انجن ځواک کاروي.",
+  "stem.flightsim.coaching_energy_complete": "د انرژۍ د مدیریت موخې ولیدل شوې. اوس هوايي ډګر ته د لنډې نږدې کېدنې پر مهال د انرژۍ کنټرول تمرین کړئ، بیا د راکوزېدو کچه او له ځمکې سره لګېدل پرتله کړئ.",
+  "stem.flightsim.drone_battery_low": "بیټرۍ کمه ده: {pct}% پاتې ده. د پورته کېدو ځای ته ورستانه شئ او ژر کښینئ.",
+  "stem.flightsim.drone_battery_depleted_title": "د ډرون بیټرۍ ختمه شوه",
+  "stem.flightsim.drone_battery_depleted_body": "الوتنه د بیټرۍ په 0% کې درول شوې. د دې هڅې د بیاکتنې لپاره ماموریت پای ته ورسوئ، بیا له ډکې بیټرۍ سره نوی ماموریت پیل کړئ.",
+  "stem.flightsim.end_drone_mission": "ماموریت پای ته ورسوئ او بیاکتنه وکړئ",
+  "stem.flightsim.geoq_nearest_place": "کوم ځای ستاسو اوسني موقعیت ته تر ټولو نږدې دی؟",
+  "stem.flightsim.geoq_paused": "الوتنه د دې پوښتنې لپاره درول شوې. ازموینه وتړئ، بیا چې الوتنې ته چمتو شئ د بیا پیلولو تڼۍ وټاکئ.",
+  "stem.flightsim.geoq_close": "ازموینه وتړئ",
+  "stem.flightsim.geoq_unavailable": "د نږدې سیمې په اړه د جغرافیې پوښتنه نشته. سپړنې ته دوام ورکړئ او بیا هڅه وکړئ.",
+  "stem.flightsim.geoq_answer_feedback": "ستاسو ځواب: {answer}. سم ځواب: {expected}."
+}

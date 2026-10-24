@@ -23,7 +23,10 @@ beforeAll(() => {
     useMemo: noop,
     useCallback: (fn) => fn,
   };
-  const source = readFileSync('allo_commands_source.jsx', 'utf8')
+  // The build embeds the School Store recognition grammar ahead of the source; without it
+  // the router fails closed and answers every utterance with the School Store notice.
+  const source = ['school_store_recognition.js', 'school_store_setup_guide.js', 'allo_commands_source.jsx']
+    .map((file) => readFileSync(file, 'utf8')).join('\n')
     + '\nwindow.__alloVoiceLoopFromSource = createVoiceLoop;\n';
   const compiled = transformSync(source, {
     babelrc: false,

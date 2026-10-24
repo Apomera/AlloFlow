@@ -15,11 +15,15 @@ describe('Solar System SVG accessible names', () => {
     expect(readFileSync(MIRROR, 'utf8')).toBe(readFileSync(SOURCE, 'utf8'));
   });
 
-  it('gives every SVG declaration an accessible name', () => {
+  it('gives every SVG declaration an accessible name or marks it explicitly decorative', () => {
+    // Same rule as the canvas scanner: an icon or a drawing inside a role="img" wrapper
+    // that already carries the label is hidden with aria-hidden, not named twice.
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const svgLines = lines.filter((line) => /h\(\s*['"]svg['"]|createElement\(\s*['"]svg['"]/.test(line));
     expect(svgLines.length).toBeGreaterThan(0);
-    expect(svgLines.filter((line) => !line.includes('aria-label'))).toEqual([]);
+    const decorative = (line) => /createElement\(\s*'svg',\s*\{[^}]*'aria-hidden':\s*(true|'true')|h\('svg',\s*\{[^}]*'aria-hidden':\s*(true|'true')/.test(line);
+    expect(svgLines.filter((line) => !line.includes('aria-label') && !decorative(line))).toEqual([]);
+    expect(svgLines.filter((line) => line.includes('aria-label')).length, 'named SVGs still dominate').toBeGreaterThan(svgLines.filter(decorative).length);
   });
 
   it('reuses visible localized mini-tool titles instead of generic names', () => {

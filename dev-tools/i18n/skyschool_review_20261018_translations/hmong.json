@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Cov kev sim teb xeem dhau los",
+  "stem.flightsim.quiz_history_scope": "Thaum pib ib zaug tshiab, yuav khaws txog plaub zaug dhau los uas muaj cov lus teb thawj zaug sau tseg. Kev rov saib lawv tsis hloov qhov kev xeem uas koj tab tom ua.",
+  "stem.flightsim.quiz_history_empty": "Tseem tsis tau khaws ib zaug sim teb xeem dhau los li.",
+  "stem.flightsim.quiz_history_attempt": "Khaws rau {date} · {score}/{answered} lo lus teb thawj zaug yog lawm",
+  "stem.flightsim.quiz_history_progress": "Sau tseg {answered} ntawm {total} lo lus nug · {unanswered} lo tseem tsis tau teb",
+  "stem.flightsim.quiz_history_question": "Lus nug {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Lus teb yog: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} lo lus nug uas khaws tseg tsis phim qhov kev xeem no lawm. Cov qhab nia tsuas siv cov ntaub ntawv ntawm cov lus nug uas tseem phim xwb."
+}

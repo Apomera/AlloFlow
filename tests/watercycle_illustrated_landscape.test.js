@@ -4,12 +4,17 @@ import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
 
 const PATHS = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'];
-const BASELINE_PATH = 'reports/watercycle-illustrated-landscape/baseline-runtime.js';
-const BASELINE_SHA = '8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230';
+// Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): every
+// later published pass edits bytes outside the two paint windows. The old pin (8d288e85) was the
+// CRLF-mixed Windows copy of the pass baseline, so it also failed on LF CI checkouts. The original
+// pass baseline remains at reports/watercycle-illustrated-landscape/baseline-runtime.js.
+const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const TEST_PATH = 'tests/watercycle_illustrated_landscape.test.js';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const loadedAt = new Date().toISOString();
-const sources = PATHS.map(path => { const bytes = readFileSync(path); return { path, bytes, text: bytes.toString('utf8') }; });
+// Compare committed (LF) text: Windows working copies can carry stray CRLF that git normalizes away.
+const sources = PATHS.map(path => { const bytes = readFileSync(path); return { path, bytes, text: bytes.toString('utf8').replace(/\r\n/g, '\n') }; });
 const baselineBytes = readFileSync(BASELINE_PATH);
 const baseline = baselineBytes.toString('utf8');
 const loadedTest = readFileSync(TEST_PATH);

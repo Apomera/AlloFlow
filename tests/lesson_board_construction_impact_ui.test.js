@@ -2,6 +2,8 @@ import {beforeAll,afterEach,describe,it,expect,vi} from 'vitest';
 import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
 import {simulatePlan} from '../lesson_board_sandbox.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -39,7 +41,7 @@ describe('Construction consequences on the tabletop',()=>{
     expect([...find('[data-resource-cache="rain"]').querySelectorAll('[data-resource-amount]')].map(node=>node.dataset.resourceAmount)).toEqual(['2','1']);
     expect(find('[data-production-caption]').textContent).toContain('After building Research station: +1 Observation tokens on a successful investigation');
     expect(find('[data-production-potential="research"]').textContent).toContain('After construction: up to 6 extra Observation tokens');
-    expect(find('[data-location="rain"]').getAttribute('aria-label')).toContain('After building Research station');
+    expect(spoken(find('[data-location="rain"]'))).toContain('After building Research station');
     expect(find('[data-production-stamp="heater"]')).toBeNull();await click('[data-location="rain"]');
     expect(onSelect).toHaveBeenCalledWith('rain');expect(JSON.stringify({b,run})).toBe(before);
     await render({board:b,run,selected:'rain'});expect(find('[data-production-stamp]')).toBeNull();expect(find('[data-production-caption]')).toBeNull();
@@ -70,7 +72,7 @@ describe('Construction consequences on the tabletop',()=>{
         expect(find('[data-production-total]')).toBeNull();
         expect(find('[data-production-list-total="research"]').textContent).toContain('1 Observation tokens');
         expect(find('[data-production-list-effect="river"]').textContent).toContain('From Research station: +1 Observation tokens');
-      }else expect(find('[data-map-construction="research"]').getAttribute('aria-label')).toContain('Supplied so far: 1 Observation tokens');
+      }else expect(spoken(find('[data-map-construction="research"]'))).toContain('Supplied so far: 1 Observation tokens');
       await click('[data-map-construction="research"]');
     }
     expect(onSelect).toHaveBeenCalledTimes(2);expect(onSelect).toHaveBeenLastCalledWith('research');
@@ -94,7 +96,7 @@ describe('Construction consequences on the tabletop',()=>{
     expect(find('[data-production-earned="research"]').textContent).toContain('Projected total supplied: 1 Observation tokens');
     expect(find('[data-production-caption]').textContent).toContain('Projection: From Research station');
     expect(find('[data-production-stamp="river"]').dataset.productionScope).toBe('projected');
-    expect(find('[data-map-construction="research"]').getAttribute('aria-label')).toContain('Projected total supplied');
+    expect(spoken(find('[data-map-construction="research"]'))).toContain('Projected total supplied');
     expect(JSON.stringify(actual)).toBe(saved);await render({board:b,run:actual});
     expect(find('[data-production-total="research"]').dataset.productionCount).toBe('0');
   });

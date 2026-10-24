@@ -170,9 +170,11 @@ describe('Enlarged A/B recorded drawings', () => {
   it('wraps keyboard focus across both studies and closes without collapsing the workspace', async () => {
     await pairMount(); await openPairViewer(); const before = latest, beforeWrites = writes;
     const tab = async shiftKey => act(async () => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true })));
-    await tab(true); expect(document.activeElement).toBe(guides('viewer-b'));
+    // 79e3e5eae added an Inspect/Fit frame action after B's guides toggle; it is now the last stop.
+    const frameAction = host.querySelector('[data-perception-recorded-frame-action="viewer-b"]');
+    await tab(true); expect(document.activeElement).toBe(frameAction);
     await tab(false); expect(document.activeElement).toBe(button('Close enlarged drawing'));
-    await tab(true); expect(document.activeElement).toBe(guides('viewer-b'));
+    await tab(true); expect(document.activeElement).toBe(frameAction);
     await act(async () => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
     expect(dialog().open).toBe(false); expect(pairLayout()).toBeNull(); expectLocalOnly(before, beforeWrites);
     expect(document.activeElement).toBe(button('Compare enlarged drawings'));

@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import { tr } from './lesson_board_strings.js';
 import { fixGroups } from './lesson_board_quality.js';
 const React = window.React;
@@ -12,8 +13,9 @@ export const BOARD_PRESETS = [
   { key: 'cards', label: 'Better discovery cards', instruction: 'Write three to five discovery cards with surprising, true facts from the lesson, each with an exact lesson quote.' }
 ];
 export const LENGTH_REQUEST = 'Rewrite answer options so learners cannot find the correct answer by its length: keep every option in an activity similar in length and detail.';
+export const giveawayRequest = stops => 'Rewrite the instructions of these stops so the wording no longer gives the answer away: ' + stops.join(', ') + '. State the task and the ordering or matching criterion, but never name the correct option, the first or last item, or which item goes where. Keep the activities, answers and everything else the same.';
 export function RefineStyles() {
-  return <style>{`.lb .lb-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.lb .lb-chips button{border-radius:999px;min-height:40px;padding:6px 14px}.lb .lb-refine,.lb .lb-teacher-preview{margin-top:18px;border-top:3px solid var(--accent)}.lb .lb-versions{margin:14px 0}.lb .lb-versions ol{padding-inline-start:20px}.lb .lb-versions li{margin:6px 0}.lb .lb-versions details{margin-top:0;border-top:0;padding-top:0}`}</style>;
+  return addBoardStyle(`.lb .lb-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.lb .lb-chips button{border-radius:999px;min-height:40px;padding:6px 14px}.lb .lb-refine,.lb .lb-teacher-preview{margin-top:18px;border-top:3px solid var(--accent)}.lb .lb-versions{margin:14px 0}.lb .lb-versions ol{padding-inline-start:20px}.lb .lb-versions li{margin:6px 0}.lb .lb-versions details{margin-top:0;border-top:0;padding-top:0}`);
 }
 export function BoardRefine({ disabled, onRefine, t }) {
   const [request, setRequest] = useState('');

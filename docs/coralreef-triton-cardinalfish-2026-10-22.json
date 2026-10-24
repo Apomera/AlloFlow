@@ -1,0 +1,340 @@
+{
+  "checked": "2026-10-22",
+  "scope": "Two additional living marine specimens for the species guide, optional identification practice and reef encounters. Newly paraphrased biology copy uses museum, aquarium, FAO and government research accounts. Observation prompts are instructions for studying the models, not claims that feeding, reproduction or scent responses are simulated.",
+  "iucnYearConvention": "iucnYear records the assessment year. Banggai cardinalfish: EN, assessed 1 March 2007; the original assessment was amended in the 2025 Red List. The current IUCN DOI registration owned by IUCN and the current FishBase IUCN export corroborate the original date, but direct IUCN species-page access failed. Giant triton: no current global assessment located; SeaLifeBase’s current IUCN field reports Not Evaluated, so use NE and null year. An old 1983 IUCN Rare entry uses an obsolete category and must not be represented as a modern risk assessment.",
+  "specimens": [
+    {
+      "id": "banggai_cardinalfish",
+      "name": "Banggai cardinalfish",
+      "scientific": "Pterapogon kauderni",
+      "group": "fish",
+      "iucn": "EN",
+      "iucnYear": 2007,
+      "iucnPublishedYear": 2007,
+      "iucnAmendedYear": 2025,
+      "iucnDateAssessed": "2007-03-01",
+      "iucnCitation": "Allen, G.R. & Donaldson, T.J. 2025. Pterapogon kauderni (amended version of 2007 assessment). The IUCN Red List of Threatened Species 2025: e.T63572A274966962.",
+      "lookalikes": [
+        "pajama_cardinalfish"
+      ],
+      "marks": [
+        "Silvery body crossed by three bold, black vertical bars",
+        "Small white spots decorate the body and most fins",
+        "Two separate dorsal fins: a tasseled front fin and a long, tapering second fin",
+        "A deeply forked tail and elongated lower anal fin create a pointed outline"
+      ],
+      "role": "Feeds on tiny crustaceans and other plankton around shallow reef and seagrass habitats.",
+      "fact": "The father broods eggs and developing young in his mouth, then releases fully formed juveniles.",
+      "habitat": "Calm, shallow reefs and seagrass beds native to Indonesia’s Banggai Archipelago; introduced populations also occur outside that natural range.",
+      "diet": "Mainly copepods, with other small plankton and bottom-dwelling crustaceans also taken.",
+      "behavior": "Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles.",
+      "observe": "Compare its three dark bars, white dots and long fin tips with the pajama cardinalfish’s single broad bar and spotted rear body.",
+      "sources": [
+        "dx-noaa-banggai_cardinalfish",
+        "dx-na-banggai_cardinalfish",
+        "dx-ga-banggai_cardinalfish",
+        "dx-iucn-banggai_cardinalfish"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-cas-banggai_cardinalfish",
+        "marks": "dx-noaa-banggai_cardinalfish; dx-na-banggai_cardinalfish; dx-ga-banggai_cardinalfish",
+        "roleDietHabitat": "dx-noaa-banggai_cardinalfish; dx-na-banggai_cardinalfish",
+        "fact": "dx-noaa-banggai_cardinalfish",
+        "behavior": "dx-ga-banggai_cardinalfish; dx-na-banggai_cardinalfish",
+        "iucnCategoryAndDate": "dx-fishbase-banggai_cardinalfish IUCN 2025-2 export; dx-ga-banggai_cardinalfish corroborates EN",
+        "iucnCurrentCitation": "dx-crossref-banggai_cardinalfish confirms the IUCN-owned current DOI and original date; published 2025 amendment citation corroborated by the institutional research bibliography noted on that reference",
+        "depth": "dx-fao-banggai_cardinalfish; dx-fishbase-banggai_cardinalfish",
+        "maximumSize": "dx-noaa-banggai_cardinalfish; dx-fishbase-banggai_cardinalfish"
+      },
+      "caution": "The IUCN category is Endangered; NOAA’s separate U.S. Endangered Species Act category is Threatened. Do not confuse the two systems. This is not naturally widespread throughout the Indo-Pacific. White spot patterns vary between individuals. The model is not assigned a sex or brooding state, and group hovering is not a rigid synchronized school."
+    },
+    {
+      "id": "giant_triton",
+      "name": "Giant triton (Triton’s trumpet)",
+      "scientific": "Charonia tritonis",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnPublishedYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [],
+      "marks": [
+        "Large spiral shell with a tall, pointed spire and a swollen final whorl",
+        "Cream-coloured shell patterned with brown markings and spiral ridges",
+        "A broad, orange shell opening with a light-and-dark striped inner edge",
+        "The flared outer lip has small teeth along its inner edge"
+      ],
+      "role": "Predator of sea stars and other echinoderms. Its feeding alone is not enough to control crown-of-thorns outbreaks.",
+      "fact": "Researchers have seen crown-of-thorns starfish move away from water carrying a triton snail’s scent.",
+      "habitat": "Hard and sandy bottoms around coral reefs across the tropical Indo-Pacific.",
+      "diet": "Sea stars, including crown-of-thorns, and other echinoderms such as sea cucumbers.",
+      "behavior": "Uses scent to locate prey and hunts across the reef, often at night.",
+      "observe": "Follow the spiral ridges toward the pointed tip, then turn the specimen to study the orange opening, striped edge and small lip teeth.",
+      "sources": [
+        "dx-aims-giant_triton",
+        "dx-wa-giant_triton",
+        "dx-fao-giant_triton",
+        "dx-noaa-giant_triton",
+        "dx-csiro-giant_triton"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-csiro-giant_triton; dx-mv-giant_triton; dx-worms-giant_triton",
+        "marks": "dx-fao-giant_triton for spire, body whorl, ridges, flared lip and paired teeth; dx-noaa-giant_triton for orange aperture and striped edge",
+        "roleDietFact": "dx-aims-giant_triton; dx-wa-giant_triton",
+        "habitat": "dx-wa-giant_triton; dx-aims-giant_triton; dx-aims-paper-giant_triton",
+        "behavior": "dx-amnh-giant_triton for night hunting; dx-aims-giant_triton for scent",
+        "iucn": "dx-slb-giant_triton current indexed IUCN field reports Not Evaluated; dx-iucn-1983-giant_triton is historical only",
+        "depth": "dx-slb-giant_triton numeric metadata; dx-wa-giant_triton describes moderate reef depths and deeper; dx-aims-paper-giant_triton records permitted broodstock collection to 30m",
+        "nominalSize": "dx-am-giant_triton documents living individuals around 30cm; dx-wa-giant_triton gives maximum50cm"
+      },
+      "caution": "NE means no current assessment is recorded here; it does not mean the species is secure. Do not translate an old Rare entry or national protection into a current IUCN threatened category. Shell colour, wear and surface encrusting life vary. Charonia variegata is a distinct Atlantic species; do not import its range or description. The canal at the front of the opening is short. Tritons eat crown-of-thorns, but AIMS explicitly cautions that predation alone cannot control outbreaks. Scent-based management remains research, not a demonstrated reef-wide solution."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-noaa-banggai_cardinalfish",
+      "text": "NOAA Fisheries (2023). Species profile: Banggai cardinalfish, Pterapogon kauderni. Accessed October 2026.",
+      "url": "https://www.fisheries.noaa.gov/species/banggai-cardinalfish",
+      "urlLabel": "fisheries.noaa.gov",
+      "supports": [
+        "Appearance, natural and introduced range, diet, mouthbrooding, maximum length"
+      ],
+      "access": "Full current account opened successfully; distinguishes ESA Threatened from global IUCN categories."
+    },
+    {
+      "id": "dx-na-banggai_cardinalfish",
+      "text": "National Aquarium. Animal Guide: Banggai cardinalfish. Accessed October 2026.",
+      "url": "https://aqua.org/explore/animals/banggai-cardinalfish",
+      "urlLabel": "aqua.org",
+      "supports": [
+        "Disc-shaped body, tasseled fin, forked tail, shelter, diet"
+      ],
+      "access": "Full account opened successfully."
+    },
+    {
+      "id": "dx-ga-banggai_cardinalfish",
+      "text": "Georgia Aquarium. Animal Guide: Banggai cardinalfish. Accessed October 2026.",
+      "url": "https://www.georgiaaquarium.org/animal/banggai-cardinalfish/",
+      "urlLabel": "georgiaaquarium.org",
+      "supports": [
+        "Three dark bars, white dots, elongated fins, social sheltering, EN corroboration"
+      ],
+      "access": "Detailed current search-index account read."
+    },
+    {
+      "id": "dx-cas-banggai_cardinalfish",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds). Eschmeyer’s Catalog of Fishes: Pterapogon kauderni. California Academy of Sciences, updated 13 August 2026. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=21851",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "Current valid name and native Sulawesi range"
+      ],
+      "access": "Current indexed catalog record read."
+    },
+    {
+      "id": "dx-fao-banggai_cardinalfish",
+      "text": "Allen, G.R. (1999). Apogonidae, in The Living Marine Resources of the Western Central Pacific, Vol. 4. FAO species guide, p. 2609. Banggai cardinalfish account.",
+      "url": "https://www.fao.org/4/x2400e/x2400e47.pdf#page=8",
+      "urlLabel": "fao.org",
+      "supports": [
+        "Sheltered shallow habitat and depth to16m"
+      ],
+      "access": "Institutional PDF species account opened in prior pass and rechecked against current index. Its old claim that this is the only marine mouthbrooder is not imported."
+    },
+    {
+      "id": "dx-iucn-banggai_cardinalfish",
+      "text": "Allen, G.R. & Donaldson, T.J. (2025). Pterapogon kauderni, amended version of the 2007 assessment. IUCN Red List e.T63572A274966962.",
+      "url": "https://www.iucnredlist.org/species/63572/274966962",
+      "urlLabel": "iucnredlist.org",
+      "supports": [
+        "Current assessment citation; EN and original2007date corroborated through exported IUCN data"
+      ],
+      "doi": "10.2305/IUCN.UK.2025-1.RLTS.T63572A274966962.en",
+      "access": "Direct current and old species-page opens failed. DOI registration obtained from IUCN-owned Crossref metadata; current EN/date corroborated by FishBase IUCN2025-2 export. Do not describe direct IUCN page access."
+    },
+    {
+      "id": "dx-crossref-banggai_cardinalfish",
+      "text": "IUCN DOI registration via Crossref: Pterapogon kauderni, Allen & Donaldson. Current DOI 10.2305/IUCN.UK.2025-1.RLTS.T63572A274966962.en. Accessed October 2026.",
+      "url": "https://api.crossref.org/works/10.2305/IUCN.UK.2025-1.RLTS.T63572A274966962.en",
+      "urlLabel": "api.crossref.org",
+      "supports": [
+        "Publisher and corporate author IUCN; original registered date2007-03-01; current2025-1DOI"
+      ],
+      "access": "PowerShell Invoke-RestMethod retrieved publisher-owned metadata successfully after browser-tool API open failed.",
+      "rawMetadata": {
+        "publisher": "IUCN",
+        "author": "IUCN",
+        "title": "Pterapogon kauderni: Allen, G.R & Donaldson, T.J.",
+        "published": [
+          2007,
+          3,
+          1
+        ],
+        "URL": "https://doi.org/10.2305/iucn.uk.2025-1.rlts.t63572a274966962.en"
+      },
+      "caution": "The registered date is the original assessment date. A2025research bibliography at https://jutif.if.unsoed.ac.id/index.php/jurnal/article/download/4793/1094/18006 identifies it as the amended2007assessment; that bibliography is used only for citation provenance."
+    },
+    {
+      "id": "dx-fishbase-banggai_cardinalfish",
+      "text": "FishBase. Pterapogon kauderni, field-guide and IUCN2025-2 data export. Accessed October 2026.",
+      "url": "https://fishbase.se/FieldGuide/FieldGuideSummary.php?GenusName=Pterapogon&SpeciesName=kauderni&print=&sps=",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "EN; assessed2007-03-01; maximum8.6cm; depth0–16m"
+      ],
+      "access": "Current indexed export read; biology primarily follows NOAA and aquarium accounts."
+    },
+    {
+      "id": "dx-aims-giant_triton",
+      "text": "Australian Institute of Marine Science (2016). Playing on fears: exploring the Pacific triton and crown-of-thorns starfish. Accessed October 2026.",
+      "url": "https://www.aims.gov.au/information-centre/news-and-stories/playing-fears-exploring-use-pacific-triton-mitigating-crown-thorns-starfish-outbreaks",
+      "urlLabel": "aims.gov.au",
+      "supports": [
+        "Prey, scent hunting, observed starfish avoidance, limits of predation"
+      ],
+      "access": "Full institutional account opened successfully; clearly separates observed responses from potential management applications."
+    },
+    {
+      "id": "dx-wa-giant_triton",
+      "text": "Waikīkī Aquarium, University of Hawaiʻi. Animal Guide: Triton’s Trumpet Snail. Accessed October 2026.",
+      "url": "https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/molluscs/tritons-trumpet-snail/",
+      "urlLabel": "waikikiaquarium.org",
+      "supports": [
+        "Large spiral shell, Indo-Pacific reefs, moderate depths and deeper, diet"
+      ],
+      "access": "Detailed current indexed account read; direct page request timed out."
+    },
+    {
+      "id": "dx-fao-giant_triton",
+      "text": "Poutiers, J.M. (1998). Gastropods, in The Living Marine Resources of the Western Central Pacific, Vol. 1. FAO species guide, p.541: Charonia tritonis tritonis.",
+      "url": "https://www.vliz.be/imisdocs/publications/391449.pdf",
+      "urlLabel": "vliz.be (FAO archive)",
+      "supports": [
+        "Spire, inflated final whorl, spiral ridges, flared toothed lip, short canal"
+      ],
+      "access": "Detailed indexed primary species account read. Direct PDF open exceeded browser tool size limit. The historical Atlantic subspecies is now a separate species and is not used here."
+    },
+    {
+      "id": "dx-noaa-giant_triton",
+      "text": "Wagner, D., Barkman, A., Spalding, H.L., Calcinai, B. & Godwin, S.L. (2016). A photographic guide to benthic flora and fauna from mesophotic coral ecosystems in Papahānaumokuākea. NOAA ONMS-16-04, p.83: Charonia tritonis.",
+      "url": "https://repository.library.noaa.gov/view/noaa/14164/noaa_14164_DS1.pdf#page=93",
+      "urlLabel": "repository.library.noaa.gov",
+      "supports": [
+        "Reddish-orange aperture, brown-and-white striped inner edge, spiral ribs"
+      ],
+      "access": "Official NOAA repository record and 97-page PDF opened successfully. Printed page 83 is PDF page 93. This is the Papahānaumokuākea guide, distinct from an Olympic Coast report that shares the ONMS-16-04 identifier."
+    },
+    {
+      "id": "dx-csiro-giant_triton",
+      "text": "CSIRO Australian National Fish Collection. Codes for Australian Aquatic Biota: Charonia tritonis, code24176013. Accessed October 2026.",
+      "url": "https://www.cmar.csiro.au/data/caab/taxon_report.cfm?caab_code=24176013",
+      "urlLabel": "cmar.csiro.au",
+      "supports": [
+        "Accepted scientific name, Charoniidae family, WoRMS141102 identifier"
+      ],
+      "access": "Detailed current indexed record read; direct page open returned cache miss."
+    },
+    {
+      "id": "dx-mv-giant_triton",
+      "text": "Museums Victoria Collections. Giant Triton, Charonia tritonis, specimen F83077. Accessed October 2026.",
+      "url": "https://collections.museumsvictoria.com.au/specimens/642209",
+      "urlLabel": "collections.museumsvictoria.com.au",
+      "supports": [
+        "Identified museum specimen and shell reference"
+      ],
+      "access": "Full specimen record opened successfully; taxonomy family in old collection record is superseded by current CSIRO Charoniidae."
+    },
+    {
+      "id": "dx-worms-giant_triton",
+      "text": "MolluscaBase / World Register of Marine Species. Charonia tritonis (Linnaeus,1758), AphiaID141102. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=141102",
+      "urlLabel": "marinespecies.org",
+      "supports": [
+        "Accepted name"
+      ],
+      "access": "Direct record returned403; accepted name is corroborated by current CSIRO record and indexed PESI/MolluscaBase record. No direct WoRMS access claimed."
+    },
+    {
+      "id": "dx-slb-giant_triton",
+      "text": "SeaLifeBase. Charonia tritonis: current field-guide and IUCN2025-2 export. Accessed October 2026.",
+      "url": "https://www.sealifebase.ca/summary/Charonia-tritonis.html",
+      "urlLabel": "sealifebase.ca",
+      "supports": [
+        "IUCN Not Evaluated; metadata depth1–40m; maximum50cm"
+      ],
+      "fieldGuideURL": "https://www.sealifebase.ca/FieldGuide/FieldGuideSummary.php?GenusName=Charonia&SpeciesName=tritonis&print=&sps=",
+      "access": "Detailed current indexed export read; direct species-page request returned403. No assessment date is supplied, and no modern global assessment was located."
+    },
+    {
+      "id": "dx-iucn-1983-giant_triton",
+      "text": "Wells, S.M., Pyle, R.M. & Collins, N.M. (1983). The IUCN Invertebrate Red Data Book, p.91: Triton’s trumpet.",
+      "url": "https://portals.iucn.org/library/sites/library/files/documents/RD-1983-001.pdf",
+      "urlLabel": "portals.iucn.org",
+      "supports": [
+        "Historical entry only; not a modern assessment"
+      ],
+      "caution": "Its Rare category predates current criteria and must not be mapped to a modern category or assessment year."
+    },
+    {
+      "id": "dx-aims-paper-giant_triton",
+      "text": "Development and Interrogation of a Transcriptomic Resource for the Giant Triton Snail (Charonia tritonis). Marine Biotechnology (2021), DOI10.1007/s10126-021-10042-7.",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270824/",
+      "urlLabel": "pmc.ncbi.nlm.nih.gov",
+      "supports": [
+        "Primary AIMS broodstock collection to30m; hard/sandy reef-bottom context"
+      ],
+      "access": "Current indexed methods read; aquarium alternative foods are not used as a complete measured wild diet."
+    },
+    {
+      "id": "dx-amnh-giant_triton",
+      "text": "American Museum of Natural History. OLogy card203: Triton trumpet. Accessed October 2026.",
+      "url": "https://www.amnh.org/explore/ology/ology-cards/203-triton-trumpet?view=modal",
+      "urlLabel": "amnh.org",
+      "supports": [
+        "Nocturnal reef hunting and scent tracking"
+      ],
+      "caution": "Used for behavior only. Its simplified population-control teaching claim is qualified by the more specific AIMS research account."
+    },
+    {
+      "id": "dx-am-giant_triton",
+      "text": "Australian Museum / Lizard Island Research Station. Lizard Island Field Guide: Charonia tritonis. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=Kef6qQnd&hierarchyId=PVWrQCLG",
+      "urlLabel": "lifg.australian.museum",
+      "supports": [
+        "Observed living specimens around30cm; shell size to45cm"
+      ],
+      "access": "Current indexed field observations read; photos attributed to Anne Hoggett."
+    }
+  ],
+  "modelProvenance": {
+    "banggai_cardinalfish": {
+      "nominalAdultLengthM": 0.075,
+      "maximumLengthM": 0.086,
+      "depth": [
+        0,
+        16
+      ],
+      "origin": "centre",
+      "basis": "An illustrative 7.5cm adult below the 8.6cm maximum. The full 0–16m metadata interval follows the FAO species account and current FishBase field guide; many native populations use much shallower water, often 0–5m. Neither interval is a hard physiological boundary.",
+      "anatomy": "Three black bars, variable white dot pattern, two separate dorsal fins, tasseled first dorsal, tapering second dorsal and anal fins, and deeply forked tail. No longnose or exaggerated snout. Enlarged mouth should not be used to assign a sex.",
+      "motion": "Gentle hovering near shelter and small local fin movements are illustrative. Existing animals must retain placement and seeds."
+    },
+    "giant_triton": {
+      "nominalAdultLengthM": 0.3,
+      "maximumShellLengthM": 0.5,
+      "depth": [
+        1,
+        40
+      ],
+      "origin": "base",
+      "basis": "A 30cm shell is consistent with living Australian Museum observations; Waikīkī Aquarium describes shells to50cm. The numeric interval uses SeaLifeBase as a clearly stated metadata source, corroborated for parts of that interval by aquarium and AIMS research records; it is not exhaustive.",
+      "anatomy": "Tall pointed coiled spire, inflated final whorl, broad flat spiral sculpture, large orange aperture, thick flared lip with small inner teeth, and a short anterior siphonal canal. It should not resemble a queen conch with finger-like lip projections or a long-canal whelk.",
+      "motion": "The foot stays grounded. Restrained tentacle/siphon movement is an illustrative current response; fast continuous shell spinning, free swimming and modeled prey consumption would be misleading."
+    }
+  },
+  "integration": {
+    "maintainedSource": "Append these records and used citations without regenerating prior guide entries. The Banggai-to-pajama lookalike link is new and one-way; existing pajama data stays exact.",
+    "practice": "Reading profiles, practicing identification and inspecting models must not award a reef discovery or change unrelated notes, bookmarks or saved answers.",
+    "conservation": "Retain the assessed-year convention. The Banggai 2025 amendment does not make 2025 a new assessment year. Giant triton keeps a null assessment year."
+  }
+}

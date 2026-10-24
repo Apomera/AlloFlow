@@ -592,9 +592,10 @@ function LessonTeachingScriptPanel(props) {
       if (mounted.current && owner === requestOwner.current) { generatingRequest.current = false; setLocalBusy(false); setRegeneratingStep(null); }
     }
   };
-  const edit = () => {
+  // quiet === true: opened by the lesson plan's Edit toggle, so focus stays on that button.
+  const edit = quiet => {
     if (!version || busy || saving || deleting) return;
-    setConfirmDiscard(false); setDeleteCandidate(null); focusNewDraft.current = true;
+    setConfirmDiscard(false); setDeleteCandidate(null); focusNewDraft.current = quiet !== true;
     setDraft(JSON.parse(JSON.stringify(sourceSteps)));
     setStepUndo([]);
     setDraftSnapshot(JSON.parse(JSON.stringify(version)));
@@ -627,16 +628,17 @@ function LessonTeachingScriptPanel(props) {
     regenerateFocus.current = index;
     setNotice(entry.kind === 'restore' ? tr('step_restore_undone', 'Undid the step restore. Your previous wording and minutes are back, and your other edits are still here.') : tr('step_undone', 'Restored this step to its wording before the replacement. Your other edits are still here.'));
   };
-  const discardEdits = () => {
+  const discardEdits = quiet => {
     if (saving || busy || generatingRequest.current) return;
     setRegenerateIndex(null); setRegenerateInstruction('');
     setStepUndo([]);
-    setConfirmDiscard(false); restoreEditFocus.current = true;
+    setConfirmDiscard(false); restoreEditFocus.current = quiet !== true;
     setDraft(null); setDraftSnapshot(null); setDraftBase(''); setDraftVersionId(''); setShowRecoveryNotice(false); setLocalError('');
   };
   const keepEditing = () => { setConfirmDiscard(false); setTimeout(() => discardToggle.current?.focus(), 0); };
-  const saveEdits = async () => {
-    if (generatingRequest.current || busy || savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return;
+  // Resolves true once the edits are in the plan; quiet keeps focus on the plan's Done button.
+  const saveEdits = async quiet => {
+    if (generatingRequest.current || busy || savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return false;
     const owner = ++requestOwner.current;
     savingRequest.current = true;
     setConfirmDiscard(false);
@@ -648,21 +650,47 @@ function LessonTeachingScriptPanel(props) {
         const clearStatus = _ltsClearSubmittedDraft(recoveryKey, draftScope, planId, submittedDraft);
         if (mounted.current && clearStatus) setRecoveryStatus(clearStatus);
       }
-      if (!mounted.current || owner !== requestOwner.current) return;
+      if (!mounted.current || owner !== requestOwner.current) return result?.ok === true;
       if (result?.ok !== true) {
         setLocalError(_ltsText(result?.error?.message || result?.error) || (result === false || result?.ok === false
           ? tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.')
           : tr('save_unconfirmed', 'Saving could not be confirmed. Your draft is still here. Try saving again.')));
-        return;
+        return false;
       }
-      restoreEditFocus.current = true;
+      restoreEditFocus.current = quiet !== true;
       setStepUndo([]);
       setDraft(null); setDraftSnapshot(null); setDraftBase(''); setDraftVersionId(''); setShowRecoveryNotice(false);
       setNotice(tr('edits_added', 'Script edits added to this plan.'));
+      return true;
     } catch (failure) {
       if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
+      return false;
     } finally { if (mounted.current && owner === requestOwner.current) { savingRequest.current = false; setSaving(false); } }
   };
+  // Inside a lesson plan, the plan's Edit/Done toggle drives the script: Edit opens a draft
+  // (no focus jump), Done saves a changed draft or drops an unchanged one.
+  const planBridged = typeof props.planEditing === 'boolean';
+  React.useEffect(() => {
+    if (!planBridged) return;
+    if (props.planEditing) {
+      if (!draft && version && !busy && !saving && !deleting && typeof onUpdateTeachingScript === 'function') { setExpanded(true); edit(true); }
+    } else if (draft && !draftChanged && !saving) discardEdits(true);
+  }, [planBridged, props.planEditing, version?.id, busy]);
+  React.useEffect(() => {
+    const bridge = props.planEditBridge;
+    if (!planBridged || !bridge) return undefined;
+    const finish = async () => {
+      if (!draft) return true;
+      if (!draftChanged && !staleDraft) { discardEdits(true); return true; }
+      if (!(staleDraft || invalidTiming || invalidDraftText || invalidDraftLength)) return saveEdits(true);
+      setExpanded(true);
+      setNotice(tr('finish_blocked', 'Your teaching script edits need attention before you finish editing.'));
+      setTimeout(() => { editActions.current?.scrollIntoView?.({ block: 'start' }); editActions.current?.focus(); }, 0);
+      return false;
+    };
+    bridge.current = finish;
+    return () => { if (bridge.current === finish) bridge.current = null; };
+  });
   const exportText = async kind => {
     const runtime = window.AlloModules?.LessonTeachingScript;
     if (!version || (!draft && typeof runtime?.toPlainText !== 'function')) { setLocalError(tr('export_unavailable', 'Text export is still loading. Please try again.')); return; }
@@ -925,7 +953,8 @@ function LessonTeachingScriptPanel(props) {
                 {versions.map((item, index) => <option key={item.id} value={String(item.id)}>{[tr('version_number', 'Version') + ' ' + (index + 1), _ltsText(item.title) || tr('title', 'Teaching script'), scopeLabel(item), Number(item.durationMinutes) > 0 ? item.durationMinutes + ' ' + tr('minutes', 'minutes') : ''].filter(Boolean).join(' · ')}</option>)}
               </select>
             </div>
-            {!draft && typeof onUpdateTeachingScript === 'function' && <button ref={editToggle} type="button" className={buttonClass} disabled={busy || saving || deleting} onClick={edit}>{tr('edit', 'Edit script')}</button>}
+            {!draft && typeof onUpdateTeachingScript === 'function' && (!planBridged || props.planEditing) && <button ref={editToggle} type="button" className={buttonClass} disabled={busy || saving || deleting} onClick={edit}>{tr('edit', 'Edit script')}</button>}
+            {!draft && typeof onUpdateTeachingScript === 'function' && planBridged && !props.planEditing && <p className="w-full text-sm text-slate-700" data-script-edit-with-plan>{tr('edit_with_plan', 'To change this script, press Edit at the top of the lesson plan.')}</p>}
             <button ref={spokenToggle} type="button" className={buttonClass} disabled={saving || busy || deleting} onClick={() => setSpokenOnly(true)}>{tr('spoken_view', 'Spoken directions')}</button>
             <button type="button" className={buttonClass} disabled={saving || busy} onClick={() => exportText('copy')}>{tr('copy', 'Copy text')}</button>
             <button type="button" className={buttonClass} disabled={saving || busy} onClick={() => exportText('download')}>{tr('download', 'Download text')}</button>
@@ -953,6 +982,7 @@ function LessonTeachingScriptPanel(props) {
           {Array.isArray(version.warnings) && version.warnings.length > 0 && <ul className="list-disc space-y-1 rounded-lg bg-amber-50 py-3 pl-7 pr-3 text-sm text-amber-950">{version.warnings.map((warning, index) => <li key={index}>{_ltsText(warning)}</li>)}</ul>}
           {draft && <div className="space-y-2 rounded-lg border border-indigo-300 bg-indigo-50 p-3 no-print">
             <p className="text-sm font-bold text-indigo-950">{tr('unsaved_edits', 'Unsaved script edits')}</p>
+            {planBridged && props.planEditing && <p className="text-sm text-indigo-950">{tr('saved_on_done', 'Script changes are saved when you press Done at the top of the lesson plan.')}</p>}
             <p className="text-sm text-slate-700">{tr('draft_export_available', 'Copy, download or print your draft text at any point, even before all fields are complete. Exports are labeled as unsaved drafts.')}</p>
             <button type="button" className={buttonClass} onClick={() => { editActions.current?.scrollIntoView?.({ block: 'start' }); editActions.current?.focus(); }}>{tr('review_save', 'Go to save and discard controls')}</button>
             <p className="text-sm text-slate-800">{tr('edit_timing', 'Step total:')} {Number.isFinite(timings) ? timings : '—'} / {version.durationMinutes} {tr('minutes', 'minutes')}</p>

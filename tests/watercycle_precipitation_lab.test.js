@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const WATER_CYCLE_PATHS = [
   'stem_lab/stem_tool_watercycle.js',
@@ -454,7 +455,8 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(html).toContain('Middle-atmosphere temperature');
     // Pinned without the trailing punctuation: the invariant is that the hint
     // explains what a crossing means, not exactly where the sentence ends.
-    expect(html).toContain('Each 0\u00B0C crossing becomes a visible phase-change layer');
+    // 79e3e5eae corrected it: an air crossing is not itself a phase change.
+    expect(html).toContain('These markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0\u00B0C');
   });
   it('checks flash-to-thunder distance estimates with qualitative feedback', () => {
     const kernel = loadPrecipitationKernel();
@@ -476,7 +478,8 @@ describe('Water Cycle Precipitation Lab', () => {
       expect(source).toContain('evaluateWcThunderEstimate');
       expect(source).toContain("id: 'wcPrecipThunderEstimate'");
       expect(source).toContain('thunderEstimateBand');
-      expect(source).toContain('Measure the storm');
+      // Heading of the 79e3e5eae thunder-measurement panel (was 'Measure the storm').
+      expect(source.includes("h('h4', { id: 'wcThunderMeasureTitle' }, 'How far did sound travel?')"), 'thunder measurement heading').toBe(true);
     });
   });
   it('limits lightning to cold mixed-phase deep convection', () => {
@@ -717,9 +720,20 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(html).toContain('role="region" aria-labelledby="wcStormAnatomyTitle"');
     expect(html).toContain('<h4 id="wcStormAnatomyTitle">Storm anatomy</h4>');
     expect(html).toContain('data-storm-anatomy="strong"');
-    expect(html).toContain('Upper cloud: positive small ice crystals (+)');
-    expect(html).toContain('Lower cloud: negative graupel and larger ice (\u2212)');
-    expect(html).toContain('Stepped leader -&gt; upward streamer -&gt; return stroke');
+    // 79e3e5eae replaced the static charge sentence with a numbered lightning
+    // study: the sequence reads as ordered text, and the charge structure is
+    // stated in the charge-separation step's diagram description.
+    expect(html).toContain('Inspect a lightning flash');
+    const study = sliceBetween(html, 'Inspect a lightning flash', null, { label: 'rendered lightning study' });
+    const order = ['Charge separation', 'Stepped leader', 'Upward streamer', 'Return stroke', 'Thunder wave'].map((label) => study.indexOf(label));
+    expect(order.every((at, i) => at > -1 && (i === 0 || at > order[i - 1])), 'numbered steps in causal order').toBe(true);
+    const chargeStep = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: { ...kernel.presets.hailstorm, preset: 'hailstorm', soundEnabled: false, lightningStudyStep: 'charge-separation' },
+      },
+    });
+    expect(chargeStep.includes('Positive small ice crystals occupy the upper cloud. Negative graupel and larger ice occupy the lower cloud.'), 'charge polarity by cloud level').toBe(true);
     expect(html).toContain('aria-label="Storm instrument readouts"');
     ['charge', 'updraft', 'delay', 'distance'].forEach((instrumentId) => {
       expect(html).toContain(`data-storm-instrument="${instrumentId}"`);

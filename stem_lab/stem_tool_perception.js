@@ -1723,9 +1723,9 @@
     }
     function setRecordedCamera(patch) {
       if (!recordedCameraReady()) return;
-      var session = recordedCameraLatest.current;
+      var session = recordedCameraLatest.current; // read refs here, not in the updater: StrictMode replays updaters after render moved them
       setViewer(function (previous) {
-        if (!recordedCameraReady() || recordedCameraLatest.current !== session || !previous || previous.recordId || previous.groupId !== viewer.groupId || previous.identity !== viewer.identity) return previous;
+        if (!previous || previous.recordId || previous.profile !== session.profile || previous.groupId !== viewer.groupId || previous.identity !== viewer.identity) return previous;
         var base = previous.inspection || { zoom: 1, x: .5, y: .5, pan: false, open: false }, next = Object.assign({}, base, patch), zoom = [1, 1.5, 2, 3].indexOf(next.zoom) >= 0 ? next.zoom : 1, edge = .5 / zoom;
         return Object.assign({}, previous, { inspection: { zoom: zoom, x: zoom === 1 ? .5 : Math.max(edge, Math.min(1 - edge, Number.isFinite(next.x) ? next.x : .5)), y: zoom === 1 ? .5 : Math.max(edge, Math.min(1 - edge, Number.isFinite(next.y) ? next.y : .5)), pan: zoom > 1 && !!next.pan, open: !!next.open } });
       });
@@ -1814,10 +1814,10 @@
           viewer.comparison && h('p', { className: 'perception-camera-linked' }, t('camera_linked_hint', 'Both drawings use the same magnification and viewing position.'))));
     }
     function updatePairedViewer(values) {
-      var session = pairedViewerLatest.current;
+      var session = pairedViewerLatest.current; // read the ref here, not in the updater: StrictMode replays updaters after render moved it
       if (!session || session !== viewer || !studyAlive.current || session.profile !== importProfile.current || studyBusyRef.current || importBusyRef.current) return;
       setViewer(function (previous) {
-        if (pairedViewerLatest.current !== session || !previous || previous.recordId || previous.profile !== session.profile || previous.groupId !== session.groupId || previous.identity !== session.identity || !previous.comparison || previous.comparison.groupId !== session.comparison.groupId || previous.comparison.identity !== session.comparison.identity) return previous;
+        if (!previous || previous.recordId || previous.profile !== session.profile || previous.groupId !== session.groupId || previous.identity !== session.identity || !previous.comparison || previous.comparison.groupId !== session.comparison.groupId || previous.comparison.identity !== session.comparison.identity) return previous;
         return Object.assign({}, previous, values);
       });
     }

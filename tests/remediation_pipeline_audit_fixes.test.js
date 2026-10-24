@@ -229,7 +229,7 @@ describe('H11/H14/M10 — the image lane refuses to guess', () => {
   });
 
   it('H14: image extraction is scoped to the remediated page range', () => {
-    expect(dp).toContain('shouldAbort: _runGenStale, pageRange: _pageRange });');
+    expect(dp.includes('shouldAbort: _runGenStale, pageRange: _pageRange, docLang: '), 'image extraction receives the page range (and the document language)').toBe(true);
     expect(dp).toContain('if (Array.isArray(imgCtx.pageRange) && imgCtx.pageRange.length === 2) {');
     // An image with no page number is kept — dropping it would lose content.
     expect(dp).toContain('return !Number.isFinite(_p) || (_p >= _pgFrom && _p <= _pgTo);');

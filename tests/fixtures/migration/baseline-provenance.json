@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "description": "Immutable inputs preserved byte-for-byte from existing reviewed Migration reports so regression tests run from a clean checkout. Original report paths are provenance only, not runtime dependencies.",
+  "regenerated": false,
+  "assertionsChanged": false,
+  "fixtures": [
+    {
+      "path": "tests/fixtures/migration/round25/mobile-dark-monarch-primary-relief.json",
+      "originalReportPath": "reports/migration-deep-review-round25-2026-10-21/mobile-dark-monarch-primary-relief.json",
+      "bytes": 265486,
+      "sha256": "120E8116C1898523A7B74EE96CBA6522CC0DA25007D6B0B1434DFE564C5EC56F"
+    },
+    {
+      "path": "tests/fixtures/migration/round26/desktop-goose-study-identity.json",
+      "originalReportPath": "reports/migration-deep-review-round26-2026-10-21/desktop-goose-study-identity.json",
+      "bytes": 1382377,
+      "sha256": "9A373001BC40FAC6C63E30B42124EEA701DF10DB77F5BA244E1AE1BFFC8D60DF"
+    },
+    {
+      "path": "tests/fixtures/migration/round26/mobile-light-peregrine-study-identity.json",
+      "originalReportPath": "reports/migration-deep-review-round26-2026-10-21/mobile-light-peregrine-study-identity.json",
+      "bytes": 952484,
+      "sha256": "0DCB2C03B2F8A14E6F11758ADDEE6BFE3C60FAED77CF6985338240D0E89FC90D"
+    },
+    {
+      "path": "tests/fixtures/migration/round27/mobile-dark-monarch-tail-relief.json",
+      "originalReportPath": "reports/migration-deep-review-round27-2026-10-21/mobile-dark-monarch-tail-relief.json",
+      "bytes": 679317,
+      "sha256": "7ABB2F6A6ED61CEFEC38590C53DCAA588B3D3A6C61CB3331B917462362F7AD29"
+    },
+    {
+      "path": "tests/fixtures/migration/round27/desktop-goose-tail-relief.json",
+      "originalReportPath": "reports/migration-deep-review-round27-2026-10-21/desktop-goose-tail-relief.json",
+      "bytes": 1975786,
+      "sha256": "92C103B398EB1907A697D96D24F2C3FFF21C97510E1E2D7AEC78754A8F153EF6"
+    },
+    {
+      "path": "tests/fixtures/migration/round27/mobile-light-peregrine-tail-relief.json",
+      "originalReportPath": "reports/migration-deep-review-round27-2026-10-21/mobile-light-peregrine-tail-relief.json",
+      "bytes": 1459126,
+      "sha256": "7ACA44CFAF3C066DE21CE022BF10B19170E1B531378D5496A927D9F178D4C9F5"
+    }
+  ]
+}

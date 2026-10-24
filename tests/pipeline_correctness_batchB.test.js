@@ -6,8 +6,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src =readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // Runtime-extract the real _stampThScopeGeometryAware (module-scope pure fn, anti-drift).
 const start = src.indexOf('function _stampThScopeGeometryAware(html) {');
@@ -44,7 +45,13 @@ describe('#7 _stampThScopeGeometryAware — scope by grid position, not blanket 
 
 describe('#5 OCR disagreement — only flag when both engines produced text (anti-drift)', () => {
   it('the reconcile guard requires tLen>0 && vLen>0', () => {
-    expect(src).toContain('longest > 0 && tLen > 0 && vLen > 0 && (Math.abs(tLen - vLen)');
+    // ed897988b (2026-09-07) compares the two readings token by token as well as by length;
+    // both comparisons, and the disagreement push, sit inside the both-engines-produced-text guard.
+    const block = sliceBetween(src, 'if (tLen > 0 && vLen > 0) {\n        const tTokens = _agreementTokens(tText), vTokens = _agreementTokens(vText);',
+      'disagreements.push({ pageNum: _pn', { file: 'doc_pipeline_source.jsx', label: 'both-engines guard' });
+    expect(block).toContain('const lengthMismatch = Math.abs(tLen - vLen) > Math.max(20, longest * 0.1);');
+    expect(block).toContain('if (tokenMismatch || lengthMismatch) {');
+    expect(block.length).toBeLessThan(1200);
   });
 });
 

@@ -33,6 +33,8 @@ afterEach(() => { if (root) act(() => root.unmount()); root = null; host?.remove
 
 const PASSAGE = 'The heron walked slowly in the shallow water.';
 const byText = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text);
+// Adapted text labels its edit button "Edit word help: {item}" (2026-09-30); the original keeps "for".
+const EDIT_HERON = 'button[aria-label^="Edit word help: heron"], button[aria-label^="Edit word help for heron"]';
 const click = node => act(async () => { if (!node) throw new Error('Missing control'); node.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
 const type = (node, value) => act(() => { node.focus(); Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new Event('input', { bubbles: true })); });
 
@@ -75,7 +77,7 @@ describe('the reader replays queued steps onto the saved item', () => {
 
   it('keeps an explanation saved through "Save and continue" before Undo re-level', async () => {
     const view = mount();
-    await click(host.querySelector('button[aria-label^="Edit word help for heron"]'));
+    await click(host.querySelector(EDIT_HERON));
     type(host.querySelector('[data-gloss-draft] textarea'), 'A tall bird that wades in water.');
     expect(view.session.hasChanges()).toBe(true);
     await click(byText('simplified.relevel_undo'));
@@ -105,7 +107,7 @@ describe('the reader replays queued steps onto the saved item', () => {
     await click(host.querySelector('[data-adapt-option="shorterSentences"]'));
     await click(host.querySelector('[data-apply-complexity]'));
     expect(host.querySelector('[data-adaptation-apply]')).toBeTruthy();
-    await click(host.querySelector('button[aria-label^="Edit word help for heron"]'));
+    await click(host.querySelector(EDIT_HERON));
     type(host.querySelector('[data-gloss-draft] textarea'), 'A tall bird that wades in water.');
     await click(host.querySelector('[data-adaptation-apply]'));
     expect(host.querySelector('[role=alertdialog]')).toBeTruthy();

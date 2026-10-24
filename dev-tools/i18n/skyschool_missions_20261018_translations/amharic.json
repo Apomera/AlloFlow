@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "የተልዕኮ ምልከታዎች",
+  "stem.flightsim.mission_journal_targets": "የተመዘገቡ ዒላማዎች፦ ከ{total} ውስጥ {captured}።",
+  "stem.flightsim.mission_journal_complete": "ሁሉም የተልዕኮ ዓላማዎች እና ወደ መነሻ ቦታ ተመልሶ ማረፍ ተመዝግበዋል።",
+  "stem.flightsim.mission_journal_ended": "የማጠናቀቅ ማስረጃዎች ሁሉ ከመመዝገባቸው በፊት ተልዕኮው ተጠናቋል።",
+  "stem.flightsim.mission_journal_recovery": "ከአደጋ የተረፈውን ሰው ማዳን ተመዝግቧል፦ {value}።",
+  "stem.flightsim.mission_journal_return": "ወደ መሠረት ተመልሶ ማረፍ ተመዝግቧል፦ {value}።",
+  "stem.flightsim.mission_guidance_title": "የተልዕኮ መመሪያ",
+  "stem.flightsim.mission_route": "{target} · አቅጣጫ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "የመነሻ ቦታ",
+  "stem.flightsim.mission_read_status": "የተልዕኮውን ሁኔታ አንብብ",
+  "stem.flightsim.mission_return_criterion": "ከ{target} በ{distance} nm ርቀት ውስጥ፣ ከመሬት አንጻር ፍጥነት ከ{speed} kt እና የመውረድ ፍጥነት ከ{fpm} fpm በታች ሆኖ ያርፉ።",
+  "stem.flightsim.mission_unavailable": "የተልዕኮው ዒላማ መረጃ አይገኝም። ይህን በረራ ጨርሰው አዲስ ተልዕኮ ይጀምሩ።",
+  "stem.flightsim.mission_capture_criterion": "ለ{hold} s በ{distance} ft ርቀት ውስጥ፣ ከመሬት በላይ ከ{min} ft ከፍ ብለው እና ከ{max} ft ዝቅ ብለው፣ የመሬት ፍጥነትዎ ከ{speed} kt በታች ሆኖ ይቆዩ።"
+}

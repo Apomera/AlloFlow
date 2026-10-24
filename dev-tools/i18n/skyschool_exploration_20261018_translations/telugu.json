@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "శోధన ఫలితాలు: {topics} అంశాల్లో {cards} కార్డులు.",
+  "stem.flightsim.learn_library_counts": "{cards} కార్డులు · {topics} అంశాలు",
+  "stem.flightsim.learn_search_clear": "శోధనను క్లియర్ చేయండి",
+  "stem.flightsim.learn_search_empty": "“{query}” కు సరిపోయే అభ్యాస కార్డులు లేవు. మరో పదాన్ని ప్రయత్నించండి లేదా శోధనను క్లియర్ చేయండి.",
+  "stem.flightsim.learn_search_none": "సరిపోయే అభ్యాస కార్డులు లేవు",
+  "stem.flightsim.learn_search_cards": "{count} అభ్యాస కార్డులు",
+  "stem.flightsim.quiz_review_progress": "{total} ప్రశ్నల్లో {answered}కు జవాబులు ఇచ్చారు · {missed} తప్పులు",
+  "stem.flightsim.quiz_review_missed": "తప్పు జవాబులను సమీక్షించండి",
+  "stem.flightsim.quiz_next_unanswered": "తదుపరి జవాబు ఇవ్వని ప్రశ్న",
+  "stem.flightsim.quiz_review_all_answered": "ప్రతి ప్రశ్నకు మొదటి జవాబు నమోదైంది. మార్కులు లేని సాధన కోసం తప్పుగా జవాబిచ్చిన ప్రశ్నలను సమీక్షించండి లేదా కొత్త ప్రయత్నాన్ని ప్రారంభించండి.",
+  "stem.flightsim.planner_drone_agl": "నేలపై నుంచి {ft} అడుగులు",
+  "stem.flightsim.sprint_native_title": "భౌగోళిక వేగ సవాలు",
+  "stem.flightsim.sprint_timed_hint": "మీరు జవాబు ఇస్తున్నప్పటికీ మార్గంలో ప్రయాణం కొనసాగుతుంది. చదవడానికి పాజ్ చేయండి; జవాబు ఎంచుకునే ముందు మళ్లీ కొనసాగించండి.",
+  "stem.flightsim.sprint_warp_reference": "ఈ భౌగోళిక కార్యకలాపం కోసం ప్రయాణాన్ని వేగవంతం చేశారు. వేగ కొలతలు నిర్దేశించిన క్రూజ్ వేగాన్ని చూపుతాయి; ఈ మార్గం విమానం పనితీరును కొలవదు.",
+  "stem.flightsim.sprint_save_menu": "సవాలును సేవ్ చేసి మెనూకి తిరిగి వెళ్లండి",
+  "stem.flightsim.sprint_next_stop": "తదుపరి ఆగే చోటు: {place}",
+  "stem.flightsim.geoq_approaching_city": "మీరు ఏ నగరానికి చేరువవుతున్నారు?",
+  "stem.flightsim.sprint_time_remaining": "మిగిలిన సమయం: {seconds} సెకన్లు"
+}

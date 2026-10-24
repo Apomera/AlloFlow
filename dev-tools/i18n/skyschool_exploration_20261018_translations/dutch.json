@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Zoekresultaten: {cards} kaarten over {topics} onderwerpen.",
+  "stem.flightsim.learn_library_counts": "{cards} kaarten · {topics} onderwerpen",
+  "stem.flightsim.learn_search_clear": "Zoekopdracht wissen",
+  "stem.flightsim.learn_search_empty": "Geen leerkaarten gevonden voor “{query}”. Probeer een andere term of wis de zoekopdracht.",
+  "stem.flightsim.learn_search_none": "Geen passende leerkaarten",
+  "stem.flightsim.learn_search_cards": "{count} leerkaarten",
+  "stem.flightsim.quiz_review_progress": "{answered} van {total} vragen beantwoord · {missed} fout",
+  "stem.flightsim.quiz_review_missed": "Foute antwoorden bekijken",
+  "stem.flightsim.quiz_next_unanswered": "Volgende onbeantwoorde vraag",
+  "stem.flightsim.quiz_review_all_answered": "Elke vraag heeft een eerste antwoord. Bekijk de foute antwoorden om zonder punten te oefenen, of begin een nieuwe poging.",
+  "stem.flightsim.planner_drone_agl": "{ft} voet boven de grond",
+  "stem.flightsim.sprint_native_title": "Aardrijkskundesprint",
+  "stem.flightsim.sprint_timed_hint": "De route gaat verder terwijl je antwoordt. Pauzeer om te lezen; hervat voordat je een antwoord kiest.",
+  "stem.flightsim.sprint_warp_reference": "De reis wordt versneld voor deze aardrijkskundeactiviteit. De snelheidsmeters tonen de opgegeven kruissnelheid; deze route meet geen vliegtuigprestaties.",
+  "stem.flightsim.sprint_save_menu": "Sprint opslaan en terug naar het menu",
+  "stem.flightsim.sprint_next_stop": "Volgende halte: {place}",
+  "stem.flightsim.geoq_approaching_city": "Welke stad nader je?",
+  "stem.flightsim.sprint_time_remaining": "Resterende tijd: {seconds} seconden"
+}

@@ -71,6 +71,30 @@ var _lazyIcon = function (name) {
     var description = String(value == null ? '' : value).trim();
     return description || 'No visual description provided.';
   }
+  function AssessmentQuestionSupport(p) {
+    var q = p.q || {};
+    return <>{p.translation !== false && q.question_en && <p data-assessment-question-translation className="mt-2 text-sm font-normal italic text-slate-600">{q.question_en}</p>}{q.imageUrl && <img data-assessment-question-image src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} loading="lazy" className="my-3 max-h-80 w-full rounded-lg bg-white object-contain" />}</>;
+  }
+  function AssessmentChoiceContent(p) {
+    var q = p.q || {}, field = p.field || 'options', index = p.index;
+    var stems = { options: 'option', answerOptions: 'answerOption', evidenceOptions: 'evidenceOption', items: 'item', candidatePartners: 'candidatePartner' };
+    var stem = stems[field] || field;
+    var images = q[stem + 'ImageUrls'] || (field === 'answerOptions' ? q.answerImageUrls || q.optionImageUrls : field === 'evidenceOptions' ? q.evidenceImageUrls : null) || [];
+    var descriptions = q[stem + 'ImageAltTexts'] || (field === 'answerOptions' ? q.answerImageAltTexts || q.optionImageAltTexts : field === 'evidenceOptions' ? q.evidenceImageAltTexts : null) || [];
+    var translations = q[field + '_en'] || [];
+    var value = p.text == null ? (q[field] || [])[index] : p.text;
+    var renderText = typeof p.renderText === 'function' ? p.renderText : function (text) { return String(text == null ? '' : text); };
+    return <span data-assessment-choice-field={field} data-assessment-choice-index={index} className="min-w-0 flex-1 break-words"><span>{p.prefix || ''}{renderText(value)}</span>{translations[index] && <span className="mt-1 block text-sm font-normal italic opacity-80">{renderText(translations[index])}</span>}{images[index] && <img src={images[index]} alt={_quizAuthoredImageAlt(descriptions[index])} loading="lazy" className="my-2 max-h-48 w-full rounded bg-white object-contain" />}</span>;
+  }
+  function AssessmentPairSide(p) {
+    var q = p.q || {}, pair = (q.pairs || [])[p.index] || {}, translated = (q.pairs_en || [])[p.index] || {};
+    var side = p.side, translation = pair[side + '_en'] || translated[side];
+    var renderText = typeof p.renderText === 'function' ? p.renderText : function (text) { return String(text == null ? '' : text); };
+    return <span className="min-w-0 flex-1 break-words"><span>{renderText(pair[side])}</span>{translation && <span className="mt-1 block text-sm font-normal italic opacity-80">{renderText(translation)}</span>}{pair[side + 'ImageUrl'] && <img src={pair[side + 'ImageUrl']} alt={_quizAuthoredImageAlt(pair[side + 'ImageAltText'])} loading="lazy" className="my-2 max-h-48 w-full rounded bg-white object-contain" />}</span>;
+  }
+  function AssessmentPairContent(p) {
+    return <span data-assessment-choice-field="pairs" data-assessment-choice-index={p.index} className="flex min-w-0 flex-1 items-start gap-2"><AssessmentPairSide q={p.q} index={p.index} side="left" renderText={p.renderText} /><span aria-hidden="true">↔</span><AssessmentPairSide q={p.q} index={p.index} side="right" renderText={p.renderText} /></span>;
+  }
   function _quizVoiceChoiceIndex(value, optionCount) {
     var count = Math.max(0, Math.min(8, Number(optionCount) || 0));
     var index = -1;
@@ -484,20 +508,79 @@ var _lazyIcon = function (name) {
   var _QUIZ_ATTEMPT_STORAGE_PREFIX = 'alloflow_assess_attempt_v1:';
   var _QUIZ_DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
   var _quizDraftMemory = {};
+  var _quizDraftFallback = {};
+  var _quizDraftWriteState = {};
   var _quizClosedDrafts = {};
-  function _quizDraftNamespace(data, sessionCode) {
+  var _quizDraftContexts = {};
+  var _quizDraftPatches = {};
+  var _quizDraftSeen = {};
+  // Old content-only keys cannot be attributed to a particular assignment.
+  // Retain access for explicit download, never silently adopt their answers.
+  function _quizLegacyDraftNamespace(data, sessionCode) {
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
+    var identity = JSON.stringify({ title: data && data.title || '', questions: questions.map(function (q) {
+      return { type: q && q.type || 'mcq', question: q && q.question || '', options: q && (q.options || q.answerOptions || q.evidenceOptions || q.items || q.pairs) || [], key: q && (q.correctAnswer || q.correctAnswers || q.expectedFill || q.expectedAnswer || q.correctValue || q.correctPartnerForWrong || q.rubric) || '' };
+    }), reflections: reflections });
+    var hash = 2166136261;
+    for (var i = 0; i < identity.length; i++) { hash ^= identity.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return _QUIZ_DRAFT_STORAGE_PREFIX + String(sessionCode || 'local') + ':' + (hash >>> 0).toString(36);
+  }
+  function _quizStableAssessmentData(data) {
+    // Response identity follows authored stimuli and grading rules. Editorial
+    // labels, explanations, translations, and check timestamps do not move an
+    // answer to a different item; an actively disputed key still needs review.
+    var fields = ['type', 'itemType', 'question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl',
+      'options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions',
+      'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls',
+      'correctAnswer', 'correctAnswers', 'correctIndex', 'correctEvidence', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'exemplarAnswer', 'sampleAnswer', 'modelAnswer', 'referenceAnswer', 'rubric',
+      'correctValue', 'tolerance', 'acceptableUnits', 'correctOrder', 'correctSequence', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong'];
+    var choiceFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'pairs', 'candidatePartners', 'principleOptions'];
+    function stableValue(value, choice) {
+      if (Array.isArray(value)) return value.map(function (entry) { return stableValue(entry, choice); });
+      if (value && typeof value === 'object') {
+        var result = {}, keys = choice ? ['id', 'text', 'label', 'value', 'score', 'left', 'right', 'imageUrl', 'leftImageUrl', 'rightImageUrl'] : Object.keys(value).sort();
+        keys.forEach(function (key) { if (value[key] !== undefined) result[key] = stableValue(value[key], choice); });
+        return result;
+      }
+      return value;
+    }
+    function questionIdentity(question) {
+      if (!question || typeof question !== 'object' || Array.isArray(question)) return question;
+      var result = {};
+      fields.forEach(function (field) { if (question[field] !== undefined) result[field] = stableValue(question[field], choiceFields.indexOf(field) >= 0); });
+      if (_quizIsAnswerKeyDisputed(question)) result.answerKeyUnderReview = true;
+      return result;
+    }
+    function reflectionIdentity(reflection) {
+      if (!reflection || typeof reflection !== 'object' || Array.isArray(reflection)) return reflection;
+      var result = {};
+      ['text', 'question', 'prompt', 'instructions', 'imageUrl'].forEach(function (field) { if (reflection[field] !== undefined) result[field] = stableValue(reflection[field]); });
+      return result;
+    }
+    return {
+      questions: (data && Array.isArray(data.questions) ? data.questions : []).map(questionIdentity),
+      reflections: (data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : []).map(reflectionIdentity)
+    };
+  }
+  function _quizPreviousStableAssessmentData(data) {
+    // Exact compatibility with the preceding fingerprint, before editorial
+    // metadata was removed. Do not use it as the new response identity.
+    return JSON.parse(JSON.stringify(data || {}, function (key, value) {
+      return /(?:_en|AltText|AltTexts)$/.test(key) ? undefined : value;
+    }));
+  }
+  function _quizDraftNamespace(data, sessionCode, resourceId) {
+    return _quizPreviousDraftNamespace(_quizStableAssessmentData(data), sessionCode, resourceId);
+  }
+  function _quizPreviousDraftNamespace(data, sessionCode, resourceId) {
     var questions = data && Array.isArray(data.questions) ? data.questions : [];
     var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
     var identity = JSON.stringify({
-      title: data && data.title || '',
-      questions: questions.map(function (q) {
-        return {
-          type: q && q.type || 'mcq',
-          question: q && q.question || '',
-          options: q && (q.options || q.answerOptions || q.evidenceOptions || q.items || q.pairs) || [],
-          key: q && (q.correctAnswer || q.correctAnswers || q.expectedFill || q.expectedAnswer || q.correctValue || q.correctPartnerForWrong || q.rubric) || ''
-        };
-      }),
+      resourceId: String(resourceId || ''),
+      // Preserve every response-relevant field, including evidence choices,
+      // sequence order, numeric tolerance, illustrations, and answer rubrics.
+      questions: questions,
       reflections: reflections
     });
     var hash = 2166136261;
@@ -506,6 +589,59 @@ var _lazyIcon = function (name) {
       hash = Math.imul(hash, 16777619);
     }
     return _QUIZ_DRAFT_STORAGE_PREFIX + String(sessionCode || 'local') + ':' + (hash >>> 0).toString(36);
+  }
+  function _quizPrepareDraft(namespace, previousNamespace, context) {
+    if (!namespace || namespace.indexOf('assess-preview:') === 0) return;
+    _quizDraftContexts[namespace] = context;
+    if (!previousNamespace || namespace === previousNamespace) return;
+    var storage = _quizLocalStorage();
+    if (!storage) return;
+    try {
+      // Only migrate the exact former fingerprint of this resource/user/session.
+      // Never adopt ambiguous content-only legacy drafts.
+      if (!_quizReadDraft(namespace) && !_quizReadAttemptReceipt(namespace) && !_quizDraftMemory[namespace] && !_quizDraftFallback[namespace] && !Object.keys(_quizDraftPatches[namespace] || {}).length) {
+        var candidates = (Array.isArray(previousNamespace) ? previousNamespace : [{ namespace: previousNamespace, signature: context.previousSignature }]).map(function (candidate) {
+          if (!candidate.namespace || candidate.namespace === namespace) return null;
+          var receipt = _quizReadAttemptReceipt(candidate.namespace), draft = _quizReadDraft(candidate.namespace);
+          if (receipt && receipt.signature === candidate.signature) return { receipt: receipt, savedAt: Number(receipt.submittedAt) || 0 };
+          if (draft && !receipt) return { draft: draft, savedAt: Number(draft.updatedAt) || 0 };
+          return null;
+        }).filter(Boolean).sort(function (a, b) { return b.savedAt - a.savedAt; });
+        var selected = candidates[0];
+        if (selected && selected.receipt) storage.setItem(_quizAttemptStorageKey(namespace), JSON.stringify(Object.assign({}, selected.receipt, { signature: context.signature, assessmentIdentity: context })));
+        else if (selected && selected.draft) storage.setItem(namespace, JSON.stringify(Object.assign({}, selected.draft, { assessmentIdentity: context })));
+      }
+    } catch (e) { /* Existing work remains available in its original key. */ }
+  }
+  function _quizMergeDraftIdentity(namespace, context) {
+    // Remember only signatures proven equivalent while this exact response
+    // identity was current. This preserves an already released legacy receipt
+    // across later harmless edits without accepting a changed question's key.
+    var savedContexts = namespace ? [_quizDraftContexts[namespace], _quizReadDraft(namespace)?.assessmentIdentity, _quizReadAttemptReceipt(namespace)?.assessmentIdentity, _quizDraftMemory[namespace]?.assessmentIdentity, _quizDraftFallback[namespace]?.assessmentIdentity] : [];
+    var signatures = (context.compatibleSignatures || []).slice();
+    savedContexts.forEach(function (saved) {
+      if (!saved || saved.signature !== context.signature || ['resourceId', 'sessionCode', 'activityId', 'userId'].some(function (field) { return saved[field] !== context[field]; })) return;
+      signatures = signatures.concat(saved.compatibleSignatures || []);
+    });
+    return Object.assign({}, context, { compatibleSignatures: Array.from(new Set(signatures)) });
+  }
+  function _quizFindEarlierVersion(context, namespace) {
+    var storage = _quizLocalStorage(), latest = null;
+    if (!storage || !context || !context.resourceId) return null;
+    try {
+      var keys = Object.keys(_quizDraftContexts);
+      for (var index = 0; index < storage.length; index++) keys.push(storage.key(index));
+      Array.from(new Set(keys)).forEach(function (key) {
+        if (!key || key === namespace || key === _quizAttemptStorageKey(namespace) || (key.indexOf(_QUIZ_DRAFT_STORAGE_PREFIX) !== 0 && key.indexOf(_QUIZ_ATTEMPT_STORAGE_PREFIX) !== 0)) return;
+        var saved = key.indexOf(_QUIZ_DRAFT_STORAGE_PREFIX) === 0 ? _quizReadWorkingDraft(key) : JSON.parse(storage.getItem(key) || 'null'), identity = saved && saved.assessmentIdentity;
+        if (!identity || ['resourceId', 'sessionCode', 'activityId', 'userId'].some(function (field) { return identity[field] !== context[field]; })) return;
+        if (identity.signature === context.signature) return;
+        var savedAt = Number(saved.submittedAt || saved.updatedAt) || 0;
+        if (!saved.submittedAt && Date.now() - savedAt > _QUIZ_DRAFT_MAX_AGE_MS) return;
+        if (!latest || savedAt > Number(latest.submittedAt || latest.updatedAt)) latest = Object.assign({}, saved, { _versionStorageKey: key });
+      });
+    } catch (e) {}
+    return latest;
   }
   function _quizLocalStorage() {
     // Reading window.localStorage THROWS (not merely returns undefined) in
@@ -536,73 +672,277 @@ var _lazyIcon = function (name) {
     }
   }
   function _quizReadDraftField(namespace, itemKey, field) {
-    var draft = _quizReadDraft(namespace);
+    var draft = _quizReadWorkingDraft(namespace);
     var item = draft && draft.items && draft.items[itemKey];
-    return item && Object.prototype.hasOwnProperty.call(item, field) ? { found: true, value: item[field] } : { found: false, value: undefined };
+    var result = item && Object.prototype.hasOwnProperty.call(item, field) ? { found: true, value: item[field] } : { found: false, value: undefined };
+    var seen = _quizDraftSeen[namespace] || (_quizDraftSeen[namespace] = {});
+    seen[itemKey + ':' + field] = result.value;
+    return result;
   }
   function _quizWriteDraftField(namespace, itemKey, field, value) {
-    if (namespace && namespace.indexOf('assess-preview:') === 0) { _quizStageDraftField(namespace, itemKey, field, value); return true; }
-    if (_quizClosedDrafts[namespace]) return false;
-    var storage = _quizLocalStorage();
-    if (!namespace || !storage) return false;
+    if (!namespace || _quizClosedDrafts[namespace] || _quizReadAttemptReceipt(namespace)) return false;
+    _quizStageDraftField(namespace, itemKey, field, value);
+    return _quizSaveWorkingDraft(namespace);
+  }
+  function _quizDraftSaveEvent(namespace, saved, updatedAt, reason) {
+    _quizDraftWriteState[namespace] = { state: saved ? 'saved' : 'error', updatedAt: saved ? updatedAt : null, reason: reason || '' };
     try {
-      var draft = _quizReadDraft(namespace) || { version: 1, createdAt: Date.now(), items: {} };
-      draft.items[itemKey] = Object.assign({}, draft.items[itemKey] || {});
-      draft.items[itemKey][field] = value;
-      draft.updatedAt = Date.now();
+      window.dispatchEvent(new CustomEvent(saved ? 'alloflow:assessment-draft-saved' : 'alloflow:assessment-draft-error', { detail: { namespace: namespace, updatedAt: updatedAt, reason: reason || '' } }));
+    } catch (eventError) {}
+  }
+  var _quizDraftLockDatabase = null;
+  function _quizWithDraftLock(namespace, operation) {
+    if (!namespace || namespace.indexOf('assess-preview:') === 0) return operation();
+    var locks = typeof navigator !== 'undefined' && navigator.locks;
+    function failed() { _quizDraftSaveEvent(namespace, false); return false; }
+    // The lock must cover the entire read/check/merge/write transaction. Storage
+    // events arrive too late to protect simultaneous writes in separate tabs.
+    if (locks && typeof locks.request === 'function') return locks.request('alloflow:assessment:' + namespace, { mode: 'exclusive' }, operation).catch(failed);
+    var database = typeof window !== 'undefined' && window.indexedDB;
+    if (!database) return operation();
+    // Older browser contexts can use an IndexedDB read/write transaction as
+    // the cross-tab mutex. Keep its callback synchronous until commit.
+    if (!_quizDraftLockDatabase) {
+      var opening = new Promise(function (resolve, reject) {
+        var request = database.open('alloflow-assessment-locks', 1);
+        request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('locks')) request.result.createObjectStore('locks'); };
+        request.onsuccess = function () { resolve(request.result); };
+        request.onerror = function () { reject(request.error); };
+      });
+      _quizDraftLockDatabase = opening;
+      opening.catch(function () { if (_quizDraftLockDatabase === opening) _quizDraftLockDatabase = null; });
+    }
+    return _quizDraftLockDatabase.then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var transaction = db.transaction('locks', 'readwrite'), result;
+        var store = transaction.objectStore('locks');
+        store.get(namespace).onsuccess = function () {
+          try { result = operation(); store.put(Date.now(), namespace); } catch (error) { transaction.abort(); reject(error); }
+        };
+        transaction.oncomplete = function () { resolve(result); };
+        transaction.onerror = transaction.onabort = function () { reject(transaction.error || new Error('Draft save interrupted')); };
+      });
+    }).catch(failed);
+  }
+  function _quizSaveWorkingDraft(namespace, overwriteConflicts) {
+    return _quizWithDraftLock(namespace, function () { return _quizSaveWorkingDraftNow(namespace, overwriteConflicts); });
+  }
+  function _quizSaveWorkingDraftNow(namespace, overwriteConflicts) {
+    if (!namespace || _quizClosedDrafts[namespace]) return false;
+    if (namespace.indexOf('assess-preview:') === 0) return true;
+    var savedReceipt = _quizReadAttemptReceipt(namespace);
+    if (savedReceipt) { _quizClosedDrafts[namespace] = true; _quizNotifyDraftSync(namespace); return false; }
+    var persisted = _quizReadDraft(namespace);
+    var localMeta = (_quizDraftFallback[namespace] || {}).items?.root?.attemptMeta;
+    var savedMeta = persisted && persisted.items?.root?.attemptMeta;
+    if (localMeta && savedMeta && localMeta.attemptId && savedMeta.attemptId && localMeta.attemptId !== savedMeta.attemptId) {
+      _quizDraftSaveEvent(namespace, false, null, 'newer-attempt'); return false;
+    }
+    var conflicts = _quizDraftConflicts(namespace, persisted);
+    if (conflicts.length && !overwriteConflicts) { _quizDraftSaveEvent(namespace, false, null, 'conflict'); return false; }
+    var draft = _quizReadWorkingDraft(namespace);
+    // Keep the entire snapshot available even if storage becomes unreadable.
+    _quizDraftFallback[namespace] = draft;
+    try {
+      var storage = _quizLocalStorage();
+      if (!storage) throw new Error('Local storage unavailable');
       storage.setItem(namespace, JSON.stringify(draft));
-      try {
-        window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-saved', { detail: { namespace: namespace, updatedAt: draft.updatedAt } }));
-      } catch (eventError) {}
+      // Only unsaved fields should override a newer snapshot from another tab.
+      delete _quizDraftMemory[namespace];
+      delete _quizDraftPatches[namespace];
+      _quizDraftSaveEvent(namespace, true, draft.updatedAt);
+      if (overwriteConflicts) _quizNotifyDraftSync(namespace);
       return true;
     } catch (e) {
-      try {
-        window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-error', { detail: { namespace: namespace } }));
-      } catch (eventError) {}
+      _quizDraftSaveEvent(namespace, false);
       return false;
     }
   }
-  function _quizStageDraftField(namespace, itemKey, field, value) {
+  function _quizNotifyDraftSync(namespace) {
+    try { window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-synced', { detail: { namespace: namespace } })); } catch (e) {}
+  }
+  function _quizUseSavedDraft(namespace) {
+    return _quizWithDraftLock(namespace, function () {
+      if (_quizClosedDrafts[namespace] || _quizReadAttemptReceipt(namespace)) { _quizNotifyDraftSync(namespace); return false; }
+      var saved = _quizReadDraft(namespace);
+      if (!saved) { _quizDraftSaveEvent(namespace, false); return false; }
+      var localMeta = _quizDraftFallback[namespace]?.items?.root?.attemptMeta, savedMeta = saved.items?.root?.attemptMeta;
+      if (localMeta?.attemptId && savedMeta?.attemptId && localMeta.attemptId !== savedMeta.attemptId) { _quizDraftSaveEvent(namespace, false, null, 'newer-attempt'); _quizNotifyDraftSync(namespace); return false; }
+      var conflicts = new Set(_quizDraftConflicts(namespace, saved));
+      var patches = _quizDraftPatches[namespace] || {}, remaining = {};
+      var staged = { version: 1, createdAt: saved.createdAt || Date.now(), updatedAt: Date.now(), items: {} };
+      Object.keys(patches).forEach(function (key) {
+        var patch = patches[key];
+        if (patch.map) {
+          var entries = {};
+          Object.keys(patch.entries).forEach(function (entryKey) { if (!conflicts.has(key + ':' + entryKey)) entries[entryKey] = patch.entries[entryKey]; });
+          if (!Object.keys(entries).length) return;
+          patch = Object.assign({}, patch, { entries: entries });
+        } else if (conflicts.has(key)) return;
+        remaining[key] = patch;
+        var item = staged.items[patch.itemKey] || (staged.items[patch.itemKey] = {});
+        if (patch.map) {
+          var values = Object.assign({}, saved.items?.[patch.itemKey]?.[patch.field] || {});
+          Object.keys(patch.entries).forEach(function (entryKey) { var value = patch.entries[entryKey].value; if (value === undefined) delete values[entryKey]; else values[entryKey] = value; });
+          item[patch.field] = values;
+        } else item[patch.field] = patch.value;
+      });
+      // Accept remote values only for actual conflicts. Preserve and persist
+      // independent local answers, including edits made while the warning was open.
+      _quizDraftPatches[namespace] = remaining;
+      _quizDraftMemory[namespace] = staged;
+      delete _quizDraftSeen[namespace];
+      _quizDraftFallback[namespace] = saved;
+      var result = _quizSaveWorkingDraftNow(namespace);
+      _quizNotifyDraftSync(namespace);
+      return result;
+    });
+  }
+  function _quizResetWorkingDraft(namespace) {
+    delete _quizDraftMemory[namespace]; delete _quizDraftFallback[namespace]; delete _quizDraftPatches[namespace];
+    delete _quizDraftSeen[namespace]; delete _quizDraftWriteState[namespace]; delete _quizClosedDrafts[namespace];
+  }
+  function _quizMapField(itemKey, field) {
+    return itemKey === 'root' && ['mcqAnswers', 'mcqConfidence', 'reflectionAnswers', 'flaggedQuestions'].indexOf(field) >= 0;
+  }
+  function _quizSameDraftValue(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  function _quizDraftConflicts(namespace, persisted) {
+    if (!persisted) return [];
+    var patches = _quizDraftPatches[namespace] || {}, conflicts = [];
+    Object.keys(patches).forEach(function (key) {
+      var patch = patches[key], current = persisted && persisted.items?.[patch.itemKey]?.[patch.field];
+      if (patch.map) Object.keys(patch.entries).forEach(function (entryKey) {
+        var change = patch.entries[entryKey], value = current && current[entryKey];
+        if (!_quizSameDraftValue(value, change.before) && !_quizSameDraftValue(value, change.value)) conflicts.push(key + ':' + entryKey);
+      });
+      else if (!_quizSameDraftValue(current, patch.before) && !_quizSameDraftValue(current, patch.value)) conflicts.push(key);
+    });
+    return conflicts;
+  }
+  function _quizStageDraftField(namespace, itemKey, field, value, previousValue) {
     if (!namespace || _quizClosedDrafts[namespace]) return;
-    var staged = _quizDraftMemory[namespace] || { items: {} };
+    var patchKey = itemKey + ':' + field;
+    var seen = _quizDraftSeen[namespace] || (_quizDraftSeen[namespace] = {});
+    var previous = arguments.length > 4 ? previousValue : seen[patchKey];
+    var patches = _quizDraftPatches[namespace] || (_quizDraftPatches[namespace] = {});
+    var patch = patches[patchKey];
+    if (_quizMapField(itemKey, field)) {
+      patch = patch || { itemKey: itemKey, field: field, map: true, entries: {} };
+      Object.keys(Object.assign({}, previous || {}, value || {})).forEach(function (key) {
+        var before = previous && previous[key], after = value && value[key];
+        if (!_quizSameDraftValue(before, after)) patch.entries[key] = { before: patch.entries[key] ? patch.entries[key].before : before, value: after };
+      });
+    } else {
+      // A hook's display default (for example an empty string) need not exist
+      // in storage. Compare against the value actually observed there.
+      if (!patch) previous = Object.prototype.hasOwnProperty.call(seen, patchKey) ? seen[patchKey] : _quizReadDraft(namespace)?.items?.[itemKey]?.[field];
+      patch = { itemKey: itemKey, field: field, before: patch ? patch.before : previous, value: value };
+    }
+    patches[patchKey] = patch;
+    seen[patchKey] = value;
+    var staged = _quizDraftMemory[namespace] || { version: 1, createdAt: Date.now(), items: {} };
     staged.items[itemKey] = Object.assign({}, staged.items[itemKey] || {});
     staged.items[itemKey][field] = value;
     staged.updatedAt = Date.now();
     _quizDraftMemory[namespace] = staged;
+    if (!_quizDraftWriteState[namespace] || _quizDraftWriteState[namespace].state !== 'error') _quizDraftWriteState[namespace] = { state: 'pending', updatedAt: null };
     try {
       window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-changed', { detail: { namespace: namespace } }));
     } catch (e) {}
   }
   function _quizReadWorkingDraft(namespace) {
-    var persisted = _quizReadDraft(namespace) || { version: 1, createdAt: Date.now(), items: {} };
+    var persisted = _quizReadDraft(namespace) || _quizDraftFallback[namespace] || { items: {} };
+    var fallback = _quizDraftFallback[namespace];
+    if (fallback?.items?.root?.attemptMeta?.attemptId && persisted.items?.root?.attemptMeta?.attemptId && fallback.items.root.attemptMeta.attemptId !== persisted.items.root.attemptMeta.attemptId) persisted = fallback;
+    var staged = _quizDraftMemory[namespace];
     var working = {
       version: 1,
-      createdAt: persisted.createdAt || Date.now(),
-      updatedAt: Date.now(),
+      createdAt: persisted.createdAt || staged && staged.createdAt || Date.now(),
+      updatedAt: Math.max(Number(persisted.updatedAt) || 0, Number(staged && staged.updatedAt) || 0) || Date.now(),
+      assessmentIdentity: _quizDraftContexts[namespace] || persisted.assessmentIdentity,
       items: Object.assign({}, persisted.items || {})
     };
-    var staged = _quizDraftMemory[namespace];
     if (staged && staged.items) {
       Object.keys(staged.items).forEach(function (itemKey) {
-        working.items[itemKey] = Object.assign({}, working.items[itemKey] || {}, staged.items[itemKey]);
+        working.items[itemKey] = Object.assign({}, working.items[itemKey] || {});
+        Object.keys(staged.items[itemKey]).forEach(function (field) {
+          var patch = (_quizDraftPatches[namespace] || {})[itemKey + ':' + field];
+          if (patch && patch.map) {
+            var merged = Object.assign({}, working.items[itemKey][field] || {});
+            Object.keys(patch.entries).forEach(function (key) { var value = patch.entries[key].value; if (value === undefined) delete merged[key]; else merged[key] = value; });
+            working.items[itemKey][field] = merged;
+          } else working.items[itemKey][field] = staged.items[itemKey][field];
+        });
       });
     }
     return working;
   }
   function _quizQuestionAnswered(question, questionIdx, draft) {
+    if (!question || typeof question !== 'object' || Array.isArray(question)) return false;
     var items = draft && draft.items || {};
     var root = items.root || {};
     var item = items['q-' + questionIdx] || {};
-    var type = question && question.type || 'mcq';
-    if (type === 'mcq') {
-      return !!(root.mcqAnswers && Object.prototype.hasOwnProperty.call(root.mcqAnswers, questionIdx) && typeof root.mcqAnswers[questionIdx] === 'number');
+    var type = question.type || 'mcq';
+    if (item.idk === true) return true;
+    function hasText(value) { return typeof value === 'string' && value.trim().length > 0; }
+    function validChoice(value, choices) { return Number.isInteger(value) && Array.isArray(choices) && value >= 0 && value < choices.length; }
+    function validOrder(order, count) {
+      return count > 0 && Array.isArray(order) && order.length === count
+        && order.every(function (value) { return Number.isInteger(value) && value >= 0 && value < count; })
+        && new Set(order).size === count;
     }
-    if (type === 'multi-select') return Array.isArray(item.selected) && item.selected.length > 0;
-    if (type === 'answer-evidence') return typeof item.answerIdx === 'number' && typeof item.evidenceIdx === 'number';
-    if (type === 'numeric-response' || type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') return !!String(item.response || '').trim();
-    if (type === 'sequence-sense') return !!item.grade || (item.verifyAnswer != null && !!String(item.principleAnswer || '').trim());
-    if (type === 'relation-mismatch') return !!item.grade || (typeof item.clickedPairIdx === 'number' && !!String(item.partnerAnswer || '').trim());
-    return !!String(item.response || '').trim();
+    if (type === 'mcq') {
+      return !!(root.mcqAnswers && Object.prototype.hasOwnProperty.call(root.mcqAnswers, questionIdx) && validChoice(root.mcqAnswers[questionIdx], question.options));
+    }
+    if (type === 'multi-select') return Array.isArray(item.selected) && item.selected.length > 0
+      && item.selected.every(function (value) { return validChoice(value, question.options); })
+      && new Set(item.selected).size === item.selected.length;
+    if (type === 'answer-evidence') return validChoice(item.answerIdx, question.answerOptions || question.options) && validChoice(item.evidenceIdx, question.evidenceOptions);
+    // Completion records an attempted response, not whether its content is
+    // correct. In particular, numeric parsing and units belong to grading.
+    if (type === 'numeric-response' || type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') return hasText(item.response);
+    if (type === 'sequence-sense') {
+      if (item.grade && item.grade.status === 'idk') return true;
+      var sequenceItems = Array.isArray(question.items) ? question.items : [];
+      if (item.verifyAnswer !== 'yes' && item.verifyAnswer !== 'no') return false;
+      if (item.verifyAnswer === 'no' && !validChoice(item.clickedIdx, sequenceItems)) return false;
+      var principles = Array.isArray(question.principleOptions) ? question.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+      if (!hasText(item.principleAnswer) || principles.indexOf(item.principleAnswer) < 0) return false;
+      // An unchanged arrangement is valid: both renderers initialize it from
+      // the displayed order, and the immediate card can leave it unstored.
+      var order = item.orderAnswer != null ? item.orderAnswer : item.presentedOrder != null ? item.presentedOrder
+        : validOrder(question.presentedOrder, sequenceItems.length) ? question.presentedOrder
+        : sequenceItems.map(function (_, index) { return index; });
+      return validOrder(order, sequenceItems.length);
+    }
+    if (type === 'relation-mismatch') {
+      if (item.grade && item.grade.status === 'idk') return true;
+      if (!validChoice(item.clickedPairIdx, question.pairs) || !hasText(item.partnerAnswer)) return false;
+      return !Array.isArray(question.candidatePartners) || question.candidatePartners.length === 0 || question.candidatePartners.indexOf(item.partnerAnswer) >= 0;
+    }
+    return false;
+  }
+  // A compound item can contain useful work before all required parts are
+  // complete. Preserve that work independently from the review completion count.
+  function _quizQuestionHasResponse(question, questionIdx, draft) {
+    if (_quizQuestionAnswered(question, questionIdx, draft)) return true;
+    if (!question || typeof question !== 'object') return false;
+    var item = draft && draft.items && draft.items['q-' + questionIdx] || {};
+    function choice(value, options) { return Number.isInteger(value) && Array.isArray(options) && value >= 0 && value < options.length; }
+    function text(value) { return typeof value === 'string' && value.trim().length > 0; }
+    if (question.type === 'answer-evidence') return choice(item.answerIdx, question.answerOptions || question.options) || choice(item.evidenceIdx, question.evidenceOptions);
+    if (question.type === 'relation-mismatch') return choice(item.clickedPairIdx, question.pairs) || text(item.partnerAnswer);
+    if (question.type === 'sequence-sense') return item.verifyAnswer === 'yes' || item.verifyAnswer === 'no' || choice(item.clickedIdx, question.items) || text(item.principleAnswer)
+      || Array.isArray(item.orderAnswer) && item.orderAnswer.length > 0;
+    return false;
+  }
+  function _quizReflectionResponse(entry) {
+    entry = entry && typeof entry === 'object' ? entry : {};
+    if (entry.submitted === true && typeof entry.submittedText === 'string' && entry.submittedText.trim()) return entry.submittedText;
+    // A reopened reflection may intentionally be blank. Never resurrect its
+    // previous submitted text merely because the current draft is empty.
+    if (typeof entry.draft === 'string') return entry.draft;
+    return typeof entry.submittedText === 'string' ? entry.submittedText : '';
   }
   function _quizBuildAttemptProgress(data, draft) {
     var questions = data && Array.isArray(data.questions) ? data.questions : [];
@@ -612,16 +952,19 @@ var _lazyIcon = function (name) {
       return {
         questionIdx: questionIdx,
         type: question && question.type || 'mcq',
-        label: question && (question.question || question.contextSentence) || ('Question ' + (questionIdx + 1)),
+        label: question && typeof question.question === 'string' && question.question.trim() ? question.question
+          : question && typeof question.contextSentence === 'string' && question.contextSentence.trim() ? question.contextSentence
+          : ('Question ' + (questionIdx + 1)),
         answered: _quizQuestionAnswered(question, questionIdx, draft),
-        flagged: !!flags[questionIdx]
+        flagged: flags[questionIdx] === true
       };
     });
     var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
     var reflectionAnswers = root.reflectionAnswers || {};
     var reflectionAnswered = reflections.reduce(function (count, reflection, idx) {
       var entry = reflectionAnswers[idx] || {};
-      return count + (entry.submitted || String(entry.draft || '').trim() ? 1 : 0);
+      var text = _quizReflectionResponse(entry);
+      return count + (typeof text === 'string' && text.trim() ? 1 : 0);
     }, 0);
     var answered = items.filter(function (item) { return item.answered; }).length;
     return {
@@ -638,7 +981,7 @@ var _lazyIcon = function (name) {
     if (!namespace) return '';
     return namespace.indexOf(_QUIZ_DRAFT_STORAGE_PREFIX) === 0 ? _QUIZ_ATTEMPT_STORAGE_PREFIX + namespace.slice(_QUIZ_DRAFT_STORAGE_PREFIX.length) : _QUIZ_ATTEMPT_STORAGE_PREFIX + namespace;
   }
-  function _quizReadAttemptReceipt(namespace) {
+  function _quizReadAttemptReceipt(namespace, signature) {
     if (namespace && namespace.indexOf('assess-preview:') === 0) return null;
     var storage = _quizLocalStorage();
     var key = _quizAttemptStorageKey(namespace);
@@ -646,7 +989,7 @@ var _lazyIcon = function (name) {
     try {
       var raw = storage.getItem(key);
       var receipt = raw ? JSON.parse(raw) : null;
-      return receipt && receipt.version === 1 && receipt.submittedAt ? receipt : null;
+      return receipt && receipt.version === 1 && receipt.submittedAt && (!signature || receipt.signature === signature) ? receipt : null;
     } catch (e) {
       return null;
     }
@@ -655,26 +998,46 @@ var _lazyIcon = function (name) {
     if (namespace && namespace.indexOf('assess-preview:') === 0) return null;
     var storage = _quizLocalStorage();
     var key = _quizAttemptStorageKey(namespace);
-    if (!storage || !namespace || !key) return null;
+    if (!namespace || !key) return null;
     try {
-      var receipt = Object.assign({ version: 1, submittedAt: Date.now() }, payload || {});
+      if (!storage) throw new Error('Local storage unavailable');
+      var current = _quizReadAttemptReceipt(namespace), savedMeta = _quizReadDraft(namespace)?.items?.root?.attemptMeta;
+      if (current && current.attemptId !== payload?.attemptId || savedMeta?.attemptId && payload?.attemptId && savedMeta.attemptId !== payload.attemptId) return null;
+      if (!current && _quizDraftConflicts(namespace, _quizReadDraft(namespace)).length) { _quizDraftSaveEvent(namespace, false, null, 'conflict'); return null; }
+      var receipt = Object.assign({ version: 1, submittedAt: Date.now(), assessmentIdentity: _quizDraftContexts[namespace] }, payload || {});
       storage.setItem(key, JSON.stringify(receipt));
       _quizClosedDrafts[namespace] = true;
-      storage.removeItem(namespace);
+      // Receipt persistence is the commit point. Draft cleanup is best effort.
+      try { storage.removeItem(namespace); } catch (cleanupError) {}
       delete _quizDraftMemory[namespace];
+      delete _quizDraftFallback[namespace];
+      delete _quizDraftWriteState[namespace];
+      delete _quizDraftPatches[namespace];
       return receipt;
     } catch (e) {
+      _quizDraftSaveEvent(namespace, false);
       return null;
     }
   }
-  function _quizClearAttemptReceipt(namespace) {
+  function _quizClearAttemptReceipt(namespace, expectedAttemptId) {
     var storage = _quizLocalStorage();
     var key = _quizAttemptStorageKey(namespace);
     if (!storage || !key) return false;
     try {
-      storage.removeItem(key);
+      var current = _quizReadAttemptReceipt(namespace);
+      if (expectedAttemptId && (!current || current.attemptId !== expectedAttemptId)) return false;
+      // Leave the committed receipt intact if stale-draft cleanup fails.
       storage.removeItem(namespace);
+      // Persist the new owner before removing the old receipt. Delayed callbacks
+      // from the completed attempt must never recreate it during a restart.
+      var now = Math.max(Date.now(), Number(current?.startedAt || 0) + 1);
+      storage.setItem(namespace, JSON.stringify({ version: 1, createdAt: now, updatedAt: now, assessmentIdentity: _quizDraftContexts[namespace] || current?.assessmentIdentity, items: { root: { attemptMeta: { attemptId: 'attempt-' + now.toString(36) + '-' + Math.random().toString(36).slice(2, 8), startedAt: now, previousAttemptId: current?.attemptId || '', status: 'in-progress' } } } }));
+      storage.removeItem(key);
       delete _quizDraftMemory[namespace];
+      delete _quizDraftFallback[namespace];
+      delete _quizDraftWriteState[namespace];
+      delete _quizDraftPatches[namespace];
+      delete _quizDraftSeen[namespace];
       delete _quizClosedDrafts[namespace];
       return true;
     } catch (e) {
@@ -710,37 +1073,77 @@ var _lazyIcon = function (name) {
   function _quizUseDraftField(namespace, itemKey, field, initialValue) {
     var restoredRef = React.useRef(false);
     var mountedRef = React.useRef(false);
+    var pendingRef = React.useRef(null);
+    var initialRef = React.useRef({ ready: false });
+    function defaultValue() {
+      if (!initialRef.current.ready) initialRef.current = { ready: true, value: typeof initialValue === 'function' ? initialValue() : initialValue };
+      return initialRef.current.value;
+    }
     var state = React.useState(function () {
       var stored = _quizReadDraftField(namespace, itemKey, field);
       if (stored.found) {
         restoredRef.current = true;
         return stored.value;
       }
-      return typeof initialValue === 'function' ? initialValue() : initialValue;
+      return defaultValue();
     });
+    var valueRef = React.useRef(state[0]);
+    valueRef.current = state[0];
     React.useEffect(function () {
       if (!namespace) return;
       if (!mountedRef.current) {
         mountedRef.current = true;
         return;
       }
+      if (!pendingRef.current) return;
       var timer = window.setTimeout(function () {
-        _quizWriteDraftField(namespace, itemKey, field, state[0]);
+        _quizSaveWorkingDraft(namespace);
+        if (pendingRef.current && pendingRef.current.value === state[0]) pendingRef.current = null;
       }, 350);
       return function () { window.clearTimeout(timer); };
     }, [namespace, itemKey, field, state[0]]);
+    React.useEffect(function () {
+      function flush() {
+        var pending = pendingRef.current;
+        if (!pending || pending.namespace !== namespace) return;
+        _quizSaveWorkingDraft(pending.namespace);
+        pendingRef.current = null;
+      }
+      window.addEventListener('pagehide', flush);
+      return function () { window.removeEventListener('pagehide', flush); flush(); };
+    }, [namespace, itemKey, field]);
+    React.useEffect(function () {
+      function sync(event) {
+        if (event.type === 'storage' ? event.key !== namespace : event.detail?.namespace !== namespace) return;
+        if (_quizDraftWriteState[namespace]?.reason === 'conflict') return;
+        if (event.type !== 'storage') pendingRef.current = null;
+        var stored = _quizReadDraftField(namespace, itemKey, field);
+        valueRef.current = stored.found ? stored.value : defaultValue();
+        state[1](valueRef.current);
+      }
+      window.addEventListener('storage', sync);
+      window.addEventListener('alloflow:assessment-draft-synced', sync);
+      return function () { window.removeEventListener('storage', sync); window.removeEventListener('alloflow:assessment-draft-synced', sync); };
+    }, [namespace, itemKey, field]);
     function setDraftState(value) {
-      state[1](function (previous) {
-        var next = typeof value === 'function' ? value(previous) : value;
-        _quizStageDraftField(namespace, itemKey, field, next);
-        return next;
-      });
+      var previous = valueRef.current;
+      var next = typeof value === 'function' ? value(previous) : value;
+      valueRef.current = next;
+      pendingRef.current = { namespace: namespace, itemKey: itemKey, field: field, value: next };
+      // Notify sibling components from the input handler, never from React's
+      // state updater, which React can evaluate again during rendering.
+      _quizStageDraftField(namespace, itemKey, field, next, previous);
+      state[1](next);
     }
     return [state[0], setDraftState, restoredRef.current];
   }
   function AssessmentDraftStatus(p) {
-    var initial = _quizReadDraft(p.namespace);
-    var statusState = React.useState(initial ? { state: 'restored', updatedAt: initial.updatedAt } : { state: 'idle', updatedAt: null });
+    var preview = p.namespace && p.namespace.indexOf('assess-preview:') === 0;
+    var tr = typeof p.copy === 'function' ? p.copy : _quizGradedCopy;
+    var statusState = React.useState(function () {
+      var initial = _quizReadDraft(p.namespace);
+      return _quizDraftWriteState[p.namespace] || (initial ? { state: 'restored', updatedAt: initial.updatedAt } : { state: _quizLocalStorage() ? 'idle' : 'error', updatedAt: null });
+    });
     var status = statusState[0];
     var setStatus = statusState[1];
     React.useEffect(function () {
@@ -748,18 +1151,32 @@ var _lazyIcon = function (name) {
         if (event && event.detail && event.detail.namespace === p.namespace) setStatus({ state: 'saved', updatedAt: event.detail.updatedAt });
       }
       function failed(event) {
-        if (event && event.detail && event.detail.namespace === p.namespace) setStatus({ state: 'error', updatedAt: null });
+        if (event && event.detail && event.detail.namespace === p.namespace) setStatus({ state: 'error', updatedAt: null, reason: event.detail.reason || '' });
+      }
+      function changed(event) {
+        if (event && event.detail && event.detail.namespace === p.namespace) setStatus(_quizDraftWriteState[p.namespace] || { state: 'pending', updatedAt: null });
+      }
+      function beforeLeave(event) {
+        var latest = _quizDraftWriteState[p.namespace];
+        if (preview || !latest || latest.state === 'saved' || _quizClosedDrafts[p.namespace]) return;
+        var result = _quizSaveWorkingDraft(p.namespace);
+        if (!result || typeof result.then === 'function') { event.preventDefault(); event.returnValue = ''; }
       }
       window.addEventListener('alloflow:assessment-draft-saved', saved);
       window.addEventListener('alloflow:assessment-draft-error', failed);
+      window.addEventListener('alloflow:assessment-draft-changed', changed);
+      window.addEventListener('beforeunload', beforeLeave);
       return function () {
         window.removeEventListener('alloflow:assessment-draft-saved', saved);
         window.removeEventListener('alloflow:assessment-draft-error', failed);
+        window.removeEventListener('alloflow:assessment-draft-changed', changed);
+        window.removeEventListener('beforeunload', beforeLeave);
       };
     }, [p.namespace]);
     var timeLabel = status.updatedAt ? new Date(status.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
-    var message = status.state === 'restored' ? 'Restored your saved work from this device.' : status.state === 'saved' ? 'Saved locally' + (timeLabel ? ' at ' + timeLabel : '') + '.' : status.state === 'error' ? 'Local autosave is unavailable in this browser.' : 'Answers save automatically on this device.';
-    return <div className={'rounded-lg border px-3 py-2 flex items-center gap-2 text-xs ' + (status.state === 'error' ? 'bg-amber-50 border-amber-300 text-amber-900' : status.state === 'restored' ? 'bg-sky-50 border-sky-200 text-sky-900' : 'bg-white border-slate-200 text-slate-700')} role="status" aria-live="polite"><span aria-hidden="true">{status.state === 'error' ? '⚠' : status.state === 'restored' ? '↻' : '✓'}</span><span><strong>{message}</strong><span className="ml-1 text-slate-500">Drafts expire after 7 days.</span></span></div>;
+    var conflict = status.reason === 'conflict';
+    var message = conflict ? tr('quiz.draft.conflict', 'This answer changed in another tab. Choose which changes to keep.') : status.reason === 'newer-attempt' ? tr('quiz.draft.newer_attempt', 'A newer attempt is open in another tab. Download this draft before switching.') : preview ? tr('quiz.draft.preview', 'Preview responses stay in this preview.') : status.state === 'restored' ? tr('quiz.draft.restored', 'Restored your saved work from this device.') : status.state === 'saved' ? (timeLabel ? _quizFill(tr('quiz.draft.saved_at', 'Saved locally at {time}.'), { time: timeLabel }) : tr('quiz.draft.saved', 'Saved locally.')) : status.state === 'error' ? tr('quiz.draft.unsaved', 'Your latest answers are not saved on this device.') : status.state === 'pending' ? tr('quiz.draft.saving', 'Saving your answers…') : tr('quiz.draft.automatic', 'Answers save automatically on this device.');
+    return <div data-assessment-draft-status className={'rounded-lg border px-3 py-2 flex flex-wrap items-center gap-2 text-xs ' + (!preview && status.state === 'error' ? 'bg-amber-50 border-amber-300 text-amber-900' : status.state === 'restored' ? 'bg-sky-50 border-sky-200 text-sky-900' : 'bg-white border-slate-200 text-slate-700')}><div className="basis-full min-w-0 flex-1 sm:basis-0" role="status" aria-live="polite"><strong>{message}</strong>{!preview && <span className="ml-1">{status.state === 'error' ? tr('quiz.draft.recovery_help', 'Keep this page open. Retry saving or download a copy before leaving.') : tr('quiz.draft.expiration', 'Drafts expire after 7 days.')}</span>}</div>{!preview && status.state === 'error' && <button type="button" className="min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 font-bold text-amber-950" onClick={function () { _quizSaveWorkingDraft(p.namespace, conflict); }}>{conflict ? tr('quiz.draft.keep_changes', 'Save my changes') : tr('quiz.draft.retry', 'Retry save')}</button>}{!preview && conflict && <button type="button" className="min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 font-bold text-amber-950" onClick={function () { _quizUseSavedDraft(p.namespace); }}>{tr('quiz.draft.use_saved', 'Use saved answers')}</button>}{!preview && typeof p.onDownload === 'function' && <button type="button" className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-800" onClick={p.onDownload}>{tr('quiz.review.download_draft', 'Download draft')}</button>}</div>;
   }
   function AssessmentDeliveryPanel(p) {
     var settings = _quizNormalizeDeliverySettings(p.settings);
@@ -811,23 +1228,41 @@ var _lazyIcon = function (name) {
     var dialogRef = React.useRef(null);
     var closeRef = React.useRef(null);
     var previousFocusRef = React.useRef(null);
+    var skipRestoreRef = React.useRef(false);
+    var errorRef = React.useRef(null);
     var confirmState = React.useState(false);
     var confirmIncomplete = confirmState[0];
     var setConfirmIncomplete = confirmState[1];
+    var filterState = React.useState('all');
+    var filter = filterState[0];
+    var tr = typeof p.copy === 'function' ? p.copy : _quizGradedCopy;
     React.useEffect(function () {
       if (!p.open) return;
-      try { previousFocusRef.current = document.activeElement; } catch (e) {}
-      var timer = setTimeout(function () { try { if (closeRef.current) closeRef.current.focus(); } catch (e) {} }, 0);
+      skipRestoreRef.current = false;
+      try {
+        previousFocusRef.current = document.activeElement;
+        if (closeRef.current) closeRef.current.focus();
+      } catch (e) {}
+      var restoreBackground = _quizIsolateDialog(dialogRef.current);
       return function () {
-        clearTimeout(timer);
+        restoreBackground();
         var previous = previousFocusRef.current;
         previousFocusRef.current = null;
-        try { if (previous && typeof previous.focus === 'function') previous.focus(); } catch (e) {}
+        try { if (!skipRestoreRef.current && previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus(); } catch (e) {}
       };
     }, [p.open]);
-    React.useEffect(function () { if (!p.open) setConfirmIncomplete(false); }, [p.open]);
+    React.useEffect(function () {
+      if (!p.open) { setConfirmIncomplete(false); filterState[1]('all'); }
+    }, [p.open]);
+    React.useEffect(function () {
+      if (p.open && p.submissionError && errorRef.current) {
+        try { errorRef.current.focus(); } catch (e) {}
+      }
+    }, [p.open, p.submissionError]);
     if (!p.open) return null;
     var progress = p.progress || { total: 0, answered: 0, unanswered: 0, flagged: 0, items: [] };
+    var items = Array.isArray(progress.items) ? progress.items : [];
+    var visibleItems = items.filter(function (item) { return filter === 'unanswered' ? !item.answered : filter === 'flagged' ? item.flagged : true; });
     function requestSubmit() {
       if (p.preview) return;
       if (progress.unanswered > 0 && !confirmIncomplete) {
@@ -836,21 +1271,72 @@ var _lazyIcon = function (name) {
       }
       if (typeof p.onSubmit === 'function') p.onSubmit();
     }
-    return <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60" onMouseDown={function (e) { if (e.target === e.currentTarget) p.onClose(); }}><div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="assessment-review-title" tabIndex={-1} onKeyDown={function (e) { _quizHandleDialogKeyDown(e, dialogRef, p.onClose); }} className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white border-2 border-indigo-300 shadow-2xl p-5"><div className="flex items-start justify-between gap-4"><div><h2 id="assessment-review-title" className="text-xl font-black text-slate-900">Review your assessment</h2><p className="text-sm text-slate-600 mt-1">Nothing is final until you choose Submit assessment.</p></div><button type="button" ref={closeRef} onClick={p.onClose} aria-label="Close review" className="w-9 h-9 rounded-full border border-slate-300 text-slate-700">×</button></div><div className="grid grid-cols-3 gap-2 my-4"><div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center"><div className="text-xl font-black text-emerald-800">{progress.answered}</div><div className="text-[10px] font-bold uppercase text-emerald-700">Answered</div></div><div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-center"><div className="text-xl font-black text-amber-900">{progress.unanswered}</div><div className="text-[10px] font-bold uppercase text-amber-800">Unanswered</div></div><div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-center"><div className="text-xl font-black text-slate-800">{progress.flagged}</div><div className="text-[10px] font-bold uppercase text-slate-600">Flagged</div></div></div><div className="space-y-2">{progress.items.map(function (item) {
-      return <button key={item.questionIdx} type="button" onClick={function () { p.onGo(item.questionIdx); }} className="w-full flex items-center gap-3 text-left rounded-lg border border-slate-200 p-3 hover:border-indigo-400 hover:bg-indigo-50"><span className={'w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ' + (item.answered ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900')}>{item.answered ? '✓' : '—'}</span><span className="flex-grow min-w-0"><span className="block text-[10px] uppercase font-bold text-slate-500">{'Question ' + (item.questionIdx + 1) + ' · ' + item.type}</span><span className="block text-sm text-slate-800 truncate">{item.label}</span></span>{item.flagged && <span role="img" className="text-amber-700 font-black" aria-label="Flagged">⚑</span>}</button>;
-    })}</div>{progress.reflectionTotal > 0 && <p className="mt-3 text-xs text-slate-600">{'Reflections completed: ' + progress.reflectionAnswered + ' / ' + progress.reflectionTotal}</p>}{confirmIncomplete && <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">{progress.unanswered + ' question' + (progress.unanswered === 1 ? ' is' : 's are') + ' still unanswered. Submit anyway, or return to finish them.'}</div>}<div className="mt-5 flex items-center justify-end gap-2 flex-wrap"><button type="button" onClick={p.onClose} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-bold">Keep working</button><button type="button" onClick={requestSubmit} disabled={p.preview} className={'px-4 py-2 rounded-lg text-white text-sm font-black ' + (confirmIncomplete ? 'bg-amber-700 hover:bg-amber-800' : 'bg-indigo-600 hover:bg-indigo-700')}>{p.preview ? 'Submission disabled in preview' : confirmIncomplete ? 'Submit with unanswered items' : 'Submit assessment'}</button></div></div></div>;
+    function goToQuestion(questionIdx) {
+      if (typeof p.onGo !== 'function') return;
+      // The host focuses the selected question after it closes this dialog.
+      skipRestoreRef.current = true;
+      p.onGo(questionIdx);
+    }
+    return <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60" onMouseDown={function (e) { if (e.target === e.currentTarget && typeof p.onClose === 'function') p.onClose(); }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="assessment-review-title" aria-describedby="assessment-review-help assessment-review-summary" tabIndex={-1} onKeyDown={function (e) { _quizHandleDialogKeyDown(e, dialogRef, function () { if (typeof p.onClose === 'function') p.onClose(); }); }} className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white border-2 border-indigo-300 shadow-2xl p-5">
+        <div className="flex items-start justify-between gap-4"><div>
+          <h2 id="assessment-review-title" className="text-xl font-black text-slate-900">{tr('quiz.review.title', 'Review your assessment')}</h2>
+          <p id="assessment-review-help" className="text-sm text-slate-600 mt-1">{tr('quiz.review.help', 'Nothing is final until you choose Submit assessment.')}</p>
+          <p id="assessment-review-summary" className="sr-only">{_quizFill(tr('quiz.review.summary', '{answered} of {total} questions answered. {unanswered} unanswered. {flagged} flagged for review.'), progress)}</p>
+        </div><button type="button" ref={closeRef} onClick={p.onClose} aria-label={tr('quiz.review.close', 'Close review')} className="w-11 h-11 shrink-0 rounded-full border border-slate-300 text-slate-700">×</button></div>
+        <div className="grid grid-cols-3 gap-2 my-4">
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center"><div className="text-xl font-black text-emerald-800">{progress.answered}</div><div className="text-[10px] font-bold uppercase text-emerald-700">{tr('quiz.review.answered', 'Answered')}</div></div>
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-center"><div className="text-xl font-black text-amber-900">{progress.unanswered}</div><div className="text-[10px] font-bold uppercase text-amber-800">{tr('quiz.review.unanswered', 'Unanswered')}</div></div>
+          <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-center"><div className="text-xl font-black text-slate-800">{progress.flagged}</div><div className="text-[10px] font-bold uppercase text-slate-600">{tr('quiz.review.flagged', 'Flagged')}</div></div>
+        </div>
+        <div role="group" aria-label={tr('quiz.review.filter_label', 'Filter questions for review')} className="mb-3 flex flex-wrap gap-2">
+          {[{ id: 'all', label: tr('quiz.review.all_questions', 'All questions'), count: items.length }, { id: 'unanswered', label: tr('quiz.review.unanswered', 'Unanswered'), count: progress.unanswered }, { id: 'flagged', label: tr('quiz.review.flagged', 'Flagged'), count: progress.flagged }].map(function (option) {
+            return <button key={option.id} type="button" data-assessment-review-filter={option.id} aria-pressed={filter === option.id} aria-controls="assessment-review-questions" onClick={function () { filterState[1](option.id); }} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold ' + (filter === option.id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-indigo-50')}>{option.label + ' (' + option.count + ')'}</button>;
+          })}
+        </div>
+        <p role="status" aria-live="polite" className="sr-only">{_quizFill(tr('quiz.review.showing_count', 'Showing {count} questions.'), { count: visibleItems.length })}</p>
+        <ul id="assessment-review-questions" className="space-y-2">{visibleItems.map(function (item) {
+          var answeredLabel = item.answered ? tr('quiz.review.answered', 'Answered') : tr('quiz.review.unanswered', 'Unanswered');
+          var flagLabel = item.flagged ? tr('quiz.review.flagged', 'Flagged') : '';
+          var numberLabel = _quizFill(tr('quiz.review.question_number', 'Question {number}'), { number: item.questionIdx + 1 });
+          return <li key={item.questionIdx}><button type="button" data-assessment-review-question={item.questionIdx} aria-label={[numberLabel, answeredLabel, flagLabel, item.label].filter(Boolean).join('. ')} onClick={function () { goToQuestion(item.questionIdx); }} className="w-full min-h-11 flex items-center gap-3 text-left rounded-lg border border-slate-200 p-3 hover:border-indigo-400 hover:bg-indigo-50">
+            <span aria-hidden="true" className={'w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-black ' + (item.answered ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900')}>{item.answered ? '✓' : '—'}</span>
+            <span className="flex-grow min-w-0"><span className="block text-xs font-bold text-slate-600">{numberLabel + ' · ' + answeredLabel + (flagLabel ? ' · ' + flagLabel : '')}</span><span className="block text-sm text-slate-800 break-words">{item.label}</span></span>{item.flagged && <span aria-hidden="true" className="text-amber-700 font-black">⚑</span>}
+          </button></li>;
+        })}</ul>
+        {visibleItems.length === 0 && <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">{filter === 'unanswered' ? tr('quiz.review.no_unanswered', 'Every question has a response.') : filter === 'flagged' ? tr('quiz.review.no_flags', 'No questions are flagged for review.') : tr('quiz.review.no_questions', 'There are no questions to review.')}</p>}
+        {progress.reflectionTotal > 0 && <p className="mt-3 text-xs text-slate-600">{_quizFill(tr('quiz.review.reflections', 'Reflections completed: {answered} / {total}'), { answered: progress.reflectionAnswered, total: progress.reflectionTotal })}</p>}
+        {confirmIncomplete && <div id="assessment-review-incomplete" className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="alert">{_quizFill(tr('quiz.review.incomplete', 'Unanswered questions: {count}. Submit anyway, or return to finish them.'), { count: progress.unanswered })}</div>}
+        {p.submissionError && <div ref={errorRef} data-assessment-submit-error role="alert" tabIndex={-1} className="mt-4 rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-900">{p.submissionError}</div>}
+        <div className="sticky bottom-0 mt-5 flex items-center justify-end gap-2 flex-wrap border-t border-slate-200 bg-white pt-3">
+          {!p.preview && typeof p.onDownloadDraft === 'function' && <button type="button" onClick={p.onDownloadDraft} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-4 py-2 text-sm font-bold text-indigo-900">{tr('quiz.review.download_draft', 'Download draft')}</button>}
+          <button type="button" onClick={p.onClose} className="min-h-11 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-bold">{tr('quiz.review.keep_working', 'Keep working')}</button>
+          <button type="button" onClick={requestSubmit} disabled={p.preview} aria-describedby={confirmIncomplete ? 'assessment-review-incomplete' : undefined} className={'min-h-11 px-4 py-2 rounded-lg text-white text-sm font-black ' + (confirmIncomplete ? 'bg-amber-700 hover:bg-amber-800' : 'bg-indigo-600 hover:bg-indigo-700')}>{p.preview ? tr('quiz.review.preview_disabled', 'Submission disabled in preview') : confirmIncomplete ? tr('quiz.review.submit_incomplete', 'Submit with unanswered items') : tr('quiz.review.submit', 'Submit assessment')}</button>
+        </div>
+      </div>
+    </div>;
   }
   function AssessmentSubmittedPanel(p) {
     var receipt = p.receipt || {}, summary = receipt.summary || {}, status = p.sending ? 'sending' : receipt.delivery?.status === 'sending' ? 'pending' : receipt.delivery?.status || 'local';
     var received = status === 'received', local = !receipt.sessionCode, pending = !local && !received;
     var tr = typeof p.copy === 'function' ? p.copy : _quizPlainCopy;
+    var headingRef = React.useRef(null);
+    var restartErrorRef = React.useRef(null);
     var [confirmingRestart, setConfirmingRestart] = React.useState(false);
     var restartRef = React.useRef(null), confirmRef = React.useRef(null), restartAskedRef = React.useRef(false);
+    React.useEffect(function () {
+      try { if (headingRef.current) headingRef.current.focus(); } catch (e) {}
+    }, [receipt.attemptId]);
     React.useEffect(function () {
       if (confirmingRestart) { restartAskedRef.current = true; try { if (confirmRef.current) confirmRef.current.focus(); } catch (e) {} }
       else if (restartAskedRef.current) { restartAskedRef.current = false; try { if (restartRef.current) restartRef.current.focus(); } catch (e) {} }
     }, [confirmingRestart]);
-    return <section data-assessment-submitted className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5 text-indigo-950"><h2 className="text-xl font-black">{tr('quiz.attempt.complete', 'Assessment complete')}</h2><p data-assessment-delivery-status role="status" aria-live="polite" className="mt-2 font-bold">{received ? tr('quiz.attempt.received', 'Received by teacher') : status === 'sending' ? tr('quiz.attempt.sending', 'Sending to teacher...') : tr('quiz.attempt.saved_device', 'Saved on this device')}</p><p className="mt-2 text-sm">{received ? tr('quiz.attempt.received_detail', 'Your teacher device confirmed receipt of the responses in this attempt.') : local ? (p.includedInSubmitWork ? tr('quiz.attempt.local_submit_work', 'Your completed responses are saved on this device and will be included when you use Submit Work.') : tr('quiz.attempt.local_detail', 'Your completed responses are saved here. No teacher delivery was requested.')) : receipt.delivery?.message || tr('quiz.attempt.pending_detail', 'Teacher receipt is not confirmed. Your completed responses are saved here.')}</p><p className="mt-3 text-sm">{_quizFill(tr('quiz.attempt.answered_count', '{answered} of {total} questions answered'), { answered: summary.answered || 0, total: summary.total || 0 })}</p><div className="mt-4 flex flex-wrap gap-2">{pending && <button type="button" onClick={p.onRetry} disabled={p.sending || !p.canRetry} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{p.sending ? tr('quiz.attempt.sending_short', 'Sending...') : tr('quiz.attempt.retry', 'Retry delivery')}</button>}<button type="button" onClick={p.onDownload} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-900">{tr('quiz.attempt.download', 'Download my responses')}</button>{!pending && <button type="button" ref={restartRef} data-assessment-start-another aria-expanded={confirmingRestart} onClick={function () { setConfirmingRestart(true); }} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-900">{tr('quiz.attempt.start_another', 'Start another attempt')}</button>}</div>{!pending && confirmingRestart && <div data-assessment-restart-confirm role="group" aria-labelledby="assessment-restart-confirm-text" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p id="assessment-restart-confirm-text">{tr('quiz.attempt.restart_confirm', 'Start a new attempt? This clears the responses saved on this device for this assessment. Download them first if you need a copy.')}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" ref={confirmRef} data-assessment-restart-yes onClick={function () { setConfirmingRestart(false); if (typeof p.onStartAnother === 'function') p.onStartAnother(); }} className="min-h-11 rounded-lg bg-amber-800 px-3 py-2 text-sm font-bold text-white hover:bg-amber-900">{tr('quiz.attempt.restart_yes', 'Clear and start again')}</button><button type="button" data-assessment-restart-cancel onClick={function () { setConfirmingRestart(false); }} className="min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950">{tr('quiz.attempt.restart_cancel', 'Keep this attempt')}</button></div></div>}{pending && !p.canRetry && <p className="mt-3 text-sm">{tr('quiz.attempt.reconnect_hint', 'Reconnect to the original class activity to retry, or download your responses to share with your teacher.')}</p>}</section>;
+    React.useEffect(function () {
+      if (p.restartError && restartErrorRef.current) {
+        try { restartErrorRef.current.focus(); } catch (e) {}
+      }
+    }, [p.restartError]);
+    return <section data-assessment-submitted aria-labelledby="assessment-submitted-title" className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-5 text-indigo-950"><h2 ref={headingRef} id="assessment-submitted-title" tabIndex={-1} className="text-xl font-black focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('quiz.attempt.complete', 'Assessment complete')}</h2><p data-assessment-delivery-status role="status" aria-live="polite" className="mt-2 font-bold">{received ? tr('quiz.attempt.received', 'Received by teacher') : status === 'sending' ? tr('quiz.attempt.sending', 'Sending to teacher...') : tr('quiz.attempt.saved_device', 'Saved on this device')}</p><p className="mt-2 text-sm">{received ? tr('quiz.attempt.received_detail', 'Your teacher device confirmed receipt of the responses in this attempt.') : local ? (p.includedInSubmitWork ? tr('quiz.attempt.local_submit_work', 'Your completed responses are saved on this device and will be included when you use Submit Work.') : tr('quiz.attempt.local_detail', 'Your completed responses are saved here. No teacher delivery was requested.')) : receipt.delivery?.message || tr('quiz.attempt.pending_detail', 'Teacher receipt is not confirmed. Your completed responses are saved here.')}</p><p className="mt-3 text-sm">{_quizFill(tr('quiz.attempt.answered_count', '{answered} of {total} questions answered'), { answered: summary.answered || 0, total: summary.total || 0 })}</p><div className="mt-4 flex flex-wrap gap-2">{pending && <button type="button" onClick={p.onRetry} disabled={p.sending || !p.canRetry} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{p.sending ? tr('quiz.attempt.sending_short', 'Sending...') : tr('quiz.attempt.retry', 'Retry delivery')}</button>}<button type="button" onClick={p.onDownload} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-900">{tr('quiz.attempt.download', 'Download my responses')}</button>{!pending && <button type="button" ref={restartRef} data-assessment-start-another aria-describedby={p.restartError ? 'assessment-restart-error' : undefined} aria-expanded={confirmingRestart} aria-controls={confirmingRestart ? 'assessment-restart-confirm' : undefined} onClick={function () { setConfirmingRestart(true); }} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-900">{tr('quiz.attempt.start_another', 'Start another attempt')}</button>}</div>{!pending && confirmingRestart && <div id="assessment-restart-confirm" data-assessment-restart-confirm onKeyDown={function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setConfirmingRestart(false); } }} role="group" aria-labelledby="assessment-restart-confirm-text" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p id="assessment-restart-confirm-text">{tr('quiz.attempt.restart_confirm', 'Start a new attempt? This clears the responses saved on this device for this assessment. Download them first if you need a copy.')}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" ref={confirmRef} data-assessment-restart-yes onClick={function () { setConfirmingRestart(false); if (typeof p.onStartAnother === 'function') p.onStartAnother(); }} className="min-h-11 rounded-lg bg-amber-800 px-3 py-2 text-sm font-bold text-white hover:bg-amber-900">{tr('quiz.attempt.restart_yes', 'Clear and start again')}</button><button type="button" data-assessment-restart-cancel onClick={function () { setConfirmingRestart(false); }} className="min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950">{tr('quiz.attempt.restart_cancel', 'Keep this attempt')}</button></div></div>}{p.restartError && <p ref={restartErrorRef} id="assessment-restart-error" data-assessment-restart-error role="alert" tabIndex={-1} className="mt-3 rounded-lg border border-rose-300 bg-rose-50 p-3 text-sm text-rose-900">{p.restartError}</p>}{pending && !p.canRetry && <p className="mt-3 text-sm">{tr('quiz.attempt.reconnect_hint', 'Reconnect to the original class activity to retry, or download your responses to share with your teacher.')}</p>}</section>;
   }
   // Sequence Sense answer key. The author supplies one "intentionallyWrongIndex",
   // but an adjacent swap leaves BOTH items out of place, so the accepted set is
@@ -948,6 +1434,7 @@ var _lazyIcon = function (name) {
       });
     }
     function markIDK() {
+      setIdkMarked(true);
       setStep('done');
       setGrade({
         step1Correct: false,
@@ -972,6 +1459,9 @@ var _lazyIcon = function (name) {
       }
     }
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var presentedOrderState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'presentedOrder', function () {
       var authored = Array.isArray(q.presentedOrder) ? q.presentedOrder : [];
       var isPermutation = authored.length === canonicalItems.length
@@ -1072,6 +1562,7 @@ var _lazyIcon = function (name) {
       return gradeResult;
     }
     function reset() {
+      setIdkMarked(false);
       setStep(1);
       setVerifyAnswer(null);
       setClickedIdx(null);
@@ -1164,7 +1655,7 @@ var _lazyIcon = function (name) {
     });
     if (canonicalItems.length === 0) return null;
     var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Sequence Sense</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || 'Below is a sequence. Verify and explain.'}</p></div></div><ol className="space-y-1.5 mb-3">{presentedOrder.map(function (canonicalIdx, displayIdx) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Sequence Sense</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || 'Below is a sequence. Verify and explain.'}</p><AssessmentQuestionSupport q={q} /></div></div><ol className="space-y-1.5 mb-3">{presentedOrder.map(function (canonicalIdx, displayIdx) {
           var item = canonicalItems[canonicalIdx];
           var isClickable = step === 2;
           var isClicked = clickedIdx === displayIdx;
@@ -1185,13 +1676,13 @@ var _lazyIcon = function (name) {
               ev.preventDefault();
               answerMisplaced(displayIdx);
             }
-          } : undefined}><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{displayIdx + 1 + '.'}</span><span className="flex-1 text-sm text-slate-800">{item}</span>{showCorrectness && thisIsActuallyMisplaced && <span className="text-xs font-bold text-amber-700">↔ misplaced</span>}{showCorrectness && isClicked && !thisIsActuallyMisplaced && <span className="text-xs font-bold text-rose-700">✗</span>}</li>;
+          } : undefined}><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{displayIdx + 1 + '.'}</span><AssessmentChoiceContent q={q} field="items" index={canonicalIdx} text={item} />{showCorrectness && thisIsActuallyMisplaced && <span className="text-xs font-bold text-amber-700">↔ misplaced</span>}{showCorrectness && isClicked && !thisIsActuallyMisplaced && <span className="text-xs font-bold text-rose-700">✗</span>}</li>;
         })}</ol>{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 1 of 4 — Is this order correct?</div><div className="flex gap-2 flex-wrap"><button type="button" onClick={function () {
             answerVerify('yes');
           }} className="flex-1 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✓ Yes, correct</button><button type="button" onClick={function () {
             answerVerify('no');
           }} className="flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">✗ No, something is off</button>{allowIDK && <button type="button" onClick={markIDK} className="px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>I don't know</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900">Step 2 of 4 — Click an item that's out of place above.</div></div>}{step === 3 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 3 of 4 — Put the items in the correct order. If they are already right, leave them.</div><ol className="space-y-1.5 mb-2" aria-label="Your order">{orderAnswer.map(function (canonicalIdx, position) {
-            return <li key={canonicalIdx} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white border-indigo-200"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{position + 1 + '.'}</span><span className="flex-1 text-sm text-slate-800">{canonicalItems[canonicalIdx]}</span><button type="button" disabled={position === 0} aria-label={'Move up: ' + canonicalItems[canonicalIdx]} onClick={function () {
+            return <li key={canonicalIdx} className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-white border-indigo-200"><span className="flex-shrink-0 text-xs font-bold text-slate-600 w-6">{position + 1 + '.'}</span><AssessmentChoiceContent q={q} field="items" index={canonicalIdx} /><button type="button" disabled={position === 0} aria-label={'Move up: ' + canonicalItems[canonicalIdx]} onClick={function () {
               moveOrderItem(position, -1);
             }} className="px-2 py-1 rounded border border-indigo-300 bg-white text-xs font-bold text-indigo-800 disabled:opacity-40">▲</button><button type="button" disabled={position === orderAnswer.length - 1} aria-label={'Move down: ' + canonicalItems[canonicalIdx]} onClick={function () {
               moveOrderItem(position, 1);
@@ -1199,7 +1690,7 @@ var _lazyIcon = function (name) {
           })}</ol><button type="button" onClick={finishArrange} className="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none">Done arranging</button></div>}{step === 4 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">Step 4 of 4 — What's the ordering principle?</div><div className="grid grid-cols-2 md:grid-cols-3 gap-2">{principleOptions.map(function (opt) {
             return <button key={opt} type="button" onClick={function () {
               answerPrinciple(opt);
-            }} className="px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none">{opt}</button>;
+            }} className="px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none"><AssessmentChoiceContent q={q} field="principleOptions" index={principleOptions.indexOf(opt)} text={opt} /></button>;
           })}</div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 4 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}><li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (actualOrderIsCorrect ? 'order was correct' : describeSequenceMisplaced(misplacedPositions)) + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')}</li>{verifyAnswer === 'no' && <li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found a misplaced item' : (actualOrderIsCorrect ? 'nothing was misplaced' : describeSequenceMisplaced(misplacedPositions) + (misplacedPositions.length > 1 ? ' (either one counts)' : '')))}</li>}<li>{(grade.arrangeCorrect ? '✓ ' : '✗ ') + 'Arrange: ' + (grade.arrangeCorrect ? 'your order matched' : 'correct order is ' + canonicalItems.join(' → '))}</li><li>{(grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")')}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
           // p.callTTS returns the audio URL without playing — never wired up
           // a playback step here, so the original button silently fetched and
@@ -1220,6 +1711,9 @@ var _lazyIcon = function (name) {
     var correctPartnerForWrong = q.correctPartnerForWrong || '';
     var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
     var step = stepState[0];
     var setStep = stepState[1];
@@ -1284,6 +1778,7 @@ var _lazyIcon = function (name) {
       });
     }
     function markIDK() {
+      setIdkMarked(true);
       setStep('done');
       setGrade({
         step1Correct: false,
@@ -1345,6 +1840,7 @@ var _lazyIcon = function (name) {
       return gradeResult;
     }
     function reset() {
+      setIdkMarked(false);
       setStep(1);
       setClickedPairIdx(null);
       setPartnerAnswer(null);
@@ -1407,7 +1903,7 @@ var _lazyIcon = function (name) {
     if (pairs.length === 0) return null;
     var statusColor = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade ? 'rose' : 'slate';
     var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Relation Mismatch</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || 'One of these pairs is wrong. Find it and fix it.'}</p></div></div><div className="space-y-1.5 mb-3">{pairs.map(function (pair, idx) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Relation Mismatch</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || 'One of these pairs is wrong. Find it and fix it.'}</p><AssessmentQuestionSupport q={q} /></div></div><div className="space-y-1.5 mb-3">{pairs.map(function (pair, idx) {
           var isClickable = step === 1;
           var isClicked = clickedPairIdx === idx;
           var thisIsActuallyWrong = idx === wrongPairIndex;
@@ -1427,11 +1923,11 @@ var _lazyIcon = function (name) {
               ev.preventDefault();
               answerWhichWrong(idx);
             }
-          } : undefined}><span className="text-sm font-semibold text-slate-800">{pair.left}</span><span className="text-sm text-slate-700 flex items-center justify-between gap-2"><span>{'↔ ' + pair.right}</span>{showCorrectness && thisIsActuallyWrong && <span className="text-xs font-bold text-amber-700 flex-shrink-0">wrong</span>}{showCorrectness && isClicked && !thisIsActuallyWrong && <span className="text-xs font-bold text-rose-700 flex-shrink-0">✗</span>}</span></div>;
+          } : undefined}><span className="text-sm font-semibold text-slate-800"><AssessmentPairSide q={q} index={idx} side="left" /></span><span className="text-sm text-slate-700 flex items-center justify-between gap-2"><span className="flex min-w-0 flex-1 items-start gap-2"><span aria-hidden="true">↔</span><AssessmentPairSide q={q} index={idx} side="right" /></span>{showCorrectness && thisIsActuallyWrong && <span className="text-xs font-bold text-amber-700 flex-shrink-0">wrong</span>}{showCorrectness && isClicked && !thisIsActuallyWrong && <span className="text-xs font-bold text-rose-700 flex-shrink-0">✗</span>}</span></div>;
         })}</div>{step === 1 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="flex items-center justify-between gap-2 flex-wrap"><div className="text-sm font-semibold text-indigo-900">Step 1 of 2 — Click the pair that's wrong above.</div>{allowIDK && <button type="button" onClick={markIDK} className="px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain")}><span aria-hidden="true">🤔 </span>{t("ui_common.i_dont_know")}</button>}</div></div>}{step === 2 && <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200"><div className="text-sm font-semibold text-indigo-900 mb-2">{'Step 2 of 2 — Which item should "' + (clickedPairIdx !== null && pairs[clickedPairIdx] ? pairs[clickedPairIdx].left : wrongPairLeft) + '" have been paired with?'}</div><div className="grid grid-cols-2 gap-2">{(candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand) {
             return <button key={cand} type="button" onClick={function () {
               answerPartner(cand);
-            }} className="px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none">{cand}</button>;
+            }} className="px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors motion-reduce:transition-none"><AssessmentChoiceContent q={q} field="candidatePartners" index={candidatePartners.indexOf(cand)} text={cand} /></button>;
           })}</div></div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-2 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review')}</span></div>{grade.status !== 'idk' && <ul className={'space-y-1 text-sm text-' + statusColor + '-900'}><li>{(grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')}</li><li>{(grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")')}</li></ul>}<div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={reset} className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300">Try again</button>{aiExplainerEnabled && !explainer.open && <button type="button" onClick={requestExplainer} className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">🤖 Explain this concept</button>}</div></div>}{explainer.open && <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
           // p.callTTS returns the audio URL without playing — never wired up
           // a playback step here, so the original button silently fetched and
@@ -1460,9 +1956,19 @@ var _lazyIcon = function (name) {
     });
     var explainer = explainerState[0];
     var setExplainer = explainerState[1];
-    var idkState = React.useState(false);
+    var idkState = React.useState(function () { return _quizReadDraftField(p.draftNamespace, 'q-' + p.questionIdx, 'idk').value === true; });
     var idkMarked = idkState[0];
     var setIdkMarked = idkState[1];
+    React.useEffect(function () {
+      function changed(event) {
+        if (event.type === 'storage' ? event.key !== p.draftNamespace : event.detail?.namespace !== p.draftNamespace) return;
+        if (_quizDraftWriteState[p.draftNamespace]?.reason !== 'conflict') setIdkMarked(_quizReadDraftField(p.draftNamespace, 'q-' + p.questionIdx, 'idk').value === true);
+      }
+      window.addEventListener('alloflow:assessment-draft-changed', changed);
+      window.addEventListener('alloflow:assessment-draft-synced', changed);
+      window.addEventListener('storage', changed);
+      return function () { window.removeEventListener('alloflow:assessment-draft-changed', changed); window.removeEventListener('alloflow:assessment-draft-synced', changed); window.removeEventListener('storage', changed); };
+    }, [p.draftNamespace, p.questionIdx]);
     var localConfidenceState = React.useState(null);
     var hasParentConfidence = typeof p.onSetConfidence === 'function';
     var confidence = hasParentConfidence ? p.currentConfidence : localConfidenceState[0];
@@ -1505,6 +2011,7 @@ var _lazyIcon = function (name) {
     }
     function markIDK() {
       setIdkMarked(true);
+      _quizWriteDraftField(p.draftNamespace, 'q-' + p.questionIdx, 'idk', true);
       requestExplainer();
       if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
         try {
@@ -1654,13 +2161,13 @@ var _lazyIcon = function (name) {
       if (item.respondents === 0) return <div key={item.questionIdx} className="rounded-lg border border-slate-200 bg-white p-3"><div className="text-xs font-black text-slate-700">{'Q' + (item.questionIdx + 1) + ' · No responses yet'}</div><p className="text-sm text-slate-600 mt-1">{item.questionText}</p></div>;
       var rateColor = item.correctRate == null ? 'slate' : item.correctRate < 40 ? 'rose' : item.correctRate > 85 ? 'emerald' : 'indigo';
       return <article key={item.questionIdx} className="rounded-lg border border-cyan-200 bg-white p-3"><div className="flex items-start gap-3"><div className="flex-grow min-w-0"><div className="text-[10px] uppercase font-black tracking-wider text-slate-500">{'Q' + (item.questionIdx + 1) + ' · ' + item.type}</div><p className="text-sm font-semibold text-slate-800 mt-1">{item.questionText}</p></div><div className={'rounded-lg px-3 py-2 text-center bg-' + rateColor + '-50 text-' + rateColor + '-900 border border-' + rateColor + '-200'}><div className="text-lg font-black">{item.unscored ? 'Unscored' : item.correctRate == null ? '—' : item.correctRate + '%'}</div><div className="text-[9px] uppercase font-bold">{item.unscored ? 'distribution' : 'correct'}</div></div></div><div className="flex gap-2 flex-wrap mt-3 text-[11px]"><span className="rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold">{item.respondents + ' responses'}</span><span className="rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold">{item.omittedCount + ' omitted'}</span>{item.idkCount > 0 && <span className="rounded-full bg-sky-100 text-sky-800 px-2 py-1 font-bold">{item.idkCount + ' IDK'}</span>}<span className={'rounded-full px-2 py-1 font-bold ' + (item.smallSample ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800')}>{item.signalLabel}</span></div>{Array.isArray(item.options) && item.options.length > 0 && <div className="space-y-1.5 mt-3">{item.options.map(function (option) {
-        var width = item.respondents > 0 ? Math.round(option.count / item.respondents * 100) : 0;
+        var distributionRespondents = item.distributionRespondents == null ? item.respondents : item.distributionRespondents;
+        var width = distributionRespondents > 0 ? Math.round(option.count / distributionRespondents * 100) : 0;
         return <div key={option.optionIdx} className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-2 text-xs"><span className={'font-black ' + (!item.unscored && option.correct ? 'text-emerald-700' : 'text-slate-600')}>{String.fromCharCode(65 + option.optionIdx)}</span><div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className={!item.unscored && option.correct ? 'h-full bg-emerald-500' : item.unscored ? 'h-full bg-purple-500' : 'h-full bg-cyan-500'} style={{ width: width + '%' }} /></div><span className="text-slate-600 tabular-nums">{option.count + ' · ' + width + '%'}</span></div>;
       })}</div>}{item.flags && item.flags.length > 0 && <ul className="mt-3 space-y-1">{item.flags.map(function (flag, idx) { return <li key={idx} className="text-xs rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1">{'⚑ ' + flag}</li>; })}</ul>}{item.smallSample && !item.unscored && <p className="text-[10px] text-slate-500 mt-2">Early signal only—no quality flag is assigned until 5 learners respond.</p>}</article>;
     })}</div>}{handoffOpen && <div className="fixed inset-0 z-[120] grid place-items-center bg-slate-950/75 p-4" role="presentation"><div ref={handoffDialogRef} role="dialog" aria-modal="true" aria-labelledby="quiz-allosheet-review-title" aria-describedby="quiz-allosheet-review-summary quiz-allosheet-review-privacy" aria-busy={handoffBusy} tabIndex={-1} onKeyDown={function (event) { _quizHandleDialogKeyDown(event, handoffDialogRef, function () { if (!handoffBusy) closeAlloSheetReview(); }); }} className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border-4 border-indigo-300 bg-white p-5 text-slate-900 shadow-2xl"><h3 id="quiz-allosheet-review-title" className="text-xl font-black text-indigo-950">Review Quiz item analysis for AlloSheet</h3><p id="quiz-allosheet-review-summary" className="mt-2 text-sm text-slate-700">This creates one aggregate table with up to 100 item rows. It includes question number, item type, response and scoring counts, correct rate, sample status, and bounded signal codes.</p><p id="quiz-allosheet-review-privacy" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><strong>Excluded:</strong> learner names and IDs, question and option wording, raw answers, reflections, AI feedback, session codes, resource IDs, and cohort arrays. Signal codes remain blank until at least five learners respond. The transfer cannot enable AI or write back to Quiz.</p><div className="mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3"><h4 className="text-sm font-black text-slate-900">Fields sent</h4><p className="mt-1 text-xs text-slate-700">Question number; item type; unscored status; respondents; omitted, gradable, correct, partial, incorrect, IDK, awaiting-review, and high-confidence-incorrect counts; correct-rate percent; sample status; signal codes.</p><p className="mt-2 text-xs font-semibold text-slate-700">{items.length + ' authored item' + (items.length === 1 ? '' : 's') + ' available for bounded aggregate review.'}</p></div>{handoffFeedback && <p className={'mt-3 rounded-lg p-3 text-sm font-semibold ' + (handoffBusy ? 'bg-indigo-50 text-indigo-900' : 'bg-rose-50 text-rose-900')} role={handoffBusy ? 'status' : 'alert'} aria-live="polite">{handoffFeedback}</p>}<div className="mt-4 flex flex-wrap justify-end gap-2"><button type="button" onClick={closeAlloSheetReview} disabled={handoffBusy} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 disabled:opacity-50">Cancel</button><button type="button" onClick={confirmAlloSheetReview} disabled={handoffBusy} className="rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:opacity-50">{handoffBusy ? 'Waiting for AlloSheet…' : 'Confirm and open AlloSheet'}</button></div></div></div>}</section>;
   }  function LiveResultsDashboard(p) {
     var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
-    if (!aggsMod) return null;
     var sessionData = p.sessionData || {};
     var quizState = sessionData.quizState || {};
     var generatedContent = p.generatedContent;
@@ -1669,9 +2176,13 @@ var _lazyIcon = function (name) {
     var modeLabel = generatedContent && generatedContent.data && generatedContent.data.modeLabel || 'Exit Ticket';
     var modeIcon = generatedContent && generatedContent.data && generatedContent.data.modeIcon || '📝';
     var appId = p.appId;
+    function dashboardCopy(key, fallback) { var value = t(key); return !value || value === key ? fallback : value; }
     var conceptMasteryState = React.useState(null);
     var conceptMasteryByUid = conceptMasteryState[0];
     var setConceptMasteryByUid = conceptMasteryState[1];
+    var reflectionsExpandedState = React.useState(true);
+    var reflectionsExpanded = reflectionsExpandedState[0];
+    var setReflectionsExpanded = reflectionsExpandedState[1];
     var rosterKeysSig = Object.keys(roster).sort().join(',');
     // FERPA refit 2026-07-01: mastery now arrives as a prop from the shell
     // (live peer-to-peer snapshots + project-file imports; device-local
@@ -1723,85 +2234,97 @@ var _lazyIcon = function (name) {
         cancelled = true;
       };
     }, [mode, rosterKeysSig, appId, propMastery]);
+    // Keep the aggregator's uid:index interface, but only expose grades for
+    // the current activity, authored criteria, and exact submitted response.
     var aiGradedState = React.useState({});
-    var aiGradedCache = aiGradedState[0];
-    var setAiGradedCache = aiGradedState[1];
+    var aiGradeEntries = aiGradedState[0];
+    var setAiGradeEntries = aiGradedState[1];
     var aiGradedInFlightRef = React.useRef({});
-    var allResponsesSig = React.useMemo(function () {
-      try {
-        return JSON.stringify(quizState.allResponses || {});
-      } catch (e) {
-        return '';
-      }
-    }, [quizState.allResponses]);
+    var aiGradeMountedRef = React.useRef(true);
+    var retryGradingState = React.useState(0);
+    var gradingData = generatedContent && generatedContent.data || {};
+    var teacherReviewOnly = gradingData.scoringPolicy && gradingData.scoringPolicy.writtenResponseMode === 'teacher-review';
+    var gradingScope = JSON.stringify([p.activeSessionCode || '', quizState.activityId || '', generatedContent && generatedContent.id || '', p.gradeLevel || '', teacherReviewOnly]);
+    var gradingItems = {};
+    if (!teacherReviewOnly) Object.keys(quizState.allResponses || {}).forEach(function (uid) {
+      var perStudent = quizState.allResponses[uid] || {};
+      Object.keys(perStudent).forEach(function (qKey) {
+        if (!/^\d+$/.test(qKey)) return;
+        var qIdx = Number(qKey), q = (gradingData.questions || [])[qIdx], response = perStudent[qKey];
+        if (!q || !response || !response.answer || response.answer.idk || response.answered === false) return;
+        var type = q.type || response.itemType;
+        if (type !== 'short-answer' && type !== 'self-explanation') return;
+        var text = typeof response.answer.text === 'string' ? response.answer.text : '';
+        if (!text.trim()) return;
+        var key = uid + ':' + qIdx;
+        gradingItems[key] = { key: key, q: q, text: text, signature: JSON.stringify([gradingScope, q, response.answer]) };
+      });
+    });
+    var gradingItemsSig = JSON.stringify(Object.keys(gradingItems).map(function (key) { return [key, gradingItems[key].signature]; }));
+    var currentGradingItemsRef = React.useRef(gradingItems);
+    currentGradingItemsRef.current = gradingItems;
+    var aiGradedCache = {}, gradingFailures = [], inFlightCount = 0;
+    Object.keys(gradingItems).forEach(function (key) {
+      var entry = aiGradeEntries[key];
+      if (!entry || entry.signature !== gradingItems[key].signature) return;
+      if (entry.pending) inFlightCount++;
+      else if (entry.result && entry.result.status === 'error') gradingFailures.push(key);
+      else if (entry.result) aiGradedCache[key] = entry.result;
+    });
+    React.useEffect(function () {
+      aiGradeMountedRef.current = true;
+      return function () { aiGradeMountedRef.current = false; aiGradedInFlightRef.current = {}; };
+    }, []);
     React.useEffect(function () {
       var aiHelpers = window.AlloModules && window.AlloModules.QuizAIHelpers;
-      if (!aiHelpers || typeof p.callGemini !== 'function') return;
-      var allResponses = quizState.allResponses || {};
-      var questions = generatedContent && generatedContent.data && generatedContent.data.questions || [];
-      var pending = [];
-      Object.keys(allResponses).forEach(function (uid) {
-        var perStudent = allResponses[uid] || {};
-        Object.keys(perStudent).forEach(function (qKey) {
-          var qIdx = parseInt(qKey, 10);
-          if (isNaN(qIdx) || !questions[qIdx]) return;
-          var response = perStudent[qKey];
-          if (!response || !response.answer || response.answer.idk) return;
-          var q = questions[qIdx];
-          var t = response.itemType || q && q.type;
-          if (t !== 'short-answer' && t !== 'self-explanation') return;
-          var text = response.answer && response.answer.text || '';
-          if (!text || !text.trim()) return;
-          var key = uid + ':' + qIdx;
-          if (aiGradedCache[key] || aiGradedInFlightRef.current[key]) return;
-          pending.push({
-            key: key,
-            q: q,
-            text: text
-          });
-        });
+      Object.keys(aiGradedInFlightRef.current).forEach(function (key) {
+        if (!gradingItems[key] || gradingItems[key].signature !== aiGradedInFlightRef.current[key].signature) delete aiGradedInFlightRef.current[key];
       });
-      if (pending.length === 0) return;
+      if (teacherReviewOnly || !aiHelpers || typeof aiHelpers.gradeFreeformAnswer !== 'function' || typeof p.callGemini !== 'function') return;
+      var pending = Object.keys(gradingItems).map(function (key) { return gradingItems[key]; }).filter(function (item) {
+        var entry = aiGradeEntries[item.key], request = aiGradedInFlightRef.current[item.key];
+        return !(entry && entry.signature === item.signature && !entry.pending) && !(request && request.signature === item.signature);
+      });
+      if (!pending.length) return;
+      pending.forEach(function (item) { aiGradedInFlightRef.current[item.key] = item; });
+      setAiGradeEntries(function (previous) {
+        var next = Object.assign({}, previous);
+        pending.forEach(function (item) { next[item.key] = { signature: item.signature, pending: true }; });
+        return next;
+      });
       pending.forEach(function (item) {
-        aiGradedInFlightRef.current[item.key] = true;
-      });
-      Promise.all(pending.map(function (item) {
-        return aiHelpers.gradeFreeformAnswer({
-          question: item.q.question || item.q.contextSentence || '',
-          expectedAnswer: item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || '',
-          studentResponse: item.text,
-          gradeLevel: p.gradeLevel,
-          callGemini: p.callGemini
-        }).then(function (result) {
-          return {
-            key: item.key,
-            result: result
-          };
-        }).catch(function (err) {
-          return {
-            key: item.key,
-            result: {
-              status: 'error',
-              feedback: err && err.message || 'Grader failed.'
-            }
-          };
-        });
-      })).then(function (results) {
-        setAiGradedCache(function (prev) {
-          var next = Object.assign({}, prev);
-          results.forEach(function (r) {
-            next[r.key] = r.result;
-            delete aiGradedInFlightRef.current[r.key];
+        Promise.resolve().then(function () {
+          var current = currentGradingItemsRef.current[item.key];
+          if (!aiGradeMountedRef.current || !current || current.signature !== item.signature || aiGradedInFlightRef.current[item.key] !== item) return null;
+          return aiHelpers.gradeFreeformAnswer({
+            question: item.q.question || item.q.contextSentence || '',
+            expectedAnswer: [item.q.rubric ? 'Rubric: ' + item.q.rubric : '', item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || ''].filter(Boolean).join('\n'),
+            studentResponse: item.text,
+            gradeLevel: p.gradeLevel,
+            callGemini: p.callGemini
           });
-          return next;
-        });
-      }).catch(function () {
-        pending.forEach(function (item) {
+        }).catch(function (error) {
+          return { status: 'error', feedback: error && error.message || 'Grader failed.' };
+        }).then(function (result) {
+          var current = currentGradingItemsRef.current[item.key];
+          if (!aiGradeMountedRef.current || !current || current.signature !== item.signature || aiGradedInFlightRef.current[item.key] !== item) return;
           delete aiGradedInFlightRef.current[item.key];
+          setAiGradeEntries(function (previous) {
+            var latest = currentGradingItemsRef.current[item.key];
+            if (!aiGradeMountedRef.current || !latest || latest.signature !== item.signature) return previous;
+            return Object.assign({}, previous, { [item.key]: { signature: item.signature, result: result || { status: 'error', feedback: 'No grade was returned. Try again.' } } });
+          });
         });
       });
-    }, [allResponsesSig, generatedContent && generatedContent.id]);
-    var inFlightCount = Object.keys(aiGradedInFlightRef.current || {}).length;
+    }, [gradingItemsSig, p.callGemini, retryGradingState[0]]);
+    function retryFailedGrading() {
+      setAiGradeEntries(function (previous) {
+        var next = Object.assign({}, previous);
+        gradingFailures.forEach(function (key) { delete next[key]; });
+        return next;
+      });
+      retryGradingState[1](function (value) { return value + 1; });
+    }
     var expandedRowsState = React.useState({});
     var expandedRows = expandedRowsState[0];
     var setExpandedRows = expandedRowsState[1];
@@ -2027,15 +2550,21 @@ var _lazyIcon = function (name) {
       if (newStatus == null) {
         update[path] = fb.deleteField();
       } else {
+        var reviewedQuestion = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
+        var reviewedResponse = quizState && quizState.allResponses && quizState.allResponses[uid] && quizState.allResponses[uid][qIdx];
+        var responseFingerprint = aggsMod.assessmentResponseFingerprint && aggsMod.assessmentResponseFingerprint(reviewedQuestion, reviewedResponse);
+        if (!responseFingerprint) return;
         update[path] = {
           status: newStatus,
-          ts: Date.now()
+          ts: Date.now(),
+          responseFingerprint: responseFingerprint
         };
       }
       try {
         fb.updateDoc(sessionRef, update);
       } catch (e) {}
     }
+    if (!aggsMod) return null;
     var aggResult;
     try {
       aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides);
@@ -2055,19 +2584,19 @@ var _lazyIcon = function (name) {
     // Share an anonymous per-question aggregate to every connected student
     // over the P2P quiz channel (shell hook; nothing stored, no names).
     var canShareResults = typeof window !== 'undefined' && typeof window.__alloQuizShareResults === 'function'
-      && (variant === 'liveHeatmap') && Array.isArray(data.bars) && data.bars.some(function (b) { return b.total > 0 && !b.unscored; });
+      && (variant === 'liveHeatmap') && Array.isArray(data.bars) && data.bars.some(function (b) { return b.totalPossible > 0 && !b.unscored; });
     var shareResultsToClass = function () {
-      var items = data.bars.filter(function (b) { return b.total > 0 && !b.unscored; }).map(function (b) {
+      var items = data.bars.filter(function (b) { return b.totalPossible > 0 && !b.unscored; }).map(function (b) {
         return {
           label: 'Q' + (b.questionIdx + 1) + ' — ' + String(b.questionText || '').slice(0, 70),
-          count: b.correct + '/' + b.total,
-          percent: b.total > 0 ? Math.round(b.correct / b.total * 100) : 0
+          count: _quizFill(dashboardCopy('quiz.live_points_ratio', '{earned}/{possible} points'), { earned: b.totalEarned, possible: b.totalPossible }),
+          percent: b.scorePercent
         };
       });
       var ok = window.__alloQuizShareResults({ title: t('quiz.shared_results_title') || 'How the class did', items: items });
       if (window.AlloFlowUX) window.AlloFlowUX.toast(ok ? (t('quiz.results_shared') || 'Anonymous results shared with the class.') : (t('quiz.results_share_failed') || 'Could not share — no students connected.'), ok ? 'success' : 'error');
     };
-    var header = <div className="flex items-center gap-2 mb-3 flex-wrap"><span className="text-2xl" aria-hidden="true">{modeIcon}</span><h3 className="font-black text-lg text-slate-800">{'Live Results — ' + modeLabel}</h3><span className="text-xs text-slate-600">{data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')}</span>{inFlightCount > 0 && <span className={'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse ' + quizreducedMotionClass} role="status" aria-live="polite" aria-label={'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's')} title={inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'}><span aria-hidden="true">✨ </span>{'AI grading ' + inFlightCount + '…'}</span>}{canShareResults && <button type="button" onClick={shareResultsToClass} className="ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors motion-reduce:transition-none" title={t('quiz.share_results_tooltip') || 'Send anonymous per-question results to every connected student (peer-to-peer, nothing stored)'} aria-label={t('quiz.share_results_aria') || 'Share anonymous results with the class'}><span aria-hidden="true">📢 </span>{t('quiz.share_results_btn') || 'Share anonymous results'}</button>}</div>;
+    var header = <div className="flex items-center gap-2 mb-3 flex-wrap"><span className="text-2xl" aria-hidden="true">{modeIcon}</span><h3 className="font-black text-lg text-slate-800">{'Live Results — ' + modeLabel}</h3><span className="text-xs text-slate-600">{data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')}</span>{inFlightCount > 0 && <span className={'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse ' + quizreducedMotionClass} role="status" aria-live="polite" aria-label={'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's')} title={inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'}><span aria-hidden="true">✨ </span>{'AI grading ' + inFlightCount + '…'}</span>}{gradingFailures.length > 0 && <span className="flex items-center gap-2 text-xs text-amber-900" role="status"><span>{_quizFill(dashboardCopy('quiz.live_grading_failed', 'AI grading unavailable. Awaiting retry: {count}.'), { count: gradingFailures.length })}</span><button type="button" onClick={retryFailedGrading} className="min-h-9 rounded border border-amber-300 bg-amber-50 px-2 py-1 font-bold hover:bg-amber-100">{dashboardCopy('quiz.live_grading_retry', 'Retry AI grading')}</button></span>}{canShareResults && <button type="button" onClick={shareResultsToClass} className="ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors motion-reduce:transition-none" title={t('quiz.share_results_tooltip') || 'Send anonymous per-question results to every connected student (peer-to-peer, nothing stored)'} aria-label={t('quiz.share_results_aria') || 'Share anonymous results with the class'}><span aria-hidden="true">📢 </span>{t('quiz.share_results_btn') || 'Share anonymous results'}</button>}</div>;
     var hasAnyResponses = false;
     if (variant === 'gradebook') {
       hasAnyResponses = data.studentRows.some(function (r) {
@@ -2100,14 +2629,14 @@ var _lazyIcon = function (name) {
       };
       var buildGradebookCsv = function () {
         var questions = generatedContent && generatedContent.data && generatedContent.data.questions || [];
-        var header = ['Student', 'Attempt status', 'Answered', 'Correct', 'IDK', 'Score %'];
+        var header = ['Student', 'Attempt status', 'Answered', 'Correct', 'IDK', 'Earned points', 'Possible points', 'Score %'];
         questions.forEach(function (_, idx) {
           header.push('Q' + (idx + 1) + ' Status', 'Q' + (idx + 1) + ' Answer', 'Q' + (idx + 1) + ' Confidence', 'Q' + (idx + 1) + ' AI Feedback');
         });
         var lines = [header.map(csvEscape).join(',')];
         data.studentRows.forEach(function (row) {
-          var pct = row.totalEvaluated > 0 ? Math.round(row.totalCorrect / row.totalEvaluated * 100) : null;
-          var line = [row.displayName, row.attemptStatus || 'not-started', row.totalAnswered, row.totalCorrect, row.totalIdk, pct == null ? 'Unscored' : pct + '%'];
+          var pct = row.scorePercent;
+          var line = [row.displayName, row.attemptStatus || 'not-started', row.totalAnswered, row.totalCorrect, row.totalIdk, row.totalEarned, row.totalPossible, pct == null ? 'Unscored' : pct + '%'];
           for (var i = 0; i < questions.length; i++) {
             var cell = row.byQuestion[i];
             if (!cell) {
@@ -2142,14 +2671,15 @@ var _lazyIcon = function (name) {
       };
       var statusBadge = function (cell) {
         if (!cell) return <span className="text-slate-600" title={t("tooltips.no_response")}>—</span>;
+        if (cell.status === 'no-response') return <span className="text-slate-600" title="No answer">—</span>;
         if (cell.status === 'correct') return <span className="text-emerald-600" title={cell.aiGraded ? 'AI-graded correct' : 'Correct'}>✓</span>;
         if (cell.status === 'incorrect') return <span className="text-rose-600" title={cell.aiGraded ? 'AI-graded incorrect' : 'Incorrect'}>✗</span>;
         if (cell.status === 'idk') return <span className="text-sky-600" title={t("tooltips.marked_unknown")}>🤔</span>;
         if (cell.status === 'partially-correct') return <span className="text-amber-600" title={t("tooltips.partially_correct")}>◐</span>;
         return <span className="text-slate-600" title={t("tooltips.submitted_ungraded")}>·</span>;
       };
-      body = <div><div className="flex items-center justify-end mb-2"><button type="button" onClick={exportCsv} className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors motion-reduce:transition-none" aria-label={t("a11y.export_gradebook_csv")} data-help-key="quiz_csv_export_btn" title={t("tooltips.download_gradebook_csv")}><span aria-hidden="true">📥 </span>{t("ui_common.export_csv")}</button></div><div className="overflow-x-auto"><table className="w-full text-sm border-collapse"><thead><tr className="bg-slate-100"><th scope="col" className="w-7 px-1 py-1.5" aria-label={t("a11y.expand_row")} /><th scope="col" className="text-left px-2 py-1.5 font-bold text-slate-700">Student</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">Attempt</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">Answered</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">Correct</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">IDK</th></tr></thead><tbody>{data.studentRows.map(function (row) {
-                var pct = row.totalEvaluated > 0 ? Math.round(row.totalCorrect / row.totalEvaluated * 100) : null;
+      body = <div><div className="flex items-center justify-end mb-2"><button type="button" onClick={exportCsv} className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors motion-reduce:transition-none" aria-label={t("a11y.export_gradebook_csv")} data-help-key="quiz_csv_export_btn" title={t("tooltips.download_gradebook_csv")}><span aria-hidden="true">📥 </span>{t("ui_common.export_csv")}</button></div><div className="overflow-x-auto"><table className="w-full text-sm border-collapse"><thead><tr className="bg-slate-100"><th scope="col" className="w-7 px-1 py-1.5" aria-label={t("a11y.expand_row")} /><th scope="col" className="text-left px-2 py-1.5 font-bold text-slate-700">Student</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">Attempt</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">Answered</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">{dashboardCopy('quiz.live_score', 'Score')}</th><th scope="col" className="text-center px-2 py-1.5 font-bold text-slate-700">IDK</th></tr></thead><tbody>{data.studentRows.map(function (row) {
+                var pct = row.scorePercent;
                 var isExpanded = !!expandedRows[row.uid];
                 var canExpand = row.totalAnswered > 0;
                 var summaryRow = <tr key={row.uid + ':summary'} className={'border-t border-slate-200 ' + (canExpand ? 'cursor-pointer hover:bg-indigo-50/40' : '')} onClick={canExpand ? function () {
@@ -2157,13 +2687,14 @@ var _lazyIcon = function (name) {
                 } : undefined}><td className="text-center px-1 py-1.5">{canExpand ? <button type="button" aria-expanded={isExpanded} aria-label={(isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details'} className="text-slate-600 hover:text-indigo-600 transition-colors motion-reduce:transition-none text-xs font-mono" onClick={function (e) {
                       e.stopPropagation();
                       toggleRowExpanded(row.uid);
-                    }}>{isExpanded ? '▼' : '▶'}</button> : <span className="text-slate-600 text-xs">·</span>}</td><th scope="row" className="px-2 py-1.5 text-left font-medium text-slate-800">{row.displayName}</th><td className="text-center px-2 py-1.5"><span className={'text-[10px] font-black uppercase px-2 py-0.5 rounded ' + (row.attemptStatus === 'submitted' ? 'bg-emerald-100 text-emerald-800' : row.attemptStatus === 'in-progress' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600')}>{row.attemptStatus === 'submitted' ? 'Submitted' : row.attemptStatus === 'in-progress' ? 'In progress' : 'Not started'}</span></td><td className="text-center px-2 py-1.5"><span className="text-xs font-mono text-slate-600">{row.totalAnswered + ' / ' + data.totalQuestions}</span></td><td className="text-center px-2 py-1.5">{row.totalEvaluated > 0 ? <span className={'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')}>{row.totalCorrect + ' (' + pct + '%)'}</span> : row.totalUnscored > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900">Unscored</span> : <span className="text-xs text-slate-600">—</span>}</td><td className="text-center px-2 py-1.5">{row.totalIdk > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">{row.totalIdk}</span> : <span className="text-xs text-slate-600">0</span>}</td></tr>;
+                    }}>{isExpanded ? '▼' : '▶'}</button> : <span className="text-slate-600 text-xs">·</span>}</td><th scope="row" className="px-2 py-1.5 text-left font-medium text-slate-800">{row.displayName}</th><td className="text-center px-2 py-1.5"><span className={'text-[10px] font-black uppercase px-2 py-0.5 rounded ' + (row.attemptStatus === 'submitted' ? 'bg-emerald-100 text-emerald-800' : row.attemptStatus === 'in-progress' ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600')}>{row.attemptStatus === 'submitted' ? 'Submitted' : row.attemptStatus === 'in-progress' ? 'In progress' : 'Not started'}</span></td><td className="text-center px-2 py-1.5"><span className="text-xs font-mono text-slate-600">{row.totalAnswered + ' / ' + data.totalQuestions}</span></td><td className="text-center px-2 py-1.5" title={_quizFill(dashboardCopy('quiz.live_fully_correct', '{count} fully correct'), { count: row.totalCorrect })}>{row.totalPossible > 0 ? <span className={'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')}>{row.totalEarned + ' / ' + row.totalPossible + ' (' + pct + '%)'}</span> : row.totalUnscored > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900">Unscored</span> : <span className="text-xs text-slate-600">—</span>}</td><td className="text-center px-2 py-1.5">{row.totalIdk > 0 ? <span className="text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">{row.totalIdk}</span> : <span className="text-xs text-slate-600">0</span>}</td></tr>;
                 if (!isExpanded) return summaryRow;
                 var detailRow = <tr key={row.uid + ':detail'} className="border-t border-slate-100 bg-indigo-50/30"><td colSpan={6} className="px-3 py-3"><div className="space-y-2">{row.byQuestion.map(function (cell, qIdx) {
                         var qNum = qIdx + 1;
                         var qSnippet = cell && cell.questionText ? cell.questionText.slice(0, 90) + (cell.questionText.length > 90 ? '…' : '') : 'Question ' + qNum;
+                        var versionReview = cell && (cell.versionMismatch || cell.versionUnverified);
                         var border = !cell ? 'border-slate-200 bg-white' : cell.status === 'correct' ? 'border-emerald-200 bg-emerald-50/50' : cell.status === 'incorrect' ? 'border-rose-200 bg-rose-50/50' : cell.status === 'idk' ? 'border-sky-200 bg-sky-50/50' : 'border-slate-200 bg-white';
-                        return <div key={qIdx} className={'p-2 rounded border ' + border}><div className="flex items-start gap-2 mb-1"><span className="text-base mt-0.5 leading-none">{statusBadge(cell)}</span><div className="flex-grow min-w-0"><p className="text-xs font-semibold text-slate-700 mb-0.5">{'Q' + qNum + '. ' + qSnippet}</p>{cell && cell.answerSummary ? <p className="text-xs text-slate-800 break-words"><span className="text-slate-600">Answered: </span>{cell.answerSummary}</p> : !cell && <p className="text-xs italic text-slate-600">No response yet</p>}</div>{cell && cell.aiGraded && <span role="group" className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800" aria-label={'Graded by AI as ' + cell.aiStatus} title={'Graded by AI (' + cell.aiStatus + ')'}><span aria-hidden="true">✨ </span>AI</span>}{cell && cell.teacherOverridden && <span role="group" className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800" aria-label={'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown')} title={'Teacher override (was: ' + (cell.priorStatus || '?') + ')'}><span aria-hidden="true">🖊 </span>Teacher</span>}{cell && confidenceChip(cell.confidence, cell.status)}</div>{cell && cell.aiFeedback && <p className="text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1">"{cell.aiFeedback}"</p>}{cell && !cell.unscored && p.activeSessionCode && <div className="mt-1 flex items-center gap-1 flex-wrap" data-help-key="quiz_teacher_override_row"><span className="text-xs text-slate-700 font-semibold mr-1">Override:</span>{[{
+                        return <div key={qIdx} className={'p-2 rounded border ' + border}><div className="flex items-start gap-2 mb-1"><span className="text-base mt-0.5 leading-none">{statusBadge(cell)}</span><div className="flex-grow min-w-0"><p className="text-xs font-semibold text-slate-700 mb-0.5">{'Q' + qNum + '. ' + qSnippet}</p>{cell && cell.answerSummary ? <p className="text-xs text-slate-800 break-words"><span className="text-slate-600">Answered: </span>{cell.answerSummary}</p> : !cell && <p className="text-xs italic text-slate-600">No response yet</p>}</div>{cell && cell.aiGraded && <span role="group" className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800" aria-label={'Graded by AI as ' + cell.aiStatus} title={'Graded by AI (' + cell.aiStatus + ')'}><span aria-hidden="true">✨ </span>AI</span>}{cell && cell.teacherOverridden && <span role="group" className="flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800" aria-label={'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown')} title={'Teacher override (was: ' + (cell.priorStatus || '?') + ')'}><span aria-hidden="true">🖊 </span>Teacher</span>}{cell && confidenceChip(cell.confidence, cell.status)}</div>{cell && cell.aiFeedback && <p className="text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1">"{cell.aiFeedback}"</p>}{cell && cell.teacherOverrideExpired && <p role="status" data-assessment-override-expired className="mt-1 text-xs text-amber-900">{dashboardCopy("quiz.live_override_expired", "This teacher override was for an earlier response or answer key. Review the current response.")}</p>}{versionReview && <p role="status" data-assessment-version-review className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">{cell.versionMismatch ? dashboardCopy('quiz.live_question_version_changed', 'Question version changed; review the original response.') : dashboardCopy('quiz.live_question_version_unavailable', 'Question version unavailable; review the original response.')}</p>}{cell && !cell.unscored && !versionReview && p.activeSessionCode && <div className="mt-1 flex items-center gap-1 flex-wrap" data-help-key="quiz_teacher_override_row"><span className="text-xs text-slate-700 font-semibold mr-1">Override:</span>{[{
                               s: 'correct',
                               icon: '✓',
                               color: 'emerald',
@@ -2193,10 +2724,10 @@ var _lazyIcon = function (name) {
               })}</tbody></table></div></div>;
     } else if (variant === 'preLessonGap') {
       body = <div className="space-y-2">{data.conceptCards.map(function (card) {
-          var color = card.totalAnswered === 0 ? 'slate' : card.unscored ? 'purple' : card.percentCorrect >= 80 ? 'emerald' : card.percentCorrect >= 50 ? 'amber' : 'rose';
-          var urgency = card.totalAnswered === 0 ? 'no responses' : card.unscored ? 'Unscored poll' : card.percentCorrect < 50 ? '⚠ Needs pre-teaching' : card.percentCorrect < 80 ? 'Review with class' : 'Class is ready';
-          var showExplainBtn = !card.unscored && card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
-          return <div key={card.questionIdx} className={'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200'}><div className="flex items-start justify-between gap-3 mb-1"><span className={'text-xs font-bold uppercase tracking-wider text-' + color + '-800'}>{urgency}</span>{card.totalAnswered > 0 && <span className={'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900'}>{card.unscored ? card.totalAnswered + ' responses' : card.percentCorrect + '% correct'}</span>}</div><p className="text-sm text-slate-800 mb-2">{card.conceptText}</p><div className={'flex items-center gap-3 text-xs text-' + color + '-900'}>{!card.unscored && <><span>{card.correctCount + ' ✓'}</span><span>{card.incorrectCount + ' ✗'}</span></>}{card.unscored && <span>Distribution only — no right answer</span>}{card.idkCount > 0 && <span className="text-sky-700">{card.idkCount + ' 🤔'}</span>}<span className="text-slate-600">{'· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'}</span>{showExplainBtn && <button type="button" onClick={function () {
+          var color = card.totalAnswered === 0 ? 'slate' : card.unscored ? 'purple' : card.scorePercent == null ? 'slate' : card.scorePercent >= 80 ? 'emerald' : card.scorePercent >= 50 ? 'amber' : 'rose';
+          var urgency = card.totalAnswered === 0 ? 'no responses' : card.unscored ? 'Unscored poll' : card.scorePercent == null ? dashboardCopy('quiz.live_no_scores', 'No scored responses') : card.scorePercent < 50 ? '⚠ Needs pre-teaching' : card.scorePercent < 80 ? 'Review with class' : 'Class is ready';
+          var showExplainBtn = !card.unscored && card.totalPossible > 0 && card.scorePercent < 80 && typeof p.callGemini === 'function';
+          return <div key={card.questionIdx} className={'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200'}><div className="flex items-start justify-between gap-3 mb-1"><span className={'text-xs font-bold uppercase tracking-wider text-' + color + '-800'}>{urgency}</span>{card.totalAnswered > 0 && <span className={'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900'}>{card.unscored ? card.totalAnswered + ' responses' : card.scorePercent == null ? 'Unscored' : _quizFill(dashboardCopy('quiz.live_score_percent', '{percent}% of points'), { percent: card.scorePercent })}</span>}</div><p className="text-sm text-slate-800 mb-2">{card.conceptText}</p><div className={'flex items-center gap-3 text-xs text-' + color + '-900'}>{!card.unscored && <><span>{card.correctCount + ' ✓'}</span>{card.partialCount > 0 && <span>{_quizFill(dashboardCopy('quiz.live_partial_count', '{count} partially correct'), { count: card.partialCount })}</span>}<span>{card.incorrectCount + ' ✗'}</span></>}{card.unscored && <span>Distribution only — no right answer</span>}{card.idkCount > 0 && <span className="text-sky-700">{card.idkCount + ' 🤔'}</span>}<span className="text-slate-600">{'· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'}</span>{showExplainBtn && <button type="button" onClick={function () {
                 openExplainer(card.questionIdx, card.conceptText);
               }} className="ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none" aria-label={t("a11y.explain_to_class")} data-help-key="quiz_explain_to_class_btn" title={t("tooltips.generate_concept_explainer")}><span aria-hidden="true">🎓 </span>{t("ui_common.explain_to_class")}</button>}</div></div>;
         })}</div>;
@@ -2250,8 +2781,9 @@ var _lazyIcon = function (name) {
         };
       };
       body = <div className="space-y-2">{data.bars.map(function (bar) {
-          var color = bar.total === 0 ? 'slate' : bar.unscored ? 'purple' : bar.percentCorrect >= 80 ? 'emerald' : bar.percentCorrect >= 50 ? 'amber' : 'rose';
+          var color = bar.total === 0 ? 'slate' : bar.unscored ? 'purple' : bar.scorePercent == null ? 'slate' : bar.scorePercent >= 80 ? 'emerald' : bar.scorePercent >= 50 ? 'amber' : 'rose';
           var pctCorrect = bar.total > 0 ? bar.correct / bar.total * 100 : 0;
+          var pctPartial = bar.total > 0 ? (bar.partial || 0) / bar.total * 100 : 0;
           var pctIncorrect = bar.total > 0 ? bar.incorrect / bar.total * 100 : 0;
           var pctIdk = bar.total > 0 ? bar.idk / bar.total * 100 : 0;
           var pctSubmitted = bar.total > 0 ? bar.submitted / bar.total * 100 : 0;
@@ -2265,10 +2797,10 @@ var _lazyIcon = function (name) {
                 e.preventDefault();
                 toggleBarExpanded(bar.questionIdx);
               }
-            } : undefined}>{canExpand && <span className="text-slate-600 hover:text-indigo-600 text-[10px] font-mono mt-0.5">{isExpanded ? '▼' : '▶'}</span>}<span className="text-xs text-slate-700 flex-1 min-w-0">{bar.questionIdx + 1 + '. ' + qLabel}</span>{bar.total > 0 && <span className={'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800'}>{bar.unscored ? 'Unscored' : bar.percentCorrect + '%'}</span>}</div>{bar.total > 0 ? <div className="flex h-3 rounded overflow-hidden border border-slate-200">{pctCorrect > 0 && <div style={{
+            } : undefined}>{canExpand && <span className="text-slate-600 hover:text-indigo-600 text-[10px] font-mono mt-0.5">{isExpanded ? '▼' : '▶'}</span>}<span className="text-xs text-slate-700 flex-1 min-w-0">{bar.questionIdx + 1 + '. ' + qLabel}</span>{bar.total > 0 && <span className={'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800'}>{bar.unscored || bar.scorePercent == null ? 'Unscored' : _quizFill(dashboardCopy('quiz.live_score_percent', '{percent}% of points'), { percent: bar.scorePercent })}</span>}</div>{bar.total > 0 ? <div className="flex h-3 rounded overflow-hidden border border-slate-200">{pctCorrect > 0 && <div style={{
                 width: pctCorrect + '%',
                 backgroundColor: '#10b981'
-              }} title={bar.correct + ' correct'} />}{pctIncorrect > 0 && <div style={{
+              }} title={bar.correct + ' correct'} />}{pctPartial > 0 && <div style={{ width: pctPartial + '%', backgroundColor: '#f59e0b' }} title={_quizFill(dashboardCopy('quiz.live_partial_count', '{count} partially correct'), { count: bar.partial })} />}{pctIncorrect > 0 && <div style={{
                 width: pctIncorrect + '%',
                 backgroundColor: '#ef4444'
               }} title={bar.incorrect + ' incorrect'} />}{pctIdk > 0 && <div style={{
@@ -2277,7 +2809,7 @@ var _lazyIcon = function (name) {
               }} title={bar.idk + ' IDK'} />}{pctSubmitted > 0 && <div style={{
                 width: pctSubmitted + '%',
                 backgroundColor: bar.unscored ? '#8b5cf6' : '#94a3b8'
-              }} title={bar.unscored ? bar.submitted + ' poll responses' : bar.submitted + ' submitted (ungraded)'} />}</div> : <div className="h-3 rounded bg-slate-100 border border-slate-200" />}<div className="flex items-center gap-3 mt-1 text-[10px] text-slate-600">{!bar.unscored && <><span>{bar.correct + ' ✓'}</span><span>{bar.incorrect + ' ✗'}</span></>}{bar.unscored && <span className="text-purple-800 font-bold">Distribution only</span>}{bar.idk > 0 && <span className="text-sky-700">{bar.idk + ' 🤔'}</span>}{bar.submitted > 0 && <span className="text-slate-600">{bar.submitted + ' submitted'}</span>}<span className="ml-auto text-slate-600">{bar.total + ' / ' + data.totalStudents}</span></div>{isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">{bar.byStudent.map(function (s) {
+              }} title={bar.unscored ? bar.submitted + ' poll responses' : bar.submitted + ' submitted (ungraded)'} />}</div> : <div className="h-3 rounded bg-slate-100 border border-slate-200" />}<div className="flex items-center gap-3 mt-1 text-[10px] text-slate-600">{!bar.unscored && <><span>{bar.correct + ' ✓'}</span>{bar.partial > 0 && <span>{_quizFill(dashboardCopy('quiz.live_partial_count', '{count} partially correct'), { count: bar.partial })}</span>}<span>{bar.incorrect + ' ✗'}</span></>}{bar.unscored && <span className="text-purple-800 font-bold">Distribution only</span>}{bar.idk > 0 && <span className="text-sky-700">{bar.idk + ' 🤔'}</span>}{bar.submitted > 0 && <span className="text-slate-600">{bar.submitted + ' submitted'}</span>}<span className="ml-auto text-slate-600">{bar.total + ' / ' + data.totalStudents}</span></div>{isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">{bar.byStudent.map(function (s) {
                 var sc = statusColor(s.status);
                 return <div key={s.uid} className="flex items-start gap-2 text-xs"><span className={'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ' + sc.bg + ' ' + sc.text}>{sc.icon}</span><span className="flex-shrink-0 font-semibold text-slate-700 w-32 truncate">{s.displayName}</span><span className="flex-grow min-w-0 break-words text-slate-700">{s.answerSummary || <em className="text-slate-600">(no text)</em>}</span>{s.aiGraded && <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800" title={t("tooltips.ai_graded")}>✨</span>}{confidenceChip(s.confidence, s.status)}{s.aiFeedback && <span className="flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]" title={s.aiFeedback}>{'"' + s.aiFeedback.slice(0, 50) + (s.aiFeedback.length > 50 ? '…' : '') + '"'}</span>}</div>;
               })}</div>}</div>;
@@ -2294,9 +2826,6 @@ var _lazyIcon = function (name) {
     } catch (e) {
       reflectionsData = null;
     }
-    var reflectionsExpandedState = React.useState(true);
-    var reflectionsExpanded = reflectionsExpandedState[0];
-    var setReflectionsExpanded = reflectionsExpandedState[1];
     var reflectionsEl = reflectionsData ? <div className="mt-4 pt-4 border-t-2 border-indigo-100"><button type="button" onClick={function () {
         setReflectionsExpanded(!reflectionsExpanded);
       }} aria-expanded={reflectionsExpanded} className="flex items-center gap-2 text-sm font-bold text-indigo-800 hover:text-indigo-900"><span className="text-xs font-mono">{reflectionsExpanded ? '▼' : '▶'}</span><span>{'✏️ Reflections (' + reflectionsData.totalReflections + ')'}</span></button>{reflectionsExpanded && <div className="mt-3 space-y-3">{reflectionsData.buckets.map(function (bucket) {
@@ -2331,11 +2860,14 @@ var _lazyIcon = function (name) {
     var options = Array.isArray(q.options) ? q.options : [];
     var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var selectedState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'selected', []);
     var selected = selectedState[0];
     var setSelected = selectedState[1];
     var gradeState = React.useState(null);
-    var grade = gradeState[0];
+    var grade = idkMarked ? { status: 'idk', score: 0 } : gradeState[0];
     var setGrade = gradeState[1];
     var submittedAnswerState = React.useState(null);
     var submittedAnswer = submittedAnswerState[0];
@@ -2366,7 +2898,7 @@ var _lazyIcon = function (name) {
       _quizEmitDeterministicAnswer(p, 'multi-select', answer, confidence);
       return answer;
     }
-    function markIDK() {
+    function markIDK() { setIdkMarked(true);
       var answer = { idk: true };
       setGrade({ status: 'idk', score: 0 });
       setSubmittedAnswer(answer);
@@ -2376,7 +2908,7 @@ var _lazyIcon = function (name) {
       setConfidence(level);
       if (submittedAnswer) _quizEmitDeterministicAnswer(p, 'multi-select', submittedAnswer, level);
     }
-    function reset() { setSelected([]); setGrade(null); setSubmittedAnswer(null); setConfidence(null); }
+    function reset() { setIdkMarked(false); setSelected([]); setGrade(null); setSubmittedAnswer(null); setConfidence(null); }
     _quizUseVoiceController(p, {
       getState: function () {
         return {
@@ -2437,9 +2969,9 @@ var _lazyIcon = function (name) {
     });
     if (options.length === 0) return null;
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Multi-select</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><p className="text-[11px] text-slate-500 mt-1">{(!p.scoringPolicy || p.scoringPolicy.partialCredit !== false) ? 'Select every correct answer. Incorrect selections reduce partial credit.' : 'Select every correct answer. This item uses all-or-nothing scoring.'}</p></div></div><div className="space-y-2">{options.map(function (opt, idx) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Multi-select</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><AssessmentQuestionSupport q={q} /><p className="text-[11px] text-slate-500 mt-1">{(!p.scoringPolicy || p.scoringPolicy.partialCredit !== false) ? 'Select every correct answer. Incorrect selections reduce partial credit.' : 'Select every correct answer. This item uses all-or-nothing scoring.'}</p></div></div><div className="space-y-2">{options.map(function (opt, idx) {
       var active = selected.indexOf(idx) !== -1;
-      return <button key={idx} type="button" aria-pressed={active} disabled={!!grade} onClick={function () { toggleOption(idx); }} className={'w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}><span aria-hidden="true" className={'mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')}>{active ? '✓' : ''}</span><span>{opt}</span></button>;
+      return <button key={idx} type="button" aria-pressed={active} disabled={!!grade} onClick={function () { toggleOption(idx); }} className={'w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}><span aria-hidden="true" className={'mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')}>{active ? '✓' : ''}</span><AssessmentChoiceContent q={q} field="options" index={idx} text={opt} /></button>;
     })}</div>{!grade && <div className="mt-3 flex items-center gap-2 flex-wrap"><button type="button" onClick={submit} disabled={selected.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check selections</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ All correct' : grade.status === 'partially-correct' ? grade.score + '% partial credit' : 'Not yet — review your selections'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{grade.selectedCorrect + ' of ' + grade.totalCorrect + ' correct choices selected' + (grade.selectedWrong ? '; ' + grade.selectedWrong + ' incorrect choice' + (grade.selectedWrong === 1 ? '' : 's') + ' selected.' : '.')}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
   }
   function AnswerEvidenceCard(p) {
@@ -2447,6 +2979,9 @@ var _lazyIcon = function (name) {
     var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
     var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var answerState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'answerIdx', null);
     var answerIdx = answerState[0];
     var setAnswerIdx = answerState[1];
@@ -2454,7 +2989,7 @@ var _lazyIcon = function (name) {
     var evidenceIdx = evidenceState[0];
     var setEvidenceIdx = evidenceState[1];
     var gradeState = React.useState(null);
-    var grade = gradeState[0];
+    var grade = idkMarked ? { status: 'idk', score: 0 } : gradeState[0];
     var setGrade = gradeState[1];
     var submittedState = React.useState(null);
     var submitted = submittedState[0];
@@ -2477,9 +3012,9 @@ var _lazyIcon = function (name) {
       _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence);
       return payload;
     }
-    function markIDK() { var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence); }
+    function markIDK() { setIdkMarked(true); var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence); }
     function updateConfidence(level) { setConfidence(level); if (submitted) _quizEmitDeterministicAnswer(p, 'answer-evidence', submitted, level); }
-    function reset() { setAnswerIdx(null); setEvidenceIdx(null); setGrade(null); setSubmitted(null); setConfidence(null); }
+    function reset() { setIdkMarked(false); setAnswerIdx(null); setEvidenceIdx(null); setGrade(null); setSubmitted(null); setConfidence(null); }
     _quizUseVoiceController(p, {
       getState: function () {
         var actions = grade ? ['try-again'] : ['choose-answer'];
@@ -2566,10 +3101,10 @@ var _lazyIcon = function (name) {
     });
     if (answers.length === 0 || evidence.length === 0) return null;
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    function optionGrid(items, selectedIdx, setter, disabled) {
-      return <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{items.map(function (opt, idx) { return <button key={idx} type="button" disabled={disabled} aria-pressed={selectedIdx === idx} onClick={function () { setter(idx); }} className={'px-3 py-2 rounded-lg border text-sm text-left transition-colors motion-reduce:transition-none disabled:cursor-default ' + (selectedIdx === idx ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}>{String.fromCharCode(65 + idx) + '. ' + opt}</button>; })}</div>;
+    function optionGrid(items, selectedIdx, setter, disabled, field) {
+      return <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{items.map(function (opt, idx) { return <button key={idx} type="button" disabled={disabled} aria-pressed={selectedIdx === idx} onClick={function () { setter(idx); }} className={'px-3 py-2 rounded-lg border text-sm text-left transition-colors motion-reduce:transition-none disabled:cursor-default ' + (selectedIdx === idx ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}><AssessmentChoiceContent q={q} field={field} index={idx} text={opt} prefix={String.fromCharCode(65 + idx) + '. '} /></button>; })}</div>;
     }
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Answer + evidence</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div><div className="space-y-4"><div><p className="text-xs font-bold text-slate-700 mb-2">Part 1 — Choose the best answer</p>{optionGrid(answers, answerIdx, setAnswerIdx, !!grade)}</div>{answerIdx !== null && <div><p className="text-xs font-bold text-slate-700 mb-2">{'Part 2 — ' + (q.evidencePrompt || 'Which evidence or reason best supports your answer?')}</p>{optionGrid(evidence, evidenceIdx, setEvidenceIdx, !!grade)}</div>}</div>{!grade && <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={answerIdx === null || evidenceIdx === null} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check both parts</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'both parts correct' : grade.status === 'partially-correct' ? 'one part correct' : 'needs review')}</div>{grade.status !== 'idk' && <ul className={'mt-1 text-xs text-' + color + '-900'}><li>{(grade.answerCorrect ? '✓ ' : '✗ ') + 'Answer'}</li><li>{(grade.evidenceCorrect ? '✓ ' : '✗ ') + 'Supporting evidence or reason'}</li></ul>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Answer + evidence</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><AssessmentQuestionSupport q={q} /></div></div><div className="space-y-4"><div><p className="text-xs font-bold text-slate-700 mb-2">Part 1 — Choose the best answer</p>{optionGrid(answers, answerIdx, setAnswerIdx, !!grade, "answerOptions")}</div>{answerIdx !== null && <div><p className="text-xs font-bold text-slate-700 mb-2">{'Part 2 — ' + (q.evidencePrompt || 'Which evidence or reason best supports your answer?')}</p>{q.evidencePrompt_en && <p className="mb-2 text-sm italic text-slate-600">{q.evidencePrompt_en}</p>}{optionGrid(evidence, evidenceIdx, setEvidenceIdx, !!grade, "evidenceOptions")}</div>}</div>{!grade && <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={answerIdx === null || evidenceIdx === null} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check both parts</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'both parts correct' : grade.status === 'partially-correct' ? 'one part correct' : 'needs review')}</div>{grade.status !== 'idk' && <ul className={'mt-1 text-xs text-' + color + '-900'}><li>{(grade.answerCorrect ? '✓ ' : '✗ ') + 'Answer'}</li><li>{(grade.evidenceCorrect ? '✓ ' : '✗ ') + 'Supporting evidence or reason'}</li></ul>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
   }
   function _quizParseIntegerWords(tokens) {
     var ones = { zero: 0, oh: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
@@ -2678,11 +3213,14 @@ var _lazyIcon = function (name) {
   function NumericResponseCard(p) {
     var q = p.q;
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var responseState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'response', '');
     var response = responseState[0];
     var setResponse = responseState[1];
     var gradeState = React.useState(null);
-    var grade = gradeState[0];
+    var grade = idkMarked ? { status: 'idk', score: 0 } : gradeState[0];
     var setGrade = gradeState[1];
     var submittedState = React.useState(null);
     var submitted = submittedState[0];
@@ -2694,6 +3232,11 @@ var _lazyIcon = function (name) {
     function submit() {
       var parsed = _quizParseNumericResponse(response);
       if (!parsed) { var invalid = { status: 'invalid', score: 0 }; setGrade(invalid); return invalid; }
+      if (!_quizHasNumericKey(q.correctValue)) {
+        var unavailable = { status: 'invalid', invalidKey: true, score: 0 };
+        setGrade(unavailable);
+        return unavailable;
+      }
       var expected = Number(q.correctValue);
       var tolerance = Math.max(0, Number(q.tolerance) || 0);
       var valueCorrect = Number.isFinite(expected) && Math.abs(parsed.value - expected) <= tolerance + 1e-9;
@@ -2709,9 +3252,9 @@ var _lazyIcon = function (name) {
       _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence);
       return payload;
     }
-    function markIDK() { var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence); }
+    function markIDK() { setIdkMarked(true); var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence); }
     function updateConfidence(level) { setConfidence(level); if (submitted) _quizEmitDeterministicAnswer(p, 'numeric-response', submitted, level); }
-    function reset() { setResponse(''); setGrade(null); setSubmitted(null); setConfidence(null); }
+    function reset() { setIdkMarked(false); setResponse(''); setGrade(null); setSubmitted(null); setConfidence(null); }
     _quizUseVoiceController(p, {
       getState: function () {
         var parsed = response ? _quizParseNumericResponse(response) : null;
@@ -2770,7 +3313,7 @@ var _lazyIcon = function (name) {
       }
     });
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p>{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input type="text" inputMode="decimal" aria-label="Numeric response" value={response} onChange={function (e) { setResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /><QuizVoiceInputButton value={response} onChange={setResponse} disabled={!!grade && grade.status !== 'invalid'} allowDictation={p.allowDictation} label="Dictate number or units" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check value</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}{grade && grade.status === 'invalid' && <span className="text-xs text-rose-700 self-center">Enter a number, optionally followed by its unit.</span>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><AssessmentQuestionSupport q={q} />{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input type="text" inputMode="decimal" aria-label="Numeric response" value={response} onChange={function (e) { setResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /><QuizVoiceInputButton value={response} onChange={setResponse} disabled={!!grade && grade.status !== 'invalid'} allowDictation={p.allowDictation} label="Dictate number or units" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check value</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}{grade && grade.status === 'invalid' && <span className="text-xs text-rose-700 self-center">{grade.invalidKey ? 'This item needs a valid answer key. Ask your teacher to review it.' : 'Enter a number, optionally followed by its unit.'}</span>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
   }
   function _quizExtractJson(raw) {
     var value = raw && typeof raw === 'object' && raw.text ? raw.text : raw;
@@ -2870,7 +3413,7 @@ var _lazyIcon = function (name) {
     return { status: status, suggestedAnswer: suggested, checkedKey: key };
   }
   function _quizKeyCheck(q, markers) {
-    if (!q || !q.factCheck || (q.type && q.type !== 'mcq')) return null;
+    if (!q || (q.type && q.type !== 'mcq')) return null;
     var key = q.correctAnswer != null ? String(q.correctAnswer) : '';
     var stored = q.keyCheck;
     if (stored && typeof stored === 'object' && ['confirmed', 'disputed', 'unclear'].indexOf(stored.status) >= 0) {
@@ -2879,7 +3422,19 @@ var _lazyIcon = function (name) {
       var suggestion = typeof stored.suggestedAnswer === 'string' && stored.suggestedAnswer && options.some(function (option) { return _quizNormChoice(option) === _quizNormChoice(stored.suggestedAnswer); }) ? stored.suggestedAnswer : '';
       return { status: stored.status, suggestedAnswer: suggestion, checkedKey: key };
     }
-    return _quizReadFactCheck(q.factCheck, q, markers);
+    return q.factCheck ? _quizReadFactCheck(q.factCheck, q, markers) : null;
+  }
+  function _quizIsAnswerKeyDisputed(q) {
+    var canonical = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (canonical && typeof canonical.isAnswerKeyDisputed === 'function') return canonical.isAnswerKeyDisputed(q);
+    if (!q || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(q.itemType || q.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var key = q.correctAnswer != null ? String(q.correctAnswer) : Number.isInteger(q.correctIndex) && Array.isArray(q.options) ? String(q.options[q.correctIndex]) : '';
+    if (q.keyCheck && typeof q.keyCheck === 'object') {
+      if (q.keyCheck.checkedKey != null && String(q.keyCheck.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(q.keyCheck.status) >= 0) return q.keyCheck.status === 'disputed';
+    }
+    var check = _quizKeyCheck(q);
+    return !!(check && check.status === 'disputed');
   }
   function _quizFactCheckText(text) {
     return String(text == null ? '' : text).replace(/^[ \t]*\[\[\s*KEY\s*:[^\]\n]*\]\][ \t]*(\r?\n)?/gim, '').replace(/\[\[\s*KEY\s*:[^\]\n]*\]\]/gi, '').trim();
@@ -2912,9 +3467,9 @@ var _lazyIcon = function (name) {
   function _quizChoiceSets(q) {
     var type = q && q.type || 'mcq';
     if (type === 'mcq') return [{ field: 'options', parallel: ['options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'], keys: [q.correctAnswer], group: 'mcq' }];
-    if (type === 'answer-evidence') return [{ field: 'answerOptions', parallel: ['answerOptions_en'], keys: [q.correctAnswer], group: 'answer' }, { field: 'evidenceOptions', parallel: ['evidenceOptions_en'], keys: [q.correctEvidence], group: 'evidence' }];
-    if (type === 'multi-select') return [{ field: 'options', parallel: ['options_en'], keys: Array.isArray(q.correctAnswers) ? q.correctAnswers : [], group: '' }];
-    if (type === 'relation-mismatch') return [{ field: 'candidatePartners', parallel: [], keys: [q.correctPartnerForWrong], group: '' }];
+    if (type === 'answer-evidence') return [{ field: 'answerOptions', parallel: ['answerOptions_en', 'answerOptionImagePrompts', 'answerOptionImageAltTexts', 'answerOptionImageUrls', 'answerImagePrompts', 'answerImageAltTexts', 'answerImageUrls', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'], keys: [q.correctAnswer], group: 'answer' }, { field: 'evidenceOptions', parallel: ['evidenceOptions_en', 'evidenceOptionImagePrompts', 'evidenceOptionImageAltTexts', 'evidenceOptionImageUrls', 'evidenceImagePrompts', 'evidenceImageAltTexts', 'evidenceImageUrls'], keys: [q.correctEvidence], group: 'evidence' }];
+    if (type === 'multi-select') return [{ field: 'options', parallel: ['options_en', 'optionImagePrompts', 'optionImageAltTexts', 'optionImageUrls'], keys: Array.isArray(q.correctAnswers) ? q.correctAnswers : [], group: '' }];
+    if (type === 'relation-mismatch') return [{ field: 'candidatePartners', parallel: ['candidatePartners_en', 'candidatePartnerImagePrompts', 'candidatePartnerImageAltTexts', 'candidatePartnerImageUrls'], keys: [q.correctPartnerForWrong], group: '' }];
     return [];
   }
   function _quizKeyIndexes(options, keys) {
@@ -3020,6 +3575,10 @@ var _lazyIcon = function (name) {
     if (positions.some(function (count) { return outOfRange(count, positionTotal); })) issues.push({ questionIdx: null, severity: 'warning', code: 'key-position', message: _quizFill(tr('quiz.key_quality.position', 'Correct answers by position: {shares} (aim for 10-40% each). Students can guess by position.'), { shares: shares(positions, positionTotal, ['A', 'B', 'C', 'D']) }) });
     return issues;
   }
+  function _quizHasNumericKey(value) {
+    return (typeof value === 'number' || typeof value === 'string')
+      && String(value).trim() !== '' && Number.isFinite(Number(value));
+  }
   function _quizAuditAssessment(data, auditOptions) {
     var questions = data && Array.isArray(data.questions) ? data.questions : [];
     var requested = data && data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object' ? data.requestedItemTypeMix : null;
@@ -3042,6 +3601,7 @@ var _lazyIcon = function (name) {
       if (type === 'mcq') {
         var mcqOptions = Array.isArray(q.options) ? q.options : [];
         if (mcqOptions.length < 2) add(index, 'error', 'Multiple choice needs at least two options.', 'mcq-options');
+        if (mcqOptions.some(function (option) { return typeof option !== 'string' || !option.trim(); })) add(index, 'error', 'Every multiple-choice option needs text.', 'empty-options');
         if (mcqOptions.indexOf(q.correctAnswer) === -1) add(index, 'error', 'The correct answer must match one option exactly.', 'mcq-key');
         if (_quizDuplicateStrings(mcqOptions).length) add(index, 'error', 'Multiple-choice options contain duplicates.', 'duplicate-options');
         var keyCheck = _quizKeyCheck(q, auditMarkers);
@@ -3052,10 +3612,12 @@ var _lazyIcon = function (name) {
         var multiOptions = Array.isArray(q.options) ? q.options : [];
         var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
         if (multiOptions.length < 3) add(index, 'error', 'Multi-select needs at least three options.', 'multi-options');
+        if (multiOptions.some(function (option) { return typeof option !== 'string' || !option.trim(); })) add(index, 'error', 'Every multi-select option needs text.', 'empty-options');
         if (correctAnswers.length < 2) add(index, 'error', 'Multi-select should identify at least two correct options.', 'multi-key');
         if (correctAnswers.some(function (answer) { return multiOptions.indexOf(answer) === -1; })) add(index, 'error', 'Every multi-select answer key must match an option exactly.', 'multi-key-match');
         if (correctAnswers.length >= multiOptions.length && multiOptions.length) add(index, 'warning', 'Every option is marked correct, which makes the item weak.', 'multi-all-correct');
         if (_quizDuplicateStrings(multiOptions).length) add(index, 'error', 'Multi-select options contain duplicates.', 'duplicate-options');
+        if (_quizDuplicateStrings(correctAnswers).length) add(index, 'error', 'Multi-select answer keys contain duplicates.', 'duplicate-keys');
       } else if (type === 'fill-blank') {
         if (String(q.question || '').indexOf('___') === -1) add(index, 'warning', 'The prompt should visibly contain ___ for the blank.', 'blank-marker');
         if (!String(q.expectedFill || '').trim()) add(index, 'error', 'Fill-in-the-blank needs an expected answer.', 'fill-key');
@@ -3067,6 +3629,9 @@ var _lazyIcon = function (name) {
         var items = Array.isArray(q.items) ? q.items : [];
         var order = Array.isArray(q.presentedOrder) ? q.presentedOrder : [];
         if (items.length < 3) add(index, 'error', 'Sequence Sense needs at least three steps.', 'sequence-items');
+        var itemTexts = items.map(function (item) { return typeof item === 'string' ? item : item && item.text; });
+        if (itemTexts.some(function (text) { return typeof text !== 'string' || !text.trim(); })) add(index, 'error', 'Every sequence step needs text.', 'sequence-empty-items');
+        if (_quizDuplicateStrings(itemTexts).length) add(index, 'error', 'Sequence steps must be distinct.', 'sequence-duplicate-items');
         var orderIsPermutation = order.length === items.length && !order.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= items.length; }) && new Set(order).size === order.length;
         if (!orderIsPermutation) add(index, 'error', 'Displayed order must use every step index exactly once.', 'sequence-order');
         if (orderIsPermutation && items.length >= 3) {
@@ -3076,22 +3641,29 @@ var _lazyIcon = function (name) {
           else if (!sequenceTruth.orderIsCorrect && (authoredWrong == null || sequenceTruth.misplaced.indexOf(authoredWrong) === -1)) add(index, 'warning', 'The misplaced position does not match the displayed order (positions out of place: ' + sequenceTruth.misplaced.map(function (value) { return value + 1; }).join(', ') + ').', 'sequence-misplaced');
         }
         if (!String(q.orderingPrinciple || '').trim()) add(index, 'error', 'Sequence Sense needs an ordering principle.', 'sequence-principle');
+        var principles = Array.isArray(q.principleOptions) ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+        if (principles.length < 2 || principles.some(function (value) { return typeof value !== 'string' || !value.trim(); }) || _quizDuplicateStrings(principles).length) add(index, 'error', 'Provide at least two distinct, nonempty ordering principle choices.', 'sequence-principle-options');
+        if (principles.indexOf(q.orderingPrinciple) === -1) add(index, 'error', 'Principle choices must include the correct ordering principle.', 'sequence-principle-key');
       } else if (type === 'relation-mismatch') {
         var pairs = Array.isArray(q.pairs) ? q.pairs : [];
         var wrongIndex = Number(q.wrongPairIndex);
         if (pairs.length < 3) add(index, 'error', 'Relation Mismatch needs at least three pairs.', 'relation-pairs');
-        if (!Number.isInteger(wrongIndex) || wrongIndex < 0 || wrongIndex >= pairs.length) add(index, 'error', 'Choose which displayed pair is incorrect.', 'relation-index');
+        if (pairs.some(function (pair) { return !pair || !String(pair.left || '').trim() || !String(pair.right || '').trim(); })) add(index, 'error', 'Every relation pair needs text on both sides.', 'relation-empty-pairs');
+        if (!_quizHasNumericKey(q.wrongPairIndex) || !Number.isInteger(wrongIndex) || wrongIndex < 0 || wrongIndex >= pairs.length) add(index, 'error', 'Choose which displayed pair is incorrect.', 'relation-index');
         if (!String(q.correctPartnerForWrong || '').trim()) add(index, 'error', 'Provide the correct partner for the mismatched pair.', 'relation-key');
         if (!Array.isArray(q.candidatePartners) || q.candidatePartners.indexOf(q.correctPartnerForWrong) === -1) add(index, 'error', 'Candidate partners must include the correct repair.', 'relation-candidates');
+        var partners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+        if (partners.length < 2 || partners.some(function (value) { return typeof value !== 'string' || !value.trim(); }) || _quizDuplicateStrings(partners).length) add(index, 'error', 'Provide at least two distinct, nonempty candidate partners.', 'relation-partner-options');
       } else if (type === 'answer-evidence') {
         var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
         var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
         if (answers.length < 2 || answers.indexOf(q.correctAnswer) === -1) add(index, 'error', 'Answer + Evidence needs a valid answer key.', 'evidence-answer-key');
         if (evidence.length < 2 || evidence.indexOf(q.correctEvidence) === -1) add(index, 'error', 'Answer + Evidence needs a valid evidence key.', 'evidence-key');
         if (_quizDuplicateStrings(answers).length || _quizDuplicateStrings(evidence).length) add(index, 'error', 'Answer or evidence choices contain duplicates.', 'duplicate-options');
+        if (answers.concat(evidence).some(function (value) { return typeof value !== 'string' || !value.trim(); })) add(index, 'error', 'Every answer and evidence choice needs text.', 'empty-options');
       } else if (type === 'numeric-response') {
-        if (!Number.isFinite(Number(q.correctValue))) add(index, 'error', 'Numeric Response needs a valid numeric answer.', 'numeric-key');
-        if (!Number.isFinite(Number(q.tolerance)) || Number(q.tolerance) < 0) add(index, 'error', 'Numeric tolerance must be zero or greater.', 'numeric-tolerance');
+        if (!_quizHasNumericKey(q.correctValue)) add(index, 'error', 'Numeric Response needs a valid numeric answer.', 'numeric-key');
+        if (!_quizHasNumericKey(q.tolerance) || Number(q.tolerance) < 0) add(index, 'error', 'Numeric tolerance must be zero or greater.', 'numeric-tolerance');
         var normalizedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(_quizNormalizeUnit).filter(Boolean);
         if (_quizDuplicateStrings(normalizedUnits).length) add(index, 'warning', 'Accepted units contain duplicate spellings.', 'numeric-units');
       } else {
@@ -3166,7 +3738,7 @@ var _lazyIcon = function (name) {
         okay = !!prompt && Array.isArray(q.answerOptions) && q.answerOptions.length >= 2 && q.answerOptions.indexOf(q.correctAnswer) !== -1 && Array.isArray(q.evidenceOptions) && q.evidenceOptions.length >= 2 && q.evidenceOptions.indexOf(q.correctEvidence) !== -1;
         adapted += okay ? 1 : 0;
       } else if (type === 'numeric-response') {
-        okay = !!prompt && Number.isFinite(Number(q.correctValue));
+        okay = !!prompt && _quizHasNumericKey(q.correctValue);
         adapted += okay ? 1 : 0;
         manualReview += okay && Number(q.tolerance) > 0 ? 1 : 0;
       }
@@ -3366,20 +3938,84 @@ var _lazyIcon = function (name) {
     var buttonLabel = listening ? 'Stop dictation' : transcribing ? 'Transcribing...' : (p.label || 'Dictate response');
     return <div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={toggle} disabled={p.disabled || transcribing} aria-pressed={listening} aria-busy={transcribing} data-dictation-engine={status.engine || ''} className={'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-xs font-semibold disabled:opacity-50 ' + (listening || transcribing ? 'bg-rose-100 border-rose-300 text-rose-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50')}><span aria-hidden="true">🎙</span>{buttonLabel}</button>{status.message && <span role="status" aria-live="polite" className="text-[10px] text-slate-600"><span className="font-semibold">{status.message}</span>{status.engineLabel && <span>{' · ' + status.engineLabel}</span>}{status.privacy && <span>{' · ' + status.privacy}</span>}</span>}</div>;
   }
+  function _quizAuthoringListPatch(q, field, values, operation) {
+    var previous = Array.isArray(q[field]) ? q[field] : [];
+    var change = operation || {};
+    var removing = change.type === 'remove' && Number.isInteger(change.index) && change.index >= 0 && change.index < previous.length && values.length === previous.length - 1;
+    var adding = change.type === 'add' && Number.isInteger(change.index) && change.index >= 0 && change.index <= previous.length && values.length === previous.length + 1;
+    // Keep the identity of each surviving row. Text matching cannot distinguish
+    // a rename from a removal that shifts the remaining rows into its position.
+    var sourceIndexes = values.map(function (value, index) {
+      if (removing) return index < change.index ? index : index + 1;
+      if (adding) return index < change.index ? index : index === change.index ? -1 : index - 1;
+      return values.length === previous.length ? index : previous.indexOf(value);
+    });
+    var update = {};
+    update[field] = values;
+    var choiceSet = _quizChoiceSets(q).find(function (set) { return set.field === field; });
+    var parallel = choiceSet ? choiceSet.parallel : field === 'items' ? ['items_en', 'itemImagePrompts', 'itemImageAltTexts', 'itemImageUrls']
+      : field === 'principleOptions' ? ['principleOptions_en', 'principleOptionImagePrompts', 'principleOptionImageAltTexts', 'principleOptionImageUrls', 'principleOptionsImagePrompts', 'principleOptionsImageAltTexts', 'principleOptionsImageUrls']
+      : field === 'pairs' ? ['pairs_en'] : [];
+    if (removing || adding || values.length !== previous.length) parallel.forEach(function (name) {
+      if (Array.isArray(q[name])) update[name] = sourceIndexes.map(function (index) {
+        return index >= 0 && index < q[name].length ? q[name][index] : name === 'pairs_en' ? {} : '';
+      });
+    });
+    function keyIndex(key) {
+      var exact = previous.indexOf(key);
+      return exact >= 0 ? exact : previous.findIndex(function (value) { return _quizAnswerMatches(value, key); });
+    }
+    function updatedKey(key) {
+      var index = keyIndex(key);
+      if (index < 0) return key;
+      var nextIndex = sourceIndexes.indexOf(index);
+      return nextIndex >= 0 ? values[nextIndex] : '';
+    }
+    if (q.type === 'multi-select' && field === 'options') {
+      var keys = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+      // Removing a keyed choice changes the correct set. Require the author to
+      // select it again rather than silently publishing an incomplete key.
+      update.correctAnswers = removing && keys.some(function (key) { return _quizAnswerMatches(previous[change.index], key); })
+        ? [] : keys.map(updatedKey);
+    }
+    var keyField = field === 'answerOptions' ? 'correctAnswer' : field === 'evidenceOptions' ? 'correctEvidence'
+      : field === 'principleOptions' ? 'orderingPrinciple' : field === 'candidatePartners' ? 'correctPartnerForWrong' : '';
+    if (keyField) update[keyField] = updatedKey(q[keyField]);
+    if (field === 'pairs') {
+      var wrong = _quizHasNumericKey(q.wrongPairIndex) ? Number(q.wrongPairIndex) : -1;
+      if (removing && wrong === change.index) { update.wrongPairIndex = null; update.correctPartnerForWrong = ''; }
+      else if (wrong >= 0 && sourceIndexes.indexOf(wrong) >= 0) update.wrongPairIndex = sourceIndexes.indexOf(wrong);
+    }
+    if (field === 'items' && (removing || adding)) {
+      var order = q.presentedOrder;
+      var validOrder = Array.isArray(order) && order.length === previous.length && new Set(order).size === previous.length
+        && order.every(function (index) { return Number.isInteger(index) && index >= 0 && index < previous.length; });
+      if (validOrder) {
+        var nextOrder = order.map(function (index) { return sourceIndexes.indexOf(index); }).filter(function (index) { return index >= 0; });
+        if (adding) nextOrder.push(change.index);
+        update.presentedOrder = nextOrder;
+        var wrongPosition = _quizHasNumericKey(q.intentionallyWrongIndex) ? Number(q.intentionallyWrongIndex) : -1;
+        var wrongItem = order[wrongPosition];
+        var nextWrongPosition = wrongPosition >= 0 ? nextOrder.indexOf(sourceIndexes.indexOf(wrongItem)) : -1;
+        update.intentionallyWrongIndex = nextWrongPosition >= 0 && !nextOrder.every(function (index, position) { return index === position; }) ? nextWrongPosition : null;
+      }
+    }
+    return update;
+  }
   function AssessmentTextListEditor(p) {
     var values = Array.isArray(p.values) ? p.values : [];
     function change(index, value) {
       var next = values.slice();
       next[index] = value;
-      p.onChange(next);
+      p.onChange(next, { type: 'edit', index: index });
     }
     function remove(index) {
       if (values.length <= (p.minimum || 0)) return;
-      p.onChange(values.filter(function (_, itemIndex) { return itemIndex !== index; }));
+      p.onChange(values.filter(function (_, itemIndex) { return itemIndex !== index; }), { type: 'remove', index: index });
     }
     return <div className="space-y-1.5"><label className="block text-xs font-bold text-slate-700">{p.label}</label>{values.map(function (value, index) {
       return <div key={index} className="flex gap-2 items-center"><input aria-label={p.label + ' ' + (index + 1)} value={value} onChange={function (event) { change(index, event.target.value); }} className="flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" /><button type="button" onClick={function () { remove(index); }} disabled={values.length <= (p.minimum || 0)} className="w-7 h-7 rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-30" aria-label={'Remove ' + p.label + ' ' + (index + 1)}>×</button></div>;
-    })}<button type="button" onClick={function () { p.onChange(values.concat([''])); }} className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900">+ Add {p.itemLabel || 'item'}</button></div>;
+    })}<button type="button" onClick={function () { p.onChange(values.concat(['']), { type: 'add', index: values.length }); }} className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900">+ Add {p.itemLabel || 'item'}</button></div>;
   }
   function AssessmentItemActions(p) {
     var action = p.onAction;
@@ -3406,32 +4042,10 @@ var _lazyIcon = function (name) {
     var q = p.q || {};
     var type = q.type || '';
     var patch = p.patch;
-    function updateList(field, values) {
-      var update = {};
-      update[field] = values;
-      if (type === 'multi-select' && field === 'options') {
-        var oldOptions = Array.isArray(q.options) ? q.options : [];
-        update.correctAnswers = (Array.isArray(q.correctAnswers) ? q.correctAnswers : []).map(function (answer) {
-          var index = oldOptions.indexOf(answer);
-          return index >= 0 && values[index] !== undefined ? values[index] : answer;
-        });
-      }
-      if (type === 'answer-evidence' && field === 'answerOptions') {
-        var oldAnswers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-        // Matcher, not indexOf: if the key has already drifted from its option by
-        // case or spacing, an exact indexOf misses and the key is silently left
-        // stale. Finding it here is the one chance to repair it.
-        var answerIndex = oldAnswers.findIndex(function (answer) { return _quizAnswerMatches(answer, q.correctAnswer); });
-        if (answerIndex >= 0 && values[answerIndex] !== undefined) update.correctAnswer = values[answerIndex];
-      }
-      if (type === 'answer-evidence' && field === 'evidenceOptions') {
-        var oldEvidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
-        var evidenceIndex = oldEvidence.indexOf(q.correctEvidence);
-        if (evidenceIndex >= 0 && values[evidenceIndex] !== undefined) update.correctEvidence = values[evidenceIndex];
-      }
-      patch(update);
+    function updateList(field, values, operation) {
+      patch(_quizAuthoringListPatch(q, field, values, operation));
     }
-    if (type === 'multi-select') return <><AssessmentTextListEditor label="Answer options" itemLabel="option" values={q.options || []} minimum={3} onChange={function (values) { updateList('options', values); }} /><div><div className="text-xs font-bold text-slate-700 mb-1">Correct options</div><div className="space-y-1">{(q.options || []).map(function (option, index) {
+    if (type === 'multi-select') return <><AssessmentTextListEditor label="Answer options" itemLabel="option" values={q.options || []} minimum={3} onChange={function (values, operation) { updateList('options', values, operation); }} /><div><div className="text-xs font-bold text-slate-700 mb-1">Correct options</div><div className="space-y-1">{(q.options || []).map(function (option, index) {
       var checked = (q.correctAnswers || []).indexOf(option) !== -1;
       return <label key={index} className="flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" aria-label={'Mark option ' + (index + 1) + ' as correct'} checked={checked} onChange={function (event) {
         var next = (q.correctAnswers || []).filter(function (answer) { return answer !== option; });
@@ -3442,7 +4056,7 @@ var _lazyIcon = function (name) {
     if (type === 'fill-blank') return <><label className="block text-xs font-bold text-slate-700">Expected answer<input value={q.expectedFill || ''} onChange={function (event) { patch({ expectedFill: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Accepted alternatives" itemLabel="alternative" values={q.acceptableAlternatives || []} minimum={0} onChange={function (values) { patch({ acceptableAlternatives: values }); }} /></>;
     if (type === 'short-answer') return <label className="block text-xs font-bold text-slate-700">Reference answer<textarea value={q.expectedAnswer || ''} onChange={function (event) { patch({ expectedAnswer: event.target.value }); }} rows="3" className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 resize-y" /></label>;
     if (type === 'self-explanation') return <label className="block text-xs font-bold text-slate-700">Scoring rubric<textarea value={q.rubric || q.expectedAnswer || ''} onChange={function (event) { patch({ rubric: event.target.value }); }} rows="4" className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 resize-y" /></label>;
-    if (type === 'answer-evidence') return <><AssessmentTextListEditor label="Answer choices" itemLabel="answer" values={q.answerOptions || []} minimum={2} onChange={function (values) { updateList('answerOptions', values); }} /><label className="block text-xs font-bold text-slate-700">Correct answer<select value={q.correctAnswer || ''} onChange={function (event) { patch({ correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose answer…</option>{(q.answerOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Answer ' + (index + 1)}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Evidence prompt<input value={q.evidencePrompt || ''} onChange={function (event) { patch({ evidencePrompt: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Evidence choices" itemLabel="evidence choice" values={q.evidenceOptions || []} minimum={2} onChange={function (values) { updateList('evidenceOptions', values); }} /><label className="block text-xs font-bold text-slate-700">Correct evidence<select value={q.correctEvidence || ''} onChange={function (event) { patch({ correctEvidence: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose evidence…</option>{(q.evidenceOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Evidence ' + (index + 1)}</option>; })}</select></label></>;
+    if (type === 'answer-evidence') return <><AssessmentTextListEditor label="Answer choices" itemLabel="answer" values={q.answerOptions || []} minimum={2} onChange={function (values, operation) { updateList('answerOptions', values, operation); }} /><label className="block text-xs font-bold text-slate-700">Correct answer<select value={q.correctAnswer || ''} onChange={function (event) { patch({ correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose answer…</option>{(q.answerOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Answer ' + (index + 1)}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Evidence prompt<input value={q.evidencePrompt || ''} onChange={function (event) { patch({ evidencePrompt: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Evidence choices" itemLabel="evidence choice" values={q.evidenceOptions || []} minimum={2} onChange={function (values, operation) { updateList('evidenceOptions', values, operation); }} /><label className="block text-xs font-bold text-slate-700">Correct evidence<select value={q.correctEvidence || ''} onChange={function (event) { patch({ correctEvidence: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose evidence…</option>{(q.evidenceOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Evidence ' + (index + 1)}</option>; })}</select></label></>;
     if (type === 'numeric-response') return <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><label className="text-xs font-bold text-slate-700">Correct value<input type="number" step="any" value={q.correctValue == null ? '' : q.correctValue} onChange={function (event) { patch({ correctValue: event.target.value === '' ? '' : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="text-xs font-bold text-slate-700">Tolerance<input type="number" min="0" step="any" value={q.tolerance == null ? 0 : q.tolerance} onChange={function (event) { patch({ tolerance: event.target.value === '' ? '' : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="text-xs font-bold text-slate-700">Preferred unit<input value={q.unit || ''} onChange={function (event) { patch({ unit: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><div className="sm:col-span-3"><AssessmentTextListEditor label="Accepted unit spellings" itemLabel="unit spelling" values={q.acceptableUnits || []} minimum={0} onChange={function (values) { patch({ acceptableUnits: values }); }} /></div></div>;
     return null;
   }
@@ -3452,21 +4066,21 @@ var _lazyIcon = function (name) {
     var patch = p.patch;
     var items = Array.isArray(q.items) ? q.items : [];
     var pairs = Array.isArray(q.pairs) ? q.pairs : [];
-    if (type === 'sequence-sense') return <><AssessmentTextListEditor label="Steps in canonical order" itemLabel="step" values={items} minimum={3} onChange={function (values) {
-      patch({ items: values, presentedOrder: values.map(function (_, index) { return index; }), intentionallyWrongIndex: null });
+    if (type === 'sequence-sense') return <><AssessmentTextListEditor label="Steps in canonical order" itemLabel="step" values={items} minimum={3} onChange={function (values, operation) {
+      patch(_quizAuthoringListPatch(q, 'items', values, operation));
     }} /><label className="block text-xs font-bold text-slate-700">Displayed order <span className="font-normal text-slate-500">(1-based, comma-separated)</span><input aria-label="Displayed sequence order using one-based positions" value={(q.presentedOrder || []).map(function (value) { return Number(value) + 1; }).join(', ')} onChange={function (event) {
       var order = event.target.value.split(',').map(function (value) { return Number(value.trim()) - 1; }).filter(function (value) { return Number.isInteger(value); });
       patch({ presentedOrder: order });
-    }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="block text-xs font-bold text-slate-700">Misplaced displayed position<select value={q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? '' : q.intentionallyWrongIndex} onChange={function (event) { patch({ intentionallyWrongIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Order is correct</option>{items.map(function (_, index) { return <option key={index} value={index}>Position {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Ordering principle<input value={q.orderingPrinciple || ''} onChange={function (event) { patch({ orderingPrinciple: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Principle choices" itemLabel="choice" values={q.principleOptions || []} minimum={3} onChange={function (values) { patch({ principleOptions: values }); }} /></>;
+    }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="block text-xs font-bold text-slate-700">Misplaced displayed position<select value={q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? '' : q.intentionallyWrongIndex} onChange={function (event) { patch({ intentionallyWrongIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Order is correct</option>{items.map(function (_, index) { return <option key={index} value={index}>Position {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Ordering principle<input value={q.orderingPrinciple || ''} onChange={function (event) { patch({ orderingPrinciple: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Principle choices" itemLabel="choice" values={q.principleOptions || []} minimum={3} onChange={function (values, operation) { patch(_quizAuthoringListPatch(q, 'principleOptions', values, operation)); }} /></>;
     if (type === 'relation-mismatch') return <><div className="space-y-1.5"><div className="text-xs font-bold text-slate-700">Displayed pairs</div>{pairs.map(function (pair, index) {
       return <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2"><input aria-label={'Pair ' + (index + 1) + ' left'} value={pair.left || ''} onChange={function (event) {
         var next = pairs.map(function (item, itemIndex) { return itemIndex === index ? Object.assign({}, item, { left: event.target.value }) : item; });
-        patch({ pairs: next });
+        patch(_quizAuthoringListPatch(q, 'pairs', next, { type: 'edit', index: index }));
       }} className="text-xs border-slate-300 rounded p-2" /><input aria-label={'Pair ' + (index + 1) + ' right'} value={pair.right || ''} onChange={function (event) {
         var next = pairs.map(function (item, itemIndex) { return itemIndex === index ? Object.assign({}, item, { right: event.target.value }) : item; });
-        patch({ pairs: next });
-      }} className="text-xs border-slate-300 rounded p-2" /><button type="button" disabled={pairs.length <= 3} onClick={function () { patch({ pairs: pairs.filter(function (_, itemIndex) { return itemIndex !== index; }) }); }} className="w-7 rounded border border-rose-200 text-rose-700 disabled:opacity-30" aria-label={'Remove pair ' + (index + 1)}>×</button></div>;
-    })}<button type="button" onClick={function () { patch({ pairs: pairs.concat([{ left: '', right: '' }]) }); }} className="text-[11px] font-semibold text-indigo-700">+ Add pair</button></div><label className="block text-xs font-bold text-slate-700">Incorrect pair<select value={Number.isInteger(Number(q.wrongPairIndex)) ? Number(q.wrongPairIndex) : ''} onChange={function (event) { patch({ wrongPairIndex: Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose pair…</option>{pairs.map(function (_, index) { return <option key={index} value={index}>Pair {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Correct partner<input value={q.correctPartnerForWrong || ''} onChange={function (event) { patch({ correctPartnerForWrong: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Candidate partners" itemLabel="candidate" values={q.candidatePartners || []} minimum={2} onChange={function (values) { patch({ candidatePartners: values }); }} /></>;
+        patch(_quizAuthoringListPatch(q, 'pairs', next, { type: 'edit', index: index }));
+      }} className="text-xs border-slate-300 rounded p-2" /><button type="button" disabled={pairs.length <= 3} onClick={function () { patch(_quizAuthoringListPatch(q, 'pairs', pairs.filter(function (_, itemIndex) { return itemIndex !== index; }), { type: 'remove', index: index })); }} className="w-7 rounded border border-rose-200 text-rose-700 disabled:opacity-30" aria-label={'Remove pair ' + (index + 1)}>×</button></div>;
+    })}<button type="button" onClick={function () { patch(_quizAuthoringListPatch(q, 'pairs', pairs.concat([{ left: '', right: '' }]), { type: 'add', index: pairs.length })); }} className="text-[11px] font-semibold text-indigo-700">+ Add pair</button></div><label className="block text-xs font-bold text-slate-700">Incorrect pair<select value={_quizHasNumericKey(q.wrongPairIndex) && Number.isInteger(Number(q.wrongPairIndex)) ? Number(q.wrongPairIndex) : ''} onChange={function (event) { patch({ wrongPairIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose pair…</option>{pairs.map(function (_, index) { return <option key={index} value={index}>Pair {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Correct partner<input value={q.correctPartnerForWrong || ''} onChange={function (event) { patch({ correctPartnerForWrong: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Candidate partners" itemLabel="candidate" values={q.candidatePartners || []} minimum={2} onChange={function (values, operation) { patch(_quizAuthoringListPatch(q, 'candidatePartners', values, operation)); }} /></>;
     return null;
   }
   function AssessmentItemEditor(p) {
@@ -3569,6 +4183,9 @@ var _lazyIcon = function (name) {
     var scoringPolicy = p.scoringPolicy || { partialCredit: true, writtenResponseMode: 'ai-provisional' };
     var teacherReviewWritten = scoringPolicy.writtenResponseMode === 'teacher-review' && (q.type === 'short-answer' || q.type === 'self-explanation');
     var draftItemKey = 'q-' + p.questionIdx;
+    var idkState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'idk', false);
+    var idkMarked = idkState[0] === true;
+    var setIdkMarked = idkState[1];
     var responseState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'response', '');
     var response = responseState[0];
     var setResponse = responseState[1];
@@ -3577,8 +4194,11 @@ var _lazyIcon = function (name) {
       feedback: '',
       loading: false
     });
-    var grade = gradeState[0];
-    var setGrade = gradeState[1];
+    var grade = idkMarked ? { status: 'idk', feedback: '', loading: false } : gradeState[0];
+    function setGrade(value) {
+      if (value && value.status === null) setIdkMarked(false);
+      gradeState[1](value);
+    }
     var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
     var confidence = confidenceState[0];
     var setConfidence = confidenceState[1];
@@ -3666,6 +4286,8 @@ var _lazyIcon = function (name) {
       });
     }
     function markIDK() {
+      setIdkMarked(true);
+      _quizEmitDeterministicAnswer(p, q.type || 'short-answer', { idk: true }, confidence);
       setGrade({
         status: 'idk',
         feedback: 'No worries — here\'s a quick explanation.',
@@ -3758,7 +4380,7 @@ var _lazyIcon = function (name) {
     var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'submitted' ? 'indigo' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
     var statusLabel = grade.status === 'correct' ? 'Correct' : grade.status === 'partially-correct' ? 'Close' : grade.status === 'submitted' ? 'Submitted for review' : grade.status === 'incorrect' ? 'Not yet' : grade.status === 'unclear' ? 'Unclear' : grade.status === 'error' ? 'Error' : grade.status === 'idk' ? 'Marked I do not know' : '';
     var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Explain your reasoning' : 'Brief written response';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div>{q.type === 'fill-blank' ? <input aria-label={t("a11y.fill_in_blank")} type="text" value={response} onChange={function (ev) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><AssessmentQuestionSupport q={q} /></div></div>{q.type === 'fill-blank' ? <input aria-label={t("a11y.fill_in_blank")} type="text" value={response} onChange={function (ev) {
         setResponse(ev.target.value);
       }} onKeyDown={function (ev) {
         if (ev.key === 'Enter') {
@@ -3767,7 +4389,7 @@ var _lazyIcon = function (name) {
         }
       }} placeholder={t("placeholders.missing_word_or_phrase")} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /> : <textarea aria-label={typeLabel + " response"} value={response} onChange={function (ev) {
         setResponse(ev.target.value);
-      }} placeholder={q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...'} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} rows={q.type === 'self-explanation' ? 5 : 3} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y" />}<QuizVoiceInputButton value={response} onChange={setResponse} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} allowDictation={p.allowDictation} label="Dictate written response" /><div className="flex items-center justify-between gap-2 mt-2 flex-wrap"><div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={submitGrade} disabled={!response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none">{grade.loading ? 'Grading…' : grade.status === 'submitted' ? 'Submitted' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : teacherReviewWritten ? 'Submit response' : 'Grade my answer'}</button>{allowIDK && !grade.status && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain_concept")}><span aria-hidden="true">🤔 </span>{t("ui_common.i_dont_know")}</button>}</div>{grade.status && grade.status !== 'correct' && grade.status !== 'idk' && <button type="button" onClick={function () {
+      }} placeholder={q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...'} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} rows={q.type === 'self-explanation' ? 5 : 3} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y" />}<QuizVoiceInputButton value={response} onChange={setResponse} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} allowDictation={p.allowDictation} label="Dictate written response" /><div className="flex items-center justify-between gap-2 mt-2 flex-wrap"><div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={submitGrade} disabled={!response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none">{grade.loading ? 'Grading…' : grade.status === 'submitted' ? 'Submitted' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : teacherReviewWritten ? 'Submit response' : 'Grade my answer'}</button>{allowIDK && !grade.status && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain_concept")}><span aria-hidden="true">🤔 </span>{t("ui_common.i_dont_know")}</button>}</div>{grade.status && grade.status !== 'correct' && <button type="button" onClick={function () {
           setGrade({
             status: null,
             feedback: '',
@@ -3820,7 +4442,7 @@ var _lazyIcon = function (name) {
       var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
       body = <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{(Array.isArray(q.options) ? q.options : []).map(function (option, index) {
         var correct = correctAnswers.indexOf(option) !== -1;
-        return <div key={index} className={'p-5 rounded-xl border-2 text-lg font-semibold flex gap-3 ' + (showAnswer && correct ? 'bg-green-50 border-green-500 text-green-900' : showAnswer ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-slate-300 text-slate-800')}><span className="w-7 h-7 rounded border-2 border-current flex items-center justify-center shrink-0">{showAnswer && correct ? '✓' : ''}</span>{renderText(option)}</div>;
+        return <div key={index} className={'p-5 rounded-xl border-2 text-lg font-semibold flex gap-3 ' + (showAnswer && correct ? 'bg-green-50 border-green-500 text-green-900' : showAnswer ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-slate-300 text-slate-800')}><span className="w-7 h-7 rounded border-2 border-current flex items-center justify-center shrink-0">{showAnswer && correct ? '✓' : ''}</span><AssessmentChoiceContent q={q} field="options" index={index} text={option} renderText={renderText} /></div>;
       })}</div>;
       answerGuide = <div><span className="font-bold">Correct selections: </span>{correctAnswers.join('; ')}</div>;
     } else if (type === 'fill-blank') {
@@ -3836,18 +4458,18 @@ var _lazyIcon = function (name) {
     } else if (type === 'sequence-sense') {
       var items = Array.isArray(q.items) ? q.items : [];
       var presented = Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder.map(function (item) { return typeof item === 'number' ? items[item] : item; }) : items;
-      body = <ol className="space-y-3">{presented.map(function (item, index) { return <li key={index} className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-lg flex gap-3"><span className="font-black text-indigo-700">{index + 1}</span>{renderText(item)}</li>; })}</ol>;
+      body = <ol className="space-y-3">{presented.map(function (item, index) { return <li key={index} className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-lg flex gap-3"><span className="font-black text-indigo-700">{index + 1}</span><AssessmentChoiceContent q={q} field="items" index={typeof q.presentedOrder?.[index] === "number" ? q.presentedOrder[index] : items.indexOf(item)} text={item} renderText={renderText} /></li>; })}</ol>;
       answerGuide = <div><div><span className="font-bold">Correct order: </span>{items.join(' → ')}</div>{q.orderingPrinciple && <div className="mt-1 text-sm">Ordering principle: {q.orderingPrinciple}</div>}</div>;
     } else if (type === 'relation-mismatch') {
       var pairs = Array.isArray(q.pairs) ? q.pairs : [];
       body = <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{pairs.map(function (pair, index) {
         pair = pair || {};
         var mismatch = index === q.wrongPairIndex;
-        return <div key={index} className={'p-4 rounded-xl border-2 text-lg ' + (showAnswer && mismatch ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-slate-200')}><span className="font-bold">{renderText(pair.left)}</span><span className="mx-2" aria-hidden="true">↔</span>{renderText(pair.right)}{showAnswer && mismatch && <span className="ml-2 text-rose-700 font-bold">Mismatch</span>}</div>;
+        return <div key={index} className={'p-4 rounded-xl border-2 text-lg ' + (showAnswer && mismatch ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-slate-200')}><AssessmentPairContent q={q} index={index} renderText={renderText} />{showAnswer && mismatch && <span className="ml-2 text-rose-700 font-bold">Mismatch</span>}</div>;
       })}</div>;
       var wrongPair = pairs[q.wrongPairIndex] || {};
       answerGuide = <div><span className="font-bold">Fix the mismatch: </span>{wrongPair.left ? wrongPair.left + ' → ' : ''}{q.correctPartnerForWrong || 'Teacher review'}</div>;    } else if (type === 'answer-evidence') {
-      body = <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><div><h4 className="font-bold text-slate-700 mb-2">Part 1 - answer options</h4><div className="space-y-2">{(Array.isArray(q.answerOptions) ? q.answerOptions : []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && _quizAnswerMatches(option, q.correctAnswer) ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div><div><h4 className="font-bold text-slate-700 mb-2">Part 2 - supporting evidence</h4>{q.evidencePrompt && <p className="mb-3 text-base text-slate-700">{renderText(q.evidencePrompt)}</p>}<div className="space-y-2">{(Array.isArray(q.evidenceOptions) ? q.evidenceOptions : []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctEvidence ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div></div>;
+      body = <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><div><h4 className="font-bold text-slate-700 mb-2">Part 1 - answer options</h4><div className="space-y-2">{(Array.isArray(q.answerOptions) ? q.answerOptions : []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && _quizAnswerMatches(option, q.correctAnswer) ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}><AssessmentChoiceContent q={q} field="answerOptions" index={index} text={option} renderText={renderText} /></div>; })}</div></div><div><h4 className="font-bold text-slate-700 mb-2">Part 2 - supporting evidence</h4>{q.evidencePrompt && <p className="mb-3 text-base text-slate-700">{renderText(q.evidencePrompt)}</p>}{q.evidencePrompt_en && <p className="mb-3 text-sm italic text-slate-600">{renderText(q.evidencePrompt_en)}</p>}<div className="space-y-2">{(Array.isArray(q.evidenceOptions) ? q.evidenceOptions : []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctEvidence ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}><AssessmentChoiceContent q={q} field="evidenceOptions" index={index} text={option} renderText={renderText} /></div>; })}</div></div></div>;
       answerGuide = <div><div><span className="font-bold">Answer: </span>{q.correctAnswer || 'Teacher review'}</div><div className="mt-1"><span className="font-bold">Evidence: </span>{q.correctEvidence || 'Teacher review'}</div></div>;
     } else if (type === 'numeric-response') {
       body = <div className="p-8 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-end gap-3 justify-center"><span className="text-3xl tracking-widest text-slate-400">____________</span>{q.unit && <span className="text-2xl font-bold text-slate-700">{q.unit}</span>}</div>;
@@ -3856,6 +4478,9 @@ var _lazyIcon = function (name) {
       body = <div role="img" className="h-36 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50" aria-label="Response space" />;
       answerGuide = <div><span className="font-bold">Answer guide: </span>{q.expectedAnswer || q.sampleAnswer || q.correctAnswer || q.rubric || 'Teacher review'}</div>;
     }
+    if (type === 'sequence-sense' && Array.isArray(q.principleOptions) && q.principleOptions.length) body = <div className="space-y-4">{body}<div><h4 className="mb-2 font-bold text-slate-700">{_quizGradedCopy('quiz.media.ordering_choices', 'Ordering principle choices')}</h4><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{q.principleOptions.map(function (option, index) { return <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><AssessmentChoiceContent q={q} field="principleOptions" index={index} text={option} renderText={renderText} /></div>; })}</div></div></div>;
+    if (type === 'relation-mismatch' && Array.isArray(q.candidatePartners) && q.candidatePartners.length) body = <div className="space-y-4">{body}<div><h4 className="mb-2 font-bold text-slate-700">{_quizGradedCopy('quiz.media.replacement_choices', 'Replacement partner choices')}</h4><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{q.candidatePartners.map(function (option, index) { return <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><AssessmentChoiceContent q={q} field="candidatePartners" index={index} text={option} renderText={renderText} /></div>; })}</div></div></div>;
+    if (_quizIsAnswerKeyDisputed(q)) answerGuide = <p data-assessment-key-under-review role="status">{t('quiz.attempt.key_under_review', 'Your teacher is reviewing this answer.')} No answer is being marked correct.</p>;
     if (p.compact) {
       var written = ['fill-blank', 'short-answer', 'self-explanation'].indexOf(type) !== -1;
       return <div data-review-question-type={type} className="rounded-xl border-2 border-slate-200 bg-white p-4 sm:p-6 text-left text-slate-800">
@@ -3865,23 +4490,45 @@ var _lazyIcon = function (name) {
         {showAnswer && _quizStudentExplanation(q, true) && <div className="mt-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-slate-700"><p className="mb-1 text-sm font-bold">Explanation</p>{typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizPlainExplanation(_quizStudentExplanation(q, true))}</div>}
       </div>;
     }
-    if (p.readOnly) return <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-950">{answerGuide}</div>;
-    return <div data-presentation-question-type={type} className="bg-white p-4 sm:p-8 rounded-2xl border-2 border-slate-200 shadow-md"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{p.index + 1}</div><div className="flex-grow"><div className="text-xs uppercase tracking-wider font-black text-teal-800 mb-1">{_quizPresentationTypeLabel(type)}</div><h3 className="text-2xl font-bold text-slate-800 leading-tight">{renderText(q.question || '')}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{renderText(q.question_en)}</p>}</div></div>{q.imageUrl && <img src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} className="mb-5 max-h-80 w-full rounded-lg object-contain"/>}<div className="ml-0 md:ml-14">{body}<div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">{_quizStudentExplanation(q, true) && <button type="button" onClick={p.onToggleExplanation} className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-400 text-slate-700">{p.showExplanation ? 'Hide explanation' : 'Show explanation'}</button>}<button type="button" onClick={p.onToggleAnswer} aria-expanded={showAnswer} className={'text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (showAnswer ? 'bg-slate-200 text-slate-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100')}>{showAnswer ? <Eye size={14} /> : <MousePointerClick size={14} />}{showAnswer ? 'Hide answer guide' : 'Reveal answer guide'}</button></div>{showAnswer && <div className="mt-4 p-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-950" role="status">{answerGuide}</div>}{p.showExplanation && _quizStudentExplanation(q, true) && <div className="mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700">{typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizPlainExplanation(_quizStudentExplanation(q, true))}</div>}</div></div>;
+    if (p.readOnly) return <div className="space-y-3">{["multi-select", "sequence-sense", "relation-mismatch", "answer-evidence"].indexOf(type) !== -1 && <div data-assessment-feedback-stimulus>{body}</div>}<div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-950">{answerGuide}</div></div>;
+    return <div data-presentation-question-type={type} className="bg-white p-4 sm:p-8 rounded-2xl border-2 border-slate-200 shadow-md"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{p.index + 1}</div><div className="flex-grow"><div className="text-xs uppercase tracking-wider font-black text-teal-800 mb-1">{_quizPresentationTypeLabel(type)}</div><h3 className="text-2xl font-bold text-slate-800 leading-tight">{renderText(q.question || '')}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{renderText(q.question_en)}</p>}</div></div><AssessmentQuestionSupport q={q} translation={false} /><div className="ml-0 md:ml-14">{body}<div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">{_quizStudentExplanation(q, true) && <button type="button" onClick={p.onToggleExplanation} className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-400 text-slate-700">{p.showExplanation ? 'Hide explanation' : 'Show explanation'}</button>}<button type="button" onClick={p.onToggleAnswer} aria-expanded={showAnswer} className={'text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (showAnswer ? 'bg-slate-200 text-slate-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100')}>{showAnswer ? <Eye size={14} /> : <MousePointerClick size={14} />}{showAnswer ? 'Hide answer guide' : 'Reveal answer guide'}</button></div>{showAnswer && <div className="mt-4 p-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-950" role="status">{answerGuide}</div>}{p.showExplanation && _quizStudentExplanation(q, true) && <div className="mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700">{typeof p.renderFormattedText === 'function' ? p.renderFormattedText(_quizStudentExplanation(q, true)) : _quizPlainExplanation(_quizStudentExplanation(q, true))}</div>}</div></div>;
   }
   function _quizCreateAuthoringRequests(readProps) {
     var requests = new Map();
-    function snapshot(props) { return JSON.stringify([props.generatedContent, props.inputText || '', props.gradeLevel || '', !!props.isTeacherMode]); }
+    function snapshot(props, questionIdx) {
+      var content = props.generatedContent;
+      if (Number.isInteger(questionIdx)) {
+        // A sibling question's result must not invalidate this request. Keep
+        // the resource/settings context, but scope question content to its target.
+        var data = Object.assign({}, content && content.data);
+        delete data.questions;
+        delete data.actualItemTypeMix;
+        delete data.itemCountMismatch;
+        content = [Object.assign({}, content, { data: data }), questionIdx, props.generatedContent?.data?.questions?.[questionIdx]];
+      }
+      return JSON.stringify([content, props.inputText || '', props.gradeLevel || '', !!props.isTeacherMode]);
+    }
+    function currentProps(request) {
+      if (!request || requests.get(request.key) !== request) return null;
+      var props = readProps();
+      if (Number.isInteger(request.questionIdx) && props.generatedContent?.data?.questions?.[request.questionIdx] !== request.question) return null;
+      return request.signature === snapshot(props, request.questionIdx) ? props : null;
+    }
     return {
-      begin: function (key) {
+      begin: function (key, target) {
         var props = readProps();
-        var signature = snapshot(props);
+        var questionIdx = target && target.questionIdx;
+        var question = Number.isInteger(questionIdx) ? props.generatedContent?.data?.questions?.[questionIdx] : undefined;
+        if (target && (!Number.isInteger(questionIdx) || questionIdx < 0 || !question || question !== target.question)) return null;
+        var signature = snapshot(props, questionIdx);
         var existing = requests.get(key);
-        if (existing && existing.signature === signature) return null;
-        var request = { key: key, signature: signature };
+        if (existing && existing.signature === signature && existing.question === question) return null;
+        var request = { key: key, signature: signature, questionIdx: questionIdx, question: question, questionSignature: question ? JSON.stringify(question) : '' };
         requests.set(key, request);
         return request;
       },
-      current: function (request) { return !!request && requests.get(request.key) === request && request.signature === snapshot(readProps()); },
+      current: function (request) { return !!currentProps(request); },
+      currentProps: currentProps,
       end: function (request) {
         if (!request || requests.get(request.key) !== request) return false;
         requests.delete(request.key);
@@ -3932,6 +4579,12 @@ var _lazyIcon = function (name) {
   }
 
   function _quizFeedbackSignature(data) {
+    return _quizPreviousFeedbackSignature(_quizStableAssessmentData(data));
+  }
+  function _quizCompatibleFeedbackSignatures(data) {
+    return Array.from(new Set([_quizFeedbackSignature(data), _quizPreviousFeedbackSignature(_quizPreviousStableAssessmentData(data)), _quizPreviousFeedbackSignature(data)]));
+  }
+  function _quizPreviousFeedbackSignature(data) {
     var text = JSON.stringify([data && data.questions || [], data && data.reflections || [], data && data.reflection || '']);
     var hash = 2166136261;
     for (var i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 16777619); }
@@ -3939,6 +4592,7 @@ var _lazyIcon = function (name) {
   }
   function _quizAttemptAnswer(q, index, responses) {
     var root = responses.root || {}, item = responses['q-' + index] || {}, type = q.type || 'mcq';
+    if (item.idk === true || (type === 'sequence-sense' || type === 'relation-mismatch') && item.grade && item.grade.status === 'idk') return { idk: true };
     if (type === 'mcq') { var optionIdx = (root.mcqAnswers || {})[index]; return { optionIdx: optionIdx, optionText: (q.options || [])[optionIdx] || '' }; }
     if (type === 'multi-select') return { selectedIndices: item.selected || [], selectedOptions: (item.selected || []).map(i => (q.options || [])[i]) };
     if (type === 'answer-evidence') return { answerIdx: item.answerIdx, evidenceIdx: item.evidenceIdx, answerText: (q.answerOptions || q.options || [])[item.answerIdx] || '', evidenceText: (q.evidenceOptions || [])[item.evidenceIdx] || '' };
@@ -3947,8 +4601,14 @@ var _lazyIcon = function (name) {
     if (type === 'numeric-response') { var parsed = _quizParseNumericResponse(item.response || ''); return { text: item.response || '', numericValue: parsed ? parsed.value : null, unit: parsed ? parsed.unit : '' }; }
     return { text: item.response || '', status: 'submitted' };
   }
+  function _quizAttemptConfidence(q, index, responses) {
+    var root = responses && responses.root || {}, item = responses && responses['q-' + index] || {};
+    var confidence = (q.type || 'mcq') === 'mcq' ? (root.mcqConfidence || {})[index] : item.confidence;
+    return confidence === 'knew' || confidence === 'guessed' || confidence === 'no-idea' ? confidence : null;
+  }
   function _quizResponseDescription(q, index, responses) {
     var a = _quizAttemptAnswer(q, index, responses);
+    if (a.idk) return _quizGradedCopy('quiz.attempt.idk_response', 'I don’t know yet.');
     if ((q.type || 'mcq') === 'mcq') return a.optionText || 'No response';
     if (q.type === 'multi-select') return a.selectedOptions.join('; ') || 'No response';
     if (q.type === 'answer-evidence') return 'Answer: ' + (a.answerText || 'Not selected') + '. Evidence: ' + (a.evidenceText || 'Not selected');
@@ -3958,6 +4618,32 @@ var _lazyIcon = function (name) {
   }
   // Teacher-readable copy of an attempt: the learner's own responses only,
   // never the key or correctness (feedback may still be held back).
+  function _quizAssessmentItemSignature(question) {
+    var aggregator = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (aggregator && typeof aggregator.assessmentItemSignature === 'function') return aggregator.assessmentItemSignature(question);
+    // Keep the offline fallback equivalent to assessmentItemSignature in the
+    // canonical grader. Only public response context belongs in this signature.
+    var q = question && typeof question === 'object' ? question : {};
+    var context = { type: String(q.type || q.itemType || 'mcq') };
+    var textFields = ['question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl'];
+    var arrayFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls'];
+    function publicValue(value) {
+      if (Array.isArray(value)) return value.map(publicValue);
+      if (value && typeof value === 'object') {
+        var result = {};
+        ['id', 'text', 'label', 'left', 'right', 'imageUrl', 'leftImageUrl', 'rightImageUrl'].forEach(function (key) {
+          if (value[key] != null) result[key] = publicValue(value[key]);
+        });
+        return result;
+      }
+      return value == null ? null : value;
+    }
+    textFields.forEach(function (field) { context[field] = String(q[field] == null ? '' : q[field]); });
+    arrayFields.forEach(function (field) { context[field] = Array.isArray(q[field]) ? q[field].map(publicValue) : []; });
+    var serialized = JSON.stringify(context), hash = 2166136261;
+    for (var i = 0; i < serialized.length; i++) { hash ^= serialized.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return 'assess-item-v1:' + (hash >>> 0).toString(36);
+  }
   function _quizResponseSnapshot(data, items, meta) {
     var questions = data && Array.isArray(data.questions) ? data.questions : [];
     var responses = items && typeof items === 'object' ? items : {};
@@ -3966,29 +4652,145 @@ var _lazyIcon = function (name) {
     var answered = 0;
     var rows = questions.map(function (q, i) {
       var question = q && typeof q === 'object' ? q : {};
-      var isAnswered = false, response = '', answer = null;
+      var isAnswered = false, hasResponse = false, response = '', answer = null;
       try {
         isAnswered = _quizQuestionAnswered(question, i, { items: responses });
-        response = isAnswered ? String(_quizResponseDescription(question, i, responses)).slice(0, 4000) : '';
-        answer = isAnswered ? _quizAttemptAnswer(question, i, responses) : null;
+        hasResponse = _quizQuestionHasResponse(question, i, { items: responses });
+        response = hasResponse ? String(_quizResponseDescription(question, i, responses)).slice(0, 4000) : '';
+        answer = hasResponse ? _quizAttemptAnswer(question, i, responses) : null;
       } catch (e) {}
       if (isAnswered) answered++;
-      return { number: i + 1, type: question.type || 'mcq', question: String(question.question || question.contextSentence || '').slice(0, 500), answered: isAnswered, response: response, answer: answer };
+      return { number: i + 1, type: question.type || 'mcq', question: String(question.question || question.contextSentence || '').slice(0, 500), questionSignature: _quizAssessmentItemSignature(question), answered: isAnswered, hasResponse: hasResponse, response: response, answer: answer, confidence: _quizAttemptConfidence(question, i, responses) };
     });
     return Object.assign({
-      kind: 'alloflow-assessment-responses', version: 1, answered: answered, total: questions.length, items: rows,
+      kind: 'alloflow-assessment-responses', version: 1, answered: answered, responded: rows.filter(function (row) { return row.hasResponse; }).length, total: questions.length, items: rows,
       reflections: reflections.map(function (reflection, i) {
         var entry = reflectionAnswers[i] || {};
-        return { prompt: String(typeof reflection === 'string' ? reflection : reflection && reflection.text || '').slice(0, 500), response: String(entry.submittedText || entry.draft || '').slice(0, 4000) };
+        return { prompt: String(typeof reflection === 'string' ? reflection : reflection && reflection.text || '').slice(0, 500), response: _quizReflectionResponse(entry).slice(0, 4000) };
       })
     }, meta || {});
   }
+
+  // Project-file responses are portable; device drafts are separately scoped.
+  // Rebuild only public learner inputs, never imported grading or answer keys.
+  function _quizProjectResponseCandidate(data, record, context) {
+    if (!record || !context || !context.resourceId || context.sessionCode || context.activityId) return null;
+    var candidates = [record.assessmentDraft, record.assessmentSubmitted].filter(function (value) {
+      return value && value.kind === 'alloflow-assessment-responses' && value.version === 1
+        && ['in-progress', 'submitted'].includes(value.status) && typeof value.attemptId === 'string' && value.attemptId;
+    }).sort(function (a, b) { return (Number(b.startedAt) || 0) - (Number(a.startedAt) || 0) || (Number(b.recordedAt || b.submittedAt) || 0) - (Number(a.recordedAt || a.submittedAt) || 0); });
+    var snapshot = candidates[0];
+    if (!snapshot) return null;
+    var identity = snapshot.assessmentIdentity;
+    if (identity && ['resourceId', 'sessionCode', 'activityId'].some(function (key) { return String(identity[key] || '') !== String(context[key] || ''); })) return null;
+    // An explicitly imported file gets a new workspace scope and may be opened
+    // by a fresh anonymous auth identity. A same-workspace account switch must
+    // not silently acquire the previous learner's answers.
+    if (identity && String(identity.userId || '') !== String(context.userId || '')
+      && !(identity.workspaceScope && context.workspaceScope && identity.workspaceScope !== context.workspaceScope)) return null;
+    // Older project snapshots have per-item public signatures, but no private
+    // grading fingerprint. They can restore answers without importing scores.
+    if (identity?.signature && !(context.compatibleSignatures || [context.signature]).includes(identity.signature)) return null;
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
+    if (!Array.isArray(snapshot.items) || snapshot.items.length !== questions.length || snapshot.total !== questions.length
+      || !Array.isArray(snapshot.reflections) || snapshot.reflections.length !== reflections.length) return null;
+    if (snapshot.items.some(function (row, index) { var q = questions[index]; return !q || typeof q !== 'object' || !row || row.number !== index + 1 || row.type !== (q.type || 'mcq') || row.questionSignature !== _quizAssessmentItemSignature(q); })) return null;
+    if (snapshot.reflections.some(function (row, index) { var reflection = reflections[index]; return !row || row.prompt !== String(typeof reflection === 'string' ? reflection : reflection && reflection.text || '').slice(0, 500) || typeof row.response !== 'string'; })) return null;
+    var items = { root: { mcqAnswers: {}, mcqConfidence: {}, reflectionAnswers: {}, attemptMeta: { attemptId: snapshot.attemptId, startedAt: Number(snapshot.startedAt) || Date.now(), status: 'in-progress' } } };
+    function choice(value, choices) { return Number.isInteger(value) && Array.isArray(choices) && value >= 0 && value < choices.length; }
+    var valid = snapshot.items.every(function (row, index) {
+      var q = questions[index], type = q.type || 'mcq', answer = row.answer, item = {};
+      items['q-' + index] = item;
+      if (['knew', 'guessed', 'no-idea'].includes(row.confidence)) {
+        if (type === 'mcq') items.root.mcqConfidence[index] = row.confidence; else item.confidence = row.confidence;
+      }
+      if (!row.hasResponse) return true;
+      if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return false;
+      if (answer.idk === true) { item.idk = true; return true; }
+      if (type === 'mcq') { if (!choice(answer.optionIdx, q.options)) return false; items.root.mcqAnswers[index] = answer.optionIdx; }
+      else if (type === 'multi-select') { if (!Array.isArray(answer.selectedIndices) || answer.selectedIndices.some(function (value) { return !choice(value, q.options); }) || new Set(answer.selectedIndices).size !== answer.selectedIndices.length) return false; item.selected = answer.selectedIndices.slice(); }
+      else if (type === 'answer-evidence') {
+        for (var field of ['answerIdx', 'evidenceIdx']) { var options = field === 'answerIdx' ? q.answerOptions || q.options : q.evidenceOptions; if (answer[field] != null) { if (!choice(answer[field], options)) return false; item[field] = answer[field]; } }
+      } else if (type === 'sequence-sense') {
+        if (answer.verifyAnswer != null) { if (!['yes', 'no'].includes(answer.verifyAnswer)) return false; item.verifyAnswer = answer.verifyAnswer; }
+        if (answer.clickedIdx != null) { if (!choice(answer.clickedIdx, q.items)) return false; item.clickedIdx = answer.clickedIdx; }
+        if (answer.orderAnswer != null) { if (!Array.isArray(answer.orderAnswer) || answer.orderAnswer.length !== (q.items || []).length || new Set(answer.orderAnswer).size !== answer.orderAnswer.length || answer.orderAnswer.some(function (value) { return !choice(value, q.items); })) return false; item.orderAnswer = answer.orderAnswer.slice(); }
+        if (answer.principleAnswer != null) { if (typeof answer.principleAnswer !== 'string') return false; item.principleAnswer = answer.principleAnswer; }
+      } else if (type === 'relation-mismatch') {
+        if (answer.clickedPairIdx != null) { if (!choice(answer.clickedPairIdx, q.pairs)) return false; item.clickedPairIdx = answer.clickedPairIdx; }
+        if (answer.partnerAnswer != null) { if (typeof answer.partnerAnswer !== 'string') return false; item.partnerAnswer = answer.partnerAnswer; }
+      } else if (['short-answer', 'self-explanation', 'fill-blank', 'numeric-response'].includes(type)) {
+        if (typeof answer.text !== 'string') return false;
+        item.response = answer.text;
+      } else return false;
+      return true;
+    });
+    if (!valid) return null;
+    snapshot.reflections.forEach(function (row, index) { items.root.reflectionAnswers[index] = { draft: row.response, submitted: snapshot.status === 'submitted' && !!row.response, submittedText: snapshot.status === 'submitted' ? row.response : '' }; });
+    return { snapshot: snapshot, items: items };
+  }
+  function _quizRestoreProjectResponses(namespace, data, record, context, isCurrent, unscopedNamespace) {
+    if (!namespace || namespace.indexOf('assess-preview:') === 0) return false;
+    var candidate = _quizProjectResponseCandidate(data, record, context);
+    if (!candidate) return false;
+    return _quizWithDraftLock(namespace, function () {
+      if (typeof isCurrent === 'function' && !isCurrent()) return false;
+      if (_quizReadAttemptReceipt(namespace) || _quizClosedDrafts[namespace]) return false;
+      var draft = _quizReadWorkingDraft(namespace), meta = draft.items?.root?.attemptMeta;
+      var progress = _quizResponseSnapshot(data, draft.items, {});
+      // Never replace work created here, including an explicitly restarted
+      // empty attempt. A late file restore may fill only an untouched view.
+      if (_quizReadDraft(namespace)?.projectResponseRestore || meta?.previousAttemptId || progress.responded
+        || progress.reflections.some(function (row) { return row.response; })
+        || progress.items.some(function (row) { return row.confidence; })
+        || Object.keys(draft.items?.root?.flaggedQuestions || {}).length) return false;
+      var storage = _quizLocalStorage();
+      if (!storage) { _quizDraftSaveEvent(namespace, false); return false; }
+      var snapshot = candidate.snapshot, now = Date.now(), items = candidate.items;
+      // Migrate an unscoped local copy only when this project's own attempt id
+      // and full response fingerprint prove ownership. Never adopt by title.
+      var legacy = unscopedNamespace && unscopedNamespace !== namespace ? _quizReadAttemptReceipt(unscopedNamespace, context.signature) || _quizReadDraft(unscopedNamespace) : null;
+      var legacyIdentity = legacy?.assessmentIdentity;
+      var legacyAttempt = legacy?.attemptId || legacy?.items?.root?.attemptMeta?.attemptId;
+      if (legacyAttempt === snapshot.attemptId && legacyIdentity?.signature === context.signature
+        && ['resourceId', 'sessionCode', 'activityId', 'userId'].every(function (key) { return String(legacyIdentity[key] || '') === String(context[key] || ''); })) items = legacy.responses || legacy.items || items;
+      try {
+        if (snapshot.status === 'submitted') {
+          var summary = _quizBuildAttemptProgress(data, { items: items });
+          var receipt = { version: 1, attemptId: snapshot.attemptId, startedAt: Number(snapshot.startedAt) || now, submittedAt: Number(snapshot.submittedAt) || now,
+            summary: { total: summary.total, answered: summary.answered, unanswered: summary.unanswered, flagged: summary.flagged }, responses: items,
+            feedbackTiming: _quizNormalizeDeliverySettings(data.deliverySettings).feedbackTiming, signature: context.signature, assessmentIdentity: context,
+            resourceId: context.resourceId, sessionCode: '', activityId: '', delivery: { status: 'local' }, projectResponseRestore: snapshot.attemptId };
+          storage.setItem(_quizAttemptStorageKey(namespace), JSON.stringify(receipt));
+          try { storage.removeItem(namespace); } catch (_) {}
+          _quizResetWorkingDraft(namespace); _quizClosedDrafts[namespace] = true;
+        } else {
+          storage.setItem(namespace, JSON.stringify({ version: 1, createdAt: Number(snapshot.startedAt) || now, updatedAt: now, assessmentIdentity: context, items: items, projectResponseRestore: snapshot.attemptId }));
+          _quizResetWorkingDraft(namespace);
+        }
+        _quizDraftContexts[namespace] = context;
+        return true;
+      } catch (_) { _quizDraftSaveEvent(namespace, false); return false; }
+    });
+  }
+  function _quizLearnerDraftSuffix(props) {
+    return (props.sessionData?.quizState?.activityId ? ':' + props.sessionData.quizState.activityId : '')
+      + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '')
+      + (!props.activeSessionCode && props.learnerResponseScope ? ':workspace-' + encodeURIComponent(props.learnerResponseScope) : '');
+  }
   function AssessmentAttemptFeedback(p) {
     var tr = typeof p.copy === 'function' ? p.copy : _quizPlainCopy;
-    return <section data-assessment-attempt-feedback className="space-y-4" aria-label={tr('quiz.attempt.feedback_region', 'Assessment feedback')}><div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-indigo-950"><h2 className="text-lg font-bold">{tr('quiz.attempt.review_title', 'Review your responses')}</h2><p className="mt-1 text-sm">{tr('quiz.attempt.review_help', 'Compare your saved responses with the answer guides. Written responses may still need teacher review.')}</p></div>{(p.data.questions || []).map((q, i) => { var keyCheck = _quizKeyCheck(q), explanation = _quizStudentExplanation(q); return <article key={i} className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800"><h3 className="font-bold">{(i + 1) + '. ' + q.question}</h3><p className="mt-3 text-sm whitespace-pre-wrap"><strong>{tr('quiz.attempt.your_response', 'Your response:') + ' '}</strong>{_quizResponseDescription(q, i, p.receipt.responses || {})}</p><div className="mt-3" data-assessment-answer-guide>{(q.type || 'mcq') === 'mcq' ? <p className="text-sm"><strong>{tr('quiz.attempt.answer_guide', 'Answer guide:') + ' '}</strong>{keyCheck && keyCheck.status === 'disputed' ? tr('quiz.attempt.key_under_review', 'Your teacher is reviewing this answer.') : q.correctAnswer || tr('quiz.attempt.teacher_review', 'Teacher review')}</p> : <AssessmentPresentationItem q={q} showAnswer={true} onToggleAnswer={null} formatInlineText={p.formatInlineText} readOnly={true} />}</div>{explanation && <p data-assessment-explanation className="mt-3 text-sm whitespace-pre-wrap">{_quizPlainExplanation(explanation)}</p>}</article>; })}</section>;
+    return <section data-assessment-attempt-feedback className="space-y-4" aria-label={tr('quiz.attempt.feedback_region', 'Assessment feedback')}><div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-indigo-950"><h2 className="text-lg font-bold">{tr('quiz.attempt.review_title', 'Review your responses')}</h2><p className="mt-1 text-sm">{tr('quiz.attempt.review_help', 'Compare your saved responses with the answer guides. Written responses may still need teacher review.')}</p></div>{(p.data.questions || []).map((q, i) => { var keyCheck = _quizKeyCheck(q), explanation = _quizStudentExplanation(q); return <article key={i} className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800"><h3 className="font-bold">{(i + 1) + '. ' + q.question}</h3><AssessmentQuestionSupport q={q} />{(q.type || "mcq") === "mcq" && <div data-assessment-feedback-stimulus className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">{(q.options || []).map((option, index) => <div key={index} className="rounded-lg border border-slate-200 p-3 text-sm"><AssessmentChoiceContent q={q} field="options" index={index} text={option} /></div>)}</div>}<p className="mt-3 text-sm whitespace-pre-wrap"><strong>{tr('quiz.attempt.your_response', 'Your response:') + ' '}</strong>{_quizResponseDescription(q, i, p.receipt.responses || {})}</p><div className="mt-3" data-assessment-answer-guide>{(q.type || 'mcq') === 'mcq' ? <p className="text-sm"><strong>{tr('quiz.attempt.answer_guide', 'Answer guide:') + ' '}</strong>{keyCheck && keyCheck.status === 'disputed' ? tr('quiz.attempt.key_under_review', 'Your teacher is reviewing this answer.') : q.correctAnswer || tr('quiz.attempt.teacher_review', 'Teacher review')}</p> : <AssessmentPresentationItem q={q} showAnswer={true} onToggleAnswer={null} formatInlineText={p.formatInlineText} readOnly={true} />}</div>{explanation && <p data-assessment-explanation className="mt-3 text-sm whitespace-pre-wrap">{_quizPlainExplanation(explanation)}</p>}</article>; })}</section>;
   }
   function DeferredAssessmentItem(p) {
     var q = p.q, type = q.type, key = 'q-' + p.questionIdx;
+    var [idkMarked, setIdkMarked] = _quizUseDraftField(p.draftNamespace, key, 'idk', function () {
+      var legacy = _quizReadDraftField(p.draftNamespace, key, 'grade').value;
+      return (type === 'sequence-sense' || type === 'relation-mismatch') && !!legacy && legacy.status === 'idk';
+    });
+    function markIDK() { setIdkMarked(true); }
+    function clearIDK() { setIdkMarked(false); _quizWriteDraftField(p.draftNamespace, key, 'grade', null); }
     var [response, setResponse] = _quizUseDraftField(p.draftNamespace, key, 'response', '');
     var [selected, setSelected] = _quizUseDraftField(p.draftNamespace, key, 'selected', []);
     var [answerIdx, setAnswerIdx] = _quizUseDraftField(p.draftNamespace, key, 'answerIdx', null);
@@ -4002,12 +4804,13 @@ var _lazyIcon = function (name) {
     var initialOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === (q.items || []).length && new Set(q.presentedOrder).size === q.presentedOrder.length && q.presentedOrder.every(i => Number.isInteger(i) && i >= 0 && i < q.items.length) ? q.presentedOrder : (q.items || []).map((_, i) => i);
     var [orderAnswer, setOrderAnswer] = _quizUseDraftField(p.draftNamespace, key, 'orderAnswer', () => initialOrder.slice());
     var inputClass = 'block mt-2 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-800';
-    function choices(label, options, value, update, multiple) {
-      return <fieldset className="space-y-2"><legend className="text-sm font-semibold text-slate-800 mb-2">{label}</legend>{options.map((option, i) => <label key={i} className={'flex items-start gap-3 rounded-lg border p-3 text-sm cursor-pointer ' + ((multiple ? value.includes(i) : value === i) ? 'bg-indigo-50 border-indigo-400 text-indigo-950' : 'bg-white border-slate-300 text-slate-800')}><input className="mt-1 shrink-0" type={multiple ? 'checkbox' : 'radio'} name={'assessment-' + p.questionIdx + '-' + label} checked={multiple ? value.includes(i) : value === i} onChange={() => update(multiple ? value.includes(i) ? value.filter(n => n !== i) : value.concat(i).sort((a,b) => a-b) : i)} /><span className="min-w-0 break-words">{String(option)}</span></label>)}</fieldset>;
+    function choices(label, options, value, update, multiple, field, indices) {
+      return <fieldset className="space-y-2"><legend className="text-sm font-semibold text-slate-800 mb-2">{label}</legend>{options.map((option, i) => <label key={i} className={'flex items-start gap-3 rounded-lg border p-3 text-sm cursor-pointer ' + ((multiple ? value.includes(i) : value === i) ? 'bg-indigo-50 border-indigo-400 text-indigo-950' : 'bg-white border-slate-300 text-slate-800')}><input className="mt-1 shrink-0" type={multiple ? 'checkbox' : 'radio'} name={'assessment-' + p.questionIdx + '-' + label} checked={multiple ? value.includes(i) : value === i} onChange={() => update(multiple ? value.includes(i) ? value.filter(n => n !== i) : value.concat(i).sort((a,b) => a-b) : i)} /><span className="min-w-0 flex-1 break-words">{field === "pairs" ? <AssessmentPairContent q={q} index={i} /> : <AssessmentChoiceContent q={q} field={field || "untranslated"} index={indices ? indices[i] : i} text={option} />}</span></label>)}</fieldset>;
     }
     _quizUseVoiceController(p, {
       getState: () => ({ type, response, selectedIndices: selected, answerIdx, evidenceIdx, verifyAnswer, clickedIdx, principleAnswer, clickedPairIdx, partnerAnswer, orderAnswer, graded: false, actions: ['enter-response', 'choose', 'check'], message: p.feedbackTiming === 'teacher-graded' ? 'Responses are saved. ' + _quizGradedCopy('quiz.graded.student_note', 'Your teacher will check your answers.') : 'Responses are saved. Feedback is available ' + (p.feedbackTiming === 'teacher-release' ? 'after your teacher releases it.' : 'after submission.') }),
       execute: (action, request) => {
+        if (idkMarked && action !== 'check') return { ok: false, state: 'skipped', message: 'Choose Try again to replace your skipped response.' };
         if (action === 'check') return { ok: false, state: 'feedback-held', message: p.feedbackTiming === 'teacher-graded' ? _quizGradedCopy('quiz.graded.student_note', 'Your teacher will check your answers.') : 'Feedback is available ' + (p.feedbackTiming === 'teacher-release' ? 'after your teacher releases it.' : 'after you submit the assessment.') };
         if (action === 'enter-response' && ['numeric-response','fill-blank','short-answer','self-explanation'].includes(type)) { setResponse(String(request.text || request.value || request.response || '')); return { ok: true, state: 'draft', message: 'Response saved.' }; }
         var options = type === 'multi-select' ? q.options : type === 'answer-evidence' ? (request.part === 'evidence' ? q.evidenceOptions : q.answerOptions) : null;
@@ -4015,20 +4818,42 @@ var _lazyIcon = function (name) {
         return { ok: false, state: 'unsupported-action', message: 'Use the labeled response controls for this part. Feedback stays hidden until release.' };
       }
     });
-    return <div data-assessment-deferred-item={type} className="rounded-xl border border-slate-300 bg-white p-5 text-slate-800 shadow-sm"><div className="flex items-start gap-3 mb-4"><span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">{p.itemNumber}</span><div className="min-w-0"><p className="mb-1 text-xs font-semibold text-slate-600">{_quizPresentationTypeLabel(type)}</p><h3 className="font-bold text-slate-800">{q.question}</h3>{q.question_en && <p className="mt-1 text-sm text-slate-600">{q.question_en}</p>}</div></div>{q.imageUrl && <img src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} className="mb-4 max-h-64 w-full object-contain" />}
-      {type === 'multi-select' && choices('Choose all that apply', q.options || [], selected, setSelected, true)}
-      {type === 'answer-evidence' && <div className="space-y-4">{choices('Choose an answer', q.answerOptions || q.options || [], answerIdx, setAnswerIdx)}{choices(q.evidencePrompt || 'Choose supporting evidence', q.evidenceOptions || [], evidenceIdx, setEvidenceIdx)}</div>}
+    return <div data-assessment-deferred-item={type} className="rounded-xl border border-slate-300 bg-white p-5 text-slate-800 shadow-sm"><div className="flex items-start gap-3 mb-4"><span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">{p.itemNumber}</span><div className="min-w-0"><p className="mb-1 text-xs font-semibold text-slate-600">{_quizPresentationTypeLabel(type)}</p><h3 className="font-bold text-slate-800">{q.question}</h3>{q.question_en && <p className="mt-1 text-sm text-slate-600">{q.question_en}</p>}</div></div><AssessmentQuestionSupport q={q} translation={false} />
+      <fieldset disabled={idkMarked} className="min-w-0 space-y-4">
+      {type === 'multi-select' && choices('Choose all that apply', q.options || [], selected, setSelected, true, 'options')}
+      {type === 'answer-evidence' && <div className="space-y-4">{choices('Choose an answer', q.answerOptions || q.options || [], answerIdx, setAnswerIdx, false, q.answerOptions ? 'answerOptions' : 'options')}{q.evidencePrompt_en && <p className="text-sm italic text-slate-600">{q.evidencePrompt_en}</p>}{choices(q.evidencePrompt || 'Choose supporting evidence', q.evidenceOptions || [], evidenceIdx, setEvidenceIdx, false, 'evidenceOptions')}</div>}
       {['numeric-response','fill-blank','short-answer','self-explanation'].includes(type) && <label className="block text-sm font-semibold">Your response{type === 'numeric-response' && q.unit && <span className="block mt-1 font-normal">{'Include units (' + q.unit + ').'}</span>}{['numeric-response','fill-blank'].includes(type) ? <input className={inputClass} value={response} onChange={e => setResponse(e.target.value)} /> : <textarea aria-label={"Your response to question " + p.itemNumber} className={inputClass + ' resize-y'} rows={type === 'self-explanation' ? 5 : 3} value={response} onChange={e => setResponse(e.target.value)} />}<QuizVoiceInputButton value={response} onChange={setResponse} allowDictation={p.allowDictation} /></label>}
-      {type === 'sequence-sense' && <div className="space-y-4"><ol className="list-decimal ps-6 text-sm space-y-1">{initialOrder.map(i => <li key={i}>{q.items[i]}</li>)}</ol>{choices('Is the displayed order correct?', ['Yes','No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no'))}{verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx)}<fieldset><legend className="text-sm font-semibold mb-2">Arrange your answer</legend><ol className="space-y-2">{orderAnswer.map((i, position) => <li key={i} className="flex items-center gap-2 rounded border border-slate-300 p-2"><span className="flex-1 text-sm">{q.items[i]}</span>{[-1,1].map(delta => <button key={delta} type="button" aria-label={(delta < 0 ? 'Move up: ' : 'Move down: ') + q.items[i]} disabled={position + delta < 0 || position + delta >= orderAnswer.length} onClick={() => { var next = orderAnswer.slice(); [next[position],next[position + delta]] = [next[position + delta],next[position]]; setOrderAnswer(next); }} className="min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40">{delta < 0 ? '↑' : '↓'}</button>)}</li>)}</ol></fieldset><label className="block text-sm font-semibold">Ordering principle<select className={inputClass} value={principleAnswer} onChange={e => setPrincipleAnswer(e.target.value)}><option value="">Choose a principle</option>{(q.principleOptions || ['chronological','cause-effect','process','size','hierarchy']).map(v => <option key={v}>{v}</option>)}</select></label></div>}
-      {type === 'relation-mismatch' && <div className="space-y-4">{choices('Choose the mismatched pair', (q.pairs || []).map(pair => pair.left + ' → ' + pair.right), clickedPairIdx, setClickedPairIdx)}<label className="block text-sm font-semibold">Replacement partner{q.candidatePartners && q.candidatePartners.length ? <select className={inputClass} value={partnerAnswer} onChange={e => setPartnerAnswer(e.target.value)}><option value="">Choose a replacement</option>{q.candidatePartners.map(v => <option key={v}>{v}</option>)}</select> : <input aria-label={"Replacement partner for question " + p.itemNumber} className={inputClass} value={partnerAnswer} onChange={e => setPartnerAnswer(e.target.value)} />}</label></div>}
+      {type === 'sequence-sense' && <div className="space-y-4"><ol className="list-decimal ps-6 text-sm space-y-1">{initialOrder.map(i => <li key={i}><AssessmentChoiceContent q={q} field="items" index={i} /></li>)}</ol>{choices('Is the displayed order correct?', ['Yes','No'], verifyAnswer === 'yes' ? 0 : verifyAnswer === 'no' ? 1 : null, i => setVerifyAnswer(i === 0 ? 'yes' : 'no'))}{verifyAnswer === 'no' && choices('Choose an item that is out of place', initialOrder.map(i => q.items[i]), clickedIdx, setClickedIdx, false, 'items', initialOrder)}<fieldset><legend className="text-sm font-semibold mb-2">Arrange your answer</legend><ol className="space-y-2">{orderAnswer.map((i, position) => <li key={i} className="flex items-center gap-2 rounded border border-slate-300 p-2"><AssessmentChoiceContent q={q} field="items" index={i} />{[-1,1].map(delta => <button key={delta} type="button" aria-label={(delta < 0 ? 'Move up: ' : 'Move down: ') + q.items[i]} disabled={position + delta < 0 || position + delta >= orderAnswer.length} onClick={() => { var next = orderAnswer.slice(); [next[position],next[position + delta]] = [next[position + delta],next[position]]; setOrderAnswer(next); }} className="min-h-11 min-w-11 rounded border border-slate-400 text-slate-800 disabled:opacity-40">{delta < 0 ? '↑' : '↓'}</button>)}</li>)}</ol></fieldset><label className="block text-sm font-semibold">Ordering principle<select className={inputClass} value={principleAnswer} onChange={e => setPrincipleAnswer(e.target.value)}><option value="">Choose a principle</option>{(q.principleOptions || ['chronological','cause-effect','process','size','hierarchy']).map((v, i) => <option key={v} value={v}>{v}{q.principleOptions_en?.[i] ? ' — ' + q.principleOptions_en[i] : ''}</option>)}</select></label></div>}
+      {type === 'relation-mismatch' && <div className="space-y-4">{choices('Choose the mismatched pair', (q.pairs || []).map(pair => pair.left + ' → ' + pair.right), clickedPairIdx, setClickedPairIdx, false, 'pairs')}{q.candidatePartners && q.candidatePartners.length ? choices('Replacement partner', q.candidatePartners, q.candidatePartners.indexOf(partnerAnswer), i => setPartnerAnswer(q.candidatePartners[i]), false, 'candidatePartners') : <label className="block text-sm font-semibold">Replacement partner<input aria-label={"Replacement partner for question " + p.itemNumber} className={inputClass} value={partnerAnswer} onChange={e => setPartnerAnswer(e.target.value)} /></label>}</div>}
       {p.modeStrategy?.render?.allowConfidenceRating && <label className="block mt-4 text-sm font-semibold">Confidence (optional)<select className={inputClass} value={confidence || ''} onChange={e => setConfidence(e.target.value)}><option value="">Choose confidence</option><option value="knew">I know this</option><option value="guessed">I am unsure</option><option value="no-idea">I need support</option></select></label>}
+      </fieldset>
+      {idkMarked ? <div role="status" className="mt-3 flex items-center gap-3 text-sm text-sky-900"><span>{_quizGradedCopy('quiz.attempt.idk_response', 'I don’t know yet.')}</span><button type="button" onClick={clearIDK} className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 font-semibold">{t('ui_common.try_again')}</button></div> : p.modeStrategy?.render?.allowIDontKnow && <button type="button" onClick={markIDK} className="mt-3 min-h-11 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-900">{t('ui_common.i_dont_know')}</button>}
       <p className="mt-4 text-xs text-slate-600">{p.feedbackTiming === 'teacher-graded' ? _quizGradedCopy('quiz.graded.student_note', 'Your teacher will check your answers.') : p.feedbackTiming === 'teacher-release' ? 'Your teacher will release feedback after submission.' : 'Feedback will appear after you submit the assessment.'}</p>
     </div>;
   }
   function QuizView(props) {
-    var identity = JSON.stringify([props.generatedContent?.id, props.activeSessionCode || '', props.sessionData?.quizState?.activityId || '', props.user?.uid || '', !!props.isTeacherMode, !!props.isParentMode, !!props.isIndependentMode]);
+    var identity = JSON.stringify([props.generatedContent?.id, props.activeSessionCode || '', props.sessionData?.quizState?.activityId || '', props.user?.uid || '', props.learnerResponseScope || '', !!props.isTeacherMode, !!props.isParentMode, !!props.isIndependentMode]);
     var [previewScope, setPreviewScope] = React.useState('');
     var [previewNonce, setPreviewNonce] = React.useState(0);
+    var [storageRevision, setStorageRevision] = React.useState(0);
+    var restoreIdentity = identity + ':' + _quizFeedbackSignature(props.generatedContent?.data);
+    var [projectRestoreState, setProjectRestoreState] = React.useState('');
+    var restoreEligible = !props.isTeacherMode && !props.isParentMode && !props._assessmentPreview && !props.activeSessionCode;
+    var restoreRecord = restoreEligible ? props.learnerResponses : null;
+    var restoreToken = JSON.stringify([restoreRecord?.assessmentDraft?.attemptId, restoreRecord?.assessmentDraft?.recordedAt, restoreRecord?.assessmentSubmitted?.attemptId, restoreRecord?.assessmentSubmitted?.recordedAt]);
+    React.useEffect(function () {
+      var current = true;
+      var data = props.generatedContent?.data || {}, resourceId = String(props.generatedContent?.id || '');
+      var suffix = _quizLearnerDraftSuffix(props), namespace = _quizDraftNamespace(data, '', resourceId) + suffix;
+      var context = { resourceId: resourceId, sessionCode: '', activityId: String(props.sessionData?.quizState?.activityId || ''), userId: String(props.user?.uid || ''), workspaceScope: String(props.learnerResponseScope || ''), signature: _quizFeedbackSignature(data), compatibleSignatures: _quizCompatibleFeedbackSignatures(data), title: data.title || 'Assessment' };
+      var unscoped = _quizDraftNamespace(data, '', resourceId) + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '');
+      Promise.resolve(restoreEligible && restoreRecord ? _quizRestoreProjectResponses(namespace, data, restoreRecord, context, function () { return current; }, unscoped) : false).then(function (restored) {
+        if (!current) return;
+        if (restored) setStorageRevision(value => value + 1);
+        setProjectRestoreState(restoreIdentity);
+      }, function () { if (current) setProjectRestoreState(restoreIdentity); });
+      return function () { current = false; };
+    }, [restoreIdentity, restoreToken]);
     var preview = !!(props.isTeacherMode || props.isParentMode) && previewScope === identity;
     var previewNamespace = 'assess-preview:' + previewNonce + ':' + identity;
     React.useEffect(() => () => { delete _quizDraftMemory[previewNamespace]; }, [previewNamespace, preview]);
@@ -4046,7 +4871,12 @@ var _lazyIcon = function (name) {
     }, [preview]);
     var previewCopy = function (key, fallback) { var value = typeof props.t === 'function' ? props.t(key) : ''; return !value || value === key ? fallback : value; };
     if (props.isTeacherMode && !preview) contentProps = { ...props, _onPreviewAsStudent: togglePreview };
-    return <div ref={previewRootRef} className="space-y-4">{(preview || props.isParentMode) && <section data-assessment-preview-controls className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white p-3 text-slate-800">{preview ? <p className="text-sm"><strong>{previewCopy('quiz.preview_banner_title', 'Student preview.')}</strong> {previewCopy('quiz.preview_banner_body', 'Responses are temporary. AI grading and submission are disabled.')}</p> : <p className="text-sm">{previewCopy('quiz.preview_parent_hint', "Check the questions and feedback settings from the learner's perspective.")}</p>}<button type="button" data-assessment-preview-toggle onClick={togglePreview} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900">{preview ? previewCopy('quiz.exit_preview', 'Exit student preview') : previewCopy('quiz.preview_as_student', 'Preview as student')}</button></section>}<QuizViewContent key={identity + ':' + (preview ? previewNonce : 'actual') + ((!props.isTeacherMode && !props.isParentMode) || preview ? ':' + _quizFeedbackSignature(props.generatedContent?.data) : '')} {...contentProps} /></div>;
+    contentProps = { ...contentProps, _onAssessmentStorageRefresh: function () { setStorageRevision(value => value + 1); } };
+    // Include explicit storage refreshes in the child identity so every draft
+    // field initializes from the newly selected attempt together.
+    var contentIdentity = identity + ':' + storageRevision;
+    if (restoreRecord && projectRestoreState !== restoreIdentity) return <div role="status">Restoring saved assessment responses…</div>;
+    return <div ref={previewRootRef} className="space-y-4">{(preview || props.isParentMode) && <section data-assessment-preview-controls className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white p-3 text-slate-800">{preview ? <p className="text-sm"><strong>{previewCopy('quiz.preview_banner_title', 'Student preview.')}</strong> {previewCopy('quiz.preview_banner_body', 'Responses are temporary. AI grading and submission are disabled.')}</p> : <p className="text-sm">{previewCopy('quiz.preview_parent_hint', "Check the questions and feedback settings from the learner's perspective.")}</p>}<button type="button" data-assessment-preview-toggle onClick={togglePreview} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900">{preview ? previewCopy('quiz.exit_preview', 'Exit student preview') : previewCopy('quiz.preview_as_student', 'Preview as student')}</button></section>}<QuizViewContent key={contentIdentity + ':' + (preview ? previewNonce : 'actual') + ((!props.isTeacherMode && !props.isParentMode) || preview ? ':' + _quizFeedbackSignature(props.generatedContent?.data) : '')} {...contentProps} /></div>;
   }
   function QuizViewContent(props) {
     var authoringPropsRef = React.useRef(props);
@@ -4070,8 +4900,21 @@ var _lazyIcon = function (name) {
     var allowDictation = isTeacherMode || !(props.studentProjectSettings && props.studentProjectSettings.allowDictation === false);
     var activeSessionCode = props.activeSessionCode;
     var sessionData = props.sessionData;
-    var onSubmitLiveAnswer = activeSessionCode && typeof props.onSubmitLiveAnswer === 'function' ? props.onSubmitLiveAnswer : null;
     var assessmentData = props.generatedContent && props.generatedContent.data || {};
+    // Capture public item identities with this render. A delayed callback from
+    // an older card must not acquire the identity of a newly edited question.
+    var liveQuestionSignatures = (assessmentData.questions || []).map(_quizAssessmentItemSignature);
+    var onSubmitLiveAnswer = activeSessionCode && typeof props.onSubmitLiveAnswer === 'function' ? function (packet) {
+      var signature = packet && Number.isInteger(packet.questionIdx) ? liveQuestionSignatures[packet.questionIdx] : '';
+      var outgoing = Object.assign({}, packet);
+      if (signature && !outgoing.questionSignature) outgoing.questionSignature = signature;
+      var owner = attemptReceipt || attemptMeta;
+      if (learnerBaseDraftNamespace && owner?.attemptId && !outgoing.assessmentAttemptId) {
+        outgoing.assessmentAttemptId = owner.attemptId;
+        outgoing.assessmentAttemptStartedAt = owner.startedAt;
+      }
+      return props.onSubmitLiveAnswer(outgoing);
+    } : null;
     var scoringPolicy = Object.assign({ partialCredit: true, writtenResponseMode: 'ai-provisional' }, assessmentData.scoringPolicy || {});
     var deliverySettings = _quizNormalizeDeliverySettings(assessmentData.deliverySettings);
     var quizT = function (key, fallback) { var value = typeof t === 'function' ? t(key) : ''; return !value || value === key ? fallback : value; };
@@ -4079,11 +4922,46 @@ var _lazyIcon = function (name) {
     _quizFactCheckMarkerCache = quizFactCheckMarkers;
     var assessmentAudit = _quizAuditAssessment(assessmentData, { markers: quizFactCheckMarkers, copy: quizT });
     var assessmentH5PPreflight = _quizH5PPreflight(assessmentData);
-    var learnerBaseDraftNamespace = props._assessmentPreview ? props._previewNamespace : !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode) + (sessionData?.quizState?.activityId ? ':' + sessionData.quizState.activityId : '') + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '') : '';
-    var attemptReceiptState = React.useState(function () { return learnerBaseDraftNamespace ? _quizReadAttemptReceipt(learnerBaseDraftNamespace) : null; });
+    var learnerDraftSuffix = _quizLearnerDraftSuffix(props);
+    var learnerBaseDraftNamespace = props._assessmentPreview ? props._previewNamespace : !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode, props.generatedContent?.id) + learnerDraftSuffix : '';
+    var draftContext = _quizMergeDraftIdentity(learnerBaseDraftNamespace, { resourceId: String(props.generatedContent?.id || ''), sessionCode: String(activeSessionCode || ''), activityId: String(sessionData?.quizState?.activityId || ''), userId: String(props.user?.uid || ''), workspaceScope: String(props.learnerResponseScope || ''), signature: _quizFeedbackSignature(assessmentData), previousSignature: _quizPreviousFeedbackSignature(assessmentData), compatibleSignatures: _quizCompatibleFeedbackSignatures(assessmentData), title: assessmentData.title || 'Assessment' });
+    if (learnerBaseDraftNamespace && !props._assessmentPreview) _quizDraftContexts[learnerBaseDraftNamespace] = draftContext;
+    var attemptReceiptState = React.useState(function () {
+      if (!learnerBaseDraftNamespace) return null;
+      if (!props._assessmentPreview) _quizPrepareDraft(learnerBaseDraftNamespace, [
+        { namespace: _quizPreviousDraftNamespace(_quizPreviousStableAssessmentData(assessmentData), activeSessionCode, props.generatedContent?.id) + learnerDraftSuffix, signature: _quizPreviousFeedbackSignature(_quizPreviousStableAssessmentData(assessmentData)) },
+        { namespace: _quizPreviousDraftNamespace(assessmentData, activeSessionCode, props.generatedContent?.id) + learnerDraftSuffix, signature: _quizPreviousFeedbackSignature(assessmentData) }
+      ], draftContext);
+      return _quizReadAttemptReceipt(learnerBaseDraftNamespace, _quizFeedbackSignature(assessmentData));
+    });
     var attemptReceipt = attemptReceiptState[0];
     var setAttemptReceipt = attemptReceiptState[1];
+    var earlierWorkState = React.useState(function () {
+      if (!learnerBaseDraftNamespace || props._assessmentPreview) return null;
+      var legacyNamespace = _quizLegacyDraftNamespace(assessmentData, activeSessionCode) + (sessionData?.quizState?.activityId ? ':' + sessionData.quizState.activityId : '') + (props.user?.uid ? ':user-' + encodeURIComponent(props.user.uid) : '');
+      return _quizFindEarlierVersion(draftContext, learnerBaseDraftNamespace) || _quizReadAttemptReceipt(legacyNamespace) || _quizReadDraft(legacyNamespace);
+    });
+    var earlierWork = earlierWorkState[0];
     var draftNamespace = learnerBaseDraftNamespace && !attemptReceipt ? learnerBaseDraftNamespace : '';
+    var [externalWork, setExternalWork] = React.useState(null);
+    React.useEffect(function () {
+      if (!learnerBaseDraftNamespace || props._assessmentPreview) return;
+      function receive(event) {
+        if (event.type === 'storage' ? event.key !== learnerBaseDraftNamespace && event.key !== _quizAttemptStorageKey(learnerBaseDraftNamespace) : event.detail?.namespace !== learnerBaseDraftNamespace) return;
+        var saved = _quizReadAttemptReceipt(learnerBaseDraftNamespace, _quizFeedbackSignature(assessmentData));
+        var incoming = _quizReadDraft(learnerBaseDraftNamespace)?.items?.root?.attemptMeta;
+        var local = _quizDraftFallback[learnerBaseDraftNamespace]?.items?.root?.attemptMeta;
+        if (saved && saved.attemptId === attemptReceipt?.attemptId) { setAttemptReceipt(saved); return; }
+        if (saved || attemptReceipt && !saved || local?.attemptId && incoming?.attemptId && local.attemptId !== incoming.attemptId) {
+          var working = _quizReadWorkingDraft(learnerBaseDraftNamespace);
+          _quizClosedDrafts[learnerBaseDraftNamespace] = true;
+          setExternalWork({ draft: working, completed: !!saved });
+        }
+      }
+      window.addEventListener('storage', receive);
+      window.addEventListener('alloflow:assessment-draft-synced', receive);
+      return function () { window.removeEventListener('storage', receive); window.removeEventListener('alloflow:assessment-draft-synced', receive); };
+    }, [learnerBaseDraftNamespace, attemptReceipt?.attemptId]);
     var regeneratingState = React.useState({});
     var regeneratingQuestions = regeneratingState[0];
     var setRegeneratingQuestions = regeneratingState[1];
@@ -4092,7 +4970,7 @@ var _lazyIcon = function (name) {
     var setRepairingAssessment = repairingState[1];
     async function regenerateAssessmentQuestion(questionIdx, question) {
       if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;
-      var request = authoringRequests.begin('question:' + questionIdx);
+      var request = authoringRequests.begin('question:' + questionIdx, { questionIdx: questionIdx, question: question });
       if (!request) return;
       setRegeneratingQuestions(function (previous) {
         var next = Object.assign({}, previous);
@@ -4107,10 +4985,16 @@ var _lazyIcon = function (name) {
         var parsed = _quizExtractJson(raw);
         var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
         if (!replacement || typeof replacement !== 'object') throw new Error('The AI did not return a valid question.');
-        if (!authoringRequests.current(request)) return;
+        var currentProps = authoringRequests.currentProps(request);
+        if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') return;
         replacement.type = type;
-        props.handleQuizQuestionAction(questionIdx, 'replace', replacement);
-        if (typeof props.addToast === 'function') props.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
+        var result = await currentProps.handleQuizQuestionAction(questionIdx, 'replace', replacement, {
+          resourceId: currentProps.generatedContent.id, questionIndex: questionIdx,
+          question: request.question, questionSignature: request.questionSignature
+        });
+        // A functional host update is queued, not confirmed yet. Its visible
+        // replacement provides feedback without announcing a rejected commit.
+        if (result !== false && result?.status !== 'queued' && typeof currentProps.addToast === 'function') currentProps.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
       } catch (error) {
         if (authoringRequests.current(request) && typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
       } finally {
@@ -4160,6 +5044,9 @@ var _lazyIcon = function (name) {
     var reviewOpenState = React.useState(false);
     var reviewOpen = reviewOpenState[0];
     var setReviewOpen = reviewOpenState[1];
+    var [submissionError, setSubmissionError] = React.useState('');
+    var [restartError, setRestartError] = React.useState('');
+    React.useEffect(function () { if (!reviewOpen) setSubmissionError(''); }, [reviewOpen]);
     var currentQuestionState = React.useState(0);
     var currentQuestionIdx = currentQuestionState[0];
     var setCurrentQuestionIdx = currentQuestionState[1];
@@ -4188,6 +5075,45 @@ var _lazyIcon = function (name) {
       if (!draftNamespace || !attemptMeta || !attemptMeta.attemptId) return;
       _quizWriteDraftField(draftNamespace, 'root', 'attemptMeta', attemptMeta);
     }, [draftNamespace, attemptMeta && attemptMeta.attemptId]);
+    React.useEffect(function () {
+      if (!draftNamespace || !attemptMeta?.previousAttemptId || !activeSessionCode || typeof onSubmitLiveAnswer !== 'function' || props._assessmentPreview) return;
+      // A restart replaces the teacher's old completion even before the first
+      // new answer. Keep retrying an unconfirmed marker through reconnects.
+      var cancelled = false, received = false, sending = false, retryTimer = null, retryDelay = 1000;
+      var packet = {
+        questionIdx: (assessmentData.questions || []).length, itemType: 'assessment-start',
+        answer: null, answered: false, timestamp: attemptMeta.startedAt,
+        assessmentAttemptId: attemptMeta.attemptId, assessmentAttemptStartedAt: attemptMeta.startedAt,
+        activityId: String(sessionData?.quizState?.activityId || ''), requireConfirmation: true,
+        requestId: attemptMeta.attemptId + '-start'
+      };
+      async function sendStartMarker() {
+        if (cancelled || received || sending) return;
+        if (retryTimer !== null) { window.clearTimeout(retryTimer); retryTimer = null; }
+        sending = true;
+        try {
+          var result = await onSubmitLiveAnswer(packet);
+          received = !!result && result.status === 'received';
+        } catch (_) { /* Retry after a temporary connection failure. */ }
+        finally {
+          sending = false;
+          if (!cancelled && !received) {
+            retryTimer = window.setTimeout(sendStartMarker, retryDelay);
+            retryDelay = Math.min(15000, retryDelay * 2);
+          }
+        }
+      }
+      function retryWhenVisible() { if (document.visibilityState !== 'hidden') sendStartMarker(); }
+      sendStartMarker();
+      window.addEventListener('online', sendStartMarker);
+      document.addEventListener('visibilitychange', retryWhenVisible);
+      return function () {
+        cancelled = true;
+        if (retryTimer !== null) window.clearTimeout(retryTimer);
+        window.removeEventListener('online', sendStartMarker);
+        document.removeEventListener('visibilitychange', retryWhenVisible);
+      };
+    }, [draftNamespace, attemptMeta && attemptMeta.attemptId, activeSessionCode]);
     React.useEffect(function () {
       if (!draftNamespace || !assessmentTimer.running || !assessmentTimer.deadlineAt || assessmentTimer.expired) return;
       var tick = function () {
@@ -4222,6 +5148,7 @@ var _lazyIcon = function (name) {
       window.setTimeout(function () {
         try {
           var node = document.getElementById('assessment-question-' + next);
+          if (node && typeof node.focus === 'function') { node.setAttribute('tabindex', '-1'); node.focus({ preventScroll: true }); }
           if (node && typeof node.scrollIntoView === 'function') node.scrollIntoView({ behavior: (document.querySelector('.reduce-motion') || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) ? 'auto' : 'smooth', block: 'start' });
         } catch (e) {}
       }, 0);
@@ -4260,7 +5187,7 @@ var _lazyIcon = function (name) {
     var [feedbackReleaseError, setFeedbackReleaseError] = React.useState('');
     var feedbackSignature = _quizFeedbackSignature(assessmentData);
     var feedbackRelease = sessionData?.quizState?.assessmentFeedbackRelease;
-    var feedbackReleased = deliverySettings.feedbackReleasedFor === feedbackSignature || !!(feedbackRelease && feedbackRelease.resourceId === String(props.generatedContent?.id || '') && feedbackRelease.signature === feedbackSignature);
+    var feedbackReleased = draftContext.compatibleSignatures.indexOf(deliverySettings.feedbackReleasedFor) >= 0 || !!(feedbackRelease && feedbackRelease.resourceId === String(props.generatedContent?.id || '') && draftContext.compatibleSignatures.indexOf(feedbackRelease.signature) >= 0);
     var gradedMode = _quizIsGraded(assessmentData);
     var deferFeedback = !isTeacherMode && !isParentMode && (deliverySettings.feedbackTiming !== 'immediate' || gradedMode);
     async function releaseAssessmentFeedback() {
@@ -4282,9 +5209,10 @@ var _lazyIcon = function (name) {
       if (receipt.sessionCode !== activeSessionCode || receipt.activityId !== String(sessionData?.quizState?.activityId || '')) return;
       submissionLockRef.current = true; setDeliveryBusy(true);
       var scope = submissionContext, namespace = learnerBaseDraftNamespace;
-      var current = () => submissionMountedRef.current && submissionContextRef.current === scope;
+      var current = () => submissionMountedRef.current && submissionContextRef.current === scope && _quizReadAttemptReceipt(namespace)?.attemptId === receipt.attemptId && (!_quizReadDraft(namespace)?.items?.root?.attemptMeta?.attemptId || _quizReadDraft(namespace).items.root.attemptMeta.attemptId === receipt.attemptId);
       var latest = Object.assign({}, receipt, { delivery: { status: 'sending' } });
-      _quizFinalizeAttempt(namespace, latest); setAttemptReceipt(latest);
+      if (!await _quizWithDraftLock(namespace, function () { return _quizFinalizeAttempt(namespace, latest); })) { submissionLockRef.current = false; setDeliveryBusy(false); _quizNotifyDraftSync(namespace); return; }
+      setAttemptReceipt(latest);
       try {
         if (typeof onSubmitLiveAnswer !== 'function' || !receipt.activityId) throw new Error('Your teacher connection is unavailable. Reconnect, then retry.');
         var questions = assessmentData.questions || [];
@@ -4294,6 +5222,9 @@ var _lazyIcon = function (name) {
           var result = await onSubmitLiveAnswer({
             questionIdx: i, itemType: complete ? 'assessment-complete' : q.type || 'mcq', conceptLabel: complete ? '' : q.conceptLabel || '',
             answer: complete ? { attemptId: receipt.attemptId, answered: receipt.summary.answered, total: receipt.summary.total, submittedAt: receipt.submittedAt, reflections: receipt.responses.root?.reflectionAnswers || {} } : _quizAttemptAnswer(q, i, receipt.responses),
+            confidence: complete ? null : _quizAttemptConfidence(q, i, receipt.responses),
+            questionSignature: complete ? '' : liveQuestionSignatures[i],
+            assessmentAttemptId: receipt.attemptId, assessmentAttemptStartedAt: receipt.startedAt,
             answered: complete || _quizQuestionAnswered(q, i, { items: receipt.responses }),
             timestamp: receipt.submittedAt, activityId: receipt.activityId, requireConfirmation: true,
             requestId: receipt.attemptId + '-q' + i
@@ -4305,39 +5236,82 @@ var _lazyIcon = function (name) {
       } catch (error) {
         latest = Object.assign({}, receipt, { delivery: { status: 'pending', message: error.message || 'Your attempt is saved. Delivery is not confirmed.' } });
       } finally {
-        if (current()) { _quizFinalizeAttempt(namespace, latest); setAttemptReceipt(latest); setDeliveryBusy(false); }
+        if (current()) { var updated = await _quizWithDraftLock(namespace, function () { return current() && _quizFinalizeAttempt(namespace, latest); }); if (updated) setAttemptReceipt(latest); else _quizNotifyDraftSync(namespace); setDeliveryBusy(false); }
         submissionLockRef.current = false;
       }
     }
     function downloadAssessmentAttempt() {
       if (!attemptReceipt || props._assessmentPreview) return;
-      var exported = { title: assessmentData.title || 'Assessment', attemptId: attemptReceipt.attemptId, submittedAt: attemptReceipt.submittedAt, delivery: attemptReceipt.delivery, responses: (assessmentData.questions || []).map((q,i) => ({ question: q.question, type: q.type || 'mcq', response: _quizAttemptAnswer(q,i,attemptReceipt.responses || {}) })), reflections: attemptReceipt.responses?.root?.reflectionAnswers || {} };
+      var exported = { title: assessmentData.title || 'Assessment', attemptId: attemptReceipt.attemptId, submittedAt: attemptReceipt.submittedAt, delivery: attemptReceipt.delivery, responses: (assessmentData.questions || []).map((q,i) => ({ question: q.question, type: q.type || 'mcq', response: _quizAttemptAnswer(q,i,attemptReceipt.responses || {}), confidence: _quizAttemptConfidence(q,i,attemptReceipt.responses || {}) })), reflections: attemptReceipt.responses?.root?.reflectionAnswers || {} };
       var url = URL.createObjectURL(new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' }));
       var link = document.createElement('a'); link.href = url; link.download = 'assessment-attempt.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
+    function downloadAssessmentDraft() {
+      if ((!draftNamespace && !externalWork) || props._assessmentPreview) return;
+      var working = externalWork ? externalWork.draft : _quizReadWorkingDraft(draftNamespace);
+      var exported = {
+        format: 'alloflow-assessment-draft', version: 1, status: 'in-progress',
+        title: assessmentData.title || 'Assessment', resourceId: String(props.generatedContent?.id || ''),
+        attemptId: attemptMeta && attemptMeta.attemptId || '', exportedAt: Date.now(), updatedAt: working.updatedAt,
+        note: 'A copy of your current responses. This download does not submit the assessment.',
+        responses: (assessmentData.questions || []).map(function (q, i) { return { question: q.question || q.contextSentence || '', type: q.type || 'mcq', response: _quizAttemptAnswer(q, i, working.items), confidence: _quizAttemptConfidence(q, i, working.items) }; }),
+        reflections: working.items.root && working.items.root.reflectionAnswers || {}
+      };
+      var url = URL.createObjectURL(new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' }));
+      var link = document.createElement('a'); link.href = url; link.download = 'assessment-draft.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function downloadEarlierAssessmentWork() {
+      if (!earlierWork || props._assessmentPreview) return;
+      var savedWork = earlierWork._versionStorageKey?.indexOf(_QUIZ_DRAFT_STORAGE_PREFIX) === 0 ? _quizReadWorkingDraft(earlierWork._versionStorageKey) : earlierWork;
+      // Do not map old answer indices to today's potentially revised choices.
+      var exported = { format: 'alloflow-earlier-assessment-work', assignmentIdentity: earlierWork.assessmentIdentity ? 'same-assignment-earlier-version' : 'unverified', note: earlierWork.assessmentIdentity ? 'Saved for an earlier version of this assignment. Its answers have not been applied to the changed questions.' : 'Saved before responses were separated by assignment. Question choices may have changed.', savedWork: savedWork };
+      var url = URL.createObjectURL(new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' }));
+      var link = document.createElement('a'); link.href = url; link.download = 'earlier-assessment-work.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
     function submitAssessmentAttempt() {
+      return _quizWithDraftLock(draftNamespace, submitAssessmentAttemptNow);
+    }
+    function submitAssessmentAttemptNow() {
       if (!draftNamespace || props._assessmentPreview || submissionLockRef.current) return null;
-      var existing = _quizReadAttemptReceipt(draftNamespace);
+      setSubmissionError('');
+      var existing = _quizReadAttemptReceipt(draftNamespace, feedbackSignature);
       if (existing) { setAttemptReceipt(existing); return existing; }
       var working = _quizReadWorkingDraft(draftNamespace), progress = _quizBuildAttemptProgress(assessmentData, working), submittedAt = Date.now();
       var receipt = _quizFinalizeAttempt(draftNamespace, {
         attemptId: attemptMeta && attemptMeta.attemptId || ('attempt-' + submittedAt.toString(36)),
         startedAt: attemptMeta && attemptMeta.startedAt || submittedAt, submittedAt,
         summary: { total: progress.total, answered: progress.answered, unanswered: progress.unanswered, flagged: progress.flagged },
-        responses: working.items, feedbackTiming: deliverySettings.feedbackTiming, signature: feedbackSignature,
+        responses: working.items, feedbackTiming: deliverySettings.feedbackTiming, signature: feedbackSignature, resourceId: String(props.generatedContent?.id || ''),
         sessionCode: activeSessionCode || '', activityId: String(sessionData?.quizState?.activityId || ''),
         delivery: { status: activeSessionCode ? 'pending' : 'local' }
       });
-      if (!receipt) { if (typeof props.addToast === 'function') props.addToast('Could not save your completed attempt. Your draft is still available. Please try again.', 'error'); return null; }
+      if (!receipt) {
+        var saveError = quizT('quiz.draft.submission_failed', 'Your assessment has not been submitted because this browser could not save it. Keep this page open, download your draft, or retry submission when local saving is available.');
+        setSubmissionError(saveError);
+        if (typeof props.addToast === 'function') props.addToast(saveError, 'error');
+        return null;
+      }
       setReviewOpen(false); setAttemptReceipt(receipt);
       if (activeSessionCode) deliverAssessmentReceipt(receipt); else reportAssessmentCompletion(receipt);
       if (typeof props.addToast === 'function') props.addToast('Completed attempt saved on this device.', 'success');
       return receipt;
     }
     function startAnotherAssessmentAttempt() {
-      if (!_quizClearAttemptReceipt(learnerBaseDraftNamespace)) return;
-      setAttemptReceipt(null);
-      try { window.location.reload(); } catch (e) {}
+      return _quizWithDraftLock(learnerBaseDraftNamespace, startAnotherAssessmentAttemptNow);
+    }
+    function startAnotherAssessmentAttemptNow() {
+      setRestartError('');
+      if (!_quizClearAttemptReceipt(learnerBaseDraftNamespace, attemptReceipt && attemptReceipt.attemptId)) {
+        var message = quizT('quiz.attempt.restart_failed', 'This browser could not start a new attempt. Your completed responses are still available here. Download a copy or try again.');
+        setRestartError(message);
+        if (typeof props.addToast === 'function') props.addToast(message, 'error');
+        return;
+      }
+      recordAssessmentResponses('assessmentSubmitted', null);
+      var restarted = _quizReadWorkingDraft(learnerBaseDraftNamespace), restartedMeta = restarted.items?.root?.attemptMeta || {};
+      recordAssessmentResponses('assessmentDraft', _quizResponseSnapshot(assessmentData, restarted.items, { status: 'in-progress', attemptId: restartedMeta.attemptId || '', startedAt: restartedMeta.startedAt || null }));
+      if (typeof props._onAssessmentStorageRefresh === 'function') props._onAssessmentStorageRefresh();
+      else { setAttemptReceipt(null); try { window.location.reload(); } catch (e) {} }
     }
     // Mirror learner answers into the host's student-work record so Submit
     // Work carries them (non-live attempts otherwise lived only on-device).
@@ -4353,7 +5327,7 @@ var _lazyIcon = function (name) {
       var signature = JSON.stringify(snapshot);
       if (recordedResponsesRef.current[key] === signature) return;
       recordedResponsesRef.current[key] = signature;
-      try { record(recordResourceId, key, snapshot ? Object.assign({}, snapshot, { recordedAt: Date.now() }) : null); } catch (e) {}
+      try { record(recordResourceId, key, snapshot ? Object.assign({}, snapshot, { assessmentIdentity: draftContext, recordedAt: Date.now() }) : null); } catch (e) {}
     }
     React.useEffect(function () {
       if (!draftNamespace || !recordResponsesRef.current) return undefined;
@@ -4362,7 +5336,7 @@ var _lazyIcon = function (name) {
         timer = 0;
         var meta = recordAttemptMetaRef.current || {};
         var snapshot = _quizResponseSnapshot(assessmentData, _quizReadWorkingDraft(draftNamespace).items, { status: 'in-progress', attemptId: meta.attemptId || '', startedAt: meta.startedAt || null });
-        if (!snapshot.answered && !snapshot.reflections.some(function (entry) { return entry.response; })) return;
+        if (!snapshot.responded && !snapshot.answered && !snapshot.items.some(function (entry) { return entry.confidence; }) && !snapshot.reflections.some(function (entry) { return entry.response; }) && !recordedResponsesRef.current.assessmentDraft) return;
         recordAssessmentResponses('assessmentDraft', snapshot);
       }
       function onDraft(event) {
@@ -4389,6 +5363,7 @@ var _lazyIcon = function (name) {
     var studentMcqConfidence = mcqConfidenceState[0];
     var setStudentMcqConfidence = mcqConfidenceState[1];
     function selectMcqOption(qIdx, optIdx, optText, q) {
+      _quizWriteDraftField(draftNamespace, 'q-' + qIdx, 'idk', false);
       setStudentMcqAnswers(function (prev) {
         var next = Object.assign({}, prev);
         next[qIdx] = optIdx;
@@ -4417,13 +5392,14 @@ var _lazyIcon = function (name) {
         return next;
       });
       var prevOptIdx = studentMcqAnswers[qIdx];
-      if (typeof prevOptIdx !== 'number' || typeof onSubmitLiveAnswer !== 'function') return;
+      var markedIdk = _quizReadDraftField(draftNamespace, 'q-' + qIdx, 'idk').value === true;
+      if ((!markedIdk && typeof prevOptIdx !== 'number') || typeof onSubmitLiveAnswer !== 'function') return;
       try {
         onSubmitLiveAnswer({
           questionIdx: qIdx,
           itemType: 'mcq',
           conceptLabel: q && q.conceptLabel || '',
-          answer: {
+          answer: markedIdk ? { idk: true } : {
             optionIdx: prevOptIdx,
             optionText: q.options[prevOptIdx]
           },
@@ -5015,7 +5991,7 @@ var _lazyIcon = function (name) {
     var canPreviewAsStudent = typeof props._onPreviewAsStudent === 'function';
     var drawerTools = canExportQti || canPreviewAsStudent ? <div data-assessment-drawer-tools className="flex flex-wrap gap-2">{canPreviewAsStudent && <button type="button" data-assessment-preview-toggle onClick={props._onPreviewAsStudent} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900">{quizCopy('quiz.preview_as_student', 'Preview as student')}</button>}{canExportQti && <button type="button" data-assessment-export-qti onClick={handleExportQTI} className="flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none" title={t('export_menu.qti')}><FolderDown size={14} aria-hidden="true" /> {t('quiz.export_qti_btn')}</button>}</div> : null;
     var settingsDrawer = drawerQuality || deliverySettingsPanel || drawerTools ? <section data-assessment-settings-drawer className="rounded-xl border border-slate-300 bg-white"><button type="button" data-assessment-settings-toggle aria-expanded={settingsDrawerOpen} aria-controls="assessment-settings-panel" onClick={function () { settingsDrawerOpenState[1](!settingsDrawerOpen); }} className="w-full min-h-11 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 text-left focus-visible:ring-2 focus-visible:ring-indigo-600"><span className="text-sm font-bold text-slate-800">{quizCopy('quiz.settings_drawer', 'Settings, preview and export')}</span><span className="text-xs text-slate-600">{[_deliveryProfileLabel, _feedbackTimingLabel].filter(Boolean).join(' · ')}</span></button><div id="assessment-settings-panel" hidden={!settingsDrawerOpen} style={{ display: settingsDrawerOpen ? undefined : 'none' }} className="space-y-3 p-3 pt-0">{drawerTools}{drawerQuality}{deliverySettingsPanel}</div></section> : null;
-    var draftStatusPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <AssessmentDraftStatus namespace={draftNamespace} /> : null;
+    var draftStatusPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <AssessmentDraftStatus namespace={draftNamespace} onDownload={downloadAssessmentDraft} copy={quizT} /> : null;
     var oneQuestionAtATime = deliverySettings.pacing === 'one-at-a-time' && !isEditingQuiz && !isPresentationMode;
     var assessmentQuestionCount = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
     var reviewProgress = draftNamespace ? _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace)) : null;
@@ -5025,7 +6001,7 @@ var _lazyIcon = function (name) {
     // that clearance the launcher covered them whenever the row scrolled to the
     // bottom of the screen.
     var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <section className="rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4" aria-label="Assessment progress and submission">{gradedMode && <p data-assessment-graded-banner className="mb-3 text-sm font-bold text-indigo-950">{quizT('quiz.graded.student_banner', 'Graded: answers are not shown here. Your teacher will check them after you submit.')}</p>}<AssessmentTimerBar enabled={deliverySettings.timeLimitMinutes > 0} remainingSeconds={assessmentTimer.remainingSeconds} running={assessmentTimer.running} expired={assessmentTimer.expired} warningMinutes={deliverySettings.warningMinutes} extensionMinutes={deliverySettings.extensionMinutes} onTogglePause={toggleAssessmentTimer} onExtend={extendAssessmentTimer} /><div className={'flex items-center gap-2 flex-wrap pr-20 md:pr-0 ' + (deliverySettings.timeLimitMinutes > 0 ? 'mt-3' : '')}>{deliverySettings.showProgress && <span className="text-xs font-black text-indigo-950">{oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'}</span>}{oneQuestionAtATime && <div className="flex items-center gap-2"><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx - 1); }} disabled={currentQuestionIdx <= 0} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Previous</button><button type="button" onClick={function () { goToAssessmentQuestion(currentQuestionIdx + 1); }} disabled={currentQuestionIdx >= assessmentQuestionCount - 1} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-indigo-300 text-indigo-900 disabled:opacity-40">Next</button></div>}<button type="button" onClick={function () { setReviewOpen(true); }} className="ml-auto text-xs font-black px-3 py-1.5 rounded-lg bg-indigo-700 text-white hover:bg-indigo-800">Review &amp; submit</button></div></section> : null;
-    var reviewDialog = <AssessmentReviewDialog preview={!!props._assessmentPreview} open={reviewOpen} progress={reviewProgress} onClose={function () { setReviewOpen(false); }} onGo={goToAssessmentQuestion} onSubmit={submitAssessmentAttempt} />;
+    var reviewDialog = <AssessmentReviewDialog preview={!!props._assessmentPreview} open={reviewOpen} progress={reviewProgress} submissionError={submissionError} onDownloadDraft={downloadAssessmentDraft} onClose={function () { setReviewOpen(false); }} onGo={goToAssessmentQuestion} onSubmit={submitAssessmentAttempt} copy={quizT} />;
     function getQuizReflections() {
       if (Array.isArray(assessmentData.reflections)) return assessmentData.reflections;
       return assessmentData.reflection ? [assessmentData.reflection] : [];
@@ -5038,7 +6014,7 @@ var _lazyIcon = function (name) {
       var entry = reflectionAnswers[rIdx] || {};
       var draft = String(entry.draft || '');
       var submitted = !!entry.submitted;
-      var response = submitted ? String(entry.submittedText || draft) : draft;
+      var response = _quizReflectionResponse(entry);
       var actions = ['status', 'describe', 'list-actions', 'list-reflections', 'select-reflection', 'read-reflection', 'read-reflection-response', 'return-to-question'];
       if (submitted) actions.push('edit-reflection');
       else {
@@ -5226,6 +6202,7 @@ var _lazyIcon = function (name) {
           message: 'Voice checking is currently available for multiple-choice items only.'
         });
       }
+      if (_quizIsAnswerKeyDisputed(question)) return Object.assign({}, status, { ok: false, state: 'key-under-review', checked: false, correct: null, message: quizT('quiz.attempt.key_under_review', 'Your teacher is reviewing this answer.') });
       if (typeof selectedOptionIdx !== 'number') {
         return Object.assign({}, status, {
           ok: false,
@@ -5357,7 +6334,7 @@ var _lazyIcon = function (name) {
       quizVoiceLastFeedbackRef.current = submitMessage;
       return Object.assign({}, status, { ok: true, state: 'reflection-submitted', reflectionSubmitted: true, message: submitMessage });
     }
-    function handleQuizVoiceSubmit(request, status) {
+    async function handleQuizVoiceSubmit(request, status) {
       if (props._assessmentPreview) return Object.assign({}, status, { ok:false, state:'preview', message:'Submission is disabled in student preview.' });
       if (status.surfaceMode === 'review') {
         if (!draftNamespace) {
@@ -5376,7 +6353,7 @@ var _lazyIcon = function (name) {
             message: 'Submit this assessment now? Say yes or no.'
           });
         }
-        var reviewReceipt = submitAssessmentAttempt();
+        var reviewReceipt = await submitAssessmentAttempt();
         if (!reviewReceipt) {
           return Object.assign({}, status, {
             ok: false,
@@ -5421,7 +6398,7 @@ var _lazyIcon = function (name) {
           message: 'Review opened. ' + submitProgress.answered + ' of ' + submitProgress.total + ' questions are answered. Confirm submit assessment to finish.'
         });
       }
-      var receipt = submitAssessmentAttempt();
+      var receipt = await submitAssessmentAttempt();
       if (!receipt) {
         return Object.assign({}, status, {
           ok: false,
@@ -5673,7 +6650,7 @@ var _lazyIcon = function (name) {
         ? new window.CustomEvent(QUIZ_VOICE_CONTROL_EVENT, { detail: detail })
         : { type: QUIZ_VOICE_CONTROL_EVENT, detail: detail };
       window.dispatchEvent(event);
-      return response || {
+      return response || detail._quizResponsePromise || {
         ok: false,
         handled: true,
         state: 'unavailable',
@@ -5800,7 +6777,8 @@ var _lazyIcon = function (name) {
           var action = actionMap[commandId];
           if (!action) return { ok: false, narration: 'That Quiz command is not available.' };
           var result = dispatchQuizVoiceScopeAction(action, params, meta);
-          return Object.assign({}, result, { narration: result && result.message ? result.message : 'Done.' });
+          var narrate = function (value) { return Object.assign({}, value, { narration: value && value.message ? value.message : 'Done.' }); };
+          return result && typeof result.then === 'function' ? result.then(narrate) : narrate(result);
         }
       });
     }
@@ -5811,7 +6789,13 @@ var _lazyIcon = function (name) {
         var action = _quizVoiceNormalizeAction(request.action);
         var status = getQuizVoiceBoundaryStatus();
         var result = executeQuizVoiceAction(request, action, status);
-        publishQuizVoiceBoundaryResult(result, request, action);
+        if (result && typeof result.then === 'function') {
+          request._quizResponsePromise = Promise.resolve(result).then(function (value) {
+            return publishQuizVoiceBoundaryResult(value, request, action);
+          }, function () {
+            return publishQuizVoiceBoundaryResult({ ok: false, state: 'error', message: 'The voice action could not finish. Check the assessment status before trying again.' }, request, action);
+          });
+        } else publishQuizVoiceBoundaryResult(result, request, action);
       };
       window.addEventListener(QUIZ_VOICE_CONTROL_EVENT, handleQuizVoiceControl);
       return function () {
@@ -5835,13 +6819,16 @@ var _lazyIcon = function (name) {
         if (typeof unregister === 'function') unregister();
       };
     }, []);
+    if (externalWork && !isTeacherMode && !isParentMode && !props._assessmentPreview) {
+      return <section data-assessment-external-change role="alert" className="space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-6 text-amber-950"><h2 className="text-lg font-bold">{quizT('quiz.draft.external_title', 'This assessment changed in another tab.')}</h2><p>{quizT('quiz.draft.external_help', 'You can download the answers from this tab before opening the latest attempt.')}</p><div className="flex flex-wrap gap-3"><button type="button" onClick={downloadAssessmentDraft} className="min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 font-bold">{quizT('quiz.review.download_draft', 'Download draft')}</button><button type="button" onClick={function () { _quizResetWorkingDraft(learnerBaseDraftNamespace); props._onAssessmentStorageRefresh?.(); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white">{quizT('quiz.draft.open_latest', 'Open latest attempt')}</button></div></section>;
+    }
     if (attemptReceipt && !isTeacherMode && !isParentMode && !isEditingQuiz && !isPresentationMode && !isReviewGame) {
-      return <div className="space-y-6">{modeBanner}<AssessmentSubmittedPanel receipt={attemptReceipt} sending={deliveryBusy} canRetry={!!activeSessionCode && attemptReceipt.sessionCode === activeSessionCode && attemptReceipt.activityId === String(sessionData?.quizState?.activityId || '')} onRetry={() => deliverAssessmentReceipt(attemptReceipt)} onDownload={downloadAssessmentAttempt} onStartAnother={startAnotherAssessmentAttempt} copy={quizT} includedInSubmitWork={!!recordResponsesRef.current} />{gradedMode ? <p data-assessment-graded-waiting role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800">{quizT('quiz.graded.submitted', 'Your responses are saved. Your teacher will check your answers.')}</p> : ((attemptReceipt.feedbackTiming || deliverySettings.feedbackTiming) !== 'teacher-release' && deliverySettings.feedbackTiming !== 'teacher-release') || feedbackReleased ? <AssessmentAttemptFeedback data={assessmentData} receipt={attemptReceipt} formatInlineText={formatInlineText} copy={quizT} /> : <p data-assessment-feedback-waiting role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800">{quizT('quiz.attempt.feedback_waiting', 'Your responses are saved. Feedback will appear here when your teacher releases it.')}</p>}</div>;
+      return <div className="space-y-6">{modeBanner}<AssessmentSubmittedPanel receipt={attemptReceipt} sending={deliveryBusy} canRetry={!!activeSessionCode && attemptReceipt.sessionCode === activeSessionCode && attemptReceipt.activityId === String(sessionData?.quizState?.activityId || '')} onRetry={() => deliverAssessmentReceipt(attemptReceipt)} onDownload={downloadAssessmentAttempt} onStartAnother={startAnotherAssessmentAttempt} restartError={restartError} copy={quizT} includedInSubmitWork={!!recordResponsesRef.current} />{gradedMode ? <p data-assessment-graded-waiting role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800">{quizT('quiz.graded.submitted', 'Your responses are saved. Your teacher will check your answers.')}</p> : ((attemptReceipt.feedbackTiming || deliverySettings.feedbackTiming) !== 'teacher-release' && deliverySettings.feedbackTiming !== 'teacher-release') || feedbackReleased ? <AssessmentAttemptFeedback data={assessmentData} receipt={attemptReceipt} formatInlineText={formatInlineText} copy={quizT} /> : <p data-assessment-feedback-waiting role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-slate-800">{quizT('quiz.attempt.feedback_waiting', 'Your responses are saved. Feedback will appear here when your teacher releases it.')}</p>}</div>;
     }
     if (soloQuestOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode)) {
       return soloQuestSetup.ready && window.AlloModules?.ConceptQuestSolo ? <window.AlloModules.ConceptQuestSolo generatedContent={generatedContent} inputText={inputText} callGemini={props.callGemini} user={props.user} appId={appId} t={t} onClose={closeSoloQuest}/> : <section className="rounded-xl border border-indigo-200 bg-indigo-50 p-5"><p role={soloQuestSetup.failed ? 'alert' : 'status'}>{soloQuestSetup.failed ? quizCopy('concept_quest.solo_load_failed', 'Concept Quest could not load. Check your connection and try again.') : quizCopy('concept_quest.solo_loading', 'Loading Concept Quest...')}</p><div className="mt-3 flex gap-2">{soloQuestSetup.failed && <button type="button" onClick={soloQuestSetup.retry} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white">{quizCopy('common.retry', 'Retry')}</button>}<button type="button" onClick={closeSoloQuest} className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 font-bold">{quizCopy('common.close', 'Close')}</button></div></section>;
     }
-    return <div className="space-y-6">{!isEditingQuiz && Array.isArray(assessmentData.questions) && assessmentData.questions.length > 0 && <button type="button" data-assessment-skip onClick={function () { var target = document.querySelector('[id^="assessment-question-"]'); if (!target) return; if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1'); target.focus(); }} className="sr-only focus:not-sr-only focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white">{quizCopy('quiz.skip_to_questions', 'Skip to the questions')}</button>}{boardSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (boardSetup.ready && window.AlloModules?.LessonBoardSetup ? <window.AlloModules.LessonBoardSetup history={props.history} callImagen={props.callImagen} callGemini={props.callGemini} inputText={props.inputText} generatedContent={generatedContent} language={leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English'} activeSessionCode={activeSessionCode} appId={appId} sessionData={sessionData} user={props.user} allowLive={!!(isTeacherMode && activeSessionCode)} t={t} onClose={() => setBoardSetupOpen(false)} onLaunched={() => setEscapeRoomState(previous => ({ ...previous, isActive: false, isGenerating: false, isPreview: false }))}/> : <div className="rounded-xl border border-teal-200 bg-teal-50 p-4"><p role={boardSetup.failed ? 'alert' : 'status'}>{boardSetup.failed ? t('lesson_board.load_failed', { defaultValue: 'The lesson board could not load. Check your connection and try again.' }) : t('lesson_board.loading', { defaultValue: 'Loading the lesson board…' })}</p>{boardSetup.failed && <button type="button" data-retry-lesson-board onClick={boardSetup.retry} className="mr-3 font-bold">{t('common.retry', { defaultValue: 'Retry' })}</button>}<button type="button" onClick={() => setBoardSetupOpen(false)}>{t('common.close')}</button></div>)}{connectedSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (connectedSetup.ready && window.AlloModules?.ConnectedEscapeRoomSetup ? <window.AlloModules.ConnectedEscapeRoomSetup callGemini={props.callGemini} inputText={props.inputText} generatedContent={generatedContent} language={leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English'} activeSessionCode={activeSessionCode} appId={appId} sessionData={sessionData} user={props.user} allowLive={!!(isTeacherMode && activeSessionCode)} learnerMode={!!isIndependentMode} t={t} onClose={() => setConnectedSetupOpen(false)} onLaunched={() => setEscapeRoomState(previous => ({ ...previous, isActive: false, isGenerating: false, isPreview: false }))} /> : <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4"><p role={connectedSetup.failed ? 'alert' : 'status'}>{connectedSetup.failed ? t('connected_escape.load_failed', { defaultValue: 'The escape room could not load. Check your connection and try again.' }) : t('connected_escape.loading', { defaultValue: 'Loading the escape room…' })}</p>{connectedSetup.failed && <button type="button" data-retry-connected-room onClick={connectedSetup.retry} className="mr-3 font-bold">{t('common.retry', { defaultValue: 'Retry' })}</button>}<button type="button" onClick={() => setConnectedSetupOpen(false)}>{t('common.close')}</button></div>)}{!canFacilitateAssessment && !isReviewGame && !escapeRoomState.isActive && <section data-assessment-student-view className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"><h2 className="text-base font-bold">{quizCopy('quiz.student_view_title','Your assessment')}</h2><p className="mt-1 text-sm">{quizCopy('quiz.student_view_help','Answer the questions below. You can review your responses before submitting.')}</p></section>}{classExplainerBanner}{isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive && deliverySettings.feedbackTiming === 'teacher-release' && <section data-assessment-live-feedback-release className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"><h2 className="text-base font-bold">Student feedback</h2><p className="mt-1 text-sm">Students can view answer guides after submitting and receiving your release.</p><button type="button" data-assessment-release-feedback onClick={releaseAssessmentFeedback} disabled={feedbackReleased || feedbackReleaseBusy} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{feedbackReleased ? 'Feedback released' : feedbackReleaseBusy ? 'Releasing feedback...' : 'Release feedback to students'}</button>{feedbackReleaseError && <p role="alert" className="mt-2 text-sm text-red-800">{feedbackReleaseError}</p>}</section>}{!isPresentationMode && !isReviewGame && <>{modeBanner}{explainerPanel}{assessmentAudit.ready ? null : qualityReviewPanel}{settingsDrawer}</>}{!canFacilitateAssessment && !isPresentationMode && !isReviewGame && <p data-assessment-feedback-note className="rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800">{deliverySettings.feedbackTiming === 'immediate' ? 'Practice feedback is available as you check responses.' : deliverySettings.feedbackTiming === 'teacher-release' ? 'Answer feedback stays hidden until you submit and your teacher releases it.' : 'Answer feedback stays hidden until you submit the assessment.'}</p>}{!props._assessmentPreview && draftStatusPanel}{learnerAttemptPanel}{reviewDialog}{canPlayAssessmentGames && <div data-assessment-facilitator-tools className="bg-teal-50 p-4 rounded-xl border border-teal-200 mb-6"><p className="mb-3 text-sm text-teal-900"><strong>UDL Goal:</strong> Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction.</p><div className="flex items-center gap-2 flex-wrap">{isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && <><button type="button" onClick={handleStartLiveSession} disabled={!!sessionData?.escapeRoomState?.isActive} className={'flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass} title={t('quiz.launch_live_tooltip')}><Wifi size={14} /> {t('quiz.launch_live_btn')}</button><div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in motion-reduce:animate-none fade-in duration-300"><Users size={12} className="text-orange-700" /><span className="text-xs font-black text-orange-700">{Object.keys(sessionData?.roster || {}).length} {t('quiz.lobby_waiting') || "Ready"}</span></div><button type="button" onClick={handleToggleInteractive} className={`flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`} title={t('session.toggle_interactive_title')}>{sessionData?.forceStatic ? <Lock size={12} /> : <Unlock size={12} />}{sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}</button></>}<>{canFacilitateAssessment && <button type="button" data-assessment-presentation-toggle aria-label={isPresentationMode ? quizCopy('quiz.exit_presentation', 'Exit presentation') : quizCopy('quiz.present_questions','Present questions')} aria-pressed={!!isPresentationMode} onClick={handleToggleIsPresentationMode} disabled={isReviewGame || isEditingQuiz || !!escapeRoomState.isActive || isTeacherMode && (sessionData?.quizState?.isActive || sessionData?.escapeRoomState?.isActive)} className={`flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`} title={t('quiz.presentation')}>{isPresentationMode ? <CheckCircle size={14} /> : <MonitorPlay size={14} />}{isPresentationMode ? quizCopy('quiz.exit_presentation', 'Exit presentation') : quizCopy('quiz.present_questions','Present questions')}</button>}</><button type="button" ref={quizGamesButtonRef} data-quiz-games-toggle aria-expanded={quizGamesOpen} aria-controls="quiz-games-tools" onClick={() => setQuizGamesOpen(open => !open)} className="min-h-11 flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50"><Gamepad2 size={16} aria-hidden="true"/>{isIndependentMode ? quizCopy('quiz.practice_games','Practice games') : t('common.start_game')}<span aria-hidden="true">{quizGamesOpen ? '▴' : '▾'}</span></button>
+    return <div className="space-y-6">{!isEditingQuiz && Array.isArray(assessmentData.questions) && assessmentData.questions.length > 0 && <button type="button" data-assessment-skip onClick={function () { var target = document.querySelector('[id^="assessment-question-"]'); if (!target) return; if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1'); target.focus(); }} className="sr-only focus:not-sr-only focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white">{quizCopy('quiz.skip_to_questions', 'Skip to the questions')}</button>}{boardSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (boardSetup.ready && window.AlloModules?.LessonBoardSetup ? <window.AlloModules.LessonBoardSetup history={props.history} callImagen={props.callImagen} callGemini={props.callGemini} inputText={props.inputText} generatedContent={generatedContent} language={leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English'} activeSessionCode={activeSessionCode} appId={appId} sessionData={sessionData} user={props.user} allowLive={!!(isTeacherMode && activeSessionCode)} t={t} onClose={() => setBoardSetupOpen(false)} onLaunched={() => setEscapeRoomState(previous => ({ ...previous, isActive: false, isGenerating: false, isPreview: false }))}/> : <div className="rounded-xl border border-teal-200 bg-teal-50 p-4"><p role={boardSetup.failed ? 'alert' : 'status'}>{boardSetup.failed ? t('lesson_board.load_failed', { defaultValue: 'The lesson board could not load. Check your connection and try again.' }) : t('lesson_board.loading', { defaultValue: 'Loading the lesson board…' })}</p>{boardSetup.failed && <button type="button" data-retry-lesson-board onClick={boardSetup.retry} className="mr-3 font-bold">{t('common.retry', { defaultValue: 'Retry' })}</button>}<button type="button" onClick={() => setBoardSetupOpen(false)}>{t('common.close')}</button></div>)}{connectedSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (connectedSetup.ready && window.AlloModules?.ConnectedEscapeRoomSetup ? <window.AlloModules.ConnectedEscapeRoomSetup callGemini={props.callGemini} inputText={props.inputText} generatedContent={generatedContent} language={leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English'} activeSessionCode={activeSessionCode} appId={appId} sessionData={sessionData} user={props.user} allowLive={!!(isTeacherMode && activeSessionCode)} learnerMode={!!isIndependentMode} t={t} onClose={() => setConnectedSetupOpen(false)} onLaunched={() => setEscapeRoomState(previous => ({ ...previous, isActive: false, isGenerating: false, isPreview: false }))} /> : <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4"><p role={connectedSetup.failed ? 'alert' : 'status'}>{connectedSetup.failed ? t('connected_escape.load_failed', { defaultValue: 'The escape room could not load. Check your connection and try again.' }) : t('connected_escape.loading', { defaultValue: 'Loading the escape room…' })}</p>{connectedSetup.failed && <button type="button" data-retry-connected-room onClick={connectedSetup.retry} className="mr-3 font-bold">{t('common.retry', { defaultValue: 'Retry' })}</button>}<button type="button" onClick={() => setConnectedSetupOpen(false)}>{t('common.close')}</button></div>)}{!canFacilitateAssessment && !isReviewGame && !escapeRoomState.isActive && <section data-assessment-student-view className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"><h2 className="text-base font-bold">{quizCopy('quiz.student_view_title','Your assessment')}</h2><p className="mt-1 text-sm">{quizCopy('quiz.student_view_help','Answer the questions below. You can review your responses before submitting.')}</p></section>}{classExplainerBanner}{isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive && deliverySettings.feedbackTiming === 'teacher-release' && <section data-assessment-live-feedback-release className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-indigo-950"><h2 className="text-base font-bold">Student feedback</h2><p className="mt-1 text-sm">Students can view answer guides after submitting and receiving your release.</p><button type="button" data-assessment-release-feedback onClick={releaseAssessmentFeedback} disabled={feedbackReleased || feedbackReleaseBusy} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{feedbackReleased ? 'Feedback released' : feedbackReleaseBusy ? 'Releasing feedback...' : 'Release feedback to students'}</button>{feedbackReleaseError && <p role="alert" className="mt-2 text-sm text-red-800">{feedbackReleaseError}</p>}</section>}{!isPresentationMode && !isReviewGame && <>{modeBanner}{explainerPanel}{assessmentAudit.ready ? null : qualityReviewPanel}{settingsDrawer}</>}{!canFacilitateAssessment && !isPresentationMode && !isReviewGame && <p data-assessment-feedback-note className="rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800">{deliverySettings.feedbackTiming === 'immediate' ? 'Practice feedback is available as you check responses.' : deliverySettings.feedbackTiming === 'teacher-release' ? 'Answer feedback stays hidden until you submit and your teacher releases it.' : 'Answer feedback stays hidden until you submit the assessment.'}</p>}{!props._assessmentPreview && draftStatusPanel}{earlierWork && <section data-assessment-earlier-work className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-950"><p>{earlierWork.assessmentIdentity ? quizT('quiz.earlier_version_note', 'Your saved work from an earlier version of this assignment is available to download. The questions have changed, so these answers have been kept separate.') : quizT('quiz.earlier_work_note', 'Earlier saved work is available for this question set. It may belong to another assignment or an earlier version, so it has not been added to this attempt.')}</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={downloadEarlierAssessmentWork} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 font-bold">{quizT('quiz.download_earlier_work', 'Download earlier work')}</button><button type="button" onClick={function () { earlierWorkState[1](null); }} className="min-h-11 rounded-lg px-3 py-2 font-bold">{quizT('common.dismiss', 'Dismiss')}</button></div></section>}{learnerAttemptPanel}{reviewDialog}{canPlayAssessmentGames && <div data-assessment-facilitator-tools className="bg-teal-50 p-4 rounded-xl border border-teal-200 mb-6"><p className="mb-3 text-sm text-teal-900"><strong>UDL Goal:</strong> Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction.</p><div className="flex items-center gap-2 flex-wrap">{isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && <><button type="button" onClick={handleStartLiveSession} disabled={!!sessionData?.escapeRoomState?.isActive} className={'flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass} title={t('quiz.launch_live_tooltip')}><Wifi size={14} /> {t('quiz.launch_live_btn')}</button><div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in motion-reduce:animate-none fade-in duration-300"><Users size={12} className="text-orange-700" /><span className="text-xs font-black text-orange-700">{Object.keys(sessionData?.roster || {}).length} {t('quiz.lobby_waiting') || "Ready"}</span></div><button type="button" onClick={handleToggleInteractive} className={`flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`} title={t('session.toggle_interactive_title')}>{sessionData?.forceStatic ? <Lock size={12} /> : <Unlock size={12} />}{sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}</button></>}<>{canFacilitateAssessment && <button type="button" data-assessment-presentation-toggle aria-label={isPresentationMode ? quizCopy('quiz.exit_presentation', 'Exit presentation') : quizCopy('quiz.present_questions','Present questions')} aria-pressed={!!isPresentationMode} onClick={handleToggleIsPresentationMode} disabled={isReviewGame || isEditingQuiz || !!escapeRoomState.isActive || isTeacherMode && (sessionData?.quizState?.isActive || sessionData?.escapeRoomState?.isActive)} className={`flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`} title={t('quiz.presentation')}>{isPresentationMode ? <CheckCircle size={14} /> : <MonitorPlay size={14} />}{isPresentationMode ? quizCopy('quiz.exit_presentation', 'Exit presentation') : quizCopy('quiz.present_questions','Present questions')}</button>}</><button type="button" ref={quizGamesButtonRef} data-quiz-games-toggle aria-expanded={quizGamesOpen} aria-controls="quiz-games-tools" onClick={() => setQuizGamesOpen(open => !open)} className="min-h-11 flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50"><Gamepad2 size={16} aria-hidden="true"/>{isIndependentMode ? quizCopy('quiz.practice_games','Practice games') : t('common.start_game')}<span aria-hidden="true">{quizGamesOpen ? '▴' : '▾'}</span></button>
       {isReviewGame && <button type="button" onClick={handleToggleIsReviewGame} className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-bold text-slate-800 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"><XCircle size={16} aria-hidden="true"/>{quizCopy('quiz.exit_review_game', 'Exit review game')}</button>}
       {escapeRoomState.isActive && <button type="button" data-quiz-exit-puzzle onClick={() => {
             closeQuizGames();
@@ -5890,6 +6877,7 @@ var _lazyIcon = function (name) {
       const reviewClaimed = reviewGameState.claimed instanceof Set ? reviewGameState.claimed : new Set();
       const reviewCompleted = reviewQuestions.filter(question => reviewClaimed.has(question.originalIndex)).length;
       const activeReviewQuestion = reviewGameState.activeQuestion;
+      const activeReviewKeyDisputed = _quizIsAnswerKeyDisputed(activeReviewQuestion);
       const activeReviewIsMcq = activeReviewQuestion && (!activeReviewQuestion.type || activeReviewQuestion.type === 'mcq') && Array.isArray(activeReviewQuestion.options);
       return <div className="animate-in motion-reduce:animate-none fade-in duration-500"><div className="bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-yellow-500 relative overflow-hidden min-h-[700px] flex flex-col"><div className="absolute inset-0 opacity-10 pointer-events-none"><div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" /><div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[linear-gradient(to_top,rgba(59,130,246,0.2),transparent)]" /></div><div className="flex justify-between items-start mb-6 relative z-10"><div className="text-left"><h2 className="text-2xl sm:text-3xl font-black text-yellow-300 tracking-wide uppercase drop-shadow-md flex items-center gap-3"><Gamepad2 size={32} /> {t('review_game.title')}</h2><p className="text-slate-200 text-sm mt-2 font-medium">{quizCopy('review_game.all_formats_help', 'Pick a tile, answer together, then reveal the guide and award points. Every assessment item is included.')}</p><p data-review-progress role="status" aria-live="polite" className="mt-2 text-sm font-bold text-yellow-200">{reviewCompleted + ' of ' + reviewQuestions.length + ' items completed · ' + reviewCategories.length + (reviewCategories.length === 1 ? ' category' : ' categories')}</p></div><div className="flex gap-2"><button type="button" aria-label={t('common.volume')} onClick={() => {
                 setSoundEnabled(!soundEnabled);
@@ -5930,10 +6918,10 @@ var _lazyIcon = function (name) {
           <div className="my-6"><p className="mb-2 text-sm font-semibold text-blue-200">{'Assessment question ' + (activeReviewQuestion.originalIndex + 1)}</p><h3 id="quiz-review-question-title" className="text-2xl font-bold leading-tight text-white sm:text-3xl">{formatInlineText(activeReviewQuestion.question || '', false, true)}</h3>{activeReviewQuestion.question_en && <p className="mt-4 text-lg italic text-blue-200">{formatInlineText(activeReviewQuestion.question_en, false, true)}</p>}</div>
           {activeReviewQuestion.imageUrl && <img src={activeReviewQuestion.imageUrl} alt={_quizAuthoredImageAlt(activeReviewQuestion.imageAltText)} className="mb-5 max-h-80 w-full rounded-lg bg-white object-contain" />}
           {activeReviewIsMcq ? <div data-review-question-type="mcq" className="mb-6 text-left"><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{activeReviewQuestion.options.map((option, optionIndex) => {
-            const correct = _quizAnswerMatches(option, activeReviewQuestion.correctAnswer);
-            return <div key={optionIndex} className={'rounded-xl border-2 p-4 text-lg font-medium ' + (reviewGameState.showAnswer && correct ? 'border-green-400 bg-green-800 text-white' : 'border-blue-500 bg-blue-800 text-white')}><span className="mr-2 inline-block font-bold">{String.fromCharCode(65 + optionIndex) + '.'}</span>{formatInlineText(option, false, true)}{reviewGameState.showAnswer && correct && <span className="ml-2 text-sm font-bold">✓ Correct</span>}</div>;
-          })}</div>{reviewGameState.showAnswer && <div data-review-answer-guide className="mt-4 rounded-xl border-2 border-green-300 bg-green-50 p-4 text-green-950" role="status"><strong>Answer: </strong>{formatInlineText(String(activeReviewQuestion.correctAnswer ?? activeReviewQuestion.expectedAnswer ?? 'Teacher review'), false)}{_quizStudentExplanation(activeReviewQuestion, true) && <div className="mt-3 border-t border-green-200 pt-3"><strong>Explanation: </strong>{renderFormattedText(_quizStudentExplanation(activeReviewQuestion, true))}</div>}</div>}</div> : <div className="mb-6"><AssessmentPresentationItem compact q={activeReviewQuestion} index={activeReviewQuestion.originalIndex} showAnswer={reviewGameState.showAnswer} formatInlineText={formatInlineText} renderFormattedText={renderFormattedText} /></div>}
-          <div className="mt-auto flex flex-col items-center gap-5 border-t border-blue-700 pt-5">{!reviewGameState.showAnswer ? <button type="button" aria-label={t('review_game.reveal_answer')} onClick={() => { setReviewGameState(prev => ({ ...prev, showAnswer: true })); playSound('reveal'); }} className="min-h-11 rounded-full bg-yellow-400 px-6 py-3 text-lg font-bold text-blue-950 hover:bg-yellow-300">{t('review_game.reveal_answer')}</button> : <div className="w-full"><p className="mb-3 text-sm font-bold text-blue-100">{quizCopy('review_game.award_help', 'Use the answer guide to decide which team earned the points.')}</p><div className="flex flex-wrap justify-center gap-3">{gameTeams.map(team => <button type="button" aria-label={`Award ${activeReviewQuestion.points} points to ${team.name}`} key={team.id} onClick={() => handleAwardPoints(team.id, activeReviewQuestion.points)} className={team.color + ' min-h-11 rounded-lg px-4 py-2 font-bold shadow-md border-b-4 border-black/20 hover:opacity-90 ' + (team.color.includes('yellow') ? 'text-indigo-900' : 'text-white')}><CheckCircle2 size={16} className="mr-2 inline" />{team.name}</button>)}<button type="button" onClick={() => { playSound('incorrect'); closeReviewModal(true); }} className="min-h-11 rounded-lg bg-slate-700 px-4 py-2 font-bold text-white hover:bg-slate-600">{t('review_game.no_points')}</button></div></div>}</div>
+            const correct = !activeReviewKeyDisputed && _quizAnswerMatches(option, activeReviewQuestion.correctAnswer);
+            return <div key={optionIndex} className={'rounded-xl border-2 p-4 text-lg font-medium ' + (reviewGameState.showAnswer && correct ? 'border-green-400 bg-green-800 text-white' : 'border-blue-500 bg-blue-800 text-white')}><span className="mr-2 inline-block font-bold">{String.fromCharCode(65 + optionIndex) + '.'}</span>{formatInlineText(option, false, true)}{activeReviewQuestion.options_en?.[optionIndex] && <p className="mt-2 text-base italic">{formatInlineText(activeReviewQuestion.options_en[optionIndex], false, true)}</p>}{activeReviewQuestion.optionImageUrls?.[optionIndex] && <img src={activeReviewQuestion.optionImageUrls[optionIndex]} alt={_quizAuthoredImageAlt(activeReviewQuestion.optionImageAltTexts?.[optionIndex])} loading="lazy" className="mt-3 max-h-48 w-full rounded-lg bg-white object-contain" />}{reviewGameState.showAnswer && correct && <span className="ml-2 text-sm font-bold">✓ Correct</span>}</div>;
+          })}</div>{reviewGameState.showAnswer && <div data-review-answer-guide className="mt-4 rounded-xl border-2 border-green-300 bg-green-50 p-4 text-green-950" role="status">{activeReviewKeyDisputed ? <p data-review-key-under-review>{quizCopy('quiz.key_quality.review_game_key_under_review', 'Answer key under review. No answer is being marked correct, and points are paused for this item.')}</p> : <><strong>Answer: </strong>{formatInlineText(String(activeReviewQuestion.correctAnswer ?? activeReviewQuestion.expectedAnswer ?? 'Teacher review'), false)}</>}{_quizStudentExplanation(activeReviewQuestion, true) && <div className="mt-3 border-t border-green-200 pt-3"><strong>Explanation: </strong>{renderFormattedText(_quizStudentExplanation(activeReviewQuestion, true))}</div>}</div>}</div> : <div className="mb-6"><AssessmentPresentationItem compact q={activeReviewQuestion} index={activeReviewQuestion.originalIndex} showAnswer={reviewGameState.showAnswer} formatInlineText={formatInlineText} renderFormattedText={renderFormattedText} /></div>}
+          <div className="mt-auto flex flex-col items-center gap-5 border-t border-blue-700 pt-5">{!reviewGameState.showAnswer ? <button type="button" aria-label={t('review_game.reveal_answer')} onClick={() => { setReviewGameState(prev => ({ ...prev, showAnswer: true })); playSound('reveal'); }} className="min-h-11 rounded-full bg-yellow-400 px-6 py-3 text-lg font-bold text-blue-950 hover:bg-yellow-300">{t('review_game.reveal_answer')}</button> : <div className="w-full"><p className="mb-3 text-sm font-bold text-blue-100">{quizCopy('review_game.award_help', 'Use the answer guide to decide which team earned the points.')}</p><div className="flex flex-wrap justify-center gap-3">{gameTeams.map(team => <button type="button" aria-label={`Award ${activeReviewQuestion.points} points to ${team.name}`} key={team.id} disabled={activeReviewKeyDisputed} onClick={() => !activeReviewKeyDisputed && handleAwardPoints(team.id, activeReviewQuestion.points)} className={team.color + ' min-h-11 rounded-lg px-4 py-2 font-bold shadow-md border-b-4 border-black/20 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ' + (team.color.includes('yellow') ? 'text-indigo-900' : 'text-white')}><CheckCircle2 size={16} className="mr-2 inline" />{team.name}</button>)}<button type="button" onClick={() => { playSound('incorrect'); closeReviewModal(true); }} className="min-h-11 rounded-lg bg-slate-700 px-4 py-2 font-bold text-white hover:bg-slate-600">{t('review_game.no_points')}</button></div></div>}</div>
         </div>
       </div>}
       </div></div>;
@@ -5966,16 +6954,17 @@ var _lazyIcon = function (name) {
           if ((q.type && q.type !== 'mcq') || !Array.isArray(q.options)) {
             return <AssessmentPresentationItem key={i} q={q} index={i} showAnswer={!!pState.showAnswer} showExplanation={!!pState.showExplanation} onToggleAnswer={() => togglePresentationAnswer(i)} onToggleExplanation={() => togglePresentationExplanation(i)} formatInlineText={formatInlineText} renderFormattedText={renderFormattedText} />;
           }
-          const isAnswered = pState.selectedOption != null;
+          const keyUnderReview = _quizIsAnswerKeyDisputed(q);
+          const isAnswered = pState.selectedOption != null && !keyUnderReview;
           const isCorrectlyAnswered = isAnswered && _quizAnswerMatches(pState.selectedOption, q.correctAnswer);
           const showAnswer = pState.showAnswer;
           const showExplanation = pState.showExplanation;
-          return <div key={i} data-presentation-question-type="mcq" className="bg-white p-4 sm:p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all motion-reduce:transition-none"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{i + 1}</div><div className="flex-grow"><h3 className="text-2xl font-bold text-slate-800 leading-tight">{formatInlineText(q.question, false)}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{formatInlineText(q.question_en, false)}</p>}</div></div>{q.imageUrl && <img src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} className="mb-5 max-h-80 w-full rounded-lg object-contain"/>}<div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14">{q.options.map((opt, optIdx) => {
+          return <div key={i} data-presentation-question-type="mcq" className="bg-white p-4 sm:p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all motion-reduce:transition-none">{showAnswer && keyUnderReview && <p data-presentation-key-under-review role="status" className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{quizCopy('quiz.key_quality.presentation_key_under_review', 'Answer key under review. No option is being marked correct or incorrect.')}</p>}<div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{i + 1}</div><div className="flex-grow"><h3 className="text-2xl font-bold text-slate-800 leading-tight">{formatInlineText(q.question, false)}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{formatInlineText(q.question_en, false)}</p>}</div></div>{q.imageUrl && <img src={q.imageUrl} alt={_quizAuthoredImageAlt(q.imageAltText)} className="mb-5 max-h-80 w-full rounded-lg object-contain"/>}<div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14">{q.options.map((opt, optIdx) => {
                 const isSelected = pState.selectedOption === opt;
-                const isCorrectOption = _quizAnswerMatches(opt, q.correctAnswer);
+                const isCorrectOption = !keyUnderReview && _quizAnswerMatches(opt, q.correctAnswer);
                 let btnClass = "bg-slate-50 border-2 border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50";
                 let icon = <div className="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors motion-reduce:transition-none" />;
-                if (isSelected && !showAnswer) {
+                if (isSelected && (!showAnswer || keyUnderReview)) {
                   btnClass = "bg-indigo-50 border-2 border-indigo-500 text-indigo-950";
                   icon = <div className="w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-100" aria-hidden="true" />;
                 } else if (isSelected) {
@@ -6008,7 +6997,7 @@ var _lazyIcon = function (name) {
                       e.stopPropagation();
                       improveDistractor(i, optIdx, opt, dq.reason || '');
                     }} disabled={!!isImprovingDistractor[i + ':' + optIdx]} className="text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50" aria-label={isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception'} title={t("tooltips.rewrite_distractor")}><span aria-hidden="true">✨ </span>{isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve'}</button></>}</div>;
-              }()}</div>)}</div>{!deferFeedback && <McqEnhancements q={q} questionIdx={i} modeStrategy={_modeStrat} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} onSubmitLiveAnswer={onSubmitLiveAnswer} currentConfidence={studentMcqConfidence[i] || null} onSetConfidence={function (lvl) {
+              }()}</div>)}</div>{!deferFeedback && <McqEnhancements q={q} questionIdx={i} draftNamespace={draftNamespace} modeStrategy={_modeStrat} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} onSubmitLiveAnswer={onSubmitLiveAnswer} currentConfidence={studentMcqConfidence[i] || null} onSetConfidence={function (lvl) {
             setMcqConfidence(i, lvl, q);
           }} />}{q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && function () {
             var keyCheck = _quizKeyCheck(q, quizFactCheckMarkers) || { status: 'unclear', suggestedAnswer: '' };
@@ -6038,7 +7027,7 @@ var _lazyIcon = function (name) {
                 }} placeholder={t("placeholders.reflection_here")} className="w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none" rows={4} /><QuizVoiceInputButton value={refDraft} onChange={function (value) { setReflectionDraft(0, value); }} allowDictation={allowDictation} label="Dictate reflection" /><div className="flex items-center gap-2 mt-2"><button type="button" onClick={function () {
                     submitReflection(0);
                   }} disabled={!refDraft.trim()} className="text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">{t("ui_common.submit_reflection")}</button>{!refDraft.trim() && <span className="text-[11px] italic text-slate-600">Type a response to enable submit</span>}</div></div>;
-            }())}</>}</div>}</div>}</div>;
+            }())}</>}</div>}{learnerAttemptPanel && assessmentQuestionCount > 0 && <div data-assessment-submit-footer className="flex justify-end rounded-xl border border-indigo-200 bg-indigo-50 p-4 pr-20 md:pr-4"><button type="button" onClick={function () { setReviewOpen(true); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">Review &amp; submit</button></div>}</div>}</div>;
   }
   QuizView.voiceBoundary = Object.freeze({
     controlEvent: QUIZ_VOICE_CONTROL_EVENT,

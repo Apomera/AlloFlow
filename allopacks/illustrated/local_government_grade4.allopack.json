@@ -32,6 +32,13 @@
       "conceptSortCardImages": 9,
       "review": "AI visual review completed; educator review pending",
       "textPolicy": "Reviewed artwork reused in native fields; original activity text stays editable"
+    },
+    "contentRefinements": {
+      "count": 5,
+      "sourceOnlyResourceIds": [],
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/local_government_grade4/content-refinements.json"
     }
   },
   "sourceTopic": "Local Government and Civic Participation",

@@ -1,5 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { parse } from 'acorn';
+
+// Element props objects (h(tag, props) / React.createElement(tag, props)) that carry a `title` key.
+function elementTitleProps(source) {
+  const hits = [], pending = [parse(source, { ecmaVersion: 'latest', locations: true })];
+  while (pending.length) {
+    const node = pending.pop();
+    if (!node || typeof node !== 'object') continue;
+    if (node.type === 'CallExpression') {
+      const callee = node.callee, props = node.arguments[1];
+      const creates = (callee.type === 'Identifier' && callee.name === 'h') ||
+        (callee.type === 'MemberExpression' && !callee.computed && callee.property.name === 'createElement');
+      if (creates && props && props.type === 'ObjectExpression') {
+        props.properties.forEach(p => { if (p.key && (p.key.name || p.key.value) === 'title') hits.push('line ' + node.loc.start.line); });
+      }
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) pending.push(...value);
+      else if (value && typeof value === 'object' && value.type) pending.push(value);
+    }
+  }
+  return hits;
+}
 
 const WATER_CYCLE_PATHS = [
   'stem_lab/stem_tool_watercycle.js',
@@ -73,10 +96,10 @@ describe('Water Cycle control accessibility', () => {
 expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_settings\', "Reset climate settings")');
       // Ban the native HTML title TOOLTIP, which screen readers announce
       // inconsistently and touch users never see - not every property that
-      // happens to be called `title`. The tool has four quest records with a
-      // `title:` field (pilot_quest_cloud_title and peers); those are data,
-      // never rendered as an attribute, and the blanket check failed on them.
-      expect(source).not.toMatch(/[,{]\s*title:\s*["'`]/);
+      // happens to be called `title`. Quest records, caption requests and step
+      // definitions carry `title:` data that is never rendered as an attribute,
+      // so check the props actually passed to h() / React.createElement.
+      expect(elementTitleProps(source), filePath + ': element props with a native title').toEqual([]);
     });
   });
 
@@ -105,7 +128,7 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
         "'aria-busy': !!d.aiQuizLoading", "id: 'wcQuizStatus'", "role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'",
         'Generating an AI quiz question.', 'Answer submitted. Review the explanation and investigate.',
         "'aria-labelledby': 'wcQuizQuestion'", "'aria-describedby': 'wcQuizInstructions'", "id: 'wcQuizInstructions'",
-        "role: 'group', 'aria-label': 'Quiz answer choices'", "id: 'wcQuizFeedbackTitle', tabIndex: -1",
+        "role: 'group', 'aria-label': __alloT(\"stem.watercycle.a11y_quiz_answer_choices\", \"Quiz answer choices\")", "id: 'wcQuizFeedbackTitle', tabIndex: -1",
         "focusWcComparisonTarget('wcQuizFeedbackTitle')", "React.createElement('strong', null, 'Correct answer: ')",
       ]) expect(source.includes(fragment), fragment).toBe(true);
     });
@@ -117,7 +140,7 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
         "'data-wc-check-myth': 'true'", "'aria-labelledby': 'wcMythTitle'", "id: 'wcMythTitle'",
         "'aria-labelledby': 'wcMythQuestion'", "'aria-describedby': 'wcMythInstructions'",
         "id: 'wcMythQuestion', tabIndex: -1", "id: 'wcMythInstructions'",
-        "role: 'group', 'aria-label': 'True or false answers'", "id: 'wcMythFeedbackTitle', tabIndex: -1",
+        "role: 'group', 'aria-label': __alloT(\"stem.watercycle.a11y_true_or_false_answers\", \"True or false answers\")", "id: 'wcMythFeedbackTitle', tabIndex: -1",
         "focusWcComparisonTarget('wcMythFeedbackTitle')", "'aria-labelledby': 'wcMythFeedbackTitle'",
       ]) expect(source.includes(fragment), fragment).toBe(true);
     });

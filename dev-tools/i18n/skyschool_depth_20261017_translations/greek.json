@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Διατήρηση των τρεχουσών παραμέτρων πτήσης",
+  "stem.flightsim.flight_assistance_targets": "Κατεύθυνση {hdg}° · Ύψος {alt} ft MSL · Ταχύτητα {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Κατεύθυνση {hdg}° · Ύψος {alt} ft MSL · Ταχύτητα προς τα εμπρός {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Στρίψτε αριστερά κατά {degrees}° προς το {airport}.",
+  "stem.flightsim.challenge_turn_right": "Στρίψτε δεξιά κατά {degrees}° προς το {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Κατευθύνεστε προς το {airport}. Ακολουθήστε τον δείκτη πορείας.",
+  "stem.flightsim.challenge_runway_reference": "Διάδρομος εξάσκησης {runway}: κατεύθυνση {heading}°. Ευθυγραμμιστείτε με τον διάδρομο πριν αρχίσετε την κάθοδο για προσγείωση."
+}

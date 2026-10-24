@@ -25,6 +25,12 @@ const ids = [
 const expectedKeys = [1, 2, 2, 1, 0, 3, 2, 0];
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|without|regardless|automatically|guarantee(?:d|s)?|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim)\b/i;
+// Question-quality waves 43/44 deliberately re-authored these wave-07 items (same keys); see
+// eppp_question_quality_audit_wave_43.json / _44.json.
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-intervention-069', 'eppp-native-quality-wave-43'],
+  ['eppp-v3-assessment-062', 'eppp-native-quality-wave-44'],
+]);
 
 describe('EPPP distractor-quality repair wave 07', () => {
   it('contains eight source-backed application or analysis rewrites with preserved keys', () => {
@@ -37,7 +43,7 @@ describe('EPPP distractor-quality repair wave 07', () => {
       expect(item).toBeTruthy();
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(['application', 'analysis']).toContain(item.cognitiveProcess);
-      expect(item.wordingReviewWave).toBe('eppp-native-quality-wave-07');
+      expect(item.wordingReviewWave, id).toBe(supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-07');
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices.map((choice) => choice.toLowerCase())).size).toBe(4);
       expect(item.choices.some((choice) => extremeCuePattern.test(choice))).toBe(false);
@@ -101,8 +107,16 @@ describe('EPPP distractor-quality repair wave 07', () => {
   it('synchronizes the revised bank into both lazy pack assets', () => {
     const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
     expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
-    expect(sourcePack).toContain("Bateman and Fonagy's mentalizing approach");
-    expect(sourcePack).toContain('Scale A has reliability .92 and Scale B has reliability .68');
-    expect(sourcePack).toContain('docosahexaenoic acid (DHA) is abundant in brain phospholipids');
+    expect(sourcePack.includes("Bateman and Fonagy's mentalizing approach")).toBe(true);
+    expect(sourcePack.includes('docosahexaenoic acid (DHA) is abundant in brain phospholipids')).toBe(true);
+    // The runtime pack carries the canonical record for every item in this tranche, including
+    // the two later superseded by waves 43/44 (the reliability .92/.68 item is now wave 44's).
+    const canonical = new Map(JSON.parse(fs.readFileSync(sourcePath, 'utf8')).map((item) => [item.id, item]));
+    const runtime = new Map(JSON.parse(sourcePack).items.map((item) => [item.id, item]));
+    for (const id of ids) {
+      for (const field of ['prompt', 'choices', 'answerIndex', 'rationale', 'choiceRationales']) {
+        expect(runtime.get(id)?.[field], id + ' ' + field).toEqual(canonical.get(id)[field]);
+      }
+    }
   });
 });

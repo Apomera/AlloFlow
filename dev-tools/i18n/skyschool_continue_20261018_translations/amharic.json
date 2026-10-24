@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "የተግዳሮቱ ዓላማዎች መሟላታቸው ታይቷል። ቀጥሎ፣ በኃይል አስተዳደር ልምምድ ውስጥ ሞተሩ በዝቅተኛ ኃይል ሲሠራ መውረድን ከሞተር ኃይል ጨምሮ መውጣት ጋር ያነጻጽሩ።",
+  "stem.flightsim.coaching_energy_complete": "የኃይል አስተዳደር ዓላማዎች መሟላታቸው ታይቷል። ቀጥሎ፣ በአጭር የአየር ማረፊያ መቅረብ ልምምድ ወቅት ኃይልን መቆጣጠር ይለማመዱ፤ ከዚያም የመውረድ ፍጥነትንና መሬት መንካትን ያነጻጽሩ።",
+  "stem.flightsim.drone_battery_low": "የባትሪ ኃይል አነስተኛ ነው፦ {pct}% ቀርቷል። ወደ ተነሱበት ቦታ ተመልሰው በቅርቡ ያርፉ።",
+  "stem.flightsim.drone_battery_depleted_title": "የድሮኑ ባትሪ አልቋል",
+  "stem.flightsim.drone_battery_depleted_body": "የባትሪ ኃይል 0% ስለደረሰ በረራው ባለበት ቆሟል። ይህን ሙከራ ለመገምገም ተልዕኮውን ያጠናቅቁ፤ ከዚያም በሙሉ ባትሪ አዲስ ተልዕኮ ይጀምሩ።",
+  "stem.flightsim.end_drone_mission": "ተልዕኮውን ጨርሰው ይገምግሙ",
+  "stem.flightsim.geoq_nearest_place": "አሁን ላሉበት አቀማመጥ በጣም የሚቀርበው ቦታ የትኛው ነው?",
+  "stem.flightsim.geoq_paused": "ለዚህ ጥያቄ በረራው ባለበት ቆሟል። ጥያቄውን ይዝጉ፤ ለመብረር ሲዘጋጁ ቀጥልን ይምረጡ።",
+  "stem.flightsim.geoq_close": "ጥያቄውን ዝጋ",
+  "stem.flightsim.geoq_unavailable": "በአቅራቢያው የሚቀርብ የጂኦግራፊ ጥያቄ የለም። ማሰስዎን ቀጥለው እንደገና ይሞክሩ።",
+  "stem.flightsim.geoq_answer_feedback": "የእርስዎ መልስ፦ {answer}። ትክክለኛው መልስ፦ {expected}።"
+}

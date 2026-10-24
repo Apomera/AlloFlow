@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Missionsbeobachtungen",
+  "stem.flightsim.mission_journal_targets": "Erfasste Ziele: {captured} von {total}.",
+  "stem.flightsim.mission_journal_complete": "Alle Missionsziele und die Landung nach der Rückkehr wurden aufgezeichnet.",
+  "stem.flightsim.mission_journal_ended": "Die Mission endete, bevor alle Nachweise für den Abschluss aufgezeichnet waren.",
+  "stem.flightsim.mission_journal_recovery": "Rettung der überlebenden Person aufgezeichnet: {value}.",
+  "stem.flightsim.mission_journal_return": "Landung an der Basis nach der Rückkehr aufgezeichnet: {value}.",
+  "stem.flightsim.mission_guidance_title": "Missionsführung",
+  "stem.flightsim.mission_route": "{target} · Peilung {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Startpunkt",
+  "stem.flightsim.mission_read_status": "Missionsstatus vorlesen",
+  "stem.flightsim.mission_return_criterion": "Lande im Umkreis von {distance} nm um {target}, mit einer Geschwindigkeit über Grund unter {speed} kt und einer Sinkrate unter {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Die Zieldaten der Mission sind nicht verfügbar. Beende diesen Flug und starte eine neue Mission.",
+  "stem.flightsim.mission_capture_criterion": "Bleibe {hold} s lang innerhalb von {distance} ft, höher als {min} und niedriger als {max} ft über Grund, mit einer Geschwindigkeit über Grund unter {speed} kt."
+}

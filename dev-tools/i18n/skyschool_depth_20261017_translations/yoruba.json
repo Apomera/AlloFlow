@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Pa ipò ìfò lọ́wọ́lọ́wọ́ mọ́",
+  "stem.flightsim.flight_assistance_targets": "Ìtọ́sọ́nà {hdg}° · Gíga {alt} ft MSL · Ìyára {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Ìtọ́sọ́nà {hdg}° · Gíga {alt} ft MSL · Ìyára síwájú {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Yí sí òsì ní {degrees}° síhà {airport}.",
+  "stem.flightsim.challenge_turn_right": "Yí sí ọ̀tún ní {degrees}° síhà {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Ò ń lọ síhà {airport}. Tẹ̀lé àmì ọ̀nà ìfò.",
+  "stem.flightsim.challenge_runway_reference": "Ọ̀nà ìbalẹ̀ fún ìdánilẹ́kọ̀ọ́ {runway}: ìtọ́sọ́nà {heading}°. Mú ọkọ̀ òfuurufú bá ọ̀nà ìbalẹ̀ wà lórí ìlà kan kí o tó sọ̀kalẹ̀ láti balẹ̀."
+}

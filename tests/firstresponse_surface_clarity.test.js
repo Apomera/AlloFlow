@@ -5,12 +5,15 @@ import { createHash } from 'node:crypto';
 const source = readFileSync('stem_lab/stem_tool_firstresponse.js','utf8'), THREE = {};
 new Function('exports','module',readFileSync('vendor/three-r128/three.min.js','utf8'))(THREE,{exports:THREE});
 const scenes = [], ages = ['adult','child','infant'];
-// Captured from the pre-finish hand rig: mesh attributes, indices and every
-// local transform. These compact baselines contain no material or UUID data.
+// Mesh attributes, indices and every local transform of the rescuer hand rig;
+// no material or UUID data. First captured from the pre-finish rig (adult
+// a4127580, child 2b2163a6, infant d057e77d, still reproduced by reverting
+// firstresponse_rescuer_wrist_refinement_delta). Re-captured after the intended
+// rescuer wrist, wrist shading and palm symmetry refinements (2026-10-08/09).
 const originalRig = {
-  adult:'a4127580caadab178cd9abc38a4a87d0a4e5ee641de25fdd7c35de8155db1723',
-  child:'2b2163a629d0f1cc59ed42f22296a28b71141a9529e9ea12ed90e0a3cfa8902c',
-  infant:'d057e77de25f8c8a3a68e3e9292ec6bcddcc5484ced759d5ab0fb8023f6ce8dd',
+  adult:'d52548a4e43bb56d77a3bc74ee928c5039d62dcd3344295a06d3f6605707c18f',
+  child:'bccda836dd7b46af6df364a5f9b0a45bda3a952ccc9ae03e578294f9b210b75d',
+  infant:'fc705471223a9537f60a97696aa9283ee867d5a3647d15731d70653cdced411a',
 };
 let build, previous;
 beforeAll(() => {
@@ -122,7 +125,7 @@ function assertResources(root,records) {
 describe('First Response rescuer surface clarity',()=>{
   it.each(ages.flatMap(age=>[false,true].map(contrast=>[age,contrast])))('preserves %s geometry and scopes finishes through frame changes (contrast %s)',(age,contrast)=>{
     const run=model(age,contrast),scene=run.sample(),hands=object(scene,'fr-depth-hands');
-    expect(fingerprint(hands),'original hand vertices, normals, indices and local poses').toBe(originalRig[age]);
+    expect(fingerprint(hands),'recorded hand vertices, normals, indices and local poses').toBe(originalRig[age]);
     const finish=assertScope(scene,age,contrast),resources=resourceSnapshot(hands),skinVersion=finish.skin.version,nailVersion=finish.nail.version;
     const contour=finish.skin.userData.frContourStrength;
     for(const phase of [0,12.5,25,50,75,87.5,100]) {

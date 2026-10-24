@@ -53,7 +53,7 @@ describe('Lifecycle inspection and manually selected moments',()=>{
     else if(v.stage==='chrysalis')expected=world.lifecycle.getObjectByName('lifecycle-chrysalis').localToWorld(new THREE.Vector3(0,-.04,0));
     else{
      const forewing=world.lifecycle.getObjectByName('lifecycle-adult').getObjectByName('monarch-forewing-right');
-     const x=3.7,z=-2.92,y=.19*Math.sin(x*Math.PI/7)+.035*Math.sin((z+1)*.8)+.07+.03;
+     const x=3.7,z=-2.92,y=BF.monarchWingHeight(x,z,true)+.03;
      expected=forewing.localToWorld(new THREE.Vector3(x,y,z));
      // The chosen point is on the vein geometry, not an empty space beside a wing.
      const positions=forewing.geometry.attributes.position;let nearest=Infinity;

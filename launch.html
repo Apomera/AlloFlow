@@ -219,6 +219,8 @@
       line-height: 1.5;
     }
     .browser-ai-note strong { color: #cbd5e1; }
+    .browser-project-note a { color: #bae6fd; text-decoration: underline; }
+    .browser-project-note a:focus-visible { outline: 2px solid #bae6fd; outline-offset: 3px; }
     .ai-access-details {
       margin-top: 0.65rem;
       border: 1px solid rgba(148, 163, 184, 0.24);
@@ -352,7 +354,7 @@
     </div>
 
     <p id="tool-note" class="tool-note" hidden></p>
-    <a id="launch-btn" class="launch-btn" href="https://share.gemini.google/xHbhRje39fUQ"
+    <a id="launch-btn" class="launch-btn" href="https://share.gemini.google/igmVhCP2zfxj"
        target="_blank" rel="noopener noreferrer"
        aria-label="Launch AlloFlow in a new tab">
       Launch AlloFlow
@@ -380,12 +382,17 @@
         Open the browser app to join a session or open a shared AlloFlow file.
         No Google account or AI key is required for these activities.
       </p>
-      <a id="browser-app-btn" class="browser-app-btn" href="https://alloflow-cdn.pages.dev/app/"
+      <a id="browser-app-btn" class="browser-app-btn" href="https://alloflow.dev/app/"
          target="_blank" rel="noopener noreferrer"
          aria-label="Open the AlloFlow browser app in a new tab">
         Open browser app
         <span aria-hidden="true">&rarr;</span>
       </a>
+      <p class="browser-ai-note browser-project-note">
+        Projects saved at the previous web address stay there.
+        <a href="https://alloflow-cdn.pages.dev/app/" target="_blank" rel="noopener noreferrer">Open the previous version</a>
+        to export them, then import them here.
+      </p>
       <p class="browser-ai-note">
         <strong>AI is optional.</strong> Creating with AI in the browser app requires a provider key.
       </p>
@@ -411,7 +418,7 @@
     </section>
 
     <footer>
-      <span>AlloFlow <span id="version-label">v1.8</span></span>
+      <span>AlloFlow <span id="version-label">v1.10</span></span>
       <span aria-hidden="true"> &middot; </span>
       <span>Bookmark this page &mdash; the launch link stays stable across releases.</span>
     </footer>
@@ -463,9 +470,9 @@
         } catch (error) { /* the launcher must still work if this ever throws */ }
       }());
 
-      const FALLBACK_CANVAS_URL = "https://share.gemini.google/xHbhRje39fUQ";
-      const FALLBACK_VERSION = "1.8";
-      const BROWSER_APP_URL = "https://alloflow-cdn.pages.dev/app/";
+      const FALLBACK_CANVAS_URL = "https://share.gemini.google/igmVhCP2zfxj";
+      const FALLBACK_VERSION = "1.10";
+      const BROWSER_APP_URL = "https://alloflow.dev/app/";
 
       const launchBtn = document.getElementById('launch-btn');
       const browserAppBtn = document.getElementById('browser-app-btn');

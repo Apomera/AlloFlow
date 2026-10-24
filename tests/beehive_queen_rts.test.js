@@ -92,7 +92,10 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     const fallback = host.querySelector('[data-beehive-coach-action="pause-plan"] button');
     expect(fallback).toBeTruthy();
     expect(fallback.textContent).toContain('Pause & plan');
-    expect(host.textContent).toContain('Wait for nectar, then scout');
+    // 79e3e5eae: resources do not accumulate while paused, so the scout-unaffordable
+    // branch no longer says "Wait for nectar"; it is still distinct from the generic fallback.
+    expect(host.textContent).toContain('Review resource costs while paused; resume to advance cycles.');
+    expect(host.textContent).not.toContain('Review the economy before the next cycle.');
     await act(async () => { fallback.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.paused).toBe(true);
   });

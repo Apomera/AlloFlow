@@ -57,8 +57,19 @@
 
   // ─── Helper: resolve correct option index for an MCQ ──────────────────
   // Mirrors the export pipeline's _resolveCorrectIdx (doc_pipeline:13235).
+  function isAnswerKeyDisputed(question) {
+    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var review = question.keyCheck;
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    if (review && typeof review === 'object') {
+      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
+    }
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+  }
+
   function resolveCorrectIdx(q) {
-    if (!q || !Array.isArray(q.options)) return -1;
+    if (!q || !Array.isArray(q.options) || isAnswerKeyDisputed(q)) return -1;
     var ca = q.correctAnswer;
     if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
     if (typeof ca === 'string') {
@@ -98,9 +109,94 @@
     return type;
   }
 
+  // Fingerprint the public stimulus, never an answer key. Student copies with
+  // withheld keys must match the teacher copy; translations and alt text do not
+  // change the authored choice represented by a saved response.
+  function assessmentItemSignature(question) {
+    var q = question && typeof question === 'object' ? question : {};
+    var context = { type: String(q.type || q.itemType || 'mcq') };
+    var textFields = ['question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl'];
+    var arrayFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls'];
+    function publicValue(value) {
+      if (Array.isArray(value)) return value.map(publicValue);
+      if (value && typeof value === 'object') {
+        var result = {};
+        ['id', 'text', 'label', 'left', 'right', 'imageUrl', 'leftImageUrl', 'rightImageUrl'].forEach(function (key) {
+          if (value[key] != null) result[key] = publicValue(value[key]);
+        });
+        return result;
+      }
+      return value == null ? null : value;
+    }
+    textFields.forEach(function (field) { context[field] = String(q[field] == null ? '' : q[field]); });
+    arrayFields.forEach(function (field) { context[field] = Array.isArray(q[field]) ? q[field].map(publicValue) : []; });
+    var serialized = JSON.stringify(context), hash = 2166136261;
+    for (var i = 0; i < serialized.length; i++) { hash ^= serialized.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    return 'assess-item-v1:' + (hash >>> 0).toString(36);
+  }
+
   function isUnscoredPollQuestion(question, response) {
     var type = normalizeItemType(question, response);
     return type === 'likert' || type === 'opinion-mcq';
+  }
+
+  function assessmentResponseVersionIssue(question, response) {
+    if (!response || typeof response !== 'object') return '';
+    if (typeof response.questionSignature === 'string' && response.questionSignature) {
+      return response.questionSignature === assessmentItemSignature(question) ? '' : 'mismatch';
+    }
+    var type = normalizeItemType(question, response);
+    return response.assessmentActivityId && (type === 'sequence-sense' || type === 'relation-mismatch') ? 'unverified' : '';
+  }
+
+  // Teacher judgments belong to a particular answer, attempt, and grading key.
+  // Timestamps, confidence, and client-generated grading hints are not answers.
+  function assessmentResponseFingerprint(question, response) {
+    if (!question || typeof question !== 'object') return '';
+    var envelope = response && typeof response === 'object' ? response : {};
+    var answer = unwrapPresentationAnswer(response).answer;
+    var a = answer && typeof answer === 'object' && !Array.isArray(answer) ? answer : {};
+    var type = normalizeItemType(question, response), reviewed;
+    function choice(value, text, options) {
+      if (Number.isInteger(value)) return value;
+      return Array.isArray(options) && text != null ? options.findIndex(function (option) { return normalizePresentationComparable(option) === normalizePresentationComparable(text); }) : -1;
+    }
+    if (a.idk === true) reviewed = { idk: true };
+    else if (type === 'mcq' || type === 'opinion-mcq' || type === 'likert') reviewed = { optionIdx: extractOptionIndex(question, response), optionText: extractOptionIndex(question, response) < 0 ? a.optionText || answer : null };
+    else if (type === 'multi-select') reviewed = { selectedIndices: extractSelectedIndices(question, response) };
+    else if (type === 'answer-evidence') reviewed = {
+      answerIdx: choice(a.answerIdx, a.answerText, question.answerOptions || question.options),
+      evidenceIdx: choice(a.evidenceIdx, a.evidenceText, question.evidenceOptions)
+    };
+    else if (type === 'numeric-response') reviewed = { numericValue: extractNumericAnswer(response), unit: normalizePresentationUnit(extractNumericUnit(response)), unparsedText: extractNumericAnswer(response) == null ? extractTextAnswer(response) : '' };
+    else if (type === 'sequence-sense') reviewed = { verifyAnswer: a.verifyAnswer || '', clickedIdx: Number.isInteger(a.clickedIdx) ? a.clickedIdx : null, orderAnswer: Array.isArray(a.orderAnswer) ? a.orderAnswer : null, principleAnswer: a.principleAnswer || '' };
+    else if (type === 'relation-mismatch') reviewed = { clickedPairIdx: Number.isInteger(a.clickedPairIdx) ? a.clickedPairIdx : null, partnerAnswer: a.partnerAnswer || '' };
+    else if (type === 'order') reviewed = extractOrderAnswer(response);
+    else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') reviewed = { text: extractTextAnswer(response) };
+    else reviewed = answer;
+    var keys = {};
+    ['correctAnswer', 'correctIndex', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedFill', 'acceptableAlternatives', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence', 'expectedAnswer', 'referenceAnswer', 'modelAnswer', 'sampleAnswer', 'rubric'].forEach(function (key) {
+      if (question[key] != null) keys[key] = question[key];
+    });
+    function stable(value) {
+      if (Array.isArray(value)) return value.map(stable);
+      if (value && typeof value === 'object') {
+        var result = {};
+        Object.keys(value).sort().forEach(function (key) { if (value[key] !== undefined) result[key] = stable(value[key]); });
+        return result;
+      }
+      return value == null ? null : value;
+    }
+    try {
+      var serialized = JSON.stringify(stable({
+        question: assessmentItemSignature(question), responseQuestion: envelope.questionSignature || assessmentItemSignature(question),
+        activity: envelope.assessmentActivityId || '', attempt: envelope.assessmentAttemptId || '', attemptStartedAt: envelope.assessmentAttemptStartedAt || 0,
+        answer: reviewed, keys: keys, keyUnderReview: isAnswerKeyDisputed(question)
+      }));
+      var first = 2166136261, second = 5381;
+      for (var i = 0; i < serialized.length; i++) { first = Math.imul(first ^ serialized.charCodeAt(i), 16777619); second = Math.imul(second, 33) ^ serialized.charCodeAt(i); }
+      return 'assess-response-v1:' + (first >>> 0).toString(36) + ':' + (second >>> 0).toString(36);
+    } catch (e) { return ''; }
   }
 
   function normalizeLiveScoringPolicy(policy) {
@@ -179,6 +275,7 @@
     if (!source && answer && typeof answer === 'object') {
       source = answer.selectedIndices || answer.selectedOptionIndices || answer.optionIndices || answer.indices || answer.selected;
       if (!Array.isArray(source) && Array.isArray(answer.selectedTexts)) source = answer.selectedTexts;
+      if (!Array.isArray(source) && Array.isArray(answer.selectedOptions)) source = answer.selectedOptions;
     }
     if (!Array.isArray(source)) return [];
     var options = question && Array.isArray(question.options) ? question.options : [];
@@ -246,6 +343,12 @@
 
   function normalizePresentationUnit(value) {
     return normalizePresentationComparable(value).replace(/\./g, '').replace(/\s+/g, ' ');
+  }
+
+  function hasNumericAnswerKey(question) {
+    var value = question && question.correctValue;
+    return (typeof value === 'number' || typeof value === 'string')
+      && String(value).trim() !== '' && Number.isFinite(Number(value));
   }
 
   function extractNumericUnit(response) {
@@ -333,7 +436,7 @@
       return multiKeys.length > 0 && resolvePresentationCorrectIndices(question).length === multiKeys.length;
     }
     if (type === 'fill-blank') return !!(question && (question.expectedFill || (Array.isArray(question.acceptableAlternatives) && question.acceptableAlternatives.length)));
-    if (type === 'numeric-response') return !!(question && Number.isFinite(Number(question.correctValue)));
+    if (type === 'numeric-response') return hasNumericAnswerKey(question);
     if (type === 'order') return expectedPresentationOrder(question).length > 0;
     if (type === 'sequence-sense') {
       var sequenceItems = question && Array.isArray(question.items) ? question.items : [];
@@ -395,6 +498,9 @@
     if (isUnscoredPollQuestion(question, response)) {
       return { status: 'submitted', isCorrect: null, evaluable: false, unscored: true };
     }
+    var versionIssue = assessmentResponseVersionIssue(question, response);
+    if (versionIssue) return result('submitted', false, null, { versionMismatch: versionIssue === 'mismatch', versionUnverified: versionIssue === 'unverified' });
+    if (isAnswerKeyDisputed(question)) return result('submitted', false, null, { keyUnderReview: true });
     // "I don't know" is explicit student intent. A generic client status
     // string is never authoritative, including status: "idk".
     if (answerObject.idk === true) return result('idk', true, null);
@@ -432,7 +538,7 @@
     if (type === 'numeric-response') {
       var value = extractNumericAnswer(response);
       var expected = question ? Number(question.correctValue) : NaN;
-      if (value == null || !Number.isFinite(expected)) return result('submitted', false, null);
+      if (value == null || !hasNumericAnswerKey(question)) return result('submitted', false, null);
       var tolerance = question && Number.isFinite(Number(question.tolerance)) ? Math.abs(Number(question.tolerance)) : 0;
       var valueCorrect = Math.abs(value - expected) <= tolerance + 1e-9;
       var acceptedUnits = [question && question.unit || '']
@@ -653,6 +759,8 @@
     var rows = [];
     var kind = 'outcomes';
     var respondentCount = entries.length;
+    var distributionEntries = entries.filter(function (entry) { return !assessmentResponseVersionIssue(question, entry.response); });
+    var versionReviewCount = respondentCount - distributionEntries.length;
     var evaluable = entries.filter(function (entry) { return entry.grade.evaluable; });
     var correctCount = evaluable.filter(function (entry) { return entry.grade.isCorrect === true; }).length;
     var partialCount = evaluable.filter(function (entry) { return entry.grade.status === 'partially-correct'; }).length;
@@ -691,12 +799,12 @@
       kind = 'options';
       var correctIdx = unscored ? -1 : resolveCorrectIdx(question);
       rows = options.map(function (option, idx) {
-        var count = entries.filter(function (entry) { return extractOptionIndex(question, entry.response) === idx; }).length;
+        var count = distributionEntries.filter(function (entry) { return extractOptionIndex(question, entry.response) === idx; }).length;
         return {
           label: String.fromCharCode(65 + idx),
           text: String(option == null ? '' : option),
           value: count,
-          percent: respondentCount > 0 ? Math.round(count / respondentCount * 100) : 0,
+          percent: distributionEntries.length > 0 ? Math.round(count / distributionEntries.length * 100) : 0,
           imageUrl: question && Array.isArray(question.optionImageUrls) ? question.optionImageUrls[idx] : null,
           isCorrect: !unscored && idx === correctIdx
         };
@@ -705,7 +813,7 @@
       kind = 'multi-select';
       var correctTexts = question && Array.isArray(question.correctAnswers) ? question.correctAnswers : [];
       rows = options.map(function (option, idx) {
-        var count = entries.filter(function (entry) { return extractSelectedIndices(question, entry.response).indexOf(idx) !== -1; }).length;
+        var count = distributionEntries.filter(function (entry) { return extractSelectedIndices(question, entry.response).indexOf(idx) !== -1; }).length;
         var correct = correctTexts.some(function (value) {
           return Number.isInteger(value) ? value === idx : String(value == null ? '' : value).trim().toLowerCase() === String(option == null ? '' : option).trim().toLowerCase();
         });
@@ -713,7 +821,7 @@
           label: String.fromCharCode(65 + idx),
           text: String(option == null ? '' : option),
           value: count,
-          percent: respondentCount > 0 ? Math.round(count / respondentCount * 100) : 0,
+          percent: distributionEntries.length > 0 ? Math.round(count / distributionEntries.length * 100) : 0,
           imageUrl: question && Array.isArray(question.optionImageUrls) ? question.optionImageUrls[idx] : null,
           isCorrect: correct
         };
@@ -721,7 +829,7 @@
     } else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') {
       kind = 'text';
       var textBuckets = {};
-      entries.forEach(function (entry) {
+      distributionEntries.forEach(function (entry) {
         var text = extractTextAnswer(entry.response);
         if (!text) return;
         var display = text.slice(0, 160);
@@ -733,12 +841,12 @@
         .sort(function (a, b) { return b.count - a.count || a.text.localeCompare(b.text); })
         .slice(0, 12)
         .map(function (bucket, idx) {
-          var matchingEntry = entries.find(function (entry) { return extractTextAnswer(entry.response).slice(0, 160).toLowerCase() === bucket.text.toLowerCase(); });
+          var matchingEntry = distributionEntries.find(function (entry) { return extractTextAnswer(entry.response).slice(0, 160).toLowerCase() === bucket.text.toLowerCase(); });
           return {
             label: String(idx + 1),
             text: bucket.text,
             value: bucket.count,
-            percent: respondentCount > 0 ? Math.round(bucket.count / respondentCount * 100) : 0,
+            percent: distributionEntries.length > 0 ? Math.round(bucket.count / distributionEntries.length * 100) : 0,
             imageUrl: null,
             isCorrect: !!(matchingEntry && matchingEntry.grade.isCorrect === true)
           };
@@ -747,7 +855,7 @@
       kind = 'numeric';
       var numericBuckets = {};
       var unitRequired = !!normalizePresentationUnit(question && question.unit);
-      entries.forEach(function (entry) {
+      distributionEntries.forEach(function (entry) {
         var value = extractNumericAnswer(entry.response);
         var submittedUnit = extractNumericUnit(entry.response);
         var normalizedUnit = normalizePresentationUnit(submittedUnit);
@@ -768,7 +876,7 @@
         })
         .slice(0, 12)
         .map(function (bucket, idx) {
-          var sample = entries.find(function (entry) {
+          var sample = distributionEntries.find(function (entry) {
             return extractNumericAnswer(entry.response) === bucket.value
               && normalizePresentationUnit(extractNumericUnit(entry.response)) === bucket.normalizedUnit;
           });
@@ -776,7 +884,7 @@
             label: String(idx + 1),
             text: bucket.text,
             value: bucket.count,
-            percent: respondentCount > 0 ? Math.round(bucket.count / respondentCount * 100) : 0,
+            percent: distributionEntries.length > 0 ? Math.round(bucket.count / distributionEntries.length * 100) : 0,
             imageUrl: null,
             isCorrect: !!(sample && sample.grade.isCorrect === true)
           };
@@ -807,6 +915,8 @@
       kind: kind,
       rows: rows,
       respondentCount: respondentCount,
+      distributionRespondentCount: distributionEntries.length,
+      versionReviewCount: versionReviewCount,
       evaluableResponseCount: evaluable.length,
       correctCount: correctCount,
       incorrectCount: incorrectCount,
@@ -821,7 +931,8 @@
       confidenceBuckets: confidenceBuckets,
       evaluative: !unscored && gameScorable,
       gameScorable: gameScorable,
-      note: unscored ? 'Unscored poll — response distribution only.'
+      note: versionReviewCount > 0 ? versionReviewCount + ' response(s) from another question version need review and are excluded from current-choice distributions.'
+        : isAnswerKeyDisputed(question) ? 'Answer key under review — responses are not scored.' : unscored ? 'Unscored poll — response distribution only.'
         : evaluable.length === 0 && respondentCount > 0 ? 'Responses received — teacher review is required before scoring.'
         : ''
     };
@@ -830,7 +941,7 @@
   // ─── Per-item grader: infers correctness from student's submitted answer ──
   // Returns { status, ... extra fields per type }.
   // status ∈ { 'correct' | 'incorrect' | 'partially-correct' | 'idk' | 'submitted' | 'no-response' }
-  function gradeResponseForItem(response, question) {
+  function gradeResponseForItem(response, question, scoringPolicy) {
     if (!response || typeof response !== 'object') return { status: 'no-response' };
     var itemType = normalizeItemType(question, response);
 
@@ -840,20 +951,17 @@
     if (isUnscoredPollQuestion(question, response)) {
       return { status: 'submitted', unscored: true, evaluative: false };
     }
+    if (assessmentResponseVersionIssue(question, response)) return gradePresentationResponse(response, question, scoringPolicy);
     if (!Object.prototype.hasOwnProperty.call(response, 'answer') || response.answer == null) return { status: 'no-response' };
+    if (isAnswerKeyDisputed(question)) return gradePresentationResponse(response, question, scoringPolicy);
     if (response.answer && typeof response.answer === 'object' && response.answer.idk === true) return { status: 'idk' };
 
     if (itemType === 'mcq') {
-      var mcqGrade = gradePresentationResponse(response, question);
-      return { status: mcqGrade.status };
+      return gradePresentationResponse(response, question, scoringPolicy);
     }
 
     if (itemType === 'fill-blank' && question) {
-      var text = String(response.answer.text || '').trim().toLowerCase();
-      if (!text) return { status: 'no-response' };
-      var targets = [question.expectedFill || ''].concat(Array.isArray(question.acceptableAlternatives) ? question.acceptableAlternatives : []);
-      var targetsNorm = targets.map(function (t) { return String(t).trim().toLowerCase(); }).filter(Boolean);
-      return { status: targetsNorm.indexOf(text) !== -1 ? 'correct' : 'incorrect', rawText: response.answer.text };
+      return Object.assign({}, gradePresentationResponse(response, question, scoringPolicy), { rawText: response.answer.text || '' });
     }
 
     if (itemType === 'short-answer' || itemType === 'self-explanation') {
@@ -866,11 +974,7 @@
         || itemType === 'matching') {
       // Recompute from the canonical question. Client status/score fields are
       // never authoritative for gradebook or game scoring.
-      var structuredGrade = gradePresentationResponse(response, question);
-      return {
-        status: structuredGrade.status,
-        score: structuredGrade.score,
-      };
+      return gradePresentationResponse(response, question, scoringPolicy);
     }
 
     return { status: 'submitted' };
@@ -883,27 +987,97 @@
   // responses with the LLM-graded result. Other types unaffected.
   // Optional teacherOverrides: nested { [uid]: { [qIdx]: { status, ts } } }
   // — beats AI override and deterministic. Highest authority on grade.
-  function collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides) {
+  function assessmentGradePoints(grade, scoringPolicy) {
+    var graded = grade && !grade.unscored && ['correct', 'incorrect', 'partially-correct'].indexOf(grade.status) >= 0;
+    if (!graded) return { scoreFraction: null, earnedPoints: 0, maxPoints: 0 };
+    var partialCredit = normalizeLiveScoringPolicy(scoringPolicy).partialCredit;
+    var fraction = grade.status === 'correct' ? 1 : grade.status === 'incorrect' || !partialCredit ? 0
+      : typeof grade.scoreFraction === 'number' && Number.isFinite(grade.scoreFraction) ? grade.scoreFraction : 0.5;
+    fraction = Math.max(0, Math.min(1, fraction));
+    return { scoreFraction: fraction, earnedPoints: fraction, maxPoints: 1 };
+  }
+
+  function assessmentResponseState(response, question) {
+    var answer = unwrapPresentationAnswer(response).answer;
+    var a = answer && typeof answer === 'object' && !Array.isArray(answer) ? answer : {};
+    var type = normalizeItemType(question, response), hasResponse = false, answered = false;
+    function text(value) { return typeof value === 'string' && !!value.trim(); }
+    function index(value) { return Number.isInteger(value) && value >= 0; }
+    if (a.idk === true) return { answered: true, hasResponse: true };
+    if (type === 'mcq' || type === 'opinion-mcq' || type === 'likert') {
+      hasResponse = answered = extractOptionIndex(question, response) >= 0 || text(a.optionText);
+      if (type === 'likert' && extractLikertNumericValue(question, response) != null) hasResponse = answered = true;
+    } else if (type === 'multi-select') {
+      hasResponse = answered = extractSelectedIndices(question, response).length > 0;
+    } else if (type === 'answer-evidence') {
+      var hasAnswer = index(a.answerIdx) || text(a.answerText), hasEvidence = index(a.evidenceIdx) || text(a.evidenceText);
+      hasResponse = hasAnswer || hasEvidence; answered = hasAnswer && hasEvidence;
+    } else if (type === 'sequence-sense') {
+      var verify = a.verifyAnswer === 'yes' || a.verifyAnswer === 'no';
+      var changedOrder = Array.isArray(a.orderAnswer) && JSON.stringify(a.orderAnswer) !== JSON.stringify(question && question.presentedOrder || []);
+      hasResponse = verify || index(a.clickedIdx) || text(a.principleAnswer) || changedOrder;
+      answered = verify && text(a.principleAnswer) && (a.verifyAnswer === 'yes' || index(a.clickedIdx));
+    } else if (type === 'relation-mismatch') {
+      hasResponse = index(a.clickedPairIdx) || text(a.partnerAnswer);
+      answered = index(a.clickedPairIdx) && text(a.partnerAnswer);
+    } else if (type === 'numeric-response') {
+      hasResponse = text(a.text) || typeof a.numericValue === 'number' && Number.isFinite(a.numericValue) || typeof answer === 'number' && Number.isFinite(answer);
+      answered = hasResponse && extractNumericAnswer(response) != null;
+    } else if (type === 'order') {
+      hasResponse = answered = extractOrderAnswer(response).length > 0;
+    } else if (type === 'matching') {
+      var matches = a.matches || a.pairs || a.mapping || answer;
+      hasResponse = answered = Array.isArray(matches) ? matches.length > 0 : !!matches && typeof matches === 'object' && Object.keys(matches).some(function (key) {
+        return ['status', 'score', 'feedback', 'confidence', 'idk'].indexOf(key) < 0 && matches[key] != null && matches[key] !== '';
+      });
+    } else {
+      hasResponse = answered = text(extractTextAnswer(response)) || typeof answer === 'number' && Number.isFinite(answer);
+    }
+    // Final packets carry the same completion decision as the learner review.
+    // Preserve useful partial work without promoting it to a completed answer.
+    if (response && typeof response.answered === 'boolean') answered = response.answered && hasResponse;
+    else if (response && typeof response.submitted === 'boolean') answered = response.submitted && hasResponse;
+    return { answered: !!answered, hasResponse: !!hasResponse };
+  }
+
+  function assessmentCompletionIsCurrent(perStudent, response) {
+    if (!response || response.itemType !== 'assessment-complete') return false;
+    var attempt = perStudent && perStudent.__assessmentAttempt;
+    return !attempt || !attempt.attemptId || response.assessmentAttemptId === attempt.attemptId
+      && Number(response.assessmentAttemptStartedAt || 0) === Number(attempt.startedAt || 0);
+  }
+
+  function collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, scoringPolicy) {
     var out = [];
     if (!allResponses || typeof allResponses !== 'object') return out;
     if (!Array.isArray(questions)) return out;
     Object.keys(allResponses).forEach(function (uid) {
       var perStudent = allResponses[uid];
       if (!perStudent || typeof perStudent !== 'object') return;
-      Object.keys(perStudent).forEach(function (qIdxKey) {
+      var completion = perStudent[questions.length];
+      var submitted = assessmentCompletionIsCurrent(perStudent, completion);
+      var indices = submitted ? questions.map(function (_, index) { return String(index); }) : Object.keys(perStudent);
+      indices.forEach(function (qIdxKey) {
         var qIdx = parseInt(qIdxKey, 10);
         if (isNaN(qIdx) || qIdx < 0 || qIdx >= questions.length) return;
         var response = perStudent[qIdxKey];
         var question = questions[qIdx];
-        var grade = gradeResponseForItem(response, question);
+        var grade = gradeResponseForItem(response, question, scoringPolicy);
+        var responseState = assessmentResponseState(response, question);
+        if (!responseState.hasResponse) grade = Object.assign({}, grade, { status: 'no-response' });
+        else if (!responseState.answered && !grade.unscored && !grade.keyUnderReview) grade = Object.assign({}, grade, { status: 'submitted', evaluable: false, incomplete: true });
         // AI grading override: only swap when the AI returned a graded status
         // and the deterministic status is 'submitted' (i.e., we asked for help
         // because we couldn't grade locally). Don't overwrite IDK or no-response.
-        if (aiGradedCache && grade.status === 'submitted' && !grade.unscored) {
+        if (aiGradedCache && responseState.answered && grade.status === 'submitted' && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified
+            && (!scoringPolicy || scoringPolicy.writtenResponseMode !== 'teacher-review')) {
           var cached = aiGradedCache[uid + ':' + qIdx];
           if (cached && cached.status && cached.status !== 'error' && cached.status !== 'unclear') {
             grade = {
-              status: cached.status === 'partially-correct' ? 'correct' : cached.status,
+              status: cached.status,
+              scoreFraction: cached.status === 'partially-correct'
+                ? (typeof cached.score === 'number' && Number.isFinite(cached.score) ? Math.max(0, Math.min(1, cached.score / 100)) : 0.5)
+                : cached.status === 'correct' ? 1 : 0,
               rawText: grade.rawText,
               aiGraded: true,
               aiStatus: cached.status,
@@ -920,21 +1094,71 @@
         // when the override status is one of the recognized values; an empty
         // or 'undo' status clears any override (handled at write time, not
         // here — a missing entry means no override).
-        if (!grade.unscored && teacherOverrides && teacherOverrides[uid] && teacherOverrides[uid][qIdxKey]) {
+        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && teacherOverrides && teacherOverrides[uid] && teacherOverrides[uid][qIdxKey]) {
           var ov = teacherOverrides[uid][qIdxKey];
-          if (ov && ov.status && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
+          var overrideMatches = ov && ov.responseFingerprint && ov.responseFingerprint === assessmentResponseFingerprint(question, response);
+          if (ov && ov.status && !overrideMatches) grade.teacherOverrideExpired = true;
+          if (overrideMatches && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
             grade = Object.assign({}, grade, {
               status: ov.status,
+              isCorrect: ov.status === 'correct',
+              evaluable: ov.status !== 'idk',
               teacherOverridden: true,
               teacherOverrideTs: ov.ts || 0,
               priorStatus: grade.status,
+              scoreFraction: ov.status === 'correct' ? 1 : ov.status === 'partially-correct'
+                ? (typeof ov.score === 'number' && Number.isFinite(ov.score) ? Math.max(0, Math.min(1, ov.score / 100)) : 0.5) : 0,
             });
           }
         }
-        out.push({ uid: uid, questionIdx: qIdx, response: response, question: question, grade: grade });
+        grade = Object.assign({}, grade, assessmentGradePoints(grade, scoringPolicy));
+        // A final blank objective answer earns zero. Draft blanks, deliberate
+        // IDK, partial work, and questions awaiting judgment remain unscored.
+        if (submitted && !responseState.hasResponse && !grade.teacherOverridden && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified && presentationQuestionIsGameScorable(question)) {
+          grade = Object.assign({}, grade, { omitted: true, scoreFraction: 0, earnedPoints: 0, maxPoints: 1 });
+        }
+        out.push({ uid: uid, questionIdx: qIdx, response: response, question: question, grade: grade, responseState: responseState });
       });
     });
     return out;
+  }
+
+  function assessmentAnswerSummary(question, response) {
+    var answer = unwrapPresentationAnswer(response).answer;
+    var a = answer && typeof answer === 'object' && !Array.isArray(answer) ? answer : {};
+    var type = normalizeItemType(question, response);
+    var compatible = !assessmentResponseVersionIssue(question, response);
+    function label(value) { return value && typeof value === 'object' ? String(value.text || value.label || '') : String(value == null ? '' : value); }
+    function originalChoice(index, text, options) {
+      var saved = label(text);
+      if (saved) return saved;
+      if (!Number.isInteger(index) || index < 0) return '';
+      if (compatible && Array.isArray(options)) return label(options[index]);
+      return 'Choice ' + String.fromCharCode(65 + index) + ' (original text unavailable)';
+    }
+    if (a.idk === true) return '🤔 I don\'t know';
+    if (type === 'mcq' || type === 'opinion-mcq' || type === 'likert') {
+      var index = extractOptionIndex(question, response);
+      var choiceText = originalChoice(index, a.optionText, question && question.options);
+      return choiceText ? (index >= 0 && (compatible || a.optionText) ? String.fromCharCode(65 + index) + '. ' : '') + choiceText : '';
+    }
+    if (type === 'multi-select') {
+      var saved = Array.isArray(a.selectedTexts) ? a.selectedTexts : Array.isArray(a.selectedOptions) ? a.selectedOptions : null;
+      if (saved) return saved.map(label).filter(Boolean).join('; ');
+      var indices = compatible ? extractSelectedIndices(question, response) : a.selectedIndices || a.selectedOptionIndices || a.optionIndices || a.indices || a.selected || [];
+      return Array.isArray(indices) ? indices.map(function (index) { return originalChoice(index, '', question && question.options); }).filter(Boolean).join('; ') : '';
+    }
+    if (typeof a.text === 'string') return a.text;
+    if (type === 'sequence-sense') return (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
+    if (type === 'relation-mismatch') return (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+    if (type === 'answer-evidence') {
+      var answerText = originalChoice(a.answerIdx, a.answerText, question && (question.answerOptions || question.options));
+      var evidenceText = originalChoice(a.evidenceIdx, a.evidenceText, question && question.evidenceOptions);
+      return (answerText ? 'Answer: ' + answerText : '') + (evidenceText ? ' · Evidence: ' + evidenceText : '');
+    }
+    if (type === 'numeric-response') return typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '';
+    if (typeof answer === 'string' || typeof answer === 'number') return String(answer);
+    try { return JSON.stringify(answer) || ''; } catch (e) { return ''; }
   }
 
   // ─── Aggregator: gradebook (exit-ticket) ──────────────────────────────
@@ -942,7 +1166,7 @@
   function aggregateGradebook(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
     // Build per-student aggregation
     var studentMap = {};
@@ -955,35 +1179,29 @@
           totalAnswered: 0,
           totalCorrect: 0,
           totalEvaluated: 0,
+          totalEarned: 0,
+          totalPossible: 0,
+          totalPartial: 0,
+          scorePercent: null,
           totalUnscored: 0,
           totalIdk: 0,
           byQuestion: new Array(questions.length).fill(null),
         };
       }
       var row = studentMap[g.uid];
-      row.totalAnswered++;
+      if (g.responseState.answered) row.totalAnswered++;
       if (g.grade.unscored) row.totalUnscored++;
-      else if (g.grade.status === 'correct' || g.grade.status === 'incorrect' || g.grade.status === 'partially-correct' || g.grade.status === 'idk') row.totalEvaluated++;
+      else if (g.grade.maxPoints > 0 || g.grade.status === 'idk') row.totalEvaluated++;
       if (g.grade.status === 'correct') row.totalCorrect++;
+      if (g.grade.status === 'partially-correct') row.totalPartial++;
+      row.totalEarned += g.grade.earnedPoints;
+      row.totalPossible += g.grade.maxPoints;
       if (g.grade.status === 'idk') row.totalIdk++;
       // Extended cell: grade fields + question/answer snippets so the dashboard
       // can render drill-down detail without re-walking allResponses.
       var qText = (g.question && (g.question.question || g.question.contextSentence || g.question.expectedFill)) || '';
       var qType = (g.response && g.response.itemType) || (g.question && (g.question.itemType || g.question.type)) || 'mcq';
-      var answerSummary = '';
-      if (g.response && g.response.answer) {
-        var a = g.response.answer;
-        if (a.idk) answerSummary = '🤔 I don\'t know';
-        else if (typeof a.optionIdx === 'number' && g.question && Array.isArray(g.question.options))
-          answerSummary = String.fromCharCode(65 + a.optionIdx) + '. ' + (g.question.options[a.optionIdx] || '');
-        else if (typeof a.text === 'string') answerSummary = a.text;
-        else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
-        else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
-        else if (qType === 'multi-select') answerSummary = Array.isArray(a.selectedTexts) ? a.selectedTexts.join('; ') : '';
-        else if (qType === 'answer-evidence') answerSummary = (a.answerText ? 'Answer: ' + a.answerText : '') + (a.evidenceText ? ' · Evidence: ' + a.evidenceText : '');
-        else if (qType === 'numeric-response') answerSummary = typeof a.text === 'string' ? a.text : (typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '');
-        else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
-      }
+      var answerSummary = g.responseState.hasResponse ? assessmentAnswerSummary(g.question, g.response) : '';
       row.byQuestion[g.questionIdx] = Object.assign({}, g.grade, {
         questionText: qText,
         questionType: qType,
@@ -991,7 +1209,7 @@
       });
     });
     // Include roster students who haven't responded yet
-    Object.keys(rosterObj).forEach(function (uid) {
+    Array.from(new Set(Object.keys(rosterObj).concat(Object.keys(allResponses).filter(function (uid) { return allResponses[uid] && allResponses[uid].__assessmentAttempt; })))).forEach(function (uid) {
       if (!studentMap[uid]) {
         var rEntry = rosterObj[uid] || {};
         studentMap[uid] = {
@@ -1000,6 +1218,10 @@
           totalAnswered: 0,
           totalCorrect: 0,
           totalEvaluated: 0,
+          totalEarned: 0,
+          totalPossible: 0,
+          totalPartial: 0,
+          scorePercent: null,
           totalUnscored: 0,
           totalIdk: 0,
           byQuestion: new Array(questions.length).fill(null),
@@ -1008,9 +1230,11 @@
     });
     var studentRows = Object.values(studentMap).sort(function (a, b) { return a.displayName.localeCompare(b.displayName); });
     studentRows.forEach(function (row) {
+      row.scorePercent = row.totalPossible > 0 ? Math.round(row.totalEarned / row.totalPossible * 100) : null;
       var responseMap = allResponses[row.uid] || {};
       var completion = responseMap[questions.length];
-      row.attemptStatus = completion && completion.itemType === 'assessment-complete' ? 'submitted' : row.totalAnswered > 0 ? 'in-progress' : 'not-started';
+      var attempt = responseMap.__assessmentAttempt;
+      row.attemptStatus = assessmentCompletionIsCurrent(responseMap, completion) ? 'submitted' : attempt && attempt.attemptId || row.totalAnswered > 0 ? 'in-progress' : 'not-started';
       row.submittedAt = row.attemptStatus === 'submitted' ? completion.timestamp || completion.answer && completion.answer.submittedAt || 0 : 0;
     });
     return {
@@ -1026,7 +1250,7 @@
   function aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var rosterCount = roster ? Object.keys(roster).length : 0;
     var perQuestion = questions.map(function (q, idx) {
       // Best-effort concept label: first 80 chars of question text or expectedFill
@@ -1041,6 +1265,10 @@
         totalAnswered: 0,
         correctCount: 0,
         incorrectCount: 0,
+        partialCount: 0,
+        totalEarned: 0,
+        totalPossible: 0,
+        scorePercent: null,
         idkCount: 0,
         percentCorrect: 0,
       };
@@ -1048,25 +1276,31 @@
     graded.forEach(function (g) {
       var card = perQuestion[g.questionIdx];
       if (!card) return;
-      card.totalAnswered++;
+      if (g.responseState.answered) card.totalAnswered++;
       if (g.grade.status === 'correct') card.correctCount++;
       else if (g.grade.status === 'incorrect') card.incorrectCount++;
+      else if (g.grade.status === 'partially-correct') card.partialCount++;
       else if (g.grade.status === 'idk') card.idkCount++;
+      card.totalEarned += g.grade.earnedPoints;
+      card.totalPossible += g.grade.maxPoints;
     });
     perQuestion.forEach(function (card) {
+      card.scorePercent = card.totalPossible > 0 ? Math.round(card.totalEarned / card.totalPossible * 100) : null;
       if (card.unscored) {
         card.percentCorrect = null;
       } else if (card.totalAnswered > 0) {
         card.percentCorrect = Math.round((card.correctCount / card.totalAnswered) * 100);
       }
     });
-    // Sort by lowest percentCorrect first (most urgent gaps surface)
+    // Sort evaluated gaps by earned credit; pending/IDK-only cards are not
+    // evidence of zero understanding and remain after evaluated results.
     var sorted = perQuestion.slice().sort(function (a, b) {
       // Unanswered last; unscored polls do not compete with evaluative gaps.
       if (a.unscored !== b.unscored) return a.unscored ? 1 : -1;
+      if ((a.scorePercent == null) !== (b.scorePercent == null)) return a.scorePercent == null ? 1 : -1;
       if (a.totalAnswered === 0 && b.totalAnswered > 0) return 1;
       if (b.totalAnswered === 0 && a.totalAnswered > 0) return -1;
-      return a.percentCorrect - b.percentCorrect;
+      return (a.scorePercent || 0) - (b.scorePercent || 0);
     });
     return {
       conceptCards: sorted,
@@ -1076,8 +1310,9 @@
   }
 
   // ─── Aggregator: reflections (Chunk 1A) ───────────────────────────────
-  // Walks allResponses for keys matching /^r\d+$/ (the convention QuizView
-  // uses for reflection submissions). Groups by reflection prompt index,
+  // Final attempts contain the current reflection drafts, including cleared
+  // entries. Prefer that map over earlier individual /^r\d+$/ submissions.
+  // Groups by reflection prompt index,
   // returns per-prompt list of { uid, displayName, text, timestamp }.
   // Returns null when there are no reflections in the quiz so the dashboard
   // can hide the section entirely.
@@ -1095,20 +1330,38 @@
     Object.keys(allResponses).forEach(function (uid) {
       var perStudent = allResponses[uid];
       if (!perStudent || typeof perStudent !== 'object') return;
+      var completion = null;
+      var completionTime = -Infinity;
       Object.keys(perStudent).forEach(function (key) {
-        var m = /^r(\d+)$/.exec(key);
-        if (!m) return;
-        var rIdx = parseInt(m[1], 10);
-        if (isNaN(rIdx) || rIdx < 0 || rIdx >= buckets.length) return;
-        var resp = perStudent[key];
-        var text = (resp && resp.answer && typeof resp.answer.text === 'string') ? resp.answer.text : '';
+        var candidate = perStudent[key];
+        if (!assessmentCompletionIsCurrent(perStudent, candidate)) return;
+        var timestamp = Number(candidate.timestamp || candidate.answer && candidate.answer.submittedAt) || 0;
+        if (timestamp >= completionTime) { completion = candidate; completionTime = timestamp; }
+      });
+      var finalMap = completion && completion.answer && completion.answer.reflections;
+      var hasFinalMap = finalMap && typeof finalMap === 'object' && !Array.isArray(finalMap);
+      buckets.forEach(function (bucket, rIdx) {
+        var resp = hasFinalMap ? completion : perStudent['r' + rIdx];
+        var attempt = perStudent.__assessmentAttempt;
+        if (!hasFinalMap && attempt && attempt.attemptId && resp && resp.assessmentAttemptId
+            && (resp.assessmentAttemptId !== attempt.attemptId || Number(resp.assessmentAttemptStartedAt || 0) !== Number(attempt.startedAt || 0))) return;
+        var text = '';
+        if (hasFinalMap) {
+          var entry = finalMap[rIdx];
+          entry = entry && typeof entry === 'object' ? entry : {};
+          if (entry.submitted === true && typeof entry.submittedText === 'string' && entry.submittedText.trim()) text = entry.submittedText;
+          else if (typeof entry.draft === 'string') text = entry.draft;
+          else if (typeof entry.submittedText === 'string') text = entry.submittedText;
+        } else {
+          text = (resp && resp.answer && typeof resp.answer.text === 'string') ? resp.answer.text : '';
+        }
         if (!text) return;
         var rEntry = rosterObj[uid] || {};
         buckets[rIdx].responses.push({
           uid: uid,
           displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4)),
           text: text,
-          timestamp: (resp && resp.timestamp) || 0,
+          timestamp: hasFinalMap ? completionTime : (resp && resp.timestamp) || 0,
         });
         anyResponses = true;
       });
@@ -1130,7 +1383,7 @@
   function aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var rosterCount = roster ? Object.keys(roster).length : 0;
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
     var bars = questions.map(function (q, idx) {
@@ -1141,6 +1394,10 @@
         unscored: isUnscoredPollQuestion(q, null),
         correct: 0,
         incorrect: 0,
+        partial: 0,
+        totalEarned: 0,
+        totalPossible: 0,
+        scorePercent: null,
         idk: 0,
         submitted: 0,
         total: 0,
@@ -1151,34 +1408,27 @@
     graded.forEach(function (g) {
       var bar = bars[g.questionIdx];
       if (!bar) return;
-      bar.total++;
+      if (g.responseState.hasResponse) bar.total++;
       if (g.grade.status === 'correct') bar.correct++;
       else if (g.grade.status === 'incorrect') bar.incorrect++;
+      else if (g.grade.status === 'partially-correct') bar.partial++;
       else if (g.grade.status === 'idk') bar.idk++;
-      else bar.submitted++;
+      else if (g.responseState.hasResponse) bar.submitted++;
+      bar.totalEarned += g.grade.earnedPoints;
+      bar.totalPossible += g.grade.maxPoints;
       // Per-student entry for drill-down
       var rEntry = rosterObj[g.uid] || {};
       var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + g.uid.slice(0, 4));
       var qText = (g.question && (g.question.question || g.question.contextSentence || g.question.expectedFill)) || '';
       var qType = (g.response && g.response.itemType) || (g.question && (g.question.itemType || g.question.type)) || 'mcq';
-      var answerSummary = '';
-      if (g.response && g.response.answer) {
-        var a = g.response.answer;
-        if (a.idk) answerSummary = '🤔 I don\'t know';
-        else if (typeof a.optionIdx === 'number' && g.question && Array.isArray(g.question.options))
-          answerSummary = String.fromCharCode(65 + a.optionIdx) + '. ' + (g.question.options[a.optionIdx] || '');
-        else if (typeof a.text === 'string') answerSummary = a.text;
-        else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
-        else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
-        else if (qType === 'multi-select') answerSummary = Array.isArray(a.selectedTexts) ? a.selectedTexts.join('; ') : '';
-        else if (qType === 'answer-evidence') answerSummary = (a.answerText ? 'Answer: ' + a.answerText : '') + (a.evidenceText ? ' · Evidence: ' + a.evidenceText : '');
-        else if (qType === 'numeric-response') answerSummary = typeof a.text === 'string' ? a.text : (typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '');
-        else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
-      }
+      var answerSummary = g.responseState.hasResponse ? assessmentAnswerSummary(g.question, g.response) : '';
       bar.byStudent.push({
         uid: g.uid,
         displayName: displayName,
         status: g.grade.status,
+        scoreFraction: g.grade.scoreFraction,
+        earnedPoints: g.grade.earnedPoints,
+        maxPoints: g.grade.maxPoints,
         aiGraded: !!g.grade.aiGraded,
         aiFeedback: g.grade.aiFeedback || '',
         answerSummary: answerSummary,
@@ -1189,6 +1439,7 @@
     });
     // Sort each bar's byStudent by displayName for stable display
     bars.forEach(function (bar) {
+      bar.scorePercent = bar.totalPossible > 0 ? Math.round(bar.totalEarned / bar.totalPossible * 100) : null;
       bar.byStudent.sort(function (a, b) { return a.displayName.localeCompare(b.displayName); });
     });
     bars.forEach(function (bar) {
@@ -1312,16 +1563,19 @@
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var responseUids = {};
     graded.forEach(function (entry) { responseUids[entry.uid] = true; });
     var rosterCount = Object.keys(rosterObj).length;
     var totalStudents = rosterCount > 0 ? rosterCount : Object.keys(responseUids).length;
     var items = questions.map(function (question, questionIdx) {
       var itemRows = graded.filter(function (entry) { return entry.questionIdx === questionIdx; });
+      var distributionRows = itemRows.filter(function (entry) { return !assessmentResponseVersionIssue(question, entry.response); });
+      var versionReviewCount = itemRows.length - distributionRows.length;
       var respondentMap = {};
-      itemRows.forEach(function (entry) { respondentMap[entry.uid] = true; });
+      itemRows.forEach(function (entry) { if (entry.responseState.hasResponse) respondentMap[entry.uid] = true; });
       var respondents = Object.keys(respondentMap).length;
+      var distributionRespondents = distributionRows.filter(function (entry) { return entry.responseState.hasResponse; }).length;
       var correctCount = 0;
       var incorrectCount = 0;
       var partialCount = 0;
@@ -1336,16 +1590,18 @@
         if ((status === 'incorrect' || status === 'partially-correct') && entry.grade && entry.grade.confidence === 'knew') highConfidenceIncorrect++;
       });
       var gradableCount = correctCount + incorrectCount + partialCount;
-      var correctRate = gradableCount > 0 ? Math.round((correctCount + partialCount * 0.5) / gradableCount * 100) : null;
+      var totalEarned = itemRows.reduce(function (sum, entry) { return sum + entry.grade.earnedPoints; }, 0);
+      var totalPossible = itemRows.reduce(function (sum, entry) { return sum + entry.grade.maxPoints; }, 0);
+      var correctRate = totalPossible > 0 ? Math.round(totalEarned / totalPossible * 100) : null;
       var omittedCount = Math.max(0, totalStudents - respondents);
-      var smallSample = respondents < 5;
+      var smallSample = distributionRespondents < 5;
       var type = normalizeItemType(question, null);
       var unscored = isUnscoredPollQuestion(question, null);
       var options = [];
       if ((type === 'mcq' || unscored) && question && Array.isArray(question.options)) {
         var correctIdx = unscored ? -1 : resolveCorrectIdx(question);
         options = question.options.map(function (label, optionIdx) {
-          var count = itemRows.reduce(function (sum, entry) {
+          var count = distributionRows.reduce(function (sum, entry) {
             return sum + (extractOptionIndex(question, entry.response) === optionIdx ? 1 : 0);
           }, 0);
           return { optionIdx: optionIdx, label: label, count: count, correct: optionIdx === correctIdx };
@@ -1370,12 +1626,13 @@
           flags.push('Several confident responses were incorrect; review the underlying misconception.');
           signalCodes.push('confidence-mismatch');
         }
-        if (options.length >= 3 && respondents >= 10 && options.some(function (option) { return !option.correct && option.count === 0; })) {
+        if (options.length >= 3 && distributionRespondents >= 10 && options.some(function (option) { return !option.correct && option.count === 0; })) {
           flags.push('One or more distractors were never selected; consider strengthening them.');
           signalCodes.push('weak-distractor');
         }
       }
-      var signalLabel = unscored ? 'Unscored distribution' : smallSample ? 'Early signal (' + respondents + '/5)' : correctRate == null ? 'Teacher review needed' : correctRate <= 35 ? 'Challenging' : correctRate >= 90 ? 'Very easy' : 'Useful range';
+      if (versionReviewCount > 0) flags.push(versionReviewCount + ' response(s) from another question version need review and are excluded from current-choice distributions.');
+      var signalLabel = versionReviewCount > 0 && distributionRespondents === 0 ? 'Question version review needed' : unscored ? 'Unscored distribution' : smallSample ? 'Early signal (' + distributionRespondents + '/5)' : correctRate == null ? 'Teacher review needed' : correctRate <= 35 ? 'Challenging' : correctRate >= 90 ? 'Very easy' : 'Useful range';
       return {
         questionIdx: questionIdx,
         questionText: question && (question.question || question.contextSentence || question.expectedFill) || ('Question ' + (questionIdx + 1)),
@@ -1383,12 +1640,16 @@
         unscored: unscored,
         evaluative: !unscored,
         respondents: respondents,
+        distributionRespondents: distributionRespondents,
+        versionReviewCount: versionReviewCount,
         omittedCount: omittedCount,
         idkCount: idkCount,
         correctCount: correctCount,
         incorrectCount: incorrectCount,
         partialCount: partialCount,
         gradableCount: gradableCount,
+        totalEarned: totalEarned,
+        totalPossible: totalPossible,
         correctRate: correctRate,
         highConfidenceIncorrect: highConfidenceIncorrect,
         smallSample: smallSample,
@@ -1472,13 +1733,14 @@
       }
     });
 
-    var safeContent = { data: { questions: questions } };
+    var safeContent = { data: { questions: questions, scoringPolicy: data.scoringPolicy } };
     var safeState = Object.assign({}, state, { allResponses: safeAllResponses });
     var graded = collectAllGradedResponses(
       safeAllResponses,
       questions,
       opts.aiGradedCache,
-      opts.teacherOverrides
+      opts.teacherOverrides,
+      data.scoringPolicy
     );
     var analysis = aggregateItemAnalysis(
       safeState,
@@ -1517,7 +1779,7 @@
       var grade = entry.grade && typeof entry.grade === 'object' ? entry.grade : {};
       var status = grade.status;
       if (!participant || status === 'no-response') return;
-      participant.answered++;
+      if (entry.responseState.answered) participant.answered++;
       if (grade.unscored) {
         participant.unscored++;
         return;
@@ -1950,11 +2212,16 @@
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
     gradePresentationResponse: gradePresentationResponse,
+    isAnswerKeyDisputed: isAnswerKeyDisputed,
     presentationQuestionIsGameScorable: presentationQuestionIsGameScorable,
     aggregatePresentationResponses: aggregatePresentationResponses,
     isUnscoredPollQuestion: isUnscoredPollQuestion,
     normalizeItemType: normalizeItemType,
     normalizeLiveScoringPolicy: normalizeLiveScoringPolicy,
+    assessmentItemSignature: assessmentItemSignature,
+    assessmentResponseFingerprint: assessmentResponseFingerprint,
+    assessmentAnswerSummary: assessmentAnswerSummary,
+    assessmentResponseState: assessmentResponseState,
     normalizePresentationConfidence: normalizePresentationConfidence,
     presentationAccuracyWeight: presentationAccuracyWeight,
     classifyPresentationConfidence: classifyPresentationConfidence,

@@ -1,0 +1,90 @@
+{
+  "generatedAtUTC": "2026-10-22T02:33:45.823Z",
+  "deploymentHeld": true,
+  "sources": [
+    {
+      "file": "catalog_module.js",
+      "sha256": "f655aa99b38a626ae8a3fca2cab2d90fb1105aba0f2191d89c0d58cc13107236",
+      "previousSHA256": "4a4189a9057218f563504efd486ed4276db9a6dde45b8588c1ef7a48f2217848",
+      "labels": 3,
+      "scalarGuards": 0,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_lab/stem_tool_birdlab.js",
+      "sha256": "015bbf9300455c5ddea06108663ec754a976e3d71e1ee9c61e1328fe2fb9e356",
+      "previousSHA256": "97b4900a86e5a92425bd45de900d44f27e5873b2e6f891138163a4d1e0bb3391",
+      "labels": 47,
+      "scalarGuards": 0,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_lab/stem_tool_cell.js",
+      "sha256": "1f0ecfab9d544cfe9ba29829129a5da208f274e7246b8f4bebb8a5618207371f",
+      "previousSHA256": "a9aafe047c3f25739485b2bc761ca95ec8d9432acf579439f1e42d62db1c6565",
+      "labels": 42,
+      "scalarGuards": 0,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585",
+      "previousSHA256": "5dd0435c997bebb797acc05e80682f84df83071cac138be4b33a286013f9589f",
+      "labels": 14,
+      "scalarGuards": 4,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_lab/stem_tool_ecosystem.js",
+      "sha256": "cdd73bff996c2a441d2d5b373d2c5ff91d200105940cadfc47885d6e655490d1",
+      "previousSHA256": "1e4181ce41f7c878febdad6e06571deac4f0ae1c690776cbb4d3094a35bfdbf1",
+      "labels": 61,
+      "scalarGuards": 0,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    },
+    {
+      "file": "stem_lab/stem_tool_raptorhunt.js",
+      "sha256": "73a5490294ea0283a645714d743131ab64a778104ecf31200cadc73333670330",
+      "previousSHA256": "02d5593e36ca1ae4408fa035fe2d98a0479795f54a38b8b9725e5d526cb47a50",
+      "labels": 72,
+      "scalarGuards": 0,
+      "inverseByteIdentical": true,
+      "mirrorIdentical": true,
+      "parses": true
+    }
+  ],
+  "registry": {
+    "preservedLeaves": 149412,
+    "addedFaithfulKeys": 234,
+    "mirrorIdentical": true
+  },
+  "watercycle": {
+    "packs": 63,
+    "pairedFiles": 126,
+    "inverseByteIdentical": true,
+    "bytesAddedPerFile": 6
+  },
+  "manifest": {
+    "packs": 63,
+    "bytesMatch": true,
+    "mirrorsIdentical": true
+  },
+  "coverage": {
+    "uiMissing": 3916190,
+    "runtimeMissing": 430338,
+    "uiPlaceholderMismatches": 0,
+    "runtimePlaceholderMismatches": 0,
+    "mirrorDrift": 0,
+    "baselinesChanged": false
+  }
+}

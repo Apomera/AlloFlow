@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "保持目前飛行狀態",
+  "stem.flightsim.flight_assistance_targets": "航向 {hdg}° · 高度 {alt} ft MSL · 速度 {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "航向 {hdg}° · 高度 {alt} ft MSL · 前進速度 {spd} kt",
+  "stem.flightsim.challenge_turn_left": "向左轉 {degrees}°，飛向 {airport}。",
+  "stem.flightsim.challenge_turn_right": "向右轉 {degrees}°，飛向 {airport}。",
+  "stem.flightsim.challenge_course_aligned": "正在飛向 {airport}。請跟隨航線標記。",
+  "stem.flightsim.challenge_runway_reference": "訓練跑道 {runway}：航向 {heading}°。下降著陸前，請先對正跑道。"
+}

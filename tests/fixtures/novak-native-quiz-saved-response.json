@@ -1,0 +1,164 @@
+{
+  "provenance": {
+    "description": "Quiz resource and exact learner response record extracted from the native browser Save Project test; all responses are fictional LOCAL TEST text.",
+    "sourceSha256": "7e44efda1d10e4d3dbf00d6f959103e64e103f624794964c10dad968a691c916"
+  },
+  "history": [
+    {
+      "id": "reading-space-exit",
+      "type": "quiz",
+      "title": "What Changed in Your Thinking?",
+      "timestamp": "2026-10-21T18:24:44.058Z",
+      "data": {
+        "questions": [
+          {
+            "type": "short-answer",
+            "conceptLabel": "Evidence and limits",
+            "question": "Explain the group recommendation using two labeled pieces of evidence. Give the equipment total and one important uncertainty or tradeoff."
+          },
+          {
+            "type": "short-answer",
+            "conceptLabel": "Reciprocal reasoning",
+            "question": "Describe one different idea someone contributed. How did you respond, and how did that exchange change or strengthen your reasoning? If the group did not reach agreement, explain the remaining concern."
+          },
+          {
+            "type": "short-answer",
+            "conceptLabel": "Transfer",
+            "question": "A new group says: \"We each made one slide, so our presentation proves we collaborated.\" What would you need to see or ask before accepting that claim?"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which support helped you communicate or understand an idea today? What will you keep, change, or try without next time?"
+          },
+          {
+            "text": "What is one specific move your group can improve next time so that more ideas influence the decision?"
+          }
+        ],
+        "title": "What Changed in Your Thinking?",
+        "scoringPolicy": {
+          "partialCredit": true,
+          "writtenResponseMode": "teacher-review"
+        },
+        "deliverySettings": {
+          "profile": "flexible",
+          "feedbackTiming": "teacher-graded",
+          "pacing": "all-at-once",
+          "timeLimitMinutes": 0,
+          "allowFlagging": true,
+          "showProgress": true
+        },
+        "answerKeysWithheld": true
+      },
+      "meta": "Individual evidence of learning | Open responses | Teacher criteria are examples, not a single correct plan",
+      "instructionalText": {
+        "schemaVersion": 1,
+        "role": "unspecified",
+        "form": "original",
+        "sourceArtifactId": null,
+        "primaryArtifactId": null,
+        "designationSource": "workflow-default",
+        "replacementAuthorization": {
+          "authorized": false,
+          "source": "none"
+        },
+        "complexity": {
+          "requestedGrade": "6th Grade",
+          "calibrationTarget": "",
+          "measuredGrade": null,
+          "method": "",
+          "status": "unavailable",
+          "contentFingerprint": "",
+          "measuredAt": "",
+          "language": "en",
+          "measurementScope": "",
+          "measurementVersion": "",
+          "extractionVersion": "",
+          "rawFleschKincaidGrade": null,
+          "displayFleschKincaidGrade": null,
+          "averageSentenceLength": null,
+          "averageSyllablesPerWord": null,
+          "bodyCounts": null,
+          "artifactCharacterCount": null,
+          "bodyCharacterCount": null,
+          "artifactFingerprint": "",
+          "bodyFingerprint": "",
+          "legacyArtifactMetrics": null
+        }
+      },
+      "_artifactInstanceId": "artifact-6cf02307-d53d-4a25-a2b9-973f4a759f6f"
+    }
+  ],
+  "responses": {
+    "reading-space-exit": {
+      "assessmentDraft": null,
+      "assessmentSubmitted": {
+        "kind": "alloflow-assessment-responses",
+        "version": 1,
+        "answered": 3,
+        "responded": 3,
+        "total": 3,
+        "items": [
+          {
+            "number": 1,
+            "type": "short-answer",
+            "question": "Explain the group recommendation using two labeled pieces of evidence. Give the equipment total and one important uncertainty or tradeoff.",
+            "questionSignature": "assess-item-v1:cngukc",
+            "answered": true,
+            "hasResponse": true,
+            "response": "LOCAL TEST Q1: We chose a lamp, pads, and basket for 5 tokens. Evidence D supports light and Evidence B requires a clear route. Sound still needs testing.",
+            "answer": {
+              "text": "LOCAL TEST Q1: We chose a lamp, pads, and basket for 5 tokens. Evidence D supports light and Evidence B requires a clear route. Sound still needs testing.",
+              "status": "submitted"
+            },
+            "confidence": null
+          },
+          {
+            "number": 2,
+            "type": "short-answer",
+            "question": "Describe one different idea someone contributed. How did you respond, and how did that exchange change or strengthen your reasoning? If the group did not reach agreement, explain the remaining concern.",
+            "questionSignature": "assess-item-v1:1ckrgl3",
+            "answered": true,
+            "hasResponse": true,
+            "response": "LOCAL TEST Q2: A partner proposed a divider. I asked about Evidence C and we added a quiet-time routine because sound blocking was untested.",
+            "answer": {
+              "text": "LOCAL TEST Q2: A partner proposed a divider. I asked about Evidence C and we added a quiet-time routine because sound blocking was untested.",
+              "status": "submitted"
+            },
+            "confidence": null
+          },
+          {
+            "number": 3,
+            "type": "short-answer",
+            "question": "A new group says: \"We each made one slide, so our presentation proves we collaborated.\" What would you need to see or ask before accepting that claim?",
+            "questionSignature": "assess-item-v1:1ws88fg",
+            "answered": true,
+            "hasResponse": true,
+            "response": "LOCAL TEST Q3: I would ask how they considered one another's ideas, used evidence, and revised a shared decision. Separate slides alone do not show that.",
+            "answer": {
+              "text": "LOCAL TEST Q3: I would ask how they considered one another's ideas, used evidence, and revised a shared decision. Separate slides alone do not show that.",
+              "status": "submitted"
+            },
+            "confidence": null
+          }
+        ],
+        "reflections": [
+          {
+            "prompt": "Which support helped you communicate or understand an idea today? What will you keep, change, or try without next time?",
+            "response": ""
+          },
+          {
+            "prompt": "What is one specific move your group can improve next time so that more ideas influence the decision?",
+            "response": ""
+          }
+        ],
+        "status": "submitted",
+        "attemptId": "attempt-mvin72d6-a8vua8",
+        "startedAt": 1792619214522,
+        "submittedAt": 1792619278715,
+        "delivery": "local",
+        "recordedAt": 1792619278740
+      }
+    }
+  }
+}

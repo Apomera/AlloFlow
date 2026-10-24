@@ -3573,7 +3573,7 @@ function _builderH5PCompatibility(item) {
         ready = !!prompt2 && Array.isArray(question.answerOptions) && question.answerOptions.length >= 2 && question.answerOptions.includes(question.correctAnswer) && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
         if (ready) adapted += 1;
       } else if (kind === "numeric-response") {
-        ready = !!prompt2 && Number.isFinite(Number(question.correctValue));
+        ready = !!prompt2 && (typeof question.correctValue === "number" || typeof question.correctValue === "string") && String(question.correctValue).trim() !== "" && Number.isFinite(Number(question.correctValue));
         if (ready) {
           adapted += 1;
           if (Number(question.tolerance) > 0) manualReview += 1;
@@ -4407,6 +4407,50 @@ function ExportPreviewView(props) {
   React.useEffect(() => {
     if (isRemediationDocument && exportPreviewMode === "worksheet") setExportPreviewMode("print");
   }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
+  let readingSettingsReady = false;
+  try {
+    readingSettingsReady = !isRemediationDocument && exportPreviewMode !== "slides" && !!window.AlloModules?.UIFontLibrary?.readingSettingsAvailable?.();
+  } catch (_) {
+    readingSettingsReady = false;
+  }
+  const usingReadingSettings = readingSettingsReady && exportConfig?.useReadingSettings === true;
+  const builderText = (key, english) => {
+    let value = "";
+    try {
+      value = t(key);
+    } catch (_) {
+      value = "";
+    }
+    return typeof value === "string" && value && value !== key ? value : english;
+  };
+  const readerRefreshRef = React.useRef(updateExportPreview2);
+  readerRefreshRef.current = updateExportPreview2;
+  React.useEffect(() => {
+    const api = usingReadingSettings ? window.__alloReadingSettings : null;
+    if (!api || typeof api.subscribe !== "function") return void 0;
+    const keyOf = (s) => s ? [s.fontId, s.baseFontSize, s.lineHeight, s.letterSpacing].join("|") : "";
+    let last = keyOf(api.get());
+    let timer = null;
+    const off = api.subscribe((next) => {
+      const key = keyOf(next || api.get());
+      if (key === last) return;
+      last = key;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          if (typeof readerRefreshRef.current === "function") readerRefreshRef.current();
+        } catch (_) {
+        }
+      }, 400);
+    });
+    return () => {
+      clearTimeout(timer);
+      try {
+        if (typeof off === "function") off();
+      } catch (_) {
+      }
+    };
+  }, [usingReadingSettings]);
   const [writingCheck, setWritingCheck] = React.useState(null);
   const [blockSuggestions, setBlockSuggestions] = React.useState(null);
   const [blockSuggestionsBusy, setBlockSuggestionsBusy] = React.useState(false);
@@ -8464,7 +8508,7 @@ ${pageCss}
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error("The export did not produce a file.");
     const clean = getCleanBuilderDocument();
-    const safeTitle = String(clean?.title || "document").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").substring(0, 60) || "document";
+    const safeTitle = String(clean?.title || "document").normalize("NFC").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").substring(0, 60) || "document";
     const extension = String(options.extension || "bin").replace(/^\./, "");
     const fileName = options.fileName || `${safeTitle}${options.suffix || ""}.${extension}`;
     const url = URL.createObjectURL(blob);
@@ -8667,7 +8711,10 @@ ${pageCss}
         const clean = teacherOnly.length ? { ...built, html: "<!DOCTYPE html>\n" + studentRoot.outerHTML } : built;
         const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
         if (succeeded !== true) return;
-        if (teacherOnly.length) addToast && addToast(t && t("export_preview.ims_student_copy_only") || "The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy.", "info");
+        if (teacherOnly.length && addToast) {
+          const __t = (key, english) => t && t(key) || english;
+          addToast(__t("export_preview.ims_student_copy_only", "The IMS package holds the student copy only. Teacher-only sections, such as an answer key or lesson plan, were left out. Use Download HTML for the private teacher copy."), "info");
+        }
       }
       try {
         if (typeof onExportSuccess === "function") onExportSuccess({ kind: "package", format: kind });
@@ -9041,7 +9088,8 @@ ${pageCss}
         const doc = exportPreviewRef.current?.contentDocument;
         const items = Array.isArray(history) ? history.filter((h) => h && h.data != null) : [];
         const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute("data-allo-user-edited") === "1");
-        const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+        const now = /* @__PURE__ */ new Date();
+        const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
         const title = exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc && doc.title || items[0] && items[0].title || "AlloFlow Lesson";
         const esc = (v) => v == null ? "" : String(v);
         const out = ["---", "title: " + esc(title), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
@@ -9114,7 +9162,8 @@ ${pageCss}
                 if (!c || typeof c !== "object") return;
                 out.push("### " + (ci + 1) + ". " + esc(c.target || maT("memory_target", "Memory target")), "");
                 const cueBlock = maRules && typeof maRules.cueBlock === "function" ? maRules.cueBlock(c) : null;
-                const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
+                const cue = c.cueNeedsReview ? "" : cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
+                if (c.cueNeedsReview) out.push("**" + maT("cue_review_required", "Cue review required") + ":** " + (c.studentCueNeedsReview && !c.teacherCueNeedsReview ? maT("cue_review_own", "The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.") : maT("cue_review_student", "The facts changed. The earlier memory cue is waiting for teacher review.")), "");
                 if (cue) out.push("**" + maT("export_memory_cue_label", "Memory cue:") + "** " + esc(cue), "");
                 if (cueBlock && cueBlock.steps.length) {
                   out.push("**" + maT("scaffold_heading", "Build it with support") + ":**");
@@ -9132,7 +9181,15 @@ ${pageCss}
                 (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
                   if (f) out.push("- " + esc(f));
                 });
-                if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                const currentLinks = maRules && typeof maRules.activeConnections === "function" ? maRules.activeConnections(c) : [];
+                const customCue = !(maRules && typeof maRules.customCue === "function") || maRules.customCue(c);
+                if (!c.cueNeedsReview && currentLinks.length) {
+                  out.push("", "**" + maT("mapping_heading", "How the cue connects") + ":**");
+                  currentLinks.forEach((link) => {
+                    const fact = (c.essentialFacts || [])[link.factIndex];
+                    if (fact) out.push("- **" + esc(link.cue) + "**: " + esc(fact) + (link.explanation ? " " + esc(link.explanation) : ""));
+                  });
+                } else if (!c.cueNeedsReview && !customCue && c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
                 const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
                 if (hook) {
                   const mdText = String(hook.text || "").replace(/([\\`*_[\]()~>#+=|{}!-])/g, "\\$1");
@@ -9717,7 +9774,16 @@ ${pageCss}
         },
         "\u{1F3F7}\uFE0F ",
         p.name || "Brand"
-      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
+      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), readingSettingsReady && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer", "data-export-reading-settings": true }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "checkbox",
+          className: "mt-0.5 accent-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500",
+          checked: exportConfig.useReadingSettings === true,
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, useReadingSettings: e.target.checked })),
+          "aria-describedby": "doc-builder-reading-settings-help"
+        }
+      ), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, builderText("reading_settings.use_mine", "Use my reading settings")), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-reading-settings-help", className: "block text-slate-600" }, builderText("reading_settings.use_mine_help", "Prints with your font, text size and spacing.")))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font:"), /* @__PURE__ */ React.createElement(
         "select",
         {
           value: exportConfig.fontId || (exportConfig.useAppFont ? "app" : "theme"),
@@ -9725,7 +9791,8 @@ ${pageCss}
             const v = e.target.value;
             setExportConfigAndRefresh((p) => ({ ...p, fontId: v, useAppFont: v === "app" }));
           },
-          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white",
+          disabled: usingReadingSettings,
+          className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white disabled:opacity-60",
           "data-help-key": "doc_builder_font_select",
           "aria-label": t("a11y.export_font") || "Export font family"
         },
@@ -9749,7 +9816,8 @@ ${pageCss}
           max: 24,
           value: exportConfig.fontSize,
           onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, fontSize: parseInt(e.target.value) })),
-          className: "flex-1 accent-indigo-600",
+          disabled: usingReadingSettings,
+          className: "flex-1 accent-indigo-600 disabled:opacity-60",
           "data-help-key": "doc_builder_font_size_slider",
           "aria-label": t("a11y.font_size")
         }
@@ -9988,29 +10056,58 @@ ${pageCss}
         } catch (_) {
         }
         setExportConfigAndRefresh((p) => ({ ...p, dueAt: parsed.toISOString(), dueTimeZone: zone }));
-      }, className: "mt-1 w-full rounded border border-indigo-300 bg-white px-2 py-1.5 text-xs text-slate-800", "aria-describedby": "alloflow-export-due-help" }), /* @__PURE__ */ React.createElement("div", { id: "alloflow-export-due-help", className: "mt-1 text-[10px] leading-snug text-indigo-800" }, "Late status is calculated only when this exact instant and a submission timestamp are available. The browser records your IANA timezone; missing work is never inferred here."), exportConfig.dueAt && /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-1 text-[10px] font-semibold text-indigo-800 underline", onClick: () => setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" })) }, "Clear due date")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: "For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers \u2014 they just can't look up or self-grade against the key." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.assessmentMode === true, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, assessmentMode: e.target.checked })), className: "rounded" }), "\u{1F512} Assessment mode (no embedded answers)"), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-white"}`, title: t("export_preview.accessibility.embeds_generated_read_aloud_audio_inside_the_html_instead_of_placing_audio") || "Embeds generated read-aloud audio inside the HTML instead of placing audio files beside it." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.singleFileHtml || exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, disabled: exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, singleFileHtml: e.target.checked })), className: "rounded" }), "\u{1F50A} Embed generated audio in HTML"))), showDisplayModes && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Display modes"), hasGlossary && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeGlossary ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Glossary"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: (exportConfig.glossaryDisplayMode || "table") === "table", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "table" })), disabled: !exportConfig.includeGlossary }), "Table (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "flash-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "flash-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F0CF} Flash cards (fold-and-cut for paper, flip for digital)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "language-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "language-cards" })), disabled: !exportConfig.includeGlossary || !hasGlossaryTranslations }), "\u{1F310} Language cards (emphasizes translations)", !hasGlossaryTranslations && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u2014 add translations first"))), (exportConfig.glossaryDisplayMode || "table") === "table" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
-        { v: "small", label: "S", px: 40 },
-        { v: "medium", label: "M", px: 64 },
-        { v: "large", label: "L", px: 96 },
-        { v: "xl", label: "XL", px: 140 }
-      ].map((opt) => {
-        const cur = exportConfig.glossaryImageSize || "medium";
-        const isActive = cur === opt.v;
-        return /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            key: opt.v,
-            type: "button",
-            disabled: !exportConfig.includeGlossary,
-            onClick: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryImageSize: opt.v })),
-            title: opt.label + " (" + opt.px + " px)",
-            "aria-label": "Glossary image size " + opt.label + " " + opt.px + " pixels",
-            "aria-pressed": isActive,
-            className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-slate-600 border-slate-300 hover:bg-emerald-50")
-          },
-          opt.label
-        );
-      })))), hasTimeline && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Timeline"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: (exportConfig.timelineDisplayMode || "list") === "list", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "list" })) }), "List (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: exportConfig.timelineDisplayMode === "cuttable-strips", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "cuttable-strips" })) }), "\u2702 Cuttable chronology strips")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
+      }, className: "mt-1 w-full rounded border border-indigo-300 bg-white px-2 py-1.5 text-xs text-slate-800", "aria-describedby": "alloflow-export-due-help" }), /* @__PURE__ */ React.createElement("div", { id: "alloflow-export-due-help", className: "mt-1 text-[10px] leading-snug text-indigo-800" }, "Late status is calculated only when this exact instant and a submission timestamp are available. The browser records your IANA timezone; missing work is never inferred here."), exportConfig.dueAt && /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-1 text-[10px] font-semibold text-indigo-800 underline", onClick: () => setExportConfigAndRefresh((p) => ({ ...p, dueAt: "", dueTimeZone: "" })) }, "Clear due date")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: "For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers \u2014 they just can't look up or self-grade against the key." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.assessmentMode === true, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, assessmentMode: e.target.checked })), className: "rounded" }), "\u{1F512} Assessment mode (no embedded answers)"), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-white"}`, title: t("export_preview.accessibility.embeds_generated_read_aloud_audio_inside_the_html_instead_of_placing_audio") || "Embeds generated read-aloud audio inside the HTML instead of placing audio files beside it." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.singleFileHtml || exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, disabled: exportPreviewMode === "html" && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, singleFileHtml: e.target.checked })), className: "rounded" }), "\u{1F50A} Embed generated audio in HTML"))), showDisplayModes && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Display modes"), hasGlossary && (() => {
+        const glText = (key, english) => {
+          const value = typeof t === "function" ? t(key) : "";
+          return typeof value === "string" && value && value !== key ? value : english;
+        };
+        const glossaryLangs = [];
+        (history || []).forEach((h) => {
+          if (h && h.type === "glossary" && Array.isArray(h.data)) h.data.forEach((term) => {
+            const tr = term && term.translations;
+            if (tr && typeof tr === "object" && !Array.isArray(tr)) Object.keys(tr).forEach((lang) => {
+              if (String(tr[lang] || "").trim() && !glossaryLangs.includes(lang)) glossaryLangs.push(lang);
+            });
+          });
+        });
+        const bilingualLangs = Array.isArray(exportConfig.glossaryBilingualLanguages) ? exportConfig.glossaryBilingualLanguages : glossaryLangs;
+        const glOption = "flex min-h-11 items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 focus-within:ring-2 focus-within:ring-emerald-600";
+        return /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeGlossary ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { id: "export-glossary-display-label", className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Glossary"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5", role: "radiogroup", "aria-labelledby": "export-glossary-display-label" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: (exportConfig.glossaryDisplayMode || "table") === "table", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "table" })), disabled: !exportConfig.includeGlossary }), "Table (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "flash-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "flash-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F0CF} Flash cards (fold-and-cut for paper, flip for digital)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "language-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "language-cards" })), disabled: !exportConfig.includeGlossary || !hasGlossaryTranslations }), "\u{1F310} Language cards (emphasizes translations)", !hasGlossaryTranslations && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u2014 add translations first")), /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "bilingual", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "bilingual" })), disabled: !exportConfig.includeGlossary || !hasGlossaryTranslations }), glText("export.glossary_mode_bilingual", "Bilingual table (a column per language)")), /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "word-wall", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "word-wall" })), disabled: !exportConfig.includeGlossary }), glText("export.glossary_mode_word_wall", "Word wall cards (large print)")), /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "worksheet", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "worksheet" })), disabled: !exportConfig.includeGlossary }), glText("export.glossary_mode_worksheet", "Student worksheet (no answers)"))), exportConfig.glossaryDisplayMode === "bilingual" && glossaryLangs.length > 0 && /* @__PURE__ */ React.createElement("fieldset", { className: "mt-2 pl-1 border-0 p-0 m-0", "data-export-glossary-languages": true }, /* @__PURE__ */ React.createElement("legend", { className: "text-[10px] font-semibold text-slate-600 mb-1" }, glText("export.glossary_bilingual_languages", "Languages to include")), glossaryLangs.map((lang) => /* @__PURE__ */ React.createElement("label", { key: lang, className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "rounded", checked: bilingualLangs.includes(lang), disabled: !exportConfig.includeGlossary, onChange: (e) => {
+          const on = e.target.checked;
+          setExportConfigAndRefresh((p) => {
+            const current = Array.isArray(p.glossaryBilingualLanguages) ? p.glossaryBilingualLanguages : glossaryLangs;
+            return { ...p, glossaryBilingualLanguages: glossaryLangs.filter((l) => l === lang ? on : current.includes(l)) };
+          });
+        } }), /* @__PURE__ */ React.createElement("span", { dir: "auto" }, lang)))), exportConfig.glossaryDisplayMode === "word-wall" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1", "data-export-glossary-word-wall": true }, /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "rounded", checked: exportConfig.glossaryWordWallDefinition === true, disabled: !exportConfig.includeGlossary, onChange: (e) => {
+          const on = e.target.checked;
+          setExportConfigAndRefresh((p) => ({ ...p, glossaryWordWallDefinition: on }));
+        } }), glText("export.glossary_word_wall_definition", "Add a short definition")), /* @__PURE__ */ React.createElement("label", { className: glOption }, glText("export.glossary_word_wall_per_page", "Cards per printed page"), /* @__PURE__ */ React.createElement("select", { className: "min-h-9 rounded border border-slate-300 bg-white px-1 text-xs focus-visible:ring-2 focus-visible:ring-emerald-600", value: String([2, 3, 4].includes(Number(exportConfig.glossaryWordWallPerPage)) ? Number(exportConfig.glossaryWordWallPerPage) : 2), disabled: !exportConfig.includeGlossary, onChange: (e) => {
+          const n = Number(e.target.value);
+          setExportConfigAndRefresh((p) => ({ ...p, glossaryWordWallPerPage: n }));
+        } }, [2, 3, 4].map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: String(n) }, n))))), exportConfig.glossaryDisplayMode === "worksheet" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1", "data-export-glossary-worksheet": true }, /* @__PURE__ */ React.createElement("div", { id: "export-glossary-worksheet-label", className: "text-[10px] font-semibold text-slate-600 mb-1" }, glText("export.glossary_worksheet_type", "Worksheet type")), /* @__PURE__ */ React.createElement("div", { role: "radiogroup", "aria-labelledby": "export-glossary-worksheet-label" }, /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryWorksheetVariant", checked: exportConfig.glossaryWorksheetVariant !== "matching", disabled: !exportConfig.includeGlossary, onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryWorksheetVariant: "lines" })) }), glText("export.glossary_worksheet_lines", "Write the definition")), /* @__PURE__ */ React.createElement("label", { className: glOption }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryWorksheetVariant", checked: exportConfig.glossaryWorksheetVariant === "matching", disabled: !exportConfig.includeGlossary, onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryWorksheetVariant: "matching" })) }), glText("export.glossary_worksheet_matching", "Match words to definitions"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-slate-600 px-1" }, glText("export.glossary_worksheet_key_note", "The answer key goes only in the teacher copy, when Teacher Key is on."))), (exportConfig.glossaryDisplayMode || "table") === "table" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
+          { v: "small", label: "S", px: 40 },
+          { v: "medium", label: "M", px: 64 },
+          { v: "large", label: "L", px: 96 },
+          { v: "xl", label: "XL", px: 140 }
+        ].map((opt) => {
+          const cur = exportConfig.glossaryImageSize || "medium";
+          const isActive = cur === opt.v;
+          return /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              key: opt.v,
+              type: "button",
+              disabled: !exportConfig.includeGlossary,
+              onClick: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryImageSize: opt.v })),
+              title: opt.label + " (" + opt.px + " px)",
+              "aria-label": "Glossary image size " + opt.label + " " + opt.px + " pixels",
+              "aria-pressed": isActive,
+              className: "px-2 py-0.5 rounded text-[10px] font-bold border transition-colors " + (isActive ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-slate-600 border-slate-300 hover:bg-emerald-50")
+            },
+            opt.label
+          );
+        }))));
+      })(), hasTimeline && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Timeline"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: (exportConfig.timelineDisplayMode || "list") === "list", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "list" })) }), "List (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "timelineDisplayMode", checked: exportConfig.timelineDisplayMode === "cuttable-strips", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: "cuttable-strips" })) }), "\u2702 Cuttable chronology strips")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
         { v: "small", label: "S", px: 48 },
         { v: "medium", label: "M", px: 64 },
         { v: "large", label: "L", px: 96 },

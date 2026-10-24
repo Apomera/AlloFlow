@@ -164,7 +164,9 @@ describe('Universe elliptical light projection', () => {
     expect(length(subtract(centered.center, GOLDEN.center))).toBeLessThan(0.3);
   });
 
-  it('updates projected ranges and leaves the fixed spiral disks and point bytes unchanged while the camera moves', () => {
+  it('updates projected ranges and leaves the fixed spiral grids and point bytes unchanged while the camera moves', () => {
+    // Projected kinds (see universe_flight_bulges): elliptical (u > .75), bulge (flag >= 1)
+    // and the exterior spiral-disk proxy (flag < 0, Enhancement57). Fixed grids have flag 0.
     const buffer = surfaceBuffer(), original = surface().slice();
     const pointBuffer = created.Buffer.find(item => item !== buffer);
     const originalPoints = buffers.get(pointBuffer).slice();
@@ -173,18 +175,28 @@ describe('Universe elliptical light projection', () => {
     expect(uploads).toHaveLength(fullUploads);
     const changed = updates.slice(start);
     expect(changed.length).toBeGreaterThan(0);
+    // Collect violations and assert once: ~120k per-vertex expect() calls exceeded the
+    // 5 s budget once the disk proxies (34k more vertices) began updating.
+    const unprojectedUpdates = [], movedUV = [], movedFixed = [];
     for (const update of changed) {
       expect(update.buffer).toBe(buffer);
       expect(update.offset % (STRIDE * 4)).toBe(0);
       expect(update.data.length % STRIDE).toBe(0);
       const offset = update.offset / 4;
-      for (let index = offset; index < offset + update.data.length; index += STRIDE) expect(original[index + 3] > 0.75 || original[index + 5] > 0).toBe(true);
+      for (let index = offset; index < offset + update.data.length; index += STRIDE) {
+        if (!(original[index + 3] > 0.75 || original[index + 5] >= 1 || original[index + 5] < 0)) unprojectedUpdates.push(index / STRIDE);
+      }
     }
+    expect(unprojectedUpdates.slice(0, 5), unprojectedUpdates.length + ' fixed vertices were re-uploaded').toEqual([]);
     const current = surface();
     for (let index = 0; index < original.length; index += STRIDE) {
-      expect(current.slice(index + 3, index + 5)).toEqual(original.slice(index + 3, index + 5));
-      if (original[index + 3] < 0.75 && original[index + 5] === 0) expect(current.slice(index, index + STRIDE)).toEqual(original.slice(index, index + STRIDE));
+      if (current[index + 3] !== original[index + 3] || current[index + 4] !== original[index + 4]) movedUV.push(index / STRIDE);
+      if (original[index + 3] < 0.75 && original[index + 5] === 0) {
+        for (let k = 0; k < STRIDE; k++) if (!Object.is(current[index + k], original[index + k])) { movedFixed.push(index / STRIDE); break; }
+      }
     }
+    expect(movedUV.slice(0, 5), movedUV.length + ' vertices changed atlas UVs').toEqual([]);
+    expect(movedFixed.slice(0, 5), movedFixed.length + ' fixed vertices changed').toEqual([]);
     expect(buffers.get(pointBuffer)).toEqual(originalPoints);
     expect(current.slice(GOLDEN_START, GOLDEN_START + MODEL_FLOATS)).not.toEqual(original.slice(GOLDEN_START, GOLDEN_START + MODEL_FLOATS));
   });

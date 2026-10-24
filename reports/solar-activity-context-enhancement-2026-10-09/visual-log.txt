@@ -1,8 +1,0 @@
-Starting activity-context-1060-dark
-Checked activity-context-1060-dark
-Starting activity-context-1060-light
-Checked activity-context-1060-light
-Starting activity-context-320-dark
-Checked activity-context-320-dark
-Starting activity-context-320-light
-Checked activity-context-320-light

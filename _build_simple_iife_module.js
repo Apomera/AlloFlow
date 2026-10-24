@@ -62,6 +62,20 @@ function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile
 
   const outputCode = wrapSimpleIife({ source, guardKey, footer });
 
+  // --check: compare what this build WOULD write with both shipped copies; never writes.
+  // (check_module_freshness.cjs is commit-based, so it cannot see an edited-but-unbuilt source.)
+  if (process.argv.includes('--check')) {
+    const stale = [OUTPUT, DEPLOY_OUT].filter((f) => {
+      try { return fs.readFileSync(f, 'utf-8') !== outputCode; } catch (_) { return true; }
+    });
+    if (stale.length) {
+      console.error('[' + tag + '] STALE (rebuild with node _build_' + name + '_module.js): ' + stale.map((f) => path.relative(ROOT, f)).join(', '));
+      process.exit(1);
+    }
+    console.log('[' + tag + '] up to date: ' + path.relative(ROOT, OUTPUT) + ' and its public copy match the source');
+    return;
+  }
+
   writeFile(OUTPUT, outputCode, 'utf-8');
   try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {

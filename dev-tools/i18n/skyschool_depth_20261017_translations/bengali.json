@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "বর্তমান উড্ডয়ন অবস্থা ধরে রাখুন",
+  "stem.flightsim.flight_assistance_targets": "অভিমুখ {hdg}° · উচ্চতা {alt} ft MSL · গতি {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "অভিমুখ {hdg}° · উচ্চতা {alt} ft MSL · সামনের দিকে গতি {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport}-এর দিকে বামে {degrees}° ঘুরুন।",
+  "stem.flightsim.challenge_turn_right": "{airport}-এর দিকে ডানে {degrees}° ঘুরুন।",
+  "stem.flightsim.challenge_course_aligned": "{airport}-এর দিকে এগোচ্ছেন। পথনির্দেশক চিহ্ন অনুসরণ করুন।",
+  "stem.flightsim.challenge_runway_reference": "প্রশিক্ষণের রানওয়ে {runway}: অভিমুখ {heading}°। অবতরণের জন্য নিচে নামার আগে রানওয়ের সঙ্গে সোজাসুজি অবস্থান নিন।"
+}

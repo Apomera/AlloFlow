@@ -55,15 +55,19 @@ describe('Finite dust on the distant neighborhood band', () => {
 
 describe('Depth-view source and flight preservation', () => {
   it('preserves catalogs, procedural generation, CPU dust, physical clocks and all pre-shader source exactly', () => {
-    const prefix = renderer.slice(0, renderer.indexOf('  var VERTEX = ['));
-    expect(hash(prefix)).toBe('c6ae486f751c7d073403db7aa0efaea949ddac83045c97d93a2c1b8c6920fd0d');
+    // Hash the LF form: the repo stores LF (.gitattributes eol=lf) and CI checks out
+    // LF, while a Windows work tree can hold CRLF lines. The old pins were taken
+    // from a CRLF work tree, so they could never match on CI.
+    const lf = renderer.replace(/\r\n/g, '\n');
+    const prefix = lf.slice(0, lf.indexOf('  var VERTEX = ['));
+    expect(hash(prefix)).toBe('ee583316dc88a2e4b8b04c137e73ec5cc395434b9b0e07bb3e012ad385a91234');
     // Resolved stellar shading has its own appearance tests. Preserve other
     // fragment, dust, resource, navigation and physical-clock line from 75.
-    const suffix = renderer.slice(renderer.indexOf('  var FRAGMENT = ['));
+    const suffix = lf.slice(lf.indexOf('  var FRAGMENT = ['));
     const coronaStart = suffix.indexOf("    '  float corona = 0.0;',"), coronaEnd = suffix.indexOf("    '  float arches = 0.0;',", coronaStart);
     expect(coronaStart).toBeGreaterThan(0); expect(coronaEnd).toBeGreaterThan(coronaStart);
-    expect(hash(suffix.slice(0, coronaStart))).toBe('3f8fcf1177d206843adaa90fd65b1519653d1fd59c38fff2c5524bb3c73e7977');
-    expect(hash(suffix.slice(coronaEnd))).toBe('9d849a42a7dde540f58b197468b45f65a4363fe9fd06d499c34ea008fd863f5a');
+    expect(hash(suffix.slice(0, coronaStart))).toBe('0dc556370021c865710e1d56a524f7ac7c99ff9cdb1a2c2e6492fc77a84206a1');
+    expect(hash(suffix.slice(coronaEnd))).toBe('54b78fd12a005c05c011b73f62dbfac5c738747287eeb97363d779d5135c5619');
   });
 
   it('changes no pose, clocks, navigation or GPU textures when dust is toggled during a camera sweep', () => {

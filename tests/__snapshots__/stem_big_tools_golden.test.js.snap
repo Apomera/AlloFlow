@@ -24,23 +24,23 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 119,
-  "inputs": 14,
-  "lengthBucket": 873,
-  "selects": 5,
-  "sha": "6c42f11f754b5764",
-  "svgs": 1,
+  "buttons": 170,
+  "inputs": 13,
+  "lengthBucket": 1486,
+  "selects": 6,
+  "sha": "18205b676027f50d",
+  "svgs": 15,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for birdLab 1`] = `
 {
-  "buttons": 127,
+  "buttons": 136,
   "inputs": 1,
-  "lengthBucket": 750,
+  "lengthBucket": 2814,
   "selects": 0,
-  "sha": "e3b85d0b56b1205e",
-  "svgs": 2,
+  "sha": "6867a36a0f8edc61",
+  "svgs": 6,
 }
 `;
 
@@ -79,11 +79,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 36,
-  "inputs": 5,
-  "lengthBucket": 215,
+  "buttons": 13,
+  "inputs": 1,
+  "lengthBucket": 60,
   "selects": 0,
-  "sha": "61d7ab944944522d",
+  "sha": "22b395083440e257",
   "svgs": 0,
 }
 `;
@@ -101,12 +101,12 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for raptorHunt 1`] = `
 {
-  "buttons": 50,
+  "buttons": 53,
   "inputs": 1,
-  "lengthBucket": 147,
+  "lengthBucket": 185,
   "selects": 0,
-  "sha": "ef79c3b080f5c0df",
-  "svgs": 2,
+  "sha": "8e49b1a8236568af",
+  "svgs": 6,
 }
 `;
 
@@ -123,11 +123,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 47,
+  "buttons": 49,
   "inputs": 1,
-  "lengthBucket": 256,
+  "lengthBucket": 277,
   "selects": 0,
-  "sha": "c5faf4e418a7599c",
+  "sha": "10258fbf96556808",
   "svgs": 0,
 }
 `;

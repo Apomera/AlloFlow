@@ -220,6 +220,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // ═══════════════════════════════════════════════════════════════
 
   // Seeded PRNG — deterministic so craters/stars don't jump per frame
+  // ── Read aloud ──
+  // The host's speech when there is one (force: the student asked, so the sound
+  // mute does not apply), else the browser's own speech, which also works
+  // offline. A new request replaces anything still being spoken.
+  function mmStopSpeech() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+  function mmSpeakText(text, callTTS) {
+    var said = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!said) return false;
+    function viaBrowser() {
+      try {
+        if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return false;
+        mmStopSpeech();
+        var utterance = new window.SpeechSynthesisUtterance(said), lang = (document.documentElement && document.documentElement.lang) || '';
+        if (lang) utterance.lang = lang;
+        window.speechSynthesis.speak(utterance);
+        return true;
+      } catch (e) { return false; }
+    }
+    if (typeof callTTS === 'function') {
+      try {
+        var pending = callTTS(said, null, null, { force: true });
+        if (pending && typeof pending.then === 'function') { pending.then(function (url) { if (!url) viaBrowser(); }, viaBrowser); return true; }
+      } catch (e) {}
+    }
+    return viaBrowser();
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { speakText: mmSpeakText, stopSpeech: mmStopSpeech }); } catch (e) {}
+
   // ── On-screen hold control ──
   // Both hand-flown phases were keyboard-only: no pointer or touch path existed
   // anywhere in this file, so the landing game and the moonwalk were unplayable on a
@@ -4968,11 +4996,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
   // Only three presets can enter this cache, independent of viewport and time.
   var _mmLunarOrbitLightSprites = {};
-  function mmDrawLunarOrbitLight(ctx, cx, cy, radius, sunAngle) {
+  // Generic cratered regolith for the orbital-plane view. It is NOT a map: the
+  // near-side atlas would be the wrong face. Tone follows 3-D position on the
+  // sphere, so features foreshorten at the limb, and crater walls brighten where
+  // they face the Sun. It multiplies the physical lighting, never replaces it.
+  var MM_REGOLITH_CRATERS = (function () {
+    var out = [], seed = 20690720;
+    function rand() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+    for (var i = 0; i < 110; i++) {
+      var z = 0.08 + 0.92 * rand(), phi = rand() * Math.PI * 2, rho = Math.sqrt(1 - z * z), size = 0.015 + 0.11 * Math.pow(rand(), 2.6);
+      out.push({ x: rho * Math.cos(phi), y: rho * Math.sin(phi), z: z, size: size, reach: Math.cos(size * 1.25) });
+    }
+    return out;
+  })();
+  function mmLunarRegolithTone(u, v, angle) {
+    var q = u * u + v * v; if (!(q <= 1)) return 1;
+    var z = Math.sqrt(1 - q), theta = (Number(angle) || 0) * Math.PI / 180, sx = Math.cos(theta), sy = Math.sin(theta);
+    var tone = 0.9 + 0.07 * Math.sin(u * 5.1 + z * 2.3) * Math.cos(v * 4.3 - z * 1.7) + 0.05 * Math.sin((u + v) * 11.7 + z * 6.1);
+    for (var i = 0; i < MM_REGOLITH_CRATERS.length; i++) {
+      var crater = MM_REGOLITH_CRATERS[i], dot = u * crater.x + v * crater.y + z * crater.z;
+      if (dot < crater.reach) continue;
+      var reach = Math.acos(Math.min(1, dot)) / crater.size;   // distance in crater radii
+      var ox = u - crater.x, oy = v - crater.y, facing = -(ox * sx + oy * sy) / (Math.hypot(ox, oy) || 1);
+      if (reach < 0.75) tone *= 0.88;                      // darker floor
+      else if (reach < 1) tone *= 1 + 0.28 * facing;       // far inner wall faces the Sun
+      else tone *= 1 - 0.1 * facing;                       // outer rim slope
+    }
+    return Math.max(0.6, Math.min(1.25, tone));
+  }
+  function mmDrawLunarOrbitLight(ctx, cx, cy, radius, sunAngle, options) {
     if (!ctx || ![cx, cy, radius].every(Number.isFinite) || radius <= 0) return null;
-    var angle = mmEnvironmentAngle(sunAngle);
-    if (!Object.prototype.hasOwnProperty.call(_mmLunarOrbitLightSprites, angle)) {
-      _mmLunarOrbitLightSprites[angle] = false;
+    var angle = mmEnvironmentAngle(sunAngle), regolith = !!(options && options.regolith), spriteKey = regolith ? angle + ':regolith' : angle;
+    if (!Object.prototype.hasOwnProperty.call(_mmLunarOrbitLightSprites, spriteKey)) {
+      _mmLunarOrbitLightSprites[spriteKey] = false;
       try {
         var sprite = document.createElement('canvas'), size = 256; sprite.width = sprite.height = size;
         var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
@@ -4980,16 +5036,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
             var light = mmLunarOrbitSurfaceLight((x + 0.5) * 2 / size - 1, 1 - (y + 0.5) * 2 / size, angle), offset = (y * size + x) * 4;
             if (!light) continue;
-            image.data[offset] = Math.round(190 * light.brightness); image.data[offset + 1] = Math.round(190 * light.brightness);
-            image.data[offset + 2] = Math.round(183 * light.brightness); image.data[offset + 3] = 255;
+            var lit = regolith ? light.brightness * mmLunarRegolithTone((x + 0.5) * 2 / size - 1, 1 - (y + 0.5) * 2 / size, angle) : light.brightness;
+            image.data[offset] = Math.round(190 * lit); image.data[offset + 1] = Math.round(190 * lit);
+            image.data[offset + 2] = Math.round(183 * lit); image.data[offset + 3] = 255;
           }
-          context.putImageData(image, 0, 0); _mmLunarOrbitLightSprites[angle] = sprite;
+          context.putImageData(image, 0, 0); _mmLunarOrbitLightSprites[spriteKey] = sprite;
         }
       } catch (_orbitLightError) {}
     }
     ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.clip();
     ctx.fillStyle = '#0a0a0a'; ctx.fill();
-    if (_mmLunarOrbitLightSprites[angle]) ctx.drawImage(_mmLunarOrbitLightSprites[angle], cx - radius, cy - radius, radius * 2, radius * 2);
+    if (_mmLunarOrbitLightSprites[spriteKey]) ctx.drawImage(_mmLunarOrbitLightSprites[spriteKey], cx - radius, cy - radius, radius * 2, radius * 2);
     else {
       var step = radius * 2 / 48;
       for (var row = 0; row < 48; row++) for (var col = 0; col < 48; col++) {
@@ -5073,12 +5130,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.textAlign = 'right'; ctx.fillStyle = '#93c5fd'; ctx.font = '10px system-ui'; ctx.fillText('\u2190 Earth', W - 16, 59);
     // Clip only the plotted geometry; labels and ruler remain readable.
     ctx.save(); ctx.beginPath(); ctx.rect(10, plotTop - 8, W - 20, plotHeight + 23); ctx.clip();
-    // A physical Moon-radius circle anchors the length scale. Neutral shading
-    // avoids presenting a near-side atlas as a view down on the orbital plane.
-    mmDrawLunarOrbitLight(ctx, cx, cy, moonR, sunAngle);
+    // A physical Moon-radius circle anchors the length scale. A generic cratered
+    // surface (not the near-side atlas, which would be the wrong face) under the
+    // same physical lighting; the name sits beside the disc, off the surface.
+    mmDrawLunarOrbitLight(ctx, cx, cy, moonR, sunAngle, { regolith: true });
     ctx.beginPath(); ctx.arc(cx, cy, moonR, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(226,232,240,0.35)'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = '#cbd5e1'; ctx.textAlign = 'center'; ctx.font = 'bold 10px system-ui'; ctx.fillText('MOON', cx, cy + 4);
+    var tagX = cx - moonR * 0.83, tagY = cy - moonR * 0.83;
+    ctx.strokeStyle = 'rgba(203,213,225,0.55)'; ctx.beginPath(); ctx.moveTo(cx - moonR * 0.72, cy - moonR * 0.72); ctx.lineTo(tagX, tagY); ctx.stroke();
+    ctx.fillStyle = '#cbd5e1'; ctx.textAlign = 'right'; ctx.font = 'bold 10px system-ui'; ctx.fillText('MOON', tagX - 3, tagY - 3);
     // Dashed future trajectory is opt-in and explicitly identified as a preview.
     function pathToTime(future) {
       var begun = false;
@@ -5191,7 +5251,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
     orbitalCraftLight: mmOrbitalCraftLight, orbitalCraftMaterial: mmOrbitalCraftMaterial,
-    lunarOrbitSurfaceLight: mmLunarOrbitSurfaceLight, drawLunarOrbitLight: mmDrawLunarOrbitLight,
+    lunarOrbitSurfaceLight: mmLunarOrbitSurfaceLight, drawLunarOrbitLight: mmDrawLunarOrbitLight, lunarRegolithTone: mmLunarRegolithTone,
+    lunarRegolithCraters: function () { return MM_REGOLITH_CRATERS.map(function (c) { return { x: c.x, y: c.y, z: c.z, size: c.size }; }); },
     drawLOIScene: mmDrawLOIScene, drawLOIStack: mmDrawLOIStack, drawLunarAtlas: mmDrawLunarAtlas, lunarLight: mmLunarLight, lunarSurfaceLight: mmLunarSurfaceLight, lunarBowlLight: mmLunarBowlLight, lunarCraterRelief: mmLunarCraterRelief, lunarAtlasSite: mmLunarAtlasSite, lunarSeas: mmLunarSeas, drawLunarLighting: mmMoonNight
   }); } catch (e) {}
 
@@ -5821,59 +5882,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return Object.assign({ direction: direction, mu: direction[1], column: ray.column, blocked: ray.blocked },
       mmLaunchAtmosphereShade(direction, colorColumn, ray.blocked), { transmission: ray.transmission });
   }
-  function mmLaunchAtmosphereGeometry(altitude, W, H) {
+  // Per-viewport ray terms for the sky raster: elevation (mu) and the Sun-phase
+  // interpolation index. One size is kept; a resize rebuilds it.
+  var _mmLaunchSkyRays = null;
+  function mmLaunchAtmosphereRays(camera, columns, rows) {
+    var cache = _mmLaunchSkyRays, W = camera.width, H = camera.height;
+    if (cache && cache.width === W && cache.height === H && cache.columns === columns && cache.rows === rows) return cache;
+    var n = columns * rows, mu = new Float64Array(n), phaseA = new Uint8Array(n), phaseWeight = new Float64Array(n);
+    var sunLength = Math.hypot(0.2, 0.47, Math.sqrt(3) / 2), sx = 0.2 / sunLength, sy = 0.47 / sunLength, sz = Math.sqrt(3) / 2 / sunLength;
+    for (var row = 0; row < rows; row++) {
+      var y = (row + 0.5) * H / rows, dy = (camera.eyeY - y) / camera.focal;
+      for (var col = 0; col < columns; col++) {
+        var x = (col + 0.5) * W / columns, dx = (x - W / 2) / camera.focal;
+        var norm = Math.hypot(dx, dy, 1), k = row * columns + col;
+        var cosine = (dx * sx + dy * sy + sz) / norm, phaseIndex = Math.min(7, Math.max(0, cosine * cosine * 7));
+        mu[k] = dy / norm; phaseA[k] = Math.min(6, Math.floor(phaseIndex)); phaseWeight[k] = phaseIndex - phaseA[k];
+      }
+    }
+    _mmLaunchSkyRays = cache = { width: W, height: H, columns: columns, rows: rows, mu: mu, phaseA: phaseA, phaseWeight: phaseWeight };
+    return cache;
+  }
+  function mmLaunchAtmosphereGeometry(altitude, W, H, detail) {
     var camera = mmLaunchAtmosphereCamera(altitude, W, H); if (!camera) return null;
-    var field = { altitude: altitude, width: W, height: H, columns: Math.min(256, Math.max(1, Math.ceil(W / 3))),
-      rows: Math.min(200, Math.max(1, Math.ceil(H / 2))), minMu: camera.minMu, maxMu: 1, profile: [] };
+    var field = { altitude: altitude, width: W, height: H, columns: Math.min(256, Math.max(1, Math.ceil(W / (detail === 0.5 ? 6 : 3)))),
+      rows: Math.min(200, Math.max(1, Math.ceil(H / (detail === 0.5 ? 4 : 2)))), minMu: camera.minMu, maxMu: 1, profile: [] };
     // Radial symmetry makes the air column depend only on ray elevation.
     // Quadratic spacing resolves the narrow bright limb without a full ray march
     // per pixel. At most 192 columns of air and 51,200 color pixels are computed.
     for (var i = 0; i < 192; i++) {
-      var u = i / 191, mu = i === 191 ? 1 : camera.minMu + (1 - camera.minMu) * u * u;
-      var ray = mmLaunchAtmosphereColumn(altitude, mu);
-      field.profile.push({ mu: mu, column: ray.column });
+      var u = i / 191, sampleMu = i === 191 ? 1 : camera.minMu + (1 - camera.minMu) * u * u;
+      var ray = mmLaunchAtmosphereColumn(altitude, sampleMu);
+      field.profile.push({ mu: sampleMu, column: ray.column });
     }
     // A small color table avoids per-pixel exponential/power evaluations.
     // Store premultiplied colors so interpolation cannot create bright fringes.
-    var colors = new Float32Array(192 * 8 * 4);
+    var colors = new Float32Array(192 * 8 * 4), base = [2, 4, 14], ceiling = [165, 198, 239];
     for (var p = 0; p < 192; p++) {
+      // Transmission and the column's own opacity do not vary with the Sun angle.
+      var transmission = MM_LAUNCH_AIR.coefficients.map(function (beta) { return Math.exp(-beta * field.profile[p].column); });
+      var columnAlpha = -Math.expm1(-field.profile[p].column * 0.0015);
       for (var angle = 0; angle < 8; angle++) {
         var phase = 0.75 + 0.75 * angle / 7;
-        var transmission = MM_LAUNCH_AIR.coefficients.map(function (beta) { return Math.exp(-beta * field.profile[p].column); });
-        var alpha = -Math.expm1(-field.profile[p].column * 0.0015), rgb = [], base = [2, 4, 14], ceiling = [165, 198, 239];
-        for (var channel = 0; channel < 3; channel++) {
-          var signal = Math.pow(1 - Math.exp(-(1 - transmission[channel]) * phase * 1.6), 1 / 2.2);
-          rgb[channel] = base[channel] + (ceiling[channel] - base[channel]) * signal;
-          alpha = Math.max(alpha, (rgb[channel] - base[channel]) / (255 - base[channel]));
+        var tableAlpha = columnAlpha, rgb = [];
+        for (var band = 0; band < 3; band++) {
+          var signal = Math.pow(1 - Math.exp(-(1 - transmission[band]) * phase * 1.6), 1 / 2.2);
+          rgb[band] = base[band] + (ceiling[band] - base[band]) * signal;
+          tableAlpha = Math.max(tableAlpha, (rgb[band] - base[band]) / (255 - base[band]));
         }
         var offset = (p * 8 + angle) * 4;
-        for (var channel = 0; channel < 3; channel++) colors[offset + channel] = rgb[channel] - base[channel] * (1 - alpha);
-        colors[offset + 3] = alpha;
+        for (var stored = 0; stored < 3; stored++) colors[offset + stored] = rgb[stored] - base[stored] * (1 - tableAlpha);
+        colors[offset + 3] = tableAlpha;
       }
     }
     field.pixels = new Uint8ClampedArray(field.columns * field.rows * 4);
-    var sunLength = Math.hypot(0.2, 0.47, Math.sqrt(3) / 2), sx = 0.2 / sunLength, sy = 0.47 / sunLength, sz = Math.sqrt(3) / 2 / sunLength;
-    for (var row = 0; row < field.rows; row++) {
-      var y = (row + 0.5) * H / field.rows, dy = (camera.eyeY - y) / camera.focal;
-      for (var col = 0; col < field.columns; col++) {
-        var x = (col + 0.5) * W / field.columns, dx = (x - W / 2) / camera.focal;
-        var norm = Math.hypot(dx, dy, 1), mu = dy / norm;
-        var blocked = mu < camera.minMu, t = Math.sqrt(Math.max(0, Math.min(1, (mu - camera.minMu) / (1 - camera.minMu)))) * 191;
-        var a = Math.min(190, Math.floor(t)), weight = t - a;
-        var cosine = (dx * sx + dy * sy + sz) / norm, phaseIndex = Math.min(7, Math.max(0, cosine * cosine * 7));
-        var phaseA = Math.min(6, Math.floor(phaseIndex)), phaseWeight = phaseIndex - phaseA;
-        var o0 = (a * 8 + phaseA) * 4, o1 = o0 + 32, index = (row * field.columns + col) * 4;
-        var alpha = 0;
-        for (var channel = 3; channel >= 0; channel--) {
-          var low = colors[o0 + channel] * (1 - phaseWeight) + colors[o0 + 4 + channel] * phaseWeight;
-          var high = colors[o1 + channel] * (1 - phaseWeight) + colors[o1 + 4 + channel] * phaseWeight;
-          var value = low * (1 - weight) + high * weight;
-          if (channel === 3) { alpha = value; field.pixels[index + 3] = blocked ? 255 : Math.round(alpha * 255); }
-          else field.pixels[index + channel] = alpha > 0 ? Math.round(value / alpha) : 0;
-        }
+    // Ray elevation and Sun phase depend on the viewport only; altitude moves minMu.
+    var rays = mmLaunchAtmosphereRays(camera, field.columns, field.rows), minMu = camera.minMu, span = 1 - camera.minMu;
+    for (var k = 0, count = field.columns * field.rows; k < count; k++) {
+      var mu = rays.mu[k], blocked = mu < minMu, t = Math.sqrt(Math.max(0, Math.min(1, (mu - minMu) / span))) * 191;
+      var a = Math.min(190, Math.floor(t)), weight = t - a, phaseA = rays.phaseA[k], phaseWeight = rays.phaseWeight[k];
+      var o0 = (a * 8 + phaseA) * 4, o1 = o0 + 32, index = k * 4;
+      var alpha = 0;
+      for (var channel = 3; channel >= 0; channel--) {
+        var low = colors[o0 + channel] * (1 - phaseWeight) + colors[o0 + 4 + channel] * phaseWeight;
+        var high = colors[o1 + channel] * (1 - phaseWeight) + colors[o1 + 4 + channel] * phaseWeight;
+        var value = low * (1 - weight) + high * weight;
+        if (channel === 3) { alpha = value; field.pixels[index + 3] = blocked ? 255 : Math.round(alpha * 255); }
+        else field.pixels[index + channel] = alpha > 0 ? Math.round(value / alpha) : 0;
       }
     }
     return field;
+  }
+  // Below 20 km a sky raster is held until it would visibly change: the limb
+  // moves half a pixel or a sampled color (overhead, mid-sky, just above the
+  // limb) moves more than one level. Higher up, the thin limb glow changes
+  // every frame, so the sky is rebuilt every frame there.
+  var MM_LAUNCH_SKY_REUSE_TOP = 20000;
+  function mmLaunchSkyLimbY(altitude, W, H) {
+    var camera = mmLaunchAtmosphereCamera(altitude, W, H);
+    return camera ? camera.eyeY - camera.focal * camera.minMu / Math.sqrt(1 - camera.minMu * camera.minMu) : NaN;
+  }
+  function mmLaunchSkyReusable(builtAltitude, altitude, W, H) {
+    if (![builtAltitude, altitude].every(Number.isFinite) || builtAltitude >= MM_LAUNCH_SKY_REUSE_TOP || altitude >= MM_LAUNCH_SKY_REUSE_TOP) return false;
+    var limbBuilt = mmLaunchSkyLimbY(builtAltitude, W, H), limbNow = mmLaunchSkyLimbY(altitude, W, H);
+    if (!(Math.abs(limbNow - limbBuilt) < 0.5)) return false;
+    var rows = [0.02 * H, 0.3 * H, 0.55 * H, Math.min(limbBuilt, limbNow) - 2];
+    for (var r = 0; r < rows.length; r++) {
+      var was = mmLaunchAtmospherePoint(builtAltitude, W, H, W / 2, rows[r]), now = mmLaunchAtmospherePoint(altitude, W, H, W / 2, rows[r]);
+      if (!was || !now) return false;
+      // Compare what is composited: color weighted by opacity, and opacity.
+      for (var k = 0; k < 4; k++) {
+        var a = k === 3 ? was.rgba[3] : was.rgba[k] * was.rgba[3] / 255, b = k === 3 ? now.rgba[3] : now.rgba[k] * now.rgba[3] / 255;
+        if (!(Math.abs(a - b) <= 1)) return false;
+      }
+    }
+    return true;
+  }
+  // Launch image detail for slow devices. Every 30th climbing frame looks at the
+  // last 60 frame intervals: if more than a quarter came later than 20 ms, the sky
+  // and ground use cells twice as large (a quarter of the work) for the rest of
+  // that launch, and later launches this session start that way. The heavy part of
+  // the climb starts above 1.5 km, so this keeps watching. Pauses are not counted.
+  var MM_LAUNCH_LATE_FRAME = 0.02, _mmLaunchStartLight = false;
+  function mmLaunchQualityStart() { return { detail: _mmLaunchStartLight ? 0.5 : 1, intervals: [], frames: 0 }; }
+  function mmLaunchQualityUpdate(state, frameSeconds) {
+    if (!state || state.detail !== 1 || !Number.isFinite(frameSeconds) || frameSeconds <= 0 || frameSeconds >= 0.25) return state;
+    state.intervals.push(frameSeconds);
+    if (state.intervals.length > 60) state.intervals.shift();
+    if (++state.frames % 30) return state;
+    var late = state.intervals.filter(function (seconds) { return seconds > MM_LAUNCH_LATE_FRAME; }).length;
+    if (late > state.intervals.length / 4) { state.detail = 0.5; _mmLaunchStartLight = true; }
+    return state;
   }
   function mmDrawLaunchAtmosphere(ctx, field) {
     if (!ctx || !ctx.canvas || !field || ctx.globalAlpha === 0 || ![field.width, field.height].every(Number.isFinite) ||
@@ -5900,13 +6018,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
     launchAtmosphereColumn: mmLaunchAtmosphereColumn, launchAtmospherePoint: mmLaunchAtmospherePoint,
-    launchAtmosphereGeometry: mmLaunchAtmosphereGeometry, drawLaunchAtmosphere: mmDrawLaunchAtmosphere
+    launchAtmosphereGeometry: mmLaunchAtmosphereGeometry, drawLaunchAtmosphere: mmDrawLaunchAtmosphere,
+    launchSkyReusable: mmLaunchSkyReusable, launchSkyLimbY: mmLaunchSkyLimbY, launchSkyReuseTop: MM_LAUNCH_SKY_REUSE_TOP,
+    launchQualityStart: mmLaunchQualityStart, launchQualityUpdate: mmLaunchQualityUpdate, launchLateFrame: MM_LAUNCH_LATE_FRAME
   }); } catch (e) {}
 
 
-  // Fixed, varied cumulus silhouettes. Smooth lobes rise from a common body;
-  // one outline prevents overlapping translucent discs from showing through.
-  // Shapes, placement and shading are illustrative, not reconstructed weather.
+  // Fixed, varied cumulus silhouettes: a lopsided mound crowned with rounded
+  // turrets, and smaller turrets on those, so the top edge is a chain of bulges
+  // with cusps between them. Each turret rises from the surface beneath it and
+  // fades to nothing at its sides, so the outline never steps. One outline still
+  // prevents overlapping translucent shapes from showing through. Shapes,
+  // placement and shading are illustrative, not reconstructed weather.
   var _mmLaunchCloudShapes = {};
   function mmLaunchCloudGeometry(seed) {
     if (!Number.isInteger(seed) || seed < 0 || seed > 2147483647) return null;
@@ -5914,30 +6037,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     seed = seed % 5;
     if (_mmLaunchCloudShapes[seed]) return _mmLaunchCloudShapes[seed];
     function variation(i) { var n = Math.sin((seed + 1) * 17.13 + i * 43.71) * 43758.5453; return n - Math.floor(n); }
+    function bodyTopAt(x) { return 0.16 - 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4))); }
+    function bump(x, b) { var q = (x - b.x) / b.rx; return Math.abs(q) >= 1 ? 0 : b.h * Math.pow(1 - q * q, b.p); }
+    var mound = { x: (variation(1) - 0.5) * 0.9, rx: 1.75 + variation(2) * 0.3, h: 0.32 + variation(3) * 0.2, p: 0.7 };
+    // Large turrets across the mound, tallest near its crest; small ones crown them.
+    var large = [], small = [], count = 5 + Math.floor(variation(4) * 3);
+    for (var i = 0; i < count; i++) {
+      var cx = -1.7 + 3.4 * (i + 0.5) / count + (variation(10 + i) - 0.5) * 0.3;
+      var rx = 0.42 + variation(20 + i) * 0.32, crest = 1 - Math.min(1, Math.abs(cx - mound.x) / 2.2), taper = Math.min(1, (2.4 - Math.abs(cx)) / 1.1);
+      large.push({ x: cx, rx: Math.min(rx, 2.3 - Math.abs(cx)), h: rx * (0.45 + 0.5 * crest) * taper, p: 0.55 });
+    }
+    large.forEach(function(turret, i) {
+      if (variation(40 + i) < 0.4) return;
+      var cx = turret.x + (variation(50 + i) - 0.5) * turret.rx, rx = turret.rx * (0.45 + variation(60 + i) * 0.25);
+      small.push({ x: cx, rx: Math.min(rx, 2.3 - Math.abs(cx)), h: rx * 0.6, p: 0.55 });
+    });
+    function layer(x, set) { var best = 0; set.forEach(function(b) { best = Math.max(best, bump(x, b)); }); return best; }
+    function surface(x, depth) {
+      var y = bodyTopAt(x) - bump(x, mound);
+      if (depth >= 1) y -= layer(x, large);
+      if (depth >= 2) y -= layer(x, small);
+      return y;
+    }
     var lobes = [{ x: 0, y: 0.16, rx: 2.4, ry: 0.48 }];
-    [-1.5, -0.62, 0.35, 1.4].forEach(function(x, i) {
-      var primary = i === 1 + seed % 2, inner = i === 1 || i === 2;
-      var center = x + (variation(i + 12) - 0.5) * 0.18;
-      // One broad rising crest and lower shoulders avoid a regular ridge.
-      var rx = Math.min(2.35 - Math.abs(center), 0.68 + variation(i + 1) * 0.16 + (primary ? 0.3 : inner ? 0.15 : 0));
-      var ry = 0.5 + variation(i + 7) * 0.24 + (primary ? 0.5 : inner ? 0.18 : 0);
-      lobes.push({ x: center,
-        y: 0.34 - ry * (0.78 + variation(i + 19) * 0.24), rx: rx, ry: ry });
+    large.concat(small).forEach(function(turret, i) {
+      var top = surface(turret.x, i < large.length ? 1 : 2);
+      lobes.push({ x: turret.x, y: top + turret.h * 0.9, rx: turret.rx, ry: Math.max(0.12, turret.h) });
     });
     var top = [], bottom = [], minY = Infinity, baseY = 0.44;
-    for (var i = 0; i <= 128; i++) {
-      var x = -2.4 + 4.8 * i / 128;
-      var bodyHeight = 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4)));
-      var bodyTop = 0.16 - bodyHeight, upper = bodyTop, lower = 0.16 + bodyHeight;
-      lobes.slice(1).forEach(function(lobe) {
-        var q = (x - lobe.x) / lobe.rx;
-        if (Math.abs(q) >= 1) return;
-        // Each crest fades back into the body at its sides, avoiding a step
-        // where an elevated ellipse would first enter the outer envelope.
-        var centerTop = 0.16 - 0.48 * Math.sqrt(1 - (lobe.x / 2.4) * (lobe.x / 2.4));
-        var height = Math.max(0.1, centerTop - (lobe.y - lobe.ry));
-        upper = Math.min(upper, bodyTop - height * Math.pow(1 - q * q, 1.15));
-      });
+    for (var p = 0; p <= 256; p++) {
+      var x = -2.4 + 4.8 * p / 256;
+      var lower = 0.16 + 0.48 * Math.sqrt(Math.max(0, 1 - (x / 2.4) * (x / 2.4)));
+      var upper = p === 0 || p === 256 ? 0.16 : surface(x, 2);
       top.push(Object.freeze({ x: x, y: upper }));
       bottom.push(Object.freeze({ x: x, y: Math.min(baseY, lower) }));
       minY = Math.min(minY, upper);
@@ -5953,8 +6084,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     for (var i = geometry.bottom.length - 1; i >= 0; i--) ctx.lineTo(geometry.bottom[i].x, geometry.bottom[i].y);
     ctx.closePath();
   }
-  function mmDrawLaunchCloud(ctx, x, y, size, seed, light) {
+  // Aerial perspective for the launch cloud layer: a smaller (farther) cloud is
+  // seen through more air, so it takes on more of the horizon haze. Illustrative.
+  function mmLaunchCloudHaze(nearness) {
+    return Number.isFinite(nearness) ? Math.max(0, Math.min(0.55, 1.3 - nearness)) : 0;
+  }
+  function mmDrawLaunchCloud(ctx, x, y, size, seed, light, atmosphere) {
     var geometry = mmLaunchCloudGeometry(seed);
+    // Optional { haze: [r, g, b], amount }: blend toward the haze, soften the edge and
+    // deepen the base. Without it every colour below is exactly the original one.
+    var hazeColor = atmosphere && Array.isArray(atmosphere.haze) && atmosphere.haze.length === 3 && atmosphere.haze.every(Number.isFinite) ? atmosphere.haze : null;
+    var haze = hazeColor ? Math.max(0, Math.min(0.6, Number(atmosphere.amount) || 0)) : 0;
+    function tint(r, g, b, alpha) {
+      if (!haze) return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+      return 'rgba(' + Math.round(r + (hazeColor[0] - r) * haze) + ',' + Math.round(g + (hazeColor[1] - g) * haze) + ',' + Math.round(b + (hazeColor[2] - b) * haze) + ',' + alpha + ')';
+    }
     if (!ctx || !geometry || ![x, y, size].every(Number.isFinite) || size <= 0 ||
         ![x - size * 3, x + size * 3, y - size * 3, y + size].every(Number.isFinite)) return null;
     light = light || mmLaunchSunlight(0);
@@ -5972,13 +6116,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.save(); ctx.translate(x, y); ctx.scale(size, size);
     // A narrow antialiased fringe softens the outline without a broad glow.
     mmLaunchCloudPath(ctx, geometry);
-    ctx.lineJoin = 'round'; ctx.lineWidth = 0.075;
-    ctx.strokeStyle = 'rgba(221,233,243,0.14)'; ctx.stroke();
+    ctx.lineJoin = 'round';
+    if (hazeColor) { ctx.lineWidth = 0.3; ctx.strokeStyle = tint(232, 240, 248, 0.06); ctx.stroke(); }   // faint wide edge: a soft silhouette
+    ctx.lineWidth = hazeColor ? 0.14 : 0.075;
+    ctx.strokeStyle = tint(221, 233, 243, hazeColor ? 0.1 : 0.14); ctx.stroke();
     var low = Infinity, high = -Infinity;
     geometry.top.concat(geometry.bottom).forEach(function(p) { var t = p.x * lx + p.y * ly; low = Math.min(low, t); high = Math.max(high, t); });
     ctx.fillStyle = gradient('createLinearGradient', [lx * high, ly * high, lx * low, ly * low], [
-      [0, 'rgba(255,253,244,0.98)'], [0.32, 'rgba(242,247,250,0.98)'],
-      [0.68, 'rgba(192,208,224,0.98)'], [1, 'rgba(137,160,185,0.98)']
+      [0, tint(255, 253, 244, 0.98)], [0.32, tint(242, 247, 250, 0.98)],
+      [0.68, tint(192, 208, 224, 0.98)], [1, tint(137, 160, 185, 0.98)]
     ], '#e6edf3');
     ctx.fill(); ctx.clip();
     // Soft interior lobes merge into the common silhouette. Their gradients
@@ -5986,18 +6132,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     geometry.lobes.slice(1).forEach(function(lobe) {
       var radius = Math.max(lobe.rx, lobe.ry) * 1.35, hx = lobe.x + lx * lobe.rx * 0.28, hy = lobe.y + ly * lobe.ry * 0.28;
       var highlight = gradient('createRadialGradient', [hx, hy, 0, hx, hy, radius], [
-        [0, 'rgba(255,255,252,0.3)'], [0.42, 'rgba(250,252,255,0.16)'], [1, 'rgba(246,250,255,0)']
+        [0, tint(255, 255, 252, haze ? +(0.3 * (1 - haze)).toFixed(3) : 0.3)], [0.42, tint(250, 252, 255, haze ? +(0.16 * (1 - haze)).toFixed(3) : 0.16)], [1, tint(246, 250, 255, 0)]
       ], null);
       if (highlight) { ctx.fillStyle = highlight; ctx.fillRect(hx - radius, hy - radius, radius * 2, radius * 2); }
     });
     ctx.fillStyle = gradient('createLinearGradient', [0, 0.05, 0, geometry.baseY], [
-      [0, 'rgba(92,116,144,0)'], [1, 'rgba(92,116,144,0.18)']
+      [0, tint(92, 116, 144, 0)], [1, tint(92, 116, 144, hazeColor ? +(0.36 * (1 - haze)).toFixed(3) : 0.18)]
     ], 'rgba(92,116,144,0.05)');
     ctx.fillRect(geometry.minX, 0.05, geometry.maxX - geometry.minX, geometry.baseY - 0.05);
     ctx.restore(); return result;
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
-    launchCloudGeometry: mmLaunchCloudGeometry, drawLaunchCloud: mmDrawLaunchCloud
+    launchCloudGeometry: mmLaunchCloudGeometry, drawLaunchCloud: mmDrawLaunchCloud, launchCloudHaze: mmLaunchCloudHaze
   }); } catch (e) {}
 
 
@@ -6223,20 +6369,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       sun: [0.2 / sunLength, 0.47 / sunLength, Math.sqrt(3) / 2 / sunLength], haze: haze };
   }
   function mmLaunchSurfaceSmooth(value) { var u = Math.max(0, Math.min(1, value)); return u * u * (3 - 2 * u); }
-  function mmLaunchWaterReflectionUnit(normal, view, sun) {
-    var nl = normal[0] * sun[0] + normal[1] * sun[1] + normal[2] * sun[2];
-    var nv = normal[0] * view[0] + normal[1] * view[1] + normal[2] * view[2];
-    var hx = sun[0] + view[0], hy = sun[1] + view[1], hz = sun[2] + view[2], length = Math.hypot(hx, hy, hz);
-    if (length < 1e-12 || nl <= 0 || nv <= 0) return { strength: 0, fresnel: 0, halfCosine: 0, sunCosine: nl, viewCosine: nv };
+  // Scalar form writes into `out` so the per-cell raster path does not allocate.
+  function mmLaunchWaterReflectionInto(n0, n1, n2, v0, v1, v2, s0, s1, s2, out) {
+    var nl = n0 * s0 + n1 * s1 + n2 * s2;
+    var nv = n0 * v0 + n1 * v1 + n2 * v2;
+    var hx = s0 + v0, hy = s1 + v1, hz = s2 + v2, length = Math.hypot(hx, hy, hz);
+    if (length < 1e-12 || nl <= 0 || nv <= 0) { out.strength = 0; out.fresnel = 0; out.halfCosine = 0; out.sunCosine = nl; out.viewCosine = nv; return out; }
     hx /= length; hy /= length; hz /= length;
-    var nh = Math.max(0, Math.min(1, normal[0] * hx + normal[1] * hy + normal[2] * hz));
-    var vh = Math.max(0, Math.min(1, view[0] * hx + view[1] * hy + view[2] * hz));
+    var nh = Math.max(0, Math.min(1, n0 * hx + n1 * hy + n2 * hz));
+    var vh = Math.max(0, Math.min(1, v0 * hx + v1 * hy + v2 * hz));
     var fresnel = 0.0204 + 0.9796 * Math.pow(1 - vh, 5);
     // A fixed roughness lobe broadens the reflection. Exposure and roughness
     // are display choices; this is not a wind or wave-height simulation.
     var lobe = nh > 0 ? Math.exp(-(1 - nh * nh) / (nh * nh * 0.0144)) : 0;
-    return { strength: Math.min(1, lobe * fresnel / 0.09), fresnel: fresnel,
-      halfCosine: nh, sunCosine: nl, viewCosine: nv };
+    out.strength = Math.min(1, lobe * fresnel / 0.09); out.fresnel = fresnel;
+    out.halfCosine = nh; out.sunCosine = nl; out.viewCosine = nv; return out;
+  }
+  function mmLaunchWaterReflectionUnit(normal, view, sun) {
+    var r = mmLaunchWaterReflectionInto(normal[0], normal[1], normal[2], view[0], view[1], view[2], sun[0], sun[1], sun[2], {});
+    return { strength: r.strength, fresnel: r.fresnel, halfCosine: r.halfCosine, sunCosine: r.sunCosine, viewCosine: r.viewCosine };
   }
   function mmLaunchWaterReflection(normal, view, sun) {
     var vectors = [normal, view, sun];
@@ -6246,19 +6397,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   var MM_LAUNCH_COAST = [[0,2400],[15000,-4000],[45000,-20000],[100000,-45000],[200000,-80000],
     [320000,-90000],[450000,-20000],[650000,100000],[1000000,320000],[2000000,650000],[4000000,1100000]];
-  function mmLaunchSurfaceAt(camera, x, y) {
-    var c = camera;
-    if (!c || c.q === 0 || !Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > c.width || y < 0 || y > c.height) return null;
+  // Shade one ray into `out` without allocating; returns false off the surface.
+  var _mmLaunchSurfaceReflection = {};
+  function mmLaunchSurfaceShade(c, x, y, out) {
+    if (!c || c.q === 0 || !Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > c.width || y < 0 || y > c.height) return false;
     var dx = (x - c.width / 2) / c.focal, dy = (c.eye - y) / c.focal;
     var a = dx * dx + dy * dy + 1, b = 2 * c.D * dy, constant = c.q * (c.q + 2);
     var discriminant = b * b - 4 * a * constant;
-    if (![a, b, discriminant].every(Number.isFinite) || b >= 0 || discriminant < 0) return null;
+    if (!(Number.isFinite(a) && Number.isFinite(b) && Number.isFinite(discriminant)) || b >= 0 || discriminant < 0) return false;
     // Stable near root avoids cancellation while climbing close to the pad.
     var t = 2 * constant / (-b + Math.sqrt(discriminant));
-    var normal = [dx * t, c.D + dy * t, t], rayLength = Math.sqrt(a);
-    var view = [-dx / rayLength, -dy / rayLength, -1 / rayLength];
-    var longitude = Math.atan2(normal[0], normal[1]) + c.downrange / MM_LAUNCH.radius;
-    var latitude = Math.asin(Math.max(-1, Math.min(1, normal[2])));
+    var n0 = dx * t, n1 = c.D + dy * t, n2 = t, rayLength = Math.sqrt(a);
+    var v0 = -dx / rayLength, v1 = -dy / rayLength, v2 = -1 / rayLength;
+    var longitude = Math.atan2(n0, n1) + c.downrange / MM_LAUNCH.radius;
+    var latitude = Math.asin(Math.max(-1, Math.min(1, n2)));
     var east = longitude * MM_LAUNCH.radius, north = latitude * MM_LAUNCH.radius;
     var shore = MM_LAUNCH_COAST[MM_LAUNCH_COAST.length - 1][1];
     for (var i = 1; i < MM_LAUNCH_COAST.length; i++) {
@@ -6280,33 +6432,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     var land = mmLaunchSurfaceSmooth((coastInland + 250) / 500);
     var lagoonEnvelope = mmLaunchSurfaceSmooth((north - 3000) / 7000) * (1 - mmLaunchSurfaceSmooth((north - 75000) / 20000));
-    var lagoonWidth = (1800 + 900 * Math.sin(north / 16000)) * lagoonEnvelope;
-    var lagoonDistance = Math.abs(inland - (6500 + 1400 * Math.sin(north / 18000)));
-    var lagoon = lagoonWidth > 0 ? 1 - mmLaunchSurfaceSmooth((lagoonDistance - lagoonWidth + 250) / 500) : 0;
+    // Outside the lagoon band the envelope is exactly 0, so its width and lagoon are 0.
+    var lagoonWidth = lagoonEnvelope > 0 ? (1800 + 900 * Math.sin(north / 16000)) * lagoonEnvelope : 0;
+    var lagoon = lagoonWidth > 0 ? 1 - mmLaunchSurfaceSmooth((Math.abs(inland - (6500 + 1400 * Math.sin(north / 18000))) - lagoonWidth + 250) / 500) : 0;
     var inlet = (1 - mmLaunchSurfaceSmooth((Math.abs(north - 63000 + inland * 0.12) - 700) / 600)) *
       mmLaunchSurfaceSmooth((inland + 1000) / 1000) * (1 - mmLaunchSurfaceSmooth((inland - 8000) / 3000));
     land *= 1 - Math.max(lagoon, inlet) * coastBlend;
-    var reflection = mmLaunchWaterReflectionUnit(normal, view, c.sun);
+    var reflection = mmLaunchWaterReflectionInto(n0, n1, n2, v0, v1, v2, c.sun[0], c.sun[1], c.sun[2], _mmLaunchSurfaceReflection);
     var glint = reflection.strength * (1 - land), mu = Math.max(0, reflection.viewCosine);
     var shallows = Math.exp(-Math.abs(coastInland) / 6500) * (1 - land);
-    var variation = 0.5 + 0.25 * Math.sin(east / 17000 + Math.sin(north / 31000)) + 0.25 * Math.sin(north / 11000 - east / 43000);
-    var beach = Math.exp(-Math.pow(coastInland / 800, 2)) * land;
-    var water = [20 + shallows * 12, 59 + shallows * 27, 91 + shallows * 26];
-    var ground = [58 + variation * 23 + beach * 76, 83 + variation * 20 + beach * 63, 47 + variation * 14 + beach * 49];
+    // Ground color is weighted by land; over open water land is exactly 0.
+    var variation = land === 0 ? 0 : 0.5 + 0.25 * Math.sin(east / 17000 + Math.sin(north / 31000)) + 0.25 * Math.sin(north / 11000 - east / 43000);
+    var beach = land === 0 ? 0 : Math.exp(-Math.pow(coastInland / 800, 2)) * land;
     var haze = Math.exp(-mu / 0.065) * 0.94;
-    var rgba = water.map(function(value, index) {
-      var color = value + (ground[index] - value) * land;
-      color += ([239,241,226][index] - color) * glint * 0.62;
-      return Math.round(color + (c.haze[index] - color) * haze);
-    }); rgba.push(255);
-    return { normal: normal, view: view, sun: c.sun.slice(), longitude: longitude, latitude: latitude, east: east, north: north,
-      distance: MM_LAUNCH.radius * t * rayLength, mu: mu, coastBlend: coastBlend, landFraction: land, glint: glint,
-      reflection: reflection, rgba: rgba };
+    out.r = mmLaunchSurfaceChannel(20 + shallows * 12, 58 + variation * 23 + beach * 76, land, glint, 239, c.haze[0], haze);
+    out.g = mmLaunchSurfaceChannel(59 + shallows * 27, 83 + variation * 20 + beach * 63, land, glint, 241, c.haze[1], haze);
+    out.b = mmLaunchSurfaceChannel(91 + shallows * 26, 47 + variation * 14 + beach * 49, land, glint, 226, c.haze[2], haze);
+    out.n0 = n0; out.n1 = n1; out.n2 = n2; out.v0 = v0; out.v1 = v1; out.v2 = v2;
+    out.longitude = longitude; out.latitude = latitude; out.east = east; out.north = north;
+    out.distance = MM_LAUNCH.radius * t * rayLength; out.mu = mu; out.coastBlend = coastBlend;
+    out.land = land; out.glint = glint; out.reflection = reflection;
+    return true;
+  }
+  // One display channel: water to ground by land fraction, sun glint, then haze.
+  function mmLaunchSurfaceChannel(water, ground, land, glint, tint, hazeColor, haze) {
+    var color = water + (ground - water) * land;
+    color += (tint - color) * glint * 0.62;
+    return Math.round(color + (hazeColor - color) * haze);
+  }
+  function mmLaunchSurfaceAt(camera, x, y) {
+    var s = {};
+    if (!mmLaunchSurfaceShade(camera, x, y, s)) return null;
+    var r = s.reflection;
+    return { normal: [s.n0, s.n1, s.n2], view: [s.v0, s.v1, s.v2], sun: camera.sun.slice(), longitude: s.longitude, latitude: s.latitude, east: s.east, north: s.north,
+      distance: s.distance, mu: s.mu, coastBlend: s.coastBlend, landFraction: s.land, glint: s.glint,
+      reflection: { strength: r.strength, fresnel: r.fresnel, halfCosine: r.halfCosine, sunCosine: r.sunCosine, viewCosine: r.viewCosine },
+      rgba: [s.r, s.g, s.b, 255] };
   }
   function mmLaunchSurfacePoint(altitude, downrange, width, height, x, y) {
     return mmLaunchSurfaceAt(mmLaunchSurfaceCamera(altitude, downrange, width, height), x, y);
   }
-  function mmLaunchSurfaceGeometry(altitude, downrange, width, height) {
+  function mmLaunchSurfaceGeometry(altitude, downrange, width, height, detail) {
     var camera = mmLaunchSurfaceCamera(altitude, downrange, width, height); if (!camera) return null;
     var opacity = mmLaunchSurfaceSmooth((altitude - 1500) / 100);
     var top = Math.max(0, Math.floor(camera.eye + camera.focal * camera.tangent - 2));
@@ -6315,20 +6481,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       top: Math.min(height, top), columns: 0, rows: 0, pixels: new Uint8ClampedArray(0),
       antialiasedPixels: new Uint8Array(0), antialiasCount: 0, landPixels: 0, waterPixels: 0, maxGlint: 0 };
     if (opacity === 0 || top >= height) return field;
-    field.columns = Math.min(400, Math.max(1, Math.ceil(width / Math.max(1, height / 140))));
-    field.rows = Math.min(140, Math.max(1, Math.ceil((height - top) / Math.max(1, height / 140))));
+    var cellSize = Math.max(1, height / (detail === 0.5 ? 70 : 140));   // half detail: cells twice as large
+    field.columns = Math.min(400, Math.max(1, Math.ceil(width / cellSize)));
+    field.rows = Math.min(140, Math.max(1, Math.ceil((height - top) / cellSize)));
     field.pixels = new Uint8ClampedArray(field.columns * field.rows * 4);
     field.antialiasedPixels = new Uint8Array(field.columns * field.rows);
-    var landMask = new Float32Array(field.columns * field.rows);
+    var landMask = new Float32Array(field.columns * field.rows), shade = {};
     for (var row = 0; row < field.rows; row++) {
       var y = top + (row + 0.5) * (height - top) / field.rows;
       for (var col = 0; col < field.columns; col++) {
-        var point = mmLaunchSurfaceAt(camera, (col + 0.5) * width / field.columns, y);
-        if (!point) continue;
-        field.pixels.set(point.rgba, (row * field.columns + col) * 4);
-        landMask[row * field.columns + col] = point.landFraction;
-        if (point.landFraction >= 0.5) field.landPixels++; else field.waterPixels++;
-        field.maxGlint = Math.max(field.maxGlint, point.glint);
+        if (!mmLaunchSurfaceShade(camera, (col + 0.5) * width / field.columns, y, shade)) continue;
+        var cell = row * field.columns + col;
+        field.pixels[cell * 4] = shade.r; field.pixels[cell * 4 + 1] = shade.g; field.pixels[cell * 4 + 2] = shade.b; field.pixels[cell * 4 + 3] = 255;
+        landMask[cell] = shade.land;
+        if (shade.land >= 0.5) field.landPixels++; else field.waterPixels++;
+        field.maxGlint = Math.max(field.maxGlint, shade.glint);
       }
     }
     // Supersample only material boundaries. Interior water/land retains one
@@ -6349,9 +6516,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         var sum = [0, 0, 0], valid = 0;
         for (var sy = 0; sy < 2; sy++) {
           for (var sx = 0; sx < 2; sx++) {
-            var sub = mmLaunchSurfaceAt(camera, (ac + 0.25 + sx * 0.5) * width / field.columns,
-              top + (ar + 0.25 + sy * 0.5) * (height - top) / field.rows);
-            if (sub) { valid++; for (var channel = 0; channel < 3; channel++) sum[channel] += sub.rgba[channel]; }
+            if (mmLaunchSurfaceShade(camera, (ac + 0.25 + sx * 0.5) * width / field.columns,
+              top + (ar + 0.25 + sy * 0.5) * (height - top) / field.rows, shade)) { valid++; sum[0] += shade.r; sum[1] += shade.g; sum[2] += shade.b; }
           }
         }
         if (valid === 4) {
@@ -6785,7 +6951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       opacity:mmSaturnDetailFade(exitWidth),outline:[],ribs:[]};
     g.outline.push({x:cx-topWidth/2,y:base},{x:cx+topWidth/2,y:base});
     for(var i=1;i<=16;i++)g.outline.push({x:cx+half(i/16),y:base+length*i/16});
-    for(var i=16;i>=1;i--)g.outline.push({x:cx-half(i/16),y:base+length*i/16});
+    for(var j=16;j>=1;j--)g.outline.push({x:cx-half(j/16),y:base+length*j/16});
     [0.22,0.38,0.54,0.7,0.86].forEach(function(t){g.ribs.push([{x:cx-half(t)*0.96,y:base+length*t},{x:cx+half(t)*0.96,y:base+length*t}]);});
     return g;
   }
@@ -12029,6 +12195,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           wait: t('stem.moonmission.predict_hop_wait', 'On the surface, press Space (or JUMP) and watch the hop timer.'),
           explain: t('stem.moonmission.predict_hop_explain', 'Time in the air is how long gravity takes to cancel your upward speed and bring you back down. The Moon pulls one sixth as hard, so the same push keeps you up about six times as long.') }
       ];
+      function readAloudButton(text, label, key) {
+        return h('button', { type: 'button', 'data-moonmission-read-aloud': key, 'aria-label': label, title: label,
+          onClick: function () { if (!mmSpeakText(text, callTTS) && addToast) addToast(t('stem.moonmission.read_aloud_unavailable', 'Read aloud is not available in this browser.'), 'info'); },
+          className: 'inline-flex items-center gap-1 flex-shrink-0 min-h-[44px] px-3 rounded-lg text-xs font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300' },
+          '\uD83D\uDD0A ' + t('stem.moonmission.read_aloud', 'Read aloud'));
+      }
       function predictCard(id, revealed, observed) {
         var sp = PREDICTIONS.filter(function(p) { return p.id === id; })[0];
         var preds = mmIsObj(d.predictions) ? d.predictions : {};
@@ -12049,17 +12221,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           body = h('p', { className: 'text-[0.6875rem] text-violet-100' },
             h('span', { className: 'font-bold' }, t('stem.moonmission.predict_yours', 'Your prediction:') + ' '), pick.label + '. ' + sp.wait);
         } else {
+          var resultLine = !pick ? t('stem.moonmission.predict_skipped', 'No prediction this time. What the flight showed:') + ' ' + answer.label + '.'
+            : pick.id === sp.correct ? t('stem.moonmission.predict_right', 'Your prediction matched the flight:') + ' ' + pick.label + '.'
+            : t('stem.moonmission.predict_yours', 'Your prediction:') + ' ' + pick.label + '. ' + t('stem.moonmission.predict_showed', 'The flight showed:') + ' ' + answer.label + '.';
           body = h('div', null,
-            h('p', { className: 'text-[0.6875rem] font-bold ' + (!pick ? 'text-violet-100' : pick.id === sp.correct ? 'text-emerald-300' : 'text-amber-300') },
-              !pick ? t('stem.moonmission.predict_skipped', 'No prediction this time. What the flight showed:') + ' ' + answer.label + '.'
-                : pick.id === sp.correct ? t('stem.moonmission.predict_right', 'Your prediction matched the flight:') + ' ' + pick.label + '.'
-                : t('stem.moonmission.predict_yours', 'Your prediction:') + ' ' + pick.label + '. ' + t('stem.moonmission.predict_showed', 'The flight showed:') + ' ' + answer.label + '.'),
+            h('p', { className: 'text-[0.6875rem] font-bold ' + (!pick ? 'text-violet-100' : pick.id === sp.correct ? 'text-emerald-300' : 'text-amber-300') }, resultLine),
             observed ? h('p', { className: 'text-[0.6875rem] text-white mt-1' }, observed) : null,
             h('p', { className: 'text-[0.6875rem] text-slate-200 mt-1' }, sp.explain));
         }
+        var spoken = sp.question + ' ' + (!pick && !revealed ? sp.options.map(function (o, i) { return (i + 1) + '. ' + o.label + '.'; }).join(' ')
+          : !revealed ? t('stem.moonmission.predict_yours', 'Your prediction:') + ' ' + pick.label + '. ' + sp.wait
+          : [resultLine, typeof observed === 'string' ? observed : '', sp.explain].join(' '));
         return h('div', { className: 'rounded-lg p-3 border bg-violet-950 border-violet-400/50 text-left', role: 'group',
             'aria-label': t('stem.moonmission.predict_title', 'Predict first') + ': ' + sp.question, 'data-moonmission-predict': id },
-          h('p', { className: 'text-[0.6875rem] font-black uppercase text-violet-200 mb-0.5' }, t('stem.moonmission.predict_title', 'Predict first')),
+          h('div', { className: 'flex items-center justify-between gap-2 mb-0.5' },
+            h('p', { className: 'text-[0.6875rem] font-black uppercase text-violet-200' }, t('stem.moonmission.predict_title', 'Predict first')),
+            readAloudButton(spoken, t('stem.moonmission.read_aloud_prediction', 'Read aloud: the prediction question and choices'), 'prediction')),
           h('p', { className: 'text-xs text-white mb-2' }, sp.question),
           h('div', { role: 'status' }, body));
       }
@@ -12173,7 +12350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', { type: 'button', onClick: function(e) { inspect(lastIndex, e.currentTarget); }, style: buttonStyle }, t('stem.moonmission.return_touchdown', 'Return to touchdown')),
             h('button', { type: 'button', 'data-landing-download': 'true', style: buttonStyle, onClick: function() {
               var url = null; try { url = URL.createObjectURL(new Blob([mmDescentCSV(rec)], { type: 'text/csv;charset=utf-8' })); var a = document.createElement('a'); a.href = url; a.download = 'moon-mission-descent.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000); }
-              catch(e) { if (url) URL.revokeObjectURL(url); if (addToast) addToast('Could not download the flight data. Try again in a browser that supports downloads.', 'info'); }
+              catch(e) { if (url) URL.revokeObjectURL(url); if (addToast) addToast(t('stem.moonmission.toast_could_not_download_the_flight_data_try', 'Could not download the flight data. Try again in a browser that supports downloads.'), 'info'); }
             } }, t('stem.moonmission.download_flight_csv', 'Download flight CSV'))),
           h('div', { style: { overflowX: 'auto' } }, h('table', { 'data-landing-attempts': 'true', style: { width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' } },
             h('caption', { style: { textAlign: 'left', fontWeight: '700', padding: '8px 0' } }, t('stem.moonmission.recent_landing_attempts', 'Recent landing attempts (last five)')),
@@ -12188,6 +12365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
 
       function setPhase(p) {
+        mmStopSpeech();
         upd('missionPhase', p);
         var phaseName = PHASES[p] ? PHASES[p].name : 'Mission Complete';
         if (typeof announceToSR === 'function') announceToSR(p >= 10 ? 'Mission complete. Splashdown confirmed. Your debrief is ready.' : ('Mission phase ' + (p + 1) + ' of 10: ' + phaseName + '. ' + (PHASES[p] ? PHASES[p].desc : '')));
@@ -12692,6 +12870,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         t('stem.moonmission.task_10', 'Read your flight record \u2014 four graded calls \u2014 then fly again and beat it.')
       ];
       var phaseTask = PHASE_TASKS[Math.min(phase, 10)];
+      var phaseNextLine = nextPhase ? t('stem.moonmission.next_phase_prefix', 'Next: ') + nextPhase.name : phase === 9 && !entryReady
+        ? d.entryRun && d.entryRun.recorded ? 'Try another angle to reach splashdown.' : 'Inspect the entry flight before opening the debrief.'
+        : t('stem.moonmission.ready_for_debrief', 'Ready for debrief and replay.');
       var phaseProgressPct = Math.min(100, Math.round((Math.min(phase, 10) / 10) * 100));
       var crewMorale = (typeof d.crewMorale === 'number' && isFinite(d.crewMorale)) ? d.crewMorale : 75;
       var earnedBadgeCount = Object.keys(d.earnedBadges || {}).length;
@@ -12787,11 +12968,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // The one line that answers "what am I supposed to do here?".
                   h('p', { className: 'mt-2 text-[0.6875rem] sm:text-xs text-amber-200 font-bold leading-snug', 'data-moonmission-task': 'true' },
                     '\uD83C\uDFAF ' + t('stem.moonmission.your_job_now', 'Your job now: ') + phaseTask),
-                  h('p', { className: 'mt-1 text-[0.6875rem] text-cyan-200/90' },
-                    nextPhase ? t('stem.moonmission.next_phase_prefix', 'Next: ') + nextPhase.name : phase === 9 && !entryReady
-                      ? d.entryRun && d.entryRun.recorded ? 'Try another angle to reach splashdown.' : 'Inspect the entry flight before opening the debrief.'
-                      : t('stem.moonmission.ready_for_debrief', 'Ready for debrief and replay.')
-                  )
+                  h('p', { className: 'mt-1 text-[0.6875rem] text-cyan-200/90' }, phaseNextLine),
+                  h('div', { className: 'mt-2' }, readAloudButton(activePhase.name + '. ' + activePhase.desc + ' ' +
+                    t('stem.moonmission.your_job_now', 'Your job now: ') + phaseTask + ' ' + phaseNextLine,
+                    t('stem.moonmission.read_aloud_phase', 'Read aloud: this phase, what it is, your job now and what comes next'), 'phase'))
                 )
               ),
               // ONE progress bar. There used to be two (a gradient bar here plus a separate
@@ -13458,11 +13638,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     cvEl.dataset.launchHorizonCenter = String(hz);
                     ctx.fillStyle = '#02040e'; ctx.fillRect(-20, -20, W + 40, H + 40);
                     if (sky.stars > 0) { ctx.save(); ctx.globalAlpha = sky.stars; drawStarfield(ctx, W, H, tick, 120); ctx.restore(); }
-                    // Air lies in front of the stars. Reuse its raster while paused.
+                    // Air lies in front of the stars. Reuse its raster while paused, and
+                    // below 20 km until the change would be visible.
+                    var detail = (cvEl._mmLaunchQuality || (cvEl._mmLaunchQuality = mmLaunchQualityStart())).detail;
+                    cvEl.dataset.launchDetail = String(detail);
                     var atmosphere = cvEl._mmLaunchAtmosphere, airAltitude = altKm * 1000;
-                    if (!atmosphere || atmosphere.altitude !== airAltitude || atmosphere.width !== W || atmosphere.height !== H) {
-                      atmosphere = mmLaunchAtmosphereGeometry(airAltitude, W, H);
-                      cvEl._mmLaunchAtmosphere = atmosphere;
+                    if (!atmosphere || atmosphere.width !== W || atmosphere.height !== H || cvEl._mmLaunchAtmosphereDetail !== detail ||
+                        (atmosphere.altitude !== airAltitude && !mmLaunchSkyReusable(atmosphere.altitude, airAltitude, W, H))) {
+                      atmosphere = mmLaunchAtmosphereGeometry(airAltitude, W, H, detail);
+                      cvEl._mmLaunchAtmosphere = atmosphere; cvEl._mmLaunchAtmosphereDetail = detail;
                     }
                     mmDrawLaunchAtmosphere(ctx, atmosphere);
                     // The solar disc stays small; only the atmospheric aureole fades with air.
@@ -13521,9 +13705,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     // Preserve the close pad view, then blend to the spherical coastal surface.
                     var surface = cvEl._mmLaunchSurface, surfaceAltitude = altKm * 1000;
-                    if (!surface || surface.altitude !== surfaceAltitude || surface.downrange !== launchSample.downrange || surface.width !== W || surface.height !== H) {
-                      surface = mmLaunchSurfaceGeometry(surfaceAltitude, launchSample.downrange, W, H);
-                      cvEl._mmLaunchSurface = surface;
+                    if (!surface || surface.altitude !== surfaceAltitude || surface.downrange !== launchSample.downrange || surface.width !== W || surface.height !== H || cvEl._mmLaunchSurfaceDetail !== detail) {
+                      surface = mmLaunchSurfaceGeometry(surfaceAltitude, launchSample.downrange, W, H, detail);
+                      cvEl._mmLaunchSurface = surface; cvEl._mmLaunchSurfaceDetail = detail;
                     }
                     mmDrawLaunchSurface(ctx, surface);
                     // The cloud footprints cover ocean and land, inside the same curved limb.
@@ -13534,10 +13718,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // Illustrative cloud layers retain the original climb parallax and
                     // deterministic drift, with varied silhouettes and one solar direction.
                     cvEl._mmLaunchClouds = [];
+                    var cloudHaze = sky.limb.match(/[\d.]+/g).map(Number);
                     MM_LAUNCH_CLOUDS.forEach(function (c, index) {
                       var s = H * 0.045 * c[2], y = hz - (c[0] - altKm) * H * 0.09 * c[2], x = W * c[1] + Math.sin(tick * 0.003 + c[0]) * 6;
                       if (y < -3 * s || y > H + 3 * s) return;
-                      var cloud = mmDrawLaunchCloud(ctx, x, y, s, index, mmLaunchSunlight(0));
+                      var cloud = mmDrawLaunchCloud(ctx, x, y, s, index, mmLaunchSunlight(0), { haze: cloudHaze, amount: mmLaunchCloudHaze(c[2]) });
                       if (cloud) cvEl._mmLaunchClouds.push({ x: x, y: y, size: s, seed: index });
                     });
                   }
@@ -13545,12 +13730,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   function drawLaunch(ts) {
                     if (!document.contains(cvEl)) { if (cvEl._mmRO) cvEl._mmRO.disconnect(); document.removeEventListener('visibilitychange', launchVisibilityChanged); return; }
                     var launchDt = Number.isFinite(ts) && launchLastTs != null ? Math.max(0, Math.min(0.25, (ts - launchLastTs) / 1000)) : 0;
+                    var frameSeconds = launchDt;   // the real interval, before liftoff accounting uses it
                     var launchActive = !_mmAnimPaused && !launchPaused && !document.hidden;
                     launchLastTs = launchActive && Number.isFinite(ts) ? ts : null;
                     if (launchActive) {
                       if (launchTime < 0) { var beforeLiftoff = Math.min(-launchTime, launchDt); launchTime += beforeLiftoff; launchDt -= beforeLiftoff; }
                       if (launchTime >= 0) launchTime = Math.min(launchProfile.summary.duration, launchTime + launchDt * launchRate);
                     }
+                    if (launchActive && launchTime > 0) cvEl._mmLaunchQuality = mmLaunchQualityUpdate(cvEl._mmLaunchQuality || mmLaunchQualityStart(), frameSeconds);
                     launchSample = mmLaunchSample(launchProfile, Math.max(0, launchTime));
                     countdown = Math.max(0, -launchTime * 60); launched = launchTime >= 0;
                     tick = launched ? 300 + launchTime * 2 : (launchTime + 5) * 60;
@@ -14271,7 +14458,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' } },
                 h('label', { style: { fontSize: '12px' } }, 'View ', h('select', { 'data-transit-view': true, 'aria-label': t("stem.moonmission.a11y_transit_view", 'Transit view'), value: d.transitView, style: buttonStyle, onChange: function(ev) { transitControl(ev, 'view', ev.target.value); } }, h('option', { value: 'system' }, 'Earth\u2013Moon system'), h('option', { value: 'moon' }, 'Moon-relative approach'))),
                 h('button', { type: 'button', 'aria-pressed': !!d.trueScale, 'data-moonmission-true-scale': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'scale', !d.trueScale); } }, 'Show true-size Earth and Moon')),
-              h('canvas', { 'data-transit-canvas': true, role: 'img', 'aria-describedby': 'mm-transit-light-note', 'aria-label': t("stem.moonmission.a11y_measured_outbound_spacecraft_trajectory_and_moving_moon_switch_between_earth_centered_and", 'Measured outbound spacecraft trajectory and moving Moon. Switch between Earth-centered and Moon-relative views. Distances, speeds and engine status follow below.'), style: { display: 'block', width: '100%', height: '360px', borderRadius: '8px' }, ref: function(cv) {
+              h('canvas', { 'data-transit-canvas': true, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'mm-transit-light-note', 'aria-label': t("stem.moonmission.a11y_measured_outbound_spacecraft_trajectory_and_moving_moon_switch_between_earth_centered_and", 'Measured outbound spacecraft trajectory and moving Moon. Switch between Earth-centered and Moon-relative views. Distances, speeds and engine status follow below.'), style: { display: 'block', width: '100%', height: '360px', borderRadius: '8px' }, ref: function(cv) {
                 if (!cv || cv._transitInit) return; cv._transitInit = true;
                 var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 360;
                 var profile = tp, plan = Object.assign({}, d.transitPlan), time = tr.time, recorded = tr.recorded, paused = !!d.transitPaused, rate = d.transitPlaybackRate, view = d.transitView, trueScale = !!d.trueScale;
@@ -14344,7 +14531,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               if (!transitReady || !canProceed()) return;
               advancePhase(4); log('Outbound encounter verified. Beginning the separate lunar insertion preset.');
               if (!d.transitAwarded) { upd('transitAwarded', true); addXP(15); }
-              if (addToast) addToast('Encounter verified. Plan lunar orbit insertion.', 'success');
+              if (addToast) addToast(t('stem.moonmission.toast_encounter_verified_plan_lunar_orbit_insertion', 'Encounter verified. Plan lunar orbit insertion.'), 'success');
             } }, 'Arrive at the Moon \u2014 Plan Lunar Insertion'),
             !transitReady && h('p', { 'data-moonmission-mcc-required': true, className: 'text-xs text-center', style: { color: '#e2e8f0', background: '#0f172a', padding: '10px', borderRadius: '8px' } }, 'Review a trajectory that reaches the 60\u2013500 km lunar encounter corridor to continue.'));
         })(),
@@ -14419,7 +14606,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 }
                 requestAnimationFrame(paint);
               } }),
-              h('p', { id: 'mm-loi-light-note', 'data-loi-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Sun ↗ 45° in the orbit plane: a fixed teaching preset. Moon shading follows spherical surface normals. Spacecraft sunlight measures the visible solar disc, including partial and total eclipse; Earth radio contact is calculated separately. Neutral material, brightness and star exposure are illustrative; the enlarged spacecraft is a diagram. Approximate hull facets follow the Sun; eclipse exposure is raised to keep the craft visible. Exhaust brightness stays illustrative.'),
+              h('p', { id: 'mm-loi-light-note', 'data-loi-light-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Sun ↗ 45° in the orbit plane: a fixed teaching preset. Moon shading follows spherical surface normals. Spacecraft sunlight measures the visible solar disc, including partial and total eclipse; Earth radio contact is calculated separately. The cratered texture is generic, not a map; surface tone, brightness and star exposure are illustrative; the enlarged spacecraft is a diagram. Approximate hull facets follow the Sun; eclipse exposure is raised to keep the craft visible. Exhaust brightness stays illustrative.'),
               h('dl', { 'data-loi-instruments': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '10px', margin: '12px 0' } }, [['time', 'Encounter time'], ['altitude', 'Altitude'], ['speed', 'Moon-relative speed'], ['radial', 'Radial speed'], ['tangential', 'Tangential speed'], ['mass', 'Docked stack mass'], ['propellant', 'SPS propellant'], ['thrust', 'SPS thrust'], ['energy', 'Specific orbital energy'], ['perilune', 'Low point if cutoff now'], ['apolune', 'High point if cutoff now'], ['radio', 'Radio link'], ['sun', 'Spacecraft illumination'], ['sunFraction', 'Visible solar disc']].map(function(item) {
                 return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-loi-value': item[0], style: { margin: 0, minHeight: '22px', color: '#f8fafc', fontWeight: 700, fontSize: '15px', fontVariantNumeric: 'tabular-nums' } }, '\u2014'));
               })),
@@ -14441,7 +14628,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('p', null, 'Review insertion result inspects the integrated trajectory immediately and awards no points. The later descent uses its own approach preset after undocking and descent-orbit preparation.'),
                 h('a', { href: 'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA Apollo 11 Mission Report'))),
             h('section', { 'data-lunar-atlas-workspace': true, style: cardStyle }, h('h4', { style: { color: '#f8fafc', fontSize: '16px', margin: '0 0 8px' } }, 'Near-side landing reference'),
-              h('canvas', { 'data-lunar-atlas': true, role: 'img', 'aria-describedby': 'mm-lunar-orbit-description mm-lunar-atlas-selection mm-lunar-light-note', 'aria-label': t("stem.moonmission.a11y_near_side_lunar_atlas_under_the_apollo_11_daylight_preset_green_dot_tranquility_base_white", 'Near-side lunar atlas under the Apollo 11 daylight preset. Green dot: Tranquility Base. White ring: selected landing site. Optional numbers identify other Apollo sites and letters identify the lunar seas.'), style: { display: 'block', width: '100%', height: '400px' }, ref: function(cv) {
+              h('canvas', { 'data-lunar-atlas': true, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'mm-lunar-orbit-description mm-lunar-atlas-selection mm-lunar-light-note', 'aria-label': t("stem.moonmission.a11y_near_side_lunar_atlas_under_the_apollo_11_daylight_preset_green_dot_tranquility_base_white", 'Near-side lunar atlas under the Apollo 11 daylight preset. Green dot: Tranquility Base. White ring: selected landing site. Optional numbers identify the other Apollo landing sites and letters identify the lunar seas. The sunrise line lies just west of Tranquility Base; the night side beyond it is shaded.'), style: { display: 'block', width: '100%', height: '400px' }, ref: function(cv) {
                 if (!cv || cv._atlasInit) return; cv._atlasInit = true;
                 var ctx = cv.getContext('2d'), width = cv.offsetWidth || 500, height = cv.offsetHeight || 400, observer, lastLabels = null, lastSite = null, dirty = true;
                 function resize() { width = cv.offsetWidth || width; height = cv.offsetHeight || height; cv.width = width * 2; cv.height = height * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); dirty = true; }
@@ -14470,7 +14657,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               if (!loiReady || !canProceed()) return;
               advancePhase(5); log('Verified lunar orbit. Eagle undocked; beginning the separate powered-descent approach.');
               if (!d.loiAwarded) { upd('loiAwarded', true); addXP(15); }
-              if (addToast) addToast('Lunar orbit verified. Preparing Eagle for descent.', 'success');
+              if (addToast) addToast(t('stem.moonmission.toast_lunar_orbit_verified_preparing_eagle_for_descent', 'Lunar orbit verified. Preparing Eagle for descent.'), 'success');
             } }, '\u2b07\ufe0f Undock & Begin Powered Descent'));
         })(),
 
@@ -18798,7 +18985,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               advancePhase(8); log('Docking exercise complete. Crew and samples aboard Columbia; LM jettisoned.');
               if (!d.ascentAwarded) { upd('ascentAwarded', true); addXP(15); }
               if (quizIdx < QUIZ_BANK.length) upd('showQuiz', true);
-              if (addToast) addToast('Docking complete. Review the Earth-return preset.', 'success');
+              if (addToast) addToast(t('stem.moonmission.toast_docking_complete_review_the_earth_return_preset', 'Docking complete. Review the Earth-return preset.'), 'success');
             } }, '\uD83D\uDE80 Head Home \u2014 Inspect Earth Return'));
         })(),
 

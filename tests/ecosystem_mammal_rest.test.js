@@ -16,7 +16,9 @@ function worldFoot(id,p,index,hind,side){
   const x=p.x+size*(Math.cos(p.yaw)*lx+Math.sin(p.yaw)*lz),z=p.z+size*(-Math.sin(p.yaw)*lx+Math.cos(p.yaw)*lz),y=api.groundHeight(p.x,p.z)+p.altitude+posture.drop+size*ly;
   const yx=Math.sin(a)*Math.cos(beta)+Math.cos(a)*sy*Math.sin(beta),yy=-Math.sin(a)*Math.sin(beta)+Math.cos(a)*sy*Math.cos(beta);
   const radius=size*Math.hypot((fox?.078:hind?.175:.12)*yx,(fox?.042:hind?.05:.045)*yy);
-  return {x,z,gap:y-radius-api.groundHeight(x,z),lift:foot.lift*size};
+  // A fast rabbit's whole-body flight lifts every sole in addition to its
+  // individual swing. Grounded/resting poses still have zero shared lift.
+  return {x,z,gap:y-radius-api.groundHeight(x,z),lift:foot.lift*size+posture.flightLift};
 }
 it('holds recorded stance positions and fits both mammals to terrain while settling and walking',()=>{
   const rows=api.compare({}).experiment,before=JSON.stringify(rows),frames=api.behaviorTimeline({},rows);

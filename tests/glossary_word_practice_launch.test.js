@@ -157,6 +157,8 @@ describe('glossary Present & Export launch', () => {
     ['Use up to 200 words in one practice set.', /200/],
     ['Use up to 200 different words in one practice set.', /200/],
     ['This practice set has too much audio. Split it into smaller word lists.', /audio/i],
+    ['The definition for “Leaf” must be 12,000 characters or fewer. Shorten the field or split it into separate practice items.', /12,000 characters per field/],
+    ['This practice set has too much instructional text. Use up to 524,288 characters across definitions, examples, translations and sentence prompts, or split it into smaller lists.', /instructional text.*smaller word lists/],
   ])('explains the known validation error inline: %s', async (message, expected) => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     window.__alloOpenWordPractice = vi.fn().mockRejectedValue(new Error(message));

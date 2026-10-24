@@ -1151,7 +1151,8 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     await page.getByRole('button', { name: 'Export SEL project file now', exact: true }).click();
     expect(await saving.getByRole('status').innerText()).toContain('a saved file has not been confirmed');
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('alloflow-project-saved')));
-    expect(await saving.getByRole('status').innerText()).toContain('host reported a completed project save');
+    // The listener sets React state; on a loaded CI runner the read can land before the re-render.
+    await expect.poll(() => saving.getByRole('status').innerText()).toContain('host reported a completed project save');
     expect(errors).toEqual([]);
   }, 120000);
 

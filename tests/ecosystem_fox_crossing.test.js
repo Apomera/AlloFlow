@@ -1,0 +1,51 @@
+import {beforeEach,describe,it,expect} from 'vitest';
+import {createHash} from 'node:crypto';
+import {loadTool,resetStemLab} from './helpers/stem_widgets_smoke_harness.js';
+let api,recording;
+beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_ecosystem.js','ecosystem');api=window.StemLab.ecosystemFoodWeb;});
+const config={soil:{enabled:false},enabled:{rabbits:false,voles:false,owls:false,caterpillars:false,bluetits:false},initial:{foxes:20},capacity:160,cover:0,event:'none',target:'foxes',eventStep:80};
+const clone=value=>JSON.parse(JSON.stringify(value));
+const digest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const presentation=new Set(['headTurn','attention','earLeft','earRight','earTilt','eyeAim','crossingCue','crossingLook','crossingCooldown','crossing','crossingIndex','crossingDistance']);
+const physical=frames=>frames.map(f=>Object.fromEntries(Object.entries(f).map(([id,poses])=>[id,poses.map(p=>Object.fromEntries(Object.entries(p).filter(([key])=>!presentation.has(key))))])));
+function recorded(){if(!recording){const c=api.normalize(config),pair=api.compare(c);recording={c,pair,frames:api.behaviorTimeline(c,pair.baseline)};}return recording;}
+function fixture(step=61){const {frames}=recorded(),index=6;return {index,old:clone(frames[step-1].foxes[index]),previous:clone(frames[step-1].foxes),committed:clone(frames[step].foxes.slice(0,index)),count:frames[step].foxes.filter(p=>p.active).length,current:{...clone(frames[step].foxes[index]),step}};}
+const call=f=>api.foxCrossing(f.index,f.old,f.previous,f.committed,f.count,f.current);
+
+describe('recorded fox crossing watch sequence',()=>{
+  it('starts from the actual committed moving peer and truthfully distinguishes a shortened step from a hold',()=>{
+    const f=fixture(),before=JSON.stringify(f),hit=call(f);expect(JSON.stringify(f)).toBe(before);expect(call(f)).toEqual(hit);expect(hit.look).toBe(.4);expect(hit.cue).toMatchObject({index:1,receiverIndex:6,age:0,startStep:61,sourceStep:61,blockStep:61,stage:'orient',stepKind:'shortened'});expect(hit.cue.allowedDistance).toBeGreaterThan(.002);expect(hit.cue.travel).toBeCloseTo(.032,12);expect(hit.cue.allowedDistance).toBeCloseTo(hit.cue.requestedDistance*hit.cue.fraction,12);expect(hit.cue.receiverTravel).toBeCloseTo(hit.cue.allowedDistance,12);
+    const held=call(fixture(62));expect(held.cue).toMatchObject({stepKind:'held',stage:'orient',age:1,movement:0,travel:0,receiverTravel:0});expect(held.cue.allowedDistance).toBe(0);expect(held.cue.onsetTravel).toBeGreaterThan(.002);expect(held.look).toBe(.8);
+  });
+  it('rejects invented, copied, out of order, absent and mismatched clearance sources',()=>{
+    const mutations=[f=>{f.current.peerAvoidance=null;},f=>{f.current.peerAvoidance.index=2;},f=>{f.current.peerAvoidance.nextX+=.001;},f=>{f.current.peerAvoidance.x+=.001;},f=>{f.current.peerAvoidance.source='previous-position';},f=>{f.current.peerAvoidance.radius+=.001;},f=>{f.current.peerAvoidance.fraction=.9;},f=>{f.current.peerAvoidance.allowedDistance+=.001;},f=>{f.current.moving=0;},f=>{f.committed[1].moving=0;},f=>{f.previous[1].active=false;},f=>{f.count=6;},f=>{f.index=1;}];
+    for(const mutate of mutations){const f=fixture();mutate(f);expect(call(f).cue).toBeNull();expect(call(f).look).toBe(0);}
+    const f=fixture();f.old.crossingCooldown=20;expect(call(f).cue).toBeNull();
+  });
+  it('cancels the watch immediately on source identity changes, direct prey, hunting, rest, absence or malformed provenance',()=>{
+    const changes=[f=>{f.current.peerAvoidance.index=2;},f=>{f.current.state='Tracking prey';},f=>{f.current.huntStage='stalk';},f=>{f.current.preyDistance=2;},f=>{f.current.preyDistance=NaN;},f=>{f.current.rest=.11;},f=>{f.current.active=false;},f=>{f.current.searchCue={};},f=>{f.current.breakoffCue={};},f=>{f.current.listenCue={};},f=>{f.committed[1].state='Tracking prey';},f=>{f.committed[1].huntStage='stalk';},f=>{f.committed[1].active=false;},f=>{f.committed[1].rest=.11;},f=>{f.committed[1].preyDistance=2;},f=>{f.committed[1].preyDistance=NaN;},f=>{f.old.crossingCue.sourceStep--;},f=>{f.old.crossingCue.x+=.001;},f=>{f.old.crossingLook=NaN;},f=>{f.old.crossingCue.allowedDistance=NaN;},f=>{f.committed[1].x=Infinity;}];
+    for(const change of changes){const f=fixture(64);change(f);expect(call(f)).toEqual({cue:null,look:0,cooldown:20});}
+  });
+  it('records a complete sixteen-sample orient, held watch and genuine resumed-step sequence with the same actual live peer',()=>{
+    const {frames}=recorded();expect(api.foxCrossingEpisode(frames)).toEqual({step:63,index:6,sourceIndex:1,start:61});expect(api.foxCrossingEpisode([null,null])).toBeNull();const absentSource=frames.map(f=>({...f,foxes:f.foxes.map((p,i)=>i===0||i===1?{...p,active:false}:p)}));expect(api.foxCrossingEpisode(absentSource)).toBeNull();
+    for(let step=61;step<=76;step++){const p=frames[step].foxes[6],q=frames[step].foxes[1],cue=api.foxCrossingCue(p.crossingCue);expect(cue).toMatchObject({age:step-61,sourceStep:step,index:1,receiverIndex:6,duration:16});expect(cue.x).toBe(q.x);expect(cue.z).toBe(q.z);expect(q.active).toBe(true);expect(cue.previousX).toBe(frames[step-1].foxes[1].x);expect(cue.previousZ).toBe(frames[step-1].foxes[1].z);expect(Object.values(cue).every(v=>v==null||typeof v!=='object')).toBe(true);if(step>=62&&step<=68){expect(cue.stepKind).toBe('held');expect(p.moving).toBe(0);expect(q.moving).toBe(0);}if(step>=69){expect(cue.stage).toBe('release');expect(cue.stepKind).toBe('unmarked');expect(p.moving).toBeGreaterThan(.3);expect(p.peerAvoidance).toBeNull();}expect(api.interaction(frames[step],'foxes',6)).toMatchObject({id:'foxes',index:1,selected:p,other:q});}
+    expect(frames[77].foxes[6]).toMatchObject({crossingCue:null,crossingLook:0,crossingCooldown:20});expect(frames[80].foxes[6].crossingCooldown).toBe(17);
+  });
+  it('uses a visible bounded head-and-ear response and eases it through real fractional playback',()=>{
+    const {frames}=recorded();expect(frames[65].foxes[6].headTurn).toBe(.42);expect(frames[68].foxes[6].earLeft).toBeGreaterThan(.5);expect(frames[63].foxes[6].attention.kind).toBe('crossing');
+    for(let step=60;step<77;step++){const a=frames[step].foxes[6],b=frames[step+1].foxes[6];expect(Math.abs(b.headTurn-a.headTurn)).toBeLessThanOrEqual(.090000001);expect(Math.abs(b.earLeft-a.earLeft)).toBeLessThanOrEqual(.065000001);expect(Math.abs(b.earRight-a.earRight)).toBeLessThanOrEqual(.065000001);for(const alpha of [.25,.5,.75]){const blended=api.blendPose(a,b,alpha,'foxes',frames[step-1]?.foxes[6],frames[step+2]?.foxes[6]),art=api.mammalArticulation('foxes',blended,false);for(const key of ['headTurn','earLeft','earRight','earTilt','crossingLook'])expect(blended[key]).toBeCloseTo(a[key]+(b[key]-a[key])*alpha,12);expect(art.headYaw).toBeCloseTo(blended.headTurn,12);expect(Number.isFinite(art.earLeft)).toBe(true);expect(api.blendPose(a,b,0,'foxes')).toBe(a);expect(api.blendPose(a,b,1,'foxes')).toBe(b);}}
+    for(const step of [62,68,69,72]){const frame=api.blendFrame(frames[step],frames[step+1],.5,frames[step-1],frames[step+2]),pair=api.interaction(frame,'foxes',6);expect(pair.other).toBe(frame.foxes[1]);expect(pair.selected).toBe(frame.foxes[6]);expect(pair.selected.crossingLook).toBeGreaterThan(0);expect(Math.abs(api.mammalArticulation('foxes',pair.selected,false).headYaw)).toBeGreaterThan(.03);}
+  });
+  it('removes canceled or replaced targets during fractional playback while keeping the original head, foot references and interpolation',()=>{
+    const a=recorded().frames[65].foxes[6];for(const patch of [{active:false,crossingCue:null,crossing:null,crossingIndex:null,crossingDistance:null,crossingLook:0},{crossingCue:null,crossing:null,crossingIndex:null,crossingDistance:null,crossingLook:0,state:'Tracking prey'},{crossingCue:{...a.crossingCue,index:0},crossing:'foxes',crossingIndex:0}]){const b={...a,...patch};for(const alpha of [.25,.5,.75]){const out=api.blendPose(a,b,alpha,'foxes');expect(out.crossingCue).toBeNull();expect(out.crossing).toBeNull();expect(out.crossingIndex).toBeNull();expect(out.crossingDistance).toBeNull();expect(out.headTurn).toBe(a.headTurn);expect(out.footPlants).toEqual(a.footPlants);expect(out.state).toBe(a.state);}}expect(a.crossingCue).not.toBeNull();
+  });
+  it('keeps starting, absent and reduced-motion articulation neutral and retains priority for existing direct-prey cues',()=>{
+    const {frames}=recorded(),p=frames[65].foxes[6];for(const q of frames[0].foxes)expect(q).toMatchObject({crossingCue:null,crossingLook:0,crossingCooldown:0});for(const [q,reduced] of [[p,true],[{...p,active:false},false]])expect(api.mammalArticulation('foxes',q,reduced)).toMatchObject({headYaw:0,earLeft:0,earRight:0});expect(api.attention('foxes','Tracking prey',p,{id:'rabbits',index:0,x:p.x+1,z:p.z},null,null,null,null,p.crossingCue).kind).toBe('prey');
+  });
+  it('explains each current step honestly and shows the live pair rather than the earlier clearance-decision coordinates',()=>{
+    const {frames}=recorded();expect(api.explainBehavior('foxes',frames[61].foxes[6]).text).toContain('shortened this recorded step');expect(api.explainBehavior('foxes',frames[63].foxes[6]).text).toContain('held this recorded step');const text=api.explainBehavior('foxes',frames[69].foxes[6]).text;expect(text).toContain('no fox-peer shortening marker');expect(text).toContain('moving again');expect(text).toContain('may itself be still');expect(text).toContain('does not establish territory');const pair=api.interaction(frames[71],'foxes',6);expect(pair.other.x).not.toBe(frames[68].foxes[1].x);const changed={...frames[63],foxes:frames[63].foxes.map((q,i)=>i===1?{...q,active:false}:q)};expect(api.interaction(changed,'foxes',6)).toBeNull();
+  });
+  it('preserves every original population, route, action, goal, speed, obstacle decision, foot plant and encounter',()=>{
+    const {c,pair,frames}=recorded();expect(digest(pair)).toBe('483d7fafb6ce56d013595ae773fa7b1deb320e0508fc0e403cef296288210416');expect(digest(physical(frames))).toBe('9d5c55363d1c7830eedff70f74aee99a131ba3cc606cf430ee060eabf7fd245c');expect(digest(api.encounters(frames,c))).toBe('4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945');
+  });
+});

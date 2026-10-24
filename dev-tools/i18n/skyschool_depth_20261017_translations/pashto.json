@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "د الوتنې اوسنی حالت وساتئ",
+  "stem.flightsim.flight_assistance_targets": "لوری {hdg}° · لوړوالی {alt} ft MSL · چټکتیا {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "لوری {hdg}° · لوړوالی {alt} ft MSL · د مخکې تګ چټکتیا {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} ته د تګ لپاره {degrees}° چپ لوري ته وګرځئ.",
+  "stem.flightsim.challenge_turn_right": "{airport} ته د تګ لپاره {degrees}° ښي لوري ته وګرځئ.",
+  "stem.flightsim.challenge_course_aligned": "د {airport} پر لور روان یاست. د مسیر نښه تعقیب کړئ.",
+  "stem.flightsim.challenge_runway_reference": "د روزنې ځغاست‌لیکه {runway}: لوری {heading}°. د ناستې لپاره تر راکوزېدو مخکې ځان له ځغاست‌لیکې سره برابر کړئ."
+}

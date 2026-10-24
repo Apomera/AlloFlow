@@ -79,7 +79,9 @@ describe('original reader sentence starts', () => {
 
   it('reads the plain original from the clicked sentence when glosses are hidden', () => {
     mount();
-    const glosses = Array.from(host.querySelectorAll('label')).find(label => /glosses/i.test(label.textContent)).querySelector('input');
+    // The toggle reads "Show word help" (simplified.compare_show_glosses) since 2026-10-12.
+    const glosses = Array.from(host.querySelectorAll('[data-original-support-settings] label')).find(label => /show word help|show_glosses/i.test(label.textContent)).querySelector('input[type="checkbox"]');
+    expect(glosses.checked).toBe(true);
     act(() => glosses.click());
     act(() => stop('So foul').click());
     const [text, , index] = lastSpeak();

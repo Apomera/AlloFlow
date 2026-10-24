@@ -884,13 +884,27 @@ const WordSoundsReviewPanel = ({
       text: () => reviewText("review_gap_tiles", "Picture the Sentence tiles without a picture: {count}. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.", { count: missingTileImgs }),
       each: null
     });
+    const UNVERIFIED_SOURCE_ACTIVITIES = {
+      rhyme: ["rhyming"],
+      family: ["word_families"],
+      blending: ["blending", "read_sentence", "read_passage"],
+      sentence: ["read_sentence", "read_passage"]
+    };
+    const unverifiedFor = (w) => {
+      if (!w || !Array.isArray(w._unverifiedWords)) return [];
+      const bySource = w._unverifiedBySource;
+      if (!bySource || typeof bySource !== "object") {
+        return reviewsActivity("rhyming", "word_families", "read_sentence", "read_passage") ? w._unverifiedWords : [];
+      }
+      return [...new Set(Object.entries(bySource).filter(([source, words]) => Array.isArray(words) && reviewsActivity(...UNVERIFIED_SOURCE_ACTIVITIES[source] || [])).flatMap(([, words]) => words))];
+    };
     addGap({
       key: "unverified",
-      activities: ["rhyming", "word_families"],
-      test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
+      activities: ["rhyming", "word_families", "blending", "read_sentence", "read_passage"],
+      test: (w) => unverifiedFor(w).length > 0,
       text: (n) => {
-        const sample = [...new Set(preloadedWords.flatMap((w) => w && w._unverifiedWords || []))].slice(0, 6);
-        return reviewText("review_gap_unverified", "Words with generated rhymes or family members outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.", { count: n, words: sample.join(", ") });
+        const sample = [...new Set(preloadedWords.flatMap(unverifiedFor))].slice(0, 6);
+        return reviewText("review_gap_unverified_words", "Generated words outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.", { count: n, words: sample.join(", ") });
       },
       // A judgement call, not a repair: the teacher edits
       // or regenerates the word if they disagree.
@@ -917,7 +931,7 @@ const WordSoundsReviewPanel = ({
       needsNetwork: true,
       each: onCheckPhonemes
     });
-    if (!gaps.length) return null;
+    if (!gaps.length && fixingGap === null && !gapFixResult) return null;
     const busy = fixingGap !== null;
     const fixable = gaps.filter((g) => g.each || g.batch);
     const fixableWords = new Set(fixable.flatMap((g) => g.indices)).size;
@@ -1277,7 +1291,7 @@ const WordSoundsReviewPanel = ({
       {
         "aria-label": t("common.rhyme_time_options"),
         value: word.rhymeWord || "",
-        onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }),
+        onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true }),
         className: "px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none",
         "data-help-key": "word_sounds_review_distractor_input",
         placeholder: t("common.placeholder_correct_rhyme")
@@ -1290,7 +1304,7 @@ const WordSoundsReviewPanel = ({
         onChange: (e) => {
           const newDist = [...word.rhymeDistractors || []];
           newDist[i] = e.target.value;
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
+          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
         },
         className: "flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none",
         "data-help-key": "word_sounds_review_distractor_input",
@@ -1347,7 +1361,7 @@ const WordSoundsReviewPanel = ({
         type: "button",
         onClick: () => {
           const newDist = [...word.rhymeDistractors || [], ""];
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
+          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
         },
         className: "px-3 py-1.5 bg-orange-100 text-orange-800 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
       },

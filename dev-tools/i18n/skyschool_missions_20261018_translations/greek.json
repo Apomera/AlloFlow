@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Παρατηρήσεις αποστολής",
+  "stem.flightsim.mission_journal_targets": "Στόχοι που καταγράφηκαν: {captured} από {total}.",
+  "stem.flightsim.mission_journal_complete": "Καταγράφηκαν όλοι οι στόχοι της αποστολής και η προσγείωση επιστροφής.",
+  "stem.flightsim.mission_journal_ended": "Η αποστολή έληξε πριν καταγραφούν όλα τα στοιχεία ολοκλήρωσης.",
+  "stem.flightsim.mission_journal_recovery": "Καταγραφή διάσωσης επιζώντος: {value}.",
+  "stem.flightsim.mission_journal_return": "Καταγραφή προσγείωσης επιστροφής στη βάση: {value}.",
+  "stem.flightsim.mission_guidance_title": "Καθοδήγηση αποστολής",
+  "stem.flightsim.mission_route": "{target} · διόπτευση {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Σημείο απογείωσης",
+  "stem.flightsim.mission_read_status": "Εκφώνηση κατάστασης αποστολής",
+  "stem.flightsim.mission_return_criterion": "Προσγειωθείτε εντός {distance} nm από το {target}, με ταχύτητα εδάφους κάτω από {speed} kt και ρυθμό καθόδου κάτω από {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Τα δεδομένα στόχου της αποστολής δεν είναι διαθέσιμα. Τερματίστε αυτή την πτήση και ξεκινήστε νέα αποστολή.",
+  "stem.flightsim.mission_capture_criterion": "Μείνετε σε απόσταση μικρότερη από {distance} ft, πάνω από {min} και κάτω από {max} ft από το έδαφος, με ταχύτητα εδάφους κάτω από {speed} kt για {hold} s."
+}

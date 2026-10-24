@@ -196,6 +196,21 @@ function _mathFractionDenominatorLimit() {
     return 20;
   }
 }
+
+// "Try with cubes" volume from the answer's final quantity: "V = 4 × 3 × 2 =
+// 24 cm^3" is 24. Digits of separate numbers must never be joined ("8 cm^3"
+// used to become 83), and a decimal, fraction or list sets no challenge.
+function _mathCubeChallengeVolume(answer) {
+  try {
+    var tail = _mathScalarText(answer, 500).split('=').pop().replace(/\\text\s*\{([^}]*)\}/g, ' $1 ').replace(/\^\s*\{?\s*\d+\s*\}?|[\u00b2\u00b3]/g, ' ');
+    var numbers = tail.match(/\d+(?:[.,]\d+)*(?:\s*\/\s*\d+)?/g) || [];
+    if (numbers.length !== 1 || !/^\d+$/.test(numbers[0])) return null;
+    var volume = Number(numbers[0]);
+    return volume > 0 && volume <= 100 ? volume : null;
+  } catch (_) {
+    return null;
+  }
+}
 function _mathRequestActivity(kind, resourceId, problemKey) {
   try {
     var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathHelpers;
@@ -611,6 +626,15 @@ function MathView(props) {
   var toggleMathEdit = canToggleMathEdit ? props.toggleMathEdit : noop;
   // Pure helpers
   var formatMathQuestion = typeof props.formatMathQuestion === 'function' ? props.formatMathQuestion : problem => problem.question || problem.problem || problem.expression || '';
+  // Check My Work and hints get the question as displayed, directive included
+  // ("Simplify: 4/6"). The raw field drops it, so a copied "4/6" passed as correct.
+  var mathQuestionForGrading = problem => {
+    var shown = '';
+    try {
+      shown = _mathScalarText(formatMathQuestion(problem)).trim();
+    } catch (_) {}
+    return shown || problem.question || problem.problem;
+  };
   var formatInlineText = typeof props.formatInlineText === 'function' ? props.formatInlineText : text => _mathScalarText(text);
   var sanitizeHtml = typeof props.sanitizeHtml === 'function' ? props.sanitizeHtml : () => '';
   var copyToClipboard = canCopyToClipboard ? props.copyToClipboard : noop;
@@ -778,6 +802,22 @@ function MathView(props) {
   var mathEditButtonId = problemKey => 'math-edit-toggle-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var answeredSelfGradeCount = mathProblems.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
   var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length && !mathProblems.some(problem => problem._verification?.reviewRequired);
+  // A problem awaiting teacher review has no answer box in self-grade mode, so
+  // the help counts the problems the student can answer and names the rest.
+  var selfGradeReviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
+  var selfGradeAnswerable = mathProblems.filter(problem => !problem._verification?.reviewRequired);
+  var answeredAnswerableCount = selfGradeAnswerable.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
+  var selfGradeReviewHelp = (() => {
+    if (!selfGradeReviewCount) return '';
+    var key = selfGradeAnswerable.length ? 'math.self_grade_review_pending' : 'math.self_grade_review_pending_all';
+    var fallback = (selfGradeAnswerable.length ? `Answered ${answeredAnswerableCount} of ${selfGradeAnswerable.length}. ` : '') + `Problems waiting for teacher review: ${selfGradeReviewCount}. Submit Assessment stays off until teacher review is done.`;
+    var translated = t(key, {
+      answered: answeredAnswerableCount,
+      answerable: selfGradeAnswerable.length,
+      count: selfGradeReviewCount
+    });
+    return typeof translated === 'string' && translated.trim() && translated !== key ? translated : fallback;
+  })();
   var selfGradeHelpId = 'math-self-grade-help-' + _mathStableHash(mathResourceId);
   var activeCheckIndex = mathProblems.findIndex(problem => getMathCheckResult(problem.__viewKey)?.checking === true);
   var activeHintIndex = mathProblems.findIndex(problem => getMathHintState(problem.__viewKey).loading === true);
@@ -1180,7 +1220,7 @@ function MathView(props) {
   })(), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
     id: selfGradeHelpId,
     className: "mt-2 text-sm font-medium text-emerald-800"
-  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
+  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : selfGradeReviewHelp || `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"
@@ -1422,7 +1462,7 @@ function MathView(props) {
     return /*#__PURE__*/React.createElement(React.Fragment, null, !checkResult?.checked && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-busy": checkResult?.checking === true,
-      onClick: () => handleCheckMathWork(mathResourceId, problem.__viewKey, problem.question || problem.problem, problem.answer, problem.steps, studentWork),
+      onClick: () => handleCheckMathWork(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps, studentWork),
       disabled: !canHandleCheckMathWork || !studentWork.trim() || checkResult?.checking === true,
       className: "flex min-h-[44px] items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]",
       "data-help-key": "math_check_work"
@@ -1450,7 +1490,7 @@ function MathView(props) {
       }, hint)))), hintInfo.count < 3 && /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-busy": hintInfo.loading,
-        onClick: () => handleGetMathHint(mathResourceId, problem.__viewKey, problem.question || problem.problem, problem.answer, problem.steps),
+        onClick: () => handleGetMathHint(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps),
         disabled: !canHandleGetMathHint || hintInfo.loading,
         className: "flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
       }, hintInfo.loading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
@@ -1539,15 +1579,13 @@ function MathView(props) {
         setStemLabTool('volume');
         setCubeBuilderMode('freeform');
         setCubePositions(new Set());
-        const vol = parseInt(String(problem.answer).replace(/[^\d]/g, ''));
-        if (vol && vol > 0 && vol <= 100) {
-          setCubeBuilderChallenge({
-            type: 'volume',
-            answer: vol,
-            shape: 'any'
-          });
-          setCubeBuilderFeedback(null);
-        }
+        const vol = _mathCubeChallengeVolume(problem.answer);
+        setCubeBuilderChallenge(vol ? {
+          type: 'volume',
+          answer: vol,
+          shape: 'any'
+        } : null);
+        setCubeBuilderFeedback(null);
       },
       className: "ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
     }, "📦 Try with cubes")))));

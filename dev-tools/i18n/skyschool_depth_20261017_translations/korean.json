@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "현재 비행 상태 유지",
+  "stem.flightsim.flight_assistance_targets": "기수방향 {hdg}° · 고도 {alt} ft MSL · 속도 {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "기수방향 {hdg}° · 고도 {alt} ft MSL · 전진 속도 {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} 방향으로 왼쪽으로 {degrees}° 선회하세요.",
+  "stem.flightsim.challenge_turn_right": "{airport} 방향으로 오른쪽으로 {degrees}° 선회하세요.",
+  "stem.flightsim.challenge_course_aligned": "{airport} 방향으로 비행 중입니다. 항로 표시를 따라가세요.",
+  "stem.flightsim.challenge_runway_reference": "훈련용 활주로 {runway}: 기수방향 {heading}°. 착륙을 위해 하강하기 전에 활주로와 일직선으로 정렬하세요."
+}

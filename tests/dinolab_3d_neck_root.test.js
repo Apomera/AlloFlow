@@ -8,8 +8,9 @@ const source = readFileSync(process.env.DINO_NECK_ROOT_SOURCE || resolve('stem_l
 const anchor = "window.StemLab.registerTool('dinoLab'";
 if (!source.includes(anchor)) throw new Error('Missing Dino Lab registration');
 window.StemLab = { registerTool() {} };
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
 new Function(source.replace(anchor,
-  'globalThis.__dinoNeckRoot = { DINOS, postcranialSurfaceProfileFor, dinoCervicalEnvelope, dinoCervicalSkinEnvelope, dinoSurfaceGeometry, dinoCranialGeometry, dinoNeckJunction };' + anchor))();
+  'globalThis.__dinoNeckRoot = { DINOS, skeletalAnatomyProfileFor, ' + nativeTopLevelNames.join(',') + ' };' + anchor))();
 const art = globalThis.__dinoNeckRoot;
 const vec = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -84,19 +85,25 @@ function specimen(id, scale = 1) {
   const shoulder = vec(.4, 1.7, -.2).multiplyScalar(scale), head = shoulder.clone().add(vec(-2.5, isSauropod ? 3.1 : .3, 0).multiplyScalar(scale));
   const original = art.dinoCervicalEnvelope(THREE, shoulder, head, .8 * scale, .46 * scale, .08 * scale,
     art.postcranialSurfaceProfileFor(dn), isSauropod, dn.clade);
-  return { dn, isSauropod, shoulder, head, original };
+  return { dn, scale, isSauropod, shoulder, head, original };
 }
 function caller(data, showBody = true) {
   const bodyMat = new THREE.MeshBasicMaterial(), model = new THREE.Group(), idleMotion = { breathingMeshes: [] };
   const chain = new Function('THREE', 'props', 'bodyMat', 'model', 'dinoCranialGeometry', 'dinoSurfaceGeometry', chainCode + 'return addSoftTissueChain;')
     (THREE, { showBody }, bodyMat, model, art.dinoCranialGeometry, art.dinoSurfaceGeometry);
-  const context = { THREE, cervicalEnvelope: data.original, shoulder: data.shoulder, head: data.head,
+  const context = { ...art, THREE, dn:data.dn, model, surfaceHypothesis:{neckSoftTissueScale:1}, cervicalEnvelope: data.original, shoulder: data.shoulder, head: data.head,
     thoraxCenter: data.shoulder.clone().add(vec(.5, 0, 0)), cladeName: data.dn.clade, isSauropod: data.isSauropod,
     hasAnatomyPart: () => false, neckPoints: data.original.points, neckRadii: data.original.radii, bodyMat,
     idleMotion, addSoftTissueChain: chain, dinoCervicalSkinEnvelope: art.dinoCervicalSkinEnvelope,
     addContourGroup: meshes => meshes.map(mesh => { const contour = new THREE.Mesh(mesh.geometry, bodyMat); contour.position.copy(mesh.position); return contour; }) };
+  const len=data.dn.lengthM*data.scale,ht=data.dn.heightM*data.scale;
+  context.ceratopsidCranium=art.dinoCeratopsidCraniumFrame(THREE,data.dn,data.head,len,ht);
+  context.lambeosaurBody=art.dinoLambeosaurBodyFrame(THREE,data.dn,{len,ht,headScale:art.reconstructionProfileFor(data.dn).head,
+    shoulder:data.shoulder,hip:data.shoulder.clone().add(vec(len*.24,0,0)),head:data.head,
+    snout:data.head.clone().add(vec(-len*.075,-ht*.020,0)),tail:data.shoulder.clone().add(vec(len*.52,0,0)),
+    bodyHeight:.8*data.scale,bodyDepth:data.original.radii[0]});
   const result = new Function('context', 'with(context){' + callerCode + 'return { neckMeshes, neckContours, neckSurfaceCurve, neckSkinEnvelope };}')(context);
-  return { ...result, idleMotion, bodyMat, model };
+  return { ...result, idleMotion, bodyMat, model, context };
 }
 function dispose(result) { result.neckMeshes.forEach(mesh => mesh.geometry.dispose()); result.bodyMat.dispose(); }
 
@@ -151,7 +158,15 @@ describe('Dino Lab sauropod cervical root seating', () => {
       const data = specimen(id), snapshot = JSON.stringify(data.original), built = caller(data);
       const expected = geometry(data.original, data.isSauropod ? { taperRoot: true } : {});
       expected.translate(-data.shoulder.x, -data.shoulder.y, -data.shoulder.z);
+      const fixedUV=expected.attributes.uv.array.slice(),fixedIndex=expected.index.array.slice();
+      if(data.dn.id==='triceratops'){
+        const reference=new THREE.Mesh(expected,built.bodyMat);reference.position.copy(data.shoulder);
+        expect(art.dinoCeratopsidNapeGeometry(THREE,data.dn,reference,built.context.ceratopsidCranium,1)).toBe(true);
+        expect(reference.userData.dinoCeratopsidNape.fixedSkeleton).toBe(true);
+      }
       try {
+        expect(expected.attributes.uv.array).toEqual(fixedUV);expect(expected.index.array).toEqual(fixedIndex);
+        expect(built.neckMeshes[0].geometry.attributes.uv.array).toEqual(fixedUV);expect(built.neckMeshes[0].geometry.index.array).toEqual(fixedIndex);
         expect(built.neckMeshes).toHaveLength(1); expect(built.model.children).toHaveLength(1);
         const mesh = built.neckMeshes[0]; arraysEqual(mesh.geometry, expected);
         expect(mesh.position.toArray()).toEqual(data.shoulder.toArray());

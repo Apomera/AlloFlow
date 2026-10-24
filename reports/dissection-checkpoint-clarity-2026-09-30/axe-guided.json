@@ -7,14 +7,14 @@
     "name": "axe"
   },
   "testEnvironment": {
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
     "windowWidth": 390,
     "windowHeight": 1000,
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-10-01T00:20:02.243Z",
-  "url": "http://127.0.0.1:56782/__harness",
+  "timestamp": "2026-10-18T02:11:03.485Z",
+  "url": "http://127.0.0.1:57931/__harness",
   "toolOptions": {
     "runOnly": {
       "type": "tag",
@@ -1045,7 +1045,7 @@
             }
           ],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Guided evidence progress\">",
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1144,9 +1144,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1177,9 +1177,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1210,9 +1210,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -1264,7 +1264,7 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Guided evidence progress\">",
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1318,9 +1318,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1336,9 +1336,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1354,9 +1354,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -1393,6 +1393,24 @@
           "html": "<section id=\"diss-guided-observation-check\" class=\"diss-learning-check\" data-phase=\"reflect\" data-guided-observation=\"true\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-guided-observation-title\">",
           "target": [
             "#diss-guided-observation-check"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "deprecatedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "minor",
+              "message": "ARIA role is not deprecated"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         },
         {
@@ -1462,7 +1480,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1494,7 +1512,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1526,14 +1544,14 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         }
       ]
     },
     {
       "id": "aria-prohibited-attr",
-      "impact": "serious",
+      "impact": null,
       "tags": [
         "cat.aria",
         "wcag2a",
@@ -1563,6 +1581,24 @@
           "html": "<section id=\"diss-guided-observation-check\" class=\"diss-learning-check\" data-phase=\"reflect\" data-guided-observation=\"true\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-guided-observation-title\">",
           "target": [
             "#diss-guided-observation-check"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         },
         {
@@ -1614,9 +1650,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1632,9 +1668,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1650,9 +1686,9 @@
             }
           ],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -1689,6 +1725,24 @@
           "html": "<section id=\"diss-guided-observation-check\" class=\"diss-learning-check\" data-phase=\"reflect\" data-guided-observation=\"true\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-guided-observation-title\">",
           "target": [
             "#diss-guided-observation-check"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-required-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "All required ARIA attributes are present"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         },
         {
@@ -1757,6 +1811,38 @@
           "html": "<section id=\"diss-guided-observation-check\" class=\"diss-learning-check\" data-phase=\"reflect\" data-guided-observation=\"true\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-guided-observation-title\">",
           "target": [
             "#diss-guided-observation-check"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "invalidrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is valid"
+            },
+            {
+              "id": "abstractrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Abstract roles are not used"
+            },
+            {
+              "id": "unsupportedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         },
         {
@@ -1868,7 +1954,7 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Guided evidence progress\">",
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1964,9 +2050,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -1996,9 +2082,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2028,9 +2114,9 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -2082,7 +2168,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Guided evidence progress\">",
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Guided evidence progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -2136,9 +2222,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2154,9 +2240,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2172,9 +2258,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -2213,9 +2299,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2231,9 +2317,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2249,9 +2335,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
@@ -2297,7 +2383,7 @@
           "impact": null,
           "html": "<span>✓ Locate</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"complete\"] > span:nth-child(1)"
+            "span[data-state=\"complete\"] > span:nth-child(1)"
           ]
         },
         {
@@ -2322,7 +2408,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__phase-status\">Done</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"complete\"] > .diss-learning-check__phase-status"
+            "span[data-state=\"complete\"] > .diss-learning-check__phase-status"
           ]
         },
         {
@@ -2397,7 +2483,7 @@
           "impact": null,
           "html": "<span>Verify</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"upcoming\"] > span:nth-child(1)"
+            "span[data-state=\"upcoming\"] > span:nth-child(1)"
           ]
         },
         {
@@ -2422,7 +2508,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__phase-status\">Upcoming</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"upcoming\"] > .diss-learning-check__phase-status"
+            "span[data-state=\"upcoming\"] > .diss-learning-check__phase-status"
           ]
         },
         {
@@ -2447,7 +2533,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -2458,7 +2544,7 @@
                 "fgColor": "#173f69",
                 "bgColor": "#ffffff",
                 "contrastRatio": 10.76,
-                "fontSize": "11.4pt (15.2px)",
+                "fontSize": "12.0pt (16px)",
                 "fontWeight": "normal",
                 "expectedContrastRatio": "4.5:1"
               },
@@ -2470,9 +2556,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span>",
+          "html": "<span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1) > .diss-learning-check__answer"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__answer"
           ]
         },
         {
@@ -2497,7 +2583,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -2508,7 +2594,7 @@
                 "fgColor": "#173f69",
                 "bgColor": "#ffffff",
                 "contrastRatio": 10.76,
-                "fontSize": "11.4pt (15.2px)",
+                "fontSize": "12.0pt (16px)",
                 "fontWeight": "normal",
                 "expectedContrastRatio": "4.5:1"
               },
@@ -2520,9 +2606,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span>",
+          "html": "<span class=\"diss-learning-check__answer\">External eardrum behind eye.</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2) > .diss-learning-check__answer"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__answer"
           ]
         },
         {
@@ -2547,7 +2633,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3) > .diss-learning-check__number[aria-hidden=\"true\"]"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -2558,7 +2644,7 @@
                 "fgColor": "#173f69",
                 "bgColor": "#ffffff",
                 "contrastRatio": 10.76,
-                "fontSize": "11.4pt (15.2px)",
+                "fontSize": "12.0pt (16px)",
                 "fontWeight": "normal",
                 "expectedContrastRatio": "4.5:1"
               },
@@ -2570,9 +2656,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<span class=\"diss-learning-check__answer\">External eardrum behind eye.</span>",
+          "html": "<span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3) > .diss-learning-check__answer"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"] > .diss-learning-check__answer"
           ]
         }
       ]
@@ -2662,9 +2748,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">1</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(1)"
+            ".diss-learning-check__choice:nth-child(1) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2680,9 +2766,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">Transparent third eyelid protecting eye underwater.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">2</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(2)"
+            ".diss-learning-check__choice:nth-child(2) > .diss-learning-check__option[type=\"button\"]"
           ]
         },
         {
@@ -2698,59 +2784,15 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">External eardrum behind eye.</span></button>",
+          "html": "<button type=\"button\" class=\"diss-learning-check__option\" aria-pressed=\"false\"><span class=\"diss-learning-check__number\" aria-hidden=\"true\">3</span><span class=\"diss-learning-check__answer\">Lighter, thinner ventral surface.</span></button>",
           "target": [
-            ".diss-learning-check__option[type=\"button\"]:nth-child(3)"
+            ".diss-learning-check__choice:nth-child(3) > .diss-learning-check__option[type=\"button\"]"
           ]
         }
       ]
     }
   ],
   "incomplete": [
-    {
-      "id": "aria-prohibited-attr",
-      "impact": "serious",
-      "tags": [
-        "cat.aria",
-        "wcag2a",
-        "wcag412",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "RGAAv4",
-        "RGAA-7.1.1"
-      ],
-      "description": "Ensure ARIA attributes are not prohibited for an element's role",
-      "help": "Elements must only use permitted ARIA attributes",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-prohibited-attr?application=axeAPI",
-      "nodes": [
-        {
-          "any": [],
-          "all": [],
-          "none": [
-            {
-              "id": "aria-prohibited-attr",
-              "data": {
-                "role": null,
-                "nodeName": "div",
-                "messageKey": "noRoleSingular",
-                "prohibited": [
-                  "aria-label"
-                ]
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "aria-label attribute is not well supported on a div with no valid role attribute."
-            }
-          ],
-          "impact": "serious",
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Guided evidence progress\">",
-          "target": [
-            ".diss-learning-check__phases"
-          ],
-          "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
-        }
-      ]
-    },
     {
       "id": "color-contrast",
       "impact": "serious",

@@ -165,7 +165,13 @@ describe('authoring rules (the ones that bite)', () => {
   });
   it('the app history panel never renders object metas as [object Object] (source pin)', () => {
     const hp = readFileSync(resolve(process.cwd(), 'view_history_panel_source.jsx'), 'utf8');
-    expect(hp).toContain("const itemMeta = typeof rawMeta === 'string' ? rawMeta : '';");
+    // 91652c2fe (2026-10-12) routes meta through getHistoryDisplayMeta; run it.
+    expect(hp).toContain('const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);');
+    const start = hp.indexOf('const getHistoryDisplayMeta = (type, meta) => {');
+    expect(start).toBeGreaterThan(-1);
+    const displayMeta = new Function('getResourceTypeLabel', hp.slice(start, hp.indexOf('// HISTORY_DISPLAY_FORMAT_END', start)) + '\nreturn getHistoryDisplayMeta;')(() => 'Lesson Plan');
+    for (const meta of [{ grade: '5' }, ['a'], 42, null, undefined]) expect(displayMeta('glossary', meta)).toBe('');
+    expect(displayMeta('glossary', ' Grade 5 ')).toBe('Grade 5');
     expect(hp).toContain('{itemMeta && <span>');
   });
   it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {

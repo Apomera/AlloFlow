@@ -1,0 +1,24 @@
+{
+  "careerStoriesSha256": "2f4f2a89c22d6e46bf005ff899157f0a8ff3df759c85579e95267b241d5ca285",
+  "profileIds": [
+    "marcus",
+    "sarah",
+    "diego",
+    "patricia",
+    "jamal",
+    "rebecca",
+    "kevin",
+    "tyrone",
+    "sophie",
+    "mike",
+    "cassidy",
+    "lin",
+    "rosa",
+    "daniel"
+  ],
+  "weights": {
+    "want": 3,
+    "school": 2,
+    "place": 2
+  }
+}

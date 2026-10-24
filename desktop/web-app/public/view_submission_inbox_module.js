@@ -289,6 +289,7 @@ function siAssessmentComparable(value) {
 function siAssessmentAnswerForGrading(type, row) {
   var a = row && row.answer && typeof row.answer === "object" && !Array.isArray(row.answer) ? row.answer : null;
   var response = siResponseText(row && row.response, 4e3);
+  if (a && a.idk === true) return { idk: true };
   if (type === "mcq") {
     var optionText = a && typeof a.optionText === "string" && a.optionText ? a.optionText : response;
     return optionText ? { optionText } : null;
@@ -314,11 +315,12 @@ function siAssessmentAnswerForGrading(type, row) {
   if (type === "sequence-sense" || type === "relation-mismatch") return a;
   return null;
 }
-function siAssessmentGrade(question, row, policy) {
+function siAssessmentGrade(question, row, policy, submitted) {
   var type = question && question.type || "mcq";
+  if (row.answer && row.answer.idk === true) return { verdict: "skipped", scorable: false, fraction: null };
   var grader = typeof window !== "undefined" && window.AlloModules && window.AlloModules.QuizLiveAggregators;
   var scorable = SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0 && !!grader && typeof grader.gradePresentationResponse === "function" && (typeof grader.presentationQuestionIsGameScorable !== "function" || grader.presentationQuestionIsGameScorable(question) === true);
-  if (!row.answered) return { verdict: "unanswered", scorable, fraction: scorable ? 0 : null };
+  if (!row.answered) return row.hasResponse ? { verdict: "incomplete", scorable: false, fraction: null } : { verdict: "unanswered", scorable: submitted && scorable, fraction: submitted && scorable ? 0 : null };
   if (!scorable) return { verdict: "review", scorable: false };
   var answer = siAssessmentAnswerForGrading(type, row);
   if (!answer) return { verdict: "review", scorable: false };
@@ -342,6 +344,8 @@ function siAssessmentReport(value, resourceId, history, content) {
   var teacherQuiz = matches.length === 1 ? matches[0] : null;
   var data = teacherQuiz && teacherQuiz.data && typeof teacherQuiz.data === "object" ? teacherQuiz.data : null;
   var questions = data && Array.isArray(data.questions) && data.answerKeysWithheld !== true ? data.questions : null;
+  var grader = typeof window !== "undefined" && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+  var signatureFor = grader && typeof grader.assessmentItemSignature === "function" ? grader.assessmentItemSignature : null;
   var copyStatus = questions ? "found" : matches.length > 1 ? "ambiguous" : teacherQuiz ? "no-key" : "missing";
   var studentCopy = (Array.isArray(content) ? content : []).find(function(item) {
     return item && String(item.id) === id;
@@ -352,29 +356,46 @@ function siAssessmentReport(value, resourceId, history, content) {
     var number = Number.isInteger(row.number) && row.number > 0 ? row.number : index + 1;
     var questionText = siResponseText(row.question, 500);
     var answered = row.answered === true;
+    var hasResponse = answered || row.hasResponse === true || !!siResponseText(row.response, 4e3);
     var question = questions ? questions[number - 1] : null;
-    var changed = false;
-    if (questions && (!question || siAssessmentComparable(question.question || question.contextSentence) !== siAssessmentComparable(questionText))) {
+    var changed = false, versionUnverified = false;
+    var signature = typeof row.questionSignature === "string" ? row.questionSignature : "";
+    if (questions && signature) {
+      if (!signatureFor || !question || signatureFor(question) !== signature) {
+        var bySignature = signatureFor ? questions.filter(function(candidate) {
+          return candidate && signatureFor(candidate) === signature;
+        }) : [];
+        question = bySignature.length === 1 ? bySignature[0] : null;
+        changed = !question;
+      }
+    } else if (questions && (!question || siAssessmentComparable(question.question || question.contextSentence) !== siAssessmentComparable(questionText))) {
       var byText = questions.filter(function(candidate) {
         return candidate && siAssessmentComparable(candidate.question || candidate.contextSentence) === siAssessmentComparable(questionText);
       });
       question = byText.length === 1 ? byText[0] : null;
       changed = !question;
     }
+    if (question && !signature && ["sequence-sense", "relation-mismatch"].indexOf(question.type || row.type) >= 0) {
+      question = null;
+      versionUnverified = true;
+    }
     var type = siResponseText(question && question.type || row.type || "mcq", 60);
-    var result = question ? siAssessmentGrade(question, { answered, answer: row.answer, response: row.response }, data.scoringPolicy) : { verdict: answered ? "review" : "unanswered", scorable: false };
+    var result = question ? siAssessmentGrade(question, { answered, hasResponse, answer: row.answer, response: row.response }, data.scoringPolicy, snap.status === "submitted") : { verdict: row.answer && row.answer.idk === true ? "skipped" : answered ? "review" : hasResponse ? "incomplete" : "unanswered", scorable: false };
     var reference = question && SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) >= 0 ? siResponseText(question.expectedAnswer || question.rubric || question.sampleAnswer || "", 800) : "";
     return {
       number,
       question: questionText,
       type,
       answered,
-      response: answered ? siResponseText(row.response, 4e3) : "",
+      hasResponse,
+      response: hasResponse ? siResponseText(row.response, 4e3) : "",
+      confidence: ["knew", "guessed", "no-idea"].indexOf(row.confidence) >= 0 ? row.confidence : null,
       verdict: result.verdict,
       scorable: result.scorable === true,
       fraction: typeof result.fraction === "number" ? result.fraction : null,
       reference,
-      changed
+      changed,
+      versionUnverified
     };
   });
   var scoredItems = items.filter(function(item) {
@@ -399,7 +420,7 @@ function siAssessmentReport(value, resourceId, history, content) {
     possible: scoredItems.length,
     percent: scoredItems.length ? Math.round(points / scoredItems.length * 100) : null,
     needsReview: items.filter(function(item) {
-      return item.answered && item.verdict === "review";
+      return item.verdict === "review" || item.verdict === "incomplete";
     }).length,
     answered: items.filter(function(item) {
       return item.answered;
@@ -412,6 +433,8 @@ var SI_ASSESSMENT_VERDICT_STYLE = {
   incorrect: { label: "Incorrect", bg: "#fee2e2", color: "#7f1d1d", border: "#fca5a5" },
   partial: { label: "Partly correct", bg: "#fef3c7", color: "#78350f", border: "#fcd34d" },
   review: { label: "Needs your review", bg: "#e0f2fe", color: "#0c4a6e", border: "#7dd3fc" },
+  incomplete: { label: "Partly answered", bg: "#fff7ed", color: "#9a3412", border: "#fdba74" },
+  skipped: { label: "I don\u2019t know yet", bg: "#e0f2fe", color: "#0c4a6e", border: "#7dd3fc" },
   unanswered: { label: "No answer", bg: "#f1f5f9", color: "#334155", border: "#cbd5e1" }
 };
 function SiAssessmentReport(p) {
@@ -443,11 +466,13 @@ function SiAssessmentReport(p) {
           h(
             "div",
             { style: { display: "flex", flexWrap: "wrap", gap: 6, alignItems: "baseline", marginTop: 2 } },
-            h("span", { style: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, item.answered ? item.response : tr("No answer submitted")),
+            h("span", { style: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, item.hasResponse ? item.response : tr("No answer submitted")),
             h("span", { style: { padding: "1px 7px", borderRadius: 999, background: style.bg, color: style.color, border: "1px solid " + style.border, fontWeight: 700, fontSize: "0.7rem" } }, tr(style.label))
           ),
+          item.confidence && h("p", { style: { margin: "6px 0 0", fontSize: "0.78rem", color: "#475569" } }, tr("Confidence") + ": " + tr({ knew: "I know this", guessed: "I am unsure", "no-idea": "I need support" }[item.confidence])),
           item.reference && h("div", { style: { marginTop: 2, color: "#475569", fontSize: "0.76rem" } }, tr("Reference from your copy:") + " " + item.reference),
-          item.changed && h("div", { style: { marginTop: 2, color: "#7c2d12", fontSize: "0.74rem" } }, tr("This question no longer matches your copy, so it was not checked."))
+          item.changed && h("div", { style: { marginTop: 2, color: "#7c2d12", fontSize: "0.74rem" } }, tr("This question no longer matches your copy, so it was not checked.")),
+          item.versionUnverified && h("div", { style: { marginTop: 2, color: "#7c2d12", fontSize: "0.74rem" } }, tr("This earlier response has no question-version record. Review it manually because the item order may have changed."))
         );
       })
     ),

@@ -14,11 +14,17 @@ describe('BirdLab shared woodland residents',()=>{
   it.each(['high','low'])('instantiates all shared species, exposes focus targets and preserves original neighbors (%s)',quality=>{
     const {wildlife,calls}=fixture(quality);
     try{
-      expect(calls).toEqual([['mourningDove',quality],['grouse',quality],['blueJay',quality],['northernCardinal',quality]]);
-      expect(wildlife.snapshot().map(b=>b.id)).toEqual(['robin','chickadee','mourningDove','grouse','blueJay','northernCardinal']);
-      for(const id of ['mourningDove','grouse','blueJay','northernCardinal']){
+      // New residents are appended, so earlier species keep their seeds.
+      const shared=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow'];
+      // The robin and chickadee lead, built from their factory species.
+      expect(calls).toEqual(['americanRobin','blackCappedChickadee',...shared].map(id=>[id,quality]));
+      expect(wildlife.isShared('robin')).toBe(true);expect(wildlife.isShared('chickadee')).toBe(true);
+      expect(wildlife.snapshot().map(b=>b.id)).toEqual(['robin','chickadee',...shared]);
+      for(const id of shared){
         const focus=new THREE.Vector3();expect(wildlife.getFocus(id,focus)).toBe(focus);expect(focus.toArray().every(Number.isFinite)).toBe(true);
-        const bird=wildlife.snapshot().find(b=>b.id===id);expect(bird.scientificName).toBe({grouse:'Bonasa umbellus',mourningDove:'Zenaida macroura',blueJay:'Cyanocitta cristata',northernCardinal:'Cardinalis cardinalis'}[id]);
+        const bird=wildlife.snapshot().find(b=>b.id===id);expect(bird.scientificName).toBe({grouse:'Bonasa umbellus',mourningDove:'Zenaida macroura',blueJay:'Cyanocitta cristata',northernCardinal:'Cardinalis cardinalis',
+          darkEyedJunco:'Junco hyemalis',tuftedTitmouse:'Baeolophus bicolor',easternTowhee:'Pipilo erythrophthalmus',
+          americanGoldfinch:'Spinus tristis',easternBluebird:'Sialia sialis',whiteThroatedSparrow:'Zonotrichia albicollis'}[id]);
       }
     }finally{wildlife.dispose();}
   });
@@ -50,6 +56,38 @@ describe('BirdLab shared woodland residents',()=>{
         expect(b.position.every(Number.isFinite)).toBe(true);expect(Math.hypot(b.position[0],b.position[2])).toBeLessThan(3);
         expect(b.altitude).toBeGreaterThanOrEqual(0);
       }}
+    }finally{wildlife.dispose();}
+  });
+  it('gives the hopping songbirds smooth paired hops, feeding pulses and low flights inside the clearing',()=>{
+    const {wildlife}=fixture('low'),epsilon=1e-5;
+    const courses={darkEyedJunco:{feed:11.03,flight:17.05,bounds:[3.2,4.5,16.5,17.6,26,27.3,37,38.1]},
+      tuftedTitmouse:{feed:9.63,flight:20.8,bounds:[6,7.2,20.2,21.4,28.6,29.8,34.5,35.7]},
+      easternTowhee:{feed:6.83,flight:15.1,bounds:[2.6,3.9,14.6,15.6,24.5,25.8,33.5,34.5]},
+      americanGoldfinch:{feed:8.63,flight:18.0,bounds:[4.8,6.1,17.4,18.65,27.2,28.5,36,37.25]},
+      easternBluebird:{feed:10.93,flight:22.3,bounds:[6.6,7.8,21.6,23,29.6,30.8,38.2,39.6]},
+      whiteThroatedSparrow:{feed:6.03,flight:12.97,bounds:[2,3.4,12.4,13.55,23.6,25,32.4,33.6]}};
+    try{
+      for(const [id,course] of Object.entries(courses)){
+        wildlife.update(course.feed);expect(wildlife.snapshot().find(b=>b.id===id).behavior,id).toBe('Foraging');
+        wildlife.update(course.flight);const flying=wildlife.snapshot().find(b=>b.id===id);
+        expect(flying.altitude,id).toBeGreaterThan(.25);expect(flying.altitude,id).toBeLessThan(.6);
+        // The first ground move is a pair of two-footed hops, not a walk.
+        let hopping=0;for(let t=course.bounds[0];t<course.bounds[1];t+=.02){wildlife.update(t);if(/Hopping/.test(wildlife.snapshot().find(b=>b.id===id).behavior))hopping++;}
+        expect(hopping,id).toBeGreaterThan(10);
+        for(const t of course.bounds){
+          wildlife.update(t-epsilon);const a=transforms(wildlife.root);
+          wildlife.update(t);const b=transforms(wildlife.root);
+          wildlife.update(t+epsilon);const c=transforms(wildlife.root);
+          expect(Math.max(...b.map((v,i)=>Math.abs(v-a[i]))),id+' position at '+t).toBeLessThan(.002);
+          expect(Math.max(...b.map((v,i)=>Math.abs(c[i]-2*v+a[i])/epsilon)),id+' velocity at '+t).toBeLessThan(.08);
+        }
+      }
+      // Residents never share a spot on the guided loop.
+      for(let t=0;t<44;t+=.25){wildlife.update(t);const birds=wildlife.snapshot();
+        for(let i=0;i<birds.length;i++)for(let j=i+1;j<birds.length;j++){
+          const d=Math.hypot(birds[i].position[0]-birds[j].position[0],birds[i].position[1]-birds[j].position[1],birds[i].position[2]-birds[j].position[2]);
+          expect(d,birds[i].id+' and '+birds[j].id+' at '+t).toBeGreaterThan(.25);
+        }}
     }finally{wildlife.dispose();}
   });
   it('keeps the support foot planted through alternating walking steps, including reverse seeks',()=>{

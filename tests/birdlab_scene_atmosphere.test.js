@@ -73,7 +73,7 @@ describe('Bird Lab sky and light conditions', () => {
 
   it('keeps coast clouds out from behind the white-headed eagle and the pale gull', () => {
     const start = source.indexOf('var HABITAT_CLOUD_BANKS = {');
-    const coast = source.slice(start, source.indexOf('};', start)).match(/coast:\s*(\[[^\n]+\]),?\n/);
+    const coast = source.slice(start, source.indexOf('};', start)).match(/coast:\s*(\[[^\r\n]+\]),?\r?\n/); // CRLF checkouts (core.autocrlf) end lines in \r\n
     const banks = JSON.parse(coast[1].replace(/'/g, '"'));
     // Soar loop plus art half-width around the gull at (350, 80); the eagle's
     // head at (800, 83). Cloud extents include their drift.
@@ -260,13 +260,21 @@ describe('Bird Lab illustrated reference views', () => {
   });
 
   it('gives each physiology topic a diagram of its own mechanism', () => {
-    const diagrams = [...view('physiology').querySelectorAll('[data-birdlab-physiology-diagram]')];
-    expect(diagrams).toHaveLength(8);
+    const host = view('physiology');
+    const diagrams = [...host.querySelectorAll('[data-birdlab-physiology-diagram]')];
+    expect(diagrams).toHaveLength(7);
     const text = diagrams.map((d) => d.textContent);
-    expect(text[1]).toContain('one way');
-    expect(text[3]).toContain('grit');
-    expect(text[5]).toContain('four bird cone types');
-    expect(text[6]).toContain('1 to 4 kHz');
+    expect(text[2]).toContain('grit');
+    expect(text[4]).toContain('four bird cone types');
+    expect(text[5]).toContain('1 to 4 kHz');
+    const respiratory = host.querySelector('[data-birdlab-breath-study]');
+    expect(respiratory.querySelectorAll('[data-breath-sac]')).toHaveLength(2);
+    expect(respiratory.querySelectorAll('[data-breath-route]')).toHaveLength(4);
+    expect(respiratory.querySelector('[data-breath-lung]')).toBeTruthy();
+    expect(respiratory.querySelector('[data-breath-packet]')).toBeTruthy();
+    expect(respiratory.querySelectorAll('[data-breath-preset]')).toHaveLength(4);
+    expect(respiratory.getAttribute('data-playing')).toBe('false');
+    expect(respiratory.textContent).toContain('more than one transit time');
   });
 
   it('paints the chickadee in each art era, and leaves the Indigenous era unimitated', () => {

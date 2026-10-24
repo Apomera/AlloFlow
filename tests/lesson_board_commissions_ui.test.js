@@ -73,9 +73,10 @@ describe('Construction commission decisions',()=>{
     await render({board:b,run,onChoose:vi.fn()});await click('[data-field-approach=commission]');expect(find('[data-commission-funding=shortfall]')).toBeTruthy();
     expect(find('[data-field-commission-preview]').textContent).toContain('cannot fund that payment');expect(find('[data-field-commission-commit]').disabled).toBe(false);
   });
-  it('previews an affordable exchange made safe by the named commission without borrowing its reward',async()=>{
+  it('previews an exchange-funded construction for the named commission without borrowing its reward',async()=>{
     const b=board();b.goal='architect';b.projects.find(project=>project.id==='network').cost=[3,3];b.projects.find(project=>project.id==='bridge').cost=[7,2];b.projects.find(project=>project.id==='research').cost=[6,3];
-    const run=pending(b,8),before=JSON.stringify(run),onChoose=vi.fn();expect(engine.constructionFunding(b,run,'network').some(option=>option.legal)).toBe(false);
+    // The completion reserve counts later projects' exchange funding, so only the research exchange is legal here (printed cost is unaffordable).
+    const run=pending(b,8),before=JSON.stringify(run),onChoose=vi.fn();expect(engine.constructionFunding(b,run,'network').filter(option=>option.legal).map(option=>option.id)).toEqual(['research']);
     await render({board:b,run,onChoose});await click('[data-field-approach=commission]');await click('[data-field-commission-option=network]');
     expect(find('[data-commission-funding=funded]')).toBeTruthy();expect(onChoose).not.toHaveBeenCalled();expect(JSON.stringify(run)).toBe(before);
   });

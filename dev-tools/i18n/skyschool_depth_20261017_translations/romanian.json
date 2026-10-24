@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Menține starea actuală a zborului",
+  "stem.flightsim.flight_assistance_targets": "Cap {hdg}° · Altitudine {alt} ft MSL · Viteză {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Cap {hdg}° · Altitudine {alt} ft MSL · Viteză de înaintare {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Virează la stânga cu {degrees}° spre {airport}.",
+  "stem.flightsim.challenge_turn_right": "Virează la dreapta cu {degrees}° spre {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Te îndrepți spre {airport}. Urmează indicatorul de curs.",
+  "stem.flightsim.challenge_runway_reference": "Pistă de antrenament {runway}: cap {heading}°. Aliniază-te cu pista înainte de a începe coborârea pentru aterizare."
+}

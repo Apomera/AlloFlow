@@ -81,7 +81,8 @@ describe('verified device audio in the reader', () => {
     window.__alloGetReadAloudReadiness = async () => result('partial', { ready: 0, sessionOnly: 0, remaining: 2, nextActions: ['prepare-missing'] });
     window.__alloPrepareReadAloud = vi.fn((_text, _progress, options) => { signal = options.signal; return new Promise(resolve => { finish = resolve; }); });
     const view = mount(); await view.render({}); const prepareButton = action('audio'); await act(async () => { prepareButton.focus(); prepareButton.click(); });
-    expect(row().textContent).toContain('Preparing audio');
+    // 91652c2fe (2026-10-12) names what is being prepared (sentence audio vs the voice model).
+    expect(row().textContent).toContain('Preparing sentence audio');
     expect(action('audio')).toBe(prepareButton);
     expect(document.activeElement).toBe(prepareButton);
     await act(async () => action('audio').click()); expect(signal.aborted).toBe(true);

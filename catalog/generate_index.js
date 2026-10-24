@@ -94,11 +94,14 @@ function buildManifest() {
   const entries = [...approvedEntries(), ...publishedAllopackEntries()];
   const seenPath = new Set();
   const seenSlug = new Set();
+  const seenShare = new Set();
   for (const e of entries) {
     if (seenPath.has(e.path)) throw new Error(`duplicate catalog path: ${e.path}`);
     if (seenSlug.has(e.slug)) throw new Error(`duplicate catalog slug: ${e.slug}`);
+    if (e.share_slug && seenShare.has(e.share_slug)) throw new Error(`duplicate share alias: ${e.share_slug}`);
     seenPath.add(e.path);
     seenSlug.add(e.slug);
+    if (e.share_slug) seenShare.add(e.share_slug);
   }
   entries.sort((a, b) => compareTitles(a.title, b.title));
   return {
@@ -111,6 +114,7 @@ function buildManifest() {
 function main() {
   const manifest = buildManifest();
   fs.writeFileSync(INDEX_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+  require('../dev-tools/build_allopack_links.cjs').writeArtifacts(manifest);
   const packs = manifest.entries.filter((e) => !e.path.startsWith('catalog/approved/')).length;
   console.log(`Wrote ${INDEX_PATH} with ${manifest.entries.length} entries (${manifest.entries.length - packs} approved submissions, ${packs} published AlloPacks).`);
 }

@@ -543,7 +543,7 @@
               ),
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', { style: { color: muted, marginRight: 6 } }, __alloT('sel.hub.ui.saved_work', 'Saved work')),
-                __alloT('sel.hub.ui.checkpoints_private', 'Tool checkpoints stay private here unless you choose them for a Share Packet.')
+                __alloT('sel.hub.ui.checkpoints_private', 'Tool checkpoints stay on this device unless you save a project file or choose them for a Share Packet.')
               ),
               guidance.boundary && h('div', { role: 'note', style: { flex: '1 1 100%', padding: '9px 11px', borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : '#f59e0b'), background: isContrast ? '#000000' : (isDark ? '#2e2410' : '#fffbeb'), color: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#78350f'), fontSize: 12, lineHeight: 1.45 } },
                 h('strong', null, __alloT('sel.hub.ui.use_with_care_label', 'Use with care:') + ' '), guidance.boundary)
@@ -1737,15 +1737,14 @@
       "- The current US-oriented resource panels include **988** (Suicide & Crisis Lifeline, call or text) and **741741** (Crisis Text Line, text HOME); verify local relevance before classroom use.",
       "",
       "**What you, the teacher, can and cannot do:**",
-      "- The teacher safety summary is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.",
-      "- **In a live web session** (students joined with your session code, not the Canvas build): your dashboard shows a **count-based safety alert** per student — a flag total and a \"critical\" indicator, **never the student's words**. Treat a critical indicator as a prompt to check in personally.",
-      "- **In solo mode or the Canvas build**: nothing reaches you, administrators, or the vendor — no alert, no list of which students saw the modal. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.",
+      "- There is no teacher safety summary, and a flag is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.",
+      "- **In every mode, including a live web session**: nothing reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. (The live-session sync once meant to carry a flag count is not delivered.) The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.",
       "- For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. Treat those excerpts as sensitive data on a shared device. Closing the tab does not clear browser storage; review the current Data & privacy controls and your deployment retention procedures.",
-      "- The in-app consent screen tells students the same story for their mode — in solo/Canvas it explicitly says **no adult is automatically notified** and urges them to tell a trusted adult directly.",
+      "- The in-app consent screen tells students the same story in every mode: the app **cannot notify an adult on its own**, and they should tell a trusted adult directly.",
       "",
       "**What you should do:**",
       "- If a student tells you the modal appeared, treat that as a disclosure and follow your building's standard crisis-response protocol — typically: stay with the student, contact the counselor or designated mental health staff, do not leave them alone, document per your district's reporting requirements.",
-      "- Do **not** rely on the Hub to surface at-risk students for you. Even the live-session alert is a blunt count that depends on the AI being reachable; in solo/Canvas there is no alert at all. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.",
+      "- Do **not** rely on the Hub to surface at-risk students for you. It sends you no alert in any mode. Your eyes, your relationship with the student, and your colleagues' observations are still the actual safety net.",
       "- Before launching the Hub with a class, confirm you know who to call when a student is in crisis and how fast they can respond.",
       "",
       "---",
@@ -2202,6 +2201,9 @@
       // conversation is truly private (solo) or visible to a hosting
       // teacher (live session). No surveillance happens in solo mode.
       var activeSessionCode = props.activeSessionCode || null;
+      // Station Builder, launch plans and station editing are for teachers. A host
+      // that predates this prop passes nothing, and undefined keeps the old behavior.
+      var selTeacherView = props.isTeacherMode !== false && !props.isIndependentMode && !props.isParentMode;
       var t               = props.t || function(k) { return k; };
 
       // Publish the translator for the SHARED safety layer. Its render
@@ -3288,6 +3290,10 @@
           // already; closing the tool or hub as well ejected students mid-activity.
           if (e.key === 'Escape') {
             if (e.defaultPrevented || showEphemeralExplainer || showForEducators || showClearSelConfirm || showSharePacket) return;
+            // Focus in a host dialog over the hub (the project Save) owns this Escape.
+            var hubRoot = document.querySelector('[role="dialog"][aria-label="SEL Hub"]');
+            var focused = document.activeElement;
+            if (hubRoot && focused && focused !== document.body && !hubRoot.contains(focused)) return;
             if (selHubTool) { setSelHubTool(null); announceToSR(__alloT('sel.hub.ui.returned_to_grid', 'Returned to tool grid')); alloFocusToolCard(selHubTool); }
             else { setShowSelHub(false); }
           }
@@ -5547,7 +5553,7 @@
               }, __alloT('sel.hub.ui.save_now', 'Save now'))
             )
           ),
-          !activePathway && !activeStation && h('details', {
+          selTeacherView && !activePathway && !activeStation && h('details', {
             'aria-label': __alloT('sel.hub.ui.launch_routines_aria', 'Teacher launch routines'),
             style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
           },
@@ -5894,7 +5900,7 @@
             )
           ),
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
-          !activeStation && !activePathway && h('details', {
+          (selTeacherView || savedStations.length > 0) && !activeStation && !activePathway && h('details', {
             open: builderOpen || !!recoverableDraft || savedStations.length > 0 || stationsPanelOpen,
             onToggle: function (e) { setStationsPanelOpen(!!(e.target && e.target.open)); },
             style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
@@ -5909,7 +5915,7 @@
                   return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: _t.text, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📌 ' + st.name),
-                      h('button', {
+                      selTeacherView && h('button', {
                         onClick: function () {
                           if (!removedStations.length) stationRemovalOrder.current = savedStations.map(function (item) { return item.id; });
                           setRemovedStations(function (prev) { return prev.concat([{ station: st, index: stationRemovalOrder.current.indexOf(st.id), order: stationRemovalOrder.current.slice() }]); });
@@ -5925,7 +5931,7 @@
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 13, color: _t.textMuted } }, _selFill(__alloT('sel.hub.ui.station_tools_count', '{count} tools'), { count: (st.tools || []).length }) + ((st.quests || []).length > 0 ? ' • ' + _selFill(__alloT('sel.hub.ui.station_quests_count', '{count} quests'), { count: st.quests.length }) : '')),
-                    st.teacherNote && h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.border } }, st.teacherNote),
+                    selTeacherView && st.teacherNote && h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.border } }, st.teacherNote),
                     h('button', {
                       onClick: function () {
                         setActiveStationId(st.id);
@@ -5938,7 +5944,7 @@
                       'data-sel-station-activate': st.id,
                       style: { marginTop: 4, minHeight: 44, padding: '9px 12px', borderRadius: 8, border: 'none', background: _t.pinkAccent, color: _t.onPink, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
                     }, __alloT('sel.hub.ui.station_start', 'Start station')),
-                    h('button', {
+                    selTeacherView && h('button', {
                       type: 'button', disabled: builderOpen || !!recoverableDraft,
                       onClick: function () { adaptStationCopy(st); },
                       'aria-label': _selFill(__alloT('sel.hub.ui.station_adapt_aria', 'Adapt a copy of station {name}'), { name: st.name }),
@@ -5947,7 +5953,7 @@
                   );
                 })
               ),
-              !builderOpen && recoverableDraft && h('section', { 'aria-label': __alloT('sel.hub.ui.draft_aria', 'Recoverable station draft'), style: { padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, fontSize: 14 } },
+              selTeacherView && !builderOpen && recoverableDraft && h('section', { 'aria-label': __alloT('sel.hub.ui.draft_aria', 'Recoverable station draft'), style: { padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, color: _t.text, fontSize: 14 } },
                 h('p', { style: { margin: '0 0 8px' } }, _selFill(__alloT('sel.hub.ui.draft_body', 'An unfinished station draft is saved on this device: {name}. Resume or discard it before starting another.'), { name: recoverableDraft.name || __alloT('sel.hub.ui.draft_untitled', 'Untitled station') })),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', { type: 'button', onClick: restoreBuilderDraft, style: { minHeight: 44, padding: 10, background: _t.bgCard, color: _t.text, border: '1px solid ' + _t.border, borderRadius: 8 } }, __alloT('sel.hub.ui.draft_resume', 'Resume station draft')),
@@ -5955,13 +5961,13 @@
                 )
               ),
               // Open builder button
-              !builderOpen && !recoverableDraft && h('button', {
+              selTeacherView && !builderOpen && !recoverableDraft && h('button', {
                 onClick: function () { alloSaveFocus(); setBuilderOpen(true); announceToSR(__alloT('sel.hub.ui.builder_opened', 'Station builder opened')); alloFocusStationNameInput(); },
                 'aria-label': __alloT('sel.hub.ui.build_station_aria', 'Build a new custom SEL Station'),
                 style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.05)', color: _t.accentSoftText, fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
               }, __alloT('sel.hub.ui.build_station', '+ Build a Custom Station')),
               // Inline builder
-              builderOpen && (function () {
+              selTeacherView && builderOpen && (function () {
                 var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
                 // Station Builder hardening: only offer tools that actually have a grid
                 // card. A registered-but-uncarded tool (e.g. a deprecated duplicate) would

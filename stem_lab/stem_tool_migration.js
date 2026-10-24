@@ -102,6 +102,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '@media (max-width:520px){.migration-tool-shell{padding:0!important;}.migration-command{padding:13px;border-radius:14px;}.migration-command p{font-size:11px;}.migration-route-board{grid-template-columns:repeat(2,minmax(0,1fr));padding:7px;}.migration-route-tab{min-height:44px;}.migration-workspace [style*="grid-template-columns: repeat(3"],.migration-workspace [style*="grid-template-columns: repeat(2"]{grid-template-columns:1fr!important;}}',
       '@media (max-width:520px){.migration-flight-stage{min-height:360px;}.migration-flight-controls{grid-template-columns:1fr;}.migration-flight-controls>*{grid-column:1!important;}.migration-flight-badge{border-radius:9px;}.migration-flight-heading{display:none;}}',
       '@media (prefers-reduced-motion:reduce){.migration-route-tab{transition:none!important;}}',
+      ".migration-missions{margin:20px 0;border:1px solid var(--mg-border);border-radius:16px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}\n.migration-missions>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:16px 20px;cursor:pointer;background:var(--mg-panel);list-style:none;}\n.migration-missions>summary::-webkit-details-marker{display:none;}\n.migration-missions>summary:after{content:'+';font-size:24px;font-weight:600;color:var(--mg-accent);}\n.migration-missions[open]>summary:after{content:'\\2212';}\n.migration-missions summary:focus-visible{outline:3px solid #38bdf8;outline-offset:-4px;}\n.migration-missions-summary-title{font-size:16px;font-weight:800;letter-spacing:-.02em;}\n.migration-missions-summary-count{margin-inline-start:auto;color:var(--mg-muted);font-size:12px;}\n.migration-missions-body{padding:18px 20px 20px;}\n.migration-missions-intro{margin:0 0 16px;color:var(--mg-muted);font-size:13px;line-height:1.65;}\n.migration-mission-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}\n.migration-mission-goals>button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 9px;min-width:0;min-height:78px;padding:12px;text-align:start;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-canvas);color:var(--mg-text);font-family:inherit;font-size:13px;font-weight:750;cursor:pointer;}\n.migration-mission-goals>button[aria-pressed=\"true\"]{border-color:var(--mg-accent);box-shadow:inset 0 0 0 1px var(--mg-accent);background:var(--mg-panel);}\n.migration-mission-number{grid-row:1/3;display:grid;place-items:center;width:30px;height:36px;border-inline-end:1px solid var(--mg-border);color:var(--mg-accent);font-size:17px;}\n.migration-mission-goals small{grid-column:2;font-size:11px;color:var(--mg-muted);font-weight:500;}\n.migration-mission-active{margin-top:17px;border:1px solid var(--mg-border);border-radius:12px;overflow:hidden;}\n.migration-mission-brief{padding:17px 18px 13px;background:var(--mg-panel);}\n.migration-mission-brief h3{margin:4px 0 9px;font-size:20px;line-height:1.25;letter-spacing:-.025em;color:var(--mg-text);}\n.migration-mission-brief p{margin:6px 0;font-size:13px;line-height:1.65;}\n.migration-mission-brief .migration-mission-hint{color:var(--mg-muted);font-size:12px;}\n.migration-mission-writing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:17px 18px 10px;}\n.migration-mission-writing label{display:flex;flex-direction:column;gap:7px;min-width:0;color:var(--mg-text);font-size:12px;font-weight:700;}\n.migration-mission-writing textarea{width:100%;min-height:88px;padding:10px 11px;resize:vertical;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);color:var(--mg-text);font-family:inherit;font-size:13px;font-weight:400;line-height:1.5;}\n.migration-mission-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 18px;}\n.migration-mission-actions button,.migration-mission-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);padding:9px 13px;font-family:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer;}\n.migration-mission-actions button:last-child{background:#075c70;border-color:#075c70;color:#fff;}\n.migration-mission-actions button:disabled{opacity:.55;cursor:default;}\n.migration-mission-load-note{margin:5px 18px 14px;font-size:11px;line-height:1.6;color:var(--mg-muted);}\n.migration-mission-feedback{margin:0 18px 16px;padding:13px 14px;border:1px solid var(--mg-border);border-inline-start:4px solid var(--mg-accent);border-radius:9px;background:var(--mg-panel);}\n.migration-mission-feedback>strong{font-size:13px;color:var(--mg-text);}\n.migration-mission-feedback p{margin:5px 0;font-size:12px;line-height:1.65;}\n.migration-mission-measurements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0;}\n.migration-mission-measurements>div{padding:9px 11px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);}\n.migration-mission-measurements span{display:block;color:var(--mg-muted);font-size:10px;}\n.migration-mission-measurements strong{display:block;margin-top:3px;color:var(--mg-text);font-size:16px;}\n.migration-mission-conditions{color:var(--mg-muted);overflow-wrap:anywhere;}\n.migration-mission-route{border-top:1px solid var(--mg-border);padding-top:7px;overflow-wrap:anywhere;}\n.migration-mission-history{margin:0 18px 16px;border:1px solid var(--mg-border);border-radius:9px;overflow:hidden;}\n.migration-mission-history>summary{min-height:44px;padding:11px 13px;cursor:pointer;font-size:12px;font-weight:750;background:var(--mg-panel);}\n.migration-mission-attempt{padding:13px;border-top:1px solid var(--mg-border);overflow-wrap:anywhere;}\n.migration-mission-attempt-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;}\n.migration-mission-attempt h4{margin:0;font-size:14px;}\n.migration-mission-attempt-heading strong{font-size:11px;color:var(--mg-accent);}\n.migration-mission-attempt p{margin:7px 0;font-size:12px;line-height:1.6;white-space:pre-wrap;}\n.migration-mission-explanation{color:var(--mg-muted);}\n.migration-mission-remove{min-height:38px;margin-top:3px;border:1px solid var(--mg-border);border-radius:7px;background:var(--mg-panel);padding:7px 11px;color:var(--mg-text);font-family:inherit;font-size:11px;cursor:pointer;}\n.migration-mission-model-note{margin:0;padding:0 18px 16px;color:var(--mg-muted);font-size:11px;line-height:1.65;}\n.migration-mission-active>.migration-experiment-help{margin:0 18px 14px;}\n.migration-tool-shell[data-migration-theme=\"contrast\"] .migration-mission-actions button:last-child{border-color:#fff;background:#000;color:#fff;}\n@media(max-width:700px){.migration-mission-goals{grid-template-columns:1fr;}.migration-mission-goals>button{min-height:59px;grid-template-columns:auto 1fr auto;}.migration-mission-number{grid-row:1;}.migration-mission-goals small{grid-column:3;}.migration-mission-writing{grid-template-columns:1fr;}.migration-missions-summary-count{font-size:11px;}}\n@media(max-width:420px){.migration-missions>summary{padding:14px;gap:8px;}.migration-missions-summary-title{font-size:15px;}.migration-missions-summary-count{max-width:110px;text-align:end;}.migration-missions-body{padding:14px 12px;}.migration-mission-brief{padding:14px;}.migration-mission-writing{padding:14px 12px 8px;}.migration-mission-actions{padding:6px 12px;}.migration-mission-actions button,.migration-mission-actions a{flex:1 0 100%;}.migration-mission-feedback{margin:0 12px 13px;padding:11px;}.migration-mission-history{margin:0 12px 13px;}.migration-mission-load-note{margin:5px 12px 13px;}.migration-mission-model-note{padding:0 12px 14px;}.migration-mission-measurements{gap:6px;}.migration-mission-measurements>div{padding:8px;}.migration-mission-measurements strong{font-size:15px;}.migration-mission-goals>button{grid-template-columns:auto 1fr;}.migration-mission-goals small{grid-column:2;}.migration-mission-number{grid-row:1/3;}}\n",
+      ".migration-mission-progress-block{padding:15px 18px 0;}\n.migration-mission-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0;}\n.migration-mission-progress li{display:flex;align-items:flex-start;gap:8px;padding:10px 9px;min-width:0;border:1px solid var(--mg-border);border-radius:9px;color:var(--mg-text);background:var(--mg-canvas);font-size:11px;font-weight:750;line-height:1.4;}\n.migration-mission-progress-mark{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border:1px solid var(--mg-border);border-radius:50%;font-size:12px;color:var(--mg-muted);}\n.migration-mission-progress li[data-recorded=\"true\"]{border-color:var(--mg-accent);background:var(--mg-panel);}\n.migration-mission-progress li[data-recorded=\"true\"] .migration-mission-progress-mark{color:var(--mg-accent);border-color:var(--mg-accent);}\n.migration-mission-progress small{display:block;margin-top:3px;color:var(--mg-muted);font-size:10px;font-weight:500;}\n.migration-mission-progress-help{margin:8px 0 0;color:var(--mg-muted);font-size:11px;line-height:1.6;}\n.migration-mission-review-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-color:var(--mg-accent) var(--mg-panel);}\n.migration-mission-review-scroll:focus-visible{outline:3px solid var(--mg-accent);outline-offset:-3px;}\n.migration-mission-review{width:100%;min-width:650px;border-collapse:collapse;text-align:start;font-size:11px;line-height:1.5;color:var(--mg-text);}\n.migration-mission-review caption{text-align:start;padding:13px;background:var(--mg-canvas);font-weight:800;font-size:13px;}\n.migration-mission-review caption span{display:block;margin-top:4px;color:var(--mg-muted);font-weight:400;font-size:11px;}\n.migration-mission-review th,.migration-mission-review td{padding:10px 12px;border-top:1px solid var(--mg-border);vertical-align:top;text-align:start;}\n.migration-mission-review thead{background:var(--mg-panel);}\n.migration-mission-review tbody th{min-width:110px;}\n.migration-mission-review td:nth-child(2){max-width:250px;min-width:155px;overflow-wrap:anywhere;}\n.migration-mission-review td:nth-child(3),.migration-mission-review td:nth-child(4){white-space:nowrap;font-variant-numeric:tabular-nums;}\n.migration-mission-review small{display:block;margin-top:4px;color:var(--mg-muted);font-size:10px;font-weight:500;}\n.migration-mission-review .migration-mission-review-match{font-weight:750;color:var(--mg-accent);}\n.migration-mission-review tr[data-latest-model-match=\"true\"]{background:var(--mg-panel);}\n.migration-mission-review tr[data-latest-model-match=\"true\"]>th{box-shadow:inset 3px 0 0 var(--mg-accent);}\n@media(max-width:700px){.migration-mission-progress{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-mission-goals small{white-space:normal;max-width:180px;}}\n@media(max-width:420px){.migration-mission-progress-block{padding:13px 12px 0;}.migration-mission-progress li{padding:9px 7px;gap:6px;}.migration-mission-review caption{padding:12px;}}\n",
+      ".migration-recorded-view-check{margin-top:8px;padding-top:10px;border-top:1px solid #426174;min-width:0;}.migration-workspace .migration-recorded-view-check button{min-height:44px;max-width:100%;padding:10px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;white-space:normal;cursor:pointer;}.migration-recorded-view-check button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-recorded-view-check p{font-size:11px;line-height:1.6;margin:9px 0;overflow-wrap:anywhere;color:#c4dde9;}.migration-recorded-view-check-summary:empty{display:none;}.migration-recorded-view-check dl{margin:8px 0;}.migration-recorded-view-check dl>div{padding:8px 0;border-top:1px solid #426174;}.migration-recorded-view-check dt{font-size:12px;font-weight:750;line-height:1.5;color:#effaff;}.migration-recorded-view-check dd{margin:3px 0 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 10px;font-size:11px;line-height:1.5;color:#c4dde9;}.migration-recorded-view-check dd strong{font-size:11px;color:#effaff;}",
+      ".migration-challenge-inspection{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid #426174;background:#09283a;color:#effaff;}.migration-challenge-inspection strong{display:block;font-size:12px;line-height:1.5;}.migration-challenge-inspection p{margin:4px 0 0;font-size:12px;line-height:1.6;color:#c4dde9;}.migration-workspace .migration-challenge-inspection button{flex-shrink:0;min-height:44px;padding:10px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;cursor:pointer;}.migration-challenge-inspection button:focus-visible,.migration-mission-inspect-actions button:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-mission-inspect-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}.migration-workspace .migration-mission-inspect-actions button{min-height:44px;padding:10px 12px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);font:inherit;font-size:12px;font-weight:750;cursor:pointer;}@media(max-width:760px){.migration-challenge-inspection{align-items:stretch;flex-direction:column;}.migration-challenge-inspection button{align-self:flex-start;}}",
+      ".migration-mission-reflection{margin:12px 0;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-canvas);}.migration-mission-reflection>summary{min-height:44px;padding:12px;cursor:pointer;font-size:12px;font-weight:750;background:var(--mg-panel);}.migration-mission-reflection-body{padding:0 12px 12px;}.migration-mission-reflection [data-flight-reflection-saved]{white-space:pre-wrap;overflow-wrap:anywhere;}.migration-mission-reflection label,.migration-mission-reflection-stale label{display:block;margin:12px 0 7px;font-size:12px;font-weight:700;}.migration-mission-reflection textarea,.migration-mission-reflection-stale textarea{display:block;width:100%;min-height:100px;box-sizing:border-box;resize:vertical;padding:10px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);color:var(--mg-text);font:inherit;font-size:13px;line-height:1.6;}.migration-workspace .migration-mission-reflection button,.migration-workspace .migration-mission-reflection-stale button{min-height:44px;padding:10px 13px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-panel);color:var(--mg-text);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}.migration-mission-reflection button:disabled{opacity:.55;cursor:default;}.migration-mission-reflection button[hidden]{display:none;}.migration-mission-reflection-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}.migration-mission-reflection summary:focus-visible,.migration-mission-reflection button:focus-visible,.migration-mission-reflection textarea:focus-visible,.migration-mission-reflection-stale button:focus-visible,.migration-mission-reflection-stale textarea:focus-visible{outline:3px solid var(--mg-accent);outline-offset:2px;}.migration-mission-reflection-draft-note{color:var(--mg-muted);}.migration-mission-reflection-stale{margin:0 18px 16px;padding:12px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-panel);}.migration-mission-reflection-stale p{font-size:12px;line-height:1.6;}.migration-mission-reflection-stale button{margin-top:10px;}",
+      // Field-station surfaces share explicit theme tokens, including light mode.
+      '.migration-tool-shell{max-width:1280px;--mg-text:#162d40;--mg-muted:#4b6475;--mg-panel:#f5f9fb;--mg-canvas:#fff;--mg-border:#ccdde5;--mg-accent:#036875;font-family:inherit;}',
+      '.migration-tool-shell[data-migration-theme="dark"]{--mg-text:#e8f3f8;--mg-muted:#a7bdcd;--mg-panel:#122536;--mg-canvas:#0b1a29;--mg-border:#2c465a;--mg-accent:#6ed5d7;}',
+      '.migration-tool-shell[data-migration-theme="contrast"]{--mg-text:#fff;--mg-muted:#fff;--mg-panel:#000;--mg-canvas:#000;--mg-border:#fff;--mg-accent:#ffff00;}',
+      '.migration-command{position:relative;overflow:hidden;padding:22px 24px;background:linear-gradient(115deg,#092d3f,#0c4554 70%,#155a66);border-color:#286574;box-shadow:0 12px 28px rgba(8,47,73,.13);}',
+      '.migration-command-main{position:relative;z-index:1;gap:18px;}.migration-command-main>button{align-self:flex-start;min-height:36px;background:#164c5c;color:#e7f6f8;border:1px solid #5a8591;font-size:12px;}',
+      '.migration-command h2{font-size:clamp(23px,3vw,32px);font-weight:800;letter-spacing:-.035em;}.migration-command p{font-size:12px;max-width:660px;color:#c7e3ea;}.migration-command .migration-eyebrow{margin:0 0 6px;font-size:10px;letter-spacing:.18em;color:#86dedb;}',
+      '.migration-header-art{position:absolute;right:12px;top:0;width:245px;height:100%;opacity:.64;pointer-events:none;}.migration-command-copy{padding-right:100px;}',
+      '.migration-metrics{gap:0;border:1px solid var(--mg-border);border-radius:12px;overflow:hidden;background:var(--mg-canvas);}.migration-metric{border:0;border-radius:0;border-inline-end:1px solid var(--mg-border);padding:12px 16px;background:transparent;}.migration-metric:last-child{border-inline-end:0;}.migration-metric-label{font-size:10px;letter-spacing:.08em;}.migration-metric-value{font-size:14px;margin-top:4px;}',
+      '.migration-route-board{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px!important;padding:7px;background:var(--mg-panel);border-radius:14px;}.migration-route-tab{gap:9px;min-height:48px;padding:8px 12px!important;background:transparent;color:var(--mg-muted);transition:background .16s,border-color .16s;}.migration-route-tab:hover{background:var(--mg-canvas);color:var(--mg-text);}.migration-route-tab>span:first-child{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;font-size:17px;background:var(--mg-canvas);border-radius:8px;}.migration-route-label{font-size:12px;line-height:1.35;}.migration-route-tab[aria-selected="true"]{background:#075c70!important;border-color:#247f8e!important;color:#fff;box-shadow:0 3px 9px rgba(8,47,73,.15);}.migration-route-tab[aria-selected="true"]>span:first-child{background:rgba(255,255,255,.14);}',
+      '.migration-active-band{box-shadow:none;padding:13px 16px!important;}.migration-active-band h3{font-size:17px!important;letter-spacing:-.015em;color:var(--mg-accent)!important;}.migration-active-band p{font-size:12px!important;font-style:normal!important;line-height:1.6!important;color:var(--mg-muted)!important;}.migration-active-band>div:last-child{min-width:0!important;}',
+      '.migration-workspace{line-height:1.55;}.migration-workspace .text-\\[0\\.6875rem\\]{font-size:12px;}.migration-workspace .text-xs{font-size:13px;}.migration-workspace .text-sm{font-size:15px;}.migration-workspace button,.migration-workspace select{min-height:34px;}.migration-workspace input[type="range"]{min-height:26px;accent-color:#0e8490;}',
+      '.migration-flight-deck{grid-template-columns:minmax(0,1fr) 286px;border-color:#315468;border-radius:16px;box-shadow:0 16px 36px rgba(2,6,23,.2);}.migration-flight-stage{min-height:590px;}.migration-flight-controls{gap:15px;padding:20px;background:linear-gradient(165deg,#102d40,#0b1d2d);border-inline-start:1px solid #315468;}.migration-flight-controls h3{font-size:19px;letter-spacing:-.02em;}.migration-flight-controls p{font-size:12px;line-height:1.6;color:#b8d0dd;}.migration-flight-control{font-size:12px;font-weight:700;gap:7px;letter-spacing:0;}.migration-flight-control select{font-size:12px;min-height:42px;background:#102b3e;border-color:#496578;border-radius:8px;}.migration-flight-value{font-size:12px;}.migration-flight-value strong{color:#8ee5df;}.migration-flight-camera{gap:6px;}.migration-flight-camera button,.migration-flight-actions button{font-size:11px;min-height:40px;border-color:#496578;background:#102b3e;}.migration-flight-camera button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;}.migration-flight-stat{padding:10px;border-color:#355266;background:#102739;}.migration-flight-stat span{font-size:9px;color:#b8d0dd;}.migration-flight-stat strong{font-size:13px;}.migration-monarch-note{font-size:12px;line-height:1.55;}',
+      '.migration-flight-overlay{padding:18px;gap:12px;}.migration-flight-badge{font-size:12px;border-radius:10px;padding:9px 12px;letter-spacing:0;background:rgba(6,27,43,.88);}.migration-flight-badge>span:first-child{font-size:24px;}.migration-flight-badge small{display:block;font-size:10px;font-weight:600;color:#b8d6e5;margin-top:2px;}.migration-flight-heading{font-size:11px;border-color:#6b91a3;background:rgba(6,27,43,.88);}',
+      '.migration-flight-route{align-self:flex-start;max-width:min(100%,380px);padding:12px 14px;border:1px solid #6b91a3;border-radius:12px;background:rgba(6,27,43,.88);color:#f0f9ff;box-shadow:0 8px 24px rgba(2,6,23,.2);}.migration-flight-route-label{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a6e8e5;}.migration-flight-route-label i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#87e0b4;}.migration-flight-route[data-paused="true"] i{background:#fcd34d;}.migration-flight-route-places{display:flex;align-items:center;gap:9px;margin-top:7px;font-size:12px;line-height:1.5;font-weight:750;}.migration-flight-route-places>span{flex:1;}.migration-flight-route-places>b{font-size:19px;color:#8ee5df;}',
+      '.migration-wind-caption{display:flex;justify-content:space-between;gap:8px;font-size:10px;font-weight:500;color:#b8d0dd;}.migration-flight-keys{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:10px;color:#b8d0dd;}.migration-flight-keys kbd{display:inline-block;min-width:20px;padding:2px 4px;border:1px solid #587488;border-radius:4px;background:#102739;color:#eaf7ff;text-align:center;font-family:inherit;}.migration-flight-keys-note{font-size:10px!important;margin:0!important;}.migration-flight-stage-status{font-size:14px;}',
+      '@media(min-width:761px){.migration-flight-deck{height:680px;min-height:0;}.migration-flight-controls{min-height:0;overflow-y:auto;}.migration-flight-stage{height:100%;min-height:0;}}',
+      '@media(max-width:900px){.migration-command-copy{padding-right:45px;}.migration-header-art{width:175px;opacity:.4;}.migration-route-board{grid-template-columns:repeat(4,minmax(0,1fr));}.migration-route-tab{padding:7px 8px!important;gap:7px;}.migration-route-label{font-size:11px;}}',
+      '@media(max-width:760px){.migration-flight-deck{grid-template-columns:1fr;}.migration-flight-stage{min-height:430px;}.migration-flight-controls{border-inline-start:0;border-top:1px solid #315468;}.migration-flight-stat-grid,.migration-flight-keys,.migration-flight-keys-note{grid-column:1/-1;}.migration-flight-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.migration-command{padding:18px;}.migration-command-main{gap:12px;}.migration-header-art{display:none;}.migration-command-copy{padding-right:0;}}',
+      '@media(max-width:520px){.migration-route-board{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-route-label{font-size:12px;}.migration-command-main{align-items:flex-start;}.migration-command-main>button{padding:6px!important;font-size:10px;}.migration-command h2{font-size:24px;}.migration-command .migration-eyebrow{font-size:9px;}.migration-command p{font-size:12px;}.migration-metric{padding:10px 12px;}.migration-metric:nth-child(2){border-inline-end:0;}.migration-metric:nth-child(-n+2){border-bottom:1px solid var(--mg-border);}.migration-metric-value{font-size:13px;}.migration-flight-stage{min-height:390px;}.migration-flight-overlay{padding:12px;}.migration-flight-badge{font-size:11px;}.migration-flight-route{padding:10px 12px;}.migration-flight-controls{padding:16px;gap:16px;}.migration-flight-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(forced-colors:active){.migration-route-tab[aria-selected="true"]{outline:2px solid Highlight;}.migration-flight-route,.migration-flight-badge,.migration-flight-heading{background:Canvas;color:CanvasText;}}',
+      '.migration-tool-shell[data-migration-theme="contrast"] .migration-command,.migration-tool-shell[data-migration-theme="contrast"] .migration-route-tab[aria-selected="true"]{background:#000!important;border:2px solid #fff!important;color:#fff;}.migration-tool-shell[data-migration-theme="contrast"] .migration-active-band{background:#000!important;border-color:#fff!important;}',
+      ".migration-guide{border:1px solid var(--mg-border);border-radius:12px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}",
+      ".migration-tool-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-guide-summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer;padding:12px 16px;list-style:none;}.migration-guide-summary::-webkit-details-marker{display:none;}.migration-guide-summary::after{content:\"+\";margin-inline-start:auto;font-size:20px;color:var(--mg-accent);}.migration-guide[open]>.migration-guide-summary::after{content:\"\\2212\";}.migration-guide-kicker{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:var(--mg-accent);}.migration-guide-summary-title{font-size:13px;font-weight:750;}.migration-guide-summary-hint{font-size:11px;color:var(--mg-muted);}",
+      ".migration-guide-body{border-top:1px solid var(--mg-border);padding:16px;}.migration-guide-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.migration-guide-option{display:flex;align-items:center;gap:8px;padding:11px 12px;min-height:44px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-panel);color:var(--mg-text);text-align:start;font-size:12px;font-weight:750;cursor:pointer;}.migration-guide-option[aria-pressed=\"true\"]{border-color:var(--mg-accent);outline:1px solid var(--mg-accent);}.migration-guide-icon{color:var(--mg-accent);font-size:20px;}.migration-guide-investigation{margin-top:16px;}.migration-guide-steps{display:flex;gap:8px;padding:0;margin:0 0 14px;list-style:none;}.migration-guide-steps li{flex:1;min-width:0;}.migration-guide-steps button{display:flex;align-items:center;gap:7px;width:100%;min-height:42px;text-align:start;border:1px solid var(--mg-border);border-radius:8px;padding:8px;background:var(--mg-panel);color:var(--mg-muted);font-size:11px;cursor:pointer;}.migration-guide-steps button>span{display:grid;place-items:center;flex:0 0 22px;height:22px;border:1px solid var(--mg-border);border-radius:50%;font-weight:800;}.migration-guide-steps button[aria-current=\"step\"]{border-color:var(--mg-accent);color:var(--mg-accent);font-weight:750;}",
+      ".migration-guide-task{padding:14px;border-inline-start:3px solid var(--mg-accent);border-radius:5px;background:var(--mg-panel);}.migration-guide-task h3{font-size:16px;font-weight:800;margin:3px 0 6px;}.migration-guide-task p{font-size:13px;line-height:1.65;margin:0;}.migration-guide-task .migration-guide-workspace{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mg-accent);font-weight:800;}.migration-guide-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}.migration-guide-actions button{border:1px solid var(--mg-border);border-radius:7px;padding:8px 12px;min-height:38px;background:var(--mg-canvas);color:var(--mg-text);font-size:12px;font-weight:750;cursor:pointer;}.migration-guide-actions .migration-guide-next{background:#075c70;border-color:#247f8e;color:#fff;}.migration-guide-reflection{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:12px;font-weight:750;}.migration-guide-reflection textarea{width:100%;min-height:72px;padding:10px;border:1px solid var(--mg-border);border-radius:8px;background:var(--mg-canvas);color:var(--mg-text);font:inherit;font-weight:400;resize:vertical;}.migration-guide-reflection small{color:var(--mg-muted);font-size:11px;font-weight:400;}",
+      "@media(max-width:600px){.migration-guide-summary{gap:5px 10px;padding:12px;}.migration-guide-summary-title{flex-basis:78%;}.migration-guide-summary-hint{display:none;}.migration-guide-body{padding:12px;}.migration-guide-options,.migration-guide-steps{display:grid;grid-template-columns:1fr;}.migration-guide-option{font-size:13px;}.migration-guide-task{padding:12px;}}",
+      ".migration-flight-stage canvas{position:absolute;inset:0;}",
+      '.migration-tool-shell [role="region"][tabindex="0"]:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.migration-flight-camera{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-flight-layers{min-width:0;margin:0;border:1px solid #426174;border-radius:10px;padding:10px 12px;}.migration-flight-layers legend{padding:0 5px;color:#c4e5ec;font-size:11px;font-weight:800;}.migration-layer-toggle{display:flex;align-items:center;gap:9px;min-height:34px;color:#eaf7ff;font-size:12px;font-weight:650;cursor:pointer;}.migration-layer-toggle input[type=checkbox]{width:17px;height:17px;accent-color:#67d9c6;}.migration-flight-layers p{font-size:11px;margin-top:7px;}.migration-flight-model-note{border-top:1px solid #426174;padding-top:12px;}.migration-flight-model-note summary{color:#c4e5ec;font-size:12px;font-weight:750;cursor:pointer;}.migration-flight-model-note p{font-size:11px;margin-top:8px;}.migration-flight-model-note a{display:inline-block;margin-top:9px;color:#9be8e1;font-size:12px;text-decoration:underline;}',
+      '.migration-wingtip-path-controls{border-top:1px solid #426174;margin-top:10px;padding-top:8px;}.migration-wingtip-path-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:8px;color:#e0f2fe;font-size:11px;}.migration-wingtip-path-key span{display:flex;align-items:center;gap:6px;}.migration-wingtip-follow-button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:7px 9px;border:1px solid #7996a6;border-radius:8px;background:#163c50;color:#e0f2fe;font:inherit;cursor:pointer;}.migration-flight-controls .migration-wingtip-follow-button{min-height:44px;}.migration-wingtip-follow-button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;box-shadow:inset 0 0 0 1px #8ee5df;}.migration-wingtip-follow-button:focus-visible{outline:3px solid #38bdf8;outline-offset:2px;}.migration-wingtip-follow-button:disabled{opacity:.55;cursor:default;}.migration-wingtip-path-key i{display:inline-block;width:22px;border-top:2px solid #67e8f9;}.migration-wingtip-path-key .migration-wingtip-key-right{border-top:2px dashed #fbbf24;}.migration-wingtip-path-key .migration-wingtip-key-point{width:7px;height:7px;border:1px solid #e0f2fe;border-radius:50%;background:#e0f2fe;}.migration-wingtip-path-key .migration-wingtip-key-landmark{width:7px;height:7px;border:1px solid #e0f2fe;border-radius:50%;}.migration-wingtip-path-key .migration-wingtip-key-marked{width:9px;height:9px;border:2px solid #c4b5fd;transform:rotate(45deg);background:transparent;}.migration-wingtip-path-key .migration-wingtip-key-direction{width:7px;height:7px;border:0;border-top:2px solid #e0f2fe;border-right:2px solid #e0f2fe;transform:rotate(45deg);}.migration-cycle-positions{display:grid;grid-template-columns:repeat(4,minmax(44px,1fr));gap:6px;margin-top:8px;}.migration-cycle-positions button{min-height:44px;border:1px solid #7996a6;border-radius:8px;background:#163c50;color:#f1f9fc;font:inherit;cursor:pointer;}.migration-cycle-positions button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;box-shadow:inset 0 0 0 1px #8ee5df;}.migration-cycle-positions button:focus-visible{outline:3px solid #38bdf8;outline-offset:2px;}',
+      '.migration-marked-pose{border-top:1px solid #426174;margin-top:4px;padding-top:10px;}.migration-marked-pose-key{display:inline-block;width:25px;margin:0 7px 3px 0;border-top:2px dashed #c4b5fd;vertical-align:middle;}.migration-marked-pose-count{display:block;margin-top:6px;color:#e0e7ff;}.migration-checked-breakdown{display:flex;flex-direction:column;gap:7px;margin:9px 0;min-width:0;}.migration-checked-breakdown>div{min-width:0;padding:9px;border:1px solid #426174;border-radius:8px;background:#0b2a3d;color:#e9f7fb;}.migration-checked-breakdown dt{font-weight:750;line-height:1.5;}.migration-checked-breakdown dd{margin:4px 0 0;min-width:0;line-height:1.5;overflow-wrap:anywhere;}.migration-checked-breakdown dd>small{display:block;margin-top:6px;color:#c4dde9;}.migration-checked-breakdown dd>span{display:block;margin-top:4px;}.migration-comparison-result{display:inline-block;padding:2px 7px;border:1px solid #7ad7d4;border-radius:999px;color:#c8faf3;font-size:10px;}.migration-checked-breakdown [data-comparison-result="changed"] .migration-comparison-result{border-color:#d5ab4e;color:#fff0c2;}.migration-view-components{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:5px;min-width:0;}.migration-view-components li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;}.migration-view-components li>span{min-width:0;overflow-wrap:anywhere;}.migration-view-component-result{font-size:10px;border:1px solid #7ad7d4;color:#c8faf3;border-radius:999px;padding:2px 7px;}.migration-view-components [data-component-result="changed"] .migration-view-component-result{border-color:#d5ab4e;color:#fff0c2;}',
+      '.migration-flight-layer-key{z-index:2;pointer-events:none;}.migration-flight-layer-key .migration-key-speed-air{height:5px;background:#67e8f9;}.migration-flight-layer-key .migration-key-speed-wind{height:5px;background:#fbbf24;}.migration-flight-layer-key .migration-key-speed-ground{height:5px;background:#86efac;}',
+      '.migration-scene-tools{position:absolute;z-index:2;top:18px;right:18px;display:flex;gap:6px;max-width:45%;}.migration-scene-tools button{min-height:36px;padding:7px 10px;border:1px solid #8bb3bf;border-radius:9px;background:#0b293c;color:#eaf7ff;font-size:11px;font-weight:750;box-shadow:0 5px 15px #051a2d33;cursor:pointer;}.migration-scene-tools button[aria-pressed="true"]{border-color:#9df0d6;background:#105f68;color:#fff;}.migration-scene-tools button:disabled{opacity:.65;cursor:default;}.migration-flight-layer-key{position:absolute;top:83px;left:18px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;max-width:calc(100% - 36px);border:1px solid #7a9daf;border-radius:8px;padding:7px 10px;background:#08283de6;color:#effaff;font-size:10px;}.migration-flight-layer-key span{display:flex;align-items:center;gap:6px;}.migration-flight-layer-key i{width:16px;height:3px;border-radius:3px;background:#60a5fa;}.migration-flight-layer-key .migration-key-upwash{background:#86efac;}.migration-flight-layer-key small{font-size:9px;color:#c4dde9;}',
+      '.migration-experiment{margin-top:16px;border:1px solid var(--mg-border);border-radius:16px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}.migration-experiment-header{padding:20px 22px;border-bottom:1px solid var(--mg-border);background:linear-gradient(110deg,var(--mg-panel),var(--mg-canvas));}.migration-experiment-header h3{margin:4px 0 6px;font-size:22px;font-weight:800;letter-spacing:-.025em;line-height:1.25;}.migration-experiment-header p{margin:0;font-size:13px;line-height:1.6;color:var(--mg-muted);}.migration-experiment-eyebrow{color:var(--mg-accent)!important;font-size:10px!important;font-weight:850;letter-spacing:.11em;text-transform:uppercase;}.migration-experiment-steps{display:flex;gap:7px 18px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--mg-muted);}.migration-experiment-steps span{display:inline-flex;align-items:center;gap:7px;}.migration-experiment-steps b{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--mg-border);border-radius:50%;background:var(--mg-canvas);color:var(--mg-accent);}',
+      '.migration-experiment-setup{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;padding:18px 22px;}.migration-experiment-variable,.migration-experiment-prediction,.migration-experiment-notes{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:750;}.migration-experiment select,.migration-experiment textarea{width:100%;min-width:0;border:1px solid var(--mg-border);border-radius:8px;padding:9px 10px;background:var(--mg-canvas);color:var(--mg-text);font:inherit;font-size:13px;font-weight:400;}.migration-experiment textarea{min-height:68px;resize:vertical;}.migration-experiment select{min-height:40px;}.migration-experiment-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 22px 18px;}.migration-experiment button{min-height:40px;border:1px solid var(--mg-border);border-radius:8px;padding:9px 13px;background:var(--mg-panel);color:var(--mg-text);font-size:12px;font-weight:750;cursor:pointer;}.migration-experiment button:disabled{opacity:.6;cursor:default;}.migration-experiment-actions button:first-child{background:#075c70;border-color:#247f8e;color:#fff;}',
+      '.migration-experiment-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 22px 18px;}.migration-experiment-snapshot{min-width:0;border:1px solid var(--mg-border);border-radius:12px;padding:15px;background:var(--mg-panel);}.migration-experiment-snapshot h4{margin:0 0 8px;font-size:14px;font-weight:800;}.migration-experiment-snapshot p{font-size:12px;color:var(--mg-muted);margin:5px 0;line-height:1.55;}.migration-experiment-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;}.migration-experiment-metric{padding-top:10px;border-top:1px solid var(--mg-border);}.migration-experiment-metric span{display:block;color:var(--mg-muted);font-size:10px;}.migration-experiment-metric strong{display:block;margin-top:2px;font-size:20px;font-weight:800;color:var(--mg-accent);}.migration-experiment-empty{color:var(--mg-muted);font-size:12px;line-height:1.6;}.migration-experiment-feedback{margin:0 22px 18px;padding:13px 15px;border:1px solid var(--mg-border);border-inline-start:4px solid var(--mg-accent);border-radius:10px;background:var(--mg-panel);font-size:13px;line-height:1.6;}.migration-experiment-feedback h4{font-size:14px;font-weight:800;margin:0 0 5px;}.migration-experiment-feedback p{margin:3px 0;}.migration-experiment-help{font-size:11px;color:var(--mg-muted);line-height:1.65;}',
+      '.migration-experiment-comparison,.migration-experiment-history,.migration-experiment-notes{margin:0 22px 18px;}.migration-experiment-history h4{font-size:14px;font-weight:800;margin:0 0 8px;}.migration-experiment-table-wrap{overflow:auto;max-height:300px;border:1px solid var(--mg-border);border-radius:10px;}.migration-experiment-table{width:100%;border-collapse:collapse;font-size:12px;text-align:start;}.migration-experiment-table th,.migration-experiment-table td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--mg-border);white-space:nowrap;}.migration-experiment-table th{position:sticky;top:0;z-index:1;background:var(--mg-panel);color:var(--mg-muted);font-size:10px;letter-spacing:.03em;}.migration-experiment-table tr:last-child td{border-bottom:0;}.migration-experiment-table button{min-height:30px;padding:4px 8px;font-size:11px;}.migration-experiment-notes small{font-size:11px;font-weight:400;color:var(--mg-muted);}',
+      '@media(max-width:760px){.migration-flight-layers,.migration-flight-model-note{grid-column:1/-1;}.migration-experiment-setup{grid-template-columns:1fr;}.migration-experiment-header,.migration-experiment-setup{padding:16px;}.migration-experiment-actions{padding:0 16px 16px;}.migration-experiment-columns{padding:0 16px 16px;}.migration-experiment-feedback,.migration-experiment-comparison,.migration-experiment-history,.migration-experiment-notes{margin-inline:16px;}}',
+      '@media(max-width:520px){.migration-scene-tools{top:12px;right:12px;max-width:38%;flex-direction:column;gap:5px;}.migration-scene-tools button{font-size:10px;padding:6px 8px;}.migration-flight-badge{max-width:61%;}.migration-flight-layer-key{left:12px;top:119px;max-width:calc(100% - 24px);font-size:10px;}.migration-experiment-columns{grid-template-columns:1fr;}.migration-experiment-header h3{font-size:21px;}}',
+      ".migration-experiment-jump{display:inline-block;margin-top:9px;font-size:12px;font-weight:750;color:#99ede1;text-decoration:underline;text-underline-offset:3px;}.migration-tool-shell a:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-experiment{scroll-margin-top:18px;}.migration-experiment-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;}.migration-experiment-count{flex-shrink:0;border:1px solid var(--mg-border);border-radius:999px;background:var(--mg-canvas);padding:6px 10px;font-size:10px;font-weight:750;color:var(--mg-muted);}",
+      ".migration-experiment-steps{margin:16px 22px 0;padding:0;list-style:none;}.migration-experiment-steps li{display:flex;align-items:center;gap:7px;}.migration-experiment-steps li[data-complete=\"true\"] b{background:#075c70;border-color:#247f8e;color:#fff;}.migration-experiment-variable{padding:0;margin:0;border:0;}.migration-experiment-variable legend{font-size:12px;font-weight:750;padding:0;margin-bottom:8px;}.migration-experiment-variable button[aria-pressed=\"true\"]{background:#075c70;border-color:#247f8e;color:#fff;}.migration-experiment-variable p{font-size:12px;font-weight:400;line-height:1.6;color:var(--mg-muted);margin:4px 0 0;}.migration-experiment>.migration-experiment-help{margin:0 22px 18px;}",
+      ".migration-experiment-snapshot-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;}.migration-experiment-snapshot-heading>span{font-size:10px;font-weight:750;border:1px solid var(--mg-border);border-radius:999px;padding:3px 7px;color:var(--mg-accent);}.migration-experiment-snapshot .migration-experiment-species{font-size:15px;font-weight:800;color:var(--mg-text);}.migration-experiment-metrics{margin-bottom:0;}.migration-experiment-metric dt{font-size:11px;color:var(--mg-muted);line-height:1.4;}.migration-experiment-metric dd{margin:3px 0 0;font-size:22px;font-weight:800;color:var(--mg-accent);}.migration-experiment-comparison{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0;}.migration-experiment-comparison span{font-size:12px;}.migration-experiment-feedback>strong{font-size:14px;}.migration-experiment-feedback .migration-experiment-help{margin-bottom:0;}",
+      ".migration-experiment-observations{margin:0 22px 18px;}.migration-experiment-observations>h4{font-size:15px;font-weight:800;margin:0 0 12px;}.migration-experiment-history{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;}.migration-experiment-trial{min-width:0;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-panel);padding:14px;}.migration-experiment-trial-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}.migration-experiment-trial-heading h5{font-size:13px;font-weight:800;margin:0;}.migration-experiment-trial-heading>span{max-width:48%;font-size:10px;color:var(--mg-accent);text-align:end;}.migration-experiment-trial p{font-size:12px;line-height:1.6;color:var(--mg-muted);margin:8px 0;overflow-wrap:anywhere;}.migration-experiment-trial .migration-experiment-remove{font-size:11px;min-height:32px;padding:5px 9px;}.migration-experiment-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}.migration-experiment-notes label{display:flex;flex-direction:column;gap:7px;}.migration-trial-evidence-context{grid-column:1/-1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-panel);font-weight:400;}.migration-trial-evidence-context strong,.migration-trial-evidence-context details{max-width:100%;min-width:0;overflow-wrap:anywhere;}.migration-trial-evidence-context summary{min-height:44px;padding-block:8px;cursor:pointer;line-height:1.5;}.migration-trial-evidence-context p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}.migration-experiment .migration-trial-evidence-context button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.5;}.migration-experiment-model-note{margin:0 22px 18px;font-size:12px;line-height:1.65;color:var(--mg-muted);}.migration-experiment-reset{display:flex;align-items:center;gap:12px;padding:16px 22px;border-top:1px solid var(--mg-border);}.migration-experiment-reset small{font-size:11px;color:var(--mg-muted);line-height:1.5;}",
+      "@media(max-width:600px){.migration-experiment-header{flex-direction:column;gap:12px;}.migration-experiment-steps{margin-inline:16px;font-size:10px;gap:8px 14px;}.migration-experiment-history,.migration-experiment-notes{grid-template-columns:1fr;}.migration-experiment-observations,.migration-experiment-model-note,.migration-experiment>.migration-experiment-help{margin-inline:16px;}.migration-experiment-reset{padding:16px;align-items:flex-start;flex-direction:column;}.migration-experiment-trial-heading>span{max-width:52%;}}",
+      '.migration-study-controls{padding:13px;border:1px solid #4c7a89;border-radius:11px;background:#09283a;display:flex;flex-direction:column;gap:13px;scroll-margin-top:12px;}.migration-study-slider{display:flex;flex-direction:column;gap:5px;color:#e3f4fa;font-size:12px;}.migration-study-slider>span{display:flex;justify-content:space-between;gap:8px;}.migration-study-slider strong{font-size:11px;color:#9deddb;}.migration-study-slider input{width:100%;accent-color:#67d9c6;}.migration-study-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;}.migration-study-actions button{padding:8px 6px;min-height:38px;font-size:10px;font-weight:750;border:1px solid #5a7e8f;border-radius:8px;background:#123a4d;color:#effaff;cursor:pointer;}.migration-study-controls .migration-study-help{font-size:11px;line-height:1.6;color:#bfd9e6;margin:0;}',
+      '.migration-anatomy-key{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0 0;margin:8px 0 0;border-top:1px solid #426174;list-style:none;}.migration-anatomy-key li{display:flex;align-items:center;gap:7px;font-size:11px;line-height:1.4;color:#e9f7fb;}.migration-anatomy-key li>span{display:grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border-radius:50%;color:#082437;font-size:10px;font-weight:850;}[data-flight-notebook-exports]{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 22px 18px;}[data-flight-notebook-exports] button{font-size:12px;}[data-flight-notebook-exports] small{font-size:11px;color:var(--mg-muted);}',
+      ".migration-study-context{padding:9px 10px;border:1px solid #426174;border-inline-start:3px solid #67e8f9;border-radius:8px;background:#0b2a3d;color:#e9f7fb;}.migration-study-context>strong{display:block;font-size:11px;margin-bottom:5px;}.migration-study-context p{margin:3px 0;line-height:1.5;overflow-wrap:anywhere;}.migration-study-context small{display:block;margin-top:6px;}.migration-study-context .migration-study-inspect,.migration-study-context .migration-study-review{margin-top:9px;min-height:44px;white-space:normal;overflow-wrap:anywhere;}.migration-study-cycle-badge{max-width:min(420px,calc(100% - 100px));}.migration-study-cycle-badge>span:last-child{min-width:0;overflow-wrap:anywhere;}",
+      ".migration-anatomy-key li{display:block;min-width:0;}.migration-anatomy-key button{width:100%;min-height:44px;display:flex;align-items:center;gap:7px;padding:7px;border:1px solid #426174;border-radius:10px;background:#102f41;color:#e9f7fb;text-align:left;font-size:11px;line-height:1.4;}.migration-anatomy-key button[aria-pressed=\"true\"]{border-color:#67e8f9;background:#1a4054;box-shadow:inset 0 0 0 1px #67e8f9;}.migration-anatomy-key button>span{display:grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border-radius:50%;color:#082437;font-size:10px;font-weight:850;}.migration-study-observation{margin-top:12px;border-top:1px solid #426174;padding-top:10px;}.migration-study-observation summary{cursor:pointer;font-size:12px;font-weight:750;min-height:44px;}.migration-study-observation summary>span{display:block;font-size:11px;font-weight:500;color:#b9d8e7;margin:4px 0 0;}.migration-study-observation-body{display:flex;flex-direction:column;gap:10px;font-size:12px;color:#e9f7fb;}.migration-study-observation-body>p,.migration-study-saved p{margin:0;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap;}.migration-study-observation-body>label{display:flex;flex-direction:column;gap:6px;font-weight:650;}.migration-study-observation textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:84px;border:1px solid #7996a6;border-radius:8px;background:#082638;color:#f1f9fc;padding:9px;font:inherit;line-height:1.5;}.migration-study-record-actions{display:flex;gap:7px;flex-wrap:wrap;}.migration-study-record-actions button{min-height:44px;border:1px solid #7996a6;border-radius:8px;background:#163c50;color:#f1f9fc;padding:8px 10px;font:inherit;}.migration-study-record-actions button:disabled{opacity:.55;cursor:not-allowed;}.migration-study-observation [role=\"status\"]:empty{display:none;}.migration-study-observation-body small{font-size:11px;line-height:1.5;color:#b9d8e7;}.migration-study-saved{display:flex;flex-direction:column;gap:7px;padding:10px;border:1px solid #426174;border-radius:8px;background:#0b2a3d;}.migration-study-unsaved{color:#fde68a;}.migration-study-comparison{border-top:1px solid #426174;padding-top:10px;min-width:0;}.migration-study-comparison-body{display:flex;flex-direction:column;gap:10px;min-width:0;}.migration-study-comparison-selects{display:grid;grid-template-columns:1fr;gap:9px;}.migration-study-comparison label{display:flex;flex-direction:column;gap:6px;font-weight:650;}.migration-study-comparison select{width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid #7996a6;border-radius:8px;background:#082638;color:#f1f9fc;padding:9px;font:inherit;}.migration-study-comparison-table{overflow-x:auto;max-width:100%;}.migration-study-comparison table{border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed;}.migration-study-comparison th,.migration-study-comparison td{border:1px solid #426174;padding:8px;text-align:start;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap;}.migration-study-comparison th{background:#12384b;}.migration-study-comparison tbody th{width:25%;}.migration-study-comparison-body>p{margin:0;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;}.migration-study-comparison [role=\"status\"]:empty{display:none;}",
+      '.migration-study-comparison{container-type:inline-size;}.migration-study-comparison-cell-label{display:none;}@container(max-width:280px){.migration-study-comparison table,.migration-study-comparison tbody,.migration-study-comparison tr,.migration-study-comparison td,.migration-study-comparison tbody th{display:block;width:auto;}.migration-study-comparison thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}.migration-study-comparison tbody tr{margin:0 0 10px;border:1px solid #426174;border-radius:8px;overflow:hidden;}.migration-study-comparison tbody th,.migration-study-comparison td{border:0;padding:9px;font-size:12px;line-height:1.55;}.migration-study-comparison td{border-top:1px solid #426174;}.migration-study-comparison-cell-label{display:block;font-weight:750;color:#e9f7fb;margin-bottom:4px;}}',
+      '@media(max-width:760px){.migration-study-controls{grid-column:1/-1;}}@media(max-width:520px){[data-flight-notebook-exports]{margin-inline:16px;}}',
+      '.migration-study-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}.migration-study-presets button,.migration-study-focus{border:1px solid #5a7e8f;border-radius:8px;background:#123a4d;color:#effaff;min-height:38px;padding:7px 5px;font-size:11px;font-weight:750;cursor:pointer;}.migration-study-presets button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;}.migration-study-focus{width:100%;}.migration-flight-controls .migration-motion-note{padding:9px 10px;border-inline-start:3px solid #8ee5df;border-radius:4px;background:#09283a;color:#d5edf4;font-size:11px;}.migration-flight-stage[data-flight-error="true"] .migration-flight-stage-status{display:flex;z-index:10;}',
+      '@media(max-width:520px){.migration-flight-stage[data-study-view="true"] .migration-flight-route{padding:7px 10px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-label{font-size:9px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-places{font-size:11px;line-height:1.25;margin-top:3px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-places>b{font-size:15px;}}',
+      '.migration-flight-stage[data-study-view="true"][data-flight-ready="true"]{cursor:grab;touch-action:none;user-select:none;}.migration-flight-stage[data-study-dragging="true"]{cursor:grabbing;}.migration-flight-stage .migration-scene-tools{cursor:default;}',
+      ".migration-pair-review-comparison{margin:12px 0;padding:10px 12px;border:1px solid #547b8c;border-radius:9px;background:#0b2a3d;}.migration-pair-review-comparison p{margin:0;color:#c4dde9;font-size:11px;line-height:1.6;overflow-wrap:anywhere;}.migration-pair-review-comparison strong{color:#f1f9fc;}.migration-pair-review-comparison-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 10px;}.migration-pair-review-comparison-deltas{display:flex;flex-wrap:wrap;gap:3px 16px;margin-top:5px!important;}.migration-pair-review-comparison-scope{margin-top:4px!important;}",
+      ".migration-study-scene-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px;flex-shrink:0;min-width:0;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-study-scene-context{display:flex;flex:1 1 190px;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere;}.migration-study-scene-context strong{font-size:12px;line-height:1.5;}.migration-study-scene-context>[data-scene-study-species]{font-size:13px;color:#f1f9fc;}.migration-flight-stage[data-study-view=true] .migration-flight-overlay{justify-content:flex-end;}.migration-study-scene-context span{font-size:11px;line-height:1.5;color:#c4dde9;}.migration-study-scene-buttons{display:flex;flex:1 1 240px;flex-wrap:wrap;gap:8px;min-width:0;}.migration-study-scene-buttons button{flex:1 1 140px;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}.migration-study-scene-buttons button:disabled{opacity:.55;cursor:not-allowed;}@media(min-width:761px){.migration-flight-deck[data-study-strip=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-study-strip=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}",
+      '@media(min-width:761px){.migration-flight-deck[data-challenge-inspection-open="true"]{height:auto;align-items:start;}.migration-flight-deck[data-challenge-inspection-open="true"] .migration-flight-controls{height:678px;max-height:678px;}}',
+      ".migration-flight-view{display:flex;flex-direction:column;min-width:0;min-height:0;}.migration-flight-view>.migration-flight-stage{flex:1 0 auto;}.migration-pair-review{flex-shrink:0;min-width:0;padding:16px;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-pair-review h3{margin:0 0 5px;font-size:17px;font-weight:800;color:#f1f9fc;}.migration-pair-review-state{margin:0 0 10px;font-size:12px;line-height:1.5;color:#c4dde9;}.migration-pair-review-actions{display:flex;flex-wrap:wrap;gap:8px;}.migration-pair-review button{min-height:44px;min-width:0;padding:8px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;cursor:pointer;}.migration-pair-review-actions button[aria-pressed=\"true\"]{background:#156773;border-color:#8ee5df;}.migration-pair-review-prediction{margin:12px 0;border-top:1px solid #426174;padding-top:8px;}.migration-pair-review-prediction summary{min-height:36px;cursor:pointer;font-size:12px;font-weight:750;}.migration-pair-review summary:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-pair-review-prediction p{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.6;}.migration-pair-review-flights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card{min-width:0;padding:12px;border:1px solid #426174;border-radius:9px;background:#0b2a3d;}.migration-pair-review-card h4{font-size:13px;font-weight:800;margin:0 0 5px;}.migration-pair-review-card p{font-size:11px;line-height:1.5;color:#c4dde9;overflow-wrap:anywhere;margin:0 0 10px;}.migration-pair-review-card dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card dt{font-size:10px;line-height:1.45;color:#c4dde9;}.migration-pair-review-card dd{font-size:12px;font-weight:750;margin:3px 0 0;line-height:1.5;overflow-wrap:anywhere;}.migration-pair-review-help{margin:10px 0 0;color:#c4dde9;font-size:11px;line-height:1.6;}@media(min-width:761px){.migration-flight-view>.migration-flight-stage{height:678px;min-height:0;flex:0 0 678px;}.migration-flight-deck[data-pair-review-open=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-pair-review-open=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}.migration-flight-deck:fullscreen,.migration-flight-deck:-webkit-full-screen,.migration-flight-deck[data-allo-fullscreen-active=\"true\"]{height:100vh;align-items:stretch;}.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:100vh;overflow:auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:100vh;min-height:0;flex:0 0 100vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:100vh;max-height:none;}@media(max-width:760px){.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:auto;overflow:visible;flex:0 0 auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:58vh;min-height:58vh;flex:0 0 58vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:auto;max-height:none;}}@media(max-width:520px){.migration-pair-review{padding:14px;}.migration-pair-review-card{padding:10px;}.migration-pair-review-card dl{grid-template-columns:1fr;gap:7px;}}.migration-pair-review-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.migration-pair-review-heading h3{padding-top:8px;}.migration-pair-review-heading button{max-width:58%;font-size:11px;line-height:1.4;}",
       // Touch sizing. Measured on an iPhone 12 viewport, this tool's buttons
       // came out at 25-28px and its range sliders at 16px tall. 16px is below
       // even the WCAG 2.5.8 (AA) floor of 24x24, and a 16px slider is close to
@@ -589,6 +652,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow. It could only do it by leaving at roughly twice its normal weight: run the numbers at a lean 300 g and the fuel runs out well short of Tasmania.', formation: 'V-formation', weight: '300 g' }
   ];
 
+  // Resolve model behaviour from the canonical catalog. The render function
+  // shadows SPECIES with translated display strings, which must never decide
+  // whether a species flies alone or in a V.
+  function migrNaturalFlightFormation(id) {
+    for (var si = 0; si < SPECIES.length; si++) {
+      if (SPECIES[si].id !== id) continue;
+      if (SPECIES[si].formation === 'V-formation') return 'v';
+      if (SPECIES[si].formation === 'Solo') return 'solo';
+      if (SPECIES[si].formation === 'Swarm') return 'swarm';
+      return 'loose';
+    }
+    return 'loose';
+  }
+
   // ── Wing types for aerodynamics tab ──
   // No bestAngle here on purpose. The best lift-to-drag angle is a CONSEQUENCE
   // of liftCoeff, dragCoeff and aspect ratio, so storing it beside them lets it
@@ -682,6 +759,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // used to hold something else. `x || fallback` takes anything truthy and
   // `typeof x === 'number'` still admits NaN and Infinity, so both let bad
   // values reach arithmetic, SVG attributes and React children.
+  function MigrationStudyContextReadout(props) {
+    var React = props.React;
+    var context = props.readContext();
+    var latest = React.useRef(props);
+    var rendered = React.useRef('');
+    var revision = React.useState(0);
+    latest.current = props;
+    rendered.current = JSON.stringify(context);
+    React.useEffect(function() {
+      var host = latest.current.getHost();
+      if (!host || !host.isConnected || typeof MutationObserver !== 'function') return;
+      var active = true;
+      function refresh() {
+        if (!active || latest.current.getHost() !== host || !host.isConnected) return;
+        var signature = JSON.stringify(latest.current.readContext());
+        // Parent renders may already have reflected this engine event. Only
+        // refresh the isolated readout when its rendered meaning changed.
+        if (signature === rendered.current) return;
+        rendered.current = signature;
+        revision[1](function(value) { return (value + 1) % 1000001; });
+      }
+      var observer = new MutationObserver(refresh);
+      observer.observe(host, { attributes: true, attributeFilter: ['data-flight-ready', 'data-flight-error', 'data-flight-source-uuid'] });
+      refresh();
+      return function() { active = false; observer.disconnect(); };
+    }, []);
+    return props.renderContext(context);
+  }
+
+  // An isolated readout waits for actual frames; render never publishes owners.
+  function MigrationChallengeInspectionReadout(props) {
+    var React = props.React, context = props.readContext();
+    var committed = React.useRef(null), signature = React.useRef('');
+    var revision = React.useState(0);
+    React.useEffect(function() {
+      committed.current = props;
+      signature.current = JSON.stringify(context);
+      var next = JSON.stringify(props.readContext());
+      if (next !== signature.current) { signature.current = next; revision[1](function(value) { return (value + 1) % 1000001; }); }
+    });
+    React.useEffect(function() {
+      var host = props.getHost();
+      if (!host || !host.isConnected || typeof MutationObserver !== 'function') return;
+      var active = true;
+      function refresh() {
+        var current = committed.current;
+        if (!active || !current || current.getHost() !== host || !host.isConnected) return;
+        var next = JSON.stringify(current.readContext());
+        if (next === signature.current) return;
+        signature.current = next;
+        revision[1](function(value) { return (value + 1) % 1000001; });
+      }
+      var observer = new MutationObserver(refresh);
+      observer.observe(host, { attributes: true, attributeFilter: ['data-flight-ready', 'data-flight-error', 'data-flight-source-uuid', 'data-flight-challenge-frame'] });
+      refresh();
+      return function() { active = false; observer.disconnect(); };
+    }, []);
+    return props.renderContext(context);
+  }
+
+  // A local inspection aid. Its key is the exact captured pair, so a changed
+  // record discards this check without touching any learner draft or evidence.
+  function MigrationRecordedViewCheck(props) {
+    var React = props.React, h = React.createElement, t = props.t;
+    var checked = React.useState(false), ownerRef = React.useRef(null);
+    var first = props.first, second = props.second;
+    var fields = [
+      { id: 'yaw', label: t('stem.migration.recorded_check_yaw', 'Horizontal angle'), value: function(row) { return row.yaw + '°'; } },
+      { id: 'pitch', label: t('stem.migration.recorded_check_pitch', 'Vertical angle'), value: function(row) { return row.pitch + '°'; } },
+      { id: 'zoom', label: t('stem.migration.recorded_check_zoom', 'Zoom multiplier'), value: function(row) { return String(row.zoom) + '×'; } },
+      { id: 'bird', label: t('stem.migration.recorded_check_individual', 'Individual number'), value: function(row) { return String(row.bird + 1); } },
+      { id: 'wingStep', label: t('stem.migration.recorded_check_step', 'Recorded step counter'), value: function(row) { return String(row.wingStep); } },
+      { id: 'paused', label: t('stem.migration.recorded_check_pause', 'Pause control'), value: function(row) { return row.paused ? t('stem.migration.recorded_check_on', 'On') : t('stem.migration.recorded_check_off', 'Off'); } },
+      { id: 'motionReduced', label: t('stem.migration.recorded_check_motion', 'Reduce motion'), value: function(row) { return row.motionReduced ? t('stem.migration.recorded_check_on', 'On') : t('stem.migration.recorded_check_off', 'Off'); } }
+    ];
+    var changed = fields.filter(function(field) { return first[field.id] !== second[field.id]; }).length;
+    var sourceLabel = props.source === 'saved' ? t('stem.migration.recorded_check_saved_source', 'Saved comparison captures') : t('stem.migration.recorded_check_selected_source', 'Selected recorded observations');
+    var summary = sourceLabel + ': ' + (changed ? changed + ' ' + t('stem.migration.recorded_check_different', 'of 7 recorded settings differ.') : t('stem.migration.recorded_check_same', 'All seven recorded settings match.'));
+    var owner = { panel: null, source: props.source, signature: props.signature };
+    return h('div', { className: 'migration-recorded-view-check', 'data-study-view-check': props.source,
+      ref: function(node) {
+        if (node) { owner.panel = node; ownerRef.current = owner; }
+        else if (ownerRef.current === owner) ownerRef.current = null;
+      } },
+      h('button', { type: 'button', 'data-study-view-check-action': 'check', 'aria-describedby': props.helpId,
+        'aria-label': t('stem.migration.recorded_check_action', 'Check recorded view conditions') + ' · ' + sourceLabel,
+        onClick: function(event) {
+          var action = event && event.currentTarget, current = ownerRef.current;
+          var group = current && current.panel && current.panel.closest('[data-study-matched-comparison]');
+          if (current !== owner || !current.panel || !current.panel.isConnected || !action || !action.isConnected ||
+              current.panel.querySelector('[data-study-view-check-action="check"]') !== action ||
+              !group || group.getAttribute('data-study-matched-comparison') !== current.source ||
+              current.panel.getAttribute('data-study-view-check') !== current.source) return;
+          checked[1](true);
+          if (props.announce) props.announce(summary);
+        }
+      }, t('stem.migration.recorded_check_action', 'Check recorded view conditions')),
+      h('p', { className: 'migration-recorded-view-check-summary', role: 'status', 'aria-live': 'polite', 'data-study-view-check-status': props.source }, checked[0] ? summary : ''),
+      checked[0] && h('div', { 'data-study-view-check-result': props.source },
+        h('p', null, t('stem.migration.recorded_check_order', 'First and Second refer to the recorded sources named above. This check uses their captured settings, even after you try a different matched view.')),
+        h('dl', null, fields.map(function(field) {
+          var same = first[field.id] === second[field.id];
+          return h('div', { key: field.id, 'data-view-condition': field.id, 'data-view-condition-match': same ? 'true' : 'false' },
+            h('dt', null, field.label),
+            h('dd', null,
+              h('span', null, t('stem.migration.recorded_check_first', 'First') + ': ' + field.value(first) + '; ' + t('stem.migration.recorded_check_second', 'Second') + ': ' + field.value(second)),
+              h('strong', null, same ? t('stem.migration.recorded_check_matches', 'Matches') : t('stem.migration.recorded_check_differs', 'Differs'))
+            )
+          );
+        })),
+        h('p', { className: 'migration-recorded-view-check-limit' }, t('stem.migration.recorded_check_limits', 'Matching recorded settings does not establish equal physical size, the same individual across species, or the same wing pose. The step counter is not a recorded animation frame. Pause and Reduce motion are separate captured controls.')),
+        h('p', null, t('stem.migration.recorded_check_reasoning', 'Try a matched view to hold angle, fitted zoom, and the illustrative still baseline fixed. Explain how remaining differences, species, or parts limit your comparison, using a detail from each source. This check does not grade your explanation.'))
+      )
+    );
+  }
+
   function migrNum(value, fallback, lo, hi) {
     var n = typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
     if (!isFinite(n)) return fallback;
@@ -698,11 +891,218 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     if (typeof value === 'number' && isFinite(value)) return String(value);
     return fallback == null ? '' : fallback;
   }
+  // Fixed catalog keys bound Study evidence storage and reject stale or malformed
+  // imported entries. Drafting is separate from explicitly recording evidence.
+  function migrReadStudyObservationRecord(saved, speciesId, region) {
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved) || saved.speciesId !== speciesId || saved.region !== region || typeof saved.note !== 'string' || !saved.note.slice(0, 1000).trim()) return null;
+    return {
+      speciesId: speciesId, region: region, note: saved.note.slice(0, 1000).trim(),
+      bird: Math.floor(migrNum(saved.bird, 0, 0, 31)),
+      yaw: migrNum(saved.yaw, 35, -180, 180), pitch: migrNum(saved.pitch, 15, -10, 60),
+      zoom: migrNum(saved.zoom, 1, 0.65, 1.6), wingStep: Math.floor(migrNum(saved.wingStep, 0, 0, 1000000)),
+      paused: saved.paused === true, motionReduced: saved.motionReduced === true
+    };
+  }
+  function migrReadStudyObservations(raw) {
+    raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var drafts = {}, records = {}, allowed = Object.create(null);
+    SPECIES.forEach(function(species) {
+      var regions = species.id === 'monarch' ? ['whole-wing'] : ['head', 'inner-wing', 'primaries', 'tail'];
+      regions.forEach(function(region) {
+        var key = species.id + ':' + region;
+        allowed[key] = true;
+        if (raw.drafts && Object.prototype.hasOwnProperty.call(raw.drafts, key) && typeof raw.drafts[key] === 'string') drafts[key] = raw.drafts[key].slice(0, 1000);
+        var saved = raw.records && Object.prototype.hasOwnProperty.call(raw.records, key) ? raw.records[key] : null;
+        var record = migrReadStudyObservationRecord(saved, species.id, region);
+        if (record) records[key] = record;
+      });
+    });
+    var feedback = raw.feedback && allowed[raw.feedback.key] && (raw.feedback.action === 'recorded' || raw.feedback.action === 'removed')
+      ? { key: raw.feedback.key, action: raw.feedback.action } : null;
+    var rawComparison = raw.comparison && typeof raw.comparison === 'object' && !Array.isArray(raw.comparison) ? raw.comparison : {};
+    var keys = Object.keys(records);
+    var firstKey = typeof rawComparison.firstKey === 'string' && Object.prototype.hasOwnProperty.call(records, rawComparison.firstKey) ? rawComparison.firstKey : keys[0] || '';
+    var secondKey = typeof rawComparison.secondKey === 'string' && rawComparison.secondKey !== firstKey && Object.prototype.hasOwnProperty.call(records, rawComparison.secondKey) ? rawComparison.secondKey : keys.filter(function(key) { return key !== firstKey; })[0] || '';
+    var savedComparison = null;
+    var saved = rawComparison.saved;
+    if (saved && typeof saved === 'object' && !Array.isArray(saved) && typeof saved.firstKey === 'string' && typeof saved.secondKey === 'string' && allowed[saved.firstKey] && allowed[saved.secondKey] && saved.firstKey !== saved.secondKey && typeof saved.claim === 'string' && saved.claim.slice(0, 1500).trim()) {
+      var firstParts = saved.firstKey.split(':'), secondParts = saved.secondKey.split(':');
+      var first = migrReadStudyObservationRecord(saved.first, firstParts[0], firstParts[1]);
+      var second = migrReadStudyObservationRecord(saved.second, secondParts[0], secondParts[1]);
+      if (first && second) savedComparison = { firstKey: saved.firstKey, secondKey: saved.secondKey, first: first, second: second, claim: saved.claim.slice(0, 1500).trim() };
+    }
+    var comparison = {
+      firstKey: firstKey, secondKey: secondKey,
+      draft: typeof rawComparison.draft === 'string' ? rawComparison.draft.slice(0, 1500) : '',
+      saved: savedComparison,
+      feedback: ['recorded', 'downloaded', 'download-failed'].indexOf(rawComparison.feedback) !== -1 ? rawComparison.feedback : ''
+    };
+    return { drafts: drafts, records: records, feedback: feedback, comparison: comparison };
+  }
+
   function migrFormationSaving(mode) {
     if (!mode) return 0;
     var k = String(mode).toLowerCase();
     return MIGR_FORMATION_SAVING[k] == null ? 0 : MIGR_FORMATION_SAVING[k];
   }
+  // A flight investigation records conditions, not moving scene/camera state.
+  // Resolve natural behavior from IDs so translating catalog prose cannot
+  // change either a recorded observation or the scene's formation.
+  function migrResolvedFlightFormation(speciesId, override) {
+    return ['v', 'loose', 'swarm', 'solo'].indexOf(override) !== -1
+      ? override : migrNaturalFlightFormation(speciesId);
+  }
+
+  // One speed calculation serves the deck, recorded trials, movement and vectors.
+  // Along-route wind is signed: positive assists the route's forward direction.
+  function migrFlightSpeedValues(speciesId, wind) {
+    var species = SPECIES[0];
+    for (var i = 0; i < SPECIES.length; i++) {
+      if (SPECIES[i].id === speciesId) { species = SPECIES[i]; break; }
+    }
+    var alongRouteWind = migrNum(wind, 8, -15, 25) * 2.237;
+    var sum = species.speed + alongRouteWind;
+    return {
+      airSpeed: species.speed,
+      windMph: alongRouteWind,
+      groundSpeed: Math.max(0, Math.round(sum)),
+      rawGroundSpeed: Math.max(0, sum),
+      headwindStops: sum < 0
+    };
+  }
+
+  function migrFlightInvestigationSnapshot(data) {
+    data = data && typeof data === 'object' ? data : {};
+    var speciesId = migrStr(data.flightSpecies, '') || migrStr(data.selectedSpecies, '') || 'canada_goose';
+    var species = SPECIES[0];
+    for (var i = 0; i < SPECIES.length; i++) {
+      if (SPECIES[i].id === speciesId) { species = SPECIES[i]; break; }
+    }
+    var mode = ['natural', 'v', 'loose', 'swarm', 'solo'].indexOf(data.flightFormation) !== -1 ? data.flightFormation : 'natural';
+    var wind = migrNum(data.flightWind, 8, -15, 25);
+    var formation = migrResolvedFlightFormation(species.id, mode);
+    return {
+      speciesId: species.id,
+      season: data.flightSeason === 'spring' ? 'spring' : 'fall',
+      wind: wind,
+      formationMode: mode,
+      formation: formation,
+      groundSpeed: migrFlightSpeedValues(species.id, wind).groundSpeed,
+      benefit: species.id === 'monarch' ? 0 : Math.round(migrFormationSaving(formation) * 100)
+    };
+  }
+
+  // Saved outcomes must describe real, readable conditions. Recompute derived
+  // values with the same model as the deck instead of trusting stale arithmetic.
+  function migrReadFlightInvestigationSnapshot(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var knownSpecies = SPECIES.some(function(species) { return species.id === raw.speciesId; });
+    var wind = migrNum(raw.wind, NaN);
+    if (!knownSpecies || !isFinite(wind) || wind < -15 || wind > 25) return null;
+    if (['fall', 'spring'].indexOf(raw.season) === -1) return null;
+    if (['natural', 'v', 'loose', 'swarm', 'solo'].indexOf(raw.formationMode) === -1) return null;
+    return migrFlightInvestigationSnapshot({ flightSpecies: raw.speciesId, flightSeason: raw.season, flightWind: wind, flightFormation: raw.formationMode });
+  }
+
+  function migrReadFlightInvestigation(raw) {
+    var source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var rows = Array.isArray(source.trials) ? source.trials : [];
+    var trials = [];
+    var repaired = raw != null && source !== raw;
+    if (source.trials != null && !Array.isArray(source.trials)) repaired = true;
+    rows.forEach(function(row) {
+      if (!row || typeof row !== 'object') { repaired = true; return; }
+      var baseline = migrReadFlightInvestigationSnapshot(row.baseline);
+      var snapshot = migrReadFlightInvestigationSnapshot(row.snapshot);
+      if (!baseline || !snapshot || ['wind', 'formation'].indexOf(row.variable) === -1) { repaired = true; return; }
+      if (trials.length >= 6) { repaired = true; return; }
+      trials.push({
+        id: trials.length + 1,
+        variable: row.variable,
+        prediction: migrStr(row.prediction, '').slice(0, 1000),
+        baseline: baseline,
+        snapshot: snapshot
+      });
+    });
+    var baseline = migrReadFlightInvestigationSnapshot(source.baseline);
+    if (source.baseline != null && !baseline) repaired = true;
+    return {
+      variable: source.variable === 'formation' ? 'formation' : 'wind',
+      prediction: migrStr(source.prediction, '').slice(0, 1000),
+      baseline: baseline,
+      trials: trials,
+      evidence: migrStr(source.evidence, '').slice(0, 2000),
+      explanation: migrStr(source.explanation, '').slice(0, 2000),
+      repaired: repaired
+    };
+  }
+
+  function migrCompareFlightInvestigation(baseline, snapshot, variable) {
+    if (!baseline || !snapshot) return { status: 'pending', changed: [], groundSpeedDelta: 0, benefitDelta: 0 };
+    var changed = ['speciesId', 'season', 'wind', 'formation'].filter(function(key) { return baseline[key] !== snapshot[key]; });
+    return {
+      status: !changed.length ? 'unchanged' : changed.length === 1 && changed[0] === variable ? 'controlled' : 'confounded',
+      changed: changed,
+      groundSpeedDelta: snapshot.groundSpeed - baseline.groundSpeed,
+      benefitDelta: snapshot.benefit - baseline.benefit
+    };
+  }
+
+  // Missions reuse the flight deck's model and keep their work separate from
+  // the six-trial open investigation. A model target is never a grade for prose.
+  var MIGR_FLIGHT_GOALS = [
+    { id: 'wind', variable: 'wind', speciesId: 'monarch', season: 'fall', wind: -15, formationMode: 'natural' },
+    { id: 'formation', variable: 'formation', speciesId: 'canada_goose', season: 'fall', wind: 0, formationMode: 'solo' },
+    { id: 'season', variable: 'season', speciesId: 'canada_goose', season: 'fall', wind: 8, formationMode: 'natural' }
+  ];
+  function migrFlightGoalStart(goal) {
+    return migrFlightInvestigationSnapshot({ flightSpecies: goal.speciesId, flightSeason: goal.season, flightWind: goal.wind, flightFormation: goal.formationMode });
+  }
+  function migrIsFlightGoalStart(goal, snapshot) {
+    if (!snapshot) return false;
+    var expected = migrFlightGoalStart(goal);
+    return ['speciesId', 'season', 'wind', 'formationMode'].every(function(key) { return expected[key] === snapshot[key]; });
+  }
+  function migrReadFlightChallenges(raw) {
+    var source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var savedWork = source.work && typeof source.work === 'object' && !Array.isArray(source.work) ? source.work : {};
+    var repaired = raw != null && raw !== source;
+    if (source.work != null && source.work !== savedWork) repaired = true;
+    var work = {};
+    MIGR_FLIGHT_GOALS.forEach(function(goal) {
+      var saved = savedWork[goal.id];
+      var item = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+      if (saved != null && item !== saved) repaired = true;
+      var setup = migrReadFlightInvestigationSnapshot(item.setup);
+      if (setup && !migrIsFlightGoalStart(goal, setup)) setup = null;
+      if (item.setup != null && !setup) repaired = true;
+      var rows = Array.isArray(item.attempts) ? item.attempts : [];
+      if (item.attempts != null && !Array.isArray(item.attempts)) repaired = true;
+      var attempts = [];
+      rows.forEach(function(row) {
+        if (!row || typeof row !== 'object' || Array.isArray(row)) { repaired = true; return; }
+        var baseline = migrReadFlightInvestigationSnapshot(row.baseline);
+        var snapshot = migrReadFlightInvestigationSnapshot(row.snapshot);
+        if (!migrIsFlightGoalStart(goal, baseline) || !snapshot || attempts.length >= 4) { repaired = true; return; }
+        var attempt = { baseline: baseline, snapshot: snapshot, prediction: migrStr(row.prediction, '').slice(0, 1000), notes: migrStr(row.notes, '').slice(0, 2000) };
+        var reflection = migrStr(row.reflection, '').slice(0, 2000);
+        if (reflection.trim()) attempt.reflection = reflection;
+        attempts.push(attempt);
+      });
+      work[goal.id] = { prediction: migrStr(item.prediction, '').slice(0, 1000), notes: migrStr(item.notes, '').slice(0, 2000), setup: setup, attempts: attempts };
+    });
+    return { selectedId: MIGR_FLIGHT_GOALS.some(function(goal) { return goal.id === source.selectedId; }) ? source.selectedId : 'wind', work: work, repaired: repaired };
+  }
+  function migrFlightChallengeAttemptIdentity(attempt) {
+    return JSON.stringify([attempt.baseline, attempt.snapshot, attempt.prediction, attempt.notes]);
+  }
+  function migrCheckFlightGoal(goal, baseline, snapshot) {
+    var result = migrCompareFlightInvestigation(baseline, snapshot, goal.variable);
+    result.met = result.status === 'controlled' && (goal.id === 'wind' ? snapshot.groundSpeed >= 20 : goal.id === 'formation' ? snapshot.benefit >= 20 && snapshot.groundSpeed === baseline.groundSpeed : snapshot.season === 'spring');
+    return result;
+  }
+
+
   // The wingspan a bird of this mass usually carries. Used where a surface does
   // not let the student set span independently, so span never silently
   // disappears from the physics. Fitted to the birds in SPECIES.
@@ -2020,6 +2420,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         { id: 'inquiry', label: t('stem.migration.energy_inquiry', 'Energy Inquiry'), icon: '\uD83D\uDD2C' }
       ];
 
+      // Optional investigations connect the workspaces around a question.
+      // Steps track navigation, never an automatic claim of mastery.
+      function renderGuidedExploration() {
+        var guides = [
+          { id: 'formation', icon: '\u2197', title: t('stem.migration.guide_formation', 'Why fly together?'), steps: [
+            { tab: 'flight3d', title: t('stem.migration.guide_formation_observe', 'Notice the pattern'), prompt: t('stem.migration.guide_formation_observe_prompt', 'Choose Canada Goose. Compare Solo with V formation while keeping the wind unchanged. What changes in the pattern benefit?') },
+            { tab: 'vformation', title: t('stem.migration.guide_formation_explain', 'Find the mechanism'), prompt: t('stem.migration.guide_formation_explain_prompt', 'Arrange the flock into a V, then rotate the leader. Use the upwash and energy displays to explain why the front bird needs a turn at the back.') },
+            { tab: 'inquiry', title: t('stem.migration.guide_formation_test', 'Test your explanation'), prompt: t('stem.migration.guide_formation_test_prompt', 'Choose Formation as the variable tested. Record a Solo trial and a V trial with identical wingspan, mass, wind and distance. Compare their reserve ratios.') }
+          ] },
+          { id: 'wind', icon: '\u224b', title: t('stem.migration.guide_wind', 'Can the air do the work?'), steps: [
+            { tab: 'flight3d', title: t('stem.migration.guide_wind_observe', 'Compare the same flight'), prompt: t('stem.migration.guide_wind_observe_prompt', 'Keep one species and formation. Move Along-route wind from a negative value to a positive value. Compare ground speed before changing anything else.') },
+            { tab: 'wind', title: t('stem.migration.guide_wind_explore', 'Read the moving air'), prompt: t('stem.migration.guide_wind_explore_prompt', 'Explore the streamlines around a mountain and a thermal. Where does the air rise, and how could a migrant use that upward motion?') },
+            { tab: 'inquiry', title: t('stem.migration.guide_wind_test', 'Measure the wind effect'), prompt: t('stem.migration.guide_wind_test_prompt', 'Choose Headwind as the variable tested. Record two different winds while keeping every other control unchanged. Explain how wind changes the energy needed per kilometre.') }
+          ] },
+          { id: 'journey', icon: '\u2316', title: t('stem.migration.guide_journey', 'What makes a journey possible?'), steps: [
+            { tab: 'world', title: t('stem.migration.guide_journey_compare', 'Look for a corridor'), prompt: t('stem.migration.guide_journey_compare_prompt', 'Compare two migrants and their flyways. What land, water or habitat does each journey need to cross?') },
+            { tab: 'routes', title: t('stem.migration.guide_journey_plan', 'Build a route'), prompt: t('stem.migration.guide_journey_plan_prompt', 'Trace one species route and locate its stopovers. Use the distance and habitat information to explain why a migrant needs places to rest and refuel.') },
+            { tab: 'navigate', title: t('stem.migration.guide_journey_decide', 'Make a decision'), prompt: t('stem.migration.guide_journey_decide_prompt', 'Explore weather and navigation. Name one condition that would make you delay departure, and one cue a migrant could use to stay on course.') }
+          ] }
+        ];
+        var saved = d.guidedExploration;
+        if (!saved || typeof saved !== 'object' || Array.isArray(saved)) saved = {};
+        var guide = null;
+        for (var gi = 0; gi < guides.length; gi++) if (guides[gi].id === saved.id) guide = guides[gi];
+        var stepIndex = guide ? Math.round(migrNum(saved.step, 0, 0, guide.steps.length - 1)) : 0;
+        var step = guide && guide.steps[stepIndex];
+        var notes = saved.notes && typeof saved.notes === 'object' && !Array.isArray(saved.notes) ? saved.notes : {};
+        function openStep(nextGuide, index) {
+          var nextStep = nextGuide.steps[index];
+          updMulti({ tab: nextStep.tab, guidedExploration: { id: nextGuide.id, step: index, notes: notes } });
+          if (announceToSR) announceToSR(nextStep.title + '. ' + nextStep.prompt);
+        }
+        function tabLabel(id) {
+          for (var i = 0; i < TABS.length; i++) if (TABS[i].id === id) return TABS[i].label;
+          return id;
+        }
+        return h('details', { className: 'migration-guide', 'data-migration-guides': 'true' },
+          h('summary', { className: 'migration-guide-summary' },
+            h('span', { className: 'migration-guide-kicker' }, t('stem.migration.guided_exploration', 'Guided exploration')),
+            h('span', { className: 'migration-guide-summary-title' }, guide ? guide.title : t('stem.migration.guide_choose_question', 'Follow a question across the lab')),
+            h('span', { className: 'migration-guide-summary-hint' }, t('stem.migration.guide_three_steps', '3 steps \u00b7 your own evidence'))
+          ),
+          h('div', { className: 'migration-guide-body' },
+            h('div', { className: 'migration-guide-options', role: 'group', 'aria-label': t('stem.migration.guide_choose_investigation', 'Choose an investigation') },
+              guides.map(function(item) {
+                return h('button', { key: item.id, type: 'button', className: 'migration-guide-option', 'data-guide-id': item.id,
+                  'aria-pressed': guide && guide.id === item.id ? 'true' : 'false', onClick: function() { openStep(item, 0); } },
+                  h('span', { 'aria-hidden': 'true', className: 'migration-guide-icon' }, item.icon), h('span', null, item.title));
+              })
+            ),
+            guide && h('div', { className: 'migration-guide-investigation' },
+              h('ol', { className: 'migration-guide-steps', 'aria-label': t('stem.migration.guide_steps', 'Investigation steps') },
+                guide.steps.map(function(item, index) {
+                  return h('li', { key: item.tab }, h('button', { type: 'button', 'aria-current': index === stepIndex ? 'step' : undefined,
+                    onClick: function() { openStep(guide, index); } }, h('span', { 'aria-hidden': 'true' }, String(index + 1)), item.title));
+                })
+              ),
+              h('div', { className: 'migration-guide-task' },
+                h('p', { className: 'migration-guide-workspace' }, tabLabel(step.tab)),
+                h('h3', { id: 'migration-guide-task-title' }, step.title),
+                h('p', null, step.prompt),
+                h('div', { className: 'migration-guide-actions' },
+                  tab !== step.tab && h('button', { type: 'button', onClick: function() { openStep(guide, stepIndex); } }, t('stem.migration.guide_open_workspace', 'Open workspace') + ': ' + tabLabel(step.tab)),
+                  stepIndex > 0 && h('button', { type: 'button', onClick: function() { openStep(guide, stepIndex - 1); } }, t('stem.migration.guide_previous', 'Previous step')),
+                  stepIndex < guide.steps.length - 1 && h('button', { type: 'button', className: 'migration-guide-next', onClick: function() { openStep(guide, stepIndex + 1); } }, t('stem.migration.guide_next', 'Next step') + ' \u2192')
+                )
+              ),
+              h('label', { className: 'migration-guide-reflection' },
+                h('span', null, t('stem.migration.guide_evidence', 'What did you notice?')),
+                h('textarea', { rows: 2, maxLength: 2000, value: typeof notes[guide.id] === 'string' ? notes[guide.id] : '',
+                  placeholder: t('stem.migration.guide_reflection_placeholder', 'Use an observation or a pair of measurements to support your explanation.'),
+                  onChange: function(event) { var nextNotes = Object.assign({}, notes); nextNotes[guide.id] = event.target.value; upd('guidedExploration', { id: guide.id, step: stepIndex, notes: nextNotes }); }
+                }),
+                h('small', null, t('stem.migration.guide_saved_note', 'Your note is saved with this lab. You can revisit any step.'))
+              )
+            )
+          )
+        );
+      }
+
       // ── Theme helpers ──
       var bg = isDark ? 'bg-slate-900' : 'bg-white';
       var cardBg = isDark ? 'bg-slate-800' : 'bg-slate-50';
@@ -2034,12 +2514,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var btnSecondary = isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-200 hover:bg-slate-300 text-slate-700';
 
       // ── Reduced motion ──
-      var reducedMotionRef = useRef(false);
+      var motionPreference = useState(function() { var media = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)'); return !!(media && media.matches); });
+      var motionReduced = motionPreference[0];
+      var setMotionReduced = motionPreference[1];
+      var reducedMotionRef = useRef(motionReduced);
       useEffect(function() {
         var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-        reducedMotionRef.current = mq && mq.matches;
+        reducedMotionRef.current = !!(mq && mq.matches);
+        setMotionReduced(reducedMotionRef.current);
         if (mq && mq.addEventListener) {
-          var handler = function(e) { reducedMotionRef.current = e.matches; };
+          var handler = function(e) { reducedMotionRef.current = e.matches; setMotionReduced(e.matches); };
           mq.addEventListener('change', handler);
           return function() { mq.removeEventListener('change', handler); };
         }
@@ -2061,6 +2545,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _f3dHostRef = useRef(null);
       var _f3dEngineRef = useRef(null);
       var _f3dBootRef = useRef(0);
+      var _f3dStudyDragRef = useRef(null);
+      var _f3dStudyRevisitRef = useRef(null);
+      var studyRevisitStatus = useState(null);
+      // A viewing aid for the saved comparison, never part of recorded evidence.
+      var studyMatchedViewState = useState('profile');
+      // A temporary visual reference. Frozen geometry never enters learner work.
+      var studyMarkedPoseState = useState(null);
+      // Follow an anatomical tip without recording a learner response.
+      var studyWingtipFollowState = useState(null);
+      // A selected illustrative cycle position is a temporary viewing aid.
+      var studyCyclePositionState = useState(null);
+      var _f3dStudyCyclePauseRef = useRef(null);
+      var _f3dStudyStepAckRef = useRef({ serial: 0, paused: false, pending: null });
+      // Focus requests are transient UI state, never recorded learner work.
+      var _f3dMotionNoteFocusRef = useRef(null);
+      var studyMotionNoteFocusTick = useState(0);
+      // A transient viewing aid; revisiting never rewrites recorded evidence.
+      var flightTrialRevisitStatus = useState(null);
+      // A committed navigation owner; never part of saved learner work.
+      var _flightTrialEvidenceReviewRef = useRef({ selected: null, panel: null });
+      // Saved challenge inspection is a transient, explicitly selected view.
+      var flightChallengeInspectionState = useState(null);
+      var _flightChallengeInspectionSerialRef = useRef(0);
+      var _flightChallengeInspectionReturnRef = useRef(null);
+      useEffect(function() {
+        var request = flightChallengeInspectionState[0];
+        if (request && !currentFlightChallengeInspection(request)) flightChallengeInspectionState[1](null);
+      });
+      // Later reflections have explicit saves; drafts and ownership stay local.
+      var flightChallengeReflectionState = useState(null);
+      var _flightChallengeReflectionOwnerRef = useRef(null);
+      var _flightChallengeReflectionFocusRef = useRef(null);
+      useEffect(function() {
+        var request = _flightChallengeReflectionFocusRef.current;
+        if (!request) return;
+        _flightChallengeReflectionFocusRef.current = null;
+        var owner = _flightChallengeReflectionOwnerRef.current;
+        if (!owner || owner.draft || owner.panel !== request.panel || !owner.panel.isConnected || owner.goalId !== request.goalId) return;
+        var attempt = owner.attempts[request.index];
+        var target = attempt && migrFlightChallengeAttemptIdentity(attempt) === request.attemptSignature
+          ? owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"] [data-flight-reflection-action="edit"]') : null;
+        if (!target && request.fallback) target = owner.panel.querySelector('[data-flight-challenge="' + owner.goalId + '"]');
+        if (target && target.isConnected && !target.disabled && target.focus) target.focus();
+      });
       // Tab 2: Wind Currents refs
       var _wcCanvasRef = useRef(null);
       var _wcAnimRef = useRef(null);
@@ -2076,6 +2604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _rtCanvasRef = useRef(null);
       var _rtAnimRef = useRef(null);
       var _rtTimeRef = useRef(0);
+      var _rtAIRequestRef = useRef({ serial: 0, active: null });
       // Tab 4: Aero refs
       var _arCanvasRef = useRef(null);
       var _arAnimRef = useRef(null);
@@ -2086,23 +2615,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _nvTimeRef = useRef(0);
       // Live values ref — updated every render so animation loops read fresh state
       var _liveVals = useRef({});
+      var flightValues = migrFlightInvestigationSnapshot(d);
+      var flightInvestigation = migrReadFlightInvestigation(d.flightInvestigation);
+      var studyBirdCount = migrationFormationPositions(findMigrationSpecies(flightValues.speciesId), flightValues.formationMode).length;
+      var studyView = {
+        bird: Math.round(migrNum(d.flightStudyBird, 0, 0, studyBirdCount - 1)),
+        yaw: Math.round(migrNum(d.flightStudyYaw, 35, -180, 180) / 5) * 5,
+        pitch: Math.round(migrNum(d.flightStudyPitch, 15, -10, 60) / 5) * 5,
+        zoom: Math.round(migrNum(d.flightStudyZoom, 1, 0.65, 1.6) * 20) / 20,
+        step: Math.floor(migrNum(d.flightWingStep, 0, 0, 1000000))
+      };
       _liveVals.current = {
         birdCount: migrNum(d.vBirdCount, 9, 2, 30), simSpeed: migrNum(d.vSpeed, 1, 0.25, 4),
         windDir: migrNum(d.windDir, 0, -360, 360), windSpeed: migrNum(d.windSpeed, 15, 0, 50),
         showStreamlines: d.showStreamlines, placingObj: d.placingObj,
         selectedSpecies: d.selectedSpecies, aoa: migrNum(d.aoa, 5, 0, 20),
-        flightSpecies: d.flightSpecies || d.selectedSpecies || 'canada_goose',
-        flightCamera: d.flightCamera || 'chase',
-        flightFormation: d.flightFormation || 'natural',
+        flightSpecies: flightValues.speciesId,
+        flightCamera: ['chase', 'aerial', 'side', 'study'].indexOf(d.flightCamera) !== -1 ? d.flightCamera : 'chase',
+        flightFormation: flightValues.formationMode,
         flightWind: migrNum(d.flightWind, 8, -15, 25),
         flightPaused: !!d.flightPaused,
-        flightSeason: d.flightSeason || 'fall',
+        flightSeason: flightValues.season,
+        flightShowAirflow: d.flightShowAirflow === true,
+        flightShowSpeedVectors: d.flightShowSpeedVectors === true,
+        flightSpeedValues: migrFlightSpeedValues(flightValues.speciesId, flightValues.wind),
+        flightShowRoute: d.flightShowRoute !== false,
+        flightStudyBird: studyView.bird, flightStudyYaw: studyView.yaw,
+        flightStudyPitch: studyView.pitch, flightStudyZoom: studyView.zoom,
+        flightShowAnatomy: d.flightShowAnatomy === true, flightWingStep: studyView.step,
+        flightShowWingtipPath: d.flightShowWingtipPath === true,
+        flightMarkedPose: studyMarkedPoseState[0], flightViewRestorePending: false,
+        flightStudyRegion: flightValues.speciesId === 'monarch' ? '' : ['head', 'inner-wing', 'primaries', 'tail'].indexOf(d.flightStudyRegion) !== -1 ? d.flightStudyRegion : 'head',
         selectedWing: d.selectedWing || MIGR_DEFAULT_WING, isDark: isDark, tab: tab, t: t,
         // Read inside deferred canvas callbacks, so they cannot come from the
         // render closure: vLeaderRotations is both DISPLAYED and INCREMENTED
         // there, and thermalRidden gates a one-shot XP award.
         vLeaderRotations: d.vLeaderRotations || 0, thermalRidden: !!d.thermalRidden
       };
+      _f3dStudyStepAckRef.current.serial = studyView.step;
+      _f3dStudyStepAckRef.current.paused = _liveVals.current.flightPaused;
+      applyMigrationStudyPendingStepAcknowledgement(_f3dEngineRef.current, _liveVals.current, _f3dStudyStepAckRef.current);
+      studyView.step = _liveVals.current.flightWingStep;
+      // A selected Study pose owns its pause until an explicit playback or
+      // context change ends it. Host values can acknowledge an older Resume.
+      var cyclePauseIntent = _f3dStudyCyclePauseRef.current;
+      if (cyclePauseIntent) {
+        var ownedStudyPause = cyclePauseIntent.kind === 'marked-return'
+          ? studyMarkedPoseState[0] && studyMarkedPoseState[0].returnIntent === cyclePauseIntent
+          : cyclePauseIntent === studyCyclePositionState[0];
+        if (!ownedStudyPause || !migrationStudyPauseIntentMatches(cyclePauseIntent, _f3dEngineRef.current, _liveVals.current, true)) {
+          _f3dStudyCyclePauseRef.current = null;
+        } else _liveVals.current.flightPaused = true;
+      }
+      var studyCycleSelection = migrationStudyCyclePositionMatches(studyCyclePositionState[0], _f3dEngineRef.current, _liveVals.current)
+        ? studyCyclePositionState[0] : null;
+      _liveVals.current.flightStudyCyclePosition = studyCycleSelection ? studyCycleSelection.index : undefined;
+      var studyWingtipFollowSelection = migrationStudyWingtipFollowMatches(studyWingtipFollowState[0], _f3dEngineRef.current, _liveVals.current)
+        ? studyWingtipFollowState[0] : null;
+      _liveVals.current.flightWingtipFollowSide = studyWingtipFollowSelection ? studyWingtipFollowSelection.side : undefined;
+      _liveVals.current.flightWingtipFollowSourceUuid = studyWingtipFollowSelection ? studyWingtipFollowSelection.context.sourceBirdUuid : undefined;
+      // Keep the acknowledged view until the host applies the atomic request.
+      // Pending restores gate comparison feedback without previewing a camera.
+      var markedViewRestore = studyMarkedPoseState[0] && studyMarkedPoseState[0].viewRestoreIntent;
+      _liveVals.current.flightViewRestorePending = !!(markedViewRestore &&
+        migrationStudyMarkedViewRestoreMatches(markedViewRestore, _f3dEngineRef.current, _liveVals.current, studyMarkedPoseState[0]) &&
+        !migrationStudyComparisonViewsMatch(migrationStudyComparisonView(_liveVals.current), markedViewRestore.view));
+      // A direct gesture previews through the existing RAF; unrelated React
+      // renders must not reset its orbit before the single final state write.
+      var activeStudyDrag = _f3dStudyDragRef.current;
+      if (activeStudyDrag && tab === 'flight3d' && _liveVals.current.flightCamera === 'study' && _liveVals.current.flightSpecies === activeStudyDrag.speciesId) {
+        _liveVals.current.flightStudyYaw = activeStudyDrag.yaw;
+        _liveVals.current.flightStudyPitch = activeStudyDrag.pitch;
+      }
 
       // ══════════════════════════════════════════
       // TAB 1: V-FORMATION SIMULATOR
@@ -2123,34 +2707,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return t('stem.migration.fmt_loose', 'Loose flock');
       }
       function flightFormationName(species, override) {
-        if (override && override !== 'natural') return override;
-        if (species.id === 'monarch') return 'swarm';
-        if (species.formation === 'V-formation') return 'v';
-        if (species.formation === 'Solo') return 'solo';
-        return 'loose';
+        return migrResolvedFlightFormation(species.id, override);
       }
 
       function disposeMigrationObject(root) {
         if (!root || !root.traverse) return;
+        // Shared ridge/cloud buffers and repeated materials belong to the
+        // scene once, even when many visible meshes reference them.
+        var geometries = new Set(), materials = new Set(), textures = new Set();
         root.traverse(function(obj) {
-          if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+          // InstancedMesh owns instance attributes outside its shared geometry.
+          if (obj.isInstancedMesh && typeof obj.dispose === 'function') obj.dispose();
+          if (obj.geometry && obj.geometry.dispose && !geometries.has(obj.geometry)) {
+            geometries.add(obj.geometry);
+            obj.geometry.dispose();
+          }
           if (obj.material) {
             var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
             mats.forEach(function(mat) {
-              if (mat.map && mat.map.dispose) mat.map.dispose();
+              if (!mat || materials.has(mat)) return;
+              materials.add(mat);
+              if (mat.map && mat.map.dispose && !textures.has(mat.map)) {
+                textures.add(mat.map);
+                mat.map.dispose();
+              }
               if (mat.dispose) mat.dispose();
             });
           }
         });
       }
 
+      function releaseMigrationStudyPointer(drag) {
+        if (!drag || !drag.host) return;
+        if (drag.onBlur) window.removeEventListener('blur', drag.onBlur);
+        drag.host.removeAttribute('data-study-dragging');
+        try {
+          if (drag.host.hasPointerCapture && drag.host.hasPointerCapture(drag.pointerId)) drag.host.releasePointerCapture(drag.pointerId);
+        } catch (ignore) {}
+      }
+
+      function cancelMigrationStudyPreview() {
+        var drag = _f3dStudyDragRef.current;
+        _f3dStudyDragRef.current = null;
+        if (drag && _liveVals.current.flightCamera === 'study' && _liveVals.current.flightSpecies === drag.speciesId) {
+          _liveVals.current.flightStudyYaw = drag.startYaw;
+          _liveVals.current.flightStudyPitch = drag.startPitch;
+        }
+        releaseMigrationStudyPointer(drag);
+      }
+
       function destroyMigrationFlightEngine() {
+        cancelMigrationStudyPreview();
+        _f3dStudyStepAckRef.current.pending = null;
+        _f3dStudyRevisitRef.current = null;
+        _f3dStudyCyclePauseRef.current = null;
+        studyCyclePositionState[1](null);
+        _liveVals.current.flightStudyCyclePosition = undefined;
+        _liveVals.current.flightWingtipFollowSide = undefined;
+        _liveVals.current.flightWingtipFollowSourceUuid = undefined;
+        studyWingtipFollowState[1](null);
         var engine = _f3dEngineRef.current;
         _f3dBootRef.current += 1;
         if (!engine) {
           _f3dHostRef.current = null;
           return;
         }
+        if (engine.markedWingPose) engine.markedWingPose.clearPose();
+        if (engine.wingtipPath) engine.wingtipPath.invalidate();
+        if (typeof engine.updateAnatomy === 'function') engine.updateAnatomy(false, 0, '');
         engine.disposed = true;
         if (engine.raf) cancelAnimationFrame(engine.raf);
         if (engine.resizeObserver) engine.resizeObserver.disconnect();
@@ -2177,21 +2801,564 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // read as a paper dart rather than a wing at every camera angle.
       // `reach` scales span, `sweep` scales chord — same meaning as before, so
       // the monarch's inner/outer wing calls still work.
-      function createMigrationWingGeometry(THREE, side, reach, sweep) {
+      // Shared terrain-height mesh: three joined summits and incised shoulders
+      // replace repeated cones. Snow belongs to the same surface as the rock,
+      // so the snow line follows gullies instead of floating as a separate cap.
+      function createMigrationRidgeGeometry(THREE, snowy) {
+        var grid = 20;
+        var positions = [];
+        var heights = [];
+        var indices = [];
+        var colors = [];
+        var highest = 0;
+        var tint = new THREE.Color();
+        var snowTint = new THREE.Color(0xe3edf2);
+        for (var rz = 0; rz <= grid; rz++) {
+          var v = -1 + rz * 2 / grid;
+          for (var rx = 0; rx <= grid; rx++) {
+            var u = -1 + rx * 2 / grid;
+            // Map the grid onto a disk so the whole skirt stays inside the
+            // footprint used to ground each instance against the land.
+            var x = u * Math.sqrt(1 - v * v / 2);
+            var z = v * Math.sqrt(1 - u * u / 2);
+            var edge = Math.max(0, 1 - Math.pow(Math.max(Math.abs(u), Math.abs(v)), 5));
+            var main = Math.exp(-((x + 0.16) * (x + 0.16) * 10 + (z + 0.12) * (z + 0.12) * 8));
+            var shoulder = 0.86 * Math.exp(-((x - 0.38) * (x - 0.38) * 12 + (z - 0.19) * (z - 0.19) * 10));
+            var spur = 0.74 * Math.exp(-((x + 0.42) * (x + 0.42) * 12 + (z - 0.34) * (z - 0.34) * 11));
+            var gully = Math.sin(x * 18 + z * 6) * Math.sin(z * 13 - x * 4) * 0.055;
+            var height = Math.max(0, (Math.max(main, shoulder, spur) + gully) * edge);
+            heights.push(height);
+            positions.push(x, height, z);
+            highest = Math.max(highest, height);
+          }
+        }
+        for (var vertex = 0; vertex < heights.length; vertex++) {
+          var h = heights[vertex] / highest;
+          var vx = positions[vertex * 3];
+          var vz = positions[vertex * 3 + 2];
+          positions[vertex * 3 + 1] = h - 0.5;
+          var stratum = Math.sin(vx * 17 + vz * 11) * Math.sin(vz * 19 - vx * 3);
+          tint.setHSL(0.57 - h * 0.035, 0.10, 0.27 + h * 0.13 + stratum * 0.025);
+          if (snowy) {
+            // An uneven snow line reveals the ridges and sheltered gullies.
+            // This is scenery, not an altitude or climate measurement.
+            var snowLine = 0.57 + Math.sin(vx * 7 + vz * 5) * 0.065 + Math.cos(vz * 13) * 0.035;
+            var snow = Math.max(0, Math.min(1, (h - snowLine) / 0.12));
+            snow = snow * snow * (3 - 2 * snow);
+            tint.lerp(snowTint, snow);
+          }
+          colors.push(tint.r, tint.g, tint.b);
+        }
+        for (var iz = 0; iz < grid; iz++) {
+          for (var ix = 0; ix < grid; ix++) {
+            var a = iz * (grid + 1) + ix;
+            var b = a + grid + 1;
+            // Upward-facing triangles; alternating diagonals avoid a repeated
+            // diagonal crease in a naturally irregular ridgeline.
+            if ((ix + iz) % 2) indices.push(a, b, a + 1, a + 1, b, b + 1);
+            else indices.push(a, b, b + 1, a, b + 1, a + 1);
+          }
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        geometry.computeBoundingSphere();
+        geometry.userData.migrationRidgeGrid = grid;
+        geometry.userData.migrationSnowy = !!snowy;
+        return geometry;
+      }
+
+      function createMigrationWingGeometry(THREE, side, reach, sweep, section) {
         var s = side;
         var k = sweep;
         var geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-          0.04 * s, 0.000, -0.46 * k,          // 0 root, leading edge
-          0.04 * s, 0.000, 0.44 * k,           // 1 root, trailing edge
-          0.50 * reach * s, 0.055, -0.40 * k,  // 2 wrist, leading
-          0.48 * reach * s, 0.045, 0.33 * k,   // 3 wrist, trailing
-          0.78 * reach * s, 0.085, -0.24 * k,  // 4 outer, leading
-          1.00 * reach * s, 0.115, 0.05 * k,   // 5 tip
-          0.90 * reach * s, 0.100, 0.27 * k    // 6 tip, trailing
-        ]), 3));
-        geometry.setIndex([0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 6, 3, 4, 5, 6]);
+        var vertices;
+        var indices;
+        var colors;
+        if (section === 'inner') {
+          // Keep the shoulder's four-edge rim and wrist join exact. A single
+          // inset surface gives the broad inner wing shallow vane relief;
+          // these six visual ridges are not a measured feather count or anatomy.
+          vertices = [0.04 * s, 0, -0.46 * k, 0.04 * s, 0, 0.44 * k,
+            0.50 * reach * s, 0.055, -0.40 * k, 0.50 * reach * s, 0.055, 0.28 * k];
+          colors = [0.86, 0.86, 0.86, 0.82, 0.82, 0.82,
+            0.86, 0.86, 0.86, 0.82, 0.82, 0.82];
+          indices = [];
+          var chordStations = [0.13, 0.35, 0.65, 0.88];
+          for (var row = 0; row < 4; row++) {
+            var v = chordStations[row];
+            var chordLift = Math.sin(Math.PI * v);
+            for (var column = 0; column < 13; column++) {
+              var u = 0.06 + 0.88 * column / 12;
+              // Ease the relief into the rim so narrow transition facets do
+              // not flip their lighting in the overhead Study view.
+              var ridge = row === 0 || row === 3 ? 0 : column % 2;
+              var leading = (-0.46 + 0.06 * u) * k;
+              var trailing = (0.44 - 0.16 * u) * k;
+              vertices.push((0.04 + (0.50 * reach - 0.04) * u) * s,
+                0.055 * u + (0.045 * Math.sin(Math.PI * u) + 0.032 * ridge) * chordLift,
+                leading + (trailing - leading) * v);
+              var shade = 0.82 + (0.11 + 0.07 * ridge) * chordLift;
+              colors.push(shade, shade, shade);
+            }
+          }
+          // One manifold grid, surrounded by an annulus that meets only the
+          // original four rim vertices. Marked-pose outlines stay on that rim.
+          for (var gridRow = 0; gridRow < 3; gridRow++) {
+            for (var gridColumn = 0; gridColumn < 12; gridColumn++) {
+              var cell = 4 + gridRow * 13 + gridColumn;
+              indices.push(cell, cell + 1, cell + 13, cell + 1, cell + 14, cell + 13);
+            }
+          }
+          indices.push(0, 2, 16, 1, 55, 3, 0, 43, 1, 2, 3, 55);
+          for (var span = 0; span < 12; span++) {
+            indices.push(0, 16 - span, 15 - span, 1, 43 + span, 44 + span);
+          }
+          for (var chord = 0; chord < 3; chord++) {
+            indices.push(0, 4 + chord * 13, 17 + chord * 13,
+              2, 55 - chord * 13, 42 - chord * 13);
+          }
+        } else if (section === 'outer') {
+          // Wrist-local hand panel: keep the original five-point rim while
+          // shallow interior camber lets Study light reveal the broad surface.
+          // This stylized relief does not represent measured wing anatomy.
+          vertices = [0, 0, -0.40 * k, 0, 0, 0.28 * k,
+            0.28 * reach * s, 0.03, -0.24 * k, 0.50 * reach * s, 0.06, 0.05 * k,
+            0.34 * reach * s, 0.045, 0.14 * k,
+            0.12 * reach * s, 0.047, -0.05 * k,
+            0.31 * reach * s, 0.073, 0.04 * k];
+          // Rim order is 0,2,3,4,1. Consistent winding keeps the temporary
+          // marked-wing outline on that rim rather than the interior edges.
+          indices = [0, 2, 5, 2, 3, 5, 3, 6, 5, 3, 4, 6,
+            4, 1, 6, 1, 5, 6, 1, 0, 5];
+        } else {
+          // Monarchs keep a continuous membrane rather than feathered hands.
+          vertices = [0.04 * s, 0, -0.46 * k, 0.04 * s, 0, 0.44 * k,
+            0.50 * reach * s, 0.055, -0.40 * k, 0.48 * reach * s, 0.045, 0.33 * k,
+            0.78 * reach * s, 0.085, -0.24 * k, reach * s, 0.115, 0.05 * k,
+            0.90 * reach * s, 0.100, 0.27 * k];
+          indices = [0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 6, 3, 4, 5, 6];
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        if (colors) geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
         geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationPrimaryGeometry(THREE, reach, sweep) {
+        // Five tapered primary silhouettes still share ONE geometry and
+        // material. Their five-point rims stay unchanged; two interior stations
+        // add shallow stylized vane relief for the Study lights to reveal.
+        var vertices = [];
+        var indices = [];
+        var colors = [];
+        for (var feather = 0; feather < 5; feather++) {
+          var x = (0.10 + feather * 0.072) * reach;
+          var z = (0.08 + feather * 0.013) * sweep;
+          var length = (0.47 - feather * 0.041) * sweep;
+          var spread = (0.06 + feather * 0.038) * reach;
+          var half = 0.047 * reach;
+          var start = vertices.length / 3;
+          vertices.push(x - half, 0.048, z, x + half, 0.048, z,
+            x + spread + half * 0.60, 0.075, z + length * 0.82,
+            x + spread, 0.065, z + length,
+            x + spread - half * 0.60, 0.075, z + length * 0.82,
+            x + spread * 0.32, 0.082, z + length * 0.26,
+            x + spread * 0.86, 0.105, z + length * 0.70);
+          // A pale center and darker edges follow the actual shallow ridge.
+          // These shapes support observation, not measured feather anatomy.
+          for (var vertex = 0; vertex < 7; vertex++) {
+            var shade = vertex === 6 ? 1 : vertex === 5 ? 0.96
+              : vertex === 3 ? 0.98 : (vertex < 2 ? 0.78 : 0.88);
+            shade *= 1 - feather * 0.018;
+            colors.push(shade, shade, shade);
+          }
+          // Consistent winding preserves the original rim without adding
+          // internal edges to the temporary marked-pose boundary.
+          indices.push(start, start + 1, start + 5,
+            start + 1, start + 2, start + 5,
+            start + 2, start + 6, start + 5,
+            start + 2, start + 3, start + 6,
+            start + 3, start + 4, start + 6,
+            start + 4, start + 5, start + 6,
+            start + 4, start, start + 5);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationTailGeometry(THREE) {
+        // Seven stylized tail feathers share one static buffer and material.
+        // Preserve their scalloped rims while adding shallow vane relief.
+        var vertices = [], colors = [], indices = [];
+        for (var feather = 0; feather < 7; feather++) {
+          var offset = feather - 3;
+          var root = offset * 0.024;
+          var tip = offset * 0.097;
+          var length = 0.69 - Math.abs(offset) * 0.035;
+          var half = 0.058;
+          var start = vertices.length / 3;
+          vertices.push(root - 0.03, 0, 0, root + 0.03, 0, 0,
+            tip + half, 0.025, length * 0.83, tip, 0.042, length,
+            tip - half, 0.025, length * 0.83,
+            root + (tip - root) * 0.30, 0.035, length * 0.28,
+            root + (tip - root) * 0.78, 0.052, length * 0.68);
+          // The raised center catches Study light; the original rim tints stay.
+          // This is visual relief, not measured feather anatomy.
+          for (var vertex = 0; vertex < 7; vertex++) {
+            var shade = vertex === 6 ? 1 : vertex === 5 ? 0.95
+              : vertex === 3 ? 0.98 : (vertex < 2 ? 0.76 : 0.87);
+            colors.push(shade, shade, shade);
+          }
+          indices.push(start, start + 1, start + 5,
+            start + 1, start + 2, start + 5, start + 2, start + 6, start + 5,
+            start + 2, start + 3, start + 6, start + 3, start + 4, start + 6,
+            start + 4, start + 5, start + 6, start + 4, start, start + 5);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationMonarchWingGeometry(THREE, lobe) {
+        // Each curved wing is one static buffer: dark membrane, inset orange
+        // cells and pale margin spots. Both faces carry the same pattern, so
+        // a bank or paused wingbeat never exposes an unpainted underside.
+        var fore = lobe === 'fore';
+        var outline = new THREE.Shape();
+        if (fore) {
+          outline.moveTo(0.055, -0.12);
+          outline.bezierCurveTo(0.19, -0.35, 0.48, -0.66, 0.70, -0.63);
+          outline.bezierCurveTo(0.87, -0.62, 0.86, -0.44, 0.79, -0.25);
+          outline.bezierCurveTo(0.69, 0.01, 0.43, 0.20, 0.07, 0.19);
+          outline.quadraticCurveTo(0.035, 0.04, 0.055, -0.12);
+        } else {
+          outline.moveTo(0.06, -0.035);
+          outline.bezierCurveTo(0.30, -0.08, 0.65, 0.10, 0.71, 0.32);
+          outline.bezierCurveTo(0.77, 0.49, 0.53, 0.65, 0.33, 0.64);
+          outline.bezierCurveTo(0.14, 0.65, 0.07, 0.44, 0.06, 0.25);
+          outline.quadraticCurveTo(0.035, 0.10, 0.06, -0.035);
+        }
+        var positions = [], colors = [], indices = [];
+        var black = new THREE.Color(0x141820);
+        var white = new THREE.Color(0xfff9e8);
+        var orange = [new THREE.Color(0xf89024), new THREE.Color(0xffa735), new THREE.Color(0xe96b17)];
+        function surfaceY(x, z) {
+          return x * 0.035 + (fore ? 0.008 : -0.008) + z * 0.008;
+        }
+        function polygon(points, color, offset) {
+          var start = positions.length / 3;
+          var contour = points.map(function(p) { return new THREE.Vector2(p[0], p[1]); });
+          var faces = THREE.ShapeUtils.triangulateShape(contour, []);
+          for (var p = 0; p < contour.length; p++) {
+            positions.push(contour[p].x, surfaceY(contour[p].x, contour[p].y) + offset, contour[p].y);
+            colors.push(color.r, color.g, color.b);
+          }
+          for (var face = 0; face < faces.length; face++) {
+            indices.push(start + faces[face][0], start + faces[face][1], start + faces[face][2]);
+          }
+        }
+        var boundary = outline.getPoints(8).map(function(p) { return [p.x, p.y]; });
+        boundary.pop();
+        polygon(boundary, black, 0);
+
+        // A narrow gap between neighboring panels becomes the dark vein.
+        // Separate inner and outer panels retain the cellular pattern at a
+        // close Study view while the broad silhouette reads from the flock.
+        var center = fore ? [0.12, 0.09] : [0.13, 0.12];
+        var rim = fore
+          ? [[0.15, -0.14], [0.29, -0.36], [0.48, -0.51], [0.66, -0.53], [0.74, -0.41], [0.68, -0.20], [0.54, -0.035], [0.33, 0.075]]
+          : [[0.24, 0.035], [0.44, 0.09], [0.58, 0.20], [0.62, 0.35], [0.51, 0.49], [0.34, 0.54], [0.21, 0.44], [0.13, 0.29]];
+        function along(point, amount) {
+          return [center[0] + (point[0] - center[0]) * amount, center[1] + (point[1] - center[1]) * amount];
+        }
+        var cellCount = 0;
+        function cell(points, color) {
+          var cx = 0, cz = 0;
+          for (var v = 0; v < points.length; v++) { cx += points[v][0]; cz += points[v][1]; }
+          cx /= points.length; cz /= points.length;
+          var inset = points.map(function(p) { return [cx + (p[0] - cx) * 0.90, cz + (p[1] - cz) * 0.90]; });
+          polygon(inset, color, 0.004);
+          polygon(inset, color, -0.004);
+          cellCount++;
+        }
+        for (var panel = 0; panel < rim.length - 1; panel++) {
+          var a = rim[panel], b = rim[panel + 1];
+          cell([along(a, 0.52), a, b, along(b, 0.52)], orange[panel % orange.length]);
+          cell([center, along(a, 0.49), along(b, 0.49)], orange[(panel + 1) % orange.length]);
+        }
+
+        var spotCount = fore ? 13 : 11;
+        for (var spot = 0; spot < spotCount; spot++) {
+          // Sample the curved outer margin, keeping a visible black border.
+          var progress = (fore ? 0.14 : 0.18) + spot / (spotCount - 1) * (fore ? 0.61 : 0.62);
+          var edge = boundary[Math.min(boundary.length - 1, Math.round(progress * (boundary.length - 1)))];
+          var spotX = edge[0] * 0.95 + center[0] * 0.05;
+          var spotZ = edge[1] * 0.95 + center[1] * 0.05;
+          var radius = (spot % 3 === 0 ? 0.017 : 0.012);
+          var disk = [];
+          for (var segment = 0; segment < 7; segment++) {
+            var angle = segment / 7 * Math.PI * 2;
+            disk.push([spotX + Math.cos(angle) * radius, spotZ + Math.sin(angle) * radius]);
+          }
+          polygon(disk, white, 0.008);
+          polygon(disk, white, -0.008);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        geometry.computeBoundingSphere();
+        geometry.userData.monarchLobe = lobe;
+        // The leading vertices form the true outer membrane, before decorative
+        // cells and spots are appended. Temporary pose outlines use this rim.
+        geometry.userData.monarchBoundaryVertexCount = boundary.length;
+        geometry.userData.monarchCellCount = cellCount;
+        geometry.userData.monarchSpotCount = spotCount;
+        return geometry;
+      }
+
+      function createMigrationNeckGeometry(THREE, speciesId) {
+        // A few smooth rings blend the breast into the head. The gentle curve
+        // keeps the long flight posture extended, rather than heron-like.
+        var crane = speciesId === 'sandhill_crane';
+        var goose = speciesId === 'canada_goose' || speciesId === 'snow_goose';
+        var centers = crane
+          ? [[0, 0.015, -0.38], [0, 0.035, -0.70], [0, 0.07, -0.99], [0, 0.085, -1.24], [0, 0.075, -1.42]]
+          : (goose
+            ? [[0, 0.015, -0.38], [0, 0.045, -0.60], [0, 0.09, -0.82], [0, 0.13, -1.02], [0, 0.10, -1.16]]
+            : [[0, 0, -0.38], [0, 0.015, -0.55], [0, 0.01, -0.72], [0, 0, -0.84]]);
+        var curve = new THREE.CatmullRomCurve3(centers.map(function(point) { return new THREE.Vector3(point[0], point[1], point[2]); }));
+        var vertices = [], indices = [];
+        var longitudinal = 14, radial = 10;
+        for (var ring = 0; ring <= longitudinal; ring++) {
+          var t = ring / longitudinal;
+          var point = curve.getPoint(t), tangent = curve.getTangent(t);
+          var normal = new THREE.Vector3(0, -tangent.z, tangent.y).normalize();
+          var radius = 0.085 + 0.10 * Math.pow(1 - t, 1.25);
+          for (var spoke = 0; spoke < radial; spoke++) {
+            var angle = spoke / radial * Math.PI * 2;
+            vertices.push(point.x + Math.cos(angle) * radius,
+              point.y + Math.sin(angle) * normal.y * radius * 0.92,
+              point.z + Math.sin(angle) * normal.z * radius * 0.92);
+            if (ring < longitudinal) {
+              var a = ring * radial + spoke, b = ring * radial + (spoke + 1) % radial;
+              indices.push(a, a + radial, b, b, a + radial, b + radial);
+            }
+          }
+        }
+        for (var end = 0; end < 2; end++) {
+          var center = curve.getPoint(end), cap = vertices.length / 3;
+          vertices.push(center.x, center.y, center.z);
+          var offset = end ? longitudinal * radial : 0;
+          for (var edge = 0; edge < radial; edge++) {
+            if (end) indices.push(cap, offset + (edge + 1) % radial, offset + edge);
+            else indices.push(cap, offset + edge, offset + (edge + 1) % radial);
+          }
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        geometry.userData.migrationNeckRings = longitudinal + 1;
+        geometry.userData.migrationNeckRadial = radial;
+        return geometry;
+      }
+
+      function createMigrationChinstrapGeometry(THREE) {
+        // One shallow ribbon wraps both cheeks and the underside. It follows
+        // the head surface instead of leaving two disconnected white blobs.
+        var vertices = [], indices = [], arcs = 16, depths = 4;
+        for (var arc = 0; arc <= arcs; arc++) {
+          var angle = (-110 + 220 * arc / arcs) * Math.PI / 180;
+          var width = 0.045 + 0.025 * Math.cos(angle * 0.55);
+          for (var depth = 0; depth <= depths; depth++) {
+            var z = 0.035 + (depth / depths * 2 - 1) * width;
+            var radius = Math.sqrt(0.204 * 0.204 - z * z);
+            vertices.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, z);
+            if (arc < arcs && depth < depths) {
+              var a = arc * (depths + 1) + depth, b = a + depths + 1;
+              indices.push(a, b, a + 1, a + 1, b, b + 1);
+            }
+          }
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationTernStreamerGeometry(THREE) {
+        // Five tapered stations and a raised shaft make a pale, curved feather.
+        // Both streamers mirror this buffer; there is no cone or texture.
+        var stations = [[0.085, 0.46, 0.075, 0.02], [0.15, 0.72, 0.085, 0.035],
+          [0.22, 1.02, 0.06, 0.045], [0.29, 1.32, 0.035, 0.035], [0.33, 1.52, 0.013, 0.02]];
+        var vertices = [], colors = [], indices = [];
+        stations.forEach(function(station, index) {
+          vertices.push(station[0] - station[2], station[3], station[1],
+            station[0], station[3] + 0.012, station[1],
+            station[0] + station[2], station[3], station[1]);
+          colors.push(0.78, 0.82, 0.87, 1, 1, 1, 0.88, 0.91, 0.95);
+          if (index < stations.length - 1) {
+            var a = index * 3;
+            indices.push(a, a + 3, a + 1, a + 1, a + 3, a + 4,
+              a + 1, a + 4, a + 2, a + 2, a + 4, a + 5);
+          }
+        });
+        vertices.push(0.34, 0.01, 1.62);
+        colors.push(0.94, 0.96, 0.98);
+        indices.push(12, 15, 13, 13, 15, 14);
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationPeregrineHeadGeometry(THREE) {
+        // A smooth, colored head surface carries the helmet, pale cheeks and
+        // dark malar stripe without floating decals or extra draw calls.
+        // These adult-style identification cues are stylized, not measured anatomy.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position;
+        var colors = new Float32Array(position.count * 3);
+        var dark = new THREE.Color(0x1e293b), pale = new THREE.Color(0xe9e5da);
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var x = Math.abs(position.getX(vertex)) / 0.2;
+          var y = position.getY(vertex) / 0.2;
+          var z = position.getZ(vertex) / 0.2;
+          var cheek = ramp(0.18, 0.48, x) * ramp(-0.90, -0.68, y) * (1 - ramp(0.02, 0.24, y))
+            * ramp(-0.94, -0.72, z) * (1 - ramp(0.66, 0.91, z));
+          // The stripe narrows toward the lower cheek; both sides are mirrored.
+          var stripeWidth = 0.15 + 0.05 * ramp(-0.75, 0.15, y);
+          var stripe = 1 - ramp(stripeWidth, stripeWidth + 0.10, Math.abs(z + 0.32));
+          var amount = cheek * (1 - stripe);
+          colors[vertex * 3] = dark.r + (pale.r - dark.r) * amount;
+          colors[vertex * 3 + 1] = dark.g + (pale.g - dark.g) * amount;
+          colors[vertex * 3 + 2] = dark.b + (pale.b - dark.b) * amount;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+      }
+
+      function createMigrationPeregrineBillGeometry(THREE) {
+        // Elliptical sections turn downward with the bill's centerline. The
+        // yellow cere and dark hooked tip share the existing bill mesh/material.
+        var sections = [[-0.16, 0, 0.070, 0.060], [-0.205, 0.012, 0.070, 0.062],
+          [-0.245, 0.006, 0.058, 0.052], [-0.282, -0.008, 0.045, 0.041],
+          [-0.312, -0.034, 0.029, 0.028], [-0.323, -0.073, 0.014, 0.015],
+          [-0.314, -0.110, 0, 0]];
+        var vertices = [], colors = [], indices = [], sides = 12;
+        var gold = new THREE.Color(0xf5bb43), horn = new THREE.Color(0x475569), tip = new THREE.Color(0x111820);
+        for (var ring = 0; ring < sections.length - 1; ring++) {
+          var section = sections[ring], before = sections[Math.max(0, ring - 1)], after = sections[ring + 1];
+          var dz = after[0] - before[0], dy = after[1] - before[1], length = Math.sqrt(dz * dz + dy * dy);
+          var upY = -dz / length, upZ = dy / length;
+          var shade = ring < 2 ? gold : ring === 2 ? horn : tip;
+          for (var side = 0; side < sides; side++) {
+            var angle = side / sides * Math.PI * 2;
+            vertices.push(Math.cos(angle) * section[2], section[1] + Math.sin(angle) * section[3] * upY,
+              section[0] + Math.sin(angle) * section[3] * upZ);
+            colors.push(shade.r, shade.g, shade.b);
+            if (ring > 0) {
+              var a = (ring - 1) * sides + side, b = (ring - 1) * sides + (side + 1) % sides;
+              var c = ring * sides + side, d = ring * sides + (side + 1) % sides;
+              indices.push(a, c, b, b, c, d);
+            }
+          }
+        }
+        var base = vertices.length / 3;
+        vertices.push(0, sections[0][1], sections[0][0]); colors.push(gold.r, gold.g, gold.b);
+        var point = vertices.length / 3, last = sections[sections.length - 1];
+        vertices.push(0, last[1], last[0]); colors.push(tip.r, tip.g, tip.b);
+        for (var cap = 0; cap < sides; cap++) {
+          indices.push(base, cap, (cap + 1) % sides);
+          var end = (sections.length - 2) * sides;
+          indices.push(end + cap, point, end + (cap + 1) % sides);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationPeregrineEyeRingGeometry(THREE) {
+        // Both orbital rings share one small buffer and the bill's colored
+        // material. Project onto a shell just outside the actual head surface.
+        var vertices = [], colors = [], indices = [], segments = 16;
+        var gold = new THREE.Color(0xf5bb43);
+        var normal = new THREE.Vector3(), across = new THREE.Vector3(), up = new THREE.Vector3(), point = new THREE.Vector3();
+        for (var side = -1; side <= 1; side += 2) {
+          normal.set(side * 0.184, 0.065, -0.055).normalize();
+          across.set(0, 1, 0).cross(normal).normalize(); up.copy(normal).cross(across).normalize();
+          var start = vertices.length / 3;
+          for (var arc = 0; arc < segments; arc++) {
+            var angle = arc / segments * Math.PI * 2;
+            for (var rim = 0; rim < 2; rim++) {
+              var radius = rim === 0 ? 0.026 : 0.039;
+              point.copy(normal).multiplyScalar(0.204)
+                .addScaledVector(across, Math.cos(angle) * radius).addScaledVector(up, Math.sin(angle) * radius)
+                .normalize().multiplyScalar(0.204);
+              vertices.push(point.x, point.y, point.z); colors.push(gold.r, gold.g, gold.b);
+            }
+            var a = start + arc * 2, b = start + ((arc + 1) % segments) * 2;
+            indices.push(a, a + 1, b, a + 1, b + 1, b);
+          }
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationHummingbirdHeadGeometry(THREE) {
+        // Adult male identification cues live on one continuous head surface.
+        // Ruby belongs below the dark face, not on detached cheek spheres.
+        // Fixed vertex colors are stylized plumage, not an iridescence model.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position, colors = new Float32Array(position.count * 3);
+        var green = new THREE.Color(0x226843), dark = new THREE.Color(0x142522);
+        var pale = new THREE.Color(0xd9ddd1), ruby = new THREE.Color(0xc51c39), wine = new THREE.Color(0x780f25);
+        var shade = new THREE.Color(), throat = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var x = Math.abs(position.getX(vertex)) / 0.2;
+          var y = position.getY(vertex) / 0.2, z = position.getZ(vertex) / 0.2;
+          shade.copy(dark).lerp(green, 0.62 + 0.38 * ramp(-0.2, 0.8, y));
+          // A dark face extends from the bill under both eyes; the rear lower
+          // edge meets the pale underside instead of painting the cheeks red.
+          var face = (1 - ramp(0.24, 0.52, z)) * ramp(-0.55, -0.20, y) * (1 - ramp(0.38, 0.62, y));
+          shade.lerp(dark, face);
+          var lowerRear = ramp(0.24, 0.60, z) * (1 - ramp(-0.42, -0.10, y));
+          shade.lerp(pale, lowerRear);
+          var gorget = (1 - ramp(-0.32, -0.12, y)) * ramp(-0.98, -0.76, z) * (1 - ramp(0.22, 0.52, z));
+          throat.copy(wine).lerp(ruby, 0.55 + 0.45 * (1 - x) * ramp(-0.95, -0.40, z));
+          shade.lerp(throat, gorget);
+          colors[vertex * 3] = shade.r; colors[vertex * 3 + 1] = shade.g; colors[vertex * 3 + 2] = shade.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         return geometry;
       }
 
@@ -2202,10 +3369,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // grey wings. Each entry now carries the markings that identify the
         // species in the air: back, belly, head/neck and wingtip.
         var palette = {
-          canada_goose:     { body: 0x6b7583, belly: 0xd6cfc2, head: 0x111a24, cheek: 0xf8fafc, wing: 0x5a6472, tip: 0x2b323c, bill: 0x1f2937 },
+          canada_goose:     { body: 0x776c60, belly: 0xd6cfc2, head: 0x111a24, cheek: 0xf8fafc, wing: 0x685f56, tip: 0x373632, bill: 0x1f2937 },
           snow_goose:       { body: 0xf3f6fa, belly: 0xffffff, head: 0xf3f6fa, cheek: null,     wing: 0xe8edf3, tip: 0x1f2937, bill: 0xf472b6 },
-          arctic_tern:      { body: 0xeef2f7, belly: 0xffffff, head: 0x111827, cheek: null,     wing: 0xd7dee7, tip: 0x475569, bill: 0xdc2626 },
-          ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: 0xb91c1c, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
+          arctic_tern:      { body: 0xeef2f7, belly: 0xffffff, head: 0xf3f5f8, cheek: null,     wing: 0xd7dee7, tip: 0x475569, bill: 0xdc2626 },
+          ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: null, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
           peregrine:        { body: 0x3f4a5a, belly: 0xe4e0d6, head: 0x1e293b, cheek: null,     wing: 0x36404e, tip: 0x1e293b, bill: 0xfbbf24 },
           sandhill_crane:   { body: 0x9aa0a6, belly: 0xb9b2a4, head: 0x9aa0a6, cheek: 0xb91c1c, wing: 0x8d939a, tip: 0x4b5563, bill: 0x44403c },
           bartailed_godwit: { body: 0xa9793f, belly: 0xe8dcc6, head: 0x8b5e2f, cheek: null,     wing: 0x96682f, tip: 0x57432a, bill: 0x1f2937 }
@@ -2218,12 +3385,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           metalness: 0.04
         });
         var body = new THREE.Mesh(
-          isMonarch ? new THREE.CylinderGeometry(0.08, 0.12, 0.72, 10) : new THREE.CylinderGeometry(0.18, 0.29, 1.25, 12),
+          isMonarch ? new THREE.SphereGeometry(0.13, 12, 8) : new THREE.SphereGeometry(0.29, 16, 10),
           bodyMat
         );
-        body.rotation.x = Math.PI / 2;
+        if (isMonarch) { body.scale.set(0.95, 0.90, 1.3); body.position.z = -0.13; }
+        else body.scale.set(0.88, 0.82, 2.25);
         body.castShadow = true;
         flyer.add(body);
+
+        var isGoose = species.id === 'canada_goose' || species.id === 'snow_goose';
+        var isCrane = species.id === 'sandhill_crane';
+        var headY = isCrane ? 0.075 : (isGoose ? 0.10 : 0);
+        var headScale = isCrane ? [0.78, 0.80, 1.05] : (isGoose ? [0.93, 0.84, 1.16] : (species.id === 'arctic_tern' ? [0.82, 0.90, 1.06] : [1, 1, 1]));
 
         if (!isMonarch) {
           // Pale underside: countershading is what makes a bird read as a solid
@@ -2236,97 +3409,476 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           belly.position.y = -0.10;
           flyer.add(belly);
 
-          // Neck, so a goose or crane is not just a head stuck to a tube
-          var neckLen = species.id === 'sandhill_crane' ? 0.78 : (species.id === 'canada_goose' || species.id === 'snow_goose' ? 0.52 : 0.22);
-          var neck = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.10, 0.15, neckLen + 0.3, 8),
-            new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.7 })
-          );
-          neck.rotation.x = Math.PI / 2;
-          neck.position.z = -0.62 - neckLen * 0.5;
+          var neck = new THREE.Mesh(createMigrationNeckGeometry(THREE, species.id),
+            new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.78 }));
+          neck.name = 'migration-bird-neck';
+          neck.castShadow = true;
           flyer.add(neck);
         }
 
+        var coloredHead = species.id === 'peregrine' || species.id === 'ruby_hummingbird';
         var head = new THREE.Mesh(
-          new THREE.SphereGeometry(isMonarch ? 0.13 : 0.2, 12, 8),
-          isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: sp3d.head, roughness: 0.66 })
+          species.id === 'peregrine' ? createMigrationPeregrineHeadGeometry(THREE) : species.id === 'ruby_hummingbird'
+            ? createMigrationHummingbirdHeadGeometry(THREE) : new THREE.SphereGeometry(isMonarch ? 0.105 : 0.2, 12, 8),
+          isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: coloredHead ? 0xffffff : sp3d.head,
+            roughness: species.id === 'ruby_hummingbird' ? 0.46 : 0.66,
+            metalness: species.id === 'ruby_hummingbird' ? 0.12 : 0, vertexColors: coloredHead })
         );
         var headZ = isMonarch ? -0.39 : -0.72 - (species.id === 'sandhill_crane' ? 0.78 : (species.id === 'canada_goose' || species.id === 'snow_goose' ? 0.52 : 0.22));
-        head.position.z = headZ;
+        head.position.set(0, headY, headZ);
+        if (!isMonarch) {
+          head.name = 'migration-bird-head';
+          head.scale.set(headScale[0], headScale[1], headScale[2]);
+        }
         head.castShadow = true;
         flyer.add(head);
 
+        if (isMonarch) {
+          // The rounded thorax and tapered abdomen replace the old tube.
+          // Antennae, legs and white body spots share small pooled buffers.
+          body.name = 'migration-monarch-thorax';
+          var abdomen = new THREE.Mesh(new THREE.SphereGeometry(0.115, 12, 8), bodyMat);
+          abdomen.name = 'migration-monarch-abdomen';
+          abdomen.scale.set(0.78, 0.75, 2.25);
+          abdomen.position.set(0, -0.012, 0.19);
+          abdomen.castShadow = true;
+          flyer.add(abdomen);
+          head.name = 'migration-monarch-head';
+          var paleMat = new THREE.MeshStandardMaterial({ color: 0xfff9e8, roughness: 0.72 });
+          var bodySpotPositions = [], bodySpotIndices = [];
+          for (var bodySide = -1; bodySide <= 1; bodySide += 2) {
+            var bodySpots = [[0.073, 0.065, -0.413], [0.092, 0.065, -0.30], [0.105, 0.060, -0.21],
+              [0.091, 0.066, -0.10], [0.060, 0.060, 0.06], [0.065, 0.055, 0.19], [0.048, 0.043, 0.33]];
+            for (var bodyDot = 0; bodyDot < bodySpots.length; bodyDot++) {
+              var dot = bodySpots[bodyDot], dotStart = bodySpotPositions.length / 3;
+              var dx = bodySide * dot[0], dy = dot[1], dz = dot[2], dr = 0.017;
+              bodySpotPositions.push(dx + dr, dy, dz, dx - dr, dy, dz,
+                dx, dy + dr, dz, dx, dy - dr, dz, dx, dy, dz + dr, dx, dy, dz - dr);
+              var octahedron = [0, 2, 4, 4, 2, 1, 1, 2, 5, 5, 2, 0, 0, 4, 3, 4, 1, 3, 1, 5, 3, 5, 0, 3];
+              for (var dotFace = 0; dotFace < octahedron.length; dotFace++) bodySpotIndices.push(dotStart + octahedron[dotFace]);
+            }
+          }
+          var spotGeometry = new THREE.BufferGeometry();
+          spotGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(bodySpotPositions), 3));
+          spotGeometry.setIndex(bodySpotIndices);
+          spotGeometry.computeVertexNormals();
+          var paleSpots = new THREE.Mesh(spotGeometry, paleMat);
+          paleSpots.name = 'migration-monarch-body-spots';
+          flyer.add(paleSpots);
+          var antennaCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0.045, 0.04, -0.455), new THREE.Vector3(0.09, 0.085, -0.59),
+            new THREE.Vector3(0.17, 0.11, -0.715), new THREE.Vector3(0.23, 0.105, -0.71)
+          ]);
+          var antennaGeometry = new THREE.TubeGeometry(antennaCurve, 14, 0.009, 4, false);
+          var antennaTipGeometry = new THREE.SphereGeometry(0.021, 7, 5);
+          var antennae = new THREE.Group();
+          antennae.name = 'migration-monarch-antennae';
+          for (var antennaSide = -1; antennaSide <= 1; antennaSide += 2) {
+            var antenna = new THREE.Mesh(antennaGeometry, bodyMat);
+            antenna.scale.x = antennaSide;
+            antennae.add(antenna);
+            var club = new THREE.Mesh(antennaTipGeometry, bodyMat);
+            club.position.set(antennaSide * 0.23, 0.105, -0.71);
+            antennae.add(club);
+          }
+          flyer.add(antennae);
+          var legPoints = [];
+          for (var insectSide = -1; insectSide <= 1; insectSide += 2) {
+            for (var insectLeg = 0; insectLeg < 3; insectLeg++) {
+              var legZ = -0.23 + insectLeg * 0.11;
+              legPoints.push(insectSide * 0.07, -0.055, legZ,
+                insectSide * 0.17, -0.13, legZ + 0.06,
+                insectSide * 0.17, -0.13, legZ + 0.06,
+                insectSide * 0.22, -0.18, legZ + 0.12);
+            }
+          }
+          var legsGeometry = new THREE.BufferGeometry();
+          legsGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(legPoints), 3));
+          var insectLegs = new THREE.LineSegments(legsGeometry, new THREE.LineBasicMaterial({ color: 0x141820 }));
+          insectLegs.name = 'migration-monarch-legs';
+          flyer.add(insectLegs);
+        }
+
         if (!isMonarch) {
-          if (sp3d.cheek) {
-            // The Canada Goose's white chinstrap and the crane's red crown —
-            // the field marks a student would actually use to name the bird.
+          if (species.id === 'canada_goose') {
+            var chinstrap = new THREE.Mesh(createMigrationChinstrapGeometry(THREE),
+              new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.80, side: THREE.DoubleSide }));
+            chinstrap.name = 'migration-goose-chinstrap';
+            chinstrap.position.copy(head.position);
+            chinstrap.scale.copy(head.scale);
+            flyer.add(chinstrap);
+          } else if (isCrane) {
+            var crown = new THREE.Mesh(new THREE.SphereGeometry(0.204, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.30),
+              new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.85 }));
+            crown.name = 'migration-crane-crown';
+            crown.position.copy(head.position);
+            crown.scale.copy(head.scale);
+            flyer.add(crown);
+            var craneCheekGeometry = new THREE.SphereGeometry(0.1, 8, 6);
+            var craneCheekMat = new THREE.MeshStandardMaterial({ color: 0xe3e0d8, roughness: 0.82 });
+            for (var craneSide = -1; craneSide <= 1; craneSide += 2) {
+              var craneCheek = new THREE.Mesh(craneCheekGeometry, craneCheekMat);
+              craneCheek.name = 'migration-crane-cheek';
+              craneCheek.scale.set(0.24, 0.68, 0.85);
+              craneCheek.position.set(craneSide * 0.143, headY - 0.017, headZ + 0.025);
+              flyer.add(craneCheek);
+            }
+          } else if (species.id === 'arctic_tern') {
+            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.204, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.49),
+              new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.80 }));
+            cap.name = 'migration-tern-cap';
+            cap.position.copy(head.position);
+            cap.scale.copy(head.scale);
+            flyer.add(cap);
+          } else if (sp3d.cheek) {
             var cheekMat = new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.7 });
+            var cheekGeometry = new THREE.SphereGeometry(0.1, 8, 6);
             for (var ck = -1; ck <= 1; ck += 2) {
-              var cheek = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), cheekMat);
+              var cheek = new THREE.Mesh(cheekGeometry, cheekMat);
               cheek.scale.set(0.45, 1, 0.85);
-              cheek.position.set(ck * 0.16, species.id === 'sandhill_crane' ? 0.13 : -0.02, headZ + 0.03);
+              cheek.position.set(ck * 0.16, -0.02, headZ + 0.03);
               flyer.add(cheek);
             }
           }
-          var beak = new THREE.Mesh(
-            new THREE.ConeGeometry(0.085, species.id === 'bartailed_godwit' ? 0.62 : 0.32, 10),
-            new THREE.MeshStandardMaterial({ color: sp3d.bill, roughness: 0.55 })
-          );
-          beak.rotation.x = -Math.PI / 2;
-          beak.position.z = headZ - (species.id === 'bartailed_godwit' ? 0.34 : 0.2);
+          var billLength = species.id === 'bartailed_godwit' ? 0.62 : (species.id === 'ruby_hummingbird' ? 0.54 : (isCrane ? 0.46 : (isGoose || species.id === 'arctic_tern' ? 0.30 : 0.32)));
+          var billRadius = species.id === 'ruby_hummingbird' ? 0.035 : (isCrane ? 0.055 : (species.id === 'arctic_tern' ? 0.045 : 0.085));
+          var beak = new THREE.Mesh(species.id === 'peregrine' ? createMigrationPeregrineBillGeometry(THREE) : new THREE.ConeGeometry(billRadius, billLength, 10),
+            new THREE.MeshStandardMaterial({ color: species.id === 'peregrine' ? 0xffffff : sp3d.bill, roughness: 0.65, vertexColors: species.id === 'peregrine' }));
+          beak.name = 'migration-bird-bill';
+          if (species.id === 'peregrine') beak.position.copy(head.position);
+          else {
+            beak.rotation.x = -Math.PI / 2;
+            if (isGoose) beak.scale.set(1.18, 1, 0.58);
+            beak.position.set(0, headY - (isGoose ? 0.015 : 0), headZ - 0.12 - billLength * 0.5);
+          }
           flyer.add(beak);
+          if (species.id === 'peregrine') {
+            var eyeRings = new THREE.Mesh(createMigrationPeregrineEyeRingGeometry(THREE), beak.material);
+            eyeRings.name = 'migration-peregrine-eye-rings';
+            eyeRings.position.copy(head.position);
+            flyer.add(eyeRings);
+          }
 
-          // Fanned tail
-          var tail3d = new THREE.Mesh(
-            new THREE.ConeGeometry(0.34, 0.62, 5),
-            new THREE.MeshStandardMaterial({ color: sp3d.tip, roughness: 0.75, flatShading: true })
-          );
-          tail3d.rotation.x = Math.PI / 2;
-          tail3d.scale.set(1, 1, 0.34);
-          tail3d.position.z = 0.78;
-          flyer.add(tail3d);
+          var eyeMat = new THREE.MeshBasicMaterial({ color: 0x060b13 });
+          var eyeGeometry = new THREE.SphereGeometry(0.026, 6, 4);
+          for (var eyeSide = -1; eyeSide <= 1; eyeSide += 2) {
+            var eye = new THREE.Mesh(eyeGeometry, eyeMat);
+            eye.position.set(eyeSide * 0.184 * headScale[0], headY + 0.065 * headScale[1], headZ - 0.055 * headScale[2]);
+            flyer.add(eye);
+          }
+
+          if (species.id === 'arctic_tern') {
+            var streamerGeometry = createMigrationTernStreamerGeometry(THREE);
+            var streamerMaterial = new THREE.MeshStandardMaterial({ color: 0xf3f5f8,
+              roughness: 0.80, vertexColors: true, side: THREE.DoubleSide });
+            for (var forkSide = -1; forkSide <= 1; forkSide += 2) {
+              var streamer = new THREE.Mesh(streamerGeometry, streamerMaterial);
+              streamer.name = 'migration-tern-tail-streamer';
+              streamer.scale.x = forkSide;
+              streamer.castShadow = true;
+              flyer.add(streamer);
+            }
+          } else {
+            var tail3d = new THREE.Mesh(createMigrationTailGeometry(THREE),
+              new THREE.MeshStandardMaterial({ color: sp3d.tip, roughness: 0.78, vertexColors: true, side: THREE.DoubleSide }));
+            tail3d.name = 'migration-tail-feathers';
+            tail3d.position.z = 0.51;
+            flyer.add(tail3d);
+          }
+
+          if (species.id === 'sandhill_crane' || species.id === 'bartailed_godwit') {
+            var legLength = species.id === 'sandhill_crane' ? 1.3 : 0.58;
+            var legGeo = new THREE.CylinderGeometry(0.022, 0.028, legLength, 5);
+            var legMat = new THREE.MeshStandardMaterial({ color: 0x343338, roughness: 0.9 });
+            for (var legSide = -1; legSide <= 1; legSide += 2) {
+              var leg = new THREE.Mesh(legGeo, legMat);
+              leg.rotation.x = Math.PI / 2;
+              leg.position.set(legSide * 0.09, -0.16, 0.7 + legLength * 0.5);
+              flyer.add(leg);
+            }
+          }
         }
 
         var leftPivot = new THREE.Group();
         var rightPivot = new THREE.Group();
-        var reach = isMonarch ? 0.82 : 1.38;
-        var sweep = isMonarch ? 0.62 : 0.86;
-        var outerMat = new THREE.MeshStandardMaterial({
-          color: isMonarch ? 0x111827 : sp3d.wing,
-          roughness: 0.72,
-          side: THREE.DoubleSide
-        });
-        var leftOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach, sweep), outerMat);
-        var rightOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach, sweep), outerMat);
-        leftOuter.castShadow = true;
-        rightOuter.castShadow = true;
-        leftPivot.add(leftOuter);
-        rightPivot.add(rightOuter);
-
-        if (isMonarch) {
-          var orangeMat = new THREE.MeshStandardMaterial({
-            color: 0xf97316,
-            emissive: 0x431407,
-            emissiveIntensity: 0.18,
-            roughness: 0.64,
+        var reach = isMonarch ? 0.82 : (species.id === 'arctic_tern' ? 1.7 : (species.id === 'sandhill_crane' ? 1.62 : 1.38));
+        var sweep = isMonarch ? 0.62 : (species.id === 'arctic_tern' || species.id === 'peregrine' ? 0.57 : 0.86);
+        var outerMat;
+        if (!isMonarch) {
+          outerMat = new THREE.MeshStandardMaterial({
+            color: isMonarch ? 0x111827 : sp3d.wing,
+            roughness: 0.72,
             side: THREE.DoubleSide
           });
-          var leftInner = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach * 0.78, sweep * 0.76), orangeMat);
-          var rightInner = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach * 0.78, sweep * 0.76), orangeMat);
-          leftInner.position.y = 0.012;
-          rightInner.position.y = 0.012;
-          leftPivot.add(leftInner);
-          rightPivot.add(rightInner);
+          // The two inner panels share one lit material. Their surface replaces
+          // the former floating shaft lines without adding a draw call.
+          var innerMat = new THREE.MeshStandardMaterial({ color: sp3d.wing,
+            roughness: 0.72, vertexColors: true, side: THREE.DoubleSide });
+          var leftOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, -1, reach, sweep, 'inner'), innerMat);
+          var rightOuter = new THREE.Mesh(createMigrationWingGeometry(THREE, 1, reach, sweep, 'inner'), innerMat);
+          leftOuter.castShadow = true;
+          rightOuter.castShadow = true;
+          leftPivot.add(leftOuter);
+          rightPivot.add(rightOuter);
+        }
+        flyer.userData.wrists = [];
+        flyer.userData.primaries = [];
+        flyer.userData.wakeAnchors = [];
+
+        if (!isMonarch) {
+          var tipMat = new THREE.MeshStandardMaterial({ color: sp3d.tip, roughness: 0.8, vertexColors: true, side: THREE.DoubleSide });
+          var primaryGeometry = createMigrationPrimaryGeometry(THREE, reach, sweep);
+          for (var tipSide = -1; tipSide <= 1; tipSide += 2) {
+            var shoulder = tipSide < 0 ? leftPivot : rightPivot;
+            var wrist = new THREE.Group();
+            wrist.name = 'migration-wing-wrist';
+            wrist.position.set(tipSide * reach * 0.50, 0.055, 0);
+            var hand = new THREE.Mesh(createMigrationWingGeometry(THREE, tipSide, reach, sweep, 'outer'), outerMat);
+            hand.castShadow = true;
+            wrist.add(hand);
+            var primaries = new THREE.Mesh(primaryGeometry, tipMat);
+            primaries.name = 'migration-primary-feathers';
+            primaries.scale.x = tipSide;
+            primaries.castShadow = true;
+            wrist.add(primaries);
+            shoulder.add(wrist);
+            flyer.userData.wrists.push(wrist);
+            flyer.userData.primaries.push(primaries);
+            flyer.userData.wakeAnchors.push({ node: wrist, point: new THREE.Vector3(tipSide * reach * 0.50, 0.06, 0.05 * sweep), side: tipSide });
+
+          }
+        }
+
+        if (isMonarch) {
+          var membraneMat = new THREE.MeshStandardMaterial({ color: 0xffffff,
+            roughness: 0.68, metalness: 0, vertexColors: true, side: THREE.DoubleSide });
+          var foreGeometry = createMigrationMonarchWingGeometry(THREE, 'fore');
+          var hindGeometry = createMigrationMonarchWingGeometry(THREE, 'hind');
+          for (var membraneSide = -1; membraneSide <= 1; membraneSide += 2) {
+            var membranePivot = membraneSide < 0 ? leftPivot : rightPivot;
+            for (var membraneLobe = 0; membraneLobe < 2; membraneLobe++) {
+              var membrane = new THREE.Mesh(membraneLobe === 0 ? foreGeometry : hindGeometry, membraneMat);
+              membrane.name = membraneLobe === 0 ? 'migration-monarch-forewing' : 'migration-monarch-hindwing';
+              membrane.userData.monarchLobe = membraneLobe === 0 ? 'fore' : 'hind';
+              membrane.userData.monarchSide = membraneSide;
+              membrane.scale.x = membraneSide;
+              membrane.castShadow = true;
+              membranePivot.add(membrane);
+            }
+          }
         }
 
         flyer.add(leftPivot);
         flyer.add(rightPivot);
         flyer.userData.wings = [leftPivot, rightPivot];
+        flyer.userData.anatomyAnchors = [];
+        flyer.userData.anatomyAnchorsBySide = [];
+        if (!isMonarch) {
+          // Anchor nodes are the ACTUAL articulated parts. Outline buffers
+          // live in their local coordinates and follow the wrist on every flap.
+          var headOutline = [];
+          for (var ring = 0; ring < 2; ring++) {
+            for (var arc = 0; arc < 12; arc++) {
+              for (var endpoint = 0; endpoint < 2; endpoint++) {
+                var angle = (arc + endpoint) / 12 * Math.PI * 2;
+                headOutline.push(Math.cos(angle) * 0.224 * headScale[0],
+                  headY + (ring === 0 ? Math.sin(angle) * 0.224 * headScale[1] : 0),
+                  headZ + (ring === 1 ? Math.sin(angle) * 0.224 * headScale[2] : 0));
+              }
+            }
+          }
+          // Follow the actual feather rims, rather than floating center shafts.
+          // Count indexed edges once while constructing this flyer; shared
+          // interior relief edges disappear, leaving the five closed contours.
+          // Both anatomical sides reuse this buffer through their mesh scale.
+          var primaryOutline = [];
+          var primaryPosition = primaryGeometry.attributes.position;
+          var primaryIndices = primaryGeometry.index.array;
+          var primaryEdges = Object.create(null);
+          for (var primaryFace = 0; primaryFace < primaryIndices.length; primaryFace += 3) {
+            for (var primaryEdge = 0; primaryEdge < 3; primaryEdge++) {
+              var from = primaryIndices[primaryFace + primaryEdge];
+              var to = primaryIndices[primaryFace + (primaryEdge + 1) % 3];
+              var edgeKey = Math.min(from, to) + ':' + Math.max(from, to);
+              if (primaryEdges[edgeKey]) primaryEdges[edgeKey].count++;
+              else primaryEdges[edgeKey] = { from: from, to: to, count: 1 };
+            }
+          }
+          Object.keys(primaryEdges).forEach(function(edgeKey) {
+            var edge = primaryEdges[edgeKey];
+            if (edge.count !== 1) return;
+            primaryOutline.push(primaryPosition.getX(edge.from), primaryPosition.getY(edge.from), primaryPosition.getZ(edge.from),
+              primaryPosition.getX(edge.to), primaryPosition.getY(edge.to), primaryPosition.getZ(edge.to));
+          });
+          var wingOutline = [0.04, 0.02, -0.46 * sweep, 0.50 * reach, 0.075, -0.40 * sweep,
+            0.50 * reach, 0.075, -0.40 * sweep, 0.50 * reach, 0.075, 0.28 * sweep,
+            0.50 * reach, 0.075, 0.28 * sweep, 0.04, 0.02, 0.44 * sweep,
+            0.04, 0.02, 0.44 * sweep, 0.04, 0.02, -0.46 * sweep];
+          var tailOutline = species.id === 'arctic_tern'
+            ? [-0.12, 0.04, 0.48, -0.34, 0.04, 1.62, -0.34, 0.04, 1.62, 0, 0.04, 0.78,
+              0, 0.04, 0.78, 0.34, 0.04, 1.62, 0.34, 0.04, 1.62, 0.12, 0.04, 0.48]
+            : [-0.10, 0.055, 0.51, -0.35, 0.055, 1.09, -0.35, 0.055, 1.09, 0, 0.07, 1.22,
+              0, 0.07, 1.22, 0.35, 0.055, 1.09, 0.35, 0.055, 1.09, 0.10, 0.055, 0.51];
+          flyer.userData.anatomyAnchors = [
+            { id: 'head', color: 0xfbbf24, node: flyer, point: new THREE.Vector3(0, headY + 0.24 * headScale[1], headZ), outline: new Float32Array(headOutline) },
+            { id: 'inner-wing', color: 0x67e8f9, node: rightPivot, point: new THREE.Vector3(reach * 0.27, 0.10, 0), outline: new Float32Array(wingOutline) },
+            { id: 'primaries', color: 0x86efac, node: flyer.userData.primaries[1], point: new THREE.Vector3(reach * 0.39, 0.10, sweep * 0.32), outline: new Float32Array(primaryOutline) },
+            { id: 'tail', color: 0xf9a8d4, node: flyer, point: new THREE.Vector3(0, 0.10, species.id === 'arctic_tern' ? 1.08 : 0.98), outline: new Float32Array(tailOutline) }
+          ];
+          var rightAnatomy = flyer.userData.anatomyAnchors;
+          var leftInnerOutline = new Float32Array(rightAnatomy[1].outline);
+          for (var mirrorX = 0; mirrorX < leftInnerOutline.length; mirrorX += 3) leftInnerOutline[mirrorX] = -leftInnerOutline[mirrorX];
+          // Inner meshes already contain signed pivot-local X coordinates.
+          // The shared primary mesh instead mirrors through its own scale.x,
+          // so its left anchor must retain the same positive local coordinates.
+          var leftAnatomy = [
+            rightAnatomy[0],
+            { id: 'inner-wing', color: rightAnatomy[1].color, node: leftPivot,
+              point: new THREE.Vector3(-reach * 0.27, 0.10, 0), outline: leftInnerOutline },
+            { id: 'primaries', color: rightAnatomy[2].color, node: flyer.userData.primaries[0],
+              point: rightAnatomy[2].point.clone(), outline: rightAnatomy[2].outline },
+            rightAnatomy[3]
+          ];
+          flyer.userData.anatomyAnchorsBySide = [leftAnatomy, rightAnatomy];
+        }
         flyer.userData.phase = index * 0.71;
         flyer.userData.flapRate = isMonarch ? 8.5 : (species.id === 'ruby_hummingbird' ? 12 : 3.2);
         flyer.userData.flapAmount = isMonarch ? 0.92 : 0.48;
+        // The scene and the optional cycle guide use this same articulation.
+        // It changes wing joints only, never body time or manual-step counters.
+        flyer.userData.applyWingPhase = function(phase) {
+          var flap = Math.sin(phase) * flyer.userData.flapAmount;
+          flyer.userData.wings[0].rotation.z = flap;
+          flyer.userData.wings[1].rotation.z = -flap;
+          for (var joint = 0; joint < flyer.userData.wrists.length; joint++) {
+            var jointSide = joint === 0 ? -1 : 1;
+            // Illustrative arm/hand timing, not measured species kinematics.
+            flyer.userData.wrists[joint].rotation.z = jointSide * (0.08 + Math.sin(phase - 0.65) * 0.15);
+            flyer.userData.wrists[joint].rotation.y = jointSide * (0.06 + Math.max(0, Math.sin(phase)) * 0.13);
+            flyer.userData.primaries[joint].rotation.x = Math.sin(phase - 0.85) * 0.075;
+          }
+        };
         flyer.scale.setScalar(isMonarch ? 0.68 : (species.id === 'ruby_hummingbird' ? 0.62 : 0.82));
+        // Cache a species-sized observation envelope once, including the bill,
+        // feather tips and trailing legs. The small expansion covers the
+        // articulated wrist sweep without refitting the camera on every flap.
+        flyer.updateMatrixWorld(true);
+        var studyPoint = new THREE.Vector3();
+        var studyRadiusSquared = 0;
+        flyer.traverse(function(part) {
+          var positions = part.geometry && part.geometry.attributes.position;
+          if (!positions) return;
+          for (var vertex = 0; vertex < positions.count; vertex++) {
+            studyPoint.fromBufferAttribute(positions, vertex).applyMatrix4(part.matrixWorld);
+            studyRadiusSquared = Math.max(studyRadiusSquared, studyPoint.lengthSq());
+          }
+        });
+        flyer.userData.studyRadius = Math.sqrt(studyRadiusSquared) * 1.08;
         return flyer;
+      }
+
+      function migrationStudyDistance(flyer, camera, zoom) {
+        // Fit the tighter field of view: narrow phones need more distance than
+        // wide screens. Zoom remains an intentional magnification of that fit.
+        var radius = migrNum(flyer && flyer.userData.studyRadius, 1.65, 0.4, 5);
+        var verticalHalf = migrNum(camera && camera.fov, 54, 20, 100) * Math.PI / 360;
+        var aspect = migrNum(camera && camera.aspect, 1, 0.25, 5);
+        var horizontalHalf = Math.atan(Math.tan(verticalHalf) * aspect);
+        var limitingHalf = Math.min(verticalHalf, horizontalHalf);
+        return radius * 1.18 / Math.sin(limitingHalf) / migrNum(zoom, 1, 0.65, 1.6);
+      }
+
+      function migrationAnatomyAtPoint(engine, clientX, clientY) {
+        // Match the rendered billboard centers in CSS pixels, including a
+        // 44px touch target. Picking never intersects hidden bird geometry.
+        if (!engine || engine.disposed || !engine.camera || !engine.anatomyMarkers || !engine.anatomyMarkers.visible ||
+            !engine.renderer || !engine.renderer.domElement || !engine.anatomyPickPoint ||
+            !engine.host || engine.host.getAttribute('data-flight-ready') !== 'true' ||
+            !Number.isFinite(clientX) || !Number.isFinite(clientY)) return '';
+        var rect = engine.renderer.domElement.getBoundingClientRect();
+        if (!(rect.width > 0 && rect.height > 0) || clientX < rect.left || clientX > rect.left + rect.width ||
+            clientY < rect.top || clientY > rect.top + rect.height) return '';
+        var nearest = 22 * 22, picked = '';
+        engine.anatomyMarkers.updateMatrixWorld(true);
+        for (var index = 0; index < engine.anatomyMarkers.children.length; index++) {
+          var marker = engine.anatomyMarkers.children[index];
+          if (!marker.visible || ['head', 'inner-wing', 'primaries', 'tail'].indexOf(marker.userData.anatomyId) < 0) continue;
+          var point = engine.anatomyPickPoint;
+          marker.getWorldPosition(point);
+          point.project(engine.camera);
+          if (!Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z) ||
+              point.z < -1 || point.z > 1 || Math.abs(point.x) > 1 || Math.abs(point.y) > 1) continue;
+          var dx = clientX - (rect.left + (point.x + 1) * rect.width / 2);
+          var dy = clientY - (rect.top + (1 - point.y) * rect.height / 2);
+          var distance = dx * dx + dy * dy;
+          if (distance <= nearest) { nearest = distance; picked = marker.userData.anatomyId; }
+        }
+        return picked;
+      }
+
+      function createMigrationAnatomyMarkers(THREE) {
+        // Code-native billboards: four disks and broad numeral strokes, with
+        // no image requests, font loading or canvas textures to clean up.
+        var root = new THREE.Group();
+        root.name = 'migration-anatomy-markers';
+        root.userData.migrationOverlay = 'anatomy-markers';
+        root.visible = false;
+        var diskGeometry = new THREE.CircleGeometry(1, 32);
+        var insetGeometry = new THREE.CircleGeometry(0.82, 32);
+        var focusGeometry = new THREE.RingGeometry(1.16, 1.29, 32);
+        var focusMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide,
+          depthTest: false, depthWrite: false, toneMapped: false, fog: false });
+        var diskMaterial = new THREE.MeshBasicMaterial({ color: 0x082437,
+          depthTest: false, depthWrite: false, toneMapped: false, fog: false });
+        var glyphs = [
+          [[-0.20, 0.28, 0, 0.42], [0, 0.42, 0, -0.42], [-0.24, -0.42, 0.24, -0.42]],
+          [[-0.28, 0.40, 0.28, 0.40], [0.28, 0.40, 0.28, 0.06], [0.28, 0.06, -0.28, -0.13], [-0.28, -0.13, -0.28, -0.40], [-0.28, -0.40, 0.28, -0.40]],
+          [[-0.28, 0.40, 0.28, 0.40], [0.28, 0.40, 0.28, -0.40], [-0.18, 0, 0.28, 0], [-0.28, -0.40, 0.28, -0.40]],
+          [[-0.23, 0.40, -0.23, 0], [-0.23, 0, 0.30, 0], [0.16, 0.40, 0.16, -0.42]]
+        ];
+        var colors = [0xfbbf24, 0x67e8f9, 0x86efac, 0xf9a8d4];
+        var names = ['head', 'inner-wing', 'primaries', 'tail'];
+        for (var label = 0; label < glyphs.length; label++) {
+          var marker = new THREE.Group();
+          marker.name = 'migration-anatomy-marker-' + (label + 1);
+          marker.userData.anatomyId = names[label];
+          marker.userData.markerNumber = label + 1;
+          marker.frustumCulled = false;
+          var accentMaterial = new THREE.MeshBasicMaterial({ color: colors[label],
+            depthTest: false, depthWrite: false, toneMapped: false, fog: false });
+          var ring = new THREE.Mesh(diskGeometry, accentMaterial);
+          ring.renderOrder = 7;
+          var inset = new THREE.Mesh(insetGeometry, diskMaterial);
+          inset.position.z = 0.005;
+          inset.renderOrder = 8;
+          var points = [], indices = [];
+          for (var stroke = 0; stroke < glyphs[label].length; stroke++) {
+            var line = glyphs[label][stroke];
+            var dx = line[2] - line[0], dy = line[3] - line[1];
+            var length = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / length * 0.062, ny = dx / length * 0.062;
+            var start = points.length / 3;
+            points.push(line[0] + nx, line[1] + ny, 0.01,
+              line[0] - nx, line[1] - ny, 0.01,
+              line[2] + nx, line[3] + ny, 0.01,
+              line[2] - nx, line[3] - ny, 0.01);
+            indices.push(start, start + 1, start + 2, start + 2, start + 1, start + 3);
+          }
+          var glyphGeometry = new THREE.BufferGeometry();
+          glyphGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(points), 3));
+          glyphGeometry.setIndex(indices);
+          var glyph = new THREE.Mesh(glyphGeometry, accentMaterial);
+          glyph.renderOrder = 9;
+          var focusRing = new THREE.Mesh(focusGeometry, focusMaterial);
+          focusRing.name = 'migration-anatomy-focus-ring';
+          focusRing.position.z = 0.015;
+          focusRing.renderOrder = 10;
+          focusRing.visible = false;
+          marker.userData.focused = false;
+          marker.add(ring, inset, glyph, focusRing);
+          root.add(marker);
+        }
+        return root;
       }
 
       function migrationFormationPositions(species, mode) {
@@ -2362,6 +3914,1068 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
         return positions;
       }
+      function createMigrationStarfield(THREE) {
+        // This is a decorative scatter, not a constellation map. Round screen-
+        // sized sprites stay crisp when the distant dome texture is magnified.
+        var count = 1100;
+        var positions = new Float32Array(count * 3);
+        var colors = new Float32Array(count * 3);
+        var seed = 20261018;
+        function randomStar() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+        for (var star = 0; star < count; star++) {
+          var azimuth = randomStar() * Math.PI * 2;
+          var height = 0.06 + randomStar() * 0.94;
+          var ring = Math.sqrt(1 - height * height);
+          var brightness = (0.36 + Math.pow(randomStar(), 3) * 0.64) * (0.28 + 0.72 * Math.min(1, height / 0.5));
+          positions[star * 3] = Math.cos(azimuth) * ring * 390;
+          positions[star * 3 + 1] = height * 390;
+          positions[star * 3 + 2] = Math.sin(azimuth) * ring * 390;
+          colors[star * 3] = brightness * 0.94;
+          colors[star * 3 + 1] = brightness * 0.97;
+          colors[star * 3 + 2] = brightness;
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.computeBoundingSphere();
+        var sprite = document.createElement('canvas');
+        sprite.width = sprite.height = 32;
+        var context = sprite.getContext('2d');
+        var gradient = context.createRadialGradient(16, 16, 0, 16, 16, 15);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.30, 'rgba(255,255,255,0.96)');
+        gradient.addColorStop(0.54, 'rgba(255,255,255,0.78)');
+        gradient.addColorStop(0.83, 'rgba(255,255,255,0.18)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 32, 32);
+        var texture = new THREE.CanvasTexture(sprite);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        var stars = new THREE.Points(geometry, new THREE.PointsMaterial({
+          map: texture, vertexColors: true, size: 2.4, sizeAttenuation: false,
+          transparent: true, opacity: 0.92, alphaTest: 0.08, depthWrite: false, fog: false
+        }));
+        stars.name = 'migration-night-stars';
+        stars.userData.decorative = true;
+        stars.visible = false;
+        return stars;
+      }
+
+      function createMigrationCloudDeck(THREE) {
+        // Three low lobes form a broad base; uneven raised crowns supply the
+        // vertical volume missing from the former row of flattened pills.
+        // One shared sphere and material, and one instanced draw per cloud.
+        var geometry = new THREE.SphereGeometry(1, 12, 8);
+        var material = new THREE.MeshStandardMaterial({ color: 0xf6fbff, roughness: 1 });
+        var clouds = [];
+        var transform = new THREE.Object3D();
+        for (var ci = 0; ci < 14; ci++) {
+          var seed = 809 + ci * 103;
+          var randomCloud = function() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+          var cloud = new THREE.Group();
+          cloud.name = 'migration-cumulus-cloud';
+          var crownCount = 4 + ci % 3;
+          var lobes = new THREE.InstancedMesh(geometry, material, 3 + crownCount);
+          lobes.name = 'migration-cloud-lobes';
+          lobes.userData.baseCount = 3;
+          lobes.userData.crownCount = crownCount;
+          // r128 culls by the unit sphere, rather than every instance's bounds.
+          lobes.frustumCulled = false;
+          for (var base = 0; base < 3; base++) {
+            var radius = 1.9 + randomCloud() * 0.55;
+            transform.position.set((base - 1) * 2.2, 0.05 + randomCloud() * 0.20, (randomCloud() - 0.5) * 0.6);
+            transform.scale.set(radius * (1.1 + randomCloud() * 0.2), radius * 0.56, radius * (0.9 + randomCloud() * 0.18));
+            transform.updateMatrix();
+            lobes.setMatrixAt(base, transform.matrix);
+          }
+          for (var crown = 0; crown < crownCount; crown++) {
+            var fraction = crown / (crownCount - 1);
+            var crownRadius = 1.35 + randomCloud() * 0.65;
+            transform.position.set(-2.8 + fraction * 5.3 + randomCloud() * 0.4,
+              0.75 + Math.sin((fraction * 0.8 + 0.1) * Math.PI) * 1.3 + randomCloud() * 0.55,
+              0.25 - (crown % 2) * 1.05 + randomCloud() * 0.35);
+            transform.scale.set(crownRadius * (0.9 + randomCloud() * 0.3),
+              crownRadius * (0.8 + randomCloud() * 0.4), crownRadius * (0.9 + randomCloud() * 0.3));
+            transform.updateMatrix();
+            lobes.setMatrixAt(3 + crown, transform.matrix);
+          }
+          lobes.instanceMatrix.needsUpdate = true;
+          cloud.add(lobes);
+          cloud.scale.set(1.35 + (ci % 3) * 0.18, 0.90 + (ci % 4) * 0.07, 1.05 + (ci % 2) * 0.2);
+          var side = ci % 2 ? -1 : 1;
+          cloud.position.set(side * (17 + (ci % 5) * 8), 13 + (ci % 4) * 4.5, -46 - ci * 15);
+          cloud.userData.baseZ = cloud.position.z;
+          cloud.userData.drift = 0.32 + (ci % 4) * 0.08;
+          cloud.userData.onGround = false;
+          clouds.push(cloud);
+        }
+        return { clouds: clouds, material: material };
+      }
+
+      function createMigrationSpeedVectors(THREE) {
+        // Scene-owned pooled buffers, rather than ArrowHelper's global caches.
+        // All three arrows use the same world-units-per-mph scale. Their axes
+        // stay parallel to route-forward -Z; lane spacing alone faces the camera.
+        var root = new THREE.Group();
+        root.name = 'migration-speed-vectors';
+        root.visible = false;
+        root.userData.routeForward = [0, 0, -1];
+        var shaftGeometry = new THREE.CylinderGeometry(1, 1, 1, 8, 1);
+        shaftGeometry.rotateX(Math.PI / 2);
+        var headGeometry = new THREE.ConeGeometry(1, 1, 10, 1);
+        headGeometry.rotateX(-Math.PI / 2);
+        headGeometry.translate(0, 0, -0.5);
+        var descriptors = [
+          { id: 'air', key: 'airSpeed', color: 0x67e8f9 },
+          { id: 'wind', key: 'windMph', color: 0xfbbf24 },
+          { id: 'ground', key: 'groundSpeed', color: 0x86efac }
+        ];
+        var arrows = descriptors.map(function(item) {
+          var arrow = new THREE.Group();
+          arrow.name = 'migration-speed-' + item.id;
+          arrow.userData.speedRole = item.id;
+          arrow.userData.valueKey = item.key;
+          arrow.userData.mph = 0;
+          arrow.userData.start = [0, 0, 0];
+          arrow.userData.tip = [0, 0, 0];
+          var material = new THREE.MeshStandardMaterial({
+            color: item.color, emissive: item.color, emissiveIntensity: 0.3,
+            roughness: 0.55, depthTest: false, depthWrite: false, fog: false
+          });
+          var shaft = new THREE.Mesh(shaftGeometry, material);
+          shaft.name = arrow.name + '-shaft';
+          var head = new THREE.Mesh(headGeometry, material);
+          head.name = arrow.name + '-head';
+          shaft.renderOrder = head.renderOrder = 4;
+          arrow.add(shaft, head);
+          root.add(arrow);
+          return arrow;
+        });
+        // These vectors are reused, including while the scene is paused.
+        var forward = new THREE.Vector3(0, 0, -1);
+        var lane = new THREE.Vector3();
+        var viewDirection = new THREE.Vector3();
+        var anchor = new THREE.Vector3();
+        root.updateValues = function(enabled, cameraMode, values, camera) {
+          root.visible = !!enabled && cameraMode !== 'study';
+          if (!root.visible) return;
+          camera.updateMatrixWorld(true);
+          // Put the diagram below the flock. Perspective and lane spacing are
+          // real 3D; the shared scale narrows for a phone's smaller field of view.
+          var compact = camera.aspect < 1.1;
+          var distance = compact ? 26 : 12;
+          var halfHeight = Math.tan(camera.fov * Math.PI / 360) * distance;
+          anchor.set(-halfHeight * camera.aspect * 0.50, -halfHeight * (compact ? 0.36 : 0.30), -distance).applyMatrix4(camera.matrixWorld);
+          root.position.copy(anchor);
+          camera.getWorldDirection(viewDirection);
+          lane.copy(viewDirection).cross(forward);
+          if (lane.lengthSq() < 0.0001) lane.set(1, 0, 0);
+          else lane.normalize();
+          var unitsPerMph = 0.085 * Math.min(1, Math.max(0.45, camera.aspect / 1.4));
+          root.userData.unitsPerMph = unitsPerMph;
+          root.userData.headwindStops = values.headwindStops;
+          for (var index = 0; index < arrows.length; index++) {
+            var arrow = arrows[index];
+            var mph = values[arrow.userData.valueKey];
+            var length = Math.abs(mph) * unitsPerMph;
+            var headLength = Math.min(0.32, length * 0.36);
+            var radius = Math.min(0.14, length * 0.20);
+            var shaftLength = length - headLength;
+            arrow.visible = length > 0;
+            arrow.position.copy(lane).multiplyScalar((index - 1) * 0.70);
+            arrow.rotation.y = mph < 0 ? Math.PI : 0;
+            arrow.userData.mph = mph;
+            for (var coordinate = 0; coordinate < 3; coordinate++) {
+              arrow.userData.start[coordinate] = arrow.position.getComponent(coordinate);
+              arrow.userData.tip[coordinate] = arrow.userData.start[coordinate];
+            }
+            arrow.userData.tip[2] -= mph * unitsPerMph;
+            var shaft = arrow.children[0], head = arrow.children[1];
+            shaft.visible = head.visible = arrow.visible;
+            shaft.scale.set(Math.min(0.045, length * 0.06), Math.min(0.045, length * 0.06), shaftLength);
+            shaft.position.z = -shaftLength / 2;
+            head.scale.set(radius, radius, headLength);
+            head.position.z = -shaftLength;
+          }
+        };
+        return root;
+      }
+
+      function createMigrationMarkedWingPose(THREE, onClear) {
+        // One engine-owned buffer remains in the scene through clear and flock
+        // rebuilds. Captured boundary vertices are frozen in the flyer's local
+        // coordinates; only the reference's body transform follows that flyer.
+        var capacity = 1024;
+        var positions = new Float32Array(capacity * 3);
+        var distances = new Float32Array(capacity);
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+        geometry.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1).setUsage(THREE.DynamicDrawUsage));
+        geometry.setDrawRange(0, 0);
+        var root = new THREE.LineSegments(geometry, new THREE.LineDashedMaterial({
+          color: 0x301056, dashSize: 0.12, gapSize: 0.08,
+          transparent: true, opacity: 0.96, depthTest: false, depthWrite: false, fog: false
+        }));
+        root.name = 'migration-marked-wing-pose';
+        root.renderOrder = 6;
+        root.matrixAutoUpdate = false;
+        root.frustumCulled = false;
+        root.visible = false;
+        root.userData.captured = false;
+        root.userData.vertexCount = 0;
+        root.userData.captureVersion = 0;
+        root.userData.capacity = capacity;
+        root.userData.sources = [];
+        var sourceBird = null;
+        var inverseBird = new THREE.Matrix4();
+        var a = new THREE.Vector3(), b = new THREE.Vector3();
+        // Two body-relative comparison links reuse one scene-owned four-vertex
+        // buffer. They connect marked and current tip positions, not a motion path.
+        var linkPositions = new Float32Array(12);
+        var linkColors = new Float32Array(12);
+        var linkDistances = new Float32Array(4);
+        var linkGeometry = new THREE.BufferGeometry();
+        linkGeometry.setAttribute('position', new THREE.BufferAttribute(linkPositions, 3).setUsage(THREE.DynamicDrawUsage));
+        linkGeometry.setAttribute('color', new THREE.BufferAttribute(linkColors, 3).setUsage(THREE.DynamicDrawUsage));
+        linkGeometry.setAttribute('lineDistance', new THREE.BufferAttribute(linkDistances, 1).setUsage(THREE.DynamicDrawUsage));
+        linkGeometry.setDrawRange(0, 0);
+        var tipLinks = new THREE.LineSegments(linkGeometry, new THREE.LineDashedMaterial({
+          color: 0xffffff, vertexColors: true, dashSize: 0.09, gapSize: 0.06,
+          transparent: true, opacity: 0.96, depthTest: false, depthWrite: false, fog: false, toneMapped: false
+        }));
+        tipLinks.name = 'migration-marked-wingtip-links';
+        tipLinks.renderOrder = 5;
+        tipLinks.frustumCulled = false;
+        tipLinks.visible = false;
+        tipLinks.userData.segmentSides = [-1, -1];
+        tipLinks.userData.segmentCount = 0;
+        tipLinks.userData.followSide = null;
+        root.add(tipLinks);
+        // A hollow diamond distinguishes each marked endpoint from the live
+        // circular tip dots and the smaller circular cycle landmarks.
+        var tipDiamonds = new THREE.InstancedMesh(
+          new THREE.RingGeometry(0.72, 1, 4),
+          new THREE.MeshBasicMaterial({ color: 0x301056, transparent: true, opacity: 0.96,
+            depthTest: false, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }), 2);
+        tipDiamonds.name = 'migration-marked-wingtip-diamonds';
+        tipDiamonds.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        tipDiamonds.renderOrder = 8;
+        tipDiamonds.frustumCulled = false;
+        tipDiamonds.count = 0;
+        tipDiamonds.visible = false;
+        tipDiamonds.userData.segmentSides = [-1, -1];
+        tipDiamonds.userData.segmentCount = 0;
+        tipDiamonds.userData.pixelRadius = 7;
+        root.add(tipDiamonds);
+        var diamondPoint = new THREE.Vector3(), diamondWorld = new THREE.Vector3(), diamondView = new THREE.Vector3();
+        var diamondScale = new THREE.Vector3(), diamondRotation = new THREE.Quaternion();
+        var diamondMatrix = new THREE.Matrix4();
+        root.userData.capturedPhase = null;
+        root.userData.tipSources = [];
+        root.userData.markedTipPositions = [];
+        var tipAnchors = [];
+        var tipPalette = {
+          day: [new THREE.Color(0x021016), new THREE.Color(0x240c01)],
+          night: [new THREE.Color(0x67e8f9), new THREE.Color(0xfbbf24)]
+        };
+        function hideTipLinks() {
+          tipDiamonds.visible = false;
+          tipDiamonds.count = 0;
+          tipDiamonds.userData.segmentCount = 0;
+          tipDiamonds.userData.segmentSides[0] = -1;
+          tipDiamonds.userData.segmentSides[1] = -1;
+          tipLinks.visible = false;
+          tipLinks.userData.followSide = null;
+          tipLinks.userData.segmentCount = 0;
+          tipLinks.userData.segmentSides[0] = -1;
+          tipLinks.userData.segmentSides[1] = -1;
+          linkGeometry.setDrawRange(0, 0);
+        }
+        function captureMarkedTips(flyer) {
+          // Match the cycle guide's anatomical endpoint, including the true
+          // Monarch forewing rim rather than any decorative cell or spot.
+          var wings = flyer.userData.wings;
+          if (!Array.isArray(wings) || wings.length !== 2 || !Array.isArray(flyer.userData.primaries)) return;
+          try {
+            for (var side = 0; side < 2; side++) {
+              var node = flyer.userData.primaries[side];
+              if (!node) wings[side].traverse(function(part) { if (part.name === 'migration-monarch-forewing') node = part; });
+              if (!node || !node.geometry || !node.geometry.attributes.position) throw new Error('Missing wingtip');
+              var vertices = node.geometry.attributes.position;
+              var limit = node.geometry.userData.monarchBoundaryVertexCount || vertices.count;
+              if (!Number.isInteger(limit) || limit < 1 || limit > vertices.count) throw new Error('Invalid wingtip boundary');
+              var chosen = -1, maxX = -Infinity, maxZ = -Infinity;
+              for (var vertex = 0; vertex < limit; vertex++) {
+                var x = vertices.getX(vertex), z = vertices.getZ(vertex);
+                if (Number.isFinite(x) && Number.isFinite(z) && (x > maxX || (x === maxX && z > maxZ))) {
+                  chosen = vertex; maxX = x; maxZ = z;
+                }
+              }
+              if (chosen < 0) throw new Error('Invalid wingtip');
+              var point = new THREE.Vector3().fromBufferAttribute(vertices, chosen);
+              a.copy(point).applyMatrix4(node.matrixWorld).applyMatrix4(inverseBird);
+              if (!Number.isFinite(a.x + a.y + a.z)) throw new Error('Invalid marked tip');
+              tipAnchors.push({ node: node, point: point, geometryUuid: node.geometry.uuid });
+              root.userData.tipSources.push({ side: side, nodeUuid: node.uuid, geometryUuid: node.geometry.uuid, vertexIndex: chosen });
+              root.userData.markedTipPositions.push(a.x, a.y, a.z);
+            }
+          } catch (ignore) {
+            // An outline can remain useful even if a custom model has no
+            // compatible pair of tip anchors. It must not show partial links.
+            tipAnchors.length = 0;
+            root.userData.tipSources.length = 0;
+            root.userData.markedTipPositions.length = 0;
+          }
+        }
+        function updateTipLinks(flyer, followSide) {
+          if (tipAnchors.length !== 2 || root.userData.markedTipPositions.length !== 6) return false;
+          var bodyDeterminant = flyer.matrixWorld.determinant();
+          if (!Number.isFinite(bodyDeterminant) || Math.abs(bodyDeterminant) < 0.000000000001) return false;
+          for (var element = 0; element < 16; element++) if (!Number.isFinite(flyer.matrixWorld.elements[element])) return false;
+          inverseBird.copy(flyer.matrixWorld).invert();
+          var scheme = root.userData.isDark ? tipPalette.night : tipPalette.day;
+          var count = 0;
+          for (var side = 0; side < 2; side++) {
+            var anchor = tipAnchors[side];
+            if (!anchor.node.geometry || anchor.node.geometry.uuid !== anchor.geometryUuid) { hideTipLinks(); return false; }
+            var ancestor = anchor.node;
+            while (ancestor && ancestor !== flyer) ancestor = ancestor.parent;
+            if (ancestor !== flyer) { hideTipLinks(); return false; }
+            if (followSide !== null && side !== followSide) continue;
+            anchor.node.updateWorldMatrix(true, false);
+            a.fromArray(root.userData.markedTipPositions, side * 3);
+            b.copy(anchor.point).applyMatrix4(anchor.node.matrixWorld).applyMatrix4(inverseBird);
+            var length = a.distanceTo(b);
+            if (!Number.isFinite(length)) { hideTipLinks(); return false; }
+            if (length <= 0.00001) continue;
+            a.toArray(linkPositions, count * 3);
+            b.toArray(linkPositions, (count + 1) * 3);
+            var color = scheme[side];
+            for (var coordinate = 0; coordinate < 2; coordinate++) {
+              linkColors[(count + coordinate) * 3] = color.r;
+              linkColors[(count + coordinate) * 3 + 1] = color.g;
+              linkColors[(count + coordinate) * 3 + 2] = color.b;
+            }
+            // Solid left and dashed right match the existing path legend.
+            linkDistances[count] = 0;
+            linkDistances[count + 1] = side === 0 ? 0 : length;
+            tipLinks.userData.segmentSides[count / 2] = side;
+            count += 2;
+          }
+          linkGeometry.setDrawRange(0, count);
+          tipLinks.userData.segmentCount = count / 2;
+          tipLinks.visible = count > 0;
+          tipLinks.userData.followSide = count ? followSide : null;
+          if (count) {
+            linkGeometry.attributes.position.needsUpdate = true;
+            linkGeometry.attributes.color.needsUpdate = true;
+            linkGeometry.attributes.lineDistance.needsUpdate = true;
+          }
+          return true;
+        }
+        function updateTipDiamonds(flyer, camera, viewHeight, followSide, viewWidth) {
+          if (!camera || camera.isPerspectiveCamera !== true || typeof camera.updateWorldMatrix !== 'function' ||
+              !camera.matrixWorld || !camera.matrixWorld.elements || camera.matrixWorld.elements.length !== 16 || typeof camera.matrixWorld.determinant !== 'function' ||
+              !camera.matrixWorldInverse || !camera.matrixWorldInverse.elements || camera.matrixWorldInverse.elements.length !== 16 ||
+              !camera.projectionMatrix || !camera.projectionMatrix.elements || camera.projectionMatrix.elements.length !== 16 || typeof camera.projectionMatrix.determinant !== 'function' ||
+              !Number.isFinite(viewHeight) || viewHeight <= 0 || !Number.isFinite(camera.aspect) || camera.aspect <= 0 ||
+              !Number.isFinite(camera.near) || camera.near <= 0 || !Number.isFinite(camera.far) || camera.far <= camera.near) return;
+          var width = viewWidth === undefined ? viewHeight * camera.aspect : viewWidth;
+          if (!Number.isFinite(width) || width <= 0) return;
+          camera.updateWorldMatrix(true, false);
+          var projectionScale = camera.projectionMatrix.elements[5], projectionXScale = camera.projectionMatrix.elements[0];
+          var determinant = flyer.matrixWorld.determinant(), cameraDeterminant = camera.matrixWorld.determinant();
+          var projectionDeterminant = camera.projectionMatrix.determinant();
+          if (!Number.isFinite(projectionScale) || projectionScale <= 0 || !Number.isFinite(projectionXScale) || projectionXScale <= 0 ||
+              !Number.isFinite(determinant) || Math.abs(determinant) < 0.000000000001 ||
+              !Number.isFinite(cameraDeterminant) || Math.abs(cameraDeterminant) < 0.000000000001 ||
+              !Number.isFinite(projectionDeterminant) || Math.abs(projectionDeterminant) < 0.000000000001) return;
+          for (var element = 0; element < 16; element++) {
+            if (!Number.isFinite(flyer.matrixWorld.elements[element]) || !Number.isFinite(camera.matrixWorld.elements[element]) ||
+                !Number.isFinite(camera.matrixWorldInverse.elements[element]) || !Number.isFinite(camera.projectionMatrix.elements[element])) return;
+          }
+          inverseBird.copy(flyer.matrixWorld).invert();
+          var count = 0;
+          for (var side = 0; side < 2; side++) {
+            if (followSide !== null && side !== followSide) continue;
+            diamondPoint.fromArray(root.userData.markedTipPositions, side * 3);
+            diamondWorld.copy(diamondPoint).applyMatrix4(flyer.matrixWorld);
+            diamondView.copy(diamondWorld).applyMatrix4(camera.matrixWorldInverse);
+            var depth = -diamondView.z;
+            if (!Number.isFinite(diamondView.x + diamondView.y + depth) || depth <= camera.near || depth >= camera.far) continue;
+            // A stable hollow endpoint remains visible when the live tip returns
+            // to the mark; only the displacement link disappears at overlap.
+            // Compose in the actual camera plane so zoom, view offsets and
+            // nonuniform or mirrored camera parents keep a seven CSS pixel cue.
+            var radiusX = tipDiamonds.userData.pixelRadius * 2 * depth / (width * projectionXScale);
+            var radiusY = tipDiamonds.userData.pixelRadius * 2 * depth / (viewHeight * projectionScale);
+            if (!Number.isFinite(radiusX) || radiusX <= 0 || !Number.isFinite(radiusY) || radiusY <= 0) continue;
+            diamondScale.set(radiusX, radiusY, radiusY);
+            diamondMatrix.compose(diamondView, diamondRotation, diamondScale)
+              .premultiply(camera.matrixWorld).premultiply(inverseBird);
+            var finite = true;
+            for (var entry = 0; entry < 16; entry++) if (!Number.isFinite(diamondMatrix.elements[entry])) { finite = false; break; }
+            if (!finite) continue;
+            tipDiamonds.setMatrixAt(count, diamondMatrix);
+            tipDiamonds.userData.segmentSides[count] = side;
+            count++;
+          }
+          tipDiamonds.count = count;
+          tipDiamonds.userData.segmentCount = count;
+          tipDiamonds.visible = count > 0;
+          if (count) tipDiamonds.instanceMatrix.needsUpdate = true;
+        }
+        root.clearPose = function(notify) {
+          var hadPose = root.userData.captured;
+          sourceBird = null;
+          root.visible = false;
+          root.userData.captured = false;
+          root.userData.speciesId = '';
+          root.userData.individual = -1;
+          root.userData.sourceBirdUuid = '';
+          root.userData.vertexCount = 0;
+          root.userData.sources = [];
+          root.userData.capturedPhase = null;
+          root.userData.tipSources.length = 0;
+          root.userData.markedTipPositions.length = 0;
+          tipAnchors.length = 0;
+          hideTipLinks();
+          geometry.setDrawRange(0, 0);
+          if (hadPose && notify !== false && onClear) onClear();
+        };
+        root.capturePose = function(flyer, speciesId, individual) {
+          root.clearPose(false);
+          if (!flyer || !flyer.userData || !Array.isArray(flyer.userData.wings) || !flyer.userData.wings.length) return false;
+          var count = 0, sources = [], failed = false;
+          try {
+            flyer.updateWorldMatrix(true, true);
+            inverseBird.copy(flyer.matrixWorld).invert();
+            flyer.userData.wings.forEach(function(wing, side) {
+              wing.traverse(function(part) {
+                // Decorative shafts, body anatomy and the old reference are
+                // excluded. Only the real wing/hand/membrane mesh boundaries.
+                if (failed || !part.isMesh || !part.geometry || !part.geometry.attributes.position) return;
+                var edges = null;
+                try {
+                  var boundaryCount = part.geometry.userData.monarchBoundaryVertexCount;
+                  var vertices, vertexCount;
+                  if (boundaryCount) {
+                    vertices = part.geometry.attributes.position;
+                    if (boundaryCount < 3 || boundaryCount > vertices.count || boundaryCount % 1) { failed = true; return; }
+                    vertexCount = boundaryCount * 2;
+                  } else {
+                    edges = new THREE.EdgesGeometry(part.geometry, 180);
+                    vertices = edges.attributes.position;
+                    vertexCount = vertices && vertices.count;
+                  }
+                  if (!vertices || !vertexCount || vertexCount % 2 || count + vertexCount > capacity) { failed = true; return; }
+                  var offset = count;
+                  for (var index = 0; index < vertexCount; index += 2) {
+                    var first = boundaryCount ? index / 2 : index;
+                    var second = boundaryCount ? (first + 1) % boundaryCount : index + 1;
+                    a.fromBufferAttribute(vertices, first).applyMatrix4(part.matrixWorld).applyMatrix4(inverseBird);
+                    b.fromBufferAttribute(vertices, second).applyMatrix4(part.matrixWorld).applyMatrix4(inverseBird);
+                    if (!Number.isFinite(a.x + a.y + a.z + b.x + b.y + b.z)) { failed = true; return; }
+                    a.toArray(positions, count * 3);
+                    b.toArray(positions, (count + 1) * 3);
+                    distances[count] = 0;
+                    distances[count + 1] = a.distanceTo(b);
+                    count += 2;
+                  }
+                  sources.push({ nodeUuid: part.uuid, geometryUuid: part.geometry.uuid,
+                    offset: offset, vertexCount: vertexCount, boundaryVertexCount: boundaryCount || 0,
+                    side: side, role: part.name || 'wing-mesh' });
+                } finally {
+                  if (edges) edges.dispose();
+                }
+              });
+            });
+          } catch (ignore) { failed = true; }
+          if (failed || !count) { root.clearPose(false); return false; }
+          sourceBird = flyer;
+          root.userData.captured = true;
+          root.userData.speciesId = speciesId;
+          root.userData.individual = individual;
+          root.userData.sourceBirdUuid = flyer.uuid;
+          root.userData.vertexCount = count;
+          root.userData.captureVersion += 1;
+          root.userData.sources = sources;
+          var renderedPhase = flyer.userData.lastRenderedWingPhase;
+          root.userData.capturedPhase = Number.isFinite(renderedPhase)
+            ? ((renderedPhase % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) : null;
+          captureMarkedTips(flyer);
+          geometry.setDrawRange(0, count);
+          geometry.attributes.position.needsUpdate = true;
+          geometry.attributes.lineDistance.needsUpdate = true;
+          root.matrix.copy(flyer.matrixWorld);
+          root.matrixWorldNeedsUpdate = true;
+          root.visible = true;
+          return true;
+        };
+        root.updatePose = function(flyer, cameraMode, isDark, showTipLinks, camera, viewHeight, followSide, viewWidth) {
+          hideTipLinks();
+          var dark = !!isDark;
+          if (root.userData.isDark !== dark) {
+            root.material.color.setHex(dark ? 0xc4b5fd : 0x301056);
+            tipDiamonds.material.color.copy(root.material.color);
+            root.userData.isDark = dark;
+          }
+          if (!root.userData.captured) { root.visible = false; return; }
+          if (!flyer || flyer !== sourceBird) { root.clearPose(); return; }
+          flyer.updateWorldMatrix(true, false);
+          root.matrix.copy(flyer.matrixWorld);
+          root.matrixWorldNeedsUpdate = true;
+          root.visible = cameraMode === 'study';
+          if (root.visible && showTipLinks === true) {
+            var selectedSide = followSide === 0 || followSide === 1 ? followSide : null;
+            if (updateTipLinks(flyer, selectedSide)) updateTipDiamonds(flyer, camera, viewHeight, selectedSide, viewWidth);
+          }
+        };
+        return root;
+      }
+
+      function createMigrationWingtipPath(THREE) {
+        var samples = 64;
+        var vertexCount = samples * 4;
+        var positions = new Float32Array(vertexCount * 3);
+        var colors = new Float32Array(vertexCount * 3);
+        var distances = new Float32Array(vertexCount);
+        var sampled = new Float32Array((samples + 1) * 2 * 3);
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3).setUsage(THREE.DynamicDrawUsage));
+        geometry.setAttribute('lineDistance', new THREE.BufferAttribute(distances, 1).setUsage(THREE.DynamicDrawUsage));
+        geometry.setDrawRange(0, 0);
+        var root = new THREE.Group();
+        root.name = 'migration-wingtip-path';
+        root.matrixAutoUpdate = false;
+        root.visible = false;
+        root.userData.sampleCount = samples;
+        root.userData.buildVersion = 0;
+        root.userData.available = false;
+        root.userData.followSide = null;
+        root.userData.sources = [];
+        var cycle = new THREE.LineSegments(geometry, new THREE.LineDashedMaterial({
+          color: 0xffffff, vertexColors: true, dashSize: 0.09, gapSize: 0.06,
+          transparent: true, opacity: 0.94, depthTest: false, depthWrite: false, fog: false, toneMapped: false
+        }));
+        cycle.name = 'migration-wingtip-cycle';
+        cycle.frustumCulled = false;
+        cycle.renderOrder = 4;
+        root.add(cycle);
+        // Flat, unlit dots stay circular in the camera plane, even off-axis.
+        var pointGeometry = new THREE.CircleGeometry(1, 20);
+        var points = [0, 1].map(function(side) {
+          var point = new THREE.Mesh(pointGeometry, new THREE.MeshBasicMaterial({ depthTest: false, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }));
+          point.name = side === 0 ? 'migration-wingtip-left-point' : 'migration-wingtip-right-point';
+          point.renderOrder = 7;
+          point.matrixAutoUpdate = false;
+          point.frustumCulled = false;
+          root.add(point); return point;
+        });
+        // The hollow rings identify equal PHASE intervals, not equal distance.
+        // Both sides share one ring and one small camera-facing chevron geometry.
+        var landmarkSamples = [0, 8, 16, 24, 32, 40, 48, 56];
+        var ringGeometry = new THREE.RingGeometry(0.66, 1, 14);
+        var directionGeometry = new THREE.BufferGeometry();
+        directionGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+          -0.9, 0.65, 0, -0.9, 0.25, 0, 0, 0, 0,
+          -0.9, 0.65, 0, 0, 0, 0, -0.30, 0, 0,
+          -0.9, -0.65, 0, 0, 0, 0, -0.9, -0.25, 0,
+          -0.9, -0.65, 0, -0.30, 0, 0, 0, 0, 0
+        ]), 3));
+        var landmarks = [0, 1].map(function(side) {
+          var marks = new THREE.InstancedMesh(ringGeometry, points[side].material, landmarkSamples.length);
+          marks.name = side === 0 ? 'migration-wingtip-left-landmarks' : 'migration-wingtip-right-landmarks';
+          marks.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          marks.frustumCulled = false; marks.renderOrder = 5;
+          marks.userData.activeCheckpoint = null;
+          root.add(marks); return marks;
+        });
+        var directions = [0, 1].map(function(side) {
+          var arrow = new THREE.Mesh(directionGeometry, points[side].material);
+          arrow.name = side === 0 ? 'migration-wingtip-left-direction' : 'migration-wingtip-right-direction';
+          arrow.frustumCulled = false; arrow.renderOrder = 6; arrow.visible = false;
+          arrow.matrixAutoUpdate = false;
+          arrow.userData.directionVector = [0, 0, 0];
+          arrow.userData.projectedDirection = [0, 0];
+          root.add(arrow); return arrow;
+        });
+        root.userData.landmarkCountPerSide = landmarkSamples.length;
+        root.userData.landmarkSampleIndices = landmarkSamples.slice();
+        root.userData.directionAheadSamples = 2;
+        var palette = {
+          day: [new THREE.Color(0x021016), new THREE.Color(0x240c01)],
+          night: [new THREE.Color(0x67e8f9), new THREE.Color(0xfbbf24)]
+        };
+        var darkMode = null, cachedBird = null, anchors = [];
+        var inverseBird = new THREE.Matrix4();
+        var localPoint = new THREE.Vector3(), otherPoint = new THREE.Vector3();
+        var worldPoint = new THREE.Vector3(), cameraPoint = new THREE.Vector3();
+        var instanceMatrix = new THREE.Matrix4(), glyphScale = new THREE.Vector3();
+        var spin = new THREE.Quaternion(), tangent = new THREE.Vector3();
+        var projectedBefore = new THREE.Vector3(), projectedAfter = new THREE.Vector3();
+        var axisZ = new THREE.Vector3(0, 0, 1), tau = Math.PI * 2;
+        // Pooled projected triangles keep a direction cue clear of the larger
+        // live tip and selected ring without moving it away from the cycle.
+        var directionProjection = new THREE.Matrix4(), directionCorner = new THREE.Vector3();
+        var directionPixels = new Float64Array(24);
+        function directionEdgeDistanceSq(px, py, ax, ay, bx, by) {
+          var dx = bx - ax, dy = by - ay, lengthSq = dx * dx + dy * dy;
+          var blend = lengthSq > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSq)) : 0;
+          var x = px - ax - blend * dx, y = py - ay - blend * dy;
+          return x * x + y * y;
+        }
+        function directionTriangleDistanceSq(px, py, offset) {
+          var ax = directionPixels[offset], ay = directionPixels[offset + 1];
+          var bx = directionPixels[offset + 2], by = directionPixels[offset + 3];
+          var cx = directionPixels[offset + 4], cy = directionPixels[offset + 5];
+          var area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+          if (!Number.isFinite(area) || Math.abs(area) < 0.00000001) return 0;
+          var ab = (bx - ax) * (py - ay) - (by - ay) * (px - ax);
+          var bc = (cx - bx) * (py - by) - (cy - by) * (px - bx);
+          var ca = (ax - cx) * (py - cy) - (ay - cy) * (px - cx);
+          if (ab >= 0 && bc >= 0 && ca >= 0 || ab <= 0 && bc <= 0 && ca <= 0) return 0;
+          return Math.min(directionEdgeDistanceSq(px, py, ax, ay, bx, by),
+            directionEdgeDistanceSq(px, py, bx, by, cx, cy), directionEdgeDistanceSq(px, py, cx, cy, ax, ay));
+        }
+        function directionHasClearance(flyer, camera, height, width, projectionScale, projectionXScale, dotX, dotY, ringX, ringY, hasRing) {
+          if (!Number.isFinite(width) || width <= 0) return false;
+          directionProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+            .multiply(flyer.matrixWorld).multiply(instanceMatrix);
+          var corners = directionGeometry.attributes.position;
+          for (var vertex = 0; vertex < corners.count; vertex++) {
+            directionCorner.fromBufferAttribute(corners, vertex).applyMatrix4(directionProjection);
+            if (!Number.isFinite(directionCorner.x + directionCorner.y + directionCorner.z) ||
+                Math.abs(directionCorner.x) > 1 || Math.abs(directionCorner.y) > 1 || Math.abs(directionCorner.z) > 1) return false;
+            directionPixels[vertex * 2] = directionCorner.x * width / 2;
+            directionPixels[vertex * 2 + 1] = directionCorner.y * height / 2;
+          }
+          // Ordinary Study cameras have unit pixel aspect. A projection with
+          // a view offset may widen the disks; bound that actual larger radius.
+          var pixelAspect = Math.max(1, width / height * projectionXScale / projectionScale);
+          var dotLimit = 6 * pixelAspect + 2, ringLimit = 8 * pixelAspect + 2;
+          for (var triangle = 0; triangle < corners.count; triangle += 3) {
+            if (directionTriangleDistanceSq(dotX, dotY, triangle * 2) < dotLimit * dotLimit ||
+                hasRing && directionTriangleDistanceSq(ringX, ringY, triangle * 2) < ringLimit * ringLimit) return false;
+          }
+          return true;
+        }
+        function composeCueMatrix(world, pixels, camera, height, projectionScale, angle) {
+          cameraPoint.copy(world).applyMatrix4(camera.matrixWorldInverse);
+          var depth = -cameraPoint.z;
+          if (!Number.isFinite(cameraPoint.x + cameraPoint.y + depth) || depth <= camera.near || depth >= camera.far) return false;
+          var radius = pixels * 2 * depth / (height * projectionScale);
+          if (!Number.isFinite(radius) || radius <= 0) return false;
+          glyphScale.setScalar(radius);
+          spin.setFromAxisAngle(axisZ, angle);
+          // Compose in the actual camera plane, then cancel the body's entire
+          // matrix. Off-axis distance, camera zoom and nonuniform parents must
+          // not change the visual size of a comparison cue.
+          instanceMatrix.compose(cameraPoint, spin, glyphScale)
+            .premultiply(camera.matrixWorld).premultiply(inverseBird);
+          for (var element = 0; element < 16; element++) if (!Number.isFinite(instanceMatrix.elements[element])) return false;
+          return true;
+        }
+        function samplePoint(side, sample, target) {
+          var wrapped = ((sample % samples) + samples) % samples;
+          var first = Math.floor(wrapped), blend = wrapped - first;
+          var offset = side * (samples + 1) * 3;
+          var a = offset + first * 3, b = offset + (first + 1) * 3;
+          return target.set(sampled[a] + (sampled[b] - sampled[a]) * blend,
+            sampled[a + 1] + (sampled[b + 1] - sampled[a + 1]) * blend,
+            sampled[a + 2] + (sampled[b + 2] - sampled[a + 2]) * blend);
+        }
+        function hideGuides() {
+          root.visible = false;
+          root.userData.followSide = null;
+          geometry.setDrawRange(0, 0);
+          for (var side = 0; side < directions.length; side++) {
+            points[side].visible = false;
+            landmarks[side].visible = false;
+            landmarks[side].userData.activeCheckpoint = null;
+            directions[side].visible = false;
+            directions[side].userData.phase = null;
+            directions[side].userData.anchorPhase = null;
+            directions[side].userData.directionVector[0] = 0;
+            directions[side].userData.directionVector[1] = 0;
+            directions[side].userData.directionVector[2] = 0;
+            directions[side].userData.projectedDirection[0] = 0;
+            directions[side].userData.projectedDirection[1] = 0;
+          }
+        }
+        root.invalidate = function() {
+          cachedBird = null; anchors = [];
+          hideGuides();
+          root.userData.available = false;
+          root.userData.speciesId = '';
+          root.userData.individual = -1;
+          root.userData.sourceBirdUuid = '';
+          root.userData.sources = [];
+        };
+        function build(flyer, speciesId, individual) {
+          root.invalidate(); cachedBird = flyer;
+          root.userData.buildVersion += 1;
+          if (!flyer || !flyer.userData || typeof flyer.userData.applyWingPhase !== 'function') return false;
+          var wings = flyer.userData.wings;
+          if (!Array.isArray(wings) || wings.length !== 2 || !Array.isArray(flyer.userData.wrists) || !Array.isArray(flyer.userData.primaries)) return false;
+          for (var side = 0; side < 2; side++) {
+            var node = flyer.userData.primaries[side];
+            if (!node) wings[side].traverse(function(part) { if (part.name === 'migration-monarch-forewing') node = part; });
+            if (!node || !node.geometry || !node.geometry.attributes.position) return false;
+            var source = node.geometry.attributes.position;
+            var limit = node.geometry.userData.monarchBoundaryVertexCount || source.count;
+            var chosen = -1, maxX = -Infinity, maxZ = -Infinity;
+            for (var vertex = 0; vertex < limit; vertex++) {
+              var x = source.getX(vertex), z = source.getZ(vertex);
+              if (Number.isFinite(x) && Number.isFinite(z) && (x > maxX || (x === maxX && z > maxZ))) {
+                chosen = vertex; maxX = x; maxZ = z;
+              }
+            }
+            if (chosen < 0) return false;
+            anchors.push({ node: node, point: new THREE.Vector3().fromBufferAttribute(source, chosen), vertexIndex: chosen });
+          }
+          // Save exact live joint Eulers and every current matrix once. The
+          // sampler is isolated from body motion, engine time and saved work.
+          flyer.updateWorldMatrix(true, true);
+          inverseBird.copy(flyer.matrixWorld).invert();
+          var joints = wings.concat(flyer.userData.wrists, flyer.userData.primaries);
+          var saved = [];
+          flyer.traverse(function(node) {
+            saved.push({ node: node, matrix: node.matrix.clone(), world: node.matrixWorld.clone(),
+              dirty: node.matrixWorldNeedsUpdate, rotation: joints.indexOf(node) >= 0 ? node.rotation.clone() : null });
+          });
+          var failed = false;
+          try {
+            for (var phaseIndex = 0; phaseIndex < samples; phaseIndex++) {
+              flyer.userData.applyWingPhase(phaseIndex * Math.PI * 2 / samples);
+              flyer.updateWorldMatrix(true, true);
+              for (var pointSide = 0; pointSide < 2; pointSide++) {
+                var anchor = anchors[pointSide];
+                localPoint.copy(anchor.point).applyMatrix4(anchor.node.matrixWorld).applyMatrix4(inverseBird);
+                if (!Number.isFinite(localPoint.x + localPoint.y + localPoint.z)) throw new Error('Invalid wingtip');
+                localPoint.toArray(sampled, (pointSide * (samples + 1) + phaseIndex) * 3);
+              }
+            }
+          } catch (ignore) { failed = true; }
+          finally {
+            saved.forEach(function(state) {
+              if (state.rotation) state.node.rotation.copy(state.rotation);
+              state.node.matrix.copy(state.matrix);
+              state.node.matrixWorld.copy(state.world);
+              state.node.matrixWorldNeedsUpdate = state.dirty;
+            });
+          }
+          if (failed) return false;
+          for (var pathSide = 0; pathSide < 2; pathSide++) {
+            var start = pathSide * (samples + 1) * 3;
+            for (var coordinate = 0; coordinate < 3; coordinate++) sampled[start + samples * 3 + coordinate] = sampled[start + coordinate];
+            var distance = 0;
+            for (var segment = 0; segment < samples; segment++) {
+              var output = pathSide * samples * 2 + segment * 2;
+              localPoint.fromArray(sampled, start + segment * 3);
+              otherPoint.fromArray(sampled, start + (segment + 1) * 3);
+              localPoint.toArray(positions, output * 3); otherPoint.toArray(positions, (output + 1) * 3);
+              // One buffer: solid left path and a dashed right path, so the
+              // two sides can be distinguished without relying on color.
+              distances[output] = pathSide === 0 ? 0 : distance;
+              distance += localPoint.distanceTo(otherPoint);
+              distances[output + 1] = pathSide === 0 ? 0 : distance;
+            }
+          }
+          root.userData.available = true;
+          root.userData.speciesId = speciesId;
+          root.userData.individual = individual;
+          root.userData.sourceBirdUuid = flyer.uuid;
+          root.userData.sources = anchors.map(function(anchor, side) {
+            return { side: side, nodeUuid: anchor.node.uuid, geometryUuid: anchor.node.geometry.uuid, vertexIndex: anchor.vertexIndex };
+          });
+          geometry.setDrawRange(0, vertexCount);
+          geometry.attributes.position.needsUpdate = true;
+          geometry.attributes.lineDistance.needsUpdate = true;
+          return true;
+        }
+        root.updatePath = function(enabled, cameraMode, flyer, speciesId, individual, camera, isDark, viewHeight, cyclePhase, activeCheckpoint, followSide, viewWidth) {
+          var dark = !!isDark;
+          if (dark !== darkMode) {
+            darkMode = dark;
+            var scheme = dark ? palette.night : palette.day;
+            for (var colorSide = 0; colorSide < 2; colorSide++) {
+              var color = scheme[colorSide]; points[colorSide].material.color.copy(color);
+              for (var cv = colorSide * samples * 2; cv < (colorSide + 1) * samples * 2; cv++) {
+                colors[cv * 3] = color.r; colors[cv * 3 + 1] = color.g; colors[cv * 3 + 2] = color.b;
+              }
+            }
+            geometry.attributes.color.needsUpdate = true;
+            root.userData.isDark = dark;
+          }
+          // Hidden and filtered guides never advertise another side's pose.
+          hideGuides();
+          if (cachedBird && cachedBird !== flyer) root.invalidate();
+          if (!enabled || cameraMode !== 'study' || !flyer) return;
+          if (!camera || camera.isPerspectiveCamera !== true || typeof camera.updateWorldMatrix !== 'function' ||
+              !camera.matrixWorld || !camera.matrixWorld.elements || camera.matrixWorld.elements.length !== 16 || typeof camera.matrixWorld.determinant !== 'function' ||
+              !camera.matrixWorldInverse || !camera.matrixWorldInverse.elements || camera.matrixWorldInverse.elements.length !== 16 ||
+              !camera.projectionMatrix || !camera.projectionMatrix.elements || camera.projectionMatrix.elements.length !== 16 || typeof camera.projectionMatrix.determinant !== 'function' ||
+              !Number.isFinite(camera.aspect) || camera.aspect <= 0 ||
+              !Number.isFinite(camera.near) || camera.near <= 0 || !Number.isFinite(camera.far) || camera.far <= camera.near ||
+              typeof flyer.updateWorldMatrix !== 'function' || !flyer.matrixWorld || !flyer.matrixWorld.elements ||
+              flyer.matrixWorld.elements.length !== 16 || typeof flyer.matrixWorld.determinant !== 'function') return;
+          camera.updateWorldMatrix(true, false);
+          flyer.updateWorldMatrix(true, true);
+          var projectionScale = camera.projectionMatrix.elements[5], projectionXScale = camera.projectionMatrix.elements[0];
+          var projectionDeterminant = camera.projectionMatrix.determinant();
+          var bodyDeterminant = flyer.matrixWorld.determinant(), cameraDeterminant = camera.matrixWorld.determinant();
+          if (!Number.isFinite(projectionScale) || projectionScale <= 0 || !Number.isFinite(projectionXScale) || projectionXScale <= 0 ||
+              !Number.isFinite(projectionDeterminant) || Math.abs(projectionDeterminant) < 0.000000000001 ||
+              !Number.isFinite(bodyDeterminant) || Math.abs(bodyDeterminant) < 0.000000000001 ||
+              !Number.isFinite(cameraDeterminant) || Math.abs(cameraDeterminant) < 0.000000000001) return;
+          for (var matrixElement = 0; matrixElement < 16; matrixElement++) {
+            if (!Number.isFinite(flyer.matrixWorld.elements[matrixElement]) || !Number.isFinite(camera.matrixWorld.elements[matrixElement]) ||
+                !Number.isFinite(camera.matrixWorldInverse.elements[matrixElement]) || !Number.isFinite(camera.projectionMatrix.elements[matrixElement])) return;
+          }
+          if (cachedBird !== flyer) build(flyer, speciesId, individual);
+          if (!root.userData.available) return;
+          var selectedSide = followSide === 0 || followSide === 1 ? followSide : null;
+          root.userData.followSide = selectedSide;
+          geometry.setDrawRange(selectedSide === null ? 0 : selectedSide * samples * 2,
+            selectedSide === null ? vertexCount : samples * 2);
+          flyer.updateWorldMatrix(true, true);
+          inverseBird.copy(flyer.matrixWorld).invert();
+          root.matrix.copy(flyer.matrixWorld); root.matrixWorldNeedsUpdate = true;
+          var height = Number.isFinite(viewHeight) && viewHeight > 0 ? viewHeight : 390;
+          var width = Number.isFinite(viewWidth) && viewWidth > 0 ? viewWidth : height * camera.aspect;
+          var phase = Number.isFinite(cyclePhase) ? ((cyclePhase % tau) + tau) % tau : null;
+          var selectedCheckpoint = null;
+          if (phase !== null && Number.isInteger(activeCheckpoint) && activeCheckpoint >= 0 && activeCheckpoint < landmarkSamples.length) {
+            var phaseDifference = Math.abs(phase - activeCheckpoint * tau / landmarkSamples.length);
+            if (Math.min(phaseDifference, tau - phaseDifference) <= 0.000001) selectedCheckpoint = activeCheckpoint;
+          }
+          for (var liveSide = 0; liveSide < 2; liveSide++) {
+            if (selectedSide !== null && liveSide !== selectedSide) continue;
+            worldPoint.copy(anchors[liveSide].point).applyMatrix4(anchors[liveSide].node.matrixWorld);
+            if (composeCueMatrix(worldPoint, 6, camera, height, projectionScale, 0)) {
+              points[liveSide].matrix.copy(instanceMatrix);
+              points[liveSide].matrix.decompose(points[liveSide].position, points[liveSide].quaternion, points[liveSide].scale);
+              points[liveSide].matrixWorldNeedsUpdate = true;
+              points[liveSide].visible = true;
+            }
+            var visibleMarks = 0;
+            for (var mark = 0; mark < landmarkSamples.length; mark++) {
+              samplePoint(liveSide, landmarkSamples[mark], localPoint);
+              worldPoint.copy(localPoint).applyMatrix4(flyer.matrixWorld);
+              // The selected ring surrounds the larger live-tip dot. The halo
+              // is valid only while the actual rendered cycle phase matches.
+              var markPixels = mark === selectedCheckpoint ? 8 : 3.2;
+              if (composeCueMatrix(worldPoint, markPixels, camera, height, projectionScale, 0)) {
+                visibleMarks++;
+                if (mark === selectedCheckpoint) landmarks[liveSide].userData.activeCheckpoint = selectedCheckpoint;
+              } else instanceMatrix.makeScale(0, 0, 0);
+              landmarks[liveSide].setMatrixAt(mark, instanceMatrix);
+            }
+            landmarks[liveSide].visible = visibleMarks > 0;
+            landmarks[liveSide].instanceMatrix.needsUpdate = true;
+            var arrow = directions[liveSide];
+            arrow.visible = false;
+            arrow.userData.phase = phase;
+            arrow.userData.anchorPhase = null;
+            if (phase === null || !points[liveSide].visible) continue;
+            projectedBefore.copy(anchors[liveSide].point).applyMatrix4(anchors[liveSide].node.matrixWorld)
+              .applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
+            if (!Number.isFinite(projectedBefore.x + projectedBefore.y + projectedBefore.z) ||
+                Math.abs(projectedBefore.x) > 1 || Math.abs(projectedBefore.y) > 1 || Math.abs(projectedBefore.z) > 1) continue;
+            var dotX = projectedBefore.x * width / 2, dotY = projectedBefore.y * height / 2;
+            var ringX = dotX, ringY = dotY;
+            if (selectedCheckpoint !== null) {
+              samplePoint(liveSide, landmarkSamples[selectedCheckpoint], localPoint);
+              projectedBefore.copy(localPoint).applyMatrix4(flyer.matrixWorld)
+                .applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
+              if (!Number.isFinite(projectedBefore.x + projectedBefore.y + projectedBefore.z) ||
+                  Math.abs(projectedBefore.x) > 1 || Math.abs(projectedBefore.y) > 1 || Math.abs(projectedBefore.z) > 1) continue;
+              ringX = projectedBefore.x * width / 2; ringY = projectedBefore.y * height / 2;
+            }
+            // Search only the next eighth of the cycle. The first clear, valid
+            // chevron stays on the sampled path; cramped projections hide it.
+            for (var candidate = 0; candidate < 13; candidate++) {
+              var advance = 2 + candidate * 0.5;
+              var ahead = phase / tau * samples + advance;
+              samplePoint(liveSide, ahead, localPoint);
+              samplePoint(liveSide, ahead - 0.5, otherPoint);
+              samplePoint(liveSide, ahead + 0.5, projectedAfter);
+              tangent.copy(projectedAfter).sub(otherPoint);
+              if (tangent.lengthSq() < 0.000000000001) continue;
+              tangent.normalize();
+              var localTangentX = tangent.x, localTangentY = tangent.y, localTangentZ = tangent.z;
+              tangent.transformDirection(flyer.matrixWorld).transformDirection(camera.matrixWorldInverse);
+              var tangentX = tangent.x, tangentY = tangent.y;
+              var transverseLength = Math.sqrt(tangentX * tangentX + tangentY * tangentY);
+              if (!Number.isFinite(transverseLength) || transverseLength < 0.08) continue;
+              // Neighboring projected points retain perspective at off-axis tips.
+              projectedBefore.copy(otherPoint).applyMatrix4(flyer.matrixWorld).applyMatrix4(camera.matrixWorldInverse);
+              projectedAfter.applyMatrix4(flyer.matrixWorld).applyMatrix4(camera.matrixWorldInverse);
+              if (projectedBefore.z >= -camera.near || projectedAfter.z >= -camera.near ||
+                  projectedBefore.z <= -camera.far || projectedAfter.z <= -camera.far) continue;
+              projectedBefore.applyMatrix4(camera.projectionMatrix);
+              projectedAfter.applyMatrix4(camera.projectionMatrix);
+              var dx = (projectedAfter.x - projectedBefore.x) * width / height;
+              var dy = projectedAfter.y - projectedBefore.y;
+              var projectedLength = Math.sqrt(dx * dx + dy * dy);
+              if (!Number.isFinite(projectedLength) || projectedLength < 0.00000001) continue;
+              worldPoint.copy(localPoint).applyMatrix4(flyer.matrixWorld);
+              var cueAngle = Math.atan2(dy / projectionScale, (projectedAfter.x - projectedBefore.x) / projectionXScale);
+              if (!composeCueMatrix(worldPoint, 8, camera, height, projectionScale, cueAngle) ||
+                  !directionHasClearance(flyer, camera, height, width, projectionScale, projectionXScale,
+                    dotX, dotY, ringX, ringY, selectedCheckpoint !== null)) continue;
+              arrow.matrix.copy(instanceMatrix);
+              arrow.matrix.decompose(arrow.position, arrow.quaternion, arrow.scale);
+              arrow.userData.anchorPhase = ((ahead / samples) * tau) % tau;
+              arrow.userData.directionVector[0] = localTangentX;
+              arrow.userData.directionVector[1] = localTangentY;
+              arrow.userData.directionVector[2] = localTangentZ;
+              arrow.userData.projectedDirection[0] = dx / projectedLength;
+              arrow.userData.projectedDirection[1] = dy / projectedLength;
+              arrow.matrixWorldNeedsUpdate = true;
+              arrow.visible = true;
+              break;
+            }
+          }
+          root.visible = true;
+        };
+        return root;
+      }
+
+      function createMigrationStudyLighting(THREE, hemi, sun, rim) {
+        // Reuse the corridor's three existing lights. Only their illumination
+        // changes in Study; surfaces, motion and the sky keep their own state.
+        function finitePoint(point) {
+          return !!(point && Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z));
+        }
+        function finiteColor(color) {
+          return !!(color && color.isColor && Number.isFinite(color.r) && Number.isFinite(color.g) && Number.isFinite(color.b) &&
+            color.r >= 0 && color.g >= 0 && color.b >= 0);
+        }
+        if (!hemi || !hemi.isHemisphereLight || !sun || !sun.isDirectionalLight || !rim || !rim.isDirectionalLight ||
+            !sun.target || !rim.target || !finitePoint(hemi.position) || !finitePoint(sun.position) || !finitePoint(rim.position) ||
+            !finitePoint(sun.target.position) || !finitePoint(rim.target.position)) return null;
+        var sunTarget = sun.target, rimTarget = rim.target;
+        var originalHemiPosition = new THREE.Vector3().copy(hemi.position);
+        var originalSunPosition = new THREE.Vector3().copy(sun.position);
+        var originalRimPosition = new THREE.Vector3().copy(rim.position);
+        var originalSunTarget = new THREE.Vector3().copy(sunTarget.position);
+        var originalRimTarget = new THREE.Vector3().copy(rimTarget.position);
+        var themeHemi = new THREE.Color(), themeGround = new THREE.Color();
+        var themeSun = new THREE.Color(), themeRim = new THREE.Color();
+        var themeHemiIntensity = 0, themeSunIntensity = 0, themeRimIntensity = 0;
+        var right = new THREE.Vector3(), up = new THREE.Vector3(), back = new THREE.Vector3();
+        var targetPoint = new THREE.Vector3(), keyWorld = new THREE.Vector3(), rimWorld = new THREE.Vector3();
+        var keyLocal = new THREE.Vector3(), rimLocal = new THREE.Vector3();
+        var keyTargetLocal = new THREE.Vector3(), rimTargetLocal = new THREE.Vector3();
+        var inverseParent = new THREE.Matrix4();
+        var active = false, dirty = true, captured = false;
+        var status = { active: false, themeVersion: 0 };
+        function usableMatrix(matrix) {
+          if (!matrix || !matrix.elements || matrix.elements.length !== 16 || typeof matrix.determinant !== 'function') return false;
+          for (var entry = 0; entry < 16; entry++) if (!Number.isFinite(matrix.elements[entry])) return false;
+          var determinant = matrix.determinant();
+          return Number.isFinite(determinant) && Math.abs(determinant) > 0.000000000001;
+        }
+        function markActive(value) {
+          active = value;
+          status.active = value;
+          hemi.userData.migrationStudyLighting = value;
+          sun.userData.migrationStudyLighting = value;
+          rim.userData.migrationStudyLighting = value;
+        }
+        function restore(force) {
+          if (!captured || (!active && force !== true)) return;
+          hemi.color.copy(themeHemi); hemi.groundColor.copy(themeGround); hemi.intensity = themeHemiIntensity;
+          sun.color.copy(themeSun); sun.intensity = themeSunIntensity;
+          rim.color.copy(themeRim); rim.intensity = themeRimIntensity;
+          sun.target = sunTarget; rim.target = rimTarget;
+          hemi.position.copy(originalHemiPosition);
+          sun.position.copy(originalSunPosition); rim.position.copy(originalRimPosition);
+          sunTarget.position.copy(originalSunTarget); rimTarget.position.copy(originalRimTarget);
+          // Compose restored owned transforms even if an unsupported manual
+          // matrix mode was selected while Study was active. Keep that flag.
+          hemi.updateMatrix(); sun.updateMatrix(); rim.updateMatrix();
+          sunTarget.updateMatrix(); rimTarget.updateMatrix();
+          hemi.updateWorldMatrix(true, false);
+          sun.updateWorldMatrix(true, false); rim.updateWorldMatrix(true, false);
+          // Directional targets are not necessarily scene children. Refresh their
+          // actual world matrices explicitly before the renderer reads them.
+          sunTarget.updateWorldMatrix(true, false); rimTarget.updateWorldMatrix(true, false);
+          dirty = true;
+          markActive(false);
+        }
+        function captureTheme() {
+          // applyTheme writes only colors and intensities. Never capture the
+          // current Study positions or targets as the corridor's originals.
+          if (!finiteColor(hemi.color) || !finiteColor(hemi.groundColor) || !finiteColor(sun.color) || !finiteColor(rim.color) ||
+              !Number.isFinite(hemi.intensity) || hemi.intensity < 0 || !Number.isFinite(sun.intensity) || sun.intensity < 0 ||
+              !Number.isFinite(rim.intensity) || rim.intensity < 0) { restore(true); return false; }
+          themeHemi.copy(hemi.color); themeGround.copy(hemi.groundColor);
+          themeSun.copy(sun.color); themeRim.copy(rim.color);
+          themeHemiIntensity = hemi.intensity; themeSunIntensity = sun.intensity; themeRimIntensity = rim.intensity;
+          captured = true; dirty = true; status.themeVersion++;
+          return true;
+        }
+        function usableParent(node) {
+          if (node.matrixAutoUpdate === false || typeof node.updateWorldMatrix !== 'function') return false;
+          if (!node.parent) return true;
+          node.parent.updateWorldMatrix(true, false);
+          return usableMatrix(node.parent.matrixWorld);
+        }
+        function localPoint(node, point, destination) {
+          destination.copy(point);
+          if (node.parent) destination.applyMatrix4(inverseParent.copy(node.parent.matrixWorld).invert());
+          return finitePoint(destination);
+        }
+        function update(enabled, camera, target) {
+          if (enabled !== true) { restore(); return false; }
+          if (!camera || camera.isPerspectiveCamera !== true || typeof camera.updateWorldMatrix !== 'function' || !finitePoint(target) ||
+              !Number.isFinite(camera.aspect) || camera.aspect <= 0 || !Number.isFinite(camera.near) || camera.near <= 0 ||
+              !Number.isFinite(camera.far) || camera.far <= camera.near || !usableMatrix(camera.projectionMatrix) ||
+              sun.target !== sunTarget || rim.target !== rimTarget) {
+            restore(); return false;
+          }
+          camera.updateWorldMatrix(true, false);
+          if (!usableMatrix(camera.matrixWorld) || !usableParent(sun) || !usableParent(rim) ||
+              !usableParent(sunTarget) || !usableParent(rimTarget)) { restore(); return false; }
+          right.setFromMatrixColumn(camera.matrixWorld, 0);
+          up.setFromMatrixColumn(camera.matrixWorld, 1);
+          back.setFromMatrixColumn(camera.matrixWorld, 2);
+          var rightLength = right.lengthSq(), upLength = up.lengthSq(), backLength = back.lengthSq();
+          if (!Number.isFinite(rightLength) || rightLength <= 0.000000000001 || !Number.isFinite(upLength) || upLength <= 0.000000000001 ||
+              !Number.isFinite(backLength) || backLength <= 0.000000000001) { restore(); return false; }
+          right.normalize(); up.normalize(); back.normalize(); targetPoint.copy(target);
+          keyWorld.copy(targetPoint).addScaledVector(right, -4).addScaledVector(up, 5).addScaledVector(back, 7);
+          rimWorld.copy(targetPoint).addScaledVector(right, 5).addScaledVector(up, 2).addScaledVector(back, -4);
+          // Validate all destinations before changing any light, including when
+          // a light or its target belongs to a transformed scene parent.
+          if (!finitePoint(keyWorld) || !finitePoint(rimWorld) || !localPoint(sun, keyWorld, keyLocal) || !localPoint(rim, rimWorld, rimLocal) ||
+              !localPoint(sunTarget, targetPoint, keyTargetLocal) || !localPoint(rimTarget, targetPoint, rimTargetLocal)) {
+            restore(); return false;
+          }
+          if (!active || dirty) {
+            hemi.color.setHex(0xe4ecf0); hemi.groundColor.setHex(0x46515c); hemi.intensity = 0.62;
+            sun.color.setHex(0xfff5e8); sun.intensity = 0.82;
+            rim.color.setHex(0xc6d8e5); rim.intensity = 0.34;
+            dirty = false;
+          }
+          sun.position.copy(keyLocal); rim.position.copy(rimLocal);
+          sunTarget.position.copy(keyTargetLocal); rimTarget.position.copy(rimTargetLocal);
+          sun.updateWorldMatrix(true, false); rim.updateWorldMatrix(true, false);
+          sunTarget.updateWorldMatrix(true, false); rimTarget.updateWorldMatrix(true, false);
+          markActive(true);
+          return true;
+        }
+        if (!captureTheme()) return null;
+        markActive(false);
+        return { captureTheme: captureTheme, restore: restore, update: update, userData: status };
+      }
+
       function initMigrationFlightScene(host, THREE, token) {
         if (!host || !THREE || token !== _f3dBootRef.current || !host.isConnected) return;
         var statusNode = host.querySelector('.migration-flight-stage-status');
@@ -2395,6 +5009,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             renderer: renderer,
             scene: scene,
             camera: camera,
+            cameraViews: {
+              chase: new THREE.Vector3(0, 5.5, 18),
+              aerial: new THREE.Vector3(0, 21, 25),
+              side: new THREE.Vector3(24, 5.5, 5),
+              study: new THREE.Vector3(4.5, 2.9, -0.8)
+            },
+            studyTarget: new THREE.Vector3(),
+            studyOrbit: new THREE.Vector3(),
+            anatomyPickPoint: new THREE.Vector3(),
+            cameraTarget: new THREE.Vector3(0, 0, -5),
+            wingStepSerial: Math.round(migrNum(_liveVals.current.flightWingStep, 0, 0, 1000000)),
+            wingStepPhase: 0,
             raf: 0,
             disposed: false,
             time: 0,
@@ -2405,6 +5031,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             formationMode: '',
             season: ''
           };
+          engine.markedWingPose = createMigrationMarkedWingPose(THREE, function() { studyMarkedPoseState[1](null); });
+          scene.add(engine.markedWingPose);
+          engine.wingtipPath = createMigrationWingtipPath(THREE);
+          scene.add(engine.wingtipPath);
           _f3dEngineRef.current = engine;
           _f3dHostRef.current = host;
 
@@ -2412,37 +5042,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // A flat background colour gave the corridor no horizon and nothing to
           // read altitude against. A vertical gradient dome supplies both, and
           // is excluded from fog so it stays a sky rather than a fog wall.
-          // 2048 wide rather than 4: a 4px strip can only hold a vertical
-          // gradient, and the night sky needs stars, which have to be painted
-          // into the texture as points rather than bands.
-          //
-          // The width matters. The dome is radius 420, so its circumference is
-          // about 2640 world units. At 512px each texel is ~5 units across,
-          // which at that distance subtends most of a degree: the first pass
-          // drew stars as fat blurry SQUARES. At 2048 a texel is ~1.3 units and
-          // a one-pixel star reads as a point.
+          // The dome carries only a smooth gradient. A separate point buffer
+          // provides stars without magnifying painted texels into square blocks.
           var skyCanvas = document.createElement('canvas');
-          skyCanvas.width = 2048;
-          skyCanvas.height = 1024;
+          skyCanvas.width = 16;
+          skyCanvas.height = 512;
           var skyCtx = skyCanvas.getContext('2d');
           // Day and night palettes for everything the sky drives, kept
           // together so a change to one cannot be forgotten in the others.
           var SKY_THEME = {
             day: {
               stops: [[0, '#0c3f6b'], [0.40, '#1f74a6'], [0.72, '#79bcd8'], [1, '#bcd9e6']],
-              haze: 0xbcd9e6, fogD: 0.0042, stars: 0,
+              haze: 0xbcd9e6, fogD: 0.0042,
               hemiSky: 0xcfe6f5, hemiGround: 0x2f4a2c, hemiI: 0.72,
               sunColor: 0xfff2d0, sunI: 1.05, rimColor: 0x9fd0ec, rimI: 0.42,
-              discColor: 0xfff9e0, glowColor: 0xfff2c4, glowOpacity: 0.18, discScale: 1
+              discColor: 0xfff9e0, glowColor: 0xfff2c4, glowOpacity: 0.42, discScale: 1
             },
             night: {
               stops: [[0, '#050b1d'], [0.42, '#0b1533'], [0.74, '#16244c'], [1, '#2b3a63']],
-              haze: 0x2b3a63, fogD: 0.0050, stars: 900,
+              haze: 0x2b3a63, fogD: 0.0050,
               // Moonlight is dim and blue, and it comes from a single direction,
               // so the hemisphere fill drops well below the daytime value.
               hemiSky: 0x415a86, hemiGround: 0x10161f, hemiI: 0.26,
               sunColor: 0xcddcff, sunI: 0.42, rimColor: 0x6f8ec6, rimI: 0.20,
-              discColor: 0xeef3ff, glowColor: 0xbcd0ff, glowOpacity: 0.12, discScale: 0.72
+              discColor: 0xeef3ff, glowColor: 0xbcd0ff, glowOpacity: 0.28, discScale: 0.72
             }
           };
           function paintSky(mode) {
@@ -2452,25 +5075,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             for (var si = 0; si < cfg.stops.length; si++) g.addColorStop(cfg.stops[si][0], cfg.stops[si][1]);
             skyCtx.fillStyle = g;
             skyCtx.fillRect(0, 0, skyCanvas.width, SH);
-            if (cfg.stars) {
-              // Deterministic scatter: a seeded LCG, so the same sky is painted
-              // every time and a theme toggle does not reshuffle the stars.
-              var seed = 20260816;
-              var rnd = function() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
-              for (var st = 0; st < cfg.stars; st++) {
-                var sx = rnd() * skyCanvas.width;
-                // Concentrated in the upper sky; none below the horizon haze.
-                var sy = Math.pow(rnd(), 1.7) * SH * 0.66;
-                var mag = rnd();
-                var r = mag > 0.94 ? 1.7 : mag > 0.72 ? 1.2 : 0.85;
-                skyCtx.globalAlpha = 0.30 + mag * 0.65 * (1 - sy / (SH * 0.86));
-                skyCtx.fillStyle = mag > 0.9 ? '#dbeafe' : '#ffffff';
-                skyCtx.beginPath();
-                skyCtx.arc(sx, sy, r, 0, Math.PI * 2);
-                skyCtx.fill();
-              }
-              skyCtx.globalAlpha = 1;
-            }
           }
           paintSky('day');
           var skyTex = new THREE.CanvasTexture(skyCanvas);
@@ -2483,6 +5087,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // disposeMigrationObject walks the scene and disposes mat.map, so the
           // canvas texture is released with the dome on teardown.
           scene.add(skyDome);
+          var nightStars = createMigrationStarfield(THREE);
+          scene.add(nightStars);
+          engine.nightStars = nightStars;
 
           // Lighting was hot enough to blow every surface toward white: a slate
           // goose read as a paper plane and the dark green ground as pale mint.
@@ -2502,6 +5109,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var rim = new THREE.DirectionalLight(0x9fd0ec, 0.42);
           rim.position.set(22, 12, -40);
           scene.add(rim);
+          hemi.name = 'migration-flight-hemisphere';
+          sun.name = 'migration-flight-key-light';
+          rim.name = 'migration-flight-rim-light';
+          engine.studyLighting = createMigrationStudyLighting(THREE, hemi, sun, rim);
 
           var sunDisc = new THREE.Mesh(
             new THREE.SphereGeometry(3.2, 24, 16),
@@ -2509,12 +5120,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           );
           sunDisc.position.set(-38, 34, -115);
           scene.add(sunDisc);
+          // A translucent sphere has a hard silhouette. A feathered billboard
+          // gives the sun and moon a soft atmospheric halo from every camera.
+          var glowCanvas = document.createElement('canvas');
+          glowCanvas.width = glowCanvas.height = 128;
+          var glowCtx = glowCanvas.getContext('2d');
+          var glowGradient = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+          glowGradient.addColorStop(0, 'rgba(255,255,255,0.9)');
+          glowGradient.addColorStop(0.20, 'rgba(255,255,255,0.45)');
+          glowGradient.addColorStop(0.55, 'rgba(255,255,255,0.12)');
+          glowGradient.addColorStop(1, 'rgba(255,255,255,0)');
+          glowCtx.fillStyle = glowGradient;
+          glowCtx.fillRect(0, 0, 128, 128);
           var sunGlow = new THREE.Mesh(
-            new THREE.SphereGeometry(9.5, 20, 14),
-            new THREE.MeshBasicMaterial({ color: 0xfff2c4, transparent: true, opacity: 0.18, fog: false, depthWrite: false })
+            new THREE.PlaneGeometry(34, 34),
+            new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(glowCanvas), color: 0xfff2c4, transparent: true, opacity: 0.46, fog: false, depthWrite: false, side: THREE.DoubleSide })
           );
           sunGlow.position.copy(sunDisc.position);
           scene.add(sunGlow);
+          engine.sunGlow = sunGlow;
 
           // ── Day / night ──
           // Called on CHANGE from the frame loop rather than read once here:
@@ -2528,6 +5152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var cfg = SKY_THEME[mode];
             paintSky(mode);
             skyTex.needsUpdate = true;
+            nightStars.visible = mode === 'night';
             scene.background = new THREE.Color(cfg.haze);
             scene.fog = new THREE.FogExp2(cfg.haze, cfg.fogD);
             renderer.setClearColor(cfg.haze, 1);
@@ -2538,11 +5163,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             sun.intensity = cfg.sunI;
             rim.color.setHex(cfg.rimColor);
             rim.intensity = cfg.rimI;
+            if (engine.studyLighting) engine.studyLighting.captureTheme();
             sunDisc.material.color.setHex(cfg.discColor);
             sunGlow.material.color.setHex(cfg.glowColor);
             sunGlow.material.opacity = cfg.glowOpacity;
             sunDisc.scale.setScalar(cfg.discScale);
             sunGlow.scale.setScalar(cfg.discScale);
+            if (cloudMat) {
+              cloudMat.color.setHex(mode === 'night' ? 0x7182aa : 0xf6fbff);
+              // Solid lobes shade and occlude each other; distance fog softens them.
+            }
+            if (cirrusMat) cirrusMat.opacity = mode === 'night' ? 0.10 : 0.24;
+            if (riverDetailMat) riverDetailMat.opacity = mode === 'night' ? 0.10 : 0.26;
           };
 
           // ── Land belt ──
@@ -2562,6 +5194,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var LAND_FRONT = 70;
           var TREE_CAP = 64;
           var PEAK_CAP = 6;
+          var REED_CAP = 96;
+          var SHORE_CAP = 22;
           engine.flown = 0;
           engine.landSeason = '';
 
@@ -2623,16 +5257,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Deeper and rougher than before: the old water mirrored the rim
           // light ahead of the flock straight at the camera, like glowing ice.
           var waterMat = new THREE.MeshStandardMaterial({ color: 0x1b5f86, roughness: 0.88, metalness: 0, transparent: true, opacity: 0.9 });
+          var riverDetailMat = new THREE.LineBasicMaterial({ color: 0xb6e4e7, transparent: true, opacity: 0.26, depthWrite: false });
+          // Two crossed reed blades and a cattail silhouette share one buffer
+          // across every wetland tile. Reeds are rooted at the actual bank;
+          // they are habitat context, not measured stopover sites.
+          var reedGeo = new THREE.BufferGeometry();
+          reedGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+            -0.10, 0, 0, 0.10, 0, 0, 0.025, 1.35, 0,
+            0, 0, -0.10, 0, 0, 0.10, 0, 1.1, 0.04,
+            -0.07, 1.0, 0, 0.07, 1.0, 0, 0, 1.55, 0
+          ]), 3));
+          reedGeo.computeVertexNormals();
+          var reedMat = new THREE.MeshStandardMaterial({ color: 0x70823c, roughness: 1, side: THREE.DoubleSide });
+          var shoreGeo = new THREE.IcosahedronGeometry(0.65, 0);
+          var shoreMat = new THREE.MeshStandardMaterial({ color: 0x7b827a, roughness: 1, flatShading: true });
           var trunkGeo = new THREE.CylinderGeometry(0.22, 0.3, 1.5, 5);
           var trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3423, roughness: 0.95 });
           var coniferGeo = new THREE.ConeGeometry(1.5, 4.4, 6);
           var broadleafGeo = new THREE.IcosahedronGeometry(1.45, 0);
           // White, so each canopy's colour is its instance colour.
           var canopyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.94, flatShading: true });
-          // Ridges: one unit cone, scaled per peak.
-          var peakGeo = new THREE.ConeGeometry(1, 1, 7);
-          var mountainMat = new THREE.MeshStandardMaterial({ color: 0x54606f, roughness: 0.94, flatShading: true });
-          var snowMat = new THREE.MeshStandardMaterial({ color: 0xeef4f8, roughness: 0.86, flatShading: true });
+          // Two shared buffers use identical connected terrain. Snowy ridges
+          // carry a varying snow line in vertex colours, not a second cone.
+          var peakGeo = createMigrationRidgeGeometry(THREE, false);
+          var snowyPeakGeo = createMigrationRidgeGeometry(THREE, true);
+          var mountainMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.96, flatShading: true });
+          var snowMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.91, flatShading: true });
           var lM = new THREE.Matrix4();
           var lQ = new THREE.Quaternion();
           var lP = new THREE.Vector3();
@@ -2651,22 +5301,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             wGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((LAND_SZ + 1) * 6), 3));
             wGeo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array((LAND_SZ + 1) * 6), 3));
             wGeo.setIndex(waterIdx);
+            var rippleGeo = new THREE.BufferGeometry();
+            rippleGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(22 * 6), 3));
             var tile = {
               c: -1,
               group: new THREE.Group(),
               ground: new THREE.Mesh(geo, landMat),
               water: new THREE.Mesh(wGeo, waterMat),
+              riverDetail: new THREE.LineSegments(rippleGeo, riverDetailMat),
+              reeds: new THREE.InstancedMesh(reedGeo, reedMat, REED_CAP),
+              shoreRocks: new THREE.InstancedMesh(shoreGeo, shoreMat, SHORE_CAP),
               trunks: new THREE.InstancedMesh(trunkGeo, trunkMat, TREE_CAP),
               conifers: new THREE.InstancedMesh(coniferGeo, canopyMat, TREE_CAP),
               broadleaf: new THREE.InstancedMesh(broadleafGeo, canopyMat, TREE_CAP),
               peaks: new THREE.InstancedMesh(peakGeo, mountainMat, PEAK_CAP),
-              caps: new THREE.InstancedMesh(peakGeo, snowMat, PEAK_CAP)
+              caps: new THREE.InstancedMesh(snowyPeakGeo, snowMat, PEAK_CAP)
             };
             tile.ground.receiveShadow = true;
             tile.conifers.castShadow = true;
             tile.broadleaf.castShadow = true;
+            tile.peaks.name = 'migration-rock-ridges';
+            tile.caps.name = 'migration-snow-ridges';
             tile.peaks.castShadow = true;
             tile.peaks.receiveShadow = true;
+            tile.caps.castShadow = true;
+            tile.caps.receiveShadow = true;
             // Give every slot an instance colour now: a mesh first drawn
             // without one compiles a shader that ignores colours set later.
             for (var cs = 0; cs < TREE_CAP; cs++) {
@@ -2675,9 +5334,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             tile.group.add(tile.ground);
             tile.group.add(tile.water);
+            tile.group.add(tile.riverDetail);
             // An InstancedMesh is culled by its GEOMETRY's bounds at the tile
             // origin, which can leave the view while its trees are still in it.
-            [tile.trunks, tile.conifers, tile.broadleaf, tile.peaks, tile.caps].forEach(function(im) {
+            tile.reeds.name = 'migration-wetland-reeds';
+            tile.shoreRocks.name = 'migration-riverbank-rocks';
+            [tile.trunks, tile.conifers, tile.broadleaf, tile.peaks, tile.caps, tile.reeds, tile.shoreRocks].forEach(function(im) {
               im.frustumCulled = false;
               tile.group.add(im);
             });
@@ -2729,6 +5391,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             wp.needsUpdate = true;
             wn.needsUpdate = true;
             tile.water.geometry.computeBoundingSphere();
+
+            // Small, broken cross-current reflections expose the river's
+            // surface and scale without turning it into a bright solid stripe.
+            // All samples use route distance, so adjacent/recycled tiles agree.
+            var ripples = [];
+            for (var ripple = 0; ripple < 22; ripple++) {
+              var rw = w0 + (ripple + 0.5) * LAND_T / 22;
+              var rx = landRiverX(rw) + (landHash(c + 17, ripple) - 0.5) * 10;
+              var rippleHalf = 0.28 + landHash(c + 41, ripple) * 1.2;
+              ripples.push(rx - rippleHalf, -6.60, -(rw - w0), rx + rippleHalf, -6.60, -(rw - w0) - 0.12);
+            }
+            var rippleAttribute = tile.riverDetail.geometry.attributes.position;
+            rippleAttribute.array.set(ripples);
+            rippleAttribute.needsUpdate = true;
+            tile.riverDetail.geometry.computeBoundingSphere();
+
+            // Continuous world-distance sampling makes wetland clusters line
+            // up across tile seams and remain fixed when seasons are changed.
+            for (var reed = 0; reed < REED_CAP; reed++) {
+              var reedW = w0 + (Math.floor(reed / 2) + 0.5) * LAND_T / (REED_CAP / 2);
+              var reedSide = reed % 2 ? -1 : 1;
+              var reedNoise = landHash(Math.floor(reedW * 3), reedSide + 9);
+              var reedX = landRiverX(reedW) + reedSide * (6.8 + reedNoise * 2.2);
+              var reedScale = 0.32 + reedNoise * 0.53;
+              lP.set(reedX, Math.max(-6.66, -6 + landHeight(reedX, reedW)), -(reedW - w0));
+              lQ.setFromAxisAngle(lUp, reedNoise * 6.283);
+              lS.set(reedScale * 1.3, reedScale, reedScale * 1.3);
+              lM.compose(lP, lQ, lS);
+              tile.reeds.setMatrixAt(reed, lM);
+            }
+            for (var rock = 0; rock < SHORE_CAP; rock++) {
+              var rockW = w0 + (rock + 0.5) * LAND_T / SHORE_CAP;
+              var rockSide = rock % 2 ? -1 : 1;
+              var rockNoise = landHash(Math.floor(rockW * 2), rockSide + 31);
+              var rockX = landRiverX(rockW) + rockSide * (8.4 + rockNoise * 1.8);
+              lP.set(rockX, -6.05 + landHeight(rockX, rockW), -(rockW - w0));
+              lQ.setFromAxisAngle(lUp, rockNoise * 6.283);
+              lS.set(0.5 + rockNoise, 0.22 + rockNoise * 0.32, 0.6 + rockNoise * 0.7);
+              lM.compose(lP, lQ, lS);
+              tile.shoreRocks.setMatrixAt(rock, lM);
+            }
+            tile.reeds.instanceMatrix.needsUpdate = true;
+            tile.shoreRocks.instanceMatrix.needsUpdate = true;
+            reedMat.color.setHex(fall ? 0x96804b : 0x70823c);
 
             // Seeded by the tile index, so a tile rebuilt for a season change
             // keeps the same trees and ridges.
@@ -2792,25 +5498,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var np = 0, ncap = 0;
             for (var mj = 0; mj < PEAK_CAP; mj++) {
               var mSide = mj % 2 ? -1 : 1;
-              var mX = mSide * (44 + rnd() * 30);
+              var mX = mSide * (54 + rnd() * 30);
               var mW = w0 + (Math.floor(mj / 2) + rnd() * 0.85) * (LAND_T / 3);
               var mH = 8 + rnd() * 14;
-              var mR = 5.5 + rnd() * 4;
+              var mR = 9 + rnd() * 5;
+              // Broad ridge shoulders stay outside the water and flight lane.
+              if (mSide > 0) mX = Math.max(mX, landRiverX(mW) + mR + 10);
               var mTurn = rnd();
-              // Sit on the lowest ground under the cone so it never floats.
-              var mBase = -6.5 + Math.min(landHeight(mX, mW), landHeight(mX - mR, mW), landHeight(mX + mR, mW), landHeight(mX, mW - mR), landHeight(mX, mW + mR));
+              // Bury the terrain skirt in the lowest surrounding ground.
+              var mBase = -6.5 + landHeight(mX, mW);
+              for (var skirt = 0; skirt < 12; skirt++) {
+                var skirtAngle = skirt * Math.PI / 6;
+                mBase = Math.min(mBase, -6.5 + landHeight(mX + Math.cos(skirtAngle) * mR, mW + Math.sin(skirtAngle) * mR));
+              }
               var mlz = -(mW - w0);
               lQ.setFromAxisAngle(lUp, mTurn * 6.283);
               lP.set(mX, mBase + mH / 2, mlz);
               lS.set(mR, mH, mR);
               lM.compose(lP, lQ, lS);
-              tile.peaks.setMatrixAt(np++, lM);
-              if (mH > 13) {
-                lP.set(mX, mBase + mH * 0.85, mlz);
-                lS.set(mR * 0.34, mH * 0.3, mR * 0.34);
-                lM.compose(lP, lQ, lS);
-                tile.caps.setMatrixAt(ncap++, lM);
-              }
+              // Each ridge is one complete mesh. Choose its surface palette
+              // without changing its position, summit shape, or footprint.
+              if (mH > 13) tile.caps.setMatrixAt(ncap++, lM);
+              else tile.peaks.setMatrixAt(np++, lM);
             }
             tile.peaks.count = np;
             tile.caps.count = ncap;
@@ -2852,50 +5561,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           );
           routeRibbon.rotation.x = -Math.PI / 2;
           routeRibbon.position.set(0, -5.88, -126);
-          scene.add(routeRibbon);
+          var routeOverlay = new THREE.Group();
+          routeOverlay.name = 'migration-route-overlay';
+          routeOverlay.add(routeRibbon);
+          scene.add(routeOverlay);
           engine.routeRibbon = routeRibbon;
+          engine.routeOverlay = routeOverlay;
 
           // ── Cloud decks ──
-          // The old deck sat at y=4..14 with one cloud dead ahead at z=-18, so
-          // white spheres filled the middle of the frame and hid the flock.
-          // Clouds now belong above the corridor and out to the flanks, and are
-          // flattened into cumulus rather than left as spheres.
-          var cloudMat = new THREE.MeshStandardMaterial({
-            color: 0xf6fbff,
-            transparent: true,
-            opacity: 0.72,
-            roughness: 1,
-            depthWrite: false
-          });
-          for (var ci = 0; ci < 14; ci++) {
-            var cloud = new THREE.Group();
-            var puffs = 4 + (ci % 3);
-            for (var puff = 0; puff < puffs; puff++) {
-              var ball = new THREE.Mesh(
-                new THREE.SphereGeometry(1.5 + (puff % 3) * 0.6, 10, 8),
-                cloudMat
-              );
-              ball.position.set((puff - (puffs - 1) / 2) * 1.85, Math.sin(puff * 1.7) * 0.5, Math.cos(puff * 1.3) * 0.85);
-              cloud.add(ball);
-            }
-            cloud.scale.set(1.5 + (ci % 3) * 0.45, 0.6, 1.15);
-            var cSide = ci % 2 ? -1 : 1;
-            cloud.position.set(
-              cSide * (17 + (ci % 5) * 8),
-              13 + (ci % 4) * 4.5,
-              -46 - ci * 15
-            );
-            cloud.userData.baseZ = cloud.position.z;
-            cloud.userData.drift = 0.32 + (ci % 4) * 0.08;
-            cloud.userData.onGround = false;
-            scene.add(cloud);
-            engine.movers.push(cloud);
+          // Keep the tall, asymmetric cumulus out above the corridor flanks.
+          var cloudDeck = createMigrationCloudDeck(THREE);
+          var cloudMat = cloudDeck.material;
+          for (var ci = 0; ci < cloudDeck.clouds.length; ci++) {
+            scene.add(cloudDeck.clouds[ci]);
+            engine.movers.push(cloudDeck.clouds[ci]);
           }
 
           // High cirrus: a slow second layer, the strongest parallax cue in the
           // frame and the one thing that made altitude legible.
+          // Alpha feathering replaces the visible rectangular plane edges.
+          // One shared canvas texture keeps this second cloud layer inexpensive.
+          var cirrusCanvas = document.createElement('canvas');
+          cirrusCanvas.width = 256;
+          cirrusCanvas.height = 128;
+          var cirrusCtx = cirrusCanvas.getContext('2d');
+          for (var feather = 0; feather < 16; feather++) {
+            var featherX = 30 + feather * 12;
+            var featherY = 55 + Math.sin(feather * 0.73) * 12;
+            var featherGradient = cirrusCtx.createRadialGradient(featherX, featherY, 1, featherX, featherY, 28);
+            featherGradient.addColorStop(0, 'rgba(255,255,255,0.42)');
+            featherGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            cirrusCtx.fillStyle = featherGradient;
+            cirrusCtx.fillRect(featherX - 28, featherY - 28, 56, 56);
+          }
           var cirrusMat = new THREE.MeshBasicMaterial({
-            color: 0xffffff, transparent: true, opacity: 0.20, depthWrite: false, side: THREE.DoubleSide
+            map: new THREE.CanvasTexture(cirrusCanvas), color: 0xffffff, transparent: true, opacity: 0.24, depthWrite: false, side: THREE.DoubleSide
           });
           for (var xi = 0; xi < 7; xi++) {
             var cirrus = new THREE.Mesh(new THREE.PlaneGeometry(46 + (xi % 3) * 22, 13), cirrusMat);
@@ -2916,7 +5616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             beacon.userData.baseZ = beacon.position.z;
             beacon.userData.drift = 1;
             beacon.userData.onGround = true;
-            scene.add(beacon);
+            routeOverlay.add(beacon);
             engine.movers.push(beacon);
           }
 
@@ -2937,11 +5637,368 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           engine.streaks = streaks;
 
           var flockRoot = new THREE.Group();
+          flockRoot.name = 'migration-flock';
           flockRoot.position.y = 1.2;
           scene.add(flockRoot);
           engine.flockRoot = flockRoot;
 
+          // Explanatory wingtip wakes, not a numerical flow solution. Cyan
+          // paired paths trail the ACTUAL articulated wings of up to five
+          // visible flock members; green arrows mark the outside upwash region.
+          // The scene does not calculate induced velocity, optimum spacing or
+          // wingbeat phase benefit. Geometry and arrows are deliberately enlarged
+          // for teaching and cannot be read as real-world distance or airspeed.
+          var WAKE_BIRDS = 5;
+          var WAKE_SEGMENTS = 24;
+          var airflow = new THREE.Group();
+          airflow.name = 'migration-airflow';
+          airflow.visible = false;
+          var wakeGeometry = new THREE.BufferGeometry();
+          var wakeBuffer = new Float32Array(WAKE_BIRDS * 2 * WAKE_SEGMENTS * 6);
+          wakeGeometry.setAttribute('position', new THREE.BufferAttribute(wakeBuffer, 3));
+          var wakePaths = new THREE.LineSegments(wakeGeometry,
+            new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.78, depthWrite: false }));
+          wakePaths.userData.migrationOverlay = 'wingtip-wake';
+          wakePaths.frustumCulled = false;
+          airflow.add(wakePaths);
+          var upwashGeometry = new THREE.BufferGeometry();
+          var upwashBuffer = new Float32Array(WAKE_BIRDS * 2 * 3 * 6);
+          upwashGeometry.setAttribute('position', new THREE.BufferAttribute(upwashBuffer, 3));
+          var upwashCues = new THREE.LineSegments(upwashGeometry,
+            new THREE.LineBasicMaterial({ color: 0xa3e635, transparent: true, opacity: 0.96, depthWrite: false }));
+          upwashCues.userData.migrationOverlay = 'upwash-cues';
+          upwashCues.frustumCulled = false;
+          airflow.add(upwashCues);
+          scene.add(airflow);
+          engine.airflow = airflow;
+          engine.speedVectors = createMigrationSpeedVectors(THREE);
+          scene.add(engine.speedVectors);
+          var wakePoint = new THREE.Vector3();
+          engine.updateAirflow = function(enabled) {
+            // Butterfly vortex dynamics are outside this bird-wing teaching
+            // model; an explicit opt-in never silently applies it to Monarchs.
+            airflow.visible = !!enabled && engine.speciesId !== 'monarch';
+            if (!airflow.visible) return;
+            flockRoot.updateMatrixWorld(true);
+            var wakeCount = engine.flyers.length;
+            var wakeBirds = 0;
+            var wi = 0;
+            var ui = 0;
+            for (var wf = 0; wf < wakeCount; wf++) {
+              if (!engine.flyers[wf].visible) continue;
+              if (wakeBirds >= WAKE_BIRDS) break;
+              wakeBirds++;
+              var anchors = engine.flyers[wf].userData.wakeAnchors;
+              for (var ws = 0; ws < anchors.length; ws++) {
+                var anchor = anchors[ws];
+                wakePoint.copy(anchor.point);
+                anchor.node.localToWorld(wakePoint);
+                for (var segment = 0; segment < WAKE_SEGMENTS; segment++) {
+                  for (var endpoint = 0; endpoint < 2; endpoint++) {
+                    var progress = (segment + endpoint) / WAKE_SEGMENTS;
+                    var radius = 0.05 + progress * 0.24;
+                    var turn = progress * Math.PI * 4 + engine.time * 1.35;
+                    // Counter-rotating pair, trailing behind the bird (+z).
+                    wakeBuffer[wi++] = wakePoint.x + Math.cos(turn) * radius;
+                    wakeBuffer[wi++] = wakePoint.y + Math.sin(turn) * radius * anchor.side - progress * 0.30;
+                    wakeBuffer[wi++] = wakePoint.z + progress * 4.2;
+                  }
+                }
+                // Flock-relative upward arrows just OUTSIDE each vortex core,
+                // not in the downwash region between the two wings.
+                var arrowX = wakePoint.x + anchor.side * 0.48;
+                var arrowY = wakePoint.y - 0.10;
+                var arrowZ = wakePoint.z + 0.95;
+                upwashBuffer[ui++] = arrowX; upwashBuffer[ui++] = arrowY - 0.20; upwashBuffer[ui++] = arrowZ;
+                upwashBuffer[ui++] = arrowX; upwashBuffer[ui++] = arrowY + 0.42; upwashBuffer[ui++] = arrowZ;
+                upwashBuffer[ui++] = arrowX; upwashBuffer[ui++] = arrowY + 0.42; upwashBuffer[ui++] = arrowZ;
+                upwashBuffer[ui++] = arrowX - 0.12; upwashBuffer[ui++] = arrowY + 0.24; upwashBuffer[ui++] = arrowZ;
+                upwashBuffer[ui++] = arrowX; upwashBuffer[ui++] = arrowY + 0.42; upwashBuffer[ui++] = arrowZ;
+                upwashBuffer[ui++] = arrowX + 0.12; upwashBuffer[ui++] = arrowY + 0.24; upwashBuffer[ui++] = arrowZ;
+              }
+            }
+            wakeGeometry.setDrawRange(0, wi / 3);
+            upwashGeometry.setDrawRange(0, ui / 3);
+            wakeGeometry.attributes.position.needsUpdate = true;
+            upwashGeometry.attributes.position.needsUpdate = true;
+          };
+
+          // One pooled, colored line buffer for all four anatomy callouts.
+          // Marker meshes and digit buffers are also built once, never in RAF.
+          var anatomyMarkers = createMigrationAnatomyMarkers(THREE);
+          scene.add(anatomyMarkers);
+          engine.anatomyMarkers = anatomyMarkers;
+          var anatomyCenter = new THREE.Vector3();
+          var anatomyRight = new THREE.Vector3();
+          var anatomyUp = new THREE.Vector3();
+          var anatomyView = new THREE.Vector3();
+          var anatomyScreen = new THREE.Vector3();
+          var anatomyMarkerView = new THREE.Vector3();
+          var anatomyMarkerWorld = new THREE.Vector3();
+          var anatomyMarkerScale = new THREE.Vector3();
+          var anatomyMarkerRotation = new THREE.Quaternion();
+          var anatomyMarkerMatrix = new THREE.Matrix4();
+          var anatomyInverseProjection = new THREE.Matrix4();
+          var anatomyInverseMarkers = new THREE.Matrix4();
+          var anatomyInverseOverlay = new THREE.Matrix4();
+          var anatomyLineStart = new THREE.Vector3();
+          var anatomyLineEnd = new THREE.Vector3();
+          for (var pooledMarker = 0; pooledMarker < anatomyMarkers.children.length; pooledMarker++) {
+            anatomyMarkers.children[pooledMarker].matrixAutoUpdate = false;
+          }
+          function anatomyUsableMatrix(matrix) {
+            if (!matrix || !matrix.elements || matrix.elements.length !== 16 || typeof matrix.determinant !== 'function') return false;
+            for (var coordinate = 0; coordinate < 16; coordinate++) if (!Number.isFinite(matrix.elements[coordinate])) return false;
+            var determinant = matrix.determinant();
+            return Number.isFinite(determinant) && Math.abs(determinant) > 1e-12;
+          }
+          var anatomyMarkerOffsets = [[-0.75, 0.65], [0.75, 0.65], [0.75, -0.65], [-0.75, -0.65]];
+          var ANATOMY_SEGMENTS = 96;
+          var anatomyGeometry = new THREE.BufferGeometry();
+          var anatomyBuffer = new Float32Array(ANATOMY_SEGMENTS * 6);
+          var anatomyColors = new Float32Array(ANATOMY_SEGMENTS * 6);
+          anatomyGeometry.setAttribute('position', new THREE.BufferAttribute(anatomyBuffer, 3));
+          anatomyGeometry.setAttribute('color', new THREE.BufferAttribute(anatomyColors, 3));
+          if (THREE.DynamicDrawUsage != null) {
+            anatomyGeometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
+            anatomyGeometry.attributes.color.setUsage(THREE.DynamicDrawUsage);
+          }
+          var anatomyOverlay = new THREE.LineSegments(anatomyGeometry,
+            new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.96,
+              depthTest: false, depthWrite: false, toneMapped: false }));
+          anatomyOverlay.name = 'migration-anatomy-callouts';
+          anatomyOverlay.userData.migrationOverlay = 'anatomy-callouts';
+          anatomyOverlay.frustumCulled = false;
+          anatomyOverlay.renderOrder = 5;
+          anatomyOverlay.visible = false;
+          scene.add(anatomyOverlay);
+          engine.anatomyOverlay = anatomyOverlay;
+          var anatomyPoint = new THREE.Vector3();
+          var anatomyNext = new THREE.Vector3();
+          var anatomyOffset = 0;
+          function writeAnatomyLine(start, end, color) {
+            if (anatomyOffset + 6 > anatomyBuffer.length) return;
+            // Anchors are world-space; keep the line correct if its parent moves.
+            anatomyLineStart.copy(start).applyMatrix4(anatomyInverseOverlay);
+            anatomyLineEnd.copy(end).applyMatrix4(anatomyInverseOverlay);
+            anatomyBuffer[anatomyOffset] = anatomyLineStart.x;
+            anatomyBuffer[anatomyOffset + 1] = anatomyLineStart.y;
+            anatomyBuffer[anatomyOffset + 2] = anatomyLineStart.z;
+            anatomyBuffer[anatomyOffset + 3] = anatomyLineEnd.x;
+            anatomyBuffer[anatomyOffset + 4] = anatomyLineEnd.y;
+            anatomyBuffer[anatomyOffset + 5] = anatomyLineEnd.z;
+            for (var vertex = 0; vertex < 2; vertex++) {
+              var offset = anatomyOffset + vertex * 3;
+              anatomyColors[offset] = ((color >> 16) & 255) / 255;
+              anatomyColors[offset + 1] = ((color >> 8) & 255) / 255;
+              anatomyColors[offset + 2] = (color & 255) / 255;
+            }
+            anatomyOffset += 6;
+          }
+          engine.updateAnatomy = function(enabled, birdIndex, region, followSide, isDark) {
+            anatomyOverlay.visible = false;
+            anatomyMarkers.visible = false;
+            anatomyOverlay.userData.anatomySide = null;
+            anatomyMarkers.userData.anatomySide = null;
+            anatomyOverlay.userData.sourceBirdUuid = '';
+            anatomyMarkers.userData.sourceBirdUuid = '';
+            anatomyMarkers.userData.selectedAnatomyId = '';
+            anatomyOverlay.userData.selectedAnatomyId = '';
+            anatomyGeometry.setDrawRange(0, 0);
+            for (var resetMarker = 0; resetMarker < anatomyMarkers.children.length; resetMarker++) {
+              var hiddenMarker = anatomyMarkers.children[resetMarker];
+              hiddenMarker.userData.anatomySide = null;
+              hiddenMarker.userData.focused = false;
+              if (hiddenMarker.children[3]) hiddenMarker.children[3].visible = false;
+            }
+            if (!enabled || engine.disposed || engine.contextLost || engine.speciesId === 'monarch' ||
+                !Array.isArray(engine.flyers) || !engine.flyers.length || anatomyMarkers.children.length !== 4) return;
+            var selected = engine.flyers[Math.round(migrNum(birdIndex, 0, 0, engine.flyers.length - 1))];
+            var side = followSide === 0 ? 0 : 1;
+            var data = selected && selected.userData;
+            var anchors = data && Array.isArray(data.anatomyAnchorsBySide) ? data.anatomyAnchorsBySide[side] : null;
+            if (!selected || selected.visible === false || typeof selected.uuid !== 'string' || !selected.uuid ||
+                !data || !Array.isArray(data.wings) || !Array.isArray(data.primaries) ||
+                !Array.isArray(anchors) || anchors.length !== 4) return;
+            var requiredCoordinates = 0;
+            for (var check = 0; check < 4; check++) {
+              var candidate = anchors[check];
+              var expectedId = check === 0 ? 'head' : check === 1 ? 'inner-wing' : check === 2 ? 'primaries' : 'tail';
+              var expectedNode = check === 1 ? data.wings[side] : check === 2 ? data.primaries[side] : selected;
+              if (!candidate || candidate.id !== expectedId || !candidate.node || candidate.node !== expectedNode ||
+                  typeof candidate.node.localToWorld !== 'function' || !candidate.node.matrixWorld || !candidate.node.matrixWorld.elements || !candidate.point ||
+                  !Number.isFinite(candidate.point.x) || !Number.isFinite(candidate.point.y) || !Number.isFinite(candidate.point.z) ||
+                  !Number.isInteger(candidate.color) || candidate.color < 0 || candidate.color > 0xffffff ||
+                  !candidate.outline || !Number.isInteger(candidate.outline.length) || candidate.outline.length <= 0 || candidate.outline.length % 6) return;
+              var ancestor = candidate.node;
+              while (ancestor && ancestor !== selected) ancestor = ancestor.parent;
+              if (ancestor !== selected) return;
+              requiredCoordinates += candidate.outline.length + 12;
+              if (requiredCoordinates > anatomyBuffer.length) return;
+              for (var coordinate = 0; coordinate < candidate.outline.length; coordinate++) {
+                if (!Number.isFinite(candidate.outline[coordinate])) return;
+              }
+            }
+            flockRoot.updateWorldMatrix(true, true);
+            for (var matrixAnchor = 0; matrixAnchor < 4; matrixAnchor++) {
+              if (!anatomyUsableMatrix(anchors[matrixAnchor].node.matrixWorld)) return;
+            }
+            selected.getWorldPosition(anatomyCenter);
+            if (!Number.isFinite(anatomyCenter.x) || !Number.isFinite(anatomyCenter.y) || !Number.isFinite(anatomyCenter.z) ||
+                !anatomyUsableMatrix(selected.matrixWorld)) return;
+            anatomyMarkers.updateWorldMatrix(true, false);
+            anatomyOverlay.updateWorldMatrix(true, false);
+            if (!anatomyUsableMatrix(anatomyMarkers.matrixWorld) || !anatomyUsableMatrix(anatomyOverlay.matrixWorld)) return;
+            anatomyInverseMarkers.copy(anatomyMarkers.matrixWorld).invert();
+            anatomyInverseOverlay.copy(anatomyOverlay.matrixWorld).invert();
+            var anatomyCamera = engine.camera;
+            var markerViewHeight = 560, markerViewWidth = 560;
+            var markerProjectionX = 1, markerProjectionY = 1;
+            if (anatomyCamera) {
+              if (!anatomyCamera.isPerspectiveCamera || typeof anatomyCamera.updateWorldMatrix !== 'function' ||
+                  !anatomyCamera.matrixWorld || anatomyCamera.matrixWorld.isMatrix4 !== true ||
+                  !anatomyCamera.matrixWorldInverse || anatomyCamera.matrixWorldInverse.isMatrix4 !== true ||
+                  !anatomyCamera.projectionMatrix || anatomyCamera.projectionMatrix.isMatrix4 !== true ||
+                  !Number.isFinite(anatomyCamera.aspect) || anatomyCamera.aspect <= 0 ||
+                  !Number.isFinite(anatomyCamera.near) || anatomyCamera.near <= 0 ||
+                  !Number.isFinite(anatomyCamera.far) || anatomyCamera.far <= anatomyCamera.near) return;
+              anatomyCamera.updateWorldMatrix(true, false);
+              if (!anatomyUsableMatrix(anatomyCamera.matrixWorld) || !anatomyUsableMatrix(anatomyCamera.matrixWorldInverse) ||
+                  !anatomyUsableMatrix(anatomyCamera.projectionMatrix)) return;
+              markerProjectionX = anatomyCamera.projectionMatrix.elements[0];
+              markerProjectionY = anatomyCamera.projectionMatrix.elements[5];
+              var projectionElements = anatomyCamera.projectionMatrix.elements;
+              if (!(markerProjectionX > 0 && markerProjectionY > 0) || projectionElements[1] !== 0 ||
+                  projectionElements[3] !== 0 || projectionElements[4] !== 0 || projectionElements[7] !== 0 ||
+                  projectionElements[11] !== -1 || projectionElements[12] !== 0 || projectionElements[13] !== 0 ||
+                  projectionElements[15] !== 0) return;
+              anatomyInverseProjection.copy(anatomyCamera.projectionMatrix).invert();
+              anatomyView.copy(anatomyCenter).applyMatrix4(anatomyCamera.matrixWorldInverse);
+              if (!Number.isFinite(anatomyView.x) || !Number.isFinite(anatomyView.y) || !Number.isFinite(anatomyView.z) ||
+                  -anatomyView.z <= anatomyCamera.near || -anatomyView.z >= anatomyCamera.far) return;
+              anatomyScreen.copy(anatomyView).applyMatrix4(anatomyCamera.projectionMatrix);
+              if (!Number.isFinite(anatomyScreen.x) || !Number.isFinite(anatomyScreen.y) || !Number.isFinite(anatomyScreen.z) ||
+                  anatomyScreen.z <= -1 || anatomyScreen.z >= 1) return;
+              markerViewHeight = engine.host && Number.isFinite(engine.host.clientHeight) && engine.host.clientHeight > 0
+                ? engine.host.clientHeight : 560;
+              markerViewWidth = engine.host && Number.isFinite(engine.host.clientWidth) && engine.host.clientWidth > 0
+                ? engine.host.clientWidth : markerViewHeight * anatomyCamera.aspect;
+            }
+            var focusedRegion = region === 'head' || region === 'inner-wing' || region === 'primaries' || region === 'tail' ? region : '';
+            anatomyOverlay.visible = true;
+            anatomyMarkers.visible = true;
+            anatomyOverlay.userData.anatomySide = side;
+            anatomyMarkers.userData.anatomySide = side;
+            anatomyOverlay.userData.sourceBirdUuid = selected.uuid;
+            anatomyMarkers.userData.sourceBirdUuid = selected.uuid;
+            anatomyMarkers.userData.selectedAnatomyId = focusedRegion;
+            anatomyOverlay.userData.selectedAnatomyId = focusedRegion;
+            var markerExtent = migrNum(selected.userData.studyRadius, 1.65, 0.4, 5);
+            anatomyRight.set(1, 0, 0);
+            anatomyUp.set(0, 1, 0);
+            anatomyOffset = 0;
+            for (var callout = 0; callout < anchors.length; callout++) {
+              var anchor = anchors[callout];
+              var anatomyLineColor = isDark === false
+                ? (callout === 0 ? 0x78350f : callout === 1 ? 0x164e63 : callout === 2 ? 0x14532d : 0x831843)
+                : anchor.color;
+              if (focusedRegion && anchor.id !== focusedRegion) {
+                // Keep every region available while making the selected segment
+                // easier to trace. Reuse the existing colors and line buffers.
+                var anatomyBackdrop = isDark === false ? 0xe2e8f0 : 0x18344a;
+                var focusRed = Math.round(((anatomyLineColor >> 16) & 255) * 0.6 + ((anatomyBackdrop >> 16) & 255) * 0.4);
+                var focusGreen = Math.round(((anatomyLineColor >> 8) & 255) * 0.6 + ((anatomyBackdrop >> 8) & 255) * 0.4);
+                var focusBlue = Math.round((anatomyLineColor & 255) * 0.6 + (anatomyBackdrop & 255) * 0.4);
+                anatomyLineColor = (focusRed << 16) | (focusGreen << 8) | focusBlue;
+              }
+              for (var point = 0; point < anchor.outline.length; point += 6) {
+                anatomyPoint.set(anchor.outline[point], anchor.outline[point + 1], anchor.outline[point + 2]);
+                anatomyNext.set(anchor.outline[point + 3], anchor.outline[point + 4], anchor.outline[point + 5]);
+                anchor.node.localToWorld(anatomyPoint);
+                anchor.node.localToWorld(anatomyNext);
+                writeAnatomyLine(anatomyPoint, anatomyNext, anatomyLineColor);
+              }
+              // Four corner positions stay separate when orbiting. Each leader
+              // still terminates at its actual articulated anatomical anchor.
+              var marker = anatomyMarkers.children[callout];
+              var markerOffset = anatomyMarkerOffsets[callout];
+              marker.userData.anatomySide = callout === 1 || callout === 2 ? side : null;
+              marker.userData.focused = anchor.id === focusedRegion;
+              marker.children[3].visible = marker.userData.focused;
+              var markerX = markerOffset[0] * markerExtent;
+              var markerY = markerOffset[1] * markerExtent;
+              var markerFocusScale = marker.userData.focused ? 1.08 : 1;
+              if (anatomyCamera) {
+                // Clamp the projected center in actual CSS pixels, including an
+                // off-axis view. Unproject at the same view depth afterwards.
+                anatomyMarkerView.copy(anatomyView);
+                anatomyMarkerView.x += markerX;
+                anatomyMarkerView.y += markerY;
+                anatomyScreen.copy(anatomyMarkerView).applyMatrix4(anatomyCamera.projectionMatrix);
+                var markerLeft = Math.min(28, markerViewWidth / 2);
+                var markerTop = Math.min(128, markerViewHeight / 2);
+                var markerPixelX = Math.max(markerLeft, Math.min(Math.max(markerLeft, markerViewWidth - 28),
+                  (anatomyScreen.x + 1) * markerViewWidth / 2));
+                // The desktop route card reaches 102.5px above the floor.
+                // Reserve its edge, the 19px focus ring and at least a 2px gap.
+                var markerPixelY = Math.max(markerTop, Math.min(Math.max(markerTop, markerViewHeight - 124),
+                  (1 - anatomyScreen.y) * markerViewHeight / 2));
+                anatomyMarkerView.set(markerPixelX * 2 / markerViewWidth - 1,
+                  1 - markerPixelY * 2 / markerViewHeight, anatomyScreen.z).applyMatrix4(anatomyInverseProjection);
+                anatomyMarkerWorld.copy(anatomyMarkerView).applyMatrix4(anatomyCamera.matrixWorld);
+                // A view-plane matrix preserves the 13px disk under zoom and
+                // nonuniform camera parents; one scalar world scale cannot.
+                var markerDepth = -anatomyMarkerView.z;
+                anatomyMarkerScale.set(26 * markerFocusScale * markerDepth / (markerViewWidth * markerProjectionX),
+                  26 * markerFocusScale * markerDepth / (markerViewHeight * markerProjectionY),
+                  26 * markerFocusScale * markerDepth / (markerViewHeight * markerProjectionY));
+                anatomyMarkerMatrix.compose(anatomyMarkerView, anatomyMarkerRotation, anatomyMarkerScale)
+                  .premultiply(anatomyCamera.matrixWorld);
+              } else {
+                // Retain the fixed-world fallback for callers without a camera.
+                anatomyMarkerWorld.copy(anatomyCenter).addScaledVector(anatomyRight, markerX).addScaledVector(anatomyUp, markerY);
+                anatomyMarkerScale.setScalar(0.14 * markerFocusScale);
+                anatomyMarkerMatrix.compose(anatomyMarkerWorld, anatomyMarkerRotation, anatomyMarkerScale);
+              }
+              marker.matrix.copy(anatomyMarkerMatrix).premultiply(anatomyInverseMarkers);
+              marker.matrix.decompose(marker.position, marker.quaternion, marker.scale);
+              marker.matrixWorldNeedsUpdate = true;
+              anatomyPoint.copy(anchor.point);
+              anchor.node.localToWorld(anatomyPoint);
+              if (anatomyCamera) {
+                anatomyNext.copy(anatomyMarkerView);
+                anatomyNext.x += (markerOffset[0] < 0 ? 1 : -1) * markerExtent * 0.18;
+                anatomyNext.applyMatrix4(anatomyCamera.matrixWorld);
+              } else {
+                anatomyNext.copy(anatomyMarkerWorld).addScaledVector(anatomyRight,
+                  (markerOffset[0] < 0 ? 1 : -1) * markerExtent * 0.18);
+              }
+              writeAnatomyLine(anatomyPoint, anatomyNext, anatomyLineColor);
+              anatomyPoint.copy(anatomyNext);
+              anatomyNext.copy(anatomyMarkerWorld);
+              writeAnatomyLine(anatomyPoint, anatomyNext, anatomyLineColor);
+            }
+            anatomyGeometry.setDrawRange(0, anatomyOffset / 3);
+            anatomyGeometry.attributes.position.needsUpdate = true;
+            anatomyGeometry.attributes.color.needsUpdate = true;
+          };
+
+          engine.updateStudyBackdrop = function(study) {
+            // Study isolates shape and motion against the sky. Restore every
+            // corridor object when returning to the flock camera views.
+            var landscape = engine.landTiles || [];
+            for (var tile = 0; tile < landscape.length; tile++) landscape[tile].group.visible = !study;
+            var scenery = engine.movers || [];
+            for (var mover = 0; mover < scenery.length; mover++) scenery[mover].visible = !study;
+            if (engine.streaks) engine.streaks.visible = !study;
+            if (engine.nightStars) engine.nightStars.visible = !study && engine._skyMode === 'night';
+          };
+
           engine.rebuildFlock = function(speciesId, formationMode, season) {
+            _f3dStudyStepAckRef.current.pending = null;
+            if (typeof engine.updateAnatomy === 'function') engine.updateAnatomy(false, 0, '');
+            engine.markedWingPose.clearPose();
+            engine.wingtipPath.invalidate();
             while (flockRoot.children.length) {
               var old = flockRoot.children.pop();
               disposeMigrationObject(old);
@@ -2962,12 +6019,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             engine.season = season;
             routeRibbon.material.color.setHex(season === 'spring' ? 0x4ade80 : 0x38bdf8);
             if (engine.landSeason !== season) engine.paintLand(season);
+            if (!engine.disposed && !engine.contextLost && engine.host && typeof engine.host.setAttribute === 'function') {
+              engine.host.setAttribute('data-flight-source-uuid', engine.flyers[0] && engine.flyers[0].uuid || '');
+            }
           };
 
           engine.resizeHandler = function() {
             if (engine.disposed || !host.isConnected) return;
             var width = Math.max(320, host.clientWidth || 720);
             var height = Math.max(320, host.clientHeight || 560);
+            if (engine.viewWidth === width && engine.viewHeight === height) return;
+            engine.viewWidth = width;
+            engine.viewHeight = height;
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
             renderer.setSize(width, height, false);
@@ -2982,7 +6045,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           renderer.domElement.addEventListener('webglcontextlost', function(event) {
             event.preventDefault();
+            engine.contextLost = true;
+            _f3dStudyStepAckRef.current.pending = null;
+            if (typeof engine.updateAnatomy === 'function') engine.updateAnatomy(false, 0, '');
+            cancelMigrationStudyPreview();
+            engine.markedWingPose.clearPose();
+            engine.wingtipPath.invalidate();
+            _f3dStudyCyclePauseRef.current = null;
+            studyCyclePositionState[1](null);
+            _liveVals.current.flightStudyCyclePosition = undefined;
+            _liveVals.current.flightWingtipFollowSide = undefined;
+            _liveVals.current.flightWingtipFollowSourceUuid = undefined;
+            studyWingtipFollowState[1](null);
             host.setAttribute('data-flight-error', 'true');
+            host.removeAttribute('data-flight-ready');
             if (statusNode) statusNode.textContent = t('stem.migration.flight_context_lost', 'The 3D context paused. Switch tabs and return to restart the flight view.');
           });
 
@@ -3015,8 +6091,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // the air (wind streaks, and clouds, which ride the wind with the
           // flock). So a tailwind speeds the ground but not the air, and a
           // headwind slows the ground while the air still streams past.
-          var groundRate = Math.max(4, species.speed + live.flightWind * 2.237) * 0.39;
-          var airRate = Math.max(4, species.speed) * 0.39;
+          var speedValues = live.flightSpeedValues;
+          var groundRate = speedValues.rawGroundSpeed * 0.39;
+          var airRate = Math.max(4, speedValues.airSpeed) * 0.39;
           if (moving) {
             engineNow.time += delta;
             engineNow.flown += groundRate * delta;
@@ -3036,33 +6113,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
           if (engineNow.placeLand) engineNow.placeLand();
 
+          // Revisit starts a repeatable illustrative pose. The notebook did not
+          // capture animation time, so it must not claim to replay that frame.
+          var revisitPose = _f3dStudyRevisitRef.current;
+          if (revisitPose) {
+            if (live.flightCamera === 'study' && live.flightPaused && revisitPose.speciesId === species.id &&
+                live.flightStudyBird === revisitPose.bird && live.flightStudyYaw === revisitPose.yaw &&
+                live.flightStudyPitch === revisitPose.pitch && live.flightStudyZoom === revisitPose.zoom &&
+                live.flightWingStep === revisitPose.wingStep) {
+              engineNow.time = 0;
+              engineNow.wingStepSerial = revisitPose.wingStep;
+              engineNow.wingStepPhase = (revisitPose.wingStep % 8) * Math.PI / 4;
+              if (revisitPose.matchPhase && engineNow.flyers[revisitPose.bird]) {
+                // Individual offsets stagger a travelling flock. For a matched
+                // still view, align the selected individual's actual wing cycle.
+                var selectedPhase = engineNow.flyers[revisitPose.bird].userData.phase;
+                engineNow.wingStepPhase = ((engineNow.wingStepPhase - selectedPhase) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+              }
+            }
+            // A changed camera/species/control cancels a request during boot.
+            _f3dStudyRevisitRef.current = null;
+          }
+          var studyBirdIndex = Math.round(migrNum(live.flightStudyBird, 0, 0, Math.max(0, engineNow.flyers.length - 1)));
+          var wingStepSerial = Math.round(migrNum(live.flightWingStep, 0, 0, 1000000));
+          if (wingStepSerial !== engineNow.wingStepSerial) {
+            var wingSteps = (wingStepSerial - engineNow.wingStepSerial + 1000001) % 1000001;
+            engineNow.wingStepSerial = wingStepSerial;
+            engineNow.wingStepPhase = (engineNow.wingStepPhase + (wingSteps % 8) * Math.PI / 4) % (Math.PI * 2);
+          }
           for (var fl = 0; fl < engineNow.flyers.length; fl++) {
             var activeFlyer = engineNow.flyers[fl];
-            var phase = engineNow.time * activeFlyer.userData.flapRate + activeFlyer.userData.phase;
-            var flap = Math.sin(phase) * activeFlyer.userData.flapAmount;
-            activeFlyer.userData.wings[0].rotation.z = flap;
-            activeFlyer.userData.wings[1].rotation.z = -flap;
+            activeFlyer.visible = live.flightCamera !== 'study' || fl === studyBirdIndex;
+            var bodyPhase = engineNow.time * activeFlyer.userData.flapRate + activeFlyer.userData.phase;
+            var phase = bodyPhase + engineNow.wingStepPhase;
+            activeFlyer.userData.applyWingPhase(phase);
+            activeFlyer.userData.lastRenderedWingPhase = phase;
             // Bob about the formation height. This used to ADD a step every
             // frame: while paused (or under reduced motion) the phase stops, the
             // same step repeats, and the birds drifted steadily out of frame.
-            activeFlyer.position.y = activeFlyer.userData.baseY + Math.sin(phase * 0.43) * 0.12;
+            activeFlyer.position.y = activeFlyer.userData.baseY + Math.sin(bodyPhase * 0.43) * 0.12;
             activeFlyer.rotation.z = Math.sin(engineNow.time * 0.55 + fl) * 0.025;
           }
-          engineNow.flockRoot.position.x = moving ? Math.sin(engineNow.time * 0.24) * 0.7 : 0;
+          engineNow.flockRoot.position.x = Math.sin(engineNow.time * 0.24) * 0.7;
           engineNow.flockRoot.rotation.y = Math.sin(engineNow.time * 0.18) * 0.045;
+          engineNow.routeOverlay.visible = live.flightShowRoute !== false && live.flightCamera !== 'study';
+          engineNow.updateStudyBackdrop(live.flightCamera === 'study');
+          engineNow.updateAirflow(live.flightShowAirflow);
 
-          var cameraTargets = {
-            chase: [0, 5.5, 18],
-            // High oblique, not straight down: at y=27/z=12 the horizon left the
-            // frame entirely and the aerial view lost all sense of the corridor.
-            aerial: [0, 21, 25],
-            side: [24, 5.5, 5]
-          };
-          var target = cameraTargets[live.flightCamera] || cameraTargets.chase;
-          var desired = new THREE.Vector3(target[0], target[1], target[2]);
-          engineNow.camera.position.lerp(desired, reducedMotionRef.current ? 1 : 0.075);
-          engineNow.camera.lookAt(0, 0, -5);
+          var desired = engineNow.cameraViews[live.flightCamera] || engineNow.cameraViews.chase;
+          if (live.flightCamera === 'study' && engineNow.flyers.length) {
+            engineNow.flyers[studyBirdIndex].getWorldPosition(engineNow.studyTarget);
+            var yaw = migrNum(live.flightStudyYaw, 35, -180, 180) * Math.PI / 180;
+            var pitch = migrNum(live.flightStudyPitch, 15, -10, 60) * Math.PI / 180;
+            var radius = migrationStudyDistance(engineNow.flyers[studyBirdIndex], engineNow.camera, live.flightStudyZoom);
+            engineNow.studyOrbit.set(Math.sin(yaw) * Math.cos(pitch) * radius,
+              Math.sin(pitch) * radius, Math.cos(yaw) * Math.cos(pitch) * radius);
+            engineNow.studyOrbit.add(engineNow.studyTarget);
+            desired = engineNow.studyOrbit;
+          } else engineNow.studyTarget.set(0, 0, -5);
+          // Cached vectors and time-based damping keep orbit controls smooth
+          // on tablets. Reduced motion responds immediately to explicit input.
+          var cameraBlend = reducedMotionRef.current ? 1 : 1 - Math.exp(-4.7 * delta);
+          engineNow.camera.position.lerp(desired, cameraBlend);
+          engineNow.cameraTarget.lerp(engineNow.studyTarget, cameraBlend);
+          engineNow.camera.lookAt(engineNow.cameraTarget);
+          if (engineNow.studyLighting) engineNow.studyLighting.update(live.flightCamera === 'study', engineNow.camera, engineNow.studyTarget);
+          engineNow.updateAnatomy(live.flightCamera === 'study' && live.flightShowAnatomy && host.getAttribute('data-flight-ready') === 'true', studyBirdIndex, live.flightStudyRegion,
+            live.flightWingtipFollowSourceUuid === engineNow.flyers[studyBirdIndex].uuid ? live.flightWingtipFollowSide : undefined, live.isDark);
+          engineNow.speedVectors.updateValues(live.flightShowSpeedVectors, live.flightCamera, speedValues, engineNow.camera);
+          if (engineNow.sunGlow) engineNow.sunGlow.quaternion.copy(engineNow.camera.quaternion);
+          var followedTipSide = live.flightWingtipFollowSourceUuid === engineNow.flyers[studyBirdIndex].uuid
+            ? live.flightWingtipFollowSide : undefined;
+          engineNow.markedWingPose.updatePose(engineNow.flyers[studyBirdIndex], live.flightCamera, live.isDark, live.flightShowWingtipPath, engineNow.camera, engineNow.viewHeight, followedTipSide, engineNow.viewWidth);
+          engineNow.wingtipPath.updatePath(live.flightShowWingtipPath && host.getAttribute('data-flight-ready') === 'true', live.flightCamera, engineNow.flyers[studyBirdIndex],
+            engineNow.speciesId, studyBirdIndex, engineNow.camera, live.isDark, engineNow.viewHeight,
+            engineNow.time * engineNow.flyers[studyBirdIndex].userData.flapRate +
+              engineNow.flyers[studyBirdIndex].userData.phase + engineNow.wingStepPhase, live.flightStudyCyclePosition, followedTipSide, engineNow.viewWidth);
           engineNow.renderer.render(engineNow.scene, engineNow.camera);
+          // Publish only after the selected recorded controls reached a frame.
+          var inspectionOwner = _flightChallengeReflectionOwnerRef.current;
+          var inspection = inspectionOwner && inspectionOwner.inspection;
+          var frame = engineNow.challengeInspectionFrame;
+          if (frame && (frame !== inspection || live.flightSpecies !== frame.snapshot.speciesId || live.flightSeason !== frame.snapshot.season ||
+              live.flightWind !== frame.snapshot.wind || live.flightFormation !== frame.snapshot.formationMode ||
+              !live.flightPaused || !live.flightShowSpeedVectors || live.flightCamera !== 'chase')) {
+            engineNow.challengeInspectionFrame = null;
+            host.removeAttribute('data-flight-challenge-frame');
+          }
+          var inspectionContext = inspection && engineNow.challengeInspectionFrame !== inspection && currentFlightChallengeInspection(inspection);
+          if (inspectionContext && inspectionContext.state !== 'changed' && inspectionContext.engine === engineNow) {
+            engineNow.challengeInspectionFrame = inspection;
+            host.setAttribute('data-flight-challenge-frame', String(inspection.serial));
+          }
           engineNow.raf = requestAnimationFrame(engineNow.animate);
         };
 
@@ -3107,81 +6249,1676 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       }, []);
 
       useEffect(function() {
+        if (studyCyclePositionState[0] && !migrationStudyCyclePositionMatches(studyCyclePositionState[0], _f3dEngineRef.current, _liveVals.current)) {
+          _liveVals.current.flightStudyCyclePosition = undefined;
+          if (_f3dStudyCyclePauseRef.current === studyCyclePositionState[0]) _f3dStudyCyclePauseRef.current = null;
+          studyCyclePositionState[1](null);
+        }
+        var followed = studyWingtipFollowState[0];
+        if (followed && !migrationStudyWingtipFollowMatches(followed, _f3dEngineRef.current, _liveVals.current)) {
+          studyWingtipFollowState[1](function(current) { return current === followed ? null : current; });
+        }
+        var returned = studyMarkedPoseState[0] && studyMarkedPoseState[0].returnIntent;
+        if (returned && !migrationStudyMarkedReturnMatches(returned, _f3dEngineRef.current, _liveVals.current)) clearMigrationMarkedReturnIntent(returned);
+        var marked = studyMarkedPoseState[0], checked = marked && marked.comparisonCheck;
+        if (checked && !migrationStudyComparisonCheckMatches(checked, _f3dEngineRef.current, _liveVals.current, marked)) {
+          studyMarkedPoseState[1](function(current) {
+            return current && current.comparisonCheck === checked ? Object.assign({}, current, { comparisonCheck: null }) : current;
+          });
+        }
+        var restore = marked && marked.viewRestoreIntent;
+        if (restore && (!_liveVals.current.flightViewRestorePending ||
+            !migrationStudyMarkedViewRestoreMatches(restore, _f3dEngineRef.current, _liveVals.current, marked))) clearMigrationMarkedViewRestoreIntent(restore);
+      });
+
+      useEffect(function() {
+        var request = _f3dMotionNoteFocusRef.current;
+        if (!request) return;
+        if (request.segmentSelection && !migrationStudySegmentNoteMatches(_f3dEngineRef.current, _liveVals.current, request.segmentSelection, request.region)) {
+          _f3dMotionNoteFocusRef.current = null;
+          return;
+        }
+        var camera = _liveVals.current.flightCamera;
+        if (tab !== 'flight3d' || camera !== 'study' || flightValues.speciesId !== request.speciesId ||
+            document.activeElement !== request.focusOrigin) {
+          _f3dMotionNoteFocusRef.current = null;
+          return;
+        }
+        var region = flightValues.speciesId === 'monarch' ? 'whole-wing' :
+          ['head', 'inner-wing', 'primaries', 'tail'].indexOf(d.flightStudyRegion) !== -1 ? d.flightStudyRegion : 'head';
+        // The host store may commit the open/region patch after our local
+        // request. Wait for that commit, but cancel a different selection.
+        if ((region !== request.region && region !== request.previousRegion) ||
+            (d.flightStudyObservationOpen !== true && request.wasOpen)) {
+          _f3dMotionNoteFocusRef.current = null;
+          return;
+        }
+        if (d.flightStudyObservationOpen !== true || region !== request.region) return;
+        var host = _f3dHostRef.current;
+        var deck = host && host.isConnected && host.closest('#migration-flight-deck');
+        var field = deck && deck.querySelector('#migration-study-observation-note');
+        if (!field || !field.isConnected || field.getAttribute('data-study-observation-key') !== request.key) return;
+        // Consume before focusing: a focus listener may synchronously update
+        // the host, and must never deliver the same request to another region.
+        _f3dMotionNoteFocusRef.current = null;
+        field.focus({ preventScroll: true });
+        if (field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: 'auto' });
+      }, [tab, flightValues.speciesId, _liveVals.current.flightCamera, d.flightStudyRegion, d.flightStudyObservationOpen, studyMotionNoteFocusTick[0],
+        studyView.bird, flightValues.formationMode, flightValues.season, _liveVals.current.flightShowAnatomy,
+        _liveVals.current.flightShowWingtipPath, studyWingtipFollowSelection]);
+
+      useEffect(function() {
+        var engine = _f3dEngineRef.current;
+        var marked = studyMarkedPoseState[0];
+        if (marked && (marked.speciesId !== flightValues.speciesId || marked.individual !== studyView.bird ||
+            marked.formationMode !== flightValues.formationMode || marked.season !== flightValues.season)) {
+          if (engine && engine.markedWingPose) engine.markedWingPose.clearPose();
+          studyMarkedPoseState[1](null);
+        }
+      }, [flightValues.speciesId, studyView.bird, flightValues.formationMode, flightValues.season]);
+
+      useEffect(function() {
         return function() { destroyMigrationFlightEngine(); };
       }, []);
 
+      function migrationStudyCycleContext(engine, live) {
+        return migrationStudyPhaseContext(engine, live, true);
+      }
+
+      function migrationStudyPhaseContext(engine, live, requirePath) {
+        if (!engine || engine.disposed || !live || live.tab !== 'flight3d' || live.flightCamera !== 'study' ||
+            (requirePath && live.flightShowWingtipPath !== true) || !engine.host || !engine.host.isConnected ||
+            engine.host.getAttribute('data-flight-ready') !== 'true' || engine.host.getAttribute('data-flight-error') === 'true' ||
+            engine.speciesId !== live.flightSpecies || engine.formationMode !== live.flightFormation || engine.season !== live.flightSeason ||
+            !Array.isArray(engine.flyers) || !Number.isInteger(live.flightStudyBird)) return null;
+        var flyer = engine.flyers[live.flightStudyBird];
+        if (!flyer || !flyer.visible || typeof flyer.uuid !== 'string' || !flyer.uuid || !flyer.userData ||
+            !Number.isFinite(engine.time) || !Number.isFinite(flyer.userData.flapRate) || !Number.isFinite(flyer.userData.phase)) return null;
+        return flyer;
+      }
+
+      function migrationStudyWingtipFollowContext(engine, live) {
+        var flyer = migrationStudyPhaseContext(engine, live, true);
+        return flyer ? { speciesId: live.flightSpecies, individual: live.flightStudyBird,
+          formationMode: live.flightFormation, season: live.flightSeason, sourceBirdUuid: flyer.uuid } : null;
+      }
+
+      function migrationStudyWingtipFollowContextMatches(context, engine, live) {
+        var current = migrationStudyWingtipFollowContext(engine, live);
+        return !!(context && current && context.speciesId === current.speciesId && context.individual === current.individual &&
+          context.formationMode === current.formationMode && context.season === current.season && context.sourceBirdUuid === current.sourceBirdUuid);
+      }
+
+      function migrationStudyWingtipFollowMatches(selection, engine, live) {
+        return !!(selection && (selection.side === 0 || selection.side === 1) &&
+          migrationStudyWingtipFollowContextMatches(selection.context, engine, live));
+      }
+
+      function migrationStudyWingtipFollowTarget(engine, live, side, expectedContext) {
+        var current = migrationStudyWingtipFollowContext(engine, live);
+        if ((side !== 0 && side !== 1) || !current || !expectedContext ||
+            expectedContext.speciesId !== current.speciesId || expectedContext.individual !== current.individual ||
+            expectedContext.formationMode !== current.formationMode || expectedContext.season !== current.season ||
+            (expectedContext.sourceBirdUuid !== undefined && expectedContext.sourceBirdUuid !== current.sourceBirdUuid)) return null;
+        return { side: side, context: current };
+      }
+
+      function migrationStudyFollowedAnatomySide(engine, live, selection) {
+        if (!live || live.flightSpecies === 'monarch' || !migrationStudyWingtipFollowMatches(selection, engine, live) ||
+            live.flightWingtipFollowSide !== selection.side || live.flightWingtipFollowSourceUuid !== selection.context.sourceBirdUuid) return undefined;
+        return selection.side;
+      }
+
+      function migrationStudySegmentNoteMatches(engine, live, selection, region) {
+        var side = migrationStudyFollowedAnatomySide(engine, live, selection);
+        return !!(engine && !engine.contextLost && live && live.flightShowAnatomy === true &&
+          (region === 'inner-wing' || region === 'primaries') && live.flightStudyRegion === region &&
+          (side === 0 || side === 1));
+      }
+
+      function migrationStudyCurrentContext(engine, live, cycleSelection, followSelection) {
+        if (!engine || engine.contextLost || !migrationStudyPhaseContext(engine, live, false)) return null;
+        var region = live.flightSpecies === 'monarch' ? 'whole-wing' : live.flightStudyRegion;
+        if (['head', 'inner-wing', 'primaries', 'tail', 'whole-wing'].indexOf(region) < 0 ||
+            (region === 'whole-wing' && live.flightSpecies !== 'monarch')) return null;
+        var followed = migrationStudyWingtipFollowMatches(followSelection, engine, live) &&
+          live.flightWingtipFollowSide === followSelection.side &&
+          live.flightWingtipFollowSourceUuid === followSelection.context.sourceBirdUuid;
+        return { speciesId: live.flightSpecies, individual: live.flightStudyBird, region: region,
+          cyclePosition: migrationStudyCyclePositionMatches(cycleSelection, engine, live) ? cycleSelection.index : null,
+          followedSide: followed ? followSelection.side : null };
+      }
+
+      function migrationStudyPendingStepContextMatches(pending, engine, live) {
+        if (!pending || !engine || engine.contextLost) return false;
+        var flyer = migrationStudyPhaseContext(engine, live, false), context = pending.context;
+        return !!(flyer && context && context.speciesId === live.flightSpecies &&
+          context.individual === live.flightStudyBird && context.formationMode === live.flightFormation && context.season === live.flightSeason &&
+          pending.sourceBirdUuid === flyer.uuid);
+      }
+
+      function applyMigrationStudyPendingStepAcknowledgement(engine, live, acknowledgement) {
+        var pending = acknowledgement.pending;
+        if (!pending) return;
+        var index = pending.serials.indexOf(acknowledgement.serial);
+        // Only serials actually queued by this UI may precede the latest Step.
+        // A changed source or unrequested host value ends that ownership.
+        if (!migrationStudyPendingStepContextMatches(pending, engine, live) ||
+            (!pending.serialAcknowledged && acknowledgement.serial !== pending.startSerial && index === -1) ||
+            (pending.serialAcknowledged && acknowledgement.serial !== pending.manualStep)) {
+          acknowledgement.pending = null;
+          live.flightWingStep = acknowledgement.serial;
+          live.flightPaused = acknowledgement.paused;
+          return;
+        }
+        if (!pending.serialAcknowledged) {
+          if (acknowledgement.serial === pending.manualStep) pending.serialAcknowledged = true;
+          else {
+            if (index !== -1) {
+              pending.startSerial = acknowledgement.serial;
+              pending.serials = pending.serials.slice(index + 1);
+            }
+            live.flightWingStep = pending.manualStep;
+          }
+        }
+        // Once the requested serial arrives, later external serial changes are
+        // read normally even while a newer Resume awaits its acknowledgement.
+        if (pending.serialAcknowledged && acknowledgement.paused === pending.paused) acknowledgement.pending = null;
+        else live.flightPaused = pending.paused;
+      }
+
+      function migrationStudyPhaseIntentMatches(selection, engine, live, allowPauseIntent) {
+        var flyer = migrationStudyPhaseContext(engine, live, false);
+        var context = selection && selection.context;
+        return !!(flyer && (live.flightPaused || allowPauseIntent) && context && context.speciesId === live.flightSpecies &&
+          context.individual === live.flightStudyBird && context.formationMode === live.flightFormation && context.season === live.flightSeason &&
+          selection.manualStep === Math.floor(migrNum(live.flightWingStep, 0, 0, 1000000)) &&
+          selection.sourceBirdUuid === flyer.uuid && selection.engineTime === engine.time);
+      }
+
+      function migrationStudyCyclePositionMatches(selection, engine, live, allowPauseIntent) {
+        return !!(selection && selection.kind !== 'marked-return' && Number.isInteger(selection.index) && selection.index >= 0 && selection.index <= 7 &&
+          live && live.flightShowWingtipPath === true && migrationStudyPhaseIntentMatches(selection, engine, live, allowPauseIntent));
+      }
+
+      function migrationStudyOppositeCycleTarget(engine, live, selection) {
+        if (!engine || engine.contextLost || !migrationStudyCyclePositionMatches(selection, engine, live)) return null;
+        return (selection.index + 4) % 8;
+      }
+
+      function migrationStudyMarkedReturnMatches(intent, engine, live, allowPauseIntent) {
+        if (!intent || intent.kind !== 'marked-return' || !Number.isFinite(intent.phase) ||
+            !Number.isInteger(intent.captureVersion) || intent.captureVersion < 1 ||
+            !migrationStudyPhaseIntentMatches(intent, engine, live, allowPauseIntent)) return false;
+        var pose = engine.markedWingPose && engine.markedWingPose.userData;
+        return !!(pose && pose.captured === true && pose.sourceBirdUuid === intent.sourceBirdUuid &&
+          pose.captureVersion === intent.captureVersion && Number.isFinite(pose.capturedPhase) && pose.capturedPhase === intent.phase &&
+          pose.speciesId === intent.context.speciesId && pose.individual === intent.context.individual);
+      }
+
+      function migrationStudyPauseIntentMatches(intent, engine, live, allowPauseIntent) {
+        return intent && intent.kind === 'marked-return'
+          ? migrationStudyMarkedReturnMatches(intent, engine, live, allowPauseIntent)
+          : migrationStudyCyclePositionMatches(intent, engine, live, allowPauseIntent);
+      }
+
+      function selectMigrationStudyCyclePosition(engine, live, index) {
+        if (!Number.isInteger(index) || index < 0 || index > 7) return null;
+        var flyer = migrationStudyCycleContext(engine, live);
+        if (!flyer) return null;
+        var serial = Math.floor(migrNum(live.flightWingStep, 0, 0, 1000000));
+        var tau = Math.PI * 2;
+        var phase = index * tau / 8 - (engine.time * flyer.userData.flapRate + flyer.userData.phase);
+        // A checkpoint is explicit latest intent. Consume previously queued
+        // manual steps, preserving their serial, before assigning this phase.
+        engine.wingStepSerial = serial;
+        engine.wingStepPhase = ((phase % tau) + tau) % tau;
+        live.flightPaused = true;
+        live.flightStudyCyclePosition = index;
+        return { index: index, context: { speciesId: live.flightSpecies, individual: live.flightStudyBird,
+          formationMode: live.flightFormation, season: live.flightSeason }, manualStep: serial,
+          sourceBirdUuid: flyer.uuid, engineTime: engine.time };
+      }
+
+      function migrationStudyMarkedReturnTarget(engine, live, marked) {
+        var flyer = migrationStudyPhaseContext(engine, live, false);
+        if (!flyer || !marked || marked.status !== 'marked' || !Number.isFinite(marked.capturedPhase) ||
+            marked.speciesId !== live.flightSpecies || marked.individual !== live.flightStudyBird ||
+            marked.formationMode !== live.flightFormation || marked.season !== live.flightSeason) return null;
+        var intent = { kind: 'marked-return', phase: marked.capturedPhase, captureVersion: marked.captureVersion,
+          context: { speciesId: live.flightSpecies, individual: live.flightStudyBird,
+            formationMode: live.flightFormation, season: live.flightSeason },
+          manualStep: Math.floor(migrNum(live.flightWingStep, 0, 0, 1000000)), sourceBirdUuid: marked.sourceBirdUuid, engineTime: engine.time };
+        return migrationStudyMarkedReturnMatches(intent, engine, live, true) ? intent : null;
+      }
+
+      function selectMigrationMarkedWingPose(engine, live, marked) {
+        var intent = migrationStudyMarkedReturnTarget(engine, live, marked);
+        if (!intent) return null;
+        var flyer = engine.flyers[live.flightStudyBird], tau = Math.PI * 2;
+        var offset = intent.phase - (engine.time * flyer.userData.flapRate + flyer.userData.phase);
+        engine.wingStepSerial = intent.manualStep;
+        engine.wingStepPhase = ((offset % tau) + tau) % tau;
+        live.flightPaused = true;
+        live.flightStudyCyclePosition = undefined;
+        return intent;
+      }
+
+      function migrationStudyComparisonPhaseMatches(first, second) {
+        return Number.isFinite(first) && Number.isFinite(second) &&
+          Math.abs(Math.sin(first) - Math.sin(second)) <= 0.000001 &&
+          Math.abs(Math.cos(first) - Math.cos(second)) <= 0.000001;
+      }
+
+      function migrationStudyComparisonViewValid(view) {
+        return !!(view && Number.isFinite(view.yaw) && view.yaw >= -180 && view.yaw <= 180 &&
+          Number.isFinite(view.pitch) && view.pitch >= -10 && view.pitch <= 60 &&
+          Number.isFinite(view.zoom) && view.zoom >= 0.65 && view.zoom <= 1.6);
+      }
+
+      function migrationStudyComparisonView(live) {
+        var view = live && { yaw: live.flightStudyYaw, pitch: live.flightStudyPitch, zoom: live.flightStudyZoom };
+        return migrationStudyComparisonViewValid(view) ? view : null;
+      }
+
+      function migrationStudyComparisonViewsMatch(first, second) {
+        return migrationStudyComparisonViewValid(first) && migrationStudyComparisonViewValid(second) &&
+          migrationStudyComparisonPhaseMatches(first.yaw * Math.PI / 180, second.yaw * Math.PI / 180) &&
+          Math.abs(first.pitch - second.pitch) <= 0.000001 && Math.abs(first.zoom - second.zoom) <= 0.000001;
+      }
+
+      function migrationStudyComparisonFrame(engine, live) {
+        var flyer = migrationStudyPhaseContext(engine, live, false);
+        if (!flyer || !Number.isFinite(engine.wingStepPhase)) return null;
+        var expected = engine.time * flyer.userData.flapRate + flyer.userData.phase + engine.wingStepPhase;
+        if (!Number.isFinite(expected)) return null;
+        var tau = Math.PI * 2, rendered = flyer.userData.lastRenderedWingPhase;
+        var phase = Number.isFinite(rendered) ? ((rendered % tau) + tau) % tau : null;
+        var expectedPhase = ((expected % tau) + tau) % tau;
+        var serial = Math.floor(migrNum(live.flightWingStep, 0, 0, 1000000));
+        return { phase: phase, expectedPhase: expectedPhase, manualStep: serial,
+          ready: engine.wingStepSerial === serial && migrationStudyComparisonPhaseMatches(phase, expectedPhase) };
+      }
+
+      function migrationCheckMarkedComparison(engine, live, marked) {
+        var target = migrationStudyMarkedReturnTarget(engine, live, marked);
+        var view = migrationStudyComparisonView(live);
+        var frame = migrationStudyComparisonFrame(engine, live);
+        if (!target || !live.flightPaused || !migrationStudyComparisonViewValid(marked.capturedView) || !view || !frame) return null;
+        var waitingForView = !!live.flightViewRestorePending && migrationStudyMarkedViewRestoreMatches(marked.viewRestoreIntent, engine, live, marked);
+        var ready = frame.ready && !waitingForView;
+        var samePhase = ready && migrationStudyComparisonPhaseMatches(frame.phase, marked.capturedPhase);
+        var sameView = migrationStudyComparisonViewsMatch(view, marked.capturedView);
+        return { status: ready ? 'checked' : 'waiting', waitingForView: waitingForView,
+          kind: ready ? samePhase ? sameView ? 'same' : 'view-only' : sameView ? 'wing-only' : 'both' : '',
+          phase: frame.phase, expectedPhase: frame.expectedPhase, view: view,
+          markedPhase: marked.capturedPhase, markedView: Object.assign({}, marked.capturedView),
+          manualStep: frame.manualStep, engineTime: engine.time, sourceBirdUuid: target.sourceBirdUuid,
+          captureVersion: target.captureVersion, context: Object.assign({}, target.context) };
+      }
+
+      function migrationStudyComparisonCheckMatches(check, engine, live, marked) {
+        if (!check || (check.status !== 'checked' && check.status !== 'waiting')) return false;
+        var target = migrationStudyMarkedReturnTarget(engine, live, marked);
+        var view = migrationStudyComparisonView(live), frame = migrationStudyComparisonFrame(engine, live);
+        var context = check.context;
+        if (!target || !live.flightPaused || !context || !frame || check.engineTime !== engine.time ||
+            check.manualStep !== frame.manualStep || check.sourceBirdUuid !== target.sourceBirdUuid ||
+            check.captureVersion !== target.captureVersion || context.speciesId !== target.context.speciesId ||
+            context.individual !== target.context.individual || context.formationMode !== target.context.formationMode || context.season !== target.context.season ||
+            !migrationStudyComparisonViewsMatch(check.view, view) || !migrationStudyComparisonViewsMatch(check.markedView, marked.capturedView) ||
+            !migrationStudyComparisonPhaseMatches(check.markedPhase, marked.capturedPhase)) return false;
+        var sameRenderedPhase = check.phase === null && frame.phase === null || migrationStudyComparisonPhaseMatches(check.phase, frame.phase);
+        if (!sameRenderedPhase || !migrationStudyComparisonPhaseMatches(check.expectedPhase, frame.expectedPhase)) return false;
+        var waitingForView = !!live.flightViewRestorePending && migrationStudyMarkedViewRestoreMatches(marked.viewRestoreIntent, engine, live, marked);
+        if (check.status === 'waiting') return check.kind === '' && (check.waitingForView ? waitingForView : !waitingForView && !frame.ready);
+        if (!frame.ready || waitingForView) return false;
+        var samePhase = migrationStudyComparisonPhaseMatches(frame.phase, marked.capturedPhase);
+        var sameView = migrationStudyComparisonViewsMatch(view, marked.capturedView);
+        return check.kind === (samePhase ? sameView ? 'same' : 'view-only' : sameView ? 'wing-only' : 'both');
+      }
+
+      function migrationStudyMarkedViewRestoreMatches(intent, engine, live, marked) {
+        var target = migrationStudyMarkedReturnTarget(engine, live, marked), context = intent && intent.context;
+        if (!(target && context && migrationStudyComparisonViewValid(intent.view) &&
+            intent.sourceBirdUuid === target.sourceBirdUuid && intent.captureVersion === target.captureVersion &&
+            context.speciesId === target.context.speciesId && context.individual === target.context.individual &&
+            context.formationMode === target.context.formationMode && context.season === target.context.season)) return false;
+        if (!Object.prototype.hasOwnProperty.call(intent, 'component')) {
+          return migrationStudyComparisonViewsMatch(intent.view, marked.capturedView);
+        }
+        // A component restore owns the complete requested tuple. Its frozen
+        // source snapshots prevent unrelated settings from drifting into it.
+        var key = intent.component;
+        if (['yaw', 'pitch', 'zoom'].indexOf(key) < 0 || !Object.isFrozen(intent) ||
+            !Object.isFrozen(intent.view) || !Object.isFrozen(intent.checkedView) || !Object.isFrozen(intent.markedView) ||
+            !Object.isFrozen(context) || !migrationStudyComparisonViewValid(intent.checkedView) ||
+            !migrationStudyComparisonViewValid(intent.markedView) || !migrationStudyComparisonViewValid(marked.capturedView)) return false;
+        var matches = key === 'yaw'
+          ? migrationStudyComparisonPhaseMatches(intent.checkedView.yaw * Math.PI / 180, intent.markedView.yaw * Math.PI / 180)
+          : Math.abs(intent.checkedView[key] - intent.markedView[key]) <= 0.000001;
+        if (matches) return false;
+        for (var index = 0; index < 3; index++) {
+          var field = ['yaw', 'pitch', 'zoom'][index];
+          if (intent.markedView[field] !== marked.capturedView[field] ||
+              intent.view[field] !== (field === key ? intent.markedView[field] : intent.checkedView[field])) return false;
+        }
+        return true;
+      }
+
+      function migrationMarkedViewRestoreTarget(engine, live, marked, checked) {
+        if (!live || live.flightMarkedPose !== marked || !marked || marked.comparisonCheck !== checked ||
+            !checked || checked.status !== 'checked' || (checked.kind !== 'view-only' && checked.kind !== 'both') ||
+            !migrationStudyComparisonCheckMatches(checked, engine, live, marked)) return null;
+        return { view: Object.assign({}, marked.capturedView), sourceBirdUuid: checked.sourceBirdUuid,
+          captureVersion: checked.captureVersion, context: Object.assign({}, checked.context) };
+      }
+
+      function migrationMarkedViewComponentRestoreTarget(engine, live, marked, checked, key) {
+        var base = migrationMarkedViewRestoreTarget(engine, live, marked, checked);
+        if (!base || ['yaw', 'pitch', 'zoom'].indexOf(key) < 0) return null;
+        var currentView = migrationStudyComparisonView(live);
+        if (!migrationStudyComparisonViewValid(currentView)) return null;
+        for (var index = 0; index < 3; index++) {
+          var field = ['yaw', 'pitch', 'zoom'][index];
+          if (checked.markedView[field] !== marked.capturedView[field] || checked.view[field] !== currentView[field]) return null;
+        }
+        var matches = key === 'yaw'
+          ? migrationStudyComparisonPhaseMatches(checked.view.yaw * Math.PI / 180, checked.markedView.yaw * Math.PI / 180)
+          : Math.abs(checked.view[key] - checked.markedView[key]) <= 0.000001;
+        if (matches) return null;
+        var view = Object.assign({}, checked.view);
+        view[key] = checked.markedView[key];
+        return Object.freeze({ component: key, view: Object.freeze(view),
+          checkedView: Object.freeze(Object.assign({}, checked.view)),
+          markedView: Object.freeze(Object.assign({}, checked.markedView)),
+          sourceBirdUuid: base.sourceBirdUuid, captureVersion: base.captureVersion, context: Object.freeze(base.context) });
+      }
+
+      function clearMigrationMarkedViewRestoreIntent(expected) {
+        var marked = _liveVals.current.flightMarkedPose;
+        if (!marked || !marked.viewRestoreIntent || (expected && marked.viewRestoreIntent !== expected)) return;
+        _liveVals.current.flightMarkedPose = Object.assign({}, marked, { viewRestoreIntent: null, comparisonCheck: expected ? marked.comparisonCheck : null });
+        _liveVals.current.flightViewRestorePending = false;
+        studyMarkedPoseState[1](function(current) {
+          return current && current.viewRestoreIntent && (!expected || current.viewRestoreIntent === expected)
+            ? Object.assign({}, current, { viewRestoreIntent: null, comparisonCheck: expected ? current.comparisonCheck : null }) : current;
+        });
+      }
+
+      function clearMigrationMarkedReturnIntent(expected) {
+        var intent = _f3dStudyCyclePauseRef.current;
+        if (intent && intent.kind === 'marked-return' && (!expected || intent === expected)) _f3dStudyCyclePauseRef.current = null;
+        studyMarkedPoseState[1](function(current) {
+          return current && (!expected || current.returnIntent === expected) && (current.returnIntent || current.comparisonCheck)
+            ? Object.assign({}, current, { returnIntent: null, comparisonCheck: null }) : current;
+        });
+      }
+
       function renderFlight3D() {
-        // These four are <select> values, which React requires to be scalar.
-        var speciesId = migrStr(d.flightSpecies, '') || migrStr(d.selectedSpecies, '') || 'canada_goose';
-        var species = findMigrationSpecies(speciesId);
-        var formationMode = migrStr(d.flightFormation, '') || 'natural';
-        var resolvedFormation = flightFormationName(species, formationMode);
-        var flightWind = migrNum(d.flightWind, 8, -15, 25);
-        var cameraMode = migrStr(d.flightCamera, '') || 'chase';
-        var season = migrStr(d.flightSeason, '') || 'fall';
-        var groundSpeed = Math.max(1, Math.round(species.speed + flightWind * 2.237));
-        // Monarchs are the deliberate exception: their swarm is not drafting,
-        // so the deck credits them nothing however they are flying.
-        var benefit = (resolvedFormation === 'swarm' && species.id === 'monarch')
-          ? 0
-          : Math.round(migrFormationSaving(resolvedFormation) * 100);
+        // The scene, measurements and recorded comparisons share one validated model.
+        var species = findMigrationSpecies(flightValues.speciesId);
+        var formationMode = flightValues.formationMode;
+        var resolvedFormation = flightValues.formation;
+        var flightWind = flightValues.wind;
+        var cameraMode = _liveVals.current.flightCamera;
+        var flightPaused = _liveVals.current.flightPaused;
+        var followedAnatomySide = migrationStudyFollowedAnatomySide(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection);
+        var studyRegions = [
+          { id: 'head', color: '#fbbf24', label: t('stem.migration.anatomy_head', 'Head & bill'), prompt: species.id === 'ruby_hummingbird' ? t('stem.migration.observe_hummingbird_head_prompt', 'Adult male head markings are shown. Use Profile, then orbit toward the bill to locate the red throat patch below the dark face. Describe what changes with your view. Colors are stylized; females and young birds can have pale throats.') : t('stem.migration.observe_head_prompt', 'Use Profile and step the wings. Describe the bill shape and the head position relative to the body. Separate what you can see from what you infer about feeding.') },
+          { id: 'inner-wing', color: '#67e8f9', label: t('stem.migration.anatomy_inner_wing', 'Inner wing'), prompt: t('stem.migration.observe_inner_wing_prompt', 'Pause and step the wings twice. Describe how the inner and outer wing sections change angle at their joint. What stays connected?') },
+          { id: 'primaries', color: '#86efac', label: t('stem.migration.anatomy_primaries', 'Primary feathers'), prompt: t('stem.migration.observe_primaries_prompt', 'Use From above and step the wings. Describe the outer feather spacing and wingtip shape. Choose another bird species and compare what you can see.') },
+          { id: 'tail', color: '#f9a8d4', label: t('stem.migration.anatomy_tail', 'Tail'), prompt: t('stem.migration.observe_tail_prompt', 'Compare Profile with From above. Describe the tail shape and its position relative to the body as the wings change. Can you see any tail motion in this stylized model?') }
+        ];
+        var studyRegion = studyRegions.filter(function(part) { return part.id === d.flightStudyRegion; })[0] || studyRegions[0];
+        var studyObservationRegion = species.id === 'monarch' ? 'whole-wing' : studyRegion.id;
+        var studyObservationKey = species.id + ':' + studyObservationRegion;
+        var studyObservations = migrReadStudyObservations(d.flightStudyObservations);
+        var studySavedObservation = studyObservations.records[studyObservationKey];
+        var studyObservationDraft = Object.prototype.hasOwnProperty.call(studyObservations.drafts, studyObservationKey)
+          ? studyObservations.drafts[studyObservationKey] : studySavedObservation ? studySavedObservation.note : '';
+        var studyObservationCount = (species.id === 'monarch' ? ['whole-wing'] : studyRegions.map(function(part) { return part.id; })).filter(function(region) { return !!studyObservations.records[species.id + ':' + region]; }).length;
+        var season = flightValues.season;
+        var groundSpeed = flightValues.groundSpeed;
+        var benefit = flightValues.benefit;
         var direction = season === 'fall'
           ? species.breedingRange + ' to ' + species.winterRange
           : species.winterRange + ' to ' + species.breedingRange;
         var formationLabel = migrFormationLabel(resolvedFormation, t);
-        var stageLabel = t('stem.migration.aria_stage_intro', 'Interactive 3D migration flight for') + ' ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' ' + t('stem.migration.mph_ground_speed', 'miles per hour ground speed') + ', ' + t('stem.migration.traveling_word', 'traveling') + ' ' + direction + '. ' + t('stem.migration.aria_stage_keys', 'Press 1 for chase camera, 2 for aerial camera, 3 for side camera, or Space to pause.');
+        var showAirflow = d.flightShowAirflow === true;
+        var showSpeedVectors = d.flightShowSpeedVectors === true;
+        var speedValues = _liveVals.current.flightSpeedValues;
+        var speedVectorLabels = [
+          { id: 'air', label: t('stem.migration.speed_vector_air', 'Airspeed'), value: speedValues.airSpeed },
+          { id: 'wind', label: t('stem.migration.speed_vector_wind', 'Along-route wind'), value: (speedValues.windMph > 0 ? '+' : '') + Math.round(speedValues.windMph * 10) / 10 },
+          { id: 'ground', label: t('stem.migration.stat_ground_speed', 'Ground speed'), value: speedValues.groundSpeed }
+        ];
+        var speedVectorSummary = speedVectorLabels.map(function(item) { return item.label + ': ' + item.value + ' ' + t('stem.migration.mph_unit', 'mph'); }).join('. ');
+        var stageLabel = t('stem.migration.aria_stage_intro', 'Interactive 3D migration flight for') + ' ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' ' + t('stem.migration.mph_ground_speed', 'miles per hour ground speed') + ', ' + t('stem.migration.traveling_word', 'traveling') + ' ' + direction + '. ' + t('stem.migration.aria_stage_orbit_keys', 'Press 1 for chase, 2 for aerial, 3 for side, 4 for study camera, or Space to pause. In Study, use arrow keys to orbit and plus or minus to zoom.');
+
+        if (showSpeedVectors && cameraMode !== 'study') stageLabel += ' ' + speedVectorSummary + '.';
 
         function chooseCamera(next) {
+          endStudyDrag(null, false);
+          if (next !== 'study') {
+            _liveVals.current.flightWingtipFollowSide = undefined;
+            _liveVals.current.flightWingtipFollowSourceUuid = undefined;
+            studyWingtipFollowState[1](null);
+          }
           upd('flightCamera', next);
-          if (announceToSR) announceToSR(next + ' camera selected');
+          if (announceToSR) announceToSR(t('stem.migration.camera_selected', 'Camera selected') + ': ' + (next === 'study' ? t('stem.migration.cam_study', 'Study') : next === 'aerial' ? t('stem.migration.cam_aerial', 'Aerial') : next === 'side' ? t('stem.migration.cam_side', 'Side') : t('stem.migration.cam_chase', 'Chase')));
         }
 
         function toggleFlightPause() {
-          upd('flightPaused', !d.flightPaused);
-          if (announceToSR) announceToSR(d.flightPaused ? '3D migration resumed' : '3D migration paused');
+          var wasPaused = _liveVals.current.flightPaused;
+          if (_f3dStudyStepAckRef.current.pending) _f3dStudyStepAckRef.current.pending.paused = !wasPaused;
+          clearMigrationMarkedReturnIntent();
+          _f3dStudyCyclePauseRef.current = null;
+          studyCyclePositionState[1](null);
+          _liveVals.current.flightStudyCyclePosition = undefined;
+          _liveVals.current.flightPaused = !wasPaused;
+          upd('flightPaused', !wasPaused);
+          if (announceToSR) announceToSR(wasPaused && motionReduced ? t('stem.migration.motion_reduced_resume', 'Flight stays still while Reduce motion is enabled. Study camera controls and wingbeat stepping remain available.') : wasPaused ? t('stem.migration.flight_resumed_announcement', '3D migration resumed') : t('stem.migration.flight_paused_announcement', '3D migration paused'));
+        }
+
+        function endStudyDrag(event, commit) {
+          var drag = _f3dStudyDragRef.current;
+          if (!drag || (event && event.pointerId != null && event.pointerId !== drag.pointerId)) return;
+          // Clear first: releasing a successful capture also fires lostcapture.
+          _f3dStudyDragRef.current = null;
+          var sameView = _liveVals.current.flightCamera === 'study' && _liveVals.current.flightSpecies === drag.speciesId;
+          var save = commit && drag.moved && sameView;
+          var isTap = commit && !drag.moved && sameView && event &&
+            Math.abs(event.clientX - drag.x) + Math.abs(event.clientY - drag.y) < 4;
+          var pickEngine = _f3dEngineRef.current;
+          var pickedRegion = isTap && _liveVals.current.flightShowAnatomy && pickEngine && pickEngine.speciesId === drag.speciesId
+            ? migrationAnatomyAtPoint(pickEngine, event.clientX, event.clientY) : '';
+          if (sameView) {
+            _liveVals.current.flightStudyYaw = save ? drag.yaw : drag.startYaw;
+            _liveVals.current.flightStudyPitch = save ? drag.pitch : drag.startPitch;
+          }
+          releaseMigrationStudyPointer(drag);
+          if (save) updMulti({ flightStudyYaw: drag.yaw, flightStudyPitch: drag.pitch });
+          else if (pickedRegion) {
+            updMulti({ flightStudyRegion: pickedRegion, flightShowAnatomy: true, flightStudyObservationOpen: true });
+            var pickedPart = studyRegions.filter(function(part) { return part.id === pickedRegion; })[0];
+            if (announceToSR) announceToSR(t('stem.migration.study_region_selected', 'Observation region selected') + ': ' + pickedPart.label);
+          }
+        }
+        function beginStudyDrag(event) {
+          if (event.isPrimary === false) { endStudyDrag(null, false); return; }
+          if (cameraMode !== 'study' || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey) return;
+          var host = event.currentTarget;
+          if (host.getAttribute('data-flight-ready') !== 'true') return;
+          if (event.target !== host && String(event.target && event.target.tagName).toUpperCase() !== 'CANVAS') return;
+          endStudyDrag(null, false);
+          clearMigrationMarkedViewRestoreIntent();
+          var drag = { host: host, pointerId: event.pointerId, speciesId: flightValues.speciesId,
+            x: event.clientX, y: event.clientY, startYaw: studyView.yaw, startPitch: studyView.pitch,
+            yaw: studyView.yaw, pitch: studyView.pitch, moved: false };
+          try { host.setPointerCapture(event.pointerId); } catch (ignore) { return; }
+          _f3dStudyDragRef.current = drag;
+          drag.onBlur = cancelMigrationStudyPreview;
+          window.addEventListener('blur', drag.onBlur);
+          host.setAttribute('data-study-dragging', 'true');
+          host.focus({ preventScroll: true });
+          event.preventDefault();
+        }
+        function moveStudyDrag(event) {
+          var drag = _f3dStudyDragRef.current;
+          if (!drag || event.pointerId !== drag.pointerId) return;
+          if (_liveVals.current.flightCamera !== 'study' || _liveVals.current.flightSpecies !== drag.speciesId) { endStudyDrag(event, false); return; }
+          var dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+          if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+          drag.moved = true;
+          var yaw = ((drag.startYaw - dx * 0.4 + 180) % 360 + 360) % 360 - 180;
+          drag.yaw = Math.max(-180, Math.min(180, Math.round(yaw / 5) * 5));
+          drag.pitch = Math.max(-10, Math.min(60, Math.round((drag.startPitch + dy * 0.3) / 5) * 5));
+          _liveVals.current.flightStudyYaw = drag.yaw;
+          _liveVals.current.flightStudyPitch = drag.pitch;
+          event.preventDefault();
+        }
+
+        function revisitStudyRecord(record, source, matchedView) {
+          if (!record || !SPECIES.some(function(item) { return item.id === record.speciesId; })) return;
+          var regions = record.speciesId === 'monarch' ? ['whole-wing'] : ['head', 'inner-wing', 'primaries', 'tail'];
+          if (regions.indexOf(record.region) === -1) return;
+          record = migrReadStudyObservationRecord(record, record.speciesId, record.region);
+          if (!record) return;
+          _f3dStudyStepAckRef.current.pending = null;
+          clearMigrationMarkedReturnIntent();
+          _f3dStudyCyclePauseRef.current = null;
+          studyCyclePositionState[1](null);
+          _liveVals.current.flightStudyCyclePosition = undefined;
+          var matched = matchedView === 'profile' || matchedView === 'above';
+          endStudyDrag(null, false);
+          var count = migrationFormationPositions(findMigrationSpecies(record.speciesId), flightValues.formationMode).length;
+          var bird = Math.min(record.bird, Math.max(0, count - 1));
+          var values = {
+            flightSpecies: record.speciesId, flightCamera: 'study', flightPaused: true,
+            flightStudyRegion: record.region === 'whole-wing' ? 'head' : record.region,
+            flightStudyBird: bird, flightStudyYaw: matched ? (matchedView === 'above' ? 0 : 90) : Math.round(record.yaw / 5) * 5,
+            flightStudyPitch: matched ? (matchedView === 'above' ? 60 : 10) : Math.round(record.pitch / 5) * 5,
+            flightStudyZoom: matched ? 1 : Math.round(record.zoom * 20) / 20, flightWingStep: matched ? 0 : record.wingStep,
+            flightShowAnatomy: record.speciesId !== 'monarch', flightStudyObservationOpen: true
+          };
+          // Update the existing RAF immediately; it may run before React commits.
+          Object.keys(values).forEach(function(key) { _liveVals.current[key] = values[key]; });
+          _f3dStudyRevisitRef.current = { speciesId: record.speciesId, wingStep: values.flightWingStep, bird: bird, yaw: values.flightStudyYaw, pitch: values.flightStudyPitch, zoom: values.flightStudyZoom };
+          if (matched) _f3dStudyRevisitRef.current.matchPhase = true;
+          var part = studyRegions.filter(function(item) { return item.id === record.region; })[0];
+          var title = findMigrationSpecies(record.speciesId).name + ' · ' + (part ? part.label : t('stem.migration.observe_monarch_label', 'Whole-insect wing motion'));
+          var message;
+          if (matched) {
+            message = t('stem.migration.study_matched_selected', 'Matched view') + ': ' + title + '. ' +
+              (matchedView === 'above' ? t('stem.migration.study_above', 'From above') : t('stem.migration.study_profile', 'Profile')) + '. ' +
+              t('stem.migration.study_matched_paused', 'Paused, fitted view, wing step 0. This still pose is illustrative; it does not replay the recorded animation frame.');
+          } else {
+            message = t('stem.migration.study_revisited', 'Revisited') + ': ' + title + '. ' +
+              t('stem.migration.study_revisit_paused', 'Paused Study view. Recorded state:') + ' ' +
+              (record.motionReduced ? t('stem.migration.study_capture_reduced', 'Still: Reduce motion') : record.paused ? t('stem.migration.paused_label', 'Paused') : t('stem.migration.study_capture_running', 'Running')) + '. ' +
+              t('stem.migration.study_revisit_pose_note', 'The illustrative pose starts from a still baseline; the original animation frame was not recorded.');
+          }
+          if (bird !== record.bird) message += ' ' + t('stem.migration.study_revisit_individual_fallback', 'This formation has fewer individuals; showing Individual') + ' ' + (bird + 1) + '.';
+          studyRevisitStatus[1]({ source: source, key: record.speciesId + ':' + record.region, record: JSON.stringify(record), region: record.region, values: values, matchedView: matched ? matchedView : '', message: message });
+          updMulti(values);
+          if (announceToSR) announceToSR(message);
+          var stage = document.getElementById('migration-flight-stage');
+          if (stage) stage.focus();
+        }
+        function renderStudyRevisitButton(record, source, label) {
+          return h('div', { className: 'migration-study-record-actions' }, h('button', {
+            type: 'button', 'data-study-revisit': source, 'aria-describedby': 'migration-study-revisit-help',
+            onClick: function() { revisitStudyRecord(record, source); }
+          }, label));
+        }
+        function currentStudyRevisitMessage() {
+          var revisit = studyRevisitStatus[0];
+          if (!revisit || cameraMode !== 'study' || !flightPaused || studyObservationRegion !== revisit.region) return '';
+          if (revisit.matchedView && studyMatchedViewState[0] !== revisit.matchedView) return '';
+          var values = revisit.values;
+          if (flightValues.speciesId !== values.flightSpecies || studyView.bird !== values.flightStudyBird || studyView.yaw !== values.flightStudyYaw || studyView.pitch !== values.flightStudyPitch || studyView.zoom !== values.flightStudyZoom || studyView.step !== values.flightWingStep || (d.flightShowAnatomy === true) !== values.flightShowAnatomy) return '';
+          var comparison = studyObservations.comparison, saved = comparison.saved;
+          if (revisit.source === 'matched-selected-first' && comparison.firstKey !== revisit.key || revisit.source === 'matched-selected-second' && comparison.secondKey !== revisit.key) return '';
+          var record = revisit.source === 'observation' || revisit.source === 'matched-selected-first' || revisit.source === 'matched-selected-second' ? studyObservations.records[revisit.key] :
+            saved && (revisit.source === 'comparison-first' || revisit.source === 'matched-first') ? saved.first :
+            saved && (revisit.source === 'comparison-second' || revisit.source === 'matched-second') ? saved.second : null;
+          return record && JSON.stringify(record) === revisit.record ? revisit.message : '';
+        }
+
+        function studyRecordTitle(key) {
+          var record = studyObservations.records[key];
+          if (!record && studyObservations.comparison.saved) record = studyObservations.comparison.saved.firstKey === key ? studyObservations.comparison.saved.first : studyObservations.comparison.saved.second;
+          if (!record) return '';
+          var part = studyRegions.filter(function(region) { return region.id === record.region; })[0];
+          return findMigrationSpecies(record.speciesId).name + ' · ' + (record.region === 'whole-wing' ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : part.label);
+        }
+        function studyRecordView(record) {
+          return t('stem.migration.individual_word', 'Individual') + ' ' + (record.bird + 1) + ' · ' +
+            t('stem.migration.study_angle', 'Study angle') + ' ' + record.yaw + '° / ' + record.pitch + '° · ' + Math.round(record.zoom * 100) + '% · ' +
+            t('stem.migration.wing_steps', 'Wing steps') + ' ' + record.wingStep + ' · ' +
+            (record.motionReduced ? t('stem.migration.study_capture_reduced', 'Still: Reduce motion') : record.paused ? t('stem.migration.paused_label', 'Paused') : t('stem.migration.study_capture_running', 'Running'));
+        }
+        function studyComparisonSourceChanged(saved) {
+          return !saved || JSON.stringify(studyObservations.records[saved.firstKey]) !== JSON.stringify(saved.first) || JSON.stringify(studyObservations.records[saved.secondKey]) !== JSON.stringify(saved.second);
+        }
+        function exportStudyNotebook() {
+          function escape(value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+          function row(key, record) { return '<tr><th scope="row">' + escape(studyRecordTitle(key)) + '</th><td>' + escape(record.note) + '</td><td>' + escape(studyRecordView(record)) + '</td></tr>'; }
+          var heading = t('stem.migration.study_notebook_title', 'Migration shape and motion notebook');
+          var saved = studyObservations.comparison.saved;
+          var content = [
+            '<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(heading) + '</title>',
+            '<style>body{font-family:system-ui,sans-serif;max-width:70rem;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#102334;background:white}h1{font-size:1.6rem}h2{font-size:1.2rem;margin-top:2rem}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid #94a3b8;padding:.65rem;text-align:left;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap}th{background:#edf2f7}p{white-space:pre-wrap;overflow-wrap:anywhere}caption{font-weight:700;text-align:left;margin-bottom:.5rem}@media print{body{max-width:none;margin:0}table{font-size:9pt}th,td{padding:.3rem}tr{break-inside:avoid}}</style></head><body>',
+            '<h1>' + escape(heading) + '</h1><p>' + escape(t('stem.migration.study_notebook_recorded_only', 'This notebook contains explicitly recorded observations and the saved comparison. Unrecorded drafts are excluded.')) + '</p>',
+            '<div class="table-wrap"><table><caption>' + escape(t('stem.migration.study_recorded_notes', 'Recorded observations')) + '</caption><thead><tr><th scope="col">' + escape(t('stem.migration.study_species_part', 'Species and part')) + '</th><th scope="col">' + escape(t('stem.migration.study_observation_note', 'My observation')) + '</th><th scope="col">' + escape(t('stem.migration.recorded_view', 'Recorded view')) + '</th></tr></thead><tbody>',
+            Object.keys(studyObservations.records).map(function(key) { return row(key, studyObservations.records[key]); }).join(''), '</tbody></table></div>'
+          ];
+          if (saved) {
+            content.push('<h2>' + escape(t('stem.migration.study_saved_comparison', 'Saved comparison')) + '</h2><p>' + escape(saved.claim) + '</p>',
+              '<p>' + escape(studyComparisonSourceChanged(saved) ? t('stem.migration.study_comparison_changed', 'A source observation was changed or removed. This comparison keeps the original recorded notes and view settings.') : t('stem.migration.study_comparison_matches', 'Source observations still match this saved comparison.')) + '</p>',
+              '<div class="table-wrap"><table><caption>' + escape(t('stem.migration.study_comparison_captured_notes', 'Notes captured with this comparison')) + '</caption><thead><tr><th scope="col">' + escape(t('stem.migration.study_species_part', 'Species and part')) + '</th><th scope="col">' + escape(t('stem.migration.study_observation_note', 'My observation')) + '</th><th scope="col">' + escape(t('stem.migration.recorded_view', 'Recorded view')) + '</th></tr></thead><tbody>' + row(saved.firstKey, saved.first) + row(saved.secondKey, saved.second) + '</tbody></table></div>');
+          }
+          content.push('<h2>' + escape(t('stem.migration.model_note_heading', 'Model note')) + '</h2><p>' + escape(t('stem.migration.study_comparison_model_note', 'These stylized models support observation and comparison. Camera angle, zoom, individual, and wing step can change what is visible. Appearance alone does not establish a biological cause or measured wingbeat rate.')) + '</p></body></html>');
+          var link = null, url = null, message;
+          try {
+            url = URL.createObjectURL(new Blob([content.join('\n')], { type: 'text/html;charset=utf-8' }));
+            link = document.createElement('a'); link.href = url; link.download = 'migration-shape-motion-notebook.html';
+            document.body.appendChild(link); link.click();
+            message = t('stem.migration.study_notebook_downloaded', 'Observation notebook downloaded.');
+            var next = migrReadStudyObservations(d.flightStudyObservations); next.comparison.feedback = 'downloaded'; upd('flightStudyObservations', next);
+          } catch (error) {
+            message = t('stem.migration.download_failed', 'Download was blocked by this browser.');
+            var next = migrReadStudyObservations(d.flightStudyObservations); next.comparison.feedback = 'download-failed'; upd('flightStudyObservations', next);
+            if (addToast) addToast(message, 'error');
+          } finally {
+            if (link && link.parentNode) link.parentNode.removeChild(link);
+            if (url) window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          }
+          if (announceToSR) announceToSR(message);
+        }
+        function renderMatchedStudyComparison(pair, saved) {
+          var matchedView = studyMatchedViewState[0] === 'above' ? 'above' : 'profile';
+          var helpId = 'migration-study-matched-help-' + (saved ? 'saved' : 'selected');
+          return h('div', { className: 'migration-study-saved', 'data-study-matched-comparison': saved ? 'saved' : 'selected',
+            role: 'group', 'aria-label': saved
+              ? t('stem.migration.study_matched_saved_group', 'Matched view for saved comparison')
+              : t('stem.migration.study_matched_selected_group', 'Matched view for selected observations') },
+            h('strong', null, t('stem.migration.study_matched_title', 'Try a matched view')),
+            h('small', { 'data-study-matched-source': saved ? 'saved' : 'selected' }, saved
+              ? t('stem.migration.study_matched_saved_sources', 'Using the two notes captured in Saved comparison. Changing the observation selectors above does not change this saved pair.')
+              : t('stem.migration.study_matched_selected_sources', 'Using the two selected recorded observations. Try both views before recording your comparison.')),
+            h('small', null, studyRecordTitle(pair.firstKey) + ' / ' + studyRecordTitle(pair.secondKey)),
+            h('p', { id: helpId }, t('stem.migration.study_matched_help', 'Switch between the two captured sources using one angle and the same still wing-cycle baseline, then revise My observation comparison. Each model is fitted to the scene separately; this does not compare physical size. The still pose is illustrative. Matching these view settings does not establish a biological cause.')),
+            h('label', null, t('stem.migration.study_matched_view', 'Matched comparison view'), h('select', {
+              'aria-label': t('stem.migration.study_matched_view', 'Matched comparison view'), 'aria-describedby': helpId, value: matchedView,
+              onChange: function(event) {
+                var nextView = event.target.value;
+                if (nextView !== 'profile' && nextView !== 'above') return;
+                studyMatchedViewState[1](nextView);
+                studyRevisitStatus[1](null);
+              }
+            }, h('option', { value: 'profile' }, t('stem.migration.study_profile', 'Profile')), h('option', { value: 'above' }, t('stem.migration.study_above', 'From above')))),
+            h('div', { className: 'migration-study-record-actions' },
+              h('button', { type: 'button', 'data-study-matched': 'first', 'aria-describedby': helpId, onClick: function() { revisitStudyRecord(pair.first, saved ? 'matched-first' : 'matched-selected-first', matchedView); } }, t('stem.migration.study_matched_first', 'Compare first in matched view')),
+              h('button', { type: 'button', 'data-study-matched': 'second', 'aria-describedby': helpId, onClick: function() { revisitStudyRecord(pair.second, saved ? 'matched-second' : 'matched-selected-second', matchedView); } }, t('stem.migration.study_matched_second', 'Compare second in matched view'))
+            ),
+            h(MigrationRecordedViewCheck, { key: JSON.stringify([saved ? 'saved' : 'selected', pair.firstKey, pair.secondKey, pair.first, pair.second]),
+              React: React, t: t, announce: announceToSR, source: saved ? 'saved' : 'selected', helpId: helpId,
+              signature: JSON.stringify([pair.firstKey, pair.secondKey, pair.first, pair.second]), first: pair.first, second: pair.second })
+          );
+        }
+        function renderStudyComparison() {
+          var keys = Object.keys(studyObservations.records), comparison = studyObservations.comparison;
+          if (keys.length < 2 && !comparison.saved) return null;
+          var enough = keys.length >= 2;
+          var first = studyObservations.records[comparison.firstKey], second = studyObservations.records[comparison.secondKey];
+          var differentViews = first && second && ['bird', 'yaw', 'pitch', 'zoom', 'wingStep', 'paused', 'motionReduced'].some(function(key) { return first[key] !== second[key]; });
+          function select(label, field, otherField) {
+            return h('label', null, label, h('select', { 'aria-label': label, value: comparison[field], disabled: !enough, onChange: function(event) {
+              if (!studyObservations.records[event.target.value] || event.target.value === comparison[otherField]) return;
+              var next = migrReadStudyObservations(d.flightStudyObservations); next.comparison[field] = event.target.value; next.comparison.feedback = ''; upd('flightStudyObservations', next);
+            } }, keys.map(function(key) { return h('option', { key: key, value: key, disabled: key === comparison[otherField] }, studyRecordTitle(key)); })));
+          }
+          function recordRow(key, record) { return h('tr', { key: key, role: 'row' },
+            h('th', { scope: 'row', role: 'rowheader' }, studyRecordTitle(key)),
+            h('td', { role: 'cell' }, h('span', { className: 'migration-study-comparison-cell-label', 'aria-hidden': 'true' }, t('stem.migration.study_observation_note', 'My observation')), record.note),
+            h('td', { role: 'cell' }, h('span', { className: 'migration-study-comparison-cell-label', 'aria-hidden': 'true' }, t('stem.migration.recorded_view', 'Recorded view')), studyRecordView(record))); }
+          return h('details', { className: 'migration-study-comparison', 'data-study-comparison': '' },
+            h('summary', null, t('stem.migration.compare_study_observations', 'Compare recorded observations')),
+            h('div', { className: 'migration-study-comparison-body' },
+              !enough && h('p', { role: 'status' }, t('stem.migration.study_comparison_need_two', 'Record two observations to make a new comparison. Your saved comparison and its original notes remain below.')),
+              h('div', { className: 'migration-study-comparison-selects' }, select(t('stem.migration.study_compare_first', 'First recorded observation'), 'firstKey', 'secondKey'), select(t('stem.migration.study_compare_second', 'Second recorded observation'), 'secondKey', 'firstKey')),
+              enough && h('div', { className: 'migration-study-comparison-table' }, h('table', { role: 'table', 'aria-label': t('stem.migration.study_compare_table', 'Recorded observation comparison') },
+                h('thead', { role: 'rowgroup' }, h('tr', { role: 'row' }, h('th', { scope: 'col', role: 'columnheader' }, t('stem.migration.study_species_part', 'Species and part')), h('th', { scope: 'col', role: 'columnheader' }, t('stem.migration.study_observation_note', 'My observation')), h('th', { scope: 'col', role: 'columnheader' }, t('stem.migration.recorded_view', 'Recorded view')))),
+                h('tbody', { role: 'rowgroup' }, recordRow(comparison.firstKey, first), recordRow(comparison.secondKey, second))
+              )),
+              enough && !comparison.saved && renderMatchedStudyComparison({ firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: first, second: second }, false),
+              enough && comparison.saved && h('details', { 'data-study-selected-comparison-activity': '' },
+                h('summary', null, t('stem.migration.study_selected_matched_activity', 'Try the selected pair in a matched view')),
+                (comparison.firstKey !== comparison.saved.firstKey || comparison.secondKey !== comparison.saved.secondKey ||
+                  JSON.stringify(first) !== JSON.stringify(comparison.saved.first) || JSON.stringify(second) !== JSON.stringify(comparison.saved.second)) &&
+                  h('p', { 'data-study-selected-source-state': 'different' }, t('stem.migration.study_selected_sources_differ', 'These selected records differ from Saved comparison. Try both selected records, then use a detail from each in My observation comparison. Saved comparison keeps its original notes and claim until you choose Record comparison.')),
+                renderMatchedStudyComparison({ firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: first, second: second }, false)
+              ),
+              h('p', { id: 'migration-study-comparison-prompt' }, t('stem.migration.study_compare_prompt', 'Name one visible similarity or difference. Use a detail from each recorded note, then explain how the views limit your comparison.')),
+              enough && h('small', null, differentViews ? t('stem.migration.study_compare_views_differ', 'The captured views differ. Check angle, zoom, individual, and wing step before attributing a difference to species or anatomy.') : t('stem.migration.study_compare_views_same', 'The captured view settings match. These stylized models still do not establish a biological cause.')),
+              h('label', null, t('stem.migration.study_compare_claim', 'My observation comparison'), h('textarea', { 'aria-label': t('stem.migration.study_compare_claim', 'My observation comparison'), 'aria-describedby': 'migration-study-comparison-prompt', rows: 3, maxLength: 1500, value: comparison.draft, onChange: function(event) {
+                var next = migrReadStudyObservations(d.flightStudyObservations); next.comparison.draft = String(event.target.value).slice(0, 1500); next.comparison.feedback = ''; upd('flightStudyObservations', next);
+              } })),
+              h('div', { className: 'migration-study-record-actions' }, h('button', { type: 'button', disabled: !enough || !comparison.draft.trim(), onClick: function() {
+                if (!enough || !comparison.draft.trim()) return;
+                var next = migrReadStudyObservations(d.flightStudyObservations);
+                next.comparison.saved = { firstKey: comparison.firstKey, secondKey: comparison.secondKey, first: Object.assign({}, first), second: Object.assign({}, second), claim: comparison.draft.slice(0, 1500).trim() };
+                next.comparison.feedback = 'recorded'; upd('flightStudyObservations', next);
+              } }, t('stem.migration.study_record_comparison', 'Record comparison'))),
+              h('p', { role: 'status', 'data-study-comparison-status': '' }, comparison.feedback === 'recorded' ? t('stem.migration.study_comparison_recorded', 'Comparison recorded with both source notes and view settings. Your claim is not graded.') : ''),
+              comparison.saved && h('div', { className: 'migration-study-saved', 'data-study-saved-comparison': '' },
+                h('strong', null, t('stem.migration.study_saved_comparison', 'Saved comparison')),
+                h('p', null, comparison.saved.claim),
+                h('small', null, studyRecordTitle(comparison.saved.firstKey) + ' / ' + studyRecordTitle(comparison.saved.secondKey)),
+                h('p', null, t('stem.migration.study_comparison_source_one', 'First captured note') + ': ' + comparison.saved.first.note),
+                h('small', null, studyRecordView(comparison.saved.first)),
+                renderStudyRevisitButton(comparison.saved.first, 'comparison-first', t('stem.migration.study_revisit_first', 'Revisit first captured view')),
+                h('p', null, t('stem.migration.study_comparison_source_two', 'Second captured note') + ': ' + comparison.saved.second.note),
+                h('small', null, studyRecordView(comparison.saved.second)),
+                renderStudyRevisitButton(comparison.saved.second, 'comparison-second', t('stem.migration.study_revisit_second', 'Revisit second captured view')),
+                renderMatchedStudyComparison(comparison.saved, true),
+                h('small', { 'data-study-comparison-source-state': studyComparisonSourceChanged(comparison.saved) ? 'changed' : 'same' }, studyComparisonSourceChanged(comparison.saved) ? t('stem.migration.study_comparison_changed', 'A source observation was changed or removed. This comparison keeps the original recorded notes and view settings.') : t('stem.migration.study_comparison_matches', 'Source observations still match this saved comparison.'))
+              ),
+              comparison.saved && comparison.draft.trim() !== comparison.saved.claim && h('small', { className: 'migration-study-unsaved' }, t('stem.migration.study_comparison_unsaved', 'The comparison draft has unrecorded changes. Record comparison to replace the saved claim.'))
+            )
+          );
+        }
+
+        function renderStudySceneNoteAction(context, actionId) {
+          if (d.flightStudyObservationOpen !== true || !context) return null;
+          return h('button', { type: 'button', 'data-study-scene-action': actionId || 'continue-note',
+            'data-study-note-key': context.speciesId + ':' + context.region,
+            'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-study-observation-part',
+            onClick: function() {
+              var host = _f3dHostRef.current, engine = _f3dEngineRef.current;
+              var current = host && engine && engine.host === host
+                ? migrationStudyCurrentContext(engine, _liveVals.current, studyCyclePositionState[0], studyWingtipFollowState[0]) : null;
+              var deck = host && host.isConnected && host.closest('.migration-flight-deck');
+              var field = deck && deck.querySelector('[id="migration-study-observation-note"]');
+              var panel = field && field.closest('[data-study-observation]');
+              var key = current && current.speciesId + ':' + current.region;
+              // Continue the current note in this deck. Looking at another
+              // region never replays an old note or overwrites its draft.
+              if (!current || !field || !field.isConnected || !panel || panel.open !== true ||
+                  field.getAttribute('data-study-observation-key') !== key) {
+                if (announceToSR) announceToSR(t('stem.migration.continue_study_note_unavailable', 'Open the current Study observation note, then try again when the scene is ready.'));
+                return;
+              }
+              // Native focus retains the existing caret and selection. Do not
+              // rewrite the value or force a new selection while navigating.
+              field.focus({ preventScroll: true });
+              if (field.isConnected && document.activeElement === field && field.scrollIntoView) {
+                field.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+              }
+            }
+          }, t('stem.migration.continue_study_note', 'Continue observation note'));
+        }
+
+        function renderStudyObservation() {
+          if (cameraMode !== 'study') return null;
+          var wholeInsect = species.id === 'monarch';
+          var partLabel = wholeInsect ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : studyRegion.label;
+          var draftChanged = !!studySavedObservation && studyObservationDraft.trim() !== studySavedObservation.note;
+          var feedback = studyObservations.feedback && studyObservations.feedback.key === studyObservationKey ? studyObservations.feedback.action : '';
+          var marked = studyMarkedPoseState[0];
+          var markedVisible = marked && marked.status === 'marked' && marked.speciesId === species.id &&
+            marked.individual === studyView.bird && marked.formationMode === formationMode && marked.season === season;
+          var pathVisible = d.flightShowWingtipPath === true;
+          var wingRegion = wholeInsect || studyRegion.id === 'inner-wing' || studyRegion.id === 'primaries';
+          var motionEvidence = wingRegion && (pathVisible || markedVisible)
+            ? pathVisible && markedVisible ? 'path-and-pose' : pathVisible ? 'path' : 'pose' : '';
+          return h('details', {
+            className: 'migration-study-observation', 'data-study-observation': '',
+            'aria-label': t('stem.migration.study_observations', 'Shape and motion observations'),
+            open: d.flightStudyObservationOpen === true,
+            onToggle: function(event) { if (event.currentTarget.open !== (d.flightStudyObservationOpen === true)) upd('flightStudyObservationOpen', event.currentTarget.open); }
+          },
+            h('summary', null, t('stem.migration.observe_shape_motion', 'Observe shape and motion'), h('span', { 'data-study-evidence-count': studyObservationCount }, studyObservationCount + ' / ' + (wholeInsect ? 1 : 4) + ' ' + t('stem.migration.observations_recorded', 'recorded'))),
+            h('div', { className: 'migration-study-observation-body' },
+              h('strong', { id: 'migration-study-observation-part' }, partLabel),
+              h('p', { id: 'migration-study-observation-prompt' }, wholeInsect
+                ? t('stem.migration.observe_monarch_prompt', 'Use Profile and From above. Step through the illustrative wing cycle and describe how the patterned wings change position relative to the insect body. These are butterfly wings; bird feather anatomy and drafting do not apply.')
+                : studyRegion.prompt),
+              motionEvidence && h('p', { id: 'migration-study-motion-evidence-prompt', 'data-study-motion-evidence': motionEvidence },
+                species.id !== 'monarch' && d.flightShowAnatomy === true && wingRegion && (followedAnatomySide === 0 || followedAnatomySide === 1)
+                  ? t('stem.migration.motion_evidence_followed_anatomy', 'Predict which segment will appear to move more. Keep the camera fixed, compare cycle positions 3 and 7, and inspect Inner wing (2) and Primary feathers (3). Name the followed left or right side and the cycle positions in your note; describe what stays connected and what changes angle. This illustrative model does not establish a biological cause.')
+                  : (_liveVals.current.flightWingtipFollowSide === 0 || _liveVals.current.flightWingtipFollowSide === 1)
+                  ? t('stem.migration.motion_evidence_follow', 'Predict where the followed tip will appear on screen. Hold the wing pose still, compare Front with From above, and describe how the same individual’s left or right tip changes screen position. Distinguish anatomical side from screen side; this illustrative model does not establish a biological cause.')
+                  : motionEvidence === 'path-and-pose'
+                  ? t('stem.migration.motion_evidence_both', 'Predict which tip positions will differ from the dashed reference. Compare the live dots and marked outline. Use Check what changed to separate selected view settings from wing-cycle position, then return the wings or choose Restore marked view settings to hold one fixed and describe a match and a difference using the comparison lines. These model views do not establish a biological cause.')
+                  : motionEvidence === 'path'
+                    ? t('stem.migration.motion_evidence_path', 'Predict how the outer tips move relative to the body. Step the wings and compare Front with From above. Describe the live dots along the paths; these illustrative paths are not measurements.')
+                    : t('stem.migration.motion_evidence_pose', 'Predict which wing positions will differ from the dashed reference. Use Check what changed to separate selected view settings from wing-cycle position. Return the wings or choose Restore marked view settings to hold one fixed, compare Front with From above, and describe a match and a difference. This stylized comparison does not establish a biological cause.')),
+              h(MigrationStudyContextReadout, { React: React,
+                getHost: function() { return _f3dHostRef.current; },
+                readContext: function() {
+                  var engine = _f3dEngineRef.current, live = _liveVals.current;
+                  var context = migrationStudyCurrentContext(engine, live, studyCyclePositionState[0], studyWingtipFollowState[0]);
+                  if (!context) return null;
+                  var marked = live.flightMarkedPose, checked = marked && marked.comparisonCheck;
+                  // This local reminder reflects an explicit, still-valid check.
+                  // It is not an observation, a saved field, or an inferred answer.
+                  return Object.assign({}, context, { checkedComparisonKind: checked && checked.status === 'checked' &&
+                    migrationStudyComparisonCheckMatches(checked, engine, live, marked) ? checked.kind : null,
+                    canReviewMarkedComparison: !!(engine && engine.host === _f3dHostRef.current && live.flightPaused &&
+                      migrationStudyMarkedReturnTarget(engine, live, marked) && migrationStudyComparisonViewValid(marked.capturedView) &&
+                      migrationStudyComparisonView(live)) });
+                },
+                renderContext: function(context) {
+                  var contextPart = context && studyRegions.filter(function(part) { return part.id === context.region; })[0];
+                  var contextPartLabel = context && context.region === 'whole-wing'
+                    ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : contextPart ? contextPart.label : partLabel;
+                  return h('div', { id: 'migration-study-current-context', className: 'migration-study-context',
+                    'data-study-current-context': context ? 'ready' : 'unavailable' },
+                    h('strong', null, t('stem.migration.current_study_context', 'Current study context')),
+                    context
+                      ? h(React.Fragment, null,
+                        h('p', { 'data-study-context-region': context.region }, t('stem.migration.current_region', 'Region') + ': ' + contextPartLabel),
+                        h('p', { 'data-study-context-cycle': context.cyclePosition === null ? 'none' : 'selected' },
+                          context.cyclePosition === null
+                            ? t('stem.migration.current_cycle_none', 'No numbered cycle position selected.')
+                            : t('stem.migration.cycle_position', 'Cycle position') + ' ' + (context.cyclePosition + 1) + ' ' + t('stem.migration.cycle_position_of_eight', 'of 8') + ' ' + t('stem.migration.current_cycle_selected', 'selected.')),
+                        h('p', { 'data-study-context-side': context.followedSide === 0 ? 'left' : context.followedSide === 1 ? 'right' : 'none' },
+                          context.followedSide === 0 ? t('stem.migration.current_follow_left', 'Followed wingtip: individual’s left.')
+                            : context.followedSide === 1 ? t('stem.migration.current_follow_right', 'Followed wingtip: individual’s right.')
+                            : t('stem.migration.current_follow_none', 'No wingtip followed.')),
+                        context.checkedComparisonKind && h('p', { 'data-study-checked-comparison': context.checkedComparisonKind },
+                          h('strong', null, t('stem.migration.current_checked_comparison', 'Checked comparison') + ': '),
+                          context.checkedComparisonKind === 'same'
+                            ? t('stem.migration.current_checked_same', 'Selected view settings and wing-cycle position match the mark.')
+                            : context.checkedComparisonKind === 'wing-only'
+                              ? t('stem.migration.current_checked_wing_only', 'Selected view settings match the mark; wing-cycle position differs.')
+                              : context.checkedComparisonKind === 'view-only'
+                                ? t('stem.migration.current_checked_view_only', 'Wing-cycle position matches the mark; selected view settings differ.')
+                                : t('stem.migration.current_checked_both', 'Selected view settings and wing-cycle position both differ from the mark.')),
+                        context.checkedComparisonKind && h('small', { 'data-study-checked-prompt': context.checkedComparisonKind },
+                          context.checkedComparisonKind === 'same'
+                            ? t('stem.migration.current_checked_same_prompt', 'Predict one change to make next, then describe what you notice.')
+                            : context.checkedComparisonKind === 'wing-only'
+                              ? t('stem.migration.current_checked_wing_prompt', 'What visible detail supports your comparison while the selected view settings stayed the same?')
+                              : context.checkedComparisonKind === 'view-only'
+                                ? t('stem.migration.current_checked_view_prompt', 'What visible detail shows how this pose appears with the changed view settings?')
+                                : t('stem.migration.current_checked_both_prompt', 'Restore either the wings or the marked view settings, check again, then explain your evidence.'))
+                      )
+                      : h('p', null, t('stem.migration.current_context_unavailable', 'Current study context is unavailable until the Study scene is ready.')),
+                    h('small', null, t('stem.migration.current_context_scope', 'These are current viewing choices. Record observation does not save the numbered cycle position or followed side; name them in your note.')),
+                    context && context.canReviewMarkedComparison && h('button', {
+                      type: 'button', className: 'migration-study-focus migration-study-review',
+                      'data-study-action': 'review-marked-comparison', 'aria-controls': 'migration-marked-comparison-controls',
+                      'aria-describedby': 'migration-marked-pose-help',
+                      onClick: function() {
+                        var host = _f3dHostRef.current, engine = _f3dEngineRef.current, live = _liveVals.current;
+                        var marked = live.flightMarkedPose;
+                        var current = host && host.isConnected && engine && engine.host === host
+                          ? migrationStudyCurrentContext(engine, live, studyCyclePositionState[0], studyWingtipFollowState[0]) : null;
+                        var deck = host && host.isConnected && host.closest('.migration-flight-deck');
+                        var controls = deck && deck.querySelector('[id="migration-marked-comparison-controls"][data-study-marked-pose="true"]');
+                        var checkButton = controls && controls.querySelector('button[data-marked-pose-action="check"]');
+                        // Navigate to this deck's existing comparison action. An
+                        // unchecked or changed view still needs an explicit Check.
+                        if (!current || !live.flightPaused || !migrationStudyMarkedReturnTarget(engine, live, marked) ||
+                            !migrationStudyComparisonViewValid(marked.capturedView) || !migrationStudyComparisonView(live) ||
+                            !controls || !controls.isConnected || controls.closest('.migration-flight-deck') !== deck ||
+                            !checkButton || !checkButton.isConnected || checkButton.disabled || checkButton.matches(':disabled') ||
+                            checkButton.closest('[data-study-marked-pose]') !== controls || checkButton.closest('.migration-flight-deck') !== deck) {
+                          if (announceToSR) announceToSR(t('stem.migration.review_marked_comparison_unavailable', 'Pause a ready Study view with a marked pose, then review the comparison controls.'));
+                          return;
+                        }
+                        checkButton.focus({ preventScroll: true });
+                        if (checkButton.isConnected && document.activeElement === checkButton && checkButton.scrollIntoView) {
+                          checkButton.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+                        }
+                      }
+                    }, t('stem.migration.review_marked_comparison', 'Review marked comparison')),
+                    h('button', { type: 'button', className: 'migration-study-focus migration-study-inspect',
+                      'data-study-action': 'inspect-current-view', disabled: !context,
+                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-inspect-help',
+                      onClick: function() {
+                        var host = _f3dHostRef.current, engine = _f3dEngineRef.current;
+                        // Navigate to this tool's current live scene. Recheck at
+                        // activation so a retained button cannot focus an old host.
+                        if (!host || !engine || engine.host !== host ||
+                            !migrationStudyCurrentContext(engine, _liveVals.current, studyCyclePositionState[0], studyWingtipFollowState[0])) {
+                          if (announceToSR) announceToSR(t('stem.migration.inspect_current_view_unavailable', 'The current Study scene is not ready. Try again when the 3D view is available.'));
+                          return;
+                        }
+                        host.focus({ preventScroll: true });
+                        if (host.isConnected && host.scrollIntoView) host.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+                      }
+                    }, t('stem.migration.inspect_current_view', 'Inspect current 3D view')),
+                    h('small', { id: 'migration-study-inspect-help' }, t('stem.migration.inspect_current_view_help', 'Check the current region and wing pose in the Study scene, then return to this note. Your view, playback and draft stay as they are.'))
+                  );
+                }
+              }),
+              h('label', null, t('stem.migration.study_observation_note', 'My observation'),
+                h('textarea', {
+                  id: 'migration-study-observation-note', 'data-study-observation-key': studyObservationKey,
+                  'aria-label': t('stem.migration.study_observation_aria', 'Shape and motion observation'),
+                  'aria-describedby': 'migration-study-observation-prompt migration-study-observation-caveat migration-study-current-context' + (motionEvidence ? ' migration-study-motion-evidence-prompt' : ''),
+                  rows: 3, maxLength: 1000, value: studyObservationDraft,
+                  onChange: function(event) {
+                    var next = migrReadStudyObservations(d.flightStudyObservations);
+                    next.drafts[studyObservationKey] = String(event.target.value).slice(0, 1000);
+                    upd('flightStudyObservations', next);
+                  }
+                })
+              ),
+              h('div', { className: 'migration-study-record-actions' },
+                h('button', { type: 'button', disabled: !studyObservationDraft.trim(), onClick: function() {
+                  if (!studyObservationDraft.trim()) return;
+                  applyMigrationStudyPendingStepAcknowledgement(_f3dEngineRef.current, _liveVals.current, _f3dStudyStepAckRef.current);
+                  var next = migrReadStudyObservations(d.flightStudyObservations);
+                  next.records[studyObservationKey] = {
+                    speciesId: species.id, region: studyObservationRegion, note: studyObservationDraft.slice(0, 1000).trim(),
+                    bird: studyView.bird, yaw: studyView.yaw, pitch: studyView.pitch, zoom: studyView.zoom,
+                    wingStep: Math.floor(migrNum(_liveVals.current.flightWingStep, studyView.step, 0, 1000000)), paused: _liveVals.current.flightPaused === true, motionReduced: motionReduced
+                  };
+                  next.feedback = { key: studyObservationKey, action: 'recorded' };
+                  upd('flightStudyObservations', next);
+                } }, t('stem.migration.record_study_observation', 'Record observation')),
+                studySavedObservation && h('button', { type: 'button', onClick: function() {
+                  var next = migrReadStudyObservations(d.flightStudyObservations);
+                  if (!Object.prototype.hasOwnProperty.call(next.drafts, studyObservationKey)) next.drafts[studyObservationKey] = studySavedObservation.note;
+                  delete next.records[studyObservationKey];
+                  next.feedback = { key: studyObservationKey, action: 'removed' };
+                  upd('flightStudyObservations', next);
+                  setTimeout(function() {
+                    var observationInput = document.querySelector('[data-study-observation] textarea');
+                    if (observationInput) observationInput.focus();
+                  }, 0);
+                } }, t('stem.migration.remove_study_observation', 'Remove recorded observation'))
+              ),
+              h('p', { role: 'status', 'data-study-observation-status': '' }, feedback === 'recorded'
+                ? t('stem.migration.study_observation_recorded', 'Observation recorded. Your words count as evidence; they are not graded.')
+                : feedback === 'removed' ? t('stem.migration.study_observation_removed', 'Recorded evidence removed. Your draft is still here.') : ''),
+              draftChanged && h('p', { className: 'migration-study-unsaved' }, t('stem.migration.study_observation_unsaved', 'Current draft has unrecorded changes. Record again to replace the saved evidence for this region.')),
+              studySavedObservation && h('div', { className: 'migration-study-saved', 'data-study-saved-context': '' },
+                h('strong', null, t('stem.migration.recorded_view', 'Recorded view') + ': ' + species.name),
+                h('p', null, studySavedObservation.note),
+                h('small', null,
+                  t('stem.migration.individual_word', 'Individual') + ' ' + (studySavedObservation.bird + 1) + ' \u00b7 ' +
+                  t('stem.migration.study_angle', 'Study angle') + ' ' + studySavedObservation.yaw + '\u00b0 / ' + studySavedObservation.pitch + '\u00b0 \u00b7 ' +
+                  Math.round(studySavedObservation.zoom * 100) + '% \u00b7 ' + t('stem.migration.wing_steps', 'Wing steps') + ' ' + studySavedObservation.wingStep + ' \u00b7 ' +
+                  (studySavedObservation.motionReduced ? t('stem.migration.study_capture_reduced', 'Still: Reduce motion') : studySavedObservation.paused ? t('stem.migration.paused_label', 'Paused') : t('stem.migration.study_capture_running', 'Running'))
+                ),
+                renderStudyRevisitButton(studySavedObservation, 'observation', t('stem.migration.study_revisit_recorded', 'Revisit recorded view'))
+              ),
+              h('small', { id: 'migration-study-observation-caveat' }, t('stem.migration.study_capture_caveat', 'Camera settings and manual Wing steps describe this illustrative view. They are not measured wingbeat frequency. Recording saves one note per region for each species.')),
+              (Object.keys(studyObservations.records).length > 0 || studyObservations.comparison.saved) && h('small', { id: 'migration-study-revisit-help' }, t('stem.migration.study_revisit_help', 'Revisit restores recorded species, part, individual, angle, zoom, and manual wing-step settings in a paused Study view. The original animation frame was not recorded. Your Reduce motion preference and note drafts stay unchanged.')),
+              h('p', { role: 'status', 'data-study-revisit-status': '' }, currentStudyRevisitMessage()),
+              renderStudyComparison(),
+              h('div', { className: 'migration-study-record-actions' }, h('button', { type: 'button', 'data-study-action': 'export-html', disabled: !Object.keys(studyObservations.records).length && !studyObservations.comparison.saved, onClick: exportStudyNotebook }, t('stem.migration.study_notebook_html', 'Download observation notebook (HTML)'))),
+              h('small', null, t('stem.migration.study_notebook_recorded_only', 'This notebook contains explicitly recorded observations and the saved comparison. Unrecorded drafts are excluded.')),
+              h('p', { role: 'status', 'data-study-export-status': '' }, studyObservations.comparison.feedback === 'downloaded' ? t('stem.migration.study_notebook_downloaded', 'Observation notebook downloaded.') : studyObservations.comparison.feedback === 'download-failed' ? t('stem.migration.download_failed', 'Download was blocked by this browser.') : '')
+            )
+          );
+        }
+
+        function renderMarkedWingPoseControls() {
+          var marked = studyMarkedPoseState[0];
+          var matchingContext = marked && marked.speciesId === species.id && marked.individual === studyView.bird &&
+            marked.formationMode === formationMode && marked.season === season;
+          var status = matchingContext ? marked.status : 'empty';
+          var returnTarget = status === 'marked' ? migrationStudyMarkedReturnTarget(_f3dEngineRef.current, _liveVals.current, marked) : null;
+          var returned = marked && migrationStudyMarkedReturnMatches(marked.returnIntent, _f3dEngineRef.current, _liveVals.current);
+          var canCheck = returnTarget && _liveVals.current.flightPaused && migrationStudyComparisonViewValid(marked.capturedView) && migrationStudyComparisonView(_liveVals.current);
+          var checked = marked && migrationStudyComparisonCheckMatches(marked.comparisonCheck, _f3dEngineRef.current, _liveVals.current, marked) ? marked.comparisonCheck : null;
+          function comparisonFeedback(check) {
+            if (check.status === 'waiting' && check.waitingForView) return t('stem.migration.comparison_check_view_wait', 'Wait for the marked view settings to finish updating, then check again.');
+            if (check.status === 'waiting') return t('stem.migration.comparison_check_wait', 'Wait for the wings to finish updating, then check again.');
+            if (check.kind === 'view-only') return t('stem.migration.comparison_check_view_only', 'Selected view settings changed; the illustrative wing-cycle position still matches the mark. Compare how the same pose appears.');
+            if (check.kind === 'wing-only') return t('stem.migration.comparison_check_wing_only', 'The illustrative wing-cycle position changed; selected view settings still match the mark. Describe a visible difference against the outline.');
+            if (check.kind === 'both') return t('stem.migration.comparison_check_both', 'Both selected view settings and illustrative wing-cycle position changed. Return the wings to hold the pose fixed, or choose Restore marked view settings to hold the view settings fixed, then check again.');
+            return t('stem.migration.comparison_check_same', 'Selected view settings and illustrative wing-cycle position match the mark. Change one, then check again.');
+          }
+          return h('div', { id: 'migration-marked-comparison-controls', className: 'migration-marked-pose', 'data-study-marked-pose': 'true' },
+            h('p', { className: 'migration-study-help', id: 'migration-marked-pose-help' },
+              t('stem.migration.marked_pose_intro', 'Predict what will change, mark a wing pose, then step away or change the view. Check what changed compares selected view settings with the illustrative wing-cycle position. Return the wings or choose Restore marked view settings to hold one fixed. Describe your evidence in the existing notes. With Show wingtip path on, diamonds keep the marked tip positions visible, including when the live tips overlap them. Straight links appear only where tip positions differ; they do not show motion.')),
+            h('div', { className: 'migration-study-actions' },
+              h('button', {
+                type: 'button', 'data-marked-pose-action': 'mark', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                onClick: function() {
+                  var engine = _f3dEngineRef.current;
+                  var flyer = engine && engine.flyers[studyView.bird];
+                  var ready = engine && !engine.disposed && engine.host && engine.host.getAttribute('data-flight-ready') === 'true' &&
+                    engine.host.getAttribute('data-flight-error') !== 'true' && engine.speciesId === species.id &&
+                    engine.formationMode === formationMode && engine.season === season && flyer && flyer.visible && engine.markedWingPose;
+                  var metadata = { speciesId: species.id, individual: studyView.bird, formationMode: formationMode, season: season };
+                  if (!ready) {
+                    studyMarkedPoseState[1](Object.assign(metadata, { status: 'unavailable' }));
+                    if (announceToSR) announceToSR(t('stem.migration.marked_pose_unavailable', 'Wait until the 3D scene is ready, then mark the pose again.'));
+                    return;
+                  }
+                  // Capture the actual currently visible transforms. Pausing is
+                  // immediate so a queued frame cannot advance the reference.
+                  metadata.manualStep = Math.floor(migrNum(engine.wingStepSerial,
+                    migrNum(_liveVals.current.flightWingStep, studyView.step, 0, 1000000), 0, 1000000));
+                  _liveVals.current.flightPaused = true;
+                  upd('flightPaused', true);
+                  var captured = engine.markedWingPose.capturePose(flyer, species.id, studyView.bird);
+                  if (_f3dStudyCyclePauseRef.current && _f3dStudyCyclePauseRef.current.kind === 'marked-return') _f3dStudyCyclePauseRef.current = null;
+                  if (captured && engine.markedWingPose.userData) {
+                    metadata.capturedPhase = engine.markedWingPose.userData.capturedPhase;
+                    metadata.captureVersion = engine.markedWingPose.userData.captureVersion;
+                    metadata.sourceBirdUuid = engine.markedWingPose.userData.sourceBirdUuid;
+                    metadata.capturedView = migrationStudyComparisonView(_liveVals.current);
+                  }
+                  studyMarkedPoseState[1](Object.assign(metadata, { status: captured ? 'marked' : 'unavailable' }));
+                  if (announceToSR) announceToSR(captured
+                    ? t('stem.migration.marked_pose_ready', 'Wing pose marked. Step the wings or orbit to compare. Mark again to replace the reference.')
+                    : t('stem.migration.marked_pose_unavailable', 'Wait until the 3D scene is ready, then mark the pose again.'));
+                }
+              }, t('stem.migration.mark_wing_pose', 'Mark wing pose')),
+              h('button', {
+                type: 'button', 'data-marked-pose-action': 'return', disabled: !returnTarget,
+                'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                onClick: function() {
+                  var intent = selectMigrationMarkedWingPose(_f3dEngineRef.current, _liveVals.current, marked);
+                  if (!intent) {
+                    if (announceToSR) announceToSR(t('stem.migration.marked_return_unavailable', 'Mark a visible wing pose after the Study scene is ready, then return to it.'));
+                    return;
+                  }
+                  endStudyDrag(null, false);
+                  _f3dStudyRevisitRef.current = null;
+                  studyCyclePositionState[1](null);
+                  _f3dStudyCyclePauseRef.current = intent;
+                  studyMarkedPoseState[1](Object.assign({}, marked, { returnIntent: intent, comparisonCheck: null }));
+                  upd('flightPaused', true);
+                  if (announceToSR) announceToSR(t('stem.migration.marked_return_selected', 'Marked wing pose selected. Compare the live wings with the dashed outline from another view.'));
+                }
+              }, t('stem.migration.return_marked_wing_pose', 'Return wings to marked pose')),
+              h('button', {
+                type: 'button', 'data-marked-pose-action': 'check', disabled: !canCheck,
+                'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                onClick: function() {
+                  var check = migrationCheckMarkedComparison(_f3dEngineRef.current, _liveVals.current, marked);
+                  if (!check) {
+                    if (announceToSR) announceToSR(t('stem.migration.comparison_check_unavailable', 'Pause a ready Study view and mark a wing pose before checking what changed.'));
+                    return;
+                  }
+                  studyMarkedPoseState[1](function(current) {
+                    return current && current.captureVersion === marked.captureVersion && current.sourceBirdUuid === marked.sourceBirdUuid &&
+                      current.capturedPhase === marked.capturedPhase ? Object.assign({}, current, { comparisonCheck: check }) : current;
+                  });
+                  if (announceToSR) announceToSR(comparisonFeedback(check));
+                }
+              }, t('stem.migration.comparison_check_action', 'Check what changed')),
+              h('button', {
+                type: 'button', 'data-marked-pose-action': 'clear', disabled: status !== 'marked',
+                onClick: function() {
+                  var engine = _f3dEngineRef.current;
+                  if (engine && engine.markedWingPose) engine.markedWingPose.clearPose();
+                  if (_f3dStudyCyclePauseRef.current && _f3dStudyCyclePauseRef.current.kind === 'marked-return') _f3dStudyCyclePauseRef.current = null;
+                  studyMarkedPoseState[1](null);
+                  if (announceToSR) announceToSR(t('stem.migration.marked_pose_cleared', 'Marked wing pose cleared.'));
+                }
+              }, t('stem.migration.clear_marked_pose', 'Clear marked pose'))
+            ),
+            h('p', { className: 'migration-study-help', id: 'migration-marked-pose-status', role: 'status', 'data-marked-pose-status': status },
+              status === 'marked'
+                ? h(React.Fragment, null,
+                  h('span', { className: 'migration-marked-pose-key', 'aria-hidden': 'true' }),
+                  t('stem.migration.marked_pose_status', 'Marked pose: dashed outline. Step the wings or orbit to compare; mark again to replace it. This does not record an observation.'),
+                  h('span', { className: 'migration-marked-pose-count', 'data-marked-pose-return-status': returned ? 'selected' : 'idle' }, returned
+                    ? t('stem.migration.marked_return_status', 'Marked wing pose selected. The view and manual step count stay as they were; compare the live wings with the outline.') : ''),
+                  migrationStudyComparisonViewValid(marked.capturedView) && h('span', { className: 'migration-marked-pose-count', 'data-marked-view-settings': 'true' },
+                    t('stem.migration.marked_view_settings', 'Marked view settings') + ': ' + marked.capturedView.yaw + '\u00b0 / ' + marked.capturedView.pitch + '\u00b0 · ' + Math.round(marked.capturedView.zoom * 100) + '%'),
+                  h('span', { className: 'migration-marked-pose-count', 'data-reference-manual-step': marked.manualStep, 'data-current-manual-step': studyView.step },
+                    t('stem.migration.marked_pose_reference_step', 'Reference manual step') + ' ' + marked.manualStep + ' · ' +
+                    t('stem.migration.marked_pose_current_step', 'Current manual step') + ' ' + studyView.step))
+                : status === 'unavailable'
+                  ? t('stem.migration.marked_pose_unavailable', 'Wait until the 3D scene is ready, then mark the pose again.')
+                  : t('stem.migration.marked_pose_empty', 'No wing pose marked. The reference clears when the species, individual, season, or formation changes.')),
+            checked && h('div', { className: 'migration-study-help', 'data-marked-comparison-check': 'true',
+              'data-marked-comparison-status': checked.status, 'data-marked-comparison-kind': checked.kind },
+              h('p', { role: 'status' }, comparisonFeedback(checked)),
+              checked.status === 'checked' && h('dl', { className: 'migration-checked-breakdown',
+                'data-marked-comparison-breakdown': checked.kind, 'aria-label': t('stem.migration.comparison_breakdown_aria', 'Checked comparison variables') },
+                h('div', { 'data-marked-comparison-variable': 'view',
+                  'data-comparison-result': checked.kind === 'same' || checked.kind === 'wing-only' ? 'matches' : 'changed' },
+                  h('dt', null, t('stem.migration.comparison_breakdown_view', 'Selected view settings')),
+                  h('dd', null,
+                    h('strong', { className: 'migration-comparison-result', 'data-marked-comparison-result': 'view' },
+                      checked.kind === 'same' || checked.kind === 'wing-only'
+                        ? t('stem.migration.comparison_breakdown_matches', 'Matches') : t('stem.migration.comparison_breakdown_changed', 'Changed')),
+                    h('small', { 'data-marked-comparison-order': 'true' },
+                      t('stem.migration.comparison_breakdown_order', 'Study angle / elevation · zoom')),
+                    h('span', { 'data-marked-comparison-value': 'marked-view' }, t('stem.migration.comparison_breakdown_marked', 'Marked') + ': ' +
+                      checked.markedView.yaw + '\u00b0 / ' + checked.markedView.pitch + '\u00b0 · ' + Math.round(checked.markedView.zoom * 100) + '%'),
+                    h('span', { 'data-marked-comparison-value': 'current-view' }, t('stem.migration.comparison_breakdown_current', 'Current') + ': ' +
+                      checked.view.yaw + '\u00b0 / ' + checked.view.pitch + '\u00b0 · ' + Math.round(checked.view.zoom * 100) + '%'),
+                    h('ul', { className: 'migration-view-components', 'data-marked-view-components': 'true',
+                      'aria-label': t('stem.migration.checked_view_components', 'Checked view settings') },
+                      ['yaw', 'pitch', 'zoom'].map(function(key) {
+                        var matches = key === 'yaw'
+                          ? migrationStudyComparisonPhaseMatches(checked.view.yaw * Math.PI / 180, checked.markedView.yaw * Math.PI / 180)
+                          : Math.abs(checked.view[key] - checked.markedView[key]) <= 0.000001;
+                        return h('li', { key: key, 'data-marked-view-component': key,
+                          'data-component-result': matches ? 'matches' : 'changed' },
+                          h('span', null, key === 'yaw' ? t('stem.migration.study_angle', 'Study angle')
+                            : key === 'pitch' ? t('stem.migration.checked_elevation', 'Elevation') : t('stem.migration.checked_zoom', 'Zoom')),
+                          h('strong', { className: 'migration-view-component-result' }, matches
+                            ? t('stem.migration.comparison_breakdown_matches', 'Matches') : t('stem.migration.comparison_breakdown_changed', 'Changed')));
+                      })
+                    ),
+                    Math.abs(checked.view.zoom - checked.markedView.zoom) > 0.000001 &&
+                      Math.round(checked.view.zoom * 100) === Math.round(checked.markedView.zoom * 100) &&
+                      h('small', { 'data-marked-view-rounding': 'true' }, t('stem.migration.checked_zoom_rounding', 'Zoom values are rounded to whole percentages.'))
+                  )
+                ),
+                h('div', { 'data-marked-comparison-variable': 'wing',
+                  'data-comparison-result': checked.kind === 'same' || checked.kind === 'view-only' ? 'matches' : 'changed' },
+                  h('dt', null, t('stem.migration.comparison_breakdown_wing', 'Wing-cycle position')),
+                  h('dd', null, h('strong', { className: 'migration-comparison-result', 'data-marked-comparison-result': 'wing' },
+                    checked.kind === 'same' || checked.kind === 'view-only'
+                      ? t('stem.migration.comparison_breakdown_matches', 'Matches') : t('stem.migration.comparison_breakdown_changed', 'Changed')))
+                )
+              ),
+              checked.status === 'checked' && (checked.kind === 'view-only' || checked.kind === 'both') && h('div', {
+                className: 'migration-study-scene-buttons migration-component-restores', 'data-marked-component-restores': 'true',
+                role: 'group', 'aria-label': t('stem.migration.restore_component_group', 'Restore one marked view setting') },
+                ['yaw', 'pitch', 'zoom'].map(function(key) {
+                  var matches = key === 'yaw'
+                    ? migrationStudyComparisonPhaseMatches(checked.view.yaw * Math.PI / 180, checked.markedView.yaw * Math.PI / 180)
+                    : Math.abs(checked.view[key] - checked.markedView[key]) <= 0.000001;
+                  if (matches) return null;
+                  return h('button', { key: key, type: 'button', className: 'migration-study-focus',
+                    'data-marked-pose-action': 'restore-view-component', 'data-restore-view-component': key,
+                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                    onClick: function(event) {
+                      var live = _liveVals.current, engine = _f3dEngineRef.current;
+                      var restore = migrationMarkedViewComponentRestoreTarget(engine, live, marked, checked, key);
+                      if (!restore) {
+                        if (announceToSR) announceToSR(t('stem.migration.restore_component_unavailable', 'Check what changed again before restoring one marked view setting.'));
+                        return;
+                      }
+                      endStudyDrag(null, false);
+                      _f3dStudyRevisitRef.current = null;
+                      var next = Object.assign({}, marked, { comparisonCheck: null, viewRestoreIntent: restore });
+                      live.flightMarkedPose = next;
+                      live.flightViewRestorePending = true;
+                      var action = event && event.currentTarget;
+                      var controls = action && action.closest('[data-study-marked-pose]');
+                      var checkButton = controls && controls.querySelector('[data-marked-pose-action="check"]');
+                      if (action && action.isConnected && checkButton && checkButton.isConnected &&
+                          (document.activeElement === action || document.activeElement === document.body)) checkButton.focus({ preventScroll: true });
+                      studyMarkedPoseState[1](function(current) {
+                        return current === marked && current.comparisonCheck === checked ? next : current;
+                      });
+                      // Submit the owned tuple atomically; the existing pending
+                      // acknowledgement keeps checks waiting until the host applies it.
+                      updMulti({ flightStudyYaw: restore.view.yaw, flightStudyPitch: restore.view.pitch, flightStudyZoom: restore.view.zoom });
+                      if (announceToSR) announceToSR(t('stem.migration.restore_component_selected', 'Marked view setting selected. Other view settings and the wing pose stay as they were. Check what changed again after the setting finishes updating.'));
+                    }
+                  }, key === 'yaw' ? t('stem.migration.restore_marked_angle', 'Restore marked study angle')
+                    : key === 'pitch' ? t('stem.migration.restore_marked_elevation', 'Restore marked elevation')
+                    : t('stem.migration.restore_marked_zoom', 'Restore marked zoom'));
+                })
+              ),
+              checked.status === 'checked' && (checked.kind === 'view-only' || checked.kind === 'both') && h('button', {
+                type: 'button', className: 'migration-study-focus', 'data-marked-pose-action': 'restore-view', 'aria-controls': 'migration-flight-stage',
+                'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
+                onClick: function(event) {
+                  var live = _liveVals.current, engine = _f3dEngineRef.current;
+                  var restore = migrationMarkedViewRestoreTarget(engine, live, marked, checked);
+                  if (!restore) {
+                    if (announceToSR) announceToSR(t('stem.migration.restore_marked_view_unavailable', 'Check what changed again before restoring the marked view settings.'));
+                    return;
+                  }
+                  endStudyDrag(null, false);
+                  _f3dStudyRevisitRef.current = null;
+                  var next = Object.assign({}, marked, { comparisonCheck: null, viewRestoreIntent: restore });
+                  live.flightMarkedPose = next;
+                  live.flightViewRestorePending = true;
+                  var action = event && event.currentTarget;
+                  var controls = action && action.closest('[data-study-marked-pose]');
+                  var checkButton = controls && controls.querySelector('[data-marked-pose-action="check"]');
+                  if (action && action.isConnected && checkButton && checkButton.isConnected &&
+                      (document.activeElement === action || document.activeElement === document.body)) checkButton.focus({ preventScroll: true });
+                  studyMarkedPoseState[1](function(current) {
+                    return current === marked && current.comparisonCheck === checked ? next : current;
+                  });
+                  updMulti({ flightStudyYaw: restore.view.yaw, flightStudyPitch: restore.view.pitch, flightStudyZoom: restore.view.zoom });
+                  if (announceToSR) announceToSR(t('stem.migration.restore_marked_view_selected', 'Marked view settings selected. Check what changed again after the settings finish updating.'));
+                }
+              }, t('stem.migration.restore_marked_view_action', 'Restore marked view settings'))
+            ),
+            h(MigrationStudyContextReadout, { React: React,
+              getHost: function() { return _f3dHostRef.current; },
+              readContext: function() {
+                var host = _f3dHostRef.current, engine = _f3dEngineRef.current;
+                return host && engine && engine.host === host
+                  ? migrationStudyCurrentContext(engine, _liveVals.current, _f3dStudyCyclePauseRef.current, studyWingtipFollowState[0]) : null;
+              },
+              renderContext: function(context) {
+                var action = renderStudySceneNoteAction(context, 'continue-comparison-note');
+                return action ? h('div', { className: 'migration-study-scene-buttons', 'data-comparison-note-return': 'true' }, action) : null;
+              }
+            })
+          );
+        }
+
+        function commitStudyCyclePosition(index) {
+          var engine = _f3dEngineRef.current;
+          applyMigrationStudyPendingStepAcknowledgement(engine, _liveVals.current, _f3dStudyStepAckRef.current);
+          var selection = engine && !engine.contextLost ? selectMigrationStudyCyclePosition(engine, _liveVals.current, index) : null;
+          if (!selection) return null;
+          endStudyDrag(null, false);
+          clearMigrationMarkedReturnIntent();
+          _f3dStudyRevisitRef.current = null;
+          _f3dStudyCyclePauseRef.current = selection;
+          studyCyclePositionState[1](selection);
+          upd('flightPaused', true);
+          return selection;
+        }
+
+        function studySceneActionsVisible() {
+          return cameraMode === 'study';
+        }
+
+        function renderStudySceneActions() {
+          if (!studySceneActionsVisible()) return null;
+          return h(MigrationStudyContextReadout, { React: React,
+            getHost: function() { return _f3dHostRef.current; },
+            readContext: function() {
+              return migrationStudyCurrentContext(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
+            },
+            renderContext: function(context) {
+              var partIndex = context ? studyRegions.findIndex(function(part) { return part.id === context.region; }) : -1;
+              var part = partIndex >= 0 ? studyRegions[partIndex] : null;
+              return h('div', { className: 'migration-study-scene-actions', 'data-scene-study-actions': 'true',
+                role: 'group', 'aria-label': d.flightShowWingtipPath === true || d.flightStudyObservationOpen === true
+                  ? t('stem.migration.scene_study_actions', 'Scene study actions') : t('stem.migration.scene_study_context', 'Study scene context') },
+                h('div', { className: 'migration-study-scene-context', 'data-scene-study-context': context ? 'ready' : 'unavailable' },
+                  h('strong', { 'data-scene-study-species': species.id }, species.emoji + ' ' + species.name),
+                  h('span', { 'data-scene-study-individual': context ? context.individual : studyView.bird },
+                    (context ? context.individual : studyView.bird) === 0 && resolvedFormation === 'v'
+                      ? t('stem.migration.isolated_lead_bird', 'Lead bird isolated for study')
+                      : t('stem.migration.individual_word', 'Individual') + ' ' + ((context ? context.individual : studyView.bird) + 1) + ' \u00b7 ' + t('stem.migration.isolated_for_study', 'isolated for study')),
+                  context ? h(React.Fragment, null,
+                    h('strong', { 'data-scene-study-region': context.region }, part
+                      ? (_liveVals.current.flightShowAnatomy === true ? (partIndex + 1) + ' \u00b7 ' + part.label : t('stem.migration.current_region', 'Region') + ': ' + part.label)
+                      : t('stem.migration.observe_monarch_label', 'Whole-insect wing motion')),
+                    h('span', { 'data-scene-study-cycle': context.cyclePosition === null ? 'none' : String(context.cyclePosition),
+                      'data-study-stage-cycle-position': context.cyclePosition === null ? undefined : context.cyclePosition },
+                      context.cyclePosition === null
+                        ? t('stem.migration.current_cycle_none', 'No numbered cycle position selected.')
+                        : t('stem.migration.current_cycle_badge', 'Cycle') + ' ' + (context.cyclePosition + 1) + '/8 ' + t('stem.migration.current_cycle_badge_selected', 'selected')),
+                    h('span', { 'data-scene-study-side': context.followedSide === 0 ? 'left' : context.followedSide === 1 ? 'right' : 'none' },
+                      context.followedSide === 0 ? t('stem.migration.current_follow_left', 'Followed wingtip: individual’s left.')
+                        : context.followedSide === 1 ? t('stem.migration.current_follow_right', 'Followed wingtip: individual’s right.')
+                        : t('stem.migration.current_follow_none', 'No wingtip followed.'))
+                  ) : h('span', null, t('stem.migration.scene_study_wait', 'Study selection is unavailable until the scene is ready.'))
+                ),
+                (d.flightShowWingtipPath === true || (d.flightStudyObservationOpen === true && context)) && h('div', { className: 'migration-study-scene-buttons' },
+                  d.flightShowWingtipPath === true && h('button', { type: 'button',
+                    'data-scene-study-action': 'opposite', disabled: !context || context.cyclePosition === null,
+                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                    onClick: function() {
+                      var engine = _f3dEngineRef.current, live = _liveVals.current;
+                      var current = migrationStudyCurrentContext(engine, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
+                      var target = current ? migrationStudyOppositeCycleTarget(engine, live, _f3dStudyCyclePauseRef.current) : null;
+                      if (target === null || !commitStudyCyclePosition(target)) {
+                        if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
+                        return;
+                      }
+                      if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
+                    }
+                  }, t('stem.migration.scene_compare_opposite', 'Compare opposite wings')),
+                  renderStudySceneNoteAction(context)
+                )
+              );
+            }
+          });
+        }
+
+        function renderStudyControls() {
+          if (cameraMode !== 'study') return null;
+          var followContext = migrationStudyWingtipFollowContext(_f3dEngineRef.current, _liveVals.current) ||
+            { speciesId: species.id, individual: studyView.bird, formationMode: formationMode, season: season };
+          function followMessage(side) {
+            return side === 0 ? t('stem.migration.wingtip_follow_left', 'Following the individual’s left wingtip guides.')
+              : side === 1 ? t('stem.migration.wingtip_follow_right', 'Following the individual’s right wingtip guides.')
+              : t('stem.migration.wingtip_follow_both', 'Showing both wingtip guides.');
+          }
+          return h('section', { id: 'migration-study-controls', className: 'migration-study-controls', 'aria-label': t('stem.migration.study_controls', 'Study camera controls') },
+            h('label', { className: 'migration-flight-control' },
+              h('span', null, t('stem.migration.study_individual', 'Study individual')),
+              h('select', { value: studyView.bird, disabled: studyBirdCount === 1, 'aria-label': t('stem.migration.study_individual', 'Study individual'), onChange: function(event) { upd('flightStudyBird', parseInt(event.target.value, 10)); } },
+                Array.from({ length: studyBirdCount }, function(_, index) {
+                  return h('option', { key: index, value: index }, t('stem.migration.individual_word', 'Individual') + ' ' + (index + 1) + (index === 0 && resolvedFormation === 'v' ? ' \u00b7 ' + t('stem.migration.lead_position', 'lead position') : ''));
+                })
+              )
+            ),
+            h('div', { className: 'migration-study-presets', role: 'group', 'aria-label': t('stem.migration.study_viewpoints', 'Study viewpoints') }, [
+              { id: 'front', yaw: 180, pitch: 10, label: t('stem.migration.study_front', 'Front') },
+              { id: 'profile', yaw: 90, pitch: 10, label: t('stem.migration.study_profile', 'Profile') },
+              { id: 'above', yaw: 0, pitch: 60, label: t('stem.migration.study_above', 'From above') }
+            ].map(function(viewpoint) {
+              return h('button', { key: viewpoint.id, type: 'button', 'data-study-viewpoint': viewpoint.id, 'aria-pressed': studyView.yaw === viewpoint.yaw && studyView.pitch === viewpoint.pitch ? 'true' : 'false', onClick: function() {
+                clearMigrationMarkedViewRestoreIntent();
+                updMulti({ flightStudyYaw: viewpoint.yaw, flightStudyPitch: viewpoint.pitch });
+                if (announceToSR) announceToSR(t('stem.migration.study_viewpoint_selected', 'Study viewpoint') + ': ' + viewpoint.label);
+              } }, viewpoint.label);
+            })),
+            [
+              { key: 'flightStudyYaw', label: t('stem.migration.study_angle', 'Study angle'), aria: t('stem.migration.study_angle_aria', 'Study angle in degrees'), min: -180, max: 180, step: 5, value: studyView.yaw, suffix: '\u00b0' },
+              { key: 'flightStudyPitch', label: t('stem.migration.study_elevation', 'Study elevation'), aria: t('stem.migration.study_elevation_aria', 'Study elevation in degrees'), min: -10, max: 60, step: 5, value: studyView.pitch, suffix: '\u00b0' },
+              { key: 'flightStudyZoom', label: t('stem.migration.study_zoom', 'Study zoom'), aria: t('stem.migration.study_zoom_aria', 'Study zoom percent'), min: 65, max: 160, step: 5, value: Math.round(studyView.zoom * 100), suffix: '%' }
+            ].map(function(control) {
+              return h('label', { key: control.key, className: 'migration-study-slider' },
+                h('span', null, control.label, h('strong', null, control.value + control.suffix)),
+                h('input', { type: 'range', min: control.min, max: control.max, step: control.step, value: control.value, 'aria-label': control.aria, onChange: function(event) { clearMigrationMarkedViewRestoreIntent(); var value = parseInt(event.target.value, 10); upd(control.key, control.key === 'flightStudyZoom' ? value / 100 : value); } })
+              );
+            }),
+            h('div', { className: 'migration-study-actions' },
+              h('button', { type: 'button', onClick: function() { clearMigrationMarkedViewRestoreIntent(); updMulti({ flightStudyYaw: 35, flightStudyPitch: 15, flightStudyZoom: 1 }); } }, t('stem.migration.reset_study_view', 'Reset study view')),
+              h('button', { type: 'button', onClick: function() {
+                // Retain each explicit click even when React batches events before
+                // the next render, then let RAF consume the full serial delta.
+                var acknowledgement = _f3dStudyStepAckRef.current, engine = _f3dEngineRef.current;
+                applyMigrationStudyPendingStepAcknowledgement(engine, _liveVals.current, acknowledgement);
+                var nextStep = (Math.floor(migrNum(_liveVals.current.flightWingStep, studyView.step, 0, 1000000)) + 1) % 1000001;
+                var pending = acknowledgement.pending, flyer = migrationStudyPhaseContext(engine, _liveVals.current, false);
+                acknowledgement.pending = flyer && !engine.contextLost ? {
+                  manualStep: nextStep, startSerial: pending && !pending.serialAcknowledged ? pending.startSerial : acknowledgement.serial,
+                  serials: (pending && !pending.serialAcknowledged ? pending.serials : []).concat(nextStep),
+                  serialAcknowledged: false, paused: true, sourceBirdUuid: flyer.uuid,
+                  context: { speciesId: _liveVals.current.flightSpecies, individual: _liveVals.current.flightStudyBird,
+                    formationMode: _liveVals.current.flightFormation, season: _liveVals.current.flightSeason }
+                } : null;
+                clearMigrationMarkedReturnIntent();
+                _f3dStudyCyclePauseRef.current = null;
+                studyCyclePositionState[1](null);
+                _liveVals.current.flightStudyCyclePosition = undefined;
+                _liveVals.current.flightWingStep = nextStep;
+                _liveVals.current.flightPaused = true;
+                updMulti({ flightPaused: true, flightWingStep: nextStep });
+              } }, t('stem.migration.step_wingbeat', 'Step wingbeat'))
+            ),
+            renderMarkedWingPoseControls(),
+            h('div', { className: 'migration-wingtip-path-controls', 'data-study-wingtip-path': 'true' },
+              h('label', { className: 'migration-layer-toggle' },
+                h('input', { type: 'checkbox', checked: d.flightShowWingtipPath === true, 'aria-describedby': 'migration-wingtip-path-help', 'aria-controls': 'migration-flight-stage', onChange: function(event) {
+                  if (!event.target.checked) {
+                    _liveVals.current.flightWingtipFollowSide = undefined;
+                    _liveVals.current.flightWingtipFollowSourceUuid = undefined;
+                    studyWingtipFollowState[1](null);
+                  }
+                  upd('flightShowWingtipPath', event.target.checked);
+                } }),
+                h('span', null, t('stem.migration.show_wingtip_path', 'Show wingtip path'))
+              ),
+              h('p', { className: 'migration-study-help', id: 'migration-wingtip-path-help' },
+                t('stem.migration.wingtip_path_activity', 'Before showing the path, predict how the outer tip moves. Show it, step the wings, and compare Front with From above. Describe what changed in your observation notes.')),
+              d.flightShowWingtipPath === true && h('div', { className: 'migration-wingtip-path-key', 'data-wingtip-path-legend': 'true',
+                'data-wingtip-follow-controls': 'true', role: 'group', 'aria-label': t('stem.migration.wingtip_follow_group', 'Follow one wingtip') },
+                [0, 1].map(function(side) {
+                  return h('button', { key: side, type: 'button', className: 'migration-wingtip-follow-button', 'data-wingtip-follow-side': side,
+                    disabled: !!(_f3dEngineRef.current && _f3dEngineRef.current.host && _f3dEngineRef.current.host.getAttribute('data-flight-error') === 'true'), 'aria-pressed': _liveVals.current.flightWingtipFollowSide === side ? 'true' : 'false',
+                    'aria-label': side === 0 ? t('stem.migration.wingtip_follow_left_action', 'Follow individual’s left wingtip') : t('stem.migration.wingtip_follow_right_action', 'Follow individual’s right wingtip'),
+                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-wingtip-follow-help',
+                    onClick: function() {
+                      var target = migrationStudyWingtipFollowTarget(_f3dEngineRef.current, _liveVals.current, side, followContext);
+                      if (!target) {
+                        if (announceToSR) announceToSR(t('stem.migration.wingtip_follow_wait', 'Wait for a ready Study view with Show wingtip path on, then choose a guide again.'));
+                        return;
+                      }
+                      followContext = target.context;
+                      var next = _liveVals.current.flightWingtipFollowSide === side ? undefined : side;
+                      _liveVals.current.flightWingtipFollowSide = next;
+                      _liveVals.current.flightWingtipFollowSourceUuid = next === undefined ? undefined : target.context.sourceBirdUuid;
+                      studyWingtipFollowState[1](next === undefined ? null : target);
+                      if (announceToSR) announceToSR(followMessage(next));
+                    }
+                  }, h('i', { className: side === 0 ? 'migration-wingtip-key-left' : 'migration-wingtip-key-right', 'aria-hidden': 'true' }),
+                    side === 0 ? t('stem.migration.wingtip_left_key', 'Individual’s left: solid path') : t('stem.migration.wingtip_right_key', 'Individual’s right: dashed path'));
+                }),
+                h('span', null, h('i', { className: 'migration-wingtip-key-point', 'aria-hidden': 'true' }), t('stem.migration.wingtip_point_key', 'Dots: current outer tips')),
+                h('span', null, h('i', { className: 'migration-wingtip-key-marked', 'aria-hidden': 'true' }), t('stem.migration.wingtip_marked_tip_key', 'Diamonds: marked tips')),
+                h('span', null, h('i', { className: 'migration-wingtip-key-landmark', 'aria-hidden': 'true' }), t('stem.migration.wingtip_landmark_key', 'Hollow marks: eight equal cycle intervals')),
+                h('span', null, h('i', { className: 'migration-wingtip-key-direction', 'aria-hidden': 'true' }), t('stem.migration.wingtip_direction_key', 'Arrowheads: cycle direction, not migration heading')),
+                studyCycleSelection && h('span', { 'data-study-cycle-selection-key': 'true' }, t('stem.migration.cycle_selected_landmark_key', 'Larger rings: selected position'))
+              ),
+              d.flightShowWingtipPath === true && h('div', { 'data-wingtip-follow-activity': 'true' },
+                h('p', { className: 'migration-study-help', id: 'migration-wingtip-follow-help' },
+                  t('stem.migration.wingtip_follow_activity', 'Predict where one tip will appear on screen. Choose its left or right guide; choose it again to show both. Hold the pose with Pause or a cycle position, compare Front with From above, then use Describe wing motion to explain the individual’s side versus its screen position. Both wings and the marked outline stay visible.')),
+                h('p', { className: 'migration-study-help', role: 'status', 'data-wingtip-follow-status': _liveVals.current.flightWingtipFollowSide === 0 ? 'left' : _liveVals.current.flightWingtipFollowSide === 1 ? 'right' : 'both' },
+                  followMessage(_liveVals.current.flightWingtipFollowSide)),
+                (followedAnatomySide === 0 || followedAnatomySide === 1) && h('div', { 'data-followed-anatomy-activity': 'true' },
+                  h('p', { className: 'migration-study-help', id: 'migration-followed-anatomy-help' },
+                    t('stem.migration.followed_anatomy_activity', 'Predict which wing segment will appear to move more. Hold the camera fixed and compare cycle positions 3 and 7. Inspect Inner wing (2) and Primary feathers (3) with the existing region buttons, then name the followed left or right side and cycle positions in your observation note.')),
+                  h('button', { type: 'button', className: 'migration-wingtip-follow-button', 'data-followed-anatomy-toggle': 'true',
+                    'aria-pressed': _liveVals.current.flightShowAnatomy ? 'true' : 'false', 'aria-controls': 'migration-flight-stage',
+                    'aria-describedby': 'migration-followed-anatomy-help',
+                    onClick: function() {
+                      var live = _liveVals.current;
+                      var side = migrationStudyFollowedAnatomySide(_f3dEngineRef.current, live, studyWingtipFollowSelection);
+                      if (side === undefined) {
+                        if (announceToSR) announceToSR(t('stem.migration.followed_anatomy_wait', 'Follow a wingtip in a ready bird Study view, then choose anatomy again.'));
+                        return;
+                      }
+                      var show = !live.flightShowAnatomy;
+                      live.flightShowAnatomy = show;
+                      upd('flightShowAnatomy', show);
+                      if (announceToSR) announceToSR(show
+                        ? t('stem.migration.followed_anatomy_shown', 'Anatomy guides shown on the followed wing.')
+                        : t('stem.migration.followed_anatomy_hidden', 'Anatomy guides hidden.'));
+                    }
+                  }, t('stem.migration.followed_anatomy_toggle', 'Show anatomy on followed wing')),
+                  migrationStudySegmentNoteMatches(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection, studyRegion.id) &&
+                    h('div', { 'data-study-segment-note': 'true' },
+                      h('button', { type: 'button', className: 'migration-wingtip-follow-button', 'data-study-action': 'describe-wing-segment',
+                        'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-segment-note-help migration-followed-anatomy-help',
+                        onClick: function() {
+                          var live = _liveVals.current;
+                          var region = studyRegion.id;
+                          if (!migrationStudySegmentNoteMatches(_f3dEngineRef.current, live, studyWingtipFollowSelection, region)) {
+                            if (announceToSR) announceToSR(t('stem.migration.segment_note_wait', 'Select Inner wing or Primary feathers on a followed wing with anatomy shown, then describe that segment again.'));
+                            return;
+                          }
+                          _f3dMotionNoteFocusRef.current = { speciesId: live.flightSpecies, region: region,
+                            key: live.flightSpecies + ':' + region, previousRegion: region,
+                            wasOpen: d.flightStudyObservationOpen === true, focusOrigin: document.activeElement,
+                            segmentSelection: studyWingtipFollowSelection };
+                          studyMotionNoteFocusTick[1](function(value) { return value + 1; });
+                          updMulti({ flightStudyObservationOpen: true });
+                        }
+                      }, t('stem.migration.describe_wing_segment', 'Describe this wing segment')),
+                      h('p', { className: 'migration-study-help', id: 'migration-segment-note-help' },
+                        t('stem.migration.segment_note_help', 'Opens the selected wing segment’s existing note and keeps your draft. This does not record an observation or change playback.'))
+                    )
+                )
+              ),
+              d.flightShowWingtipPath === true && h('div', { 'data-study-cycle-controls': 'true' },
+                h('p', { className: 'migration-study-help', id: 'migration-study-cycle-help' },
+                  t('stem.migration.cycle_position_activity', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally use Mark wing pose. Keep the view fixed and use Compare opposite position to switch between 3 and 7. With Show wingtip path on, predict whether live dots will meet marked diamonds when you return to 3. Inspect the followed wing or selected segment, then describe your evidence in the existing notes. Choosing a position pauses the illustrative cycle.')),
+                h('div', { className: 'migration-cycle-positions', role: 'group', 'aria-label': t('stem.migration.cycle_positions', 'Wing cycle positions') },
+                  Array.from({ length: 8 }, function(_, index) {
+                    return h('button', { key: index, type: 'button', 'data-study-cycle-position': index,
+                      'aria-label': t('stem.migration.cycle_position', 'Cycle position') + ' ' + (index + 1) + ' ' + t('stem.migration.cycle_position_of_eight', 'of 8'),
+                      'aria-pressed': studyCycleSelection && studyCycleSelection.index === index ? 'true' : 'false',
+                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                      onClick: function() {
+                        if (!commitStudyCyclePosition(index)) {
+                          if (announceToSR) announceToSR(t('stem.migration.cycle_position_wait', 'Wait until the Study scene is ready, then choose a cycle position again.'));
+                          return;
+                        }
+                        if (announceToSR) announceToSR(t('stem.migration.cycle_position_selected', 'Selected cycle position') + ' ' + (index + 1) + '. ' + t('stem.migration.cycle_position_paused', 'Flight paused. Mark this pose or compare another position.'));
+                      }
+                    }, index + 1);
+                  })
+                ),
+                h('div', { className: 'migration-study-actions' },
+                  h(MigrationStudyContextReadout, { React: React,
+                    getHost: function() { return _f3dHostRef.current; },
+                    readContext: function() {
+                      return migrationStudyOppositeCycleTarget(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current);
+                    },
+                    renderContext: function(targetIndex) {
+                      return h('button', { type: 'button', className: 'migration-wingtip-follow-button',
+                        'data-study-cycle-action': 'opposite', disabled: targetIndex === null,
+                        'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
+                        onClick: function() {
+                          // A retained handler must follow the latest explicit click,
+                          // even before React or the host acknowledges the last one.
+                          var target = migrationStudyOppositeCycleTarget(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current);
+                          if (target === null || !commitStudyCyclePosition(target)) {
+                            if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
+                            return;
+                          }
+                          if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
+                        }
+                      }, t('stem.migration.compare_opposite_cycle', 'Compare opposite position'));
+                    }
+                  })
+                ),
+                h('p', { className: 'migration-study-help' }, t('stem.migration.cycle_position_scope', 'The eight positions divide a stylized cycle, not physical distance or measured time. Selecting a position keeps your notes and manual Wing steps unchanged. Write the position numbers in your note so you can repeat the comparison.'))
+              ),
+              h('div', { className: 'migration-study-actions' },
+                h('button', { type: 'button', 'data-study-action': 'describe-wing-motion',
+                  'aria-controls': 'migration-study-observation-note', 'aria-describedby': 'migration-wing-motion-note-help',
+                  onClick: function() {
+                    var region = species.id === 'monarch' ? 'whole-wing' : 'primaries';
+                    _f3dMotionNoteFocusRef.current = { speciesId: species.id, region: region,
+                      key: species.id + ':' + region, previousRegion: studyObservationRegion,
+                      wasOpen: d.flightStudyObservationOpen === true, focusOrigin: document.activeElement };
+                    studyMotionNoteFocusTick[1](function(value) { return value + 1; });
+                    var patch = { flightStudyObservationOpen: true };
+                    if (species.id !== 'monarch') patch.flightStudyRegion = 'primaries';
+                    updMulti(patch);
+                  }
+                }, t('stem.migration.describe_wing_motion', 'Describe wing motion'))
+              ),
+              h('p', { className: 'migration-study-help', id: 'migration-wing-motion-note-help' }, species.id === 'monarch'
+                ? t('stem.migration.describe_monarch_motion_help', 'Opens whole-wing notes and keeps your existing draft. This does not record an observation or change playback.')
+                : t('stem.migration.describe_bird_motion_help', 'Opens Primary feathers notes and keeps your existing draft. This does not record an observation or change playback.')),
+              h('p', { className: 'migration-study-help' }, t('stem.migration.wingtip_path_scope', 'The paths show one stylized wing cycle relative to the body. They are not a flight track, distance scale, or measured wingbeat rate.'))
+            ),
+            h('button', { className: 'migration-study-focus', type: 'button', onClick: function() {
+              var stage = document.getElementById('migration-flight-stage');
+              if (stage) stage.focus();
+            } }, t('stem.migration.focus_scene', 'Focus 3D scene')),
+            h('p', { className: 'migration-study-help' }, t('stem.migration.study_camera_help', 'Drag the scene to orbit, or focus it and use arrow keys; + / \u2212 zoom. Step wingbeat pauses flight and advances one eighth of the illustrative wing cycle.') + ' ' + t('stem.migration.study_lighting_help', 'Study lighting follows your view so surfaces stay readable.')),
+            h('p', { className: 'migration-study-help' }, t('stem.migration.study_backdrop_help', 'Study fits the individual to your screen and hides the landscape and route corridor. Return to Chase to follow the migration.'))
+          );
         }
 
         return h('div', {
           id: 'migration-flight-deck',
           className: 'migration-flight-deck',
           'data-migration-3d-flight': 'true',
-          'data-monarch-simulation': species.id === 'monarch' ? 'active' : 'available'
+          'data-monarch-simulation': species.id === 'monarch' ? 'active' : 'available',
+          'data-pair-review-open': currentFlightTrialReview() ? 'true' : 'false',
+          'data-challenge-inspection-open': selectedFlightChallengeInspection() ? 'true' : 'false',
+          'data-study-strip': studySceneActionsVisible() ? 'true' : 'false'
         },
+          h('div', { className: 'migration-flight-view' },
           h('div', {
+            id: 'migration-flight-stage',
             className: 'migration-flight-stage',
+            'data-motion-reduced': motionReduced ? 'true' : 'false',
+            'data-study-view': cameraMode === 'study' ? 'true' : 'false',
             ref: setMigrationFlightHost,
-            role: 'img',
+            role: 'group',
             tabIndex: 0,
             'aria-label': stageLabel,
+            onPointerDown: beginStudyDrag,
+            onPointerMove: moveStudyDrag,
+            onPointerUp: function(event) { endStudyDrag(event, true); },
+            onPointerCancel: function(event) { endStudyDrag(event, false); },
+            onLostPointerCapture: function(event) { endStudyDrag(event, false); },
             onKeyDown: function(event) {
+              if (event.target !== event.currentTarget) return;
+              if (event.ctrlKey || event.metaKey || event.altKey) return;
+              endStudyDrag(null, false);
               if (event.key === '1') { event.preventDefault(); chooseCamera('chase'); }
               else if (event.key === '2') { event.preventDefault(); chooseCamera('aerial'); }
               else if (event.key === '3') { event.preventDefault(); chooseCamera('side'); }
+              else if (event.key === '4') { event.preventDefault(); chooseCamera('study'); }
+              else if (cameraMode === 'study' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyYaw', ((studyView.yaw + (event.key === 'ArrowLeft' ? -10 : 10) + 180) % 360 + 360) % 360 - 180);
+              }
+              else if (cameraMode === 'study' && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyPitch', Math.max(-10, Math.min(60, studyView.pitch + (event.key === 'ArrowUp' ? 5 : -5))));
+              }
+              else if (cameraMode === 'study' && ['+', '=', '-', '_'].indexOf(event.key) !== -1) {
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyZoom', Math.max(0.65, Math.min(1.6, Math.round((studyView.zoom + (event.key === '+' || event.key === '=' ? 0.1 : -0.1)) * 20) / 20)));
+              }
               else if (event.key === ' ') { event.preventDefault(); toggleFlightPause(); }
             }
           },
             h('div', { className: 'migration-flight-stage-status', role: 'status', 'aria-live': 'polite' }, t('stem.migration.flight_preparing', 'Preparing the 3D migration corridor...')),
-            h('div', { className: 'migration-flight-overlay', 'aria-hidden': 'true' },
-              h('div', { className: 'migration-flight-badge' },
-                h('span', null, species.emoji),
-                h('span', null, species.name + ' - ' + formationLabel)
+            h('div', { className: 'migration-scene-tools', role: 'group', 'aria-label': t('stem.migration.quick_scene_controls', 'Quick scene controls') },
+              h('button', { type: 'button', 'aria-pressed': cameraMode === 'study' ? 'true' : 'false', onClick: function() { chooseCamera(cameraMode === 'study' ? 'chase' : 'study'); } }, t('stem.migration.study_view', 'Study view')),
+              h('button', { type: 'button', disabled: species.id === 'monarch', 'aria-pressed': showAirflow ? 'true' : 'false', onClick: function() { upd('flightShowAirflow', !showAirflow); } }, t('stem.migration.airflow_view', 'Airflow'))
+            ),
+            ((showAirflow && species.id !== 'monarch') || (showSpeedVectors && cameraMode !== 'study')) && h('div', {
+              className: 'migration-flight-layer-key', role: 'group',
+              'aria-label': t('stem.migration.scene_layer_key', 'Scene layer key'),
+              'data-speed-vectors': showSpeedVectors && cameraMode !== 'study' ? 'true' : 'false'
+            },
+              showAirflow && species.id !== 'monarch' && h(React.Fragment, null,
+                h('span', null, h('i', { className: 'migration-key-wake', 'aria-hidden': 'true' }), t('stem.migration.wake_key', 'Wingtip wake')),
+                h('span', null, h('i', { className: 'migration-key-upwash', 'aria-hidden': 'true' }), t('stem.migration.upwash_key', 'Outside upwash')),
+                h('small', null, t('stem.migration.schematic_layer', 'Schematic airflow'))
               ),
-              h('div', { className: 'migration-flight-heading' }, (season === 'fall' ? t('stem.migration.fall_southbound', 'Fall southbound') : t('stem.migration.spring_northbound', 'Spring northbound')) + ' - ' + groundSpeed + ' ' + t('stem.migration.mph_over_ground', 'mph over ground'))
+              showSpeedVectors && cameraMode !== 'study' && speedVectorLabels.map(function(item) {
+                return h('span', { key: item.id, 'data-speed-role': item.id },
+                  h('i', { className: 'migration-key-speed-' + item.id, 'aria-hidden': 'true' }),
+                  item.label + ': ' + item.value + ' ' + t('stem.migration.mph_unit', 'mph')
+                );
+              })
+            ),
+            h('div', { className: 'migration-flight-overlay', 'aria-hidden': 'true' },
+              cameraMode !== 'study' && h(MigrationStudyContextReadout, { React: React,
+                getHost: function() { return _f3dHostRef.current; },
+                readContext: function() {
+                  return migrationStudyCurrentContext(_f3dEngineRef.current, _liveVals.current, studyCyclePositionState[0], studyWingtipFollowState[0]);
+                },
+                renderContext: function(context) {
+                  return h('div', { className: 'migration-flight-badge' + (context && context.cyclePosition !== null ? ' migration-study-cycle-badge' : '') },
+                    h('span', null, species.emoji),
+                    h('span', null, species.name,
+                      h('small', null, cameraMode === 'study'
+                        ? (studyView.bird === 0 && resolvedFormation === 'v' ? t('stem.migration.isolated_lead_bird', 'Lead bird isolated for study') : t('stem.migration.individual_word', 'Individual') + ' ' + (studyView.bird + 1) + ' \u00b7 ' + t('stem.migration.isolated_for_study', 'isolated for study'))
+                        : formationLabel + ' \u00b7 ' + groundSpeed + ' ' + t('stem.migration.mph_over_ground', 'mph over ground')),
+                      context && context.cyclePosition !== null && h('small', { 'data-study-stage-cycle-position': context.cyclePosition },
+                        t('stem.migration.current_cycle_badge', 'Cycle') + ' ' + (context.cyclePosition + 1) + '/8 ' + t('stem.migration.current_cycle_badge_selected', 'selected'))
+                    )
+                  );
+                }
+              }),
+              h('div', { className: 'migration-flight-route', 'data-paused': flightPaused || motionReduced ? 'true' : 'false' },
+                h('div', { className: 'migration-flight-route-label' },
+                  h('i', null),
+                  flightPaused ? t('stem.migration.flight_paused_label', 'Flight paused') : motionReduced ? t('stem.migration.flight_motion_reduced_label', 'Motion reduced') : (season === 'fall' ? t('stem.migration.fall_route_label', 'Fall migration') : t('stem.migration.spring_route_label', 'Spring migration'))
+                ),
+                h('div', { className: 'migration-flight-route-places' },
+                  h('span', null, season === 'fall' ? species.breedingRange : species.winterRange),
+                  h('b', null, '\u2192'),
+                  h('span', null, season === 'fall' ? species.winterRange : species.breedingRange)
+                )
+              )
             )
+          ),
+          renderStudySceneActions(),
+          renderFlightChallengeInspection(),
+          renderFlightTrialReview()
           ),
           h('aside', { className: 'migration-flight-controls', 'aria-label': t('stem.migration.aria_flight_controls', '3D migration flight controls') },
             h('div', null,
               h('h3', null, t('stem.migration.flight_deck_title', 'Migration Flight Deck')),
-              h('p', null, t('stem.migration.flight_deck_blurb', 'Fly a scientifically grounded corridor in three dimensions. Clouds, terrain, route beacons, wind streaks, flock spacing, and wing motion provide depth cues.'))
+              h('p', null, t('stem.migration.flight_deck_observe', 'Follow the flock. Change one condition and watch how the journey responds.')),
+              h('a', { className: 'migration-experiment-jump', href: '#migration-flight-experiment' }, t('stem.migration.open_flight_experiment', 'Start a flight investigation') + ' \u2193')
             ),
+            h('div', { className: 'migration-flight-actions' },
+              h('button', { type: 'button', onClick: toggleFlightPause, 'aria-pressed': flightPaused ? 'true' : 'false' }, flightPaused ? t('stem.migration.resume_flight', 'Resume flight') : t('stem.migration.pause_flight', 'Pause flight')),
+              h('button', {
+                type: 'button',
+                onClick: function() {
+                  var deck = document.getElementById('migration-flight-deck');
+                  if (!deck) return;
+                  if (typeof window.__alloStemFS === 'function') {
+                    window.__alloStemFS(deck);
+                    return;
+                  }
+                  var active = document.fullscreenElement || document.webkitFullscreenElement;
+                  if (active) {
+                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                    if (exit) exit.call(document);
+                  } else {
+                    var enter = deck.requestFullscreen || deck.webkitRequestFullscreen;
+                    if (enter) enter.call(deck);
+                  }
+                },
+                'aria-label': t('stem.migration.aria_flight_fullscreen', 'Toggle fullscreen for the 3D migration flight deck')
+              }, t('stem.migration.fullscreen_label', 'Fullscreen'))
+            ),
+            motionReduced && h('p', { className: 'migration-motion-note', role: 'note', 'data-flight-motion-note': 'true' }, t('stem.migration.motion_reduced_help', 'Reduce motion is enabled on this device. Flight stays still; camera controls and Step wingbeat respond to your input.')),
             h('label', { className: 'migration-flight-control' },
               h('span', null, t('stem.migration.focus_species_label', 'Focus species')),
               h('select', {
                 value: species.id,
                 'aria-label': t('stem.migration.aria_flight_species', '3D migration focus species'),
                 onChange: function(event) {
+                  endStudyDrag(null, false);
                   var nextId = event.target.value;
-                  updMulti({ flightSpecies: nextId, selectedSpecies: nextId });
+                  var nextSpeciesData = { flightSpecies: nextId, selectedSpecies: nextId };
+                  if (d.selectedSpecies !== nextId) {
+                    _rtAIRequestRef.current.active = null;
+                    nextSpeciesData.aiExplorerText = '';
+                    nextSpeciesData.aiExplorerLoading = false;
+                    nextSpeciesData.aiExplorerReqId = null;
+                  }
+                  updMulti(nextSpeciesData);
                   if (announceToSR) announceToSR(findMigrationSpecies(nextId).name + ' selected for the 3D flight');
                 }
               },
@@ -3216,8 +7953,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 step: 1,
                 value: flightWind,
                 'aria-label': t('stem.migration.aria_route_wind', 'Along-route wind in meters per second. Negative is headwind and positive is tailwind.'),
+                'aria-valuetext': Math.abs(flightWind) + ' ' + t('stem.migration.wind_meters_per_second', 'meters per second') + ' ' + (flightWind < 0 ? t('stem.migration.headwind_word', 'headwind') : flightWind > 0 ? t('stem.migration.tailwind_word', 'tailwind') : t('stem.migration.calm_word', 'calm')),
                 onChange: function(event) { upd('flightWind', parseInt(event.target.value, 10)); }
-              })
+              }),
+              h('span', { className: 'migration-wind-caption' },
+                h('span', null, t('stem.migration.wind_headwind_end', '\u2212 Headwind')),
+                h('span', null, t('stem.migration.wind_tailwind_end', '+ Tailwind'))
+              )
             ),
             h('label', { className: 'migration-flight-control' },
               h('span', null, t('stem.migration.season_and_direction', 'Season and direction')),
@@ -3236,7 +7978,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 [
                   { id: 'chase', label: t('stem.migration.cam_chase', 'Chase') },
                   { id: 'aerial', label: t('stem.migration.cam_aerial', 'Aerial') },
-                  { id: 'side', label: t('stem.migration.cam_side', 'Side') }
+                  { id: 'side', label: t('stem.migration.cam_side', 'Side') },
+                  { id: 'study', label: t('stem.migration.cam_study', 'Study') }
                 ].map(function(view) {
                   return h('button', {
                     key: view.id,
@@ -3246,6 +7989,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   }, view.label);
                 })
               )
+            ),
+            renderStudyControls(),
+            h('fieldset', { className: 'migration-flight-layers' },
+              h('legend', null, t('stem.migration.observation_layers', 'Observation layers')),
+              h('label', { className: 'migration-layer-toggle' },
+                h('input', { type: 'checkbox', checked: showAirflow, onChange: function(event) { upd('flightShowAirflow', event.target.checked); } }),
+                h('span', null, t('stem.migration.show_wingtip_airflow', 'Show wingtip airflow'))
+              ),
+              h('label', { className: 'migration-layer-toggle' },
+                h('input', { type: 'checkbox', checked: showSpeedVectors, 'aria-describedby': showSpeedVectors ? 'migration-speed-vector-note' : undefined, onChange: function(event) { upd('flightShowSpeedVectors', event.target.checked); } }),
+                h('span', null, t('stem.migration.show_speed_vectors', 'Show speed vectors'))
+              ),
+              showSpeedVectors && h('p', { id: 'migration-speed-vector-note', 'data-speed-vector-note': 'true' },
+                cameraMode === 'study'
+                  ? t('stem.migration.speed_vectors_study_hidden', 'Speed vectors are hidden in Study. Use Chase, Aerial, or Side to compare speeds.')
+                  : t('stem.migration.speed_vectors_scope', '3D arrow lengths share one scale in mph. Side view makes lengths easier to compare. They show along-route speeds, not crosswind or compass directions. Wind is rounded to one decimal; ground speed is rounded to whole mph.') + (speedValues.headwindStops
+                    ? ' ' + t('stem.migration.speed_vectors_zero_limit', 'This headwind exceeds airspeed. The teaching model holds ground speed at zero rather than showing backward travel.') : '')
+              ),
+              h('label', { className: 'migration-layer-toggle' },
+                h('input', { type: 'checkbox', checked: d.flightShowRoute !== false, onChange: function(event) { upd('flightShowRoute', event.target.checked); } }),
+                h('span', null, t('stem.migration.show_route_corridor', 'Show route corridor'))
+              ),
+              h('label', { className: 'migration-layer-toggle' },
+                h('input', { type: 'checkbox', checked: d.flightShowAnatomy === true, onChange: function(event) { upd('flightShowAnatomy', event.target.checked); } }),
+                h('span', null, t('stem.migration.show_bird_anatomy', 'Show bird anatomy'))
+              ),
+              h('p', null, species.id === 'monarch' && (showAirflow || d.flightShowAnatomy)
+                ? t('stem.migration.bird_layers_monarch_scope', 'Bird wing airflow and feather anatomy are hidden for Monarchs.')
+                : d.flightShowAnatomy
+                  ? t('stem.migration.anatomy_study_pick_hint', 'Select a numbered marker in the scene, or use the buttons below, to observe that region. Drag between markers to orbit the model.')
+                  : t('stem.migration.airflow_observe_hint', 'Use Study or Aerial to inspect the wings and the space behind them.')),
+              cameraMode === 'study' && species.id !== 'monarch' && d.flightShowAnatomy === true && h('p', { role: 'status', 'data-study-anatomy-side': followedAnatomySide === 0 ? 'left' : 'right', 'data-study-anatomy-focus': studyRegion.id },
+                followedAnatomySide === 0 ? t('stem.migration.anatomy_side_left', 'Wing markers 2 and 3: individual’s left wing.') : t('stem.migration.anatomy_side_right', 'Wing markers 2 and 3: individual’s right wing.'),
+                ' ', t('stem.migration.anatomy_selected_outline', 'Highlighted outline') + ': ' + studyRegion.label + '. ',
+                t('stem.migration.anatomy_outline_context', 'Other outlines are softened. All four numbered markers remain available.')),
+              cameraMode === 'study' && species.id !== 'monarch' && h('ol', { className: 'migration-anatomy-key', 'aria-label': t('stem.migration.anatomy_key', 'Anatomy marker key') },
+                studyRegions.map(function(part, index) { return h('li', { key: part.id },
+                  h('button', {
+                    type: 'button', 'data-study-region': part.id, 'aria-pressed': studyRegion.id === part.id ? 'true' : 'false',
+                    'aria-label': t('stem.migration.observe_part', 'Observe') + ' ' + part.label,
+                    'aria-controls': 'migration-study-observation-part',
+                    onClick: function() { updMulti({ flightStudyRegion: part.id, flightShowAnatomy: true, flightStudyObservationOpen: true }); }
+                  }, h('span', { style: { background: part.color }, 'aria-hidden': 'true' }, index + 1), part.label)
+                ); })
+              ),
+              renderStudyObservation()
             ),
             h('div', { className: 'migration-flight-stat-grid', 'aria-label': t('stem.migration.aria_flight_metrics', 'Current flight metrics') },
               [
@@ -3264,33 +8053,927 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('strong', null, t('stem.migration.monarch_relay_heading', 'Monarch relay migration: ')),
               t('stem.migration.monarch_relay_note', 'The fall super generation reaches central Mexico in one journey. Spring return unfolds across multiple generations, so the simulation uses a swarm rather than bird-style drafting.')
             ),
-            h('div', { className: 'migration-flight-actions' },
-              h('button', { type: 'button', onClick: toggleFlightPause, 'aria-pressed': d.flightPaused ? 'true' : 'false' }, d.flightPaused ? t('stem.migration.resume_flight', 'Resume flight') : t('stem.migration.pause_flight', 'Pause flight')),
-              h('button', {
-                type: 'button',
-                onClick: function() {
-                  var deck = document.getElementById('migration-flight-deck');
-                  if (!deck) return;
-                  if (typeof window.__alloStemFS === 'function') {
-                    window.__alloStemFS(deck);
-                    return;
-                  }
-                  var active = document.fullscreenElement || document.webkitFullscreenElement;
-                  if (active) {
-                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
-                    if (exit) exit.call(document);
-                  } else {
-                    var enter = deck.requestFullscreen || deck.webkitRequestFullscreen;
-                    if (enter) enter.call(deck);
-                  }
-                },
-                'aria-label': t('stem.migration.aria_flight_fullscreen', 'Toggle fullscreen for the 3D migration flight deck')
-              }, t('stem.migration.fullscreen_label', 'Fullscreen'))
+            h('div', { className: 'migration-flight-keys', 'aria-label': t('stem.migration.camera_shortcuts', 'Camera keyboard shortcuts') },
+              [
+                { key: '1', label: t('stem.migration.cam_chase', 'Chase') },
+                { key: '2', label: t('stem.migration.cam_aerial', 'Aerial') },
+                { key: '3', label: t('stem.migration.cam_side', 'Side') },
+                { key: '4', label: t('stem.migration.cam_study', 'Study') },
+                { key: t('stem.migration.space_key', 'Space'), label: t('stem.migration.pause_key_label', 'Pause / resume') }
+              ].map(function(shortcut) { return h('span', { key: shortcut.key }, h('kbd', null, shortcut.key), ' ', shortcut.label); })
             ),
-            h('p', { role: 'note' }, direction + '. ' + species.funFact)
+            h('p', { className: 'migration-flight-keys-note' }, t('stem.migration.scene_shortcut_hint', 'Focus the scene to use shortcuts. Motion follows your device preferences.')),
+            h('p', { role: 'note' }, direction + '. ' + species.funFact),
+            h('details', { className: 'migration-flight-model-note' },
+              h('summary', null, t('stem.migration.read_scene_model', 'How to read this model')),
+              h('p', null, t('stem.migration.scene_scale_note', 'The landscape and flight height are illustrative. Route distance and typical altitude are species reference values.')),
+              h('p', null, t('stem.migration.scene_anatomy_note', 'Anatomical shapes and wingbeats are stylized for observation and comparison. They are not measured anatomical reconstructions or wingbeat rates.')),
+              h('p', null, t('stem.migration.scene_airflow_note', 'Airflow paths show the idea of wingtip wakes and outside upwash. Real benefits depend on spacing and wingbeat timing; this scene does not calculate those forces.')),
+              h('p', null, formationMode !== 'natural' && resolvedFormation !== migrNaturalFlightFormation(species.id)
+                ? t('stem.migration.experimental_pattern_note', 'This pattern is an exploratory choice for this species. The displayed drafting credit is a fixed model assumption.')
+                : t('stem.migration.fixed_credit_note', 'The displayed drafting credit is a fixed model assumption for comparisons.')),
+              h('a', { href: 'https://www.nature.com/articles/nature12939', target: '_blank', rel: 'noopener noreferrer' }, t('stem.migration.formation_research_link', 'Read the ibis formation study'))
+            )
           )
         );
       }
+      function currentFlightChallengeInspection(request) {
+        var owner = _flightChallengeReflectionOwnerRef.current;
+        var host = _f3dHostRef.current, live = _liveVals.current, engine = _f3dEngineRef.current;
+        if (!request || !owner || owner.inspection !== request || owner.tab !== 'flight3d' || live.tab !== 'flight3d' ||
+            owner.panel !== request.panel || !owner.panel || !owner.panel.isConnected || owner.goalId !== request.goalId ||
+            owner.sequence !== request.sequence || !owner.attempts[request.index] ||
+            migrFlightChallengeAttemptIdentity(owner.attempts[request.index]) !== request.attemptSignature ||
+            !host || !host.isConnected || host !== request.host) return null;
+        var deck = host.closest('.migration-flight-deck'), workspace = deck && deck.closest('.migration-flight-workspace');
+        if (!workspace || owner.panel.closest('.migration-flight-workspace') !== workspace) return null;
+        var snapshot = request.snapshot, values = owner.flightValues;
+        var same = values.speciesId === snapshot.speciesId && values.season === snapshot.season &&
+          values.wind === snapshot.wind && values.formationMode === snapshot.formationMode &&
+          live.flightSpecies === snapshot.speciesId && live.flightSeason === snapshot.season &&
+          live.flightWind === snapshot.wind && live.flightFormation === snapshot.formationMode &&
+          owner.view.flightPaused && live.flightPaused && owner.view.flightShowSpeedVectors && live.flightShowSpeedVectors &&
+          owner.view.flightCamera === 'chase' && live.flightCamera === 'chase';
+        var ready = same && engine && engine.host === host && !engine.disposed && !engine.contextLost &&
+          host.getAttribute('data-flight-ready') === 'true' && host.getAttribute('data-flight-error') !== 'true' &&
+          engine.speciesId === snapshot.speciesId && engine.formationMode === snapshot.formationMode && engine.season === snapshot.season;
+        return { owner: owner, host: host, deck: deck, engine: ready ? engine : null,
+          state: !same ? 'changed' : ready && engine.challengeInspectionFrame === request ? 'ready' : 'pending' };
+      }
+
+      function selectedFlightChallengeInspection() {
+        var request = flightChallengeInspectionState[0];
+        if (!request) return null;
+        var saved = migrReadFlightChallenges(d.flightChallenges), work = saved.work[request.goalId];
+        if (saved.selectedId !== request.goalId || !work || JSON.stringify(work.attempts) !== request.sequence ||
+            !work.attempts[request.index] || migrFlightChallengeAttemptIdentity(work.attempts[request.index]) !== request.attemptSignature) return null;
+        return request;
+      }
+
+      function renderFlightChallengeInspection() {
+        var request = selectedFlightChallengeInspection();
+        if (!request) return null;
+        var title = request.goalId === 'wind' ? t('stem.migration.mission_wind_title', 'Recover forward progress') : request.goalId === 'formation'
+          ? t('stem.migration.mission_formation_title', 'Find a drafting advantage') : t('stem.migration.mission_season_title', 'Reverse the seasonal journey');
+        var label = title + ' · ' + t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (request.index + 1) + ' · ' +
+          (request.source === 'baseline' ? t('stem.migration.mission_inspection_start', 'Starting flight') : t('stem.migration.mission_inspection_saved', 'Saved attempt'));
+        return h(MigrationChallengeInspectionReadout, { React: React,
+          getHost: function() { return _f3dHostRef.current; },
+          readContext: function() { var context = currentFlightChallengeInspection(request); return context ? context.state : null; },
+          renderContext: function(state) {
+            if (!state) return null;
+            var navigation = { node: null, request: request };
+            return h('div', { className: 'migration-challenge-inspection', 'data-flight-challenge-inspection': '',
+              'data-inspection-state': state, 'data-inspection-goal': request.goalId,
+              'data-inspection-attempt': request.index + 1, 'data-inspection-source': request.source },
+              h('div', { role: 'status', 'aria-live': 'polite' },
+                h('strong', null, label),
+                h('p', null, state === 'ready'
+                  ? t('stem.migration.mission_inspection_ready', 'Recorded conditions restored in a paused illustrative view with speed vectors. The original animation frame was not recorded.')
+                  : state === 'changed' ? t('stem.migration.mission_inspection_changed', 'Flight controls changed. This scene no longer matches the selected inspection. Inspect the saved flight again to restore its recorded conditions.')
+                  : t('stem.migration.mission_inspection_pending', 'Waiting for the recorded conditions to appear in the 3D scene. Your saved work is unchanged.'))
+              ),
+              h('button', { type: 'button', 'data-flight-challenge-return': '',
+                ref: function(node) {
+                  if (node) { navigation.node = node; _flightChallengeInspectionReturnRef.current = navigation; }
+                  else if (_flightChallengeInspectionReturnRef.current === navigation) _flightChallengeInspectionReturnRef.current = null;
+                },
+                onClick: function(event) {
+                  var action = event && event.currentTarget;
+                  function returnToReflection() {
+                    var context = currentFlightChallengeInspection(request);
+                    if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action ||
+                        !action || !action.isConnected || action.closest('.migration-flight-deck') !== context.deck ||
+                        context.deck.querySelector('[data-flight-challenge-return]') !== action) return;
+                    var owner = context.owner, row = owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"]');
+                    var disclosure = row && row.querySelector('[data-flight-challenge-reflection]');
+                    var target = owner.editor && owner.editor.index === request.index ? row.querySelector('[data-flight-reflection-input]') :
+                      row && row.querySelector('[data-flight-reflection-action="edit"]');
+                    if (target && (target.disabled || target.hidden)) target = disclosure && disclosure.querySelector('summary');
+                    if (!target || !target.isConnected || !disclosure) return;
+                    owner.panel.open = true;
+                    var history = owner.panel.querySelector('[data-flight-challenge-history]');
+                    if (history) history.open = true;
+                    disclosure.open = true;
+                    target.focus({ preventScroll: true });
+                    if (document.activeElement === target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+                  }
+                  var context = currentFlightChallengeInspection(request);
+                  if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action || !action || !action.isConnected) return;
+                  var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+                  if (fullscreen && fullscreen === context.deck && !fullscreen.contains(context.owner.panel)) {
+                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                    if (exit) { try { var pending = exit.call(document); if (pending && pending.then) pending.then(returnToReflection, function() {}); else window.setTimeout(returnToReflection, 0); } catch (ignore) {} }
+                    return;
+                  }
+                  if (context.deck.getAttribute('data-allo-fullscreen-active') === 'true' && typeof window.__alloStemFS === 'function') window.__alloStemFS(context.deck);
+                  returnToReflection();
+                }
+              }, t('stem.migration.mission_inspection_return', 'Return to this reflection'))
+            );
+          }
+        });
+      }
+
+      function renderFlightChallenges() {
+        var challenges = migrReadFlightChallenges(d.flightChallenges);
+        var goal = MIGR_FLIGHT_GOALS.filter(function(item) { return item.id === challenges.selectedId; })[0];
+        var work = challenges.work[goal.id];
+        var live = migrFlightInvestigationSnapshot(d);
+        var result = migrCheckFlightGoal(goal, work.setup, live);
+        var goalIndex = MIGR_FLIGHT_GOALS.indexOf(goal) + 1;
+        // Progress is derived from retained work, never from a grade for prose.
+        function evidenceProgress(item, saved) {
+          var latestMatch = -1;
+          var evidence = false;
+          saved.attempts.forEach(function(attempt, index) {
+            if (migrCheckFlightGoal(item, attempt.baseline, attempt.snapshot).met) {
+              latestMatch = index;
+              if (attempt.notes.trim() || (attempt.reflection || '').trim()) evidence = true;
+            }
+          });
+          var steps = [
+            { id: 'prediction', label: t('stem.migration.mission_progress_prediction', 'Prediction recorded'), recorded: !!saved.prediction.trim() || saved.attempts.some(function(attempt) { return !!attempt.prediction.trim(); }) },
+            { id: 'attempt', label: t('stem.migration.mission_progress_attempt', 'Attempt saved'), recorded: saved.attempts.length > 0 },
+            { id: 'model', label: t('stem.migration.mission_progress_model', 'Model condition met'), recorded: latestMatch >= 0 },
+            { id: 'evidence', label: t('stem.migration.mission_progress_evidence', 'Evidence recorded'), recorded: evidence }
+          ];
+          return { steps: steps, count: steps.filter(function(step) { return step.recorded; }).length, latestMatch: latestMatch };
+        }
+        var progress = evidenceProgress(goal, work);
+        var reflectionSequence = JSON.stringify(work.attempts);
+        var reflectionDraft = flightChallengeReflectionState[0];
+        var reflectionEditing = reflectionDraft && reflectionDraft.goalId === goal.id && reflectionDraft.sequence === reflectionSequence &&
+          work.attempts[reflectionDraft.index] && migrFlightChallengeAttemptIdentity(work.attempts[reflectionDraft.index]) === reflectionDraft.attemptSignature ? reflectionDraft : null;
+        // Only the callback ref publishes this render. Abandoned renders and
+        // detached handlers cannot acquire authority to write learner work.
+        var reflectionCommit = { panel: null, goalId: goal.id, sequence: reflectionSequence, attempts: work.attempts,
+          challenges: challenges, draft: reflectionDraft, editor: reflectionEditing, locked: false,
+          inspection: flightChallengeInspectionState[0], flightValues: flightValues,
+          view: { flightCamera: _liveVals.current.flightCamera, flightPaused: !!d.flightPaused,
+            flightShowSpeedVectors: d.flightShowSpeedVectors === true }, tab: tab };
+        function reflectionOwner(event, index, action, editor) {
+          var owner = _flightChallengeReflectionOwnerRef.current;
+          var node = event && event.currentTarget;
+          if (owner !== reflectionCommit || owner.locked || !owner.panel || !owner.panel.isConnected || !node || !node.isConnected || !owner.panel.contains(node)) return null;
+          var selector = index < 0 ? '[data-flight-reflection-action="cancel-stale"]' :
+            '[data-flight-challenge-attempt="' + (index + 1) + '"] ' + (action === 'input' ? '[data-flight-reflection-input]' : '[data-flight-reflection-action="' + action + '"]');
+          if (owner.panel.querySelector(selector) !== node) return null;
+          if (editor && (owner.editor !== editor || editor.goalId !== owner.goalId || editor.sequence !== owner.sequence ||
+              !owner.attempts[index] || editor.attemptSignature !== migrFlightChallengeAttemptIdentity(owner.attempts[index]))) return null;
+          return owner;
+        }
+        function reflectionFocus(owner, index, attemptSignature, fallback) {
+          _flightChallengeReflectionFocusRef.current = { panel: owner.panel, goalId: owner.goalId, index: index, attemptSignature: attemptSignature, fallback: !!fallback };
+        }
+        function beginReflection(event, index) {
+          var owner = reflectionOwner(event, index, 'edit');
+          if (!owner || owner.draft || !owner.attempts[index]) return;
+          var attempt = owner.attempts[index];
+          flightChallengeReflectionState[1]({ goalId: owner.goalId, index: index, sequence: owner.sequence,
+            attemptSignature: migrFlightChallengeAttemptIdentity(attempt), token: {}, text: attempt.reflection || '' });
+        }
+        function saveReflection(event, index) {
+          var owner = reflectionOwner(event, index, 'save', reflectionEditing);
+          if (!owner || !reflectionEditing || owner.editor !== reflectionEditing) return;
+          var attempt = owner.attempts[index];
+          var value = reflectionEditing.text.slice(0, 2000);
+          if (value.trim() ? value === (attempt.reflection || '') : !attempt.reflection) return;
+          var rows = owner.attempts.slice();
+          rows[index] = Object.assign({}, attempt);
+          if (value.trim()) rows[index].reflection = value;
+          else delete rows[index].reflection;
+          var nextGoals = Object.assign({}, owner.challenges.work);
+          nextGoals[owner.goalId] = Object.assign({}, owner.challenges.work[owner.goalId], { attempts: rows });
+          var next = Object.assign({}, owner.challenges, { work: nextGoals });
+          delete next.repaired;
+          owner.locked = true;
+          reflectionFocus(owner, index, reflectionEditing.attemptSignature);
+          flightChallengeReflectionState[1](null);
+          upd('flightChallenges', next);
+          announce(t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1) + '. ' +
+            (value.trim() ? t('stem.migration.mission_reflection_saved_announcement', 'Later reflection saved. Original flight and explanation remain as recorded. Your reflection is ungraded.') :
+              t('stem.migration.mission_reflection_cleared_announcement', 'Later reflection cleared. Original flight and explanation remain as recorded.')));
+        }
+        function cancelReflection(event, index, stale) {
+          var owner = reflectionOwner(event, stale ? -1 : index, stale ? 'cancel-stale' : 'cancel', stale ? null : reflectionEditing);
+          if (!owner || !owner.draft || (stale ? owner.editor : owner.editor !== reflectionEditing)) return;
+          owner.locked = true;
+          reflectionFocus(owner, index, owner.draft.attemptSignature, stale);
+          flightChallengeReflectionState[1](null);
+          announce(t('stem.migration.mission_reflection_cancelled', 'Unsaved reflection closed. Saved work is unchanged.'));
+        }
+        function renderReflection(attempt, index) {
+          var editing = reflectionEditing && reflectionEditing.index === index ? reflectionEditing : null;
+          var inputId = 'migration-mission-reflection-' + goal.id + '-' + (index + 1);
+          var helpId = inputId + '-help';
+          var canSave = editing && (editing.text.trim() ? editing.text !== (attempt.reflection || '') : !!attempt.reflection);
+          return h('details', { className: 'migration-mission-reflection', 'data-flight-challenge-reflection': index + 1 },
+            h('summary', null, t('stem.migration.mission_reflection_title', 'Later reflection')),
+            h('div', { className: 'migration-mission-reflection-body' },
+              h('p', { id: helpId }, t('stem.migration.mission_reflection_help', 'Use this attempt’s saved measurements or route changes to explain what you notice and a limitation of the model. A later reflection keeps your original prediction and explanation as recorded; it is ungraded.')),
+              h('p', { 'data-flight-reflection-saved': index + 1 }, attempt.reflection || t('stem.migration.mission_reflection_empty', 'No later reflection is saved yet.')),
+              h('button', { type: 'button', 'data-flight-reflection-action': 'edit', hidden: !!editing, disabled: !!reflectionDraft,
+                'aria-describedby': helpId, onClick: function(event) { beginReflection(event, index); } },
+                attempt.reflection ? t('stem.migration.mission_reflection_edit', 'Edit reflection') : t('stem.migration.mission_reflection_add', 'Add reflection')),
+              editing && h('div', { className: 'migration-mission-reflection-editor' },
+                h('label', { htmlFor: inputId }, t('stem.migration.mission_reflection_label', 'My later reflection')),
+                h('textarea', { id: inputId, rows: 4, maxLength: 2000, autoFocus: true, value: editing.text,
+                  'data-flight-reflection-input': index + 1, 'aria-label': t('stem.migration.mission_reflection_label', 'My later reflection') + ' · ' + t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1), 'aria-describedby': helpId,
+                  placeholder: t('stem.migration.mission_reflection_placeholder', 'What does this saved flight support, and what can this model not tell me?'),
+                  onChange: function(event) {
+                    if (!reflectionOwner(event, index, 'input', editing)) return;
+                    flightChallengeReflectionState[1](Object.assign({}, editing, { text: event.target.value.slice(0, 2000) }));
+                  }
+                }),
+                h('div', { className: 'migration-mission-reflection-actions' },
+                  h('button', { type: 'button', 'data-flight-reflection-action': 'save', disabled: !canSave, onClick: function(event) { saveReflection(event, index); } }, t('stem.migration.mission_reflection_save', 'Save reflection')),
+                  h('button', { type: 'button', 'data-flight-reflection-action': 'cancel', onClick: function(event) { cancelReflection(event, index, false); } }, t('stem.migration.mission_reflection_cancel', 'Cancel'))
+                ),
+                h('p', { className: 'migration-mission-reflection-draft-note' }, t('stem.migration.mission_reflection_draft_note', 'This draft is not saved yet. Finish or cancel it before editing another attempt.'))
+              )
+            )
+          );
+        }
+        function title(id) {
+          if (id === 'wind') return t('stem.migration.mission_wind_title', 'Recover forward progress');
+          if (id === 'formation') return t('stem.migration.mission_formation_title', 'Find a drafting advantage');
+          return t('stem.migration.mission_season_title', 'Reverse the seasonal journey');
+        }
+        function target(id) {
+          if (id === 'wind') return t('stem.migration.mission_wind_target', 'A Monarch starts at 0 mph over ground in a strong headwind. Reach at least 20 mph by changing only along-route wind.');
+          if (id === 'formation') return t('stem.migration.mission_formation_target', 'A Canada Goose starts solo in calm air. Reach at least 20% modeled drafting credit by changing only flight pattern. Keep ground speed the same.');
+          return t('stem.migration.mission_season_target', 'A Canada Goose starts on its fall route. Reverse the journey toward its breeding range by changing only season. Keep species, wind, and flight pattern the same.');
+        }
+        function hint(id) {
+          if (id === 'wind') return t('stem.migration.mission_wind_hint', 'Watch ground speed and movement past the landscape. The species airspeed stays fixed in this model.');
+          if (id === 'formation') return t('stem.migration.mission_formation_hint', 'Try the Aerial camera and wingtip airflow. Compare drafting credit with ground speed; the model treats them separately.');
+          return t('stem.migration.mission_season_hint', 'Read the route card in the scene. Which endpoint becomes the destination? This corridor illustrates direction rather than geographic position.');
+        }
+        function feedback(check) {
+          if (check.status === 'pending') return t('stem.migration.mission_pending', 'Write a prediction, then load the starting flight. Your other investigations stay saved.');
+          if (check.met) return t('stem.migration.mission_met_feedback', 'The current flight meets the model target. Save an attempt and explain the evidence; this check does not assess your explanation.');
+          if (check.status === 'confounded') return t('stem.migration.mission_confounded', 'More than the target condition changed. Load the starting flight again, then change only the control named in the goal.');
+          if (check.status === 'unchanged') return t('stem.migration.mission_unchanged', 'The starting conditions are unchanged. Adjust the named flight control above, then check again.');
+          return t('stem.migration.mission_not_yet', 'Only the target condition changed, but the model target is not met yet. Use the current measurements to decide your next adjustment.');
+        }
+        function outcome(check) {
+          return check.met ? t('stem.migration.mission_met', 'Model condition met') : t('stem.migration.mission_not_met', 'Model condition not met');
+        }
+        function announce(message) { if (announceToSR) announceToSR(message); }
+        function saveChallenge(patch) {
+          var next = Object.assign({}, challenges, patch);
+          delete next.repaired;
+          return next;
+        }
+        function nextWork(patch) {
+          var next = Object.assign({}, challenges.work);
+          next[goal.id] = Object.assign({}, work, patch);
+          return next;
+        }
+        function saveWork(patch) { upd('flightChallenges', saveChallenge({ work: nextWork(patch) })); }
+        function route(snapshot) {
+          var species = findMigrationSpecies(snapshot.speciesId);
+          return snapshot.season === 'spring' ? species.winterRange + ' \u2192 ' + species.breedingRange : species.breedingRange + ' \u2192 ' + species.winterRange;
+        }
+        function conditions(snapshot) {
+          return findMigrationSpecies(snapshot.speciesId).name + ' \u00b7 ' + (snapshot.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall')) + ' \u00b7 ' + migrFormationLabel(snapshot.formation, t) + ' \u00b7 ' + (snapshot.wind > 0 ? '+' : '') + snapshot.wind + ' ' + t('stem.migration.experiment_wind_unit', 'm/s wind');
+        }
+        function changeText(baseline, snapshot, checked) {
+          if (!checked.changed.length) return t('stem.migration.mission_review_no_change', 'No effective condition changed');
+          return checked.changed.map(function(key) {
+            if (key === 'speciesId') return t('stem.migration.experiment_condition_species', 'Species') + ': ' + findMigrationSpecies(baseline.speciesId).name + ' → ' + findMigrationSpecies(snapshot.speciesId).name;
+            if (key === 'season') return t('stem.migration.experiment_condition_season', 'Season') + ': ' + (baseline.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall')) + ' → ' + (snapshot.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall'));
+            if (key === 'wind') return t('stem.migration.experiment_condition_wind', 'Wind') + ': ' + (baseline.wind > 0 ? '+' : '') + baseline.wind + ' → ' + (snapshot.wind > 0 ? '+' : '') + snapshot.wind + ' m/s';
+            return t('stem.migration.mission_review_pattern', 'Pattern') + ': ' + migrFormationLabel(baseline.formation, t) + ' → ' + migrFormationLabel(snapshot.formation, t);
+          }).join('; ');
+        }
+        function comparisonTable() {
+          return h('div', { className: 'migration-mission-review-scroll', role: 'region', 'aria-label': t('stem.migration.mission_review_region', 'Saved challenge attempt comparisons'), tabIndex: 0 },
+            h('table', { className: 'migration-mission-review' },
+              h('caption', null, t('stem.migration.mission_review_caption', 'Saved flight comparisons'), h('span', null, t('stem.migration.mission_review_arrows', 'Each arrow compares that attempt’s starting flight with its recorded result.'))),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col' }, t('stem.migration.mission_attempt_word', 'Attempt')),
+                h('th', { scope: 'col' }, t('stem.migration.mission_review_changes', 'Effective control changes')),
+                h('th', { scope: 'col' }, t('stem.migration.stat_ground_speed', 'Ground speed') + ' (mph)'),
+                h('th', { scope: 'col' }, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit') + ' (%)'),
+                h('th', { scope: 'col' }, t('stem.migration.mission_review_result', 'Model check & evidence'))
+              )),
+              h('tbody', null, work.attempts.map(function(attempt, index) {
+                var checked = migrCheckFlightGoal(goal, attempt.baseline, attempt.snapshot);
+                return h('tr', { key: index, 'data-flight-challenge-review': index + 1, 'data-latest-model-match': index === progress.latestMatch ? 'true' : 'false' },
+                  h('th', { scope: 'row' }, t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1), index === progress.latestMatch && h('small', { className: 'migration-mission-review-match' }, t('stem.migration.mission_review_latest_match', 'Latest model match'))),
+                  h('td', null, changeText(attempt.baseline, attempt.snapshot, checked)),
+                  h('td', null, attempt.baseline.groundSpeed + ' → ' + attempt.snapshot.groundSpeed),
+                  h('td', null, attempt.baseline.benefit + ' → ' + attempt.snapshot.benefit),
+                  h('td', null, h('strong', null, checked.status === 'confounded' ? t('stem.migration.experiment_confounded_badge', 'Other conditions changed') : checked.status === 'unchanged' ? t('stem.migration.experiment_unchanged_badge', 'Unchanged conditions') : outcome(checked)), h('small', null, attempt.notes.trim() ? t('stem.migration.mission_review_explanation_saved', 'Explanation recorded · ungraded') : (attempt.reflection || '').trim() ? t('stem.migration.mission_review_reflection_saved', 'Reflection recorded · ungraded') : t('stem.migration.mission_review_explanation_missing', 'Explanation not recorded')))
+                );
+              }))
+            )
+          );
+        }
+        function measurements(baseline, snapshot) {
+          return h('div', { className: 'migration-mission-measurements' },
+            h('div', null, h('span', null, t('stem.migration.stat_ground_speed', 'Ground speed')), h('strong', null, baseline.groundSpeed + ' \u2192 ' + snapshot.groundSpeed + ' ' + t('stem.migration.mph_unit', 'mph'))),
+            h('div', null, h('span', null, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit')), h('strong', null, baseline.benefit + '% \u2192 ' + snapshot.benefit + '%'))
+          );
+        }
+        return h('details', { id: 'migration-flight-challenges', className: 'migration-missions', 'data-migration-flight-challenges': 'true',
+          ref: function(node) {
+            if (node) { reflectionCommit.panel = node; _flightChallengeReflectionOwnerRef.current = reflectionCommit; }
+            else if (_flightChallengeReflectionOwnerRef.current === reflectionCommit) _flightChallengeReflectionOwnerRef.current = null;
+          } },
+          h('summary', null,
+            h('span', { className: 'migration-missions-summary-title' }, t('stem.migration.mission_summary', 'Flight challenges')),
+            h('span', { className: 'migration-missions-summary-count' }, t('stem.migration.mission_three_goals', '3 goals to investigate'))
+          ),
+          h('div', { className: 'migration-missions-body' },
+            h('p', { className: 'migration-missions-intro' }, t('stem.migration.mission_intro', 'Solve a flight problem with the real controls. Predict, test, and explain. Each challenge keeps its own work and up to four attempts.')),
+            challenges.repaired && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_recovered', 'Some saved challenge data could not be read. Readable predictions, explanations, and attempts are still available.')),
+            h('div', { className: 'migration-mission-goals', role: 'group', 'aria-label': t('stem.migration.mission_choose', 'Choose a flight challenge') }, MIGR_FLIGHT_GOALS.map(function(item, index) {
+              var itemProgress = evidenceProgress(item, challenges.work[item.id]);
+              return h('button', { key: item.id, type: 'button', 'data-flight-challenge': item.id, 'data-evidence-steps': itemProgress.count, 'aria-pressed': item.id === goal.id ? 'true' : 'false', onClick: function() { upd('flightChallenges', saveChallenge({ selectedId: item.id })); } },
+                h('span', { className: 'migration-mission-number', 'aria-hidden': 'true' }, '0' + (index + 1)),
+                h('span', null, title(item.id)),
+                h('small', null, itemProgress.count + '/4 ' + t('stem.migration.mission_progress_steps', 'evidence steps') + ' · ' + challenges.work[item.id].attempts.length + '/4 ' + t('stem.migration.mission_attempts_short', 'attempts'))
+              );
+            })),
+            h('section', { className: 'migration-mission-active', 'aria-labelledby': 'migration-mission-active-title' },
+              h('div', { className: 'migration-mission-brief' },
+                h('p', { className: 'migration-experiment-eyebrow' }, t('stem.migration.mission_goal_label', 'Challenge') + ' ' + goalIndex + ' / 3'),
+                h('h3', { id: 'migration-mission-active-title' }, title(goal.id)),
+                h('p', null, target(goal.id)),
+                h('p', { className: 'migration-mission-hint' }, hint(goal.id))
+              ),
+              h('div', { className: 'migration-mission-progress-block' },
+                h('ol', { className: 'migration-mission-progress', 'aria-label': t('stem.migration.mission_progress_label', 'Flight challenge evidence progress'), 'data-flight-challenge-progress': 'true' }, progress.steps.map(function(step, index) {
+                  return h('li', { key: step.id, 'data-mission-progress-step': step.id, 'data-recorded': step.recorded ? 'true' : 'false' },
+                    h('span', { className: 'migration-mission-progress-mark', 'aria-hidden': 'true' }, step.recorded ? '✓' : index + 1),
+                    h('span', null, step.label, h('small', null, step.recorded ? t('stem.migration.mission_progress_recorded', 'Recorded') : t('stem.migration.mission_progress_needed', 'Not yet recorded')))
+                  );
+                })),
+                h('p', { className: 'migration-mission-progress-help' }, t('stem.migration.mission_progress_reflection_help', 'Prediction includes saved attempts. Evidence is an explanation or later reflection saved with a model-matching attempt; its quality is not graded.'))
+              ),
+              h('div', { className: 'migration-mission-writing' },
+                h('label', { htmlFor: 'migration-mission-prediction' },
+                  h('span', null, t('stem.migration.mission_prediction_label', 'My prediction: which control will I change, and why?')),
+                  h('textarea', { id: 'migration-mission-prediction', rows: 2, maxLength: 1000, value: work.prediction, 'aria-label': t('stem.migration.mission_prediction_aria', 'Flight challenge prediction'), onChange: function(event) { saveWork({ prediction: event.target.value.slice(0, 1000) }); } })
+                ),
+                h('label', { htmlFor: 'migration-mission-notes' },
+                  h('span', null, t('stem.migration.mission_notes_label', 'My explanation: what numbers or route changes support my claim?')),
+                  h('textarea', { id: 'migration-mission-notes', rows: 2, maxLength: 2000, value: work.notes, 'aria-label': t('stem.migration.mission_notes_aria', 'Flight challenge explanation'), onChange: function(event) { saveWork({ notes: event.target.value.slice(0, 2000) }); } })
+                )
+              ),
+              h('div', { className: 'migration-mission-actions' },
+                h('button', { type: 'button', 'data-flight-challenge-action': 'load', disabled: !work.prediction.trim(), onClick: function() {
+                  if (!work.prediction.trim()) return;
+                  var setup = migrFlightGoalStart(goal);
+                  updMulti({ flightSpecies: setup.speciesId, flightSeason: setup.season, flightWind: setup.wind, flightFormation: setup.formationMode, flightChallenges: saveChallenge({ work: nextWork({ setup: setup }) }) });
+                  announce(t('stem.migration.mission_loaded', 'Starting flight loaded. Change only the named control. Earlier attempts and other investigations are still saved.'));
+                } }, t('stem.migration.mission_load', 'Load starting flight')),
+                h('a', { href: '#migration-flight-deck' }, t('stem.migration.mission_controls_link', 'Adjust flight controls') + ' \u2191'),
+                h('button', { type: 'button', 'data-flight-challenge-action': 'check', disabled: !work.setup || !work.prediction.trim() || work.attempts.length >= 4, onClick: function() {
+                  if (!work.setup || !work.prediction.trim() || work.attempts.length >= 4) return;
+                  saveWork({ attempts: work.attempts.concat([{ baseline: work.setup, snapshot: live, prediction: work.prediction, notes: work.notes }]) });
+                  announce(t('stem.migration.mission_attempt_saved', 'Attempt saved') + '. ' + outcome(result) + '. ' + t('stem.migration.mission_explanation_ungraded', 'Your explanation is saved as evidence, without an automatic grade.'));
+                } }, t('stem.migration.mission_check', 'Check & save attempt'))
+              ),
+              h('p', { className: 'migration-mission-load-note' }, t('stem.migration.mission_load_note', 'Load starting flight changes species, season, wind, and flight pattern. Choosing a challenge changes no flight controls. Your open investigation and camera stay saved.')),
+              h('div', { className: 'migration-mission-feedback', 'data-flight-challenge-feedback': 'true', 'data-model-condition': work.setup ? result.met ? 'met' : 'not-met' : 'pending', role: 'status', 'aria-live': 'polite' },
+                h('strong', null, !work.setup ? t('stem.migration.mission_start_needed', 'Starting flight needed') : outcome(result)),
+                h('p', null, feedback(result)),
+                work.setup && measurements(work.setup, live),
+                work.setup && h('p', { className: 'migration-mission-conditions' }, t('stem.migration.mission_current_conditions', 'Current conditions') + ': ' + conditions(live)),
+                work.setup && goal.id === 'season' && h('div', { className: 'migration-mission-route' },
+                  h('p', null, h('b', null, t('stem.migration.mission_start_route', 'Starting route') + ': '), route(work.setup)),
+                  h('p', null, h('b', null, t('stem.migration.mission_current_route', 'Current route') + ': '), route(live))
+                )
+              ),
+              work.attempts.length >= 4 && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_history_reflection_full', 'Four attempts are saved for this goal. You can still add a later reflection to any saved attempt. Remove an attempt only to make room for another flight; nothing is replaced automatically.')),
+              reflectionDraft && !reflectionEditing && h('div', { className: 'migration-mission-reflection-stale', 'data-flight-reflection-stale': '', role: 'group', 'aria-label': t('stem.migration.mission_reflection_stale_label', 'Unsaved reflection from another saved context') },
+                h('p', { role: 'status' }, t('stem.migration.mission_reflection_stale_help', 'The saved attempts or selected challenge changed. Your unsaved reflection is kept below. Return to the same saved context to continue, or copy your words and close this draft before editing another attempt.')),
+                h('label', { htmlFor: 'migration-mission-reflection-stale' }, t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection')),
+                h('textarea', { id: 'migration-mission-reflection-stale', rows: 4, readOnly: true, value: reflectionDraft.text, 'aria-label': t('stem.migration.mission_reflection_stale_input', 'My unsaved reflection') }),
+                h('button', { type: 'button', 'data-flight-reflection-action': 'cancel-stale', onClick: function(event) { cancelReflection(event, reflectionDraft.index, true); } }, t('stem.migration.mission_reflection_stale_close', 'Close unsaved draft'))
+              ),
+              work.attempts.length > 0 && h('details', { className: 'migration-mission-history', 'data-flight-challenge-history': 'true' },
+                h('summary', null, t('stem.migration.mission_saved_attempts', 'Saved attempts') + ' ' + work.attempts.length + '/4'),
+                comparisonTable(),
+                work.attempts.map(function(attempt, index) {
+                  var checked = migrCheckFlightGoal(goal, attempt.baseline, attempt.snapshot);
+                  var attemptLabel = t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1);
+                  return h('article', { key: index, className: 'migration-mission-attempt', 'data-flight-challenge-attempt': index + 1, 'data-model-condition': checked.met ? 'met' : 'not-met' },
+                    h('div', { className: 'migration-mission-attempt-heading' }, h('h4', null, attemptLabel), h('strong', null, outcome(checked))),
+                    measurements(attempt.baseline, attempt.snapshot),
+                    h('p', null, t('stem.migration.mission_start_conditions', 'Starting conditions') + ': ' + conditions(attempt.baseline)),
+                    h('p', null, t('stem.migration.mission_recorded_conditions', 'Recorded conditions') + ': ' + conditions(attempt.snapshot)),
+                    goal.id === 'season' && h('p', null, route(attempt.baseline) + ' / ' + route(attempt.snapshot)),
+                    h('p', null, h('b', null, t('stem.migration.mission_recorded_prediction', 'Prediction when checked') + ': '), attempt.prediction),
+                    h('p', { className: 'migration-mission-explanation' }, h('b', null, t('stem.migration.mission_recorded_explanation', 'Explanation when checked') + ': '), attempt.notes.trim() ? attempt.notes : t('stem.migration.mission_no_explanation_reflect', 'No explanation was recorded when checked. Use Later reflection below to add your reasoning to this saved flight.')),
+                    h('div', { className: 'migration-mission-inspect-actions' },
+                      ['baseline', 'snapshot'].map(function(source) {
+                        return h('button', { key: source, type: 'button', 'data-flight-challenge-inspect': source,
+                          'aria-label': (source === 'baseline' ? t('stem.migration.mission_inspect_start', 'Inspect starting flight') : t('stem.migration.mission_inspect_saved', 'Inspect saved attempt')) + ' · ' + attemptLabel,
+                          onClick: function(event) {
+                            var owner = _flightChallengeReflectionOwnerRef.current, action = event && event.currentTarget;
+                            var host = _f3dHostRef.current, deck = host && host.isConnected && host.closest('.migration-flight-deck');
+                            var workspace = deck && deck.closest('.migration-flight-workspace');
+                            if (owner !== reflectionCommit || owner.locked || !action || !action.isConnected || !owner.panel || !owner.panel.isConnected ||
+                                !workspace || owner.panel.closest('.migration-flight-workspace') !== workspace || _liveVals.current.tab !== 'flight3d' ||
+                                owner.panel.querySelector('[data-flight-challenge-attempt="' + (index + 1) + '"] [data-flight-challenge-inspect="' + source + '"]') !== action ||
+                                owner.goalId !== goal.id || owner.sequence !== reflectionSequence || !owner.attempts[index] ||
+                                migrFlightChallengeAttemptIdentity(owner.attempts[index]) !== migrFlightChallengeAttemptIdentity(attempt)) return;
+                            var snapshot = migrReadFlightInvestigationSnapshot(owner.attempts[index][source]);
+                            if (!snapshot) return;
+                            var request = { panel: owner.panel, host: host, goalId: owner.goalId, sequence: owner.sequence, index: index,
+                              attemptSignature: migrFlightChallengeAttemptIdentity(owner.attempts[index]), source: source, snapshot: snapshot,
+                              serial: ++_flightChallengeInspectionSerialRef.current };
+                            cancelMigrationStudyPreview(); clearMigrationMarkedReturnIntent();
+                            _f3dStudyRevisitRef.current = null;
+                            flightTrialRevisitStatus[1](null);
+                            flightChallengeInspectionState[1](request);
+                            var values = { flightSpecies: snapshot.speciesId, flightSeason: snapshot.season, flightWind: snapshot.wind,
+                              flightFormation: snapshot.formationMode, flightCamera: 'chase', flightPaused: true, flightShowSpeedVectors: true };
+                            Object.keys(values).forEach(function(key) { _liveVals.current[key] = values[key]; });
+                            _liveVals.current.flightSpeedValues = migrFlightSpeedValues(snapshot.speciesId, snapshot.wind);
+                            updMulti(values);
+                            announce(attemptLabel + '. ' + t('stem.migration.mission_inspection_requested', 'Inspection requested. Saved predictions, explanations, and reflection drafts are unchanged.'));
+                            if (host.isConnected && host.focus) { host.focus({ preventScroll: true }); if (host.scrollIntoView) host.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+                          }
+                        }, source === 'baseline' ? t('stem.migration.mission_inspect_start', 'Inspect starting flight') : t('stem.migration.mission_inspect_saved', 'Inspect saved attempt'));
+                      })
+                    ),
+                    renderReflection(attempt, index),
+                    h('button', { type: 'button', className: 'migration-mission-remove', 'aria-label': t('stem.migration.mission_remove_attempt', 'Remove challenge attempt') + ' ' + (index + 1), onClick: function() {
+                      saveWork({ attempts: work.attempts.filter(function(row, rowIndex) { return rowIndex !== index; }) });
+                      announce(attemptLabel + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
+                      setTimeout(function() {
+                        var panel = document.getElementById('migration-flight-challenges');
+                        if (!panel || !panel.querySelectorAll) return;
+                        var buttons = panel.querySelectorAll('[data-flight-challenge-attempt] .migration-mission-remove');
+                        var target = buttons[Math.min(index, buttons.length - 1)] || panel.querySelector('[data-flight-challenge-action="check"]');
+                        if (target && target.disabled) target = panel.querySelector('#migration-mission-prediction');
+                        if (target && target.focus) target.focus();
+                      }, 0);
+                    } }, t('stem.migration.experiment_remove', 'Remove'))
+                  );
+                })
+              ),
+              h('p', { className: 'migration-mission-model-note', role: 'note' }, t('stem.migration.mission_model_scope', 'These goals test the flight deck’s teaching model. Fixed species airspeed, schematic routes, and assumed drafting credit cannot establish how a real individual would complete a migration. Use your explanation to describe that limit.'))
+            )
+          )
+        );
+      }
+
+
+      function revisitFlightTrial(trial, index, baseline) {
+        // The notebook reader has already discarded unreadable rows. Validate
+        // again at this explicit restore boundary before writing controls.
+        var snapshot = trial && migrReadFlightInvestigationSnapshot(baseline ? trial.baseline : trial.snapshot);
+        if (!snapshot || flightInvestigation.trials[index] !== trial) return;
+        flightChallengeInspectionState[1](null);
+        cancelMigrationStudyPreview();
+        clearMigrationMarkedReturnIntent();
+        _f3dStudyRevisitRef.current = null;
+        var values = {
+          flightSpecies: snapshot.speciesId, flightSeason: snapshot.season,
+          flightFormation: snapshot.formationMode, flightWind: snapshot.wind,
+          flightCamera: 'chase', flightPaused: true, flightShowSpeedVectors: true
+        };
+        Object.keys(values).forEach(function(key) { _liveVals.current[key] = values[key]; });
+        _liveVals.current.flightSpeedValues = migrFlightSpeedValues(snapshot.speciesId, snapshot.wind);
+        var message = (baseline ? t('stem.migration.experiment_revisited_trial_baseline', 'Revisited baseline for trial') : t('stem.migration.experiment_revisited_trial', 'Revisited trial')) + ' ' + (index + 1) + '. ' +
+          t('stem.migration.experiment_revisit_paused', 'Paused flight view with speed vectors. The original animation frame was not recorded.') + ' ' +
+          t('stem.migration.experiment_revisit_saved_controls', 'Reviewing the controls saved with') + ' ' + t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (index + 1) + '.';
+        flightTrialRevisitStatus[1]({ index: index, trial: JSON.stringify(trial), values: values, message: message, baseline: !!baseline });
+        updMulti(values);
+        if (announceToSR) announceToSR(message);
+        var stage = document.getElementById('migration-flight-stage');
+        if (stage && stage.focus) stage.focus();
+      }
+
+      function currentFlightTrialReview() {
+        var revisit = flightTrialRevisitStatus[0];
+        var trial = revisit && flightInvestigation.trials[revisit.index];
+        if (!trial || JSON.stringify(trial) !== revisit.trial) return null;
+        function matches(snapshot) {
+          return ['speciesId', 'season', 'wind', 'formationMode'].every(function(key) { return flightValues[key] === snapshot[key]; });
+        }
+        var baselineMatches = matches(trial.baseline), trialMatches = matches(trial.snapshot);
+        var active = baselineMatches && trialMatches ? revisit.baseline ? 'baseline' : 'trial' : baselineMatches ? 'baseline' : trialMatches ? 'trial' : '';
+        return { trial: trial, index: revisit.index, active: active };
+      }
+
+      function focusFlightInvestigationEvidence() {
+        var field = document.getElementById('migration-experiment-evidence');
+        if (!field) return;
+        function focusField() {
+          field.focus();
+          if (field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }
+        var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        if (fullscreen && !fullscreen.contains(field)) {
+          var exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) {
+            try {
+              var pending = exit.call(document);
+              if (pending && pending.then) pending.then(focusField, function() {});
+              else window.setTimeout(focusField, 0);
+            } catch (error) {}
+          }
+          return;
+        }
+        var deck = document.getElementById('migration-flight-deck');
+        if (deck && deck.getAttribute('data-allo-fullscreen-active') === 'true' && typeof window.__alloStemFS === 'function') window.__alloStemFS(deck);
+        focusField();
+      }
+
+      function renderFlightTrialReview() {
+        var review = currentFlightTrialReview();
+        if (!review) return null;
+        var trial = review.trial;
+        var title = t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (review.index + 1);
+        // Assess this recorded pair, independently of today's baseline or live
+        // controls. A numerical change alone cannot isolate its cause.
+        var comparison = migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable);
+        var testedVariable = trial.variable === 'formation' ? t('stem.migration.experiment_formation', 'Formation') : t('stem.migration.experiment_wind', 'Wind');
+        var comparisonLabel = comparison.status === 'controlled'
+          ? t('stem.migration.experiment_controlled_badge', 'Controlled comparison')
+          : comparison.status === 'confounded'
+            ? t('stem.migration.experiment_confounded_badge', 'Other conditions changed')
+            : t('stem.migration.experiment_unchanged_badge', 'Unchanged conditions');
+        function changedConditionName(key) {
+          if (key === 'speciesId') return t('stem.migration.experiment_condition_species', 'Species');
+          if (key === 'season') return t('stem.migration.experiment_condition_season', 'Season');
+          if (key === 'wind') return t('stem.migration.experiment_condition_wind', 'Wind');
+          return t('stem.migration.mission_review_pattern', 'Pattern');
+        }
+        function signed(value) { return (value > 0 ? '+' : '') + value; }
+        function flightCard(snapshot, label) {
+          var species = findMigrationSpecies(snapshot.speciesId);
+          var metrics = [
+            [t('stem.migration.experiment_wind', 'Wind'), signed(snapshot.wind) + ' ' + t('stem.migration.experiment_wind_unit', 'm/s wind')],
+            [t('stem.migration.mission_review_pattern', 'Pattern'), (snapshot.formationMode === 'natural' ? t('stem.migration.pair_review_natural', 'Natural') + ' · ' : '') + migrFormationLabel(snapshot.formation, t)],
+            [t('stem.migration.stat_ground_speed', 'Ground speed'), snapshot.groundSpeed + ' ' + t('stem.migration.mph_unit', 'mph')],
+            [t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit'), snapshot.benefit + '%']
+          ];
+          return h('section', { className: 'migration-pair-review-card', 'aria-label': label },
+            h('h4', null, label),
+            h('p', null, species.name + ' · ' + (snapshot.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall'))),
+            h('dl', null, metrics.map(function(metric, index) { return h('div', { key: index }, h('dt', null, metric[0]), h('dd', null, metric[1])); }))
+          );
+        }
+        return h('section', { id: 'migration-flight-trial-review', className: 'migration-pair-review',
+          ref: function(node) { _flightTrialEvidenceReviewRef.current.panel = node; }, 'data-experiment-pair-review': '', 'data-review-trial': review.index + 1, 'data-review-active': review.active, 'aria-label': t('stem.migration.pair_review_label', 'Saved trial review') },
+          h('div', { className: 'migration-pair-review-heading' },
+            h('h3', null, t('stem.migration.pair_review_heading', 'Review') + ' ' + title),
+            h('button', { type: 'button', 'data-pair-review': 'close', onClick: function() {
+              flightTrialRevisitStatus[1](null);
+              var stage = document.getElementById('migration-flight-stage');
+              if (stage && stage.focus) stage.focus();
+            } }, t('stem.migration.pair_review_close', 'Close saved trial review'))
+          ),
+          h('p', { className: 'migration-pair-review-state', role: 'status', 'aria-live': 'polite', 'data-pair-review-state': '' },
+            review.active === 'baseline' ? t('stem.migration.pair_review_showing_baseline', 'Showing saved baseline conditions.') :
+              review.active === 'trial' ? t('stem.migration.pair_review_showing_trial', 'Showing saved trial conditions.') :
+                t('stem.migration.pair_review_conditions_changed', 'Current conditions differ from this saved pair.')),
+          h('div', { className: 'migration-pair-review-actions', role: 'group', 'aria-label': t('stem.migration.pair_review_choose', 'Choose a saved flight') },
+            h('button', { type: 'button', 'data-pair-review': 'baseline', 'aria-pressed': review.active === 'baseline' ? 'true' : 'false', onClick: function() { revisitFlightTrial(trial, review.index, true); } }, t('stem.migration.pair_review_baseline', 'Saved baseline')),
+            h('button', { type: 'button', 'data-pair-review': 'trial', 'aria-pressed': review.active === 'trial' ? 'true' : 'false', onClick: function() { revisitFlightTrial(trial, review.index, false); } }, t('stem.migration.pair_review_trial', 'Saved trial')),
+            h('button', { type: 'button', 'data-pair-review': 'evidence', onClick: focusFlightInvestigationEvidence }, t('stem.migration.pair_review_evidence', 'Add evidence'))
+          ),
+          h('div', { className: 'migration-pair-review-comparison', role: 'note',
+            'aria-label': t('stem.migration.pair_review_comparison', 'Saved pair model comparison'),
+            'data-pair-review-comparison': comparison.status, 'data-pair-review-variable': trial.variable },
+            h('p', { className: 'migration-pair-review-comparison-heading' },
+              h('strong', null, t('stem.migration.variable_tested', 'Variable tested') + ': ' + testedVariable),
+              h('span', { 'data-pair-comparison-status': '' }, comparisonLabel)),
+            h('p', { 'data-pair-changed-conditions': comparison.changed.join(',') },
+              comparison.changed.length
+                ? t('stem.migration.experiment_changed_conditions', 'Changed conditions') + ': ' + comparison.changed.map(changedConditionName).join(', ')
+                : t('stem.migration.mission_review_no_change', 'No effective condition changed')),
+            h('p', { className: 'migration-pair-review-comparison-deltas' },
+              h('span', { 'data-pair-speed-delta': comparison.groundSpeedDelta }, t('stem.migration.experiment_speed_change', 'Ground speed change') + ': ' + signed(comparison.groundSpeedDelta) + ' ' + t('stem.migration.mph_unit', 'mph')),
+              h('span', { 'data-pair-drafting-delta': comparison.benefitDelta }, t('stem.migration.experiment_benefit_change', 'Drafting credit change') + ': ' + signed(comparison.benefitDelta) + ' ' + t('stem.migration.experiment_percentage_points', 'percentage points'))),
+            comparison.status !== 'unchanged' && h('p', { className: 'migration-pair-review-comparison-scope' }, comparison.status === 'confounded'
+              ? t('stem.migration.pair_review_confounded_scope', 'This pair cannot isolate the tested condition.')
+              : t('stem.migration.pair_review_controlled_scope', 'Only the tested condition changed in this saved model pair.'))
+          ),
+          h('details', { className: 'migration-pair-review-prediction' },
+            h('summary', null, t('stem.migration.experiment_prediction_saved', 'Prediction when recorded')),
+            h('p', null, trial.prediction.trim() ? trial.prediction : t('stem.migration.pair_review_no_prediction', 'No prediction was recorded with this trial.'))
+          ),
+          h('div', { className: 'migration-pair-review-flights' }, flightCard(trial.baseline, t('stem.migration.pair_review_baseline', 'Saved baseline')), flightCard(trial.snapshot, t('stem.migration.pair_review_trial', 'Saved trial'))),
+          h('p', { className: 'migration-pair-review-help' }, t('stem.migration.pair_review_help', 'Compare the saved flights, then add what you notice to your existing evidence. These controls restore a paused illustrative view; they do not replay the original animation frame. Your prediction and explanation are ungraded.'))
+        );
+      }
+
+      function renderFlightInvestigation() {
+        var study = flightInvestigation;
+        var selectedReview = currentFlightTrialReview();
+        var live = migrFlightInvestigationSnapshot(d);
+        var comparison = migrCompareFlightInvestigation(study.baseline, live, study.variable);
+        var variableLabel = study.variable === 'wind' ? t('stem.migration.experiment_wind', 'Wind') : t('stem.migration.experiment_formation', 'Formation');
+
+        function saveStudy(patch) {
+          var next = Object.assign({}, study, patch);
+          delete next.repaired;
+          upd('flightInvestigation', next);
+        }
+        function announce(message) { if (announceToSR) announceToSR(message); }
+        function currentFlightTrialRevisitMessage() {
+          var revisit = flightTrialRevisitStatus[0];
+          if (!revisit || !study.trials[revisit.index] || JSON.stringify(study.trials[revisit.index]) !== revisit.trial) return '';
+          var values = revisit.values;
+          if (live.speciesId !== values.flightSpecies || live.season !== values.flightSeason || live.formationMode !== values.flightFormation || live.wind !== values.flightWind ||
+              _liveVals.current.flightCamera !== values.flightCamera || !d.flightPaused || d.flightShowSpeedVectors !== true) return '';
+          return revisit.message;
+        }
+        function signed(value) { return (value > 0 ? '+' : '') + value; }
+        function speciesName(snapshot) { return findMigrationSpecies(snapshot.speciesId).name; }
+        function seasonName(snapshot) { return snapshot.season === 'spring' ? t('stem.migration.experiment_spring', 'Spring') : t('stem.migration.experiment_fall', 'Fall'); }
+        function conditionName(key) {
+          if (key === 'speciesId') return t('stem.migration.experiment_condition_species', 'species');
+          if (key === 'season') return t('stem.migration.experiment_condition_season', 'season');
+          if (key === 'wind') return t('stem.migration.experiment_condition_wind', 'wind');
+          return t('stem.migration.experiment_condition_formation', 'formation');
+        }
+        function statusLabel(status) {
+          if (status === 'controlled') return t('stem.migration.experiment_controlled_badge', 'Controlled comparison');
+          if (status === 'confounded') return t('stem.migration.experiment_confounded_badge', 'Other conditions changed');
+          if (status === 'unchanged') return t('stem.migration.experiment_unchanged_badge', 'Unchanged conditions');
+          return t('stem.migration.experiment_pending_badge', 'Baseline needed');
+        }
+        function feedback(result) {
+          if (result.status === 'controlled') return t('stem.migration.experiment_controlled_feedback', 'Only your chosen variable changed. Use the result as evidence for this model, then consider what a real flight might add.');
+          if (result.status === 'confounded') return t('stem.migration.experiment_confounded_feedback', 'Another flight condition changed, so this trial cannot isolate your chosen variable. Restore the baseline, then change only the variable you chose.');
+          if (result.status === 'unchanged') return t('stem.migration.experiment_unchanged_feedback', 'The effective flight conditions are unchanged. Change your chosen variable in the flight controls above, then record a trial.');
+          return t('stem.migration.experiment_pending_feedback', 'Write a prediction and capture the current flight as your baseline. Then change one flight control above.');
+        }
+        function notebookEscape(value) {
+          return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+        function notebookCsvCell(value) {
+          var text = String(value == null ? '' : value);
+          // A quoted CSV cell can still execute as a spreadsheet formula.
+          // Preserve signed NUMBERS; neutralize formula-like text, including
+          // the learner's predictions and notes and translated column labels.
+          if (typeof value !== 'number' && (/^[=+\-@\t\r]/.test(text) || /^\s+[=+\-@]/.test(text))) text = "'" + text;
+          return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+        }
+        var flightModelNote = t('stem.migration.experiment_model_note', 'Teaching model: wind changes ground speed while species airspeed stays fixed. Drafting credit is a simplified drag estimate; it does not increase airspeed here. Monarchs receive no drafting credit. Real flights also vary with gusts, altitude, fatigue, and flock position.');
+        var notebookColumns = [
+          { key: 'trial', label: t('stem.migration.experiment_trial_word', 'Trial') },
+          { key: 'role', label: t('stem.migration.notebook_snapshot', 'Snapshot') },
+          { key: 'variable', label: t('stem.migration.variable_tested', 'Variable tested') },
+          { key: 'speciesId', label: t('stem.migration.notebook_species_id', 'Species ID') },
+          { key: 'species', label: t('stem.migration.experiment_condition_species', 'Species') },
+          { key: 'season', label: t('stem.migration.experiment_condition_season', 'Season') },
+          { key: 'wind', label: t('stem.migration.experiment_wind', 'Wind') + ' (m/s)' },
+          { key: 'formationMode', label: t('stem.migration.notebook_pattern_choice', 'Pattern choice') },
+          { key: 'formation', label: t('stem.migration.notebook_effective_pattern', 'Effective pattern') },
+          { key: 'groundSpeed', label: t('stem.migration.stat_ground_speed', 'Ground speed') + ' (mph)' },
+          { key: 'benefit', label: t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit') + ' (%)' },
+          { key: 'comparison', label: t('stem.migration.notebook_comparison', 'Comparison') },
+          { key: 'prediction', label: t('stem.migration.experiment_prediction_saved', 'Prediction when recorded') }
+        ];
+        function notebookRows() {
+          var rows = [];
+          function append(snapshot, trial, role, variable, comparisonLabel, prediction) {
+            rows.push({ trial: trial, role: role, variable: variable, speciesId: snapshot ? snapshot.speciesId : '', species: snapshot ? speciesName(snapshot) : '', season: snapshot ? snapshot.season : '', wind: snapshot ? snapshot.wind : '', formationMode: snapshot ? snapshot.formationMode : '', formation: snapshot ? snapshot.formation : '', groundSpeed: snapshot ? snapshot.groundSpeed : '', benefit: snapshot ? snapshot.benefit : '', comparison: comparisonLabel, prediction: prediction });
+          }
+          if (study.baseline) append(study.baseline, '', t('stem.migration.notebook_current_baseline', 'Current baseline'), study.variable, '', study.prediction);
+          study.trials.forEach(function(trial, index) {
+            var comparisonLabel = statusLabel(migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable).status);
+            append(trial.baseline, index + 1, t('stem.migration.experiment_baseline_heading', 'Baseline'), trial.variable, comparisonLabel, trial.prediction);
+            append(trial.snapshot, index + 1, t('stem.migration.experiment_trial_word', 'Trial'), trial.variable, comparisonLabel, trial.prediction);
+          });
+          if (!rows.length) append(null, '', t('stem.migration.notebook_notes_only', 'Notes only'), study.variable, '', study.prediction);
+          return rows;
+        }
+        function saveNotebook(content, mime, extension) {
+          var link = null;
+          var url = null;
+          try {
+            var blob = new Blob([content], { type: mime });
+            url = URL.createObjectURL(blob);
+            link = document.createElement('a');
+            link.href = url;
+            link.download = 'migration-flight-investigation.' + extension;
+            document.body.appendChild(link);
+            link.click();
+            announce(t('stem.migration.flight_notebook_downloaded', 'Flight investigation downloaded'));
+          } catch (error) {
+            announce(t('stem.migration.download_failed', 'Download was blocked by this browser.'));
+            if (addToast) addToast(t('stem.migration.download_failed', 'Download was blocked by this browser.'), 'error');
+          } finally {
+            if (link && link.parentNode) link.parentNode.removeChild(link);
+            // Give browsers time to consume the URL before releasing it.
+            if (url) window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          }
+        }
+        function exportFlightCsv() {
+          var columns = notebookColumns.concat([
+            { key: 'currentPrediction', label: t('stem.migration.notebook_current_prediction', 'Current prediction') },
+            { key: 'evidence', label: t('stem.migration.experiment_evidence_label', 'Evidence I noticed') },
+            { key: 'explanation', label: t('stem.migration.explanation_heading', 'Explanation') },
+            { key: 'modelNote', label: t('stem.migration.model_note_heading', 'Model note') }
+          ]);
+          var lines = [columns.map(function(column) { return notebookCsvCell(column.label); }).join(',')];
+          notebookRows().forEach(function(row) {
+            row.currentPrediction = study.prediction;
+            row.evidence = study.evidence;
+            row.explanation = study.explanation;
+            row.modelNote = flightModelNote;
+            lines.push(columns.map(function(column) { return notebookCsvCell(row[column.key]); }).join(','));
+          });
+          saveNotebook('\uFEFF' + lines.join('\r\n'), 'text/csv;charset=utf-8', 'csv');
+        }
+        function exportFlightHtml() {
+          var rows = notebookRows().map(function(row) {
+            return '<tr>' + notebookColumns.map(function(column) { return '<td>' + notebookEscape(row[column.key]) + '</td>'; }).join('') + '</tr>';
+          }).join('\n');
+          var heading = t('stem.migration.flight_notebook_title', 'Migration flight investigation');
+          var content = [
+            '<!doctype html><html lang="' + notebookEscape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
+            '<title>' + notebookEscape(heading) + '</title>',
+            '<style>body{font-family:system-ui,sans-serif;max-width:90rem;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#0f172a;background:#fff}h1{font-size:1.6rem}h2{font-size:1.1rem;margin-top:1.6rem}p,td{white-space:pre-wrap;overflow-wrap:anywhere}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem}th,td{border:1px solid #94a3b8;padding:.5rem;text-align:left;vertical-align:top}th{background:#e2e8f0}caption{text-align:left;font-weight:700;margin-bottom:.5rem}.note{color:#334155}@media print{body{max-width:none;margin:0}table{font-size:8pt}th,td{padding:.25rem}}</style></head><body>',
+            '<h1>' + notebookEscape(heading) + '</h1>',
+            '<h2>' + notebookEscape(t('stem.migration.notebook_current_prediction', 'Current prediction')) + '</h2><p>' + notebookEscape(study.prediction) + '</p>',
+            '<div class="table-wrap"><table><caption>' + notebookEscape(t('stem.migration.flight_notebook_caption', 'Current baseline and every saved baseline–trial pair. Comparisons use effective flight conditions.')) + '</caption>',
+            '<thead><tr>' + notebookColumns.map(function(column) { return '<th scope="col">' + notebookEscape(column.label) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>',
+            '<h2>' + notebookEscape(t('stem.migration.experiment_evidence_label', 'Evidence I noticed')) + '</h2><p>' + notebookEscape(study.evidence) + '</p>',
+            '<h2>' + notebookEscape(t('stem.migration.explanation_heading', 'Explanation')) + '</h2><p>' + notebookEscape(study.explanation) + '</p>',
+            '<h2>' + notebookEscape(t('stem.migration.model_note_heading', 'Model note')) + '</h2><p class="note">' + notebookEscape(flightModelNote) + '</p>',
+            '</body></html>'
+          ].join('\n');
+          saveNotebook(content, 'text/html;charset=utf-8', 'html');
+        }
+        function snapshotCard(snapshot, heading, isLive) {
+          return h('section', { className: 'migration-experiment-snapshot', 'aria-label': heading, 'data-experiment-snapshot': isLive ? 'live' : 'baseline' },
+            h('div', { className: 'migration-experiment-snapshot-heading' }, h('h4', null, heading), isLive && h('span', null, t('stem.migration.experiment_live', 'Live'))),
+            snapshot ? h('div', null,
+              h('p', { className: 'migration-experiment-species' }, speciesName(snapshot)),
+              h('p', { className: 'migration-experiment-conditions' }, seasonName(snapshot) + ' · ' + migrFormationLabel(snapshot.formation, t) + ' · ' + signed(snapshot.wind) + ' ' + t('stem.migration.experiment_wind_unit', 'm/s wind')),
+              h('dl', { className: 'migration-experiment-metrics' },
+                h('div', { className: 'migration-experiment-metric' }, h('dt', null, t('stem.migration.stat_ground_speed', 'Ground speed')), h('dd', null, snapshot.groundSpeed + ' ' + t('stem.migration.mph_unit', 'mph'))),
+                h('div', { className: 'migration-experiment-metric' }, h('dt', null, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit')), h('dd', null, snapshot.benefit + '%'))
+              )
+            ) : h('p', { className: 'migration-experiment-empty' }, t('stem.migration.experiment_baseline_empty', 'Your baseline will appear here when you capture it.'))
+          );
+        }
+
+        return h('section', { id: 'migration-flight-experiment', className: 'migration-experiment', 'data-migration-flight-investigation': 'true', 'aria-labelledby': 'migration-experiment-heading' },
+          h('header', { className: 'migration-experiment-header' },
+            h('div', null,
+              h('p', { className: 'migration-experiment-eyebrow' }, t('stem.migration.experiment_eyebrow', 'Flight investigation')),
+              h('h3', { id: 'migration-experiment-heading' }, t('stem.migration.experiment_title', 'One change. What happens?')),
+              h('p', null, t('stem.migration.experiment_intro', 'Make a prediction, capture a baseline, and compare a trial with your own evidence. Your observations stay saved as you explore.'))
+            ),
+            h('span', { className: 'migration-experiment-count' }, study.trials.length + '/6 ' + t('stem.migration.experiment_trials_saved', 'trials saved'))
+          ),
+          h('ol', { className: 'migration-experiment-steps', 'aria-label': t('stem.migration.experiment_steps', 'Flight investigation steps') },
+            h('li', { 'data-complete': study.prediction.trim() ? 'true' : 'false' }, h('b', null, '1'), h('span', null, t('stem.migration.experiment_step_predict', 'Choose & predict'))),
+            h('li', { 'data-complete': study.baseline ? 'true' : 'false' }, h('b', null, '2'), h('span', null, t('stem.migration.experiment_step_compare', 'Capture & change'))),
+            h('li', { 'data-complete': study.trials.length && study.evidence.trim() && study.explanation.trim() ? 'true' : 'false' }, h('b', null, '3'), h('span', null, t('stem.migration.experiment_step_explain', 'Record & explain')))
+          ),
+          study.repaired && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.experiment_recovered', 'Some saved observations could not be read. Your readable trials and notes are still available.')),
+          h('div', { className: 'migration-experiment-setup' },
+            h('fieldset', { className: 'migration-experiment-variable' },
+              h('legend', null, t('stem.migration.experiment_variable_label', 'Choose one variable to test')),
+              ['wind', 'formation'].map(function(variable) {
+                return h('button', { key: variable, type: 'button', 'data-experiment-variable': variable, 'aria-pressed': study.variable === variable ? 'true' : 'false', onClick: function() { saveStudy({ variable: variable }); } }, variable === 'wind' ? t('stem.migration.experiment_wind', 'Wind') : t('stem.migration.experiment_formation', 'Formation'));
+              }),
+              h('p', null, study.variable === 'wind' ? t('stem.migration.experiment_wind_instruction', 'Change Along-route wind. Keep species, season, and the effective flight pattern the same.') : t('stem.migration.experiment_formation_instruction', 'Change Flight pattern. Keep species, season, and wind the same. Natural and V can resolve to the same pattern.'))
+            ),
+            h('label', { className: 'migration-experiment-prediction', htmlFor: 'migration-experiment-prediction' },
+              h('span', null, t('stem.migration.experiment_prediction_label', 'What do you predict, and why?')),
+              h('textarea', { id: 'migration-experiment-prediction', rows: 3, maxLength: 1000, value: study.prediction, 'aria-label': t('stem.migration.experiment_prediction_aria', 'Flight investigation prediction'), placeholder: t('stem.migration.experiment_prediction_placeholder', 'If I change this condition, I think… because…'), onChange: function(event) { saveStudy({ prediction: event.target.value.slice(0, 1000) }); } })
+            )
+          ),
+          h('div', { className: 'migration-experiment-actions' },
+            h('button', { className: 'migration-experiment-button', type: 'button', disabled: !study.prediction.trim(), 'data-experiment-action': 'baseline', onClick: function() {
+              if (!study.prediction.trim()) return;
+              saveStudy({ baseline: live });
+              announce(t('stem.migration.experiment_baseline_captured', 'Baseline captured. Change only your chosen flight variable, then record a trial.'));
+            } }, study.baseline ? t('stem.migration.experiment_replace_baseline', 'Replace baseline') : t('stem.migration.experiment_capture_baseline', 'Capture baseline')),
+            h('button', { className: 'migration-experiment-button', type: 'button', disabled: !study.baseline || study.trials.length >= 6, 'data-experiment-action': 'record', onClick: function() {
+              if (!study.baseline || study.trials.length >= 6) return;
+              var trial = { id: study.trials.length + 1, variable: study.variable, prediction: study.prediction, baseline: study.baseline, snapshot: live };
+              saveStudy({ trials: study.trials.concat([trial]) });
+              announce(t('stem.migration.experiment_trial_recorded', 'Trial recorded') + '. ' + statusLabel(comparison.status) + '. ' + feedback(comparison));
+            } }, t('stem.migration.experiment_record_trial', 'Record trial')),
+            h('button', { className: 'migration-experiment-button migration-experiment-button-secondary', type: 'button', disabled: !study.baseline, 'data-experiment-action': 'restore', onClick: function() {
+              if (!study.baseline) return;
+              // Restoring a flight does not select a route or touch AI route facts,
+              // camera, motion preferences, inquiry work, or this evidence log.
+              updMulti({ flightSpecies: study.baseline.speciesId, flightFormation: study.baseline.formationMode, flightWind: study.baseline.wind, flightSeason: study.baseline.season });
+              announce(t('stem.migration.experiment_restored', 'Baseline flight controls restored. Your investigation notes and trials are still saved.'));
+            } }, t('stem.migration.experiment_restore_baseline', 'Restore baseline controls'))
+          ),
+          !study.prediction.trim() && h('p', { className: 'migration-experiment-help' }, t('stem.migration.experiment_prediction_first', 'Add a prediction to enable Capture baseline.')),
+          study.trials.length >= 6 && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.experiment_history_full', 'Six trials are saved. Remove a trial to make room; existing observations are never replaced automatically.')),
+          h('div', { className: 'migration-experiment-columns' }, snapshotCard(study.baseline, t('stem.migration.experiment_baseline_heading', 'Baseline'), false), snapshotCard(live, t('stem.migration.experiment_current_heading', 'Current flight'), true)),
+          h('div', { className: 'migration-experiment-feedback', 'data-experiment-comparison': 'true', 'data-comparison': comparison.status, role: 'status', 'aria-live': 'polite' },
+            h('strong', null, statusLabel(comparison.status)),
+            h('p', null, feedback(comparison)),
+            study.baseline && h('div', { className: 'migration-experiment-comparison' },
+              h('span', null, t('stem.migration.experiment_speed_change', 'Ground speed change') + ': ', h('b', null, signed(comparison.groundSpeedDelta) + ' ' + t('stem.migration.mph_unit', 'mph'))),
+              h('span', null, t('stem.migration.experiment_benefit_change', 'Drafting credit change') + ': ', h('b', null, signed(comparison.benefitDelta) + ' ' + t('stem.migration.experiment_percentage_points', 'percentage points')))
+            ),
+            comparison.changed.length > 0 && h('p', { className: 'migration-experiment-help' }, t('stem.migration.experiment_changed_conditions', 'Changed conditions') + ': ' + comparison.changed.map(conditionName).join(', '))
+          ),
+          study.trials.length > 0 && h('section', { className: 'migration-experiment-observations', 'aria-label': t('stem.migration.experiment_observations', 'Saved flight observations') },
+            h('h4', null, t('stem.migration.experiment_observations', 'Saved flight observations')),
+            h('p', { id: 'migration-experiment-revisit-help', className: 'migration-experiment-help' }, t('stem.migration.experiment_revisit_help', 'Revisit a trial and its paired baseline with speed vectors. Use each trial’s two saved flights to revisit its comparison; the comparison above uses your current baseline. Describe what changes in Evidence I noticed. Revisiting shows recorded conditions in a paused illustrative view; it does not replay the original animation frame.')),
+            h('p', { className: 'migration-experiment-help', 'data-experiment-revisit-status': '', role: 'status', 'aria-live': 'polite' }, currentFlightTrialRevisitMessage()),
+            h('div', { className: 'migration-experiment-history' }, study.trials.map(function(trial, index) {
+              var result = migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable);
+              var trialTitle = t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (index + 1);
+              return h('article', { key: index, className: 'migration-experiment-trial', 'data-experiment-trial': index + 1, 'data-comparison': result.status },
+                h('div', { className: 'migration-experiment-trial-heading' }, h('h5', null, trialTitle + ' · ' + (trial.variable === 'wind' ? t('stem.migration.experiment_wind', 'Wind') : t('stem.migration.experiment_formation', 'Formation'))), h('span', null, statusLabel(result.status))),
+                h('p', null, speciesName(trial.baseline) + ' → ' + speciesName(trial.snapshot) + ' · ' + seasonName(trial.baseline) + ' → ' + seasonName(trial.snapshot)),
+                h('p', null, t('stem.migration.experiment_wind', 'Wind') + ': ' + signed(trial.baseline.wind) + ' → ' + signed(trial.snapshot.wind) + ' ' + t('stem.migration.wind_meters_per_second', 'meters per second') + ' · ' + migrFormationLabel(trial.baseline.formation, t) + ' → ' + migrFormationLabel(trial.snapshot.formation, t)),
+                h('div', { className: 'migration-experiment-comparison' },
+                  h('span', null, t('stem.migration.stat_ground_speed', 'Ground speed') + ': ' + trial.baseline.groundSpeed + ' → ' + trial.snapshot.groundSpeed + ' ' + t('stem.migration.mph_unit', 'mph') + ' (' + signed(result.groundSpeedDelta) + ')'),
+                  h('span', null, t('stem.migration.experiment_drafting_credit', 'Modeled drafting credit') + ': ' + trial.baseline.benefit + '% → ' + trial.snapshot.benefit + '% (' + signed(result.benefitDelta) + ' ' + t('stem.migration.experiment_percentage_points', 'percentage points') + ')')
+                ),
+                trial.prediction && h('p', { className: 'migration-experiment-trial-prediction' }, t('stem.migration.experiment_prediction_saved', 'Prediction when recorded') + ': ' + trial.prediction),
+                h('div', { className: 'migration-experiment-trial-actions', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBlock: 10 } },
+                  h('button', { type: 'button', 'data-experiment-revisit-baseline': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, true); } }, t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1)),
+                  h('button', { type: 'button', 'data-experiment-revisit': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, false); } }, t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1))
+                ),
+                h('button', { className: 'migration-experiment-remove', type: 'button', 'aria-label': t('stem.migration.experiment_remove_trial', 'Remove trial') + ' ' + (index + 1), onClick: function() {
+                  saveStudy({ trials: study.trials.filter(function(row, rowIndex) { return rowIndex !== index; }) });
+                  announce(trialTitle + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
+                  window.setTimeout(function() {
+                    var notebook = document.getElementById('migration-flight-experiment');
+                    if (!notebook) return;
+                    var buttons = notebook.querySelectorAll('.migration-experiment-remove');
+                    var target = buttons[Math.min(index, buttons.length - 1)] || notebook.querySelector('[data-experiment-action="record"]');
+                    if (target && target.disabled) target = notebook.querySelector('#migration-experiment-prediction');
+                    if (target && target.focus) target.focus();
+                  }, 0);
+                } }, t('stem.migration.experiment_remove', 'Remove'))
+              );
+            }))
+          ),
+          h('div', { className: 'migration-experiment-notes' },
+            selectedReview && h('div', { className: 'migration-trial-evidence-context',
+              'data-trial-evidence-context': selectedReview.index + 1 },
+              h('strong', null, t('stem.migration.selected_saved_comparison', 'Selected saved comparison') + ': ' +
+                t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (selectedReview.index + 1) + ' · ' +
+                (selectedReview.trial.variable === 'formation' ? t('stem.migration.experiment_formation', 'Formation') : t('stem.migration.experiment_wind', 'Wind'))),
+              h('details', { 'data-trial-evidence-prediction': 'true' },
+                h('summary', null, t('stem.migration.experiment_prediction_saved', 'Prediction when recorded')),
+                h('p', null, selectedReview.trial.prediction.trim() ? selectedReview.trial.prediction :
+                  t('stem.migration.pair_review_no_prediction', 'No prediction was recorded with this trial.'))
+              ),
+              h('button', { type: 'button', className: 'migration-experiment-button',
+                ref: function(node) { _flightTrialEvidenceReviewRef.current.selected = node ? selectedReview : null; },
+                'data-experiment-action': 'inspect-saved-comparison',
+                'aria-controls': 'migration-flight-trial-review', 'aria-describedby': 'migration-trial-evidence-help',
+                onClick: function(event) {
+                  var owner = _flightTrialEvidenceReviewRef.current, action = event && event.currentTarget;
+                  var host = _f3dHostRef.current, deck = host && host.isConnected && host.closest('.migration-flight-deck');
+                  var workspace = deck && deck.closest('.migration-flight-workspace');
+                  var notebook = action && action.closest('[data-migration-flight-investigation]');
+                  var panel = deck && deck.querySelector('[id="migration-flight-trial-review"][data-experiment-pair-review]');
+                  var target = panel && panel.querySelector('button[data-pair-review="baseline"]');
+                  // Retained handlers cannot borrow a newer review, another
+                  // tool's deck, or a replacement panel. This only navigates.
+                  if (!selectedReview || owner.selected !== selectedReview || owner.panel !== panel || _liveVals.current.tab !== 'flight3d' ||
+                      !action || !action.isConnected || !workspace || !notebook ||
+                      action.closest('.migration-flight-workspace') !== workspace || notebook.closest('.migration-flight-workspace') !== workspace ||
+                      !panel || !panel.isConnected || panel.closest('.migration-flight-deck') !== deck ||
+                      panel.getAttribute('data-review-trial') !== String(selectedReview.index + 1) ||
+                      !target || !target.isConnected || target.disabled || target.matches(':disabled') || target.closest('[data-experiment-pair-review]') !== panel) {
+                    if (announceToSR) announceToSR(t('stem.migration.inspect_saved_comparison_unavailable', 'Saved trial comparison is unavailable. Revisit a recorded trial, then try again.'));
+                    return;
+                  }
+                  target.focus({ preventScroll: true });
+                  if (target.isConnected && document.activeElement === target && target.scrollIntoView) {
+                    target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+                  }
+                }
+              }, t('stem.migration.inspect_saved_comparison', 'Inspect saved trial comparison')),
+              h('small', { id: 'migration-trial-evidence-help' }, t('stem.migration.trial_evidence_scope', 'Compare your recorded prediction with your own evidence. Your prediction and explanation are ungraded.'))
+            ),
+            h('label', { htmlFor: 'migration-experiment-evidence' }, h('span', null, t('stem.migration.experiment_evidence_label', 'Evidence I noticed')), h('textarea', { id: 'migration-experiment-evidence', rows: 3, maxLength: 2000, value: study.evidence, 'aria-label': t('stem.migration.experiment_evidence_aria', 'Flight investigation evidence notes'), placeholder: t('stem.migration.experiment_evidence_placeholder', 'Use the saved numbers and describe a change you saw in the 3D scene.'), onChange: function(event) { saveStudy({ evidence: event.target.value.slice(0, 2000) }); } })),
+            h('label', { htmlFor: 'migration-experiment-explanation' }, h('span', null, t('stem.migration.experiment_explanation_label', 'How does the evidence support or challenge my prediction?')), h('textarea', { id: 'migration-experiment-explanation', rows: 3, maxLength: 2000, value: study.explanation, 'aria-label': t('stem.migration.experiment_explanation_aria', 'Flight investigation explanation'), placeholder: t('stem.migration.experiment_explanation_placeholder', 'My evidence suggests… A limitation of this model is…'), onChange: function(event) { saveStudy({ explanation: event.target.value.slice(0, 2000) }); } }))
+          ),
+          h('p', { className: 'migration-experiment-model-note', role: 'note' }, flightModelNote),
+          h('div', { className: 'migration-experiment-actions', 'data-flight-notebook-exports': 'true' },
+            h('button', { type: 'button', className: 'migration-experiment-button', 'data-experiment-action': 'export-html', onClick: exportFlightHtml }, t('stem.migration.flight_notebook_html', 'Download flight notebook (HTML)')),
+            h('button', { type: 'button', className: 'migration-experiment-button migration-experiment-button-secondary', 'data-experiment-action': 'export-csv', onClick: exportFlightCsv }, t('stem.migration.flight_notebook_csv', 'Download flight trials (CSV)'))
+          ),
+          h('div', { className: 'migration-experiment-reset' },
+            h('button', { type: 'button', 'data-experiment-action': 'reset', onClick: function() { upd('flightInvestigation', { variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' }); announce(t('stem.migration.experiment_reset_announcement', 'Flight investigation cleared. Flight settings and other activities are unchanged.')); } }, t('stem.migration.experiment_reset', 'Reset investigation')),
+            h('small', null, t('stem.migration.experiment_reset_hint', 'Clears this investigation’s prediction, baseline, six-trial log, and notes.'))
+          )
+        );
+      }
+
       function renderVFormation() {
         var canvasRef = _vfCanvasRef;
         var animRef = _vfAnimRef;
@@ -4754,7 +10437,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var selectedSpecies = d.selectedSpecies || null;
         var routeAnimProgress = d.routeAnimProgress || 0;
         var aiExplorerText = migrStr(d.aiExplorerText, '');
-        var aiExplorerLoading = d.aiExplorerLoading || false;
+        // A persisted loading flag is not a live request after a reload.
+        var activeRequest = _rtAIRequestRef.current.active;
+        var aiExplorerLoading = !!(activeRequest && activeRequest.species === selectedSpecies);
+
+        // Cards and the keyboard map are two ways to do the same work. Keep
+        // progress and request cancellation together, so changing species cannot
+        // leave facts (or a loading spinner) from the previous bird.
+        function selectRouteSpecies(id) {
+          var changed = selectedSpecies !== id;
+          if (changed) _rtAIRequestRef.current.active = null;
+          updMulti({
+            selectedSpecies: id, routeAnimProgress: 0,
+            aiExplorerText: changed ? '' : aiExplorerText,
+            aiExplorerLoading: changed ? false : aiExplorerLoading,
+            aiExplorerReqId: changed ? null : d.aiExplorerReqId,
+            routesPlanned: migrNum(d.routesPlanned, 0, 0, 1000000) + (changed ? 1 : 0)
+          });
+        }
 
         // Flyway colors
         var FLYWAY_COLORS = {
@@ -5426,19 +11126,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         function handleAIExplorer() {
-          if (!selectedSpecies || !callGemini || d.aiExplorerLoading) return; // prevent double-click
+          if (!selectedSpecies || !callGemini || _rtAIRequestRef.current.active) return;
           var sp = getSpeciesById(selectedSpecies);
-          var reqId = Date.now();
+          var reqId = ++_rtAIRequestRef.current.serial;
+          _rtAIRequestRef.current.active = { id: reqId, species: sp.id };
           updMulti({ aiExplorerLoading: true, aiExplorerReqId: reqId });
           var prompt = 'You are a wildlife biologist teaching grade ' + (gradeLevel || 5) + ' students. Tell me 3 fascinating facts about ' + sp.name + ' migration that most people don\'t know. Include one fact about their navigation, one about their physical adaptations, and one about conservation. Keep each fact to 1-2 sentences. Format as numbered list.';
-          callGemini(prompt).then(function(result) {
-            // Only update if this is still the latest request
-            if (d.aiExplorerReqId === reqId || !d.aiExplorerReqId) {
+          function isCurrentRequest() {
+            var active = _rtAIRequestRef.current.active;
+            return active && active.id === reqId && active.species === _liveVals.current.selectedSpecies;
+          }
+          function failed() {
+            if (!isCurrentRequest()) return;
+            _rtAIRequestRef.current.active = null;
+            updMulti({ aiExplorerText: t('stem.migration.ai_facts_failed', 'Could not load AI facts. Try again later.'), aiExplorerLoading: false });
+          }
+          var pending;
+          try { pending = callGemini(prompt); } catch (error) { failed(); return; }
+          Promise.resolve(pending).then(function(result) {
+            // Read a live token, not the render snapshot from before the request.
+            if (isCurrentRequest()) {
+              _rtAIRequestRef.current.active = null;
               updMulti({ aiExplorerText: result, aiExplorerLoading: false });
             }
-          }).catch(function() {
-            updMulti({ aiExplorerText: t('stem.migration.ai_facts_failed', 'Could not load AI facts. Try again later.'), aiExplorerLoading: false });
-          });
+          }).catch(failed);
         }
 
         return h('div', { className: 'space-y-3' },
@@ -5453,12 +11164,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 // Arrow keys to cycle species
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                   e.preventDefault();
-                  var idx = 0;
+                  var idx = -1;
                   for (var i = 0; i < SPECIES.length; i++) {
                     if (SPECIES[i].id === selectedSpecies) { idx = i; break; }
                   }
                   var next = (idx + 1) % SPECIES.length;
-                  updMulti({ selectedSpecies: SPECIES[next].id, aiExplorerText: '' });
+                  selectRouteSpecies(SPECIES[next].id);
                   if (announceToSR) announceToSR('Selected ' + SPECIES[next].name);
                 } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
                   e.preventDefault();
@@ -5467,7 +11178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     if (SPECIES[i2].id === selectedSpecies) { idx2 = i2; break; }
                   }
                   var prev = (idx2 - 1 + SPECIES.length) % SPECIES.length;
-                  updMulti({ selectedSpecies: SPECIES[prev].id, aiExplorerText: '' });
+                  selectRouteSpecies(SPECIES[prev].id);
                   if (announceToSR) announceToSR('Selected ' + SPECIES[prev].name);
                 }
               },
@@ -5485,7 +11196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
-                  updMulti({ selectedSpecies: sp.id, routeAnimProgress: 0, aiExplorerText: '', routesPlanned: (d.routesPlanned || 0) + (active ? 0 : 1) });
+                  selectRouteSpecies(sp.id);
                   if (beep) beep(880, 0.06, 0.08);
                   if (announceToSR) announceToSR('Selected ' + sp.name + '. ' + sp.flyway + ' flyway.');
                 }
@@ -5643,7 +11354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Species comparison table
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, t('stem.migration.species_comparison', '\uD83D\uDCCA Species Comparison')),
-            h('div', { className: 'overflow-x-auto' },
+            h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.migration.species_comparison_region', 'Species comparison table') },
               h('table', { className: 'w-full text-[0.6875rem] ' + textSecondary, role: 'table' },
                 h('thead', null,
                   h('tr', { className: 'border-b ' + borderCol },
@@ -6996,7 +12707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var challengeDistance = migrNum(d.challengeDistance, 3000, 0, 20000);
         var challengeDistRemaining = migrNum(d.challengeDistRemaining, 3000, 0, 20000);
         var challengeWeather = migrStr(d.challengeWeather, 'Clear');
-        var challengeFlockSize = migrNum(d.challengeFlockSize, 50, 1, 1000);
+        var challengeFlockSize = migrNum(d.challengeFlockSize, 50, 0, 1000);
         var challengeChoices = d.challengeChoices || null;
         var challengeResult = migrStr(d.challengeResult, '');
         var challengeLoading = d.challengeLoading || false;
@@ -7111,9 +12822,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var choice = usable[choiceIdx];
           if (!choice) return;
 
-          var newEnergy = clamp(challengeEnergy + (choice.energy_cost || 0), 0, 100);
-          var newRemaining = Math.max(0, challengeDistRemaining - (choice.distance_gain || 0));
-          var newFlock = Math.max(1, challengeFlockSize + (choice.flock_change || 0));
+          // Model replies and saved choices may use numeric strings. Coerce
+          // before addition, reject non-finite values, and keep each effect
+          // within the challenge's supported state ranges.
+          var energyChange = migrNum(choice.energy_cost, 0, -100, 100);
+          var distanceGain = migrNum(choice.distance_gain, 0, 0, 20000);
+          var flockChange = Math.round(migrNum(choice.flock_change, 0, -1000, 1000));
+          var newEnergy = clamp(challengeEnergy + energyChange, 0, 100);
+          var newRemaining = Math.max(0, challengeDistRemaining - distanceGain);
+          var newFlock = clamp(challengeFlockSize + flockChange, 0, 1000);
           var newStep = challengeStep + 1;
           var newLog = challengeLog.concat([{
             step: challengeStep + 1,
@@ -7125,10 +12842,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             flock: newFlock
           }]);
 
-          var newScore = challengeScore + Math.round((choice.distance_gain || 0) / 10) + newFlock;
+          var newScore = migrNum(challengeScore, 0, 0, 1000000) + Math.round(distanceGain / 10) + newFlock;
 
           // Check win/lose
-          if (newRemaining <= 0) {
+          if (newRemaining <= 0 && newFlock > 0) {
             updMulti({
               challengeStep: newStep,
               challengeEnergy: newEnergy,
@@ -7314,7 +13031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Challenge complete
               challengeComplete && h('div', { className: 'text-center p-4 rounded-xl border ' + borderCol + ' ' + cardBg },
-                challengeDistRemaining <= 0 ? h('div', null,
+                challengeDistRemaining <= 0 && challengeFlockSize > 0 ? h('div', null,
                   h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83C\uDF89'),
                   h('h4', { className: 'font-bold ' + textPrimary }, t('stem.migration.migration_complete', 'Migration Complete!')),
                   h('p', { className: 'text-xs ' + textSecondary + ' mt-1' }, challengeFlockSize + ' of 50 birds arrived safely.'),
@@ -7335,7 +13052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Journey log
               challengeLog.length > 0 && h('details', { className: 'text-xs ' + textSecondary },
                 h('summary', { className: 'cursor-pointer font-bold ' + textPrimary + ' text-[0.6875rem]' }, '\uD83D\uDCDC Journey Log (' + challengeLog.length + ' steps)'),
-                h('div', { className: 'mt-2 space-y-1 max-h-40 overflow-y-auto' },
+                h('div', { className: 'mt-2 space-y-1 max-h-40 overflow-y-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.migration.journey_log_region', 'Migration journey log') },
                   challengeLog.map(function(entry, ei) {
                     return h('div', { key: ei, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                       h('div', { className: 'flex items-center gap-2' },
@@ -7474,7 +13191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       // Tab content
       var tabContent = null;
-      if (tab === 'flight3d') tabContent = renderFlight3D();
+      if (tab === 'flight3d') tabContent = h('div', { className: 'migration-flight-workspace' }, renderFlight3D(), renderFlightChallenges(), renderFlightInvestigation());
       else if (tab === 'vformation') tabContent = renderVFormation();
       else if (tab === 'wind') tabContent = renderWindCurrents();
       else if (tab === 'routes') tabContent = renderRoutes();
@@ -7485,7 +13202,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       function renderMigrationInquiry() {
         var IQ_DEFAULTS = { wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], testVar: null, trials: [] };
-        var iq = d.inquiry || IQ_DEFAULTS;
+        var savedIQ = d.inquiry && typeof d.inquiry === 'object' && !Array.isArray(d.inquiry) ? d.inquiry : {};
+        var iq = Object.assign({}, IQ_DEFAULTS, savedIQ);
+        iq.hypothesis = typeof iq.hypothesis === 'string' ? iq.hypothesis : '';
+        iq.explanation = typeof iq.explanation === 'string' ? iq.explanation : '';
+        if (['solo', 'echelon', 'V'].indexOf(iq.vMode) === -1) iq.vMode = IQ_DEFAULTS.vMode;
         // The five numbers this tab computes from all reach the DOM as SVG
         // geometry and slider values. A NaN or an Infinity out of stale storage
         // does not throw -- it renders width="NaN" and value="NaN", which is
@@ -7496,7 +13217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var fixed = null;
           for (var k in bounds) {
             var v = Number(iq[k]);
-            if (!isFinite(v) || v < bounds[k][0] || v > bounds[k][1]) {
+            if (!isFinite(v) || v < bounds[k][0] || v > bounds[k][1] || typeof iq[k] !== 'number') {
               if (!fixed) fixed = Object.assign({}, iq);
               fixed[k] = isFinite(v) ? Math.min(bounds[k][1], Math.max(bounds[k][0], v)) : IQ_DEFAULTS[k];
             }
@@ -7513,13 +13234,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // half-written value, a schema from an older build. Anything that is
         // not an array of rows is treated as no rows rather than crashing the
         // tab, which is what iqTrials.filter did.
-        var iqTrials = Array.isArray(iq.trials) ? iq.trials : null;
-        if (!iqTrials && iq.log && iq.log.length) {
+        var iqTrials = Array.isArray(savedIQ.trials) ? savedIQ.trials : null;
+        var unreadableTrials = !iqTrials && savedIQ.trials != null ? 1 : 0;
+        if (!iqTrials && Array.isArray(iq.log)) {
           iqTrials = iq.log.map(function(e, i) {
+            if (!e || typeof e !== 'object' || Array.isArray(e)) return null;
             return { n: i + 1, testVar: null, legacy: true, wingspan: parseFloat(e.w), mass: parseFloat(e.m), headwind: e.hw, vMode: e.fmt, distance: e.d, ratio: parseFloat(e.fr), state: e.state, energyPerKm: null, totalKJ: null, fatBudget: null };
           });
-        }
-        iqTrials = iqTrials || [];
+        } else if (!iqTrials && iq.log != null) unreadableTrials += 1;
+        // Reject unreadable observations instead of inventing replacement data.
+        // The original saved value is left intact until the learner edits it.
+        iqTrials = (iqTrials || []).map(function(row, index) {
+          if (!row || typeof row !== 'object' || Array.isArray(row)) { unreadableTrials++; return null; }
+          var clean = Object.assign({}, row);
+          var fields = ['wingspan', 'mass', 'headwind', 'distance', 'ratio'];
+          for (var ri = 0; ri < fields.length; ri++) {
+            var key = fields[ri], value = row[key];
+            if ((typeof value !== 'number' && typeof value !== 'string') || value === '' || !isFinite(Number(value))) { unreadableTrials++; return null; }
+            clean[key] = Number(value);
+          }
+          if (clean.wingspan <= 0 || clean.mass <= 0 || clean.distance <= 0 || clean.ratio < 0 || ['solo', 'echelon', 'V'].indexOf(clean.vMode) === -1) { unreadableTrials++; return null; }
+          clean.n = isFinite(Number(row.n)) && Number(row.n) > 0 ? Number(row.n) : index + 1;
+          clean.state = typeof row.state === 'string' ? row.state : '';
+          clean.stateKey = ['fatal', 'borderline', 'feasible', 'comfortable', 'easy'].indexOf(row.stateKey) !== -1 ? row.stateKey : (clean.ratio < 0.5 ? 'fatal' : clean.ratio < 1 ? 'borderline' : clean.ratio < 1.5 ? 'feasible' : clean.ratio < 3 ? 'comfortable' : 'easy');
+          return clean;
+        }).filter(function(row) { return row !== null; });
+        // Preserve recovered legacy observations on the first edit, too.
+        iq.trials = iqTrials;
         function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         // Every number below comes from the tool's single flight-energy model,
@@ -7607,7 +13348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // each annotated with what changed since the previous one of its run.
         var runTrials = iqTrials.filter(function(x) { return activeVar && x.testVar === activeVar.id; });
         var runRows = runTrials.map(function(x, i) {
-          return { trial: x, confounds: i === 0 ? [] : confoundsBetween(runTrials[i - 1], x) };
+          return { trial: x, confounds: i === 0 ? [] : confoundsBetween(runTrials[i - 1], x), unchanged: i > 0 && activeVar.val(runTrials[i - 1]) === activeVar.val(x) };
         });
         var confoundedCount = runRows.filter(function(r) { return r.confounds.length > 0; }).length;
         function recordTrial() {
@@ -7666,7 +13407,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
         function iqCsvCell(v) {
           var str = String(v == null ? '' : v);
-          return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+          // CSV quoting alone does not prevent spreadsheet formula execution.
+          // Protect learner prose while preserving numeric headwinds as numbers.
+          if (typeof v !== 'number' && (/^[=+\-@\t\r]/.test(str) || /^\s+[=+\-@]/.test(str))) str = "'" + str;
+          return /[",\r\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
         }
         var IQ_COLS = [
           { key: 'n', head: '#' },
@@ -7767,6 +13511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var needBarW = Math.max(2, (iq.distance / rangeScale) * (BAR_MAX - BAR_X));
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: IQ.text } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.migration.energy_inquiry_can_the_bird_make_it', '🔬 Energy Inquiry — Can the bird make it?')),
+          unreadableTrials > 0 && h('p', { role: 'status', style: { padding: 8, border: '1px solid ' + IQ.tileBorder, borderRadius: 6, background: IQ.tile, fontSize: 11 } }, t('stem.migration.trial_recovery_note', 'Some saved trial rows could not be read. Valid trials remain available; unreadable rows are excluded from charts and exports.')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.migration.pick_wingspan_mass_headwind_formation_', 'Choose wingspan, mass, headwind, formation, and distance, then observe how the modeled energy state changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: isDark ? '#000' : '#fff', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
@@ -7777,7 +13522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               { label: t('stem.migration.fat_budget', 'Fat budget'), val: fatBurnKJ.toFixed(0) + ' kJ' }
             ].map(function(m) {
               return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: IQ.tile, border: '1px solid ' + sm.border, textAlign: 'center' } },
-                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
+                h('div', { style: { fontSize: 11, color: IQ.textDim } }, m.label),
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
               );
             })
@@ -7895,7 +13640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               chartPts.length + ' ' + t('stem.migration.trials_plotted', 'trials plotted') + ', ' +
               activeVar.label + ' ' + activeVar.fmt(chartXMin) + ' ' + t('stem.migration.to_word', 'to') + ' ' + activeVar.fmt(chartXMax) + ' ' + activeVar.unit + ', ' +
               t('stem.migration.reserve_ratio_label', 'reserve ratio') + ' ' + chartPts[0].yv.toFixed(2) + ' ' + t('stem.migration.to_word', 'to') + ' ' + chartPts[chartPts.length - 1].yv.toFixed(2) + '. ' +
-              (confoundedCount > 0 ? confoundedCount + ' ' + t('stem.migration.trials_confounded_short', 'of these trials changed more than one variable.') : t('stem.migration.trials_all_controlled', 'Every trial changed only the variable under test.')) + ' ' +
+              (confoundedCount > 0 ? confoundedCount + ' ' + t('stem.migration.trials_confounded_short', 'of these trials changed more than one variable.') : t('stem.migration.trials_controls_constant', 'Other controls stayed constant between these trials.')) + ' ' +
               t('stem.migration.table_is_data', 'The trial table below carries the same numbers.'),
             style: { background: IQ.tile, borderRadius: 6, marginBottom: 10, display: 'block', width: '100%', maxWidth: 560, height: 'auto', border: '1px solid ' + IQ.tileBorder }
           },
@@ -7925,7 +13670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // \u2500\u2500 Trial table \u2500\u2500
           iqTrials.length > 0 && h('div', { style: { marginBottom: 10 } },
-            h('div', { style: { maxHeight: 190, overflow: 'auto', borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile } },
+            h('div', { tabIndex: 0, role: 'region', 'aria-label': t('stem.migration.trials_region', 'Recorded migration energy trials'), style: { maxHeight: 190, overflow: 'auto', borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10 } },
                 h('caption', { style: { captionSide: 'top', textAlign: 'left', padding: '6px 8px 4px', fontSize: 11, fontWeight: 800, color: IQ.text } },
                   activeVar
@@ -7951,7 +13696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('td', { style: { padding: '3px 6px', color: r.confounds.length ? '#eb6834' : IQ.textDim, fontWeight: r.confounds.length ? 700 : 400 } },
                         i === 0 && activeVar ? t('stem.migration.baseline_word', 'baseline')
                           : r.confounds.length ? t('stem.migration.also_changed', 'also changed') + ': ' + r.confounds.join(', ')
-                          : (activeVar ? t('stem.migration.yes_word', 'yes') : '\u2014'))
+                          : r.unchanged ? t('stem.migration.repeat_trial', 'unchanged (repeat)') : (activeVar ? t('stem.migration.yes_word', 'yes') : '\u2014'))
                     );
                   })
                 )
@@ -7968,7 +13713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('button', { type: 'button', onClick: exportCsv, style: { padding: '5px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer' } }, t('stem.migration.export_csv', 'Download trials (CSV)'))
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.migration.your_hypothesis_which_parameter_forces', 'Your hypothesis (which parameter forces the most stopovers?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.e_g_v_formation_savings_only_pay_off_a', 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.hypothesis_wind_example', 'e.g., Increasing headwind will lower the reserve ratio when the other variables stay the same.'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: IQ.tile, border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.migration.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -8024,29 +13769,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       );
 
       var activeTab = TABS.filter(function(item) { return item.id === tab; })[0] || TABS[0];
-      var species = SPECIES.filter(function(item) { return item.id === (d.flightSpecies || d.selectedSpecies || 'canada_goose'); })[0] || SPECIES[0];
-      return h('main', { className: 'migration-tool-shell space-y-3 ' + bg, 'data-migration-tool': 'true' },
+      var species = findMigrationSpecies(flightValues.speciesId);
+      return h('main', { className: 'migration-tool-shell space-y-3 ' + bg, 'data-migration-tool': 'true', 'data-migration-theme': isContrast ? 'contrast' : isDark ? 'dark' : 'light' },
         h('header', { className: 'migration-command', 'data-migration-mission': 'true' },
           h('div', { className: 'migration-command-main' },
             backButton,
             h('div', { className: 'migration-command-copy' },
               h('p', { className: 'migration-eyebrow' }, t('stem.migration.field_station', 'Migration field station')),
               h('h2', null, t('stem.migration.title', 'Migration & Wind Lab')),
-              h('p', null, t('stem.migration.v_formation_wind_currents_flyways_aero', '3D flight - Monarch migration - V-formation - Wind currents - Flyways - Aerodynamics - Navigation'))
+              h('p', null, t('stem.migration.field_station_description', 'Across continents, through changing skies. Explore the forces and decisions behind an extraordinary journey.'))
             )
           ),
-          h('span', { className: 'migration-command-icon', 'aria-hidden': 'true' }, '\uD83E\uDDED')
+          h('svg', { className: 'migration-header-art', viewBox: '0 0 245 130', fill: 'none', 'aria-hidden': 'true', focusable: 'false' },
+            h('circle', { cx: 191, cy: 66, r: 41, stroke: '#6dc8c7', strokeWidth: 1, opacity: 0.4 }),
+            h('circle', { cx: 191, cy: 66, r: 65, stroke: '#6dc8c7', strokeWidth: 1, opacity: 0.25 }),
+            h('path', { d: 'M4 118C77 125 43 42 127 58S193 20 231 14', stroke: '#a2ddd7', strokeWidth: 1.5, strokeDasharray: '4 6' }),
+            [ [142, 42, 1.1], [173, 68, 0.8], [110, 66, 0.8], [198, 89, 0.6], [83, 86, 0.6] ].map(function(bird, i) {
+              return h('path', { key: i, d: 'M-14 5Q-7-4 0 0Q7-4 14 5L0 2Z', transform: 'translate(' + bird[0] + ' ' + bird[1] + ') scale(' + bird[2] + ') rotate(-15)', fill: '#d0f0e9' });
+            }),
+            h('circle', { cx: 231, cy: 14, r: 3, fill: '#b9e9c7' })
+          )
         ),
         h('section', { className: 'migration-metrics', 'aria-label': t('stem.migration.field_status', 'Migration field status') },
           [
             { label: t('stem.migration.active_activity', 'Active activity'), value: activeTab.label },
             { label: t('stem.migration.focus_species', 'Focus species'), value: species.name },
-            { label: t('stem.migration.formation_status', 'Formation status'), value: tab === 'flight3d'
-                // Was the raw mode id with " flight" appended, which read as
-                // "loose flight" and "v flight".
-                ? migrFormationLabel(flightFormationName(species, d.flightFormation || 'natural'), t)
-                : (d.perfectVFormed ? t('stem.migration.perfect_v_formed', 'Perfect V formed') : t('stem.migration.formation_in_progress', 'Formation in progress')) },
-            { label: t('stem.migration.routes_planned', 'Routes planned'), value: String(d.routesPlanned || 0) }
+            { label: t('stem.migration.focus_flight_pattern', 'Focus flight pattern'), value: migrFormationLabel(flightValues.formation, t) },
+            { label: t('stem.migration.routes_planned', 'Routes planned'), value: String(migrNum(d.routesPlanned, 0, 0, 1000000)) }
           ].map(function(metric) {
             return h('div', { key: metric.label, className: 'migration-metric' },
               h('span', { className: 'migration-metric-label' }, metric.label),
@@ -8055,6 +13804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           })
         ),
         tabBar,
+        renderGuidedExploration(),
         tabHero,
         h('section', { id: 'migration-active-panel', className: 'migration-workspace', role: 'tabpanel', 'aria-labelledby': 'migration-tab-' + tab, tabIndex: 0, 'data-migration-workspace': tab }, tabContent)
       );

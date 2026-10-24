@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Kenbe paramèt vòl aktyèl yo",
+  "stem.flightsim.flight_assistance_targets": "Direksyon {hdg}° · Altitid {alt} ft MSL · Vitès {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Direksyon {hdg}° · Altitid {alt} ft MSL · Vitès pou avanse {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Vire agoch {degrees}° nan direksyon {airport}.",
+  "stem.flightsim.challenge_turn_right": "Vire adwat {degrees}° nan direksyon {airport}.",
+  "stem.flightsim.challenge_course_aligned": "W ap dirije w nan direksyon {airport}. Swiv makè wout la.",
+  "stem.flightsim.challenge_runway_reference": "Pis antrènman {runway}: direksyon {heading}°. Mete avyon an nan menm liy ak pis la anvan ou desann pou ateri."
+}

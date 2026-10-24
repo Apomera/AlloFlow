@@ -13,7 +13,8 @@ describe('contextual representative behavior',()=>{
   });
   it('requires nearby prey for hunting and includes independent rest and bird states',()=>{
     expect(api.behavior('foxes',6,calm).state).toBe('Searching');
-    expect(api.behavior('foxes',1,{...calm,preyDistance:2}).state).toBe('Listening');
+    // Phase and proximity alone do not fabricate a prey-movement listening cue.
+    expect(api.behavior('foxes',1,{...calm,preyDistance:2}).state).toBe('Stalking');
     expect(api.behavior('foxes',4,{...calm,preyDistance:2}).state).toBe('Stalking');
     expect(api.behavior('foxes',6,{...calm,preyDistance:1}).state).toBe('Pouncing');
     expect(api.behavior('foxes',11,{...calm,preyDistance:1}).state).toBe('Resting');
@@ -49,6 +50,20 @@ describe('contextual representative behavior',()=>{
       if(p.active)states.add(p.state);
       if(t){const prior=frames[t-1][id][i],travel=Math.hypot(p.x-prior.x,p.z-prior.z);expect(travel).toBeLessThanOrEqual(0.116);if(p.moving===0)expect(travel).toBe(0);}
     })));
-    for(const state of ['Alert','Retreating','Resting','Listening','Stalking','Pouncing','Pecking','Preening','Crawling','Feeding','Gliding'])expect(states.has(state),state).toBe(true);
+    for(const state of ['Alert','Retreating','Resting','Listening','Stalking','Pouncing','Preening','Crawling','Feeding','Gliding'])expect(states.has(state),state).toBe(true);
+    // Pecking requires an actual nearby caterpillar, so cover it in the
+    // supported insect study rather than requiring an incidental encounter
+    // after every change to the default community's interdependent paths.
+    const insectConfig=api.investigation('insects').config,insectRows=api.compare(insectConfig).baseline,insectFrames=api.behaviorTimeline(insectConfig,insectRows);let pecks=0;
+    expect(api.links.some(link=>link.consumer==='bluetits'&&link.food==='caterpillars')).toBe(true);
+    insectFrames.forEach((frame,step)=>frame.bluetits.forEach((bird,index)=>{
+      if(!step||!bird.active||bird.state!=='Pecking')return;pecks++;
+      expect(bird.foodAvailable).toBe(true);expect(bird.prey).toBe('caterpillars');expect(Number.isInteger(bird.preyIndex)).toBe(true);expect(insectRows[step].values.caterpillars).toBeGreaterThan(0);
+      const priorBird=insectFrames[step-1].bluetits[index],priorFood=insectFrames[step-1].caterpillars[bird.preyIndex],currentFood=frame.caterpillars[bird.preyIndex];
+      expect(priorFood.active).toBe(true);expect(currentFood.active).toBe(true);expect([priorFood.x,priorFood.z,currentFood.x,currentFood.z].every(Number.isFinite)).toBe(true);
+      expect(bird.preyDistance).toBeLessThan(.65);expect(bird.preyDistance).toBeCloseTo(Math.hypot(priorFood.x-priorBird.x,priorFood.z-priorBird.z),10);
+      const pair=api.interaction(frame,'bluetits',index);expect(pair).toMatchObject({id:'caterpillars',index:bird.preyIndex});expect(pair.other).toBe(currentFood);
+    }));
+    expect(pecks).toBeGreaterThan(0);
   });
 });

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "தேடல் முடிவுகள்: {topics} தலைப்புகளில் {cards} அட்டைகள்.",
+  "stem.flightsim.learn_library_counts": "{cards} அட்டைகள் · {topics} தலைப்புகள்",
+  "stem.flightsim.learn_search_clear": "தேடலை அழி",
+  "stem.flightsim.learn_search_empty": "“{query}” என்பதற்குப் பொருந்தும் கற்றல் அட்டைகள் இல்லை. வேறு சொல்லை முயற்சிக்கவும் அல்லது தேடலை அழிக்கவும்.",
+  "stem.flightsim.learn_search_none": "பொருந்தும் கற்றல் அட்டைகள் இல்லை",
+  "stem.flightsim.learn_search_cards": "{count} கற்றல் அட்டைகள்",
+  "stem.flightsim.quiz_review_progress": "{total} கேள்விகளில் {answered} பதிலளிக்கப்பட்டன · {missed} தவறுகள்",
+  "stem.flightsim.quiz_review_missed": "தவறான பதில்களை மீள்பார்க்கவும்",
+  "stem.flightsim.quiz_next_unanswered": "அடுத்த பதிலளிக்காத கேள்வி",
+  "stem.flightsim.quiz_review_all_answered": "ஒவ்வொரு கேள்விக்கும் முதல் பதில் பதிவாகியுள்ளது. மதிப்பெண் இல்லாத பயிற்சிக்குத் தவறாகப் பதிலளித்த கேள்விகளை மீள்பார்க்கவும் அல்லது புதிய முயற்சியைத் தொடங்கவும்.",
+  "stem.flightsim.planner_drone_agl": "தரைக்கு மேல் {ft} அடி",
+  "stem.flightsim.sprint_native_title": "புவியியல் விரைவுச் சவால்",
+  "stem.flightsim.sprint_timed_hint": "நீங்கள் பதிலளிக்கும்போதும் பாதையில் பயணம் தொடரும். படிப்பதற்கு இடைநிறுத்தவும்; பதிலைத் தேர்ந்தெடுக்கும் முன் மீண்டும் தொடரவும்.",
+  "stem.flightsim.sprint_warp_reference": "இந்தப் புவியியல் செயல்பாட்டிற்காகப் பயணம் வேகப்படுத்தப்பட்டுள்ளது. வேக அளவீடுகள் நிர்ணயிக்கப்பட்ட சீரான பயண வேகத்தைக் காட்டுகின்றன; இந்தப் பாதை விமானத்தின் செயல்திறனை அளவிடுவதில்லை.",
+  "stem.flightsim.sprint_save_menu": "சவாலைச் சேமித்து பட்டிக்குத் திரும்பவும்",
+  "stem.flightsim.sprint_next_stop": "அடுத்த நிறுத்தம்: {place}",
+  "stem.flightsim.geoq_approaching_city": "நீங்கள் எந்த நகரத்தை நெருங்குகிறீர்கள்?",
+  "stem.flightsim.sprint_time_remaining": "மீதமுள்ள நேரம்: {seconds} வினாடிகள்"
+}

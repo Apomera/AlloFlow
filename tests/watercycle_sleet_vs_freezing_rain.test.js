@@ -151,10 +151,17 @@ describe('the temperature profile chart shows the mechanism', () => {
     'desktop/web-app/public/stem_lab/stem_tool_watercycle.js',
   ];
 
+  // The 10-10 air-column redesign (79e3e5eae) labels crossings by AIR temperature
+  // only ("a particle does not necessarily melt or freeze as soon as it crosses
+  // 0 C") and states the particle outcome once, in the verdict. The verdict must
+  // still tell refreezing (pellets) apart from supercooling (glaze).
   it('labels the freezing crossing by what actually happens there', () => {
     for (const p of PATHS) {
       const s = readFileSync(resolve(process.cwd(), p), 'utf8');
-      expect(s, p).toContain("(precipModel.visualType === 'sleet' ? 'REFREEZES' : 'SUPERCOOLS')");
+      expect(s.includes("'Into colder air: above 0\\u00B0C to below 0\\u00B0C.'"), p + ': crossing names the air change').toBe(true);
+      expect(s.includes("'data-cold-layer-outcome': precipModel.visualType"), p + ': verdict keyed by modeled outcome').toBe(true);
+      expect(s.includes("precipModel.visualType === 'sleet' ? 'Modeled arrival: ice pellets. ' : 'Modeled arrival: supercooled liquid. '"), p + ': pellets vs supercooled verdict').toBe(true);
+      expect(s.includes("precipModel.visualType === 'sleet' ? 'The illustrated drop freezes in the air before reaching the surface.' : 'The drop reaches a cold surface as liquid, where it can form an ice coating.'"), p + ': mechanism sentence').toBe(true);
     }
   });
 

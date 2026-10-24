@@ -272,6 +272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     return h('div',{className:'uf-motion-controls'},
       h('button',{type:'button',className:'uf-motion-toggle','aria-pressed':props.smoothTravel,disabled:!props.ready,onClick:props.onToggle},label('motion_smooth','Smooth camera travel'),h('span',{'aria-hidden':'true'},props.smoothTravel?'ON':'OFF')),
       h('div',{className:'uf-motion-readout'},h('span',null,label('motion_current','Current camera pace')),h('strong',null,props.number(pace)+' ly/s'),h('small',null,status)),
+      pace>0&&h('p',{className:'uf-note uf-speed-context'},universeFlightLightMultiple(pace,label)),
       h('div',{className:'uf-motion-track','aria-hidden':'true'},h('i',{style:{width:(target?Math.max(0,Math.min(1,pace/target))*100:0)+'%'}})),
       h('p',{className:'uf-note'},props.smoothTravel?label('motion_note','Free flight eases speed changes. Pause stops immediately. Guided approaches, flybys, and camera orbits use their own pace.'):label('motion_direct_note','Free flight uses the selected pace directly. Pause stops immediately. Guided approaches, flybys, and camera orbits use their own pace.')));
   }
@@ -872,7 +873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       markers.current.forEach(function(marker){if(!marker||!marker.isConnected)return;
         ['i','span'].forEach(function(selector){var child=marker.querySelector(selector);if(!child)return;var box=child.getBoundingClientRect(),pad=selector==='i'?14:6;
           obstacles.push({left:box.left-stageBox.left-stage.clientLeft-pad,top:box.top-stageBox.top-stage.clientTop-pad,right:box.right-stageBox.left-stage.clientLeft+pad,bottom:box.bottom-stageBox.top-stage.clientTop+pad,weight:selector==='i'?20:1});});});
-      var next=universeFlightPairPanelLayout(stage.clientWidth,stage.clientHeight,node.offsetWidth,node.offsetHeight,obstacles,dock.current,document.fullscreenElement===stage);
+      var next=universeFlightPairPanelLayout(stage.clientWidth,stage.clientHeight,node.offsetWidth,node.offsetHeight,obstacles,dock.current,document.fullscreenElement===stage||stage.getAttribute('data-allo-fullscreen-active')==='true');
       if(!next)return;dock.current=next.key;setLayout(function(previous){return previous&&previous.key===next.key&&previous.left===next.left&&previous.top===next.top?previous:next;});
     }
     placeRef.current=place;
@@ -954,6 +955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       props.detour&&props.detour.active&&button(label('detour_return','Return to flyby')+' · '+props.detour.elapsedSeconds.toFixed(1)+' s',props.onReturnDetour,{className:'uf-inspector-return','aria-label':label('detour_return','Return to flyby'),title:label('flyby_'+props.detour.id,props.detour.name)}),
       h('div',{id:'uf-inspection-body',className:'uf-inspector-body',hidden:!expanded,ref:body,role:'region',tabIndex:0,'aria-label':label('inspector_details_region','Landmark details and nearby destinations')},
         h('p',{className:'uf-inspector-kind'},target.kind),h('p',null,target.description),
+        universeLandmarkScience(target.id)&&h('div',{className:'uf-real-science'},h('h4',null,label('real_science','In the real universe')),h('p',null,universeLandmarkScience(target.id))),
         (target.id==='blue-nebula'||target.id==='violet-nebula')&&h(UniverseFlightDustControls,{React:React,label:label,prefix:'uf-inspector',ready:true,dust:props.dust,onDust:props.onDust}),
         h('div',{className:'uf-inspector-presets',role:'group','aria-label':label('inspector_lens_presets','Inspection lens presets')},
           [[90,'wide','Wide'],[65,'standard','Standard'],[10,'centered_detail','Centered detail']].map(function(preset){var detail=preset[0]===10;return button(h(React.Fragment,null,h('strong',null,label('inspector_lens_'+preset[1],preset[2])),h('small',null,preset[0]+'°')),function(){if(detail)props.onDetail();else props.onFov(preset[0]);},{key:preset[0],disabled:detail&&props.coincident,'aria-pressed':detail?undefined:props.fov===preset[0],'aria-label':detail?label('inspector_centered_detail_action','Center landmark with a 10° detail lens'):label('inspector_lens_'+preset[1],preset[2])+' '+preset[0]+'° lens'});})),
@@ -1021,6 +1023,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
         glide.active?button(label('distance_end_glide','End glide'),props.onEndGlide):props.orbit?button(label('inspector_end_orbit','End orbit'),props.onEndOrbit):button(label('inspector_orbit','Orbit view'),props.onOrbit,{disabled:!props.canOrbit})));
   }
 
+  // What each generated landmark stands for in the real universe.
+  var UNIVERSE_LANDMARK_SCIENCE = {
+    'amber-star': 'Orange (K-type) stars such as Alpha Centauri B are a little cooler and smaller than the Sun, about 4,000 to 5,300 K. They live longer than the Sun, which makes them good places to look for planets.',
+    'blue-star': 'Blue-white stars such as Rigel are far hotter than the Sun: Rigel is about 12,000 K. The more massive a star, the faster it uses its fuel; Rigel will last only about 10 million years, while the Sun will last about 10 billion.',
+    'pale-star': 'Astronomers measure distances to nearby stars by parallax: as Earth orbits the Sun, a nearby star seems to shift slightly against far-away ones. Even the nearest star, Proxima Centauri, shifts by less than one arcsecond.',
+    'blue-nebula': 'Real glowing nebulae such as the Orion Nebula are lit by hot young stars. Hydrogen glows red and oxygen glows green-blue, while a blue haze is often starlight scattered by dust. The Orion Nebula is about 24 light-years across and 1,340 light-years away.',
+    'violet-nebula': 'Large star-forming clouds such as the Carina Nebula stretch for hundreds of light-years and hold some of the most massive stars known. Dust inside them dims and reddens the light of stars behind them.',
+    'galactic-center': 'At the Milky Way’s center is Sagittarius A*, a black hole about 4 million times the Sun’s mass, inside a crowded bulge of older stars. Thick dust hides it from visible light, so astronomers study it in infrared, radio and X-rays.',
+    'inner-arm': 'Spiral arms are not solid objects. They are regions where stars and gas crowd together, like a traffic jam, so new stars form there. Bright young blue stars make the arms stand out.',
+    'disk-edge': 'Our Sun lies in the disk about 26,000 light-years from the center, on a small arm called the Orion Spur. The thin disk is only about 1,000 light-years thick but about 100,000 light-years across.',
+    'near-galaxy': 'The Milky Way belongs to the Local Group: about 80 galaxies within roughly 10 million light-years. Its largest member is the Andromeda Galaxy, 2.5 million light-years away.',
+    'companion-galaxy': 'Neighboring galaxies tug on one another. The Milky Way and Andromeda are approaching each other at about 110 km per second and may merge in several billion years.',
+    'distant-galaxy': 'Light from distant galaxies is stretched to longer, redder wavelengths as space expands. The farther the galaxy, the larger this redshift, which is how astronomers measure how fast the universe is expanding.',
+    'golden-elliptical': 'Giant elliptical galaxies such as M87 hold up to trillions of older stars. M87’s central black hole, about 6.5 billion times the Sun’s mass, was the first black hole ever photographed, in 2019.'
+  };
+  function universeLandmarkScience(id) {
+    if (/^local-cluster-/.test(id)) return 'Stars are often born together in open clusters such as the Pleiades, about 444 light-years away. Over hundreds of millions of years the galaxy’s gravity slowly pulls these clusters apart.';
+    if (/^halo-cluster-/.test(id)) return 'The Milky Way’s halo holds about 150 globular clusters: tight balls of hundreds of thousands of very old stars, many more than 10 billion years old.';
+    return Object.prototype.hasOwnProperty.call(UNIVERSE_LANDMARK_SCIENCE, id) ? UNIVERSE_LANDMARK_SCIENCE[id] : '';
+  }
+  // How a camera pace compares with light. Light covers one light-year per year.
+  function universeFlightLightMultiple(pace, label) {
+    var times = pace * 31557600;
+    if (times < 1) return label('speed_light_fraction', 'About ') + Math.max(1, Math.round(times * 100)) + label('speed_light_percent', '% of the speed of light.');
+    var scale = times < 1e3 ? [1, ''] : times < 1e6 ? [1e3, ' thousand'] : times < 1e9 ? [1e6, ' million'] : times < 1e12 ? [1e9, ' billion'] : [1e12, ' trillion'];
+    var value = times / scale[0];
+    return label('speed_light_about', 'About ') + (value < 10 ? value.toFixed(1) : Math.round(value)) + scale[1] + label('speed_light_times', ' times the speed of light. Nothing real can travel faster than light; this camera bends the rules so you can cross huge distances.');
+  }
+  // Speed lines for fast flight, drawn over the 3D view. Off for still scenes and reduced motion.
+  function UniverseFlightMotionStreaks(props) {
+    var React = props.React, h = React.createElement, canvas = React.useRef(null), state = React.useRef({ streaks: [], intensity: 0, target: 0, raf: 0, wake: null });
+    state.current.target = props.active ? Math.max(0, Math.min(1, props.intensity)) : 0;
+    React.useEffect(function () {
+      var node = canvas.current, s = state.current, stopped = false, last = 0;
+      var ctx = !props.still && node && node.getContext ? node.getContext('2d') : null;
+      if (!ctx) return;
+      function frame(now) {
+        s.raf = 0;
+        if (stopped) return;
+        var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016, dpr = Math.min(2, window.devicePixelRatio || 1);
+        last = now;
+        s.intensity += (s.target - s.intensity) * Math.min(1, dt * 3);
+        var w = Math.round(node.clientWidth * dpr), hgt = Math.round(node.clientHeight * dpr);
+        if (node.width !== w || node.height !== hgt) { node.width = w; node.height = hgt; }
+        ctx.clearRect(0, 0, w, hgt);
+        if (s.target === 0 && s.intensity < 0.02) { s.streaks.length = 0; last = 0; return; }
+        var want = Math.round(90 * s.intensity), cx = w / 2, cy = hgt / 2, reach = Math.hypot(cx, cy) || 1;
+        while (s.streaks.length < want) s.streaks.push({ angle: Math.random() * Math.PI * 2, r: Math.random() * reach, speed: 0.4 + Math.random() * 0.8 });
+        if (s.streaks.length > want) s.streaks.length = want;
+        ctx.lineCap = 'round';
+        s.streaks.forEach(function (p) {
+          p.r += (0.25 + p.r / reach) * (0.6 + s.intensity * 2.4) * p.speed * dt * reach;
+          if (p.r > reach) { p.r = reach * (0.04 + Math.random() * 0.2); p.angle = Math.random() * Math.PI * 2; }
+          var len = Math.min(p.r * 0.5, (10 + 70 * s.intensity) * dpr * (p.r / reach + 0.2)), cos = Math.cos(p.angle), sin = Math.sin(p.angle);
+          var x1 = cx + cos * p.r, y1 = cy + sin * p.r, x0 = cx + cos * (p.r - len), y0 = cy + sin * (p.r - len), line = ctx.createLinearGradient(x0, y0, x1, y1);
+          line.addColorStop(0, 'rgba(191,219,254,0)'); line.addColorStop(1, 'rgba(224,242,254,' + (0.12 + 0.45 * s.intensity) * Math.min(1, p.r / reach * 2.2) + ')');
+          ctx.strokeStyle = line; ctx.lineWidth = (0.6 + 1.4 * p.r / reach) * dpr; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        });
+        s.raf = requestAnimationFrame(frame);
+      }
+      s.wake = function () { if (!stopped && !s.raf) s.raf = requestAnimationFrame(frame); };
+      s.wake();
+      return function () { stopped = true; cancelAnimationFrame(s.raf); s.raf = 0; s.wake = null; ctx.clearRect(0, 0, node.width, node.height); };
+    }, [props.still]);
+    React.useEffect(function () { if (props.active && state.current.wake) state.current.wake(); }, [props.active, props.intensity]);
+    return h('canvas', { ref: canvas, className: 'uf-motion-streaks', 'aria-hidden': 'true' });
+  }
+
   function UniverseFlightExplorer(props) {
     var React = props.React, h = React.createElement;
     var useState = React.useState;
@@ -1068,8 +1138,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var tourState=useState(null), tour=tourState[0], setTour=tourState[1];
     var draftState=useState({}), observationDrafts=draftState[0], setObservationDrafts=draftState[1];
     var comparisonState=useState([null,null]), comparison=comparisonState[0], setComparison=comparisonState[1];
+    var cutState=useState(0),cutKey=cutState[0],setCutKey=cutState[1];
     var canvas = React.useRef(null), scene = React.useRef(null), stage = React.useRef(null), drag = React.useRef(null);
-    var pointers=React.useRef({}), pinch=React.useRef(null), detourContext=React.useRef(null);
+    var pointers=React.useRef({}), pinch=React.useRef(null), detourContext=React.useRef(null), tap=React.useRef(null);
     var flightRegion = mode === 'relativity' ? 'neighborhood' : region;
     var scales = {neighborhood:[0.001,50],galaxy:[1,30000],cosmic:[1000,100000000]};
     var limits = scales[flightRegion], travelSpeed = limits[0] * Math.pow(limits[1]/limits[0], speedLevel/100);
@@ -1093,8 +1164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       if(event.key==='Escape'&&!event.ctrlKey&&!event.metaKey&&!event.altKey){event.preventDefault();stop();restoreOverlay();}
     }
     function chooseSmoothTravel() { var next=!smoothTravel;settingsRef.current.smoothTravel=next;setSmoothTravel(next);if(scene.current)scene.current.set({smoothTravel:next}); }
-    function changeMode(next) { if(mode===next)return; stop();setJourney(null);setNotice(''); setExperiment(''); setTargetId(''); setMode(next); setCompareRest(false); if (scene.current) scene.current.reset(); }
-    function chooseRegion(next) { if(region===next)return;stop();setJourney(null);setNotice('');setTargetId('');setRegion(next); }
+    function veil() { setCutKey(function(value){return value+1;}); }
+    function changeMode(next) { if(mode===next)return; veil(); stop();setJourney(null);setNotice(''); setExperiment(''); setTargetId(''); setMode(next); setCompareRest(false); if (scene.current) scene.current.reset(); }
+    function chooseRegion(next) { if(region===next)return;veil();stop();setJourney(null);setNotice('');setTargetId('');setRegion(next); }
     function look(yaw, pitch) { if (scene.current) scene.current.look(yaw,pitch); }
     function view(direction) { if (scene.current) scene.current.view(direction); }
     function setLens(value) {
@@ -1119,10 +1191,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     function pointerDown(e) {
       if(e.button!==0||!ready)return;
       pointers.current[e.pointerId]={x:e.clientX,y:e.clientY};rebaseGesture();
+      tap.current=Object.keys(pointers.current).length===1?{id:e.pointerId,x:e.clientX,y:e.clientY,time:Date.now(),moved:0}:null;
       e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.focus({preventScroll:true});
     }
     function pointerMove(e) {
       if(!pointers.current[e.pointerId])return;
+      if(tap.current&&tap.current.id===e.pointerId)tap.current.moved=Math.max(tap.current.moved,Math.hypot(e.clientX-tap.current.x,e.clientY-tap.current.y));
       pointers.current[e.pointerId]={x:e.clientX,y:e.clientY};
       var ids=Object.keys(pointers.current),gesture=pinch.current;
       if(ids.length===2&&gesture){
@@ -1136,8 +1210,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     }
     function pointerEnd(e) {
       if(!pointers.current[e.pointerId])return;
+      var press=tap.current;tap.current=null;
       delete pointers.current[e.pointerId];rebaseGesture();
       if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
+      if(e.type==='pointerup'&&press&&press.id===e.pointerId&&press.moved<6&&Date.now()-press.time<450)pickLandmarkAt(e.clientX,e.clientY);
+    }
+    // The landmark nearest a tap, projected the way the discovery card projects it.
+    function pickLandmarkAt(clientX,clientY) {
+      if(!ready||!canvas.current||!api||!api.math||!api.math.targetView||!info.position||info.position.length!==3)return false;
+      var box=canvas.current.getBoundingClientRect(),best=null,bestGap=Infinity;
+      if(!box.width||!box.height)return false;
+      destinations.forEach(function(target){
+        var delta=target.position.map(function(v,i){return v-info.position[i];}),distance=Math.hypot.apply(Math,delta);
+        if(!Number.isFinite(distance)||distance<1e-9)return;
+        var view=api.math.targetView(delta.map(function(v){return v/distance;}),info.yaw||0,info.pitch||0,mode==='relativity'&&!compareRest?beta:0,fov,box.width/box.height);
+        if(!view||!view.inView)return;
+        var gap=Math.hypot(view.screen[0]*box.width-(clientX-box.left),view.screen[1]*box.height-(clientY-box.top));
+        if(gap<bestGap){bestGap=gap;best=target;}
+      });
+      if(!best||bestGap>32)return false;
+      if(mode==='explore')inspectDiscovery(best.id);else chooseTarget(best.id);
+      return true;
     }
     function nudge(direction) { if(scene.current && ready && mode==='explore')scene.current.nudge(direction,cameraStep); }
     function undoNudge() { if(scene.current && ready&&scene.current.undoNudge())setJourney(null); }
@@ -1670,7 +1763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       if((savedSettings&&savedSettings.mode==='relativity'&&savedSettings.region!=='neighborhood')||!restore(saved.snapshot)) { setNotice(label('invalid_view','This saved view could not be restored. Its data may be incomplete.')); return false; }
       setJourney(null);
       setTour(null);
-      setPairView(null);setInspection(null);
+      setPairView(null);setInspection(null);veil();
       if(!keepReturns)setReturnViews([]);
       var restored = scene.current.snapshot(), s = restored.settings;
       setMode(s.mode); setRegion(s.region); setBeta(s.beta); setCompareRest(s.compareRest); setFov(s.fov); setExposure(s.exposure); setQuality(s.quality); setDust(s.dust!==false); settingsRef.current.dust=s.dust!==false; setTargetId(restored.targetId||''); setExperiment('');
@@ -1761,14 +1854,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       var wasFullscreen=false;
       function hidden() { if (document.hidden) {stop();clearGesture();} }
       function fullChanged() {
-        var next=!!stage.current&&document.fullscreenElement===stage.current;
+        var node=stage.current;
+        var next=!!node&&(document.fullscreenElement===node||node.getAttribute('data-allo-fullscreen-active')==='true');
+        if(next===wasFullscreen)return;
         clearGesture();setShowInViewControls(false);setOverlayFocus(false);setFullscreen(next);
-        if(wasFullscreen&&!next&&canvas.current)canvas.current.focus({preventScroll:true});
+        if(canvas.current)canvas.current.focus({preventScroll:true});
         wasFullscreen=next;
       }
+      // The CSS fill-frame fallback raises no fullscreenchange; it toggles this marker.
+      // Watch the document, since the stage mounts only once the flight panel opens.
+      var fillFrame=typeof MutationObserver==='function'?new MutationObserver(fullChanged):null;
+      if(fillFrame)fillFrame.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['data-allo-fullscreen-active']});
       document.addEventListener('visibilitychange',hidden);
       document.addEventListener('fullscreenchange',fullChanged);
-      return function() { document.removeEventListener('visibilitychange',hidden); document.removeEventListener('fullscreenchange',fullChanged); };
+      return function() { if(fillFrame)fillFrame.disconnect(); document.removeEventListener('visibilitychange',hidden); document.removeEventListener('fullscreenchange',fullChanged); };
     }, []);
     function keyDown(event) {
       if(event.ctrlKey||event.metaKey||event.altKey)return;
@@ -1803,6 +1902,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     React.useEffect(function(){if(pairView&&!activePair)setPairView(null);},[pairView,activePair]);
     var showInspection=!!(inspectionTarget&&activeTarget&&ready&&showHud&&!activePair&&mode==='explore'&&!activeTour&&!(flyby&&flyby.active)&&!(info.navigation&&info.navigation.active)&&!(fullscreen&&showInViewControls)&&!(checkpoint&&checkpoint.kind==='boundary')&&(!running||(info.orbit&&info.orbit.active)||inspectionGlide.active));
     var showJourney=!!(showHud&&fullscreen&&ready&&checkpoint&&!showInViewControls&&!overlayFocus&&!showInspection);
+    var reduceFlightMotion=!!props.still||!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var motionNow=info.motion||{},paceNow=Math.max(0,Number(motionNow.paceLyPerSecond)||0);
+    var streakIntensity=paceNow>0?Math.max(0,Math.min(1,(Math.log(paceNow/limits[0])/Math.log(limits[1]/limits[0])-0.12)/0.88)):0;
+    var streaksActive=ready&&running&&mode==='explore'&&['orbit','glide','flyby'].indexOf(motionNow.kind)===-1&&streakIntensity>0.02;
     var journeyActions={onContinue:toggleFlybyPlayback,onDetour:beginFlybyDetour,onDismiss:dismissJourney,onFaceCenter:faceJourneyCenter,onReset:resetJourney,onInspect:inspectJourney,onOrbit:orbitJourney,onSave:function(){openJourneySection('compose','uf-inview-view-name');},onExplore:function(){openJourneySection('explore');}};
     return h('section',{id:'universe-flight',className:'uni-flight','aria-labelledby':'universe-flight-title'},
       h('style',null,UNIVERSE_FLIGHT_CSS),
@@ -1810,6 +1913,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
         h('div',null,h('p',{className:'uf-eyebrow'},label('eyebrow','SPACE, AT YOUR PACE')),
           h('h2',{id:'universe-flight-title'},label('title','Take the controls. Explore the universe.')),
           h('p',null,label('intro','Fly between stars, pull back to a galaxy, or stop and look around. Explore freely, then try Einstein’s thought experiment.'))),
+        h('svg',{className:'uf-intro-art',viewBox:'0 0 240 120','aria-hidden':'true',focusable:'false'},
+          h('defs',null,
+            h('radialGradient',{id:'uf-art-core'},h('stop',{offset:'0%',stopColor:'#fef3c7'}),h('stop',{offset:'60%',stopColor:'#fbbf24',stopOpacity:.5}),h('stop',{offset:'100%',stopColor:'#fbbf24',stopOpacity:0})),
+            h('linearGradient',{id:'uf-art-trail',x1:0,x2:1,y1:0,y2:0},h('stop',{offset:'0%',stopColor:'#5eead4',stopOpacity:0}),h('stop',{offset:'100%',stopColor:'#5eead4',stopOpacity:.9}))),
+          [[12,18],[40,96],[70,30],[98,108],[126,14],[150,90],[214,104],[228,22],[188,10],[58,62],[110,58]].map(function(p,i){return h('circle',{key:i,cx:p[0],cy:p[1],r:i%3?0.9:1.4,fill:'#cbd5e1',opacity:.8});}),
+          h('g',{transform:'translate(184 56) rotate(-18) scale(1 .55)'},
+            h('circle',{r:34,fill:'url(#uf-art-core)'}),
+            [0,Math.PI].map(function(ph,k){var pts=[];for(var a=0;a<=7;a+=.2){var r=5*Math.exp(.22*a);pts.push((r*Math.cos(a+ph)).toFixed(1)+','+(r*Math.sin(a+ph)).toFixed(1));}return h('polyline',{key:k,points:pts.join(' '),fill:'none',stroke:'#7dd3fc',strokeOpacity:.75,strokeWidth:3,strokeLinecap:'round'});})),
+          h('path',{d:'M8 104 C 60 100 96 70 132 58',fill:'none',stroke:'url(#uf-art-trail)',strokeWidth:2,strokeDasharray:'4 4'}),
+          h('g',{transform:'translate(136 56) rotate(-24)'},h('polygon',{points:'8,0 -6,-5 -3,0 -6,5',fill:'#f0fdfa'}),h('circle',{cx:-8,cy:0,r:2.2,fill:'#5eead4',opacity:.8})),
+          h('g',{transform:'translate(46 34)'},h('circle',{r:9,fill:'#a78bfa'}),h('ellipse',{rx:16,ry:4,fill:'none',stroke:'#ddd6fe',strokeWidth:1.4,transform:'rotate(-14)'}))),
         button(props.open?label('close','Close flight explorer'):label('open','Open 3D flight'),function(){stop();props.onToggle(!props.open);},{'aria-expanded':props.open,'aria-controls':'universe-flight-workspace',className:'uf-primary'})
       ),
       props.open && h('div',{id:'universe-flight-workspace'},
@@ -1828,6 +1942,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               h('p',{id:'uf-journey-announcement',className:'uf-journey-announcement',role:'status','aria-atomic':'true'},checkpoint?(checkpoint.kind==='flyby-stop'?flybyStopTitle(checkpoint,label)+'. '+flybyStopHelp(checkpoint,label):checkpoint.kind==='boundary'?label('journey_boundary_title','Scene limit reached')+'. '+label('journey_boundary_help','Travel is paused at the limit of this generated scene.'):checkpoint.kind==='flyby'?flybyCheckpointTitle(checkpoint,label)+'. '+flybyCheckpointHelp(checkpoint,label):label('journey_arrival_title','Arrived at ')+checkpoint.targetName+'. '+label('journey_arrival_help','Travel is paused at your chosen viewing distance. Look around or compose a view.')):''),
               h('canvas',{ref:canvas,tabIndex:0,role:'img','aria-label':label('canvas','3D universe view. Drag to look around; pinch or Shift-scroll to zoom. Arrow keys turn. Plus and minus zoom; zero resets the lens. Space starts or pauses travel; Escape pauses; Home faces forward.'),'aria-describedby':'uf-scene-description',onKeyDown:keyDown,
                 onPointerDown:pointerDown,onPointerMove:pointerMove,onPointerUp:pointerEnd,onPointerCancel:pointerEnd,onLostPointerCapture:pointerEnd}),
+              h(UniverseFlightMotionStreaks,{React:React,active:streaksActive,intensity:streakIntensity,still:reduceFlightMotion}),
+              cutKey>0&&!reduceFlightMotion&&h('div',{key:'veil-'+cutKey,className:'uf-cut-veil','aria-hidden':'true'}),
               compositionGrid&&h('svg',{className:'uf-composition-grid',viewBox:'0 0 300 300',preserveAspectRatio:'none','aria-hidden':'true',focusable:'false'},
                 [100,200].map(function(value){return h('line',{key:'v'+value,x1:value,y1:0,x2:value,y2:300});}),
                 [100,200].map(function(value){return h('line',{key:'h'+value,x1:0,y1:value,x2:300,y2:value});})),
@@ -1888,6 +2004,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 onSpeed:setSpeedLevel,onSmooth:chooseSmoothTravel,onBeta:chooseBeta,onTime:setTimeScale,onCompare:function(){setCompareRest(!compareRest);},onOrbitRate:setOrbitRate,onOrbitTilt:setOrbitTilt,onReverseOrbit:function(){setOrbitDirection(-orbitDirection);},onTravel:toggleTravel}),
               button(fullscreen?label('exit_fullscreen','Exit full screen'):label('fullscreen','Full screen'),function(){
                 var element=stage.current;
+                // The shared helper tries real fullscreen and falls back to a CSS fill-frame
+                // where a sandboxed embed refuses it; fullChanged below follows both.
+                if(element&&typeof window.__alloStemFS==='function'){window.__alloStemFS(element);return;}
                 if(document.fullscreenElement){if(document.exitFullscreen)document.exitFullscreen().catch(function(){});}
                 else if(element&&element.requestFullscreen){element.requestFullscreen().then(function(){if(canvas.current)canvas.current.focus();}).catch(function(){setNotice(label('fullscreen_unavailable','Full screen is unavailable in this browser.'));});}
                 else setNotice(label('fullscreen_unavailable','Full screen is unavailable in this browser.'));
@@ -2103,8 +2222,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-landmark-copy small{font-size:10px;font-weight:400;line-height:1.4;color:#c7dce8;}
   [data-universe-tool] .uf-landmark-copy .uf-landmark-state{color:#ace8d9;}
   [data-universe-tool] .uf-stage button.uf-landmark-pick{position:absolute;transform:translate(-50%,-50%);width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:1px solid #a0e6d9;border-radius:50%;background:#0d293de8;color:#d9fff5;box-shadow:0 0 0 3px #08132199;z-index:2;font-size:13px;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-landmark-browser{bottom:148px;max-height:calc(100% - 268px);}
-  @media(max-height:479px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-landmark-browser{left:50%;right:auto;transform:translateX(-50%);bottom:12px;max-height:calc(100% - 24px);width:252px;}[data-universe-tool] .uf-landmark-browser-note{display:none;}}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-landmark-browser{bottom:148px;max-height:calc(100% - 268px);}
+  @media(max-height:479px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-landmark-browser{left:50%;right:auto;transform:translateX(-50%);bottom:12px;max-height:calc(100% - 24px);width:252px;}[data-universe-tool] .uf-landmark-browser-note{display:none;}}
   @media(forced-colors:active){[data-universe-tool] .uf-landmark-browser{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}[data-universe-tool] .uf-landmark-browser h3,[data-universe-tool] .uf-landmark-browser p,[data-universe-tool] .uf-landmark-copy small,[data-universe-tool] .uf-landmark-copy .uf-landmark-state,[data-universe-tool] .uf-landmark-number{color:CanvasText;border-color:CanvasText;}}
 
   [data-universe-tool] .uf-scenic-duration{display:block;margin-top:8px;font-size:10px;opacity:.85;}
@@ -2180,7 +2299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-composition-grid line{stroke:#c1dce2;stroke-width:.8;vector-effect:non-scaling-stroke;}
   [data-universe-tool] .uf-clean-view .uf-composition-grid{display:none;}
   [data-universe-tool] .uf-stage button.uf-flight-controls-toggle{display:none;position:absolute;bottom:94px;right:12px;background:#102d40f5;z-index:4;}
-  [data-universe-tool] .uf-stage:fullscreen button.uf-flight-controls-toggle{display:block;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) button.uf-flight-controls-toggle{display:block;}
   [data-universe-tool] .uf-inview-controls{position:absolute;bottom:150px;right:12px;width:min(320px,calc(100% - 24px));max-height:calc(100% - 210px);display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:16px;border:1px solid #7495a8;border-radius:12px;background:#0e2335;box-shadow:0 8px 30px #0009;z-index:4;}
   [data-universe-tool] .uf-inview-heading{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:10px;min-height:44px;}
   [data-universe-tool] .uf-inview-heading h3{margin:0;min-width:0;font-size:16px;color:#ddf7ee;}
@@ -2324,7 +2443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-route-track i{display:block;height:100%;background:#a6efdf;}
   [data-universe-tool] .uf-route-progress small{color:#bed4e6;letter-spacing:0;}
   [data-universe-tool] .uf-clean-view .uf-route-progress{display:none;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-route-progress{bottom:160px;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-route-progress{bottom:160px;}
   [data-universe-tool] .uf-chart{margin-top:18px;border-top:1px solid #4b6279;}
   [data-universe-tool] .uf-chart summary{padding:14px 0;color:#c7e9ee;min-height:48px;font-size:12px;font-weight:650;cursor:pointer;}
   [data-universe-tool] .uf-chart-planes{display:flex;gap:6px;margin-bottom:10px;}
@@ -2347,26 +2466,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-clean-view .uf-target-bearing,[data-universe-tool] .uf-clean-view .uf-at-landmark{display:none;}
   [data-universe-tool] .uf-clean-view .uf-target-finder{display:none;}
   [data-universe-tool] .uf-stage.uf-clean-view button.uf-target-marker,[data-universe-tool] .uf-stage.uf-clean-view button.uf-target-finder{display:none;}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen{--uf-bearing-top:114px;}[data-universe-tool] .uf-stage:fullscreen .uf-lens-controls{top:16px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-controls{bottom:144px;max-height:calc(100% - 156px);padding:8px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-tabs button{min-height:36px;font-size:11px;}[data-universe-tool] .uf-stage:fullscreen .uf-inview-body{padding:0;}[data-universe-tool] .uf-stage:fullscreen .uf-scene-top .uf-chip:nth-child(2){display:none;}[data-universe-tool] .uf-stage:fullscreen button.uf-target-finder,[data-universe-tool] .uf-stage:fullscreen .uf-at-landmark{top:16px;}[data-universe-tool] .uf-stage:fullscreen .uf-route-progress{width:96px;padding:8px;bottom:190px;}[data-universe-tool] .uf-stage:fullscreen .uf-route-progress small{display:none;}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]){--uf-bearing-top:114px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-lens-controls{top:16px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-controls{bottom:144px;max-height:calc(100% - 156px);padding:8px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-tabs button{min-height:36px;font-size:11px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-body{padding:0;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-scene-top .uf-chip:nth-child(2){display:none;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) button.uf-target-finder,[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-at-landmark{top:16px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-route-progress{width:96px;padding:8px;bottom:190px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-route-progress small{display:none;}}
   @media(max-height:480px) and (min-width:520px){
-    [data-universe-tool] .uf-stage:fullscreen .uf-inview-controls{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:44px minmax(0,1fr);height:calc(100% - 156px);}
-    [data-universe-tool] .uf-stage:fullscreen .uf-inview-heading{grid-column:2;grid-row:1;gap:0;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-inview-heading h3{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-inview-tabs{grid-column:1;grid-row:1;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-inview-body{grid-column:1 / -1;grid-row:2;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card{display:flex;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card .uf-inview-heading{gap:10px;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-journey-card .uf-inview-heading h3{position:static;width:auto;height:auto;margin:0;padding:0;overflow:visible;clip:auto;white-space:normal;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-controls{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:44px minmax(0,1fr);height:calc(100% - 156px);}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-heading{grid-column:2;grid-row:1;gap:0;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-heading h3{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-tabs{grid-column:1;grid-row:1;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inview-body{grid-column:1 / -1;grid-row:2;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-card{display:flex;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-card .uf-inview-heading{gap:10px;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-card .uf-inview-heading h3{position:static;width:auto;height:auto;margin:0;padding:0;overflow:visible;clip:auto;white-space:normal;}
   }
   [data-universe-tool] .uf-orbit-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid #30465e;}
   [data-universe-tool] .uf-orbit-controls label,[data-universe-tool] .uf-orbit-controls p{grid-column:1/-1;}
   [data-universe-tool] .uf-orbit-controls input{width:100%;min-width:0;accent-color:#a6efdf;}
   @media(max-width:480px){[data-universe-tool] .uf-orbit-controls{grid-template-columns:minmax(0,1fr);}}
   [data-universe-tool] .uf-stage button.uf-overlay-toggle{position:absolute;bottom:40px;left:12px;background:#102336eb;font-size:11px;z-index:3;}
-  [data-universe-tool] .uf-stage:fullscreen button.uf-overlay-toggle{bottom:94px;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) button.uf-overlay-toggle{bottom:94px;}
   [data-universe-tool] .uf-stage button.uf-follow-route{position:absolute;left:12px;bottom:94px;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);min-height:44px;padding:10px 12px;border:1px solid #8dc5bc;border-radius:10px;background:linear-gradient(120deg,#183d46f5,#102a3bf5);color:#e3fff6;font-size:11px;line-height:1.4;text-align:left;overflow-wrap:anywhere;z-index:3;}
   [data-universe-tool] .uf-follow-route svg{width:20px;height:20px;flex-shrink:0;}
-  [data-universe-tool] .uf-stage:fullscreen button.uf-follow-route{bottom:148px;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) button.uf-follow-route{bottom:148px;}
   [data-universe-tool] .uf-clean-view .uf-scene-top,[data-universe-tool] .uf-clean-view .uf-scene-bottom,[data-universe-tool] .uf-clean-view .uf-reticle,[data-universe-tool] .uf-clean-view .uf-target-marker{display:none;}
   [data-universe-tool] .uf-vistas{margin:20px 0;padding:18px;border:1px solid #30465e;border-radius:16px;background:linear-gradient(120deg,#122536,#101b30);}
   [data-universe-tool] .uf-vista-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;}
@@ -2427,13 +2546,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;border-top:1px solid #3d536c;}
   [data-universe-tool] .uf-view-column{min-width:0;}
   [data-universe-tool] .uf-stage{position:relative;height:clamp(340px,55vh,650px);background:#01040a;overflow:hidden;}
-  [data-universe-tool] .uf-stage.uf-inspection-details:not(:fullscreen),[data-universe-tool] .uf-stage.uf-pair-open:not(:fullscreen){height:clamp(560px,80vh,720px);}
-  [data-universe-tool] .uf-stage:fullscreen{width:100vw;height:100vh;}
+  [data-universe-tool] .uf-stage.uf-inspection-details:not(:fullscreen):not([data-allo-fullscreen-active]),[data-universe-tool] .uf-stage.uf-pair-open:not(:fullscreen):not([data-allo-fullscreen-active]){height:clamp(560px,80vh,720px);}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]){width:100vw;height:100vh;}
   [data-universe-tool] .uf-stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;}
   [data-universe-tool] .uf-stage canvas:active{cursor:grabbing;}
   [data-universe-tool] .uf-scene-top,[data-universe-tool] .uf-scene-bottom{position:absolute;left:16px;right:16px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;color:#cbd9e9;font-size:10px;letter-spacing:.09em;}
   [data-universe-tool] .uf-inspector{position:absolute;right:12px;bottom:94px;width:320px;max-width:calc(100% - 24px);max-height:calc(100% - 112px);display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid #607c90;border-top:2px solid #a0e6d9;border-radius:12px;background:linear-gradient(145deg,#122c3ff7,#071322fc);box-shadow:0 8px 32px #0008;z-index:3;color:#e8f2fa;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-inspector{bottom:148px;max-height:calc(100% - 160px);}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector{bottom:148px;max-height:calc(100% - 160px);}
   [data-universe-tool] .uf-inspector-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;min-height:44px;}
   [data-universe-tool] .uf-inspector-heading h3{margin:0;font-size:15px;line-height:1.3;color:#effbf8;}
   [data-universe-tool] .uf-inspector-heading p{margin:4px 0 0;font-size:11px;line-height:1.4;color:#bde6dd;font-variant-numeric:tabular-nums;}
@@ -2470,7 +2589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-pair-marker i{display:block;position:absolute;left:-6px;top:-6px;width:12px;height:12px;border:1px solid #b9f4e7;border-radius:50%;box-shadow:0 0 0 3px #071322bb;}
   [data-universe-tool] .uf-pair-marker span{position:absolute;width:max-content;max-width:140px;padding:4px 7px;border:1px solid #688d99;border-radius:5px;background:#091f2bed;color:#e5fff8;font-size:10px;line-height:1.4;text-align:center;overflow-wrap:anywhere;}
   [data-universe-tool] .uf-pair-view{position:absolute;right:12px;bottom:94px;width:220px;max-width:calc(100% - 24px);padding:8px 10px;border:1px solid #7196a2;border-radius:10px;background:#0d2635f5;z-index:2;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-pair-view{bottom:148px;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-pair-view{bottom:148px;}
   [data-universe-tool] .uf-pair-view p{margin:0 0 5px;font-size:11px;line-height:1.4;color:#d8f5ef;}
   [data-universe-tool] .uf-pair-view .uf-pair-names{font-size:10px;color:#c5d9e6;}
   [data-universe-tool] .uf-pair-guidance{display:grid;gap:6px;list-style:none;margin:6px 0;padding:0;}
@@ -2483,7 +2602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-pair-guidance li[data-in-view=false] .uf-pair-guide-status{color:#ffe3af;}
   @media(forced-colors:active){[data-universe-tool] .uf-pair-guidance li{background:Canvas;border-color:CanvasText;}[data-universe-tool] .uf-pair-guidance span{color:CanvasText!important;}}
   [data-universe-tool] .uf-pair-view{display:flex;flex-direction:column;gap:6px;max-height:min(380px,calc(100% - 214px));overflow:hidden;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-pair-view{max-height:min(380px,calc(100% - 268px));}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-pair-view{max-height:min(380px,calc(100% - 268px));}
   [data-universe-tool] .uf-pair-tools{display:flex;gap:6px;flex-shrink:0;}
   [data-universe-tool] .uf-pair-tools button{flex:1;min-width:0;padding:5px;}
   [data-universe-tool] .uf-pair-content{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8dbbbd #0d2635;}
@@ -2494,7 +2613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-pair-tools .uf-pair-frame:disabled{opacity:1;border-color:#66818a;background:#243a43;color:#c8dbe0;cursor:default;}
   [data-universe-tool] .uf-pair-view .uf-pair-frame-help{margin:5px 0;font-size:10px;line-height:1.4;flex-shrink:0;}
   @media(forced-colors:active){[data-universe-tool] .uf-pair-tools .uf-pair-frame:disabled{color:GrayText!important;border-color:GrayText!important;}}
-  @media(max-height:479px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-pair-view{max-height:calc(100% - 24px);}}
+  @media(max-height:479px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-pair-view{max-height:calc(100% - 24px);}}
   [data-universe-tool] .uf-pair-view button{width:100%;min-height:44px;font-size:11px;}
   [data-universe-tool] .uf-pair-depth{margin:7px 0;border-top:1px solid #547681;}
   [data-universe-tool] .uf-pair-depth summary{min-height:44px;display:flex;align-items:center;gap:8px;color:#e5fff8;font-size:11px;font-weight:650;cursor:pointer;list-style:none;}
@@ -2571,19 +2690,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-inspector-orbit button{width:100%;font-size:11px;}
   @media(forced-colors:active){[data-universe-tool] .uf-inspector-perspective{background:Canvas;border-color:CanvasText;}[data-universe-tool] .uf-inspector-perspective>summary,[data-universe-tool] .uf-inspector-orbit label{color:CanvasText!important;}[data-universe-tool] .uf-perspective-ring{fill:Canvas;stroke:CanvasText;}[data-universe-tool] .uf-perspective-axis{stroke:CanvasText;}[data-universe-tool] .uf-perspective-camera{fill:Highlight;stroke:HighlightText;}[data-universe-tool] .uf-perspective-center{fill:CanvasText;}}
   [data-universe-tool] .uf-inspector-divider{display:block;border-top:1px solid #466a74;margin-top:12px;}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-inspector-lens{display:none;}}
-  @media(max-width:600px){[data-universe-tool] .uf-stage:not(:fullscreen) .uf-inspector-lens{display:none;}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector-lens{display:none;}}
+  @media(max-width:600px){[data-universe-tool] .uf-stage:not(:fullscreen):not([data-allo-fullscreen-active]) .uf-inspector-lens{display:none;}}
   [data-universe-tool] .uf-inspector-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex-shrink:0;}
   [data-universe-tool] .uf-inspector-actions button{min-height:44px;padding:5px;font-size:11px;}
   [data-universe-tool] .uf-inspection-open .uf-lens-controls,[data-universe-tool] .uf-inspection-open .uf-target-bearing,[data-universe-tool] .uf-inspection-open .uf-at-landmark{display:none;}
   [data-universe-tool] .uf-stage.uf-inspection-open button.uf-target-finder,[data-universe-tool] .uf-stage.uf-inspection-open button.uf-target-marker{display:none;}
   [data-universe-tool] .uf-inspection-open .uf-scene-top .uf-chip:nth-child(2){visibility:hidden;}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-inspector{left:12px;right:auto;width:252px;padding:6px 8px;gap:6px;}[data-universe-tool] .uf-stage:fullscreen.uf-inspection-open .uf-scene-top{display:none;}}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-inspector-expanded{bottom:12px;width:320px;max-height:calc(100% - 24px);}[data-universe-tool] .uf-stage:fullscreen.uf-inspection-details button.uf-fs-play,[data-universe-tool] .uf-stage:fullscreen.uf-inspection-details button.uf-overlay-toggle{display:none;}}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-inspector:not(.uf-inspector-expanded){width:320px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;}[data-universe-tool] .uf-stage:fullscreen .uf-inspector:not(.uf-inspector-expanded)>button.uf-inspector-return{margin:0;flex-shrink:0;}[data-universe-tool] .uf-stage:fullscreen .uf-inspector-actions{grid-template-columns:repeat(4,minmax(0,1fr));}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector{left:12px;right:auto;width:252px;padding:6px 8px;gap:6px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]).uf-inspection-open .uf-scene-top{display:none;}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector-expanded{bottom:12px;width:320px;max-height:calc(100% - 24px);}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]).uf-inspection-details button.uf-fs-play,[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]).uf-inspection-details button.uf-overlay-toggle{display:none;}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector:not(.uf-inspector-expanded){width:320px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector:not(.uf-inspector-expanded)>button.uf-inspector-return{margin:0;flex-shrink:0;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-inspector-actions{grid-template-columns:repeat(4,minmax(0,1fr));}}
   @media(forced-colors:active){[data-universe-tool] .uf-inspector,[data-universe-tool] .uf-inspector-prompt{background:Canvas;border-color:CanvasText;box-shadow:none;}[data-universe-tool] .uf-inspector h3,[data-universe-tool] .uf-inspector h4,[data-universe-tool] .uf-inspector p,[data-universe-tool] .uf-inspector span{color:CanvasText!important;}[data-universe-tool] .uf-inspector button span,[data-universe-tool] .uf-inspector button strong,[data-universe-tool] .uf-inspector button small{color:ButtonText!important;}}
   [data-universe-tool] .uf-discovery{position:absolute;right:12px;bottom:94px;width:280px;max-width:calc(100% - 24px);padding:10px 12px;border:1px solid #58758b;border-top:2px solid #87dcca;border-radius:12px;background:linear-gradient(135deg,#10283bf5,#081321fa);box-shadow:0 8px 28px #0007;z-index:2;color:#e8f2fa;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-discovery{bottom:148px;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-discovery{bottom:148px;}
   [data-universe-tool] .uf-discovery-marker{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border:1px solid #a0e6d9;border-radius:50%;box-shadow:0 0 0 3px #08132199;display:grid;place-items:center;pointer-events:none;z-index:1;}
   [data-universe-tool] .uf-discovery-marker span{width:4px;height:4px;border-radius:50%;background:#a0e6d9;}
   [data-universe-tool] .uf-discovery-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;}
@@ -2593,7 +2712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-discovery p.uf-discovery-distance{margin:5px 0 9px;font-size:11px;line-height:1.4;color:#c4d5e5;}
   [data-universe-tool] .uf-discovery-actions{display:flex;gap:8px;}
   [data-universe-tool] .uf-discovery-actions button{flex:1;min-height:44px;padding:6px 8px;font-size:12px;}
-  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-discovery{left:12px;right:auto;width:252px;padding:6px 10px;}[data-universe-tool] .uf-stage:fullscreen .uf-discovery p.uf-discovery-distance{margin:2px 0 5px;}}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-discovery{left:12px;right:auto;width:252px;padding:6px 10px;}[data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-discovery p.uf-discovery-distance{margin:2px 0 5px;}}
   @media(forced-colors:active){[data-universe-tool] .uf-discovery{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}[data-universe-tool] .uf-discovery-eyebrow,[data-universe-tool] .uf-discovery p.uf-discovery-distance{color:CanvasText;}[data-universe-tool] .uf-stage button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}[data-universe-tool] .uf-discovery-marker{border-color:CanvasText;background:Canvas;box-shadow:none;}[data-universe-tool] .uf-discovery-marker span{background:CanvasText;}}
   @media(forced-colors:active){
     [data-universe-tool] .uf-vistas{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}
@@ -2620,7 +2739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-reticle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#d8eeff88;font:24px monospace;pointer-events:none;}
   [data-universe-tool] .uf-stage button.uf-fullscreen{position:absolute;bottom:40px;right:12px;background:#102336db;font-size:11px;}
   [data-universe-tool] .uf-stage button.uf-fs-play{display:none;position:absolute;bottom:40px;left:12px;background:#102336db;}
-  [data-universe-tool] .uf-stage:fullscreen button.uf-fs-play{display:block;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) button.uf-fs-play{display:block;}
   [data-universe-tool] .uf-stage .uf-journey-dock{--uf-dock-reserve:174px;width:min(300px,calc(100% - 24px));padding:10px 12px;gap:4px;max-height:calc(100% - 174px);overflow:hidden;}
   [data-universe-tool] .uf-journey-heading-copy{min-width:0;flex:1;}
   [data-universe-tool] .uf-journey-dock .uf-inview-heading h3{font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
@@ -2634,16 +2753,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-journey-dock-body>p{margin:10px 0 0;}
   [data-universe-tool] .uf-journey-dock .uf-journey-actions{margin:10px 0 2px;}
   @media(max-height:480px) and (min-width:520px){
-    [data-universe-tool] .uf-stage:fullscreen .uf-journey-dock{--uf-dock-reserve:156px;display:flex;height:auto;left:12px;right:auto;width:min(280px,calc(50% - 24px));bottom:144px;max-height:calc(100% - 156px);padding:8px 10px;}
-    [data-universe-tool] .uf-stage:fullscreen .uf-journey-dock .uf-inview-heading h3{font-size:13px;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-dock{--uf-dock-reserve:156px;display:flex;height:auto;left:12px;right:auto;width:min(280px,calc(50% - 24px));bottom:144px;max-height:calc(100% - 156px);padding:8px 10px;}
+    [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-dock .uf-inview-heading h3{font-size:13px;}
   }
-  [data-universe-tool] .uf-stage:fullscreen .uf-journey-dock[data-journey-fit=room]{bottom:12px;max-height:calc(100% - 24px);z-index:6;}
-  [data-universe-tool] .uf-stage:fullscreen .uf-journey-dock[data-journey-fit=tight]{bottom:0;max-height:100%;padding:2px;gap:0;z-index:6;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-dock[data-journey-fit=room]{bottom:12px;max-height:calc(100% - 24px);z-index:6;}
+  [data-universe-tool] .uf-stage:is(:fullscreen,[data-allo-fullscreen-active]) .uf-journey-dock[data-journey-fit=tight]{bottom:0;max-height:100%;padding:2px;gap:0;z-index:6;}
   [data-universe-tool] .uf-journey-dock[data-journey-fit=tight] .uf-inview-heading{position:absolute;top:4px;right:4px;min-height:44px;z-index:1;}
   [data-universe-tool] .uf-journey-dock[data-journey-fit=tight] .uf-journey-heading-copy{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
   [data-universe-tool] .uf-journey-dock[data-journey-fit=tight] .uf-journey-disclosure>summary{padding-right:56px;}
   [data-universe-tool] .uf-stage.uf-clean-view>button.uf-fs-play,[data-universe-tool] .uf-stage.uf-clean-view>button.uf-flight-controls-toggle,[data-universe-tool] .uf-stage.uf-clean-view>button.uf-fullscreen{display:none;}
   [data-universe-tool] .uf-stage.uf-clean-view>button.uf-overlay-toggle{display:block;left:12px;right:auto;bottom:16px;min-height:44px;z-index:5;}
+  [data-universe-tool] .uf-stage.uf-clean-view:is(:fullscreen,[data-allo-fullscreen-active])>button.uf-fullscreen{display:block;bottom:16px;z-index:5;}
+  [data-universe-tool] .uf-stage canvas.uf-motion-streaks{position:absolute;inset:0;z-index:1;pointer-events:none;cursor:default;mix-blend-mode:screen;}
+  [data-universe-tool] .uf-cut-veil{position:absolute;inset:0;z-index:1;background:#01040a;pointer-events:none;animation:uf-veil .55s ease-out forwards;}
+  @keyframes uf-veil{from{opacity:.92}to{opacity:0}}
+  @media(prefers-reduced-motion:reduce){[data-universe-tool] .uf-cut-veil,[data-universe-tool] .uf-stage canvas.uf-motion-streaks{display:none;}}
+  [data-universe-tool] .uf-real-science{margin:10px 0;padding:10px 12px;border:1px solid #4f7a8c;border-left:3px solid #a0e6d9;border-radius:8px;background:#0c2232;}
+  [data-universe-tool] .uf-real-science h4{margin:0 0 4px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#a0e6d9;}
+  [data-universe-tool] .uf-real-science p{margin:0;font-size:12px;line-height:1.55;color:#e1eef6;}
+  [data-universe-tool] .uf-speed-context{color:#c6dceb;}
   @media(forced-colors:active){
     [data-universe-tool] .uf-journey-disclosure>summary,[data-universe-tool] .uf-journey-disclosure[open]>summary{background:ButtonFace;color:ButtonText;border-color:ButtonText;}
     [data-universe-tool] .uf-journey-disclosure>summary:focus-visible{outline-color:Highlight;}
@@ -2740,7 +2868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   @media(max-width:900px){[data-universe-tool] .uf-experiments{grid-template-columns:repeat(3,minmax(0,1fr));}[data-universe-tool] .uf-saved-views{grid-template-columns:repeat(2,minmax(0,1fr));}}
   @media(max-width:600px){[data-universe-tool] .uf-destinations,[data-universe-tool] .uf-relativity-lab{padding:16px;}[data-universe-tool] .uf-destination-list{grid-template-columns:1fr;}[data-universe-tool] .uf-experiments{grid-template-columns:repeat(2,minmax(0,1fr));}[data-universe-tool] .uf-spectrometer{grid-template-columns:1fr;padding:14px;}[data-universe-tool] .uf-clock-grid,[data-universe-tool] .uf-note-form,[data-universe-tool] .uf-saved-views{grid-template-columns:1fr;}[data-universe-tool] .uf-light-clock{padding:0 12px;}[data-universe-tool] .uf-target-actions>button{flex:1;} }
   @media(max-width:800px){[data-universe-tool] .uf-workspace{grid-template-columns:minmax(0,1fr);}[data-universe-tool] .uf-controls{border-inline-start:0;border-top:1px solid #3d536c;}[data-universe-tool] .uf-science-grid{grid-template-columns:1fr;}[data-universe-tool] .uf-intro{flex-direction:column;align-items:stretch;padding:18px;}[data-universe-tool] .uf-intro h2{font-size:22px;}[data-universe-tool] .uf-mode-note{width:100%;margin:4px 0;}[data-universe-tool] .uf-modes{padding:12px;}[data-universe-tool] .uf-stage{height:400px;}[data-universe-tool] .uf-scene-top{left:10px;right:10px;font-size:10px;}[data-universe-tool] .uf-chip{padding:5px;} }
-  `;
+  .uf-intro-art{flex:0 0 220px;width:220px;height:auto;}@media(max-width:820px){.uf-intro-art{display:none;}}`;
 
 
   function UniverseTutorialDialog(props) {
@@ -2837,6 +2965,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var steps = [
       { icon: '\u23F3', text: 'Use the Left and Right Arrow keys or drag the timeline slider to travel through cosmic epochs.' },
       { icon: '\u25B6', text: 'Activate Play to watch the universe evolve; you can pause playback at any time.' },
+      { icon: '\uD83D\uDD0D', text: 'Click or tap anything in the time-lapse picture to learn what it is. Time pauses while you look.' },
+      { icon: '\uD83D\uDE80', text: 'Open 3D flight to travel among stars and galaxies, and tap a landmark to learn about it.' },
       { icon: '\u2B50', text: 'Explore how a star’s mass shapes its lifecycle.' },
       { icon: '\uD83D\uDCCA', text: 'Study the HR Diagram to classify stars.' },
       { icon: '\uD83D\uDD73', text: 'Learn about dark energy, dark matter, and cosmic structure.' },
@@ -2985,7 +3115,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
   var universeScenes = new Set();
   function startUniverseScene(el, draw) {
-    if (el._sceneStop) el._sceneStop();
+    // A restart on the same canvas keeps its init flags. Clearing them here (a
+    // deferred first init restarts the scene) made every later render rebuild the
+    // canvas, regenerating its textures and wiping the picture each time.
+    if (el._sceneStop) {
+      var flags = [el._universeInit, el._zoomInit, el._bhInit, el._lensInit, el._rsInit];
+      el._sceneStop();
+      el._universeInit = flags[0]; el._zoomInit = flags[1]; el._bhInit = flags[2]; el._lensInit = flags[3]; el._rsInit = flags[4];
+    }
     var root = el.closest('[data-universe-tool]'), raf = 0, stopped = false, last = '', wasVisible = false;
     var media = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     function visible() {
@@ -3049,6 +3186,995 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     }, [props.check]);
     return null;
   }
+  // ── Story clock ──
+  // The slider gives every chapter the same space. Inside a chapter, time runs
+  // through that chapter's key moments on a log scale, so ten microseconds and
+  // four billion years both get room. Ages are in billions of years (Gyr).
+  var UNIVERSE_STOP_AGES = [0, 0.00038, 0.001, 0.2, 0.4, 4.6, 9.2, 13.8, 13.81];
+  var UNIVERSE_NOW_GYR = 13.8;
+  var UNIVERSE_SECOND = 1 / 3.15576e16, UNIVERSE_YEAR = 1e-9;
+  var UNIVERSE_LOOKBACK_FLOOR = 100 * UNIVERSE_YEAR;
+  function universeMoment(age, id, title, text) { return { age: age, id: id, title: title, text: text }; }
+  var UNIVERSE_MOMENTS = [
+    [
+      universeMoment(1e-43 * UNIVERSE_SECOND, 'planck', 'Planck time', 'The earliest moment today’s physics can try to describe. Explaining anything earlier needs a theory of quantum gravity that no one has completed.'),
+      universeMoment(1e-32 * UNIVERSE_SECOND, 'inflation', 'Inflation ends (if it happened)', 'A leading idea says space expanded by an enormous factor in a tiny fraction of a second, smoothing out the universe. Evidence supports it, but it is not confirmed.'),
+      universeMoment(1e-5 * UNIVERSE_SECOND, 'protons', 'Protons and neutrons form', 'About ten millionths of a second in, the universe has cooled enough for quarks to bind into protons and neutrons.'),
+      universeMoment(1 * UNIVERSE_SECOND, 'neutrinos', 'Neutrinos fly free', 'At about one second, ghostly neutrinos stop interacting with other matter. They still fill space today.'),
+      universeMoment(180 * UNIVERSE_SECOND, 'nuclei', 'The first atomic nuclei', 'Around three minutes, protons and neutrons fuse into helium and other light nuclei. This is Big Bang nucleosynthesis.'),
+      universeMoment(1200 * UNIVERSE_SECOND, 'nuclei-set', 'The recipe is set', 'By about 20 minutes it is too cool and thin for fusion. The mix is about 75% hydrogen and 25% helium by mass, with a trace of lithium.'),
+      universeMoment(50000 * UNIVERSE_YEAR, 'matter-era', 'Matter takes over', 'Around 50,000 years, matter starts to outweigh light and other radiation, so gravity can begin growing denser regions.')
+    ],
+    [],
+    [universeMoment(0.1, 'earliest-stars', 'The earliest possible stars', 'Some models suggest the very first stars could ignite as early as about 100 million years. The exact time is still uncertain.')],
+    [universeMoment(0.29, 'farthest-galaxies', 'The most distant galaxies seen so far', 'The James Webb Space Telescope has confirmed galaxies whose light left them about 300 million years after the Big Bang.')],
+    [
+      universeMoment(1.0, 'reionization', 'Reionization is largely complete', 'Ultraviolet light from stars and galaxies has split most of the hydrogen between galaxies back into charged particles. It took hundreds of millions of years.'),
+      universeMoment(3.3, 'cosmic-noon', 'Cosmic noon', 'Star formation across the universe peaks. Galaxies make new stars roughly ten times faster than they do today.')
+    ],
+    [universeMoment(8.0, 'acceleration', 'Expansion speeds up', 'About 5 to 6 billion years ago, the expansion of space began to speed up. Astronomers call the unknown cause dark energy.')],
+    [
+      universeMoment(9.26, 'earth', 'Earth forms', 'About 4.5 billion years ago, Earth grows from colliding rocks in the young Solar System.'),
+      universeMoment(10.3, 'life', 'Early life', 'The oldest widely accepted fossils of microbes are about 3.5 billion years old.'),
+      universeMoment(11.4, 'oxygen', 'Oxygen fills the air', 'About 2.4 billion years ago, microbes that use sunlight have released enough oxygen to change Earth’s atmosphere.'),
+      universeMoment(13.262, 'animals', 'Animals spread', 'About 540 million years ago, many animal groups appear quickly in the oceans.'),
+      universeMoment(13.734, 'dinosaurs', 'The dinosaurs’ end', 'About 66 million years ago, an asteroid impact ends the age of the non-bird dinosaurs.'),
+      universeMoment(13.7997, 'humans', 'Modern humans', 'Our species appears about 300,000 years ago — in the final minutes of a cosmic calendar year.'),
+      universeMoment(13.799995, 'history', 'All of written history', 'Writing began about 5,000 years ago. On the cosmic calendar, everything ever written fits in the last dozen seconds.')
+    ],
+    []
+  ];
+  var UNIVERSE_SEGMENTS = UNIVERSE_STOP_AGES.slice(0, -1).map(function (start, index) {
+    var end = UNIVERSE_STOP_AGES[index + 1], knots = [start], weights = [], at = [0];
+    UNIVERSE_MOMENTS[index].forEach(function (moment) { knots.push(moment.age); });
+    knots.push(end);
+    for (var k = 0; k < knots.length - 1; k++) weights.push(knots[k] === 0 ? 0.35 : 1);
+    var total = weights.reduce(function (sum, w) { return sum + w; }, 0), run = 0;
+    weights.forEach(function (w) { run += w; at.push(run / total); });
+    at[at.length - 1] = 1;
+    return { start: start, end: end, knots: knots, weights: weights, at: at, moments: UNIVERSE_MOMENTS[index], mode: index === 6 ? 'lookback' : index === 7 ? 'linear' : 'log' };
+  });
+  function universeBlend(mode, a, b, u, end) {
+    if (u <= 0) return a;
+    if (u >= 1) return b;
+    if (mode === 'lookback') { var la = end - a, lb = Math.max(end - b, UNIVERSE_LOOKBACK_FLOOR); return end - la * Math.pow(lb / la, u); }
+    if (mode === 'log' && a > 0) return a * Math.pow(b / a, u);
+    return a + (b - a) * u;
+  }
+  function universeUnblend(mode, a, b, age, end) {
+    if (age <= a) return 0;
+    if (age >= b) return 1;
+    if (mode === 'lookback') {
+      var la = end - a, lb = Math.max(end - b, UNIVERSE_LOOKBACK_FLOOR), l = end - age;
+      return l <= lb ? 1 : Math.log(l / la) / Math.log(lb / la);
+    }
+    if (mode === 'log' && a > 0) return Math.log(age / a) / Math.log(b / a);
+    return (age - a) / (b - a);
+  }
+  function universeStoryAge(position) {
+    var last = UNIVERSE_STOP_AGES.length - 1;
+    position = Number(position);
+    if (!(position > 0)) return UNIVERSE_STOP_AGES[0];
+    if (position >= last) return UNIVERSE_STOP_AGES[last];
+    var i = Math.floor(position), f = position - i, seg = UNIVERSE_SEGMENTS[i], k = 0;
+    if (f <= 0) return UNIVERSE_STOP_AGES[i];
+    while (k < seg.knots.length - 2 && f > seg.at[k + 1]) k++;
+    return universeBlend(seg.mode, seg.knots[k], seg.knots[k + 1], (f - seg.at[k]) / (seg.at[k + 1] - seg.at[k]), seg.end);
+  }
+  function universeStoryPosition(age) {
+    var stops = UNIVERSE_STOP_AGES, last = stops.length - 1, i = 0, k = 0;
+    age = Number(age);
+    if (!(age > 0)) return 0;
+    if (age >= stops[last]) return last;
+    while (i < last - 1 && age >= stops[i + 1]) i++;
+    if (age === stops[i]) return i;
+    var seg = UNIVERSE_SEGMENTS[i];
+    while (k < seg.knots.length - 2 && age >= seg.knots[k + 1]) k++;
+    return i + seg.at[k] + universeUnblend(seg.mode, seg.knots[k], seg.knots[k + 1], age, seg.end) * (seg.at[k + 1] - seg.at[k]);
+  }
+  // The moment whose knot is nearest the position, inside the same chapter.
+  function universeStoryMoment(position) {
+    var i = Math.floor(Math.max(0, Math.min(UNIVERSE_SEGMENTS.length - 1, Number(position) || 0))), seg = UNIVERSE_SEGMENTS[i];
+    var f = (Number(position) || 0) - i, best = null, bestGap = Infinity;
+    for (var k = 0; k < seg.knots.length; k++) {
+      var gap = Math.abs(f - seg.at[k]);
+      if (gap < bestGap) { bestGap = gap; best = k; }
+    }
+    if (best === 0 || best === seg.knots.length - 1) return null;
+    return Object.assign({ chapter: i, position: i + seg.at[best] }, seg.moments[best - 1]);
+  }
+  // Illustration clock: the artwork's own timeline, advanced at story pace.
+  var UNIVERSE_SCENE_STOPS = [0, 0.32, 0.4, 0.65, 1.1, 4.6, 9.2, 13.8, 13.81];
+  function universeSceneClock(age) {
+    var position = universeStoryPosition(age), i = Math.min(UNIVERSE_SCENE_STOPS.length - 2, Math.floor(position));
+    if (position >= UNIVERSE_SCENE_STOPS.length - 1) return UNIVERSE_SCENE_STOPS[UNIVERSE_SCENE_STOPS.length - 1];
+    return UNIVERSE_SCENE_STOPS[i] + (position - i) * (UNIVERSE_SCENE_STOPS[i + 1] - UNIVERSE_SCENE_STOPS[i]);
+  }
+  var UNIVERSE_SUPERSCRIPT = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function universeRound(value) { var r = value < 10 ? Math.round(value * 10) / 10 : Math.round(value); return r.toLocaleString('en-US'); }
+  function universeUnits(value, unit) { var r = universeRound(value); return r + ' ' + unit + (r === '1' ? '' : 's'); }
+  // A duration in Gyr, in the unit a learner would use for it.
+  function universeSpanLabel(gyr) {
+    var seconds = gyr / UNIVERSE_SECOND, years = gyr / UNIVERSE_YEAR;
+    if (!(seconds > 0)) return '0 seconds';
+    if (seconds < 1e-6) {
+      var exponent = Math.floor(Math.log10(seconds) + 1e-9), mantissa = Math.round(seconds / Math.pow(10, exponent));
+      if (mantissa >= 10) { mantissa = 1; exponent++; }
+      return (mantissa > 1 ? mantissa + ' × ' : '') + '10' + String(exponent).split('').map(function (c) { return UNIVERSE_SUPERSCRIPT[c]; }).join('') + ' seconds';
+    }
+    if (seconds < 1e-3) return universeUnits(seconds * 1e6, 'microsecond');
+    if (seconds < 1) return universeUnits(seconds * 1e3, 'millisecond');
+    if (seconds < 120) return universeRound(seconds) + (Math.round(seconds) === 1 ? ' second' : ' seconds');
+    if (seconds < 7200) return universeRound(seconds / 60) + ' minutes';
+    if (seconds < 172800) return universeRound(seconds / 3600) + ' hours';
+    if (years < 2) return universeRound(seconds / 86400) + ' days';
+    if (years < 1000) return universeRound(years) + ' years';
+    if (years < 1e6) return universeRound(years / 1e3) + ' thousand years';
+    if (years < 1e9) return universeRound(years / 1e6) + ' million years';
+    return universeRound(years / 1e9) + ' billion years';
+  }
+  function universeAgeLabel(value) {
+    if (value >= UNIVERSE_STOP_AGES[8]) return 'Future fate preview';
+    if (value <= 0) return 'Big Bang';
+    if (value < 1e-6) return universeSpanLabel(value);
+    if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years';
+    if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' Myr';
+    if (value > UNIVERSE_STOP_AGES[6] && value < UNIVERSE_NOW_GYR) return universeSpanLabel(UNIVERSE_NOW_GYR - value) + ' ago';
+    return value.toFixed(1) + ' Gyr';
+  }
+  function universeAgeSentence(value) {
+    if (value >= UNIVERSE_STOP_AGES[8]) return 'future fate preview beyond the present day';
+    if (value <= 0) return 'Big Bang moment';
+    if (value < 1e-6) return universeSpanLabel(value) + ' after the Big Bang';
+    if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years after the Big Bang';
+    if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' million years after the Big Bang';
+    if (value > UNIVERSE_STOP_AGES[6] && value < UNIVERSE_NOW_GYR) return universeSpanLabel(UNIVERSE_NOW_GYR - value) + ' ago, ' + value.toFixed(2) + ' billion years after the Big Bang';
+    return value.toFixed(1) + ' billion years after the Big Bang';
+  }
+  // Where this age falls if all 13.8 billion years were squeezed into one calendar year.
+  var UNIVERSE_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var UNIVERSE_MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  function universeCalendarLabel(age) {
+    if (age >= UNIVERSE_STOP_AGES[8]) return 'After midnight, Dec 31: a possible future';
+    var year = 365 * 86400, seconds = Math.max(0, Math.min(1, age / UNIVERSE_NOW_GYR)) * year;
+    if (seconds >= year) return 'Midnight, Dec 31: now';
+    if (seconds < 1) return 'Jan 1, within the first second';
+    var day = Math.floor(seconds / 86400), month = 0;
+    while (day >= UNIVERSE_MONTH_DAYS[month]) { day -= UNIVERSE_MONTH_DAYS[month]; month++; }
+    var inDay = seconds - Math.floor(seconds / 86400) * 86400, hour = Math.floor(inDay / 3600), minute = Math.floor(inDay % 3600 / 60), second = Math.floor(inDay % 60);
+    var fine = seconds < 60 || year - seconds < 60;
+    var clock = ((hour + 11) % 12 + 1) + ':' + String(minute).padStart(2, '0') + (fine ? ':' + String(second).padStart(2, '0') : '') + (hour < 12 ? ' AM' : ' PM');
+    return UNIVERSE_MONTHS[month] + ' ' + (day + 1) + ', ' + clock;
+  }
+  // Playback pacing: travel between moments, linger on each one, linger longer at
+  // each chapter. Durations are seconds at 1x speed.
+  var UNIVERSE_TRAVEL_SECONDS = 2.4, UNIVERSE_MOMENT_DWELL = 2.6, UNIVERSE_CHAPTER_DWELL = 4.5;
+  var UNIVERSE_PLAYBACK_LEGS = (function () {
+    var legs = [], clock = 0, last = UNIVERSE_SEGMENTS.length;
+    UNIVERSE_SEGMENTS.forEach(function (seg, i) {
+      for (var k = 0; k < seg.knots.length - 1; k++) {
+        var travel = UNIVERSE_TRAVEL_SECONDS * seg.weights[k], to = i + seg.at[k + 1], endsChapter = k === seg.knots.length - 2;
+        legs.push({ kind: 'travel', from: i + seg.at[k], to: to, start: clock, duration: travel }); clock += travel;
+        if (endsChapter && i + 1 === last) continue;
+        var dwell = endsChapter ? UNIVERSE_CHAPTER_DWELL : UNIVERSE_MOMENT_DWELL;
+        legs.push({ kind: 'dwell', at: to, start: clock, duration: dwell, chapter: endsChapter ? i + 1 : -1 }); clock += dwell;
+      }
+    });
+    legs.total = clock;
+    return legs;
+  })();
+  // Where playback resumes for a slider position: inside a travel leg, or at the
+  // start of the next leg when the position sits exactly on a moment or chapter.
+  function universePlaybackClock(position) {
+    var legs = UNIVERSE_PLAYBACK_LEGS;
+    for (var n = 0; n < legs.length; n++) {
+      var leg = legs[n];
+      if (leg.kind !== 'travel' || position >= leg.to) continue;
+      if (position <= leg.from) return leg.start;
+      var u = (position - leg.from) / (leg.to - leg.from), eased = u;
+      for (var step = 0; step < 24; step++) eased -= (eased * eased * (3 - 2 * eased) - u) / Math.max(1e-6, 6 * eased * (1 - eased));
+      return leg.start + Math.max(0, Math.min(1, eased)) * leg.duration;
+    }
+    return legs.total;
+  }
+  function universePlaybackAt(clock) {
+    var legs = UNIVERSE_PLAYBACK_LEGS;
+    if (clock >= legs.total) return { position: UNIVERSE_SEGMENTS.length, leg: null, done: true };
+    for (var n = 0; n < legs.length; n++) {
+      var leg = legs[n];
+      if (clock >= leg.start + leg.duration) continue;
+      if (leg.kind === 'dwell') return { position: leg.at, leg: leg, done: false };
+      var u = Math.max(0, Math.min(1, (clock - leg.start) / leg.duration));
+      return { position: leg.from + (leg.to - leg.from) * u * u * (3 - 2 * u), leg: leg, done: false };
+    }
+    return { position: UNIVERSE_SEGMENTS.length, leg: null, done: true };
+  }
+  // ── Time-lapse player ──
+  // Runs on the interval handle the tool has always used, so every existing
+  // pause path (clearInterval(window._universeTimeLapse)) still stops it. Each
+  // tick moves the canvas, sliders and live labels directly and hands the age
+  // to React only a few times a second, instead of re-rendering the whole tool
+  // twenty times a second.
+  var universePlayer = { clock: 0, last: 0, committed: 0, leg: null, start: 0, hooks: null, holdUntil: 0 };
+  function universePaintTime(age, position) {
+    var root = document.querySelector('[data-universe-tool]');
+    if (!root) return;
+    var canvas = root.querySelector('[data-universe-canvas]');
+    if (canvas) canvas.dataset.time = String(age);
+    var share = position / (UNIVERSE_STOP_AGES.length - 1) * 100 + '%';
+    root.querySelectorAll('[data-universe-story-slider]').forEach(function (input) { input.value = String(position); input.style.setProperty('--uni-position', share); });
+    root.querySelectorAll('[data-universe-live]').forEach(function (node) {
+      var kind = node.getAttribute('data-universe-live');
+      if (kind === 'marker') { node.style.left = Math.min(100, age / UNIVERSE_NOW_GYR * 100) + '%'; return; }
+      var text = kind === 'calendar' ? universeCalendarLabel(age) : kind === 'temp' || kind === 'size' || kind === 'redshift' || kind === 'cond' ? universeConditionLabels(age)[kind] : universeAgeLabel(age);
+      if (node.textContent !== text) node.textContent = text;
+    });
+  }
+  function universePlayerStop() {
+    if (window._universeTimeLapse) clearInterval(window._universeTimeLapse);
+    window._universeTimeLapse = null;
+    universePlayer.leg = null;
+  }
+  function universePlayerTick() {
+    var player = universePlayer, hooks = player.hooks;
+    if (!hooks) { universePlayerStop(); return; }
+    var now = Date.now(), seconds = Math.min(0.1, Math.max(0, (now - player.last) / 1000));
+    player.last = now;
+    if (now < player.holdUntil) return;
+    var input = document.querySelector('[data-universe-speed]');
+    player.clock += seconds * (Number(input && input.value) || hooks.speed() || 1);
+    var at = universePlaybackAt(player.clock), age = universeStoryAge(at.position), entered = at.leg !== player.leg;
+    player.leg = at.leg;
+    universePaintTime(age, at.position);
+    if (at.done) { universePlayerStop(); hooks.commit(age, false); return; }
+    if (entered && at.leg && at.leg.kind === 'dwell') {
+      var hold = at.leg.chapter >= 0 && hooks.pauseAtChapters();
+      if (hold) universePlayerStop();
+      player.committed = now;
+      hooks.commit(age, !hold);
+      var linger = hooks.arrive(at.leg, age, player.start, hold);
+      if (!hold && linger > 0) player.holdUntil = now + linger * 1000;
+      return;
+    }
+    if (now - player.committed >= 150) { player.committed = now; hooks.commit(age, true); }
+  }
+  function universePlayerStart(position) {
+    universePlayerStop();
+    universePlayer.clock = universePlaybackClock(position);
+    universePlayer.start = position;
+    universePlayer.last = Date.now();
+    universePlayer.committed = 0;
+    universePlayer.holdUntil = 0;
+    window._universeTimeLapse = setInterval(universePlayerTick, 33);
+  }
+  // ── Expansion model ──
+  // Flat ΛCDM (Planck 2018: H0 = 67.7 km/s/Mpc, matter 0.311, radiation incl.
+  // neutrinos 9.1e-5). Integrating the Friedmann equation gives the age at each
+  // scale factor a (today a = 1); ages are rescaled so today lands on 13.8 Gyr.
+  // The background light's temperature is 2.7255 K / a.
+  var UNIVERSE_EXPANSION = (function () {
+    var hubbleTime = 977.79 / 67.7, matter = 0.311, radiation = 9.1e-5, lambda = 1 - matter - radiation;
+    function rate(a) { return Math.sqrt(radiation / (a * a * a * a) + matter / (a * a * a) + lambda) / hubbleTime; }
+    var logs = [], ages = [], step = 0.01, low = -32;
+    var a0 = Math.pow(10, low), age = a0 * a0 / (2 * Math.sqrt(radiation)) * hubbleTime;
+    for (var n = 0; n <= -low / step; n++) {
+      var la = low + n * step;
+      if (n > 0) {
+        var aPrev = Math.pow(10, la - step), aNow = Math.pow(10, la);
+        age += (1 / rate(aPrev) + 1 / rate(aNow)) / 2 * step * Math.LN10;
+      }
+      logs.push(la); ages.push(age);
+    }
+    var scale = 13.8 / ages[ages.length - 1];
+    for (var k = 0; k < ages.length; k++) ages[k] *= scale;
+    return { logs: logs, ages: ages, modelAge: ages[ages.length - 1] / scale };
+  })();
+  // Scale factor at an age in Gyr (null before the table starts, at the Big Bang itself).
+  function universeScaleFactor(age) {
+    var table = UNIVERSE_EXPANSION, ages = table.ages, last = ages.length - 1;
+    if (!(age > ages[0])) return null;
+    if (age >= ages[last]) return 1;
+    var lo = 0, hi = last;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (ages[mid] <= age) lo = mid; else hi = mid; }
+    var u = Math.log(age / ages[lo]) / Math.log(ages[hi] / ages[lo]);
+    return Math.pow(10, table.logs[lo] + u * (table.logs[hi] - table.logs[lo]));
+  }
+  // Temperature, size and redshift at an age, for the readouts.
+  function universeConditions(age) {
+    if (age >= UNIVERSE_STOP_AGES[8]) return { future: true };
+    var a = universeScaleFactor(age);
+    if (a === null || age < 1e-32 * UNIVERSE_SECOND) return { unknown: true };
+    return { a: a, temperature: 2.7255 / a, smaller: 1 / a, redshift: 1 / a - 1, visible: age >= 0.00038 };
+  }
+  // 3,000 → "3,000"; 1.1e10 → "11 billion"; 3e27 → "3 × 10²⁷".
+  function universeBigNumber(value) {
+    if (!(value > 0)) return '0';
+    if (value < 10) return (Math.round(value * 10) / 10).toLocaleString('en-US');
+    if (value < 1e6) return Math.round(value).toLocaleString('en-US');
+    var words = [[1e15, 'quadrillion'], [1e12, 'trillion'], [1e9, 'billion'], [1e6, 'million']];
+    if (value < 1e18) for (var w = 0; w < words.length; w++) if (value >= words[w][0]) { var v = value / words[w][0]; return (v < 10 ? Math.round(v * 10) / 10 : Math.round(v)) + ' ' + words[w][1]; }
+    var exponent = Math.floor(Math.log10(value)), mantissa = Math.round(value / Math.pow(10, exponent));
+    if (mantissa >= 10) { mantissa = 1; exponent++; }
+    return (mantissa > 1 ? mantissa + ' × ' : '') + '10' + String(exponent).split('').map(function (c) { return UNIVERSE_SUPERSCRIPT[c]; }).join('');
+  }
+  // Redshift for a proper distance today, in units of the Hubble distance c/H0, for
+  // the same flat model. Used where the nearby rule z = v/c breaks down.
+  var UNIVERSE_DISTANCE_TABLE = (function () {
+    var matter = 0.311, radiation = 9.1e-5, lambda = 1 - matter - radiation, zs = [0], xs = [0], x = 0, step = 0.005;
+    function e(z) { var o = 1 + z; return Math.sqrt(radiation * o * o * o * o + matter * o * o * o + lambda); }
+    for (var n = 1; n <= 4000; n++) { var z = n * step; x += (1 / e(z - step) + 1 / e(z)) / 2 * step; zs.push(z); xs.push(x); }
+    return { zs: zs, xs: xs };
+  })();
+  function universeRedshiftAtHubbleDistance(x) {
+    var table = UNIVERSE_DISTANCE_TABLE, xs = table.xs, last = xs.length - 1;
+    if (!(x > 0)) return 0;
+    if (x >= xs[last]) return table.zs[last];
+    var lo = 0, hi = last;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (xs[mid] <= x) lo = mid; else hi = mid; }
+    return table.zs[lo] + (x - xs[lo]) / (xs[hi] - xs[lo]) * (table.zs[hi] - table.zs[lo]);
+  }
+  // Age in Gyr when the scale factor was a.
+  function universeAgeAtScale(a) {
+    var table = UNIVERSE_EXPANSION, logs = table.logs, la = Math.log10(a);
+    if (!(la > logs[0])) return table.ages[0];
+    if (la >= 0) return table.ages[table.ages.length - 1];
+    var k = Math.min(logs.length - 2, Math.floor((la - logs[0]) / 0.01)), u = (la - logs[k]) / (logs[k + 1] - logs[k]);
+    return table.ages[k] * Math.pow(table.ages[k + 1] / table.ages[k], u);
+  }
+  // Readouts for an age: the background light's temperature, how much smaller
+  // distances were than today, and how stretched (redshifted) its light arrives.
+  function universeConditionLabels(age) {
+    var c = universeConditions(age);
+    if (c.future) return { temp: 'Cooling toward absolute zero', size: 'Still growing', redshift: 'A possible future', cond: 'A possible future', note: 'A prediction, not a measurement.' };
+    if (c.unknown) return { temp: 'Unknown', size: 'Unknown', redshift: 'No light yet', cond: 'Beyond known physics', note: 'No tested theory describes this instant.' };
+    var temp = '≈ ' + universeBigNumber(c.temperature) + ' K', near = c.smaller < 1.05;
+    var size = near ? 'About today’s size' : universeBigNumber(c.smaller) + '× smaller than today';
+    var redshift = !c.visible ? 'Hidden: light was still trapped' : c.redshift < 0.005 ? 'z ≈ 0: nearby' : 'z ≈ ' + (c.redshift < 10 ? c.redshift.toFixed(1) : universeBigNumber(c.redshift));
+    return {
+      temp: temp, size: size, redshift: redshift,
+      cond: temp + ' · ' + (near ? 'today’s size' : universeBigNumber(c.smaller) + '× smaller'),
+      note: age < 1e-12 * UNIVERSE_SECOND ? 'An extrapolation: colliders test conditions back to about a trillionth of a second.' : !c.visible ? 'Light from this time never reaches us: the hot plasma scattered it.' : 'Light from this time reaches us stretched by expansion.'
+    };
+  }
+
+  // Predict, then watch: one question per chapter stop, about what comes next.
+  // `answer` indexes `options`; options are length-matched and rotated on display.
+  var UNIVERSE_PREDICTIONS = [
+    null,
+    { q: 'Light now travels freely. What happens to this glow as space keeps expanding?', options: ['It stretches into infrared and the sky turns dark', 'It grows brighter as new light keeps on being made', 'It keeps exactly the same orange color forever'], answer: 0, explain: 'Expansion stretches light to longer wavelengths. The orange glow shifts into infrared, invisible to our eyes, so the universe looks dark until the first stars ignite.' },
+    { q: 'There are no stars yet. Where will the first stars light up?', options: ['Spread evenly through empty space', 'In the densest clumps of gas', 'Inside large spiral galaxies'], answer: 1, explain: 'Gravity gathers gas into the densest clumps first. Stars ignite there long before big spiral galaxies exist.' },
+    { q: 'What does ultraviolet light from the first stars do to the gas around them?', options: ['Freezes it into grains of dust and ice', 'Turns it slowly into dark matter', 'Knocks electrons off its atoms'], answer: 2, explain: 'Ultraviolet light ionizes hydrogen, stripping electrons from its atoms. Bubbles of ionized gas grow around the first stars and galaxies.' },
+    { q: 'How do small young galaxies grow into big ones like the Milky Way?', options: ['By merging and pulling in more gas', 'By spinning faster and faster over time', 'By splitting into smaller pieces'], answer: 0, explain: 'Galaxies grow by colliding and merging with neighbors and by drawing in fresh gas along the cosmic web.' },
+    { q: 'The Sun formed from gas that held carbon, oxygen and iron. Where did those come from?', options: ['They were all made in the Big Bang', 'Earlier stars that exploded or shed gas', 'Comets that crashed into the young gas cloud'], answer: 1, explain: 'The Big Bang made almost only hydrogen and helium. Heavier elements were forged inside earlier generations of stars and spread by supernovae and stellar winds.' },
+    { q: 'When the Sun is born, about how much of cosmic history has already passed?', options: ['Only about one tenth of it', 'Nearly all of it', 'About two thirds of it'], answer: 2, explain: 'The Sun formed 9.2 billion years after the Big Bang: two thirds of the way to today. On the cosmic calendar that is early September.' },
+    { q: 'If expansion keeps speeding up, what happens to faraway galaxies?', options: ['They drift out of sight', 'They crash into our galaxy', 'They stop moving away'], answer: 0, explain: 'Accelerating expansion carries distant galaxies away faster and faster, so their light fades from view. Nearby galaxies held by gravity stay with us.' }
+  ];
+  // Display order for a chapter's options: a fixed rotation that, with the authored
+  // answers, spreads the keyed answer across all three places.
+  function universePredictionOrder(chapter) {
+    var item = UNIVERSE_PREDICTIONS[chapter];
+    return item ? item.options.map(function (_, i) { return (i + chapter * 2) % item.options.length; }) : [];
+  }
+
+  // Big Questions sorts. Each card is placed in one kind; some honestly fit two, and
+  // the feedback says so rather than marking a defensible answer wrong.
+  var UNIVERSE_FERMI_KINDS = [
+    { id: 'rare', label: 'Hardly anyone is out there' },
+    { id: 'quiet', label: 'They are there but stay quiet' },
+    { id: 'missed', label: 'They are there but we miss them' }
+  ];
+  var UNIVERSE_MYSTERY_TESTS = [
+    { id: 'now', label: 'Being tested now' },
+    { id: 'new', label: 'Needs new tools' },
+    { id: 'never', label: 'Maybe never testable' }
+  ];
+  var UNIVERSE_MULTIVERSE_TESTS = [
+    { id: 'test', label: 'Could be tested' },
+    { id: 'hard', label: 'Very hard to test' }
+  ];
+  function universeSortScore(items, picks, acceptKey) {
+    var placed = 0, matched = 0;
+    items.forEach(function (item, i) {
+      var pick = picks ? picks[i] : undefined;
+      if (pick === undefined || pick === null) return;
+      placed++;
+      if (item[acceptKey].indexOf(pick) !== -1) matched++;
+    });
+    return { placed: placed, matched: matched, total: items.length };
+  }
+
+  // Energy ladder with the Sun as the yardstick (IAU nominal luminosity, 3.828 × 10²⁶ W).
+  // Ranges: Chicxulub estimates span ~4 × 10²³ to 6 × 10²⁵ J; Kepler superflares 10²⁶–10²⁹ J;
+  // a GRB's ~10⁴⁴ J is beamed, so its all-directions equivalent reaches ~10⁴⁷ J.
+  var UNIVERSE_SUN_WATTS = 3.828e26;
+  var UNIVERSE_ENERGY_LADDER = [
+    { id: 'chelyabinsk', kind: 'impact', joules: 1.8e15, name: 'Chelyabinsk meteor (2013)', note: 'A rock about 20 metres wide exploded high over Russia. The shock wave broke windows across a city and injured about 1,500 people.' },
+    { id: 'tunguska', kind: 'impact', joules: 5e16, name: 'Tunguska blast (1908)', note: 'An object about 50 to 60 metres wide exploded over Siberia and flattened about 2,000 km² of forest.' },
+    { id: 'world-year', kind: 'yardstick', joules: 6e20, name: 'All the energy people use in a year', note: 'Fuel, electricity and heat for the whole world: about 600 exajoules.' },
+    { id: 'chicxulub', kind: 'impact', joules: 4e23, upTo: 5.8e25, name: 'Dinosaur asteroid (Chicxulub)', note: 'A rock about 10 km wide struck Mexico 66 million years ago. Estimates run from about 4 × 10²³ J up to 6 × 10²⁵ J; the faint bar shows that range.' },
+    { id: 'superflare', kind: 'star', joules: 1e26, upTo: 1e29, name: 'Superflare on a Sun-like star', note: 'Space telescopes such as Kepler have caught flares this big on other Sun-like stars. The biggest flares recorded on our Sun reach about the bottom of this range.' },
+    { id: 'sun-second', kind: 'yardstick', joules: UNIVERSE_SUN_WATTS, name: 'The Sun’s output in one second' },
+    { id: 'sun-year', kind: 'yardstick', joules: UNIVERSE_SUN_WATTS * 3.15576e7, name: 'The Sun’s output in one year' },
+    { id: 'magnetar', kind: 'star', joules: 2e39, name: 'Magnetar giant flare (2004)', note: 'The magnetar SGR 1806-20 released this in about a fifth of a second. From tens of thousands of light-years away, it still disturbed Earth’s upper atmosphere.' },
+    { id: 'supernova', kind: 'star', joules: 1e44, name: 'Supernova (light and blast)', note: 'A collapsing star also sends out about 100 times more energy as neutrinos, which pass almost unnoticed through everything.' },
+    { id: 'sun-life', kind: 'yardstick', joules: UNIVERSE_SUN_WATTS * 3.15576e17, name: 'The Sun’s whole 10-billion-year life' },
+    { id: 'grb', kind: 'star', joules: 1e44, upTo: 1e47, name: 'Gamma-ray burst', note: 'About a supernova’s worth of energy squeezed into two narrow jets. Seen head-on, it looks as if it gave out up to 10⁴⁷ J; the faint bar shows that.' }
+  ];
+  // "2 × 10³⁹": one significant figure is honest for every rung on this ladder.
+  function universeEnergyLabel(joules) {
+    var exponent = Math.floor(Math.log10(joules) + 1e-9), mantissa = Math.round(joules / Math.pow(10, exponent) * 10) / 10;
+    if (mantissa >= 10) { mantissa = 1; exponent++; }
+    return (mantissa !== 1 ? mantissa + ' × ' : '') + '10' + String(exponent).split('').map(function (c) { return UNIVERSE_SUPERSCRIPT[c]; }).join('');
+  }
+  // How long the Sun takes to give out the same energy.
+  function universeSunTime(joules) { return universeSpanLabel(joules / UNIVERSE_SUN_WATTS * UNIVERSE_SECOND); }
+  var UNIVERSE_ENERGY_PREDICTION = { q: 'Which of these gives out the most energy in one go?', options: ['The dinosaur asteroid', 'A magnetar flare', 'A solar superflare'], answer: 1 };
+
+  // Angular size in degrees (small-angle: size ÷ distance), and a full-Moon comparison.
+  var UNIVERSE_MOON_DEG = 0.52;
+  function universeAngularSizeDeg(sizeLy, distLy) { return sizeLy / distLy * 180 / Math.PI; }
+  function universeMoonCompare(deg) {
+    var m = deg / UNIVERSE_MOON_DEG;
+    if (m >= 1.5) return 'about ' + Math.round(m) + ' full Moons';
+    if (m >= 0.8) return 'about one full Moon';
+    if (m >= 0.6) return 'a bit smaller than the full Moon';
+    if (m >= 0.35) return 'about half the full Moon';
+    if (m >= 0.18) return 'about a quarter of the full Moon';
+    return 'a speck beside the full Moon';
+  }
+  var UNIVERSE_NURSERY_PREDICTION = { q: 'Which looks bigger in our night sky?', options: ['Orion Nebula (24 ly wide)', 'Tarantula Nebula (1,000 ly wide)', 'About the same size'], answer: 0 };
+
+  // ── Round 4 labs. Each number a lab shows comes from these functions. ──
+  var UNIVERSE_LY_PER_PC = 3.26156, UNIVERSE_COIN_M = 0.024, UNIVERSE_ARCSEC = Math.PI / 648000;
+  // Rough "about" value: two significant figures.
+  function universeRough(value) { return Number(value.toPrecision(2)); }
+  function universeLengthLabel(metres) {
+    if (metres < 0.01) return universeRound(metres * 1000) + ' mm';
+    if (metres < 1) return universeRound(metres * 100) + ' cm';
+    if (metres < 1000) return universeRound(metres) + ' m';
+    if (metres < 1e12) return universeBigNumber(metres / 1000) + ' km';
+    return universeRound(metres / 1.496e11) + ' AU';
+  }
+
+  // Parallax: distance in parsecs = 1 ÷ parallax in arcseconds. coinKm: how far away a
+  // 2.4 cm coin would look that small.
+  function universeParallax(mas) {
+    var pc = 1000 / mas;
+    return { pc: pc, ly: pc * UNIVERSE_LY_PER_PC, coinKm: UNIVERSE_COIN_M / (mas / 1000 * UNIVERSE_ARCSEC) / 1000 };
+  }
+  var UNIVERSE_PARALLAX_STARS = [
+    { id: 'proxima', name: 'Proxima Centauri', mas: 768.07 },
+    { id: 'sirius', name: 'Sirius', mas: 379.21 },
+    { id: 'vega', name: 'Vega', mas: 130.23 },
+    { id: 'polaris', name: 'Polaris', mas: 7.54 }
+  ];
+  var UNIVERSE_CANDLE_PREDICTION = { q: 'Two identical supernovae explode. One looks 1/4 as bright as the other. How much farther away is it?', options: ['Four times farther', 'Twice as far away', 'Sixteen times farther'], answer: 1 };
+
+  // Telescopes: light grasp grows with mirror area; the finest detail is the diffraction
+  // limit 1.22 λ / D at λ = 550 nm, or the air's ~0.8″ blur on the ground without adaptive optics.
+  var UNIVERSE_EYE_M = 0.007, UNIVERSE_SEEING_ARCSEC = 0.8, UNIVERSE_DOUBLE_STAR_ARCSEC = 0.3;
+  function universeTelescope(diameterM, ground) {
+    var diffraction = 1.22 * 550e-9 / diameterM / UNIVERSE_ARCSEC, arcsec = ground ? Math.max(diffraction, UNIVERSE_SEEING_ARCSEC) : diffraction;
+    return { gather: Math.pow(diameterM / UNIVERSE_EYE_M, 2), diffraction: diffraction, arcsec: arcsec, blurredByAir: !!ground && diffraction < UNIVERSE_SEEING_ARCSEC,
+      splits: arcsec < UNIVERSE_DOUBLE_STAR_ARCSEC, coinKm: UNIVERSE_COIN_M / (arcsec * UNIVERSE_ARCSEC) / 1000 };
+  }
+  var UNIVERSE_TELESCOPE_PRESETS = [
+    { id: 'eye', name: 'Your eye', m: 0.007 }, { id: 'binoculars', name: 'Binoculars', m: 0.05 }, { id: 'backyard', name: 'Backyard telescope', m: 0.2 },
+    { id: 'hubble', name: 'Hubble', m: 2.4, space: true }, { id: 'jwst', name: 'Webb (JWST)', m: 6.5, space: true }, { id: 'elt', name: 'Extremely Large Telescope', m: 39 }
+  ];
+  var UNIVERSE_TELESCOPE_PREDICTION = { q: 'Hubble collects about 120,000 times more light than your eye. How much wider is its mirror than your pupil?', options: ['About 340 times wider', 'About 120,000 times wider', 'About 60,000 times wider'], answer: 0 };
+
+  // Black holes: event-horizon radius r = 2GM/c², 2,953 m per solar mass. "Density" is the
+  // mass divided by the volume of a sphere that size, so it falls as 1 / mass².
+  var UNIVERSE_SUN_KG = 1.989e30;
+  function universeHorizon(solarMasses) {
+    var r = 2953.25 * solarMasses;
+    return { metres: r, density: solarMasses * UNIVERSE_SUN_KG / (4 / 3 * Math.PI * r * r * r) };
+  }
+  function universeDensityLabel(kgPerM3) {
+    if (kgPerM3 < 1.2) return 'less dense than air';
+    if (kgPerM3 < 1000) return 'less dense than water';
+    return 'about ' + universeBigNumber(universeRough(kgPerM3 / 1000)) + ' times the density of water';
+  }
+  var UNIVERSE_HORIZON_PRESETS = [
+    { id: 'earth', name: 'Earth', mass: 3.003e-6, compare: 'about the size of a marble' },
+    { id: 'sun', name: 'The Sun', mass: 1, compare: 'about the size of a small town' },
+    { id: 'star', name: 'A 10-Sun star', mass: 10, compare: 'about the size of a big city' },
+    { id: 'sgra', name: 'Sagittarius A*', mass: 4.3e6, compare: 'small enough to fit well inside Mercury’s orbit' },
+    { id: 'm87', name: 'M87*', mass: 6.5e9, compare: 'wider than the orbits of all the planets' }
+  ];
+  var UNIVERSE_HORIZON_PREDICTION = { q: 'Imagine the Sun suddenly became a black hole with the same mass. What happens to Earth’s orbit?', options: ['Pulled in and swallowed', 'It keeps the same orbit', 'Flung out into space'], answer: 1 };
+
+  // Rotation curve of a spiral galaxy (r in kpc, speeds in km/s). Visible matter: a Plummer
+  // sphere of 6 × 10¹⁰ Suns (scale 3 kpc). Dark halo: pseudo-isothermal, core 5 kpc.
+  var UNIVERSE_G_KPC = 4.3009e-6, UNIVERSE_VISIBLE_MASS = 6e10;
+  function universeRotation(r, vHalo) {
+    var visible = UNIVERSE_G_KPC * UNIVERSE_VISIBLE_MASS * r * r / Math.pow(r * r + 9, 1.5);
+    var halo = Math.max(0, vHalo * vHalo * (1 - 5 / r * Math.atan(r / 5)));
+    return { visible: Math.sqrt(visible), halo: Math.sqrt(halo), total: Math.sqrt(visible + halo) };
+  }
+  // Simulated measurements shaped like a real spiral's: a 190 km/s halo plus fixed scatter.
+  var UNIVERSE_ROTATION_POINTS = [[2, 3], [4, -4], [6, 2], [8, -3], [10, 5], [13, -2], [16, 4], [20, -5], [24, 3], [28, -2]].map(function (p) {
+    return { r: p[0], v: Math.round(universeRotation(p[0], 190).total + p[1]) };
+  });
+  function universeRotationFit(vHalo) {
+    var sum = 0;
+    UNIVERSE_ROTATION_POINTS.forEach(function (p) { var dv = universeRotation(p.r, vHalo).total - p.v; sum += dv * dv; });
+    return Math.sqrt(sum / UNIVERSE_ROTATION_POINTS.length);
+  }
+  // Mass inside r is v² r / G for each part, so the unseen-to-visible ratio is a ratio of v².
+  function universeDarkRatio(r, vHalo) { var m = universeRotation(r, vHalo); return m.halo * m.halo / (m.visible * m.visible); }
+  var UNIVERSE_ROTATION_PREDICTION = { q: 'Far from a spiral galaxy’s bright center, how fast do its stars orbit?', options: ['Slower, like outer planets', 'About the same speed', 'Faster than inner stars'], answer: 1 };
+
+  // Where the atoms in a body were made (body: percent of mass). Carbon and iron honestly
+  // come from two kinds of source; carbon is split evenly in the body tally.
+  var UNIVERSE_ELEMENT_SOURCES = [
+    { id: 'bigbang', label: 'The Big Bang' },
+    { id: 'lowmass', label: 'Dying Sun-like stars' },
+    { id: 'massive', label: 'Exploding massive stars' },
+    { id: 'whitedwarf', label: 'Exploding white dwarfs' },
+    { id: 'merger', label: 'Colliding neutron stars' }
+  ];
+  var UNIVERSE_BODY_ELEMENTS = [
+    { symbol: 'O', name: 'Oxygen', body: 65, from: ['massive'], why: 'Made by fusion inside massive stars and blasted into space when they exploded.' },
+    { symbol: 'C', name: 'Carbon', body: 18, from: ['lowmass', 'massive'], why: 'Shared: roughly half comes from dying Sun-like stars that puff off their outer layers, and about half from massive stars.' },
+    { symbol: 'H', name: 'Hydrogen', body: 10, from: ['bigbang'], why: 'Made in the first minutes after the Big Bang. The hydrogen in the water inside you is about 13.8 billion years old.' },
+    { symbol: 'N', name: 'Nitrogen', body: 3, from: ['lowmass'], why: 'Mostly from dying Sun-like stars, which make it late in life and puff it out.' },
+    { symbol: 'Ca', name: 'Calcium (bones)', body: 1.5, from: ['massive'], why: 'Mostly made in massive stars and spread by their explosions.' },
+    { symbol: 'P', name: 'Phosphorus (DNA)', body: 1, from: ['massive'], why: 'Made in massive stars and spread by their explosions.' },
+    { symbol: 'Fe', name: 'Iron (blood)', body: 0.006, from: ['whitedwarf', 'massive'], why: 'Mostly from exploding white dwarfs (Type Ia supernovae), with the rest from massive stars.' },
+    { symbol: 'I', name: 'Iodine (thyroid)', body: 0.00002, from: ['merger'], why: 'Built by rapid neutron capture, mainly when neutron stars collide. Some astronomers think rare, fast-spinning exploding stars add a little.' },
+    { symbol: 'Au', name: 'Gold (in a ring)', body: null, from: ['merger'], why: 'Also built by rapid neutron capture. In 2017 telescopes watched the neutron-star collision GW170817 make heavy elements like it.' }
+  ];
+  function universeBodyByOrigin() {
+    var out = {};
+    UNIVERSE_BODY_ELEMENTS.forEach(function (el) {
+      if (el.body === null) return;
+      el.from.forEach(function (src) { out[src] = (out[src] || 0) + el.body / el.from.length; });
+    });
+    return out;
+  }
+
+  // ── Round 5 labs: cosmic calendar guesses, powers-of-ten estimates, galaxy shapes, a supernova hunt ──
+  // Cosmic calendar: 13.8 billion years squeezed into one year; day 0 = Jan 1, day 365 = midnight Dec 31.
+  var UNIVERSE_CALENDAR_EVENTS = [
+    { id: 'sun', event: 'The Sun and Earth form', yearsAgo: 4.57e9 },
+    { id: 'fossils', event: 'The oldest fossils of life (microbial mats)', yearsAgo: 3.5e9 },
+    { id: 'dinosaurs', event: 'The first dinosaurs', yearsAgo: 2.3e8 },
+    { id: 'extinction', event: 'An asteroid ends the age of dinosaurs', yearsAgo: 6.6e7 },
+    { id: 'humans', event: 'The first humans (genus Homo)', yearsAgo: 2.5e6 },
+    { id: 'pyramids', event: 'The Great Pyramid is built', yearsAgo: 4.5e3 }
+  ];
+  function universeCalendarDay(yearsAgo) { return Math.max(0, Math.min(365, (1 - yearsAgo / (UNIVERSE_NOW_GYR * 1e9)) * 365)); }
+  function universeDayName(dayIndex) {
+    var day = Math.max(0, Math.min(364, Math.floor(dayIndex))), month = 0;
+    while (day >= UNIVERSE_MONTH_DAYS[month]) { day -= UNIVERSE_MONTH_DAYS[month]; month++; }
+    return UNIVERSE_MONTHS[month] + ' ' + (day + 1);
+  }
+  // Whole calendar days between a guessed day and the day an event really falls on.
+  function universeCalendarMiss(yearsAgo, guessDay) { return Math.abs(Math.floor(universeCalendarDay(yearsAgo)) - Math.floor(guessDay)); }
+
+  // Powers-of-ten estimates: the learner picks an exponent; the miss is in powers of ten.
+  var UNIVERSE_ESTIMATES = [
+    { id: 'earths', q: 'How many Earths would fit inside the Sun?', value: 1.3e6, note: 'The Sun is about 109 times wider than Earth, and 109 × 109 × 109 is about 1.3 million.' },
+    { id: 'milkyway', q: 'How many stars are in the Milky Way?', value: 2e11, note: 'Estimates run from about 100 to 400 billion. Most are small red dwarfs too faint to see without a telescope.' },
+    { id: 'proxima', q: 'How many kilometres away is the nearest star after the Sun?', value: 4.0e13, note: 'Proxima Centauri is 4.2 light-years away, and one light-year is about 9.5 trillion km.' },
+    { id: 'seconds', q: 'How many seconds have passed since the Big Bang?', value: 13.8e9 * 3.15576e7, note: '13.8 billion years × about 31.6 million seconds in each year.' },
+    { id: 'earthmass', q: 'What is Earth’s mass in kilograms?', value: 5.97e24, note: 'Found from the strength of Earth’s gravity once Henry Cavendish measured the gravitational constant in 1798.' },
+    { id: 'atoms', q: 'How many atoms are in your body?', value: 7e27, note: 'About 7 × 10²⁷ for an adult. Roughly 6 in every 10 of them are hydrogen.' }
+  ];
+  function universeEstimateMiss(value, power) { return Math.abs(power - Math.log10(value)); }
+
+  // Galaxy shapes to classify. `look` is the drawing's text alternative.
+  var UNIVERSE_GALAXY_KINDS = [
+    { id: 'spiral', label: 'Spiral' },
+    { id: 'elliptical', label: 'Elliptical' },
+    { id: 'lenticular', label: 'Lenticular' },
+    { id: 'irregular', label: 'Irregular' }
+  ];
+  var UNIVERSE_GALAXY_SPECIMENS = [
+    { id: 'g1', draw: 'spiral', kinds: ['spiral'], like: 'the Whirlpool Galaxy (M51)', look: 'A yellow center with two blue arms winding outward, dotted with pink knots.', why: 'Arms of young blue stars and pink star-forming knots wind out from a yellow bulge of older stars.' },
+    { id: 'g2', draw: 'round', kinds: ['elliptical'], like: 'M87 in the Virgo Cluster', look: 'A smooth, round, yellow-orange glow that fades evenly outward, with no disk and no arms.', why: 'Smooth and featureless, made of old yellow and red stars, with almost no new stars forming.' },
+    { id: 'g3', draw: 'barred', kinds: ['spiral'], like: 'NGC 1300, and our own Milky Way', look: 'A straight yellow bar through the center, with blue arms starting from its ends.', why: 'A barred spiral: its arms start at the ends of a straight bar of stars. The Milky Way is one.' },
+    { id: 'g4', draw: 'lenticular', kinds: ['lenticular'], like: 'NGC 2787', look: 'A bright yellow center inside a thin, smooth disk, with no arms and no blue or pink knots.', why: 'A disk and a bulge like a spiral, but no arms, and too little gas left to make many new stars.' },
+    { id: 'g5', draw: 'irregular', kinds: ['irregular'], like: 'the Large Magellanic Cloud', look: 'Lopsided patches of blue stars and pink knots, with no clear center or shape.', why: 'No regular shape, plenty of gas and many young blue stars. Pulls from neighbouring galaxies often stir these up.' },
+    { id: 'g6', draw: 'oval', kinds: ['elliptical'], like: 'M110, a small companion of Andromeda', look: 'A smooth yellow glow stretched into an oval, with no thin disk, arms or knots.', why: 'Still an elliptical: smooth, no arms, old stars. Ellipticals range from round to quite stretched.' }
+  ];
+
+  // Supernova hunt: compare last month's image with tonight's, then read the spectrum.
+  var UNIVERSE_SN_HUNT = { q: 'Which spot has a star tonight that was not there last month?', options: ['Spot A', 'Spot B', 'Spot C', 'Spot D', 'Spot E'], answer: 2,
+    spots: [{ x: 38, y: 34 }, { x: 196, y: 30 }, { x: 150, y: 94 }, { x: 62, y: 128 }, { x: 214, y: 132 }] };
+  var UNIVERSE_SN_SPECTRUM_PREDICTION = { q: 'Its light shows no hydrogen at all, but strong silicon. What exploded?', options: ['A white dwarf (Type Ia)', 'A massive star (Type II)', 'Two merging neutron stars'], answer: 0 };
+
+  // ── Round 6 visuals ──
+  // HR diagram population: main-sequence stars from simple mass–luminosity–radius
+  // relations, plus giant, supergiant and white-dwarf branches. Seeded, so it never jumps.
+  var UNIVERSE_HR_STARS = (function () {
+    var rand = quizRng(1906), stars = [], i;
+    function gauss() { return (rand() + rand() + rand() + rand() - 2) * 1.732; }
+    for (i = 0; i < 170; i++) {
+      var m = Math.pow(10, -1 + 2.3 * Math.pow(rand(), 1.6));
+      var lum = m < 0.43 ? 0.23 * Math.pow(m, 2.3) : m < 2 ? Math.pow(m, 4) : 1.4 * Math.pow(m, 3.5);
+      var rad = m < 1 ? Math.pow(m, 0.8) : Math.pow(m, 0.57);
+      stars.push({ kind: 'ms', T: 5772 * Math.pow(lum / (rad * rad), 0.25) * Math.pow(10, gauss() * 0.012), L: lum * Math.pow(10, gauss() * 0.08) });
+    }
+    for (i = 0; i < 42; i++) { var tg = 3700 + 1400 * rand(); stars.push({ kind: 'giant', T: tg, L: Math.pow(10, 1 + 2.1 * (5100 - tg) / 1400 + gauss() * 0.15) }); }
+    for (i = 0; i < 16; i++) stars.push({ kind: 'super', T: Math.pow(10, 3.55 + 0.9 * rand()), L: Math.pow(10, 4.3 + 1.3 * rand()) });
+    for (i = 0; i < 26; i++) { var tw = Math.pow(10, 3.7 + 0.78 * rand()), rw = 0.009 + 0.005 * rand(); stars.push({ kind: 'wd', T: tw, L: rw * rw * Math.pow(tw / 5772, 4) }); }
+    return stars.filter(function (s) { return s.T >= 2500 && s.T <= 40000 && s.L >= 1e-4 && s.L <= 1e6; });
+  })();
+  var UNIVERSE_HR_NAMED = [
+    { name: 'Sun', T: 5772, L: 1, side: 'right' },
+    { name: 'Sirius A', T: 9940, L: 25.4, side: 'right' },
+    { name: 'Sirius B', T: 25000, L: 0.056, side: 'right' },
+    { name: 'Rigel', T: 12100, L: 1.2e5, side: 'right' },
+    { name: 'Betelgeuse', T: 3600, L: 1e5, side: 'left' },
+    { name: 'Aldebaran', T: 3900, L: 440, side: 'left' },
+    { name: 'Proxima Centauri', T: 3040, L: 0.0017, side: 'left' }
+  ];
+  // Position on the diagram, 0..1 each way: hotter to the left, brighter up.
+  function universeHRPoint(T, L) {
+    return { x: (Math.log10(40000) - Math.log10(T)) / (Math.log10(40000) - Math.log10(2500)), y: (6 - Math.log10(L)) / 10 };
+  }
+  var UNIVERSE_STAR_COLORS = [[30000, '#9bb0ff'], [15000, '#aabfff'], [9000, '#cad7ff'], [7000, '#f8f7ff'], [5700, '#fff4ea'], [4900, '#ffe0b5'], [4200, '#ffc98a'], [3500, '#ffa760'], [0, '#ff8448']];
+  function universeStarColor(T) { for (var i = 0; i < UNIVERSE_STAR_COLORS.length; i++) if (T >= UNIVERSE_STAR_COLORS[i][0]) return UNIVERSE_STAR_COLORS[i][1]; return '#ff8448'; }
+
+  // A point-mass gravitational lens, in units of the Einstein radius (u = how far off
+  // the line the source sits): where the two images appear, and how much brighter
+  // a small source looks.
+  function universeLensImages(u) { var root = Math.sqrt(u * u + 4); return { outer: (u + root) / 2, inner: (u - root) / 2 }; }
+  function universeLensMagnification(u) { return (u * u + 2) / (u * Math.sqrt(u * u + 4)); }
+
+  // How much of each wavelength Earth's air blocks: log10(wavelength in metres) → 0..1.
+  // Schematic, after the standard NASA atmospheric-window chart.
+  var UNIVERSE_AIR_OPACITY = [[3, 1], [1.3, 1], [1, 0.1], [-2, 0.05], [-2.5, 0.5], [-3, 0.85], [-4.7, 0.95], [-4.9, 0.45], [-5.1, 0.2], [-5.3, 0.6], [-5.5, 0.35], [-5.7, 0.6], [-6, 0.15], [-6.1, 0.05], [-6.45, 0.05], [-6.55, 1], [-12, 1]];
+  function universeAirOpacity(logLambda) {
+    var t = UNIVERSE_AIR_OPACITY;
+    if (logLambda >= t[0][0]) return t[0][1];
+    for (var i = 1; i < t.length; i++) {
+      if (logLambda >= t[i][0]) { var f = (logLambda - t[i][0]) / (t[i - 1][0] - t[i][0]); return t[i][1] + f * (t[i - 1][1] - t[i][1]); }
+    }
+    return t[t.length - 1][1];
+  }
+
+  // ── Round 7: light's journey, zoom-out, matter budget ──
+  // Comoving distance in billion light-years to light seen at scale factor a, for the same
+  // flat ΛCDM model as UNIVERSE_EXPANSION: χ = ∫ c da / (a² H). With H in 1/Gyr and c = 1 Gly
+  // per Gyr the integral comes out directly in Gly. Table from a = 1 down to a = 10⁻⁴.
+  var UNIVERSE_COMOVING_STEP = 0.002;
+  var UNIVERSE_COMOVING = (function () {
+    var hubbleTime = 977.79 / 67.7, matter = 0.311, radiation = 9.1e-5, lambda = 1 - matter - radiation;
+    function invAH(a) { return hubbleTime / (a * Math.sqrt(radiation / (a * a * a * a) + matter / (a * a * a) + lambda)); }
+    var chis = [0], sum = 0;
+    for (var i = 1; i <= 4 / UNIVERSE_COMOVING_STEP; i++) {
+      var a1 = Math.pow(10, -(i - 1) * UNIVERSE_COMOVING_STEP), a0 = Math.pow(10, -i * UNIVERSE_COMOVING_STEP);
+      sum += (invAH(a1) + invAH(a0)) / 2 * UNIVERSE_COMOVING_STEP * Math.LN10;
+      chis.push(sum);
+    }
+    return chis;
+  })();
+  function universeComovingGly(a) {
+    var idx = -Math.log10(Math.max(1e-4, Math.min(1, a))) / UNIVERSE_COMOVING_STEP, i = Math.floor(idx), t = UNIVERSE_COMOVING;
+    if (i >= t.length - 1) return t[t.length - 1];
+    return t[i] + (idx - i) * (t[i + 1] - t[i]);
+  }
+  var UNIVERSE_JOURNEY_SOURCES = [
+    { id: 'cmb', name: 'The microwave background', z: 1077 },
+    { id: 'gnz11', name: 'Galaxy GN-z11', z: 10.6 },
+    { id: 'z1', name: 'A galaxy at redshift 1', z: 1 },
+    { id: 'z01', name: 'A galaxy at redshift 0.1', z: 0.1 }
+  ];
+  // Light from a source at redshift z on its way to us: the proper distances of the light and
+  // of its source at each moment, and where the light was farthest from us.
+  function universeLightJourney(z, steps) {
+    var ae = 1 / (1 + z), te = universeAgeAtScale(ae), chi = universeComovingGly(ae), n = steps || 120, points = [], peak = { t: te, d: ae * chi };
+    for (var i = 0; i <= n; i++) {
+      var t = te + (UNIVERSE_NOW_GYR - te) * Math.pow(i / n, 1.6), a = i === n ? 1 : universeScaleFactor(t) || ae;
+      var photon = a * universeComovingGly(a);
+      points.push({ t: t, photon: photon, source: a * chi });
+      if (photon > peak.d) peak = { t: t, d: photon };
+    }
+    return { te: te, chi: chi, startDistance: ae * chi, points: points, peak: peak };
+  }
+
+  // "You are here", zooming out. Sizes are diameters in metres (1 light-year = 9.4607 × 10¹⁵ m).
+  var UNIVERSE_LY_M = 9.4607e15;
+  var UNIVERSE_ZOOM_LEVELS = [
+    { id: 'earth', name: 'Earth', metres: 1.2742e7, size: '12,742 km across', note: 'Your home planet: everything you have ever touched is here.' },
+    { id: 'solar', name: 'The Solar System', metres: 9e12, size: 'about 9 billion km across, to Neptune’s orbit', note: 'Eight planets circle the Sun. At this scale Earth is far too small to see.' },
+    { id: 'neighbours', name: 'Our stellar neighbourhood', metres: 20 * UNIVERSE_LY_M, size: 'about 20 light-years across', note: 'The Sun and its nearest neighbour stars, such as Alpha Centauri, Barnard’s Star and Sirius.' },
+    { id: 'milkyway', name: 'The Milky Way', metres: 1e5 * UNIVERSE_LY_M, size: 'about 100,000 light-years across', note: 'Hundreds of billions of stars. The Sun sits about 26,000 light-years from the center.' },
+    { id: 'localgroup', name: 'The Local Group', metres: 1e7 * UNIVERSE_LY_M, size: 'about 10 million light-years across', note: 'The Milky Way, Andromeda, Triangulum and dozens of small galaxies, held together by gravity.' },
+    { id: 'laniakea', name: 'The Laniakea Supercluster', metres: 5.2e8 * UNIVERSE_LY_M, size: 'about 520 million light-years across', note: 'About 100,000 galaxies whose motions all flow toward one region, nicknamed the Great Attractor.' },
+    { id: 'observable', name: 'The observable universe', metres: 9.3e10 * UNIVERSE_LY_M, size: 'about 93 billion light-years across', note: 'Everything whose light has had time to reach us. Galaxies lie along a vast web of filaments.' }
+  ];
+
+  // What the universe is made of, and how little of the ordinary part is in stars (ESA, 2018).
+  var UNIVERSE_COMPOSITION = [['Dark energy', 68, '#6366f1'], ['Dark matter', 27, '#a855f7'], ['Ordinary matter', 5, '#f59e0b']];
+  var UNIVERSE_ORDINARY_SPLIT = [['Stars', 7, '#fde68a'], ['Gas in and between galaxies', 93, '#2dd4bf']];
+
+  // ── Round 8: starlight lab (blackbody), black-hole anatomy, history timelines ──
+  // Planck's law as a shape: relative brightness at wavelength nm for a surface at T kelvin.
+  function universePlanck(nm, T) { var lm = nm * 1e-9, x = 1.4388e-2 / (lm * T); return x > 700 ? 0 : 1 / (Math.pow(lm, 5) * (Math.exp(x) - 1)); }
+  // Wien's law: the wavelength where that curve peaks.
+  function universeWienPeakNm(T) { return 2.8978e6 / T; }
+  // Colour of a glowing surface at T kelvin (Tanner Helland's fit, good from 1,000 to 40,000 K).
+  function universeBlackbodyRGB(T) {
+    var t = T / 100;
+    var r = t <= 66 ? 255 : 329.698727446 * Math.pow(t - 60, -0.1332047592);
+    var g = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+    var b = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+    function c(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+    return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')';
+  }
+  var UNIVERSE_SPECTRAL_EDGES = [[30000, 'O'], [10000, 'B'], [7500, 'A'], [6000, 'F'], [5200, 'G'], [3700, 'K'], [0, 'M']];
+  function universeSpectralClass(T) { for (var i = 0; i < UNIVERSE_SPECTRAL_EDGES.length; i++) if (T >= UNIVERSE_SPECTRAL_EDGES[i][0]) return UNIVERSE_SPECTRAL_EDGES[i][1]; return 'M'; }
+  // Where a wavelength falls, in words.
+  function universeWavelengthBand(nm) {
+    if (nm < 380) return 'ultraviolet, too blue for our eyes';
+    if (nm > 750) return 'infrared, too red for our eyes';
+    return nm < 450 ? 'violet' : nm < 495 ? 'blue' : nm < 570 ? 'green' : nm < 590 ? 'yellow' : nm < 620 ? 'orange' : 'red';
+  }
+  var UNIVERSE_STARLIGHT_PRESETS = [
+    { id: 'betelgeuse', name: 'Betelgeuse', T: 3600 }, { id: 'sun', name: 'The Sun', T: 5772 }, { id: 'sirius', name: 'Sirius', T: 9940 },
+    { id: 'rigel', name: 'Rigel', T: 12100 }, { id: 'naos', name: 'Naos (Zeta Puppis)', T: 40000 }
+  ];
+  var UNIVERSE_STARLIGHT_PREDICTION = { q: 'The Sun’s light is brightest at green wavelengths. So why doesn’t the Sun look green?', options: ['Its light mixes every colour', 'Our air soaks up the green', 'Green light cannot cross space'], answer: 0 };
+  // First year mentioned in a label such as "~150 AD", "1924–29" or "1970s".
+  function universeYearOf(text) { var m = String(text).match(/\d{3,4}/); return m ? parseInt(m[0], 10) : null; }
+
+  // ── Round 9: hydrogen lines under redshift ──
+  // Rest wavelengths (nm) of hydrogen's Lyman-alpha line and four Balmer lines.
+  var UNIVERSE_HYDROGEN_LINES = [['Lyα', 121.6], ['Hδ', 410.2], ['Hγ', 434.0], ['Hβ', 486.1], ['Hα', 656.3]];
+  var UNIVERSE_LINESHIFT_PRESETS = [
+    { id: 'lab', name: 'In a lab', z: 0 }, { id: 'virgo', name: 'Virgo Cluster', z: 0.004 }, { id: 'q3c273', name: 'Quasar 3C 273', z: 0.158 },
+    { id: 'z1', name: 'A galaxy at z = 1', z: 1 }, { id: 'gnz11', name: 'GN-z11', z: 10.6 }
+  ];
+  var UNIVERSE_LINESHIFT_PREDICTION = { q: 'Hydrogen glows at a red line of 656 nm. In a galaxy at redshift z = 1, where does that line arrive?', options: ['About 1,312 nm, infrared', 'About 657 nm, still red', 'About 328 nm, ultraviolet'], answer: 0 };
+
+  // Habitable zone: the Kopparapu et al. (2013) climate-model fit. Starlight (Earth = 1)
+  // at the inner edge (runaway greenhouse) and the outer edge (maximum CO2 greenhouse).
+  var UNIVERSE_HZ_FIT = { inner: [1.107, 1.332e-4, 1.580e-8, -8.308e-12, -1.931e-15], outer: [0.356, 6.171e-5, 1.698e-9, -3.198e-12, -5.575e-16] };
+  function universeHabitableZone(teff, lum) {
+    var t = teff - 5780;
+    function seff(c) { return c[0] + t * (c[1] + t * (c[2] + t * (c[3] + t * c[4]))); }
+    var sIn = seff(UNIVERSE_HZ_FIT.inner), sOut = seff(UNIVERSE_HZ_FIT.outer);
+    return { sIn: sIn, sOut: sOut, inner: Math.sqrt(lum / sIn), outer: Math.sqrt(lum / sOut) };
+  }
+  function universeStarlight(lum, au) { return lum / (au * au); }
+  function universeZoneOf(star, au) { var z = universeHabitableZone(star.teff, star.lum), s = universeStarlight(star.lum, au); return s > z.sIn ? 'hot' : s < z.sOut ? 'cold' : 'zone'; }
+  function universeYearDays(au, mass) { return Math.sqrt(au * au * au / mass) * 365.25; }
+  // view: the drawing's radius in AU. Planets: [name, orbit in AU].
+  var UNIVERSE_HZ_STARS = [
+    { id: 'sun', name: 'The Sun', short: 'the Sun', teff: 5772, lum: 1, mass: 1, view: 2, planets: [['Venus', 0.723], ['Earth', 1], ['Mars', 1.524]] },
+    { id: 'procyon', name: 'Procyon A (hotter)', short: 'Procyon A', teff: 6530, lum: 6.93, mass: 1.5, view: 5, planets: [] },
+    { id: 'proxima', name: 'Proxima Centauri (red dwarf)', short: 'Proxima Centauri', teff: 3042, lum: 0.00155, mass: 0.122, view: 0.1, planets: [['d', 0.0289], ['b', 0.0486]] },
+    { id: 'trappist', name: 'TRAPPIST-1 (cool red dwarf)', short: 'TRAPPIST-1', teff: 2566, lum: 0.000553, mass: 0.0898, view: 0.07, planets: [['b', 0.0115], ['c', 0.0158], ['d', 0.0223], ['e', 0.0293], ['f', 0.0385], ['g', 0.0468], ['h', 0.0619]] }
+  ];
+  var UNIVERSE_HZ_PREDICTION = { q: 'A red dwarf is smaller and much dimmer than the Sun. Where would a planet need to orbit it to have liquid water?', options: ['Much closer in', 'About the same distance', 'Much farther out'], answer: 0 };
+  // Gravity: the same take-off speed on every world. Height and time in the air.
+  function universeJump(earthHeight, gRel) { var v = Math.sqrt(2 * 9.81 * earthHeight); return { speed: v, height: earthHeight / gRel, air: 2 * v / (9.81 * gRel) }; }
+  // Drake equation step by step, and how far apart civilizations would be if scattered
+  // evenly over the Milky Way's disc (radius about 50,000 light-years).
+  var UNIVERSE_GALAXY_RADIUS_LY = 50000;
+  function universeDrakeChain(factors) { var p = 1; return factors.map(function (f) { p *= f; return p; }); }
+  function universeNeighbourLy(n) { return n >= 1.5 ? 0.5 * Math.sqrt(Math.PI * UNIVERSE_GALAXY_RADIUS_LY * UNIVERSE_GALAXY_RADIUS_LY / n) : null; }
+  function universeGyrLabel(gyr) { return gyr >= 1 ? (Math.round(gyr * 10) / 10).toLocaleString('en-US') + ' billion years' : universeSpanLabel(gyr); }
+
+  // Planet sizes in Earth radii. Solar System planets are measured; each exoplanet kind
+  // is drawn at a typical size inside the range its card gives.
+  var UNIVERSE_PLANET_SIZES = [
+    { id: 'earth', name: 'Earth', r: 1, ours: true, colors: ['#60a5fa', '#1d4ed8'] },
+    { id: 'super', name: 'Super-Earth', r: 1.6, colors: ['#a3a3a3', '#57534e'] },
+    { id: 'mini', name: 'Mini-Neptune', r: 2.7, colors: ['#a5f3fc', '#0891b2'] },
+    { id: 'neptune', name: 'Neptune', r: 3.88, ours: true, colors: ['#93c5fd', '#2563eb'] },
+    { id: 'jupiter', name: 'Jupiter', r: 11.21, ours: true, colors: ['#fde68a', '#b45309'] },
+    { id: 'hotjup', name: 'Hot Jupiter', r: 15.7, colors: ['#fdba74', '#b91c1c'] }
+  ];
+
+  // Earth through time, for the timeline's zoom window. Each era starts at a dated event
+  // (Gyr after the Big Bang); `moment` names the key moment it shares an age with.
+  var UNIVERSE_EARTH_ERAS = [
+    { from: 9.26, look: 'molten', name: 'molten and pelted by rocks', moment: 'earth' },
+    { from: 9.4, look: 'oceans', name: 'the first oceans' },
+    { from: 10.3, look: 'oceans', name: 'microbes in the sea', moment: 'life' },
+    { from: 11.4, look: 'rust', name: 'oxygen fills the air', moment: 'oxygen' },
+    { from: 13.083, look: 'ice', name: 'ice almost to the equator' },
+    { from: 13.165, look: 'rust', name: 'the ice melts' },
+    { from: 13.262, look: 'rust', name: 'animals spread in the sea', moment: 'animals' },
+    { from: 13.33, look: 'green', name: 'plants spread onto land' },
+    { from: 13.465, look: 'pangaea', name: 'one supercontinent, Pangaea' },
+    { from: 13.625, look: 'green', name: 'Pangaea breaks apart' },
+    { from: 13.734, look: 'green', name: 'mammals spread after the dinosaurs', moment: 'dinosaurs' },
+    { from: 13.7997, look: 'green', name: 'modern humans appear', moment: 'humans' },
+    { from: 13.8, look: 'green', name: 'cities light the night side', today: true }
+  ];
+  function universeEarthEra(age) { var era = null; UNIVERSE_EARTH_ERAS.forEach(function (it) { if (age >= it.from) era = it; }); return era; }
+  function universeAgoLabel(age) {
+    var ago = Math.max(0, UNIVERSE_NOW_GYR - age);
+    if (ago >= 1) return universeRound(ago) + ' billion years ago';
+    if (ago >= 0.001) return universeRound(ago * 1000) + ' million years ago';
+    if (ago >= 1e-6) return universeRound(ago * 1e6) + ' thousand years ago';
+    return 'today';
+  }
+
+  // What If? picker: one icon per thought experiment, and where the learner is in it.
+  var UNIVERSE_WHATIF_ICONS = ['💥', '🕳️', '🐢', '🏋️', '⏳', '🔄', '⚛️', '👻'];
+  // state: 'new' (nothing typed), 'drafted' (a prediction typed), 'done' (compared with the answer)
+  function universeWhatIfState(index, notes, shown) {
+    if (Array.isArray(shown) && shown.indexOf(index) !== -1) return 'done';
+    return notes && typeof notes[index] === 'string' && notes[index].trim() ? 'drafted' : 'new';
+  }
+  // Which experiment is open: the learner's pick, else the latest one they compared, else the first.
+  function universeWhatIfOpen(pick, shown, count) {
+    if (typeof pick === 'number' && pick >= 0 && pick < count) return pick;
+    return Array.isArray(shown) && shown.length ? Math.min(count - 1, Math.max(0, shown[shown.length - 1])) : 0;
+  }
+
+  // Danger distances quoted on the Catastrophes cards (light-years), and landmarks to set
+  // them against. The share of the Milky Way's disc inside a radius is (r / R)^2.
+  var UNIVERSE_DANGER_RANGES = [
+    { id: 'magnetar', name: 'Magnetar flare', ly: 10, color: '#f472b6' },
+    { id: 'supernova', name: 'Supernova', ly: 30, color: '#fb923c' },
+    { id: 'grb', name: 'Gamma-ray burst (aimed at us)', ly: 6500, color: '#facc15' }
+  ];
+  var UNIVERSE_DANGER_LANDMARKS = [
+    { id: 'proxima', name: 'Nearest star', ly: 4.2 },
+    { id: 'ikpeg', name: 'IK Pegasi', ly: 150 },
+    { id: 'center', name: 'Galaxy’s center', ly: 26000 }
+  ];
+  function universeDiscShare(ly) { return Math.min(1, ly * ly / (UNIVERSE_GALAXY_RADIUS_LY * UNIVERSE_GALAXY_RADIUS_LY)); }
+  function universePercentLabel(share) { var p = share * 100; return p >= 10 ? Math.round(p) + '%' : p >= 0.1 ? (Math.round(p * 10) / 10) + '%' : p >= 0.0001 ? 'about ' + Number(p.toPrecision(1)) + '%' : 'under 0.0001%'; }
+
+  // The Sun's fate, to scale. Radii in AU (1 solar radius = 0.00465 AU). Orbits widen as the
+  // Sun loses mass (a is proportional to 1 / mass): about 0.67 solar masses at the red giant
+  // tip, about 0.54 as a white dwarf. Giant radius about 256 solar radii (Schroder and Smith 2008).
+  var UNIVERSE_SUN_STAGES = [
+    { id: 'now', name: 'Today', radius: 0.00465, mass: 1, note: 'a yellow dwarf, 1.4 million km wide' },
+    { id: 'giant', name: 'Red giant (in about 5 billion years)', radius: 1.19, mass: 0.67, note: 'about 250 times wider than today' },
+    { id: 'dwarf', name: 'White dwarf (afterwards)', radius: 0.0000426, mass: 0.54, note: 'about as wide as Earth' }
+  ];
+  var UNIVERSE_SUN_PLANETS = [{ name: 'Mercury', au: 0.387 }, { name: 'Venus', au: 0.723 }, { name: 'Earth', au: 1 }, { name: 'Mars', au: 1.524 }];
+  // fate: 'engulfed' (inside the star now), 'gone' (engulfed earlier, so absent later), 'outside'.
+  function universeSunPlanets(stage) {
+    var giant = UNIVERSE_SUN_STAGES[1];
+    return UNIVERSE_SUN_PLANETS.map(function (p) {
+      var au = p.au / stage.mass, lost = p.au / giant.mass < giant.radius;
+      return { name: p.name, au: au, fate: stage.id === 'dwarf' && lost ? 'gone' : au < stage.radius ? 'engulfed' : 'outside' };
+    });
+  }
+
+  // Hubble diagram geometry: where the recession speed passes light speed (c / H0, in Mpc).
+  var UNIVERSE_C_KMS = 299792.458;
+  function universeHubbleSphereMpc(h0) { return h0 > 0 ? UNIVERSE_C_KMS / h0 : Infinity; }
+
+  // Readable text on a colour: the better of white and dark ink; the colour is darkened (white ink) or
+  // lightened (dark ink) in 5% steps until the pair reaches 4.5:1.
+  function universeInkLum(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255].map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce(function (sum, v, i) { return sum + v * [0.2126, 0.7152, 0.0722][i]; }, 0); }
+  function universeContrast(a, b) { var x = universeInkLum(a), y = universeInkLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function universeMixHex(hex, toward, amount) {
+    var n = parseInt(hex.slice(1), 16), t = toward === 'black' ? 0 : 255;
+    return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(function (v) { return ('0' + Math.round(v + (t - v) * amount).toString(16)).slice(-2); }).join('');
+  }
+  function universeReadableInk(hex) {
+    var DARK = '#0f172a', LIGHT = '#ffffff', ink = universeContrast(hex, LIGHT) >= universeContrast(hex, DARK) ? LIGHT : DARK, bg = hex;
+    for (var step = 1; universeContrast(bg, ink) < 4.5 && step <= 20; step++) bg = universeMixHex(hex, ink === LIGHT ? 'black' : 'white', step * 0.05);
+    return { ink: ink, bg: bg };
+  }
+
+  // Put-it-in-order challenge: chapter stops and key moments, each with its age.
+  var UNIVERSE_ORDER_EVENTS = [
+    { id: 'recombination', title: 'Light breaks free (recombination)', age: 0.00038 },
+    { id: 'first-stars', title: 'The first stars light up', age: 0.2 },
+    { id: 'first-galaxies', title: 'Early galaxies are common', age: 0.4 },
+    { id: 'milky-way', title: 'The Milky Way assembles', age: 4.6 },
+    { id: 'sun', title: 'The Sun is born', age: 9.2 }
+  ].concat(UNIVERSE_MOMENTS.reduce(function (all, list) {
+    return all.concat(list.map(function (moment) { return { id: moment.id, title: moment.title, age: moment.age }; }));
+  }, []));
+  // Five events for a round, in a shuffled starting order that is never already sorted.
+  function universeOrderRound(seed) {
+    var picks = quizShuffle(UNIVERSE_ORDER_EVENTS.map(function (_, i) { return i; }), seed >>> 0).slice(0, 5);
+    var order = quizShuffle(picks, (seed * 31 + 7) >>> 0);
+    var sorted = picks.slice().sort(function (a, b) { return UNIVERSE_ORDER_EVENTS[a].age - UNIVERSE_ORDER_EVENTS[b].age; });
+    if (order.every(function (index, n) { return index === sorted[n]; })) order.push(order.shift());
+    return order.map(function (index) { return UNIVERSE_ORDER_EVENTS[index].id; });
+  }
+  function universeOrderEvent(id) { return UNIVERSE_ORDER_EVENTS.filter(function (item) { return item.id === id; })[0] || null; }
+
+  // ── Click-to-learn: what each thing drawn in the time-lapse scene represents ──
+  // Kinds marked field have no single object; a click on open sky reports them.
+  function universeKind(icon, name, what, when, size, model, think, extra) {
+    return Object.assign({ icon: icon, name: name, what: what, when: when, size: size, model: model, think: think }, extra || {});
+  }
+  var UNIVERSE_SCENE_KINDS = {
+    plasma: universeKind('🔥', 'Hot, glowing plasma', 'Space is filled almost evenly with a glowing mix of particles and light. It is too hot for atoms to hold together, so electrons roam free.', 'From the first instants until about 380,000 years, when it cools enough to become see-through.', 'Everywhere at once. In this model the glow has no center and no edge.', 'Color stands for temperature, from yellow-white to orange as it cools. The real glow was far brighter.', 'If the glow fills every direction equally, where would the “center” of the Big Bang be?', { field: true }),
+    grid: universeKind('▦', 'Expanding grid', 'Each dot marks a place in space. As space expands, every dot moves away from every other dot, so no dot is the center.', 'Expansion has continued for 13.8 billion years and is still happening.', 'The grid is a small patch of a universe that may have no edge at all.', 'Real space has no grid lines. They are a ruler that makes the stretching visible.', 'Pick one dot. Do its neighbors move away from it? Would that be true for any dot you pick?', { guide: true }),
+    'photon-trapped': universeKind('〰️', 'Trapped light', 'Light particles (photons) zigzag because they keep bouncing off free electrons. Light cannot travel far, so the universe is opaque, like a glowing fog.', 'Light stays trapped for about 380,000 years.', 'Each zigzag step is short compared with the size of the universe.', 'Paths are drawn large and slow. Real photons move at the speed of light.', 'Why can you see through clear air but not through thick fog?'),
+    'photon-free': universeKind('➝', 'Free-flying light', 'Electrons have joined nuclei to make atoms, so light now flies in straight lines. This freed light is the cosmic microwave background.', 'Light broke free about 380,000 years after the Big Bang.', 'Some of this light has traveled for 13.8 billion years to reach Earth today.', 'Paths are drawn large and slow. Their color shifts toward red as space stretches the light.', 'What changed so that light could suddenly travel in straight lines?'),
+    afterglow: universeKind('🌫️', 'Cosmic microwave background', 'This mottled glow is the light released when the universe became transparent. Its slightly warmer and cooler patches were seeds of future galaxies.', 'Released about 380,000 years after the Big Bang, and still detected today.', 'It reaches us from every direction in the sky, cooled to 2.725 degrees above absolute zero.', 'Real temperature differences are tiny, about 1 part in 100,000; the contrast is exaggerated here. As space stretches, this light shifts to infrared and then microwaves, so the scene grows dark.', 'Is this glow coming from one place, or from everywhere?', { field: true }),
+    gas: universeKind('☁️', 'Gas gathering into clumps', 'There are no stars yet. Gravity, mostly from invisible dark matter, pulls hydrogen and helium gas into denser clumps.', 'Clumps grow for tens to hundreds of millions of years before the first stars ignite.', 'The clumps that made the first stars held roughly a million times the Sun’s mass.', 'Gas this cold would look dark. It is tinted so you can see where it gathers.', 'Why did gravity need help from dark matter to build structure quickly?'),
+    'first-star': universeKind('⭐', 'A first-generation star', 'Made of only hydrogen and helium. Models suggest many were huge, very hot and blue, and lived for only a few million years.', 'The first stars may have formed around 100 to 200 million years after the Big Bang.', 'Possibly tens to hundreds of times the Sun’s mass.', 'No first-generation star has been seen directly yet. These come from computer models.', 'The first stars had no carbon or oxygen. Where did those elements come from later?'),
+    bubble: universeKind('🫧', 'Ionized bubble', 'Ultraviolet light from early stars and galaxies knocks electrons off nearby hydrogen atoms, carving out bubbles of charged gas. The bubbles grow and merge.', 'This reionization was largely complete about 1 billion years after the Big Bang.', 'Early bubbles were thousands of light-years across; late ones spanned millions before they merged.', 'The blue rings are a guide. Ionized gas is not actually blue.', 'Why would the bubbles grow fastest around the brightest, hottest stars?', { guide: true }),
+    'young-galaxy': universeKind('🌌', 'Young galaxy', 'Early galaxies were small, clumpy and full of new stars. They often collided and merged, building bigger galaxies.', 'The James Webb Space Telescope has found galaxies from about 300 million years after the Big Bang.', 'Often only a few thousand light-years across, much smaller than the Milky Way today.', 'Sizes and spacing are not to scale. Real galaxies are much farther apart.', 'How could small galaxies become large ones?'),
+    quasar: universeKind('💫', 'Quasar', 'Gas spiraling into a supermassive black hole heats up and blazes so brightly that it can outshine its whole galaxy. Some quasars shoot out jets.', 'Quasars were most common around 10 billion years ago. They are rare today.', 'The glowing region is roughly the size of our Solar System, yet it can outshine a hundred billion stars.', 'The glow and jets are simplified symbols.', 'If no light escapes a black hole, where does a quasar’s light come from?'),
+    spiral: universeKind('🌀', 'Spiral galaxy', 'A spinning disk of stars, gas and dust, with arms where new stars form around a bright central bulge. The Milky Way is a spiral.', 'Disks like this settle over billions of years.', 'About 100,000 light-years across for a galaxy like ours, with 100 billion stars or more.', 'Galaxies are drawn far closer together than they really are. Some are seen tilted or edge-on.', 'What keeps a spinning galaxy from flying apart?'),
+    elliptical: universeKind('🥚', 'Elliptical galaxy', 'A smooth, rounded swarm of mostly older, redder stars, with little gas left to make new ones. Many grew through galaxy mergers.', 'Large ellipticals are common in crowded galaxy clusters today.', 'From small dwarfs to giants with a trillion stars or more.', 'Drawn simply; real ellipticals fade gradually at their edges.', 'Why might colliding galaxies end up round instead of flat?'),
+    nebula: universeKind('🌈', 'Star-forming nebula', 'A cloud of gas and dust where new stars are being born. Hot young stars make the gas glow.', 'A nebula can keep making stars for millions of years.', 'Tens to hundreds of light-years across, small enough to fit inside a galaxy.', 'Real nebulae sit inside galaxies and would be too small to see at this scale. They are enlarged so you can find them.', 'Why do new stars form inside clouds of gas and dust?'),
+    halo: universeKind('🟣', 'Dark matter halo', 'An invisible cloud of dark matter surrounds each galaxy. Its gravity holds the galaxy together and helped it form.', 'Dark matter began clumping early, before the first stars.', 'A halo stretches several times wider than the galaxy you can see.', 'Dark matter gives off no light. The purple glow is a guide that shows where it would be.', 'How can scientists find something that gives off no light?', { guide: true }),
+    filament: universeKind('🕸️', 'Cosmic web filament', 'Galaxies line up along enormous threads of dark matter and gas, with nearly empty voids in between.', 'The web grew from the tiny seeds seen in the cosmic microwave background.', 'Filaments can stretch for hundreds of millions of light-years.', 'The lines are a guide. Real filaments are faint gas and invisible dark matter.', 'Why might galaxies form along lines instead of being spread evenly?', { guide: true }),
+    group: universeKind('🔵', 'Galaxy group', 'Gravity binds dozens to thousands of galaxies together. Our Milky Way belongs to the Local Group, along with the Andromeda Galaxy.', 'Groups and clusters keep growing as more galaxies fall in.', 'Groups span a few million light-years; big clusters span 10 million or more.', 'Member galaxies are drawn larger than they would look at this distance.', 'If space is expanding, why do the galaxies in a group stay together?'),
+    disk: universeKind('🪐', 'Protoplanetary disk', 'A newborn star surrounded by a flat disk of gas and dust. Dust grains stick together into pebbles, then rocks, then planets.', 'Our Solar System formed this way about 4.6 billion years ago. A disk lasts only a few million years.', 'Hundreds of times wider than the distance from Earth to the Sun.', 'Enormously enlarged. At this scene’s scale a disk would be far too small to see.', 'Why might rocky planets form close to the star and icy giants farther out?'),
+    star: universeKind('✦', 'Star', 'One of hundreds of billions of stars in a galaxy. A star’s color hints at its temperature: blue-white stars are hottest and red stars are coolest.', 'Small stars can shine for trillions of years; the biggest last only a few million.', 'From about a tenth of the Sun’s width to more than a thousand times wider.', 'The twinkle is illustrative. Stars twinkle only when seen through air.', 'Is a blue star hotter or cooler than a red one?'),
+    earth: universeKind('🌍', 'Earth', 'Our planet at the age you picked: molten at first, then oceans, microbes, oxygen, ice ages, plants, animals and finally us.', 'Earth formed about 4.5 billion years ago. The oldest widely accepted fossils of life are about 3.5 billion years old.', 'About 12,700 km across.', 'Shown in a zoom window, enlarged trillions of times. The continents are drawn to suggest each era, not as a real map.', 'Life began about 3.5 billion years ago, but oxygen only filled the air about 2.4 billion years ago. What took so long?'),
+    'milky-way': universeKind('🏠', 'Our Milky Way', 'Our home galaxy, a barred spiral. The Sun orbits about 26,000 light-years from its center.', 'The Sun takes about 230 million years to circle the galaxy once.', 'About 100,000 light-years across, with 100 to 400 billion stars.', 'Its place in this picture is illustrative. We can only see the Milky Way from inside it.', 'How could astronomers map the shape of a galaxy they are inside?'),
+    'red-dwarf': universeKind('🔴', 'One of the last red dwarfs', 'Small, cool stars use their fuel so slowly that they could shine for trillions of years. They would be the last stars still glowing.', 'The longest-lived red dwarfs may last 10 trillion years or more.', 'Often less than half the Sun’s width.', 'A possible future based on today’s physics.', 'Why would a small star last longer than a big one?'),
+    'black-hole': universeKind('⚫', 'Black hole', 'Long after the stars fade, black holes may be among the last objects left. Theory says even they slowly evaporate.', 'The largest might take about 10¹⁰⁰ years to evaporate, if the theory is right.', 'A black hole with 10 times the Sun’s mass has an event horizon about 60 km across.', 'Drawn as a dark disk with a faint ring. A real black hole is seen only through its effects on nearby matter and light.', 'If nothing escapes a black hole, how could it slowly lose mass?'),
+    'deep-space': universeKind('🌑', 'Mostly empty space', 'Even where the scene looks crowded, the universe is mostly empty. On average there is less than one atom in each cubic meter of space.', 'The space between galaxy groups keeps growing as the universe expands.', 'Large neighboring galaxies are often millions of light-years apart.', 'Galaxies are drawn much closer together than they really are.', 'What fills the space between the galaxies?', { field: true }),
+    baryon: universeKind('⚛️', 'Protons and neutrons', 'About ten millionths of a second after the Big Bang, quarks join into protons (red) and neutrons (grey). For the first few minutes it is too hot for them to stick together.', 'From about 10 microseconds until about 3 minutes, when fusion begins.', 'A proton is about a femtometre across: a million-billionth of a metre.', 'Drawn huge and far apart. In reality there were about 1.6 billion particles of light for every proton or neutron.', 'Why does it need to cool down before protons and neutrons can stick together?'),
+    helium: universeKind('🟠', 'A helium-4 nucleus', 'Two protons and two neutrons fused into a helium nucleus. In a few minutes the universe made almost all the helium that exists today.', 'Fusion ran from about 3 to 20 minutes after the Big Bang.', 'By mass, about one quarter of ordinary matter became helium; almost all the rest stayed hydrogen.', 'Only bare nuclei formed. Electrons stayed free until about 380,000 years, when the first atoms formed.', 'The Big Bang made almost no carbon or oxygen. Where did those elements come from?'),
+    fading: universeKind('🔮', 'A fading universe', 'If expansion continues, stars run out of fuel one by one, and galaxies grow dark and far apart.', 'This takes trillions of years and more, far beyond the present.', 'Distant galaxies drift out of sight as expansion speeds up.', 'This is a prediction from today’s physics, not an observation.', 'What new evidence could change this prediction?', { field: true })
+  };
+  // Which kinds the scene shows at an illustration-clock value. Mirrors the draw code.
+  function universeSceneKinds(t, guides, age) {
+    if (age >= UNIVERSE_STOP_AGES[8]) return ['fading', 'red-dwarf', 'black-hole'];
+    var kinds = [];
+    function add(kind, test) { if (test) kinds.push(kind); }
+    add('plasma', t < 0.32);
+    add('grid', t < 0.3);
+    add('baryon', t >= 0.111 && t < 0.31);
+    add('helium', t >= 0.216 && t < 0.31);
+    add('photon-trapped', t >= 0.12 && t < 0.32);
+    add('afterglow', t >= 0.32 && t < 0.65);
+    add('photon-free', t >= 0.32 && t < 0.45);
+    add('gas', t >= 0.38 && t < 1.02);
+    add('first-star', t >= 0.55 && t < 1.15);
+    add('bubble', guides && t >= 0.57 && t < 2.32);
+    add('young-galaxy', t > 0.92 && t < 4.6);
+    add('quasar', t >= 1.3 && t < 6.5);
+    add('spiral', t >= 4.6);
+    add('elliptical', t >= 4.6);
+    add('milky-way', t >= 4.3);
+    add('nebula', t > 2.4);
+    add('group', t > 3.3);
+    add('halo', guides && t > 2.2);
+    add('filament', guides && t > 2.4);
+    add('disk', t >= 8.5 && age < 9.26);
+    add('earth', age >= 9.26);
+    add('star', t >= 1.1);
+    add('deep-space', t >= 0.65);
+    return kinds;
+  }
+  // The field (whole-sky) kind a click on empty sky reports.
+  function universeSceneField(t, age) {
+    if (age >= UNIVERSE_STOP_AGES[8]) return 'fading';
+    return t < 0.32 ? 'plasma' : t < 0.65 ? 'afterglow' : 'deep-space';
+  }
+  // The drawn object under a point, in canvas pixels. Of the objects the point is
+  // inside, the smallest wins, so a star inside its bubble or a galaxy inside its
+  // halo can still be picked; otherwise the nearest edge within reach. Threads
+  // (filaments) end on galaxies, so they win only where nothing solid is. A tie
+  // goes to the object drawn last, the one on top.
+  function universeSceneHit(hotspots, x, y, reach) {
+    var best = null, bestScore = Infinity;
+    (hotspots || []).forEach(function (spot) {
+      var d;
+      if (spot.path) {
+        d = Infinity;
+        for (var i = 0; i + 3 < spot.path.length; i += 2) {
+          var ax = spot.path[i], ay = spot.path[i + 1], bx = spot.path[i + 2], by = spot.path[i + 3];
+          var dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy, u = len ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len)) : 0;
+          d = Math.min(d, Math.hypot(x - ax - u * dx, y - ay - u * dy));
+        }
+      } else d = Math.hypot(x - spot.x, y - spot.y);
+      if (d > spot.r + reach) return;
+      var score = (d <= spot.r ? spot.r : 1e6 + d - spot.r) + (spot.path ? 1e4 : 0);
+      if (score <= bestScore) { bestScore = score; best = spot; }
+    });
+    return best;
+  }
+  // The time-lapse stage: click-to-learn card, finder list, fullscreen transport, time-scale panel.
+  var UNIVERSE_STAGE_CSS = `[data-universe-tool] .uni-scene .uni-fs-button{position:absolute;top:10px;right:10px;z-index:20;display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;height:44px;padding:0 10px;border-radius:10px;background:rgba(15,23,42,.9);border:1px solid rgba(167,139,250,.6);color:#ede9fe;font-size:17px;font-weight:700;cursor:pointer;}[data-universe-tool] .uni-fs-word{display:none;font-size:13px;}[data-universe-tool] .uni-fs-only{display:none!important;}[data-universe-tool] .uni-scene-tools{position:absolute;top:10px;left:10px;z-index:6;display:flex;flex-wrap:wrap;gap:8px;max-width:calc(100% - 80px);}[data-universe-tool] .uni-scene-tools button{display:flex;align-items:center;gap:7px;min-height:44px;padding:6px 13px;border-radius:999px;background:rgba(2,6,23,.84);border:1px solid rgba(148,163,184,.6);color:#f1f5f9;font-size:12px;font-weight:650;box-shadow:0 4px 14px #0006;}[data-universe-tool] .uni-scene-tools button[aria-expanded=true]{border-color:#fde047;box-shadow:0 0 0 2px #fde04755;}[data-universe-tool] .uni-scene-tools small{font-size:11px;font-weight:600;color:#bae6fd;}[data-universe-tool] .uni-scene-tip{position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-100%);padding:4px 9px;border-radius:7px;background:#020617eb;border:1px solid #94a3b8;color:#f8fafc;font-size:12px;font-weight:600;line-height:1.3;white-space:nowrap;opacity:0;transition:opacity .12s;}[data-universe-tool] .uni-scene-tip[data-show]{opacity:1;}[data-universe-tool] .uni-scene-caption .uni-scene-moment{display:block;margin-top:2px;font-style:normal;font-size:12px;font-weight:650;color:#fde68a;}[data-universe-tool] .uni-scene-caption .uni-scene-moment-text{margin:4px 0 0;max-width:46ch;font-size:11.5px;line-height:1.45;color:#e2e8f0;}[data-universe-tool] .uni-scene-caption .uni-scene-calendar{display:block;margin-top:4px;font-size:10.5px;line-height:1.4;color:#c7d2fe;}[data-universe-tool] .uni-scene-caption .uni-scene-calendar b{font-weight:700;color:#eef2ff;}[data-universe-tool] .uni-scene-card-open .uni-scene-caption{max-width:calc(100% - 400px);}[data-universe-tool] .uni-scene-finds{position:absolute;top:62px;left:10px;z-index:7;width:min(300px,calc(100% - 20px));max-height:calc(100% - 140px);overflow:auto;overscroll-behavior:contain;padding:12px;border:1px solid #64748b;border-radius:12px;background:#0b1426f5;color:#e2e8f0;box-shadow:0 12px 34px #000a;}[data-universe-tool] .uni-scene-finds-title{margin:0;font-size:13px;font-weight:800;color:#f8fafc;}[data-universe-tool] .uni-scene-finds-help,[data-universe-tool] .uni-scene-finds-count{margin:4px 0 0;font-size:12px;line-height:1.45;color:#cbd5e1;}[data-universe-tool] .uni-scene-finds ul{list-style:none;margin:10px 0;padding:0;display:grid;gap:6px;}[data-universe-tool] .uni-scene-finds li button{display:flex;align-items:center;gap:9px;width:100%;padding:6px 10px;border:1px solid #3b4a63;border-radius:9px;background:#14223a;color:#f1f5f9;font-size:13px;text-align:left;}[data-universe-tool] .uni-scene-finds li button:hover{border-color:#fde047;}[data-universe-tool] .uni-scene-find-icon{flex:none;width:22px;text-align:center;font-size:16px;}[data-universe-tool] .uni-scene-found{margin-left:auto;font-weight:800;color:#86efac;}[data-universe-tool] .uni-scene-card{position:absolute;top:10px;right:64px;z-index:8;display:flex;flex-direction:column;width:min(340px,calc(100% - 84px));max-height:calc(100% - 20px);border:1px solid #7c8db0;border-top:3px solid #fde047;border-radius:14px;background:linear-gradient(160deg,#0f1d33f8,#0a1324fb);color:#e2e8f0;box-shadow:0 12px 40px #000b;}[data-universe-tool] .uni-scene-card-head{display:flex;align-items:flex-start;gap:10px;padding:12px 12px 6px;}[data-universe-tool] .uni-scene-card-icon{font-size:24px;line-height:1.2;}[data-universe-tool] .uni-scene-card-head .uni-eyebrow{margin:0 0 2px;color:#fde68a;}[data-universe-tool] .uni-scene-card-head h3{margin:0;font-size:17px;line-height:1.3;font-weight:800;color:#ffffff;}[data-universe-tool] .uni-scene-card-close{flex:none;margin-left:auto;width:44px;height:44px;border:1px solid #475569;border-radius:10px;background:transparent;color:#f8fafc;font-size:20px;line-height:1;}[data-universe-tool] .uni-scene-card-body{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 14px 8px;font-size:13px;line-height:1.55;}[data-universe-tool] .uni-scene-card-what{margin:4px 0 8px;color:#f1f5f9;}[data-universe-tool] .uni-scene-card-body dl{margin:0;}[data-universe-tool] .uni-scene-card-body dl>div{margin:8px 0;}[data-universe-tool] .uni-scene-card-body dt{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#93c5fd;}[data-universe-tool] .uni-scene-card-body dd{margin:2px 0 0;color:#dbe4f0;}[data-universe-tool] .uni-scene-card-think{margin:10px 0 4px;padding:8px 10px;border-left:3px solid #fde047;border-radius:6px;background:#1e293b;color:#f1f5f9;}[data-universe-tool] .uni-scene-card-actions{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 12px;border-top:1px solid #334155;}[data-universe-tool] .uni-scene-card-actions button,[data-universe-tool] .uni-scene-guide button{padding:6px 12px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#f1f5f9;font-size:12px;font-weight:650;}[data-universe-tool] .uni-scene-card-actions .uni-scene-card-primary{border-color:#fde047;background:#fde047;color:#1c1917;}[data-universe-tool] .uni-scene-transport{position:absolute;left:16px;right:16px;bottom:16px;z-index:9;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid #475569;border-radius:14px;background:#020617e6;color:#f1f5f9;box-shadow:0 10px 30px #000a;}[data-universe-tool] .uni-scene-transport button{min-width:44px;height:44px;padding:0 10px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#f8fafc;font-size:15px;font-weight:700;}[data-universe-tool] .uni-scene-transport button:disabled{opacity:.45;}[data-universe-tool] .uni-scene-transport button[aria-pressed=true]{border-color:#fde047;background:#fde047;color:#111827;}[data-universe-tool] .uni-scene-transport .uni-scene-play{padding:0 16px;border-color:#818cf8;background:#4338ca;}[data-universe-tool] .uni-scene-transport .uni-scene-play[aria-pressed=true]{border-color:#fca5a5;background:#b91c1c;color:#ffffff;}[data-universe-tool] .uni-scene-scrub{flex:1 1 220px;min-width:140px;height:44px;accent-color:#a5b4fc;}[data-universe-tool] .uni-scene-transport-time{min-width:13ch;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-scene-speed{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;}[data-universe-tool] .uni-scene-speed select{min-height:44px;padding:0 8px;border:1px solid #64748b;border-radius:8px;background:#0f172a;color:#f8fafc;}[data-universe-tool] .uni-scene-guide{position:absolute;top:66px;left:16px;z-index:7;width:min(380px,40%);max-height:calc(100% - 196px);overflow:auto;overscroll-behavior:contain;padding:14px 16px;border:1px solid #64748b;border-left:3px solid var(--uni-epoch-accent,#a5b4fc);border-radius:12px;background:#0b1426f2;color:#e2e8f0;font-size:14px;line-height:1.55;}[data-universe-tool] .uni-scene-guide h3{margin:2px 0 6px;font-size:20px;font-weight:800;color:#ffffff;}[data-universe-tool] .uni-scene-guide .uni-eyebrow{color:#c4b5fd;}[data-universe-tool] .uni-scene-guide-event{font-weight:700;color:#fde68a;}[data-universe-tool] .uni-scene-guide-moment{margin:10px 0;padding:8px 10px;border-radius:8px;background:#1e293b;}[data-universe-tool] .uni-scene-guide-moment p{margin:4px 0 0;}[data-universe-tool] .uni-scene-guide summary{padding:8px 0;font-weight:700;color:#bae6fd;cursor:pointer;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-transport.uni-fs-only{display:flex!important;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-guide.uni-fs-only{display:block!important;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-tools .uni-fs-only{display:flex!important;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-fs-word{display:inline;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-not-fs{display:none!important;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-caption{bottom:104px;max-width:min(520px,calc(100% - 32px));}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-caption strong{font-size:18px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-caption .uni-scene-moment{font-size:14px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-caption .uni-scene-moment-text{font-size:13px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-card{top:66px;right:16px;bottom:104px;max-height:none;width:min(400px,42%);}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-finds{top:66px;left:16px;max-height:calc(100% - 190px);}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-tools{top:16px;left:16px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-fs-button{top:16px;right:16px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]).uni-scene-guide-open .uni-scene-finds{left:auto;right:16px;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]).uni-scene-guide-open .uni-scene-caption{display:none;}[data-universe-tool] .uni-chapter-stops{min-height:44px;padding:0 12px;border:1px solid #8b7fd8;border-radius:8px;background:#ffffff;color:#3b2a8c;font-size:12px;font-weight:700;}[data-universe-tool] .uni-chapter-stops[aria-pressed=true]{border-color:#4338ca;background:#4338ca;color:#ffffff;}[data-universe-tool][data-uni-theme=dark] .uni-chapter-stops{border-color:#818cf8;background:#24324a;color:#ede9fe;}[data-universe-tool][data-uni-theme=dark] .uni-chapter-stops[aria-pressed=true]{background:#4338ca;color:#ffffff;}[data-universe-tool] .uni-timescale{margin-top:14px;padding:16px 18px;border:1px solid #b9c6e0;border-radius:14px;background:var(--uni-panel);}[data-universe-tool] .uni-timescale h3{margin:0 0 10px;font-size:15px;font-weight:800;color:var(--uni-ink);}[data-universe-tool] .uni-timescale-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}[data-universe-tool] .uni-timescale-stats>div{padding:10px 12px;border:1px solid #c7d2fe;border-radius:10px;background:var(--uni-panel);}[data-universe-tool] .uni-timescale-stats span,[data-universe-tool] .uni-timescale-stats small{display:block;font-size:11px;color:var(--uni-muted);}[data-universe-tool] .uni-timescale-stats span{font-weight:750;letter-spacing:.05em;text-transform:uppercase;}[data-universe-tool] .uni-timescale-stats strong{display:block;margin:2px 0;font-size:16px;font-weight:800;line-height:1.3;color:var(--uni-ink);font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-true-scale{margin-top:12px;}[data-universe-tool] .uni-true-scale-label{margin:0 0 6px;font-size:12px;font-weight:750;color:var(--uni-ink);}[data-universe-tool] .uni-true-scale-bar{position:relative;display:flex;height:16px;border-radius:8px;background:#e2e8f0;}[data-universe-tool] .uni-true-scale-part{display:block;height:100%;min-width:2px;}[data-universe-tool] .uni-true-scale-part:first-child{border-radius:8px 0 0 8px;}[data-universe-tool] .uni-true-scale-part:last-of-type{border-radius:0 8px 8px 0;}[data-universe-tool] .uni-true-scale-part.is-current{position:relative;z-index:1;outline:2px solid var(--uni-ink);outline-offset:1px;}[data-universe-tool] .uni-true-scale-marker{position:absolute;top:-6px;bottom:-6px;z-index:2;width:4px;margin-left:-2px;border-radius:2px;background:var(--uni-ink);box-shadow:0 0 0 2px var(--uni-panel);}[data-universe-tool] .uni-true-scale-ends{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--uni-muted);font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-true-scale-note{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--uni-muted);}[data-universe-tool] .uni-moment-list{margin-top:12px;}[data-universe-tool] .uni-moment-list .uni-eyebrow{margin:0 0 6px;color:var(--uni-muted);}[data-universe-tool] .uni-moment-list>div{display:flex;flex-wrap:wrap;gap:6px;}[data-universe-tool] .uni-moment-list button{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px;border:1px solid #a5b4fc;border-radius:9px;background:var(--uni-panel);color:var(--uni-ink);text-align:left;}[data-universe-tool] .uni-moment-list strong{font-size:12px;font-weight:750;}[data-universe-tool] .uni-moment-list small{font-size:11px;color:var(--uni-muted);font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-moment-list button[aria-pressed=true]{border-color:#4338ca;background:#4338ca;color:#ffffff;}[data-universe-tool] .uni-moment-list button[aria-pressed=true] small{color:#e0e7ff;}[data-universe-tool] .uni-key-moment{margin-top:12px;padding:12px 14px;border:1px solid #c7d2fe;border-left:4px solid #6366f1;border-radius:12px;background:#eef2ff;}[data-universe-tool] .uni-key-moment .uni-eyebrow{margin:0;color:#4338ca;}[data-universe-tool] .uni-key-moment h4{margin:2px 0 0;font-size:15px;font-weight:800;color:#1e1b4b;}[data-universe-tool] .uni-key-moment h4 small{font-size:12px;font-weight:650;color:#4338ca;}[data-universe-tool] .uni-key-moment p{margin:4px 0 0;font-size:13px;line-height:1.55;color:#312e81;}[data-universe-tool] .uni-key-moment.is-now{border-color:#fcd34d;border-left-color:#d97706;background:#fffbeb;}[data-universe-tool] .uni-key-moment.is-now .uni-eyebrow,[data-universe-tool] .uni-key-moment.is-now h4 small{color:#92400e;}[data-universe-tool] .uni-key-moment.is-now h4{color:#78350f;}[data-universe-tool] .uni-key-moment.is-now p{color:#713f12;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment{border-color:#4338ca;background:#1e1b4b;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment .uni-eyebrow,[data-universe-tool][data-uni-theme=dark] .uni-key-moment h4 small{color:#c7d2fe;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment h4{color:#eef2ff;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment p{color:#e0e7ff;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment.is-now{border-color:#a16207;background:#33240a;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment.is-now .uni-eyebrow,[data-universe-tool][data-uni-theme=dark] .uni-key-moment.is-now h4 small{color:#fcd34d;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment.is-now h4{color:#fef3c7;}[data-universe-tool][data-uni-theme=dark] .uni-key-moment.is-now p{color:#fef3c7;}[data-universe-tool][data-uni-theme=dark] .uni-timescale{border-color:#3b4a6b;}[data-universe-tool][data-uni-theme=dark] .uni-timescale-stats>div{border-color:#3b4a6b;}[data-universe-tool][data-uni-theme=dark] .uni-true-scale-bar{background:#2b3a55;}[data-universe-tool][data-uni-theme=dark] .uni-moment-list button{border-color:#5b6bb0;}[data-universe-tool] .uni-chapter-span{margin:0 0 8px;font-size:13px;line-height:1.55;color:#cbd5e1;}[data-universe-tool] .uni-chapter-span strong{color:#fde68a;}@media(max-width:700px){[data-universe-tool] .uni-timescale-stats{grid-template-columns:1fr;}[data-universe-tool] .uni-scene.uni-scene-card-open:not(:fullscreen):not([data-allo-fullscreen-active]){height:min(560px,88vh)!important;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-scene-caption{top:128px;bottom:auto;}[data-universe-tool] .uni-scene-card{left:10px;right:10px;top:auto;bottom:10px;width:auto;max-height:72%;}[data-universe-tool] .uni-scene-card-open .uni-scene-caption{display:none;}}@media(forced-colors:active){[data-universe-tool] .uni-scene-card,[data-universe-tool] .uni-scene-finds,[data-universe-tool] .uni-scene-guide,[data-universe-tool] .uni-scene-transport,[data-universe-tool] .uni-scene-tools button,[data-universe-tool] .uni-scene-tip{border:1px solid CanvasText;background:Canvas;color:CanvasText;forced-color-adjust:auto;}[data-universe-tool] .uni-true-scale-part{forced-color-adjust:none;}}@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-scene-tip{transition:none;}}[data-universe-tool] .uni-scene.uni-scene-card-open:not(:fullscreen):not([data-allo-fullscreen-active]){height:clamp(440px,62vh,540px)!important;}[data-universe-tool] .uni-predict{position:absolute;top:62px;left:50%;transform:translateX(-50%);z-index:8;width:min(460px,calc(100% - 20px));max-height:calc(100% - 80px);overflow:auto;overscroll-behavior:contain;padding:14px 16px;border:1px solid #8b7fd8;border-top:3px solid #c4b5fd;border-radius:14px;background:linear-gradient(160deg,#1a1640f7,#0d1326fb);color:#e2e8f0;box-shadow:0 12px 40px #000b;}[data-universe-tool] .uni-predict .uni-eyebrow{margin:0 0 4px;color:#c4b5fd;}[data-universe-tool] .uni-predict h3{margin:0 0 10px;font-size:16px;line-height:1.4;font-weight:800;color:#ffffff;}[data-universe-tool] .uni-predict-options{display:grid;gap:6px;}[data-universe-tool] .uni-predict-options button{padding:8px 12px;border:1px solid #6b6fa8;border-radius:10px;background:#1c2142;color:#f1f5f9;font-size:13px;line-height:1.4;text-align:left;}[data-universe-tool] .uni-predict-options button:hover:not(:disabled){border-color:#c4b5fd;}[data-universe-tool] .uni-predict-options button[data-result=right]{border-color:#4ade80;background:#14532d;color:#ffffff;}[data-universe-tool] .uni-predict-options button[data-result=wrong]{border-color:#fca5a5;background:#4c1d1d;color:#ffffff;}[data-universe-tool] .uni-predict-options button:disabled{opacity:.75;}[data-universe-tool] .uni-predict-options button[data-result=right]:disabled{opacity:1;}[data-universe-tool] .uni-predict-feedback{margin:10px 0 0;padding:8px 10px;border-left:3px solid #c4b5fd;border-radius:6px;background:#1e2443;font-size:13px;line-height:1.55;}[data-universe-tool] .uni-predict-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}[data-universe-tool] .uni-predict-actions button{padding:6px 14px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#f1f5f9;font-size:12px;font-weight:700;}[data-universe-tool] .uni-predict-actions .uni-predict-continue{border-color:#c4b5fd;background:#c4b5fd;color:#1e1b4b;}[data-universe-tool] .uni-scene:is(:fullscreen,[data-allo-fullscreen-active]) .uni-predict{top:120px;max-height:calc(100% - 250px);}[data-universe-tool] .uni-scene-caption .uni-scene-cond{color:#fcd9a6;}[data-universe-tool] .uni-conditions{margin-top:14px;}[data-universe-tool] .uni-conditions h4{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--uni-ink);}[data-universe-tool] .uni-order{margin-top:14px;border:1px solid #c7d2fe;border-radius:12px;background:var(--uni-panel);padding:0 14px;}[data-universe-tool] .uni-order>summary{min-height:44px;display:flex;align-items:center;gap:4px;cursor:pointer;font-size:14px;font-weight:800;color:var(--uni-ink);}[data-universe-tool] .uni-order>summary small{font-weight:600;color:var(--uni-muted);}[data-universe-tool] .uni-order[open]{padding-bottom:14px;}[data-universe-tool] .uni-order-intro p,[data-universe-tool] .uni-order-direction{margin:4px 0 10px;font-size:13px;line-height:1.55;color:var(--uni-muted);}[data-universe-tool] .uni-order-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;}[data-universe-tool] .uni-order-list li{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 8px 6px 10px;border:1px solid #c7d2fe;border-radius:10px;background:var(--uni-page);color:var(--uni-ink);}[data-universe-tool] .uni-order-list li[data-result=right]{border-color:#16a34a;background:#f0fdf4;}[data-universe-tool] .uni-order-list li[data-result=wrong]{border-color:#dc2626;background:#fef2f2;}[data-universe-tool] .uni-order-rank{flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#4338ca;color:#ffffff;font-size:12px;font-weight:800;}[data-universe-tool] .uni-order-title{flex:1 1 auto;min-width:0;font-size:13px;font-weight:700;line-height:1.35;}[data-universe-tool] .uni-order-title small{display:block;margin-top:2px;font-size:12px;font-weight:500;color:var(--uni-muted);}[data-universe-tool] .uni-order-moves{display:flex;gap:4px;}[data-universe-tool] .uni-order-moves button{width:44px;height:44px;border:1px solid #94a3b8;border-radius:9px;background:var(--uni-panel);color:var(--uni-ink);font-size:14px;}[data-universe-tool] .uni-order-moves button:disabled{opacity:.35;}[data-universe-tool] .uni-order-mark{flex:none;font-size:18px;font-weight:800;}[data-universe-tool] .uni-order-list li[data-result=right] .uni-order-mark{color:#15803d;}[data-universe-tool] .uni-order-list li[data-result=wrong] .uni-order-mark{color:#b91c1c;}[data-universe-tool] .uni-order-score{margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-order-actions{margin-top:10px;}[data-universe-tool] .uni-order-check{min-height:44px;padding:0 16px;border:1px solid #4338ca;border-radius:10px;background:#4338ca;color:#ffffff;font-size:13px;font-weight:700;}[data-universe-tool][data-uni-theme=dark] .uni-order{border-color:#3b4a6b;}[data-universe-tool][data-uni-theme=dark] .uni-order-list li{border-color:#3b4a6b;}[data-universe-tool][data-uni-theme=dark] .uni-order-list li[data-result=right]{border-color:#22c55e;background:#0f2e1c;}[data-universe-tool][data-uni-theme=dark] .uni-order-list li[data-result=wrong]{border-color:#f87171;background:#3a1414;}[data-universe-tool][data-uni-theme=dark] .uni-order-list li[data-result=right] .uni-order-mark{color:#86efac;}[data-universe-tool][data-uni-theme=dark] .uni-order-list li[data-result=wrong] .uni-order-mark{color:#fca5a5;}@media(forced-colors:active){[data-universe-tool] .uni-predict,[data-universe-tool] .uni-order-list li{border:1px solid CanvasText;background:Canvas;color:CanvasText;forced-color-adjust:auto;}}[data-universe-tool] .uni-star-paths{margin:4px 0 10px;padding:12px;border:1px solid #fcd34d;border-radius:12px;background:var(--uni-surface,#fffbeb);}[data-universe-tool] .uni-star-mass-label{display:block;font-size:13px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-star-paths input[type=range]{width:100%;min-height:44px;accent-color:#d97706;}[data-universe-tool] .uni-star-presets{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 8px;font-size:12px;color:var(--uni-muted);}[data-universe-tool] .uni-star-presets button{padding:4px 10px;border:1px solid #d97706;border-radius:999px;background:transparent;color:var(--uni-ink);font-size:12px;font-weight:650;}[data-universe-tool] .uni-star-presets button[aria-pressed=true]{background:#b45309;border-color:#b45309;color:#ffffff;}[data-universe-tool] .uni-star-diagram{display:block;width:100%;height:auto;margin:4px 0;}[data-universe-tool] .uni-star-story{margin:8px 0 4px;font-size:13px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-star-note{margin:0;font-size:12px;line-height:1.5;color:var(--uni-muted);}[data-universe-tool] .uni-race{margin:4px 0 12px;padding:12px;border:1px solid #fcd34d;border-radius:12px;}[data-universe-tool] .uni-race-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-race-head select{max-width:100%;min-height:44px;padding:0 8px;border:1px solid #64748b;border-radius:8px;background:var(--uni-panel);color:var(--uni-ink);font-size:13px;}[data-universe-tool] .uni-race-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px;}[data-universe-tool] .uni-race-list li{display:grid;grid-template-columns:minmax(0,11rem) minmax(0,1fr) minmax(0,9.5rem);align-items:center;gap:8px;font-size:12px;color:var(--uni-ink);}[data-universe-tool] .uni-race-name{min-width:0;overflow-wrap:anywhere;}[data-universe-tool] .uni-race-track{display:block;height:10px;border-radius:999px;background:#e2e8f0;overflow:hidden;}[data-universe-tool] .uni-race-track i{display:block;height:100%;border-radius:999px;}[data-universe-tool] .uni-race-time{text-align:right;font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-race-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--uni-muted);}[data-universe-tool][data-uni-theme=dark] .uni-race-track{background:#334155;}@media(max-width:560px){[data-universe-tool] .uni-race-list li{grid-template-columns:minmax(0,1fr) minmax(0,8rem);}[data-universe-tool] .uni-race-track{grid-column:1/-1;grid-row:2;}}[data-universe-tool] .uni-transit{margin:4px 0 12px;padding:12px;border:1px solid #6ee7b7;border-radius:12px;}[data-universe-tool] .uni-transit-intro,[data-universe-tool] .uni-transit-readout{margin:0 0 8px;font-size:13px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-transit-controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}[data-universe-tool] .uni-transit-controls label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-transit-controls select{min-height:44px;padding:0 8px;border:1px solid #64748b;border-radius:8px;background:var(--uni-panel);color:var(--uni-ink);font-size:13px;}[data-universe-tool] .uni-transit-view{display:block;width:100%;max-width:520px;height:auto;margin:0 auto 6px;}[data-universe-tool] .uni-transit-phase{display:block;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-transit input[type=range]{width:100%;min-height:44px;accent-color:#059669;}[data-universe-tool] .uni-transit-think summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-transit-think p{margin:0;font-size:13px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-gravity-mass{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--uni-ink);}[data-universe-tool] .uni-gravity-mass label{font-weight:700;}[data-universe-tool] .uni-gravity-mass input{width:6rem;min-height:44px;padding:0 8px;border:1px solid #16a34a;border-radius:8px;background:var(--uni-panel);color:var(--uni-ink);font-size:14px;text-align:center;}[data-universe-tool] .uni-gravity-note,[data-universe-tool] .uni-gravity-feedback{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-gravity-feedback{padding:8px 10px;border-left:3px solid #16a34a;border-radius:6px;background:#f0fdf4;color:#14532d;}[data-universe-tool][data-uni-theme=dark] .uni-gravity-feedback{background:#0f2e1c;color:#dcfce7;}[data-universe-tool] .uni-gravity-predict{margin-bottom:8px;padding:10px;border:1px dashed #16a34a;border-radius:10px;}[data-universe-tool] .uni-gravity-predict p{margin:0 0 8px;font-size:13px;color:var(--uni-ink);}[data-universe-tool] .uni-gravity-predict div{display:flex;flex-wrap:wrap;gap:6px;}[data-universe-tool] .uni-gravity-predict button{padding:4px 12px;border:1px solid #16a34a;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12px;font-weight:650;}[data-universe-tool] .uni-gravity-predict .uni-gravity-skip{margin-top:8px;border-style:dashed;}[data-universe-tool] .uni-whatif-label{display:block;margin:4px 0 2px;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-whatif-input{display:block;box-sizing:border-box;width:100%;min-height:56px;padding:8px;border:1px solid #64748b;border-radius:8px;background:var(--uni-panel);color:var(--uni-ink);font-size:13px;line-height:1.5;resize:vertical;}[data-universe-tool] .uni-whatif-reveal{margin-top:6px;padding:4px 12px;border:1px solid #ca8a04;border-radius:999px;background:transparent;color:var(--uni-ink);font-size:12px;font-weight:700;}[data-universe-tool] .uni-whatif-mine{margin:4px 0;padding:6px 8px;border-left:3px solid #ca8a04;border-radius:6px;font-size:12px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}[data-universe-tool] .uni-bigq-lead,[data-universe-tool] .uni-bigq-task{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-bigq-link{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;padding:8px 10px;border:1px dashed #64748b;border-radius:10px;}[data-universe-tool] .uni-bigq-link p{flex:1 1 16rem;margin:0;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-bigq-link button,[data-universe-tool] .uni-sort-score button,[data-universe-tool] .uni-mini-skip{padding:6px 12px;min-height:44px;border:1px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12.5px;font-weight:650;line-height:1.3;text-align:left;}[data-universe-tool] .uni-bigq-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,23rem),1fr));align-items:start;gap:8px;}[data-universe-tool] .uni-bigq-card{padding:10px;border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));border-radius:12px;background:var(--uni-panel);}[data-universe-tool] .uni-bigq-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:4px;font-size:13px;color:var(--uni-ink);}[data-universe-tool] .uni-bigq-icon{font-size:18px;line-height:1;}[data-universe-tool] .uni-bigq-tag{margin-left:auto;padding:2px 8px;border:1px solid #64748b;border-radius:999px;font-size:11px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-bigq-source{flex-basis:100%;font-size:11.5px;color:var(--uni-muted);}[data-universe-tool] .uni-bigq-desc{margin:0 0 6px;font-size:12px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-bigq-listen{margin-top:4px;min-height:32px;padding:2px 4px;border:0;background:transparent;color:var(--uni-muted);font-size:12px;font-weight:650;text-decoration:underline;text-underline-offset:3px;}[data-universe-tool] .uni-sort-prompt{margin:4px 0;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-sort-options{display:flex;flex-wrap:wrap;gap:6px;}[data-universe-tool] .uni-sort-options button{padding:6px 12px;min-height:44px;border:1px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12.5px;font-weight:650;line-height:1.3;text-align:left;}[data-universe-tool] .uni-sort-options button[aria-pressed=true]{background:var(--uni-ink);border-color:var(--uni-ink);color:var(--uni-panel);}[data-universe-tool] .uni-sort-options button[data-result=fits]{border:2px solid #15803d;}[data-universe-tool] .uni-sort-options button[data-result=fits]::before{content:'✓ ';font-weight:800;}[data-universe-tool] .uni-sort-options button[aria-pressed=true][data-result=fits]{background:#15803d;border-color:#15803d;color:#ffffff;}[data-universe-tool] .uni-sort-options button[aria-pressed=true][data-result=miss]{background:#b45309;border-color:#b45309;color:#ffffff;}[data-universe-tool] .uni-sort-options button:disabled:not([data-result]){opacity:.6;}[data-universe-tool] .uni-sort-options button:disabled[data-result]{opacity:1;}[data-universe-tool][data-uni-theme=dark] .uni-sort-options button[data-result=fits]:not([aria-pressed=true]){border-color:#4ade80;}[data-universe-tool][data-uni-theme=dark] .uni-sort-options button{border-color:#94a3b8;}[data-universe-tool] .uni-sort-feedback{margin:8px 0 0;padding:8px 10px;border-left:3px solid #d97706;border-radius:6px;background:#fffbeb;color:#1f2937;font-size:12.5px;line-height:1.55;}[data-universe-tool] .uni-sort-feedback[data-fits=true]{border-left-color:#16a34a;background:#f0fdf4;}[data-universe-tool] .uni-sort-feedback p{margin:0 0 4px;}[data-universe-tool] .uni-sort-feedback p:last-child{margin-bottom:0;}[data-universe-tool][data-uni-theme=dark] .uni-sort-feedback{background:#33260a;color:#fef3c7;}[data-universe-tool][data-uni-theme=dark] .uni-sort-feedback[data-fits=true]{background:#0f2e1c;color:#dcfce7;}[data-universe-tool] .uni-sort-score{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--uni-panel);border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));}[data-universe-tool] .uni-sort-score p{flex:1 1 16rem;margin:0;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-unknown{margin:0 0 10px;}[data-universe-tool] .uni-unknown-bar{display:flex;height:14px;border-radius:999px;overflow:hidden;margin-bottom:6px;}[data-universe-tool] .uni-unknown-bar i{display:block;height:100%;}[data-universe-tool] .uni-unknown-bar .is-energy{background:#4f46e5;}[data-universe-tool] .uni-unknown-bar .is-matter{background:#9333ea;}[data-universe-tool] .uni-unknown-bar .is-atoms{background:#f59e0b;}[data-universe-tool] .uni-unknown p{margin:0;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-mini-predict{margin:4px 0 10px;padding:10px;border:1px dashed #64748b;border-radius:10px;}[data-universe-tool] .uni-mini-predict > p:first-child{margin:0 0 8px;font-size:13px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-mini-skip{margin-top:8px;border-style:dashed;}[data-universe-tool] .uni-nursery-chart{margin:0 0 12px;padding:10px;border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));border-radius:12px;background:var(--uni-panel);}[data-universe-tool] .uni-nursery-view{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-nursery-view button{padding:6px 12px;min-height:44px;border:1px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12.5px;font-weight:650;line-height:1.3;text-align:left;}[data-universe-tool] .uni-nursery-view button[aria-pressed=true]{background:var(--uni-ink);border-color:var(--uni-ink);color:var(--uni-panel);}[data-universe-tool] .uni-nursery-bars{list-style:none;margin:0;padding:0;display:grid;gap:8px;}[data-universe-tool] .uni-nursery-bars li{display:grid;grid-template-columns:minmax(0,10rem) minmax(0,1fr) minmax(0,13rem);align-items:center;gap:8px;font-size:12px;color:var(--uni-ink);}[data-universe-tool] .uni-nursery-name{min-width:0;overflow-wrap:anywhere;font-weight:650;}[data-universe-tool] .uni-nursery-track{position:relative;display:block;height:12px;border-radius:999px;background:#e2e8f0;}[data-universe-tool] .uni-nursery-track i{display:block;height:100%;border-radius:999px;transition:width .45s ease;}[data-universe-tool] .uni-nursery-track b{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--uni-ink);}[data-universe-tool] .uni-nursery-value{font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-nursery-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--uni-muted);}[data-universe-tool][data-uni-theme=dark] .uni-nursery-track{background:#334155;}[data-universe-tool] .uni-energy-intro{margin:0 0 6px;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-energy-legend{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 6px;font-size:11.5px;color:var(--uni-muted);}[data-universe-tool] .uni-energy-legend span::before{content:'';display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:50%;vertical-align:-1px;background:var(--uni-kind);}[data-universe-tool] [data-kind=impact]{--uni-kind:#ea580c;}[data-universe-tool] [data-kind=star]{--uni-kind:#7c3aed;}[data-universe-tool] [data-kind=yardstick]{--uni-kind:#0284c7;}[data-universe-tool][data-uni-theme=dark] [data-kind=impact]{--uni-kind:#fb923c;}[data-universe-tool][data-uni-theme=dark] [data-kind=star]{--uni-kind:#c4b5fd;}[data-universe-tool][data-uni-theme=dark] [data-kind=yardstick]{--uni-kind:#38bdf8;}[data-universe-tool] .uni-energy-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:2px;}[data-universe-tool] .uni-energy-list button{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr) minmax(0,6.5rem);align-items:center;gap:8px;width:100%;min-height:44px;padding:4px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--uni-ink);font-size:12px;text-align:left;}[data-universe-tool] .uni-energy-list button:hover{border-color:#94a3b8;}[data-universe-tool] .uni-energy-list button[aria-pressed=true]{border-color:var(--uni-ink);background:var(--uni-panel);font-weight:700;}[data-universe-tool] .uni-energy-name{min-width:0;overflow-wrap:anywhere;}[data-universe-tool] .uni-energy-track{position:relative;display:block;height:10px;border-radius:999px;background:#e2e8f0;}[data-universe-tool] .uni-energy-track i{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--uni-kind);box-shadow:0 0 0 2px var(--uni-panel);}[data-universe-tool] .uni-energy-track em{position:absolute;top:2px;bottom:2px;border-radius:999px;background:var(--uni-kind);opacity:.4;}[data-universe-tool] .uni-energy-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:650;}[data-universe-tool][data-uni-theme=dark] .uni-energy-track{background:#334155;}[data-universe-tool] .uni-energy-detail{margin:0 0 8px;padding:8px 10px;border-left:3px solid #64748b;border-radius:6px;background:var(--uni-panel);font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-energy-detail p{margin:0 0 4px;}[data-universe-tool] .uni-energy-note{margin:0;font-size:12px;line-height:1.5;color:var(--uni-muted);}@media(max-width:560px){[data-universe-tool] .uni-nursery-bars li{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}[data-universe-tool] .uni-nursery-track{grid-column:1/-1;grid-row:2;}[data-universe-tool] .uni-energy-list button{grid-template-columns:minmax(0,1fr) minmax(0,6rem);}[data-universe-tool] .uni-energy-track{grid-column:1/-1;grid-row:2;}}@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-nursery-track i{transition:none;}}[data-universe-tool] .uni-lab{margin:10px 0 12px;padding:12px;border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));border-radius:12px;background:var(--uni-panel);}[data-universe-tool] .uni-lab-title{margin:0 0 6px;font-size:13.5px;font-weight:800;color:var(--uni-ink);}[data-universe-tool] .uni-lab-gap{margin-top:16px;padding-top:12px;border-top:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));}[data-universe-tool] .uni-lab-intro{margin:0 0 8px;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-lab-label{display:block;margin-top:8px;font-size:12.5px;color:var(--uni-ink);}[data-universe-tool] .uni-lab input[type=range]{display:block;width:100%;min-height:44px;accent-color:#7c3aed;}[data-universe-tool] .uni-lab-choices{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-lab-choices button{padding:6px 12px;min-height:44px;border:1px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12.5px;font-weight:650;line-height:1.3;text-align:left;}[data-universe-tool] .uni-lab-choices button[aria-pressed=true]{background:var(--uni-ink);border-color:var(--uni-ink);color:var(--uni-panel);}[data-universe-tool][data-uni-theme=dark] .uni-lab-choices button{border-color:#94a3b8;}[data-universe-tool] .uni-lab-svg{display:block;width:100%;max-width:560px;height:auto;margin:8px auto;}[data-universe-tool] .uni-lab-readout{margin:6px 0 0;padding:8px 10px;border-left:3px solid #64748b;border-radius:6px;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-lab-key{margin:4px 0 0;font-size:12px;line-height:1.5;color:var(--uni-muted);}[data-universe-tool] .uni-lab-facts{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-lab-facts p{margin:0 0 6px;}[data-universe-tool] .uni-telescope-view{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}[data-universe-tool] .uni-telescope-view svg{width:240px;max-width:100%;margin:0;}[data-universe-tool] .uni-telescope-view p{flex:1 1 12rem;margin:0;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-element-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:var(--uni-ink);color:var(--uni-panel);font-size:13px;font-weight:800;}[data-universe-tool] .uni-element-origin{margin-top:10px;padding:10px;border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));border-radius:12px;}[data-universe-tool] .uni-element-origin > p:first-child{margin:0 0 6px;font-size:12.5px;color:var(--uni-ink);}[data-universe-tool] .uni-lab .uni-bigq-card{background:transparent;}[data-universe-tool] .uni-guess-list{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:8px;}[data-universe-tool] .uni-guess-list li{padding:8px 10px;border:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));border-radius:10px;}[data-universe-tool] .uni-guess-list p{margin:0;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-guess-strip{display:block;width:100%;max-width:420px;height:auto;margin-top:4px;color:var(--uni-ink);}[data-universe-tool] .uni-guess-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px;font-size:13px;color:var(--uni-ink);}[data-universe-tool] .uni-guess-row button,[data-universe-tool] .uni-guess-again{padding:6px 14px;min-height:44px;border:1px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12.5px;font-weight:700;line-height:1.3;}[data-universe-tool] .uni-guess-row button{background:var(--uni-ink);border-color:var(--uni-ink);color:var(--uni-panel);}[data-universe-tool] .uni-guess-again{margin-top:8px;}[data-universe-tool][data-uni-theme=dark] .uni-guess-again{border-color:#94a3b8;}[data-universe-tool] .uni-galaxy-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:8px;}[data-universe-tool] .uni-galaxy-name{display:block;margin-bottom:4px;font-size:13px;color:var(--uni-ink);}[data-universe-tool] .uni-galaxy-svg{display:block;width:100%;max-width:240px;height:auto;margin:0 auto 6px;border-radius:10px;}[data-universe-tool] .uni-sn-svg,[data-universe-tool] .uni-sn-spectrum{max-width:420px;}[data-universe-tool] .uni-spot[data-spot-dark=true] .font-bold[style*=color],[data-universe-tool] .uni-spot[data-spot-dark=true] .font-black[style*=color]{color:#e2e8f0 !important;}[data-universe-tool] .uni-card[data-uni-dark] .text-slate-500,[data-universe-tool] .uni-card[data-uni-dark] .text-slate-600,[data-universe-tool] .uni-card[data-uni-dark] .text-slate-700{color:#cbd5e1;}[data-universe-tool] .uni-card[data-uni-dark]{--uni-ink:#eef2ff;--uni-muted:#bdc9df;--uni-panel:#111d32;--uni-line-strong:rgba(148,163,184,0.34);}[data-universe-tool] .uni-card[data-uni-dark] .uni-sort-feedback{background:#33260a;color:#fef3c7;}[data-universe-tool] .uni-card[data-uni-dark] .uni-sort-feedback[data-fits=true]{background:#0f2e1c;color:#dcfce7;}[data-universe-tool] .uni-card[data-uni-dark] .uni-sort-options button,[data-universe-tool] .uni-card[data-uni-dark] .uni-lab-choices button,[data-universe-tool] .uni-card[data-uni-dark] .uni-guess-again{border-color:#94a3b8;}[data-universe-tool] .uni-card[data-uni-dark] .uni-sort-options button[data-result=fits]:not([aria-pressed=true]){border-color:#4ade80;}[data-universe-tool] .uni-hr-svg{display:block;width:100%;max-width:720px;height:auto;margin:0 auto;}[data-universe-tool] .uni-lens-canvas{display:block;width:100%;max-width:640px;height:auto;margin:6px auto 4px;border-radius:10px;background:#0b1220;}[data-universe-tool] .uni-air{margin:4px 0 12px;}[data-universe-tool] .uni-air .uni-lab-svg{max-width:640px;}[data-universe-tool] .uni-air-notes{margin:6px 0 0;padding-left:18px;font-size:12.5px;line-height:1.55;color:var(--uni-ink);}[data-universe-tool] .uni-air-notes li{margin-bottom:4px;}[data-universe-tool] .uni-nebula-svg{display:block;width:100%;max-width:320px;height:auto;margin:4px auto 8px;border-radius:10px;}[data-universe-tool] .uni-journey-svg{max-width:640px;}[data-universe-tool] .uni-zoom-stage{max-width:520px;margin:0 auto 8px;overflow:hidden;border-radius:12px;}[data-universe-tool] .uni-zoom-svg{display:block;width:100%;height:auto;animation:uni-zoom-out .55s ease both;}@keyframes uni-zoom-out{from{transform:scale(2.4);opacity:0;}to{transform:none;opacity:1;}}@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-zoom-svg{animation:none;}}[data-universe-tool][data-scene-motion=still] .uni-zoom-svg{animation:none;}[data-universe-tool] .uni-zoom-lab .uni-guess-row button:disabled{opacity:.45;}[data-universe-tool] .uni-donut{margin:0 0 10px;}[data-universe-tool] .uni-donut .uni-lab-svg{max-width:560px;}[data-universe-tool] .uni-donut-key{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px;font-size:12.5px;line-height:1.5;color:var(--uni-ink);}[data-universe-tool] .uni-donut-key i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:3px;vertical-align:-1px;}[data-universe-tool] .uni-image-head{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 10px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;}[data-universe-tool] .uni-image-panel{display:grid;gap:6px;padding:0 10px 10px;}[data-universe-tool] .uni-image-art{margin:0;}[data-universe-tool] .uni-image-art svg{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:10px;}[data-universe-tool] .uni-image-art figcaption{margin-top:4px;text-align:center;font-size:11px;color:var(--uni-muted);}[data-universe-tool] .uni-starlight{display:flex;flex-wrap:wrap;align-items:center;gap:12px;}[data-universe-tool] .uni-starlight .uni-lab-svg{flex:1 1 360px;max-width:600px;margin:0;}[data-universe-tool] .uni-starlight-star{flex:0 0 110px;width:110px;height:110px;margin:0 auto;border-radius:50%;}[data-universe-tool] .uni-bh-svg{display:block;width:100%;max-width:620px;height:auto;margin:0 auto 8px;border-radius:12px;}[data-universe-tool] .uni-history-svg{max-width:620px;margin-bottom:8px;}[data-universe-tool] .uni-practice-link{display:inline-flex;align-items:center;min-height:44px;margin:4px 0 6px;padding:6px 12px;border:1px solid #0f766e;border-radius:999px;background:transparent;color:var(--uni-ink);font-size:12px;font-weight:700;text-align:left;}[data-universe-tool] .uni-chapter-strip{display:flex;align-items:center;gap:8px;margin:2px 0 8px;}@media(max-width:560px){[data-universe-tool] .uni-chapter-strip{display:none;}}[data-universe-tool] .uni-chapter-pad{visibility:hidden;}[data-universe-tool] .uni-chapter-track{position:relative;flex:1;height:38px;}[data-universe-tool] .uni-chapter-dot{position:absolute;top:3px;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border:2px solid var(--uni-chapter);border-radius:50%;background:var(--uni-panel);font-size:14px;line-height:1;opacity:.7;transform:translateX(-50%);transition:transform .2s ease,opacity .2s ease;}[data-universe-tool] .uni-chapter-dot:hover{opacity:1;}[data-universe-tool] .uni-chapter-dot[aria-current=step]{opacity:1;transform:translateX(-50%) scale(1.2);box-shadow:0 0 0 3px color-mix(in srgb,var(--uni-chapter) 40%,transparent);}@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-chapter-dot{transition:none;}}[data-universe-tool] .uni-drake-picture{margin-top:10px;}[data-universe-tool] .uni-drake-chain{list-style:none;margin:8px 0 4px;padding:0;display:grid;gap:5px;}[data-universe-tool] .uni-drake-chain li{display:grid;grid-template-columns:minmax(0,15rem) minmax(60px,1fr) minmax(0,11rem);gap:10px;align-items:center;font-size:12px;line-height:1.35;color:var(--uni-ink);}[data-universe-tool] .uni-drake-chain li[data-last=true]{padding-top:5px;border-top:1px solid var(--uni-line-strong,rgba(100,116,139,0.3));}[data-universe-tool] .uni-drake-bar{height:9px;border-radius:5px;background:color-mix(in srgb,var(--uni-ink) 12%,transparent);overflow:hidden;}[data-universe-tool] .uni-drake-bar span{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#34d399,#16a34a);transition:width .25s ease;}[data-universe-tool] .uni-drake-value{font-size:12px;text-align:right;}@media(max-width:560px){[data-universe-tool] .uni-drake-chain li{grid-template-columns:minmax(0,1fr) auto;}[data-universe-tool] .uni-drake-bar{grid-column:1 / -1;grid-row:2;}}[data-universe-tool] .uni-jump-button{display:inline-flex;align-items:center;min-height:44px;margin:8px 0 4px;padding:6px 16px;border:0;border-radius:999px;background:var(--uni-ink);color:var(--uni-panel);font-size:13px;font-weight:700;}[data-universe-tool] .uni-jump-go{animation-name:uni-jump-arc;animation-iteration-count:1;animation-fill-mode:none;}@keyframes uni-jump-arc{0%{transform:translateY(0);animation-timing-function:cubic-bezier(.333,.667,.667,1);}50%{transform:translateY(calc(-1 * var(--uni-jump-h)));animation-timing-function:cubic-bezier(.333,0,.667,.333);}100%{transform:translateY(0);}}@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-jump-go{animation:none;}[data-universe-tool] .uni-drake-bar span{transition:none;}}[data-universe-tool] .uni-element-origin{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:center;}[data-universe-tool] .uni-element-origin > *{grid-column:1 / -1;}[data-universe-tool] .uni-element-origin > .uni-body-figure{grid-column:1;grid-row:2 / span 2;width:92px;height:auto;}[data-universe-tool] .uni-element-origin > .uni-race-list{grid-column:2;}[data-universe-tool] .uni-element-origin > .uni-race-note{grid-column:2;}@media(max-width:560px){[data-universe-tool] .uni-element-origin{display:block;}[data-universe-tool] .uni-element-origin > .uni-body-figure{display:block;width:64px;margin:0 auto 8px;}}[data-universe-tool] .uni-planet-sizes .uni-lab-svg{max-width:640px;}[data-universe-tool] .uni-whatif-progress{margin:6px 0 4px;font-size:12px;font-weight:700;color:var(--uni-ink);}[data-universe-tool] .uni-whatif-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}[data-universe-tool] .uni-whatif-chip{display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 12px;border:1.5px solid #64748b;border-radius:999px;background:var(--uni-panel);color:var(--uni-ink);font-size:12px;font-weight:650;text-align:left;line-height:1.25;}[data-universe-tool] .uni-whatif-chip[data-state=drafted]{border-style:dashed;border-color:#b45309;}[data-universe-tool] .uni-whatif-chip[data-state=done]{border-color:#15803d;background:color-mix(in srgb,#22c55e 14%,var(--uni-panel));}[data-universe-tool] .uni-whatif-chip[data-state=done] .uni-whatif-text::after{content:' ✓';font-weight:800;}[data-universe-tool] .uni-whatif-chip[aria-pressed=true]{background:var(--uni-ink);border-color:var(--uni-ink);color:var(--uni-panel);}[data-universe-tool] .uni-whatif-icon{font-size:16px;line-height:1;}[data-universe-tool] input[type=range]{min-height:24px;}[data-universe-tool] input[type=range].appearance-none{height:24px;padding:10px 0;background-clip:content-box;background-color:#5b8c6d;}[data-universe-tool] input[type=checkbox]{min-width:24px;min-height:24px;}[data-universe-tool] p > a[target=_blank]:only-child{display:inline-block;min-height:24px;line-height:24px;}[data-universe-tool][data-uni-theme=dark] .uni-whatif-input{border-color:#94a3b8;}[data-universe-tool] .uni-spectral-bar{height:24px;}[data-universe-tool] .uni-spectral-bar > div{height:100%;}[data-universe-tool] .uni-spectral-bar > div[aria-pressed=true]{box-shadow:inset 0 -4px 0 #0f172a,inset 0 4px 0 #f8fafc;}`;
   var UNIVERSE_EPOCH_IDS = ['big-bang','recombination','dark-ages','first-stars','first-galaxies','milky-way','solar-system','present','future'];
   var ANDROMEDA_SOURCE = 'https://science.nasa.gov/missions/hubble/apocalypse-when-hubble-casts-doubt-on-certainty-of-galactic-collision/';
   var ANDROMEDA_FUTURE = 'A 2025 study estimates about a 50% chance of a Milky Way–Andromeda collision within the next 10 billion years. The outcome remains uncertain.';
@@ -3060,14 +4186,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     { q: 'How old is the universe?', options: ['4.5 billion years', '13.8 billion years', '100 billion years', '1 trillion years'], correct: 1, why: 'Measurements of the cosmic microwave background by the Planck mission give 13.8 billion years, and the oldest stars agree.' },
     { q: 'What makes up most of the energy content of the universe?', options: ['Ordinary matter', 'Dark energy', 'Dark matter', 'Radiation'], correct: 1, why: 'Dark energy is roughly 68 percent, dark matter about 27 percent, and everything made of atoms only about 5 percent.' },
     { q: 'What is the cosmic microwave background?', options: ['Light from the first stars', 'Oldest light we can see', 'Glow of dark matter clumps', 'Haze of interstellar dust'], correct: 1, why: 'It is light released about 380,000 years after the Big Bang, when the universe first became transparent.' },
-    { q: 'Where are heavy elements like gold mostly made?', options: ['Inside the Sun', 'During the Big Bang', 'Neutron star mergers', 'Inside planet cores'], correct: 2, why: 'Neutron star mergers, confirmed by the 2017 event GW170817, build elements heavier than iron through rapid neutron capture.' },
+    { q: 'Which event was seen making heavy elements like gold?', options: ['Inside the Sun', 'During the Big Bang', 'Neutron star mergers', 'Inside planet cores'], correct: 2, why: 'Neutron star mergers, confirmed by the 2017 event GW170817, build elements heavier than iron through rapid neutron capture.' },
     { q: 'Which instrument first detected gravitational waves?', options: ['Hubble', 'Webb', 'LIGO', 'Chandra'], correct: 2, why: 'LIGO detected the merger of two black holes in September 2015, a century after Einstein predicted the waves.' },
     { q: 'What fraction of the universe is ordinary matter?', options: ['5%', '27%', '50%', '68%'], correct: 0, why: 'Everything made of atoms, including every star and planet, is only about 5 percent of the total energy content.' },
     { q: 'What will happen to the Sun in about 5 billion years?', options: ['Explode as a supernova', 'Collapse to a black hole', 'Swell into a red giant', 'Switch off quite suddenly'], correct: 2, why: 'The Sun is far too light to explode. It will expand into a red giant, then shed its layers and leave a white dwarf.' },
-    { q: 'What is the fastest anything can travel?', options: ['The speed of sound', 'The speed of light', 'The speed of gravity', 'There is no limit'], correct: 1, why: 'Light in a vacuum travels 299,792 km per second, and nothing carrying information can beat it. Gravitational waves travel at the same speed.' },
+    { q: 'What is the fastest anything can travel?', options: ['The speed of sound', 'The speed of light', 'The speed of a rocket', 'There is no limit'], correct: 1, why: 'Light in a vacuum travels 299,792 km per second, and nothing carrying information can beat it. Gravitational waves travel at the same speed.' },
     { q: 'Which elements formed in the first minutes after the Big Bang?', options: ['Carbon, oxygen and neon', 'Hydrogen and helium', 'Silicon, iron and nickel', 'Nitrogen and argon'], correct: 1, why: 'Big Bang nucleosynthesis made hydrogen, helium and a trace of lithium. Everything heavier was built later inside stars.' },
     { q: 'About how many galaxies are in the observable universe?', options: ['Around 100 million or so', 'Hundreds of billions', 'Around 10 thousand only', 'Just the Milky Way itself'], correct: 1, why: 'Deep field surveys imply hundreds of billions, and some estimates that count faint galaxies run to two trillion.' },
-    { q: 'What does a redshifted spectrum tell you about a distant galaxy?', options: ['It is moving away', 'It moves closer', 'It is very hot', 'It is massive'], correct: 0, why: 'Its light is stretched to longer wavelengths. For distant galaxies this stretching comes from the expansion of space itself.' },
+    { q: 'What does a redshifted spectrum tell you about a distant galaxy?', options: ['Its light was stretched', 'It is moving closer to us', 'It is hotter than the Sun', 'It is very massive'], correct: 0, why: 'Its light is stretched to longer wavelengths. For distant galaxies this stretching comes from the expansion of space itself.' },
     { q: 'What is the event horizon of a black hole?', options: ['Its solid outer surface', 'The point of no return', 'A ring of hot debris', 'Its magnetic boundary'], correct: 1, why: 'It is not a surface at all but the boundary where escape would require travelling faster than light.' },
     { q: 'Why can we not see anything from the first 380,000 years?', options: ['The universe was opaque', 'No matter existed back then', 'Telescopes are far too weak', 'That light has moved away'], correct: 0, why: 'Free electrons scattered light constantly, like fog. Only when atoms formed did the universe become transparent.' },
     { q: 'What is a light-year a measure of?', options: ['A span of time', 'A unit of distance', 'A rate of travel', 'A stellar brightness'], correct: 1, why: 'It is how far light travels in one year, about 9.46 trillion kilometres. It measures distance, not time.' },
@@ -3111,7 +4237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     return { q: q, order: order, correctPos: order.indexOf(q.correct) };
   }
 
-  try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView, universeWebEdges: universeWebEdges }; } catch (_e) {}
+  try { window.__universePure = { COSMIC_QUIZ: COSMIC_QUIZ, QUIZ_PER_ATTEMPT: QUIZ_PER_ATTEMPT, quizRng: quizRng, quizShuffle: quizShuffle, quizDeck: quizDeck, quizView: quizView, universeWebEdges: universeWebEdges, UNIVERSE_STOP_AGES: UNIVERSE_STOP_AGES, UNIVERSE_MOMENTS: UNIVERSE_MOMENTS, UNIVERSE_SEGMENTS: UNIVERSE_SEGMENTS, universeStoryAge: universeStoryAge, universeStoryPosition: universeStoryPosition, universeStoryMoment: universeStoryMoment, universeSceneClock: universeSceneClock, universeSpanLabel: universeSpanLabel, universeAgeLabel: universeAgeLabel, universeAgeSentence: universeAgeSentence, universeCalendarLabel: universeCalendarLabel, UNIVERSE_PLAYBACK_LEGS: UNIVERSE_PLAYBACK_LEGS, universePlaybackClock: universePlaybackClock, universePlaybackAt: universePlaybackAt, UNIVERSE_SCENE_KINDS: UNIVERSE_SCENE_KINDS, universeSceneKinds: universeSceneKinds, universeSceneField: universeSceneField, universeSceneHit: universeSceneHit, universeLandmarkScience: universeLandmarkScience, universeFlightLightMultiple: universeFlightLightMultiple, universeScaleFactor: universeScaleFactor, universeConditions: universeConditions, universeConditionLabels: universeConditionLabels, universeBigNumber: universeBigNumber, UNIVERSE_PREDICTIONS: UNIVERSE_PREDICTIONS, universePredictionOrder: universePredictionOrder, UNIVERSE_ORDER_EVENTS: UNIVERSE_ORDER_EVENTS, universeOrderRound: universeOrderRound, universeRedshiftAtHubbleDistance: universeRedshiftAtHubbleDistance, universeAgeAtScale: universeAgeAtScale, UNIVERSE_FERMI_KINDS: UNIVERSE_FERMI_KINDS, UNIVERSE_MYSTERY_TESTS: UNIVERSE_MYSTERY_TESTS, UNIVERSE_MULTIVERSE_TESTS: UNIVERSE_MULTIVERSE_TESTS, universeSortScore: universeSortScore, UNIVERSE_SUN_WATTS: UNIVERSE_SUN_WATTS, UNIVERSE_ENERGY_LADDER: UNIVERSE_ENERGY_LADDER, universeEnergyLabel: universeEnergyLabel, universeSunTime: universeSunTime, UNIVERSE_ENERGY_PREDICTION: UNIVERSE_ENERGY_PREDICTION, UNIVERSE_MOON_DEG: UNIVERSE_MOON_DEG, universeAngularSizeDeg: universeAngularSizeDeg, universeMoonCompare: universeMoonCompare, UNIVERSE_NURSERY_PREDICTION: UNIVERSE_NURSERY_PREDICTION, universeRough: universeRough, universeLengthLabel: universeLengthLabel, universeParallax: universeParallax, UNIVERSE_PARALLAX_STARS: UNIVERSE_PARALLAX_STARS, UNIVERSE_CANDLE_PREDICTION: UNIVERSE_CANDLE_PREDICTION, universeTelescope: universeTelescope, UNIVERSE_TELESCOPE_PRESETS: UNIVERSE_TELESCOPE_PRESETS, UNIVERSE_TELESCOPE_PREDICTION: UNIVERSE_TELESCOPE_PREDICTION, universeHorizon: universeHorizon, universeDensityLabel: universeDensityLabel, UNIVERSE_HORIZON_PRESETS: UNIVERSE_HORIZON_PRESETS, UNIVERSE_HORIZON_PREDICTION: UNIVERSE_HORIZON_PREDICTION, universeRotation: universeRotation, UNIVERSE_ROTATION_POINTS: UNIVERSE_ROTATION_POINTS, universeRotationFit: universeRotationFit, universeDarkRatio: universeDarkRatio, UNIVERSE_ROTATION_PREDICTION: UNIVERSE_ROTATION_PREDICTION, UNIVERSE_ELEMENT_SOURCES: UNIVERSE_ELEMENT_SOURCES, UNIVERSE_BODY_ELEMENTS: UNIVERSE_BODY_ELEMENTS, universeBodyByOrigin: universeBodyByOrigin, UNIVERSE_CALENDAR_EVENTS: UNIVERSE_CALENDAR_EVENTS, universeCalendarDay: universeCalendarDay, universeDayName: universeDayName, universeCalendarMiss: universeCalendarMiss, UNIVERSE_ESTIMATES: UNIVERSE_ESTIMATES, universeEstimateMiss: universeEstimateMiss, UNIVERSE_GALAXY_KINDS: UNIVERSE_GALAXY_KINDS, UNIVERSE_GALAXY_SPECIMENS: UNIVERSE_GALAXY_SPECIMENS, UNIVERSE_SN_HUNT: UNIVERSE_SN_HUNT, UNIVERSE_SN_SPECTRUM_PREDICTION: UNIVERSE_SN_SPECTRUM_PREDICTION, UNIVERSE_HR_STARS: UNIVERSE_HR_STARS, UNIVERSE_HR_NAMED: UNIVERSE_HR_NAMED, universeHRPoint: universeHRPoint, universeStarColor: universeStarColor, universeLensImages: universeLensImages, universeLensMagnification: universeLensMagnification, universeAirOpacity: universeAirOpacity, universeComovingGly: universeComovingGly, UNIVERSE_JOURNEY_SOURCES: UNIVERSE_JOURNEY_SOURCES, universeLightJourney: universeLightJourney, UNIVERSE_ZOOM_LEVELS: UNIVERSE_ZOOM_LEVELS, UNIVERSE_COMPOSITION: UNIVERSE_COMPOSITION, UNIVERSE_ORDINARY_SPLIT: UNIVERSE_ORDINARY_SPLIT, universePlanck: universePlanck, universeWienPeakNm: universeWienPeakNm, universeBlackbodyRGB: universeBlackbodyRGB, universeSpectralClass: universeSpectralClass, universeWavelengthBand: universeWavelengthBand, UNIVERSE_STARLIGHT_PRESETS: UNIVERSE_STARLIGHT_PRESETS, UNIVERSE_STARLIGHT_PREDICTION: UNIVERSE_STARLIGHT_PREDICTION, universeYearOf: universeYearOf, UNIVERSE_HYDROGEN_LINES: UNIVERSE_HYDROGEN_LINES, UNIVERSE_LINESHIFT_PRESETS: UNIVERSE_LINESHIFT_PRESETS, UNIVERSE_LINESHIFT_PREDICTION: UNIVERSE_LINESHIFT_PREDICTION, universeHabitableZone: universeHabitableZone, universeStarlight: universeStarlight, universeZoneOf: universeZoneOf, universeYearDays: universeYearDays, UNIVERSE_HZ_STARS: UNIVERSE_HZ_STARS, UNIVERSE_HZ_PREDICTION: UNIVERSE_HZ_PREDICTION, universeJump: universeJump, universeDrakeChain: universeDrakeChain, universeNeighbourLy: universeNeighbourLy, universeGyrLabel: universeGyrLabel, UNIVERSE_PLANET_SIZES: UNIVERSE_PLANET_SIZES, UNIVERSE_EARTH_ERAS: UNIVERSE_EARTH_ERAS, universeEarthEra: universeEarthEra, universeAgoLabel: universeAgoLabel, UNIVERSE_WHATIF_ICONS: UNIVERSE_WHATIF_ICONS, universeWhatIfState: universeWhatIfState, universeWhatIfOpen: universeWhatIfOpen, UNIVERSE_DANGER_RANGES: UNIVERSE_DANGER_RANGES, UNIVERSE_DANGER_LANDMARKS: UNIVERSE_DANGER_LANDMARKS, universeDiscShare: universeDiscShare, universePercentLabel: universePercentLabel, UNIVERSE_SUN_STAGES: UNIVERSE_SUN_STAGES, UNIVERSE_SUN_PLANETS: UNIVERSE_SUN_PLANETS, universeSunPlanets: universeSunPlanets, universeHubbleSphereMpc: universeHubbleSphereMpc, universeReadableInk: universeReadableInk, universeContrast: universeContrast }; } catch (_e) {}
 
   window.StemLab.registerTool('universe', {
     icon: '\uD83C\uDF20',
@@ -3165,20 +4291,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       var d = labToolData.universe || {};
       var UNIVERSE_PRESENT_GYR = 13.8;
       var UNIVERSE_FUTURE_PREVIEW_GYR = 13.81;
-      function formatCosmicTimeLabel(value) {
-        if (value >= UNIVERSE_FUTURE_PREVIEW_GYR) return 'Future fate preview';
-        if (value <= 0) return 'Big Bang';
-        if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years';
-        if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' Myr';
-        return value.toFixed(1) + ' Gyr';
-      }
-      function formatCosmicTimeSentence(value) {
-        if (value >= UNIVERSE_FUTURE_PREVIEW_GYR) return 'future fate preview beyond the present day';
-        if (value <= 0) return 'Big Bang moment';
-        if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years after the Big Bang';
-        if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' million years after the Big Bang';
-        return value.toFixed(1) + ' billion years after the Big Bang';
-      }
+      // The story clock's labels also cover the first seconds and Earth's history.
+      function formatCosmicTimeLabel(value) { return universeAgeLabel(value); }
+      function formatCosmicTimeSentence(value) { return universeAgeSentence(value); }
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -3247,7 +4362,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { id: 'space_images', name: 'Icon Spotter', desc: 'Study famous space images', icon: '\uD83D\uDCF7', rp: 10, check: function() { return uniDidEngage('images', 1); } },
             { id: 'cosmic_speed', name: 'Speed Demon', desc: 'Compare cosmic speeds', icon: '\uD83C\uDFC1', rp: 10, check: function() { return uniDidEngage('speeds', 2); } },
             { id: 'citizen_sci', name: 'Citizen Scientist', desc: 'Investigate about citizen science', icon: '\uD83E\uDDD1\u200D\uD83D\uDD2C', rp: 15, check: function() { return uniDidEngage('citizen-science', 2); } },
-            { id: 'glossary', name: 'Lexicographer', desc: 'Work through the cosmology glossary', icon: '\uD83D\uDCD6', rp: 10, check: function() { return uniDidEngage('glossary', 2); } }
+            { id: 'glossary', name: 'Lexicographer', desc: 'Work through the cosmology glossary', icon: '\uD83D\uDCD6', rp: 10, check: function() { return uniDidEngage('glossary', 2); } },
+            { id: 'scene_detective', name: 'Cosmic Detective', desc: 'Inspect 8 kinds of objects in the time-lapse scene', icon: '\uD83D\uDD0D', rp: 25, check: function() { return (Array.isArray(d.sceneFound) ? d.sceneFound : []).length >= 8; } },
+            { id: 'full_story', name: 'Story of Everything', desc: 'Watch the time-lapse from the early universe to today', icon: '\uD83C\uDF9E', rp: 25, check: function() { return d.storyWatched === true; } },
+            { id: 'predictor', name: 'Fortune Teller', desc: 'Make 5 predictions at chapter stops in the time-lapse', icon: '\uD83D\uDD2E', rp: 20, check: function() { return Object.keys(d.predictions && typeof d.predictions === 'object' ? d.predictions : {}).length >= 5; } },
+            { id: 'time_detective', name: 'Time Detective', desc: 'Put five cosmic events in perfect order', icon: '\uD83E\uDDE9', rp: 25, check: function() { return (d.orderPerfect || 0) >= 1; } }
           ];
 
           function checkChallenges() {
@@ -3332,12 +4451,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Molecular Cloud', icon: '\u2601', color: '#4a3a6a', desc: 'Giant clouds of gas and dust (mostly hydrogen) collapse under gravity. Triggered by supernova shockwaves or galaxy collisions.', temp: '10-50 K', size: '1-300 light-years', duration: 'Millions of years' },
             { name: 'Protostar', icon: '\uD83C\uDF1F', color: '#d4924f', desc: 'The cloud core heats up as it contracts. Not yet hot enough for fusion. Surrounded by a rotating disk of gas and dust.', temp: '2,000-3,000 K', size: '~1 AU', duration: '100,000 years' },
             { name: 'Main Sequence', icon: '\u2600\uFE0F', color: '#fbbf24', desc: 'Hydrogen fusion ignites! The star enters a stable equilibrium between gravity (pulling in) and radiation pressure (pushing out). Our Sun is here.', temp: '3,000-50,000 K', size: '0.1-10x Sun', duration: 'Millions to trillions of years' },
-            { name: 'Red Giant', icon: '\uD83D\uDD34', color: '#ef4444', desc: 'Hydrogen fuel runs out in the core. The star swells enormously as it fuses helium. Could engulf inner planets.', temp: '3,000-5,000 K', size: '10-100x Sun', duration: 'Millions of years' },
+            { name: 'Red Giant', icon: '\uD83D\uDD34', color: '#ef4444', desc: 'Hydrogen runs out in the core. The core shrinks while hydrogen keeps fusing in a shell around it, and the outer layers swell enormously. Later the core fuses helium. Could engulf inner planets.', temp: '3,000-5,000 K', size: '10-100x Sun', duration: 'Hundreds of millions of years (Sun-like star)' },
             { name: 'Planetary Nebula', icon: '\uD83C\uDF00', color: '#a78bfa', desc: 'Low-mass stars gently shed their outer layers into beautiful expanding gas shells, enriching space with heavier elements.', temp: '10,000-200,000 K (central star)', size: '~1 light-year', duration: '~10,000 years' },
             { name: 'White Dwarf', icon: '\u26AA', color: '#cbd5e1', desc: 'The Earth-sized remnant core. No fusion. Slowly cools over billions of years. Will eventually become a black dwarf (none exist yet).', temp: '8,000-40,000 K (cooling)', size: 'Earth-sized', duration: 'Trillions of years to cool' },
-            { name: 'Supernova', icon: '\uD83D\uDCA5', color: '#f97316', desc: 'Massive stars (8+ solar masses) die in spectacular explosions brighter than entire galaxies! Creates elements heavier than iron (gold, platinum, uranium).', temp: '10 billion K (briefly)', size: 'Visible across galaxies', duration: 'Weeks to months' },
+            { name: 'Supernova', icon: '\uD83D\uDCA5', color: '#f97316', desc: 'Massive stars (8+ solar masses) die in explosions that can briefly outshine their whole galaxy. They scatter oxygen, silicon, iron and other elements into space. Much of the gold and platinum is now thought to come from neutron-star mergers instead.', temp: '10 billion K (briefly)', size: 'Visible across galaxies', duration: 'Weeks to months' },
             { name: 'Neutron Star', icon: '\uD83D\uDCAB', color: '#67e8f9', desc: 'A city-sized ball of neutrons that can spin up to ~700 rotations/second. A teaspoon weighs 6 billion tons. Pulsars are spinning neutron stars.', temp: '~1 million K', size: '~20 km diameter', duration: 'Effectively forever' },
-            { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km across for 10 solar masses', duration: '10\u00B9\u2070\u2070 years (Hawking evaporation)' }
+            { name: 'Black Hole', icon: '\uD83D\uDD73', color: '#1a1a2a', desc: 'If the star is massive enough (25+ solar masses), the core collapses past neutron star density into a singularity. Nothing escapes the event horizon.', temp: 'N/A (Hawking radiation: ~nanokelvin)', size: 'Event horizon: ~60 km across for 10 solar masses', duration: 'About 10⁷⁰ years for 10 solar masses (Hawking evaporation, a prediction)' }
           ];
 
           // --- Cosmic Distance Ladder ---
@@ -3347,7 +4466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Sun to Neptune', dist: '4.5 billion km (30 AU)', light: '4.2 light-hours', method: 'Radar + orbital mechanics', icon: '\uD83D\uDD35' },
             { name: 'Sun to Proxima Centauri', dist: '4.24 light-years (268,000 AU)', light: '4.24 years', method: 'Stellar parallax', icon: '\u2B50' },
             { name: 'Across the Milky Way', dist: '100,000 light-years', light: '100,000 years', method: 'Cepheid variables', icon: '\uD83C\uDF00' },
-            { name: 'To Andromeda Galaxy', dist: '2.537 million light-years', light: '2.5 million years', method: 'Cepheids + Type Ia supernovae', icon: '\uD83C\uDF0C' },
+            { name: 'To Andromeda Galaxy', dist: '2.537 million light-years', light: '2.5 million years', method: 'Cepheids, red giants and eclipsing binaries', icon: '\uD83C\uDF0C' },
             { name: 'To Virgo Cluster', dist: '54 million light-years', light: '54 million years', method: 'Type Ia supernovae', icon: '\uD83D\uDD2D' },
             { name: 'Edge of Observable Universe', dist: '46.5 billion light-years', light: '13.8 billion years (lookback)', method: 'CMB + redshift', icon: '\uD83C\uDF20' }
           ];
@@ -3356,9 +4475,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var WHAT_IF_COSMIC = [
             { q: 'What if the Big Bang never happened?', a: 'There would be nothing \u2014 no space, no time, no matter, no energy. The Big Bang created spacetime itself. Without it, the question itself couldn\'t exist!' },
             { q: 'What if dark matter didn\'t exist?', a: 'Galaxies would fly apart! Dark matter provides 85% of the gravity holding galaxies and galaxy clusters together. Without it, stars would scatter into the void.' },
-            { q: 'What if the speed of light were slower?', a: 'Nuclear fusion in stars would produce less energy. Stars might not shine brightly enough for life. GPS would be more accurate though! E=mc\u00B2 means less energy per gram of matter.' },
+            { q: 'What if the speed of light were slower?', a: 'Physicists say a different light speed only means something if you also say what else changes. In many "what if" versions, atoms and chemistry would behave differently, E = mc² would release less energy from each gram of fuel, and stars might not shine the way they do now.' },
             { q: 'What if gravity were twice as strong?', a: 'Stars would burn through fuel much faster. The Sun might only last 1 billion years. Planets would be smaller and denser. You\'d weigh twice as much!' },
-            { q: 'What if the universe were only 1 billion years old?', a: 'No Sun, no Earth, no life. The first generation of stars would still be forming. Only hydrogen, helium, and traces of lithium would exist \u2014 no carbon, oxygen, or iron.' },
+            { q: 'What if the universe were only 1 billion years old?', a: 'No Sun, no Earth, and no life yet: the Sun formed 9.2 billion years after the Big Bang. But several generations of stars would already have lived and died, seeding galaxies with carbon, oxygen and iron. Telescopes detect oxygen in galaxies from only about 300 million years after the Big Bang.' },
             { q: 'What if dark energy reversed?', a: 'The expansion of the universe would slow and reverse. Eventually, everything would collapse back into a single point \u2014 the Big Crunch. Some theorize this could trigger a new Big Bang.' },
             { q: 'What if protons decayed?', a: 'All matter would eventually dissolve. Even in the most stable materials, every atom would decay over 10\u00B3\u2077 years. Only black holes and radiation would remain.' },
             { q: 'What if there were no neutrinos?', a: 'Supernovae wouldn\'t work properly \u2014 neutrinos carry away 99% of a supernova\'s energy. Without them, heavy elements (including the iron in your blood) might never have been created.' }
@@ -3366,63 +4485,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           // Exoplanet types
           var EXOPLANET_TYPES = [
-            { name: 'Hot Jupiter', icon: '\uD83D\uDD25', size: '1-2x Jupiter', orbit: '<10 days', temp: '1,000-3,000 K', desc: 'Gas giants orbiting extremely close to their star. First exoplanet type discovered (51 Pegasi b, 1995). They migrated inward from where they formed.', example: '51 Pegasi b, WASP-12b', habitable: false, color: '#ef4444' },
+            { name: 'Hot Jupiter', icon: '\uD83D\uDD25', size: '1-2x Jupiter', orbit: '<10 days', temp: '1,000-3,000 K', desc: 'Gas giants orbiting extremely close to their star. The first planet found around a Sun-like star was one (51 Pegasi b, 1995). They migrated inward from where they formed.', example: '51 Pegasi b, WASP-12b', habitable: false, color: '#ef4444' },
             { name: 'Super-Earth', icon: '\uD83C\uDF0D', size: '1.2-2x Earth', orbit: 'Varies', temp: 'Varies', desc: 'Rocky planets larger than Earth but smaller than Neptune. No equivalent in our Solar System. Some may be habitable with thick atmospheres.', example: 'LHS 1140 b, 55 Cancri e', habitable: 'Possible', color: '#22c55e' },
             { name: 'Mini-Neptune', icon: '\uD83D\uDD35', size: '2-4x Earth', orbit: 'Varies', temp: '200-600 K', desc: 'Small gas/ice planets with thick hydrogen-helium atmospheres. The most common type of exoplanet discovered! No equivalent in our Solar System.', example: 'Kepler-11f, GJ 1214 b', habitable: false, color: '#3b82f6' },
             { name: 'Earth Analog', icon: '\u2B50', size: '0.8-1.5x Earth', orbit: 'Habitable zone', temp: '200-320 K', desc: 'Rocky planets in the habitable zone where liquid water could exist. The holy grail of exoplanet research. Very hard to detect.', example: 'Kepler-442b, TRAPPIST-1e', habitable: 'Best candidate', color: '#fbbf24' },
-            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#94a3b8' },
+            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Cold, unless young or heated inside', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#94a3b8' },
             { name: 'Lava World', icon: '\uD83C\uDF0B', size: '0.5-2x Earth', orbit: 'Ultra-short', temp: '2,000+ K', desc: 'Rocky worlds so close to their star that the surface is molten rock. May have magma oceans and silicate vapor atmospheres. Rock literally rains from the sky.', example: 'CoRoT-7b, Kepler-78b', habitable: false, color: '#f97316' }
           ];
 
           // Space missions timeline
           var SPACE_MISSIONS = [
             { year: '1957', name: 'Sputnik 1', agency: 'USSR', desc: 'First artificial satellite. Launched the Space Age with a simple radio beep heard worldwide.', icon: '\uD83D\uDEF0' },
-            { year: '1961', name: 'Vostok 1', agency: 'USSR', desc: 'Yuri Gagarin becomes the first human in space, completing one orbit of Earth in 108 minutes.', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80' },
+            { year: '1961', name: 'Vostok 1', agency: 'USSR', desc: 'Yuri Gagarin becomes the first human in space, orbiting Earth once during a 108-minute flight.', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80' },
             { year: '1969', name: 'Apollo 11', agency: 'NASA', desc: 'Neil Armstrong and Buzz Aldrin walk on the Moon. "One small step for man, one giant leap for mankind."', icon: '\uD83C\uDF15' },
             { year: '1977', name: 'Voyager 1 & 2', agency: 'NASA', desc: 'Between them, the twin probes explored all four giant planets (Voyager 2 visited all four). Voyager 1 is now the farthest human-made object, in interstellar space.', icon: '\uD83D\uDE80' },
             { year: '1990', name: 'Hubble Space Telescope', agency: 'NASA/ESA', desc: 'Revolutionized astronomy with Deep Field images, measured the expansion rate of the universe.', icon: '\uD83D\uDD2D' },
-            { year: '1997', name: 'Cassini-Huygens', agency: 'NASA/ESA', desc: 'Explored Saturn for 13 years. Huygens probe landed on Titan. Discovered geysers on Enceladus.', icon: '\uD83E\uDE90' },
+            { year: '2004', name: 'Cassini-Huygens', agency: 'NASA/ESA', desc: 'Arrived at Saturn in 2004 (launched 1997) and explored it for 13 years. Huygens probe landed on Titan. Discovered geysers on Enceladus.', icon: '\uD83E\uDE90' },
             { year: '2004', name: 'Spirit & Opportunity', agency: 'NASA', desc: 'Mars rovers. Opportunity lasted 14 years (designed for 90 days!) and found evidence of ancient water.', icon: '\uD83D\uDD34' },
             { year: '2012', name: 'Curiosity Rover', agency: 'NASA', desc: 'Car-sized Mars rover. Confirmed Mars once had habitable conditions with flowing water and organic molecules.', icon: '\uD83E\uDD16' },
             { year: '2015', name: 'New Horizons', agency: 'NASA', desc: 'First spacecraft to fly by Pluto, revealing a complex world with nitrogen glaciers and a heart-shaped plain.', icon: '\u2764' },
-            { year: '2015', name: 'LIGO Detection', agency: 'LIGO/Caltech/MIT', desc: 'First direct detection of gravitational waves from merging black holes. Confirmed Einstein\'s 1915 prediction.', icon: '\uD83C\uDF0A' },
-            { year: '2019', name: 'EHT Black Hole Image', agency: 'EHT Collaboration', desc: 'First image of a black hole shadow (M87*). Used 8 radio telescopes across 4 continents as one Earth-sized dish.', icon: '\uD83D\uDD73' },
+            { year: '2015', name: 'LIGO Detection', agency: 'LIGO/Caltech/MIT (ground-based)', desc: 'First direct detection of gravitational waves from merging black holes. Confirmed Einstein’s 1916 prediction.', icon: '\uD83C\uDF0A' },
+            { year: '2019', name: 'EHT Black Hole Image', agency: 'EHT Collaboration (ground-based)', desc: 'First image of a black hole shadow (M87*). Used 8 radio telescopes across 4 continents as one Earth-sized dish.', icon: '\uD83D\uDD73' },
             { year: '2021', name: 'Perseverance + Ingenuity', agency: 'NASA', desc: 'Mars rover collecting samples for Earth return. Ingenuity helicopter achieved first powered flight on another planet.', icon: '\uD83D\uDE81' },
-            { year: '2022', name: 'James Webb Space Telescope', agency: 'NASA/ESA/CSA', desc: 'Largest space telescope ever launched. Infrared vision studies early galaxies whose light has traveled for over 13 billion years, plus exoplanet atmospheres.', icon: '\uD83C\uDF1F' },
+            { year: '2021', name: 'James Webb Space Telescope', agency: 'NASA/ESA/CSA', desc: 'Launched on Dec 25, 2021: the largest space telescope ever. Infrared vision studies early galaxies whose light has traveled for over 13 billion years, plus exoplanet atmospheres.', icon: '\uD83C\uDF1F' },
             { year: '2023', name: 'OSIRIS-REx Return', agency: 'NASA', desc: 'Returned samples from asteroid Bennu to Earth. First US asteroid sample return. Studying origins of the solar system.', icon: '\u2604' }
           ];
 
           // Fermi Paradox solutions
           var FERMI_SOLUTIONS = [
-            { name: 'The Great Filter', desc: 'There is a nearly impossible step in the development of life/civilizations that most never pass. It could be behind us (abiogenesis) or ahead of us (self-destruction).', icon: '\u26D4', type: 'filter' },
-            { name: 'Zoo Hypothesis', desc: 'Advanced civilizations know about us but deliberately avoid contact, treating Earth like a nature reserve or zoo. We are being observed but not contacted.', icon: '\uD83E\uDD81', type: 'social' },
-            { name: 'Dark Forest Theory', desc: 'The universe is full of predatory civilizations. Any civilization that reveals itself is destroyed, so everyone stays silent. Popularized by Liu Cixin\'s novels.', icon: '\uD83C\uDF32', type: 'social' },
-            { name: 'Rare Earth Hypothesis', desc: 'The conditions needed for complex life (stable star, Jupiter-like protector, large moon, plate tectonics, magnetic field) are extraordinarily rare. We may be nearly unique.', icon: '\uD83D\uDC8E', type: 'filter' },
-            { name: 'They Are Already Here', desc: 'Aliens have visited or are visiting, but we don\'t recognize them. They could be operating at scales or timescales we can\'t perceive.', icon: '\uD83D\uDC7D', type: 'contact' },
-            { name: 'We Are Too Primitive', desc: 'Detecting alien signals requires technology we haven\'t invented yet. It\'s like indigenous people trying to detect radio waves. We\'re looking with the wrong tools.', icon: '\uD83D\uDCE1', type: 'tech' },
-            { name: 'Transcension Hypothesis', desc: 'Advanced civilizations turn inward, migrating into virtual realities, black hole computers, or higher dimensions rather than expanding outward across space.', icon: '\uD83E\uDDE0', type: 'tech' },
-            { name: 'Time & Distance', desc: 'Civilizations may exist but are separated by thousands of light-years and millions of years. Two civilizations might never overlap in time.', icon: '\u23F3', type: 'physics' }
+            { name: 'The Great Filter', kinds: ['rare'], why: 'If almost every world fails at some hard step, very few civilizations ever exist to be heard.', test: 'Look for life on Mars, Europa or Enceladus. If simple life turns out to be common, the hard step is probably still ahead of us, which is a worrying thought.', desc: 'There is a nearly impossible step in the development of life/civilizations that most never pass. It could be behind us (abiogenesis) or ahead of us (self-destruction).', icon: '\u26D4', type: 'filter' },
+            { name: 'Zoo Hypothesis', kinds: ['quiet'], why: 'They exist and know about us, but choose to stay hidden.', test: 'Very hard: a careful zookeeper leaves no evidence. An idea that predicts no evidence at all is hard to check.', desc: 'Advanced civilizations know about us but deliberately avoid contact, treating Earth like a nature reserve or zoo. We are being observed but not contacted.', icon: '\uD83E\uDD81', type: 'social' },
+            { name: 'Dark Forest Theory', kinds: ['quiet'], why: 'They exist, but every one of them hides out of fear.', test: 'Hard to test. It also needs every civilization to behave the same way: a single noisy one would break it.', desc: 'The universe is full of predatory civilizations. Any civilization that reveals itself is destroyed, so everyone stays silent. Popularized by Liu Cixin\'s novels.', icon: '\uD83C\uDF32', type: 'social' },
+            { name: 'Rare Earth Hypothesis', kinds: ['rare'], why: 'If planets like Earth are extremely rare, so is complex life.', test: 'Count planets. Telescopes such as JWST, and planned ones like the Habitable Worlds Observatory, can check how often rocky planets have water and oxygen.', desc: 'The conditions needed for complex life (stable star, Jupiter-like protector, large moon, plate tectonics, magnetic field) are extraordinarily rare. We may be nearly unique.', icon: '\uD83D\uDC8E', type: 'filter' },
+            { name: 'They Are Already Here', kinds: ['missed', 'quiet'], why: 'If they are here, either we have failed to recognize them or they are hiding.', test: 'Claims need evidence that others can check. NASA’s 2023 study of unexplained sightings (UAPs) found no evidence that any of them were alien.', desc: 'Aliens have visited or are visiting, but we don\'t recognize them. They could be operating at scales or timescales we can’t perceive. There is no credible evidence for this.', icon: '\uD83D\uDC7D', type: 'contact' },
+            { name: 'We Are Too Primitive', kinds: ['missed'], why: 'They may be signalling in ways we have not learned to detect.', test: 'Widen the search. SETI now looks for laser flashes, waste heat from giant structures and industrial gases in planet atmospheres, not just radio.', desc: 'Detecting alien signals requires technology we haven\'t invented yet. It’s like listening for a radio broadcast with a telescope that only sees visible light. We\'re looking with the wrong tools.', icon: '\uD83D\uDCE1', type: 'tech' },
+            { name: 'Transcension Hypothesis', kinds: ['quiet', 'missed'], why: 'They turn inward instead of spreading out, so they make little noise. That shades into “we miss them” too.', test: 'Very hard to test, because a civilization that turns inward leaves little for us to see.', desc: 'Advanced civilizations turn inward, migrating into virtual realities, black hole computers, or higher dimensions rather than expanding outward across space.', icon: '\uD83E\uDDE0', type: 'tech' },
+            { name: 'Time & Distance', kinds: ['missed', 'rare'], why: 'They may exist but be too far apart in space and time for us to overlap, which also means few exist at any one moment.', test: 'Do the arithmetic. Our radio signals have travelled only about 100 light-years: a tiny bubble in a galaxy 100,000 light-years across.', desc: 'Civilizations may exist but are separated by thousands of light-years and millions of years. Two civilizations might never overlap in time.', icon: '\u23F3', type: 'physics' }
           ];
 
           // Unsolved cosmic mysteries
           var COSMIC_MYSTERIES = [
-            { name: 'What Is Dark Energy?', desc: 'We know it\'s 68% of the universe and accelerates expansion, but we have zero idea what it actually IS. Is it a property of space? A new force? Einstein\'s cosmological constant?', urgency: 'Critical', icon: '\u2753' },
-            { name: 'What Is Dark Matter?', desc: 'Makes up 27% of the universe. We see its gravitational effects but cannot detect it directly. WIMPs? Axions? Modified gravity? Decades of searches have found nothing.', urgency: 'Critical', icon: '\uD83C\uDF11' },
-            { name: 'Why More Matter Than Antimatter?', desc: 'The Big Bang should have created equal matter and antimatter (which would annihilate completely). A tiny asymmetry (1 part per billion) saved the universe. Why?', urgency: 'Fundamental', icon: '\u2696' },
-            { name: 'What Caused the Big Bang?', desc: 'We can describe everything from 10\u207B\u00B3\u00B2 seconds onward, but what caused the initial singularity? Was there a "before"? Is time itself meaningless at that point?', urgency: 'Philosophical', icon: '\uD83D\uDCA5' },
-            { name: 'Is the Universe Infinite?', desc: 'We can only see 93 billion light-years across, but the universe may extend infinitely. Current measurements suggest it\'s flat (infinite) but we can\'t be sure.', urgency: 'Open', icon: '\u221E' },
-            { name: 'Quantum Gravity', desc: 'General relativity (gravity) and quantum mechanics are both correct but fundamentally incompatible. String theory and loop quantum gravity are leading candidates to unify them.', urgency: 'Critical', icon: '\uD83E\uDDF2' },
-            { name: 'Black Hole Information Paradox', desc: 'If information is destroyed when it falls into a black hole, it violates quantum mechanics. If it\'s preserved, how? Hawking radiation may encode it, but the details are unclear.', urgency: 'Active debate', icon: '\uD83D\uDD73' },
-            { name: 'Are We in a Simulation?', desc: 'Nick Bostrom\'s argument: if civilizations can run ancestor simulations, statistically we\'re almost certainly in one. Unfalsifiable but philosophically provocative.', urgency: 'Philosophical', icon: '\uD83D\uDCBB' }
+            { name: 'What Is Dark Energy?', test: ['now'], how: 'Surveys such as DESI, Euclid and the Rubin Observatory are mapping how fast space expanded at different times. DESI’s 2024 and 2025 results hint that dark energy may be changing, but this is not yet confirmed.', desc: 'We know it\'s 68% of the universe and accelerates expansion, but we have zero idea what it actually IS. Is it a property of space? A new force? Einstein\'s cosmological constant?', urgency: 'Critical', icon: '\u2753' },
+            { name: 'What Is Dark Matter?', test: ['now'], how: 'Detectors deep underground, such as LZ and XENONnT, wait for a dark matter particle to bump an atom. Other experiments hunt for axions. Nothing has been found yet.', desc: 'Makes up 27% of the universe. We see its gravitational effects but cannot detect it directly. WIMPs? Axions? Modified gravity? Decades of searches have found nothing.', urgency: 'Critical', icon: '\uD83C\uDF11' },
+            { name: 'Why More Matter Than Antimatter?', test: ['now', 'new'], how: 'Experiments such as LHCb at CERN and neutrino detectors in Japan and the US measure tiny differences between matter and antimatter. The differences found so far are too small to explain it, so bigger experiments are being built.', desc: 'The Big Bang should have created equal matter and antimatter (which would annihilate completely). A tiny asymmetry (1 part per billion) saved the universe. Why?', urgency: 'Fundamental', icon: '\u2696' },
+            { name: 'What Caused the Big Bang?', test: ['new', 'never'], how: 'Future telescopes will hunt for gravitational waves from inflation, printed on the microwave background. What came before, if anything did, may never be testable.', desc: 'Tested physics reaches back to about a trillionth of a second, and ideas like inflation push further. Near time zero our equations break down, so we do not know whether there was a true beginning, a "before", or something else.', urgency: 'Philosophical', icon: '\uD83D\uDCA5' },
+            { name: 'Is the Universe Infinite?', test: ['never'], how: 'The Planck satellite searched for repeating patterns that a small, wrapped-around universe would leave, and found none. If the universe is much bigger than the part we can see, we may never be able to tell.', desc: 'We can only see 93 billion light-years across, but the universe may extend infinitely. Measurements show space is very close to flat. A flat universe could be infinite, or finite and wrapped around, so we can’t be sure.', urgency: 'Open', icon: '\u221E' },
+            { name: 'Quantum Gravity', test: ['new'], how: 'Its effects show up at energies about a million billion times beyond the Large Hadron Collider. Physicists are designing tabletop experiments to test whether gravity follows quantum rules.', desc: 'General relativity (gravity) and quantum mechanics are both correct but fundamentally incompatible. String theory and loop quantum gravity are leading candidates to unify them.', urgency: 'Critical', icon: '\uD83E\uDDF2' },
+            { name: 'Black Hole Information Paradox', test: ['new', 'never'], how: 'Hawking radiation from real black holes is far too faint to detect. Progress so far comes from calculations and from lab models that copy some of the physics.', desc: 'If information is destroyed when it falls into a black hole, it violates quantum mechanics. If it\'s preserved, how? Hawking radiation may encode it, but the details are unclear.', urgency: 'Active debate', icon: '\uD83D\uDD73' },
+            { name: 'Are We in a Simulation?', test: ['never'], how: 'Proposed tests rely on the simulation having flaws we could spot. Many scientists think it cannot be tested at all, which puts it closer to philosophy than physics.', desc: 'Nick Bostrom argued that at least one of three things is true: civilizations almost never reach that technology, they choose not to run such simulations, or we are probably in one. It may be impossible to test.', urgency: 'Philosophical', icon: '\uD83D\uDCBB' }
           ];
 
           // Multiverse theories
           var MULTIVERSE_THEORIES = [
-            { name: 'Many-Worlds (Quantum)', source: 'Hugh Everett III, 1957', desc: 'Every quantum measurement causes the universe to split into branches where each possible outcome occurs. All outcomes are equally real. No wavefunction collapse needed.', evidence: 'Solves quantum measurement problem elegantly. No direct evidence possible.', icon: '\uD83C\uDF33' },
-            { name: 'Inflationary Multiverse', source: 'Andrei Linde, 1986', desc: 'Eternal cosmic inflation continuously creates "bubble universes" with different physical laws and constants. Our universe is just one bubble in an infinite foam.', evidence: 'Consistent with CMB observations. Predicted by most inflation models.', icon: '\uD83E\uDEE7' },
-            { name: 'String Landscape', source: 'String Theory, 2003', desc: 'String theory predicts 10\u2075\u2070\u2070 possible vacuum states, each corresponding to a universe with different particle physics. Our laws of physics are just one roll of the dice.', evidence: 'Mathematically consistent. No experimental verification yet.', icon: '\uD83C\uDFB2' },
-            { name: 'Cyclic Universe', source: 'Steinhardt & Turok, 2002', desc: 'The Big Bang was a collision between higher-dimensional "branes." The universe goes through infinite cycles of expansion and contraction, with each cycle creating new matter.', evidence: 'Alternative to inflation. Testable via gravitational wave signatures.', icon: '\uD83D\uDD04' },
-            { name: 'Mathematical Universe', source: 'Max Tegmark, 2007', desc: 'Every self-consistent mathematical structure exists as a physical universe. Our universe is one mathematical object among infinitely many. Reality IS mathematics.', evidence: 'Philosophical. Explains unreasonable effectiveness of math in physics.', icon: '\uD83D\uDCDA' }
+            { name: 'Many-Worlds (Quantum)', test: ['hard'], how: 'The other branches can never interact with ours, so there is nothing to observe directly.', source: 'Hugh Everett III, 1957', desc: 'Every quantum measurement causes the universe to split into branches where each possible outcome occurs. All outcomes are equally real. No wavefunction collapse needed.', evidence: 'An interpretation, not a separate theory: it predicts the same results as other interpretations, so no experiment yet tells them apart.', icon: '\uD83C\uDF33' },
+            { name: 'Inflationary Multiverse', test: ['test'], how: 'If another bubble universe ever bumped into ours, it could have left a round mark in the microwave background. Searches so far have found none.', source: 'Andrei Linde, 1986', desc: 'Eternal cosmic inflation continuously creates "bubble universes" with different physical laws and constants. Our universe is just one bubble in an infinite foam.', evidence: 'The CMB supports inflation itself. Other bubble universes have not been observed and may be impossible to detect.', icon: '\uD83E\uDEE7' },
+            { name: 'String Landscape', test: ['hard'], how: 'Nobody yet knows how to observe another vacuum state, and the idea has not made a prediction we can check.', source: 'String Theory, 2003', desc: 'String theory seems to allow around 10\u2075\u2070\u2070 possible vacuum states, each corresponding to a universe with different particle physics. Our laws of physics are just one roll of the dice.', evidence: 'Mathematically consistent. No experimental verification yet.', icon: '\uD83C\uDFB2' },
+            { name: 'Cyclic Universe', test: ['test'], how: 'It predicts almost no gravitational waves from the Big Bang era. If future telescopes find their pattern in the microwave background, this model is ruled out.', source: 'Steinhardt & Turok, 2002', desc: 'The Big Bang was a collision between higher-dimensional "branes." The universe goes through infinite cycles of expansion and contraction, with each cycle creating new matter.', evidence: 'An alternative to inflation. No direct evidence yet; the search for gravitational waves from the early universe will test it.', icon: '\uD83D\uDD04' },
+            { name: 'Mathematical Universe', test: ['hard'], how: 'Other mathematical universes would be completely cut off from ours, so there is nothing we could measure.', source: 'Max Tegmark, 2007', desc: 'Every self-consistent mathematical structure exists as a physical universe. Our universe is one mathematical object among infinitely many. Reality IS mathematics.', evidence: 'A philosophical idea. It offers one answer to why mathematics describes nature so well, but makes no prediction we can check.', icon: '\uD83D\uDCDA' }
           ];
 
           // Gravitational lensing data
@@ -3445,12 +4564,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           // Stellar nurseries
           var STELLAR_NURSERIES = [
-            { name: 'Orion Nebula (M42)', dist: '1,344 ly', size: '24 ly across', desc: 'The closest massive star-forming region. Visible to the naked eye as a fuzzy patch in Orion\'s sword. Contains ~700 young stars in various stages of formation.', features: 'Trapezium star cluster, protoplanetary disks (proplyds), Herbig-Haro jets', icon: '\u2728', color: '#e879f9' },
-            { name: 'Eagle Nebula (M16)', dist: '7,000 ly', size: '70 ly across', desc: 'Home to the iconic "Pillars of Creation" photographed by Hubble. Massive columns of gas and dust where new stars are being born inside dense cocoons.', features: 'Pillars of Creation, evaporating gaseous globules (EGGs), young open cluster', icon: '\uD83E\uDDA5', color: '#a78bfa' },
-            { name: 'Carina Nebula', dist: '8,500 ly', size: '300+ ly across', desc: 'One of the largest nebulae in the sky. Contains Eta Carinae, a massive unstable star 100x the Sun\'s mass that could explode as a supernova any time.', features: 'Eta Carinae, Keyhole Nebula, Mystic Mountain, young massive stars', icon: '\uD83C\uDF1F', color: '#f472b6' },
-            { name: 'Tarantula Nebula (30 Doradus)', dist: '160,000 ly (LMC)', size: '600 ly across', desc: 'The most active star-forming region in the Local Group. If it were as close as the Orion Nebula, it would cast shadows on Earth. Contains the most massive known stars.', features: 'R136 cluster with stars 200+ solar masses, extreme UV radiation', icon: '\uD83D\uDD25', color: '#fb923c' },
-            { name: 'Rosette Nebula', dist: '5,000 ly', size: '130 ly across', desc: 'A beautiful flower-shaped emission nebula. Stellar winds from the central star cluster have carved a cavity in the gas, creating the rose pattern.', features: 'Central cavity, elephant trunk structures, NGC 2244 cluster', icon: '\uD83C\uDF39', color: '#f87171' },
-            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#94a3b8' }
+            { name: 'Orion Nebula (M42)', distLy: 1344, sizeLy: 24, dist: '1,344 ly', size: '24 ly across', desc: 'The closest massive star-forming region. Visible to the naked eye as a fuzzy patch in Orion\'s sword. Contains ~700 young stars in various stages of formation.', features: 'Trapezium star cluster, protoplanetary disks (proplyds), Herbig-Haro jets', icon: '\u2728', color: '#e879f9' },
+            { name: 'Eagle Nebula (M16)', distLy: 7000, sizeLy: 70, dist: '7,000 ly', size: '70 ly across', desc: 'Home to the iconic "Pillars of Creation" photographed by Hubble. Massive columns of gas and dust where new stars are being born inside dense cocoons.', features: 'Pillars of Creation, evaporating gaseous globules (EGGs), young open cluster', icon: '\uD83E\uDDA5', color: '#a78bfa' },
+            { name: 'Carina Nebula', distLy: 8500, sizeLy: 300, dist: '8,500 ly', size: '300+ ly across', desc: 'One of the largest nebulae in the sky. Contains Eta Carinae, a massive unstable star 100x the Sun\'s mass that could explode as a supernova any time.', features: 'Eta Carinae, Keyhole Nebula, Mystic Mountain, young massive stars', icon: '\uD83C\uDF1F', color: '#f472b6' },
+            { name: 'Tarantula Nebula (30 Doradus)', distLy: 160000, sizeLy: 1000, dist: '160,000 ly (LMC)', size: 'nearly 1,000 ly across', desc: 'The most active star-forming region in the Local Group. If it were as close as the Orion Nebula, it would cast shadows on Earth. Contains the most massive known stars.', features: 'R136 cluster with stars 200+ solar masses, extreme UV radiation', icon: '\uD83D\uDD25', color: '#fb923c' },
+            { name: 'Rosette Nebula', distLy: 5000, sizeLy: 130, dist: '5,000 ly', size: '130 ly across', desc: 'A beautiful flower-shaped emission nebula. Stellar winds from the central star cluster have carved a cavity in the gas, creating the rose pattern.', features: 'Central cavity, elephant trunk structures, NGC 2244 cluster', icon: '\uD83C\uDF39', color: '#f87171' },
+            { name: 'Horsehead Nebula (Barnard 33)', distLy: 1500, sizeLy: 3.5, dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#94a3b8' }
           ];
 
           // Planetary nebulae gallery
@@ -3458,29 +4577,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Ring Nebula (M57)', dist: '2,570 ly', age: '~4,000 yrs', desc: 'A textbook planetary nebula. The dying star shed its outer layers into a glowing ring of ionized gas. The central white dwarf is visible.', shape: 'Ring/torus', color: '#22d3ee', icon: '\u2B55' },
             { name: 'Helix Nebula (NGC 7293)', dist: '655 ly', age: '~12,000 yrs', desc: 'The closest bright planetary nebula. Known as the "Eye of God" for its striking appearance. Enormous at nearly half a degree (full Moon size).', shape: 'Helical/double ring', color: '#34d399', icon: '\uD83D\uDC41' },
             { name: 'Cat\'s Eye Nebula (NGC 6543)', dist: '3,300 ly', age: '~1,000 yrs', desc: 'One of the most complex planetary nebulae known. Concentric rings, jets, and intricate knots suggest a binary star system at the center.', shape: 'Concentric shells + jets', color: '#60a5fa', icon: '\uD83D\uDC31' },
-            { name: 'Butterfly Nebula (NGC 6302)', dist: '3,400 ly', age: '~2,200 yrs', desc: 'Bipolar nebula with "wings" of gas expanding at 600 km/s. Central star is one of the hottest known at 250,000 K (43x the Sun).', shape: 'Bipolar (butterfly)', color: '#c084fc', icon: '\uD83E\uDD8B' },
+            { name: 'Butterfly Nebula (NGC 6302)', dist: '3,400 ly', age: '~2,200 yrs', desc: 'Bipolar nebula with "wings" of gas racing outward at about 270 km/s (600,000 mph). Central star is one of the hottest known at 250,000 K (43x the Sun).', shape: 'Bipolar (butterfly)', color: '#c084fc', icon: '\uD83E\uDD8B' },
             { name: 'Hourglass Nebula (MyCn 18)', dist: '8,000 ly', age: '~few thousand yrs', desc: 'Hubble revealed a striking hourglass shape with an eerie "eye" at the center. Formed by fast stellar wind interacting with a slower previous wind.', shape: 'Hourglass/bipolar', color: '#fbbf24', icon: '\u23F3' }
           ];
 
           // Cosmic catastrophes
           var COSMIC_CATASTROPHES = [
-            { name: 'Gamma-Ray Burst (GRB)', energy: '10^44 joules in seconds', freq: '~1/day (observed)', desc: 'The most energetic events since the Big Bang. Long GRBs come from collapsing massive stars (hypernovae). Short GRBs from merging neutron stars. A nearby GRB aimed at Earth could sterilize the biosphere.', danger: 'Extinction-level within ~6,500 ly', icon: '\u26A1' },
-            { name: 'Magnetar Flare', energy: '10^39 joules', freq: 'Rare', desc: 'Neutron stars with magnetic fields 10^15 Gauss (quadrillion times Earth\'s). Starquakes release titanic flares. In 2004, a magnetar 50,000 ly away was bright enough to affect Earth\'s ionosphere.', danger: 'Dangerous within ~10 ly', icon: '\uD83E\uDDF2' },
-            { name: 'Asteroid Impact', energy: 'Varies (Chicxulub: 10^25 J)', freq: '~100 Myr for extinction-class', desc: 'The Chicxulub impactor (10 km wide) ended the dinosaurs 66 Mya. Smaller impacts (Tunguska 1908, Chelyabinsk 2013) happen more frequently. NASA\'s DART mission proved we can deflect asteroids.', danger: 'Depends on size and speed', icon: '\u2604' },
-            { name: 'Supernova Near Earth', energy: '10^44 joules', freq: '~few per century (galaxy-wide)', desc: 'A supernova within 30 light-years could destroy the ozone layer via cosmic rays, causing mass extinction from UV radiation. The nearest candidate (IK Pegasi) is 150 ly away \u2014 safe for now.', danger: 'Dangerous within ~30 ly', icon: '\uD83D\uDCA5' },
-            { name: 'Solar Superflare', energy: '10^26+ joules', freq: 'Unknown for our Sun', desc: 'Some Sun-like stars produce superflares 100-10,000x stronger than the strongest recorded solar flare. If our Sun did this, it could fry satellite electronics, knock out power grids, and increase radiation.', danger: 'Infrastructure collapse', icon: '\u2600\uFE0F' },
+            { name: 'Gamma-Ray Burst (GRB)', energy: '~10⁴⁴ J in two narrow jets', freq: '~1/day (observed)', desc: 'The brightest explosions known. A GRB squeezes about a supernova’s worth of energy into two narrow jets, so seen head-on it looks hundreds of times more powerful. Long GRBs come from collapsing massive stars (hypernovae). Short GRBs from merging neutron stars. A nearby GRB aimed at Earth could strip away much of the ozone layer and trigger a mass extinction.', danger: 'Extinction-level if aimed at us from within ~6,500 ly', icon: '\u26A1' },
+            { name: 'Magnetar Flare', energy: '~2 × 10³⁹ J in 0.2 s', freq: 'Rare', desc: 'Neutron stars with magnetic fields of 10¹⁵ gauss (over a thousand trillion times Earth\'s). Starquakes release titanic flares. In 2004, a magnetar 50,000 ly away was bright enough to affect Earth\'s ionosphere.', danger: 'Dangerous within ~10 ly', icon: '\uD83E\uDDF2' },
+            { name: 'Asteroid Impact', energy: 'Varies (Chicxulub: ~4 × 10²³ J)', freq: '~100 Myr for extinction-class', desc: 'The Chicxulub impactor (10 km wide) ended the dinosaurs 66 Mya. Smaller impacts (Tunguska 1908, Chelyabinsk 2013) happen more frequently. NASA\'s DART mission proved we can deflect asteroids.', danger: 'Depends on size and speed', icon: '\u2604' },
+            { name: 'Supernova Near Earth', energy: '~10⁴⁴ J', freq: '~few per century (galaxy-wide)', desc: 'A supernova within 30 light-years could destroy the ozone layer via cosmic rays, causing mass extinction from UV radiation. The nearest candidate (IK Pegasi) is 150 ly away \u2014 safe for now.', danger: 'Dangerous within ~30 ly', icon: '\uD83D\uDCA5' },
+            { name: 'Solar Superflare', energy: '10²⁶ to 10²⁹ J', freq: 'Unknown for our Sun', desc: 'Some Sun-like stars produce superflares up to 10,000 times stronger than the strongest flare recorded on our Sun. If our Sun did this, it could fry satellite electronics, knock out power grids, and increase radiation.', danger: 'Infrastructure collapse', icon: '\u2600\uFE0F' },
             { name: 'Galaxy Collision', energy: 'Gravitational', freq: 'Common over Gyr timescales', desc: ANDROMEDA_FUTURE + ' Direct collisions between individual stars would be rare.', danger: 'Stellar orbit disruption (very long-term)', icon: '\uD83C\uDF00' }
           ];
 
           // Electromagnetic spectrum in astronomy
           var EM_SPECTRUM = [
-            { name: 'Radio Waves', wavelength: '> 1 mm', sees: 'Pulsars, quasars, CMB, 21-cm hydrogen line, fast radio bursts', telescope: 'ALMA, VLA, FAST, SKA (and historically Arecibo, until 2020)', color: '#ef4444', desc: 'Penetrates dust clouds. Essential for studying cold gas, mapping the Milky Way, and SETI.' },
-            { name: 'Microwaves', wavelength: '1 mm \u2013 1 m', sees: 'Cosmic Microwave Background (CMB), Sunyaev-Zel\'dovich effect', telescope: 'Planck, WMAP, COBE, ACT', color: '#f97316', desc: 'The CMB is the oldest light in the universe. Tiny temperature variations reveal the seeds of all cosmic structure.' },
+            { name: 'Radio Waves', wavelength: '> 1 mm (includes microwaves)', sees: 'Pulsars, quasars, CMB, 21-cm hydrogen line, fast radio bursts', telescope: 'ALMA, VLA, FAST, SKA (and historically Arecibo, until 2020)', color: '#ef4444', desc: 'Penetrates dust clouds. Essential for studying cold gas, mapping the Milky Way, and SETI.' },
+            { name: 'Microwaves', wavelength: '1 mm – 1 m (short radio waves)', sees: 'Cosmic Microwave Background (CMB), Sunyaev-Zel\'dovich effect', telescope: 'Planck, WMAP, COBE, ACT', color: '#f97316', desc: 'The CMB is the oldest light in the universe. Tiny temperature variations reveal the seeds of all cosmic structure.' },
             { name: 'Infrared', wavelength: '700 nm \u2013 1 mm', sees: 'Dust-shrouded star formation, exoplanet atmospheres, early galaxies', telescope: 'JWST, Spitzer, Herschel, WISE', color: '#eab308', desc: 'Sees through dust! JWST observes in infrared to see the most distant (and thus oldest) galaxies in the universe.' },
             { name: 'Visible Light', wavelength: '400 \u2013 700 nm', sees: 'Stars, galaxies, nebulae, planets', telescope: 'Hubble, VLT, Keck, ELT, Rubin', color: '#22c55e', desc: 'What our eyes see. Most of classical astronomy. Hubble\'s visible-light images revolutionized public engagement with space.' },
             { name: 'Ultraviolet', wavelength: '10 \u2013 400 nm', sees: 'Hot young stars, stellar atmospheres, intergalactic medium', telescope: 'GALEX, IUE, HST (UV mode)', color: '#3b82f6', desc: 'Reveals the hottest, most energetic stars. Absorbed by Earth\'s atmosphere \u2014 must observe from space.' },
             { name: 'X-rays', wavelength: '0.01 \u2013 10 nm', sees: 'Black hole accretion, supernova remnants, galaxy cluster hot gas, neutron stars', telescope: 'Chandra, XMM-Newton, NuSTAR, XRISM', color: '#8b5cf6', desc: 'Emitted by matter heated to millions of degrees. Maps the most violent processes in the universe.' },
-            { name: 'Gamma Rays', wavelength: '< 0.01 nm', sees: 'Gamma-ray bursts, pulsars, active galactic nuclei, dark matter annihilation', telescope: 'Fermi, MAGIC, H.E.S.S., CTA', color: '#ec4899', desc: 'The highest-energy photons. From the most extreme events. Some gamma-ray photons carry more energy than a tennis ball.' }
+            { name: 'Gamma Rays', wavelength: '< 0.01 nm', sees: 'Gamma-ray bursts, pulsars, active galactic nuclei (and searches for dark matter)', telescope: 'Fermi, MAGIC, H.E.S.S., CTA', color: '#ec4899', desc: 'The highest-energy photons. From the most extreme events. The most energetic gamma rays ever detected carry over a quadrillion electronvolts, about 100 times the energy of collisions in the largest particle collider.' }
           ];
 
           // Scale of the universe (powers of 10)
@@ -3494,8 +4613,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Earth', size: '1.27 \u00D7 10\u2077 m', power: 7, desc: 'Our home planet. Thin atmosphere, liquid water, magnetic field \u2014 the conditions for life.', icon: '\uD83C\uDF0D' },
             { name: 'Sun', size: '1.39 \u00D7 10\u2079 m', power: 9, desc: '109 Earths fit across. A G2V main-sequence star, 4.6 billion years old, halfway through its life.', icon: '\u2600\uFE0F' },
             { name: 'Solar System', size: '~9 \u00D7 10\u00B9\u00B2 m', power: 12, desc: 'From the Sun out past Neptune and the Kuiper Belt. Light takes ~4 hours to reach Neptune. 8 planets and hundreds of known moons.', icon: '\uD83E\uDE90' },
-            { name: 'Light-Year', size: '9.46 \u00D7 10\u00B9\u2075 m', power: 15, desc: 'The distance light travels in one year. Nearest star (Proxima Centauri): 4.24 light-years away.', icon: '\u2B50' },
-            { name: 'Milky Way', size: '~10\u00B2\u2070 m (100,000 ly)', power: 20, desc: '200-400 billion stars. Our solar system orbits the center every 230 million years (one "galactic year").', icon: '\uD83C\uDF00' },
+            { name: 'Light-Year', size: '9.46 \u00D7 10\u00B9\u2075 m', power: 16, desc: 'The distance light travels in one year. Nearest star (Proxima Centauri): 4.24 light-years away.', icon: '\u2B50' },
+            { name: 'Milky Way', size: '~10²¹ m (100,000 ly)', power: 21, desc: '200-400 billion stars. Our solar system orbits the center every 230 million years (one "galactic year").', icon: '\uD83C\uDF00' },
             { name: 'Galaxy Supercluster', size: '~5 \u00D7 10\u00B2\u2074 m (500 Mly)', power: 24, desc: 'Laniakea, our home supercluster, contains 100,000+ galaxies gravitationally connected.', icon: '\uD83C\uDF0C' },
             { name: 'Observable Universe', size: '8.8 \u00D7 10\u00B2\u2076 m (93 Gly)', power: 26, desc: 'Hundreds of billions to trillions of galaxies. Everything we can observe; beyond this, light has not had time to reach us.', icon: '\uD83C\uDF20' }
           ];
@@ -3506,7 +4625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var ZOOM_OBJECTS = [
             { p: -18.0, n: 'Quark', s: 'smaller than 10\u207B\u00B9\u2078 m', c: '#f472b6', g: '', key: true },
             { p: -15.0, n: 'Proton', s: '1 femtometre', c: '#fb7185', g: '', key: true },
-            { p: -14.2, n: 'Uranium nucleus', s: '15 femtometres', c: '#fb923c', g: '' },
+            { p: -13.82, n: 'Uranium nucleus', s: '15 femtometres', c: '#fb923c', g: '' },
             { p: -10.0, n: 'Hydrogen atom', s: '0.1 nanometres', c: '#60a5fa', g: '\u269B', key: true },
             { p: -8.70, n: 'DNA double helix', s: '2 nanometres wide', c: '#34d399', g: '\uD83E\uDDEC', key: true },
             { p: -7.00, n: 'Influenza virus', s: '100 nanometres', c: '#fbbf24', g: '' },
@@ -3581,11 +4700,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // Spectral classification (OBAFGKM)
           var SPECTRAL_CLASSES = [
             { class: 'O', temp: '30,000-50,000+ K', color: '#6366f1', colorName: 'Blue', mass: '16-150+ M\u2609', luminosity: '30,000-1,000,000+ L\u2609', lifespan: '1-10 Myr', pct: '~0.00003%', example: 'Alnitak, Naos', desc: 'The hottest, most massive, most luminous, and rarest main-sequence stars. Produce copious UV radiation that ionizes surrounding gas, creating H II regions. Burn through fuel incredibly fast.' },
-            { class: 'B', temp: '10,000-30,000 K', color: '#818cf8', colorName: 'Blue-white', mass: '2.1-16 M\u2609', luminosity: '25-30,000 L\u2609', lifespan: '10-100 Myr', pct: '~0.12%', example: 'Rigel, Spica', desc: 'Hot blue-white stars. Rigel, the brightest star in Orion, is a B-type supergiant 120,000x the Sun\'s luminosity. Many B-stars are in young open clusters.' },
-            { class: 'A', temp: '7,500-10,000 K', color: '#c4b5fd', colorName: 'White', mass: '1.4-2.1 M\u2609', luminosity: '5-25 L\u2609', lifespan: '1-2 Gyr', pct: '~0.6%', example: 'Sirius, Vega', desc: 'Bright white stars. Sirius (the brightest star in the night sky) and Vega are both A-type. Strong hydrogen absorption lines. Many have debris disks.' },
+            { class: 'B', temp: '10,000-30,000 K', color: '#818cf8', colorName: 'Blue-white', mass: '2.1-16 M\u2609', luminosity: '25-30,000 L\u2609', lifespan: '10 Myr-1 Gyr', pct: '~0.12%', example: 'Rigel, Spica', desc: 'Hot blue-white stars. Rigel, the brightest star in Orion, is a B-type supergiant 120,000x the Sun\'s luminosity. Many B-stars are in young open clusters.' },
+            { class: 'A', temp: '7,500-10,000 K', color: '#c4b5fd', colorName: 'White', mass: '1.4-2.1 M\u2609', luminosity: '5-25 L\u2609', lifespan: '1-3 Gyr', pct: '~0.6%', example: 'Sirius, Vega', desc: 'Bright white stars. Sirius (the brightest star in the night sky) and Vega are both A-type. Strong hydrogen absorption lines. Many have debris disks.' },
             { class: 'F', temp: '6,000-7,500 K', color: '#fde68a', colorName: 'Yellow-white', mass: '1.0-1.4 M\u2609', luminosity: '1.5-5 L\u2609', lifespan: '2-7 Gyr', pct: '~3%', example: 'Procyon, Canopus', desc: 'Yellow-white stars slightly hotter than the Sun. Good candidates for habitable planets \u2014 long-lived enough for complex life but brighter than K/M stars.' },
             { class: 'G', temp: '5,200-6,000 K', color: '#fbbf24', colorName: 'Yellow', mass: '0.8-1.0 M\u2609', luminosity: '0.6-1.5 L\u2609', lifespan: '7-15 Gyr', pct: '~7.5%', example: 'Sun, Alpha Centauri A', desc: 'Our Sun is a G2V star! Yellow stars with the right temperature and lifespan for life. The "Goldilocks" spectral type. Prominent calcium absorption lines.' },
-            { class: 'K', temp: '3,700-5,200 K', color: '#fb923c', colorName: 'Orange', mass: '0.45-0.8 M\u2609', luminosity: '0.08-0.6 L\u2609', lifespan: '15-30 Gyr', pct: '~12%', example: 'Arcturus, Epsilon Eridani', desc: 'Orange stars. Very long-lived \u2014 great for habitable planets! Less UV radiation than G-stars, reducing mutation rates. Increasingly favored in the search for life.' },
+            { class: 'K', temp: '3,700-5,200 K', color: '#fb923c', colorName: 'Orange', mass: '0.45-0.8 M\u2609', luminosity: '0.08-0.6 L\u2609', lifespan: '15-30 Gyr', pct: '~12%', example: 'Alpha Centauri B, Epsilon Eridani', desc: 'Orange stars. Very long-lived \u2014 great for habitable planets! Less UV radiation than G-stars, reducing mutation rates. Increasingly favored in the search for life.' },
             { class: 'M', temp: '2,400-3,700 K', color: '#ef4444', colorName: 'Red', mass: '0.08-0.45 M\u2609', luminosity: '0.0001-0.08 L\u2609', lifespan: 'Up to trillions of years', pct: '~76%', example: 'Proxima Centauri, TRAPPIST-1', desc: 'Red dwarfs \u2014 the most common stars by far. So dim they\'re invisible to the naked eye. But they live almost forever! Many have been found to host rocky exoplanets (TRAPPIST-1 has 7!).' }
           ];
 
@@ -3594,25 +4713,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Moon', g: 0.166, icon: '\uD83C\uDF15', desc: 'You could jump 6x higher!' },
             { name: 'Mars', g: 0.378, icon: '\uD83D\uDD34', desc: 'About 1/3 of Earth. Manageable for colonists.' },
             { name: 'Earth', g: 1.0, icon: '\uD83C\uDF0D', desc: 'Home! 9.81 m/s\u00B2' },
-            { name: 'Jupiter', g: 2.528, icon: '\uD83E\uDE90', desc: 'You\'d be crushed. No solid surface anyway!' },
+            { name: 'Jupiter', g: 2.528, icon: '\uD83E\uDE90', desc: 'You’d feel 2.5 times heavier, like a strong roller-coaster dip that never ends. There is no solid surface to stand on, though.' },
             { name: 'Saturn', g: 1.065, icon: '\uD83E\uDE90', desc: 'Surprisingly close to Earth (low density!)' },
-            { name: 'Sun', g: 27.94, icon: '\u2600\uFE0F', desc: 'A 70 kg person would weigh ~1,956 kg' },
-            { name: 'Neutron Star', g: 200000000000, icon: '\uD83D\uDCAB', desc: '200 billion g! Spaghettification guaranteed.' },
-            { name: 'Pluto', g: 0.063, icon: '\u26AA', desc: 'You\'d weigh less than a house cat.' },
+            { name: 'Sun', g: 27.94, icon: '\u2600\uFE0F', desc: 'No surface to stand on: at its visible surface, gravity is about 28 times Earth’s.' },
+            { name: 'Neutron Star', g: 200000000000, icon: '\uD83D\uDCAB', desc: 'About 200 billion times Earth’s gravity: anything landing there is crushed flat.' },
+            { name: 'Pluto', g: 0.063, icon: '\u26AA', desc: 'A bathroom scale would show about what a house cat weighs on Earth.' },
             { name: 'Titan (Saturn moon)', g: 0.138, icon: '\uD83C\uDF19', desc: 'Low enough that humans could strap on wings and fly!' },
-            { name: 'ISS (orbit)', g: 0.89, icon: '\uD83D\uDEF0', desc: 'Not zero-g! Astronauts are in freefall (89% Earth gravity)' }
+            { name: 'ISS (orbit)', g: 0.89, icon: '\uD83D\uDEF0', desc: 'Gravity here is still 89% as strong, but you and the scale fall around Earth together, so the scale reads zero.' }
           ];
 
           // Famous space images
           var FAMOUS_IMAGES = [
             { name: 'Earthrise (1968)', mission: 'Apollo 8', desc: 'Taken by astronaut Bill Anders during the first crewed orbit of the Moon. Seeing Earth as a fragile blue marble floating in the void of space catalyzed the modern environmental movement.', impact: 'Inspired Earth Day and the environmental movement', icon: '\uD83C\uDF0D' },
             { name: 'Pale Blue Dot (1990)', mission: 'Voyager 1', desc: 'Carl Sagan convinced NASA to turn Voyager 1 around at 6 billion km to photograph Earth. Our planet appears as a tiny blue speck in a sunbeam. "Look again at that dot. That\'s here. That\'s home. That\'s us."', impact: 'Humbled humanity with cosmic perspective', icon: '\uD83D\uDD35' },
-            { name: 'Hubble Deep Field (1995)', mission: 'HST', desc: 'Hubble stared at a "blank" patch of sky (1/13-millionth of the sky) for 10 days. Result: ~3,000 galaxies, some 12+ billion years old. Proved galaxies fill the universe in every direction.', impact: 'Transformed estimates of how many galaxies fill the observable universe', icon: '\uD83C\uDF0C' },
+            { name: 'Hubble Deep Field (1995)', mission: 'HST', desc: 'Hubble stared at a "blank" patch of sky (about 1/24-millionth of the sky) for 10 days. Result: ~3,000 galaxies, some 12+ billion years old. Proved galaxies fill the universe in every direction.', impact: 'Transformed estimates of how many galaxies fill the observable universe', icon: '\uD83C\uDF0C' },
             { name: 'Pillars of Creation (1995/2022)', mission: 'HST / JWST', desc: 'Towering columns of gas and dust in the Eagle Nebula where new stars are being born. Hubble\'s 1995 image became the most famous space photo ever. JWST re-imaged it in infrared, revealing hidden stars.', impact: 'Most iconic nebula image in history', icon: '\u2728' },
             { name: 'First Black Hole Image (2019)', mission: 'EHT', desc: 'The Event Horizon Telescope combined 8 radio telescopes across 4 continents to create an Earth-sized virtual dish. Result: the shadow of the supermassive black hole in galaxy M87, 6.5 billion solar masses.', impact: 'Confirmed black holes look exactly as Einstein predicted', icon: '\uD83D\uDD73' },
             { name: 'JWST Deep Field (2022)', mission: 'JWST', desc: 'The deepest, sharpest infrared image of the distant universe ever taken. Shows galaxy cluster SMACS 0723 as it appeared 4.6 billion years ago, with gravitational lensing revealing galaxies 13+ billion years old.', impact: 'New era of infrared astronomy began', icon: '\uD83C\uDF1F' },
             { name: 'Blue Marble (1972)', mission: 'Apollo 17', desc: 'The first full-disk photograph of Earth taken by humans. Shot by the Apollo 17 crew on their way to the Moon. One of the most reproduced images in history.', impact: 'Became a symbol for the environmental movement', icon: '\uD83C\uDF0E' },
-            { name: 'Cosmic Microwave Background (2013)', mission: 'Planck', desc: 'The most detailed map of the oldest light in the universe (380,000 years after the Big Bang). Tiny temperature fluctuations (1 part in 100,000) are the seeds of all cosmic structure.', impact: 'Determined universe age: 13.799 \u00B1 0.021 Gyr', icon: '\uD83C\uDF21' }
+            { name: 'Cosmic Microwave Background (2013–2018)', mission: 'Planck', desc: 'The most detailed map of the oldest light in the universe (380,000 years after the Big Bang). Tiny temperature fluctuations (1 part in 100,000) are the seeds of all cosmic structure.', impact: 'Measured the universe’s age: 13.787 ± 0.020 billion years (2018)', icon: '\uD83C\uDF21' }
           ];
 
           // Cosmic speed comparison
@@ -3626,7 +4745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Sun orbiting the Milky Way', speed: '828,000 km/h', mps: 230000, frac: '0.08%', icon: '\u2600\uFE0F', color: '#f59e0b' },
             { name: 'Milky Way through space', speed: '2.1 million km/h', mps: 600000, frac: '0.2%', icon: '\uD83C\uDF00', color: '#f97316' },
             { name: 'Speed of light', speed: '1.08 billion km/h', mps: 299792458, frac: '100%', icon: '\u26A1', color: '#fbbf24' },
-            { name: 'Cosmic expansion (distant galaxies)', speed: '>c (space expands)', mps: null, frac: '>100%!', icon: '\uD83C\uDF20', color: '#ef4444' }
+            { name: 'Distant galaxies (space expanding)', speed: 'Their distance can grow faster than c', mps: null, frac: 'Not a speed through space', icon: '\uD83C\uDF20', color: '#ef4444' }
           ];
 
           // Citizen science projects
@@ -3636,7 +4755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Backyard Worlds: Planet 9', url: 'zooniverse.org', desc: 'Search WISE infrared data for brown dwarfs and the hypothetical Planet Nine. Citizen scientists discovered over 100 new brown dwarfs and 1,500+ cold worlds.', field: 'Brown dwarfs / Planet 9 search', icon: '\uD83D\uDD0D' },
             { name: 'Supernova Hunters', url: 'zooniverse.org', desc: 'Spot supernovae in galaxy images by looking for new bright points that weren\'t there before. Real-time alerts sent to professional telescopes for follow-up.', field: 'Transient detection', icon: '\uD83D\uDCA5' },
             { name: 'Globe at Night', url: 'globeatnight.org', desc: 'Measure light pollution from your location by counting visible stars. Contributes to the global light pollution database. Great classroom activity!', field: 'Light pollution monitoring', icon: '\uD83C\uDF03' },
-            { name: 'Breakthrough Listen (SETI)', url: 'breakthroughinitiatives.org', desc: 'Search for technosignatures from extraterrestrial intelligence in radio telescope data. Breakthrough Listen is the most comprehensive SETI program ever, scanning 1 million stars.', field: 'Search for ET intelligence', icon: '\uD83D\uDC7D' }
+            { name: 'Breakthrough Listen (SETI)', url: 'breakthroughinitiatives.org', desc: 'Follow the search for technosignatures in radio telescope data (its volunteer-computing project, SETI@home, has been paused since 2020). Breakthrough Listen is the most comprehensive SETI program ever, scanning 1 million stars.', field: 'Search for ET intelligence', icon: '\uD83D\uDC7D' }
           ];
 
           // Cosmology glossary
@@ -3644,20 +4763,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { term: 'Accretion', def: 'The process of matter falling onto a massive object (black hole, star, planet) due to gravity. Accretion disks form when infalling material has angular momentum.' },
             { term: 'Baryon', def: 'Particles made of 3 quarks (protons, neutrons). "Baryonic matter" = ordinary matter. Only ~5% of the universe.' },
             { term: 'CMB (Cosmic Microwave Background)', def: 'The oldest light in the universe, released 380,000 years after the Big Bang when atoms first formed. Now cooled to 2.725 K microwaves.' },
-            { term: 'Cosmic Inflation', def: 'A period of exponential expansion in the first 10\u207B\u00B3\u00B2 seconds. Expanded the universe by a factor of ~10\u00B2\u2076. Explains flatness and horizon problems.' },
+            { term: 'Cosmic Inflation', def: 'A proposed burst of extremely fast expansion in roughly the first 10⁻³² seconds, growing the universe by a factor of at least about 10²⁶. It explains why the universe is so smooth and flat, and its predictions match the CMB, but it is not yet confirmed.' },
             { term: 'Dark Energy', def: '~68% of the universe. Causes accelerating expansion. Discovered 1998 via Type Ia supernovae. Nature completely unknown.' },
             { term: 'Dark Matter', def: '~27% of the universe. Has gravity but doesn\'t emit light. Detected via galaxy rotation curves, gravitational lensing. Particle identity unknown.' },
             { term: 'Event Horizon', def: 'The boundary around a black hole beyond which nothing can escape \u2014 not even light. For a 10 M\u2609 black hole: ~30 km radius.' },
             { term: 'General Relativity', def: 'Einstein\'s 1915 theory: gravity is the curvature of spacetime caused by mass/energy. Predicts black holes, gravitational waves, time dilation.' },
             { term: 'Gravitational Waves', def: 'Ripples in spacetime caused by accelerating massive objects (merging black holes, neutron stars). First detected by LIGO in 2015.' },
-            { term: 'Hawking Radiation', def: 'Theoretical radiation emitted by black holes due to quantum effects near the event horizon. Causes black holes to slowly evaporate over 10\u00B9\u2070\u2070 years.' },
+            { term: 'Hawking Radiation', def: 'Theoretical radiation emitted by black holes due to quantum effects near the event horizon. Would make black holes evaporate extremely slowly: about 10⁶⁷ years for one with the Sun’s mass, and up to about 10¹⁰⁰ years for the biggest.' },
             { term: 'Hubble Constant (H\u2080)', def: 'The expansion rate of the universe: ~70 km/s per megaparsec. There is currently a "Hubble tension" \u2014 different methods give slightly different values.' },
+            { term: 'Doppler shift', def: 'The change in a wave\'s wavelength when its source moves toward or away from you: shorter (bluer) when approaching, longer (redder) when receding.' },
+            { term: 'Habitable zone', def: 'The range of distances from a star where a planet could have liquid water on its surface. It is closer in for cool red dwarfs and farther out for hot stars.' },
             { term: 'Light-year', def: 'The distance light travels in one year: 9.461 \u00D7 10\u00B9\u00B2 km. Not a unit of time!' },
+            { term: 'Megaparsec (Mpc)', def: 'A distance used for galaxies: one million parsecs, about 3.26 million light-years.' },
             { term: 'Nucleosynthesis', def: 'The creation of atomic nuclei. Big Bang nucleosynthesis made H, He, Li. Stellar nucleosynthesis fuses heavier elements up to iron.' },
-            { term: 'Parallax', def: 'The apparent shift in a star\'s position as Earth orbits the Sun. Used to measure distances to nearby stars (< ~1,000 ly).' },
+            { term: 'Parallax', def: 'The apparent shift in a star\'s position as Earth orbits the Sun. Used to measure distances to nearby stars; the Gaia spacecraft reaches stars thousands of light-years away.' },
+            { term: 'Quasar', def: 'The brilliant core of a galaxy where gas spirals into a supermassive black hole and glows, often outshining all the galaxy\'s stars.' },
             { term: 'Redshift (z)', def: 'Stretching of light to longer wavelengths. Caused by recession velocity (Doppler) or cosmic expansion (cosmological). z = (\u03BB_obs - \u03BB_emit) / \u03BB_emit.' },
-            { term: 'Singularity', def: 'A point of theoretically infinite density. Exists at the center of black holes and at the Big Bang. Indicates our physics breaks down.' },
+            { term: 'Singularity', def: 'Where general relativity predicts infinite density, such as at a black hole’s center or at time zero. Most physicists read it as a sign the theory breaks down there, not as a real infinite point.' },
             { term: 'Spacetime', def: 'The 4-dimensional fabric of the universe (3 space + 1 time). Mass curves spacetime; objects follow curved paths (this IS gravity).' },
+            { term: 'Transit', def: 'When a planet passes in front of its star as seen from Earth, dimming the star slightly. Most known exoplanets were found this way.' },
             { term: 'Standard Candle', def: 'An object of known intrinsic brightness. By comparing apparent vs. intrinsic brightness, distance can be calculated. Type Ia supernovae and Cepheid variables are key standard candles.' }
           ];
 
@@ -3666,17 +4790,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // Carl Sagan's Cosmic Calendar
           var COSMIC_CALENDAR = [
             { date: 'Jan 1, 00:00:00', event: 'Big Bang', real: '13.8 billion years ago', icon: '\uD83D\uDCA5' },
-            { date: 'Jan 22', event: 'First galaxies form', real: '12.85 billion years ago', icon: '\uD83C\uDF0C' },
+            { date: 'Jan 26', event: 'First galaxies form', real: '12.85 billion years ago', icon: '\uD83C\uDF0C' },
             { date: 'Mar 16', event: 'Milky Way forms', real: '11 billion years ago', icon: '\uD83C\uDF00' },
             { date: 'Sep 2', event: 'Solar System forms', real: '4.57 billion years ago', icon: '\u2600\uFE0F' },
-            { date: 'Sep 7', event: 'Earth forms', real: '4.54 billion years ago', icon: '\uD83C\uDF0D' },
+            { date: 'Sep 2', event: 'Earth forms', real: '4.54 billion years ago', icon: '\uD83C\uDF0D' },
             { date: 'Sep 14', event: 'First life (microbes)', real: '4.1 billion years ago', icon: '\uD83E\uDDA0' },
             { date: 'Nov 9', event: 'First complex cells', real: '2 billion years ago', icon: '\uD83E\uDDEC' },
-            { date: 'Dec 5', event: 'First multicellular life', real: '800 million years ago', icon: '\uD83E\uDD9A' },
+            { date: 'Dec 10', event: 'First multicellular life', real: '800 million years ago', icon: '\uD83E\uDD9A' },
             { date: 'Dec 17', event: 'Cambrian Explosion', real: '530 million years ago', icon: '\uD83D\uDC1A' },
             { date: 'Dec 19', event: 'First land plants', real: '470 million years ago', icon: '\uD83C\uDF3F' },
             { date: 'Dec 25', event: 'Dinosaurs appear', real: '230 million years ago', icon: '\uD83E\uDD95' },
-            { date: 'Dec 30, 06:24', event: 'Dinosaurs go extinct', real: '66 million years ago', icon: '\u2604' },
+            { date: 'Dec 30, 06:06', event: 'Dinosaurs go extinct', real: '66 million years ago', icon: '\u2604' },
             { date: 'Dec 31, 22:24', event: 'First humans', real: '2.5 million years ago', icon: '\uD83E\uDDD1' },
             { date: 'Dec 31, 23:59:50', event: 'Pyramids built', real: '~4,500 years ago', icon: '\uD83D\uDDFF' },
             { date: 'Dec 31, 23:59:59', event: 'Modern science', real: '~500 years ago', icon: '\uD83D\uDD2C' }
@@ -3684,15 +4808,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           // Galaxy types
           var GALAXY_TYPES = [
-            { name: 'Spiral', example: 'Milky Way, Andromeda', pct: '~60%', desc: 'Flat disk with spiral arms of gas, dust, and young stars rotating around a central bulge. Active star formation in the arms.', features: 'Central bulge + disk + spiral arms + halo', icon: '\uD83C\uDF00' },
-            { name: 'Elliptical', example: 'M87, IC 1101', pct: '~20%', desc: 'Smooth, featureless blobs ranging from nearly spherical to elongated. Mostly old red/yellow stars. Very little gas or dust \u2014 star formation has stopped.', features: 'No disk, no arms, uniform glow', icon: '\u26AA' },
-            { name: 'Lenticular', example: 'NGC 2787, Spindle Galaxy', pct: '~15%', desc: 'Hybrid between spiral and elliptical. Has a disk and bulge but no spiral arms. Star formation depleted.', features: 'Disk + bulge, no arms', icon: '\uD83D\uDFE0' },
-            { name: 'Irregular', example: 'Large Magellanic Cloud', pct: '~5%', desc: 'No regular shape. Often the result of gravitational interactions or collisions with other galaxies. Rich in gas and active star formation.', features: 'Chaotic structure', icon: '\u2728' }
+            { name: 'Spiral', example: 'Milky Way, Andromeda', pct: '~60% of bright galaxies', desc: 'Flat disk with spiral arms of gas, dust, and young stars rotating around a central bulge. Active star formation in the arms.', features: 'Central bulge + disk + spiral arms + halo', icon: '\uD83C\uDF00' },
+            { name: 'Elliptical', example: 'M87, IC 1101', pct: '~20% of bright galaxies', desc: 'Smooth, featureless blobs ranging from nearly spherical to elongated. Mostly old red/yellow stars. Very little gas or dust \u2014 star formation has stopped.', features: 'No disk, no arms, uniform glow', icon: '\u26AA' },
+            { name: 'Lenticular', example: 'NGC 2787, Spindle Galaxy', pct: '~15% of bright galaxies', desc: 'Hybrid between spiral and elliptical. Has a disk and bulge but no spiral arms. Star formation depleted.', features: 'Disk + bulge, no arms', icon: '\uD83D\uDFE0' },
+            { name: 'Irregular', example: 'Large Magellanic Cloud', pct: '~5% of bright galaxies; many faint dwarfs are irregular', desc: 'No regular shape. Often the result of gravitational interactions or collisions with other galaxies. Rich in gas and active star formation.', features: 'Chaotic structure', icon: '\u2728' }
           ];
 
           // Black hole anatomy
           var BLACK_HOLE_PARTS = [
-            { name: 'Singularity', desc: 'The infinitely dense point at the center where all the mass is concentrated. Our physics breaks down here \u2014 general relativity and quantum mechanics conflict.', color: '#000000' },
+            { name: 'Singularity', desc: 'Where general relativity predicts infinite density at the center. Physicists expect a theory of quantum gravity to replace this prediction, because relativity and quantum mechanics conflict here.', color: '#000000' },
             { name: 'Event Horizon', desc: 'The point of no return. Once anything crosses this boundary, not even light can escape. For a 10-solar-mass black hole, this is about 30 km in radius (roughly 60 km across).', color: '#1a1a2a' },
             { name: 'Photon Sphere', desc: 'At 1.5x the event horizon radius, photons orbit the black hole. Light can theoretically circle it here, but the orbit is unstable.', color: '#4a3a6a' },
             { name: 'Accretion Disk', desc: 'Superheated matter spiraling into the black hole at near light speed. Friction heats it to millions of degrees, emitting intense X-rays. This is what the EHT photographed.', color: '#f97316' },
@@ -3715,13 +4839,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var ASTRONOMERS = [
             { name: 'Claudius Ptolemy', year: '~150 AD', contribution: 'Earth-centered (geocentric) model of the universe that dominated for 1,400 years', icon: '\uD83C\uDF0D' },
             { name: 'Nicolaus Copernicus', year: '1543', contribution: 'Proposed Sun-centered (heliocentric) model \u2014 revolutionary paradigm shift', icon: '\u2600\uFE0F' },
-            { name: 'Galileo Galilei', year: '1610', contribution: 'First to use telescope for astronomy. Saw Jupiter\'s moons, phases of Venus, craters on Moon', icon: '\uD83D\uDD2D' },
+            { name: 'Galileo Galilei', year: '1610', contribution: 'Turned a telescope to the sky and published what he saw: Jupiter’s moons, the phases of Venus, craters on the Moon', icon: '\uD83D\uDD2D' },
             { name: 'Johannes Kepler', year: '1619', contribution: 'Three laws of planetary motion \u2014 orbits are ellipses, not circles', icon: '\uD83D\uDCCA' },
             { name: 'Isaac Newton', year: '1687', contribution: 'Universal gravitation + calculus. Explained why Kepler\'s laws work', icon: '\uD83C\uDF4E' },
             { name: 'William Herschel', year: '1781', contribution: 'Discovered Uranus \u2014 first new planet since antiquity', icon: '\u26AA' },
             { name: 'Henrietta Leavitt', year: '1912', contribution: 'Period-luminosity relation of Cepheids \u2014 enabled measuring cosmic distances', icon: '\u2B50' },
-            { name: 'Edwin Hubble', year: '1929', contribution: 'Proved galaxies exist beyond Milky Way. Discovered universe is expanding', icon: '\uD83C\uDF0C' },
-            { name: 'Vera Rubin', year: '1970s', contribution: 'Galaxy rotation curves proved dark matter exists \u2014 galaxies spin too fast for visible matter alone', icon: '\uD83D\uDD73' },
+            { name: 'Edwin Hubble', year: '1924–29', contribution: 'Showed Andromeda lies far beyond the Milky Way (1924), then found that farther galaxies recede faster (1929), building on Lemaître’s 1927 work', icon: '\uD83C\uDF0C' },
+            { name: 'Vera Rubin', year: '1970s', contribution: 'Her galaxy rotation curves gave strong evidence for dark matter: galaxies spin too fast for their visible matter alone', icon: '\uD83D\uDD73' },
             { name: 'Stephen Hawking', year: '1974', contribution: 'Hawking radiation \u2014 black holes slowly evaporate. Bridged quantum mechanics and gravity', icon: '\u2B1B' },
             { name: 'Jocelyn Bell Burnell', year: '1967', contribution: 'Discovered pulsars (rapidly spinning neutron stars) as a graduate student', icon: '\uD83D\uDCAB' },
             { name: 'Saul Perlmutter et al.', year: '1998', contribution: 'Discovered accelerating expansion of universe \u2014 dark energy (Nobel Prize 2011)', icon: '\uD83D\uDE80' }
@@ -3729,7 +4853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           // Supernova types
           var SUPERNOVA_TYPES = [
-            { type: 'Type Ia', trigger: 'White dwarf in binary system', mechanism: 'White dwarf accretes matter from companion star until it exceeds 1.4 solar masses (Chandrasekhar limit) and detonates in thermonuclear explosion.', importance: 'Standard candles \u2014 all have the same brightness, used to measure cosmic distances. Led to discovery of dark energy!', brightness: '~5 billion suns', icon: '\uD83D\uDCA1' },
+            { type: 'Type Ia', trigger: 'White dwarf in binary system', mechanism: 'White dwarf accretes matter from companion star until it nears 1.4 solar masses (the Chandrasekhar limit) and detonates in thermonuclear explosion.', importance: 'Standardizable candles: their peak brightness varies, but brighter ones fade more slowly, so astronomers can correct for it and measure distances. Led to the discovery of dark energy.', brightness: '~5 billion suns', icon: '\uD83D\uDCA1' },
             { type: 'Type II (Core Collapse)', trigger: 'Massive star (8+ solar masses)', mechanism: 'Iron core grows until it can no longer support itself against gravity. Core collapses in milliseconds, rebounds, and blows outer layers into space.', importance: 'Creates and disperses heavy elements (oxygen, calcium, iron). Leaves behind neutron star or black hole.', brightness: '~1 billion suns', icon: '\uD83D\uDCA5' }
           ];
 
@@ -3749,9 +4873,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Helium (He)', origin: 'Big Bang + Stars', pct: '25%', note: 'Mostly from Big Bang nucleosynthesis. Also made in stellar fusion.', color: '#fde68a' },
             { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: '#64748b' },
             { name: 'Oxygen (O)', origin: 'Massive star fusion', pct: 'Trace', note: 'Made in massive star cores. Third most abundant element in universe.', color: '#3b82f6' },
-            { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: '#94a3b8' },
+            { name: 'Iron (Fe)', origin: 'Supernovae (both kinds)', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: '#94a3b8' },
             { name: 'Gold (Au)', origin: 'Neutron star mergers', pct: 'Ultra-trace', note: 'Created when two neutron stars collide! That\'s why gold is so rare.', color: '#f59e0b' },
-            { name: 'Uranium (U)', origin: 'Supernovae + mergers', pct: 'Ultra-trace', note: 'Heaviest natural element. Powers nuclear reactors and heats Earth\'s core.', color: '#10b981' },
+            { name: 'Uranium (U)', origin: 'Supernovae + mergers', pct: 'Ultra-trace', note: 'The heaviest element found in large amounts in nature. Fuels nuclear reactors, and its slow decay helps heat Earth’s interior.', color: '#10b981' },
             { name: 'Lithium (Li)', origin: 'Big Bang + cosmic rays', pct: 'Trace', note: 'Tiny amount from Big Bang. Also made when cosmic rays hit atoms in space.', color: '#ef4444' }
           ];
 
@@ -3763,7 +4887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'Galaxy', example: 'Milky Way', size: '~100,000 light-years', icon: '\uD83C\uDF00', desc: '100-400 billion stars, gas, dust, and dark matter' },
             { name: 'Galaxy Group', example: 'Local Group', size: '~10 million light-years', icon: '\uD83C\uDF0C', desc: '~80 galaxies gravitationally bound together' },
             { name: 'Galaxy Cluster', example: 'Virgo Cluster', size: '~15 million light-years', icon: '\uD83D\uDD2D', desc: '1,000-10,000 galaxies, hot intracluster gas' },
-            { name: 'Supercluster', example: 'Laniakea', size: '~500 million light-years', icon: '\uD83E\uDDE8', desc: 'Thousands of galaxy clusters connected by filaments' },
+            { name: 'Supercluster', example: 'Laniakea', size: '~500 million light-years', icon: '\uD83E\uDDE8', desc: 'About 100,000 galaxies in hundreds of groups and clusters, linked by filaments' },
             { name: 'Observable Universe', example: '\u2014', size: '93 billion light-years', icon: '\uD83C\uDF20', desc: 'Hundreds of billions to trillions of galaxies. Beyond this, light hasn\'t reached us yet.' }
           ];
 
@@ -3802,7 +4926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { id: 'cmb', title: 'CMB Afterglow', icon: '\uD83C\uDF21', time: 0.00038, wwtStop: 'cmb', signal: 'Microwave maps show a nearly uniform 2.7 K glow with tiny temperature differences.', model: 'Those tiny differences are the early density seeds that later grow into galaxies and clusters.', move: 'Jump near the early timeline, then ask why the universe had light before it had stars.', bridge: 'Universe + StatsLab', claim: 'The early universe was hot, dense, and nearly uniform.', evidence: 'The sky contains a faint microwave glow in every direction, with tiny temperature variations.', reasoning: 'A hot early universe should leave cooled leftover light; the small variations become structure seeds.', guardrail: 'The CMB is not light from stars; it is older than the first stars and galaxies.' },
             { id: 'lensing', title: 'Dark Matter By Lensing', icon: '\uD83D\uDD0D', time: 9.2, wwtStop: 'scale', signal: 'Mass bends light, so distant galaxies can appear stretched into arcs around clusters.', model: 'The visible galaxies are not enough mass; the model needs an invisible halo to explain the bending.', move: 'Use the scale ladder to compare what is directly visible with what is inferred from gravity.', bridge: 'Universe + Data Lab', claim: 'Galaxy clusters contain more mass than the visible matter alone.', evidence: 'Background galaxies are bent into arcs around massive foreground clusters.', reasoning: 'Gravity bends light; stronger bending means more mass along the path, even if that mass does not glow.', guardrail: 'Dark matter is inferred from gravity; it is not simply dark-colored gas or dust.' },
             { id: 'candles', title: 'Supernova Distance Ladder', icon: '\uD83D\uDCA5', time: 8.8, wwtStop: 'deep-field', signal: 'Certain supernovae act like distance markers because their brightness pattern is predictable.', model: 'Distance plus redshift lets students connect galaxy recession, acceleration, and dark energy.', move: 'Connect Star Life supernovae to Universe expansion: a stellar death can become a cosmic ruler.', bridge: 'Star Life + Universe', claim: 'Some exploding stars can measure cosmic distances.', evidence: 'Their light curves have recognizable peak brightness and fading patterns.', reasoning: 'Compare expected brightness with observed brightness: dimmer means farther away after calibration.', guardrail: 'Not every supernova is a standard candle; astronomers use specific types and calibration checks.' },
-            { id: 'blackholes', title: 'Black-Hole Evidence', icon: '\u26AB', time: 13.8, wwtStop: 'm87', signal: 'Jets, hot accretion light, orbiting stars, and black-hole shadow images all point to compact massive objects.', model: 'The tool should frame black holes as evidence-rich objects, not just dramatic dark circles.', move: 'Use M87 as the real-data anchor, then compare it with Galaxy Explorer black-hole formation.', bridge: 'Galaxy + Universe', claim: 'Black holes can be detected by their effects on nearby matter and light.', evidence: 'Fast orbits, energetic jets, hot disks, and shadow images reveal a massive compact center.', reasoning: 'If huge mass is packed into a tiny region, surrounding matter moves and glows in extreme ways.', guardrail: 'A black hole is not a cosmic vacuum cleaner; distant objects orbit it like they orbit any other mass.' }
+            { id: 'blackholes', title: 'Black-Hole Evidence', icon: '\u26AB', time: 13.8, wwtStop: 'm87', signal: 'Jets, hot accretion light, orbiting stars, and black-hole shadow images all point to compact massive objects.', model: 'We cannot see a black hole itself, so astronomers build the case from many independent clues around it.', move: 'Use M87 as the real-data anchor, then compare it with Galaxy Explorer black-hole formation.', bridge: 'Galaxy + Universe', claim: 'Black holes can be detected by their effects on nearby matter and light.', evidence: 'Fast orbits, energetic jets, hot disks, and shadow images reveal a massive compact center.', reasoning: 'If huge mass is packed into a tiny region, surrounding matter moves and glows in extreme ways.', guardrail: 'A black hole is not a cosmic vacuum cleaner; distant objects orbit it like they orbit any other mass.' }
           ];
 
           var cosmicEvidenceId = d.cosmicEvidenceThread || 'redshift';
@@ -3812,10 +4936,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var activeEvidenceMastered = evidenceThreadsMastered.indexOf(activeCosmicEvidence.id) !== -1;
 
           var GUIDED_COSMIC_MISSIONS = [
-            { id: 'expansion', title: 'How We Know Space Expands', icon: '\uD83C\uDF08', subtitle: 'Follow stretched light from spectra to deep-field scale.', time: 13.8, evidence: 'redshift', wwtStop: 'deep-field', bridgeTool: 'galaxy', bridgeLabel: 'Galaxy Doppler Shift', setup: { showDistance: true, showImages: true }, checkpoints: ['Align the timeline to the present-day universe.', 'Use the redshift evidence card to build a claim.', 'Open Galaxy and compare Doppler redshift with cosmic redshift.'] },
+            { id: 'expansion', title: 'How We Know Space Expands', icon: '\uD83C\uDF08', subtitle: 'Follow stretched light from spectra to deep-field scale.', time: 13.8, evidence: 'redshift', wwtStop: 'deep-field', bridgeTool: 'galaxy', bridgeLabel: 'Galaxy Doppler Shift', setup: { showRedshift: true, showHubbleInquiry: true, showDistance: true, showImages: true }, checkpoints: ['Align the timeline to the present-day universe.', 'Use the redshift evidence card to build a claim.', 'Open Galaxy and compare Doppler redshift with cosmic redshift.'] },
             { id: 'first-light', title: 'First Light to First Galaxies', icon: '\uD83C\uDF21', subtitle: 'Use the CMB afterglow to explain where structure began.', time: 0.00038, evidence: 'cmb', wwtStop: 'cmb', bridgeTool: 'statsLab', bridgeLabel: 'StatsLab', setup: { showSpectrum: true, showImages: true }, checkpoints: ['Jump to the early universe afterglow.', 'Explain why tiny differences matter.', 'Use a data tool to compare variation, pattern, and noise.'] },
             { id: 'dark-universe', title: 'The Dark Universe', icon: '\uD83D\uDD0D', subtitle: 'Trace lensing arcs from visible light to invisible mass.', time: 9.2, evidence: 'lensing', wwtStop: 'scale', bridgeTool: 'dataLab', bridgeLabel: 'Data Lab', setup: { showDark: true, showLensing: true, showScale: true }, checkpoints: ['Align to the era of growing clusters.', 'Use lensing arcs as evidence for hidden mass.', 'Move into data analysis and ask what mass is inferred.'] },
-            { id: 'stellar-rulers', title: 'Exploding Stars as Rulers', icon: '\uD83D\uDCA5', subtitle: 'Connect stellar death to the distance ladder.', time: 8.8, evidence: 'candles', wwtStop: 'deep-field', bridgeTool: 'universe', bridgeLabel: 'Distance Ladder', setup: { showStarLife: true, showDistance: true, showImages: true }, checkpoints: ['Connect supernova physics to brightness curves.', 'Compare expected and observed brightness.', 'Use the distance ladder section to explain scale.'] },
+            { id: 'stellar-rulers', title: 'Exploding Stars as Rulers', icon: '\uD83D\uDCA5', subtitle: 'Connect stellar death to the distance ladder.', time: 8.8, evidence: 'candles', wwtStop: 'deep-field', bridgeTool: 'universe', bridgeLabel: 'Distance Ladder', setup: { showSupernovae: true, showStarLife: true, showDistance: true, showImages: true }, checkpoints: ['Connect supernova physics to brightness curves.', 'Compare expected and observed brightness.', 'Use the distance ladder section to explain scale.'] },
             { id: 'black-hole-proof', title: 'Black-Hole Evidence Trail', icon: '\u26AB', subtitle: 'Use M87 to connect jets, shadows, orbits, and galaxy cores.', time: 13.8, evidence: 'blackholes', wwtStop: 'm87', bridgeTool: 'galaxy', bridgeLabel: 'Galaxy Black Hole', setup: { showBlackHole: true, showImages: true }, checkpoints: ['Launch the M87 real-data stop.', 'Explain why a black hole is inferred from effects.', 'Compare with Galaxy Explorer black-hole formation.'] }
           ];
 
@@ -3969,7 +5093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { name: 'The particle horizon', fact: 'About 46.5 billion light-years in every direction', desc: 'The greatest distance light could have covered to reach us since the Big Bang. Everything inside it is observable in principle; everything outside is not, yet.', icon: '\uD83C\uDF10' },
             { name: 'Why not 13.8 billion?', fact: '93 billion light-years across, not 27.6', desc: 'Space expanded while the light was in transit. The matter that emitted the oldest light we can see is now far further away than that light actually travelled.', icon: '\uD83D\uDCCF' },
             { name: 'A horizon, not a wall', fact: 'A limit in time, not a boundary in space', desc: 'Nothing is physically special at the edge. An observer out there would see their own sphere of the same size, with us sitting near their horizon instead.', icon: '\uD83D\uDEA7' },
-            { name: 'It grows, then it shrinks', fact: 'More becomes visible, and later less', desc: 'Light from further away keeps arriving, so the horizon grows. But accelerating expansion means distant galaxies will eventually recede faster than their light can close the gap, and they will fade from view for good.', icon: '\u23F3' }
+            { name: 'It keeps growing, but galaxies fade', fact: 'More light arrives, yet far galaxies slip away', desc: 'Light from farther away keeps arriving, so the observable universe keeps growing. But because expansion is speeding up, light that distant galaxies send from now on will never reach us. We keep seeing their old light, ever dimmer and redder, until they fade from view.', icon: '\u23F3' }
           ];
           // Cosmic quiz bank + seeded shuffle live at module scope (pure,
           // test-exposed via window.__universePure).
@@ -4019,7 +5143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               t: 0.001, name: t('stem.universe.the_dark_ages', 'The Dark Ages'), emoji: '\uD83C\uDF11', color: '#08061a', border: '#4338ca', sky: '#0a0a1a',
 
-              temp: '60 K \u2192 ~20 K', scale: 'Expanding but starless',
+              temp: 'Afterglow ~1,600 K \u2192 ~60 K', scale: 'Expanding but starless',
 
               keyEvent: 'No stars yet; gravity gathers gas into clumps',
 
@@ -4053,7 +5177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               desc: 'Gravity pulls gas and dark matter into the first protogalaxies \u2014 small, chaotic, intensely star-forming clumps. Supermassive black holes form at their centers, devouring surrounding gas and shining as quasars \u2014 the most luminous objects in the universe. The cosmic web of dark matter filaments connects galaxy clusters with bridges of gas spanning millions of light-years. Galaxy mergers are violent and frequent.',
 
-              facts: ['The first galaxies were 100x smaller than the Milky Way', 'Quasars can outshine their entire host galaxy by 100x', 'JWST discovered galaxies existing just 300 million years after the Big Bang \u2014 earlier than expected', 'Supermassive black holes grew to billions of solar masses surprisingly quickly', 'The cosmic web structure is like a sponge \u2014 galaxies along filaments, voids between them', 'Reionization completed around this time \u2014 the universe became fully transparent again']
+              facts: ['The first galaxies were 100x smaller than the Milky Way', 'Quasars can outshine their entire host galaxy by 100x', 'JWST discovered galaxies existing just 300 million years after the Big Bang \u2014 earlier than expected', 'Supermassive black holes grew to billions of solar masses surprisingly quickly', 'The cosmic web structure is like a sponge \u2014 galaxies along filaments, voids between them', 'Reionization was under way: starlight was splitting the hydrogen between galaxies back into charged particles, a change largely complete by about 1 billion years']
 
             },
 
@@ -4483,7 +5607,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
           function visitTime(value) {
             pauseTimeline();
-            updMulti({ cosmicTime: value, isPlaying: false });
+            stopSpeech();
+            updMulti({ cosmicTime: value, isPlaying: false, chapterHold: null });
             var cv = document.querySelector('[data-universe-canvas]');
             if (cv) cv.dataset.time = String(value);
           }
@@ -4499,16 +5624,1735 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               target.scrollIntoView({ block: 'start', behavior: 'auto' });
             }, 0);
           }
-          // Equal space per epoch makes the earliest stops reachable. It is not a linear time scale.
-          function timelinePosition(age) {
-            var i = EPOCHS.indexOf(getCurrentEpoch(age));
-            if (i === EPOCHS.length - 1) return i;
-            return i + (age - EPOCHS[i].t) / (EPOCHS[i + 1].t - EPOCHS[i].t);
+          // Equal space per epoch makes the earliest stops reachable; inside an epoch the
+          // story clock runs through its key moments on a log scale. Not a linear time scale.
+          function timelinePosition(age) { return universeStoryPosition(age); }
+          function timeAtPosition(position) { return universeStoryAge(position); }
+
+          // ── Time-lapse playback (the player lives at module scope) ──
+          universePlayer.hooks = {
+            speed: function () { return speed; },
+            pauseAtChapters: function () { return d.pauseAtChapters === true; },
+            commit: function (age, playing) { updMulti(playing ? { cosmicTime: age } : { cosmicTime: age, isPlaying: false }); },
+            // Returns how many seconds to linger so narration can finish.
+            arrive: function (leg, age, startedAt, held) {
+              var announce = typeof announceToSR === 'function' ? announceToSR : function () {}, spoken = '';
+              if (leg.chapter >= 0) {
+                var stop = EPOCHS[leg.chapter];
+                if (stop.t === UNIVERSE_PRESENT_GYR && startedAt < 1) updMulti({ storyWatched: true });
+                if (held) updMulti({ chapterHold: leg.chapter });
+                announce(stop.name + '. ' + stop.keyEvent + '.' + (held ? (UNIVERSE_PREDICTIONS[leg.chapter] ? ' Paused: predict what happens next, or press Play to continue.' : ' Paused at this chapter; press Play to continue.') : ''));
+                spoken = stop.name + '. ' + stop.keyEvent + '.';
+              } else {
+                var moment = universeStoryMoment(leg.at);
+                if (moment) { announce(moment.title + ', ' + universeAgeLabel(age) + '.'); spoken = moment.title + '. ' + moment.text; }
+              }
+              if (d.narrate !== true || !spoken) return 0;
+              speakText(spoken);
+              return Math.min(16, 0.8 + spoken.split(/\s+/).length * 0.42);
+            }
+          };
+          function stopSpeech() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+          function sceneCanvas() { return typeof document !== 'undefined' ? document.querySelector('[data-universe-canvas]') : null; }
+          // The age the canvas shows. While playing it runs a few frames ahead of tool data.
+          function paintedAge() { var cv = sceneCanvas(), value = cv ? parseFloat(cv.dataset.time) : NaN; return isFinite(value) ? value : cosmicTime; }
+          function startPlayback(position) {
+            updMulti({ isPlaying: true, chapterHold: null });
+            if (typeof announceToSR === "function") announceToSR("Cosmic timeline playing.");
+            universePlayerStart(position);
           }
-          function timeAtPosition(position) {
-            var i = Math.min(EPOCHS.length - 1, Math.max(0, Math.floor(position)));
-            if (i === EPOCHS.length - 1) return EPOCHS[i].t;
-            return EPOCHS[i].t + (position - i) * (EPOCHS[i + 1].t - EPOCHS[i].t);
+          function togglePlayback() {
+            if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; stopSpeech(); updMulti({ isPlaying: false, cosmicTime: paintedAge() }); if (typeof announceToSR === "function") announceToSR("Cosmic timeline paused."); return; }
+            startPlayback(cosmicTime >= UNIVERSE_FUTURE_PREVIEW_GYR ? 0 : timelinePosition(cosmicTime));
+          }
+
+          // ── Predict, then watch ──
+          var atChapterStop = !isPlaying && epochIndex >= 1 && epochIndex < EPOCHS.length - 1 && cosmicTime === epoch.t;
+          var predictions = d.predictions && typeof d.predictions === 'object' ? d.predictions : {};
+          function openPrediction() {
+            updMulti({ chapterHold: epochIndex, sceneInspect: null, sceneExplore: false });
+            setTimeout(function () { var heading = document.getElementById('universe-predict-title'); if (heading) heading.focus({ preventScroll: true }); }, 0);
+          }
+          function choosePrediction(option) {
+            if (predictions[epoch.id] !== undefined) return;
+            var next = Object.assign({}, predictions); next[epoch.id] = option;
+            updMulti({ predictions: next });
+          }
+          function continueStory() { stopSpeech(); startPlayback(timelinePosition(cosmicTime)); }
+
+          // ── Time detective: put five events in order ──
+          var orderGame = d.orderGame && Array.isArray(d.orderGame.order) && d.orderGame.order.length === 5 && d.orderGame.order.every(universeOrderEvent) ? d.orderGame : null;
+          function newOrderRound() {
+            var seed = orderGame ? (orderGame.seed + 1) >>> 0 : (Date.now() % 100000);
+            updMulti({ orderGame: { seed: seed, order: universeOrderRound(seed), checked: false } });
+          }
+          function moveOrder(index, step) {
+            if (!orderGame || orderGame.checked) return;
+            var order = orderGame.order.slice(), target = index + step, id = order[index];
+            if (target < 0 || target >= order.length) return;
+            order[index] = order[target]; order[target] = id;
+            updMulti({ orderGame: Object.assign({}, orderGame, { order: order }) });
+            if (typeof announceToSR === 'function') announceToSR(universeOrderEvent(id).title + ' moved to place ' + (target + 1) + ' of 5.');
+            setTimeout(function () { var button = document.querySelector('[data-order-move="' + id + (step < 0 ? '-up' : '-down') + '"]'); if (button && !button.disabled) button.focus(); else { var other = document.querySelector('[data-order-move="' + id + (step < 0 ? '-down' : '-up') + '"]'); if (other) other.focus(); } }, 0);
+          }
+          function orderSorted(order) { return order.slice().sort(function (a, b) { return universeOrderEvent(a).age - universeOrderEvent(b).age; }); }
+          function checkOrder() {
+            if (!orderGame) return;
+            var sorted = orderSorted(orderGame.order), right = orderGame.order.filter(function (id, i) { return sorted[i] === id; }).length;
+            updMulti(Object.assign({ orderGame: Object.assign({}, orderGame, { checked: true }) }, right === 5 ? { orderPerfect: (d.orderPerfect || 0) + 1 } : {}));
+            if (typeof announceToSR === 'function') announceToSR(right + ' of 5 events in the right place.');
+          }
+
+          // ── Click-to-learn in the time-lapse scene ──
+          var conditions = universeConditionLabels(cosmicTime);
+          var storyPosition = timelinePosition(cosmicTime);
+          var storyMoment = universeStoryMoment(storyPosition);
+          var storyMomentNow = !!storyMoment && Math.abs(storyPosition - storyMoment.position) < 0.02;
+          var chapterSpan = epochIndex < EPOCHS.length - 2 ? universeSpanLabel(EPOCHS[epochIndex + 1].t - epoch.t) : '';
+          var sceneKinds = universeSceneKinds(universeSceneClock(cosmicTime), d.showStructureGuides !== false, cosmicTime);
+          var sceneFound = (Array.isArray(d.sceneFound) ? d.sceneFound : []).filter(function (kind) { return !!UNIVERSE_SCENE_KINDS[kind]; });
+          var sceneFoundHere = sceneKinds.filter(function (kind) { return sceneFound.indexOf(kind) !== -1; }).length;
+          var sceneInspect = d.sceneInspect && UNIVERSE_SCENE_KINDS[d.sceneInspect.kind] && sceneKinds.indexOf(d.sceneInspect.kind) !== -1 ? d.sceneInspect : null;
+          var sceneKind = sceneInspect ? UNIVERSE_SCENE_KINDS[sceneInspect.kind] : null;
+          function sceneSpots(kind) { var cv = sceneCanvas(); return ((cv && cv._uniHotspots) || []).filter(function (spot) { return spot.kind === kind; }); }
+          var sceneSameKind = sceneInspect ? sceneSpots(sceneInspect.kind).length : 0;
+          function openSceneInfo(kind, id) {
+            var wasPlaying = !!window._universeTimeLapse, age = paintedAge();
+            pauseTimeline();
+            var found = sceneFound.indexOf(kind) === -1 ? sceneFound.concat([kind]) : sceneFound;
+            updMulti({ sceneInspect: { kind: kind, id: id || kind }, sceneExplore: false, sceneFound: found, isPlaying: false, cosmicTime: age, sceneResume: wasPlaying });
+            setTimeout(function () { var heading = document.getElementById('universe-scene-card-title'); if (heading) heading.focus({ preventScroll: true }); }, 0);
+          }
+          function closeSceneInfo(keepFocus) {
+            updMulti({ sceneInspect: null, sceneResume: false });
+            if (!keepFocus) setTimeout(function () { var cv = sceneCanvas(); if (cv) cv.focus({ preventScroll: true }); }, 0);
+          }
+          function resumeAfterInspect() { updMulti({ sceneInspect: null, sceneResume: false }); startPlayback(timelinePosition(cosmicTime)); }
+          function openSceneList() {
+            upd('sceneExplore', true);
+            setTimeout(function () { var first = document.querySelector('#universe-scene-finds button'); if (first) first.focus({ preventScroll: true }); }, 0);
+          }
+          function pickSceneKind(kind) {
+            var cv = sceneCanvas(), best = null, bestGap = Infinity;
+            sceneSpots(kind).forEach(function (spot) { var gap = cv ? Math.hypot(spot.x - cv.width / 2, spot.y - cv.height / 2) : 0; if (gap < bestGap) { bestGap = gap; best = spot; } });
+            openSceneInfo(kind, best ? best.id : kind);
+          }
+          function showAnotherScene() {
+            var spots = sceneInspect ? sceneSpots(sceneInspect.kind) : [];
+            if (spots.length < 2) return;
+            var index = spots.findIndex(function (spot) { return spot.id === sceneInspect.id; });
+            updMulti({ sceneInspect: { kind: sceneInspect.kind, id: spots[(index + 1) % spots.length].id } });
+          }
+          function sceneHitAt(event) {
+            var cv = event.currentTarget, box = cv.getBoundingClientRect();
+            if (!box.width || !box.height) return null;
+            var scale = cv.width / box.width;
+            return universeSceneHit(cv._uniHotspots, (event.clientX - box.left) * scale, (event.clientY - box.top) * cv.height / box.height, 6 * scale);
+          }
+          function sceneHover(event) {
+            var cv = event.currentTarget, spot = sceneHitAt(event), id = spot ? spot.id : '';
+            if ((cv.dataset.hover || '') !== id) cv.dataset.hover = id;
+            cv.style.cursor = spot ? 'pointer' : '';
+            var tip = cv.parentNode && cv.parentNode.querySelector('.uni-scene-tip');
+            if (!tip) return;
+            if (!spot) { tip.removeAttribute('data-show'); return; }
+            var box = cv.getBoundingClientRect();
+            tip.textContent = UNIVERSE_SCENE_KINDS[spot.kind].name;
+            tip.style.left = Math.min(box.width - 12, Math.max(12, event.clientX - box.left)) + 'px';
+            tip.style.top = Math.max(12, event.clientY - box.top - 16) + 'px';
+            tip.setAttribute('data-show', 'true');
+          }
+          function sceneLeave(event) {
+            var cv = event.currentTarget, tip = cv.parentNode && cv.parentNode.querySelector('.uni-scene-tip');
+            if (cv.dataset.hover) cv.dataset.hover = '';
+            cv.style.cursor = '';
+            if (tip) tip.removeAttribute('data-show');
+          }
+          function sceneClick(event) {
+            var spot = sceneHitAt(event), age = paintedAge();
+            openSceneInfo(spot ? spot.kind : universeSceneField(universeSceneClock(age), age), spot ? spot.id : null);
+          }
+
+          // ── Star lifecycle: a star's mass decides its path and its lifetime ──
+          // Main-sequence lifetime ≈ 10 Gyr × M^-2.5 for Sun-like stars; massive stars level off.
+          function starLifetimeGyr(mass) { return mass < 10 ? 10 * Math.pow(mass, -2.5) : 10 * Math.pow(10, -2.5) * Math.pow(mass / 10, -1); }
+          function formatLifeGyr(life) { return life >= 1000 ? (life / 1000).toPrecision(2) + ' trillion years' : life >= 1 ? life.toPrecision(2) + ' billion years' : (life * 1000).toPrecision(2) + ' million years'; }
+          function renderStarPaths() {
+            var logMass = typeof d.starMassLog === 'number' && isFinite(d.starMassLog) ? Math.max(-1, Math.min(1.6, d.starMassLog)) : 0;
+            var mass = Math.pow(10, logMass), life = starLifetimeGyr(mass);
+            var track = mass < 0.5 ? 'dwarf' : mass < 8 ? 'low' : mass < 25 ? 'high' : 'giant';
+            var nodes = [
+              { stage: 0, x: 45, y: 85, label: 'Gas cloud' }, { stage: 1, x: 140, y: 85, label: 'Protostar' }, { stage: 2, x: 240, y: 85, label: 'Main sequence' },
+              { stage: 3, x: 345, y: 38, label: 'Red giant' }, { stage: 4, x: 450, y: 38, label: 'Planetary nebula' }, { stage: 5, x: 550, y: 38, label: 'White dwarf' },
+              { stage: 3, x: 345, y: 132, label: 'Red supergiant' }, { stage: 6, x: 450, y: 132, label: 'Supernova' }, { stage: 7, x: 550, y: 110, label: 'Neutron star' }, { stage: 8, x: 550, y: 152, label: 'Black hole' }
+            ];
+            var route = { dwarf: [0, 1, 2, 5], low: [0, 1, 2, 3, 4, 5], high: [0, 1, 2, 6, 7, 8], giant: [0, 1, 2, 6, 7, 9] }[track];
+            var edges = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [2, 6], [6, 7], [7, 8], [7, 9]];
+            function onRoute(a, b) { var i = route.indexOf(a); return i !== -1 && route[i + 1] === b; }
+            var story = {
+              dwarf: 'A red dwarf burns so slowly that it outlives the present age of the universe. It never swells into a giant; one day it will fade into a white dwarf.',
+              low: 'It swells into a red giant, puffs off its outer layers as a planetary nebula, and leaves a white dwarf.',
+              high: 'It swells into a red supergiant, then its core collapses in a supernova, leaving a neutron star.',
+              giant: 'Its core collapses into a black hole, sometimes with a supernova and sometimes almost without one.'
+            }[track];
+            var massText = mass >= 10 ? String(Math.round(mass)) : mass.toFixed(mass < 1 ? 2 : 1);
+            function setLog(v) { uniTouch('star-lifecycle'); upd('starMassLog', Math.max(-1, Math.min(1.6, v))); }
+            return h('div', { className: 'uni-star-paths' },
+              h('label', { htmlFor: 'universe-star-mass', className: 'uni-star-mass-label' }, 'Star’s mass: ', h('strong', null, massText + ' × the Sun')),
+              h('input', { id: 'universe-star-mass', type: 'range', min: -1, max: 1.6, step: 0.01, value: logMass, 'aria-valuetext': massText + ' times the mass of the Sun', onChange: function (e) { setLog(parseFloat(e.target.value)); } }),
+              h('div', { className: 'uni-star-presets', role: 'group', 'aria-labelledby': 'universe-star-presets-title' },
+                h('span', { id: 'universe-star-presets-title' }, 'Try:'),
+                [[-0.7, 'Red dwarf (0.2)'], [0, 'The Sun (1)'], [Math.log10(15), 'Massive (15)'], [Math.log10(40), 'Very massive (40)']].map(function (p) { return h('button', { key: p[1], type: 'button', 'aria-pressed': Math.abs(logMass - p[0]) < 0.005, onClick: function () { setLog(p[0]); } }, p[1]); })),
+              h('svg', { viewBox: '0 0 600 180', className: 'uni-star-diagram', role: 'img', 'aria-label': 'Life path for a star of ' + massText + ' solar masses: ' + route.map(function (n) { return nodes[n].label; }).join(', then ') + '.' },
+                h('rect', { x: 0, y: 0, width: 600, height: 180, rx: 14, fill: '#0f172a' }),
+                edges.map(function (e) { var a = nodes[e[0]], b = nodes[e[1]], lit = onRoute(e[0], e[1]); return h('line', { key: e.join('-'), x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: lit ? '#fbbf24' : '#334155', strokeWidth: lit ? 3.5 : 1.5 }); }),
+                track === 'dwarf' && h('path', { d: 'M240 85 Q 395 0 550 38', fill: 'none', stroke: '#fbbf24', strokeWidth: 3.5, strokeDasharray: '7 6' }),
+                nodes.map(function (n, i) { var lit = route.indexOf(i) !== -1, stage = STAR_STAGES[n.stage];
+                  return h('g', { key: i },
+                    h('circle', { cx: n.x, cy: n.y, r: 11, fill: stage.color, stroke: lit ? '#ffffff' : '#64748b', strokeWidth: 2, opacity: lit ? 1 : 0.4 }),
+                    h('text', { x: n.x, y: n.y + 25, textAnchor: 'middle', fontSize: 11, fontWeight: lit ? 700 : 500, fill: lit ? '#f1f5f9' : '#94a3b8' }, n.label)); })),
+              h('p', { className: 'uni-star-story', role: 'status' }, h('strong', null, 'About ' + formatLifeGyr(life) + ' on the main sequence. '), story),
+              h('p', { className: 'uni-star-note' }, 'Heavier stars burn hotter and far faster, so they live shorter lives. The masses where the paths split are approximate: about 8 and roughly 20 to 25 times the Sun. Pick a stage below to read about it.'));
+          }
+
+          // ── Cosmic speeds: how long each racer would take to get somewhere ──
+          var RACE_DESTINATIONS = [
+            { id: 'moon', name: 'the Moon', meters: 3.844e8, note: '384,400 km' },
+            { id: 'mars', name: 'Mars at its closest', meters: 5.46e10, note: 'about 55 million km' },
+            { id: 'proxima', name: 'Proxima Centauri', meters: 4.011e16, note: '4.24 light-years' },
+            { id: 'center', name: 'the center of the Milky Way', meters: 2.46e20, note: 'about 26,000 light-years' },
+            { id: 'andromeda', name: 'the Andromeda Galaxy', meters: 2.4e22, note: '2.5 million light-years' }
+          ];
+          function renderSpeedRace() {
+            var dest = RACE_DESTINATIONS.filter(function (x) { return x.id === d.raceDest; })[0] || RACE_DESTINATIONS[2];
+            var racers = COSMIC_SPEEDS.filter(function (s) { return s.mps; }), top = Math.log10(299792458);
+            return h('div', { className: 'uni-race' },
+              h('div', { className: 'uni-race-head' },
+                h('label', { htmlFor: 'universe-race-dest' }, 'How long would it take to reach'),
+                h('select', { id: 'universe-race-dest', value: dest.id, onChange: function (e) { uniTouch('speeds'); upd('raceDest', e.target.value); } },
+                  RACE_DESTINATIONS.map(function (x) { return h('option', { key: x.id, value: x.id }, x.name + ' (' + x.note + ')'); }))),
+              h('ul', { className: 'uni-race-list' }, racers.map(function (s) {
+                var share = Math.max(0, Math.log10(s.mps)) / top;
+                return h('li', { key: s.name },
+                  h('span', { className: 'uni-race-name' }, h('span', { 'aria-hidden': 'true' }, s.icon + ' '), s.name),
+                  h('span', { className: 'uni-race-track', 'aria-hidden': 'true' }, h('i', { style: { width: Math.max(2, share * 100) + '%', background: s.color } })),
+                  h('strong', { className: 'uni-race-time' }, universeSpanLabel(dest.meters / s.mps * UNIVERSE_SECOND)));
+              })),
+              h('p', { className: 'uni-race-note' }, 'Bars show speed on a log scale: each step along the bar is ten times faster. Even light needs ' + universeSpanLabel(dest.meters / 299792458 * UNIVERSE_SECOND) + ' to reach ' + dest.name + '.'));
+          }
+
+          // ── Exoplanets: finding a planet from the dip in its star's light ──
+          var TRANSIT_STARS = [{ id: 'sun', name: 'A Sun-like star', radius: 109.1, color: '#fde68a' }, { id: 'dwarf', name: 'A small red dwarf (like TRAPPIST-1)', radius: 13.1, color: '#fb923c' }];
+          var TRANSIT_PLANETS = [{ id: 'earth', name: 'Earth-size', radius: 1 }, { id: 'super', name: 'Super-Earth (1.5 × Earth)', radius: 1.5 }, { id: 'neptune', name: 'Neptune-size', radius: 3.88 }, { id: 'jupiter', name: 'Jupiter-size', radius: 11.2 }];
+          // Fraction of a star's disk (radius R) hidden by a planet (radius r) whose centre is `gap` away.
+          function transitCovered(R, r, gap) {
+            if (gap >= R + r) return 0;
+            if (gap <= R - r) return (r * r) / (R * R);
+            var a = r * r * Math.acos((gap * gap + r * r - R * R) / (2 * gap * r)), b = R * R * Math.acos((gap * gap + R * R - r * r) / (2 * gap * R));
+            var c = 0.5 * Math.sqrt(Math.max(0, (-gap + r + R) * (gap + r - R) * (gap - r + R) * (gap + r + R)));
+            return (a + b - c) / (Math.PI * R * R);
+          }
+          function renderTransit() {
+            var star = TRANSIT_STARS.filter(function (s) { return s.id === d.transitStar; })[0] || TRANSIT_STARS[0];
+            var planet = TRANSIT_PLANETS.filter(function (p) { return p.id === d.transitPlanet; })[0] || TRANSIT_PLANETS[0];
+            var phase = typeof d.transitPhase === 'number' ? Math.max(0, Math.min(100, d.transitPhase)) : 50;
+            var R = 46, ratio = planet.radius / star.radius, depth = ratio * ratio, drawn = Math.max(1.6, R * ratio), cx = 160, cy = 62;
+            function xAt(p) { return 40 + p / 100 * 240; }
+            function brightness(p) { return 1 - transitCovered(R, R * ratio, Math.abs(xAt(p) - cx)); }
+            function yAt(b) { return 134 + Math.min(1, (1 - b) / 0.012) * 54; }
+            var curve = '';
+            for (var p = 0; p <= 100; p++) curve += xAt(p) + ',' + yAt(brightness(p)).toFixed(2) + ' ';
+            var now = brightness(phase), pct = function (v) { return (v * 100).toFixed(depth < 0.001 ? 4 : 2) + '%'; };
+            function touch(key, value) { uniTouch('exoplanets'); upd(key, value); }
+            return h('div', { className: 'uni-transit' },
+              h('p', { className: 'uni-transit-intro' }, h('strong', null, 'Transit method: '), 'when a planet crosses in front of its star, the star dims a tiny bit. Most known exoplanets were found this way.'),
+              h('div', { className: 'uni-transit-controls' },
+                h('label', null, 'Star', h('select', { value: star.id, onChange: function (e) { touch('transitStar', e.target.value); } }, TRANSIT_STARS.map(function (s) { return h('option', { key: s.id, value: s.id }, s.name); }))),
+                h('label', null, 'Planet', h('select', { value: planet.id, onChange: function (e) { touch('transitPlanet', e.target.value); } }, TRANSIT_PLANETS.map(function (pl) { return h('option', { key: pl.id, value: pl.id }, pl.name); })))),
+              h('svg', { viewBox: '0 0 320 200', className: 'uni-transit-view', role: 'img', 'aria-label': planet.name + ' planet passing ' + star.name.toLowerCase() + '. Brightness now ' + pct(now) + '; deepest dip ' + (depth * 100).toFixed(depth < 0.001 ? 4 : 2) + ' percent.' },
+                h('rect', { x: 0, y: 0, width: 320, height: 200, rx: 12, fill: '#0b1220' }),
+                h('circle', { cx: cx, cy: cy, r: R, fill: star.color }),
+                h('circle', { cx: xAt(phase), cy: cy, r: drawn, fill: '#0b1220', stroke: '#94a3b8', strokeWidth: drawn < 4 ? 0.8 : 0 }),
+                h('line', { x1: 40, y1: 134, x2: 280, y2: 134, stroke: '#334155', strokeDasharray: '3 4' }),
+                h('polyline', { points: curve.trim(), fill: 'none', stroke: '#67e8f9', strokeWidth: 2 }),
+                h('circle', { cx: xAt(phase), cy: yAt(now), r: 4, fill: '#fde047' }),
+                h('text', { x: 286, y: 138, fill: '#cbd5e1', fontSize: 10 }, '100%'),
+                h('text', { x: 286, y: 192, fill: '#cbd5e1', fontSize: 10 }, '98.8%'),
+                h('text', { x: 40, y: 124, fill: '#cbd5e1', fontSize: 10 }, 'Brightness')),
+              h('label', { htmlFor: 'universe-transit-phase', className: 'uni-transit-phase' }, 'Move the planet along its orbit'),
+              h('input', { id: 'universe-transit-phase', type: 'range', min: 0, max: 100, step: 1, value: phase, 'aria-valuetext': 'Brightness ' + pct(now), onChange: function (e) { touch('transitPhase', parseFloat(e.target.value)); } }),
+              h('p', { className: 'uni-transit-readout', role: 'status' }, 'Brightness now: ' + pct(now) + ' · deepest dip: ' + (depth * 100).toFixed(depth < 0.001 ? 4 : 2) + '%' + (depth * 100 < 0.05 ? '. Too small to see on this graph; telescopes such as Kepler and TESS measure brightness this precisely.' : '.') + (drawn > R * ratio ? ' The planet is drawn bigger so you can find it.' : '')),
+              h('details', { className: 'uni-transit-think' },
+                h('summary', null, 'Why do astronomers often hunt for Earth-size planets around small red dwarfs?'),
+                h('p', null, 'The dip depends on how much of the star the planet covers: (planet size ÷ star size)². An Earth-size planet hides about 0.58% of a red dwarf like TRAPPIST-1, but only 0.0084% of the Sun. Try both above.')));
+          }
+
+          // ── Big Questions: five fact lists become tasks (sort, predict, compare) ──
+          function drakeEstimate() {
+            // A slider at 0 means 0: read each factor the same way its label does.
+            return [['drakeR', 'R'], ['drakeFp', 'fp'], ['drakeNe', 'ne'], ['drakeFl', 'fl'], ['drakeFi', 'fi'], ['drakeFc', 'fc'], ['drakeL', 'L']].reduce(function (product, pair) { return product * (d[pair[0]] !== undefined ? d[pair[0]] : DRAKE_DEFAULTS[pair[1]]); }, 1);
+          }
+          function goToSection(id) { var s = UNI_SECTIONS.filter(function (x) { return x.id === id; })[0]; if (s) uniGoTo(s); }
+          function bigListen(name, text, touch) {
+            return h('button', { type: 'button', className: 'uni-bigq-listen', onClick: function (e) { uniTouch(touch); e.stopPropagation(); speakText(text); } },
+              h('span', { 'aria-hidden': 'true' }, '🔊 '), 'Listen', h('span', { className: 'uni-sr' }, ' to ' + name));
+          }
+          // One "which kind is it?" choice under a card. The pick locks; the learner then sees
+          // how scientists would class it and why, and every kind that fits is marked.
+          function renderSortChoices(cfg, index, nameId, extra) {
+            var picks = d[cfg.stateKey] || {}, pick = picks[index], item = cfg.items[index], accept = item[cfg.acceptKey];
+            var picked = pick !== undefined && pick !== null, fits = picked && accept.indexOf(pick) !== -1, promptId = nameId + '-ask';
+            function labelOf(id) { return cfg.bins.filter(function (b) { return b.id === id; })[0].label; }
+            function verdict(ok) { return ok ? (accept.length > 1 ? 'That fits. ' : 'Yes. ') : 'Most scientists would say “' + labelOf(accept[0]) + '”. '; }
+            return h('div', { className: 'uni-sort' },
+              h('p', { id: promptId, className: 'uni-sort-prompt' }, cfg.prompt),
+              h('div', { className: 'uni-sort-options', role: 'group', 'aria-labelledby': nameId + ' ' + promptId },
+                cfg.bins.map(function (b) {
+                  var on = pick === b.id;
+                  return h('button', { key: b.id, type: 'button', 'aria-pressed': on, disabled: picked && !on,
+                    'data-result': picked ? (accept.indexOf(b.id) !== -1 ? 'fits' : on ? 'miss' : undefined) : undefined,
+                    onClick: function () {
+                      if (picked) return;
+                      var next = {};
+                      Object.keys(picks).forEach(function (k) { next[k] = picks[k]; });
+                      next[index] = b.id;
+                      uniTouch(cfg.touch);
+                      upd(cfg.stateKey, next);
+                      if (typeof announceToSR === 'function') announceToSR(verdict(accept.indexOf(b.id) !== -1) + item[cfg.whyKey]);
+                    } }, b.label);
+                })),
+              picked && h('div', { className: 'uni-sort-feedback', 'data-fits': fits ? 'true' : 'false' },
+                h('p', null, h('strong', null, verdict(fits)), item[cfg.whyKey]),
+                extra && extra(item)));
+          }
+          function renderSortScore(cfg, doneText) {
+            var score = universeSortScore(cfg.items, d[cfg.stateKey] || {}, cfg.acceptKey);
+            return h('div', { className: 'uni-sort-score' },
+              h('p', { role: 'status' }, 'Placed ' + score.placed + ' of ' + score.total + (score.placed ? ': ' + score.matched + (score.matched === 1 ? ' matches' : ' match') + ' what scientists would say.' : '.'), score.placed === score.total ? ' ' + doneText : ''),
+              score.placed > 0 && h('button', { type: 'button', onClick: function () { upd(cfg.stateKey, {}); } }, 'Start again'));
+          }
+          function bigCard(key, icon, name, nameId, tail, body) {
+            return h('li', { key: key, className: 'uni-bigq-card' },
+              h('div', { className: 'uni-bigq-head' }, h('span', { className: 'uni-bigq-icon', 'aria-hidden': 'true' }, icon), h('strong', { id: nameId }, name), tail),
+              body);
+          }
+          function renderFermiTask() {
+            var cfg = { stateKey: 'fermiSort', items: FERMI_SOLUTIONS, bins: UNIVERSE_FERMI_KINDS, acceptKey: 'kinds', whyKey: 'why', touch: 'fermi', prompt: 'What does it say about the silence?' };
+            var N = Math.round(drakeEstimate());
+            var meaning = N >= 10 ? 'If that is right, the galaxy should be busy, so the silence needs explaining.'
+              : N >= 1 ? 'Only a few, spread across a galaxy 100,000 light-years wide, so the silence is less surprising.'
+              : 'Fewer than one, so the silence is what you would expect and the paradox mostly disappears.';
+            return h('div', { className: 'uni-bigq' },
+              h('p', { className: 'uni-bigq-lead' }, 'If the universe is so vast and old, and the conditions for life aren’t rare, why haven’t we found evidence of alien civilizations? Physicist Enrico Fermi asked this in 1950 over lunch.'),
+              h('div', { className: 'uni-bigq-link' },
+                h('p', null, h('strong', null, 'Your Drake Equation estimate: N ≈ ' + N.toLocaleString() + '. '), meaning),
+                h('button', { type: 'button', onClick: function () { goToSection('drake'); } }, 'Change it in the Drake Equation')),
+              h('p', { className: 'uni-bigq-task' }, h('strong', null, 'Your task: '), 'sort each idea by what it says about the silence. Then find out how scientists could test it.'),
+              h('ol', { className: 'uni-bigq-list' }, FERMI_SOLUTIONS.map(function (fs, i) {
+                var nameId = 'uni-fermi-' + i;
+                return bigCard(i, fs.icon, fs.name, nameId, null, [
+                  h('p', { key: 'd', className: 'uni-bigq-desc' }, fs.desc),
+                  h(React.Fragment, { key: 's' }, renderSortChoices(cfg, i, nameId, function (it) { return h('p', null, h('strong', null, h('span', { 'aria-hidden': 'true' }, '🔬 '), 'How could we test it? '), it.test); })),
+                  h(React.Fragment, { key: 'l' }, bigListen(fs.name, fs.name + '. ' + fs.desc, 'fermi'))]);
+              })),
+              renderSortScore(cfg, 'Notice which ideas are easy to test. An idea that predicts no evidence at all is very hard to check, however exciting it is.'));
+          }
+          function renderMysteryTask() {
+            var cfg = { stateKey: 'mysterySort', items: COSMIC_MYSTERIES, bins: UNIVERSE_MYSTERY_TESTS, acceptKey: 'test', whyKey: 'how', touch: 'mysteries', prompt: 'How close are we to testing an answer?' };
+            return h('div', { className: 'uni-bigq' },
+              h('p', { className: 'uni-bigq-lead' }, 'These are some of the biggest unanswered questions in cosmology. Solving any one could win a Nobel Prize.'),
+              h('div', { className: 'uni-unknown' },
+                h('div', { className: 'uni-unknown-bar', 'aria-hidden': 'true' }, h('i', { className: 'is-energy', style: { width: '68%' } }), h('i', { className: 'is-matter', style: { width: '27%' } }), h('i', { className: 'is-atoms', style: { width: '5%' } })),
+                h('p', null, h('strong', null, 'About 95% of the universe is something we cannot yet explain: '), 'dark energy (about 68%) and dark matter (about 27%). Everything made of atoms, from stars to you, is only about 5%.')),
+              h('p', { className: 'uni-bigq-task' }, h('strong', null, 'Your task: '), 'for each mystery, decide how close we are to testing an answer. Then see what scientists are doing about it.'),
+              h('ol', { className: 'uni-bigq-list' }, COSMIC_MYSTERIES.map(function (cm, i) {
+                var nameId = 'uni-mystery-' + i;
+                return bigCard(i, cm.icon, cm.name, nameId, h('span', { className: 'uni-bigq-tag' }, cm.urgency), [
+                  h('p', { key: 'd', className: 'uni-bigq-desc' }, cm.desc),
+                  h(React.Fragment, { key: 's' }, renderSortChoices(cfg, i, nameId, null)),
+                  h(React.Fragment, { key: 'l' }, bigListen(cm.name, cm.name + '. ' + cm.desc, 'mysteries'))]);
+              })),
+              renderSortScore(cfg, 'Science moves fastest on questions we can test. The “maybe never” ones may stay open for a very long time.'));
+          }
+          function renderMultiverseTask() {
+            var cfg = { stateKey: 'multiverseSort', items: MULTIVERSE_THEORIES, bins: UNIVERSE_MULTIVERSE_TESTS, acceptKey: 'test', whyKey: 'how', touch: 'multiverse', prompt: 'Could we ever check it?' };
+            return h('div', { className: 'uni-bigq' },
+              h('p', { className: 'uni-bigq-lead' }, 'Is our universe all there is? Several serious scientific frameworks suggest it may be one of many.'),
+              h('p', { className: 'uni-bigq-task' }, h('strong', null, 'Your task: '), 'for each idea, decide whether we could ever check it. The evidence appears once you decide.'),
+              h('ol', { className: 'uni-bigq-list' }, MULTIVERSE_THEORIES.map(function (mt, i) {
+                var nameId = 'uni-multiverse-' + i;
+                return bigCard(i, mt.icon, mt.name, nameId, h('span', { className: 'uni-bigq-source' }, mt.source), [
+                  h('p', { key: 'd', className: 'uni-bigq-desc' }, mt.desc),
+                  h(React.Fragment, { key: 's' }, renderSortChoices(cfg, i, nameId, function (it) { return h('p', null, h('strong', null, 'Evidence so far: '), it.evidence); })),
+                  h(React.Fragment, { key: 'l' }, bigListen(mt.name, mt.name + '. ' + mt.desc, 'multiverse'))]);
+              })),
+              renderSortScore(cfg, 'A scientific idea has to risk being wrong: it should predict something we could see. That is why observers pay most attention to the ideas that could be tested.'));
+          }
+          // A one-question "predict first" gate; the reveal waits for an answer or a skip.
+          function renderMiniPredict(cfg) {
+            var item = cfg.item, guess = d[cfg.stateKey], answered = typeof guess === 'number', skipped = guess === 'skip', askId = 'uni-ask-' + cfg.stateKey;
+            return h('div', { className: 'uni-mini-predict' },
+              h('p', { id: askId }, h('strong', null, cfg.lead || 'Predict first: '), item.q),
+              !skipped && h('div', { className: 'uni-sort-options', role: 'group', 'aria-labelledby': askId },
+                item.options.map(function (option, i) {
+                  var on = guess === i;
+                  return h('button', { key: i, type: 'button', 'aria-pressed': on, disabled: answered && !on,
+                    'data-result': answered ? (i === item.answer ? 'fits' : on ? 'miss' : undefined) : undefined,
+                    onClick: function () {
+                      if (answered) return;
+                      uniTouch(cfg.touch);
+                      upd(cfg.stateKey, i);
+                      if (typeof announceToSR === 'function') announceToSR(cfg.feedback(i === item.answer));
+                    } }, option);
+                })),
+              answered && h('p', { className: 'uni-sort-feedback', 'data-fits': guess === item.answer ? 'true' : 'false' }, cfg.feedback(guess === item.answer)),
+              !cfg.noSkip && !answered && !skipped && h('button', { type: 'button', className: 'uni-mini-skip', onClick: function () { upd(cfg.stateKey, 'skip'); } }, 'Skip and show me'));
+          }
+          // Stellar nurseries: true size against size in our sky (angle ≈ size ÷ distance).
+          function renderNurserySky() {
+            var guess = d.nurseryGuess, revealed = guess !== undefined && guess !== null, view = d.nurseryView === 'true' ? 'true' : 'sky';
+            var rows = STELLAR_NURSERIES.map(function (sn) { return { sn: sn, deg: universeAngularSizeDeg(sn.sizeLy, sn.distLy) }; });
+            var maxDeg = Math.max.apply(null, rows.map(function (r) { return r.deg; })), maxSize = Math.max.apply(null, rows.map(function (r) { return r.sn.sizeLy; }));
+            function row(prefix) { return rows.filter(function (r) { return r.sn.name.indexOf(prefix) === 0; })[0]; }
+            var orion = row('Orion'), tarantula = row('Tarantula');
+            function degLabel(v) { return (v < 1 ? v.toFixed(2) : v.toFixed(1)) + '°'; }
+            function setView(v) { uniTouch('nurseries'); upd('nurseryView', v); }
+            return h('div', { className: 'uni-nursery-sky' },
+              renderMiniPredict({ stateKey: 'nurseryGuess', item: UNIVERSE_NURSERY_PREDICTION, touch: 'nurseries', feedback: function (right) {
+                return (right ? 'Yes: Orion. ' : 'It is Orion. ') + 'Orion looks about ' + Math.round(orion.deg / tarantula.deg) + ' times wider, even though the Tarantula is about ' + Math.round(tarantula.sn.sizeLy / orion.sn.sizeLy / 10) * 10 + ' times bigger, because the Tarantula is about ' + Math.round(tarantula.sn.distLy / orion.sn.distLy / 10) * 10 + ' times farther away.';
+              } }),
+              revealed && h('div', { className: 'uni-nursery-chart' },
+                h('div', { className: 'uni-nursery-view', role: 'group', 'aria-labelledby': 'uni-nursery-view-label' },
+                  h('span', { id: 'uni-nursery-view-label' }, 'Compare by'),
+                  h('button', { type: 'button', 'aria-pressed': view === 'true', onClick: function () { setView('true'); } }, 'True size'),
+                  h('button', { type: 'button', 'aria-pressed': view === 'sky', onClick: function () { setView('sky'); } }, 'Size in our sky')),
+                h('ul', { className: 'uni-nursery-bars' }, rows.map(function (r) {
+                  var share = view === 'true' ? r.sn.sizeLy / maxSize : r.deg / maxDeg;
+                  return h('li', { key: r.sn.name },
+                    h('span', { className: 'uni-nursery-name' }, r.sn.name),
+                    h('span', { className: 'uni-nursery-track', 'aria-hidden': 'true' },
+                      h('i', { style: { width: Math.max(1.5, share * 100) + '%', background: r.sn.color } }),
+                      view === 'sky' && h('b', { style: { left: (UNIVERSE_MOON_DEG / maxDeg * 100) + '%' } })),
+                    h('span', { className: 'uni-nursery-value' }, view === 'true' ? r.sn.size : degLabel(r.deg) + ', ' + universeMoonCompare(r.deg)));
+                })),
+                h('p', { className: 'uni-nursery-note' }, view === 'sky'
+                  ? 'The thin line marks the full Moon, about 0.5° wide. Each angle is worked out as size ÷ distance, turned into degrees. Most of these are too faint to see by eye, but long-exposure photos show their full size.'
+                  : 'Bars are to scale: the Horsehead is a sliver next to the Tarantula. Now switch to “Size in our sky”.')));
+          }
+          // Catastrophes: one energy ladder, with the Sun as the yardstick.
+          var ENERGY_KIND_LABELS = { impact: 'Impact', star: 'Star or explosion', yardstick: 'Yardstick' };
+          function renderEnergyLadder() {
+            var guess = d.energyGuess, revealed = guess !== undefined && guess !== null;
+            function rung(id) { return UNIVERSE_ENERGY_LADDER.filter(function (x) { return x.id === id; })[0]; }
+            var pick = rung(d.energyPick) || null, magnetar = rung('magnetar'), asteroid = rung('chicxulub');
+            function at(j) { return Math.max(0, Math.min(100, (Math.log10(j) - 15) / 33 * 100)); }
+            return h('div', { className: 'uni-energy' },
+              renderMiniPredict({ stateKey: 'energyGuess', item: UNIVERSE_ENERGY_PREDICTION, touch: 'catastrophes', feedback: function (right) {
+                return (right ? 'Yes: the magnetar flare, by far. ' : 'It is the magnetar flare, by far. ') + 'Even against the highest estimate for the dinosaur asteroid, it gave out about ' + universeBigNumber(magnetar.joules / asteroid.upTo) + ' times more energy, in about a fifth of a second. The asteroid did more harm to Earth only because it hit us.';
+              } }),
+              revealed && h('div', null,
+                h('p', { className: 'uni-energy-intro' }, 'The ladder runs from 10¹⁵ to 10⁴⁸ joules, and each step along it is ten times more energy. Pick a row to compare it with the Sun.'),
+                h('p', { className: 'uni-energy-legend', 'aria-hidden': 'true' }, Object.keys(ENERGY_KIND_LABELS).map(function (k) { return h('span', { key: k, 'data-kind': k }, ENERGY_KIND_LABELS[k]); })),
+                h('ul', { className: 'uni-energy-list' }, UNIVERSE_ENERGY_LADDER.map(function (x) {
+                  var on = !!pick && pick.id === x.id;
+                  return h('li', { key: x.id },
+                    h('button', { type: 'button', 'aria-pressed': on, 'data-kind': x.kind, onClick: function () { if (!on) uniTouch('catastrophes'); upd('energyPick', on ? null : x.id); } },
+                      h('span', { className: 'uni-energy-name' }, x.name, h('span', { className: 'uni-sr' }, ' (' + ENERGY_KIND_LABELS[x.kind] + ')')),
+                      h('span', { className: 'uni-energy-track', 'aria-hidden': 'true' },
+                        x.upTo && h('em', { style: { left: at(x.joules) + '%', width: (at(x.upTo) - at(x.joules)) + '%' } }),
+                        h('i', { style: { left: at(x.joules) + '%' } })),
+                      h('span', { className: 'uni-energy-value' }, universeEnergyLabel(x.joules) + ' J')));
+                })),
+                pick && h('div', { className: 'uni-energy-detail', role: 'status' },
+                  h('p', null, h('strong', null, pick.name + ': '), (pick.upTo ? 'about ' : '') + universeEnergyLabel(pick.joules) + ' joules' + (pick.upTo ? ', up to ' + universeEnergyLabel(pick.upTo) + ' joules' : '') + '.'),
+                  h('p', null, pick.id.indexOf('sun-') === 0
+                    ? 'This is a yardstick: the Sun gives out ' + universeEnergyLabel(UNIVERSE_SUN_WATTS) + ' joules every second.'
+                    : 'The Sun gives out this much energy in ' + universeSunTime(pick.joules) + '.'),
+                  pick.note && h('p', null, pick.note)),
+                h('p', { className: 'uni-energy-note' }, h('strong', null, 'Not on the ladder: '), 'when two galaxies collide, their motion carries far more energy than anything here, but it plays out over billions of years and their stars almost never hit each other.')));
+          }
+
+          // ── Round 4 labs: measure, model and predict (models live in module scope) ──
+          function labNumber(value, lo, hi, fallback) { return typeof value === 'number' && isFinite(value) ? Math.max(lo, Math.min(hi, value)) : fallback; }
+          function labChoices(labelText, labelId, items, isOn, onPick) {
+            return h('div', { className: 'uni-lab-choices', role: 'group', 'aria-labelledby': labelId },
+              h('span', { id: labelId }, labelText),
+              items.map(function (it) { return h('button', { key: it.id, type: 'button', 'aria-pressed': !!isOn(it), onClick: function () { onPick(it); } }, it.name); }));
+          }
+          // Dark matter: fit a rotation curve. Visible matter alone predicts speeds that fall
+          // off; the measurements stay high until an unseen halo is added.
+          function renderRotationLab() {
+            var guess = d.rotationGuess, revealed = guess !== undefined && guess !== null;
+            var vHalo = labNumber(d.rotationHalo, 0, 300, 0), fit = universeRotationFit(vHalo), fits = fit <= 8;
+            var last = UNIVERSE_ROTATION_POINTS[UNIVERSE_ROTATION_POINTS.length - 1];
+            function x(r) { return 50 + r / 30 * 450; }
+            function y(v) { return 220 - v / 300 * 200; }
+            function curve(part) { var pts = []; for (var r = 0.5; r <= 30.001; r += 0.5) pts.push(x(r).toFixed(1) + ',' + y(universeRotation(r, vHalo)[part]).toFixed(1)); return pts.join(' '); }
+            var status = fits
+              ? 'Your model fits the measurements. Inside about ' + universeBigNumber(universeRough(last.r * UNIVERSE_LY_PER_PC * 1000)) + ' light-years it needs about ' + universeRound(universeDarkRatio(last.r, vHalo)) + ' times as much unseen mass as visible mass, and real halos reach much farther.'
+              : vHalo === 0 ? 'Visible matter alone predicts the dashed curve: speeds should fall far from the center, like the outer planets. The measurements stay high.'
+              : 'Still off by about ' + Math.round(fit) + ' km/s on average. Keep adjusting the halo.';
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: weigh a galaxy by how fast it spins'),
+              renderMiniPredict({ stateKey: 'rotationGuess', item: UNIVERSE_ROTATION_PREDICTION, touch: 'dark-universe', feedback: function (right) {
+                return (right ? 'Yes: about the same speed. ' : 'They orbit at about the same speed. ') + 'Planets far from the Sun move slower, because nearly all the Sun’s mass is in the middle. Stars far out in a galaxy do not slow down, so there must be far more mass out there than we can see.';
+              } }),
+              revealed && h('div', null,
+                h('svg', { viewBox: '0 0 520 260', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-rotation-title' },
+                  h('title', { id: 'uni-rotation-title' }, 'Orbit speed against distance from the galaxy center. ' + status),
+                  h('rect', { x: 0, y: 0, width: 520, height: 260, rx: 12, fill: '#0b1220' }),
+                  [0, 100, 200, 300].map(function (v) { return h('g', { key: 'v' + v }, h('line', { x1: 50, x2: 500, y1: y(v), y2: y(v), stroke: '#1e293b' }), h('text', { x: 44, y: y(v) + 4, textAnchor: 'end', fill: '#cbd5e1', fontSize: 11 }, String(v))); }),
+                  [0, 25, 50, 75].map(function (kly) { return h('text', { key: 'x' + kly, x: x(kly / UNIVERSE_LY_PER_PC), y: 238, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, kly === 0 ? '0' : kly + ',000'); }),
+                  h('text', { x: 50, y: 13, fill: '#e2e8f0', fontSize: 11 }, 'Orbit speed (km/s)'),
+                  h('text', { x: 275, y: 254, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11 }, 'Distance from the center (light-years)'),
+                  h('polyline', { points: curve('visible'), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '6 5' }),
+                  vHalo > 0 && h('polyline', { points: curve('total'), fill: 'none', stroke: fits ? '#4ade80' : '#c4b5fd', strokeWidth: 3 }),
+                  UNIVERSE_ROTATION_POINTS.map(function (p) {
+                    return h('g', { key: 'p' + p.r }, h('line', { x1: x(p.r), x2: x(p.r), y1: y(p.v - 8), y2: y(p.v + 8), stroke: '#e2e8f0' }), h('circle', { cx: x(p.r), cy: y(p.v), r: 4, fill: '#f8fafc' }));
+                  })),
+                h('label', { htmlFor: 'universe-rotation-halo', className: 'uni-lab-label' }, 'Add a dark matter halo: ', h('strong', null, vHalo === 0 ? 'none' : vHalo + ' km/s')),
+                h('input', { id: 'universe-rotation-halo', type: 'range', min: 0, max: 300, step: 5, value: vHalo, 'aria-valuetext': vHalo === 0 ? 'none' : vHalo + ' km/s', onChange: function (e) { uniTouch('dark-universe'); upd('rotationHalo', parseFloat(e.target.value)); } }),
+                h('p', { className: 'uni-lab-key' }, 'Dots: measured speeds (simulated, shaped like a real spiral galaxy’s). Dashed: what visible matter alone predicts. Solid: your model. The halo number is the speed its gravity alone would give stars far out.'),
+                h('p', { className: 'uni-lab-readout', role: 'status' }, status)));
+          }
+          // Distance ladder: two rungs to try by hand, parallax and a standard candle.
+          function renderDistanceLab() {
+            var star = UNIVERSE_PARALLAX_STARS.filter(function (it) { return it.id === d.parallaxStar; })[0] || UNIVERSE_PARALLAX_STARS[0];
+            var july = d.parallaxSeason === 'july', p = universeParallax(star.mas), arcsec = star.mas / 1000;
+            // On screen the shift is exaggerated and only keeps the order: nearer = bigger jump.
+            var shift = Math.max(8, Math.min(60, Math.log10(star.mas) * 22)), seen = 385 + (july ? -shift / 2 : shift / 2);
+            var candleOpen = d.candleGuess !== undefined && d.candleGuess !== null, far = labNumber(d.candleDist, 1, 10, 2);
+            var dimmer = far === 1 ? 'just as bright' : '1/' + universeRound(far * far) + ' as bright';
+            function angle(v) { return v >= 0.1 ? v.toFixed(3) : v.toFixed(4); }
+            function pick(key, value) { uniTouch('distance-ladder'); upd(key, value); }
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Rung 1: parallax'),
+              h('p', { className: 'uni-lab-intro' }, 'Hold up a finger and blink one eye, then the other: the finger jumps against the background. Nearby stars do the same as Earth circles the Sun. The smaller the jump, the farther the star.'),
+              labChoices('Star', 'uni-parallax-star-label', UNIVERSE_PARALLAX_STARS, function (it) { return it.id === star.id; }, function (it) { pick('parallaxStar', it.id); }),
+              labChoices('Look in', 'uni-parallax-season-label', [{ id: 'january', name: 'January' }, { id: 'july', name: 'July' }], function (it) { return (it.id === 'july') === july; }, function (it) { pick('parallaxSeason', it.id); }),
+              h('svg', { viewBox: '0 0 520 190', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-parallax-title' },
+                h('title', { id: 'uni-parallax-title' }, star.name + ' seen from Earth in ' + (july ? 'July' : 'January') + ': it sits ' + (july ? 'left' : 'right') + ' of where it was six months earlier, against far more distant stars.'),
+                h('rect', { x: 0, y: 0, width: 520, height: 190, rx: 12, fill: '#0b1220' }),
+                h('circle', { cx: 120, cy: 150, r: 40, fill: 'none', stroke: '#475569', strokeDasharray: '4 4' }),
+                h('circle', { cx: 120, cy: 150, r: 9, fill: '#fde047' }),
+                h('circle', { cx: july ? 80 : 160, cy: 150, r: 5, fill: 'none', stroke: '#38bdf8', strokeDasharray: '2 2' }),
+                h('circle', { cx: july ? 160 : 80, cy: 150, r: 6, fill: '#38bdf8' }),
+                h('line', { x1: july ? 160 : 80, y1: 150, x2: 120, y2: 40, stroke: '#94a3b8' }),
+                h('circle', { cx: 120, cy: 40, r: 5, fill: '#f8fafc' }),
+                h('text', { x: 120, y: 26, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11 }, star.name),
+                h('text', { x: 120, y: 182, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Earth’s orbit, seen from above'),
+                h('rect', { x: 260, y: 32, width: 250, height: 128, rx: 8, fill: '#020617', stroke: '#334155' }),
+                [[280, 60], [300, 140], [340, 48], [420, 150], [470, 70], [490, 130], [440, 44], [360, 122]].map(function (bg, i) { return h('circle', { key: i, cx: bg[0], cy: bg[1], r: 1.6, fill: '#94a3b8' }); }),
+                h('circle', { cx: 385 + (july ? shift / 2 : -shift / 2), cy: 95, r: 5, fill: 'none', stroke: '#94a3b8', strokeDasharray: '2 2' }),
+                h('circle', { cx: seen, cy: 95, r: 5, fill: '#f8fafc' }),
+                h('text', { x: 385, y: 24, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11 }, 'Through the telescope (shift exaggerated)'),
+                h('text', { x: 385, y: 178, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Dashed: where it was six months earlier')),
+              h('p', { className: 'uni-lab-readout', role: 'status' },
+                h('strong', null, 'Parallax of ' + star.name + ': ' + angle(arcsec) + ' arcseconds. '),
+                'Distance = 1 ÷ ' + angle(arcsec) + ' = ' + universeRound(p.pc) + ' parsecs, or ' + universeRound(p.ly) + ' light-years. That angle is as small as a coin seen from ' + universeRound(p.coinKm) + ' km away.'),
+              h('p', { className: 'uni-lab-key' }, 'The parallax angle is half the jump between January and July. The Gaia spacecraft measures angles thousands of times smaller than Polaris’s, enough to map stars thousands of light-years away.'),
+              h('h4', { className: 'uni-lab-title uni-lab-gap' }, 'Rung 2: standard candles'),
+              renderMiniPredict({ stateKey: 'candleGuess', item: UNIVERSE_CANDLE_PREDICTION, touch: 'distance-ladder', feedback: function (right) {
+                return (right ? 'Yes: twice as far. ' : 'It is twice as far. ') + 'Light spreads out over a growing sphere, so brightness falls with the square of distance: twice as far means 2 × 2 = 4 times dimmer. Type Ia supernovae all peak at about the same brightness (about 5 billion Suns), so how dim one looks tells us how far away it is.';
+              } }),
+              candleOpen && h('div', null,
+                h('label', { htmlFor: 'universe-candle-distance', className: 'uni-lab-label' }, 'Move the second supernova away: ', h('strong', null, universeRound(far) + ' times as far')),
+                h('input', { id: 'universe-candle-distance', type: 'range', min: 1, max: 10, step: 0.5, value: far, 'aria-valuetext': universeRound(far) + ' times as far, ' + dimmer, onChange: function (e) { pick('candleDist', parseFloat(e.target.value)); } }),
+                h('svg', { viewBox: '0 0 520 120', className: 'uni-lab-svg', 'aria-hidden': 'true' },
+                  h('rect', { x: 0, y: 0, width: 520, height: 120, rx: 12, fill: '#0b1220' }),
+                  h('circle', { cx: 60, cy: 52, r: 22, fill: '#fde68a' }),
+                  h('circle', { cx: 60 + far * 42, cy: 52, r: Math.max(1.5, 22 / far), fill: '#fde68a' }),
+                  h('text', { x: 60, y: 104, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11 }, 'Nearby'),
+                  h('text', { x: Math.min(480, 60 + far * 42), y: 104, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 11 }, universeRound(far) + '× as far')),
+                h('p', { className: 'uni-lab-readout', role: 'status' }, universeRound(far) + ' times as far, so ' + dimmer + '. The dot’s area shows its brightness. Astronomers run this backwards: measure how dim it looks, then work out how far.')));
+          }
+          // Telescopes: a bigger mirror gathers more light and sees finer detail, unless air blurs it.
+          function renderTelescopeLab() {
+            var revealed = d.telescopeGuess !== undefined && d.telescopeGuess !== null;
+            var lo = Math.log10(UNIVERSE_EYE_M), hi = Math.log10(39);
+            var logD = labNumber(d.telescopeLogD, lo, hi, Math.log10(2.4)), D = Math.pow(10, logD), ground = d.telescopeGround === true, t = universeTelescope(D, ground);
+            var preset = UNIVERSE_TELESCOPE_PRESETS.filter(function (it) { return Math.abs(Math.log10(it.m) - logD) < 0.004; })[0];
+            var blob = Math.max(2.5, Math.min(70, t.arcsec / UNIVERSE_DOUBLE_STAR_ARCSEC * 16));
+            function arc(v) { return v < 0.1 ? v.toFixed(3) : v < 10 ? v.toFixed(2) : v.toFixed(0); }
+            function setSize(v, onGround) { uniTouch('telescopes'); var patch = { telescopeLogD: v }; if (onGround !== undefined) patch.telescopeGround = onGround; updMulti(patch); }
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: what a bigger mirror buys'),
+              renderMiniPredict({ stateKey: 'telescopeGuess', item: UNIVERSE_TELESCOPE_PREDICTION, touch: 'telescopes', feedback: function (right) {
+                return (right ? 'Yes: about 340 times wider. ' : 'It is about 340 times wider. ') + 'A mirror catches light with its whole area, and area grows with the square of the width: 340 × 340 is about 120,000.';
+              } }),
+              revealed && h('div', null,
+                h('label', { htmlFor: 'universe-telescope-size', className: 'uni-lab-label' }, 'Mirror width: ', h('strong', null, universeLengthLabel(D))),
+                h('input', { id: 'universe-telescope-size', type: 'range', min: lo, max: hi, step: 0.01, value: logD, 'aria-valuetext': universeLengthLabel(D), onChange: function (e) { setSize(parseFloat(e.target.value)); } }),
+                labChoices('Try', 'uni-telescope-preset-label', UNIVERSE_TELESCOPE_PRESETS, function (it) { return !!preset && preset.id === it.id; }, function (it) { setSize(Math.log10(it.m), !it.space); }),
+                labChoices('Where is it?', 'uni-telescope-where-label', [{ id: 'space', name: 'In space' }, { id: 'ground', name: 'On the ground' }], function (it) { return (it.id === 'ground') === ground; }, function (it) { uniTouch('telescopes'); upd('telescopeGround', it.id === 'ground'); }),
+                h('div', { className: 'uni-telescope-view' },
+                  h('svg', { viewBox: '0 0 240 120', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-telescope-title' },
+                    h('title', { id: 'uni-telescope-title' }, t.splits ? 'The double star shows as two separate points.' : 'The double star is blurred into one blob.'),
+                    h('defs', null, h('radialGradient', { id: 'uni-telescope-glow' }, h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 1 }), h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))),
+                    h('rect', { x: 0, y: 0, width: 240, height: 120, rx: 10, fill: '#020617' }),
+                    h('circle', { cx: 100, cy: 60, r: blob, fill: 'url(#uni-telescope-glow)' }),
+                    h('circle', { cx: 140, cy: 60, r: blob, fill: 'url(#uni-telescope-glow)' })),
+                  h('p', null, h('strong', null, t.splits ? 'Split! ' : 'Blurred into one. '), 'A double star 0.3 arcseconds apart, as this telescope would show it.')),
+                h('div', { className: 'uni-telescope-view' },
+                  renderMirrorScale(D, preset),
+                  h('p', null, h('strong', null, 'To scale. '), D < 0.05 ? 'A mirror this small is a speck beside you, yet it already gathers ' + (t.gather < 1.5 ? 'as much light as your eye.' : universeBigNumber(universeRough(t.gather)) + ' times more light than your eye.') : D > 5 ? 'One piece of glass this wide would sag under its own weight, so big mirrors are built from many hexagonal segments that fit together.' : 'Mirror width against a 1.7-metre person.')),
+                h('div', { className: 'uni-lab-facts', role: 'status' },
+                  h('p', null, t.gather < 1.5 ? 'Collects the same light as your eye.' : 'Collects about ' + universeBigNumber(universeRough(t.gather)) + ' times as much light as your eye, so it can see far fainter things.'),
+                  h('p', null, 'Finest detail: ' + arc(t.arcsec) + ' arcseconds, enough to make out a coin ' + universeLengthLabel(t.coinKm * 1000) + ' away.'),
+                  t.blurredByAir && h('p', null, 'On the ground, moving air blurs detail to about 0.8 arcseconds unless adaptive optics correct it. That is a big reason Hubble and Webb work from space.'),
+                  D < 0.01 && h('p', null, 'Your eye’s lens blurs more than this best case, so in practice you see detail of about 60 arcseconds.'),
+                  !!preset && preset.id === 'jwst' && h('p', null, 'Webb observes infrared light, whose waves are longer, so its real detail is close to Hubble’s even with a bigger mirror.'))));
+          }
+          // Black holes: how small would something have to be squeezed?
+          function renderHorizonLab() {
+            var revealed = d.horizonGuess !== undefined && d.horizonGuess !== null;
+            var logM = labNumber(d.horizonLogM, -6, 10, 0), M = Math.pow(10, logM), bh = universeHorizon(M);
+            var preset = UNIVERSE_HORIZON_PRESETS.filter(function (it) { return Math.abs(Math.log10(it.mass) - logM) < 0.004; })[0];
+            function massLabel(m) {
+              if (m < 1e-3) { var earths = universeRound(m / 3.003e-6); return earths + (earths === '1' ? ' Earth mass' : ' Earth masses'); }
+              var suns = m < 1e6 ? universeRound(m) : universeBigNumber(m);
+              return suns + (suns === '1' ? ' Sun' : ' Suns');
+            }
+            function setMass(v) { uniTouch('black-holes'); upd('horizonLogM', v); }
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: squeeze it into a black hole'),
+              renderMiniPredict({ stateKey: 'horizonGuess', item: UNIVERSE_HORIZON_PREDICTION, touch: 'black-holes', feedback: function (right) {
+                return (right ? 'Yes: ' : 'Surprisingly, ') + 'Earth keeps the same orbit. Gravity at Earth’s distance depends only on the Sun’s mass, and that has not changed. Earth would get dark and cold, though. The real Sun is far too light ever to become a black hole.';
+              } }),
+              revealed && h('div', null,
+                h('p', { className: 'uni-lab-intro' }, 'Anything becomes a black hole if it is squeezed inside its event horizon. How small is that?'),
+                labChoices('Try', 'uni-horizon-preset-label', UNIVERSE_HORIZON_PRESETS, function (it) { return !!preset && preset.id === it.id; }, function (it) { setMass(Math.log10(it.mass)); }),
+                h('label', { htmlFor: 'universe-horizon-mass', className: 'uni-lab-label' }, 'Mass: ', h('strong', null, massLabel(M))),
+                h('input', { id: 'universe-horizon-mass', type: 'range', min: -6, max: 10, step: 0.05, value: logM, 'aria-valuetext': massLabel(M), onChange: function (e) { setMass(parseFloat(e.target.value)); } }),
+                h('div', { className: 'uni-lab-facts', role: 'status' },
+                  h('p', null, h('strong', null, 'Event horizon: '), universeLengthLabel(bh.metres) + ' in radius, ' + universeLengthLabel(bh.metres * 2) + ' across' + (preset ? ', ' + preset.compare + '.' : '.')),
+                  h('p', null, h('strong', null, 'Average density: '), universeDensityLabel(bh.density) + ' (its mass ÷ the space inside the horizon).'),
+                  h('p', null, 'Double the mass and the horizon doubles in size, so the space inside grows 8 times. That is why the biggest black holes are the least dense.'))));
+          }
+          // Element origins: sort the elements in a body by the cosmic event that made them.
+          var ELEMENT_SOURCE_COLORS = { bigbang: '#0ea5e9', lowmass: '#f59e0b', massive: '#7c3aed', whitedwarf: '#14b8a6', merger: '#e11d48' };
+          function renderElementSort() {
+            var cfg = { stateKey: 'elementSort', items: UNIVERSE_BODY_ELEMENTS, bins: UNIVERSE_ELEMENT_SOURCES, acceptKey: 'from', whyKey: 'why', touch: 'elements', prompt: 'Where was it made?' };
+            var score = universeSortScore(cfg.items, d.elementSort || {}, 'from'), origin = universeBodyByOrigin();
+            var shown = UNIVERSE_ELEMENT_SOURCES.filter(function (src) { return (origin[src.id] || 0) >= 0.5; }).sort(function (a, b) { return origin[b.id] - origin[a.id]; });
+            var counted = shown.reduce(function (sum, src) { return sum + origin[src.id]; }, 0);
+            function share(v) { return v >= 1 ? universeRound(v) + '%' : String(v) + '%'; }
+            return h('div', { className: 'uni-bigq uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: where were your atoms made?'),
+              h('p', { className: 'uni-bigq-task' }, h('strong', null, 'Your task: '), 'every atom in your body was made somewhere. Decide where each element was made. A few were made in two kinds of place.'),
+              h('ol', { className: 'uni-bigq-list' }, UNIVERSE_BODY_ELEMENTS.map(function (el, i) {
+                var nameId = 'uni-element-' + i;
+                return bigCard(i, h('span', { className: 'uni-element-symbol' }, el.symbol), el.name, nameId, h('span', { className: 'uni-bigq-tag' }, el.body === null ? 'not in your body' : share(el.body) + ' of your mass'), [
+                  h(React.Fragment, { key: 's' }, renderSortChoices(cfg, i, nameId, null))]);
+              })),
+              renderSortScore(cfg, 'Your body, by where its atoms were made, is shown below.'),
+              score.placed === score.total && h('div', { className: 'uni-element-origin' },
+                h('p', null, h('strong', null, 'You, by where your atoms were made')),
+                bodyOriginFigure(shown, origin),
+                h('ul', { className: 'uni-race-list' }, shown.map(function (src) {
+                  return h('li', { key: src.id },
+                    h('span', { className: 'uni-race-name' }, src.label),
+                    h('span', { className: 'uni-race-track', 'aria-hidden': 'true' }, h('i', { style: { width: origin[src.id] + '%', background: ELEMENT_SOURCE_COLORS[src.id] } })),
+                    h('strong', { className: 'uni-race-time' }, 'about ' + universeRound(origin[src.id]) + '%'));
+                })),
+                h('p', { className: 'uni-race-note' }, 'By mass. Carbon is split evenly between its two sources here. The last ' + universeRound(100 - counted) + '% is many other elements in small amounts, including the iron and iodine above.')));
+          }
+
+          // ── Round 5 labs: guess the date, estimate in powers of ten, classify galaxies, hunt a supernova ──
+          // A one-line ruler with the learner's guess and the real value, labels pushed apart.
+          function guessStrip(ticks, guessAt, realAt) {
+            function x(at) { return 30 + Math.max(0, Math.min(1, at)) * 294; }
+            var gx = x(guessAt), rx = x(realAt), guessLeft = gx <= rx;
+            return h('svg', { viewBox: '0 0 360 56', className: 'uni-guess-strip', 'aria-hidden': 'true' },
+              h('line', { x1: 30, x2: 324, y1: 30, y2: 30, stroke: '#94a3b8', strokeWidth: 2 }),
+              ticks.map(function (tk, i) {
+                return h('g', { key: i }, h('line', { x1: x(tk.at), x2: x(tk.at), y1: 26, y2: 34, stroke: '#94a3b8' }),
+                  h('text', { x: x(tk.at + (tk.span || 0) / 2), y: 50, textAnchor: 'middle', fontSize: 11, fill: 'currentColor' }, tk.label));
+              }),
+              h('line', { x1: gx, x2: gx, y1: 10, y2: 37, stroke: '#d97706', strokeWidth: 3 }),
+              h('text', { x: guessLeft ? gx - 4 : gx + 4, y: 14, textAnchor: guessLeft ? 'end' : 'start', fontSize: 12, fontWeight: 700, fill: 'currentColor' }, 'You'),
+              h('line', { x1: rx, x2: rx, y1: 10, y2: 37, stroke: '#16a34a', strokeWidth: 3 }),
+              h('text', { x: guessLeft ? rx + 4 : rx - 4, y: 14, textAnchor: guessLeft ? 'start' : 'end', fontSize: 12, fontWeight: 700, fill: 'currentColor' }, 'Real'));
+          }
+          // The reference list under a guessing game would give its answers away, so it waits
+          // until every guess is in, or until the learner asks for it.
+          function labRevealed(which) {
+            var list = which === 'calendar' ? UNIVERSE_CALENDAR_EVENTS : UNIVERSE_ESTIMATES, guesses = d[which === 'calendar' ? 'calendarGuesses' : 'estimateGuesses'] || {};
+            return d[which + 'ShowAll'] === true || list.every(function (it) { return typeof guesses[it.id] === 'number'; });
+          }
+          function spoilerButton(which, text) {
+            return !labRevealed(which) && h('button', { type: 'button', className: 'uni-guess-again', onClick: function () { upd(which + 'ShowAll', true); } }, text);
+          }
+          function renderCalendarGuess() {
+            var guesses = d.calendarGuesses || {}, draft = Math.round(labNumber(d.calendarDraft, 0, 364, 182));
+            var monthTicks = [], cum = 0;
+            UNIVERSE_MONTHS.forEach(function (m, i) { monthTicks.push({ at: cum / 365, span: UNIVERSE_MONTH_DAYS[i] / 365, label: m.charAt(0) }); cum += UNIVERSE_MONTH_DAYS[i]; });
+            var done = UNIVERSE_CALENDAR_EVENTS.filter(function (ev) { return typeof guesses[ev.id] === 'number'; });
+            var current = UNIVERSE_CALENDAR_EVENTS.filter(function (ev) { return typeof guesses[ev.id] !== 'number'; })[0];
+            function realLabel(ev) { return universeCalendarLabel(UNIVERSE_NOW_GYR - ev.yearsAgo / 1e9); }
+            function missText(miss) { return miss === 0 ? 'Right day!' : miss + (miss === 1 ? ' day off.' : ' days off.'); }
+            function lockIn() {
+              var next = {};
+              Object.keys(guesses).forEach(function (k) { next[k] = guesses[k]; });
+              next[current.id] = draft;
+              uniTouch('calendar');
+              upd('calendarGuesses', next);
+              if (typeof announceToSR === 'function') announceToSR(current.event + ': really ' + realLabel(current) + '. ' + missText(universeCalendarMiss(current.yearsAgo, draft)));
+            }
+            var average = done.length ? done.reduce(function (sum, ev) { return sum + universeCalendarMiss(ev.yearsAgo, guesses[ev.id]); }, 0) / done.length : 0;
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: guess the date'),
+              h('p', { className: 'uni-lab-intro' }, 'Squeeze all 13.8 billion years into one calendar year: the Big Bang at midnight on January 1, today at midnight on December 31. Each day is about 38 million years. When did these happen?'),
+              done.length > 0 && h('ol', { className: 'uni-guess-list' }, done.map(function (ev) {
+                return h('li', { key: ev.id },
+                  h('p', null, h('strong', null, ev.event + ': '), 'you said ' + universeDayName(guesses[ev.id]) + '; really ' + realLabel(ev) + '. ' + missText(universeCalendarMiss(ev.yearsAgo, guesses[ev.id]))),
+                  guessStrip(monthTicks, (guesses[ev.id] + 0.5) / 365, universeCalendarDay(ev.yearsAgo) / 365));
+              })),
+              current ? h('div', { className: 'uni-guess-now' },
+                h('label', { htmlFor: 'universe-calendar-guess', className: 'uni-lab-label' }, h('strong', null, current.event), ' happened on…'),
+                h('input', { id: 'universe-calendar-guess', type: 'range', min: 0, max: 364, step: 1, value: draft, 'aria-valuetext': universeDayName(draft), onChange: function (e) { upd('calendarDraft', parseFloat(e.target.value)); } }),
+                h('div', { className: 'uni-guess-row' },
+                  h('span', null, 'Your guess: ', h('strong', null, universeDayName(draft))),
+                  h('button', { type: 'button', onClick: lockIn }, 'Lock in my guess')),
+                h('p', { className: 'uni-lab-key' }, 'Event ' + (done.length + 1) + ' of ' + UNIVERSE_CALENDAR_EVENTS.length + '. The arrow keys move one day at a time.'),
+                spoilerButton('calendar', 'Show the full calendar now (it gives the answers away)'))
+              : h('div', { className: 'uni-lab-readout' },
+                  h('p', { role: 'status' }, h('strong', null, 'On average you were ' + universeRound(average) + ' days off. '), 'Life’s whole story crowds into the last third of the year, and all of human history fits into the final seconds before midnight.'),
+                  h('button', { type: 'button', className: 'uni-guess-again', onClick: function () { upd('calendarGuesses', {}); } }, 'Start again')));
+          }
+          function renderEstimateGame() {
+            var guesses = d.estimateGuesses || {}, draft = Math.round(labNumber(d.estimateDraft, 0, 30, 6));
+            var ticks = [0, 5, 10, 15, 20, 25, 30].map(function (n) { return { at: n / 30, label: universeEnergyLabel(Math.pow(10, n)) }; });
+            var done = UNIVERSE_ESTIMATES.filter(function (it) { return typeof guesses[it.id] === 'number'; });
+            var current = UNIVERSE_ESTIMATES.filter(function (it) { return typeof guesses[it.id] !== 'number'; })[0];
+            function words(n) { return n <= 5 ? Math.pow(10, n).toLocaleString('en-US') : universeBigNumber(Math.pow(10, n)); }
+            function real(it) { return it.value < 1e18 ? universeBigNumber(it.value) + ' (' + universeEnergyLabel(it.value) + ')' : universeEnergyLabel(it.value); }
+            function verdict(it, power) {
+              var miss = universeEstimateMiss(it.value, power);
+              return miss < 0.5 ? 'Spot on: within a factor of 3.' : 'About ' + universeBigNumber(universeRough(Math.pow(10, miss))) + ' times too ' + (power > Math.log10(it.value) ? 'big.' : 'small.');
+            }
+            function lockIn() {
+              var next = {};
+              Object.keys(guesses).forEach(function (k) { next[k] = guesses[k]; });
+              next[current.id] = draft;
+              uniTouch('numbers');
+              upd('estimateGuesses', next);
+              if (typeof announceToSR === 'function') announceToSR('Really about ' + real(current) + '. ' + verdict(current, draft));
+            }
+            var average = done.length ? done.reduce(function (sum, it) { return sum + universeEstimateMiss(it.value, guesses[it.id]); }, 0) / done.length : 0;
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: estimate in powers of ten'),
+              h('p', { className: 'uni-lab-intro' }, 'Scientists often start with an order-of-magnitude estimate: which power of ten is it? Each step along the ruler is ten times bigger than the last.'),
+              done.length > 0 && h('ol', { className: 'uni-guess-list' }, done.map(function (it) {
+                return h('li', { key: it.id },
+                  h('p', null, h('strong', null, it.q + ' '), 'You said ' + universeEnergyLabel(Math.pow(10, guesses[it.id])) + '; really about ' + real(it) + '. ' + verdict(it, guesses[it.id]) + ' ' + it.note),
+                  guessStrip(ticks, guesses[it.id] / 30, Math.log10(it.value) / 30));
+              })),
+              current ? h('div', { className: 'uni-guess-now' },
+                h('label', { htmlFor: 'universe-estimate-guess', className: 'uni-lab-label' }, h('strong', null, current.q)),
+                h('input', { id: 'universe-estimate-guess', type: 'range', min: 0, max: 30, step: 1, value: draft, 'aria-valuetext': words(draft) + ', 10 to the power ' + draft, onChange: function (e) { upd('estimateDraft', parseFloat(e.target.value)); } }),
+                h('div', { className: 'uni-guess-row' },
+                  h('span', null, 'Your guess: ', h('strong', null, universeEnergyLabel(Math.pow(10, draft))), ' (' + words(draft) + ')'),
+                  h('button', { type: 'button', onClick: lockIn }, 'Lock in my guess')),
+                h('p', { className: 'uni-lab-key' }, 'Question ' + (done.length + 1) + ' of ' + UNIVERSE_ESTIMATES.length + '.'),
+                spoilerButton('numbers', 'Show the list of big numbers now (it gives some answers away)'))
+              : h('div', { className: 'uni-lab-readout' },
+                  h('p', { role: 'status' }, h('strong', null, 'On average you were off by ' + universeRound(average) + ' powers of ten. '), 'Within one power of ten is a good estimate for numbers this large.'),
+                  h('button', { type: 'button', className: 'uni-guess-again', onClick: function () { upd('estimateGuesses', {}); } }, 'Start again')));
+          }
+          // Galaxy drawings from glowing gradients. `bare` drops the frame and field stars.
+          function galaxyDrawing(kind, uid, bare) {
+            function glow(id, inner, outer) { return h('radialGradient', { id: id }, h('stop', { offset: '0%', stopColor: inner, stopOpacity: 1 }), h('stop', { offset: '55%', stopColor: outer, stopOpacity: 0.55 }), h('stop', { offset: '100%', stopColor: outer, stopOpacity: 0 })); }
+            function fill(id) { return 'url(#' + uid + '-' + id + ')'; }
+            function arm(a, b, turns, phase) {
+              var pts = [];
+              for (var t = 0; t <= turns * Math.PI; t += 0.12) { var r = a * Math.exp(b * t); pts.push((80 + r * Math.cos(t + phase)).toFixed(1) + ',' + (60 + r * Math.sin(t + phase) * 0.72).toFixed(1)); }
+              return pts.join(' ');
+            }
+            function arms(a, b, turns, knots) {
+              return [0, Math.PI].map(function (phase, k) {
+                return h('g', { key: 'arm' + k },
+                  h('polyline', { points: arm(a, b, turns, phase), fill: 'none', stroke: '#60a5fa', strokeWidth: 9, strokeOpacity: 0.35, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('polyline', { points: arm(a, b, turns, phase), fill: 'none', stroke: '#bfdbfe', strokeWidth: 2.5, strokeOpacity: 0.85, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  knots.map(function (t, j) { var r = a * Math.exp(b * t); return h('circle', { key: j, cx: 80 + r * Math.cos(t + phase), cy: 60 + r * Math.sin(t + phase) * 0.72, r: 1.8, fill: '#f472b6' }); }));
+              });
+            }
+            var shapes = {
+              spiral: [h('ellipse', { key: 'haze', cx: 80, cy: 60, rx: 48, ry: 34, fill: fill('blue'), opacity: 0.35 }), arms(6, 0.24, 2.6, [3.5, 5, 6.5]), h('ellipse', { key: 'bulge', cx: 80, cy: 60, rx: 14, ry: 11, fill: fill('core') })],
+              barred: [h('ellipse', { key: 'haze', cx: 80, cy: 60, rx: 50, ry: 34, fill: fill('blue'), opacity: 0.3 }), arms(24, 0.16, 1.7, [2, 3.6]), h('ellipse', { key: 'bar', cx: 80, cy: 60, rx: 25, ry: 6, fill: fill('core') }), h('ellipse', { key: 'bulge', cx: 80, cy: 60, rx: 9, ry: 8, fill: fill('core') })],
+              round: [h('ellipse', { key: 'halo', cx: 80, cy: 60, rx: 46, ry: 42, fill: fill('disk') }), h('ellipse', { key: 'core', cx: 80, cy: 60, rx: 16, ry: 15, fill: fill('core') })],
+              oval: [h('g', { key: 'oval', transform: 'rotate(-25 80 60)' }, h('ellipse', { cx: 80, cy: 60, rx: 54, ry: 22, fill: fill('disk') }), h('ellipse', { cx: 80, cy: 60, rx: 18, ry: 9, fill: fill('core') }))],
+              lenticular: [h('g', { key: 'lens', transform: 'rotate(-12 80 60)' }, h('ellipse', { cx: 80, cy: 60, rx: 68, ry: 9, fill: fill('disk') }), h('ellipse', { cx: 80, cy: 60, rx: 58, ry: 3.5, fill: '#fde68a', opacity: 0.4 }), h('ellipse', { cx: 80, cy: 60, rx: 18, ry: 14, fill: fill('core') }))],
+              irregular: [[58, 48, 20, 13, -20], [94, 66, 24, 15, 15], [106, 42, 12, 9, 0], [68, 78, 14, 9, 30]].map(function (b, i) { return h('ellipse', { key: 'blob' + i, cx: b[0], cy: b[1], rx: b[2], ry: b[3], fill: fill('blue'), opacity: 0.85, transform: 'rotate(' + b[4] + ' ' + b[0] + ' ' + b[1] + ')' }); })
+                .concat([[52, 44], [64, 52], [90, 62], [102, 70], [108, 40], [72, 80]].map(function (p, i) { return h('circle', { key: 'knot' + i, cx: p[0], cy: p[1], r: 1.8, fill: '#f472b6' }); }))
+            };
+            return [h('defs', { key: 'defs' }, glow(uid + '-core', '#fffbeb', '#f59e0b'), glow(uid + '-disk', '#fde68a', '#d97706'), glow(uid + '-blue', '#e0f2fe', '#60a5fa'))]
+              .concat(bare ? [] : [h('rect', { key: 'bg', x: 0, y: 0, width: 160, height: 120, rx: 10, fill: '#050816' })].concat([[12, 14], [148, 20], [20, 104], [140, 108], [96, 10], [70, 112]].map(function (p, i) { return h('circle', { key: 'star' + i, cx: p[0], cy: p[1], r: 0.9, fill: '#cbd5e1' }); })))
+              .concat(shapes[kind] || []);
+          }
+          function renderGalaxySort() {
+            var cfg = { stateKey: 'galaxySort', items: UNIVERSE_GALAXY_SPECIMENS, bins: UNIVERSE_GALAXY_KINDS, acceptKey: 'kinds', whyKey: 'why', touch: 'galaxy-types', prompt: 'What type is it?' };
+            return h('div', { className: 'uni-bigq uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: classify galaxies by shape'),
+              h('p', { className: 'uni-bigq-task' }, h('strong', null, 'Your task: '), 'Edwin Hubble sorted galaxies by shape in 1926. Sort these six the same way. Colour is a clue too: blue light comes from young stars, yellow and red from old ones.'),
+              h('ol', { className: 'uni-galaxy-grid' }, UNIVERSE_GALAXY_SPECIMENS.map(function (g, i) {
+                var nameId = 'uni-galaxy-' + i, lookId = nameId + '-look';
+                return h('li', { key: g.id, className: 'uni-bigq-card' },
+                  h('strong', { id: nameId, className: 'uni-galaxy-name' }, 'Galaxy ' + (i + 1)),
+                  h('svg', { viewBox: '0 0 160 120', className: 'uni-galaxy-svg', role: 'img', 'aria-labelledby': lookId }, h('title', { id: lookId }, g.look), galaxyDrawing(g.draw, 'uni-gal-' + g.id)),
+                  renderSortChoices(cfg, i, nameId, function (it) { return h('p', null, h('strong', null, 'Real example: '), 'it looks like ' + it.like + '.'); }));
+              })),
+              renderSortScore(cfg, 'Shape records history: big smooth ellipticals are often built by galaxies merging, while spirals have kept a calm, gas-rich disk.'));
+          }
+          // Supernova hunt: blink two images, find the new star, then read its spectrum.
+          function supernovaSpectrum() {
+            function x(nm) { return 24 + (nm - 400) / 350 * 222; }
+            function flux(nm) {
+              var f = 0.92 - 0.3 * (nm - 400) / 350;
+              [[615, 0.42, 10], [545, 0.14, 7], [565, 0.14, 7]].forEach(function (dip) { f -= dip[1] * Math.exp(-Math.pow((nm - dip[0]) / dip[2], 2) / 2); });
+              return f;
+            }
+            var pts = [];
+            for (var nm = 400; nm <= 750; nm += 2) pts.push(x(nm).toFixed(1) + ',' + (92 - flux(nm) * 70).toFixed(1));
+            return h('svg', { viewBox: '0 0 260 120', className: 'uni-lab-svg uni-sn-spectrum', role: 'img', 'aria-labelledby': 'uni-sn-spectrum-title' },
+              h('title', { id: 'uni-sn-spectrum-title' }, 'Spectrum of the new star: a deep silicon dip near 615 nanometres, and no hydrogen dip at 656 nanometres.'),
+              h('rect', { x: 0, y: 0, width: 260, height: 120, rx: 10, fill: '#0b1220' }),
+              h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fde68a', strokeWidth: 2 }),
+              h('line', { x1: x(656), x2: x(656), y1: 14, y2: 96, stroke: '#f472b6', strokeDasharray: '3 3' }),
+              h('text', { x: x(656) - 3, y: 20, textAnchor: 'end', fill: '#fbcfe8', fontSize: 10 }, 'Hydrogen: no dip'),
+              h('text', { x: x(615), y: 84, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 10 }, 'Silicon'),
+              h('text', { x: 24, y: 112, fill: '#cbd5e1', fontSize: 10 }, '400 nm'),
+              h('text', { x: 135, y: 112, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Wavelength'),
+              h('text', { x: 246, y: 112, textAnchor: 'end', fill: '#cbd5e1', fontSize: 10 }, '750 nm'));
+          }
+          function renderSupernovaHunt() {
+            var hunt = UNIVERSE_SN_HUNT, after = d.snView === 'after', answered = typeof d.snSpot === 'number', letters = ['A', 'B', 'C', 'D', 'E'];
+            var description = after ? 'Tonight: spots A, B, C, D and E each have a star.' : 'Last month: spots A, B, D and E each have a star; spot C is empty.';
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: hunt for a supernova'),
+              h('p', { className: 'uni-lab-intro' }, 'Astronomers find exploding stars by comparing a new image with an old one of the same patch of sky. Switch between the two images and look for what changed.'),
+              labChoices('Show', 'uni-sn-view-label', [{ id: 'before', name: 'Last month' }, { id: 'after', name: 'Tonight' }], function (it) { return (it.id === 'after') === after; }, function (it) { uniTouch('supernovae'); upd('snView', it.id); }),
+              h('svg', { viewBox: '0 0 260 160', className: 'uni-lab-svg uni-sn-svg', role: 'img', 'aria-labelledby': 'uni-sn-title' },
+                h('title', { id: 'uni-sn-title' }, description),
+                h('rect', { x: 0, y: 0, width: 260, height: 160, rx: 12, fill: '#050816' }),
+                h('g', { transform: 'translate(50 20)' }, galaxyDrawing('spiral', 'uni-sn-gal', true)),
+                hunt.spots.map(function (spot, i) {
+                  var isNew = i === hunt.answer;
+                  return h('g', { key: i },
+                    (!isNew || after) && h('circle', { cx: spot.x, cy: spot.y, r: isNew ? 3.4 : 2.4, fill: isNew ? '#fef9c3' : '#f8fafc' }),
+                    h('text', { x: spot.x + 6, y: spot.y - 6, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, letters[i]));
+                })),
+              renderMiniPredict({ stateKey: 'snSpot', item: hunt, touch: 'supernovae', lead: 'Your turn: ', noSkip: true, feedback: function (right) {
+                return (right ? 'Yes: spot C. ' : 'It is spot C. ') + 'Nothing was there last month, and tonight a new point of light sits in the galaxy’s outskirts. Surveys such as the Zwicky Transient Facility compare images like this every night and find thousands of exploding stars a year.';
+              } }),
+              answered && h('div', null,
+                supernovaSpectrum(),
+                renderMiniPredict({ stateKey: 'snType', item: UNIVERSE_SN_SPECTRUM_PREDICTION, touch: 'supernovae', lead: 'Read the spectrum: ', noSkip: true, feedback: function (right) {
+                  return (right ? 'Yes: a white dwarf, a Type Ia supernova. ' : 'It was a white dwarf: a Type Ia supernova. ') + 'A white dwarf has no hydrogen left, and silicon is one of the elements its runaway burning makes. A massive star’s explosion shows strong hydrogen, and a neutron-star merger fades within days and shows heavy elements instead. Type Ia supernovae are the standard candles from the Distance Ladder.';
+                } })));
+          }
+
+          // ── Round 6 visuals: HR diagram, gravitational lens, atmospheric window, nebula drawings ──
+          // HR diagram as crisp SVG: a realistic population, named stars, and the picked region lit.
+          var HR_REGION_KINDS = ['ms', 'giant', 'super', 'wd', 'strip'];
+          function renderHRDiagram() {
+            var X0 = 74, PW = 456, Y0 = 34, PH = 246, pick = d.hrPick, region = (pick === 0 || pick) ? HR_REGION_KINDS[pick] || null : null;
+            function at(T, L) { var p = universeHRPoint(T, L); return { x: X0 + p.x * PW, y: Y0 + p.y * PH }; }
+            function inStrip(st) { return st.T >= 5500 && st.T <= 7500 && st.L >= 30; }
+            function lit(st) { return !region || (region === 'strip' ? inStrip(st) : st.kind === region); }
+            var classes = [['O', 35000], ['B', 17000], ['A', 8700], ['F', 6700], ['G', 5600], ['K', 4400], ['M', 3050]];
+            var lums = [[1e6, '1,000,000'], [1e4, '10,000'], [100, '100'], [1, '1'], [0.01, '0.01'], [1e-4, '0.0001']];
+            var temps = [[30000, '30,000 K'], [10000, '10,000 K'], [6000, '6,000 K'], [3000, '3,000 K']];
+            var strip0 = at(7500, 1e5), strip1 = at(5500, 30);
+            return h('svg', { viewBox: '0 0 560 336', className: 'uni-hr-svg', role: 'img', 'aria-label': __alloT('stem.universe.a11y_hertzsprung_russell_diagram_plotting_stars_by_s', 'Hertzsprung-Russell diagram plotting stars by surface temperature on the horizontal axis and luminosity on the vertical axis, with most stars falling on the main sequence diagonal') },
+              h('rect', { x: 0, y: 0, width: 560, height: 336, rx: 12, fill: '#0b1220' }),
+              classes.map(function (c) { return h('text', { key: c[0], x: at(c[1], 1).x, y: 22, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: universeStarColor(c[1]) }, c[0]); }),
+              lums.map(function (l) { var y = at(5772, l[0]).y; return h('g', { key: 'l' + l[0] }, h('line', { x1: X0, x2: X0 + PW, y1: y, y2: y, stroke: '#1e293b' }), h('text', { x: X0 - 6, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, l[1])); }),
+              temps.map(function (t) { var x = at(t[0], 1).x; return h('g', { key: 't' + t[0] }, h('line', { x1: x, x2: x, y1: Y0, y2: Y0 + PH, stroke: '#1e293b' }), h('text', { x: x, y: Y0 + PH + 16, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, t[1])); }),
+              h('text', { x: X0 + PW / 2, y: 330, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, 'Surface temperature (hotter to the left)'),
+              h('text', { x: 14, y: Y0 + PH / 2, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0', transform: 'rotate(-90 14 ' + (Y0 + PH / 2) + ')' }, 'Luminosity (Sun = 1)'),
+              region === 'strip' && h('rect', { x: strip0.x, y: strip0.y, width: strip1.x - strip0.x, height: strip1.y - strip0.y, fill: '#a78bfa', opacity: 0.2 }),
+              UNIVERSE_HR_STARS.map(function (st, i) {
+                var p = at(st.T, st.L), on = lit(st);
+                var r = st.kind === 'wd' ? 1.3 : st.kind === 'giant' ? 2.6 : st.kind === 'super' ? 3.4 : Math.max(1, Math.min(3.2, 0.9 + (Math.log10(st.L) + 4) * 0.22));
+                return h('circle', { key: i, cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: r, fill: universeStarColor(st.T), opacity: on ? 0.95 : 0.14, 'data-lit': region && on ? 'true' : undefined });
+              }),
+              UNIVERSE_HR_NAMED.map(function (st) {
+                var p = at(st.T, st.L), left = st.side === 'left';
+                return h('g', { key: st.name }, h('circle', { cx: p.x, cy: p.y, r: 4.6, fill: universeStarColor(st.T), stroke: '#ffffff', strokeWidth: 1.4 }),
+                  h('text', { x: p.x + (left ? -8 : 8), y: p.y + 4, textAnchor: left ? 'end' : 'start', fontSize: 11, fontWeight: 700, fill: '#f1f5f9' }, st.name));
+              }));
+          }
+          // Ray-shoot each pixel back through a point-mass lens to the background galaxy.
+          function drawLensing(el, sx, sy, einstein, showTruth) {
+            var ctx = el.getContext ? el.getContext('2d') : null;
+            if (!ctx || !ctx.createImageData) return;
+            var W = el.width, H = el.height, img = ctx.createImageData(W, H), px = img.data, cx = W / 2, cy = H / 2, e2 = einstein * einstein;
+            for (var y = 0; y < H; y++) {
+              for (var x = 0; x < W; x++) {
+                var tx = x - cx, ty = y - cy, r2 = tx * tx + ty * ty || 0.01;
+                var bx = tx - e2 * tx / r2 - sx, by = ty - e2 * ty / r2 - sy;
+                var u = bx * 0.94 + by * 0.34, v = by * 0.94 - bx * 0.34;
+                var glow = Math.exp(-(u * u / 700 + v * v / 160)) * 0.8 + Math.exp(-(bx * bx + by * by) / 30);
+                var lens = Math.exp(-(tx * tx * 0.8 + ty * ty * 1.3) / 300) * 0.95;
+                var i = (y * W + x) * 4;
+                px[i] = Math.min(255, 5 + glow * 120 + lens * 255);
+                px[i + 1] = Math.min(255, 8 + glow * 175 + lens * 200);
+                px[i + 2] = Math.min(255, 20 + glow * 255 + lens * 110);
+                px[i + 3] = 255;
+              }
+            }
+            ctx.putImageData(img, 0, 0);
+            var rand = quizRng(31);
+            ctx.fillStyle = 'rgba(226,232,240,0.7)';
+            for (var k = 0; k < 46; k++) ctx.fillRect(Math.floor(rand() * W), Math.floor(rand() * H), 1.4, 1.4);
+            if (showTruth) {
+              ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
+              ctx.strokeStyle = 'rgba(148,163,184,0.9)'; ctx.beginPath(); ctx.arc(cx, cy, einstein, 0, Math.PI * 2); ctx.stroke();
+              ctx.strokeStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cx + sx, cy + sy, 13, 0, Math.PI * 2); ctx.stroke();
+              ctx.setLineDash([]); ctx.font = '600 12px system-ui, sans-serif'; ctx.fillStyle = '#f8fafc';
+              ctx.fillText('Where the galaxy really is', Math.min(W - 170, cx + sx + 16), Math.max(14, cy + sy - 16));
+              ctx.fillStyle = '#cbd5e1'; ctx.fillText('Einstein radius', cx - einstein * 0.7 - 96, cy - einstein * 0.7 - 4);
+            }
+          }
+          function renderLensLab() {
+            var offset = labNumber(d.lensOffset, 0, 120, 26), mass = labNumber(d.lensMass, 1, 4, 2), showTruth = d.lensTruth === true;
+            var einstein = 28 * Math.sqrt(mass), sx = offset, sy = offset * 0.35, u = Math.sqrt(sx * sx + sy * sy) / einstein;
+            var images = universeLensImages(u), mu = universeLensMagnification(Math.max(u, 0.001)), ring = u < 0.08;
+            var where = ring ? 'right behind the lens' : universeRound(u) + ' Einstein radii off the line';
+            var status = ring ? 'Almost perfectly lined up: the galaxy’s light spreads into an Einstein ring around the lens.'
+              : 'Two images: a brighter one ' + universeRound(images.outer) + ' Einstein radii out on the same side as the real galaxy, and a fainter one ' + universeRound(-images.inner) + ' on the opposite side. A small source here would look about ' + universeRound(mu) + ' times brighter than with no lens.';
+            function set(key, value) { uniTouch('lensing'); upd(key, value); }
+            return h('div', { className: 'uni-lab uni-lens-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: make your own gravitational lens'),
+              h('canvas', { width: 480, height: 260, className: 'uni-lens-canvas', role: 'img', 'aria-labelledby': 'uni-lens-status', ref: function (el) {
+                if (!el) return;
+                var sig = [sx, sy, einstein, showTruth].join('|');
+                if (el._lensSig === sig) return;
+                el._lensSig = sig;
+                drawLensing(el, sx, sy, einstein, showTruth);
+              } }),
+              h('label', { htmlFor: 'universe-lens-offset', className: 'uni-lab-label' }, 'Move the background galaxy: ', h('strong', null, where)),
+              h('input', { id: 'universe-lens-offset', type: 'range', min: 0, max: 120, step: 2, value: offset, 'aria-valuetext': where, onChange: function (e) { set('lensOffset', parseFloat(e.target.value)); } }),
+              h('label', { htmlFor: 'universe-lens-mass', className: 'uni-lab-label' }, 'Mass of the foreground galaxy: ', h('strong', null, universeRound(mass) + ' ×')),
+              h('input', { id: 'universe-lens-mass', type: 'range', min: 1, max: 4, step: 0.25, value: mass, 'aria-valuetext': universeRound(mass) + ' times', onChange: function (e) { set('lensMass', parseFloat(e.target.value)); } }),
+              labChoices('Show', 'uni-lens-truth-label', [{ id: 'seen', name: 'What a telescope sees' }, { id: 'truth', name: 'Where it really is' }], function (it) { return (it.id === 'truth') === showTruth; }, function (it) { set('lensTruth', it.id === 'truth'); }),
+              h('p', { id: 'uni-lens-status', className: 'uni-lab-readout', role: 'status' }, status),
+              h('p', { className: 'uni-lab-key' }, 'Each pixel traces its light back past the lens with Einstein’s lens equation. A heavier lens makes a bigger ring: its radius grows with the square root of the mass.'));
+          }
+          // Which light gets through Earth's air: a wave that shortens from radio to gamma, over an opacity chart.
+          function renderAtmosphereWindow() {
+            function x(lg) { return 20 + (3 - lg) / 15 * 520; }
+            var top = 50, depth = 90, area = [x(3).toFixed(1) + ',' + top], wave = [], lg, phase = 0, k = Math.log(64 / 3);
+            for (lg = 3; lg >= -12.001; lg -= 0.05) area.push(x(lg).toFixed(1) + ',' + (top + universeAirOpacity(lg) * depth).toFixed(1));
+            area.push(x(-12).toFixed(1) + ',' + top);
+            for (var p = 20; p <= 540; p += 0.5) { phase += Math.PI / (64 * Math.exp(-k * (p - 20) / 520)); wave.push(p.toFixed(1) + ',' + (24 + 9 * Math.sin(phase)).toFixed(1)); }
+            var bands = [['Radio', 0.6], ['Microwave', -2.2], ['Infrared', -4.4], ['Visible', -6.25], ['UV', -7.6], ['X-ray', -9.5], ['Gamma', -11.3]];
+            return h('div', { className: 'uni-air' },
+              h('svg', { viewBox: '0 0 560 196', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-air-title' },
+                h('title', { id: 'uni-air-title' }, 'Which light reaches the ground: Earth’s air lets through visible light and radio waves, blocks gamma rays, X-rays and most ultraviolet, and blocks much of the infrared.'),
+                h('defs', null, h('linearGradient', { id: 'uni-air-wave', x1: 0, x2: 1, y1: 0, y2: 0 }, ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'].map(function (c, i) { return h('stop', { key: i, offset: Math.round(i / 6 * 100) + '%', stopColor: c }); }))),
+                h('rect', { x: 0, y: 0, width: 560, height: 196, rx: 12, fill: '#0b1220' }),
+                h('polyline', { points: wave.join(' '), fill: 'none', stroke: 'url(#uni-air-wave)', strokeWidth: 2 }),
+                h('rect', { x: 20, y: top, width: 520, height: depth, fill: '#0f2a3d' }),
+                h('polygon', { points: area.join(' '), fill: '#64748b', opacity: 0.92 }),
+                h('rect', { x: x(-6.15), y: top + depth - 10, width: x(-6.45) - x(-6.15), height: 10, fill: 'url(#uni-air-wave)' }),
+                h('text', { x: 470, y: top + 40, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Blocked by air'),
+                h('text', { x: x(-1), y: top + depth - 8, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'Reaches the ground'),
+                bands.map(function (b) { return h('text', { key: b[0], x: x(b[1]), y: top + depth + 18, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, b[0]); }),
+                h('text', { x: 280, y: 186, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, 'Longer waves ←  wavelength  → shorter waves')),
+              h('ul', { className: 'uni-air-notes' },
+                h('li', null, h('strong', null, 'Radio waves and visible light '), 'reach the ground, so radio dishes and optical telescopes work from Earth, best on high, dry mountains.'),
+                h('li', null, h('strong', null, 'Much of the infrared '), 'is soaked up by water vapour, one reason Webb works from space.'),
+                h('li', null, h('strong', null, 'Ultraviolet, X-rays and gamma rays '), 'never reach the ground, which protects life, so telescopes such as Chandra and Fermi fly in space.')));
+          }
+          // Drawings of the five planetary nebulae, each with a text alternative.
+          function nebulaDrawing(it) {
+            var key = /Ring/.test(it.name) ? 'ring' : /Helix/.test(it.name) ? 'helix' : /Cat/.test(it.name) ? 'cat' : /Butterfly/.test(it.name) ? 'butterfly' : 'hourglass', id = 'uni-neb-' + key;
+            function grad(gid, stops) { return h('radialGradient', { id: gid }, stops.map(function (st, i) { return h('stop', { key: i, offset: st[0], stopColor: st[1], stopOpacity: st[2] }); })); }
+            var glow = 'url(#' + id + '-g)', wing = 'url(#' + id + '-w)';
+            var knots = [];
+            for (var i = 0; i < 28; i++) { var a = i / 28 * Math.PI * 2; knots.push(h('line', { key: 'k' + i, x1: 100 + Math.cos(a) * 28, y1: 70 + Math.sin(a) * 23, x2: 100 + Math.cos(a) * 36, y2: 70 + Math.sin(a) * 29, stroke: '#fca5a5', strokeWidth: 1.4, strokeOpacity: 0.8 })); }
+            var art = {
+              ring: { title: 'Drawing of the Ring Nebula: an oval ring of gas, blue-green inside and red at its edge, with the white dwarf at the center.',
+                body: [h('ellipse', { key: 'r', cx: 100, cy: 70, rx: 54, ry: 42, fill: glow }), h('ellipse', { key: 'hole', cx: 100, cy: 70, rx: 22, ry: 17, fill: '#0b1220', opacity: 0.55 })] },
+              helix: { title: 'Drawing of the Helix Nebula: a wide eye-shaped ring with a blue-green center, a red rim and many small knots pointing outward.',
+                body: [h('ellipse', { key: 'o', cx: 100, cy: 70, rx: 64, ry: 52, fill: glow }), h('ellipse', { key: 'i', cx: 100, cy: 70, rx: 27, ry: 22, fill: '#0b1220', opacity: 0.5 })].concat(knots) },
+              cat: { title: 'Drawing of the Cat’s Eye Nebula: faint rings nested like onion layers around a bright, twisted core, crossed by two thin jets.',
+                body: [24, 32, 40, 48, 56].map(function (r) { return h('ellipse', { key: 'r' + r, cx: 100, cy: 70, rx: r * 1.1, ry: r * 0.85, fill: 'none', stroke: '#38bdf8', strokeOpacity: 0.28 }); }).concat([
+                  h('ellipse', { key: 'c1', cx: 100, cy: 70, rx: 26, ry: 11, fill: glow, transform: 'rotate(35 100 70)' }),
+                  h('ellipse', { key: 'c2', cx: 100, cy: 70, rx: 20, ry: 9, fill: glow, opacity: 0.85, transform: 'rotate(-35 100 70)' }),
+                  h('line', { key: 'jet', x1: 58, y1: 28, x2: 142, y2: 112, stroke: '#f472b6', strokeWidth: 1.4, strokeOpacity: 0.75 })]) },
+              butterfly: { title: 'Drawing of the Butterfly Nebula: two glowing wings of gas spreading left and right from a dark, dusty middle.',
+                body: [h('path', { key: 'r', d: 'M100 70 C 125 40 175 30 192 62 C 196 78 176 104 140 96 C 122 92 108 80 100 70 Z', fill: wing }),
+                  h('path', { key: 'l', d: 'M100 70 C 75 40 25 30 8 62 C 4 78 24 104 60 96 C 78 92 92 80 100 70 Z', fill: wing }),
+                  h('ellipse', { key: 'dust', cx: 100, cy: 70, rx: 5, ry: 16, fill: '#020617', opacity: 0.85, transform: 'rotate(10 100 70)' })] },
+              hourglass: { title: 'Drawing of the Hourglass Nebula: two glowing rings above and below a narrow waist, with a small bright eye at the center.',
+                body: [h('ellipse', { key: 'u', cx: 100, cy: 40, rx: 34, ry: 24, fill: glow }), h('ellipse', { key: 'd', cx: 100, cy: 100, rx: 34, ry: 24, fill: glow }),
+                  h('ellipse', { key: 'ur', cx: 100, cy: 40, rx: 34, ry: 24, fill: 'none', stroke: '#f472b6', strokeOpacity: 0.6 }), h('ellipse', { key: 'dr', cx: 100, cy: 100, rx: 34, ry: 24, fill: 'none', stroke: '#f472b6', strokeOpacity: 0.6 }),
+                  h('ellipse', { key: 'eye', cx: 100, cy: 70, rx: 8, ry: 10, fill: '#fef9c3', opacity: 0.6 })] }
+            }[key];
+            return h('svg', { viewBox: '0 0 200 140', className: 'uni-nebula-svg', role: 'img', 'aria-labelledby': id + '-title' },
+              h('title', { id: id + '-title' }, art.title),
+              h('defs', null, grad(id + '-g', [['0%', '#99f6e4', 0.35], ['45%', '#22d3ee', 0.6], ['72%', '#fb923c', 0.85], ['88%', '#ef4444', 0.75], ['100%', '#ef4444', 0]]),
+                grad(id + '-w', [['0%', '#fef3c7', 0.95], ['35%', '#fb923c', 0.75], ['75%', '#60a5fa', 0.45], ['100%', '#60a5fa', 0]])),
+              h('rect', { x: 0, y: 0, width: 200, height: 140, rx: 10, fill: '#0b1220' }),
+              art.body,
+              h('circle', { cx: 100, cy: 70, r: 2.4, fill: '#f8fafc' }));
+          }
+
+          // ── Round 7: light's journey, zoom-out, composition donut, famous-image drawings ──
+          function glyLabel(v) { return v >= 1 ? universeRound(v) + ' billion light-years' : universeRound(v * 1000) + ' million light-years'; }
+          // Where light and its source are while the light travels to us (proper distances).
+          function renderLightJourney() {
+            var src = UNIVERSE_JOURNEY_SOURCES.filter(function (it) { return it.id === d.journeySource; })[0] || UNIVERSE_JOURNEY_SOURCES[0];
+            var j = universeLightJourney(src.z, 140), maxD = j.chi * 1.08, X0 = 58, PW = 466, Y0 = 18, PH = 226;
+            function x(gly) { return X0 + gly / maxD * PW; }
+            function y(t) { return Y0 + PH - t / UNIVERSE_NOW_GYR * PH; }
+            var frac = labNumber(d.journeyAt, 0, 1, 1), tNow = j.te + (UNIVERSE_NOW_GYR - j.te) * frac;
+            var aNow = frac >= 1 ? 1 : universeScaleFactor(tNow) || 1 / (1 + src.z), photon = aNow * universeComovingGly(aNow), source = aNow * j.chi;
+            var turns = j.peak.d > j.startDistance * 1.05, outbound = turns && tNow < j.peak.t;
+            var stepD = maxD > 30 ? 10 : maxD > 8 ? 2 : maxD > 3 ? 1 : 0.25, ticks = [];
+            for (var tk = stepD; tk < maxD; tk += stepD) ticks.push(tk);
+            var line = function (key) { return j.points.map(function (p) { return x(p[key]).toFixed(1) + ',' + y(p.t).toFixed(1); }).join(' '); };
+            var status = 'The universe is ' + universeGyrLabel(tNow) + ' old. This light has travelled for ' + universeGyrLabel(Math.max(0, tNow - j.te)) + (photon < 0.001 ? ' and has reached us' : ' and is ' + glyLabel(photon) + ' from us') + '; its source is now ' + glyLabel(source) + ' away.'
+              + (outbound ? ' Right now expanding space is carrying the light away from us faster than it can travel toward us.' : '');
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: follow the light home'),
+              h('p', { className: 'uni-lab-intro' }, 'Light from the oldest things we see has travelled for less than 13.8 billion years, yet they are now much farther away than 13.8 billion light-years, because space kept stretching while the light was on its way.'),
+              labChoices('Light from', 'uni-journey-source-label', UNIVERSE_JOURNEY_SOURCES, function (it) { return it.id === src.id; }, function (it) { uniTouch('observable'); upd('journeySource', it.id); }),
+              h('svg', { viewBox: '0 0 540 284', className: 'uni-lab-svg uni-journey-svg', role: 'img', 'aria-labelledby': 'uni-journey-title' },
+                h('title', { id: 'uni-journey-title' }, 'Distance against time for light from ' + src.name.toLowerCase() + '. It set off ' + glyLabel(j.startDistance) + ' away; its source is now ' + glyLabel(j.chi) + ' away.' + (turns ? ' At first the light was carried away from us, reaching ' + glyLabel(j.peak.d) + ' before it began to close in.' : '')),
+                h('rect', { x: 0, y: 0, width: 540, height: 284, rx: 12, fill: '#0b1220' }),
+                ticks.map(function (v) { return h('g', { key: 'x' + v }, h('line', { x1: x(v), x2: x(v), y1: Y0, y2: Y0 + PH, stroke: '#1e293b' }), h('text', { x: x(v), y: Y0 + PH + 15, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, String(v))); }),
+                [0, 4, 8, 12].map(function (t) { return h('g', { key: 't' + t }, h('line', { x1: X0, x2: X0 + PW, y1: y(t), y2: y(t), stroke: '#1e293b' }), h('text', { x: X0 - 6, y: y(t) + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, String(t))); }),
+                h('text', { x: X0 + PW / 2, y: 278, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, 'Distance from us (billion light-years)'),
+                h('text', { x: 14, y: Y0 + PH / 2, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0', transform: 'rotate(-90 14 ' + (Y0 + PH / 2) + ')' }, 'Age of the universe (billion years)'),
+                h('line', { x1: x(0), x2: x(0), y1: Y0, y2: Y0 + PH, stroke: '#38bdf8', strokeWidth: 2.5 }),
+                h('polyline', { points: line('source'), fill: 'none', stroke: '#f472b6', strokeWidth: 2, strokeDasharray: '6 5' }),
+                h('polyline', { points: line('photon'), fill: 'none', stroke: '#fde047', strokeWidth: 2.5 }),
+                h('line', { x1: X0, x2: X0 + PW, y1: y(tNow), y2: y(tNow), stroke: '#94a3b8', strokeDasharray: '2 4' }),
+                turns && h('circle', { cx: x(j.peak.d), cy: y(j.peak.t), r: 5, fill: 'none', stroke: '#fde047', strokeWidth: 1.5 }),
+                turns && h('text', { x: x(j.peak.d) + 9, y: y(j.peak.t) + 4, fontSize: 11, fill: '#fef08a', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, 'farthest from us'),
+                h('circle', { cx: x(source), cy: y(tNow), r: 5, fill: '#f472b6' }),
+                h('circle', { cx: x(photon), cy: y(tNow), r: 5, fill: '#fde047', stroke: '#0b1220', strokeWidth: 1.5 })),
+              h('p', { className: 'uni-lab-key' }, 'Blue: us. Yellow: the light. Pink, dashed: where its source is. Distances are as they were at each moment, not as they are today.'),
+              h('label', { htmlFor: 'universe-journey-at', className: 'uni-lab-label' }, 'Follow the light: ', h('strong', null, universeGyrLabel(tNow) + ' after the Big Bang')),
+              h('input', { id: 'universe-journey-at', type: 'range', min: 0, max: 1, step: 0.005, value: frac, 'aria-valuetext': universeGyrLabel(tNow) + ' after the Big Bang', onChange: function (e) { uniTouch('observable'); upd('journeyAt', parseFloat(e.target.value)); } }),
+              h('p', { className: 'uni-lab-readout', role: 'status' }, status),
+              h('p', { className: 'uni-lab-key' }, 'It set off when the universe was ' + universeGyrLabel(j.te) + ' old, from a place ' + glyLabel(j.startDistance) + ' away. That place is now ' + glyLabel(j.chi) + ' away.'
+                + (turns ? ' At first the light was carried away from us, up to ' + glyLabel(j.peak.d) + ', when the universe was ' + universeGyrLabel(j.peak.t) + ' old.' : '')));
+          }
+          // "You are here" pictures for each zoom level.
+          function zoomArt(id) {
+            var art = [], title = '', rand = quizRng(id.length * 97 + 11), halo = { stroke: '#050816', strokeWidth: 3, paintOrder: 'stroke' };
+            function label(x, y, text, anchor, fill) { return h('text', Object.assign({ key: 'l' + text, x: x, y: y, textAnchor: anchor || 'middle', fontSize: 11, fill: fill || '#e2e8f0' }, halo), text); }
+            function you(x, y, text, dx) {
+              return h('g', { key: 'you' }, h('circle', { cx: x, cy: y, r: 7, fill: 'none', stroke: '#f87171', strokeWidth: 2 }),
+                h('line', { x1: x + (dx > 0 ? 5 : -5), y1: y - 5, x2: x + dx, y2: y - 22, stroke: '#f87171', strokeWidth: 1.5 }),
+                h('text', Object.assign({ x: x + dx + (dx > 0 ? 3 : -3), y: y - 25, textAnchor: dx > 0 ? 'start' : 'end', fontSize: 12, fontWeight: 700, fill: '#fecaca' }, halo), text));
+            }
+            if (id === 'earth') {
+              title = 'Earth from space: blue oceans, green land and white clouds. You are here.';
+              art = [h('defs', { key: 'd' }, h('radialGradient', { id: 'uni-zoom-earth', cx: '40%', cy: '35%' }, h('stop', { offset: '0%', stopColor: '#93c5fd' }), h('stop', { offset: '100%', stopColor: '#1e3a8a' }))),
+                h('circle', { key: 'e', cx: 160, cy: 100, r: 78, fill: 'url(#uni-zoom-earth)' }),
+                h('path', { key: 'c1', d: 'M118 62 q 22 -18 44 -6 q 12 14 -4 28 q -18 10 -30 0 q -14 -8 -10 -22 Z', fill: '#4d7c0f', opacity: 0.9 }),
+                h('path', { key: 'c2', d: 'M176 106 q 24 -8 34 10 q 4 22 -16 32 q -20 2 -24 -16 q -4 -14 6 -26 Z', fill: '#65a30d', opacity: 0.9 }),
+                h('path', { key: 'c3', d: 'M112 122 q 12 -6 18 6 q 2 14 -10 16 q -12 -4 -8 -22 Z', fill: '#4d7c0f', opacity: 0.9 }),
+                h('path', { key: 'w', d: 'M98 88 q 30 -10 52 6 M168 70 q 22 -8 40 6 M120 150 q 30 6 56 -4', fill: 'none', stroke: '#f8fafc', strokeWidth: 3, strokeOpacity: 0.65, strokeLinecap: 'round' }),
+                you(146, 72, 'You are here', -36)];
+            } else if (id === 'solar') {
+              title = 'The Solar System seen from above: the Sun with eight planets on their orbits. Earth, on the third orbit, is where you are.';
+              var radii = [16, 22, 29, 38, 56, 72, 86, 98];
+              art = radii.map(function (r, i) { var ang = 0.6 + i * 1.7; return h('g', { key: 'o' + i }, h('ellipse', { cx: 160, cy: 100, rx: r * 1.45, ry: r * 0.8, fill: 'none', stroke: i === 2 ? '#38bdf8' : '#334155', strokeWidth: i === 2 ? 1.6 : 1 }), h('circle', { cx: 160 + Math.cos(ang) * r * 1.45, cy: 100 + Math.sin(ang) * r * 0.8, r: i > 3 ? 3 : 2, fill: i === 2 ? '#60a5fa' : '#cbd5e1' })); })
+                .concat([h('circle', { key: 'sun', cx: 160, cy: 100, r: 8, fill: '#fde047' }), you(160 + Math.cos(4) * 29 * 1.45, 100 + Math.sin(4) * 29 * 0.8, 'Earth (you)', -34)]);
+            } else if (id === 'neighbours') {
+              title = 'Our stellar neighbourhood: the Sun at the center, with nearby stars such as Alpha Centauri, Barnard’s Star and Sirius within about 10 light-years.';
+              var stars = [['Alpha Centauri', 4.37, 200, '#fff4ea', 3, 'end'], ['Barnard’s Star', 5.96, 300, '#ffa760', 2, 'start'], ['Sirius', 8.6, 140, '#cad7ff', 3.6, 'end'], ['', 7.9, 60, '#ffa760', 1.8], ['', 8.3, 20, '#ffa760', 1.8], ['', 9.7, 250, '#ffa760', 1.8], ['', 9.0, 95, '#ffc98a', 1.8]];
+              art = [h('circle', { key: 'ring', cx: 160, cy: 100, r: 90, fill: 'none', stroke: '#334155', strokeDasharray: '4 4' }), label(160, 196, '10 light-years from the Sun', 'middle', '#94a3b8'),
+                h('circle', { key: 'sun', cx: 160, cy: 100, r: 4, fill: '#fde047' })]
+                .concat(stars.map(function (st, i) { var a = st[2] * Math.PI / 180, sx = 160 + Math.cos(a) * st[1] * 9, sy = 100 + Math.sin(a) * st[1] * 9;
+                  return h('g', { key: 's' + i }, h('circle', { cx: sx, cy: sy, r: st[4], fill: st[3] }), st[0] && label(sx + (st[5] === 'end' ? -7 : 7), sy + 4, st[0], st[5])); }))
+                .concat([you(160, 100, 'The Sun (you)', -36)]);
+            } else if (id === 'milkyway') {
+              title = 'The Milky Way seen from above: a barred spiral galaxy. The Sun is in a spiral arm about halfway out from the center.';
+              art = [h('g', { key: 'mw', transform: 'translate(0 -20) scale(2)' }, galaxyDrawing('barred', 'uni-zoom-mw', true)), you(206, 128, 'The Sun (you)', 16)];
+            } else if (id === 'localgroup') {
+              title = 'The Local Group: the Milky Way and the larger Andromeda Galaxy, the smaller Triangulum Galaxy, and many dwarf galaxies around them.';
+              art = [h('g', { key: 'mw', transform: 'translate(70 70) scale(0.5)' }, galaxyDrawing('barred', 'uni-zoom-lg-mw', true)),
+                h('g', { key: 'm31', transform: 'translate(172 50) scale(0.85)' }, galaxyDrawing('spiral', 'uni-zoom-lg-m31', true)),
+                h('g', { key: 'm33', transform: 'translate(250 14) scale(0.3)' }, galaxyDrawing('spiral', 'uni-zoom-lg-m33', true))]
+                .concat([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(function (i) { var near = i % 2 ? [110, 100] : [240, 101], a = rand() * Math.PI * 2, r = 22 + rand() * 30; return h('circle', { key: 'dw' + i, cx: near[0] + Math.cos(a) * r, cy: near[1] + Math.sin(a) * r, r: 1.4, fill: '#cbd5e1' }); }))
+                .concat([label(110, 150, 'Milky Way'), label(240, 168, 'Andromeda'), label(274, 64, 'Triangulum'), you(110, 100, 'You are here', -20)]);
+            } else if (id === 'laniakea') {
+              title = 'The Laniakea Supercluster: filaments of galaxies whose motions all flow toward one region, the Great Attractor. The Local Group sits near the edge.';
+              var ga = [196, 104], starts = [];
+              for (var f = 0; f < 22; f++) {
+                var ang = f / 22 * Math.PI * 2 + rand() * 0.2, r0 = 70 + rand() * 30, sx2 = ga[0] + Math.cos(ang) * r0 * 1.3, sy2 = ga[1] + Math.sin(ang) * r0 * 0.85;
+                var cx2 = (sx2 + ga[0]) / 2 + (rand() - 0.5) * 30, cy2 = (sy2 + ga[1]) / 2 + (rand() - 0.5) * 30;
+                starts.push([sx2, sy2]);
+                art.push(h('path', { key: 'f' + f, d: 'M' + sx2.toFixed(1) + ' ' + sy2.toFixed(1) + ' Q' + cx2.toFixed(1) + ' ' + cy2.toFixed(1) + ' ' + ga[0] + ' ' + ga[1], fill: 'none', stroke: '#60a5fa', strokeOpacity: 0.45, strokeWidth: 1.2 }));
+                for (var g = 1; g < 5; g++) { var tt = g / 5; art.push(h('circle', { key: 'g' + f + '-' + g, cx: (1 - tt) * (1 - tt) * sx2 + 2 * (1 - tt) * tt * cx2 + tt * tt * ga[0], cy: (1 - tt) * (1 - tt) * sy2 + 2 * (1 - tt) * tt * cy2 + tt * tt * ga[1], r: 1.2, fill: '#bfdbfe' })); }
+              }
+              art.push(h('circle', { key: 'ga', cx: ga[0], cy: ga[1], r: 6, fill: '#fef3c7', opacity: 0.85 }), label(ga[0], ga[1] + 20, 'Great Attractor'));
+              var home = starts.reduce(function (m, p) { return p[0] < m[0] ? p : m; });
+              art.push(you(home[0], home[1], 'Local Group (you)', 30));
+            } else {
+              title = 'The observable universe: a sphere of galaxies strung along a web of filaments, with the oldest light, the cosmic microwave background, at its edge. You are at the center.';
+              var nodes = [];
+              for (var q = 0; q < 64; q++) { var ra = Math.sqrt(rand()) * 86, aa = rand() * Math.PI * 2; nodes.push([160 + Math.cos(aa) * ra, 100 + Math.sin(aa) * ra]); }
+              nodes.forEach(function (p, i) {
+                var near = nodes.map(function (o, k) { return [k, (o[0] - p[0]) * (o[0] - p[0]) + (o[1] - p[1]) * (o[1] - p[1])]; }).filter(function (e) { return e[0] !== i; }).sort(function (u, v) { return u[1] - v[1]; }).slice(0, 2);
+                near.forEach(function (e) { if (e[0] > i) art.push(h('line', { key: 'w' + i + '-' + e[0], x1: p[0], y1: p[1], x2: nodes[e[0]][0], y2: nodes[e[0]][1], stroke: '#818cf8', strokeOpacity: 0.5 })); });
+                art.push(h('circle', { key: 'n' + i, cx: p[0], cy: p[1], r: 1.4, fill: '#c7d2fe' }));
+              });
+              art = [h('circle', { key: 'edge', cx: 160, cy: 100, r: 92, fill: 'none', stroke: '#fb923c', strokeOpacity: 0.65, strokeWidth: 4 })].concat(art)
+                .concat([label(160, 194, 'Edge: the oldest light we can see', 'middle', '#fed7aa'), you(160, 100, 'You are here', 40)]);
+            }
+            return h('svg', { viewBox: '0 0 320 200', className: 'uni-zoom-svg', role: 'img', 'aria-labelledby': 'uni-zoom-title' },
+              h('title', { id: 'uni-zoom-title' }, title),
+              h('rect', { x: 0, y: 0, width: 320, height: 200, rx: 12, fill: '#050816' }), art);
+          }
+          function renderZoomOut() {
+            var levels = UNIVERSE_ZOOM_LEVELS, idx = Math.round(labNumber(d.zoomLevel, 0, levels.length - 1, 0)), lv = levels[idx], prev = levels[idx - 1];
+            function go(i) { uniTouch('structures'); upd('zoomLevel', i); }
+            function short(name) { return name.replace(/^The /, 'the ').replace(/^Our /, 'our '); }
+            return h('div', { className: 'uni-lab uni-zoom-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'You are here: zoom out'),
+              h('div', { key: lv.id, className: 'uni-zoom-stage' }, zoomArt(lv.id)),
+              h('p', { className: 'uni-lab-readout', role: 'status' }, h('strong', null, lv.name + ': '), lv.size + '. ' + (prev ? 'About ' + universeBigNumber(universeRough(lv.metres / prev.metres)) + ' times wider than ' + short(prev.name) + '. ' : '') + lv.note),
+              h('div', { className: 'uni-guess-row' },
+                h('button', { type: 'button', disabled: idx === 0, onClick: function () { go(idx - 1); } }, '← Zoom in'),
+                h('button', { type: 'button', disabled: idx === levels.length - 1, onClick: function () { go(idx + 1); } }, 'Zoom out →'),
+                h('span', null, 'Step ' + (idx + 1) + ' of ' + levels.length)),
+              labChoices('Jump to', 'uni-zoom-levels-label', levels.map(function (l, i) { return { id: String(i), name: l.name.replace(/^The /, '') }; }), function (it) { return Number(it.id) === idx; }, function (it) { go(Number(it.id)); }));
+          }
+          // What the universe is made of, and the small share of ordinary matter that is stars.
+          function renderCompositionDonut() {
+            function arcs(list, cx, cy, r, w, startDeg) {
+              var start = startDeg * Math.PI / 180;
+              return list.map(function (p, i) {
+                var ang = p[1] / 100 * Math.PI * 2, end = start + ang, mid = start + ang / 2, large = ang > Math.PI ? 1 : 0;
+                var dPath = 'M ' + (cx + r * Math.cos(start)).toFixed(2) + ' ' + (cy + r * Math.sin(start)).toFixed(2) + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(end)).toFixed(2) + ' ' + (cy + r * Math.sin(end)).toFixed(2);
+                start = end;
+                return h('g', { key: i }, h('path', { d: dPath, fill: 'none', stroke: p[2], strokeWidth: w }),
+                  p[1] >= 5 && h('text', { x: cx + r * Math.cos(mid), y: cy + r * Math.sin(mid) + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#0b1220' }, p[1] + '%'));
+              });
+            }
+            var ordStart = -9, outerStart = ordStart + 18;
+            return h('div', { className: 'uni-donut' },
+              h('svg', { viewBox: '0 0 520 220', className: 'uni-lab-svg', role: 'img', 'aria-label': __alloT('stem.universe.a11y_pie_chart_showing_the_composition_of_the_univer', 'Pie chart showing the composition of the universe: 68 percent dark energy, 27 percent dark matter, and 5 percent ordinary matter') },
+                h('rect', { x: 0, y: 0, width: 520, height: 220, rx: 12, fill: '#0b1220' }),
+                arcs(UNIVERSE_COMPOSITION, 130, 110, 70, 34, outerStart),
+                h('text', { x: 130, y: 108, textAnchor: 'middle', fontSize: 20, fontWeight: 800, fill: '#f8fafc' }, '95%'),
+                h('text', { x: 130, y: 126, textAnchor: 'middle', fontSize: 11, fill: '#cbd5e1' }, 'unseen'),
+                h('line', { x1: 130 + 87 * Math.cos(ordStart * Math.PI / 180), y1: 110 + 87 * Math.sin(ordStart * Math.PI / 180), x2: 382, y2: 58, stroke: '#64748b', strokeDasharray: '3 3' }),
+                h('line', { x1: 130 + 87 * Math.cos(-ordStart * Math.PI / 180), y1: 110 + 87 * Math.sin(-ordStart * Math.PI / 180), x2: 382, y2: 162, stroke: '#64748b', strokeDasharray: '3 3' }),
+                arcs(UNIVERSE_ORDINARY_SPLIT, 420, 110, 42, 22, -90),
+                h('text', { x: 420, y: 107, textAnchor: 'middle', fontSize: 15, fontWeight: 800, fill: '#f8fafc' }, '5%'),
+                h('text', { x: 420, y: 123, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'ordinary'),
+                h('text', { x: 420, y: 196, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, 'Inside the 5%')),
+              h('ul', { className: 'uni-donut-key' },
+                UNIVERSE_COMPOSITION.map(function (p) { return h('li', { key: p[0] }, h('i', { style: { background: p[2] }, 'aria-hidden': 'true' }), p[0] + ': about ' + p[1] + '%'); }),
+                h('li', null, h('i', { style: { background: UNIVERSE_ORDINARY_SPLIT[0][2] }, 'aria-hidden': 'true' }), 'Of the ordinary 5%, only about ' + UNIVERSE_ORDINARY_SPLIT[0][1] + '% is in stars, so every star in the universe adds up to roughly ' + universeRound(UNIVERSE_ORDINARY_SPLIT[0][1] * 5 / 100) + '% of everything. Most of the rest is thin gas in and between galaxies (ESA, 2018).')));
+          }
+          // Illustrations for the famous-images list (clearly labelled as drawings).
+          function famousImageArt(fi) {
+            var n = fi.name, key = /Earthrise/.test(n) ? 'earthrise' : /Pale Blue/.test(n) ? 'pale' : /Hubble Deep/.test(n) ? 'hdf' : /Pillars/.test(n) ? 'pillars' : /Black Hole/.test(n) ? 'bh' : /JWST/.test(n) ? 'jwst' : /Blue Marble/.test(n) ? 'marble' : 'cmb';
+            var id = 'uni-img-' + key, rand = quizRng(key.length * 131 + 7), art = [], title = '', defs = [];
+            function earthGrad(gid) { return h('radialGradient', { key: gid, id: gid, cx: '38%', cy: '35%' }, h('stop', { offset: '0%', stopColor: '#93c5fd' }), h('stop', { offset: '100%', stopColor: '#1e3a8a' })); }
+            function galaxies(count, palette) { var out = []; for (var i = 0; i < count; i++) { var rx = 0.8 + rand() * 4.5; out.push(h('ellipse', { key: 'g' + i, cx: (rand() * 236 + 2).toFixed(1), cy: (rand() * 146 + 2).toFixed(1), rx: rx.toFixed(1), ry: (rx * (0.35 + rand() * 0.6)).toFixed(1), fill: palette[Math.floor(rand() * palette.length)], opacity: 0.85, transform: 'rotate(' + Math.round(rand() * 180) + ')', style: { transformBox: 'fill-box', transformOrigin: 'center' } })); } return out; }
+            if (key === 'earthrise') {
+              title = 'Illustration of Earthrise: a half-lit blue Earth rising above the grey, cratered horizon of the Moon.';
+              defs = [earthGrad(id + '-e'), h('linearGradient', { key: 'm', id: id + '-m', x1: 0, x2: 0, y1: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: '#9ca3af' }), h('stop', { offset: '100%', stopColor: '#374151' }))];
+              art = [h('circle', { key: 'e', cx: 150, cy: 52, r: 22, fill: 'url(#' + id + '-e)' }), h('path', { key: 'night', d: 'M150 30 A22 22 0 0 0 150 74 A9 22 0 0 0 150 30 Z', fill: '#020617', opacity: 0.85 }),
+                h('path', { key: 'moon', d: 'M0 150 L0 112 Q 120 90 240 112 L240 150 Z', fill: 'url(#' + id + '-m)' }),
+                h('ellipse', { key: 'c1', cx: 60, cy: 124, rx: 10, ry: 3, fill: '#4b5563' }), h('ellipse', { key: 'c2', cx: 180, cy: 130, rx: 14, ry: 4, fill: '#4b5563' })];
+            } else if (key === 'pale') {
+              title = 'Illustration of the Pale Blue Dot: bands of scattered sunlight cross a dark frame, and Earth is a single tiny pale-blue dot in one band.';
+              defs = [h('linearGradient', { key: 'b', id: id + '-b', x1: 0, x2: 1, y1: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: '#fb923c', stopOpacity: 0.05 }), h('stop', { offset: '50%', stopColor: '#fdba74', stopOpacity: 0.4 }), h('stop', { offset: '100%', stopColor: '#fb923c', stopOpacity: 0.05 }))];
+              art = [[20, 40], [90, 34], [168, 28]].map(function (b, i) { return h('polygon', { key: 'band' + i, points: (b[0]) + ',0 ' + (b[0] + b[1]) + ',0 ' + (b[0] + b[1] + 60) + ',150 ' + (b[0] + 60) + ',150', fill: 'url(#' + id + '-b)' }); })
+                .concat([h('circle', { key: 'earth', cx: 136, cy: 82, r: 1.6, fill: '#dbeafe' })]);
+            } else if (key === 'hdf') {
+              title = 'Illustration of the Hubble Deep Field: a tiny patch of dark sky packed with faint galaxies of many shapes and colours.';
+              art = galaxies(90, ['#fde68a', '#fca5a5', '#93c5fd', '#fdba74', '#e9d5ff', '#f8fafc']);
+            } else if (key === 'pillars') {
+              title = 'Illustration of the Pillars of Creation: three tall, dark columns of gas and dust, lit along their edges, rising through a blue-green glow.';
+              defs = [h('radialGradient', { key: 'bg', id: id + '-bg' }, h('stop', { offset: '0%', stopColor: '#2dd4bf', stopOpacity: 0.55 }), h('stop', { offset: '100%', stopColor: '#134e4a', stopOpacity: 0.2 })),
+                h('linearGradient', { key: 'p', id: id + '-p', x1: 0, x2: 0, y1: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: '#b45309' }), h('stop', { offset: '100%', stopColor: '#451a03' }))];
+              art = [h('rect', { key: 'glow', x: 0, y: 0, width: 240, height: 150, fill: 'url(#' + id + '-bg)' })]
+                .concat([['M52 150 C 48 110 40 70 58 34 C 70 22 80 34 76 52 C 72 90 84 120 88 150 Z'], ['M112 150 C 110 120 104 96 116 74 C 124 64 134 72 132 86 C 128 110 136 130 140 150 Z'], ['M170 150 C 168 128 164 110 174 98 C 182 92 190 98 188 108 C 186 124 192 138 194 150 Z']]
+                  .map(function (p, i) { return h('path', { key: 'pil' + i, d: p[0], fill: 'url(#' + id + '-p)', stroke: '#fbbf24', strokeOpacity: 0.55, strokeWidth: 1.5 }); }));
+            } else if (key === 'bh') {
+              title = 'Illustration of the first black hole image, M87*: a glowing orange ring, brighter on one side, around a dark central shadow.';
+              defs = [h('radialGradient', { key: 'r', id: id + '-r' }, h('stop', { offset: '0%', stopColor: '#000000' }), h('stop', { offset: '50%', stopColor: '#000000' }), h('stop', { offset: '62%', stopColor: '#f97316', stopOpacity: 0.95 }), h('stop', { offset: '78%', stopColor: '#fbbf24', stopOpacity: 0.55 }), h('stop', { offset: '100%', stopColor: '#7c2d12', stopOpacity: 0 }))];
+              art = [h('circle', { key: 'ring', cx: 120, cy: 75, r: 56, fill: 'url(#' + id + '-r)' }), h('ellipse', { key: 'hot', cx: 120, cy: 104, rx: 26, ry: 8, fill: '#fde68a', opacity: 0.35 })];
+            } else if (key === 'jwst') {
+              title = 'Illustration of Webb’s First Deep Field: crowded galaxies, some stretched into arcs by a foreground cluster, and bright stars with six-pointed spikes.';
+              art = galaxies(60, ['#fdba74', '#fca5a5', '#fde68a', '#f8fafc', '#c4b5fd'])
+                .concat([[38, 20, 70], [42, 140, 190], [36, 230, 280], [44, 300, 340]].map(function (a, i) { var r = a[0], s0 = a[1] * Math.PI / 180, s1 = a[2] * Math.PI / 180; return h('path', { key: 'arc' + i, d: 'M' + (120 + r * Math.cos(s0)).toFixed(1) + ' ' + (75 + r * Math.sin(s0)).toFixed(1) + ' A' + r + ' ' + r + ' 0 0 1 ' + (120 + r * Math.cos(s1)).toFixed(1) + ' ' + (75 + r * Math.sin(s1)).toFixed(1), fill: 'none', stroke: '#fdba74', strokeWidth: 2, strokeOpacity: 0.8 }); }))
+                .concat([[60, 40], [186, 112]].map(function (p, i) { return h('g', { key: 'star' + i }, [0, 60, 120].map(function (deg) { var r = deg * Math.PI / 180; return h('line', { key: deg, x1: p[0] - Math.cos(r) * 12, y1: p[1] - Math.sin(r) * 12, x2: p[0] + Math.cos(r) * 12, y2: p[1] + Math.sin(r) * 12, stroke: '#e0f2fe', strokeWidth: 0.9 }); }), h('circle', { cx: p[0], cy: p[1], r: 2.4, fill: '#ffffff' })); }));
+            } else if (key === 'marble') {
+              title = 'Illustration of the Blue Marble: the whole sunlit Earth, with Africa, swirling white clouds and the ice of Antarctica.';
+              defs = [earthGrad(id + '-e')];
+              art = [h('circle', { key: 'e', cx: 120, cy: 75, r: 62, fill: 'url(#' + id + '-e)' }),
+                h('path', { key: 'africa', d: 'M108 40 q 22 -6 30 10 q 10 18 -2 36 q -8 16 -14 26 q -8 -6 -8 -20 q -10 -10 -12 -24 q -4 -18 6 -28 Z', fill: '#a16207', opacity: 0.9 }),
+                h('path', { key: 'ice', d: 'M88 128 q 32 10 64 0 q -30 12 -64 0 Z', fill: '#f8fafc' }),
+                h('path', { key: 'cloud', d: 'M70 60 q 20 -12 34 4 M140 96 q 18 -10 30 6 M76 100 q 14 8 26 -2', fill: 'none', stroke: '#f8fafc', strokeWidth: 3, strokeOpacity: 0.7, strokeLinecap: 'round' })];
+            } else {
+              title = 'Illustration of the Planck map of the cosmic microwave background: an oval map of the whole sky, mottled with tiny warmer and cooler spots.';
+              defs = [h('clipPath', { key: 'c', id: id + '-c' }, h('ellipse', { cx: 120, cy: 75, rx: 108, ry: 56 }))];
+              var spots = [];
+              for (var i = 0; i < 260; i++) spots.push(h('circle', { key: 's' + i, cx: (rand() * 220 + 10).toFixed(1), cy: (rand() * 120 + 15).toFixed(1), r: (2.5 + rand() * 4.5).toFixed(1), fill: ['#1d4ed8', '#38bdf8', '#fde047', '#f97316', '#dc2626'][Math.floor(rand() * 5)], opacity: 0.45 }));
+              art = [h('ellipse', { key: 'base', cx: 120, cy: 75, rx: 108, ry: 56, fill: '#1e40af' }), h('g', { key: 'spots', clipPath: 'url(#' + id + '-c)' }, spots)];
+            }
+            return h('figure', { className: 'uni-image-art' },
+              h('svg', { viewBox: '0 0 240 150', role: 'img', 'aria-labelledby': id + '-title' },
+                h('title', { id: id + '-title' }, title), h('defs', null, defs),
+                h('rect', { x: 0, y: 0, width: 240, height: 150, rx: 10, fill: '#050816' }), art),
+              h('figcaption', null, 'An illustration, not the real photograph.'));
+          }
+
+          // ── Round 8: starlight lab, black-hole anatomy, history timelines ──
+          function renderStarlightLab() {
+            var revealed = d.starlightGuess !== undefined && d.starlightGuess !== null;
+            var T = labNumber(d.starTemp, 2500, 40000, 5772), peak = universeWienPeakNm(T), cls = universeSpectralClass(T), colour = universeBlackbodyRGB(T);
+            var X0 = 36, PW = 488, Y0 = 22, PH = 140, L0 = 100, L1 = 2000;
+            function x(nm) { return X0 + (nm - L0) / (L1 - L0) * PW; }
+            var norm = universePlanck(peak, T), pts = [];
+            for (var nm = L0; nm <= L1; nm += 10) pts.push(x(nm).toFixed(1) + ',' + (Y0 + PH - universePlanck(nm, T) / norm * PH).toFixed(1));
+            var area = x(L0) + ',' + (Y0 + PH) + ' ' + pts.join(' ') + ' ' + x(L1) + ',' + (Y0 + PH);
+            var perArea = Math.pow(T / 5772, 4), tLabel = Math.round(T).toLocaleString('en-US') + ' K';
+            var preset = UNIVERSE_STARLIGHT_PRESETS.filter(function (p) { return Math.abs(p.T - T) < 1; })[0];
+            function setT(v) { uniTouch('spectral'); updMulti({ starTemp: v, spectralIdx: 'OBAFGKM'.indexOf(universeSpectralClass(v)) }); }
+            var status = 'Class ' + cls + '. Its light peaks at ' + Math.round(peak) + ' nanometres (' + universeWavelengthBand(peak) + '). '
+              + (Math.abs(perArea - 1) < 0.05 ? 'Each square metre of its surface gives out the same light as a square metre of the Sun.' : 'Each square metre of its surface gives out about ' + universeRound(perArea) + ' times as much light as a square metre of the Sun.');
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: read a star’s colour'),
+              renderMiniPredict({ stateKey: 'starlightGuess', item: UNIVERSE_STARLIGHT_PREDICTION, touch: 'spectral', feedback: function (right) {
+                return (right ? 'Yes. ' : 'It is because its light mixes every colour. ') + 'A star shines across the whole rainbow at once. Even when the peak is green, plenty of red and blue light comes too, and together they look white. That is why there are no green stars.';
+              } }),
+              revealed && h('div', null,
+                h('div', { className: 'uni-starlight' },
+                  h('svg', { viewBox: '0 0 540 196', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-starlight-title' },
+                    h('title', { id: 'uni-starlight-title' }, 'Light from a ' + tLabel + ' star at each wavelength. ' + status),
+                    h('defs', null, h('linearGradient', { id: 'uni-starlight-rainbow', x1: 0, x2: 1, y1: 0, y2: 0 }, ['#7c3aed', '#2563eb', '#16a34a', '#eab308', '#f97316', '#dc2626'].map(function (c, i) { return h('stop', { key: i, offset: Math.round(i / 5 * 100) + '%', stopColor: c }); }))),
+                    h('rect', { x: 0, y: 0, width: 540, height: 196, rx: 12, fill: '#0b1220' }),
+                    h('rect', { x: x(380), y: Y0, width: x(750) - x(380), height: PH, fill: 'url(#uni-starlight-rainbow)', opacity: 0.32 }),
+                    h('text', { x: (X0 + x(380)) / 2, y: Y0 + 14, textAnchor: 'middle', fontSize: 11, fill: '#c4b5fd', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, 'Ultraviolet'),
+                    h('text', { x: (x(380) + x(750)) / 2, y: Y0 + 14, textAnchor: 'middle', fontSize: 11, fill: '#f8fafc', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, 'Visible'),
+                    h('text', { x: (x(750) + x(L1)) / 2, y: Y0 + 14, textAnchor: 'middle', fontSize: 11, fill: '#fca5a5', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, 'Infrared'),
+                    [500, 1000, 1500, 2000].map(function (v) { return h('g', { key: v }, h('line', { x1: x(v), x2: x(v), y1: Y0 + PH, y2: Y0 + PH + 4, stroke: '#94a3b8' }), h('text', { x: x(v) + (v === 2000 ? 4 : 0), y: Y0 + PH + 17, textAnchor: v === 2000 ? 'end' : 'middle', fontSize: 10, fill: '#cbd5e1' }, v + ' nm')); }),
+                    h('line', { x1: X0, x2: X0 + PW, y1: Y0 + PH, y2: Y0 + PH, stroke: '#94a3b8' }),
+                    h('polygon', { points: area, fill: colour, opacity: 0.22 }),
+                    h('polyline', { points: pts.join(' '), fill: 'none', stroke: colour, strokeWidth: 2.5 }),
+                    peak >= L0 ? h('g', null, h('line', { x1: x(peak), x2: x(peak), y1: Y0, y2: Y0 + PH, stroke: '#f8fafc', strokeDasharray: '3 3' }), h('text', { x: x(peak) + 4, y: Y0 + PH - 8, fontSize: 11, fill: '#f8fafc' }, 'peak'))
+                      : h('text', { x: X0 + 4, y: Y0 + 30, fontSize: 11, fill: '#f8fafc' }, '← peak at ' + Math.round(peak) + ' nm'),
+                    h('text', { x: 270, y: 190, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, 'Wavelength')),
+                  h('div', { className: 'uni-starlight-star', 'aria-hidden': 'true', style: { background: 'radial-gradient(circle, #ffffff 0%, ' + colour + ' 34%, rgba(0,0,0,0) 62%), #0b1220' } })),
+                h('label', { htmlFor: 'universe-star-temp', className: 'uni-lab-label' }, 'Surface temperature: ', h('strong', null, tLabel)),
+                h('input', { id: 'universe-star-temp', type: 'range', min: Math.log10(2500), max: Math.log10(40000), step: 0.005, value: Math.log10(T), 'aria-valuetext': tLabel, onChange: function (e) { setT(Math.round(Math.pow(10, parseFloat(e.target.value)) / 50) * 50); } }),
+                labChoices('Try', 'uni-starlight-preset-label', UNIVERSE_STARLIGHT_PRESETS, function (p) { return !!preset && preset.id === p.id; }, function (p) { setT(p.T); }),
+                h('p', { className: 'uni-lab-readout', role: 'status' }, status),
+                h('p', { className: 'uni-lab-key' }, 'The curve follows Planck’s law. Its peak follows Wien’s law: 2.9 million divided by the temperature gives the wavelength in nanometres. Brightness per square metre grows with the temperature to the fourth power.')));
+          }
+          // Black-hole anatomy, labelled, with the part picked below lit up.
+          // A typical temperature for each class, O to M, so picking a class moves the starlight lab too.
+          var SPECTRAL_CLASS_TEMPS = [35000, 20000, 8750, 6750, 5772, 4450, 3100];
+          var BH_PART_KEYS = ['singularity', 'horizon', 'photon', 'disk', 'jets', 'ergo'];
+          function renderBlackHoleAnatomy() {
+            var pick = d.bhPick, sel = (pick === 0 || pick) ? BH_PART_KEYS[pick] || null : null, cx = 260, cy = 150, rs = 34;
+            function op(k) { return !sel || sel === k ? 1 : 0.25; }
+            function tag(k, x1, y1, x2, y2, text, anchor) {
+              var on = sel === k;
+              return h('g', { key: 'tag-' + k, 'data-on': on ? 'true' : undefined },
+                h('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: on ? '#fde68a' : '#94a3b8', strokeWidth: on ? 1.6 : 1 }),
+                h('text', { x: x2 + (anchor === 'end' ? -4 : 4), y: y2 + 4, textAnchor: anchor || 'start', fontSize: 12, fontWeight: on ? 800 : 500, fill: on ? '#fde68a' : '#e2e8f0', stroke: '#050816', strokeWidth: 3, paintOrder: 'stroke' }, text));
+            }
+            var disk = function (key) { return h('g', { key: key, opacity: op('disk') }, h('ellipse', { cx: cx, cy: cy, rx: 230, ry: 34, fill: 'url(#uni-bh-disk)' }), h('ellipse', { cx: cx, cy: cy, rx: 3 * rs, ry: 15, fill: '#050816' })); };
+            return h('svg', { viewBox: '0 0 520 300', className: 'uni-bh-svg', role: 'img', 'aria-labelledby': 'uni-bh-title' },
+              h('title', { id: 'uni-bh-title' }, 'Labelled diagram of a black hole, not to scale: the singularity at the center, the event horizon, the photon sphere at one and a half times the horizon, an ergosphere around a spinning hole, an accretion disk whose inner edge is three times the horizon, and jets from the poles.' + (sel ? ' Highlighted: ' + BLACK_HOLE_PARTS[pick].name + '.' : '')),
+              h('defs', null,
+                h('radialGradient', { id: 'uni-bh-disk' }, h('stop', { offset: '30%', stopColor: '#fef3c7' }), h('stop', { offset: '55%', stopColor: '#f97316' }), h('stop', { offset: '100%', stopColor: '#7c2d12', stopOpacity: 0 })),
+                h('linearGradient', { id: 'uni-bh-jet', x1: 0, x2: 0, y1: 0, y2: 1 }, h('stop', { offset: '0%', stopColor: '#818cf8', stopOpacity: 0 }), h('stop', { offset: '100%', stopColor: '#a5b4fc', stopOpacity: 0.9 })),
+                h('linearGradient', { id: 'uni-bh-jet-down', x1: 0, x2: 0, y1: 1, y2: 0 }, h('stop', { offset: '0%', stopColor: '#818cf8', stopOpacity: 0 }), h('stop', { offset: '100%', stopColor: '#a5b4fc', stopOpacity: 0.9 })),
+                h('clipPath', { id: 'uni-bh-front' }, h('rect', { x: 0, y: cy, width: 520, height: 150 }))),
+              h('rect', { x: 0, y: 0, width: 520, height: 300, rx: 12, fill: '#050816' }),
+              h('g', { opacity: op('jets') },
+                h('polygon', { points: (cx - 7) + ',' + (cy - rs) + ' ' + (cx + 7) + ',' + (cy - rs) + ' ' + (cx + 24) + ',8 ' + (cx - 24) + ',8', fill: 'url(#uni-bh-jet)' }),
+                h('polygon', { points: (cx - 7) + ',' + (cy + rs) + ' ' + (cx + 7) + ',' + (cy + rs) + ' ' + (cx + 24) + ',292 ' + (cx - 24) + ',292', fill: 'url(#uni-bh-jet-down)' })),
+              disk('back'),
+              h('ellipse', { cx: cx, cy: cy, rx: rs * 1.35, ry: rs, fill: '#7c3aed', fillOpacity: 0.22, stroke: '#a78bfa', strokeDasharray: '4 3', opacity: op('ergo') }),
+              h('circle', { cx: cx, cy: cy, r: rs * 1.5, fill: 'none', stroke: '#fde047', strokeDasharray: '5 4', strokeWidth: 1.4, opacity: op('photon') }),
+              h('circle', { cx: cx, cy: cy, r: rs, fill: '#000000', stroke: '#f97316', strokeWidth: 1.6, opacity: Math.max(0.6, op('horizon')) }),
+              h('g', { clipPath: 'url(#uni-bh-front)' }, disk('front')),
+              h('circle', { cx: cx, cy: cy, r: 2.6, fill: '#fef3c7', opacity: op('singularity') }),
+              tag('jets', cx + 12, 44, cx + 40, 30, 'Relativistic jet'),
+              tag('photon', cx + 36, cy - 36, cx + 86, cy - 64, 'Photon sphere (1.5×)'),
+              tag('horizon', cx - 24, cy - 24, cx - 86, cy - 64, 'Event horizon', 'end'),
+              tag('disk', cx + 168, cy + 14, cx + 156, cy + 56, 'Accretion disk', 'end'),
+              tag('ergo', cx - 44, cy + 8, cx - 112, cy + 56, 'Ergosphere (if it spins)', 'end'),
+              tag('singularity', cx + 2, cy + 3, cx + 34, cy + 100, 'Singularity'),
+              h('text', { x: 510, y: 292, textAnchor: 'end', fontSize: 10, fill: '#94a3b8' }, 'Not to scale: the disk begins at 3× the horizon; jets reach thousands of light-years'));
+          }
+          // A history timeline that lights up the item picked in the list below it.
+          function renderHistoryTimeline(items, stateKey, accent, from, to, early) {
+            var pick = d[stateKey], sel = (pick === 0 || pick) ? pick : null, X0 = early ? 78 : 26, X1 = 500, seen = {};
+            function x(yr) { return early && yr < from ? 34 : X0 + (yr - from) / (to - from) * (X1 - X0); }
+            var step = to - from > 200 ? 100 : 10, ticks = [];
+            for (var t = Math.ceil(from / step) * step; t <= to; t += step) ticks.push(t);
+            var dots = items.map(function (it, i) {
+              var yr = universeYearOf(it.year), k = seen[yr] = (seen[yr] || 0) + 1;
+              return { i: i, yr: yr, x: x(yr), y: 58 - (k - 1) * 11, it: it };
+            });
+            var chosen = sel !== null ? dots[sel] : null;
+            return h('svg', { viewBox: '0 0 520 96', className: 'uni-lab-svg uni-history-svg', role: 'img', 'aria-labelledby': 'uni-history-' + stateKey },
+              h('title', { id: 'uni-history-' + stateKey }, 'Timeline from ' + (early ? 'about ' + dots[0].yr + ' AD' : from) + ' to ' + to + ', one dot for each entry in the list below.' + (chosen ? ' Highlighted: ' + chosen.it.name + ', ' + chosen.it.year + '.' : '')),
+              h('rect', { x: 0, y: 0, width: 520, height: 96, rx: 12, fill: '#0b1220' }),
+              h('line', { x1: X0, x2: X1, y1: 66, y2: 66, stroke: '#64748b' }),
+              early && h('g', null, h('line', { x1: 22, x2: 46, y1: 66, y2: 66, stroke: '#64748b' }), h('text', { x: 58, y: 70, textAnchor: 'middle', fontSize: 12, fill: '#94a3b8' }, '//'), h('text', { x: 34, y: 84, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, dots[0].yr + ' AD')),
+              ticks.map(function (t) { return h('g', { key: t }, h('line', { x1: x(t), x2: x(t), y1: 63, y2: 69, stroke: '#64748b' }), h('text', { x: x(t), y: 84, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, String(t))); }),
+              dots.map(function (p) { var on = sel === p.i; return h('circle', { key: p.i, cx: p.x, cy: p.y, r: on ? 7 : 5, fill: accent, stroke: on ? '#ffffff' : 'none', strokeWidth: 2, opacity: sel === null || on ? 1 : 0.35, 'data-on': on ? 'true' : undefined }); }),
+              chosen && h('text', { x: Math.max(60, Math.min(460, chosen.x)), y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: '#f8fafc' }, chosen.it.name + ', ' + chosen.it.year));
+          }
+
+          // ── Round 9: hydrogen lines sliding with redshift; citizen-science practice links ──
+          function renderLineShiftLab() {
+            var revealed = d.lineShiftGuess !== undefined && d.lineShiftGuess !== null;
+            var zmax = 11, z = labNumber(d.lineShiftZ, 0, zmax, 0.158), stretch = 1 + z;
+            var X0 = 20, PW = 500;
+            function x(nm) { return X0 + (Math.log10(nm) - 2) / 2 * PW; }
+            var preset = UNIVERSE_LINESHIFT_PRESETS.filter(function (p) { return Math.abs(p.z - z) < 1e-6; })[0];
+            function setZ(v) { uniTouch('redshift'); upd('lineShiftZ', v); }
+            var ha = 656.3 * stretch, a = 1 / stretch, stretchText = String(Number(stretch.toFixed(3)));
+            var status = z === 0 ? 'No shift: these are hydrogen’s lines as measured in a laboratory on Earth.'
+              : 'Every wavelength is stretched by 1 + z = ' + stretchText + '. Hydrogen’s red line (656.3 nm) arrives at ' + ha.toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' nm (' + universeWavelengthBand(ha) + '). This light left when the universe was ' + universeSpanLabel(universeAgeAtScale(a)) + ' old, and that galaxy is now ' + glyLabel(universeComovingGly(a)) + ' away.';
+            var halo = { stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' };
+            function bracket(key, from, to, y, text) {
+              return h('g', { key: key }, h('line', { x1: x(from), x2: x(to), y1: y, y2: y, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                h('line', { x1: x(from), x2: x(from), y1: y - 4, y2: y + 4, stroke: '#94a3b8' }), h('line', { x1: x(to), x2: x(to), y1: y - 4, y2: y + 4, stroke: '#94a3b8' }),
+                h('text', Object.assign({ x: (x(from) + x(to)) / 2, y: y - 4, textAnchor: 'middle', fontSize: 10, fill: '#e2e8f0' }, halo), text));
+            }
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: watch hydrogen’s lines stretch'),
+              renderMiniPredict({ stateKey: 'lineShiftGuess', item: UNIVERSE_LINESHIFT_PREDICTION, touch: 'redshift', feedback: function (right) {
+                return (right ? 'Yes: about 1,312 nm. ' : 'It arrives at about 1,312 nm, in the infrared. ') + 'Redshift z = 1 means every wavelength is stretched by 1 + z = 2, so 656 × 2 = 1,312 nm. That is why the most distant galaxies are studied with infrared telescopes such as Webb.';
+              } }),
+              revealed && h('div', null,
+                h('svg', { viewBox: '0 0 540 150', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-lineshift-title' },
+                  h('title', { id: 'uni-lineshift-title' }, 'Hydrogen’s spectral lines on a wavelength scale from 100 to 10,000 nanometres. ' + status),
+                  h('defs', null, h('linearGradient', { id: 'uni-lineshift-rainbow', x1: 0, x2: 1, y1: 0, y2: 0 }, ['#7c3aed', '#2563eb', '#16a34a', '#eab308', '#f97316', '#dc2626'].map(function (c, i) { return h('stop', { key: i, offset: Math.round(i / 5 * 100) + '%', stopColor: c }); }))),
+                  h('rect', { x: 0, y: 0, width: 540, height: 150, rx: 12, fill: '#0b1220' }),
+                  h('rect', { x: X0, y: 28, width: PW, height: 64, fill: '#111827' }),
+                  h('rect', { x: x(380), y: 28, width: x(750) - x(380), height: 64, fill: 'url(#uni-lineshift-rainbow)', opacity: 0.45 }),
+                  h('text', Object.assign({ x: (X0 + x(380)) / 2, y: 22, textAnchor: 'middle', fontSize: 11, fill: '#c4b5fd' }, halo), 'Ultraviolet'),
+                  h('text', Object.assign({ x: (x(380) + x(750)) / 2, y: 22, textAnchor: 'middle', fontSize: 11, fill: '#f8fafc' }, halo), 'Visible'),
+                  h('text', Object.assign({ x: (x(750) + X0 + PW) / 2, y: 22, textAnchor: 'middle', fontSize: 11, fill: '#fca5a5' }, halo), 'Infrared'),
+                  z > 0 && UNIVERSE_HYDROGEN_LINES.map(function (ln) { return h('line', { key: 'rest' + ln[0], x1: x(ln[1]), x2: x(ln[1]), y1: 28, y2: 92, stroke: '#64748b', strokeDasharray: '2 3' }); }),
+                  UNIVERSE_HYDROGEN_LINES.map(function (ln, i) {
+                    var at = ln[1] * stretch;
+                    if (at > 10000) return null;
+                    return h('g', { key: 'obs' + ln[0], 'data-nm': Math.round(at) }, h('line', { x1: x(at), x2: x(at), y1: 28, y2: 92, stroke: '#f8fafc', strokeWidth: i === 1 || i === 2 ? 1.5 : 2.5 }),
+                      (i === 0 || i >= 3) && h('text', Object.assign({ x: x(at) + 3, y: i === 0 ? 42 : i === 3 ? 58 : 74, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, halo), ln[0]));
+                  }),
+                  h('text', { x: x(100), y: 105, fontSize: 10, fill: '#cbd5e1' }, '100 nm'),
+                  h('text', { x: x(1000), y: 105, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, '1,000 nm'),
+                  h('text', { x: x(10000), y: 105, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, '10,000 nm'),
+                  bracket('hst', 115, 2500, 122, 'Hubble sees'),
+                  bracket('jwst', 600, 10000, 141, 'Webb sees (and on to 28,000 nm)')),
+                h('label', { htmlFor: 'universe-lineshift-z', className: 'uni-lab-label' }, 'Redshift z: ', h('strong', null, String(z))),
+                h('input', { id: 'universe-lineshift-z', type: 'range', min: 0, max: 1, step: 0.002, value: Math.log10(stretch) / Math.log10(1 + zmax), 'aria-valuetext': 'redshift ' + z,
+                  onChange: function (ev) { setZ(Math.round((Math.pow(1 + zmax, parseFloat(ev.target.value)) - 1) * 1000) / 1000); } }),
+                labChoices('Try', 'uni-lineshift-preset-label', UNIVERSE_LINESHIFT_PRESETS, function (p) { return !!preset && preset.id === p.id; }, function (p) { setZ(p.z); }),
+                h('p', { className: 'uni-lab-readout', role: 'status' }, status),
+                h('p', { className: 'uni-lab-key' }, 'Dashed: where each line sits in a laboratory. Solid: where it arrives; the two thinner lines just left of Hβ are Hγ and Hδ. Expanding space stretches every wavelength by the same factor, so the whole pattern slides together, and that is how astronomers recognize it.')));
+          }
+          var CITIZEN_PRACTICE = { 'Galaxy Zoo': 'galaxy-types', 'Planet Hunters TESS': 'exoplanets', 'Backyard Worlds: Planet 9': 'supernovae', 'Supernova Hunters': 'supernovae', 'Breakthrough Listen (SETI)': 'fermi' };
+          function citizenPractice(it) {
+            var id = CITIZEN_PRACTICE[it.name], sec = id && UNI_SECTIONS.filter(function (x) { return x.id === id; })[0];
+            return sec ? h('button', { type: 'button', className: 'uni-practice-link', onClick: function () { uniTouch('citizen-science'); goToSection(id); } }, 'Practice the same skill here: ' + sec.label + ' →') : null;
+          }
+
+          // ── Round 10: chapter strip under the timeline slider ──
+          // One marker per chapter stop, aligned with the slider (same side labels, thumb inset).
+          function renderChapterStrip() {
+            return h('div', { className: 'uni-chapter-strip' },
+              h('span', { className: 'uni-chapter-pad text-[0.6875rem]', 'aria-hidden': 'true' }, 'Big Bang'),
+              h('div', { className: 'uni-chapter-track', role: 'group', 'aria-labelledby': 'uni-chapter-strip-label' },
+                h('span', { id: 'uni-chapter-strip-label', className: 'uni-sr' }, 'Jump to a chapter'),
+                EPOCHS.map(function (ep, i) {
+                  var on = i === epochIndex;
+                  return h('button', { key: i, type: 'button', className: 'uni-chapter-dot', 'aria-current': on ? 'step' : undefined,
+                    style: { left: 'calc(9px + (100% - 18px) * ' + (i / (EPOCHS.length - 1)).toFixed(4) + ')', '--uni-chapter': ep.border },
+                    onClick: function () { visitTime(ep.t); } },
+                    h('span', { 'aria-hidden': 'true' }, ep.emoji), h('span', { className: 'uni-sr' }, ep.name));
+                })),
+              h('span', { className: 'uni-chapter-pad text-[0.6875rem]', 'aria-hidden': 'true' }, 'Future'));
+          }
+
+          // ── Round 11: habitable zone, Drake picture, low-gravity jumps ──
+          var HZ_ZONE_COLORS = { hot: '#f87171', zone: '#4ade80', cold: '#93c5fd' };
+          function renderHabitableLab() {
+            var guess = d.hzGuess, revealed = guess !== undefined && guess !== null;
+            var star = UNIVERSE_HZ_STARS.filter(function (it) { return it.id === d.hzStar; })[0] || UNIVERSE_HZ_STARS[0];
+            var pos = labNumber(d.hzPos, 0.04, 0.98, 0.5), au = pos * star.view, zone = universeHabitableZone(star.teff, star.lum);
+            var light = universeStarlight(star.lum, au), where = universeZoneOf(star, au), days = universeYearDays(au, star.mass);
+            var CX = 180, CY = 104, R = 94, starColor = universeBlackbodyRGB(star.teff);
+            function px(a) { return a / star.view * R; }
+            function auText(a) { return a < 0.1 ? a.toFixed(3) : a.toFixed(2); }
+            var lightText = light >= 1.05 ? universeRound(light) + ' times what Earth gets' : light > 0.95 ? 'about the same as Earth gets'
+              : (light >= 0.1 ? Math.round(light * 100) : universeRough(light * 100)) + '% of what Earth gets';
+            var yearText = days < 730 ? universeRound(days) + ' days' : universeRound(days / 365.25) + ' Earth years';
+            var verdict = where === 'hot' ? 'Too hot: its oceans would boil away in a runaway greenhouse, as probably happened on Venus.'
+              : where === 'cold' ? 'Too cold: its water would freeze, even under a thick blanket of carbon dioxide.'
+              : 'In the habitable zone: liquid water could last on its surface, if it has the right kind of air.';
+            var status = 'Your planet: ' + auText(au) + ' AU from ' + star.short + '. Starlight: ' + lightText + '. A year there lasts ' + yearText + '. ' + verdict
+              + (star.mass < 0.5 ? ' This close to its star, it probably keeps one side always facing it, as the Moon does with Earth.' : '');
+            var bar = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2].filter(function (v) { return v <= star.view / 3; }).pop() || 0.005;
+            // Real planets sit at golden-angle steps from -2.2 rad; 0.66 rad is the widest gap.
+            var you = { x: CX + px(au) * Math.cos(0.66), y: CY + px(au) * Math.sin(0.66) };
+            var X0 = 20, SW = 320, f = function (a) { return X0 + Math.min(1, a / star.view) * SW; };
+            function pick(key, value) { uniTouch('exoplanets'); upd(key, value); }
+            return h('div', { className: 'uni-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: find the habitable zone'),
+              renderMiniPredict({ stateKey: 'hzGuess', item: UNIVERSE_HZ_PREDICTION, touch: 'exoplanets', feedback: function (right) {
+                return (right ? 'Yes: much closer in. ' : 'Much closer in. ') + 'A red dwarf gives off so little light that a planet must huddle close to get Earth-like warmth. Around TRAPPIST-1 the zone is about 20 to 40 times closer than Earth is to the Sun.';
+              } }),
+              revealed && h('div', null,
+                labChoices('Star', 'uni-hz-star-label', UNIVERSE_HZ_STARS, function (it) { return it.id === star.id; }, function (it) { pick('hzStar', it.id); }),
+                h('svg', { viewBox: '0 0 360 250', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-hz-title' },
+                  h('title', { id: 'uni-hz-title' }, 'Orbits around ' + star.short + ', seen from above, with the habitable zone shaded green. ' + status),
+                  h('defs', null, h('radialGradient', { id: 'uni-hz-glow' }, h('stop', { offset: '0%', stopColor: starColor, stopOpacity: 0.85 }), h('stop', { offset: '100%', stopColor: starColor, stopOpacity: 0 }))),
+                  h('rect', { x: 0, y: 0, width: 360, height: 250, rx: 12, fill: '#0b1220' }),
+                  h('circle', { className: 'uni-hz-ring', cx: CX, cy: CY, r: (px(zone.inner) + px(zone.outer)) / 2, fill: 'none', stroke: '#22c55e', strokeOpacity: 0.3, strokeWidth: px(zone.outer) - px(zone.inner) }),
+                  [zone.inner, zone.outer].map(function (edge, k) { return h('circle', { key: 'e' + k, cx: CX, cy: CY, r: px(edge), fill: 'none', stroke: '#4ade80', strokeOpacity: 0.7, strokeWidth: 1 }); }),
+                  star.planets.map(function (pl, i) {
+                    var r = px(pl[1]), ang = -2.2 + i * 2.4, x = CX + r * Math.cos(ang), y = CY + r * Math.sin(ang);
+                    return h('g', { key: pl[0] },
+                      h('circle', { cx: CX, cy: CY, r: r, fill: 'none', stroke: '#475569', strokeWidth: 1 }),
+                      h('circle', { cx: x, cy: y, r: 3.4, fill: HZ_ZONE_COLORS[universeZoneOf(star, pl[1])], 'data-zone': universeZoneOf(star, pl[1]) }),
+                      h('text', { x: x + 5, y: y - 5, fontSize: 11, fill: '#e2e8f0' }, pl[0]));
+                  }),
+                  h('circle', { cx: CX, cy: CY, r: 18, fill: 'url(#uni-hz-glow)' }),
+                  h('circle', { cx: CX, cy: CY, r: 6, fill: starColor }),
+                  h('circle', { cx: CX, cy: CY, r: px(au), fill: 'none', stroke: '#e2e8f0', strokeWidth: 1.2, strokeDasharray: '4 4' }),
+                  h('circle', { className: 'uni-hz-you', cx: you.x, cy: you.y, r: 5.5, fill: HZ_ZONE_COLORS[where], stroke: '#f8fafc', strokeWidth: 2, 'data-zone': where }),
+                  h('text', { x: you.x + 9, y: you.y + 4, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, 'Your planet'),
+                  h('line', { x1: 14, x2: 14 + px(bar), y1: 196, y2: 196, stroke: '#cbd5e1', strokeWidth: 2 }),
+                  h('text', { x: 14, y: 190, fontSize: 10, fill: '#cbd5e1' }, bar + ' AU'),
+                  h('rect', { x: X0, y: 210, width: f(zone.inner) - X0, height: 10, fill: '#f87171', fillOpacity: 0.85 }),
+                  h('rect', { x: f(zone.inner), y: 210, width: f(zone.outer) - f(zone.inner), height: 10, fill: '#4ade80', fillOpacity: 0.9 }),
+                  h('rect', { x: f(zone.outer), y: 210, width: X0 + SW - f(zone.outer), height: 10, fill: '#93c5fd', fillOpacity: 0.85 }),
+                  [['Too hot', X0, f(zone.inner)], ['Habitable zone', f(zone.inner), f(zone.outer)], ['Too cold', f(zone.outer), X0 + SW]].map(function (seg) {
+                    return h('text', { key: seg[0], x: (seg[1] + seg[2]) / 2, y: 236, textAnchor: 'middle', fontSize: 10, fill: '#e2e8f0' }, seg[0]);
+                  }),
+                  h('polygon', { points: [f(au) - 5, 204, f(au) + 5, 204, f(au), 211].join(' '), fill: '#f8fafc' })),
+                h('label', { htmlFor: 'universe-hz-pos', className: 'uni-lab-label' }, 'Your planet’s distance from the star: ', h('strong', null, auText(au) + ' AU')),
+                h('input', { id: 'universe-hz-pos', type: 'range', min: 0.04, max: 0.98, step: 0.01, value: pos, 'aria-valuetext': auText(au) + ' AU: ' + (where === 'zone' ? 'in the habitable zone' : where === 'hot' ? 'too hot' : 'too cold'), onChange: function (e) { pick('hzPos', parseFloat(e.target.value)); } }),
+                h('p', { className: 'uni-lab-key' }, 'Seen from above. Green ring: the habitable zone, where starlight is about right for liquid water (a climate-model estimate by Kopparapu and others, 2013). Dots: real planets, coloured by zone. The star and planets are drawn far bigger than life. 1 AU is the distance from Earth to the Sun.'),
+                h('p', { className: 'uni-lab-readout', role: 'status' }, status),
+                h('details', { className: 'uni-transit-think' },
+                  h('summary', null, 'Mars is inside the Sun’s habitable zone. So why is it frozen?'),
+                  h('p', null, 'The zone only says the starlight is right. Mars is small, so its weak gravity could not hold on to a thick atmosphere, and with thin air it cannot keep warm or keep water liquid for long. Being in the zone is a start, not a promise of life.'))));
+          }
+          function drakeFactors() { return [['drakeR', 'R'], ['drakeFp', 'fp'], ['drakeNe', 'ne'], ['drakeFl', 'fl'], ['drakeFi', 'fi'], ['drakeFc', 'fc'], ['drakeL', 'L']].map(function (pair) { return d[pair[0]] !== undefined ? d[pair[0]] : DRAKE_DEFAULTS[pair[1]]; }); }
+          var DRAKE_STEPS = ['New stars born each year', '… that have planets', '… habitable planets made each year', '… where life starts', '… where intelligence evolves', '… whose signals we could detect', '… still around right now'];
+          function renderDrakePicture() {
+            var chain = universeDrakeChain(drakeFactors()), N = chain[6], near = universeNeighbourLy(N);
+            // Fewer than about 1.5 at once: the one civilization is us, so no other dots.
+            var shown = near ? Math.min(400, Math.round(N)) : 0, per = N > 400 ? N / 400 : 1, CX = 180, CY = 108, R = 98;
+            function rate(v, last) {
+              if (!(v > 0)) return last ? 'none' : 'none a year';
+              if (last) return 'about ' + universeBigNumber(universeRough(v));
+              return v >= 0.1 ? universeBigNumber(universeRough(v)) + ' a year' : 'about 1 every ' + universeBigNumber(universeRough(1 / v)) + ' years';
+            }
+            var rand = quizRng(4242), dots = [];
+            for (var i = 0; i < shown; i++) { var rr = R * Math.sqrt(0.03 + 0.92 * rand()), aa = rand() * 2 * Math.PI; dots.push([CX + rr * Math.cos(aa), CY + rr * Math.sin(aa)]); }
+            var sun = { x: CX + 0.52 * R * Math.cos(2.5), y: CY + 0.52 * R * Math.sin(2.5) }, ring = near ? near / UNIVERSE_GALAXY_RADIUS_LY * R : 0;
+            var nearText = near ? universeBigNumber(universeRough(near)) : '';
+            var caption = near
+              ? 'If about ' + universeBigNumber(universeRough(N)) + ' civilizations were scattered across the Milky Way, the nearest one to any of them would typically be about ' + nearText + ' light-years away. A radio “hello” would take ' + nearText + ' years to get there, and a reply just as long to come back.'
+              : 'On these numbers there is less than about one civilization at a time, so we may well be the only one in the Milky Way right now.';
+            caption += ' Our own radio broadcasts have travelled only about 100 light-years so far: less than a pixel on this map.' + (per > 1 ? ' Each dot stands for about ' + universeBigNumber(universeRough(per)) + ' civilizations.' : '');
+            var arms = [0, Math.PI].map(function (ph, k) {
+              // Log spiral with a pitch of about 12 degrees (tan 12° ≈ 0.21), out to the disc edge.
+              var pts = []; for (var a = 0; a <= 6.9; a += 0.1) { var r = 22 * Math.exp(0.21 * a); pts.push((CX + r * Math.cos(a + ph - 0.5)).toFixed(1) + ',' + (CY + r * Math.sin(a + ph - 0.5)).toFixed(1)); }
+              return h('g', { key: k }, h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#93c5fd', strokeOpacity: 0.12, strokeWidth: 18, strokeLinecap: 'round' }), h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#bfdbfe', strokeOpacity: 0.2, strokeWidth: 4, strokeLinecap: 'round' }));
+            });
+            return h('div', { className: 'uni-drake-picture' },
+              h('ol', { className: 'uni-drake-chain' },
+                DRAKE_STEPS.map(function (label, k) {
+                  var v = chain[k], w = v > 0 ? Math.max(2, Math.min(100, (Math.log10(v) + 7) / 15 * 100)) : 0;
+                  return h('li', { key: k, 'data-last': k === 6 ? 'true' : undefined },
+                    h('span', { className: 'uni-drake-step' }, label),
+                    h('span', { className: 'uni-drake-bar', 'aria-hidden': 'true' }, h('span', { style: { width: w.toFixed(1) + '%' } })),
+                    h('strong', { className: 'uni-drake-value' }, rate(v, k === 6)));
+                })),
+              h('p', { className: 'uni-lab-key' }, 'Each row keeps only part of the row above (or multiplies it). Bars use a log scale: each step along is ten times more.'),
+              h('svg', { viewBox: '0 0 360 216', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-drake-map-title' },
+                h('title', { id: 'uni-drake-map-title' }, 'The Milky Way seen from above, with ' + (shown === 1 ? 'one dot' : shown + ' dots') + ' for civilizations. ' + caption),
+                h('defs', null, h('radialGradient', { id: 'uni-drake-core' }, h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.95 }), h('stop', { offset: '45%', stopColor: '#fbbf24', stopOpacity: 0.35 }), h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 }))),
+                h('rect', { x: 0, y: 0, width: 360, height: 216, rx: 12, fill: '#0b1220' }),
+                h('circle', { cx: CX, cy: CY, r: R, fill: '#1e293b', fillOpacity: 0.55 }),
+                arms,
+                h('ellipse', { cx: CX, cy: CY, rx: 22, ry: 8, fill: '#fde68a', fillOpacity: 0.35, transform: 'rotate(-28 ' + CX + ' ' + CY + ')' }),
+                h('circle', { cx: CX, cy: CY, r: 30, fill: 'url(#uni-drake-core)' }),
+                h('g', { className: 'uni-drake-dots' }, dots.map(function (p, k) { return h('circle', { key: k, cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: 1.7, fill: '#fde047' }); })),
+                ring >= 2 && ring <= R * 1.4 && h('circle', { className: 'uni-drake-ring', cx: sun.x, cy: sun.y, r: ring, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.4, strokeDasharray: '5 4' }),
+                h('circle', { cx: sun.x, cy: sun.y, r: 3.6, fill: '#22d3ee', stroke: '#0b1220', strokeWidth: 1 }),
+                h('text', { x: sun.x - 6, y: sun.y + 18, textAnchor: 'middle', fontSize: 13, fontWeight: 700, fill: '#a5f3fc', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, 'You are here'),
+                near && ring >= 2 && h('text', { x: 352, y: 206, textAnchor: 'end', fontSize: 11, fill: '#a5f3fc' }, 'Dashed ring: typical distance to the nearest'),
+                h('text', { x: 10, y: 19, fontSize: 12, fill: '#cbd5e1' }, '100,000 light-years across')),
+              h('p', { className: 'uni-lab-key' }, caption));
+          }
+          var JUMP_WORLDS = [['Earth', 'Earth', '#22c55e'], ['Mars', 'Mars', '#c2410c'], ['Moon', 'Moon', '#9ca3af'], ['Titan (Saturn moon)', 'Titan', '#d97706'], ['Pluto', 'Pluto', '#e7e5e4']];
+          function jumpFigure(cx, foot, H, extra) {
+            var head = H * 0.13;
+            return h('g', extra,
+              h('circle', { cx: cx, cy: foot - H + head, r: head, fill: '#f8fafc' }),
+              h('path', { d: 'M' + cx + ' ' + (foot - H + 2 * head) + ' L' + cx + ' ' + (foot - H * 0.42)
+                + ' M' + cx + ' ' + (foot - H * 0.42) + ' L' + (cx - H * 0.16) + ' ' + foot + ' M' + cx + ' ' + (foot - H * 0.42) + ' L' + (cx + H * 0.16) + ' ' + foot
+                + ' M' + (cx - H * 0.26) + ' ' + (foot - H * 0.92) + ' L' + cx + ' ' + (foot - H * 0.7) + ' L' + (cx + H * 0.26) + ' ' + (foot - H * 0.92),
+                fill: 'none', stroke: '#f8fafc', strokeWidth: Math.max(1.4, H * 0.07), strokeLinecap: 'round', strokeLinejoin: 'round' }));
+          }
+          function renderJumpLab() {
+            var earthJump = labNumber(d.jumpEarth, 0.2, 1, 0.5), run = typeof d.jumpRun === 'number' ? d.jumpRun : 0;
+            var rows = JUMP_WORLDS.map(function (w) { var gb = GRAVITY_BODIES.filter(function (it) { return it.name === w[0]; })[0]; return { name: w[1], ground: w[2], j: universeJump(earthJump, gb.g) }; });
+            var tallest = Math.max.apply(null, rows.map(function (r) { return r.j.height; })) + 1.7, step = tallest > 12 ? 4 : 2, top = Math.ceil(tallest / step) * step;
+            var GROUND = 186, k = 166 / top, ticks = [];
+            for (var t = 0; t <= top; t += step) ticks.push(t);
+            var pluto = rows[rows.length - 1].j, earth = rows[0].j;
+            var status = 'Every world, the same push: you leave the ground at about ' + earth.speed.toFixed(1) + ' m/s. On Earth you are back down after ' + earth.air.toFixed(1) + ' seconds. On Pluto you rise ' + universeRound(pluto.height) + ' m and stay up for ' + universeRound(pluto.air) + ' seconds.';
+            return h('div', { className: 'uni-lab uni-jump-lab' },
+              h('h4', { className: 'uni-lab-title' }, 'Lab: how high could you jump?'),
+              h('svg', { viewBox: '0 0 360 236', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-jump-title' },
+                h('title', { id: 'uni-jump-title' }, 'One jump on five worlds. ' + rows.map(function (r) { return r.name + ': ' + universeRound(r.j.height) + ' m up, ' + universeRound(r.j.air) + ' s in the air'; }).join('; ') + '.'),
+                h('rect', { x: 0, y: 0, width: 360, height: 236, rx: 12, fill: '#0b1220' }),
+                ticks.map(function (tv) { var y = GROUND - tv * k; return h('g', { key: 't' + tv }, h('line', { x1: 34, x2: 352, y1: y, y2: y, stroke: '#1e293b' }), h('text', { x: 30, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, tv + ' m')); }),
+                rows.map(function (r, i) {
+                  var cx = 66 + i * 64, peak = GROUND - r.j.height * k, H = 1.7 * k;
+                  return h('g', { key: r.name },
+                    h('rect', { x: cx - 30, y: GROUND, width: 60, height: 8, rx: 2, fill: r.ground }),
+                    h('line', { x1: cx + 12, x2: cx + 12, y1: GROUND, y2: peak, stroke: '#64748b', strokeDasharray: '3 3' }),
+                    jumpFigure(cx, peak, H, { opacity: 0.4 }),
+                    jumpFigure(cx, GROUND, H, { key: 'run' + run, className: run > 0 ? 'uni-jump-go' : undefined, style: run > 0 ? { '--uni-jump-h': (r.j.height * k).toFixed(1) + 'px', animationDuration: r.j.air.toFixed(2) + 's' } : undefined }),
+                    h('text', { x: cx, y: 210, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, r.name),
+                    h('text', { x: cx, y: 224, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, universeRound(r.j.height) + ' m · ' + universeRound(r.j.air) + ' s'));
+                })),
+              h('label', { htmlFor: 'universe-jump-earth', className: 'uni-lab-label' }, 'How high you can jump on Earth: ', h('strong', null, earthJump.toFixed(2) + ' m')),
+              h('input', { id: 'universe-jump-earth', type: 'range', min: 0.2, max: 1, step: 0.05, value: earthJump, 'aria-valuetext': earthJump.toFixed(2) + ' metres', onChange: function (e) { uniTouch('gravity'); upd('jumpEarth', parseFloat(e.target.value)); } }),
+              h('button', { type: 'button', className: 'uni-jump-button', onClick: function () { uniTouch('gravity'); upd('jumpRun', run + 1); } }, run > 0 ? 'Jump again' : 'Jump on all five worlds'),
+              h('p', { className: 'uni-lab-key' }, 'Faint figure: the top of the jump. Under each world: how high (m) and how long in the air (s), in real time when you press Jump. Same push from your legs everywhere and no heavy spacesuit: height = your Earth jump ÷ the world’s gravity (in Earth g). Saturn, Jupiter and the Sun have no solid ground to jump from.'),
+              h('p', { className: 'uni-lab-readout', role: 'status' }, status));
+          }
+
+          // ── Round 12: atoms-by-origin figure, planet sizes, mirrors to scale ──
+          // A person filled from the feet up, one band per birthplace (largest first), heights by
+          // share of mass; what no band covers is the many other elements in small amounts.
+          function bodyOriginFigure(shown, origin) {
+            var TOP = 14, BOTTOM = 216, bands = [], y = BOTTOM;
+            shown.forEach(function (src) { var hgt = origin[src.id] / 100 * (BOTTOM - TOP); y -= hgt; bands.push({ src: src, y: y, hgt: hgt }); });
+            var shape = 'M60 14a17 17 0 1 1 0 34a17 17 0 1 1 0 -34Z'
+              + 'M44 53h32q14 0 16 14l6 59q1 8 -7 8q-6 0 -7 -7l-5 -44v126q0 7 -8 7q-8 0 -8 -7v-60h-6v60q0 7 -8 7q-8 0 -8 -7v-126l-5 44q-1 7 -7 7q-8 0 -7 -8l6 -59q2 -14 16 -14Z';
+            return h('svg', { viewBox: '0 0 120 232', className: 'uni-body-figure', 'aria-hidden': 'true', focusable: 'false' },
+              h('defs', null, h('clipPath', { id: 'uni-body-clip' }, h('path', { d: shape }))),
+              h('path', { d: shape, fill: '#64748b', fillOpacity: 0.35 }),
+              h('g', { clipPath: 'url(#uni-body-clip)' }, bands.map(function (b) { return h('rect', { key: b.src.id, x: 0, y: b.y.toFixed(1), width: 120, height: (b.hgt + 0.6).toFixed(1), fill: ELEMENT_SOURCE_COLORS[b.src.id], 'data-src': b.src.id }); })),
+              h('path', { d: shape, fill: 'none', stroke: '#0f172a', strokeOpacity: 0.55, strokeWidth: 1.5 }));
+          }
+          function renderExoplanetSizes() {
+            // Labels alternate between two rows so narrow slots (and phone widths) still read.
+            var K = 2.6, GAP = 14, MIN = 50, x = 10, slots = UNIVERSE_PLANET_SIZES.map(function (p) { var w = Math.max(MIN, p.r * 2 * K + GAP); var slot = { p: p, cx: x + w / 2 }; x += w; return slot; });
+            var W = x + 10, BASE = 110, HGT = 178;
+            return h('div', { className: 'uni-lab uni-planet-sizes' },
+              h('h4', { className: 'uni-lab-title' }, 'How big are they?'),
+              h('svg', { viewBox: '0 0 ' + W.toFixed(0) + ' ' + HGT, className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-planet-sizes-title' },
+                h('title', { id: 'uni-planet-sizes-title' }, 'Planets to scale, by width: ' + UNIVERSE_PLANET_SIZES.map(function (p) { return p.id === 'earth' ? 'Earth' : p.name + ' ' + universeRound(p.r) + ' times as wide'; }).join(', ') + '.'),
+                h('defs', null, UNIVERSE_PLANET_SIZES.map(function (p) { return h('radialGradient', { key: p.id, id: 'uni-planet-' + p.id, cx: '35%', cy: '35%', r: '70%' }, h('stop', { offset: '0%', stopColor: p.colors[0] }), h('stop', { offset: '100%', stopColor: p.colors[1] })); })),
+                h('rect', { x: 0, y: 0, width: W, height: HGT, rx: 12, fill: '#0b1220' }),
+                h('line', { x1: 8, x2: W - 8, y1: BASE + 0.5, y2: BASE + 0.5, stroke: '#334155' }),
+                slots.map(function (sl, i) {
+                  var p = sl.p, r = p.r * K, cy = BASE - r, banded = p.r > 10, ly = BASE + (i % 2 ? 46 : 18);
+                  return h('g', { key: p.id, 'data-planet': p.id },
+                    p.id === 'hotjup' && h('circle', { cx: sl.cx, cy: cy, r: r + 5, fill: '#f97316', fillOpacity: 0.18 }),
+                    h('circle', { cx: sl.cx, cy: cy, r: r, fill: 'url(#uni-planet-' + p.id + ')' }),
+                    banded && [-0.45, -0.15, 0.2, 0.5].map(function (f, k) { return h('ellipse', { key: k, cx: sl.cx, cy: cy + f * r, rx: r * Math.sqrt(1 - f * f) * 0.98, ry: r * 0.05, fill: '#000', fillOpacity: 0.16 }); }),
+                    i % 2 === 1 && h('line', { x1: sl.cx, x2: sl.cx, y1: BASE + 3, y2: ly - 12, stroke: '#475569' }),
+                    h('text', { x: sl.cx, y: ly, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: p.ours ? '#cbd5e1' : '#f8fafc' }, p.name),
+                    h('text', { x: sl.cx, y: ly + 13, textAnchor: 'middle', fontSize: 11, fill: '#cbd5e1' }, p.ours ? 'Solar System' : universeRound(p.r) + ' × Earth'));
+                })),
+              h('p', { className: 'uni-lab-key' }, 'Widths to scale. The most common planets found so far are bigger than Earth but smaller than Neptune, and our Solar System has none like them. Exoplanet kinds are shown at a typical size; real ones vary.'));
+          }
+          // Mirror to scale beside a 1.7 m person; segmented mirrors drawn as hexagons.
+          function renderMirrorScale(D, preset) {
+            var big = Math.max(D, 1.7), k = 132 / big, GROUND = 156, personX = 40, mx = personX + 40 + D * k / 2 + 6, my = GROUND - D * k / 2, r = D * k / 2;
+            var seg = preset && preset.id === 'jwst' ? 1.32 / Math.sqrt(3) : preset && preset.id === 'elt' ? 0.725 : 0, gold = !!preset && preset.id === 'jwst', hexes = [];
+            if (seg) {
+              // seg: segment corner radius in metres (Webb 1.32 m flat to flat, ELT 1.45 m corner
+              // to corner). Webb: two rings of 18 around an empty middle; the ELT: a disc of hundreds.
+              var a = seg * k, rows = Math.ceil(r / (a * 1.5)) + 1;
+              for (var q = -rows; q <= rows; q++) for (var rr = -rows; rr <= rows; rr++) {
+                var hx = mx + a * Math.sqrt(3) * (q + rr / 2), hy = my + a * 1.5 * rr, ring = Math.max(Math.abs(q), Math.abs(rr), Math.abs(q + rr));
+                if (gold ? (ring < 1 || ring > 2) : Math.hypot(hx - mx, hy - my) > r - a * 0.4) continue;
+                var pts = []; for (var c = 0; c < 6; c++) { var ang = Math.PI / 6 + c * Math.PI / 3; pts.push((hx + a * 0.94 * Math.cos(ang)).toFixed(1) + ',' + (hy + a * 0.94 * Math.sin(ang)).toFixed(1)); }
+                hexes.push(h('polygon', { key: q + '_' + rr, points: pts.join(' '), fill: gold ? '#facc15' : '#cbd5e1', fillOpacity: 0.9 }));
+              }
+            }
+            var H = 1.7 * k, tiny = r < 2;
+            return h('svg', { viewBox: '0 0 240 176', className: 'uni-lab-svg uni-mirror-scale', role: 'img', 'aria-labelledby': 'uni-mirror-title' },
+              h('title', { id: 'uni-mirror-title' }, 'To scale: a ' + universeLengthLabel(D) + ' mirror beside a 1.7-metre person.' + (seg ? ' It is built from hexagonal segments.' : '')),
+              h('defs', null, h('radialGradient', { id: 'uni-mirror-silver', cx: '40%', cy: '35%' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '100%', stopColor: '#64748b' }))),
+              h('rect', { x: 0, y: 0, width: 240, height: 176, rx: 10, fill: '#0b1220' }),
+              h('line', { x1: 8, x2: 232, y1: GROUND + 0.5, y2: GROUND + 0.5, stroke: '#475569' }),
+              jumpFigure(personX, GROUND, H, null),
+              h('text', { x: personX, y: GROUND + 14, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'You'),
+              seg ? h('g', null, h('circle', { cx: mx, cy: my, r: r, fill: '#1e293b' }), hexes)
+                : h('circle', { className: 'uni-mirror-disc', cx: mx, cy: my, r: Math.max(r, 0.6), fill: 'url(#uni-mirror-silver)', stroke: tiny ? 'none' : '#94a3b8', strokeWidth: 1.5 }),
+              // Hubble's primary has a hole in the middle: light bounces back through it to the cameras.
+              !!preset && preset.id === 'hubble' && h('circle', { cx: mx, cy: my, r: r * 0.25, fill: '#0b1220', stroke: '#475569' }),
+              tiny && h('path', { d: 'M' + (mx + 4) + ' ' + (my - 4) + ' L' + (mx + 26) + ' ' + (my - 30), stroke: '#fde047', strokeWidth: 1.2 }),
+              h('text', { x: tiny ? mx + 28 : mx, y: tiny ? my - 34 : Math.max(12, my - r - 6), textAnchor: tiny ? 'start' : 'middle', fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, universeLengthLabel(D)));
+          }
+
+          // ── Round 14: What If picker ──
+          function renderWhatIfPicker(open) {
+            var notes = d.whatIfNotes && typeof d.whatIfNotes === 'object' ? d.whatIfNotes : {}, doneCount = 0;
+            var LABELS = { 'new': 'not tried yet', drafted: 'your prediction is written', done: 'compared with a scientist' };
+            var chips = WHAT_IF_COSMIC.map(function (wi, i) {
+              var st = universeWhatIfState(i, notes, d.whatIfShown); if (st === 'done') doneCount++;
+              return h('button', { key: i, type: 'button', className: 'uni-whatif-chip', 'data-state': st, 'aria-pressed': i === open, onClick: function () { upd('whatIfPick', i); } },
+                h('span', { 'aria-hidden': 'true', className: 'uni-whatif-icon' }, UNIVERSE_WHATIF_ICONS[i] || '❓'),
+                h('span', { className: 'uni-whatif-text' }, wi.q.replace(/^What if /, '').replace(/\?$/, '')),
+                h('span', { className: 'uni-sr' }, ', ' + LABELS[st]));
+            });
+            return h('div', { className: 'uni-whatif-picker' },
+              h('p', { className: 'uni-whatif-progress', role: 'status' }, doneCount + ' of ' + WHAT_IF_COSMIC.length + ' compared'),
+              h('div', { className: 'uni-whatif-chips', role: 'group', 'aria-labelledby': 'uni-whatif-chips-label' }, h('span', { id: 'uni-whatif-chips-label', className: 'uni-sr' }, 'Choose a thought experiment'), chips));
+          }
+
+          // ── Round 15: how close is too close? ──
+          function renderDangerRange() {
+            var X0 = 24, PW = 296, TOP = 22, ROW = 30, lo = 0, hi = 5;
+            function x(ly) { return X0 + (Math.log10(Math.max(1, ly)) - lo) / (hi - lo) * PW; }
+            var H = TOP + UNIVERSE_DANGER_RANGES.length * ROW + 66;
+            var bars = UNIVERSE_DANGER_RANGES.map(function (r, i) {
+              var y = TOP + i * ROW;
+              return h('g', { key: r.id, 'data-range': r.id },
+                h('rect', { x: X0, y: y, width: Math.max(2, x(r.ly) - X0), height: 16, rx: 3, fill: r.color }),
+                h('text', { x: Math.min(x(r.ly) + 6, 270), y: y + 12, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, universeRound(r.ly) + ' ly'),
+                h('text', { x: X0, y: y - 3, fontSize: 10, fill: '#cbd5e1' }, r.name));
+            });
+            var base = TOP + UNIVERSE_DANGER_RANGES.length * ROW;
+            var marks = UNIVERSE_DANGER_LANDMARKS.map(function (m, i) {
+              return h('g', { key: m.id, 'data-landmark': m.id },
+                h('line', { x1: x(m.ly), x2: x(m.ly), y1: 6, y2: base, stroke: '#94a3b8', strokeDasharray: '3 3' }),
+                h('text', { x: x(m.ly), y: base + 30 + (i % 2) * 12, textAnchor: m.ly > 10000 ? 'end' : 'middle', fontSize: 10, fill: '#e2e8f0' }, m.name + ' (' + universeBigNumber(m.ly) + ' ly)'));
+            });
+            var ticks = [1, 10, 100, 1000, 10000, 100000].map(function (v) { return h('text', { key: v, x: x(v), y: base + 12, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, universeBigNumber(v)); });
+            var grb = UNIVERSE_DANGER_RANGES[2], sn = UNIVERSE_DANGER_RANGES[1];
+            var text = 'A supernova must be within about ' + sn.ly + ' light-years to threaten us, which is ' + universePercentLabel(universeDiscShare(sn.ly)) + ' of the Milky Way’s disc. A gamma-ray burst can reach ' + universeBigNumber(grb.ly) + ' light-years, about ' + universePercentLabel(universeDiscShare(grb.ly)) + ' of the disc, but only when its jet points at us.';
+            return h('div', { className: 'uni-lab uni-danger' },
+              h('h4', { className: 'uni-lab-title' }, 'How close is too close?'),
+              h('svg', { viewBox: '0 0 360 ' + H, className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-danger-title' },
+                h('title', { id: 'uni-danger-title' }, 'Distances at which each event could harm Earth, on a scale from 1 to 100,000 light-years. ' + text),
+                h('rect', { x: 0, y: 0, width: 360, height: H, rx: 12, fill: '#0b1220' }),
+                marks, bars, ticks,
+                h('text', { x: 180, y: H - 6, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Distance from Earth in light-years (each step is ×10)')),
+              h('p', { className: 'uni-lab-readout' }, text));
+          }
+
+          // ── Round 16: our Sun's fate, to scale ──
+          function renderSunFate() {
+            var stage = UNIVERSE_SUN_STAGES.filter(function (it) { return it.id === d.sunFate; })[0] || UNIVERSE_SUN_STAGES[0];
+            var planets = universeSunPlanets(stage), CX = 180, CY = 100, PXAU = 33;
+            var r = Math.max(1.6, stage.radius * PXAU), giant = stage.id === 'giant';
+            var gone = planets.filter(function (p) { return p.fate === 'gone'; }).map(function (p) { return p.name; });
+            var engulfed = planets.filter(function (p) { return p.fate === 'engulfed'; }).map(function (p) { return p.name; });
+            var status = giant
+              ? engulfed.join(' and ') + ' would be inside the Sun. Earth’s orbit widens to ' + universeRound(planets[2].au) + ' AU, just outside the Sun’s ' + universeRound(stage.radius) + ' AU radius, but the Sun’s pull on the air and tides may still drag Earth in. Models disagree.'
+              : stage.id === 'dwarf' ? gone.join(' and ') + ' are gone, swallowed by the red giant. The star is now only Earth-sized, but still hot, and the planets that survived circle farther out than before. Earth, if it survived, would be at about ' + universeRound(planets[2].au) + ' AU.'
+              : 'Today the Sun is a tiny dot at this scale: its whole width is about ' + universeRound(stage.radius * 2 * 149.6) + ' million km, and Earth is 150 million km away.';
+            var planetEls = planets.map(function (p, i) {
+              if (p.fate === 'gone') return null;
+              var pr = p.au * PXAU, ang = -0.6 + i * 1.55, px = CX + pr * Math.cos(ang), py = CY + pr * Math.sin(ang);
+              return h('g', { key: p.name, 'data-planet': p.name, 'data-fate': p.fate },
+                h('circle', { cx: CX, cy: CY, r: pr, fill: 'none', stroke: p.fate === 'engulfed' ? '#7f1d1d' : '#475569', strokeDasharray: p.fate === 'engulfed' ? '3 3' : undefined }),
+                h('circle', { cx: px, cy: py, r: 3.4, fill: p.fate === 'engulfed' ? '#f87171' : '#7dd3fc' }),
+                h('text', { x: px + 6, y: py - 5, fontSize: 11, fill: '#e2e8f0' }, p.name));
+            });
+            var color = giant ? '#ef4444' : stage.id === 'dwarf' ? '#e0f2fe' : '#fde047';
+            return h('div', { className: 'uni-lab uni-sunfate' },
+              h('h4', { className: 'uni-lab-title' }, 'Our Sun’s fate, to scale'),
+              labChoices('Stage', 'uni-sunfate-label', UNIVERSE_SUN_STAGES, function (it) { return it.id === stage.id; }, function (it) { uniTouch('star-lifecycle'); upd('sunFate', it.id); }),
+              h('svg', { viewBox: '0 0 360 200', className: 'uni-lab-svg', role: 'img', 'aria-labelledby': 'uni-sunfate-title' },
+                h('title', { id: 'uni-sunfate-title' }, stage.name + ': ' + stage.note + '. ' + status),
+                h('defs', null, h('radialGradient', { id: 'uni-sunfate-glow' }, h('stop', { offset: '0%', stopColor: color, stopOpacity: 0.9 }), h('stop', { offset: '100%', stopColor: color, stopOpacity: 0 }))),
+                h('rect', { x: 0, y: 0, width: 360, height: 200, rx: 12, fill: '#0b1220' }),
+                h('circle', { cx: CX, cy: CY, r: r * 2.6, fill: 'url(#uni-sunfate-glow)' }),
+                h('circle', { className: 'uni-sunfate-star', cx: CX, cy: CY, r: r, fill: color }),
+                planetEls,
+                h('line', { x1: 14, x2: 14 + PXAU, y1: 188, y2: 188, stroke: '#cbd5e1', strokeWidth: 2 }),
+                h('text', { x: 14, y: 182, fontSize: 10, fill: '#cbd5e1' }, '1 AU (Earth–Sun distance today)')),
+              h('p', { className: 'uni-lab-key' }, stage.name + ': ' + stage.note + '. Orbits are drawn from above; planets are not to scale. Dashed red rings: planets inside the red giant Sun.'),
+              h('p', { className: 'uni-lab-readout', role: 'status' }, status));
+          }
+
+          // ── Making sense of cosmic time: chapter length, a true-scale bar, a calendar ──
+          function renderTimeScale() {
+            var future = epochIndex === EPOCHS.length - 1, chapterMoments = future ? [] : UNIVERSE_SEGMENTS[epochIndex].moments;
+            var lengthText = future ? 'A possible future' : epochIndex === EPOCHS.length - 2 ? 'Today, then a look ahead' : chapterSpan;
+            return h('section', { className: 'uni-timescale', 'aria-labelledby': 'universe-timescale-title' },
+              h('h3', { id: 'universe-timescale-title' }, 'Making sense of cosmic time'),
+              h('div', { className: 'uni-timescale-stats' },
+                h('div', null, h('span', null, 'Moment in cosmic history'), h('strong', { 'data-universe-live': 'age' }, formatCosmicTimeLabel(cosmicTime)), h('small', null, epoch.name)),
+                h('div', null, h('span', null, 'This chapter lasts'), h('strong', null, lengthText), h('small', null, future ? 'Not part of the observed history' : epochIndex === EPOCHS.length - 2 ? 'The present day' : epoch.name + ' → ' + EPOCHS[epochIndex + 1].name)),
+                h('div', null, h('span', null, 'On a cosmic calendar'), h('strong', { 'data-universe-live': 'calendar' }, universeCalendarLabel(cosmicTime)), h('small', null, 'If 13.8 billion years were one year'))),
+              h('div', { className: 'uni-true-scale' },
+                h('p', { id: 'universe-true-scale-label', className: 'uni-true-scale-label' }, 'The same history on a true time scale'),
+                h('div', { className: 'uni-true-scale-bar', role: 'img', 'aria-labelledby': 'universe-true-scale-label', 'aria-describedby': 'universe-true-scale-note' },
+                  EPOCHS.slice(0, EPOCHS.length - 2).map(function (ep, i) { return h('span', { key: ep.id, className: 'uni-true-scale-part' + (i === epochIndex ? ' is-current' : ''), style: { width: (EPOCHS[i + 1].t - ep.t) / UNIVERSE_PRESENT_GYR * 100 + '%', background: ep.border } }); }),
+                  !future && h('i', { className: 'uni-true-scale-marker', 'data-universe-live': 'marker', 'aria-hidden': 'true', style: { left: Math.min(100, cosmicTime / UNIVERSE_PRESENT_GYR * 100) + '%' } })),
+                h('div', { className: 'uni-true-scale-ends', 'aria-hidden': 'true' }, h('span', null, 'Big Bang'), h('span', null, '4.6 Gyr'), h('span', null, '9.2 Gyr'), h('span', null, 'Today')),
+                h('p', { id: 'universe-true-scale-note', className: 'uni-true-scale-note' }, 'On a true scale, chapters 1 to 4 (the first 400 million years) squeeze into the first 3% of the bar. The time-lapse gives every chapter equal space so you can see them.')),
+              h('div', { className: 'uni-conditions', role: 'group', 'aria-labelledby': 'universe-conditions-title' },
+                h('h4', { id: 'universe-conditions-title' }, 'The universe at this moment'),
+                h('div', { className: 'uni-timescale-stats' },
+                  h('div', null, h('span', null, 'Temperature of the background light'), h('strong', { 'data-universe-live': 'temp' }, conditions.temp), h('small', null, 'It cools as space stretches: 2.7 K today')),
+                  h('div', null, h('span', null, 'Distances compared with today'), h('strong', { 'data-universe-live': 'size' }, conditions.size), h('small', null, 'Space itself has grown since then')),
+                  h('div', null, h('span', null, 'Redshift of light from this time'), h('strong', { 'data-universe-live': 'redshift' }, conditions.redshift), h('small', null, 'How much expansion stretches it on the way to us'))),
+                h('p', { className: 'uni-true-scale-note' }, conditions.note + ' Computed from the standard cosmological model (Planck 2018).')),
+              chapterMoments.length > 0 && h('div', { className: 'uni-moment-list', role: 'group', 'aria-labelledby': 'universe-moment-list-title' },
+                h('p', { id: 'universe-moment-list-title', className: 'uni-eyebrow' }, 'Key moments in this chapter'),
+                h('div', null, chapterMoments.map(function (moment) {
+                  var here = storyMomentNow && storyMoment.id === moment.id;
+                  return h('button', { key: moment.id, type: 'button', 'aria-pressed': here, onClick: function () { visitTime(moment.age); } }, h('strong', null, moment.title), h('small', null, universeAgeLabel(moment.age)));
+                }))),
+              storyMoment && h('div', { className: 'uni-key-moment' + (storyMomentNow ? ' is-now' : '') },
+                h('p', { className: 'uni-eyebrow' }, storyMomentNow ? 'Key moment' : 'Nearest key moment'),
+                h('h4', null, storyMoment.title, h('small', null, ' · ' + universeAgeLabel(storyMoment.age) + ' · ' + universeCalendarLabel(storyMoment.age))),
+                h('p', null, storyMoment.text)),
+              h('details', { className: 'uni-order', id: 'universe-order-game' },
+                h('summary', null, h('span', { 'aria-hidden': 'true' }, '🧩 '), 'Time detective: put cosmic history in order', (d.orderPerfect || 0) > 0 && h('small', null, ' · ' + d.orderPerfect + ' perfect')),
+                !orderGame ? h('div', { className: 'uni-order-intro' },
+                  h('p', null, 'Five events from the story, shuffled. Move them from earliest to latest, then check. The checked list shows each real age and its place on the cosmic calendar.'),
+                  h('button', { type: 'button', className: 'uni-order-check', onClick: newOrderRound }, 'Start a round'))
+                : (function () {
+                  var sorted = orderSorted(orderGame.order), right = orderGame.order.filter(function (id, i) { return sorted[i] === id; }).length;
+                  return h('div', null,
+                    h('p', { className: 'uni-order-direction' }, 'Earliest at the top ↓ latest at the bottom'),
+                    h('ol', { className: 'uni-order-list' }, orderGame.order.map(function (id, index) {
+                      var item = universeOrderEvent(id), placed = sorted[index] === id;
+                      return h('li', { key: id, 'data-result': orderGame.checked ? (placed ? 'right' : 'wrong') : undefined },
+                        h('span', { className: 'uni-order-rank', 'aria-hidden': 'true' }, index + 1),
+                        h('span', { className: 'uni-order-title' }, item.title, orderGame.checked && h('small', null, universeAgeLabel(item.age) + ' · ' + universeCalendarLabel(item.age))),
+                        orderGame.checked ? h('span', { className: 'uni-order-mark' }, h('span', { 'aria-hidden': 'true' }, placed ? '✓' : '✗'), h('span', { className: 'sr-only' }, placed ? ' in the right place' : ' in the wrong place'))
+                        : h('span', { className: 'uni-order-moves' },
+                          h('button', { type: 'button', 'data-order-move': id + '-up', disabled: index === 0, onClick: function () { moveOrder(index, -1); } }, h('span', { 'aria-hidden': 'true' }, '▲'), h('span', { className: 'sr-only' }, 'Move ' + item.title + ' earlier')),
+                          h('button', { type: 'button', 'data-order-move': id + '-down', disabled: index === orderGame.order.length - 1, onClick: function () { moveOrder(index, 1); } }, h('span', { 'aria-hidden': 'true' }, '▼'), h('span', { className: 'sr-only' }, 'Move ' + item.title + ' later'))));
+                    })),
+                    orderGame.checked && h('p', { className: 'uni-order-score', role: 'status' }, right + ' of 5 in the right place. ' + (right === 5 ? 'A perfect timeline!' : 'Correct order: ' + sorted.map(function (id) { return universeOrderEvent(id).title; }).join(' → ') + '.')),
+                    h('div', { className: 'uni-order-actions' }, orderGame.checked ? h('button', { type: 'button', className: 'uni-order-check', onClick: newOrderRound }, 'New round') : h('button', { type: 'button', className: 'uni-order-check', onClick: checkOrder }, 'Check my order')));
+                })()));
           }
 
 
@@ -4617,6 +7461,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var filamentGraphKey = '', filamentEdges = [];
             var galaxySites = [];
             for (var site = 0; site < 16; site++) galaxySites.push({ x: 0.07 + ((site * 0.61803398875 + 0.12) % 1) * 0.86, y: 0.12 + ((site * 0.38196601125 + site * site * 0.071) % 1) * 0.73 });
+            // The first objects to appear take sites clear of the corner buttons and the caption.
+            galaxySites = [7, 1, 4, 9, 12, 15, 2, 14, 3, 6, 11, 5, 10, 0, 8, 13].map(function (index) { return galaxySites[index]; });
+            var MILKY_WAY_SITE = 2;
+            // Galaxies on the illustration clock: a few small ones at cosmic dawn, sixteen by the Milky Way's assembly.
+            // Ripples in the early plasma: tiny density differences (about 1 part in 100,000;
+            // exaggerated here so they show) that gravity later grew into galaxies.
+            var plasmaRipples = (function () { var rand = quizRng(1989), list = []; for (var i = 0; i < 46; i++) list.push({ x: rand(), y: rand(), r: 0.035 + rand() * 0.07, hot: rand() < 0.5 }); return list; })();
+            // ── Zoom window (round 13): galaxy assembly, the young Sun, then Earth through time ──
+            // Continents: 12 seeded clusters of 3 overlapping patches each, for ragged coastlines.
+            var earthBlobs = (function () {
+              var rand = quizRng(4540), list = [];
+              for (var i = 0; i < 12; i++) {
+                var lon = i * 0.5236 + rand() * 0.4, lat = (rand() - 0.5) * 1.5;
+                for (var k = 0; k < 3; k++) list.push({ lon: lon + (rand() - 0.5) * 0.35, lat: lat + (rand() - 0.5) * 0.35, s: 0.1 + rand() * 0.13, ar: 0.7 + rand() * 0.8, group: i });
+              }
+              return list;
+            })();
+            var PANGAEA = [{ lon: -0.45, lat: 0.25, s: 0.42, ar: 1.2 }, { lon: -0.1, lat: -0.15, s: 0.38, ar: 1.1 }, { lon: 0.25, lat: 0.3, s: 0.3, ar: 1 }, { lon: -0.2, lat: -0.55, s: 0.26, ar: 0.9 }];
+            var EARTH_LOOKS = {
+              molten: { sea: ['#c2410c', '#3b0a04'], land: null, rim: 'rgba(251,146,60,0.6)' },
+              oceans: { sea: ['#2b7a96', '#0b2a40'], land: '#6b6259', rim: 'rgba(203,213,225,0.5)' },
+              rust: { sea: ['#3b82f6', '#0b2a5c'], land: '#a8553a', rim: 'rgba(147,197,253,0.65)' },
+              ice: { sea: ['#f1f5f9', '#8fa3bb'], land: '#ffffff', rim: 'rgba(224,242,254,0.75)' },
+              green: { sea: ['#3b82f6', '#0b2a5c'], land: '#4d7c0f', rim: 'rgba(147,197,253,0.7)', clouds: true, caps: true },
+              pangaea: { sea: ['#3b82f6', '#0b2a5c'], land: '#65741f', rim: 'rgba(147,197,253,0.7)', clouds: true }
+            };
+            function drawZoomGalaxy(R, frac) {
+              var spin = tick * 0.0004;
+              ctx.save(); ctx.rotate(spin); ctx.scale(1, 0.8); ctx.lineCap = 'round';
+              for (var arm = 0; arm < 2; arm++) {
+                ctx.beginPath();
+                for (var a = 0; a <= 6.2; a += 0.12) { var ar = R * 0.15 * Math.exp(0.27 * a), ax = Math.cos(a + arm * Math.PI) * ar, ay = Math.sin(a + arm * Math.PI) * ar; if (a === 0) ctx.moveTo(ax, ay); else ctx.lineTo(ax, ay); }
+                ctx.strokeStyle = 'rgba(147,197,253,0.22)'; ctx.lineWidth = R * 0.16; ctx.stroke();
+                ctx.strokeStyle = 'rgba(219,234,254,0.4)'; ctx.lineWidth = R * 0.045; ctx.stroke();
+              }
+              ctx.fillStyle = 'rgba(253,230,138,0.5)'; ctx.beginPath(); ctx.ellipse(0, 0, R * 0.24, R * 0.075, 0, 0, Math.PI * 2); ctx.fill();
+              var core = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.4);
+              core.addColorStop(0, 'rgba(255,244,214,0.95)'); core.addColorStop(0.4, 'rgba(251,191,36,0.35)'); core.addColorStop(1, 'rgba(251,191,36,0)');
+              ctx.fillStyle = core; ctx.fillRect(-R, -R, R * 2, R * 2);
+              ctx.restore();
+              // Dwarf galaxies spiral in one after another as the chapter goes on, trailing torn-off stars.
+              for (var dw = 0; dw < 3; dw++) {
+                var f = frac * 1.6 - dw * 0.3; if (f <= 0 || f >= 1) continue;
+                var at = function (ff) { var rr = R * (0.95 - 0.75 * ff), aa = dw * 2.1 + ff * 2 + 0.4; return [Math.cos(aa) * rr, Math.sin(aa) * rr * 0.8]; };
+                ctx.strokeStyle = 'rgba(254,243,199,0.3)'; ctx.lineWidth = 2 * dpr; ctx.beginPath();
+                for (var st = 0; st <= 6; st++) { var tp = at(Math.max(0, f - st * 0.05)); if (st === 0) ctx.moveTo(tp[0], tp[1]); else ctx.lineTo(tp[0], tp[1]); }
+                ctx.stroke();
+                var p = at(f), dg = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], R * 0.1);
+                dg.addColorStop(0, 'rgba(254,243,199,0.95)'); dg.addColorStop(1, 'rgba(254,243,199,0)');
+                ctx.fillStyle = dg; ctx.beginPath(); ctx.arc(p[0], p[1], R * 0.1, 0, Math.PI * 2); ctx.fill();
+              }
+            }
+            function drawZoomDisk(R) {
+              var cloud = ctx.createRadialGradient(0, 0, R * 0.1, 0, 0, R);
+              cloud.addColorStop(0, 'rgba(190,80,60,0.38)'); cloud.addColorStop(1, 'rgba(60,20,40,0)');
+              ctx.fillStyle = cloud; ctx.fillRect(-R, -R, R * 2, R * 2);
+              var dr = R * 0.92;
+              ctx.save(); ctx.rotate(-0.23);
+              ctx.save(); ctx.scale(1, 0.34); ctx.rotate(tick * 0.0007); ctx.drawImage(dustDiskTexture, -dr, -dr, dr * 2, dr * 2); ctx.restore();
+              var coreR = dr * 0.24, g = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
+              g.addColorStop(0, 'rgba(255,247,216,1)'); g.addColorStop(0.18, 'rgba(255,216,135,0.85)'); g.addColorStop(0.5, 'rgba(249,165,83,0.2)'); g.addColorStop(1, 'rgba(249,165,83,0)');
+              ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.fillRect(-coreR, -coreR, coreR * 2, coreR * 2); ctx.restore();
+              for (var pli = 0; pli < 5; pli++) {
+                var plAngle = pli * 2.399963 + tick * 0.008 / Math.pow(1 + pli * 0.34, 1.5), plR = dr * (0.3 + pli * 0.15);
+                ctx.beginPath(); ctx.arc(Math.cos(plAngle) * plR, Math.sin(plAngle) * plR * 0.34, (1.1 + pli * 0.3) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(240,209,165,0.85)'; ctx.fill();
+              }
+              ctx.restore();
+            }
+            function drawZoomEarth(R, era) {
+              var look = EARTH_LOOKS[era.look], er = R * 0.66, spin = tick * 0.004;
+              var sea = ctx.createRadialGradient(-er * 0.35, -er * 0.35, er * 0.1, 0, 0, er);
+              sea.addColorStop(0, look.sea[0]); sea.addColorStop(1, look.sea[1]);
+              ctx.save(); ctx.beginPath(); ctx.arc(0, 0, er, 0, Math.PI * 2); ctx.fillStyle = sea; ctx.fill(); ctx.clip();
+              function project(b, extra) { var lon = b.lon + spin * (extra || 1), c = Math.cos(lon); return { c: c, x: Math.sin(lon) * Math.cos(b.lat) * er, y: -Math.sin(b.lat) * er }; }
+              if (era.look === 'molten') {
+                // Glowing magma and fresh impacts.
+                ctx.save(); ctx.globalCompositeOperation = 'lighter';
+                earthBlobs.forEach(function (b, i) {
+                  var q = project(b); if (q.c < 0) return;
+                  var gr = b.s * er * 1.3 * (0.5 + 0.5 * q.c), lg = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, gr);
+                  lg.addColorStop(0, i % 3 === 0 ? 'rgba(254,240,138,0.9)' : 'rgba(251,146,60,0.6)'); lg.addColorStop(1, 'rgba(251,146,60,0)');
+                  ctx.fillStyle = lg; ctx.fillRect(q.x - gr, q.y - gr, gr * 2, gr * 2);
+                });
+                ctx.restore();
+              } else {
+                (era.look === 'pangaea' ? PANGAEA : earthBlobs).forEach(function (b) {
+                  var q = project(b); if (q.c < -0.1) return;
+                  ctx.fillStyle = look.land; ctx.beginPath();
+                  ctx.ellipse(q.x, q.y, Math.max(1, b.s * er * Math.max(0.12, q.c)), b.s * er * b.ar * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+                });
+                if (era.look === 'ice') {
+                  // A thin belt of slushy open water may have survived near the equator.
+                  var belt = ctx.createLinearGradient(0, -er * 0.2, 0, er * 0.2);
+                  belt.addColorStop(0, 'rgba(30,64,175,0)'); belt.addColorStop(0.5, 'rgba(30,64,175,0.32)'); belt.addColorStop(1, 'rgba(30,64,175,0)');
+                  ctx.fillStyle = belt; ctx.fillRect(-er, -er * 0.2, er * 2, er * 0.4);
+                }
+                if (look.caps) { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.ellipse(0, -er * 0.97, er * 0.5, er * 0.16, 0, 0, Math.PI * 2); ctx.ellipse(0, er * 0.97, er * 0.6, er * 0.2, 0, 0, Math.PI * 2); ctx.fill(); }
+                if (look.clouds) {
+                  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                  earthBlobs.forEach(function (b, i) { var q = project({ lon: b.lon + 1.7, lat: b.lat * 0.8 }, 1.35); if (q.c < 0 || i % 3) return; ctx.beginPath(); ctx.ellipse(q.x, q.y, er * 0.3 * Math.max(0.15, q.c), er * 0.05, 0, 0, Math.PI * 2); ctx.fill(); });
+                }
+              }
+              // Night side, and today's city lights on it.
+              var night = ctx.createLinearGradient(-er * 0.2, 0, er, 0);
+              night.addColorStop(0, 'rgba(2,6,23,0)'); night.addColorStop(1, 'rgba(2,6,23,0.8)');
+              ctx.fillStyle = night; ctx.fillRect(-er, -er, er * 2, er * 2);
+              if (era.today) {
+                ctx.fillStyle = 'rgba(253,224,71,0.95)';
+                earthBlobs.forEach(function (b) { var q = project(b); if (q.c < 0.1 || q.x < er * 0.2) return; for (var k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(q.x + (k - 1) * er * 0.05, q.y + (k % 2 - 0.5) * er * 0.06, Math.max(0.8, 1.1 * dpr), 0, Math.PI * 2); ctx.fill(); } });
+              }
+              ctx.restore();
+              ctx.strokeStyle = look.rim; ctx.lineWidth = Math.max(1.5, R * 0.045); ctx.beginPath(); ctx.arc(0, 0, er + R * 0.025, 0, Math.PI * 2); ctx.stroke();
+            }
+            function galaxiesAt(clock) { return clock < 0.9 ? 0 : clock < 1.17 ? (clock - 0.9) * 22 : Math.min(16, 6 + (clock - 1.17) * 2.92); }
             var deepField = [];
             for (var df = 0; df < 34; df++) {
               deepField.push({
@@ -4650,12 +7609,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 if (!stillScene) tick++;
 
                 var actualAge = parseFloat(canvasEl.dataset.time || '0');
-                var ep = getCurrentEpoch(actualAge);
-                // Illustration clock: preserves the artwork while the labels use physical ages.
-                var sceneStops = [0, 0.32, 0.4, 0.65, 1.1, 4.6, 9.2, 13.8, 13.81];
-                var sceneIndex = EPOCHS.indexOf(ep);
-                var sceneFraction = sceneIndex === 8 ? 0 : (actualAge - ep.t) / (EPOCHS[sceneIndex + 1].t - ep.t);
-                var t = sceneStops[sceneIndex] + (sceneIndex === 8 ? 0 : sceneFraction * (sceneStops[sceneIndex + 1] - sceneStops[sceneIndex]));
+                // Illustration clock: the artwork's own timeline, advanced at story pace so each
+                // chapter's pictures change evenly while the labels keep physical ages.
+                var t = universeSceneClock(actualAge);
+                // Everything a learner can click is recorded as it is drawn (canvas pixels).
+                var hotspots = [];
+                function spot(kind, id, x, y, r, path, exact) { hotspots.push({ kind: kind, id: kind + ':' + id, x: x, y: y, r: exact ? r : Math.max(r, 12 * dpr), path: path || null }); }
 
                 ctx.clearRect(0, 0, W, H);
 
@@ -4667,8 +7626,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 var skyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.7);
 
-                if (t < 0.2) {
-                  skyGrad.addColorStop(0, '#8b4528'); skyGrad.addColorStop(1, '#743f32');
+                if (t < 0.32) {
+                  // Opaque plasma: an even glow cooling from yellow-white to orange.
+                  var heat = t / 0.32, hot = [255, 222, 160], warm = [246, 158, 82], cool = [190, 88, 42];
+                  var mixFrom = heat < 0.5 ? hot : warm, mixTo = heat < 0.5 ? warm : cool, mixU = heat < 0.5 ? heat * 2 : heat * 2 - 1;
+                  var plasma = mixFrom.map(function (v, k) { return Math.round(v + (mixTo[k] - v) * mixU); });
+                  skyGrad.addColorStop(0, 'rgb(' + plasma.join(',') + ')'); skyGrad.addColorStop(1, 'rgb(' + plasma.map(function (v) { return Math.round(v * 0.88); }).join(',') + ')');
                 } else if (t < 0.4) {
 
                   // Dark Ages: deep indigo-black
@@ -4694,10 +7657,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }
 
                 ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+                if (t < 0.32) {
+                  ctx.save();
+                  for (var rpi = 0; rpi < plasmaRipples.length; rpi++) {
+                    var rp = plasmaRipples[rpi], rpx = rp.x * W, rpy = rp.y * H, rpr = rp.r * W, rpGrad = ctx.createRadialGradient(rpx, rpy, 0, rpx, rpy, rpr);
+                    rpGrad.addColorStop(0, rp.hot ? 'rgba(255,248,225,0.18)' : 'rgba(110,36,8,0.14)'); rpGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = rpGrad; ctx.fillRect(rpx - rpr, rpy - rpr, rpr * 2, rpr * 2);
+                  }
+                  ctx.restore();
+                }
                 // Full-field gas has no central source; the expanding grid remains readable.
-                if (t < 0.2 || (t >= 0.4 && t < 1)) {
-                  ctx.save(); ctx.globalAlpha = t < 0.2 ? 0.16 : 0.11 * (1 - (t - 0.4) / 0.6);
-                  ctx.drawImage(cloudTextures[t < 0.2 ? 0 : 1], 0, 0, W, H); ctx.restore();
+                if (t < 0.32 || (t >= 0.4 && t < 1)) {
+                  ctx.save(); ctx.globalAlpha = t < 0.32 ? 0.2 : 0.11 * (1 - (t - 0.4) / 0.6);
+                  ctx.drawImage(cloudTextures[t < 0.32 ? 0 : 1], 0, 0, W, H); ctx.restore();
                 }
 
                 // Cinematic deep-field layer: distant galaxies and epoch-specific light.
@@ -4725,22 +7697,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 // Expanding separations across a representative patch of space; no privileged center.
                 if (t < 0.3) {
-                  var spacing = (30 + t * 180 + (stillScene ? 0 : tick % 240 / 240 * 8)) * dpr;
-                  ctx.strokeStyle = 'rgba(255,224,170,.22)'; ctx.lineWidth = dpr;
-                  for (var gx = -spacing; gx < W + spacing; gx += spacing) {
+                  // Inflation (between Planck time and its end) opens the grid up fast; after
+                  // that, ordinary expansion keeps stretching it more slowly. Not to scale.
+                  var chapterF = t / 0.32, knots0 = UNIVERSE_SEGMENTS[0].at;
+                  var inflating = chapterF < knots0[1] ? 0 : chapterF < knots0[2] ? (chapterF - knots0[1]) / (knots0[2] - knots0[1]) : 1;
+                  var cell = chapterF < knots0[2] ? 6 * Math.pow(6, inflating) : 36 + (chapterF - knots0[2]) / (1 - knots0[2]) * 50;
+                  var spacing = (cell + (stillScene ? 0 : tick % 240 / 240 * 8 * Math.min(1, cell / 36))) * dpr, gridDots = spacing >= 14 * dpr;
+                  ctx.strokeStyle = 'rgba(92,40,12,' + (gridDots ? 0.3 : 0.18) + ')'; ctx.lineWidth = dpr;
+                  for (var gx = -spacing, gcol = -1; gx < W + spacing; gx += spacing, gcol++) {
                     ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
-                    for (var gy = -spacing; gy < H + spacing; gy += spacing) {
-                      ctx.beginPath(); ctx.arc(gx, gy, 2 * dpr, 0, Math.PI * 2); ctx.fillStyle = '#ffe4b5'; ctx.fill();
+                    for (var gy = -spacing, grow = -1; gridDots && gy < H + spacing; gy += spacing, grow++) {
+                      ctx.beginPath(); ctx.arc(gx, gy, 2.2 * dpr, 0, Math.PI * 2); ctx.fillStyle = 'rgba(110,46,14,0.78)'; ctx.fill();
+                      if (gx >= 0 && gy >= 0 && gx <= W && gy <= H) spot('grid', gcol + '_' + grow, gx, gy, 6 * dpr, null, true);
                     }
                   }
                   for (var gy2 = 0; gy2 < H; gy2 += spacing) { ctx.beginPath(); ctx.moveTo(0, gy2); ctx.lineTo(W, gy2); ctx.stroke(); }
                 }
 
-                // ── Illustrative afterglow: continuous mottling, rather than isolated light sources ──
-                if (t > 0.15 && t < 1.0) {
-                  var cmbPhase = (t - 0.15) / 0.85, cmbAlpha = Math.max(0, 0.35 * (1 - cmbPhase));
-                  ctx.save(); ctx.globalAlpha = cmbAlpha * 0.85;
-                  ctx.drawImage(cloudTextures[0], 0, 0, W, H); ctx.restore();
+                // ── First minutes: protons (red) and neutrons (grey), then helium nuclei ──
+                // 48 protons and 8 neutrons: about the 7-to-1 mix when fusion began. Fusion
+                // binds every neutron into helium, leaving roughly a quarter of the mass in helium.
+                var chapterA = t / 0.32, knotsA = UNIVERSE_SEGMENTS[0].at;
+                if (t < 0.32 && chapterA >= knotsA[3]) {
+                  var appear = Math.min(1, (chapterA - knotsA[3]) / 0.05) * (t > 0.3 ? Math.max(0, (0.32 - t) / 0.02) : 1);
+                  var fuse = chapterA < knotsA[5] ? 0 : Math.min(1, (chapterA - knotsA[5]) / (knotsA[6] - knotsA[5]));
+                  var nucleonR = 2.6 * dpr, heliumAt = [[0.2, 0.32], [0.42, 0.66], [0.62, 0.3], [0.82, 0.64]].map(function (p) { return { x: p[0] * W, y: p[1] * H }; });
+                  ctx.save();
+                  for (var bi = 0; bi < 56; bi++) {
+                    var nx = ((Math.sin(bi * 91.7) * 9301.3) % 1 + 1) % 1, ny = ((Math.sin(bi * 47.3) * 4831.9) % 1 + 1) % 1, jig = stillScene ? 0 : 3 * dpr;
+                    var px = nx * W + Math.sin(tick * 0.05 + bi) * jig, py = ny * H + Math.cos(tick * 0.045 + bi * 1.3) * jig;
+                    var neutron = bi < 8, group = neutron ? Math.floor(bi / 2) : bi < 16 ? Math.floor((bi - 8) / 2) : -1;
+                    if (group >= 0 && fuse > 0) {
+                      var slot = neutron ? bi % 2 : 2 + (bi - 8) % 2, home = heliumAt[group];
+                      var hx = home.x + (slot % 2 ? 1 : -1) * nucleonR * 0.95, hy = home.y + (slot < 2 ? -1 : 1) * nucleonR * 0.95;
+                      px += (hx - px) * fuse; py += (hy - py) * fuse;
+                    }
+                    ctx.globalAlpha = appear;
+                    ctx.beginPath(); ctx.arc(px, py, nucleonR, 0, Math.PI * 2);
+                    ctx.fillStyle = neutron ? '#cbd5e1' : '#ef4444'; ctx.fill();
+                    ctx.lineWidth = 1.2 * dpr; ctx.strokeStyle = 'rgba(69,26,3,0.85)'; ctx.stroke();
+                    if (appear > 0.5 && !(group >= 0 && fuse > 0.6)) spot('baryon', bi, px, py, 6 * dpr);
+                  }
+                  if (fuse > 0.6 && appear > 0.5) heliumAt.forEach(function (home, k) { spot('helium', k, home.x, home.y, 8 * dpr); });
+                  ctx.restore();
+                }
+
+                // ── Afterglow: the freed light, mottled, dimming and reddening as space stretches ──
+                if (t >= 0.32 && t < 0.52) {
+                  var cmbAlpha = 0.72 * Math.pow(Math.max(0, 1 - (t - 0.32) / 0.2), 2);
+                  ctx.save(); ctx.globalAlpha = cmbAlpha;
+                  ctx.drawImage(cloudTextures[0], 0, 0, W, H);
+                  ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = Math.min(1, (t - 0.32) / 0.08) * 0.85;
+                  ctx.fillStyle = '#7f1d1d'; ctx.fillRect(0, 0, W, H); ctx.restore();
+                }
+
+                // ── Light: zigzags while trapped in the plasma, flies straight once atoms form ──
+                if (t >= 0.12 && t < 0.48) {
+                  var trapped = t < 0.32, photonAlpha = trapped ? Math.min(1, (t - 0.12) / 0.05) : Math.max(0, 1 - (t - 0.32) / 0.16);
+                  var redshift = trapped ? 0 : Math.min(1, (t - 0.32) / 0.12);
+                  var photonColor = 'rgba(255,' + Math.round(236 - 120 * redshift) + ',' + Math.round(190 - 100 * redshift) + ',';
+                  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  for (var phi = 0; phi < 22; phi++) {
+                    var phx = (Math.sin(phi * 12.9898) * 43758.5453) % 1, phy = (Math.sin(phi * 78.233) * 12345.678) % 1;
+                    phx = (phx + 1) % 1 * W; phy = (phy + 1) % 1 * H;
+                    if (trapped) {
+                      // A random walk: many short hops that go nowhere fast.
+                      var hop = 9 * dpr, hx = phx, hy = phy, walk = [hx, hy], beat = stillScene ? 0 : Math.floor(tick / 18);
+                      for (var st = 1; st <= 9; st++) { var turn = Math.sin(phi * 3.7 + st * 2.3 + beat * 0.9) * Math.PI * 2; hx += Math.cos(turn) * hop; hy += Math.sin(turn) * hop; walk.push(hx, hy); }
+                      [[3.2, 'rgba(92,40,12,' + 0.35 * photonAlpha + ')'], [1.3, photonColor + 0.95 * photonAlpha + ')']].forEach(function (pass) {
+                        ctx.beginPath(); ctx.moveTo(walk[0], walk[1]);
+                        for (var w = 2; w < walk.length; w += 2) ctx.lineTo(walk[w], walk[w + 1]);
+                        ctx.lineWidth = pass[0] * dpr; ctx.strokeStyle = pass[1]; ctx.stroke();
+                      });
+                      ctx.beginPath(); ctx.arc(hx, hy, 2.2 * dpr, 0, Math.PI * 2); ctx.fillStyle = photonColor + photonAlpha + ')'; ctx.fill();
+                      spot('photon-trapped', phi, hx, hy, 8 * dpr);
+                    } else {
+                      var heading2 = phi * 2.399963, run = (stillScene ? 0.4 * (W + H) : tick * 1.4 * dpr) + phi * 41 * dpr;
+                      var headX = ((phx + Math.cos(heading2) * run) % W + W) % W, headY = ((phy + Math.sin(heading2) * run) % H + H) % H;
+                      var tail = 30 * dpr, streak = ctx.createLinearGradient(headX - Math.cos(heading2) * tail, headY - Math.sin(heading2) * tail, headX, headY);
+                      streak.addColorStop(0, photonColor + '0)'); streak.addColorStop(1, photonColor + 0.9 * photonAlpha + ')');
+                      ctx.beginPath(); ctx.moveTo(headX - Math.cos(heading2) * tail, headY - Math.sin(heading2) * tail); ctx.lineTo(headX, headY);
+                      ctx.strokeStyle = streak; ctx.lineWidth = 1.6 * dpr; ctx.stroke();
+                      if (photonAlpha > 0.15) spot('photon-free', phi, headX, headY, 8 * dpr);
+                    }
+                  }
+                  ctx.restore();
+                }
+
+                // ── Dark ages: gas gathers into clumps (tinted so it can be seen) ──
+                var dawnSites = [0, 1, 2, 3, 4];
+                if (t >= 0.35 && t < 1.1) {
+                  var gasIn = Math.min(1, (t - 0.35) / 0.1), gasOut = t > 0.8 ? Math.max(0, 1 - (t - 0.8) / 0.3) : 1;
+                  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+                  for (var gci = 0; gci < 10; gci++) {
+                    var gasX = galaxySites[gci].x * W, gasY = galaxySites[gci].y * H;
+                    var gasR = Math.min(W, H) * (0.1 - Math.min(0.05, (t - 0.35) * 0.09)) * (0.75 + (gci % 3) * 0.18);
+                    ctx.globalAlpha = 0.3 * gasIn * gasOut;
+                    ctx.drawImage(cloudTextures[2], gasX - gasR, gasY - gasR, gasR * 2, gasR * 2);
+                    if (gasIn * gasOut > 0.25) spot('gas', gci, gasX, gasY, gasR * 0.55);
+                  }
+                  ctx.restore();
+                }
+
+                // ── Reionization: bubbles of ionized gas grow around the first light sources ──
+                if (showStructureGuides && t >= 0.56 && t < 2.4) {
+                  var bubbleFade = t > 2 ? Math.max(0, 1 - (t - 2) / 0.4) : 1;
+                  ctx.save();
+                  dawnSites.forEach(function (siteIndex, k) {
+                    var lit = 0.56 + k * 0.025;
+                    if (t < lit) return;
+                    var bx = galaxySites[siteIndex].x * W, by = galaxySites[siteIndex].y * H;
+                    var br = Math.min(W, H) * Math.min(0.34, 0.025 + Math.pow(t - lit, 0.8) * 0.2);
+                    var fill = ctx.createRadialGradient(bx, by, br * 0.2, bx, by, br);
+                    fill.addColorStop(0, 'rgba(125,211,252,0.03)'); fill.addColorStop(0.85, 'rgba(125,211,252,0.09)'); fill.addColorStop(1, 'rgba(125,211,252,0)');
+                    ctx.globalAlpha = bubbleFade; ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+                    if (ctx.setLineDash) ctx.setLineDash([4 * dpr, 5 * dpr]);
+                    ctx.strokeStyle = 'rgba(125,211,252,0.36)'; ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+                    if (ctx.setLineDash) ctx.setLineDash([]);
+                    if (bubbleFade > 0.2) spot('bubble', k, bx, by, br * 0.95, null, true);
+                  });
+                  ctx.restore();
+                }
+
+                // ── Cosmic dawn: the first stars light up inside the densest clumps ──
+                if (t >= 0.53 && t < 1.25) {
+                  var dawnFade = t > 0.95 ? Math.max(0, 1 - (t - 0.95) / 0.3) : 1;
+                  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+                  dawnSites.forEach(function (siteIndex, k) {
+                    var on = Math.min(1, Math.max(0, (t - 0.53 - k * 0.025) / 0.04)) * dawnFade;
+                    if (on <= 0) return;
+                    var sx = galaxySites[siteIndex].x * W, sy = galaxySites[siteIndex].y * H, pulse = stillScene ? 1 : 0.9 + 0.1 * Math.sin(tick * 0.03 + k);
+                    var halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, 16 * dpr * pulse);
+                    halo.addColorStop(0, 'rgba(255,255,255,' + on + ')'); halo.addColorStop(0.18, 'rgba(186,230,253,' + 0.85 * on + ')'); halo.addColorStop(1, 'rgba(96,165,250,0)');
+                    ctx.fillStyle = halo; ctx.fillRect(sx - 16 * dpr, sy - 16 * dpr, 32 * dpr, 32 * dpr);
+                    if (on > 0.3) spot('first-star', k, sx, sy, 7 * dpr);
+                  });
+                  ctx.restore();
                 }
 
                 // ── Stars                // ── Stars (appear after Dark Ages) ──
@@ -4797,6 +7889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * 3, 0, Math.PI * 2);
 
                     ctx.fillStyle = glow; ctx.fill();
+                    if (starBrightness * starReveal > 0.3) spot(t < 1.1 ? 'first-star' : 'star', 'p' + pi, p.x, p.y, 7 * dpr);
 
                   }
 
@@ -4821,6 +7914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     ctx.save(); ctx.translate(nbx, nby); ctx.rotate(nb.phase + Math.sin(tick * 0.001 + nb.phase) * 0.025);
                     ctx.scale(1.5, 0.78); ctx.globalAlpha = nebAlpha;
                     ctx.drawImage(cloudTextures[2 + nbi % 4], -nbSize, -nbSize, nbSize * 2, nbSize * 2); ctx.restore();
+                    if (t > 2.4) spot('nebula', nbi, nbx, nby, nbSize * 0.8);
 
                   }
 
@@ -4830,22 +7924,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 // ── Galaxies (after t > 1 Gyr) with spiral hints ──
 
-                if (t > 1) {
+                if (t > 0.9) {
 
-                  var galaxyGrowth = Math.max(0, (t - 1) * 2.5), galaxyCount = Math.min(16, Math.ceil(galaxyGrowth));
+                  var galaxyGrowth = galaxiesAt(t), galaxyCount = Math.min(16, Math.ceil(galaxyGrowth));
                   for (var gi = 0; gi < galaxyCount; gi++) {
-                    var gx = galaxySites[gi].x * W, gy = galaxySites[gi].y * H, gs = (15 + gi % 6 * 5) * dpr;
+                    var gx = galaxySites[gi].x * W, gy = galaxySites[gi].y * H, gs = (15 + gi % 6 * 5) * dpr * (t < 4.6 ? 0.7 + 0.3 * (t - 0.9) / 3.7 : 1);
                     ctx.save(); ctx.translate(gx, gy); ctx.rotate(gi * 1.3 + tick * 0.00035);
                     ctx.scale(1.35, gi % 4 === 3 ? 0.3 : gi % 4 === 1 ? 0.85 : 0.65);
                     ctx.globalAlpha = Math.min(1, galaxyGrowth - gi) * 0.88;
                     ctx.drawImage(galaxyTextures[gi % 4], -gs, -gs, gs * 2, gs * 2); ctx.restore();
+                    if (galaxyGrowth - gi > 0.3) spot(gi === MILKY_WAY_SITE && t >= 4.3 ? 'milky-way' : t < 4.6 ? 'young-galaxy' : gi % 4 === 1 ? 'elliptical' : 'spiral', gi, gx, gy, gs * 1.15);
                   }
+                  if (t >= 4.3 && galaxyCount > MILKY_WAY_SITE) {
+                    ctx.save(); ctx.font = '600 ' + (11 * dpr) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.globalAlpha = Math.min(1, (t - 4.3) * 3) * 0.92;
+                    ctx.lineWidth = 3 * dpr; ctx.strokeStyle = 'rgba(2,6,23,0.85)'; ctx.fillStyle = '#e0f2fe';
+                    var mwX = galaxySites[MILKY_WAY_SITE].x * W, mwY = galaxySites[MILKY_WAY_SITE].y * H + 30 * dpr;
+                    ctx.strokeText('Our Milky Way', mwX, mwY); ctx.fillText('Our Milky Way', mwX, mwY); ctx.restore();
+                  }
+                }
+
+                // ── Quasars: feeding black holes outshine their young galaxies ──
+                if (t >= 1.3 && t < 6.5) {
+                  var quasarCount = Math.min(16, Math.ceil(galaxiesAt(t)));
+                  var quasarGlow = Math.min(1, (t - 1.3) / 0.6) * (t > 4.2 ? Math.max(0, 1 - (t - 4.2) / 2.3) : 1);
+                  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+                  [1, 5].forEach(function (siteIndex, k) {
+                    if (siteIndex >= quasarCount || quasarGlow <= 0) return;
+                    var qx = galaxySites[siteIndex].x * W, qy = galaxySites[siteIndex].y * H, flicker = stillScene ? 1 : 0.85 + 0.15 * Math.sin(tick * 0.05 + k * 2);
+                    var jet = k ? 0.9 : -0.6, reach = 46 * dpr * quasarGlow;
+                    var host = ctx.createRadialGradient(qx, qy, 0, qx, qy, 24 * dpr);
+                    host.addColorStop(0, 'rgba(196,181,253,' + 0.35 * quasarGlow + ')'); host.addColorStop(1, 'rgba(129,140,248,0)');
+                    ctx.fillStyle = host; ctx.fillRect(qx - 24 * dpr, qy - 24 * dpr, 48 * dpr, 48 * dpr);
+                    [1, -1].forEach(function (side) {
+                      var jetEnd = ctx.createLinearGradient(qx, qy, qx + Math.cos(jet) * reach * side, qy + Math.sin(jet) * reach * side);
+                      jetEnd.addColorStop(0, 'rgba(207,250,254,' + 0.8 * quasarGlow + ')'); jetEnd.addColorStop(1, 'rgba(103,232,249,0)');
+                      ctx.beginPath(); ctx.moveTo(qx, qy); ctx.lineTo(qx + Math.cos(jet) * reach * side, qy + Math.sin(jet) * reach * side);
+                      ctx.strokeStyle = jetEnd; ctx.lineWidth = 2.6 * dpr; ctx.stroke();
+                    });
+                    var core = ctx.createRadialGradient(qx, qy, 0, qx, qy, 12 * dpr);
+                    core.addColorStop(0, 'rgba(255,255,255,' + quasarGlow * flicker + ')'); core.addColorStop(0.25, 'rgba(165,243,252,' + 0.7 * quasarGlow * flicker + ')'); core.addColorStop(1, 'rgba(34,211,238,0)');
+                    ctx.fillStyle = core; ctx.fillRect(qx - 12 * dpr, qy - 12 * dpr, 24 * dpr, 24 * dpr);
+                    if (quasarGlow > 0.2) spot('quasar', k, qx, qy, 8 * dpr);
+                  });
+                  ctx.restore();
                 }
 
                 // ── Cosmic web: local connections with a faint surrounding glow ──
                 if (t > 2 && showStructureGuides) {
-                  var filAlpha = Math.min(0.12, (t - 2) * 0.01);
-                  var filGalCount = Math.min(16, Math.floor((t - 1) * 2.5)), graphKey = filGalCount + ':' + W + ':' + H;
+                  var filAlpha = Math.min(0.55, (t - 2) * 0.12);
+                  var filGalCount = Math.min(16, Math.floor(galaxiesAt(t))), graphKey = filGalCount + ':' + W + ':' + H;
                   if (graphKey !== filamentGraphKey) {
                     filamentEdges = universeWebEdges(galaxySites, filGalCount, W / H); filamentGraphKey = graphKey;
                   }
@@ -4859,8 +7986,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     gradient.addColorStop(0, 'rgba(147,167,222,0)'); gradient.addColorStop(0.2, 'rgba(147,167,222,0.75)');
                     gradient.addColorStop(0.55, 'rgba(158,180,235,1)'); gradient.addColorStop(0.8, 'rgba(147,167,222,0.65)'); gradient.addColorStop(1, 'rgba(147,167,222,0)');
                     ctx.beginPath(); ctx.moveTo(fx1, fy1); ctx.quadraticCurveTo(fmx, fmy, fx2, fy2); ctx.strokeStyle = gradient;
-                    ctx.globalAlpha = filAlpha * 0.14; ctx.lineWidth = 4 * dpr; ctx.stroke();
-                    ctx.globalAlpha = filAlpha * 0.72; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                    ctx.globalAlpha = filAlpha * 0.18; ctx.lineWidth = 4 * dpr; ctx.stroke();
+                    ctx.globalAlpha = filAlpha * 0.6; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                    var curveX = 0.25 * fx1 + 0.5 * fmx + 0.25 * fx2, curveY = 0.25 * fy1 + 0.5 * fmy + 0.25 * fy2;
+                    if (t > 2.4) spot('filament', edge.a + '-' + edge.b, curveX, curveY, 7 * dpr, [fx1, fy1, curveX, curveY, fx2, fy2], true);
                   });
                   ctx.restore();
                 }
@@ -4884,6 +8013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     var clR = Math.min((44 + cli * 9) * dpr, W * 0.15, H * 0.25);
 
                     var clPulse = 0.78 + 0.22 * Math.sin(tick * 0.012 + cli);
+                    if (t > 3.3) spot('group', cli, clx, cly, clR);
 
                     var clGrad = ctx.createRadialGradient(clx, cly, 0, clx, cly, clR * 1.35);
 
@@ -4950,7 +8080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 if (t > 1.5 && showStructureGuides) {
 
-                  var dmGalCount = Math.min(16, Math.floor((t - 1) * 2.5));
+                  var dmGalCount = Math.min(16, Math.floor(galaxiesAt(t)));
 
                   ctx.save();
 
@@ -4964,7 +8094,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     var dmHaloR = dms * 2.2;
 
-                    var dmAlpha = Math.min(0.06, (t - 1.5) * 0.01);
+                    var dmAlpha = Math.min(0.14, (t - 1.5) * 0.03);
+                    if (t > 2.2) spot('halo', dmi, dmx, dmy, dmHaloR * 0.9, null, true);
 
                     var dmGrad = ctx.createRadialGradient(dmx, dmy, dms * 0.3, dmx, dmy, dmHaloR);
 
@@ -5048,34 +8179,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // ── Protoplanetary disk during the Sun-formation illustration ──
-                if (t > 8.5 && t < 10) {
-                  var ppAlpha = (t < 9 ? (t - 8.5) / 0.5 : t > 9.5 ? Math.max(0, 1 - (t - 9.5) / 0.5) : 1) * 0.7;
-                  var ppRadius = Math.min(54 * dpr, W * 0.22, H * 0.2);
-                  var ppx = Math.min(W * 0.76, W - 72 * dpr), ppy = Math.max(50 * dpr, H * 0.27);
-                  ctx.save(); ctx.translate(ppx, ppy); ctx.rotate(-0.23); ctx.globalAlpha = ppAlpha;
-                  ctx.save(); ctx.scale(1, 0.34); ctx.rotate(tick * 0.0007);
-                  ctx.drawImage(dustDiskTexture, -ppRadius, -ppRadius, ppRadius * 2, ppRadius * 2); ctx.restore();
-                  var coreRadius = ppRadius * 0.24, psGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
-                  psGrad.addColorStop(0, 'rgba(255,247,216,1)'); psGrad.addColorStop(0.18, 'rgba(255,216,135,0.8)');
-                  psGrad.addColorStop(0.5, 'rgba(249,165,83,0.18)'); psGrad.addColorStop(1, 'rgba(249,165,83,0)');
-                  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = psGrad;
-                  ctx.fillRect(-coreRadius, -coreRadius, coreRadius * 2, coreRadius * 2); ctx.restore();
-                  for (var pli = 0; pli < 5; pli++) {
-                    var plAngle = pli * 2.399963 + tick * 0.008 / Math.pow(1 + pli * 0.34, 1.5);
-                    var plR = ppRadius * (0.3 + pli * 0.15);
-                    ctx.beginPath(); ctx.arc(Math.cos(plAngle) * plR, Math.sin(plAngle) * plR * 0.34, (0.9 + pli * 0.22) * dpr, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(240,209,165,0.7)'; ctx.fill();
+                // ── Zoom window linked to our galaxy: what is happening inside it in the later chapters ──
+                // Earth's eras follow the real age (actualAge), not the story-paced clock.
+                var zoomMode = actualAge >= UNIVERSE_FUTURE_PREVIEW_GYR ? '' : actualAge >= 9.26 ? 'earth' : t >= 8.5 ? 'disk' : t >= 4.3 ? 'galaxy' : '';
+                if (zoomMode && galaxySites[MILKY_WAY_SITE]) {
+                  // Narrow scenes (phones): a smaller window tucked under the fullscreen button, one caption line.
+                  var zCompact = W < 520 * dpr;
+                  var zR = zCompact ? Math.max(30 * dpr, Math.min(H * 0.17, W * 0.14)) : Math.max(34 * dpr, Math.min(H * 0.23, W * 0.16));
+                  var zx = W - zR - (zCompact ? 12 : 18) * dpr, zy = zCompact ? 62 * dpr + zR : Math.min(H - zR - 40 * dpr, Math.max(zR + 60 * dpr, H * 0.46));
+                  var mwx = galaxySites[MILKY_WAY_SITE].x * W, mwy = galaxySites[MILKY_WAY_SITE].y * H, ringR = 16 * dpr;
+                  var zdx = zx - mwx, zdy = zy - mwy, zdist = Math.max(1, Math.hypot(zdx, zdy)), znx = -zdy / zdist, zny = zdx / zdist;
+                  var zEra = zoomMode === 'earth' ? universeEarthEra(actualAge) : null;
+                  ctx.save(); ctx.globalAlpha = zoomMode === 'galaxy' ? Math.min(1, (t - 4.3) * 3) : 1;
+                  ctx.strokeStyle = 'rgba(165,243,252,0.5)'; ctx.lineWidth = 1.2 * dpr; ctx.setLineDash([4 * dpr, 4 * dpr]);
+                  ctx.beginPath(); ctx.arc(mwx, mwy, ringR, 0, Math.PI * 2); ctx.stroke();
+                  [1, -1].forEach(function (side) { ctx.beginPath(); ctx.moveTo(mwx + znx * ringR * side, mwy + zny * ringR * side); ctx.lineTo(zx + znx * zR * side, zy + zny * zR * side); ctx.stroke(); });
+                  ctx.setLineDash([]);
+                  ctx.save(); ctx.beginPath(); ctx.arc(zx, zy, zR, 0, Math.PI * 2); ctx.clip();
+                  var zbg = ctx.createRadialGradient(zx, zy, 0, zx, zy, zR); zbg.addColorStop(0, '#0b1633'); zbg.addColorStop(1, '#020617');
+                  ctx.fillStyle = zbg; ctx.fillRect(zx - zR, zy - zR, zR * 2, zR * 2);
+                  ctx.translate(zx, zy);
+                  if (zoomMode === 'galaxy') drawZoomGalaxy(zR, Math.min(1, Math.max(0, (t - 4.3) / 4.2)));
+                  else if (zoomMode === 'disk') drawZoomDisk(zR);
+                  else drawZoomEarth(zR, zEra);
+                  ctx.restore();
+                  ctx.lineWidth = 2 * dpr; ctx.strokeStyle = 'rgba(165,243,252,0.85)'; ctx.beginPath(); ctx.arc(zx, zy, zR, 0, Math.PI * 2); ctx.stroke();
+                  var zLine1 = (zCompact ? '' : 'Zoom: ') + (zoomMode === 'galaxy' ? 'the Milky Way' : zoomMode === 'disk' ? 'the young Sun' : 'Earth, ' + universeAgoLabel(actualAge));
+                  if (zCompact) zLine1 = zLine1.charAt(0).toUpperCase() + zLine1.slice(1);
+                  var zLine2 = zoomMode === 'galaxy' ? 'swallowing smaller galaxies' : zoomMode === 'disk' ? __alloT('stem.universe.protoplanetary_disk', 'Protoplanetary disk') : zEra.name;
+                  ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.lineWidth = 3.5 * dpr; ctx.strokeStyle = 'rgba(2,6,23,0.92)';
+                  ctx.font = '700 ' + ((zCompact ? 11 : 12) * dpr) + 'px sans-serif';
+                  var zw = Math.max(ctx.measureText(zLine1).width, zCompact ? 0 : ctx.measureText(zLine2).width), ztx = Math.min(zx, W - 8 * dpr - zw / 2), zty = zy + zR + (zCompact ? 14 : 16) * dpr;
+                  ctx.fillStyle = '#f8fafc'; ctx.strokeText(zLine1, ztx, zty); ctx.fillText(zLine1, ztx, zty);
+                  if (!zCompact) {
+                    ctx.font = '600 ' + (11 * dpr) + 'px sans-serif'; ctx.fillStyle = '#fde68a';
+                    ctx.strokeText(zLine2, ztx, zty + 14 * dpr); ctx.fillText(zLine2, ztx, zty + 14 * dpr);
                   }
                   ctx.restore();
-                  ctx.save(); ctx.globalAlpha = ppAlpha; ctx.font = '500 ' + (11 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
-                  ctx.fillStyle = '#f7d9a8'; ctx.fillText(__alloT('stem.universe.protoplanetary_disk', 'Protoplanetary disk'), ppx, ppy + ppRadius * 0.55 + 18 * dpr); ctx.restore();
+                  spot(zoomMode === 'galaxy' ? 'milky-way' : zoomMode, 'zoom', zx, zy, zR * 0.8);
                 }
 
                 // The possible far-future preview should not retain the present-day brightness.
                 if (actualAge >= UNIVERSE_FUTURE_PREVIEW_GYR) {
+                  hotspots = [];
                   ctx.fillStyle = 'rgba(1,3,9,0.975)'; ctx.fillRect(0, 0, W, H);
+                  // The last lights: a few red dwarfs, and black holes that outlast them.
+                  for (var rdi = 0; rdi < 7; rdi++) {
+                    var rdx = W * (0.06 + ((rdi * 0.618 + 0.21) % 1) * 0.88), rdy = H * (0.12 + ((rdi * 0.382 + rdi * rdi * 0.11 + 0.17) % 1) * 0.72);
+                    var ember = ctx.createRadialGradient(rdx, rdy, 0, rdx, rdy, 8 * dpr), dim = 0.55 + (rdi % 3) * 0.15;
+                    ember.addColorStop(0, 'rgba(254,202,202,' + dim + ')'); ember.addColorStop(0.3, 'rgba(239,68,68,' + 0.55 * dim + ')'); ember.addColorStop(1, 'rgba(127,29,29,0)');
+                    ctx.fillStyle = ember; ctx.fillRect(rdx - 8 * dpr, rdy - 8 * dpr, 16 * dpr, 16 * dpr);
+                    spot('red-dwarf', rdi, rdx, rdy, 6 * dpr);
+                  }
+                  [[0.3, 0.44, 11], [0.74, 0.62, 7]].forEach(function (hole, k) {
+                    var hx2 = hole[0] * W, hy2 = hole[1] * H, hr = hole[2] * dpr;
+                    var ring = ctx.createRadialGradient(hx2, hy2, hr * 0.9, hx2, hy2, hr * 2.2);
+                    ring.addColorStop(0, 'rgba(251,146,60,0.42)'); ring.addColorStop(0.35, 'rgba(251,146,60,0.12)'); ring.addColorStop(1, 'rgba(251,146,60,0)');
+                    ctx.fillStyle = ring; ctx.beginPath(); ctx.arc(hx2, hy2, hr * 2.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(hx2, hy2, hr, 0, Math.PI * 2); ctx.fill();
+                    spot('black-hole', k, hx2, hy2, hr * 1.6);
+                  });
                 }
+
+                var inspectId = canvasEl.dataset.inspect || '', hoverId = canvasEl.dataset.hover || '';
+                hotspots.forEach(function (hs) {
+                  var chosen = hs.id === inspectId;
+                  if (!chosen && hs.id !== hoverId) return;
+                  var grow = chosen && !stillScene ? 1 + 0.08 * Math.sin(tick * 0.08) : 1;
+                  [[chosen ? 5 : 3.6, 'rgba(2,6,23,0.75)'], [chosen ? 2.4 : 1.5, chosen ? 'rgba(253,224,71,0.98)' : 'rgba(224,242,254,0.85)']].forEach(function (pass) {
+                    ctx.save(); ctx.lineWidth = pass[0] * dpr; ctx.strokeStyle = pass[1]; ctx.beginPath();
+                    if (hs.path) { ctx.moveTo(hs.path[0], hs.path[1]); for (var hp = 2; hp < hs.path.length; hp += 2) ctx.lineTo(hs.path[hp], hs.path[hp + 1]); }
+                    else ctx.arc(hs.x, hs.y, (hs.r + 4 * dpr) * grow, 0, Math.PI * 2);
+                    ctx.stroke(); ctx.restore();
+                  });
+                });
+                canvasEl._uniHotspots = hotspots;
                 // The epoch caption is HTML so it scales clearly with text zoom.
 
                 /* Scheduled by startUniverseScene. */
@@ -5095,7 +8273,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               var newW = canvasEl.offsetWidth, newH = canvasEl.offsetHeight;
 
-              if (newW && newH) { W = canvasEl.width = newW * dpr; H = canvasEl.height = newH * dpr; }
+              // Assigning width, even unchanged, clears the bitmap, and a still scene
+              // whose size signature did not change would never redraw it.
+              if (newW && newH && (newW * dpr !== W || newH * dpr !== H)) { W = canvasEl.width = newW * dpr; H = canvasEl.height = newH * dpr; }
 
             });
 
@@ -5483,8 +8663,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
             if (typeof ResizeObserver === 'function') {
               var ro = new ResizeObserver(function () {
-                var nw = el.offsetWidth, nh = el.offsetHeight;
-                if (nw && nh) { W = el.width = Math.round(nw * dpr); H = el.height = Math.round(nh * dpr); }
+                var nw = Math.round(el.offsetWidth * dpr), nh = Math.round(el.offsetHeight * dpr);
+                // Assigning width, even unchanged, wipes the bitmap, and a still scene never redraws it.
+                if (nw && nh && (nw !== W || nh !== H)) { W = el.width = nw; H = el.height = nh; }
               });
               ro.observe(el);
               el._zoomRo = ro;
@@ -5527,7 +8708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var item = (picked === 0 || picked) ? cfg.items[picked] : null;
             // The four canvas panels are dark whatever the app theme is doing.
             var dk = cfg.forceDark || isDark;
-            return React.createElement("div", null,
+            return React.createElement("div", { className: "uni-spot", "data-spot-dark": dk ? "true" : undefined },
 
               cfg.hint && React.createElement("p", { className: "text-[0.6875rem] italic mb-2 " + (dk ? 'text-slate-300' : 'text-slate-600') }, cfg.hint),
 
@@ -5556,7 +8737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               item && React.createElement("div", { role: "status", className: "mt-2 rounded-lg border p-2.5", style: { borderColor: cfg.accent + '80', background: dk ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)' } },
                 cfg.detail(item, dk),
-                cfg.prompt && React.createElement("p", { className: "text-[0.6875rem] font-bold mt-2 pt-2", style: { color: cfg.accent, borderTop: '1px solid ' + cfg.accent + '33' } }, "\uD83E\uDD14 " + cfg.prompt(item))
+                cfg.prompt && React.createElement("p", { className: "text-[0.6875rem] font-bold mt-2 pt-2", style: { color: dk ? '#e2e8f0' : '#1e293b', borderTop: '1px solid ' + cfg.accent + '55' } }, "\uD83E\uDD14 " + cfg.prompt(item))
               ),
 
               !item && React.createElement("p", { className: "text-[0.6875rem] mt-2 " + (dk ? 'text-slate-400' : 'text-slate-500') }, "Choose one to see the detail.")
@@ -5801,7 +8982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var paths={arrow:'M5 12h14m-5-5 5 5-5 5',back:'M19 12H5m5-5-5 5 5 5',observe:'M3 12a9 9 0 0 1 18 0M6 17a7 7 0 0 0 12 0M12 3v3m0 12v3M3 12h3m12 0h3',explain:'M3 16h3l3-8 4 12 3-15 3 11h2',explore:'M4 5h6a3 3 0 0 1 3 3v13a4 4 0 0 0-4-3H4zM13 8a3 3 0 0 1 3-3h4v13h-3a4 4 0 0 0-4 3',brand:'M5 17 9 5l10 5-6 9-8-2M9 5l4 14',stars:'m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z',galaxies:'M4 13c-1-5 8-9 13-6s1 9-5 10-9-1-8-4m4 0c-1-3 4-5 7-3s0 5-3 4',cosmology:'M3 12h18M12 3v18M5.6 5.6l12.8 12.8M5.6 18.4 18.4 5.6',observing:'m4 9 13-5 3 7-13 5zM11 14l-4 7m4-7 5 7',questions:'M8 8a4 4 0 1 1 7 3c-2 1-3 2-3 4m0 4h.01',practice:'M6 3h12v18H6zM9 8h6m-6 4h6m-6 4h4'};
             return h('svg',{width:size||22,height:size||22,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:paths[name]||paths.explore}),name==='observe'&&h('circle',{cx:12,cy:12,r:3}));
           }
-          var UNIVERSE_VISUAL_POLISH_CSS = "[data-universe-tool]{--uni-edge:#bdcbe0;--uni-soft:#eaf0fa;--uni-accent:#4338ca;--uni-accent-soft:#edeaff;background:linear-gradient(145deg,#f8faff,#eff4fb 75%);border:1px solid #dce5f2;padding:22px;}\n[data-universe-tool][data-uni-theme=dark]{--uni-edge:#405370;--uni-soft:#17253b;--uni-accent:#c4b5fd;--uni-accent-soft:#28254d;background:linear-gradient(145deg,#0b1424,#101b2e 75%);border-color:#33445f;}\n[data-universe-tool] .uni-header{padding:16px 18px;margin-bottom:0;border-radius:18px;background:linear-gradient(115deg,#121c35,#1d2349 65%,#16354a)!important;box-shadow:0 6px 20px #09142616!important;}\n[data-universe-tool] .uni-brand-row{display:flex;flex-wrap:nowrap;gap:14px;align-items:center;}\n[data-universe-tool] .uni-brand-copy{flex:1;min-width:0!important;}\n[data-universe-tool] .uni-brand-copy h3{font-size:19px;font-weight:750;letter-spacing:-.02em;line-height:1.35;}\n[data-universe-tool] .uni-brand-copy>span{font-size:12px;}\n[data-universe-tool] .uni-brand-mark{width:42px;height:42px;display:grid;place-items:center;flex:none;border:1px solid #687b9b;border-radius:12px;background:#253354;color:#d6d4ff;}\n[data-universe-tool] .uni-header .uni-back-button{display:grid;place-items:center;width:40px;min-width:40px;min-height:44px;color:#eef2ff;}\n[data-universe-tool] .uni-header-status{margin-inline-start:auto;gap:8px;justify-content:flex-end;}\n[data-universe-tool] .uni-header-status>span{padding:5px 10px;font-size:11px;white-space:nowrap;}\n[data-universe-tool] .uni-header-status>span:first-child{color:#e2e8f0!important;}\n[data-universe-tool] .uni-orientation{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'intro utilities' 'path path';column-gap:20px;padding:24px 0 22px;}\n[data-universe-tool] .uni-orientation>div:first-child{grid-area:intro;}\n[data-universe-tool] .uni-orientation h2{font-size:clamp(23px,2.5vw,30px);letter-spacing:-.035em;font-weight:750;margin:6px 0 10px;max-width:760px;}\n[data-universe-tool] .uni-orientation p{font-size:13px;line-height:1.75;max-width:72ch;}\n[data-universe-tool] .uni-orientation .uni-eyebrow{color:#5c5984;font-size:10px!important;letter-spacing:.13em;}\n[data-universe-tool][data-uni-theme=dark] .uni-orientation .uni-eyebrow{color:#bcb6e7;}\n[data-universe-tool] .uni-utilities{grid-area:utilities;align-content:start;align-items:flex-start;justify-content:flex-end;max-width:170px;gap:6px;margin:0;}\n[data-universe-tool] .uni-utilities button{min-height:36px;padding:7px 10px;text-decoration:none;border:1px solid var(--uni-edge);border-radius:8px;background:var(--uni-panel);font-size:11px;}\n[data-universe-tool] .uni-utilities button:hover{border-color:var(--uni-accent);}\n[data-universe-tool] .uni-path{grid-area:path;margin-top:18px;gap:12px;}\n[data-universe-tool] .uni-path button{display:flex;align-items:center;gap:12px;text-align:start;padding:15px;border-radius:13px;border-color:var(--uni-edge);box-shadow:0 2px 6px #0d244608;}\n[data-universe-tool] .uni-path button:first-child{background:#4338ca;border-color:#4338ca;}\n[data-universe-tool] .uni-path-icon{display:grid!important;place-items:center;width:38px;height:38px;flex:none;background:var(--uni-accent-soft);color:var(--uni-accent);border-radius:11px;}\n[data-universe-tool] .uni-path button:first-child .uni-path-icon{background:#ffffff20;color:#fff;}\n[data-universe-tool] .uni-path-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-path-copy strong{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-path-copy>span{font-size:11px;line-height:1.5;margin-top:3px;}\n[data-universe-tool] .uni-path-arrow{opacity:.8;display:flex!important;}\n[data-universe-tool] .uni-observatory{gap:18px;}\n[data-universe-tool] .uni-visual-column>.uni-timeline{padding:16px 18px;border-radius:14px;box-shadow:0 2px 8px #15304c06;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-timeline label{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-timeline-hint{font-size:11px;line-height:1.6;margin:9px 0;}\n[data-universe-tool] #universe-cosmic-time{appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;height:28px;min-width:48px;}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-runnable-track{height:7px;border-radius:9px;background:linear-gradient(to right,#6557da var(--uni-position),#b8c5db var(--uni-position));}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#5142bc;border:3px solid #fff;box-shadow:0 1px 4px #192d5155;margin-top:-7.5px;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-track{height:7px;border-radius:9px;background:#b8c5db;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-progress{height:7px;border-radius:9px;background:#6557da;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-thumb{width:16px;height:16px;border:3px solid #fff;border-radius:50%;background:#5142bc;}\n[data-universe-tool] .uni-scene-toolbar{margin-top:12px;}\n[data-universe-tool] .uni-scene-toolbar .uni-eyebrow{font-size:10px!important;letter-spacing:.075em;}\n[data-universe-tool] .uni-scene-toolbar button{min-height:36px;border-radius:9px;font-size:11px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-step-controls{margin:10px 0;}\n[data-universe-tool] .uni-step-controls button{border-color:var(--uni-edge);border-radius:9px;padding:8px 12px;font-size:12px;}\n[data-universe-tool] .uni-scene{border-color:#617497!important;border-radius:18px;box-shadow:0 8px 25px #06193325!important;}\n[data-universe-tool] .uni-model-note{font-size:11px;line-height:1.65;margin:12px 4px 0;}\n[data-universe-tool] .uni-observatory>.uni-epoch-card{border-radius:18px;padding:22px;border-color:#536682!important;border-top:3px solid var(--uni-epoch-accent)!important;box-shadow:0 6px 18px #0d234515!important;background:linear-gradient(160deg,#18263e,#101a2d)!important;}\n[data-universe-tool] .uni-observe-grid h3{font-size:22px;letter-spacing:-.02em;line-height:1.4;}\n[data-universe-tool] .uni-think>details{border:1px solid #4b607d;border-radius:10px;margin:8px 0;background:#15243a;padding:0 12px;}\n[data-universe-tool] .uni-think>details[open]{background:#1a2b45;border-color:#8599bb;}\n[data-universe-tool] .uni-think>details summary{font-size:12px;padding:11px 0;min-height:44px;}\n[data-universe-tool] .uni-think>details p{padding:8px 0;background:transparent;}\n[data-universe-tool] .uni-concept-help summary,[data-universe-tool] .uni-comparison summary{font-size:12px;}\n[data-universe-tool] .uni-section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;}\n[data-universe-tool] .uni-section-heading h3{font-size:17px;line-height:1.4;letter-spacing:-.015em;font-weight:750;color:var(--uni-ink);}\n[data-universe-tool] .uni-section-heading p{font-size:12px;color:var(--uni-muted);margin-top:3px;}\n[data-universe-tool] .uni-section-count{font-size:11px;color:var(--uni-muted);background:var(--uni-soft);padding:6px 10px;border-radius:8px;white-space:nowrap;}\n[data-universe-tool] .uni-milestones{border-radius:16px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-epoch-stops{margin-top:16px;gap:12px;}\n[data-universe-tool] .uni-epoch-stops button{padding:14px;text-align:start;border-color:var(--uni-edge);border-radius:12px;box-shadow:0 1px 3px #182d4f05;}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=false]:hover{background:var(--uni-soft);border-color:var(--uni-accent);}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=true]{outline:2px solid var(--uni-ink);outline-offset:2px;box-shadow:0 4px 10px #10234014;}\n[data-universe-tool] .uni-epoch-stops .uni-stop-number{border-color:currentColor;opacity:.85;}\n[data-universe-tool] .uni-disclosure{border-radius:16px;border-color:var(--uni-edge);box-shadow:0 2px 6px #162c4b05;margin-top:20px;}\n[data-universe-tool] .uni-disclosure>summary{padding:20px 4px;font-size:18px;letter-spacing:-.015em;}\n[data-universe-tool] .uni-disclosure>summary small{font-size:12px;letter-spacing:0;}\n[data-universe-tool] .uni-investigation-nav{gap:8px;padding:0 0 16px;}\n[data-universe-tool] .uni-investigation-nav button{background:var(--uni-soft);border-color:var(--uni-edge);font-size:12px;}\n[data-universe-tool] .uni-index{padding:22px;border-radius:16px!important;border-color:var(--uni-edge)!important;box-shadow:0 3px 14px #142c4a08!important;}\n[data-universe-tool] .uni-library-heading{font-size:18px!important;letter-spacing:-.015em;color:var(--uni-ink)!important;}\n[data-universe-tool] #universe-topic-search{font-size:14px;min-height:48px;border-radius:11px;border-color:var(--uni-edge)!important;padding-inline:14px;background:var(--uni-page)!important;}\n[data-universe-tool] #universe-topic-search::placeholder{color:var(--uni-muted);opacity:1;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group']{gap:8px;margin:14px 0;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group'] button{border-radius:20px;padding:8px 12px;font-size:11px;}\n[data-universe-tool] .uni-topic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}\n[data-universe-tool] .uni-topic-card{display:flex;align-items:center;gap:10px;text-align:start;min-width:0;min-height:74px;padding:12px!important;border-radius:11px!important;border-color:var(--uni-edge)!important;background:var(--uni-panel)!important;}\n[data-universe-tool] .uni-topic-card:hover{background:var(--uni-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-card[aria-expanded=true]{background:var(--uni-accent-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-icon{display:grid;place-items:center;width:30px;height:30px;flex:none;color:var(--uni-accent);background:var(--uni-soft);border-radius:9px;}\n[data-universe-tool] .uni-topic-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-topic-copy strong{display:block;font-size:12px;line-height:1.4;color:var(--uni-ink);font-weight:700;}\n[data-universe-tool] .uni-topic-copy small{display:block;font-size:10px;line-height:1.5;margin-top:4px;color:var(--uni-muted);font-weight:400;}\n[data-universe-tool] .uni-topic-arrow{color:var(--uni-muted);flex:none;display:flex;}\n@media(max-width:1050px){[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(3,minmax(0,1fr));}[data-universe-tool] .uni-header-status>span:first-child{display:none;}}\n@media(max-width:750px){[data-universe-tool] .uni-orientation{grid-template-columns:minmax(0,1fr);grid-template-areas:'intro' 'path' 'utilities';padding:20px 0;}[data-universe-tool] .uni-utilities{max-width:none;justify-content:flex-start;margin-top:12px;}[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr));}[data-universe-tool] .uni-brand-mark{display:none;}}\n@media(max-width:640px){[data-universe-tool]{padding:12px;border-radius:14px;}[data-universe-tool] .uni-header{padding:13px 12px;border-radius:13px;}[data-universe-tool] .uni-brand-row{gap:10px;}[data-universe-tool] .uni-brand-copy h3{font-size:17px;}[data-universe-tool] .uni-brand-copy>span{font-size:10px;}[data-universe-tool] .uni-header-status{display:none;}[data-universe-tool] .uni-orientation h2{font-size:24px;line-height:1.25;}[data-universe-tool] .uni-path{gap:8px;margin-top:14px;}[data-universe-tool] .uni-path button{padding:11px 12px;gap:10px;}[data-universe-tool] .uni-path-copy>span{font-size:11px;margin-top:2px;}[data-universe-tool] .uni-path-icon{width:34px;height:34px;border-radius:10px;}[data-universe-tool] .uni-path-copy strong{font-size:13px;}[data-universe-tool] .uni-utilities button{min-height:40px;}[data-universe-tool] .uni-observatory>.uni-epoch-card{padding:18px;}[data-universe-tool] .uni-visual-column>.uni-timeline{padding:14px;}[data-universe-tool] .uni-section-heading{align-items:flex-start;gap:10px;}[data-universe-tool] .uni-section-heading h3{font-size:16px;}[data-universe-tool] .uni-section-heading p{font-size:11px;}[data-universe-tool] .uni-section-count{font-size:10px;padding:5px 7px;}[data-universe-tool] .uni-epoch-stops{gap:10px;}[data-universe-tool] .uni-epoch-stops button{padding:11px;}[data-universe-tool] .uni-index{padding:16px;}[data-universe-tool] .uni-topic-card{gap:8px;padding:10px!important;min-height:76px;}[data-universe-tool] .uni-topic-icon{display:none;}[data-universe-tool] .uni-topic-copy strong{font-size:12px;}[data-universe-tool] .uni-topic-arrow{display:none;}}\n@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-path button,[data-universe-tool] .uni-topic-card{transition:none!important;}}\n@media(forced-colors:active){[data-universe-tool] .uni-path-icon,[data-universe-tool] .uni-topic-icon{color:ButtonText;background:ButtonFace;}[data-universe-tool] .uni-topic-card,[data-universe-tool] .uni-epoch-stops button{border:1px solid ButtonText!important;}[data-universe-tool] #universe-cosmic-time{appearance:auto;-webkit-appearance:auto;}}\r\n";
+          var UNIVERSE_VISUAL_POLISH_CSS = "[data-universe-tool]{--uni-edge:#bdcbe0;--uni-soft:#eaf0fa;--uni-accent:#4338ca;--uni-accent-soft:#edeaff;background:linear-gradient(145deg,#f8faff,#eff4fb 75%);border:1px solid #dce5f2;padding:22px;}\n[data-universe-tool][data-uni-theme=dark]{--uni-edge:#405370;--uni-soft:#17253b;--uni-accent:#c4b5fd;--uni-accent-soft:#28254d;background:linear-gradient(145deg,#0b1424,#101b2e 75%);border-color:#33445f;}\n[data-universe-tool] .uni-header{padding:16px 18px;margin-bottom:0;border-radius:18px;background:linear-gradient(115deg,#121c35,#1d2349 65%,#16354a)!important;box-shadow:0 6px 20px #09142616!important;}\n[data-universe-tool] .uni-brand-row{display:flex;flex-wrap:nowrap;gap:14px;align-items:center;}\n[data-universe-tool] .uni-brand-copy{flex:1;min-width:0!important;}\n[data-universe-tool] .uni-brand-copy h3{font-size:19px;font-weight:750;letter-spacing:-.02em;line-height:1.35;}\n[data-universe-tool] .uni-brand-copy>span{font-size:12px;}\n[data-universe-tool] .uni-brand-mark{width:42px;height:42px;display:grid;place-items:center;flex:none;border:1px solid #687b9b;border-radius:12px;background:#253354;color:#d6d4ff;}\n[data-universe-tool] .uni-header .uni-back-button{display:grid;place-items:center;width:40px;min-width:40px;min-height:44px;color:#eef2ff;}\n[data-universe-tool] .uni-header-status{margin-inline-start:auto;gap:8px;justify-content:flex-end;}\n[data-universe-tool] .uni-header-status>span{padding:5px 10px;font-size:11px;white-space:nowrap;}\n[data-universe-tool] .uni-header-status>span:first-child{color:#e2e8f0!important;}\n[data-universe-tool] .uni-orientation{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'intro utilities' 'path path';column-gap:20px;padding:24px 0 22px;}\n[data-universe-tool] .uni-orientation>div:first-child{grid-area:intro;}\n[data-universe-tool] .uni-orientation h2{font-size:clamp(23px,2.5vw,30px);letter-spacing:-.035em;font-weight:750;margin:6px 0 10px;max-width:760px;}\n[data-universe-tool] .uni-orientation p{font-size:13px;line-height:1.75;max-width:72ch;}\n[data-universe-tool] .uni-orientation .uni-eyebrow{color:#5c5984;font-size:10px!important;letter-spacing:.13em;}\n[data-universe-tool][data-uni-theme=dark] .uni-orientation .uni-eyebrow{color:#bcb6e7;}\n[data-universe-tool] .uni-utilities{grid-area:utilities;align-content:start;align-items:flex-start;justify-content:flex-end;max-width:170px;gap:6px;margin:0;}\n[data-universe-tool] .uni-utilities button{min-height:36px;padding:7px 10px;text-decoration:none;border:1px solid var(--uni-edge);border-radius:8px;background:var(--uni-panel);font-size:11px;}\n[data-universe-tool] .uni-utilities button:hover{border-color:var(--uni-accent);}\n[data-universe-tool] .uni-path{grid-area:path;margin-top:18px;gap:12px;}\n[data-universe-tool] .uni-path button{display:flex;align-items:center;gap:12px;text-align:start;padding:15px;border-radius:13px;border-color:var(--uni-edge);box-shadow:0 2px 6px #0d244608;}\n[data-universe-tool] .uni-path button:first-child{background:#4338ca;border-color:#4338ca;}\n[data-universe-tool] .uni-path-icon{display:grid!important;place-items:center;width:38px;height:38px;flex:none;background:var(--uni-accent-soft);color:var(--uni-accent);border-radius:11px;}\n[data-universe-tool] .uni-path button:first-child .uni-path-icon{background:#ffffff20;color:#fff;}\n[data-universe-tool] .uni-path-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-path-copy strong{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-path-copy>span{font-size:11px;line-height:1.5;margin-top:3px;}\n[data-universe-tool] .uni-path-arrow{opacity:.8;display:flex!important;}\n[data-universe-tool] .uni-observatory{gap:18px;}\n[data-universe-tool] .uni-visual-column>.uni-timeline{padding:16px 18px;border-radius:14px;box-shadow:0 2px 8px #15304c06;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-timeline label{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-timeline-hint{font-size:11px;line-height:1.6;margin:9px 0;}\n[data-universe-tool] #universe-cosmic-time{appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;height:28px;min-width:48px;}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-runnable-track{height:7px;border-radius:9px;background:linear-gradient(to right,#6557da var(--uni-position),#7587a8 var(--uni-position));}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#5142bc;border:3px solid #fff;box-shadow:0 1px 4px #192d5155;margin-top:-7.5px;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-track{height:7px;border-radius:9px;background:#b8c5db;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-progress{height:7px;border-radius:9px;background:#6557da;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-thumb{width:16px;height:16px;border:3px solid #fff;border-radius:50%;background:#5142bc;}\n[data-universe-tool] .uni-scene-toolbar{margin-top:12px;}\n[data-universe-tool] .uni-scene-toolbar .uni-eyebrow{font-size:10px!important;letter-spacing:.075em;}\n[data-universe-tool] .uni-scene-toolbar button{min-height:36px;border-radius:9px;font-size:11px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-step-controls{margin:10px 0;}\n[data-universe-tool] .uni-step-controls button{border-color:var(--uni-edge);border-radius:9px;padding:8px 12px;font-size:12px;}\n[data-universe-tool] .uni-scene{border-color:#617497!important;border-radius:18px;box-shadow:0 8px 25px #06193325!important;}\n[data-universe-tool] .uni-model-note{font-size:11px;line-height:1.65;margin:12px 4px 0;}\n[data-universe-tool] .uni-observatory>.uni-epoch-card{border-radius:18px;padding:22px;border-color:#536682!important;border-top:3px solid var(--uni-epoch-accent)!important;box-shadow:0 6px 18px #0d234515!important;background:linear-gradient(160deg,#18263e,#101a2d)!important;}\n[data-universe-tool] .uni-observe-grid h3{font-size:22px;letter-spacing:-.02em;line-height:1.4;}\n[data-universe-tool] .uni-think>details{border:1px solid #4b607d;border-radius:10px;margin:8px 0;background:#15243a;padding:0 12px;}\n[data-universe-tool] .uni-think>details[open]{background:#1a2b45;border-color:#8599bb;}\n[data-universe-tool] .uni-think>details summary{font-size:12px;padding:11px 0;min-height:44px;}\n[data-universe-tool] .uni-think>details p{padding:8px 0;background:transparent;}\n[data-universe-tool] .uni-concept-help summary,[data-universe-tool] .uni-comparison summary{font-size:12px;}\n[data-universe-tool] .uni-section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;}\n[data-universe-tool] .uni-section-heading h3{font-size:17px;line-height:1.4;letter-spacing:-.015em;font-weight:750;color:var(--uni-ink);}\n[data-universe-tool] .uni-section-heading p{font-size:12px;color:var(--uni-muted);margin-top:3px;}\n[data-universe-tool] .uni-section-count{font-size:11px;color:var(--uni-muted);background:var(--uni-soft);padding:6px 10px;border-radius:8px;white-space:nowrap;}\n[data-universe-tool] .uni-milestones{border-radius:16px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-epoch-stops{margin-top:16px;gap:12px;}\n[data-universe-tool] .uni-epoch-stops button{padding:14px;text-align:start;border-color:var(--uni-edge);border-radius:12px;box-shadow:0 1px 3px #182d4f05;}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=false]:hover{background:var(--uni-soft);border-color:var(--uni-accent);}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=true]{outline:2px solid var(--uni-ink);outline-offset:2px;box-shadow:0 4px 10px #10234014;}\n[data-universe-tool] .uni-epoch-stops .uni-stop-number{border-color:currentColor;opacity:.85;}\n[data-universe-tool] .uni-disclosure{border-radius:16px;border-color:var(--uni-edge);box-shadow:0 2px 6px #162c4b05;margin-top:20px;}\n[data-universe-tool] .uni-disclosure>summary{padding:20px 4px;font-size:18px;letter-spacing:-.015em;}\n[data-universe-tool] .uni-disclosure>summary small{font-size:12px;letter-spacing:0;}\n[data-universe-tool] .uni-investigation-nav{gap:8px;padding:0 0 16px;}\n[data-universe-tool] .uni-investigation-nav button{background:var(--uni-soft);border-color:var(--uni-edge);font-size:12px;}\n[data-universe-tool] .uni-index{padding:22px;border-radius:16px!important;border-color:var(--uni-edge)!important;box-shadow:0 3px 14px #142c4a08!important;}\n[data-universe-tool] .uni-library-heading{font-size:18px!important;letter-spacing:-.015em;color:var(--uni-ink)!important;}\n[data-universe-tool] #universe-topic-search{font-size:14px;min-height:48px;border-radius:11px;border-color:#7587a8!important;padding-inline:14px;background:var(--uni-page)!important;}\n[data-universe-tool] #universe-topic-search::placeholder{color:var(--uni-muted);opacity:1;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group']{gap:8px;margin:14px 0;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group'] button{border-radius:20px;padding:8px 12px;font-size:11px;}\n[data-universe-tool] .uni-topic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}\n[data-universe-tool] .uni-topic-card{display:flex;align-items:center;gap:10px;text-align:start;min-width:0;min-height:74px;padding:12px!important;border-radius:11px!important;border-color:var(--uni-edge)!important;background:var(--uni-panel)!important;}\n[data-universe-tool] .uni-topic-card:hover{background:var(--uni-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-card[aria-expanded=true]{background:var(--uni-accent-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-icon{display:grid;place-items:center;width:30px;height:30px;flex:none;color:var(--uni-accent);background:var(--uni-soft);border-radius:9px;}\n[data-universe-tool] .uni-topic-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-topic-copy strong{display:block;font-size:12px;line-height:1.4;color:var(--uni-ink);font-weight:700;}\n[data-universe-tool] .uni-topic-copy small{display:block;font-size:10px;line-height:1.5;margin-top:4px;color:var(--uni-muted);font-weight:400;}\n[data-universe-tool] .uni-topic-arrow{color:var(--uni-muted);flex:none;display:flex;}\n@media(max-width:1050px){[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(3,minmax(0,1fr));}[data-universe-tool] .uni-header-status>span:first-child{display:none;}}\n@media(max-width:750px){[data-universe-tool] .uni-orientation{grid-template-columns:minmax(0,1fr);grid-template-areas:'intro' 'path' 'utilities';padding:20px 0;}[data-universe-tool] .uni-utilities{max-width:none;justify-content:flex-start;margin-top:12px;}[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr));}[data-universe-tool] .uni-brand-mark{display:none;}}\n@media(max-width:640px){[data-universe-tool]{padding:12px;border-radius:14px;}[data-universe-tool] .uni-header{padding:13px 12px;border-radius:13px;}[data-universe-tool] .uni-brand-row{gap:10px;}[data-universe-tool] .uni-brand-copy h3{font-size:17px;}[data-universe-tool] .uni-brand-copy>span{font-size:10px;}[data-universe-tool] .uni-header-status{display:none;}[data-universe-tool] .uni-orientation h2{font-size:24px;line-height:1.25;}[data-universe-tool] .uni-path{gap:8px;margin-top:14px;}[data-universe-tool] .uni-path button{padding:11px 12px;gap:10px;}[data-universe-tool] .uni-path-copy>span{font-size:11px;margin-top:2px;}[data-universe-tool] .uni-path-icon{width:34px;height:34px;border-radius:10px;}[data-universe-tool] .uni-path-copy strong{font-size:13px;}[data-universe-tool] .uni-utilities button{min-height:40px;}[data-universe-tool] .uni-observatory>.uni-epoch-card{padding:18px;}[data-universe-tool] .uni-visual-column>.uni-timeline{padding:14px;}[data-universe-tool] .uni-section-heading{align-items:flex-start;gap:10px;}[data-universe-tool] .uni-section-heading h3{font-size:16px;}[data-universe-tool] .uni-section-heading p{font-size:11px;}[data-universe-tool] .uni-section-count{font-size:10px;padding:5px 7px;}[data-universe-tool] .uni-epoch-stops{gap:10px;}[data-universe-tool] .uni-epoch-stops button{padding:11px;}[data-universe-tool] .uni-index{padding:16px;}[data-universe-tool] .uni-topic-card{gap:8px;padding:10px!important;min-height:76px;}[data-universe-tool] .uni-topic-icon{display:none;}[data-universe-tool] .uni-topic-copy strong{font-size:12px;}[data-universe-tool] .uni-topic-arrow{display:none;}}\n@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-path button,[data-universe-tool] .uni-topic-card{transition:none!important;}}\n@media(forced-colors:active){[data-universe-tool] .uni-path-icon,[data-universe-tool] .uni-topic-icon{color:ButtonText;background:ButtonFace;}[data-universe-tool] .uni-topic-card,[data-universe-tool] .uni-epoch-stops button{border:1px solid ButtonText!important;}[data-universe-tool] #universe-cosmic-time{appearance:auto;-webkit-appearance:auto;}}\r\n";
 
           return React.createElement("div", { style: {"--uni-epoch-accent":epoch.border}, "data-universe-tool": "true", "data-scene-motion": d.sceneMotion || "system", "data-uni-theme": (isDark ? 'dark' : 'light'), className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
             React.createElement(UniverseLifecycle, { React: React, check: checkChallenges, motionChanged: function(){upd("systemMotionReduced",!!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches));} }),
@@ -5810,10 +8991,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             h("style",null,"[data-universe-tool] .uni-measurement-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;align-items:start;margin:18px 0;}[data-universe-tool] .uni-measurement-plot{padding:18px;border:1px solid #536581;border-radius:14px;background:linear-gradient(160deg,#15263d,#0b1526);min-width:0;}[data-universe-tool] .uni-measurement-layout .uni-sample-inspector{margin:0;min-width:0;}[data-universe-tool] .uni-measurement-layout .uni-sample-values{grid-template-columns:1fr;gap:8px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 8px;padding:12px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values strong{grid-column:2;grid-row:1 / 3;font-size:22px;}@media(max-width:1000px){[data-universe-tool] .uni-measurement-layout{grid-template-columns:minmax(0,1fr);}}@media(max-width:400px){[data-universe-tool] .uni-measurement-plot{padding:10px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values strong{font-size:20px;}}"),
             h("style",null,"[data-universe-tool] .uni-sample-inspector{margin:16px 0;padding:18px;border:1px solid #607797;border-radius:14px;background:linear-gradient(125deg,#18304a,#17213b);}[data-universe-tool] .uni-sample-inspector select{max-width:240px;}[data-universe-tool] .uni-sample-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0;}[data-universe-tool] .uni-sample-values>div{padding:14px;border-radius:10px;background:#101d31;border:1px solid #536581;}[data-universe-tool] .uni-sample-values span,[data-universe-tool] .uni-sample-values small{display:block;font-size:12px;color:#cbd5e1;line-height:1.5;}[data-universe-tool] .uni-sample-values strong{display:block;font-size:24px;line-height:1.5;color:#f8fafc;font-variant-numeric:tabular-nums;}[data-universe-tool] .uni-response-context{padding-bottom:16px;border-bottom:1px solid #64748b;}[data-universe-tool] .uni-response-context h3{font-size:24px;line-height:1.3;font-weight:750;color:#f8fafc;}[data-universe-tool] .uni-workflow-nav{display:flex;flex-wrap:wrap;margin:12px 0;}[data-universe-tool] .uni-quiz-return{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px;margin:0 0 16px;background:#edf2ff;border:1px solid #818cf8;border-radius:12px;color:#24334b;}[data-universe-tool] .uni-quiz-return p{font-size:14px;line-height:1.5;margin:6px 0;}[data-universe-tool] .uni-quiz-return button{flex:none;min-height:44px;padding:10px 14px;background:#4338ca;color:#fff;border:1px solid #4338ca;border-radius:9px;font-size:13px;font-weight:650;}[data-universe-tool] .uni-quiz-return strong{font-size:12px;text-transform:uppercase;letter-spacing:.05em;}@media(max-width:600px){[data-universe-tool] .uni-sample-values{grid-template-columns:1fr;gap:8px;}[data-universe-tool] .uni-sample-values>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 8px;padding:12px;}[data-universe-tool] .uni-sample-values strong{grid-column:2;grid-row:1 / 3;font-size:22px;}[data-universe-tool] .uni-quiz-return{align-items:stretch;flex-direction:column;}[data-universe-tool] .uni-quiz-return button{align-self:flex-start;}[data-universe-tool] .uni-sample-inspector{padding:14px;}}"),
             h("style", null, "[data-universe-tool] .uni-comparison,[data-universe-tool] .uni-concept-help{color:#e2e8f0;}[data-universe-tool] .uni-comparison summary,[data-universe-tool] .uni-concept-help summary{color:#bae6fd;font-size:13px;font-weight:650;cursor:pointer;padding:12px 0;}[data-universe-tool] .uni-science-source{font-size:13px;color:#bae6fd;margin-top:12px;text-decoration:underline;}[data-universe-tool] .uni-quiz-review{text-align:start;margin:18px 0;}[data-universe-tool] .uni-quiz-concept{border:1px solid #94a3b8;padding:14px;border-radius:10px;margin:10px 0;font-size:14px;line-height:1.65;}[data-universe-tool] .uni-quiz-review button{min-height:44px;padding:8px 12px;border:1px solid #818cf8;border-radius:8px;margin-top:8px;}"),
-            h("style", null, "[data-universe-tool] .uni-measurement,[data-universe-tool] .uni-response{margin:18px 0;padding:24px;border:1px solid #64748b;border-radius:16px;background:#0f172a;color:#e2e8f0;scroll-margin-top:16px;}[data-universe-tool] .uni-measurement h4,[data-universe-tool] .uni-response h4,[data-universe-tool] .uni-notebook h4{font-size:20px;font-weight:750;margin:8px 0;}[data-universe-tool] .uni-measurement p,[data-universe-tool] .uni-response p,[data-universe-tool] .uni-notebook p{font-size:14px;line-height:1.65;margin:10px 0;}[data-universe-tool] .uni-measurement svg{width:100%;max-width:720px;margin:12px auto;display:block;}[data-universe-tool] .uni-measurement a{color:#a5f3fc;text-decoration:underline;}[data-universe-tool] .uni-response-field{margin:18px 0;}[data-universe-tool] .uni-response label,[data-universe-tool] .uni-measurement label{font-weight:700;display:block;margin:10px 0;}[data-universe-tool] .uni-response textarea,[data-universe-tool] .uni-response select,[data-universe-tool] .uni-measurement select,[data-universe-tool] .uni-notebook input,[data-universe-tool] .uni-notebook select{display:block;width:100%;max-width:100%;min-width:0;background:#17243b;color:#f1f5f9;border:1px solid #94a3b8;border-radius:9px;padding:10px;font-size:14px;box-sizing:border-box;}[data-universe-tool] .uni-response textarea{resize:vertical;}[data-universe-tool] .uni-response select{white-space:normal;}[data-universe-tool] .uni-action,[data-universe-tool] .uni-response button,[data-universe-tool] .uni-measurement button,[data-universe-tool] .uni-notebook button,[data-universe-tool] .uni-comparison button,[data-universe-tool] .uni-reflection button{min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid #a5b4fc;color:#eef2ff;background:#373078;font-size:13px;font-weight:650;margin:6px 6px 6px 0;}[data-universe-tool] button:disabled{opacity:.55;cursor:default;}[data-universe-tool] .uni-review-check{display:flex;align-items:flex-start;gap:10px;font-size:14px;}[data-universe-tool] .uni-review-check input{margin-top:5px;width:18px;height:18px;flex:none;}[data-universe-tool] .uni-feedback{padding:12px;background:#164e63;border-radius:10px;}[data-universe-tool] .uni-table-scroll{overflow:auto;}[data-universe-tool] .uni-table-scroll table{width:100%;border-collapse:collapse;font-size:13px;}[data-universe-tool] .uni-table-scroll th,[data-universe-tool] .uni-table-scroll td{padding:10px;text-align:start;border-bottom:1px solid #475569;}[data-universe-tool] .uni-notebook{color:#e2e8f0;}[data-universe-tool] .uni-notebook-tools{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin-top:18px;}[data-universe-tool] .uni-notebook-tools label{flex:1;min-width:180px;font-size:13px;}[data-universe-tool] .uni-notebook-entry{margin:14px 0;padding:18px;background:#17243b;border:1px solid #52627c;border-radius:12px;color:#e2e8f0;}[data-universe-tool] .uni-comparison{margin-top:14px;}[data-universe-tool] .uni-comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}[data-universe-tool] .uni-comparison-grid>div{padding:12px;background:#17243b;border:1px solid #64748b;border-radius:10px;}[data-universe-tool] .uni-comparison-grid h4{font-size:15px;font-weight:700;}[data-universe-tool] .uni-visual-column>.uni-timeline{margin:0 0 12px;padding:14px;}[data-universe-tool] .uni-index{position:static;}[data-universe-tool] .uni-notebook-entry :is(p,h4){overflow-wrap:anywhere;}@media(max-width:640px){[data-universe-tool] .uni-response,[data-universe-tool] .uni-measurement{padding:14px;}[data-universe-tool] .uni-comparison-grid{grid-template-columns:1fr;}[data-universe-tool] .uni-notebook-tools label{min-width:100%;}}"),
+            h("style", null, "[data-universe-tool] .uni-measurement,[data-universe-tool] .uni-response{margin:18px 0;padding:24px;border:1px solid #64748b;border-radius:16px;background:#0f172a;color:#e2e8f0;scroll-margin-top:16px;}[data-universe-tool] .uni-measurement h4,[data-universe-tool] .uni-response h4,[data-universe-tool] .uni-notebook h4{font-size:20px;font-weight:750;margin:8px 0;}[data-universe-tool] .uni-measurement p,[data-universe-tool] .uni-response p,[data-universe-tool] .uni-notebook p{font-size:14px;line-height:1.65;margin:10px 0;}[data-universe-tool] .uni-measurement svg{width:100%;max-width:720px;margin:12px auto;display:block;}[data-universe-tool] .uni-measurement a{color:#a5f3fc;text-decoration:underline;}[data-universe-tool] .uni-response-field{margin:18px 0;}[data-universe-tool] .uni-response label,[data-universe-tool] .uni-measurement label{font-weight:700;display:block;margin:10px 0;}[data-universe-tool] .uni-response textarea,[data-universe-tool] .uni-response select,[data-universe-tool] .uni-measurement select,[data-universe-tool] .uni-notebook input,[data-universe-tool] .uni-notebook select{display:block;width:100%;max-width:100%;min-width:0;background:#17243b;color:#f1f5f9;border:1px solid #94a3b8;border-radius:9px;padding:10px;font-size:14px;box-sizing:border-box;}[data-universe-tool] .uni-response textarea{resize:vertical;}[data-universe-tool] .uni-response select{white-space:normal;}[data-universe-tool] .uni-action,[data-universe-tool] .uni-response button,[data-universe-tool] .uni-measurement button,[data-universe-tool] .uni-notebook button,[data-universe-tool] .uni-comparison button,[data-universe-tool] .uni-reflection button{min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid #a5b4fc;color:#eef2ff;background:#373078;font-size:13px;font-weight:650;margin:6px 6px 6px 0;}[data-universe-tool] button:disabled{opacity:.55;cursor:default;}[data-universe-tool] .uni-review-check{display:flex;align-items:flex-start;gap:10px;font-size:14px;}[data-universe-tool] .uni-review-check input{margin-top:3px;width:24px;height:24px;flex:none;}[data-universe-tool] .uni-feedback{padding:12px;background:#164e63;border-radius:10px;}[data-universe-tool] .uni-table-scroll{overflow:auto;}[data-universe-tool] .uni-table-scroll table{width:100%;border-collapse:collapse;font-size:13px;}[data-universe-tool] .uni-table-scroll th,[data-universe-tool] .uni-table-scroll td{padding:10px;text-align:start;border-bottom:1px solid #475569;}[data-universe-tool] .uni-notebook{color:#e2e8f0;}[data-universe-tool] .uni-notebook-tools{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin-top:18px;}[data-universe-tool] .uni-notebook-tools label{flex:1;min-width:180px;font-size:13px;}[data-universe-tool] .uni-notebook-entry{margin:14px 0;padding:18px;background:#17243b;border:1px solid #52627c;border-radius:12px;color:#e2e8f0;}[data-universe-tool] .uni-comparison{margin-top:14px;}[data-universe-tool] .uni-comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}[data-universe-tool] .uni-comparison-grid>div{padding:12px;background:#17243b;border:1px solid #64748b;border-radius:10px;}[data-universe-tool] .uni-comparison-grid h4{font-size:15px;font-weight:700;}[data-universe-tool] .uni-visual-column>.uni-timeline{margin:0 0 12px;padding:14px;}[data-universe-tool] .uni-index{position:static;}[data-universe-tool] .uni-notebook-entry :is(p,h4){overflow-wrap:anywhere;}@media(max-width:640px){[data-universe-tool] .uni-response,[data-universe-tool] .uni-measurement{padding:14px;}[data-universe-tool] .uni-comparison-grid{grid-template-columns:1fr;}[data-universe-tool] .uni-notebook-tools label{min-width:100%;}}"),
             h("style",null,"[data-universe-tool] .uni-supported-options{border:0;padding:0;margin:8px 0;}[data-universe-tool] .uni-supported-options label{display:flex;gap:10px;align-items:flex-start;border:1px solid #64748b;border-radius:10px;padding:12px;font-size:14px;font-weight:400;line-height:1.6;}[data-universe-tool] .uni-supported-options label:has(input:checked){background:#253858;border-color:#a5b4fc;}[data-universe-tool] .uni-supported-options input{margin-top:5px;flex:none;width:18px;height:18px;}[data-universe-tool] .uni-supported-options span{min-width:0;overflow-wrap:anywhere;}[data-universe-tool] .uni-response :focus-visible,[data-universe-tool] .uni-measurement :focus-visible,[data-universe-tool] .uni-notebook :focus-visible{outline:3px solid #a5b4fc;outline-offset:3px;}"),
 
             h("style", null, UNIVERSE_VISUAL_POLISH_CSS),
+            h("style", null, UNIVERSE_STAGE_CSS),
             h("style", null, "[data-universe-tool] .uni-evidence-view-label{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 14px;margin:12px 0;border:1px solid #7890ad;border-radius:10px;background:#1b2d47;}\n[data-universe-tool] .uni-evidence-view-label>span{font-size:11px;font-weight:750;padding:4px 8px;border:1px solid #c4b5fd;border-radius:6px;background:#343057;color:#ede9fe;}\n[data-universe-tool] .uni-investigation-workspace .uni-evidence-view-label p{margin:0;font-size:12px;line-height:1.6;color:#d4deed;}\n[data-universe-tool] .uni-measurement .uni-data-view-label{display:inline-block;padding:7px 10px;margin:0 0 8px;background:#134c47;color:#c2ffed;border:1px solid #7cc8b4;border-radius:7px;font-size:11px;font-weight:700;}\n[data-universe-tool] .uni-firas-comparison{padding:22px;margin:20px 0;border:1px solid #7b93b4;border-radius:14px;background:linear-gradient(145deg,#1c304b,#152239);}\n[data-universe-tool] .uni-firas-comparison[hidden]{display:none;}\n[data-universe-tool] .uni-firas-comparison-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;}\n[data-universe-tool] .uni-firas-comparison-heading .uni-eyebrow{font-size:10px;color:#a7f3d0;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;}\n[data-universe-tool] .uni-firas-comparison h5{font-size:21px;line-height:1.4;color:#f1f5f9;font-weight:750;margin:0;}\n[data-universe-tool] .uni-firas-comparison-tag{flex:none;font-size:13px;font-weight:750;color:#e0e7ff;border:1px solid #8f9bbc;border-radius:9px;padding:8px 12px;background:#263855;}\n[data-universe-tool] .uni-firas-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0 14px;}\n[data-universe-tool] .uni-firas-pair-card{padding:18px;border:1px solid #879bb6;border-radius:12px;background:#0f1f35;min-width:0;}\n[data-universe-tool] .uni-firas-pair-card:last-child{border-color:#cf8ab7;}\n[data-universe-tool] .uni-firas-pair-card label{margin:0 0 10px;font-size:13px;color:#eef2ff;}\n[data-universe-tool] .uni-firas-pair-card:last-child label{color:#fbcfe8;}\n[data-universe-tool] .uni-firas-pair select{min-height:46px;}\n[data-universe-tool] .uni-measurement .uni-firas-intensity{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin:18px 0 4px;}\n[data-universe-tool] .uni-firas-intensity strong{font-size:30px;line-height:1.3;font-variant-numeric:tabular-nums;color:#f8fafc;}\n[data-universe-tool] .uni-firas-intensity span{font-size:12px;color:#cbd5e1;}\n[data-universe-tool] .uni-measurement .uni-firas-uncertainty{font-size:12px;color:#d6e2f2;margin:6px 0 0;}\n[data-universe-tool] .uni-firas-difference{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 24px;padding:18px;border:1px solid #6995a6;border-radius:11px;background:#123747;}\n[data-universe-tool] .uni-firas-difference span{display:block;font-size:12px;color:#c6eaf4;margin-bottom:6px;}\n[data-universe-tool] .uni-firas-difference strong{display:block;font-size:22px;font-weight:750;color:#e0faff;line-height:1.5;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}\n[data-universe-tool] .uni-measurement .uni-firas-difference p{font-size:13px;line-height:1.7;margin:0;color:#d9ecf4;max-width:38ch;}\n[data-universe-tool] .uni-firas-comparison-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 10px;}\n[data-universe-tool] .uni-measurement .uni-firas-comparison-actions button{margin:0;}\n[data-universe-tool] .uni-measurement .uni-firas-compare-prompt{font-size:13px;line-height:1.8;color:#d6e5f6;margin:16px 0 0;padding-top:16px;border-top:1px solid #536e8b;}\n@media(max-width:650px){[data-universe-tool] .uni-firas-pair{grid-template-columns:minmax(0,1fr);gap:10px;}[data-universe-tool] .uni-firas-comparison{padding:16px;}[data-universe-tool] .uni-firas-comparison h5{font-size:18px;}[data-universe-tool] .uni-firas-comparison-tag{display:none;}[data-universe-tool] .uni-firas-pair-card{padding:14px;}[data-universe-tool] .uni-firas-difference{padding:14px;}[data-universe-tool] .uni-firas-difference strong{font-size:20px;}[data-universe-tool] .uni-firas-comparison-actions button{width:100%;}}\n@media(max-width:450px){[data-universe-tool] .uni-measurement .uni-firas-comparison{margin:20px -14px -14px;border-inline:0;border-radius:0;padding:16px 14px;}[data-universe-tool] .uni-firas-intensity strong{font-size:26px;}}\r\n"),
             h("style", null, "[data-universe-tool] .uni-response .uni-response-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0 14px;}\n[data-universe-tool] .uni-response .uni-response-steps button{display:flex;align-items:center;gap:10px;min-width:0;margin:0;padding:13px;text-align:start;color:#e2e8f0;background:#192a42;border:1px solid #6e83a1;border-radius:11px;}\n[data-universe-tool] .uni-response-step-number{display:grid;place-items:center;flex:none;width:28px;height:28px;border:1px solid #8c9fba;border-radius:50%;font-size:12px;font-weight:750;}\n[data-universe-tool] .uni-response-steps strong{display:block;font-size:12px;line-height:1.5;}\n[data-universe-tool] .uni-response-steps small{display:block;font-size:10px;line-height:1.6;color:#cad5e7;margin-top:4px;font-weight:400;}\n[data-universe-tool] .uni-response .uni-response-steps button[data-next=true]{border-color:#c4b5fd;background:#2b3056;box-shadow:inset 0 3px #c4b5fd;}\n[data-universe-tool] .uni-response .uni-response-steps button[data-recorded=true] .uni-response-step-number{background:#1c5249;color:#b9ffe3;border-color:#79c9ad;}\n[data-universe-tool] .uni-response-next{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 18px;margin:14px 0 22px;border:1px solid #658aac;border-radius:12px;background:#18374d;}\n[data-universe-tool] .uni-response-next>div{min-width:0;}\n[data-universe-tool] .uni-response-next h5{font-size:16px;font-weight:750;line-height:1.5;color:#e0f2fe;margin:0;}\n[data-universe-tool] .uni-response .uni-response-next p{font-size:12px;line-height:1.7;color:#d2e5f5;margin:5px 0 0;max-width:72ch;}\n[data-universe-tool] .uni-response .uni-response-next button{flex:none;margin:0;background:#373078;border-color:#b6b4ef;}\n[data-universe-tool] .uni-notebook-questions{margin:18px 0;border:1px solid #7b91ad;border-radius:12px;padding:0 18px 14px;background:#172b43;}\n[data-universe-tool] .uni-notebook-questions>summary{min-height:48px;padding:14px 0;font-size:15px;font-weight:700;color:#d3fbea;cursor:pointer;}\n[data-universe-tool] .uni-notebook-questions>p{font-size:13px;line-height:1.7;color:#c8d8e9;}\n[data-universe-tool] .uni-notebook-questions>ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;list-style:none;margin:16px 0 0;padding:0;}\n[data-universe-tool] .uni-notebook-questions li{display:flex;flex-direction:column;min-width:0;padding:16px;background:#102037;border:1px solid #5c7898;border-radius:10px;}\n[data-universe-tool] .uni-notebook .uni-question-origin{font-size:11px;font-weight:700;line-height:1.6;color:#a7f3d0;margin:0 0 8px;}\n[data-universe-tool] .uni-notebook .uni-question-text{font-size:14px;line-height:1.75;color:#e2e8f0;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 16px;flex:1;}\n[data-universe-tool] .uni-notebook-questions button{margin:0;align-self:flex-start;}\n[data-universe-tool] .uni-notebook-questions :focus-visible{outline:3px solid #a5b4fc;outline-offset:3px;}\n@media(max-width:850px){[data-universe-tool] .uni-response .uni-response-steps{grid-template-columns:repeat(2,minmax(0,1fr));}[data-universe-tool] .uni-response-next{align-items:stretch;flex-direction:column;gap:12px;}[data-universe-tool] .uni-response .uni-response-next button{align-self:flex-start;}}\n@media(max-width:600px){[data-universe-tool] .uni-response .uni-response-steps{gap:8px;}[data-universe-tool] .uni-response .uni-response-steps button{flex-direction:column;align-items:flex-start;gap:8px;padding:12px;}[data-universe-tool] .uni-response-next{padding:14px;}[data-universe-tool] .uni-notebook-questions{padding-inline:12px;}[data-universe-tool] .uni-notebook-questions>ul{grid-template-columns:minmax(0,1fr);}[data-universe-tool] .uni-notebook-questions li{padding:12px;}}\r\n"),
             h("style", null, "[data-universe-tool] .uni-thinking{padding:0 18px 16px;border-color:#8299b8;background:linear-gradient(145deg,#14263e,#152137);}\n[data-universe-tool] .uni-thinking-intro{padding:18px 0 12px;border-top:1px solid #546b88;}\n[data-universe-tool] .uni-thinking-intro .uni-eyebrow{font-size:10px;color:#a7f3d0;letter-spacing:.1em;text-transform:uppercase;}\n[data-universe-tool] .uni-thinking h5{font-size:19px;font-weight:750;line-height:1.45;color:#f1f5f9;margin:6px 0 10px;}\n[data-universe-tool] .uni-thinking-intro>p:last-child{font-size:13px;max-width:78ch;color:#c6d5e8;}\n[data-universe-tool] .uni-thinking-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:16px;margin:12px 0 18px;}\n[data-universe-tool] .uni-thinking-toolbar label{flex:1;min-width:0;font-size:12px;font-weight:650;color:#d9e4f4;}\n[data-universe-tool] .uni-thinking-toolbar select{min-height:46px;margin-top:8px;font-size:13px;}\n[data-universe-tool] .uni-thinking .uni-thinking-status{flex:1;font-size:12px;line-height:1.7;color:#c4d4e9;padding:10px 14px;border:1px solid #5c7798;border-radius:9px;margin:0;background:#20344f;}\n[data-universe-tool] .uni-thinking-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}\n[data-universe-tool] .uni-thinking-pair>section{min-width:0;border:1px solid #657e9d;border-radius:12px;background:#0f1e33;overflow:hidden;}\n[data-universe-tool] .uni-thinking-pair h6{font-size:12px;line-height:1.5;font-weight:700;padding:12px 16px;margin:0;background:#273b56;color:#e0e7ff;border-bottom:1px solid #657e9d;}\n[data-universe-tool] .uni-thinking-pair>section:last-child{border-color:#6cafa2;}\n[data-universe-tool] .uni-thinking-pair>section:last-child h6{background:#1d423f;color:#b6ffe3;border-color:#6cafa2;}\n[data-universe-tool] .uni-thinking-pair p{font-size:13px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;padding:16px;margin:0;}\n[data-universe-tool] .uni-thinking .uni-thinking-hint{font-size:12px;color:#cad8e9;padding:12px 0;margin:0;}\n[data-universe-tool] .uni-thinking-reflection{margin:20px 0 12px;padding:20px;background:#203149;border:1px solid #647e9e;border-radius:12px;}\n[data-universe-tool] .uni-thinking-reflection label{display:block;font-size:14px;font-weight:700;color:#e0e7ff;margin:18px 0 6px;}\n[data-universe-tool] .uni-thinking-reflection label+p{font-size:12px;line-height:1.7;color:#c8d5e6;margin:6px 0 12px;}\n[data-universe-tool] .uni-thinking-reflection textarea{display:block;width:100%;min-width:0;max-width:100%;resize:vertical;min-height:92px;padding:12px;font:inherit;font-size:14px;line-height:1.7;color:#f1f5f9;background:#102037;border:1px solid #8b9eb8;border-radius:10px;box-sizing:border-box;}\n[data-universe-tool] .uni-thinking-reflection .uni-caption{font-size:11px;color:#cbd5e1;line-height:1.6;}\n[data-universe-tool] .uni-thinking-history,[data-universe-tool] .uni-thinking-context{margin-top:16px;border-top:1px solid #7086a4;}\n[data-universe-tool] .uni-thinking-history>summary,[data-universe-tool] .uni-thinking-context>summary{font-size:12px;}\n[data-universe-tool] .uni-thinking :focus-visible{outline:3px solid #a5b4fc;outline-offset:3px;}\n@media(max-width:750px){[data-universe-tool] .uni-thinking-pair{grid-template-columns:minmax(0,1fr);}[data-universe-tool] .uni-thinking-toolbar{align-items:stretch;flex-direction:column;}}\n@media(max-width:450px){[data-universe-tool] .uni-thinking{padding-inline:10px;}[data-universe-tool] .uni-thinking-reflection{padding:12px;}[data-universe-tool] .uni-thinking h5{font-size:17px;}[data-universe-tool] .uni-thinking-pair p{padding:12px;}[data-universe-tool] .uni-thinking-pair h6{padding:10px 12px;}[data-universe-tool] .uni-thinking-toolbar select{font-size:12px;}}\r\n@media(max-width:600px){[data-universe-tool] #universe-investigation-notebook .uni-notebook-entry{padding:12px;}[data-universe-tool] .uni-note-revisions.uni-thinking{margin:16px -12px -12px;padding:0 12px 12px;border-inline:0;border-bottom:0;border-radius:0 0 12px 12px;background:#142239;}[data-universe-tool] .uni-thinking .uni-thinking-reflection{padding:16px 0;margin:18px 0 10px;border:0;border-top:1px solid #7086a4;border-radius:0;background:transparent;}[data-universe-tool] .uni-thinking .uni-thinking-reflection textarea{min-height:144px;}[data-universe-tool] .uni-thinking-pair{gap:10px;}}\r\n"),
@@ -5882,9 +9064,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                React.createElement("label", { id: "universe-cosmic-timeline-label", htmlFor: "universe-cosmic-time", className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Timeline"),
+                React.createElement("label", { id: "universe-cosmic-timeline-label", htmlFor: "universe-cosmic-time", className: "text-xs font-bold text-violet-700" }, "⏳ Cosmic Timeline"),
 
-                React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, formatCosmicTimeLabel(cosmicTime))
+                React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full", 'data-universe-live': 'age' }, formatCosmicTimeLabel(cosmicTime))
 
               ),
 
@@ -5894,8 +9076,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 React.createElement("input", {
 
-                  id: "universe-cosmic-time", type: "range", min: 0, max: EPOCHS.length - 1, step: 0.01, value: timelinePosition(cosmicTime), style:{"--uni-position":(timelinePosition(cosmicTime)/(EPOCHS.length-1)*100)+"%"},
-
+                  id: "universe-cosmic-time", type: "range", min: 0, max: EPOCHS.length - 1, step: 0.01, value: storyPosition, style:{"--uni-position":(storyPosition/(EPOCHS.length-1)*100)+"%"},
+                  'data-universe-story-slider': 'true',
                   'aria-labelledby': 'universe-cosmic-timeline-label',
                   'aria-valuetext': epoch.name + ', ' + formatCosmicTimeSentence(cosmicTime),
                   'aria-describedby': 'universe-timeline-hint',
@@ -5910,38 +9092,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               ),
 
-              React.createElement("p", { id: "universe-timeline-hint", className: "uni-timeline-hint" }, "Equal space per epoch, not equal time. Gyr = billion years; Myr = million years. Future is a possible scenario."),
+              renderChapterStrip(),
+              React.createElement("p", { id: "universe-timeline-hint", className: "uni-timeline-hint" }, "Each chapter gets equal space, not equal time. Inside a chapter, time runs through its key moments on a log scale, so the first seconds and the last billion years both fit. Gyr = billion years; Myr = million years. Future is a possible scenario."),
               // Playback controls
 
               React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" },
 
                 React.createElement("button", { type: "button", "aria-label": isPlaying ? "Pause cosmic timeline playback" : "Play cosmic timeline playback", "aria-pressed": isPlaying ? "true" : "false",
 
-                  onClick: function () {
+                  onClick: togglePlayback, className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700 " + (isPlaying ? "bg-red-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
 
-                    if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; upd("isPlaying", false); if (typeof announceToSR === "function") announceToSR("Cosmic timeline paused."); return; }
-
-                    upd("isPlaying", true); if (typeof announceToSR === "function") announceToSR("Cosmic timeline playing.");
-
-                    var position = cosmicTime >= UNIVERSE_FUTURE_PREVIEW_GYR ? 0 : timelinePosition(cosmicTime);
-
-                    window._universeTimeLapse = setInterval(function () {
-
-                      var liveSpeed = Number(document.querySelector('[data-universe-speed]')?.value) || speed;
-                      position = Math.min(EPOCHS.length - 1, position + 0.02 * liveSpeed);
-                      var t = timeAtPosition(position);
-                      upd("cosmicTime", t);
-                      if (position === EPOCHS.length - 1) { pauseTimeline(); upd('isPlaying', false); }
-
-                      var cv = document.querySelector('[data-universe-canvas]');
-
-                      if (cv) cv.dataset.time = String(t);
-
-                    }, 50);
-
-                  }, className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700 " + (isPlaying ? "bg-red-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700") + " transition-all"
-
-                }, isPlaying ? "\u23F8 Pause" : "\u25B6 Play"),
+                }, isPlaying ? "⏸ Pause" : "▶ Play"),
 
                 React.createElement("div", { className: "min-h-11 flex items-center gap-1.5 bg-white/60 rounded-lg px-2 py-1 border border-violet-200" },
 
@@ -5953,9 +9114,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                 ),
 
-                React.createElement("span", { className: "text-xs text-violet-700" }, "Playback can be paused at any time.")
+                h('button', { type: 'button', className: 'uni-chapter-stops', 'aria-pressed': d.pauseAtChapters === true, 'aria-describedby': 'universe-chapter-stops-help', onClick: function () { upd('pauseAtChapters', d.pauseAtChapters !== true); } }, 'Stop at each chapter'),
+                h('button', { type: 'button', className: 'uni-chapter-stops', 'aria-pressed': d.narrate === true, onClick: function () { if (d.narrate === true) stopSpeech(); upd('narrate', d.narrate !== true); } }, '🔊 Read moments aloud'),
 
-              ),
+                React.createElement("span", { id: "universe-chapter-stops-help", className: "text-xs text-violet-700" }, "Playback can be paused at any time. A full play-through takes about 2½ minutes at 1x.")
+
+              )
 
             ),
             // Canvas
@@ -5969,7 +9133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("span", null, "Epoch " + (epochIndex + 1) + " / " + EPOCHS.length),
                 React.createElement("button", { type: "button", disabled: epochIndex === EPOCHS.length - 1, onClick: function () { visitTime(EPOCHS[epochIndex + 1].t); } }, "Next epoch →")
               ),
-            React.createElement("div", { id: "universe-scene", 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: "uni-scene relative rounded-xl overflow-hidden border shadow-lg", style: { height: '42vh', minHeight: '260px', maxHeight: '480px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
+            React.createElement("div", { id: "universe-scene", 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: "uni-scene relative rounded-xl overflow-hidden border shadow-lg" + (sceneKind || (d.chapterHold === epochIndex && UNIVERSE_PREDICTIONS[epochIndex]) ? " uni-scene-card-open" : "") + (d.sceneGuideOpen === true ? " uni-scene-guide-open" : ""), style: { height: '42vh', minHeight: '260px', maxHeight: '480px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
 
               React.createElement('button', {
                 type: 'button',
@@ -5978,8 +9142,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 'aria-label': __alloT('stem.universe.enter_fullscreen', 'View the universe time-lapse fullscreen'),
                 'data-fs-out': __alloT('stem.universe.enter_fullscreen', 'View the universe time-lapse fullscreen'),
                 'data-fs-in': __alloT('stem.universe.exit_fullscreen', 'Exit fullscreen universe time-lapse (Escape)'),
-                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(167,139,250,0.55)', color: '#ede9fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
-              }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
+                className: 'uni-fs-button'
+              }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶'), React.createElement('span', { className: 'uni-fs-word', 'aria-hidden': 'true' }, 'Exit full screen')),
               React.createElement("canvas", {
                 tabIndex: 0,
                 "data-universe-canvas": "true",
@@ -5987,9 +9151,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 "data-time": String(cosmicTime),
                 "data-structure-guides": d.showStructureGuides !== false ? "true" : "false",
                 "data-scene-motion": d.sceneMotion || "system",
+                "data-inspect": sceneInspect ? sceneInspect.id : "",
                 role: 'img',
-                'aria-label': 'Universe time-lapse visualization showing cosmic history from the Big Bang through the present day, with a future fate preview at the end of the timeline. Currently at ' + formatCosmicTimeSentence(cosmicTime) + ', epoch: ' + epoch.name + '. Use arrow keys to scrub cosmic time, Page Up and Page Down for larger steps, Home for the Big Bang, End for the future preview.',
+                'aria-label': 'Universe time-lapse visualization showing cosmic history from the Big Bang through the present day, with a future fate preview at the end of the timeline. Currently at ' + formatCosmicTimeSentence(cosmicTime) + ', epoch: ' + epoch.name + '. Use arrow keys to scrub cosmic time, Page Up and Page Down for larger steps, Home for the Big Bang, End for the future preview. Click or tap anything in the picture to learn what it is, or press Enter for a list.',
+                onClick: sceneClick, onPointerMove: sceneHover, onPointerLeave: sceneLeave,
                 onKeyDown: function (e) {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSceneList(); return; }
                   // The hero canvas was a focus stop that did nothing; arrows now scrub time.
                   var step = 0, jump = null;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step = 1;
@@ -6012,13 +9179,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(2,6,23,0.28) 100%)', opacity: 0.65 } }),
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.72) 0%, rgba(2,6,23,0.14) 10%, rgba(2,6,23,0) 22%, rgba(2,6,23,0) 78%, rgba(2,6,23,0.18) 90%, rgba(2,6,23,0.78) 100%)' } }),
               React.createElement("div", { className: "uni-scene-caption", "aria-hidden": "true", style: { '--uni-caption-accent': epoch.border } },
-                React.createElement("span", null, formatCosmicTimeLabel(cosmicTime)),
-                React.createElement("strong", null, epoch.name)
+                React.createElement("span", { 'data-universe-live': 'age' }, formatCosmicTimeLabel(cosmicTime)),
+                React.createElement("strong", null, epoch.name),
+                storyMoment && h('em', { className: 'uni-scene-moment' }, storyMoment.title),
+                storyMomentNow && h('p', { className: 'uni-scene-moment-text' }, storyMoment.text),
+                h('small', { className: 'uni-scene-calendar' }, 'Cosmic calendar · ', h('b', { 'data-universe-live': 'calendar' }, universeCalendarLabel(cosmicTime))),
+                h('small', { className: 'uni-scene-calendar uni-scene-cond', 'data-universe-live': 'cond' }, conditions.cond)
+              ),
+              h('div', { className: 'uni-scene-tip', 'aria-hidden': 'true' }),
+              h('div', { className: 'uni-scene-tools' },
+                h('button', { type: 'button', className: 'uni-scene-explore', 'aria-expanded': d.sceneExplore === true, 'aria-controls': 'universe-scene-finds', onClick: function () { upd('sceneExplore', d.sceneExplore !== true); } },
+                  h('span', { 'aria-hidden': 'true' }, '🔍'), h('span', null, 'Explore this scene'), h('small', null, sceneFoundHere + ' / ' + sceneKinds.length + ' found')),
+                h('button', { type: 'button', className: 'uni-scene-guide-toggle uni-fs-only', 'aria-expanded': d.sceneGuideOpen === true, 'aria-controls': 'universe-scene-guide', onClick: function () { upd('sceneGuideOpen', d.sceneGuideOpen !== true); } },
+                  h('span', { 'aria-hidden': 'true' }, '📖'), h('span', null, 'Chapter guide')),
+                atChapterStop && UNIVERSE_PREDICTIONS[epochIndex] && d.chapterHold !== epochIndex && h('button', { type: 'button', className: 'uni-scene-predict-open', onClick: openPrediction },
+                  h('span', { 'aria-hidden': 'true' }, '🔮'), h('span', null, predictions[epoch.id] !== undefined ? 'Your prediction' : 'Predict what comes next'))
+              ),
+              d.chapterHold === epochIndex && UNIVERSE_PREDICTIONS[epochIndex] && !sceneKind && (function () {
+                var item = UNIVERSE_PREDICTIONS[epochIndex], chosen = predictions[epoch.id], answered = chosen !== undefined;
+                return h('section', { className: 'uni-predict', 'aria-labelledby': 'universe-predict-title', onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); updMulti({ chapterHold: null }); } } },
+                  h('p', { className: 'uni-eyebrow' }, 'Predict, then watch · ' + epoch.name + ' → ' + EPOCHS[epochIndex + 1].name),
+                  h('h3', { id: 'universe-predict-title', tabIndex: -1 }, item.q),
+                  h('div', { className: 'uni-predict-options', role: 'group', 'aria-labelledby': 'universe-predict-title' }, universePredictionOrder(epochIndex).map(function (option) {
+                    var right = option === item.answer, mine = chosen === option;
+                    return h('button', { key: option, type: 'button', 'aria-pressed': mine, disabled: answered && !mine, 'data-result': answered ? (right ? 'right' : mine ? 'wrong' : 'other') : undefined, onClick: function () { choosePrediction(option); } },
+                      item.options[option], answered && right && h('span', { className: 'sr-only' }, ' (the expected answer)'));
+                  })),
+                  answered && h('p', { className: 'uni-predict-feedback', role: 'status' }, h('strong', null, chosen === item.answer ? 'Good prediction. ' : 'Not quite. '), item.explain),
+                  h('div', { className: 'uni-predict-actions' },
+                    h('button', { type: 'button', className: 'uni-predict-continue', onClick: continueStory }, answered ? '▶ Watch what happens' : '▶ Skip and keep watching'),
+                    h('button', { type: 'button', onClick: function () { updMulti({ chapterHold: null }); } }, 'Close')));
+              })(),
+              d.sceneExplore === true && h('div', { id: 'universe-scene-finds', className: 'uni-scene-finds', role: 'group', 'aria-labelledby': 'universe-scene-finds-title', onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); upd('sceneExplore', false); var opener = document.querySelector('.uni-scene-explore'); if (opener) opener.focus(); } } },
+                h('p', { id: 'universe-scene-finds-title', className: 'uni-scene-finds-title' }, 'What can you find in this chapter?'),
+                h('p', { className: 'uni-scene-finds-help' }, 'Click or tap anything in the picture, or pick from this list. Time pauses while you look.'),
+                h('ul', null, sceneKinds.map(function (kind) {
+                  var info = UNIVERSE_SCENE_KINDS[kind], found = sceneFound.indexOf(kind) !== -1;
+                  return h('li', { key: kind }, h('button', { type: 'button', onClick: function () { pickSceneKind(kind); } },
+                    h('span', { className: 'uni-scene-find-icon', 'aria-hidden': 'true' }, info.icon), h('span', null, info.name),
+                    found && h('span', { className: 'uni-scene-found' }, h('span', { 'aria-hidden': 'true' }, '✓'), h('span', { className: 'sr-only' }, ' (found)'))));
+                })),
+                h('p', { className: 'uni-scene-finds-count' }, sceneFound.length + ' of ' + Object.keys(UNIVERSE_SCENE_KINDS).length + ' kinds of objects discovered across the whole story')
+              ),
+              sceneKind && h('section', { className: 'uni-scene-card', 'aria-labelledby': 'universe-scene-card-title', onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSceneInfo(); } } },
+                h('div', { className: 'uni-scene-card-head' },
+                  h('span', { className: 'uni-scene-card-icon', 'aria-hidden': 'true' }, sceneKind.icon),
+                  h('div', null,
+                    h('p', { className: 'uni-eyebrow' }, sceneKind.field ? 'Fills this whole view' : sceneKind.guide ? 'A guide drawn on the model' : 'Illustrated object'),
+                    h('h3', { id: 'universe-scene-card-title', tabIndex: -1 }, sceneKind.name)),
+                  h('button', { type: 'button', className: 'uni-scene-card-close', 'aria-label': 'Close details about ' + sceneKind.name, onClick: function () { closeSceneInfo(); } }, '×')),
+                h('div', { className: 'uni-scene-card-body', tabIndex: 0, role: 'region', 'aria-label': 'Details about ' + sceneKind.name },
+                  h('p', { className: 'uni-scene-card-what' }, sceneKind.what),
+                  h('dl', null,
+                    h('div', null, h('dt', null, 'When'), h('dd', null, sceneKind.when)),
+                    h('div', null, h('dt', null, 'How big'), h('dd', null, sceneKind.size)),
+                    h('div', null, h('dt', null, 'In this model'), h('dd', null, sceneKind.model))),
+                  h('p', { className: 'uni-scene-card-think' }, h('strong', null, 'Think: '), sceneKind.think)),
+                h('div', { className: 'uni-scene-card-actions' },
+                  d.sceneResume === true && h('button', { type: 'button', className: 'uni-scene-card-primary', onClick: resumeAfterInspect }, '▶ Resume time-lapse'),
+                  h('button', { type: 'button', onClick: function () { speakText(sceneKind.name + '. ' + sceneKind.what + ' ' + sceneKind.when); } }, '🔊 Read aloud'),
+                  sceneSameKind > 1 && h('button', { type: 'button', onClick: showAnotherScene }, 'Show another'),
+                  h('button', { type: 'button', className: 'uni-not-fs', onClick: function () { closeSceneInfo(true); focusUniverseSection('universe-reflection-' + epochIndex); } }, 'Write about it'))
+              ),
+              d.sceneGuideOpen === true && h('aside', { id: 'universe-scene-guide', className: 'uni-scene-guide uni-fs-only', 'aria-labelledby': 'universe-scene-guide-title' },
+                h('p', { className: 'uni-eyebrow' }, 'Chapter ' + (epochIndex + 1) + ' of ' + EPOCHS.length + (chapterSpan ? ' · lasts ' + chapterSpan : '')),
+                h('h3', { id: 'universe-scene-guide-title' }, h('span', { 'aria-hidden': 'true' }, epoch.emoji + ' '), epoch.name),
+                h('p', { className: 'uni-scene-guide-event' }, epoch.keyEvent),
+                h('p', null, epochGuide.idea + ' ' + epochGuide.notice),
+                storyMoment && h('div', { className: 'uni-scene-guide-moment' }, h('strong', null, storyMoment.title + ' · ' + universeAgeLabel(storyMoment.age)), h('p', null, storyMoment.text)),
+                h('details', null, h('summary', null, epochGuide.question), h('p', null, epochGuide.explain)),
+                h('button', { type: 'button', onClick: function () { upd('sceneGuideOpen', false); } }, 'Close guide')
+              ),
+              h('div', { className: 'uni-scene-transport uni-fs-only', role: 'group', 'aria-label': __alloT('stem.universe.a11y_step_through_cosmic_epochs', 'Step through cosmic epochs') },
+                h('button', { type: 'button', disabled: epochIndex === 0, onClick: function () { visitTime(EPOCHS[epochIndex - 1].t); } }, h('span', { 'aria-hidden': 'true' }, '⏮'), h('span', { className: 'sr-only' }, 'Previous epoch')),
+                h('button', { type: 'button', className: 'uni-scene-play', 'aria-pressed': isPlaying ? 'true' : 'false', onClick: togglePlayback }, isPlaying ? '⏸ Pause time-lapse' : '▶ Play time-lapse'),
+                h('button', { type: 'button', disabled: epochIndex === EPOCHS.length - 1, onClick: function () { visitTime(EPOCHS[epochIndex + 1].t); } }, h('span', { 'aria-hidden': 'true' }, '⏭'), h('span', { className: 'sr-only' }, 'Next epoch')),
+                h('input', { type: 'range', className: 'uni-scene-scrub', min: 0, max: EPOCHS.length - 1, step: 0.01, value: storyPosition, 'data-universe-story-slider': 'true', 'aria-labelledby': 'universe-cosmic-timeline-label', 'aria-valuetext': epoch.name + ', ' + formatCosmicTimeSentence(cosmicTime), onChange: function (e) { visitTime(timeAtPosition(parseFloat(e.target.value))); } }),
+                h('span', { className: 'uni-scene-transport-time', 'data-universe-live': 'age', 'aria-hidden': 'true' }, formatCosmicTimeLabel(cosmicTime)),
+                h('label', { className: 'uni-scene-speed' }, h('span', null, 'Speed'), h('select', { value: String(speed), onChange: function (e) { upd('speed', parseFloat(e.target.value)); } }, [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map(function (value) { return h('option', { key: value, value: String(value) }, value + '×'); }))),
+                h('button', { type: 'button', 'aria-pressed': d.pauseAtChapters === true, onClick: function () { upd('pauseAtChapters', d.pauseAtChapters !== true); } }, 'Stop at chapters'),
+                h('button', { type: 'button', 'aria-pressed': d.narrate === true, onClick: function () { if (d.narrate === true) stopSpeech(); upd('narrate', d.narrate !== true); } }, '🔊 Read aloud')
               )
 
             ),
 
             React.createElement("p", { id: "universe-model-note", className: "uni-model-note" }, "Teaching model • Colors, sizes, and motion are illustrative. This is not telescope footage or a view from outside the universe. ", __alloT('stem.universe.structure_guides_help', 'Structure guides show illustrative matter halos and connections in later epochs.')),
+            renderTimeScale(),
             ), // visual column
             React.createElement("div", { className: "uni-timeline uni-milestones" },
               h('div',{className:'uni-section-heading'},h('div',null,h('h3',null,u('choose_epoch','Choose an epoch')),h('p',null,u('epoch_chapters','Nine chapters, from early light to possible futures.'))),h('span',{className:'uni-section-count'},visitedEpochIds.length+' / '+EPOCHS.length+' visited')),
@@ -6083,7 +9329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   ),
 
-                  React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[0.625rem] font-black whitespace-nowrap", style: { color: ctx.isContrast ? '#ffffff' : epoch.border, borderColor: ctx.isContrast ? '#ffffff' : epoch.border + '66', background: 'rgba(255,255,255,0.05)' } }, "Epoch " + (EPOCHS.indexOf(epoch) + 1) + " of " + EPOCHS.length)
+                  React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[0.625rem] font-black whitespace-nowrap", style: { color: ctx.isContrast ? '#ffffff' : 'color-mix(in srgb, ' + epoch.border + ' 45%, #ffffff)', borderColor: ctx.isContrast ? '#ffffff' : epoch.border + '66', background: 'rgba(255,255,255,0.05)' } }, "Epoch " + (EPOCHS.indexOf(epoch) + 1) + " of " + EPOCHS.length)
 
                 ),
 
@@ -6092,6 +9338,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", { style: { height: '100%', width: Math.max(1.5, epochIndex / (EPOCHS.length - 1) * 100) + '%', borderRadius: '999px', background: 'linear-gradient(90deg, ' + epoch.border + '55, ' + epoch.border + ')', boxShadow: '0 0 12px -2px ' + epoch.border, transition: 'width 180ms linear' } })
                 ),
 
+                h('p', { className: 'uni-chapter-span' }, epochIndex < EPOCHS.length - 2
+                  ? h(React.Fragment, null, h('strong', null, 'This chapter lasts ' + chapterSpan + '. '), 'On a cosmic calendar it runs from ' + (epoch.t === 0 ? 'Jan 1, 12:00 AM' : universeCalendarLabel(epoch.t)) + ' to ' + universeCalendarLabel(EPOCHS[epochIndex + 1].t) + '.')
+                  : epochIndex === EPOCHS.length - 2 ? 'Today is midnight at the end of the cosmic calendar year. Everything humans have ever written fits in its last dozen seconds.' : 'A possible future, not part of the observed history.'),
                 React.createElement("div", { className: "uni-observe-grid" },
                   React.createElement("div", null,
                     React.createElement("p", { className: "uni-eyebrow" }, "The big idea"),
@@ -6167,7 +9416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   // epoch.border is a per-epoch accent chosen against a light ground; on the
                   // contrast theme black host it ran 2.66:1.
-                  React.createElement("p", { className: "text-[0.6875rem] font-bold mb-1.5", style: { color: ctx.isContrast ? '#ffffff' : epoch.border } }, "\uD83D\uDCA1 Key Facts"),
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold mb-1.5", style: { color: ctx.isContrast ? '#ffffff' : 'color-mix(in srgb, ' + epoch.border + ' 45%, #ffffff)' } }, "\uD83D\uDCA1 Key Facts"),
 
                   React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5" },
 
@@ -6217,7 +9466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var cv = document.querySelector('[data-universe-canvas]');
                   if (cv) cv.dataset.time = String(activeCosmicMission.time);
                   updMulti(Object.assign({}, activeCosmicMission.setup || {}, { activeCosmicMission: activeCosmicMission.id, cosmicMissionsLaunched: launchList, cosmicTime: activeCosmicMission.time, cosmicEvidenceThread: activeCosmicMission.evidence, wwtTourStop: activeCosmicMission.wwtStop, isPlaying: false, showImages: true }));
-                  uniTouch('missions');
+                  uniTouch('guided-missions');
                   if (typeof awardStemXP === 'function') awardStemXP('universe_guided_mission', 2, 'Launched mission: ' + activeCosmicMission.title);
                 }, className: "rounded-lg bg-rose-600 px-3 py-2 text-[0.6875rem] font-black text-white shadow-sm hover:bg-rose-700" }, activeMissionLaunched ? "Restart mission view" : "Start this mission")
               ),
@@ -6549,8 +9798,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             React.createElement("div", { "data-uni": "violet", className: "uni-card rounded-xl p-3 border" },
               React.createElement("div", { className: "flex flex-wrap items-baseline gap-2 mb-1.5" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-violet-300' : 'text-violet-700') }, "\u2B50 Research Points"),
-                React.createElement("span", { className: "text-lg font-black leading-none", style: { color: '#8b5cf6' } }, researchPoints),
-                React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: 'rgba(139,92,246,0.85)' } }, "RP"),
+                React.createElement("span", { className: "text-lg font-black leading-none", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, researchPoints),
+                React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, "RP"),
                 React.createElement("span", { className: "ml-auto text-[0.6875rem] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, completedChallenges.length + " of " + CHALLENGES.length + " challenges earned")
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 overflow-hidden", style: { background: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(139,92,246,0.15)' } },
@@ -6684,42 +9933,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }, d.showStarLife ? 'Hide' : 'Explore \u2192')
               ),
               d.showStarLife && React.createElement("div", { className: "space-y-2" },
-                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Every star follows a lifecycle determined by its mass. Low-mass stars end gently; massive stars end violently."),
-                // Two tracks diagram
-                React.createElement("div", { className: "flex gap-4 mb-2" },
-                  React.createElement("div", { className: "flex-1 text-center" },
-                    React.createElement("div", { className: "text-[0.6875rem] font-bold text-amber-600 mb-1" }, "Low Mass (< 8 M\u2609)"),
-                    React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Cloud \u2192 Protostar \u2192 Main Seq \u2192 Red Giant \u2192 Nebula \u2192 White Dwarf")
-                  ),
-                  React.createElement("div", { className: "flex-1 text-center" },
-                    React.createElement("div", { className: "text-[0.6875rem] font-bold text-red-600 mb-1" }, "High Mass (> 8 M\u2609)"),
-                    React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Cloud \u2192 Protostar \u2192 Main Seq \u2192 Red Giant \u2192 Supernova \u2192 Neutron Star / Black Hole")
-                  )
-                ),
+                renderStarPaths(),
+                renderSunFate(),
                 STAR_STAGES.map(function(stage, si) {
                   var isActive = d.starStage === si;
-                  return React.createElement("div", { 
-                    key: si,
-                    onClick: function() { uniTouch('star-lifecycle'); upd('starStage', isActive ? null : si); playBeep(); },
-                    className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
+                  return React.createElement("div", { key: si,
+                    className: "rounded-lg border transition-all " + (isActive
                       ? (isDark ? 'bg-slate-700 border-amber-500' : 'bg-white border-amber-400 shadow-md')
                       : (isDark ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-white/50 border-amber-100 hover:border-amber-300'))
                   },
-                    React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-lg", style: { color: stage.color } }, stage.icon),
+                    React.createElement("button", { type: "button", 'aria-expanded': isActive ? 'true' : 'false',
+                      onClick: function() { uniTouch('star-lifecycle'); upd('starStage', isActive ? null : si); playBeep(); },
+                      className: "w-full text-left p-2.5 flex items-center gap-2" },
+                      React.createElement("span", { className: "text-lg", 'aria-hidden': 'true', style: { color: stage.color } }, stage.icon),
                       React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, stage.name),
                       React.createElement("span", { className: "ml-auto text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, stage.duration)
                     ),
-                    isActive && React.createElement("div", { className: "mt-2 space-y-1" },
+                    isActive && React.createElement("div", { className: "px-2.5 pb-2.5 space-y-1" },
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, stage.desc),
                       React.createElement("div", { className: "flex gap-3 text-[0.6875rem] mt-1" },
-                        React.createElement("span", { className: "text-red-500 font-bold" }, "\uD83C\uDF21 " + stage.temp),
-                        React.createElement("span", { className: "text-blue-500 font-bold" }, "\uD83D\uDCCF " + stage.size)
+                        React.createElement("span", { className: "font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, "🌡 " + stage.temp),
+                        React.createElement("span", { className: "font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "📏 " + stage.size)
                       ),
-                      React.createElement("button", { "aria-label": "Listen to " + stage.name + " stage description",
-                        onClick: function(e) { e.stopPropagation(); speakText(stage.name + '. ' + stage.desc); },
-                        className: "transition-colors text-[0.6875rem] text-amber-400 hover:text-amber-600 mt-1"
-                      }, "\uD83D\uDD0A Listen")
+                      React.createElement("button", { type: "button", "aria-label": "Listen to " + stage.name + " stage description",
+                        onClick: function() { speakText(stage.name + '. ' + stage.desc); },
+                        className: "transition-colors text-[0.6875rem] " + (isDark ? 'text-amber-300' : 'text-amber-800') + " mt-1"
+                      }, "🔊 Listen")
                     )
                   );
                 })
@@ -6738,95 +9977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showHR && React.createElement("div", null,
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "The HR Diagram plots stars by temperature (x) and luminosity (y). Most stars fall on the Main Sequence diagonal."),
-                React.createElement("canvas", {
-                  role: 'img',
-                  'aria-label': __alloT('stem.universe.a11y_hertzsprung_russell_diagram_plotting_stars_by_s', 'Hertzsprung-Russell diagram plotting stars by surface temperature on the horizontal axis and luminosity on the vertical axis, with most stars falling on the main sequence diagonal'),
-                  style: { width: '100%', height: '320px', display: 'block', borderRadius: '8px' },
-                  ref: function(hrEl) {
-                    if (!hrEl || hrEl._hrInit) return;
-                    hrEl._hrInit = true;
-                    var hctx = hrEl.getContext('2d');
-                    var HW = hrEl.offsetWidth || 300, HH = 320;
-                    hrEl.width = HW * 2; hrEl.height = HH * 2; hctx.scale(2, 2);
-                    // Background
-                    hctx.fillStyle = '#0a0a20';
-                    hctx.fillRect(0, 0, HW, HH);
-                    // Axes
-                    hctx.strokeStyle = '#334155';
-                    hctx.lineWidth = 1;
-                    hctx.beginPath();
-                    hctx.moveTo(40, 10); hctx.lineTo(40, HH - 25); hctx.lineTo(HW - 10, HH - 25);
-                    hctx.stroke();
-                    // Labels
-                    hctx.fillStyle = '#94a3b8';
-                    hctx.font = '8px system-ui';
-                    hctx.textAlign = 'center';
-                    hctx.fillText('Hot (O,B)', 80, HH - 8);
-                    hctx.fillText('Cool (K,M)', HW - 40, HH - 8);
-                    hctx.fillText('Temperature \u2192 (reversed)', HW / 2, HH - 8);
-                    hctx.save();
-                    hctx.translate(10, HH / 2);
-                    hctx.rotate(-Math.PI / 2);
-                    hctx.fillText('Luminosity \u2192', 0, 0);
-                    hctx.restore();
-                    // Main Sequence band
-                    hctx.save();
-                    hctx.globalAlpha = 0.3;
-                    hctx.beginPath();
-                    hctx.moveTo(55, 15);
-                    hctx.quadraticCurveTo(HW * 0.4, HH * 0.4, HW - 30, HH - 35);
-                    hctx.lineTo(HW - 50, HH - 35);
-                    hctx.quadraticCurveTo(HW * 0.35, HH * 0.35, 75, 15);
-                    hctx.closePath();
-                    var msGrad = hctx.createLinearGradient(55, 15, HW - 30, HH - 35);
-                    msGrad.addColorStop(0, '#6366f1');
-                    msGrad.addColorStop(0.5, '#fbbf24');
-                    msGrad.addColorStop(1, '#ef4444');
-                    hctx.fillStyle = msGrad;
-                    hctx.fill();
-                    hctx.restore();
-                    // Plot specific stars
-                    var stars = [
-                      { name: 'Rigel', x: 0.12, y: 0.05, color: '#a0c4ff', r: 4 },
-                      { name: 'Sirius', x: 0.25, y: 0.25, color: '#e0e8ff', r: 3 },
-                      { name: 'Sun', x: 0.55, y: 0.6, color: '#fbbf24', r: 4 },
-                      { name: 'Betelgeuse', x: 0.8, y: 0.05, color: '#ef4444', r: 6 },
-                      { name: 'Proxima Centauri', x: 0.85, y: 0.85, color: '#f87171', r: 2 },
-                      { name: 'White Dwarfs', x: 0.2, y: 0.82, color: '#e2e8f0', r: 2 },
-                      { name: 'Aldebaran', x: 0.7, y: 0.2, color: '#fb923c', r: 5 }
-                    ];
-                    stars.forEach(function(s) {
-                      var sx = 45 + s.x * (HW - 60);
-                      var sy = 12 + s.y * (HH - 45);
-                      hctx.fillStyle = s.color;
-                      hctx.beginPath();
-                      hctx.arc(sx, sy, s.r, 0, Math.PI * 2);
-                      hctx.fill();
-                      // glow
-                      hctx.globalAlpha = 0.3;
-                      var glow2 = hctx.createRadialGradient(sx, sy, 0, sx, sy, s.r * 3);
-                      glow2.addColorStop(0, s.color);
-                      glow2.addColorStop(1, 'transparent');
-                      hctx.fillStyle = glow2;
-                      hctx.beginPath();
-                      hctx.arc(sx, sy, s.r * 3, 0, Math.PI * 2);
-                      hctx.fill();
-                      hctx.globalAlpha = 1;
-                      // label
-                      hctx.fillStyle = '#94a3b8';
-                      hctx.font = '7px system-ui';
-                      hctx.textAlign = 'center';
-                      hctx.fillText(s.name, sx, sy + s.r + 9);
-                    });
-                    // Region labels
-                    hctx.fillStyle = '#475569';
-                    hctx.font = 'bold 9px system-ui';
-                    hctx.fillText('Main Sequence', HW * 0.42, HH * 0.45);
-                    hctx.fillText('Red Giants', HW * 0.75, HH * 0.15);
-                    hctx.fillText('White Dwarfs', HW * 0.25, HH * 0.9);
-                    hctx.fillText('Supergiants', HW * 0.35, 20);
-                  }
-                }),
+                renderHRDiagram(),
                 React.createElement("div", { className: "mt-2 text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "The Sun is a G2V main-sequence star. It will become a red giant in ~5 billion years, then shrink to a white dwarf.")
               ),
               d.showHR && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
@@ -6866,6 +10017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-emerald-500 hover:text-emerald-700"
                 }, d.showDistance ? 'Hide' : 'Explore \u2192')
               ),
+              d.showDistance && renderDistanceLab(),
               d.showDistance && uniSpotlight({
                 stateKey: "ladderPick", items: DISTANCE_LADDER, accent: "#10b981", touch: "distance-ladder",
                 hint: "Each rung is calibrated by the one below it. Pick a rung and find the overlap that makes the next one trustworthy.",
@@ -6902,58 +10054,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }, d.showDark ? 'Hide' : 'Learn \u2192')
               ),
               d.showDark && React.createElement("div", { className: "space-y-2" },
-                // Pie chart canvas
-                React.createElement("canvas", {
-                  role: 'img',
-                  'aria-label': __alloT('stem.universe.a11y_pie_chart_showing_the_composition_of_the_univer', 'Pie chart showing the composition of the universe: 68 percent dark energy, 27 percent dark matter, and 5 percent ordinary matter'),
-                  style: { width: '100%', height: '180px', display: 'block', borderRadius: '8px' },
-                  ref: function(pieEl) {
-                    if (!pieEl || pieEl._pieInit) return;
-                    pieEl._pieInit = true;
-                    var pctx = pieEl.getContext('2d');
-                    var PW = pieEl.offsetWidth || 300, PH = 180;
-                    pieEl.width = PW * 2; pieEl.height = PH * 2; pctx.scale(2, 2);
-                    pctx.fillStyle = isDark ? '#1e293b' : '#faf5ff';
-                    pctx.fillRect(0, 0, PW, PH);
-                    var cx2 = PW * 0.3, cy2 = PH * 0.5, r2 = 65;
-                    var slices = [
-                      { pct: 0.68, color: '#6366f1', label: 'Dark Energy 68%' },
-                      { pct: 0.27, color: '#8b5cf6', label: 'Dark Matter 27%' },
-                      { pct: 0.05, color: '#fbbf24', label: 'Ordinary Matter 5%' }
-                    ];
-                    var startAngle = -Math.PI / 2;
-                    slices.forEach(function(sl) {
-                      var endAngle = startAngle + sl.pct * Math.PI * 2;
-                      pctx.beginPath();
-                      pctx.moveTo(cx2, cy2);
-                      pctx.arc(cx2, cy2, r2, startAngle, endAngle);
-                      pctx.closePath();
-                      pctx.fillStyle = sl.color;
-                      pctx.fill();
-                      startAngle = endAngle;
-                    });
-                    // Legend
-                    pctx.font = 'bold 9px system-ui';
-                    pctx.textAlign = 'left';
-                    slices.forEach(function(sl, si) {
-                      var ly = 25 + si * 28;
-                      pctx.fillStyle = sl.color;
-                      pctx.fillRect(PW * 0.62, ly, 10, 10);
-                      pctx.fillStyle = isDark ? '#e2e8f0' : '#334155';
-                      pctx.fillText(sl.label, PW * 0.62 + 15, ly + 9);
-                    });
-                    pctx.fillStyle = isDark ? '#94a3b8' : '#475569';
-                    pctx.font = '8px system-ui';
-                    pctx.textAlign = 'center';
-                    pctx.fillText('Composition of the Universe', PW * 0.5, PH - 5);
-                  }
-                }),
+                renderCompositionDonut(),
                 React.createElement("div", { className: "space-y-1.5 text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                  React.createElement("div", null, "\uD83D\uDD73 **Dark Energy** (68%): A mysterious force causing the universe\'s expansion to accelerate. Discovered in 1998 via distant supernovae. We have no idea what it is."),
-                  React.createElement("div", null, "\uD83C\uDF0C **Dark Matter** (27%): Invisible matter that doesn\'t emit light but has gravity. We see its effects on galaxy rotation and gravitational lensing. Leading candidate: unknown particles (WIMPs)."),
-                  React.createElement("div", null, "\u2B50 **Ordinary Matter** (5%): Everything you can see \u2014 stars, planets, people, atoms. All of chemistry and biology is just 5% of the universe!")
+                  React.createElement("div", null, "\uD83D\uDD73 ", React.createElement("strong", null, "Dark Energy"), " (68%): An unknown property of space that makes the universe\'s expansion speed up. Discovered in 1998 via distant supernovae. We have no idea what it is."),
+                  React.createElement("div", null, "\uD83C\uDF0C ", React.createElement("strong", null, "Dark Matter"), " (27%): Invisible matter that doesn\'t emit light but has gravity. We see its effects on galaxy rotation and gravitational lensing. It is probably made of particles no experiment has caught yet."),
+                  React.createElement("div", null, "\u2B50 ", React.createElement("strong", null, "Ordinary Matter"), " (5%): Everything you can see \u2014 stars, planets, people, atoms. All of chemistry and biology is just 5% of the universe!")
                 )
               ),
+              d.showDark && renderRotationLab(),
               d.showDark && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
                 uniSpotlight({
                   stateKey: "darkPick", items: DARK_COMPONENTS, accent: "#a855f7", touch: "dark-universe",
@@ -6993,14 +10101,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }, d.showWhatIf ? 'Hide' : 'Think \u2192')
               ),
               d.showWhatIf && React.createElement("div", { className: "space-y-2" },
+                React.createElement("p", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Make a prediction first, then compare it with a scientist’s answer. Thinking it through is the point; there are no wrong guesses."),
+                renderWhatIfPicker(universeWhatIfOpen(d.whatIfPick, d.whatIfShown, WHAT_IF_COSMIC.length)),
                 WHAT_IF_COSMIC.map(function(wi, wii) {
+                  if (wii !== universeWhatIfOpen(d.whatIfPick, d.whatIfShown, WHAT_IF_COSMIC.length)) return null;
+                  var notes = d.whatIfNotes && typeof d.whatIfNotes === 'object' ? d.whatIfNotes : {}, note = typeof notes[wii] === 'string' ? notes[wii] : '';
+                  var shown = Array.isArray(d.whatIfShown) && d.whatIfShown.indexOf(wii) !== -1;
                   return React.createElement("div", { key: wii, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-yellow-100') + " rounded-lg p-2.5 border" },
-                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "\u2753 " + wi.q),
-                    React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
-                    React.createElement("button", { "aria-label": "Listen to thought experiment: " + wi.q,
-                      onClick: function() { uniTouch('what-if'); speakText(wi.q + ' ' + wi.a); },
-                      className: "transition-colors mt-1 text-[0.6875rem] text-yellow-400 hover:text-yellow-600"
-                    }, "\uD83D\uDD0A Listen")
+                    React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-yellow-200' : 'text-yellow-800') + " mb-1" }, "❓ " + wi.q),
+                    !shown && h('label', { htmlFor: 'universe-whatif-' + wii, className: 'uni-whatif-label' }, 'My prediction'),
+                    !shown && h('textarea', { id: 'universe-whatif-' + wii, rows: 2, maxLength: 600, value: note, placeholder: 'I think… because…', className: 'uni-whatif-input', onChange: function (e) { var next = Object.assign({}, notes); next[wii] = e.target.value; upd('whatIfNotes', next); } }),
+                    !shown && h('button', { type: 'button', className: 'uni-whatif-reveal', onClick: function () { if (note.trim().length >= 3) uniTouch('what-if'); upd('whatIfShown', (Array.isArray(d.whatIfShown) ? d.whatIfShown : []).concat([wii])); } }, note.trim() ? 'Compare with a scientist’s answer' : 'Show a scientist’s answer'),
+                    shown && note.trim() && h('p', { className: 'uni-whatif-mine' }, h('strong', null, 'You predicted: '), note),
+                    shown && React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
+                    shown && React.createElement("button", { type: "button", "aria-label": "Listen to thought experiment: " + wi.q,
+                      onClick: function() { speakText(wi.q + ' ' + wi.a); },
+                      className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-yellow-300' : 'text-yellow-800')
+                    }, "🔊 Listen")
                   );
                 })
               )
@@ -7016,7 +10133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   'aria-label': __alloT('stem.universe.a11y_ask_the_ai_cosmos_tutor_a_question', 'Ask the AI cosmos tutor a question'),
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askCosmosTutor(d.aiQuestion); },
-                  className: "flex-1 px-3 py-1.5 border border-violet-600 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 border border-violet-600 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none " + (isDark ? "bg-slate-800 text-white placeholder-slate-300" : "bg-white text-slate-900")
                 }),
                 React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_ask_cosmos_tutor', 'Ask Cosmos Tutor'),
                   onClick: function() { askCosmosTutor(d.aiQuestion); },
@@ -7054,6 +10171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-orange-500 hover:text-orange-700"
                 }, d.showElements ? 'Hide' : 'Explore \u2192')
               ),
+              d.showElements && renderElementSort(),
               d.showElements && uniSpotlight({
                 stateKey: "elemPick", items: ELEMENT_ORIGINS, accent: "#f97316", touch: "elements",
                 hint: "Every atom in you was made somewhere. Pick a source and trace what it produced.",
@@ -7070,7 +10188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 detail: function (it) {
                   return React.createElement("div", null,
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: "#c2410c" } }, it.name),
-                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Share of the elements: "), it.pct),
+                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Share by mass: "), it.pct),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Note: "), it.note)
                   );
                 },
@@ -7088,6 +10206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-sky-500 hover:text-sky-700"
                 }, d.showStructures ? 'Hide' : 'View \u2192')
               ),
+              d.showStructures && renderZoomOut(),
               d.showStructures && uniSpotlight({
                 stateKey: "structPick", items: COSMIC_STRUCTURES, accent: "#0ea5e9", touch: "structures",
                 hint: "Structure nests inside structure. Pick a level and place yourself inside it.",
@@ -7123,6 +10242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-teal-500 hover:text-teal-700"
                 }, d.showTelescopes ? 'Hide' : 'View \u2192')
               ),
+              d.showTelescopes && renderTelescopeLab(),
               d.showTelescopes && uniSpotlight({
                 stateKey: 'telPick', items: TELESCOPES, accent: '#14b8a6', touch: 'telescopes',
                 hint: 'Every telescope is built for a slice of the spectrum. Pick one and ask what would stay invisible without it.',
@@ -7190,7 +10310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 return React.createElement("div", null,
                   React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
                     React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Question " + (qi + 1) + " of " + deck.length),
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: '#db2777' } }, "Score: " + qScore),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isDark ? '#f9a8d4' : '#be185d' } }, "Score: " + qScore),
                     React.createElement("div", { className: "ml-auto h-1.5 w-24 rounded-full overflow-hidden", "aria-hidden": "true", style: { background: isDark ? 'rgba(148,163,184,0.25)' : 'rgba(219,39,119,0.16)' } },
                       React.createElement("div", { style: { height: '100%', width: Math.round(qi / deck.length * 100) + '%', background: '#db2777', borderRadius: '999px' } })
                     )
@@ -7232,7 +10352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   // Explanation. The old flow auto-advanced after 1.5 seconds, so the
                   // reasoning was never on screen long enough to read.
                   answered && React.createElement("div", { role: "status", className: "mt-2 rounded-lg border p-2.5", style: { borderColor: gotIt ? 'rgba(34,197,94,0.45)' : 'rgba(219,39,119,0.4)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.85)' } },
-                    React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: gotIt ? '#16a34a' : '#db2777' } }, gotIt ? "\u2705 Correct" : "\u274C The answer is: " + cq.options[cq.correct]),
+                    React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: gotIt ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#f9a8d4' : '#be185d') } }, gotIt ? "\u2705 Correct" : "\u274C The answer is: " + cq.options[cq.correct]),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, cq.why),
                     cq.source && h('p',null,h('a',{href:cq.source,target:'_blank',rel:'noopener noreferrer'},'Read the NASA source ↗')),
                     React.createElement("button", {
@@ -7265,7 +10385,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showNumbers ? 'Hide' : 'View \u2192')
               ),
-              d.showNumbers && uniSpotlight({
+              d.showNumbers && renderEstimateGame(),
+              d.showNumbers && labRevealed('numbers') && uniSpotlight({
                 stateKey: "numPick", items: COSMIC_NUMBERS, accent: "#6366f1", touch: "numbers",
                 hint: "Big numbers stop meaning anything unless you can check them. Pick one and ask how it was measured.",
                 name: function (it) { return it.label; },
@@ -7299,7 +10420,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showCalendar ? 'Hide' : 'View \u2192')
               ),
-              d.showCalendar && uniSpotlight({
+              d.showCalendar && renderCalendarGuess(),
+              d.showCalendar && labRevealed('calendar') && uniSpotlight({
                 stateKey: "calPick", items: COSMIC_CALENDAR, accent: "#6366f1", touch: "calendar",
                 hint: "The whole history of the universe compressed into one year. Pick a date and see the real one.",
                 name: function (it) { return it.event; },
@@ -7334,6 +10456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-violet-500 hover:text-violet-700"
                 }, d.showGalaxyTypes ? 'Hide' : 'View \u2192')
               ),
+              d.showGalaxyTypes && renderGalaxySort(),
               d.showGalaxyTypes && uniSpotlight({
                 stateKey: "galTypePick", items: GALAXY_TYPES, accent: "#8b5cf6", touch: "galaxy-types",
                 hint: "Shape records history. Pick a type and work out what its form says about its past.",
@@ -7370,127 +10493,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-orange-400 hover:text-orange-300"
                 }, d.showBlackHole ? 'Hide' : 'Explore \u2192')
               ),
+              d.showBlackHole && renderHorizonLab(),
               d.showBlackHole && React.createElement("div", { className: "space-y-1.5" },
-                // Visual canvas
-                React.createElement("canvas", {
-                  role: 'img',
-                  'aria-label': __alloT('stem.universe.a11y_animated_black_hole_anatomy_diagram_showing_the', 'Animated black hole anatomy diagram showing the singularity, event horizon, photon sphere, and accretion disk swirling around a central black hole'),
-                  style: { width: '100%', height: '240px', display: 'block', borderRadius: '8px' },
-                  ref: function(bhEl) {
-                    if (!bhEl || bhEl._bhInit) return;
-                    bhEl._bhInit = true;
-                    var bctx = bhEl.getContext('2d');
-                    var BW = bhEl.offsetWidth || 300, BH = 240;
-                    bhEl.width = BW * 2; bhEl.height = BH * 2; bctx.scale(2, 2);
-                    var btick = 0;
-                    var bhRaf;
-                    function drawBH() {
-                      if (!bhEl.isConnected) { cancelAnimationFrame(bhRaf); bhEl._bhInit = false; return; }
-                      btick++;
-                      bctx.fillStyle = '#050510';
-                      bctx.fillRect(0, 0, BW, BH);
-                      var cx2 = BW * 0.45, cy2 = BH * 0.5;
-                      // Stars in background
-                      for (var bsi = 0; bsi < 50; bsi++) {
-                        bctx.globalAlpha = 0.2 + 0.2 * Math.sin(btick * 0.02 + bsi);
-                        bctx.fillStyle = '#fff';
-                        bctx.beginPath();
-                        bctx.arc((bsi * 73 + 11) % BW, (bsi * 41 + 7) % BH, 0.6, 0, Math.PI * 2);
-                        bctx.fill();
-                      }
-                      bctx.globalAlpha = 1;
-                      // Relativistic jet (top)
-                      bctx.save();
-                      var jetGrad = bctx.createLinearGradient(cx2, cy2 - 60, cx2, cy2);
-                      jetGrad.addColorStop(0, 'rgba(99,102,241,0)');
-                      jetGrad.addColorStop(0.5, 'rgba(99,102,241,0.3)');
-                      jetGrad.addColorStop(1, 'rgba(99,102,241,0)');
-                      bctx.fillStyle = jetGrad;
-                      bctx.beginPath();
-                      bctx.moveTo(cx2 - 3, cy2);
-                      bctx.lineTo(cx2 - 8 + Math.sin(btick * 0.05) * 2, cy2 - 60);
-                      bctx.lineTo(cx2 + 8 + Math.sin(btick * 0.05) * 2, cy2 - 60);
-                      bctx.lineTo(cx2 + 3, cy2);
-                      bctx.fill();
-                      // Jet (bottom)
-                      var jetGrad2 = bctx.createLinearGradient(cx2, cy2, cx2, cy2 + 60);
-                      jetGrad2.addColorStop(0, 'rgba(99,102,241,0)');
-                      jetGrad2.addColorStop(0.5, 'rgba(99,102,241,0.3)');
-                      jetGrad2.addColorStop(1, 'rgba(99,102,241,0)');
-                      bctx.fillStyle = jetGrad2;
-                      bctx.beginPath();
-                      bctx.moveTo(cx2 - 3, cy2);
-                      bctx.lineTo(cx2 - 8 - Math.sin(btick * 0.05) * 2, cy2 + 60);
-                      bctx.lineTo(cx2 + 8 - Math.sin(btick * 0.05) * 2, cy2 + 60);
-                      bctx.lineTo(cx2 + 3, cy2);
-                      bctx.fill();
-                      bctx.restore();
-                      // Accretion disk (elliptical ring)
-                      for (var ari = 3; ari >= 0; ari--) {
-                        var diskR = 28 + ari * 7;
-                        var aAlpha = 0.3 - ari * 0.05;
-                        bctx.strokeStyle = 'rgba(249,115,22,' + aAlpha + ')';
-                        bctx.lineWidth = 3 - ari * 0.5;
-                        bctx.beginPath();
-                        bctx.ellipse(cx2, cy2, diskR, diskR * 0.25, btick * 0.002, 0, Math.PI * 2);
-                        bctx.stroke();
-                      }
-                      // Photon sphere glow
-                      var phGrad = bctx.createRadialGradient(cx2, cy2, 14, cx2, cy2, 22);
-                      phGrad.addColorStop(0, 'rgba(168,85,247,0)');
-                      phGrad.addColorStop(0.5, 'rgba(168,85,247,0.15)');
-                      phGrad.addColorStop(1, 'rgba(168,85,247,0)');
-                      bctx.save();
-                      bctx.globalCompositeOperation = 'lighter';
-                      bctx.fillStyle = phGrad;
-                      bctx.beginPath();
-                      bctx.arc(cx2, cy2, 22, 0, Math.PI * 2);
-                      bctx.fill();
-                      bctx.restore();
-                      // Event horizon (black circle)
-                      bctx.fillStyle = '#000';
-                      bctx.beginPath();
-                      bctx.arc(cx2, cy2, 14, 0, Math.PI * 2);
-                      bctx.fill();
-                      // Shadow edge glow
-                      var edgeGrad = bctx.createRadialGradient(cx2, cy2, 12, cx2, cy2, 16);
-                      edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
-                      edgeGrad.addColorStop(0.5, 'rgba(249,115,22,0.2)');
-                      edgeGrad.addColorStop(1, 'rgba(249,115,22,0)');
-                      bctx.fillStyle = edgeGrad;
-                      bctx.beginPath();
-                      bctx.arc(cx2, cy2, 16, 0, Math.PI * 2);
-                      bctx.fill();
-                      // Labels
-                      bctx.fillStyle = '#94a3b8';
-                      bctx.font = '7px system-ui';
-                      bctx.textAlign = 'left';
-                      bctx.fillText('Event Horizon', cx2 + 18, cy2 - 2);
-                      bctx.fillText('Accretion Disk', cx2 + 35, cy2 + 12);
-                      bctx.fillStyle = '#818cf8';
-                      bctx.fillText('Relativistic Jet', cx2 + 12, cy2 - 45);
-                      bctx.fillText('Relativistic Jet', cx2 + 12, cy2 + 50);
-                      /* Scheduled by startUniverseScene. */
-                    }
-                    startUniverseScene(bhEl, drawBH);
-                  }
-                }),
+                renderBlackHoleAnatomy(),
                 uniSpotlight({
                 stateKey: "bhPick", items: BLACK_HOLE_PARTS, accent: "#fb923c", touch: "black-holes", forceDark: true,
                 hint: "Pick a part of the diagram above to read what it actually is.",
                 name: function (it) { return it.name; },
-                row: function (it, on) {
+                row: function (it, on, dk) {
                   return React.createElement("span", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "flex-1" },
-                      React.createElement("span", { className: "block text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name)
+                      React.createElement("span", { className: "block text-[0.6875rem] font-bold " + (dk ? 'text-white' : 'text-slate-800') }, it.name)
                     ),
                     React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: "#fb923c" } }, on ? "\u25BE" : "\u203A")
                   );
                 },
-                detail: function (it) {
+                detail: function (it, dk) {
                   return React.createElement("div", null,
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: "#fdba74" } }, it.name),
-                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
+                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
                   );
                 },
                 prompt: function () { return "Is this a physical object you could touch, or a boundary defined by how light behaves?"; }
@@ -7518,29 +10539,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     { key: 'drakeFl', label: 'fl (fraction with life)', min: 0, max: 1, step: 0.1, def: DRAKE_DEFAULTS.fl, desc: 'Planets where life actually develops' },
                     { key: 'drakeFi', label: 'fi (fraction intelligent)', min: 0, max: 1, step: 0.05, def: DRAKE_DEFAULTS.fi, desc: 'Life that develops intelligence' },
                     { key: 'drakeFc', label: 'fc (fraction detectable)', min: 0, max: 1, step: 0.05, def: DRAKE_DEFAULTS.fc, desc: 'Civilizations we could detect' },
-                    { key: 'drakeL', label: 'L (civilization lifetime, yrs)', min: 100, max: 1000000, step: 1000, def: DRAKE_DEFAULTS.L, desc: 'How long a detectable civilization lasts' }
+                    { key: 'drakeL', label: 'L (civilization lifetime, yrs)', min: 2, max: 6, step: 0.05, log: true, def: DRAKE_DEFAULTS.L, desc: 'How long a detectable civilization lasts' }
                   ].map(function(param) {
-                    var val = d[param.key] !== undefined ? d[param.key] : param.def;
+                    var raw = d[param.key] !== undefined ? d[param.key] : param.def, val = param.log ? Math.log10(Math.max(1, raw)) : raw;
                     return React.createElement("div", { key: param.key },
                       React.createElement("div", { className: "flex items-center justify-between" },
-                        React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, param.label + ": " + val),
+                        React.createElement("label", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, param.label + ": " + (param.log ? Math.round(raw).toLocaleString() : raw)),
                         React.createElement("span", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, param.desc)
                       ),
-                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, 'aria-label': param.label, onChange: function(e) { uniTouch('drake'); upd(param.key, parseFloat(e.target.value)); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
+                      React.createElement("input", { type: "range", min: param.min, max: param.max, step: param.step, value: val, 'aria-label': param.label, 'aria-valuetext': param.log ? Math.round(raw).toLocaleString() + ' years' : undefined, onChange: function(e) { uniTouch('drake'); var v = parseFloat(e.target.value); upd(param.key, param.log ? Math.round(Math.pow(10, v)) : v); }, className: "w-full h-1 bg-green-200 rounded-lg appearance-none" })
                     );
                   })
                 ),
                 // Result
                 (function() {
-                  var N = (d.drakeR || DRAKE_DEFAULTS.R) * (d.drakeFp || DRAKE_DEFAULTS.fp) * (d.drakeNe || DRAKE_DEFAULTS.ne) * (d.drakeFl || DRAKE_DEFAULTS.fl) * (d.drakeFi || DRAKE_DEFAULTS.fi) * (d.drakeFc || DRAKE_DEFAULTS.fc) * (d.drakeL || DRAKE_DEFAULTS.L);
+                  // A slider at 0 means 0: read each factor the same way its label does.
+                  var N = drakeEstimate();
                   return React.createElement("div", { className: "mt-2 text-center p-2 rounded-lg " + (isDark ? 'bg-slate-700' : 'bg-green-100') },
                     React.createElement("div", { className: "text-lg font-black " + (isDark ? 'text-green-300' : 'text-green-700') }, "N \u2248 " + Math.round(N).toLocaleString()),
                     React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Estimated detectable civilizations in our galaxy right now"),
-                    N > 1000 ? React.createElement("div", { className: "text-[0.6875rem] text-green-500 mt-1 font-bold" }, "\uD83D\uDC7D That\'s a lot! So where is everybody? (Fermi Paradox)") :
-                    N < 1 ? React.createElement("div", { className: "text-[0.6875rem] text-orange-500 mt-1 font-bold" }, "\uD83D\uDE14 We might be alone in the Milky Way...") :
-                    React.createElement("div", { className: "text-[0.6875rem] text-blue-500 mt-1 font-bold" }, "\uD83E\uDD14 A handful of civilizations \u2014 but space is very, very big")
+                    N > 1000 ? React.createElement("div", { className: "text-[0.6875rem] mt-1 font-bold " + (isDark ? "text-green-300" : "text-green-800") }, "\uD83D\uDC7D That\'s a lot! So where is everybody? (Fermi Paradox)") :
+                    N < 1 ? React.createElement("div", { className: "text-[0.6875rem] mt-1 font-bold " + (isDark ? "text-orange-300" : "text-orange-800") }, "\uD83D\uDE14 We might be alone in the Milky Way...") :
+                    React.createElement("div", { className: "text-[0.6875rem] mt-1 font-bold " + (isDark ? "text-blue-300" : "text-blue-800") }, "\uD83E\uDD14 A handful of civilizations \u2014 but space is very, very big")
                   );
-                })()
+                })(),
+                renderDrakePicture()
               )
             ),
 
@@ -7562,13 +10585,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
                 var c = 299792; // km/s
                 var recessionV = iq.hubbleConst * iq.distMpc;
-                var z = recessionV / c;
+                // z = v/c holds only nearby; farther out, use the expansion model.
+                var z = universeRedshiftAtHubbleDistance(iq.distMpc * iq.hubbleConst / c);
                 // Look-back time: linear estimate t ≈ d/c, valid only at low z. For z > 0.3 a
                 // full ΛCDM integration is needed; we keep the linear form here and flag the
                 // limit in the disclaimer. (The previous form `(d/c) / (1 - z/2)` inflated
                 // look-back by ~33% at z=0.5 — wrong direction vs the standard first-order
                 // expansion `t ≈ (d/c)·(1 − z/(1+q0) + …)`.)
-                var lookBackGyr = (iq.distMpc * 3.262 / 1000); // d·(Mpc→Gly), c→light-Gly/Gyr ≈ 1
+                var lookBackGyr = UNIVERSE_NOW_GYR - universeAgeAtScale(1 / (1 + z));
                 var ageEstGyr = (1 / iq.hubbleConst) * 977.8; // simplified
                 var oTotal = (iq.darkEnergy + iq.matter) / 100;
                 // Ω-total ≠ 1 is meaningful: in ΛCDM it implies spatial curvature
@@ -7576,7 +10600,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 // collapses this to a Λ-vs-matter contest and ignores curvature + dark-energy
                 // equation of state w; that simplification is called out in the open
                 // questions and in the disclaimer.
-                var fate = iq.darkEnergy / 100 > 0.6 ? 'expanding' : iq.darkEnergy / 100 > 0.3 ? 'coasting' : iq.matter / 100 > 0.7 ? 'collapsing' : 'borderline';
+                // Deceleration today: q0 = Ωm/2 − ΩΛ. With matter ≤ 100% and dark energy ≥ 0,
+                // none of these universes recollapses; they differ in speeding up or slowing.
+                var fate = iq.matter / 200 - iq.darkEnergy / 100 < 0 ? 'speeding up, expands forever' : 'slowing, still expands forever';
                 var state = z > 1 ? 'highZ' : z > 0.3 ? 'cosmological' : z > 0.05 ? 'extragalactic' : z > 0.001 ? 'local' : 'gravbound';
                 var sm = ({
                   gravbound: { label: 'Gravitationally bound', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Distance < ~5 Mpc. Local Group is gravitationally bound \u2014 does not participate in cosmic expansion.' },
@@ -7600,24 +10626,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       );
                     })
                   ),
-                  React.createElement("svg", { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': "Hubble diagram showing the selected galaxy distance on the v equals H0 times d line. Current distance is " + iq.distMpc + " megaparsecs, H0 is " + iq.hubbleConst + ", and estimated redshift is " + z.toFixed(3) + ".", style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-                    React.createElement("line", { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
-                    React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 100, stroke: '#1e293b' }),
-                    // Hubble line: v = H * d
+                  React.createElement("svg", { width: '100%', viewBox: '0 0 360 204', className: 'uni-hubble-chart', role: 'img', 'aria-label': "Hubble diagram showing the selected galaxy distance on the v equals H0 times d line. Current distance is " + iq.distMpc + " megaparsecs, H0 is " + iq.hubbleConst + ", and estimated redshift is " + z.toFixed(3) + ".", style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8, display: 'block', maxWidth: 600 } },
                     (function() {
-                      var pts = '';
-                      for (var dd = 0; dd <= 1000; dd += 25) {
-                        var vv = iq.hubbleConst * dd;
-                        var x = 30 + (dd / 1000) * 280;
-                        var y = 100 - Math.min(90, vv / 800);
-                        pts += x + ',' + y + ' ';
+                      // Plot box: x 44..348 (0..4,000 Mpc), y 150..18 (0..1.2 c).
+                      var PX0 = 44, PW = 304, PY0 = 150, PH = 132, VMAX = 1.2 * UNIVERSE_C_KMS;
+                      function gx(dd) { return PX0 + Math.min(4000, dd) / 4000 * PW; }
+                      function gy(vv) { return PY0 - Math.min(VMAX, vv) / VMAX * PH; }
+                      var pts = '', sphere = universeHubbleSphereMpc(iq.hubbleConst);
+                      for (var dd = 0; dd <= 4000; dd += 100) pts += gx(dd).toFixed(1) + ',' + gy(iq.hubbleConst * dd).toFixed(1) + ' ';
+                      var els = [];
+                      [0, 1000, 2000, 3000, 4000].forEach(function (t) { els.push(React.createElement("g", { key: 'x' + t }, React.createElement("line", { x1: gx(t), x2: gx(t), y1: 18, y2: PY0, stroke: '#1e293b' }), React.createElement("text", { x: gx(t), y: PY0 + 13, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, t.toLocaleString('en-US')))); });
+                      [0, 100000, 200000, 300000].forEach(function (t) { els.push(React.createElement("g", { key: 'y' + t }, React.createElement("line", { x1: PX0, x2: 348, y1: gy(t), y2: gy(t), stroke: '#1e293b' }), React.createElement("text", { x: PX0 - 4, y: gy(t) + 3, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, t === 0 ? '0' : (t / 1000) + 'k'))); });
+                      els.push(React.createElement("line", { key: 'c', className: 'uni-hubble-c', x1: PX0, x2: 348, y1: gy(UNIVERSE_C_KMS), y2: gy(UNIVERSE_C_KMS), stroke: '#f87171', strokeDasharray: '5 4' }));
+                      els.push(React.createElement("text", { key: 'ct', x: PX0 + 5, y: gy(UNIVERSE_C_KMS) - 4, fill: '#fca5a5', fontSize: 10 }, 'speed of light'));
+                      if (sphere <= 4000) {
+                        els.push(React.createElement("line", { key: 'hs', className: 'uni-hubble-sphere', x1: gx(sphere), x2: gx(sphere), y1: 18, y2: PY0, stroke: '#fca5a5', strokeDasharray: '2 3' }));
+                        els.push(React.createElement("text", { key: 'hst', x: gx(sphere) - 4, y: 30, fill: '#fca5a5', fontSize: 10, textAnchor: 'end' }, 'faster than light beyond ' + Math.round(sphere).toLocaleString('en-US') + ' Mpc'));
                       }
-                      return React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: sm.color, strokeWidth: 1.5, opacity: 0.7 });
-                    })(),
-                    React.createElement("circle", { cx: 30 + (Math.min(1000, iq.distMpc) / 1000) * 280, cy: 100 - Math.min(90, recessionV / 800), r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
-                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 10 }, 'v (km/s)'),
-                    React.createElement("text", { x: 310, y: 116, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, 'distance (Mpc)'),
-                    React.createElement("text", { x: 160, y: 116, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'v = H\u2080d  \u00B7  fate: ' + fate)
+                      els.push(React.createElement("polyline", { key: 'line', points: pts.trim(), fill: 'none', stroke: sm.color, strokeWidth: 2 }));
+                      els.push(React.createElement("circle", { key: 'dot', cx: gx(iq.distMpc), cy: gy(recessionV), r: 5.5, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }));
+                      els.push(React.createElement("text", { key: 'ylab', x: 4, y: 12, fill: '#cbd5e1', fontSize: 10 }, 'Recession speed (km/s)'));
+                      els.push(React.createElement("text", { key: 'xlab', x: 196, y: 178, fill: '#cbd5e1', fontSize: 10, textAnchor: 'middle' }, 'Distance (Mpc)'));
+                      els.push(React.createElement("text", { key: 'fate', x: 196, y: 197, fill: '#e2e8f0', fontSize: 11, textAnchor: 'middle' }, 'v = H₀d  ·  fate: ' + fate));
+                      return els;
+                    })()
                   ),
                   React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement("label", { className: "text-[0.625rem]" },
@@ -7685,6 +10717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-red-500 hover:text-red-700"
                 }, d.showSupernovae ? 'Hide' : 'Learn \u2192')
               ),
+              d.showSupernovae && renderSupernovaHunt(),
               d.showSupernovae && uniSpotlight({
                 stateKey: 'snPick', items: SUPERNOVA_TYPES, accent: '#ef4444', touch: 'supernovae',
                 hint: 'Not every exploding star works the same way. Pick a type and follow the mechanism through to why it matters.',
@@ -7720,6 +10753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-cyan-500 hover:text-cyan-700"
                 }, d.showAstronomers ? 'Hide' : 'View \u2192')
               ),
+              d.showAstronomers && renderHistoryTimeline(ASTRONOMERS, 'astPick', '#06b6d4', 1500, 2030, true),
               d.showAstronomers && uniSpotlight({
                 stateKey: 'astPick', items: ASTRONOMERS, accent: '#06b6d4', touch: 'astronomers',
                 hint: 'Each of these people was right about something and limited by what could be measured at the time.',
@@ -7768,12 +10802,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   )
                 ),
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " space-y-1.5" },
-                  React.createElement("div", null, "\u2753 **Why is it 93 billion light-years if the universe is only 13.8 billion years old?**"),
+                  React.createElement("div", null, "\u2753 ", React.createElement("strong", null, "Why is it 93 billion light-years if the universe is only 13.8 billion years old?"), ""),
                   React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, OBSERVABLE_UNIVERSE.whyBigger),
-                  React.createElement("div", null, "\u2753 **Is there more beyond what we can see?**"),
+                  React.createElement("div", null, "\u2753 ", React.createElement("strong", null, "Is there more beyond what we can see?"), ""),
                   React.createElement("div", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, OBSERVABLE_UNIVERSE.beyondIt)
                 )
               ),
+              d.showObservable && renderLightJourney(),
               d.showObservable && React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.18)') } },
                 uniSpotlight({
                   stateKey: "obsPick", items: OBSERVABLE_LIMITS, accent: "#d946ef", touch: "observable",
@@ -7813,6 +10848,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showExoplanets && React.createElement("div", null,
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "We have discovered 6,300+ confirmed exoplanets. They come in dazzling variety \u2014 many unlike anything in our Solar System."),
+                renderTransit(),
+                renderHabitableLab(),
+                renderExoplanetSizes(),
                 React.createElement("div", { className: "grid grid-cols-1 gap-2" },
                   EXOPLANET_TYPES.map(function(ep2, epi) {
                     return React.createElement("div", { key: epi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-emerald-100') + " rounded-lg p-2.5 border" },
@@ -7841,7 +10879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, ep2.desc),
                       React.createElement("button", { "aria-label": "Listen to " + ep2.name + " description",
                         onClick: function(e) { uniTouch('exoplanets'); e.stopPropagation(); speakText(ep2.name + '. ' + ep2.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-emerald-400 hover:text-emerald-600"
+                        className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-700 hover:text-emerald-800')
                       }, "\uD83D\uDD0A Listen")
                     );
                   })
@@ -7859,6 +10897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-blue-500 hover:text-blue-700"
                 }, d.showMissions ? 'Hide' : 'Explore \u2192')
               ),
+              d.showMissions && renderHistoryTimeline(SPACE_MISSIONS, 'missionPick', '#3b82f6', 1955, 2025, false),
               d.showMissions && uniSpotlight({
                 stateKey: "missionPick", items: SPACE_MISSIONS, accent: "#3b82f6", touch: "missions",
                 hint: "Pick a mission and ask what question it was actually built to answer.",
@@ -7894,26 +10933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-amber-500 hover:text-amber-700"
                 }, d.showFermi ? 'Hide' : 'Think \u2192')
               ),
-              d.showFermi && React.createElement("div", null,
-                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-2" }, "If the universe is so vast and old, and the conditions for life aren't rare, why haven't we found evidence of alien civilizations? Physicist Enrico Fermi asked this in 1950 over lunch. Here are the leading proposed answers:"),
-                React.createElement("div", { className: "space-y-2" },
-                  FERMI_SOLUTIONS.map(function(fs, fsi) {
-                    var typeColors = { filter: 'text-red-400', social: 'text-purple-400', contact: 'text-green-400', tech: 'text-blue-400', physics: 'text-cyan-400' };
-                    return React.createElement("div", { key: fsi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-amber-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-lg" }, fs.icon),
-                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, fs.name),
-                        React.createElement("span", { className: "ml-auto text-[0.6875rem] px-1.5 py-0.5 rounded-full font-bold " + (typeColors[fs.type] || 'text-slate-200') + " " + (isDark ? 'bg-slate-600' : 'bg-slate-100') }, fs.type)
-                      ),
-                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, fs.desc),
-                      React.createElement("button", { "aria-label": "Listen to " + fs.name + " solution",
-                        onClick: function(e) { uniTouch('fermi'); e.stopPropagation(); speakText(fs.name + '. ' + fs.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-amber-400 hover:text-amber-600"
-                      }, "\uD83D\uDD0A Listen")
-                    );
-                  })
-                )
-              )
+              d.showFermi && renderFermiTask()
             ),
 
             // === GRAVITATIONAL LENSING ===
@@ -7928,117 +10948,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showLensing && React.createElement("div", { className: "space-y-2" },
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
-                // Animated lensing canvas
-                React.createElement("canvas", {
-                  role: 'img',
-                  'aria-label': __alloT('stem.universe.a11y_animated_gravitational_lensing_visualization_sh', 'Animated gravitational lensing visualization showing how a massive foreground galaxy bends light from a distant background source, producing arcs and Einstein rings'),
-                  style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
-                  ref: function(lensEl) {
-                    if (!lensEl || lensEl._lensInit) return;
-                    lensEl._lensInit = true;
-                    var lctx = lensEl.getContext('2d');
-                    var LW = lensEl.offsetWidth || 300, LH = 260;
-                    lensEl.width = LW * 2; lensEl.height = LH * 2; lctx.scale(2, 2);
-                    var ltick = 0;
-                    var lensRaf;
-                    function drawLens() {
-                      if (!lensEl.isConnected) { cancelAnimationFrame(lensRaf); lensEl._lensInit = false; return; }
-                      ltick++;
-                      lctx.fillStyle = '#050510';
-                      lctx.fillRect(0, 0, LW, LH);
-                      // Background stars
-                      for (var lsi = 0; lsi < 60; lsi++) {
-                        lctx.globalAlpha = 0.15 + 0.1 * Math.sin(ltick * 0.015 + lsi * 2);
-                        lctx.fillStyle = '#fff';
-                        lctx.beginPath();
-                        lctx.arc((lsi * 59 + 17) % LW, (lsi * 37 + 11) % LH, 0.5, 0, Math.PI * 2);
-                        lctx.fill();
-                      }
-                      lctx.globalAlpha = 1;
-                      var lcx = LW * 0.5, lcy = LH * 0.5;
-                      // Massive foreground galaxy (lens)
-                      var lensGrad = lctx.createRadialGradient(lcx, lcy, 0, lcx, lcy, 18);
-                      lensGrad.addColorStop(0, 'rgba(255,200,100,0.6)');
-                      lensGrad.addColorStop(0.5, 'rgba(200,150,80,0.2)');
-                      lensGrad.addColorStop(1, 'rgba(200,150,80,0)');
-                      lctx.fillStyle = lensGrad;
-                      lctx.beginPath(); lctx.arc(lcx, lcy, 18, 0, Math.PI * 2); lctx.fill();
-                      // Einstein Ring (lensed background galaxy)
-                      var ringR = 32 + 2 * Math.sin(ltick * 0.02);
-                      var ringGrad = lctx.createRadialGradient(lcx, lcy, ringR - 4, lcx, lcy, ringR + 4);
-                      ringGrad.addColorStop(0, 'rgba(100,150,255,0)');
-                      ringGrad.addColorStop(0.3, 'rgba(100,180,255,0.25)');
-                      ringGrad.addColorStop(0.5, 'rgba(120,200,255,0.4)');
-                      ringGrad.addColorStop(0.7, 'rgba(100,180,255,0.25)');
-                      ringGrad.addColorStop(1, 'rgba(100,150,255,0)');
-                      lctx.save(); lctx.globalCompositeOperation = 'lighter';
-                      lctx.fillStyle = ringGrad;
-                      lctx.beginPath(); lctx.arc(lcx, lcy, ringR + 4, 0, Math.PI * 2); lctx.fill();
-                      lctx.restore();
-                      // Four arc images (simulating strong lensing arcs)
-                      for (var ai = 0; ai < 4; ai++) {
-                        var arcAngle = ai * Math.PI / 2 + ltick * 0.003;
-                        var arcR = 35;
-                        var ax = lcx + Math.cos(arcAngle) * arcR;
-                        var ay = lcy + Math.sin(arcAngle) * arcR;
-                        var arcAlpha = 0.3 + 0.15 * Math.sin(ltick * 0.025 + ai);
-                        lctx.save();
-                        lctx.translate(ax, ay);
-                        lctx.rotate(arcAngle + Math.PI / 2);
-                        lctx.beginPath();
-                        lctx.ellipse(0, 0, 6, 2, 0, 0, Math.PI * 2);
-                        lctx.fillStyle = 'rgba(120,180,255,' + arcAlpha + ')';
-                        lctx.fill();
-                        lctx.restore();
-                      }
-                      // Spacetime grid distortion lines
-                      lctx.save();
-                      lctx.globalAlpha = 0.08;
-                      lctx.strokeStyle = '#6366f1';
-                      lctx.lineWidth = 0.5;
-                      for (var gx = 0; gx < LW; gx += 12) {
-                        lctx.beginPath();
-                        for (var gy2 = 0; gy2 < LH; gy2 += 2) {
-                          var ddx = gx - lcx, ddy = gy2 - lcy;
-                          var dist2 = Math.sqrt(ddx * ddx + ddy * ddy);
-                          var bend = dist2 > 5 ? 300 / (dist2 * dist2) : 0;
-                          var bx = gx + ddx * bend;
-                          if (gy2 === 0) lctx.moveTo(bx, gy2);
-                          else lctx.lineTo(bx, gy2);
-                        }
-                        lctx.stroke();
-                      }
-                      lctx.restore();
-                      // Labels
-                      lctx.fillStyle = '#94a3b8'; lctx.font = '7px system-ui'; lctx.textAlign = 'center';
-                      lctx.fillText('Foreground Galaxy (Lens)', lcx, lcy + 26);
-                      lctx.fillStyle = '#818cf8';
-                      lctx.fillText('Einstein Ring', lcx, lcy - 38);
-                      lctx.fillStyle = '#94a3b8'; lctx.font = '8px system-ui';
-                      lctx.fillText('Light from a background galaxy is bent around a massive foreground object', LW / 2, LH - 8);
-                      /* Scheduled by startUniverseScene. */
-                    }
-                    startUniverseScene(lensEl, drawLens);
-                  }
-                }),
+                renderLensLab(),
                 uniSpotlight({
                 stateKey: "lensPick", items: LENSING_EXAMPLES, accent: "#818cf8", touch: "lensing", forceDark: true,
-                hint: "Pick a real lensing case and match it to the geometry in the animation above.",
+                hint: "Pick a real lensing case and match it to what you made in the lens above.",
                 name: function (it) { return it.name; },
-                row: function (it, on) {
+                row: function (it, on, dk) {
                   return React.createElement("span", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, it.icon),
                     React.createElement("span", { className: "flex-1" },
-                      React.createElement("span", { className: "block text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, it.name),
-                      React.createElement("span", { className: "block text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, it.type)
+                      React.createElement("span", { className: "block text-[0.6875rem] font-bold " + (dk ? 'text-white' : 'text-slate-800') }, it.name),
+                      React.createElement("span", { className: "block text-[0.6875rem] " + (dk ? 'text-slate-300' : 'text-slate-600') }, it.type)
                     ),
                     React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: "#818cf8" } }, on ? "\u25BE" : "\u203A")
                   );
                 },
-                detail: function (it) {
+                detail: function (it, dk) {
                   return React.createElement("div", null,
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: "#c7d2fe" } }, it.name),
-                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What is seen: "), it.desc)
+                    React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (dk ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What is seen: "), it.desc)
                   );
                 },
                 prompt: function () { return "What does the shape of the lensed image tell you about the mass in front of it?"; }
@@ -8056,27 +10984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-rose-500 hover:text-rose-700"
                 }, d.showMysteries ? 'Hide' : 'Explore \u2192')
               ),
-              d.showMysteries && React.createElement("div", null,
-                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "These are the biggest unanswered questions in cosmology. Solving any one could win a Nobel Prize."),
-                React.createElement("div", { className: "space-y-2" },
-                  COSMIC_MYSTERIES.map(function(cm, cmi) {
-                    var urgColors = { Critical: 'text-red-200 bg-red-900/30', Fundamental: 'text-amber-400 bg-amber-900/30', Philosophical: 'text-purple-400 bg-purple-900/30', Open: 'text-blue-400 bg-blue-900/30', 'Active debate': 'text-green-400 bg-green-900/30' };
-                    var uc = urgColors[cm.urgency] || 'text-slate-200 bg-slate-700';
-                    return React.createElement("div", { key: cmi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-rose-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-lg" }, cm.icon),
-                        React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cm.name),
-                        React.createElement("span", { className: "ml-auto text-[0.6875rem] px-1.5 py-0.5 rounded-full font-bold " + uc }, cm.urgency)
-                      ),
-                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, cm.desc),
-                      React.createElement("button", { "aria-label": "Listen to " + cm.name + " mystery",
-                        onClick: function(e) { uniTouch('mysteries'); e.stopPropagation(); speakText(cm.name + '. ' + cm.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-rose-400 hover:text-rose-600"
-                      }, "\uD83D\uDD0A Listen")
-                    );
-                  })
-                )
-              )
+              d.showMysteries && renderMysteryTask()
             ),
 
             // === MULTIVERSE THEORIES ===
@@ -8089,28 +10997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-purple-500 hover:text-purple-700"
                 }, d.showMultiverse ? 'Hide' : 'Explore \u2192')
               ),
-              d.showMultiverse && React.createElement("div", null,
-                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "Is our universe all there is? Several serious scientific frameworks suggest it may be one of infinitely many."),
-                React.createElement("div", { className: "space-y-2" },
-                  MULTIVERSE_THEORIES.map(function(mt2, mti) {
-                    return React.createElement("div", { key: mti, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-purple-100') + " rounded-lg p-2.5 border" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                        React.createElement("span", { className: "text-lg" }, mt2.icon),
-                        React.createElement("div", { className: "flex-1" },
-                          React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, mt2.name),
-                          React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, mt2.source)
-                        )
-                      ),
-                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, mt2.desc),
-                      React.createElement("div", { className: "text-[0.6875rem] font-medium " + (isDark ? 'text-purple-400' : 'text-purple-600') }, "\uD83D\uDD2C Evidence: " + mt2.evidence),
-                      React.createElement("button", { "aria-label": "Listen to " + mt2.name + " theory",
-                        onClick: function(e) { uniTouch('multiverse'); e.stopPropagation(); speakText(mt2.name + '. ' + mt2.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-purple-400 hover:text-purple-600"
-                      }, "\uD83D\uDD0A Listen")
-                    );
-                  })
-                )
-              )
+              d.showMultiverse && renderMultiverseTask()
             ),
 
             // === REDSHIFT & BLUESHIFT ===
@@ -8132,7 +11019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   ref: function(rsEl) {
                     if (!rsEl || rsEl._rsInit) return;
                     rsEl._rsInit = true;
-                    var rctx = rsEl.getContext('2d');
+                    var rctx = rsEl.getContext('2d'); if (!rctx) return;
                     var RW = rsEl.offsetWidth || 300, RH = 260;
                     rsEl.width = RW * 2; rsEl.height = RH * 2; rctx.scale(2, 2);
                     var rtick = 0;
@@ -8185,9 +11072,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       rctx.beginPath(); rctx.moveTo(obsX1 - 10, topY); rctx.lineTo(obsX1 - 16, topY - 4); rctx.moveTo(obsX1 - 10, topY); rctx.lineTo(obsX1 - 16, topY + 4);
                       rctx.stroke();
                       // Labels
-                      rctx.fillStyle = '#60a5fa'; rctx.font = 'bold 8px system-ui'; rctx.textAlign = 'center';
+                      rctx.fillStyle = '#60a5fa'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
                       rctx.fillText('BLUESHIFT', RW * 0.5, topY - 18);
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '7px system-ui';
+                      rctx.fillStyle = '#94a3b8'; rctx.font = '11px system-ui';
                       rctx.fillText('Approaching \u2192 wavelength compressed \u2192 light appears bluer', RW * 0.5, topY + 22);
 
                       // Divider
@@ -8197,7 +11084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       // === BOTTOM HALF: Redshift (receding) ===
                       var botY = RH * 0.75;
                       // Receding galaxy (moves left away from observer)
-                      var galX2 = RW * 0.6 - (rtick * 0.3) % (RW * 0.35);
+                      var galX2 = RW * 0.42 + (rtick * 0.3) % (RW * 0.4);
                       var obsX2 = RW * 0.22;
                       // Draw stretched waves between observer and galaxy
                       var waveCount2 = 8;
@@ -8230,14 +11117,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       rctx.beginPath(); rctx.arc(obsX2, botY, 5, 0, Math.PI * 2); rctx.fill();
                       // Arrow showing recession
                       rctx.strokeStyle = '#f87171'; rctx.lineWidth = 1.5;
-                      rctx.beginPath(); rctx.moveTo(obsX2 + 10, botY); rctx.lineTo(galX2 - 14, botY);
+                      rctx.beginPath(); rctx.moveTo(galX2 + 12, botY); rctx.lineTo(galX2 + 30, botY);
                       rctx.stroke();
-                      rctx.beginPath(); rctx.moveTo(galX2 - 14, botY); rctx.lineTo(galX2 - 8, botY - 4); rctx.moveTo(galX2 - 14, botY); rctx.lineTo(galX2 - 8, botY + 4);
+                      rctx.beginPath(); rctx.moveTo(galX2 + 30, botY); rctx.lineTo(galX2 + 24, botY - 4); rctx.moveTo(galX2 + 30, botY); rctx.lineTo(galX2 + 24, botY + 4);
                       rctx.stroke();
                       // Labels
-                      rctx.fillStyle = '#f87171'; rctx.font = 'bold 8px system-ui'; rctx.textAlign = 'center';
+                      rctx.fillStyle = '#f87171'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
                       rctx.fillText('REDSHIFT', RW * 0.5, botY - 18);
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '7px system-ui';
+                      rctx.fillStyle = '#94a3b8'; rctx.font = '11px system-ui';
                       rctx.fillText('Receding \u2192 wavelength stretched \u2192 light appears redder', RW * 0.5, botY + 22);
 
                       // Spectrum bar at bottom
@@ -8248,7 +11135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         rctx.fillStyle = specColors[sci];
                         rctx.fillRect(20 + sci * barW, specY, barW, 6);
                       }
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '6px system-ui';
+                      rctx.fillStyle = '#94a3b8'; rctx.font = '10px system-ui';
                       rctx.textAlign = 'left'; rctx.fillText('Blue (short \u03BB)', 20, specY - 2);
                       rctx.textAlign = 'right'; rctx.fillText('Red (long \u03BB)', RW - 20, specY - 2);
 
@@ -8259,9 +11146,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }),
                 // Explanation text
                 React.createElement("div", { className: "space-y-1.5 text-[0.6875rem] text-slate-300" },
-                  React.createElement("div", null, "\uD83D\uDD34 **Motion redshift**: For nearby objects, light from something moving away is stretched to longer, redder wavelengths. Light from something moving toward us is compressed toward blue."),
-                  React.createElement("div", null, "\uD83D\uDD35 **Blueshift**: Andromeda is slightly blueshifted because local gravity pulls it toward the Milky Way. This is a local motion effect, not a contradiction of cosmic expansion."),
-                  React.createElement("div", null, "\uD83C\uDF20 **Cosmological redshift**: For distant galaxies, the main effect is expanding space stretching photons while they travel. Hubble's law revealed a distance-redshift pattern: farther galaxies usually have larger redshifts.")
+                  React.createElement("div", null, "\uD83D\uDD34 ", React.createElement("strong", null, "Motion redshift"), ": For nearby objects, light from something moving away is stretched to longer, redder wavelengths. Light from something moving toward us is compressed toward blue."),
+                  React.createElement("div", null, "\uD83D\uDD35 ", React.createElement("strong", null, "Blueshift"), ": Andromeda is slightly blueshifted because local gravity pulls it toward the Milky Way. This is a local motion effect, not a contradiction of cosmic expansion."),
+                  React.createElement("div", null, "\uD83C\uDF20 ", React.createElement("strong", null, "Cosmological redshift"), ": For distant galaxies, the main effect is expanding space stretching photons while they travel. Hubble's law revealed a distance-redshift pattern: farther galaxies usually have larger redshifts.")
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
                   React.createElement("div", { className: "rounded-lg border border-blue-500/30 bg-blue-500/10 p-2" },
@@ -8278,6 +11165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", { className: "text-[0.6875rem] font-mono text-indigo-300" }, "z = (\u03BB_observed - \u03BB_emitted) / \u03BB_emitted"),
                   React.createElement("div", { className: "text-[0.6875rem] text-slate-400 mt-0.5" }, "z > 0 means wavelength grew; z < 0 means wavelength shrank; z = 1 means the wavelength doubled.")
                 ),
+                renderLineShiftLab(),
                 // \u2500\u2500 Hubble's Law interactive: v = H\u2080 \u00D7 d \u2500\u2500
                 // Empirical foundation of expanding universe. Slider sets distance in Mpc;
                 // recession velocity computed and plotted on the iconic Hubble diagram.
@@ -8314,7 +11202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     ),
                     // Mini Hubble diagram
                     React.createElement("svg", {
-                      viewBox: '0 0 ' + hW + ' ' + hH, width: '100%', height: 70,
+                      viewBox: '0 0 ' + hW + ' ' + hH, width: '100%', height: 104,
                       'aria-label': __alloT('stem.universe.a11y_hubble_diagram_showing_user_s_point_on_v_h0_d_l', 'Hubble diagram showing user\'s point on v = H0 d line')
                     },
                       React.createElement("line", { x1: hPad, y1: hH - 8, x2: hW - hPad, y2: hH - 8, stroke: '#64748b', strokeWidth: 0.6 }),
@@ -8342,10 +11230,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "text-[0.6875rem] font-bold text-white" }, re.name),
                           React.createElement("span", { className: "text-[0.6875rem] px-1.5 py-0.5 rounded-full font-bold " + (re.type === 'blueshift' ? 'bg-blue-900 text-blue-300' : 'bg-red-900 text-red-300') }, re.type + " z=" + re.z),
-                          React.createElement("span", { className: "text-[0.625rem] px-1.5 py-0.5 rounded-full font-bold border", style: { color: sourceColor, borderColor: sourceColor + '66', background: sourceColor + '18' } }, sourceLabel)
+                          React.createElement("span", { className: "text-[0.625rem] px-1.5 py-0.5 rounded-full font-bold border", style: { color: 'color-mix(in srgb, ' + sourceColor + ' 55%, #ffffff)', borderColor: sourceColor + '66', background: sourceColor + '18' } }, sourceLabel)
                         ),
                         React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, "Signal: " + re.signal),
-                        React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, re.desc)
+                        React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-300') }, re.desc)
                       )
                     );
                   })
@@ -8369,6 +11257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showNurseries && React.createElement("div", null,
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "Stars are born in vast clouds of gas and dust called nebulae. When regions become dense enough, gravity wins and collapse begins."),
+                renderNurserySky(),
                 React.createElement("div", { className: "grid grid-cols-1 gap-2" },
                   STELLAR_NURSERIES.map(function(sn, sni) {
                     return React.createElement("div", { key: sni, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-pink-100') + " rounded-lg p-2.5 border" },
@@ -8383,10 +11272,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         )
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, sn.desc),
-                      React.createElement("div", { className: "text-[0.6875rem] font-medium " + (isDark ? 'text-pink-400' : 'text-pink-600') }, "\u2B50 Features: " + sn.features),
+                      React.createElement("div", { className: "text-[0.6875rem] font-medium " + (isDark ? 'text-pink-300' : 'text-pink-700') }, "\u2B50 Features: " + sn.features),
                       React.createElement("button", { "aria-label": "Listen to " + sn.name + " stellar nursery",
                         onClick: function(e) { uniTouch('nurseries'); e.stopPropagation(); speakText(sn.name + '. ' + sn.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-pink-400 hover:text-pink-600"
+                        className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-pink-300 hover:text-pink-200' : 'text-pink-700 hover:text-pink-800')
                       }, "\uD83D\uDD0A Listen")
                     );
                   })
@@ -8421,6 +11310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 detail: function (it) {
                   return React.createElement("div", null,
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: "#0e7490" } }, it.name),
+                    nebulaDrawing(it),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Distance: "), it.dist),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Age: "), it.age),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What it is: "), it.desc)
@@ -8442,6 +11332,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               ),
               d.showCatastrophes && React.createElement("div", null,
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "The universe is not always peaceful. Here are some of the most violent events that can occur in space:"),
+                renderEnergyLadder(),
+                renderDangerRange(),
                 React.createElement("div", { className: "space-y-2" },
                   COSMIC_CATASTROPHES.map(function(cc, cci) {
                     return React.createElement("div", { key: cci, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-orange-100') + " rounded-lg p-2.5 border" },
@@ -8452,12 +11344,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, cc.desc),
                       React.createElement("div", { className: "flex items-center gap-2 text-[0.6875rem]" },
-                        React.createElement("span", { className: (isDark ? 'text-amber-400' : 'text-amber-600') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
+                        React.createElement("span", { className: (isDark ? 'text-amber-400' : 'text-amber-700') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
                         React.createElement("span", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, "\u2022 Frequency: " + cc.freq)
                       ),
                       React.createElement("button", { "aria-label": "Listen to " + cc.name + " catastrophe",
                         onClick: function(e) { uniTouch('catastrophes'); e.stopPropagation(); speakText(cc.name + '. ' + cc.desc); },
-                        className: "transition-colors mt-1 text-[0.6875rem] text-orange-400 hover:text-orange-600"
+                        className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-orange-300 hover:text-orange-200' : 'text-orange-700 hover:text-orange-800')
                       }, "\uD83D\uDD0A Listen")
                     );
                   })
@@ -8476,34 +11368,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 }, d.showSpectrum ? 'Hide' : 'Explore \u2192')
               ),
               d.showSpectrum && React.createElement("div", null,
-                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "Astronomers observe the universe across the entire electromagnetic spectrum. Each type of light reveals different cosmic phenomena invisible to our eyes."),
+                React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-300') + " italic mb-2" }, "Astronomers observe the universe across the entire electromagnetic spectrum. Each type of light reveals different cosmic phenomena invisible to our eyes."),
                 // Spectrum bar visualization
                 React.createElement("div", { className: "flex rounded-lg overflow-hidden mb-2 h-3" },
                   EM_SPECTRUM.map(function(em, emi) {
                     return React.createElement("div", { key: emi, className: "flex-1", style: { background: em.color }, title: em.name });
                   })
                 ),
-                React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-slate-600 mb-2" },
+                React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-slate-300 mb-2" },
                   React.createElement("span", null, "Radio (long \u03BB) \u2190"),
                   React.createElement("span", null, "\u2192 Gamma (short \u03BB)")
                 ),
+                renderAtmosphereWindow(),
                 React.createElement("div", { className: "space-y-1.5" },
                   EM_SPECTRUM.map(function(em, emi) {
                     var isActive = d.spectrumIdx === emi;
-                    return React.createElement("div", { 
+                    return React.createElement("div", {
                       key: emi,
-                      onClick: function() { uniTouch('spectrum'); upd('spectrumIdx', isActive ? null : emi); playBeep(); },
-                      className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-slate-700 border-indigo-500' : 'bg-slate-800 border-slate-700 hover:border-slate-500')
+                      className: "rounded-lg p-2 border transition-all " + (isActive ? 'bg-slate-700 border-indigo-500' : 'bg-slate-800 border-slate-700 hover:border-slate-500')
                     },
-                      React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("div", { className: "w-3 h-3 rounded-full flex-shrink-0", style: { background: em.color } }),
+                      React.createElement("button", { type: "button", 'aria-expanded': isActive ? 'true' : 'false', onClick: function() { uniTouch('spectrum'); upd('spectrumIdx', isActive ? null : emi); playBeep(); }, className: "w-full text-left flex items-center gap-2" },
+                        React.createElement("span", { className: "w-3 h-3 rounded-full flex-shrink-0", 'aria-hidden': 'true', style: { background: em.color } }),
                         React.createElement("span", { className: "text-[0.6875rem] font-bold text-white" }, em.name),
-                        React.createElement("span", { className: "ml-auto text-[0.6875rem] text-slate-600 font-mono" }, em.wavelength)
+                        React.createElement("span", { className: "ml-auto text-[0.6875rem] text-slate-300 font-mono" }, em.wavelength)
                       ),
                       isActive && React.createElement("div", { className: "mt-1.5 space-y-1" },
                         React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, em.desc),
                         React.createElement("div", { className: "text-[0.6875rem] text-indigo-300" }, "\uD83D\uDD2D Sees: " + em.sees),
-                        React.createElement("div", { className: "text-[0.6875rem] text-slate-600" }, "Telescopes: " + em.telescope)
+                        React.createElement("div", { className: "text-[0.6875rem] text-slate-300" }, "Telescopes: " + em.telescope)
                       )
                     );
                   })
@@ -8588,7 +11480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   // \u2500\u2500 Zoom scrubber \u2500\u2500
                   React.createElement("div", { className: "mt-2 rounded-xl border p-2.5", style: { borderColor: isDark ? 'rgba(148,163,184,0.24)' : 'rgba(139,92,246,0.28)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.72)' } },
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("span", { className: "text-[0.6875rem] font-bold whitespace-nowrap", style: { color: '#8b5cf6' } }, "Quark"),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold whitespace-nowrap", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, "Quark"),
                       React.createElement("input", {
                         id: "universe-zoom-pow",
                         type: "range",
@@ -8599,7 +11491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         onChange: function (e) { pushPow(parseFloat(e.target.value)); },
                         className: "flex-1 h-6 accent-violet-500"
                       }),
-                      React.createElement("span", { className: "text-[0.6875rem] font-bold whitespace-nowrap", style: { color: '#8b5cf6' } }, "Universe")
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold whitespace-nowrap", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, "Universe")
                     ),
 
                     React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" },
@@ -8649,7 +11541,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   // \u2500\u2500 Written detail for the nearest catalogued rung \u2500\u2500
                   (function () {
-                    var si = (Number.isInteger(d.scaleIdx) && d.scaleIdx >= 0) ? d.scaleIdx : 0;
+                    // The rung nearest the zoom, unless the learner's chosen rung is still in view.
+                    var zoomNow = typeof d.zoomPow === 'number' ? d.zoomPow : 0, si = 0;
+                    COSMIC_SCALES.forEach(function (rung, k) { if (Math.abs(rung.power - zoomNow) < Math.abs(COSMIC_SCALES[si].power - zoomNow)) si = k; });
+                    if (Number.isInteger(d.scaleIdx) && COSMIC_SCALES[d.scaleIdx] && Math.abs(COSMIC_SCALES[d.scaleIdx].power - zoomNow) < 1) si = d.scaleIdx;
                     var cs = COSMIC_SCALES[si];
                     var isHuman = cs.power === 0;
                     return React.createElement("div", { className: "mt-2 text-center p-3 rounded-xl " + (isDark ? 'bg-slate-700' : 'bg-white') + " border " + (isDark ? 'border-slate-600' : 'border-violet-200') + (isHuman ? ' ring-2 ring-violet-400' : '') },
@@ -8680,7 +11575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                           React.createElement("div", { className: "flex items-center gap-1.5" },
                             React.createElement("span", { className: "text-xs", "aria-hidden": "true" }, cs2.icon),
                             React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? (isActive ? 'text-white' : 'text-slate-200') : (isActive ? 'text-violet-900' : 'text-slate-700')) }, cs2.name),
-                            React.createElement("span", { className: "ml-auto text-[0.6875rem] font-mono " + (isDark ? 'text-slate-400' : 'text-slate-500') }, "10^" + cs2.power + " m")
+                            React.createElement("span", { className: "ml-auto text-[0.6875rem] font-mono " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "10^" + cs2.power + " m")
                           )
                         );
                       })
@@ -8701,14 +11596,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showSpectral ? 'Hide' : 'Classify \u2192')
               ),
+              d.showSpectral && renderStarlightLab(),
               d.showSpectral && React.createElement("div", null,
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Stars are classified by surface temperature into spectral types: O, B, A, F, G, K, M."),
                 React.createElement("div", { className: "text-center text-[0.6875rem] font-bold mb-2 py-1 rounded-lg " + (isDark ? 'bg-slate-700 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, "\uD83D\uDCA1 Mnemonic: \"Oh Be A Fine Girl/Guy, Kiss Me\""),
                 // Color bar
-                React.createElement("div", { className: "flex rounded-lg overflow-hidden mb-2 h-2" },
+                React.createElement("div", { className: "uni-spectral-bar flex rounded-lg overflow-hidden mb-2 h-2" },
                   SPECTRAL_CLASSES.map(function(sc, sci) {
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
-                      onClick: function() { uniTouch('spectral'); upd('spectralIdx', sci); playBeep(); }
+                    return React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": (Number.isInteger(d.spectralIdx) && d.spectralIdx >= 0 && d.spectralIdx < SPECTRAL_CLASSES.length ? d.spectralIdx : 4) === sci, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
+                      onClick: function() { uniTouch('spectral'); updMulti({ spectralIdx: sci, starTemp: SPECTRAL_CLASS_TEMPS[sci] }); playBeep(); }
                     });
                   })
                 ),
@@ -8722,7 +11618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var sc = SPECTRAL_CLASSES[idx];
                   return React.createElement("div", { className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-indigo-100') + " rounded-xl p-3 border-2 transition-all", style: { borderColor: sc.color } },
                     React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-                      React.createElement("div", { className: "w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-white shadow-lg", style: { background: sc.color, boxShadow: '0 0 20px ' + sc.color + '60' } }, sc.class),
+                      React.createElement("div", { className: "w-12 h-12 rounded-full flex items-center justify-center text-xl font-black shadow-lg", style: { background: universeReadableInk(sc.color).bg, color: universeReadableInk(sc.color).ink, boxShadow: '0 0 20px ' + sc.color + '60' } }, sc.class),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("div", { className: "text-sm font-black " + (isDark ? 'text-white' : 'text-slate-800') }, "Class " + sc.class + " \u2014 " + sc.colorName + " Stars"),
                         React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "Example: " + sc.example + " \u2022 " + sc.pct + " of all stars")
@@ -8742,7 +11638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       })
                     ),
                     React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, sc.desc),
-                    sc.class === 'G' && React.createElement("div", { className: "mt-1 text-[0.6875rem] font-bold text-amber-500" }, "\u2600\uFE0F Our Sun is a G2V star!"),
+                    sc.class === 'G' && React.createElement("div", { className: "mt-1 text-[0.6875rem] font-bold " + (isDark ? "text-amber-300" : "text-amber-800") }, "\u2600\uFE0F Our Sun is a G2V star!"),
                     React.createElement("button", { "aria-label": "Listen to class " + sc.class + " star description",
                       onClick: function() { speakText('Class ' + sc.class + ' stars. ' + sc.colorName + '. Temperature: ' + sc.temp + '. ' + sc.desc); },
                       className: "mt-1 text-[0.6875rem] " + (isDark ? 'text-indigo-400' : 'text-indigo-500') + "transition-colors  hover:text-indigo-600"
@@ -8753,10 +11649,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("div", { className: "flex gap-1 mt-2 justify-center" },
                   SPECTRAL_CLASSES.map(function(sc, sci) {
                     var isActive = (d.spectralIdx !== undefined ? d.spectralIdx : 4) === sci;
-                    return React.createElement("button", { "aria-label": "Select spectral class " + sc.class, key: sci,
-                      onClick: function() { upd('spectralIdx', sci); playBeep(); },
-                      className: "w-8 h-8 rounded-full text-xs font-black text-white transition-all " + (isActive ? 'ring-2 ring-offset-2 ring-white scale-110' : 'opacity-60 hover:opacity-100'),
-                      style: { background: sc.color }
+                    var inkPair = universeReadableInk(sc.color);
+                    return React.createElement("button", { "aria-label": "Select spectral class " + sc.class, key: sci, "aria-pressed": isActive,
+                      onClick: function() { uniTouch('spectral'); updMulti({ spectralIdx: sci, starTemp: SPECTRAL_CLASS_TEMPS[sci] }); playBeep(); },
+                      className: "w-8 h-8 rounded-full text-xs font-black transition-all " + (isActive ? 'ring-2 ring-offset-2 ring-white scale-110' : ''),
+                      style: { background: inkPair.bg, color: inkPair.ink }
                     }, sc.class);
                   })
                 )
@@ -8773,32 +11670,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-green-500 hover:text-green-700"
                 }, d.showGravity ? 'Hide' : 'Calculate \u2192')
               ),
-              d.showGravity && React.createElement("div", null,
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                  React.createElement("label", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Your weight on Earth (kg):"),
-                  React.createElement("input", {
-                    type: "number", min: 1, max: 500, step: 1,
-                    value: d.earthWeight || 70,
-                    'aria-label': __alloT('stem.universe.a11y_your_weight_on_earth_in_kilograms', 'Your weight on Earth in kilograms'),
-                    onChange: function(e) { uniTouch('gravity'); upd('earthWeight', parseFloat(e.target.value) || 70); },
-                    className: "w-20 px-2 py-1 border rounded text-sm text-center " + (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-green-600')
-                  }),
-                  React.createElement("span", { className: "text-[0.6875rem] " + ((isDark || ctx.isContrast) ? 'text-slate-200' : 'text-slate-600') }, "(" + Math.round((d.earthWeight || 70) * 2.205) + " lbs)")
-                ),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                  GRAVITY_BODIES.map(function(gb, gbi) {
-                    var w = (d.earthWeight || 70) * gb.g;
-                    var isEarth = gb.name === 'Earth';
-                    return React.createElement("div", { key: gbi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-green-100') + " rounded-lg p-2 border text-center " + (isEarth ? 'ring-2 ring-green-400' : '') },
-                      React.createElement("div", { className: "text-sm" }, gb.icon),
-                      React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, gb.name),
-                      React.createElement("div", { className: "text-sm font-black " + (isDark ? 'text-green-300' : 'text-green-600') }, gb.g > 1000 ? 'N/A' : w.toFixed(1) + " kg"),
-                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, gb.g < 100 ? gb.g + "g" : gb.g.toExponential(1) + "g"),
-                      React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic" }, gb.desc)
-                    );
-                  })
-                )
-              )
+              d.showGravity && React.createElement("div", null, (function () {
+                var massValue = d.earthWeight === '' ? '' : (Number(d.earthWeight) > 0 ? Number(d.earthWeight) : 70);
+                var mass = Number(massValue) > 0 ? Math.min(500, Number(massValue)) : 70;
+                var guess = typeof d.gravityGuess === 'string' ? d.gravityGuess : '', revealed = !!guess || d.gravityRevealed === true;
+                var choices = GRAVITY_BODIES.filter(function (gb) { return gb.name !== 'Earth' && gb.g < 100 && gb.name !== 'ISS (orbit)'; });
+                function kg(v) { return v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString(); }
+                return h('div', null,
+                  h('div', { className: 'uni-gravity-mass' },
+                    h('label', { htmlFor: 'universe-gravity-mass' }, 'Your mass (kg):'),
+                    h('input', { id: 'universe-gravity-mass', type: 'number', min: 1, max: 500, step: 1, value: massValue, onChange: function (e) { uniTouch('gravity'); var v = e.target.value; upd('earthWeight', v === '' ? '' : Math.max(1, Math.min(500, parseFloat(v) || 1))); } }),
+                    h('span', null, '(' + Math.round(mass * 2.205) + ' lb on an Earth scale)')),
+                  h('p', { className: 'uni-gravity-note' }, 'Your mass is how much matter you are made of, so it is the same on every world. Your weight is the force of gravity pulling on that mass, measured in newtons (N). A bathroom scale measures that force but shows it as if you were on Earth.'),
+                  !revealed && h('div', { className: 'uni-gravity-predict' },
+                    h('p', { id: 'universe-gravity-question' }, h('strong', null, 'Predict first: '), 'on which world would a bathroom scale read closest to what it reads on Earth?'),
+                    h('div', { role: 'group', 'aria-labelledby': 'universe-gravity-question' }, choices.map(function (gb) { return h('button', { key: gb.name, type: 'button', onClick: function () { uniTouch('gravity'); upd('gravityGuess', gb.name); } }, gb.icon + ' ' + gb.name); })),
+                    h('button', { type: 'button', className: 'uni-gravity-skip', onClick: function () { upd('gravityRevealed', true); } }, 'Just show me')),
+                  revealed && guess && h('p', { className: 'uni-gravity-feedback', role: 'status' }, h('strong', null, guess === 'Saturn' ? 'Yes, Saturn. ' : 'You picked ' + guess + '. The closest is Saturn. '), 'Saturn has 95 times Earth’s mass but is also about 9 times wider, so at its cloud tops gravity is only about 1.07 times Earth’s. Surface gravity depends on both mass and size.'),
+                  revealed && h('div', { className: "grid grid-cols-2 gap-1.5" },
+                    GRAVITY_BODIES.map(function(gb, gbi) {
+                      var isEarth = gb.name === 'Earth', orbit = gb.name === 'ISS (orbit)', extreme = gb.g > 1000, newtons = mass * 9.81 * gb.g;
+                      return React.createElement("div", { key: gbi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-green-100') + " rounded-lg p-2 border text-center " + (isEarth ? 'ring-2 ring-green-400' : '') },
+                        React.createElement("div", { className: "text-sm", 'aria-hidden': 'true' }, gb.icon),
+                        React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, gb.name),
+                        React.createElement("div", { className: "text-sm font-black " + (isDark ? 'text-green-300' : 'text-green-700') }, extreme ? 'Crushed flat' : 'Scale reads ' + (orbit ? '0' : kg(mass * gb.g)) + ' kg'),
+                        React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, extreme ? universeBigNumber(gb.g) + ' × Earth’s gravity' : (orbit ? 'Gravity still pulls ' : 'Weight ') + Math.round(newtons).toLocaleString() + ' N · ' + gb.g + ' × Earth'),
+                        React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic" }, gb.desc)
+                      );
+                    })),
+                  revealed && renderJumpLab());
+              })())
             ),
 
             // === FAMOUS SPACE IMAGES ===
@@ -8815,25 +11716,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "These photographs didn't just capture light \u2014 they transformed humanity's understanding of our place in the cosmos."),
                 React.createElement("div", { className: "space-y-2" },
                   FAMOUS_IMAGES.map(function(fi, fii) {
-                    var isActive = d.imageIdx === fii;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: fii,
-                      onClick: function() { uniTouch('images'); upd('imageIdx', isActive ? null : fii); playBeep(); },
-                      className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
+                    var isActive = d.imageIdx === fii, panelId = 'uni-image-panel-' + fii;
+                    return React.createElement("div", { key: fii, className: "uni-image-item rounded-lg border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-sky-500' : 'bg-white border-sky-400 shadow-md')
-                        : (isDark ? 'bg-slate-700/50 border-slate-600 hover:border-slate-500' : 'bg-white/50 border-sky-100 hover:border-sky-300'))
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-lg" }, fi.icon),
+                        : (isDark ? 'bg-slate-700/50 border-slate-600' : 'bg-white/50 border-sky-100')) },
+                      React.createElement("button", { type: "button", className: "uni-image-head", "aria-expanded": isActive, "aria-controls": panelId,
+                        onClick: function() { if (!isActive) uniTouch('images'); upd('imageIdx', isActive ? null : fii); playBeep(); } },
+                        React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, fi.icon),
                         React.createElement("span", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, fi.name),
                         React.createElement("span", { className: "ml-auto text-[0.6875rem] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-sky-900 text-sky-300' : 'bg-sky-100 text-sky-700') }, fi.mission)
                       ),
-                      isActive && React.createElement("div", { className: "mt-2 space-y-1" },
+                      isActive && React.createElement("div", { id: panelId, className: "uni-image-panel" },
+                        famousImageArt(fi),
                         React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, fi.desc),
-                        React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-sky-400' : 'text-sky-600') }, "\uD83D\uDCA1 Impact: " + fi.impact),
-                        React.createElement("button", { "aria-label": "Listen to " + fi.name + " image description",
-                          onClick: function(e) { e.stopPropagation(); speakText(fi.name + '. ' + fi.desc + '. Impact: ' + fi.impact); },
-                          className: "uni-toggle transition-colors text-[0.6875rem] text-sky-400 hover:text-sky-600"
-                        }, "\uD83D\uDD0A Listen")
+                        React.createElement("div", { className: "text-[0.6875rem] font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') }, "💡 Impact: " + fi.impact),
+                        React.createElement("button", { type: "button", className: "uni-toggle transition-colors text-[0.6875rem]",
+                          onClick: function(e) { e.stopPropagation(); speakText(fi.name + '. ' + fi.desc + '. Impact: ' + fi.impact); } },
+                          React.createElement("span", { "aria-hidden": "true" }, "🔊 "), "Listen", React.createElement("span", { className: "uni-sr" }, " to the " + fi.name + " description"))
                       )
                     );
                   })
@@ -8851,7 +11750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   className: "uni-toggle transition-colors text-[0.6875rem] text-amber-500 hover:text-amber-700"
                 }, d.showSpeeds ? 'Hide' : 'Race \u2192')
               ),
-              d.showSpeeds && uniSpotlight({
+              d.showSpeeds && h('div', null, renderSpeedRace(), uniSpotlight({
                 stateKey: "speedPick", items: COSMIC_SPEEDS, accent: "#f59e0b", touch: "speeds",
                 hint: "You are moving in several directions at once right now. Pick a motion and feel the scale of it.",
                 name: function (it) { return it.name; },
@@ -8873,7 +11772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   );
                 },
                 prompt: function () { return "Why can you not feel this motion at all?"; }
-              })
+              }))
             ),
 
             // === CITIZEN SCIENCE ===
@@ -8905,7 +11804,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: "#0f766e" } }, it.name),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "Field: "), it.field),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed mb-1 " + (isDark ? 'text-slate-200' : 'text-slate-700') }, React.createElement("b", null, "What you would do: "), it.desc),
-                    React.createElement("a", { href: it.url, target: "_blank", rel: "noreferrer", className: "text-[0.6875rem] font-bold underline", style: { color: "#14b8a6" } }, "Open the project \u2197")
+                    citizenPractice(it),
+                    React.createElement("a", { href: /^https?:/.test(it.url) ? it.url : 'https://' + it.url, target: "_blank", rel: "noreferrer", className: "text-[0.6875rem] font-bold underline", style: { color: isDark ? "#5eead4" : "#0f766e" } }, "Open the project \u2197")
                   );
                 },
                 prompt: function () { return "What can a human volunteer still do here that software cannot?"; }
@@ -8956,8 +11856,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               function statTile(label, value, sub, colour) {
                 return React.createElement("div", { className: "rounded-lg p-2.5", style: { background: isDark ? 'rgba(148,163,184,0.09)' : 'rgba(255,255,255,0.86)', border: '1px solid ' + colour + '3d' } },
                   React.createElement("p", { className: "text-[0.625rem] font-bold uppercase tracking-wide", style: { color: isDark ? 'rgba(203,213,225,0.85)' : 'rgba(71,85,105,0.9)' } }, label),
-                  React.createElement("p", { className: "text-lg font-black leading-tight", style: { color: colour } }, value),
-                  sub && React.createElement("p", { className: "text-[0.625rem] font-semibold", style: { color: isDark ? 'rgba(203,213,225,0.7)' : 'rgba(71,85,105,0.75)' } }, sub)
+                  React.createElement("p", { className: "text-lg font-black leading-tight", style: { color: isDark ? 'color-mix(in srgb, ' + colour + ' 55%, #ffffff)' : 'color-mix(in srgb, ' + colour + ' 60%, #000000)' } }, value),
+                  sub && React.createElement("p", { className: "text-[0.625rem] font-semibold", style: { color: isDark ? '#cbd5e1' : '#475569' } }, sub)
                 );
               }
 

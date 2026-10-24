@@ -130,7 +130,11 @@ function assertResources(current, saved) {
 
 const skyPaint = () => commands.find(command => command.method === 'fillRect' && command.fill?.kind === 'linear'
   && command.fill.stops.length === 17 && command.fill.stops.every(([, color]) => /^rgb\(/.test(color)));
-const parseRgb = color => color.slice(color.indexOf('(') + 1, -1).split(',').map(Number);
+const parseRgb = color => {
+  const channels = /\(([^)]*)\)/.exec(color);
+  if (!channels) throw new Error('Not an rgb() colour: ' + color);
+  return channels[1].split(',').map(Number);
+};
 const skyColors = () => {
   const paint = skyPaint(); expect(paint).toBeTruthy();
   const colors = paint.fill.stops.map(([, color]) => parseRgb(color));
@@ -156,7 +160,7 @@ describe('production weather exposure and atmosphere', () => {
     const position = clear.camera.position.clone(), rotation = clear.camera.quaternion.clone();
     const flight = JSON.stringify(hooks.flightRef.current), time = hooks.timeRef.current;
     expect(clearLight[0]).toBeCloseTo(0.55, 10); expect(clearLight[1]).toBeCloseTo(0.8, 10);
-    expect(clearFog).toEqual([23750, 95000]); assertNoLegacySunRays();
+    expect(clearFog).toEqual([112500, 450000]); assertNoLegacySunRays();
     weather('stormy', 0.4); const storm = await frame();
     expect(storm.ambient.intensity).toBeGreaterThan(0); expect(storm.ambient.intensity).toBeLessThan(clearLight[0]);
     expect(storm.key.intensity).toBe(0); expect(storm.scene.fog.far).toBe(38000); expect(storm.scene.fog.near).toBe(9500);

@@ -20,11 +20,15 @@ const PALETTE = {
   rose: { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337' },
 };
 
+// One compiled pattern per prefix: building a RegExp per token made the sweep take
+// ~50 s on a loaded machine. (The pattern text is unchanged; see the CI report.)
+const UTILITY_PATTERNS = {};
 function utilityColor(token, prefix) {
   const normalized = token.replace(/^(hover|active|focus):/, '');
   if (normalized === prefix + '-white') return '#ffffff';
   if (normalized === prefix + '-black') return '#000000';
-  const match = normalized.match(new RegExp('^' + prefix + '-([a-z]+)-(\d+)$'));
+  const pattern = UTILITY_PATTERNS[prefix] || (UTILITY_PATTERNS[prefix] = new RegExp('^' + prefix + '-([a-z]+)-(\d+)$'));
+  const match = normalized.match(pattern);
   return match ? PALETTE[match[1]]?.[match[2]] || null : null;
 }
 
@@ -76,7 +80,9 @@ describe('STEM utility-class contrast', () => {
 describe('Theme-aware STEM contrast surfaces', () => {
   it('pins readable alpha breadcrumbs and theme-adaptive cards', () => {
     expect(contrast('#334155', '#bcbec3')).toBeGreaterThanOrEqual(4.5);
-    expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_anatomy.js'), 'utf8')).toContain('font-size:10px;font-weight:900;color:#334155');
+    // The breadcrumb grew from 10px to 11px on 09-02; its #334155 ink on the translucent
+    // white chip is what this pins.
+    expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_anatomy.js'), 'utf8')).toMatch(/\.anatomy-scale-path\{[^}]*background:rgba\(255,255,255,\.72\)[^}]*font-weight:900;color:#334155;\}/);
     expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_brainatlas.js'), 'utf8')).toContain("background: '#5b21b6', color: '#fff'");
     const graphSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_graphcalc.js'), 'utf8');
     expect(graphSource).toContain("color: '#78350f', background: '#fef3c7'");

@@ -136,6 +136,75 @@ window.StemLab = window.StemLab || {
     { id: 'all_12_modes',   icon: '\ud83c\udf1f', name: 'Polyglot',         desc: 'Try all 12 manipulative modes' }
   ];
 
+  // Geoboard polygon checks, shared by the challenge checker and the Polygon Builder badge.
+  // A closed cycle: every peg on exactly 2 segments, and one walk visits them all.
+  var segsFormClosedCycle = function(segs) {
+    if (segs.length < 3) return false;
+    // Build adjacency: peg-key → [other peg-keys]
+    var key = function(x, y) { return x + ',' + y; };
+    var adj = {};
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      var a = key(s.x1, s.y1), b = key(s.x2, s.y2);
+      if (a === b) return false; // zero-length
+      (adj[a] = adj[a] || []).push(b);
+      (adj[b] = adj[b] || []).push(a);
+    }
+    var pegs = Object.keys(adj);
+    // Every peg used in exactly 2 segments (entry + exit of the cycle)
+    for (var p = 0; p < pegs.length; p++) {
+      if (adj[pegs[p]].length !== 2) return false;
+    }
+    // Cycle must visit all pegs — walk from any starting peg
+    if (pegs.length !== segs.length) return false;
+    var visited = {};
+    var cur = pegs[0];
+    var prev = null;
+    for (var step = 0; step < segs.length; step++) {
+      visited[cur] = true;
+      var nbrs = adj[cur];
+      var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
+      prev = cur;
+      cur = nxt;
+    }
+    return cur === pegs[0] && Object.keys(visited).length === segs.length;
+  };
+  // Shoelace area of the closed cycle, so three collinear pegs do
+  // not pass as a "triangle" — a zero-area cycle is a line, not a
+  // polygon. Walk the cycle exactly as segsFormClosedCycle does.
+  var cycleArea = function(segs) {
+    if (!segsFormClosedCycle(segs)) return 0;
+    var key = function(x, y) { return x + ',' + y; };
+    var adj = {};
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      (adj[key(s.x1, s.y1)] = adj[key(s.x1, s.y1)] || []).push(key(s.x2, s.y2));
+      (adj[key(s.x2, s.y2)] = adj[key(s.x2, s.y2)] || []).push(key(s.x1, s.y1));
+    }
+    var start = Object.keys(adj)[0];
+    var cur = start, prev = null, area = 0;
+    for (var step = 0; step < segs.length; step++) {
+      var nbrs = adj[cur];
+      var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
+      var a = cur.split(',').map(Number), b = nxt.split(',').map(Number);
+      area += a[0] * b[1] - b[0] * a[1];
+      prev = cur;
+      cur = nxt;
+    }
+    return Math.abs(area) / 2;
+  };
+  // Polygon Builder ("Build a polygon with 5+ segments"): a closed band that encloses
+  // area. Counting segments passed any 5 strokes. Saved state is read in every mode,
+  // so anything that is not a segment fails instead of throwing.
+  function geoboardBuildsPolygon(segs) {
+    if (!Array.isArray(segs) || segs.length < 5) return false;
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i];
+      if (!s || typeof s !== 'object' || [s.x1, s.y1, s.x2, s.y2].some(function(v) { return typeof v !== 'number' || !isFinite(v); })) return false;
+    }
+    return segsFormClosedCycle(segs) && cycleArea(segs) > 1e-9;
+  }
+
   // ══════════════════════════════════════════════════════════════
   // ── Place Value Quiz Questions ──
   // ══════════════════════════════════════════════════════════════
@@ -330,6 +399,8 @@ window.StemLab = window.StemLab || {
     { place: 'ones',      w: 1,  h: 1,  d: 1  }
   ];
 
+  // More than the UI can build (20 per place, trades keep the value: 22,220 cubes); guards a corrupt save.
+  var B10_MAX_CUBES = 30000;
   var B10GL = (function () {
     var DEG = Math.PI / 180;
     var T = null;
@@ -353,11 +424,14 @@ window.StemLab = window.StemLab || {
       var out = [];
       var cursorX = 0, maxD = 0, maxH = 0;
       B10_SPEC.forEach(function (spec) {
-        var n = Math.max(0, Math.min(9, counts[spec.place] | 0));
+        // Every block the label and the flat view count: a cap of 9 drew 9 of "14 ones" mid-regroup.
+        // Up to 9 keep the 3-wide rows; more spread into a near-square grid.
+        var n = Math.max(0, counts[spec.place] | 0);
         if (!n) return;
-        var cols = Math.min(3, n), rows = Math.ceil(n / cols);
+        var cols = n <= 9 ? Math.min(3, n) : Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
         var stepX = spec.w + 1, stepZ = spec.d + 1;
         for (var i = 0; i < n; i++) {
+          if (out.length + spec.w * spec.h * spec.d > B10_MAX_CUBES) break;
           var ox = cursorX + (i % cols) * stepX;
           var oz = Math.floor(i / cols) * stepZ;
           for (var bx = 0; bx < spec.w; bx++) {
@@ -794,7 +868,8 @@ window.StemLab = window.StemLab || {
         chk('quiz_10', (s.quizSolved || quizSolved) >= 10);
         chk('streak_5', (s.streak || streak) >= 5);
         chk('streak_10', (s.streak || streak) >= 10);
-        chk('all_modes', Object.keys(s.modesVisited || modesVisited).length >= 4);
+        // "Try all 4 modes" = the original four; Help, Glossary and the other reference screens are not modes.
+        chk('all_modes', ['blocks', 'abacus', 'slideRule', 'quiz'].every(function(m) { return (s.modesVisited || modesVisited)[m]; }));
         chk('thousand', totalValue >= 1000 || (s.totalValue || 0) >= 1000);
         chk('ai_tutor', !!s.aiUsed);
         chk('addition', !!s.additionDone);
@@ -807,7 +882,7 @@ window.StemLab = window.StemLab || {
         chk('hc_skipcount',   !!hundredsSkipCount);
         chk('hc_primes',      !!s.hcPrimesShown);
         chk('pb_hex_cover',   !!s.pbHexCovered);
-        chk('gb_polygon',     geoboardSegments.length >= 5);
+        chk('gb_polygon',     geoboardBuildsPolygon(s.geoboardSegments || geoboardSegments));
         chk('cr_train',       cRods.reduce(function(a, r) { return a + r.length; }, 0) >= 10 && cRods.length >= 2);
         chk('nb_practice5',   (s.nbSolved || 0) >= 5);
         chk('cra_complete',   !!s.craCompleted);
@@ -834,6 +909,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var switchMode = function(mode) {
         var visited = Object.assign({}, modesVisited);
+        visited[manipMode] = true; // the mode being left was tried too (everyone starts in Blocks)
         visited[mode] = true;
         // Track previous non-meta mode so the Library can snapshot the right thing.
         var metaModes = { library: 1, teacher: 1, standards: 1, cra: 1 };
@@ -904,8 +980,12 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Challenge Checks ──
       // ══════════════════════════════════════════════════════════════
+      // A solved challenge stays solved (the Check buttons stay enabled): re-clicking
+      // re-scored it, so one 347 earned 25/25, a 25 streak and 25 XP awards.
+      var challengeCheckPending = false;
       var checkBase10 = function() {
-        if (!b10Challenge) return;
+        if (!b10Challenge || b10Challenge.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var ok = totalValue === b10Challenge.target;
         if (announceToSR) announceToSR(ok ? 'Correct!' : 'Incorrect');
         var newStreak = ok ? streak + 1 : 0;
@@ -917,7 +997,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Your blocks show ' + totalValue.toLocaleString() + ', target is ' + b10Challenge.target.toLocaleString() },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          blocksSolved: newBS
+          blocksSolved: newBS,
+          b10Challenge: ok ? Object.assign({}, b10Challenge, { solved: true }) : b10Challenge
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'base-10 blocks');
@@ -930,7 +1011,8 @@ window.StemLab = window.StemLab || {
       };
 
       var checkAbacus = function() {
-        if (!abacusChallenge) return;
+        if (!abacusChallenge || abacusChallenge.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var ok = abacusTotal === abacusChallenge.target;
         var newStreak = ok ? streak + 1 : 0;
         var newAS = abacusSolved + (ok ? 1 : 0);
@@ -940,7 +1022,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Shows ' + abacusTotal.toLocaleString() + ', target is ' + abacusChallenge.target.toLocaleString() },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          abacusSolved: newAS
+          abacusSolved: newAS,
+          abacusChallenge: ok ? Object.assign({}, abacusChallenge, { solved: true }) : abacusChallenge
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'abacus');
@@ -970,7 +1053,8 @@ window.StemLab = window.StemLab || {
       };
 
       var checkSR = function() {
-        if (!srProblem) return;
+        if (!srProblem || srProblem.solved || challengeCheckPending) return;
+        challengeCheckPending = true;
         var tolerance = srProblem.answer * 0.15;
         var ok = Math.abs(product - srProblem.answer) <= tolerance;
         var newStreak = ok ? streak + 1 : 0;
@@ -981,7 +1065,8 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Need \u2248' + srProblem.answer + ', your slide rule reads \u2248' + product.toFixed(1) },
           score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
           streak: newStreak,
-          slideSolved: newSS
+          slideSolved: newSS,
+          srProblem: ok ? Object.assign({}, srProblem, { solved: true }) : srProblem
         });
         if (ok) {
           if (awardXP) awardXP('base10', 5, 'slide rule');
@@ -1821,7 +1906,8 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, pvQuiz.q),
             !pvFeedback && h('div', { className: 'grid grid-cols-2 gap-3' },
               pvQuiz.opts.map(function(opt) {
-                return h('button', { 'aria-label': __alloT('stem.manipulatives.next', 'Next'), key: opt, onClick: function() { answerPVQuiz(opt); },
+                // No aria-label: it named every choice "Next"; the visible option text is the name.
+                return h('button', { key: opt, onClick: function() { answerPVQuiz(opt); },
                   className: 'px-4 py-3 rounded-xl text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer'
                 }, opt);
               })
@@ -2271,7 +2357,7 @@ window.StemLab = window.StemLab || {
                 upd({ pvdChallenge: { type: t, target: a + b, q: 'Build ' + a + ' + ' + b + ' = ?  Place all the disks, then regroup.' }, pvdFeedback: null, pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } });
               } else {
                 var x = 200 + Math.floor(Math.random() * 700);
-                var y = 100 + Math.floor(Math.random() * (x - 50));
+                var y = 100 + Math.floor(Math.random() * (x - 100)); // y < x; (x - 50) allowed "take away 249 from 200"
                 upd({ pvdChallenge: { type: t, target: x - y, q: 'Build ' + x + ', then take away ' + y + '. What disks remain?' }, pvdFeedback: null, pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } });
               }
             };
@@ -2294,7 +2380,9 @@ window.StemLab = window.StemLab || {
               }
               var newStreak = ok ? streak + 1 : 0;
               upd({
-                pvdFeedback: { ok: ok, msg: ok ? '✅ Correct! Total = ' + total.toLocaleString() : '❌ Currently ' + total.toLocaleString() + ', need ' + pvdChallenge.target.toLocaleString() },
+                pvdFeedback: { ok: ok, msg: ok ? '✅ Correct! Total = ' + total.toLocaleString()
+                  : total === pvdChallenge.target ? '❌ ' + total.toLocaleString() + ' is the right value, but not with the fewest disks. Regroup: trade 10 of one disk for 1 of the next.'
+                  : '❌ Currently ' + total.toLocaleString() + ', need ' + pvdChallenge.target.toLocaleString() },
                 score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
                 streak: newStreak
               });
@@ -2340,7 +2428,8 @@ window.StemLab = window.StemLab || {
             onClick: function() {
               var nh = Object.assign({}, hundredsHighlight);
               if (nh[n]) delete nh[n]; else nh[n] = true;
-              upd({ hundredsHighlight: nh });
+              // Remember the click itself: Object.keys sorts integer keys, so "last key" was the LARGEST cell.
+              upd({ hundredsHighlight: nh, hcLastClicked: nh[n] ? n : null });
               sfxClick();
             },
             'aria-label': 'Number ' + n + (highlighted ? ', highlighted' : '') + (isSkipCounted ? ', skip-count match' : ''),
@@ -2410,21 +2499,18 @@ window.StemLab = window.StemLab || {
             var genHc = function() {
               var types = ['skipFind', 'multiple', 'prime', 'pattern'];
               var t = types[Math.floor(Math.random() * types.length)];
+              upd({ hcLastClicked: null });
               if (t === 'skipFind') {
                 var step = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
                 var nth = 3 + Math.floor(Math.random() * 8);
-                upd({ hcChallenge: { type: t, q: 'Skip-count by ' + step + 's. Click the ' + nth + 'th number you land on.', target: step * nth }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Skip-count by ' + step + 's. Click the ' + (nth === 3 ? '3rd' : nth + 'th') + ' number you land on.', target: step * nth }, hcFeedback: null });
               } else if (t === 'multiple') {
+                // Graded from data in checkHc: a validator FUNCTION in state is lost on save/reload.
                 var bases = [3, 4, 6, 7, 8, 9, 11];
                 var b = bases[Math.floor(Math.random() * bases.length)];
-                var mult = 2 + Math.floor(Math.random() * Math.floor(100 / b));
-                upd({ hcChallenge: { type: t, q: 'Click any multiple of ' + b + ' greater than 20.', target: null, validator: function(n) { return n % b === 0 && n > 20; } }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Click any multiple of ' + b + ' greater than 20.', target: null, base: b }, hcFeedback: null });
               } else if (t === 'prime') {
-                upd({ hcChallenge: { type: t, q: 'Click any prime number between 30 and 70.', target: null, validator: function(n) {
-                  if (n < 30 || n > 70) return false;
-                  for (var d = 2; d * d <= n; d++) if (n % d === 0) return false;
-                  return n > 1;
-                } }, hcFeedback: null });
+                upd({ hcChallenge: { type: t, q: 'Click any prime number between 30 and 70.', target: null, low: 30, high: 70 }, hcFeedback: null });
               } else {
                 var diff = 2 + Math.floor(Math.random() * 8);
                 var startSeq = 1 + Math.floor(Math.random() * 9);
@@ -2433,12 +2519,16 @@ window.StemLab = window.StemLab || {
             };
             var checkHc = function() {
               if (!hcChallenge) return;
-              // Last highlighted cell — newest key
-              var highlighted = Object.keys(hundredsHighlight).map(Number);
-              if (highlighted.length === 0) return;
-              var picked = highlighted[highlighted.length - 1];
+              // The cell clicked last (and still highlighted).
+              var picked = Number(_m.hcLastClicked);
+              if (!Number.isInteger(picked) || !hundredsHighlight[picked]) return;
               var ok;
-              if (hcChallenge.validator) ok = hcChallenge.validator(picked);
+              if (hcChallenge.type === 'multiple' && hcChallenge.base) ok = picked % hcChallenge.base === 0 && picked > 20;
+              else if (hcChallenge.type === 'prime') {
+                ok = picked >= (hcChallenge.low || 30) && picked <= (hcChallenge.high || 70);
+                for (var pd = 2; ok && pd * pd <= picked; pd++) if (picked % pd === 0) ok = false;
+              }
+              else if (typeof hcChallenge.validator === 'function') ok = hcChallenge.validator(picked);
               else ok = picked === hcChallenge.target;
               var newStreak = ok ? streak + 1 : 0;
               upd({
@@ -2613,7 +2703,8 @@ window.StemLab = window.StemLab || {
                 ),
             patternBlocks.length > 0 && h('p', { className: 'text-[0.6875rem] text-purple-700 mt-2 text-center font-bold' },
               __alloT('stem.manipulatives.total_fractional_value_in_hexagons', 'Total fractional value (in hexagons): '), h('span', { className: 'font-mono' }, totalValue.toFixed(3)),
-              totalValue === Math.floor(totalValue) && totalValue > 0 && ' = ' + totalValue + ' whole hexagon' + (totalValue === 1 ? '' : 's')
+              // Six 1/6 triangles sum to 0.9999999999999999 in floating point; compare to 6 places.
+              Math.abs(totalValue - Math.round(totalValue)) < 1e-6 && Math.round(totalValue) > 0 && ' = ' + Math.round(totalValue) + ' whole hexagon' + (Math.round(totalValue) === 1 ? '' : 's')
             )
           ),
           h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800' },
@@ -2645,19 +2736,23 @@ window.StemLab = window.StemLab || {
               }, 0);
               var valOk = Math.abs(total - pbChallenge.target) < 0.001;
               var useOk = true;
+              // ONLY means only: squares and tan rhombi (no hexagon value) used to slip through,
+              // and counted toward "exactly N pieces" (2 hexagons + 4 squares = "6 pieces worth 2").
+              var valued = patternBlocks.filter(function(b) {
+                var s = PB_SHAPES.find(function(x) { return x.id === b.type; });
+                return !!(s && s.value);
+              });
               if (pbChallenge.mustUse) {
-                useOk = patternBlocks.every(function(b) {
-                  var s = PB_SHAPES.find(function(x) { return x.id === b.type; });
-                  return !s || !s.value || b.type === pbChallenge.mustUse;
-                });
+                useOk = patternBlocks.every(function(b) { return b.type === pbChallenge.mustUse; });
               }
-              var countOk = pbChallenge.exactCount == null || patternBlocks.length === pbChallenge.exactCount;
+              var countOk = pbChallenge.exactCount == null || (valued.length === pbChallenge.exactCount && valued.length === patternBlocks.length);
               var ok = valOk && useOk && countOk;
               var newStreak = ok ? streak + 1 : 0;
               var msgParts = [];
-              if (!valOk) msgParts.push('value is ' + total.toFixed(3) + ', need ' + pbChallenge.target);
-              if (!useOk) msgParts.push('only use ' + pbChallenge.mustUse);
-              if (!countOk) msgParts.push('use exactly ' + pbChallenge.exactCount + ' pieces (you have ' + patternBlocks.length + ')');
+              var mustShape = PB_SHAPES.find(function(x) { return x.id === pbChallenge.mustUse; });
+              if (!valOk) msgParts.push('value is ' + total.toFixed(3) + ', need ' + Number(pbChallenge.target.toFixed(3)));
+              if (!useOk) msgParts.push('only use ' + (mustShape ? mustShape.name : pbChallenge.mustUse));
+              if (!countOk) msgParts.push('use exactly ' + pbChallenge.exactCount + ' hexagon-fraction pieces (you have ' + valued.length + (valued.length !== patternBlocks.length ? ' plus ' + (patternBlocks.length - valued.length) + ' without a fraction value' : '') + ')');
               upd({
                 pbFeedback: { ok: ok, msg: ok ? '✅ Correct! Value = ' + total.toFixed(3) : '❌ ' + msgParts.join('; ') },
                 score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
@@ -2712,11 +2807,10 @@ window.StemLab = window.StemLab || {
         function gbPegActivate(x, y) {
           if (!geoboardSelected) { upd({ geoboardSelected: { x: x, y: y } }); sfxClick(); return; }
           if (geoboardSelected.x === x && geoboardSelected.y === y) { upd({ geoboardSelected: null }); return; }
-          upd({
-            geoboardSegments: geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]),
-            geoboardSelected: null
-          });
+          var nextSegs = geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]);
+          upd({ geoboardSegments: nextSegs, geoboardSelected: null });
           sfxClick();
+          checkBadges({ geoboardSegments: nextSegs }); // Polygon Builder: when the band closes
         }
         function gbKey(ev, x, y) {
           var k = ev.key, nx = x, ny = y;
@@ -2768,6 +2862,7 @@ window.StemLab = window.StemLab || {
                     var newSegs = geoboardSegments.concat([{ x1: geoboardSelected.x, y1: geoboardSelected.y, x2: x, y2: y }]);
                     upd({ geoboardSegments: newSegs, geoboardSelected: null });
                     sfxClick();
+                    checkBadges({ geoboardSegments: newSegs });
                   }
                 }
               }; }(px, py)
@@ -2852,37 +2947,6 @@ window.StemLab = window.StemLab || {
             // A "rectangle with perimeter X" must (a) be closed, (b) have 4 axis-aligned sides
             // with right angles, AND (c) sum to X. A "polygon with N segs" must be a closed
             // cycle of N segments where each peg appears in exactly 2 segments.
-            var segsFormClosedCycle = function(segs) {
-              if (segs.length < 3) return false;
-              // Build adjacency: peg-key → [other peg-keys]
-              var key = function(x, y) { return x + ',' + y; };
-              var adj = {};
-              for (var i = 0; i < segs.length; i++) {
-                var s = segs[i];
-                var a = key(s.x1, s.y1), b = key(s.x2, s.y2);
-                if (a === b) return false; // zero-length
-                (adj[a] = adj[a] || []).push(b);
-                (adj[b] = adj[b] || []).push(a);
-              }
-              var pegs = Object.keys(adj);
-              // Every peg used in exactly 2 segments (entry + exit of the cycle)
-              for (var p = 0; p < pegs.length; p++) {
-                if (adj[pegs[p]].length !== 2) return false;
-              }
-              // Cycle must visit all pegs — walk from any starting peg
-              if (pegs.length !== segs.length) return false;
-              var visited = {};
-              var cur = pegs[0];
-              var prev = null;
-              for (var step = 0; step < segs.length; step++) {
-                visited[cur] = true;
-                var nbrs = adj[cur];
-                var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
-                prev = cur;
-                cur = nxt;
-              }
-              return cur === pegs[0] && Object.keys(visited).length === segs.length;
-            };
             var segsFormAxisRect = function(segs) {
               if (segs.length !== 4) return false;
               if (!segsFormClosedCycle(segs)) return false;
@@ -2911,10 +2975,9 @@ window.StemLab = window.StemLab || {
               var xv = Object.keys(xs).map(Number), yv = Object.keys(ys).map(Number);
               return Math.abs(xv[1] - xv[0]) === Math.abs(yv[1] - yv[0]);
             };
-            // Shoelace area of the closed cycle, so three collinear pegs do
-            // not pass as a "triangle" — a zero-area cycle is a line, not a
-            // polygon. Walk the cycle exactly as segsFormClosedCycle does.
-            var cycleArea = function(segs) {
+            // Corners = pegs where the band turns. A peg in the middle of a straight side (or where
+            // the band doubles back) is not one, so N segments are not always N sides.
+            var cycleCorners = function(segs) {
               if (!segsFormClosedCycle(segs)) return 0;
               var key = function(x, y) { return x + ',' + y; };
               var adj = {};
@@ -2923,17 +2986,20 @@ window.StemLab = window.StemLab || {
                 (adj[key(s.x1, s.y1)] = adj[key(s.x1, s.y1)] || []).push(key(s.x2, s.y2));
                 (adj[key(s.x2, s.y2)] = adj[key(s.x2, s.y2)] || []).push(key(s.x1, s.y1));
               }
-              var start = Object.keys(adj)[0];
-              var cur = start, prev = null, area = 0;
+              var order = [], cur = Object.keys(adj)[0], prev = null;
               for (var step = 0; step < segs.length; step++) {
+                order.push(cur.split(',').map(Number));
                 var nbrs = adj[cur];
                 var nxt = nbrs[0] === prev ? nbrs[1] : nbrs[0];
-                var a = cur.split(',').map(Number), b = nxt.split(',').map(Number);
-                area += a[0] * b[1] - b[0] * a[1];
                 prev = cur;
                 cur = nxt;
               }
-              return Math.abs(area) / 2;
+              var corners = 0;
+              for (var j = 0; j < order.length; j++) {
+                var p = order[(j + order.length - 1) % order.length], q = order[j], t = order[(j + 1) % order.length];
+                if ((q[0] - p[0]) * (t[1] - q[1]) - (q[1] - p[1]) * (t[0] - q[0]) !== 0) corners++;
+              }
+              return corners;
             };
             var checkGb = function() {
               if (!gbChallenge) return;
@@ -2967,10 +3033,13 @@ window.StemLab = window.StemLab || {
                 var hasN = geoboardSegments.length === gbChallenge.segs;
                 var isClosed = hasN && segsFormClosedCycle(geoboardSegments);
                 var hasArea = isClosed && cycleArea(geoboardSegments) > 1e-9;
-                ok = hasN && isClosed && hasArea;
+                var corners = hasArea ? cycleCorners(geoboardSegments) : 0;
+                var hasCorners = hasArea && corners === gbChallenge.segs;
+                ok = hasN && isClosed && hasArea && hasCorners;
                 if (!hasN) msg = '❌ You have ' + geoboardSegments.length + ' segments, need exactly ' + gbChallenge.segs;
                 else if (!isClosed) msg = '❌ ' + geoboardSegments.length + ' segments but they do not form a closed shape.';
                 else if (!hasArea) msg = '❌ Those segments all lie on one line — a real polygon encloses some area.';
+                else if (!hasCorners) msg = '❌ ' + __alloT('stem.manipulatives.gb_straight_peg_not_corner', 'A peg in the middle of a straight side is not a corner.') + ' ' + __alloT('stem.manipulatives.gb_corners_counted', 'Corners:') + ' ' + corners + ' / ' + gbChallenge.segs;
                 else msg = '✅ Closed ' + geoboardSegments.length + '-sided shape.';
               }
               var newStreak = ok ? streak + 1 : 0;
@@ -3143,8 +3212,8 @@ window.StemLab = window.StemLab || {
           upd({ nbWhole: w, nbPart1: p1, nbMode: 'practice', nbAnswer: '', nbFeedback: null });
         };
         var checkNb = function() {
-          var ans = parseInt(nbAnswer);
-          var ok = ans === (nbWhole - nbPart1);
+          var ans = String(nbAnswer).trim() === '' ? NaN : Number(nbAnswer); // parseInt took "4.9" as 4
+          var ok = Number.isInteger(ans) && ans === (nbWhole - nbPart1);
           if (ok) {
             var newNbS = (_m.nbSolved || 0) + 1;
             sfxCorrect();
@@ -3274,23 +3343,26 @@ window.StemLab = window.StemLab || {
         var craGenAddition = function() {
           var a = 3 + Math.floor(Math.random() * 8);  // 3..10
           var b = 2 + Math.floor(Math.random() * 7);  // 2..8
-          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenSubtraction = function() {
           var a = 5 + Math.floor(Math.random() * 10); // 5..14
           var b = 1 + Math.floor(Math.random() * Math.min(a - 1, 8));
-          upd({ craTarget: { op: '−', a: a, b: b, ans: a - b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '−', a: a, b: b, ans: a - b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenRegroup = function() {
           // Force a regrouping addition (carrying)
-          var a = 13 + Math.floor(Math.random() * 15); // 13..27
-          var b = 14 + Math.floor(Math.random() * 15); // 14..28
-          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b, requiresRegroup: true }, craStep: 1, craFeedback: null });
+          var a, b;
+          do { // resample until the ones carry: 47% of pairs (13 + 14) needed no regrouping
+            a = 13 + Math.floor(Math.random() * 15); // 13..27
+            b = 14 + Math.floor(Math.random() * 15); // 14..28
+          } while ((a % 10) + (b % 10) < 10);
+          upd({ craTarget: { op: '+', a: a, b: b, ans: a + b, requiresRegroup: true }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craGenMultiplication = function() {
           var a = 2 + Math.floor(Math.random() * 4);
           var b = 2 + Math.floor(Math.random() * 5);
-          upd({ craTarget: { op: '×', a: a, b: b, ans: a * b }, craStep: 1, craFeedback: null });
+          upd({ craTarget: { op: '×', a: a, b: b, ans: a * b }, craStep: 1, craFeedback: null, craUserAns: '' });
         };
         var craNext = function() {
           if (craStep < 3) upd({ craStep: craStep + 1, craFeedback: null });
@@ -3478,8 +3550,8 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ craUserAns: e.target.value }); },
                   onKeyDown: function(e) {
                     if (e.key === 'Enter') {
-                      var u = parseInt(_m.craUserAns);
-                      var ok = u === t.ans;
+                      var u = String(_m.craUserAns == null ? '' : _m.craUserAns).trim() === '' ? NaN : Number(_m.craUserAns); // parseInt took "12.9" as 12
+                      var ok = Number.isInteger(u) && u === t.ans;
                       upd({ craFeedback: { ok: ok, msg: ok ? '✅ Correct! ' + t.a + ' ' + t.op + ' ' + t.b + ' = ' + t.ans : '❌ Answer is ' + t.ans } });
                       if (ok) { sfxCorrect(); checkBadges({ craCompleted: true }); } else sfxWrong();
                     }
@@ -3998,6 +4070,7 @@ window.StemLab = window.StemLab || {
           }
         };
 
+        // Three lessons re-keyed with corrected math: ui_strings shipped the wrong English under the old keys.
         var lessonPlans = [
           { grade: 'K', title: __alloT('stem.manipulatives.build_to_10', 'Build to 10'), manips: ['tenFrame', 'numberBonds'],
             desc: __alloT('stem.manipulatives.use_a_ten_frame_to_fill_in_dots_up_to_', 'Use a ten frame to fill in dots up to 10. Then switch to Number Bonds and decompose 10 into pairs (1+9, 2+8, 3+7...).'),
@@ -4084,7 +4157,7 @@ window.StemLab = window.StemLab || {
             desc: __alloT('stem.manipulatives.walk_through_cra_for_4_3_4_groups_of_3', 'Walk through CRA for 4 × 3: 4 groups of 3 white rods, then a 4-by-3 array of dots, then the equation 4 × 3 = 12.'),
             standards: ['3.OA.A.1', '3.OA.C.7'] },
           { grade: '1', title: __alloT('stem.manipulatives.counting_on_with_the_abacus', 'Counting on with the abacus'), manips: ['abacus'],
-            desc: __alloT('stem.manipulatives.show_6_on_the_ones_rod_add_2_by_slidin', 'Show 6 on the ones rod. Add 2 by sliding two more earth beads. Now show 9 + 4: add 5 by sliding the heaven bead down, then take back 1.'),
+            desc: __alloT('stem.manipulatives.lesson_abacus_count_on_make_ten', 'Show 6 on the ones rod. Add 2 by sliding two more earth beads (8). Now try 9 + 4. The ones rod cannot hold 13, so use 4 = 10 − 6: push up one earth bead on the tens rod (+10), then take 6 off the ones rod (lift the heaven bead and drop one earth bead). The abacus reads 13.'),
             standards: ['1.OA.C.5', '1.OA.C.6'] },
           { grade: '3-4', title: __alloT('stem.manipulatives.money_with_disks', 'Money with disks'), manips: ['pvDisks'],
             desc: __alloT('stem.manipulatives.re_label_disks_ones_pennies_tens_dimes', 'Re-label disks: ones = pennies, tens = dimes, hundreds = dollars. Build $2.47 with 2 dollar-disks, 4 dime-disks, 7 penny-disks. Add $1.85.'),
@@ -4096,13 +4169,13 @@ window.StemLab = window.StemLab || {
             desc: __alloT('stem.manipulatives.build_1_2_1_3_with_rods_using_a_6_rod_', 'Build 1/2 + 1/3 with rods, using a 6-rod (dark green) as the whole. Half of 6 is 3 (light green). A third is 2 (red). Combined: 5. Read as 5/6.'),
             standards: ['5.NF.A.1'] },
           { grade: '6', title: __alloT('stem.manipulatives.subtracting_negatives', 'Subtracting negatives'), manips: ['counters'],
-            desc: __alloT('stem.manipulatives.show_3_yellow_pose_3_2_you_don_t_have_', 'Show 3 yellow. Pose: 3 − (−2). You don\'t have any reds to take away! So FIRST add a zero pair (1 yellow + 1 red doesn\'t change net). Now you can remove 2 reds. Final: 5.'),
+            desc: __alloT('stem.manipulatives.lesson_subtract_negative_two_zero_pairs', 'Show 3 yellow. Pose: 3 − (−2). There are no reds to take away! So FIRST add two zero pairs (2 yellow + 2 red, which does not change the net value). Now remove the 2 reds. What is left is 5 yellow, so 3 − (−2) = 5.'),
             standards: ['7.NS.A.1.C'] },
           { grade: 'K-1', title: __alloT('stem.manipulatives.shape_sorting', 'Shape sorting'), manips: ['patternBlocks'],
             desc: __alloT('stem.manipulatives.sort_blocks_into_bins_by_number_of_sid', 'Sort blocks into bins by number of sides: triangles (3), squares (4), trapezoids (4), hexagons (6). Count each pile.'),
             standards: ['K.G.A.2', '1.G.A.1'] },
           { grade: '4-5', title: __alloT('stem.manipulatives.place_value_to_one_million', 'Place value to one million'), manips: ['blocks', 'pvDisks'],
-            desc: __alloT('stem.manipulatives.a_thousand_cube_is_1_000_ten_of_those_', 'A thousand-cube is 1,000. Ten of those would be 10,000. A hundred of those is 1,000,000. Build 1,000,000 in your imagination: 10 stacks of 10 cubes of 10 cubes. Now you understand "ten million."'),
+            desc: __alloT('stem.manipulatives.lesson_place_value_one_million', 'A thousand-cube is 1,000. Ten of those make 10,000. A hundred of those make 100,000. A thousand of them make 1,000,000: picture a giant cube 10 thousand-cubes long, 10 wide and 10 tall. Now you understand "one million."'),
             standards: ['4.NBT.A.1'] },
           { grade: '5', title: __alloT('stem.manipulatives.coordinate_grid_intro', 'Coordinate grid intro'), manips: ['geoboard'],
             desc: __alloT('stem.manipulatives.label_the_geoboard_pegs_with_x_y_coord', 'Label the geoboard pegs with (x, y) coordinates. Plot the point (2, 3). Connect (1,1), (4,1), (4,3), (1,3) to make a rectangle. Compute its perimeter and area.'),
@@ -4272,7 +4345,7 @@ window.StemLab = window.StemLab || {
             }, mode: 'tenFrame', goal: 'tenFrame' },
           { id: 'tf_subitize', cat: 'Ten Frames',
             gen: function() {
-              var n = 4 + Math.floor(Math.random() * 6);
+              var n = 5 + Math.floor(Math.random() * 6); // 5..10: n = 4 asked for "-1 more"
               return { q: 'A ten frame has the top row full and ' + (n - 5) + ' more in the bottom row. How many total?', a: n };
             }, mode: 'tenFrame', goal: 'tenFrame' },
           { id: 'ct_net', cat: 'Counters',
@@ -4305,7 +4378,7 @@ window.StemLab = window.StemLab || {
             gen: function() {
               var step = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
               var n = 2 + Math.floor(Math.random() * 8);
-              return { q: 'Skip-count by ' + step + 's. The ' + n + 'th number is?', a: step * n };
+              return { q: 'Skip-count by ' + step + 's. The ' + (n === 2 ? '2nd' : n === 3 ? '3rd' : n + 'th') + ' number is?', a: step * n };
             }, mode: 'hundredsChart', goal: 'hundredsChart' },
           { id: 'pb_frac', cat: 'Pattern Blocks',
             gen: function() {
@@ -4334,10 +4407,12 @@ window.StemLab = window.StemLab || {
             }, mode: 'cRods', goal: 'cRods' },
           { id: 'cr_fit', cat: 'Cuisenaire',
             gen: function() {
+              // Divisors only: [2,2,3,5] paired 8 with 3 (answer 2.67), and only the 10-rod is orange.
               var bigs = [4, 6, 8, 10];
               var big = bigs[Math.floor(Math.random() * bigs.length)];
-              var small = [2, 2, 3, 5][bigs.indexOf(big)];
-              return { q: 'How many rods of length ' + small + ' fit along an orange-' + big + '?', a: big / small };
+              var fits = [2, 3, 4, 5].filter(function(s) { return s < big && big % s === 0; });
+              var small = fits[Math.floor(Math.random() * fits.length)];
+              return { q: 'How many rods of length ' + small + ' fit along a rod of length ' + big + '?', a: big / small };
             }, mode: 'cRods', goal: 'cRods' },
           { id: 'nb_part', cat: 'Number Bonds',
             gen: function() {
@@ -4362,7 +4437,13 @@ window.StemLab = window.StemLab || {
           if (!crChallenge) return;
           var raw = (_m.crUserAns || '').toString().trim();
           if (raw === '') return;
-          var ok = crChallenge.strAnswer ? raw === crChallenge.ans : parseFloat(raw) === crChallenge.ans;
+          // Fraction answers grade by VALUE: "2/4" and "0.5" are the trapezoid's 1/2.
+          var fracValue = function(s) {
+            var m = /^\s*(\d+)\s*\/\s*(\d+)\s*$/.exec(String(s));
+            if (m) return Number(m[2]) > 0 ? Number(m[1]) / Number(m[2]) : NaN;
+            return /^\s*\d*\.?\d+\s*$/.test(String(s)) ? Number(s) : NaN;
+          };
+          var ok = crChallenge.strAnswer ? Math.abs(fracValue(raw) - fracValue(crChallenge.ans)) < 1e-9 : Number(raw) === crChallenge.ans;
           var newStreak = ok ? streak + 1 : 0;
           upd({
             crFeedback: { ok: ok, msg: ok ? '✅ Correct! Answer = ' + crChallenge.ans : '❌ Answer was ' + crChallenge.ans },

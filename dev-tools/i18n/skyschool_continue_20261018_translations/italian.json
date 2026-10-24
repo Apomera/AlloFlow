@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Le osservazioni confermano il raggiungimento degli obiettivi della sfida. Ora, nell’esercizio di gestione dell’energia, confronta una discesa con motore al minimo e una salita con potenza motore.",
+  "stem.flightsim.coaching_energy_complete": "Le osservazioni confermano il raggiungimento degli obiettivi di gestione dell’energia. Ora esercitati a controllare l’energia durante un breve avvicinamento a un aeroporto, poi confronta il rateo di discesa e il contatto con il suolo.",
+  "stem.flightsim.drone_battery_low": "Batteria scarica: resta il {pct}%. Torna al punto di decollo e atterra presto.",
+  "stem.flightsim.drone_battery_depleted_title": "Batteria del drone esaurita",
+  "stem.flightsim.drone_battery_depleted_body": "Il volo è in pausa con la batteria allo 0%. Termina la missione per esaminare questo tentativo, poi avvia una nuova missione con la batteria carica.",
+  "stem.flightsim.end_drone_mission": "Termina la missione e rivedi",
+  "stem.flightsim.geoq_nearest_place": "Quale luogo è più vicino alla tua posizione attuale?",
+  "stem.flightsim.geoq_paused": "Il volo è in pausa per questa domanda. Chiudi il quiz, poi scegli Riprendi quando sei pronto a volare.",
+  "stem.flightsim.geoq_close": "Chiudi il quiz",
+  "stem.flightsim.geoq_unavailable": "Non è disponibile una domanda di geografia sui dintorni. Continua a esplorare e riprova.",
+  "stem.flightsim.geoq_answer_feedback": "La tua risposta: {answer}. Risposta corretta: {expected}."
+}

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "已记录任务完成和返航着陆。再次尝试本任务，有意识地改变一项操控或路线选择，然后比较已保存的观察记录。",
+  "stem.flightsim.coaching_mission_depleted": "无人机电量已耗尽。开始新任务，选择较短路线，并计划在电量偏低前返航。",
+  "stem.flightsim.coaching_mission_unknown": "本任务的证据不完整或相互矛盾。查看已有记录，然后开始新的尝试。",
+  "stem.flightsim.coaching_mission_capture": "部分目标尚未采集。开始新任务后，每次接近一个目标，并保持在显示的高度和地速限制内，直到采集被记录。",
+  "stem.flightsim.coaching_mission_recovery": "尚未救起幸存者。开始新的救援任务后，先练习在显示的高度、漂移和垂直速度限制内稳定悬停，再返回基地。",
+  "stem.flightsim.coaching_mission_return": "已记录救援或采集目标的完成情况，但尚未返航着陆。开始新任务，并为返回基地预留时间和电量。",
+  "stem.flightsim.mission_reflection_prompt": "你会改变哪项关于目标、悬停或返航的决定？利用任务观察记录解释你的选择，并为新的尝试计划一项改变。你的解释将随本次飞行保存。",
+  "stem.flightsim.journal_different_airport": "这些进近使用了不同机场。请分别查看观察记录；系统不会计算测量值的变化。",
+  "stem.flightsim.journal_approach_airport": "进近机场：{airport}。",
+  "stem.flightsim.mission_evidence_heading": "任务证据",
+  "stem.flightsim.challenge_brake_release": "增加动力前，松开X，并在Deck中关闭机轮刹车。"
+}

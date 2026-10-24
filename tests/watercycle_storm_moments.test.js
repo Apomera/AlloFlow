@@ -7,8 +7,11 @@ import { parse } from 'acorn';
 const SOURCE_PATH = 'stem_lab/stem_tool_watercycle.js';
 const MIRROR_PATH = 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js';
 const TEST_PATH = 'tests/watercycle_storm_moments.test.js';
-const BASELINE_PATH = 'reports/watercycle-storm-moments/baseline-runtime.js';
-const BASELINE_SHA = '3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d';
+// Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): later
+// published passes (585a61ba2, 79e3e5eae) changed preserved declarations on purpose. The original
+// pass baseline remains at reports/watercycle-storm-moments/baseline-runtime.js.
+const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const PRESERVED = [
   'wcPrecipClamp', 'advanceWcStormWeather', 'WC_PRECIP_DEFAULTS', 'WC_PRECIP_PRESETS',
   'normalizeWcPrecipConfig', 'wcPrecipTemperatureAt', 'buildWcPrecipThermalStructure',
@@ -55,14 +58,18 @@ function walkNodes(tree, visit) {
   }
 }
 // The prior groundwater runtime already contains the reviewed illustration and
-// adapter. Storm moments permits no exceptions to these model and scene bodies.
+// adapter. The range workspace adds one renderer call; exclude exactly that
+// additive line while preserving every prior byte of the experiment body.
 function productionNodes(text) {
   const normalized = text.replace(/\r\n/g, '\n'), result = {};
   walkNodes(parse(normalized, { ecmaVersion: 'latest' }), node => {
     const name = ['FunctionDeclaration', 'VariableDeclarator'].includes(node.type) && node.id && node.id.name;
     if (!PRESERVED.includes(name)) return;
     if (result[name]) throw new Error('Non-unique production anchor: ' + name);
-    result[name] = normalized.slice(node.start, node.end);
+    const declaration = normalized.slice(node.start, node.end);
+    result[name] = name === 'renderStormExperiment'
+      ? declaration.replace('\n                renderStormRange(),', '')
+      : declaration;
   });
   return result;
 }
@@ -109,7 +116,11 @@ function kernelExport(text) {
     if (left && left.type === 'MemberExpression' && !left.computed && left.object.name === 'window' && left.property.name === 'WaterCyclePrecipitationKernel') result.push(normalized.slice(node.start, node.end));
   });
   if (result.length !== 1) throw new Error('Missing or duplicate scientific kernel export');
-  return result[0];
+  // These two additive exports expose the separately tested sweep. Their exact
+  // names and targets are allowed; all prior export bytes still compare below.
+  return result[0]
+    .replace('\n    sweepInputs: WC_PRECIP_SWEEP_INPUTS,', '')
+    .replace('\n    sweep: wcPrecipSweep,', '');
 }
 export const waterCycleStormMomentsVerification = {
   baselinePath: BASELINE_PATH, baselineSha: BASELINE_SHA, preservedNames: PRESERVED,
@@ -246,6 +257,8 @@ function rendererHarness(shippedRuntime, initial = {}, helper = shippedRuntime.h
       WC_STORM_MOMENTS_STYLE: style, isDark: state.theme === 'dark', isContrast: false,
       upd(key, value) { calls.push({ key, value }); state = freeze({ ...state, [key]: value }); },
       focusWcComparisonTarget(id) { focusCalls.push(id); },
+      // The shipped renderer reads copy through the tool's __alloT(key, fallback) wrapper.
+      __alloT: (_key, fallback) => fallback,
     }, { filename: source.path + ':actual-storm-renderer', timeout: 1000 });
     return fn();
   }
@@ -828,6 +841,26 @@ describe('Storm moments: aligned comparison signals', () => {
 });
 
 describe('Storm moments: independent exact preservation', () => {
+  it('excludes only one exact range-renderer addition while retaining surrounding bytes', () => {
+    const addition = '\n                renderStormRange(),';
+    // Use a real comma-separated call argument so the additive line remains
+    // valid JavaScript in both the baseline and expanded declarations.
+    const baseline = 'function renderStormExperiment() {\n  h(\n  keepOriginal());\n}';
+    const shipped = baseline.replace('h(', 'h(' + addition);
+    expect(productionNodes(shipped)).toEqual(productionNodes(baseline));
+    expect(productionNodes(shipped.replace('keepOriginal', 'changedOriginal'))).not.toEqual(productionNodes(baseline));
+    expect(productionNodes(shipped.replace(addition, addition + addition))).not.toEqual(productionNodes(baseline));
+    expect(productionNodes(shipped.replace('renderStormRange()', 'renderSomethingElse()'))).not.toEqual(productionNodes(baseline));
+  });
+  it('excludes only the exact additive sweep exports while retaining prior export bytes', () => {
+    const baseline = 'window.WaterCyclePrecipitationKernel = {\n    compute: computeWcPrecipitationModel\n};';
+    const addition = '\n    sweepInputs: WC_PRECIP_SWEEP_INPUTS,\n    sweep: wcPrecipSweep,';
+    const expanded = baseline.replace(' = {', ' = {' + addition);
+    expect(kernelExport(expanded)).toBe(kernelExport(baseline));
+    expect(kernelExport(expanded.replace('compute: computeWcPrecipitationModel', 'compute: changedModel'))).not.toBe(kernelExport(baseline));
+    expect(kernelExport(expanded.replace('sweep: wcPrecipSweep', 'sweep: changedSweep'))).not.toBe(kernelExport(baseline));
+    expect(kernelExport(expanded.replace(addition, addition + addition))).not.toBe(kernelExport(baseline));
+  });
   it('pins the frozen prior groundwater runtime and exact source/public parity', () => {
     expect(sha(baselineBytes)).toBe(BASELINE_SHA); expect(sha(sources[0].bytes)).toBe(sha(sources[1].bytes));
   });

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Rezultatele căutării: {cards} fișe din {topics} teme.",
+  "stem.flightsim.learn_library_counts": "{cards} fișe · {topics} teme",
+  "stem.flightsim.learn_search_clear": "Șterge căutarea",
+  "stem.flightsim.learn_search_empty": "Nicio fișă de învățare nu corespunde cu „{query}”. Încearcă alt termen sau șterge căutarea.",
+  "stem.flightsim.learn_search_none": "Nicio fișă de învățare corespunzătoare",
+  "stem.flightsim.learn_search_cards": "{count} fișe de învățare",
+  "stem.flightsim.quiz_review_progress": "{answered} din {total} întrebări au răspuns · {missed} greșite",
+  "stem.flightsim.quiz_review_missed": "Recapitulează răspunsurile greșite",
+  "stem.flightsim.quiz_next_unanswered": "Următoarea întrebare fără răspuns",
+  "stem.flightsim.quiz_review_all_answered": "Fiecare întrebare are un prim răspuns. Recapitulează întrebările greșite pentru exersare fără punctaj sau începe o nouă încercare.",
+  "stem.flightsim.planner_drone_agl": "{ft} picioare deasupra solului",
+  "stem.flightsim.sprint_native_title": "Sprint de geografie",
+  "stem.flightsim.sprint_timed_hint": "Traseul avansează în timp ce răspunzi. Pune pauză pentru a citi și reia înainte de a alege un răspuns.",
+  "stem.flightsim.sprint_warp_reference": "Călătoria este accelerată pentru această activitate de geografie. Indicatoarele de viteză arată viteza de croazieră anunțată; acest traseu nu măsoară performanțele aeronavei.",
+  "stem.flightsim.sprint_save_menu": "Salvează sprintul și revino la meniu",
+  "stem.flightsim.sprint_next_stop": "Următoarea oprire: {place}",
+  "stem.flightsim.geoq_approaching_city": "De ce oraș te apropii?",
+  "stem.flightsim.sprint_time_remaining": "Timp rămas: {seconds} secunde"
+}

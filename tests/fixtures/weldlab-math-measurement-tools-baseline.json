@@ -1,0 +1,52 @@
+[
+  {
+    "tool": "Tape measure (12-25 ft)",
+    "use": "Layout work, rough cuts, structural placement",
+    "precision": "~1/16\" practical accuracy"
+  },
+  {
+    "tool": "Combination square (12\")",
+    "use": "Square + 45° angle layout, transfer marks",
+    "precision": "~1/64\" (rule graduations)"
+  },
+  {
+    "tool": "Speed square / framing square",
+    "use": "Rapid angle layout (5°-90°), framing work",
+    "precision": "~1/32\""
+  },
+  {
+    "tool": "Dividers / compass",
+    "use": "Transferring measurements, scribing arcs",
+    "precision": "~1/64\""
+  },
+  {
+    "tool": "Calipers (6\" dial or digital)",
+    "use": "Plate thickness, pipe ID/OD, precise gaps",
+    "precision": "0.001\" (dial or digital)"
+  },
+  {
+    "tool": "Micrometer (0-1\")",
+    "use": "Very precise thickness measurements",
+    "precision": "0.001\" (0.0001\" with a vernier scale)"
+  },
+  {
+    "tool": "Bevel gauge / protractor",
+    "use": "Transferring angles for bevel cuts",
+    "precision": "~0.5°"
+  },
+  {
+    "tool": "Fillet weld gauge set",
+    "use": "Go/no-go check of fillet leg size and convexity",
+    "precision": "One blade per size, typically 1/16\" steps"
+  },
+  {
+    "tool": "Bridge cam gauge",
+    "use": "Undercut depth, reinforcement height, leg size, bevel angle — inspector's tool",
+    "precision": "about 1/64\" (about 0.5 mm)"
+  },
+  {
+    "tool": "Pi tape (circumference tape)",
+    "use": "Reads pipe diameter directly from the circumference",
+    "precision": "~0.001\" on diameter (vernier)"
+  }
+]

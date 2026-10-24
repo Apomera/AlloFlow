@@ -509,11 +509,11 @@ describe('Kitchen Lab stirring', () => {
     expect(r.state.recipeUnattendedSec).toBe(0);
   });
 
-  it('gives back crust when the chicken is poked, and the judge says so', () => {
+  it('slows future browning when the chicken is poked, and the judge says so', () => {
     const sched = (stir) => [{ until: 60, level: 8, add: ['oil'] }, { until: 330, level: 8, add: ['chicken'], stir }, { until: 570, level: 8 }, { until: 900, level: 4 }, { until: 930, level: 0, off: true }];
     const patient = cook('panSeared', sched(0), { stopAtFoodF: 165 });
     const poked = cook('panSeared', sched(4), { stopAtFoodF: 165 });
-    expect(poked.browning).toBeLessThan(patient.browning * 0.8);
+    expect(poked.browning).toBeLessThan(patient.browning);
     expect(has(patient.judgement, 'Left it alone')).toBe(true);
     expect(has(poked.judgement, 'Moved during the sear')).toBe(true);
     expect(has(poked.judgement, 'Left it alone')).toBe(false);
@@ -522,7 +522,7 @@ describe('Kitchen Lab stirring', () => {
 
   it('wires the stir action into the cockpit and the tick', () => {
     expect(source).toContain('function stirPan()');
-    expect(source).toContain("if (stir.disturbs) patch.recipeBrowning = (prior.recipeBrowning || 0) * 0.8;");
+    expect(source).toContain("return Object.assign(moveFood(prior, rec), { recipeLog: logEvent(prior, { k: 'stir' }) });");
     expect(source).toContain("'data-kl-stir': stir.disturbs ? 'disturbs' : 'stir'");
     expect(source).toContain('recipeUnattendedSec: (prior.recipeUnattendedSec || 0) + (unattended ? dtSec : 0)');
     resetEverywhere('recipeLastStirSimSec', null);
@@ -713,7 +713,7 @@ describe('Kitchen Lab Free Cook sandbox', () => {
 
   it('is not in the catalog, so competition, tournament and the suggester never pick it', () => {
     expect(E.RECIPE_CATALOG.some((r) => r.id === 'freeCook')).toBe(false);
-    expect(source).toContain("if (rec.sandbox) {\n              return { recipePhase: 'done', recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };");
+    expect(source.includes("if (rec.sandbox) {\n              return { recipePhase: 'done', recipeReplaySetup: captureCookSetup(prior), recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };"), 'sandbox completion keeps its ungraded readout').toBe(true);
     // no AI critique for the sandbox, and only where the teacher has AI on
     expect(source).toContain("var aiOn = !isSandbox && !!ctx.callGemini && ctx.aiHintsEnabled !== false;");
   });
@@ -1490,7 +1490,7 @@ describe('Kitchen Lab kitchen detective', () => {
     expect(E.benchLiveHint(vars.find((v) => v.id === 'pan'), '⚫ Cast iron', 'A')).toContain('already set');
     expect(E.traceMarksFor(E.RECIPES.rice, E.runBench(E.RECIPES.rice, 'dial', '0').result.state, 'Heat off').map((m) => m.icon)).toEqual(['🍚', '⏻']);
     expect(source).toContain("h('button', { type: 'button', 'data-kl-bench-live': tag, onClick: function() { cookLive(tag, choiceId, r); },");
-    expect(source).toContain("setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klBenchLiveHint: benchLiveHint(v, labelOf(choiceId), tag) });");
+    expect(source.includes("setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klAltitudeFt: st.altitudeFt || 0, klBenchLiveHint: benchLiveHint(v, labelOf(choiceId), tag) });"), 'bench follow-up keeps its setup and reminder').toBe(true);
     expect(source).toContain("klNewAchievements: [], klBenchLiveHint: null");   // a fresh start clears the reminder
     expect(source).toContain("d.klBenchLiveHint ? h('div', { 'data-kl-bench-live-hint': '1',");
   });
@@ -1943,22 +1943,22 @@ describe('Kitchen Lab pot dial and lesson links', () => {
   });
 });
 
-describe('Kitchen Lab evidence ladder (matches the 3D studio)', () => {
+describe('Kitchen Lab coaching and observation evidence', () => {
   const st = (log, extra) => Object.assign(E.defaultState(), { recipeLog: log }, extra || {});
   const jud = (independent) => ({ score: 95, grade: 'A', notes: [], independent });
 
-  it('grades a cook three ways, not two, the way the studio does', () => {
+  it('records self-directed observations without treating them as coaching', () => {
     expect(E.evidenceStatus(st([]), jud(false))).toMatchObject({ status: 'coached' });
     expect(E.evidenceStatus(st([]), jud(true))).toMatchObject({ status: 'independent' });
-    // the recipe ASKS for one thermometer check, so the first probe is free
+    // Checking again before removing the food is still independent cooking.
     expect(E.evidenceStatus(st([{ k: 'probe', reading: 140 }]), jud(true))).toMatchObject({ status: 'independent' });
-    expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'probe' }, { k: 'probe' }]), jud(true))).toMatchObject({ status: 'supported' });
+    expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'probe' }, { k: 'probe' }]), jud(true))).toMatchObject({ status: 'independent' });
     expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'flick' }, { k: 'flick' }]), jud(true)).detail).toContain('2 water flicks');
     // the AI critique is written after the judge scores a cook, so it cannot have
     // supported it; a leftover one from the last cook used to mark this one "supported"
     expect(E.evidenceStatus(st([], { aiCritique: 'x' }), jud(true))).toMatchObject({ status: 'independent' });
     expect(E.evidenceStatus(st([]), { score: null })).toBeNull();          // the sandbox has no grade to stand behind
-    expect(E.cookSupports(st([{ k: 'probe' }, { k: 'probe' }, { k: 'flick' }]), jud(true)).count).toBe(2);
+    expect(E.cookSupports(st([{ k: 'probe' }, { k: 'probe' }, { k: 'flick' }]), jud(true))).toMatchObject({ count: 0, observationCount: 3 });
     expect(E.cookSupports(st([{ k: 'dial', level: 9 }, { k: 'add', id: 'oil' }]), jud(true)).count).toBe(0);   // cooking is not a support
   });
 

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Cov kev soj ntsuam qhia tias ua tiav cov hom phiaj ntawm qhov kev sib tw lawm. Tom ntej, hauv qhov kev xyaum tswj lub zog, muab kev ya nqes thaum cav khiav qeeb piv rau kev ya nce uas siv cav lub zog.",
+  "stem.flightsim.coaching_energy_complete": "Cov kev soj ntsuam qhia tias ua tiav cov hom phiaj tswj lub zog lawm. Tom ntej, xyaum tswj lub zog thaum ya los ze tshav dav hlau kom tsaws, ces piv qhov ceev ntawm kev ya nqes thiab lub sijhawm kov hauv av.",
+  "stem.flightsim.drone_battery_low": "Roj teeb tshuav tsawg: tshuav {pct}%. Rov mus rau qhov chaw uas ya tawm thiab tsaws sai.",
+  "stem.flightsim.drone_battery_depleted_title": "Lub roj teeb ntawm lub dav hlau tsis muaj neeg tsav tas lawm",
+  "stem.flightsim.drone_battery_depleted_body": "Kev ya raug nres ib ntus thaum roj teeb tshuav 0%. Xaus txoj haujlwm kom rov saib qhov kev sim no, ces pib txoj haujlwm tshiab nrog roj teeb puv.",
+  "stem.flightsim.end_drone_mission": "Xaus txoj haujlwm thiab rov saib",
+  "stem.flightsim.geoq_nearest_place": "Qhov chaw twg nyob ze tshaj rau qhov chaw uas koj nyob tam sim no?",
+  "stem.flightsim.geoq_paused": "Kev ya raug nres ib ntus rau lo lus nug no. Kaw qhov kev nug, ces xaiv Txuas ntxiv thaum koj npaj txhij ya.",
+  "stem.flightsim.geoq_close": "Kaw qhov kev nug",
+  "stem.flightsim.geoq_unavailable": "Tsis muaj lus nug txog thaj chaw nyob ze no. Tshawb nrhiav ntxiv thiab sim dua.",
+  "stem.flightsim.geoq_answer_feedback": "Koj cov lus teb: {answer}. Cov lus teb yog: {expected}."
+}

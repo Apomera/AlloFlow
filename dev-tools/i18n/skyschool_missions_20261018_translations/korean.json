@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "임무 관찰 기록",
+  "stem.flightsim.mission_journal_targets": "촬영한 목표: {total}개 중 {captured}개.",
+  "stem.flightsim.mission_journal_complete": "모든 임무 목표와 복귀 착륙이 기록되었습니다.",
+  "stem.flightsim.mission_journal_ended": "모든 완료 근거가 기록되기 전에 임무가 종료되었습니다.",
+  "stem.flightsim.mission_journal_recovery": "생존자 구조 기록: {value}.",
+  "stem.flightsim.mission_journal_return": "기지 복귀 착륙 기록: {value}.",
+  "stem.flightsim.mission_guidance_title": "임무 안내",
+  "stem.flightsim.mission_route": "{target} · 방위 {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "이륙 지점",
+  "stem.flightsim.mission_read_status": "임무 상태 읽기",
+  "stem.flightsim.mission_return_criterion": "{target}에서 {distance} nm 이내에 대지 속도 {speed} kt 미만, 하강률 {fpm} fpm 미만으로 착륙하세요.",
+  "stem.flightsim.mission_unavailable": "임무 목표 데이터를 사용할 수 없습니다. 이 비행을 종료하고 새 임무를 시작하세요.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft 이내에서 지상고 {min} ft 초과, {max} ft 미만을 유지하고, 지상 속도 {speed} kt 미만으로 {hold} s 동안 머무르세요."
+}

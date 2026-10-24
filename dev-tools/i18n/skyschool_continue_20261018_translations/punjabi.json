@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "ਚੁਣੌਤੀ ਦੇ ਉਦੇਸ਼ ਪੂਰੇ ਹੁੰਦੇ ਵੇਖੇ ਗਏ ਹਨ। ਹੁਣ ਊਰਜਾ ਪ੍ਰਬੰਧਨ ਦੇ ਅਭਿਆਸ ਵਿੱਚ ਇੰਜਣ ਦੀ ਘੱਟੋ-ਘੱਟ ਸ਼ਕਤੀ ਨਾਲ ਹੇਠਾਂ ਆਉਣ ਅਤੇ ਇੰਜਣ ਦੀ ਸ਼ਕਤੀ ਨਾਲ ਉੱਪਰ ਚੜ੍ਹਨ ਦੀ ਤੁਲਨਾ ਕਰੋ।",
+  "stem.flightsim.coaching_energy_complete": "ਊਰਜਾ ਪ੍ਰਬੰਧਨ ਦੇ ਉਦੇਸ਼ ਪੂਰੇ ਹੁੰਦੇ ਵੇਖੇ ਗਏ ਹਨ। ਹੁਣ ਹਵਾਈ ਅੱਡੇ ਵੱਲ ਛੋਟੀ ਪਹੁੰਚ ਦੌਰਾਨ ਊਰਜਾ ਕਾਬੂ ਕਰਨ ਦਾ ਅਭਿਆਸ ਕਰੋ, ਫਿਰ ਹੇਠਾਂ ਆਉਣ ਦੀ ਦਰ ਅਤੇ ਜ਼ਮੀਨ ਛੂਹਣ ਦੀ ਤੁਲਨਾ ਕਰੋ।",
+  "stem.flightsim.drone_battery_low": "ਬੈਟਰੀ ਘੱਟ ਹੈ: {pct}% ਬਾਕੀ ਹੈ। ਉਡਾਣ ਸ਼ੁਰੂ ਕਰਨ ਵਾਲੀ ਥਾਂ ਵਾਪਸ ਜਾਓ ਅਤੇ ਛੇਤੀ ਉਤਰੋ।",
+  "stem.flightsim.drone_battery_depleted_title": "ਡਰੋਨ ਦੀ ਬੈਟਰੀ ਖ਼ਤਮ ਹੋ ਗਈ",
+  "stem.flightsim.drone_battery_depleted_body": "ਬੈਟਰੀ 0% ਹੋਣ 'ਤੇ ਉਡਾਣ ਰੋਕੀ ਗਈ ਹੈ। ਇਸ ਕੋਸ਼ਿਸ਼ ਦੀ ਸਮੀਖਿਆ ਲਈ ਮਿਸ਼ਨ ਸਮਾਪਤ ਕਰੋ, ਫਿਰ ਪੂਰੀ ਬੈਟਰੀ ਨਾਲ ਨਵਾਂ ਮਿਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ।",
+  "stem.flightsim.end_drone_mission": "ਮਿਸ਼ਨ ਸਮਾਪਤ ਕਰਕੇ ਸਮੀਖਿਆ ਕਰੋ",
+  "stem.flightsim.geoq_nearest_place": "ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਥਾਂ ਤੋਂ ਕਿਹੜੀ ਜਗ੍ਹਾ ਸਭ ਤੋਂ ਨੇੜੇ ਹੈ?",
+  "stem.flightsim.geoq_paused": "ਇਸ ਸਵਾਲ ਲਈ ਉਡਾਣ ਰੋਕੀ ਗਈ ਹੈ। ਪ੍ਰਸ਼ਨਾਵਲੀ ਬੰਦ ਕਰੋ, ਫਿਰ ਉੱਡਣ ਲਈ ਤਿਆਰ ਹੋਣ 'ਤੇ ਮੁੜ ਸ਼ੁਰੂ ਕਰਨ ਦਾ ਵਿਕਲਪ ਚੁਣੋ।",
+  "stem.flightsim.geoq_close": "ਪ੍ਰਸ਼ਨਾਵਲੀ ਬੰਦ ਕਰੋ",
+  "stem.flightsim.geoq_unavailable": "ਨੇੜਲੀ ਥਾਂ ਬਾਰੇ ਭੂਗੋਲ ਦਾ ਕੋਈ ਸਵਾਲ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਖੋਜ ਜਾਰੀ ਰੱਖੋ ਅਤੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "stem.flightsim.geoq_answer_feedback": "ਤੁਹਾਡਾ ਜਵਾਬ: {answer}। ਸਹੀ ਜਵਾਬ: {expected}।"
+}

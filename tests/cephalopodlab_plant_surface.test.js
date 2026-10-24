@@ -53,12 +53,18 @@ const tone = new Function('vein', 'edge', 'grain', 'return ' + toneExpression.re
 const roughnessExpression = surfaceShader.fragmentShader.match(/roughnessFactor=(mix\(roughnessFactor,clamp\(roughnessFactor[^;]+);/)[1];
 const finishRoughness = new Function('base', 'weight', 'vein', 'grain', 'clamp', 'mix', 'return ' + roughnessExpression.replaceAll('roughnessFactor', 'base').replaceAll('clPlantRibbonWeight', 'weight').replaceAll('clPlantVein', 'vein').replaceAll('clPlantGrain', 'grain') + ';');
 const backlightExpression = surfaceShader.fragmentShader.match(/reflectedLight\.directDiffuse\+=diffuseColor\.rgb\*directionalLights\[0\]\.color\*([^;]+);/)[1];
-const backlightWeight = new Function('weight', 'backlight', 'edge', 'return ' + backlightExpression.replaceAll('clPlantRibbonWeight', 'weight').replaceAll('clPlantBacklight', 'backlight').replaceAll('clPlantEdge', 'edge') + ';');
+// Pass74 rib relief routes the backlight through the emitted clPlantBladeTransmission helper (edge variation).
+const transmissionDefinition = surfaceShader.fragmentShader.match(/float clPlantBladeTransmission\(([^)]*)\)\{([^{}]*)\}/);
+if (!transmissionDefinition) throw new Error('Live blade transmission missing');
+const clPlantBladeTransmission = new Function('return function(' + transmissionDefinition[1].replace(/float /g, '') + '){' + transmissionDefinition[2] + '};')();
+const backlightWeight = new Function('clPlantBladeTransmission', 'weight', 'backlight', 'edge', 'variation', 'aa', 'return ' + backlightExpression.replaceAll('clPlantRibbonWeight', 'weight').replaceAll('clPlantBacklight', 'backlight').replaceAll('clPlantEdgeVariation', 'variation').replaceAll('clPlantEdgeAA', 'aa').replaceAll('clPlantEdge', 'edge') + ';').bind(null, clPlantBladeTransmission);
 
 describe('Cephalopod Hunter restrained plant tissue finish', () => {
   it('restores the accepted source exactly and leaves the original geometry, motion and placement definitions intact', () => {
     expect(hash(baseline)).toBe('4dbccc80d7607e788c961eee1829eead070e59382985862913b4d83687aa14ec');
-    for (const helper of ['shade', 'update', 'create']) expect(live[helper].toString()).toBe(accepted[helper].toString());
+    // Pass74 recurves only the kelp blade tips inside the geometry factory; kelp_tip_form checks that
+    // against a frozen accepted factory and the geometry test below keeps every other byte exact.
+    for (const helper of ['shade', 'update']) expect(live[helper].toString()).toBe(accepted[helper].toString());
     for (const call of [
       "createCLHuntPlantFlex(THREE,gmesh,gH,renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives'));",
       "createCLHuntPlantFlex(THREE,kmesh,kH,renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives'));",
@@ -83,7 +89,14 @@ describe('Cephalopod Hunter restrained plant tissue finish', () => {
       const height = kind === 'kelp' ? 5 + variant / 24 * 4 : .6 + variant / 24 * 1.3;
       const current = fixture(live, kind, height, variant), old = fixture(accepted, kind, height, variant), saved = buffers(current.geometry), meta = current.geometry.userData;
       try {
-        expect(Array.from(current.geometry.attributes.position.array)).toEqual(Array.from(old.geometry.attributes.position.array));
+        const livePositions = Array.from(current.geometry.attributes.position.array), oldPositions = Array.from(old.geometry.attributes.position.array);
+        if (kind === 'grass') expect(livePositions).toEqual(oldPositions);
+        else {
+          // Pass74 appends 24 tip vertices and moves the last six rows of each blade; all other kelp bytes stay exact.
+          expect(livePositions.length).toBe(oldPositions.length + 24 * 3);
+          const kept = [[0, 57], [141, 277], ...[0, 1, 2, 3].map(leaf => [57 + leaf * 21, 57 + leaf * 21 + 15])];
+          for (const [from, to] of kept) expect(livePositions.slice(from * 3, to * 3)).toEqual(oldPositions.slice(from * 3, to * 3));
+        }
         const uuid = current.geometry.uuid, materialUUID = current.material.uuid, random = Math.random; let globalDraws = 0;
         try { Math.random = () => { globalDraws++; return .375; }; live.configure(THREE, current.mesh, height, true); } finally { Math.random = random; }
         accepted.configure(THREE, old.mesh, height);
@@ -92,11 +105,11 @@ describe('Cephalopod Hunter restrained plant tissue finish', () => {
         const mask = current.geometry.attributes.clPlantRibbon; expect(mask.itemSize).toBe(1); expect(mask.count).toBe(current.geometry.attributes.position.count); expect(mask.version).toBe(0);
         const closed = new Set(); if (kind === 'kelp') for (const part of meta.clKelpBladders.parts) for (let at = part.vertexStart; at < part.vertexStart + part.vertexCount; at++) closed.add(at);
         for (let at = 0; at < mask.count; at++) expect(mask.getX(at)).toBe(closed.has(at) ? 0 : 1);
-        expect(mask.array.byteLength).toBe(kind === 'kelp' ? 1108 : 132);
+        expect(mask.array.byteLength).toBe(kind === 'kelp' ? 1204 : 132);
         expect(current.material.transparent).toBe(old.material.transparent); expect(current.material.opacity).toBe(old.material.opacity); expect(current.material.depthWrite).toBe(old.material.depthWrite); expect(current.material.side).toBe(old.material.side);
       } finally { current.dispose(); old.dispose(); }
     }
-    expect(25 * 1108 + 80 * 132).toBe(38260);
+    expect(25 * 1204 + 80 * 132).toBe(40660);
   });
 
   it('retains one motion uniform and mask across compilation and pause or reduced-motion updates, including instanced grass', () => {
@@ -106,7 +119,7 @@ describe('Cephalopod Hunter restrained plant tissue finish', () => {
         const { motion } = compiled(plant, true), saved = buffers(plant.geometry), uniform = motion.value, mask = plant.geometry.attributes.clPlantRibbon;
         for (let iteration = 0; iteration < 3; iteration++) {
           const shader = standardShader(); plant.material.onBeforeCompile(shader);
-          expect(shader.uniforms.clPlantMotion).toBe(motion); expect(plant.material.customProgramCacheKey()).toBe('cl-plant-flex-v57-tissue');
+          expect(shader.uniforms.clPlantMotion).toBe(motion); expect(plant.material.customProgramCacheKey()).toBe('cl-plant-flex-v58-rib-relief');
           expect(shader.vertexShader).toContain('attribute float clPlantRibbon; varying vec3 clPlantTissue;'); expect(shader.vertexShader).toContain('clPlantTissue=vec3(uv,clPlantRibbon);');
           expect(shader.vertexShader).toContain('clPlantInstancePhase=dot(instanceMatrix[3].xz,vec2(7.1,11.3));'); expect(shader.vertexShader).toContain('objectNormal.y-=dot(clPlantSlope,objectNormal.xz);');
           expect(shader.fragmentShader.indexOf('float clPlantRibbonWeight=')).toBeLessThan(shader.fragmentShader.indexOf('#include <roughnessmap_fragment>'));
@@ -147,11 +160,13 @@ describe('Cephalopod Hunter restrained plant tissue finish', () => {
     const fragment = surfaceShader.fragmentShader, inserted = fragment.split('#include <lights_fragment_end>\n')[1].split('#include <aomap_fragment>')[0];
     expect(inserted).toContain('#if NUM_DIR_LIGHTS > 0'); expect(inserted).toContain('max(0.0,-dot(geometry.normal,directionalLights[0].direction))');
     expect(inserted).toContain('directionalLights[0].color'); expect(inserted).not.toContain('emissive'); expect(fragment).not.toContain('diffuseColor.a*=');
-    const diffuse = [.10, .18, .035], light = [.8, 1.0, .7], lit = (weight, backlight, edge, intensity) => diffuse.map((value, i) => value * light[i] * intensity * backlightWeight(weight, backlight, edge));
-    for (const edge of [0, .5, 1]) {
-      expect(lit(0, 1, edge, 1)).toEqual([0, 0, 0]); expect(lit(1, 0, edge, 1)).toEqual([0, 0, 0]); expect(lit(1, 1, edge, 0)).toEqual([0, 0, 0]);
-      const full = lit(1, 1, edge, 1), half = lit(1, 1, edge, .5);
-      expect(full.every((value, i) => value >= 0 && value <= diffuse[i] * light[i] * .26 + 1e-12)).toBe(true); expect(half).toEqual(full.map(value => value * .5));
+    const diffuse = [.10, .18, .035], light = [.8, 1.0, .7], lit = (weight, backlight, edge, intensity, variation, aa) => diffuse.map((value, i) => value * light[i] * intensity * backlightWeight(weight, backlight, edge, variation, aa));
+    for (const edge of [0, .5, 1]) for (const variation of [-1, 0, 1]) for (const aa of [0, 1]) {
+      expect(lit(0, 1, edge, 1, variation, aa)).toEqual([0, 0, 0]); expect(lit(1, 0, edge, 1, variation, aa)).toEqual([0, 0, 0]); expect(lit(1, 1, edge, 0, variation, aa)).toEqual([0, 0, 0]);
+      const full = lit(1, 1, edge, 1, variation, aa), half = lit(1, 1, edge, .5, variation, aa);
+      // Accepted .18-.26 transmission, with the Pass74 edge variation of at most 16% (plant_rib_relief bound .3016).
+      expect(full.every((value, i) => value >= 0 && value <= diffuse[i] * light[i] * .3016 + 1e-12)).toBe(true); expect(half).toEqual(full.map(value => value * .5));
+      if (aa === 0 || variation === 0) expect(full.every((value, i) => value <= diffuse[i] * light[i] * .26 + 1e-12)).toBe(true);
     }
   });
 });

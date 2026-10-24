@@ -725,7 +725,9 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('data-journal-export="true"');
       expect(source).toContain('function exportDroneJournal()');
       expect(source).toContain("_field_journal_' + new Date().toISOString().slice(0, 10) + '.html'");
-      expect(source).toContain("addMissionEntry('\\uD83D\\uDCD3 Exported field journal for ' + sel.name);");
+      // The mission log entry now carries structured metadata (kind + world) like every other entry.
+      expect(source.includes("addMissionEntry('\\uD83D\\uDCD3 Exported field journal for ' + sel.name, { kind: 'export', world: sel.key });"),
+        'the journal export must log a structured export entry for the selected world').toBe(true);
     });
   });
 

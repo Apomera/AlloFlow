@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "وضعیت فعلی پرواز را ثابت نگه دارید",
+  "stem.flightsim.flight_assistance_targets": "سمت {hdg}° · ارتفاع {alt} ft MSL · سرعت {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "سمت {hdg}° · ارتفاع {alt} ft MSL · سرعت حرکت به پیش {spd} kt",
+  "stem.flightsim.challenge_turn_left": "به‌سوی {airport}، به‌اندازۀ {degrees}° به چپ بپیچید.",
+  "stem.flightsim.challenge_turn_right": "به‌سوی {airport}، به‌اندازۀ {degrees}° به راست بپیچید.",
+  "stem.flightsim.challenge_course_aligned": "به‌سوی {airport} در حرکت هستید. نشانگر مسیر را دنبال کنید.",
+  "stem.flightsim.challenge_runway_reference": "خط پرواز تمرینی {runway}: سمت {heading}°. پیش از پایین آمدن برای فرود، طیاره را با خط پرواز هم‌راستا کنید."
+}

@@ -598,8 +598,46 @@ function projectSessionForParticipant(data, uid) {
   if (copy.democracy && typeof copy.democracy === 'object') copy.democracy.votes = ownMap(copy.democracy.votes, uid);
   if (copy.escapeRoomState && typeof copy.escapeRoomState === 'object') {
     copy.escapeRoomState.teams = ownMap(copy.escapeRoomState.teams, uid);
+    redactEscapeProgress(copy.escapeRoomState, uid);
   }
   return copy;
+}
+
+// Pending answers, delivery receipts and per-learner results stay private to their
+// owner. Shared votes, class outcomes and dice remain; the host reads the full document.
+function redactEscapeProgress(state, uid) {
+  var all = state.teamProgress && state.teamProgress.All;
+  if (!all || typeof all !== 'object') return;
+  ['boardActions', 'connectedActions', 'questActions'].forEach(function(field) {
+    if (all[field] && typeof all[field] === 'object') all[field] = ownMap(all[field], uid);
+  });
+  var runs = all.boardRuns && typeof all.boardRuns === 'object' ? all.boardRuns : {};
+  Object.keys(runs).forEach(function(attempt) {
+    var run = runs[attempt];
+    if (!run || typeof run !== 'object' || !run.steps || typeof run.steps !== 'object') return;
+    var own = Array.isArray(run.members) ? run.members.indexOf(uid) : -1;
+    Object.keys(run.steps).forEach(function(name) {
+      var step = run.steps[name];
+      if (!step || typeof step !== 'object') return;
+      ['answers', 'seen', 'retryStats'].forEach(function(field) {
+        if (step[field] && typeof step[field] === 'object') step[field] = ownMap(step[field], uid);
+      });
+      if (step.responseRounds && typeof step.responseRounds === 'object') Object.keys(step.responseRounds).forEach(function(round) {
+        var entry = step.responseRounds[round];
+        if (!entry || typeof entry !== 'object') return;
+        ['answers', 'seen'].forEach(function(field) {
+          if (entry[field] && typeof entry[field] === 'object') entry[field] = ownMap(entry[field], uid);
+        });
+      });
+      var result = step.result;
+      if (!result || typeof result !== 'object') return;
+      ['marks', 'attempts'].forEach(function(field) {
+        if (result[field] && typeof result[field] === 'object') result[field] = ownMap(result[field], uid);
+      });
+      if (typeof result.mk === 'string') result.mk = result.mk.split('').map(function(code, index) { return index === own ? code : '-'; }).join('').replace(/-+$/, '');
+      if (typeof result.ak === 'string') result.ak = result.ak.split(',').map(function(code, index) { return index === own ? code : ''; }).join(',').replace(/,+$/, '');
+    });
+  });
 }
 
 function applyDocUpdates(target, updates) {

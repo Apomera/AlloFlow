@@ -24,7 +24,8 @@ describe('Glossary flashcard read-aloud headings', () => {
       .toBeGreaterThanOrEqual(4);
     expect(source.match(/focus-visible:ring-indigo-700/g)?.length).toBeGreaterThanOrEqual(3);
     expect(source).toContain('focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700');
-    expect(source).toContain('disabled={!((generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").includes(":")');
+    // The split accepts the full-width colon too (2026-10-19).
+    expect(source).toContain('disabled={!((glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "").search(/[:：]/) >= 0');
   });
 
   it('keeps root and deployed generated modules synchronized', () => {

@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "முந்தைய வினாடி வினா முயற்சிகள்",
+  "stem.flightsim.quiz_history_scope": "புதிய முயற்சியைத் தொடங்கும்போது, முதல் பதில்கள் பதிவான முந்தைய நான்கு முயற்சிகள் வரை சேமிக்கப்படும். அவற்றைப் பார்வையிடுவதால் உங்கள் தற்போதைய வினாடி வினா மாறாது.",
+  "stem.flightsim.quiz_history_empty": "முந்தைய வினாடி வினா முயற்சிகள் எதுவும் இன்னும் சேமிக்கப்படவில்லை.",
+  "stem.flightsim.quiz_history_attempt": "{date} அன்று சேமிக்கப்பட்டது · முதல் பதில்களில் {score}/{answered} சரியானவை",
+  "stem.flightsim.quiz_history_progress": "{total} கேள்விகளில் {answered} பதிவாகியுள்ளன · {unanswered} பதிலளிக்கப்படவில்லை",
+  "stem.flightsim.quiz_history_question": "கேள்வி {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "சரியான பதில்: {answer}",
+  "stem.flightsim.quiz_history_changed": "சேமிக்கப்பட்ட {count} கேள்விகள் இப்போது இந்த வினாடி வினாவுடன் பொருந்தவில்லை. பொருந்தும் கேள்விப் பதிவுகள் மட்டுமே மதிப்பெண்களுக்குப் பயன்படுத்தப்படும்."
+}

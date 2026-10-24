@@ -62,6 +62,26 @@ describe('safe city flight starts', () => {
       .toBeGreaterThan(getFlightCityStart(target, trainer, () => 0).speedKts);
   });
 
+  it('trims against a supplied engine model whose thrust changes with speed and height', () => {
+    // A propeller-like model: thrust falls with airspeed and with altitude.
+    const calls = [];
+    const engine = (lever, speedFps, altitudeFt) => {
+      calls.push(altitudeFt);
+      return lever * 900 * 130 / Math.sqrt(speedFps ** 2 + 130 ** 2) * (1 - altitudeFt / 40000);
+    };
+    const result = getFlightCityStart(target, trainer, () => 1200, engine);
+    expect(result).not.toBeNull();
+    expect(calls.every(a => a === result.altitude)).toBe(true);
+    const rho = density(result.altitude), speed = result.speedKts / 0.5924838;
+    const cl = trainer.cl0 + trainer.clPerAoa * result.pitch;
+    const drag = 0.5 * rho * speed ** 2 * trainer.wingArea * (trainer.cd0 + trainer.cdK * cl ** 2);
+    expect(engine(result.throttle, speed, result.altitude) * Math.cos(result.pitch * Math.PI / 180)).toBeCloseTo(drag, 4);
+    // The legacy fixed-thrust answer would be a different lever.
+    expect(Math.abs(result.throttle - drag / Math.cos(result.pitch * Math.PI / 180) / trainer.maxThrust)).toBeGreaterThan(0.05);
+    // An engine too weak to hold that speed below 95% power gives no start.
+    expect(getFlightCityStart(target, trainer, () => 1200, () => 10)).toBeNull();
+  });
+
   it('gives gliders release altitude and flying speed without engine thrust', () => {
     const result = getFlightCityStart(target, glider, () => 400);
     expect(result.altitude).toBe(3400);

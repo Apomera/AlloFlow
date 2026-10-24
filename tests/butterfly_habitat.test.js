@@ -17,20 +17,26 @@ describe('Butterfly habitat exploration',()=>{
    for(const setup of [{paused:true},{paused:false,landed:'milkweed'}]){const s=Object.assign(BF.freshState(),setup),before=JSON.stringify(s);for(let i=0;i<100;i++)BF.step(s,.05,{forward:true});expect(JSON.stringify(s)).toBe(before);}
  });
  it('bounds frame deltas and world coordinates, and normalizes diagonal input',()=>{
-   const a=Object.assign(BF.freshState(),{paused:false}),b={...a};BF.step(a,999,{right:true});BF.step(b,.05,{right:true});expect(a).toEqual(b);
-   const c=Object.assign(BF.freshState(),{paused:false}),d={...c};BF.step(c,.05,{forward:true});BF.step(d,.05,{forward:true,right:true});expect(Math.hypot(c.x,c.z-52)).toBeCloseTo(Math.hypot(d.x,d.z-52),8);
+   const a=Object.assign(BF.freshState(),{paused:false,controlMode:'map'}),b={...a};BF.step(a,999,{right:true});BF.step(b,.05,{right:true});expect(a).toEqual(b);
+   const c=Object.assign(BF.freshState(),{paused:false,controlMode:'map'}),d={...c};BF.step(c,.05,{forward:true});BF.step(d,.05,{forward:true,right:true});expect(Math.hypot(c.x,c.z-52)).toBeCloseTo(Math.hypot(d.x,d.z-52),8);
    for(let i=0;i<20000;i++)BF.step(a,.05,{right:true,back:true,rise:true});expect(a.x).toBeLessThanOrEqual(100);expect(a.z).toBeLessThanOrEqual(100);expect(a.y).toBe(24);expect(a.energy).toBeGreaterThanOrEqual(0);
    const before=JSON.stringify(a);for(const dt of [NaN,Infinity,0,-2])BF.step(a,dt,{left:true});expect(JSON.stringify(a)).toBe(before);
  });
  it('guided travel reaches each destination and pauses before the learner lands',()=>{
    for(const p of BF.plants){const s=Object.assign(BF.freshState(),{paused:false,target:p.id});for(let i=0;i<1000&&!s.paused;i++)BF.step(s,.05,{});expect(s.paused).toBe(true);expect(BF.nearest(s).plant.id).toBe(p.id);expect(BF.nearest(s).distance).toBeLessThan(4);expect(s.observations).toEqual([]);expect(BF.land(s).ok).toBe(true);}
  });
- it('manual steering takes over from guidance without losing recorded observations',()=>{
-   const s=Object.assign(BF.freshState({observations:['milkweed']}),{paused:false,target:'lawn'});BF.step(s,.05,{left:true});expect(s.target).toBeNull();expect(s.x).toBeLessThan(0);expect(s.observations).toEqual(['milkweed']);
+ it('manual map movement takes over from guidance without losing recorded observations',()=>{
+   const s=Object.assign(BF.freshState({observations:['milkweed']}),{paused:false,target:'lawn',controlMode:'map'});BF.step(s,.05,{left:true});expect(s.target).toBeNull();expect(s.x).toBeLessThan(0);expect(s.observations).toEqual(['milkweed']);
+ });
+ it('direct steering leaves evidence and investigation records to the learner',()=>{
+   const s=Object.assign(BF.freshState({observations:['milkweed']}),{paused:false,target:'lawn'}),saved=BF.save(s);
+   BF.step(s,.05,{left:true});expect(s.target).toBeNull();expect(s.yaw).toBeGreaterThan(0);expect(s.x).toBe(0);expect(s.z).toBe(52);
+   for(let i=0;i<120;i++)BF.step(s,.05,{forward:true,right:i<60,rise:i<20});
+   expect(Math.hypot(s.x,s.z-52)).toBeGreaterThan(5);expect(s.landed).toBeNull();expect(BF.save(s)).toEqual(saved);
  });
  it('persists only known unique observations and starts restored sessions safely paused',()=>{
    const s=BF.freshState({observations:['milkweed','constructor','milkweed','bergamot'],paused:false,x:Infinity});expect(s.observations).toEqual(['milkweed','bergamot']);expect(s.paused).toBe(true);expect(s.x).toBe(0);
-   const saved=BF.save(s);saved.observations.push('lawn');expect(s.observations).toHaveLength(2);expect(Object.keys(saved).sort()).toEqual(['lifecycle','notebook','observations','pollination','restoration','season','version']);
+   const saved=BF.save(s);saved.observations.push('lawn');expect(s.observations).toHaveLength(2);expect(Object.keys(saved).sort()).toEqual(['cases','lifecycle','notebook','observations','pollination','restoration','season','version']);
  });
 });
 describe('Shared meadow extraction',()=>{

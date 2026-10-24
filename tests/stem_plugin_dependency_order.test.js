@@ -106,9 +106,12 @@ describe('STEM demand-loader dependency ordering', () => {
     expect(harness.window.__alloGetStemPluginState('dataStudio')).toMatchObject({ status: 'loaded' });
   });
 
-  it('loads the Lumen Evidence, Study, and tool scripts in dependency order', async () => {
+  it('loads the Lumen Evidence, Documents, Study, and tool scripts in dependency order', async () => {
+    // Since 09-15 Study also depends on the Documents module (its Import files
+    // action stayed disabled while that optional script never loaded).
     const harness = createHarness([
       'stem_lab/stem_lumen_evidence.js',
+      'stem_lab/stem_lumen_documents.js',
       'stem_lab/stem_lumen_study.js',
       'stem_lab/stem_tool_lumen.js',
     ]);
@@ -120,13 +123,22 @@ describe('STEM demand-loader dependency ordering', () => {
     await flushJobs();
     expect(harness.history.map(modulePath)).toEqual([
       'stem_lab/stem_lumen_evidence.js',
-      'stem_lab/stem_lumen_study.js',
+      'stem_lab/stem_lumen_documents.js',
     ]);
 
     harness.history[1].onload();
     await flushJobs();
     expect(harness.history.map(modulePath)).toEqual([
       'stem_lab/stem_lumen_evidence.js',
+      'stem_lab/stem_lumen_documents.js',
+      'stem_lab/stem_lumen_study.js',
+    ]);
+
+    harness.history[2].onload();
+    await flushJobs();
+    expect(harness.history.map(modulePath)).toEqual([
+      'stem_lab/stem_lumen_evidence.js',
+      'stem_lab/stem_lumen_documents.js',
       'stem_lab/stem_lumen_study.js',
       'stem_lab/stem_tool_lumen.js',
     ]);

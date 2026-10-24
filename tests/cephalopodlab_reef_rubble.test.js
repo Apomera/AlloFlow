@@ -23,7 +23,10 @@ function track(mesh){owned.add(mesh.geometry);owned.add(mesh.material);return me
 function rocks(seed=2741){
  let n=seed;const math=Object.assign(Object.create(Math),{random(){n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;}});
  const text=region(source,'        var rocks = [];','        // ─── Curved branching coral colonies')+region(source,'        rocks.slice(0,10)','        corals.slice(0,10)');
- const result=new Function('THREE','Math','renderer','var scene=new THREE.Scene();function reefSurface(){}function shadeCLHuntRockSurface(){}'+text+';return rocks;')(T,math,{capabilities:{isWebGL2:true}});
+ // Since 79e3e5eae this region also appends the reef refuge rocks for reef species. Run that live
+ // path for the default common octopus; this fixture builds no clams, shelters, crabs, dens or landmarks.
+ const refuge='var speciesId="commonOcto",clams=[],shelters=[],crabs=[],dens=[],landmarks=[],grounded=[],rockCollisionFootprints=[],reefRefuge=null;'+['function isDeepSpecies(','function findCLHuntRefugeSite(','function createCLHuntRefugeGeometry(','function createCLReefFootprint(','function createCLHuntRockCollisionFootprint(','function terrainHeight('].map(tag=>braced(source,tag)).join('\n');
+ const result=new Function('THREE','Math','renderer','var scene=new THREE.Scene();function reefSurface(){}function shadeCLHuntRockSurface(){}'+refuge+text+';return rocks;')(T,math,{capabilities:{isWebGL2:true}});
  result.forEach(r=>{r.position.y+=terrain(r.position.x,r.position.z);track(r);});return result;
 }
 function setup(quality='balanced',seed=2741){const r=rocks(seed),f=r.map(rock=>footprint(T,rock)),result=build(T,r,f,terrain,quality);track(result.mesh);return{...result,rocks:r,footprints:f};}
@@ -34,11 +37,13 @@ describe('Rock-rooted decorative seabed rubble',()=>{
  it('uses one bounded instanced pool with independent static geometry and no texture or gameplay tags',()=>{
   for(const [quality,pieces]of [['low',4],['balanced',8],['high',12]]){
    const a=setup(quality),b=build(T,a.rocks,a.footprints,terrain,quality);track(b.mesh);
-   assert.equal(a.mesh.type,'Mesh');assert.ok(a.mesh.isInstancedMesh);assert.equal(a.mesh.instanceMatrix.count,44*pieces);assert.ok(a.mesh.count>30&&a.mesh.count<=44*pieces);
+   // 44 seeded reef rocks plus the three appended refuge rocks each own a rubble budget.
+   assert.equal(a.rocks.length,47);assert.equal(a.rocks.filter(r=>r.userData.clRefuge).length,3);
+   assert.equal(a.mesh.type,'Mesh');assert.ok(a.mesh.isInstancedMesh);assert.equal(a.mesh.instanceMatrix.count,a.rocks.length*pieces);assert.ok(a.mesh.count>30&&a.mesh.count<=a.rocks.length*pieces);
    assert.equal(a.mesh.children.length,0);assert.equal(a.mesh.geometry.attributes.position.count,240);assert.equal(a.mesh.geometry.index,null);assert.equal(a.mesh.geometry.groups.length,0);
    assert.notEqual(a.mesh.geometry,b.mesh.geometry);assert.notEqual(a.mesh.material,b.mesh.material);assert.equal(a.mesh.material.type,'MeshStandardMaterial');assert.equal(a.mesh.material.roughness,.96);assert.equal(a.mesh.material.transparent,false);assert.equal(a.mesh.material.vertexColors,true);
    assert.ok(!Object.values(a.mesh.material).some(x=>x?.isTexture));assert.equal(a.mesh.frustumCulled,false);assert.equal(a.mesh.castShadow,quality!=='low');assert.equal(a.mesh.receiveShadow,true);assert.equal(a.mesh.userData.decorative,true);assert.equal(a.mesh.userData.substrate,undefined);
-   assert.equal(a.mesh.instanceColor.count,44*pieces);assert.ok(Array.from(a.mesh.instanceColor.array.slice(0,a.mesh.count*3)).every(n=>Number.isFinite(n)&&n>0&&n<=1));
+   assert.equal(a.mesh.instanceColor.count,a.rocks.length*pieces);assert.ok(Array.from(a.mesh.instanceColor.array.slice(0,a.mesh.count*3)).every(n=>Number.isFinite(n)&&n>0&&n<=1));
    assert.equal(a.mesh.count,b.mesh.count);assert.equal(bytes(a.mesh.instanceMatrix),bytes(b.mesh.instanceMatrix));assert.equal(bytes(a.mesh.instanceColor),bytes(b.mesh.instanceColor));
    for(const [name,attr]of Object.entries(a.mesh.geometry.attributes)){assert.equal(bytes(attr),bytes(b.mesh.geometry.attributes[name]));assert.ok(Array.from(attr.array).every(Number.isFinite));assert.equal(attr.usage,T.StaticDrawUsage);}
    for(let i=0;i<240;i++){const p=new T.Vector3().fromBufferAttribute(a.mesh.geometry.attributes.position,i),normal=new T.Vector3().fromBufferAttribute(a.mesh.geometry.attributes.normal,i);assert.ok(Math.abs(normal.length()-1)<1e-6);assert.ok(normal.dot(p)>0);assert.ok(a.mesh.geometry.boundingBox.distanceToPoint(p)<1e-6);assert.ok(p.distanceTo(a.mesh.geometry.boundingSphere.center)<=a.mesh.geometry.boundingSphere.radius+1e-6);}

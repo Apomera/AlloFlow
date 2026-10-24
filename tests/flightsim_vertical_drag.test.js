@@ -81,7 +81,12 @@ describe('fixed-wing drag opposes the vertical component of the flight path', ()
 
   it.each([-5, 8])('has no vertical contribution on a horizontal flight path despite pitch %s', pitch => {
     const { low, high } = pairedDrag(flight(), { pitch, bank: 25, throttle: 0.6 });
-    expect(high.vsi).toBe(low.vsi);
-    expect(high.altitude).toBe(low.altitude);
+    // Drag acts along the path, so it cannot bend it: both aircraft leave on
+    // the same path angle. The draggier one is just slower along that path,
+    // so its vertical speed is smaller in exact proportion to its speed.
+    const pathAngle = state => Math.asin(state.vsi / state.speed);
+    expect(low.vsi).not.toBe(0);
+    expect(pathAngle(high)).toBeCloseTo(pathAngle(low), 12);
+    expect(high.vsi / low.vsi).toBeCloseTo(high.speed / low.speed, 12);
   });
 });

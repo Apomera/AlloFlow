@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Duy trì trạng thái bay hiện tại",
+  "stem.flightsim.flight_assistance_targets": "Hướng mũi {hdg}° · Độ cao {alt} ft MSL · Tốc độ {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Hướng mũi {hdg}° · Độ cao {alt} ft MSL · Tốc độ tiến về trước {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Rẽ trái {degrees}° về phía {airport}.",
+  "stem.flightsim.challenge_turn_right": "Rẽ phải {degrees}° về phía {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Đang bay về phía {airport}. Đi theo dấu chỉ đường bay.",
+  "stem.flightsim.challenge_runway_reference": "Đường băng huấn luyện {runway}: hướng mũi {heading}°. Căn thẳng với đường băng trước khi hạ độ cao để hạ cánh."
+}

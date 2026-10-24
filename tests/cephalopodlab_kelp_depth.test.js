@@ -7,7 +7,10 @@ const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
 const { restorePass67Source } = require('./helpers/cephalopod_pass67_reference.cjs');
 const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8');
-const baseline = restorePass67Source(source);
+const restored = restorePass67Source(source);
+// Pass74 later recurves kelp tips and adds rib relief inside the plant helpers (kelp_tip_form,
+// plant_rib_relief). Re-apply exactly those helper changes so this compares only the Pass66 delta.
+const baseline = require('./helpers/cephalopod_pass74_reference.cjs').applyPass74PlantSource(restored);
 function region(text, start, end) {
   const from = text.indexOf(start), to = text.indexOf(end, from);
   if (from < 0 || to <= from) throw new Error('Missing actual kelp source region: ' + start);
@@ -39,7 +42,7 @@ function shaderFor(material) {
 
 describe('Cephalopod Hunter kelp depth and light', () => {
   it('restores the accepted Pass66 source exactly and preserves every plant helper', () => {
-    expect(createHash('sha256').update(baseline).digest('hex')).toBe('2a777cc913efe952c2f10ba0f67712493f75443dd276b0f2c5761734582309c7');
+    expect(createHash('sha256').update(restored).digest('hex')).toBe('2a777cc913efe952c2f10ba0f67712493f75443dd276b0f2c5761734582309c7');
     expect(helpers(source)).toBe(helpers(baseline));
   });
 
@@ -53,7 +56,7 @@ describe('Cephalopod Hunter kelp depth and light', () => {
         for (let i = 0; i < current.strands.length; i++) {
           const live = current.strands[i], old = accepted.strands[i];
           expect(placement(live)).toEqual(placement(old)); expect(geometrySnapshot(live.mesh.geometry)).toEqual(geometrySnapshot(old.mesh.geometry));
-          expect(live.mesh.children).toHaveLength(0); expect(live.mesh.geometry.attributes.position.count).toBe(277); expect(live.mesh.geometry.index.count).toBe(1272);
+          expect(live.mesh.children).toHaveLength(0); expect(live.mesh.geometry.attributes.position.count).toBe(277 + 24); expect(live.mesh.geometry.index.count).toBe(1272 + 32 * 3);
           geometries.add(live.mesh.geometry); materials.add(live.mesh.material);
         }
         expect(geometries.size).toBe(25); expect(materials.size).toBe(25);
@@ -76,7 +79,7 @@ describe('Cephalopod Hunter kelp depth and light', () => {
           if (support !== 'none') {
             expect(shader.fragmentShader).toContain('directionalLights[0].color*clPlantRibbonWeight*clPlantBacklight');
             const mask = mesh.geometry.attributes.clPlantRibbon, floats = mesh.geometry.userData.clKelpBladders.parts;
-            expect(mask.count).toBe(277);
+            expect(mask.count).toBe(277 + 24);
             for (const part of floats) for (let vertex = part.vertexStart; vertex < part.vertexStart + part.vertexCount; vertex++) expect(mask.getX(vertex)).toBe(0);
             for (let vertex = 0; vertex < 141; vertex++) expect(mask.getX(vertex)).toBe(1);
           } else { expect(mesh.geometry.attributes.clPlantRibbon).toBeUndefined(); }

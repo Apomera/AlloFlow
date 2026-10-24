@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ಹಿಂದಿನ ರಸಪ್ರಶ್ನೆ ಪ್ರಯತ್ನಗಳು",
+  "stem.flightsim.quiz_history_scope": "ಹೊಸ ಪ್ರಯತ್ನವನ್ನು ಪ್ರಾರಂಭಿಸಿದಾಗ, ಮೊದಲ ಉತ್ತರಗಳನ್ನು ದಾಖಲಿಸಿದ ಹಿಂದಿನ ನಾಲ್ಕು ಪ್ರಯತ್ನಗಳವರೆಗೆ ಉಳಿಸಲಾಗುತ್ತದೆ. ಅವುಗಳನ್ನು ಪರಿಶೀಲಿಸುವುದರಿಂದ ನಿಮ್ಮ ಪ್ರಸ್ತುತ ರಸಪ್ರಶ್ನೆ ಬದಲಾಗುವುದಿಲ್ಲ.",
+  "stem.flightsim.quiz_history_empty": "ಹಿಂದಿನ ಯಾವುದೇ ರಸಪ್ರಶ್ನೆ ಪ್ರಯತ್ನಗಳು ಇನ್ನೂ ಉಳಿಸಲ್ಪಟ್ಟಿಲ್ಲ.",
+  "stem.flightsim.quiz_history_attempt": "{date} ರಂದು ಉಳಿಸಲಾಗಿದೆ · ಮೊದಲ ಉತ್ತರಗಳಲ್ಲಿ {score}/{answered} ಸರಿಯಾಗಿವೆ",
+  "stem.flightsim.quiz_history_progress": "{total} ಪ್ರಶ್ನೆಗಳಲ್ಲಿ {answered} ದಾಖಲಾಗಿವೆ · {unanswered} ಉತ್ತರಿಸಿಲ್ಲ",
+  "stem.flightsim.quiz_history_question": "ಪ್ರಶ್ನೆ {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ಸರಿಯಾದ ಉತ್ತರ: {answer}",
+  "stem.flightsim.quiz_history_changed": "ಉಳಿಸಲಾದ {count} ಪ್ರಶ್ನೆಗಳು ಇನ್ನು ಈ ರಸಪ್ರಶ್ನೆಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. ಅಂಕಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಪ್ರಶ್ನೆಗಳ ದಾಖಲೆಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗುತ್ತದೆ."
+}

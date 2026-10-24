@@ -1,0 +1,72 @@
+[
+  {
+    "resourceId": "ch-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "WHAT DID I SAY I WOULD DO?",
+      "bullets": [
+        "Find the goal you wrote",
+        "Read it as written, not as remembered"
+      ],
+      "iconPrompt": "an open notebook with one highlighted line"
+    },
+    "to": {
+      "label": "WHAT DID I SAY I WOULD DO?",
+      "bullets": [
+        "Find the goal you wrote",
+        "Read it as written, not as remembered"
+      ],
+      "iconPrompt": "an open notebook with one highlighted line",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "ch-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "WHAT ACTUALLY HAPPENED?",
+      "bullets": [
+        "By the count, not the feeling",
+        "Mornings with everything: __ of __",
+        "Which part stopped, and when"
+      ],
+      "iconPrompt": "a row of tally marks with one gap"
+    },
+    "to": {
+      "label": "WHAT ACTUALLY HAPPENED?",
+      "bullets": [
+        "By the count, not the feeling",
+        "Mornings with everything: __ of __",
+        "Which part stopped, and when"
+      ],
+      "iconPrompt": "a row of tally marks with one gap",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "ch-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "WHAT IS THE ONE CHANGE?",
+      "bullets": [
+        "One part, not the whole system",
+        "Name why that part broke",
+        "Test it for a week, then check again"
+      ],
+      "iconPrompt": "a single gear being turned by a hand"
+    },
+    "to": {
+      "label": "WHAT IS THE ONE CHANGE?",
+      "bullets": [
+        "One part, not the whole system",
+        "Name why that part broke",
+        "Test it for a week, then check again"
+      ],
+      "iconPrompt": "a single gear being turned by a hand",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

@@ -84,7 +84,9 @@ test.describe('Raptor Lab discovery and responsive navigation', () => {
       await page.screenshot({ path: `scratch/raptor-ui-search-${width}.png` });
       await search.press('Escape');
       await page.screenshot({ path: `scratch/raptor-ui-final-${width}.png` });
-      if (width === 1280) expect((await page.locator('.rh-command-deck').boundingBox())!.height).toBeLessThan(450);
+      // The interactive flight plate includes species/posture controls; keep its
+      // compact two-column introduction short enough to reveal inquiry cards.
+      if (width === 1280) expect((await page.locator('.rh-command-deck').boundingBox())!.height).toBeLessThan(560);
       expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
     });
   }

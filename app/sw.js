@@ -4,10 +4,17 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-student-shell-v1791887229941';
-const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.39be9bc0.js","./static/css/main.41df7663.css"];
+const RELEASE_ID = 'f53bc72cfd8cb6507096ea09a31cc574b2be2fbed0a9cb97d22c03fa5eb8f198';
+const RELEASE_BUILT_AT = 1792819908514;
+const CACHE_NAME = 'alloflow-student-shell-vf53bc72cfd8cb6507096ea09a31cc574b2be2fbed0a9cb97d22c03fa5eb8f198-1792819908514';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./alloflow_update.js","./static/js/main.afd111cd.js","./static/css/main.1be0ed05.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
+const CLASSROOM_NETWORK_PATHS = new Set([
+    '/classroom-import.html', '/classroom-import',
+    '/classroom_import_config.js', '/classroom_import_app.js',
+    '/classroom_import_service.js'
+]);
 
 // Cloudflare Pages answers ./index.html with a 308 to ./ (clean URLs), so the
 // precached shell arrived as a REDIRECTED response. A navigation request's
@@ -27,8 +34,15 @@ self.addEventListener('install', (event) => {
     // Install succeeds only when the HTML and every hashed boot asset are cached.
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => Promise.all(PRECACHE_PATHS.map(scopedUrl).map((assetUrl) =>
-            fetch(assetUrl).then((response) => {
+            fetch(assetUrl, { cache: 'reload' }).then(async (response) => {
                 if (!response.ok) throw new Error('[SW] precache failed: ' + assetUrl + ' -> ' + response.status);
+                // A deployment can switch between fetching sw.js and HTML.
+                // Never announce a release unless its own shell was installed.
+                if (assetUrl === SHELL_URL) {
+                    const html = await response.clone().text();
+                    const release = html.match(/window\.__alloReleaseId\s*=\s*["']([a-f0-9]+)["']/);
+                    if (!release || release[1] !== RELEASE_ID) throw new Error('[SW] shell release does not match worker');
+                }
                 return cache.put(assetUrl, cleanCopy(response));
             })
         )))
@@ -40,6 +54,11 @@ self.addEventListener('install', (event) => {
 // in-app update prompt. This preserves interruption-free automatic updates
 // while making "Refresh now" deterministic when the timing is appropriate.
 self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ALLOFLOW_GET_RELEASE') {
+        const reply = { type: 'ALLOFLOW_RELEASE', releaseId: RELEASE_ID, releaseBuiltAt: RELEASE_BUILT_AT };
+        if (event.ports && event.ports[0]) event.ports[0].postMessage(reply);
+        return;
+    }
     if (event.data && event.data.type === 'ALLOFLOW_ACTIVATE_UPDATE') {
         self.skipWaiting();
     }
@@ -62,6 +81,27 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     if (url.origin !== self.location.origin && event.request.mode !== 'navigate') return;
+
+    // Standalone Classroom pages must never become the app shell. Fetch the
+    // helper and its configuration afresh so cached enablement cannot reopen
+    // Google access after school IT has disabled the deployment.
+    if (url.origin === self.location.origin && CLASSROOM_NETWORK_PATHS.has(url.pathname)) {
+        event.respondWith(
+            fetch(event.request, { cache: 'no-store' }).catch(() => new Response(
+                'Classroom connection is unavailable. Reconnect and reopen this page.',
+                {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: {
+                        'Content-Type': 'text/plain; charset=utf-8',
+                        'Cache-Control': 'no-store',
+                        'X-Content-Type-Options': 'nosniff'
+                    }
+                }
+            ))
+        );
+        return;
+    }
 
     if (event.request.mode === 'navigate') {
         event.respondWith(
@@ -103,7 +143,9 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => cache.match(event.request).then((cached) => {
                 if (cached) return cached;
-                return fetch(event.request).then((response) => {
+                // A new release cache must not inherit a still-fresh HTTP
+                // cache entry for an unchanged local module URL.
+                return fetch(event.request, { cache: 'no-cache' }).then((response) => {
                     if (response.ok) cache.put(event.request, response.clone());
                     return response;
                 });

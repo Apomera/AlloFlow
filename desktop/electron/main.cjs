@@ -420,12 +420,16 @@ function postJson(url, timeoutMs = 35000) {
     .finally(() => clearTimeout(timeout));
 }
 
-async function waitForRuntime(url, timeoutMs = 6000) {
+async function waitForRuntime(url, timeoutMs = 30000) {
   const startedAt = Date.now();
   let lastError = null;
   while (Date.now() - startedAt < timeoutMs) {
     try {
-      return await fetchJson(url + '/api/health', 700);
+      // Health includes optional School Box probes: two Docker commands may
+      // each take up to 5 seconds, followed by service probes. A 700 ms
+      // deadline aborts healthy cold starts on Windows before a window opens.
+      const remainingMs = timeoutMs - (Date.now() - startedAt);
+      return await fetchJson(url + '/api/health', Math.min(15000, remainingMs));
     } catch (error) {
       lastError = error;
       await new Promise((resolve) => setTimeout(resolve, 180));
@@ -1197,7 +1201,33 @@ handleTrustedIpc('alloflow-desktop:coach-overlay-hide', async () => {
 // window.alloAPI.remediation.saveFiles and prefers a folder of files over a
 // browser ZIP download when the bridge exists — see doc_pipeline_source.jsx).
 // payload = { folderName?: string, files: [{ name, data, encoding: 'base64'|'utf8' }] }
-// Returns { canceled } | { folder, saved } | { error }.
+// Returns { canceled } | { folder, saved, skipped } | { error }.
+// __ALLO_EXPORT_GUARD_BEGIN__
+// The renderer names these files, so only document and image types are written: a compromised
+// page must not be able to drop an executable that reveal-path would then launch.
+const EXPORT_FILE_EXTS = new Set(['.pdf', '.html', '.htm', '.csv', '.json', '.txt', '.md', '.docx', '.pptx', '.xlsx', '.epub', '.brf', '.xml', '.png', '.jpg', '.jpeg', '.webp']);
+const WINDOWS_RESERVED_NAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+function safeExportName(name, maxLength) {
+  const cleaned = String(name == null ? '' : name).replace(/[\\/:*?"<>|]/g, '_').replace(/[. ]+$/, '').slice(0, maxLength || 180);
+  // Trailing dots and spaces are stripped above, so "." and ".." arrive here empty.
+  if (!cleaned || WINDOWS_RESERVED_NAME.test(cleaned)) return null;
+  return cleaned;
+}
+function safeExportFileName(name) {
+  const cleaned = safeExportName(name);
+  return cleaned && EXPORT_FILE_EXTS.has(path.extname(cleaned).toLowerCase()) ? cleaned : null;
+}
+// Only folders this run saved exports into can be revealed, and only as folders:
+// shell.openPath on a file opens (or runs) it.
+const revealableExportDirs = new Set();
+function isRevealableExportDir(targetPath) {
+  if (typeof targetPath !== 'string' || !targetPath) return false;
+  try {
+    const real = fs.realpathSync(targetPath);
+    return fs.statSync(real).isDirectory() && revealableExportDirs.has(real);
+  } catch (_) { return false; }
+}
+// __ALLO_EXPORT_GUARD_END__
 handleTrustedIpc('remediation:save-files', async (_event, payload) => {
   try {
     const files = (payload && Array.isArray(payload.files)) ? payload.files : [];
@@ -1211,22 +1241,24 @@ handleTrustedIpc('remediation:save-files', async (_event, payload) => {
     });
     if (result.canceled || !result.filePaths[0]) return { canceled: true };
 
-    const rawName = (payload && payload.folderName) || 'AlloFlow_Export';
-    const folderName = String(rawName).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120) || 'AlloFlow_Export';
+    const folderName = safeExportName((payload && payload.folderName) || '', 120) || 'AlloFlow_Export';
     const baseDir = path.join(result.filePaths[0], folderName);
     fs.mkdirSync(baseDir, { recursive: true });
 
     let saved = 0;
+    let skipped = 0;
     for (const f of files) {
       if (!f || !f.name || typeof f.data !== 'string') continue;
-      const safe = String(f.name).replace(/[\\/:*?"<>|]/g, '_');
+      const safe = safeExportFileName(f.name);
+      if (!safe) { skipped++; continue; }
       const buf = f.encoding === 'utf8' ? Buffer.from(f.data, 'utf8') : Buffer.from(f.data, 'base64');
       fs.writeFileSync(path.join(baseDir, safe), buf);
       saved++;
     }
+    revealableExportDirs.add(fs.realpathSync(baseDir));
 
-    logLine(`Saved ${saved} file(s) to ${baseDir}`);
-    return { canceled: false, folder: baseDir, saved };
+    logLine(`Saved ${saved} file(s) to ${baseDir}` + (skipped ? `; skipped ${skipped} of a type AlloFlow does not export` : ''));
+    return { canceled: false, folder: baseDir, saved, skipped };
   } catch (error) {
     return { error: String((error && error.message) || error) };
   }
@@ -1235,10 +1267,10 @@ handleTrustedIpc('remediation:save-files', async (_event, payload) => {
 // Reveal a saved folder/file in the OS file manager.
 handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
   try {
-    if (typeof targetPath !== 'string' || !fs.existsSync(targetPath)) {
-      return { error: 'Path not found' };
+    if (!isRevealableExportDir(targetPath)) {
+      return { error: 'Only a folder AlloFlow saved can be opened' };
     }
-    await shell.openPath(targetPath);
+    await shell.openPath(fs.realpathSync(targetPath));
     return { success: true };
   } catch (error) {
     return { error: String((error && error.message) || error) };
@@ -1328,7 +1360,8 @@ async function ensureAdminServerPosture() {
     let config = runtime.readConfig();
     const lan = (config.liveSession && config.liveSession.lan) || {};
     if (!String(lan.pin || '').trim()) {
-      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      // This PIN gates LAN access to the live session, so it comes from a CSPRNG.
+      const pin = String(crypto.randomInt(100000, 1000000));
       config = runtime.writeConfig({
         ...config,
         liveSession: { ...config.liveSession, lan: { ...lan, pin } },

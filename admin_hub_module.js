@@ -400,7 +400,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "maineSldPractice",
-      icon: "📚",
+      icon: "📂",
       title: "Maine SLD Case Lab",
       desc: "Practice with fictional Maine SLD cases: review the full score profile, weigh evidence, follow the form, distinguish SLD from the need for specially designed instruction, and compare your reasoning with a facilitator debrief.",
       accent: "from-sky-50 to-indigo-50 border-sky-700",

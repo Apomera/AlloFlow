@@ -37,9 +37,10 @@ describe('Emotions visual and input accessibility', () => {
 
   it('names the reflection field and all four library searches', () => {
     const text = source();
-    expect(text).toContain("h('textarea', { 'aria-label': step.prompt");
+    // Since the 09-21 i18n passes some labels go through the tool's key-plus-English-fallback helpers.
+    expect(/h\('textarea', \{ 'aria-label': (?:step\.prompt|_niStepText\(prompt, niStep, step\.prompt\))[,)]/.test(text), 'reflection textarea named by its step prompt').toBe(true);
     expect(text).toContain("'aria-label': 'Search the cultural emotion atlas'");
-    expect(text).toContain("'aria-label': 'Search compound emotions'");
+    expect(/'aria-label': (?:'Search compound emotions'|__alloT\('sel\.emotions\.cmp_search_label', 'Search compound emotions'\))/.test(text), 'compound search named').toBe(true);
     expect(text).toContain("'aria-label': 'Search coregulation scenarios'");
     expect(text).toContain("'aria-label': 'Search emotion vocabulary'");
   });

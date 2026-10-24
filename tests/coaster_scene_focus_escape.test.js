@@ -141,11 +141,12 @@ describe('Coaster Lab scene focus follows the real fullscreen state', () => {
 
   it('registers the listener in the tool itself', () => {
     // The lifted functions above cannot show that anything CALLS them. Without
-    // this guard, deleting both addEventListener lines would ship the original
-    // defect with every test still green.
-    expect(SOURCE).toContain("document.addEventListener('fullscreenchange', onCoasterFullscreenChange)");
+    // this guard, deleting both listener lines would ship the original defect
+    // with every test still green. They go through __clabListen so teardown
+    // removes them (a bare document listener kept every closed instance alive).
+    expect(SOURCE).toContain("__clabListen(document, 'fullscreenchange', onCoasterFullscreenChange)");
     expect(SOURCE, 'older WebKit fires the prefixed event')
-      .toContain("document.addEventListener('webkitfullscreenchange', onCoasterFullscreenChange)");
+      .toContain("__clabListen(document, 'webkitfullscreenchange', onCoasterFullscreenChange)");
   });
 
   it('keeps the view clearance measured AFTER the fullscreen request', () => {

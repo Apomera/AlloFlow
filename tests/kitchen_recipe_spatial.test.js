@@ -18,12 +18,13 @@ describe('Individual pan surfaces',()=>{
  });
  it('makes stirring reposition and turn pieces without erasing their cooking history',()=>{
   const s=R.act(pan(),'advance',60),before=JSON.stringify(s),mixed=R.act(s,'stirSweep','gesture');expect(mixed.pan.pieces.map(p=>p.down)).not.toEqual(s.pan.pieces.map(p=>p.down));expect(mixed.pan.pieces.map(p=>[p.x,p.z])).not.toEqual(s.pan.pieces.map(p=>[p.x,p.z]));
-  expect(mixed.pan.pieces.map(p=>p.faces)).toEqual(s.pan.pieces.map(p=>p.faces));expect(mixed.pan.moisture).toBe(s.pan.moisture);expect(JSON.stringify(s)).toBe(before);
+  expect(mixed.time).toBe(s.time+6);mixed.pan.pieces.forEach((p,i)=>{p.faces.forEach((face,j)=>expect(face).toBeGreaterThanOrEqual(s.pan.pieces[i].faces[j]));expect(p.faces[s.pan.pieces[i].down]).toBeGreaterThan(s.pan.pieces[i].faces[s.pan.pieces[i].down]);});expect(mixed.pan.moisture).toBe(s.pan.moisture);expect(JSON.stringify(s)).toBe(before);
  });
  it('makes scorching persistent after turning, moving, mixing, or adding water',()=>{
   let s=isolated(0);s.pan.temp=270;s.pan.heat=3;for(let i=0;i<8;i++)s=R.act(s,'advance',60);expect(R.panSurface(s).scorched).toBeGreaterThan(0);const damage=s.pan.pieces.map(p=>p.damage.slice());s.pot.reserve=200;
-  for(const [a,v]of [['flipPiece',0],['movePiece','0:55:0'],['stirSweep','gesture'],['pour',50]])s=R.act(s,a,v);
-  expect(s.pan.pieces.map(p=>p.damage)).toEqual(damage);expect(s.pan.damage).toBeGreaterThanOrEqual(1);
+  const time=s.time;for(const [a,v]of [['flipPiece',0],['movePiece','0:55:0']]){s=R.act(s,a,v);expect(s.time).toBe(time);expect(s.pan.pieces.map(p=>p.damage)).toEqual(damage);}
+  const beforeMix=s;s=R.act(s,'stirSweep','gesture');expect(s.time).toBe(time+6);s.pan.pieces.forEach((p,i)=>p.damage.forEach((face,j)=>expect(face).toBeGreaterThanOrEqual(damage[i][j])));expect(s.pan.damage).toBeGreaterThanOrEqual(beforeMix.pan.damage);expect(s.pan.pieces.flatMap(p=>p.damage).reduce((a,b)=>a+b,0)).toBeGreaterThan(damage.flat().reduce((a,b)=>a+b,0));
+  const mixedDamage=s.pan.pieces.map(p=>p.damage.slice()),mixedPanDamage=s.pan.damage;s=R.act(s,'pour',50);expect(s.pan.pieces.map(p=>p.damage)).toEqual(mixedDamage);expect(s.pan.damage).toBe(mixedPanDamage);expect(s.pan.damage).toBeGreaterThanOrEqual(1);
  });
  it('rejects malformed or out-of-pan moves and does not operate on an empty or finished pan',()=>{
   const s=pan();for(const v of [undefined,{},'14:0:0','0:99:99','0:-61:0']){const n=R.act(s,'movePiece',v);expect(n.pan.pieces).toEqual(s.pan.pieces);}

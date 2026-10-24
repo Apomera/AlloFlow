@@ -1,0 +1,202 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional living marine specimen for the species guide, optional identification practice and reef encounters. Copy is newly paraphrased. Biology uses museum accounts and an explicitly cautious diet inference in a government synthesis coauthored by Australian Museum researchers. Observation instructions are prompts, not claims that every behavior is simulated.",
+  "iucnYearConvention": "iucnYear is the assessment year, matching existing fish metadata. Assessed 28 June 2016; the assessment was published in the 2016 Red List and an errata version was published in 2017. The IUCN specialist group's current table still labels the latest assessment 2016. Direct IUCN and DOI access failed; MNHN TAXREF's current indexed IUCN export and the IUCN specialist group's table corroborate status/date/citation. This is not a successful direct IUCN check.",
+  "specimens": [
+    {
+      "id": "banded_pipefish",
+      "name": "Banded pipefish (ringed pipefish)",
+      "scientific": "Dunckerocampus dactyliophorus",
+      "group": "fish",
+      "iucn": "DD",
+      "iucnYear": 2016,
+      "iucnPublishedYear": 2016,
+      "iucnErrataYear": 2017,
+      "iucnDateAssessed": "2016-06-28",
+      "iucnCitation": "Pollom, R. 2016. Dunckerocampus dactyliophorus (errata version published in 2017). The IUCN Red List of Threatened Species 2016: e.T6814A115083653.",
+      "lookalikes": [],
+      "marks": [
+        "Very slender, elongated body with a long, narrow tubular snout",
+        "Alternating pale and red-to-black bands cross the head and body",
+        "A distinct reddish tail fin ends the thin body",
+        "White margins line the tail fin above and below, with one or more pale spots near its centre"
+      ],
+      "role": "Thought to prey on tiny crustaceans in sheltered reef habitats; its detailed wild feeding role is poorly documented.",
+      "fact": "In this relative of seahorses, the male broods the developing eggs.",
+      "habitat": "Sheltered tropical western Pacific reefs and lagoons, especially caves, crevices and spaces beneath ledges.",
+      "diet": "Its detailed wild diet is poorly documented; it is thought to take tiny crustaceans, like other pipefishes.",
+      "behavior": "Often found as a pair near shelter; it may also occur alone or in small groups. It can hover in recesses beneath reef ledges.",
+      "observe": "Trace the long snout, then follow the alternating bands to the tail. Look for the pale tail margins and central spot or spots.",
+      "sources": [
+        "dx-am-banded_pipefish",
+        "dx-foa-banded_pipefish",
+        "dx-lkc-banded_pipefish",
+        "dx-ea-banded_pipefish"
+      ],
+      "claimSupport": {
+        "nameScientific": "dx-cas-banded_pipefish; dx-am-banded_pipefish; dx-foa-banded_pipefish",
+        "marks": "dx-am-banded_pipefish for long snout, transverse bars and distinct caudal fin; dx-foa-banded_pipefish and dx-lkc-banded_pipefish for tail colour, pale margins and central spots; dx-foa-order-syngnathiformes for general tubular snout and elongate pipefish body",
+        "roleDiet": "dx-ea-banded_pipefish explicitly states that the species' diet is unknown and small-crustacean feeding is an inference from its family; retain the uncertainty in both role and diet copy. dx-foa-order-syngnathiformes supports the family/order-level small-crustacean predation pattern, not a measured diet for this species.",
+        "fact": "dx-foa-banded_pipefish quick facts: males brood eggs; dx-foa-order-syngnathiformes supports seahorse relationship and developing-embryo brooding. Do not infer a sealed pouch or modeled sex.",
+        "habitat": "dx-foa-banded_pipefish for current western Pacific range, sheltered reefs/lagoons/caves/crevices; dx-lkc-banded_pipefish and dx-ea-banded_pipefish for reef ledges",
+        "behavior": "dx-lkc-banded_pipefish for alone/pairs/small groups; dx-ea-banded_pipefish for usually paired adults and hovering beneath ledges",
+        "iucnCategory": "dx-iucn-ssg-banded_pipefish; dx-mnhn-banded_pipefish; dx-cas-banded_pipefish",
+        "iucnAssessmentDateYear": "dx-mnhn-banded_pipefish; corroborated by dx-fishbase-banded_pipefish",
+        "iucnCitationPublishedErrataYear": "dx-mnhn-banded_pipefish; dx-iucn-ssg-banded_pipefish lists latest published assessment 2016; dx-cas-banded_pipefish notes IUCN 2017",
+        "depthNominalLength": "dx-foa-banded_pipefish quick facts depth 5–56 m and maximum length 18 cm; dx-am-banded_pipefish independently gives maximum 18 cm. Nominal 17 cm is an illustrative adult below that maximum."
+      },
+      "caution": "DD means insufficient information to assess extinction risk, not that the species is secure. The accepted genus is Dunckerocampus; Doryrhamphus dactyliophorus appears in older sources. FoA warns that older records can include the similar D. naia or D. boylei, so current museum western Pacific distribution is preferred over an unqualified broad Indo-Pacific range. Tail spots vary (FoA usually 1–3), and bands may be red through nearly black. No existing guide organism is a genuine close visual lookalike. Do not assign a confirmed cleaner role, universal pair bond, precise wild prey list, coiled prehensile tail, or sealed seahorse-like brood pouch. The 2002 synthesis has old conservation advice and distribution; use it only for explicit diet uncertainty, male egg attachment and hovering behavior, not current status."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-am-banded_pipefish",
+      "text": "McGrouther, M. (2020). Australian Museum: Banded Pipefish, Dunckerocampus dactyliophorus. Accessed October 2026.",
+      "url": "https://australian.museum/learn/animals/fishes/banded-pipefish-doryrhamphus-dactyliophorus/",
+      "urlLabel": "australian.museum",
+      "supports": [
+        "accepted scientific and common names",
+        "red-to-blackish bars",
+        "very long snout",
+        "distinct caudal fin",
+        "caves and crevices",
+        "maximum 18 cm"
+      ],
+      "access": "Full account opened successfully; updated 21 December 2020."
+    },
+    {
+      "id": "dx-foa-banded_pipefish",
+      "text": "Bray, D.J. & Thompson, V.J. (2025). Fishes of Australia: Banded Pipefish, Dunckerocampus dactyliophorus. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/species/3178",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "accepted name",
+        "alternating pale and red-to-black bands including head and snout",
+        "reddish caudal fin with pale upper/lower margins and usually 1–3 central white spots",
+        "protected reefs/lagoons, caves and crevices",
+        "current western Pacific distribution",
+        "maximum 18 cm total length",
+        "long snout/head proportions",
+        "quick facts: males brood eggs",
+        "quick facts: depth 5–56 m",
+        "similar D. naia and D. boylei, historical identification cautions"
+      ],
+      "access": "Full main account opened successfully. The quick-facts block is present in the current search index but omitted by the page's extracted main-text representation."
+    },
+    {
+      "id": "dx-lkc-banded_pipefish",
+      "text": "Toh, Y.H. & Koh, K.S. (2015). New record of ringed pipefish in Singapore. Singapore Biodiversity Records 2015: 211. Lee Kong Chian Natural History Museum, National University of Singapore.",
+      "url": "https://lkcnhm.nus.edu.sg/app/uploads/2017/04/sbr2015-211.pdf",
+      "urlLabel": "lkcnhm.nus.edu.sg",
+      "supports": [
+        "field observation of a 15 cm specimen near substrate among gorgonians and hydroids",
+        "bands and diagnostic reddish pale-margined tail with a central yellow or white spot",
+        "occurrence alone, in pairs or small groups in reef caves and beneath ledges",
+        "maximum 18 cm",
+        "an observed shallow record below 1 m"
+      ],
+      "access": "One-page institutional field record opened successfully. The single shallow observation is not used to imply a universal depth or behavior."
+    },
+    {
+      "id": "dx-ea-banded_pipefish",
+      "text": "Pogonoski, J.J., Pollard, D.A. & Paxton, J.R. (2002). Conservation Overview and Action Plan for Australian Threatened and Potentially Threatened Marine and Estuarine Fishes. Environment Australia, pp. 136–137 (PDF pages 135–136). Banded Pipefish account.",
+      "url": "https://library.dbca.wa.gov.au/FullTextFiles/020861.pdf#page=136",
+      "urlLabel": "library.dbca.wa.gov.au",
+      "supports": [
+        "species wild diet unknown; probably small crustaceans by comparison with its family",
+        "hovering in recesses under ledges",
+        "usually paired adults",
+        "male brooding with eggs attached to trunk, without additional cover"
+      ],
+      "caution": "Used as an explicitly approved government/museum-authored exception for diet uncertainty and corroborating behavior. Do not import its 2002 conservation recommendation, broader historical range, unconfirmed cleaning inference or 20 cm size over current museum accounts."
+    },
+    {
+      "id": "dx-foa-order-syngnathiformes",
+      "text": "Bray, D.J. (2018). Fishes of Australia: Seahorses, pipefishes, SYNGNATHIFORMES. Museums Victoria and OzFishNet. Accessed October 2026.",
+      "url": "https://fishesofaustralia.net.au/home/order/18",
+      "urlLabel": "fishesofaustralia.net.au",
+      "supports": [
+        "general elongate armored body and small terminal mouth on long tubular snout",
+        "most members are small-crustacean predators",
+        "Syngnathidae includes seahorses and pipefishes",
+        "males brood developing embryos in varied brood structures"
+      ],
+      "caution": "Higher-taxon context only. It does not establish the exact prey or brood enclosure of D. dactyliophorus."
+    },
+    {
+      "id": "dx-cas-banded_pipefish",
+      "text": "Fricke, R., Eschmeyer, W.N. & Van der Laan, R. (eds). Eschmeyer's Catalog of Fishes: dactyliophorus, Syngnathus Bleeker 1853. California Academy of Sciences, online version updated 7 July 2026. Accessed October 2026.",
+      "url": "https://researcharchive.calacademy.org/research/ichthyology/catalog/fishcatget.asp?spid=14890",
+      "urlLabel": "calacademy.org",
+      "supports": [
+        "currently valid Dunckerocampus dactyliophorus (Bleeker 1853)",
+        "historical Doryrhamphus combination",
+        "current western Pacific distribution",
+        "IUCN 2017 Data Deficient"
+      ],
+      "access": "Full catalog record opened successfully."
+    },
+    {
+      "id": "dx-iucn-ssg-banded_pipefish",
+      "text": "IUCN SSC Seahorse, Pipefish and Seadragon Specialist Group. Global IUCN Red List Assessments, copy dated 11 August 2025. Accessed October 2026.",
+      "url": "https://www.iucn-seahorse.org/iucn-global-assessments-1",
+      "urlLabel": "iucn-seahorse.org",
+      "supports": [
+        "Dunckerocampus dactyliophorus: Ringed pipefish, DD",
+        "latest published Red List assessment listed as 2016"
+      ],
+      "access": "Full specialist-group assessment table opened successfully; table explicitly labels the status and published-assessment-year columns."
+    },
+    {
+      "id": "dx-mnhn-banded_pipefish",
+      "text": "Muséum national d'Histoire naturelle. TAXREF: Dunckerocampus dactyliophorus, via Doryramphus dactyliophorus synonym trait record 578000; IUCN 2025-1 export. Accessed October 2026.",
+      "url": "https://taxref.mnhn.fr/taxref-web/taxa/578000/traits",
+      "urlLabel": "taxref.mnhn.fr",
+      "supports": [
+        "DD",
+        "assessment date 2016-06-28",
+        "Pollom 2016 citation; errata version published 2017",
+        "primary IUCN species assessment URL"
+      ],
+      "access": "Detailed current search-index result includes assessment date and full citation; direct page opening subsequently failed. Used for IUCN provenance only."
+    },
+    {
+      "id": "dx-fishbase-banded_pipefish",
+      "text": "FishBase. Dunckerocampus dactyliophorus: IUCN assessment export (Red List version 2025-2). Accessed October 2026.",
+      "url": "https://www.fishbase.se/summary/Dunckerocampus-dactyliophorus.html",
+      "urlLabel": "fishbase.se",
+      "supports": [
+        "DD",
+        "assessment date 28 June 2016"
+      ],
+      "integration": "Corroborating IUCN provenance only; no biological copy is taken from this account."
+    },
+    {
+      "id": "dx-iucn-banded_pipefish",
+      "text": "Pollom, R. (2016). Dunckerocampus dactyliophorus (errata version published in 2017). IUCN Red List e.T6814A115083653.",
+      "url": "https://www.iucnredlist.org/species/6814/115083653",
+      "urlLabel": "iucnredlist.org",
+      "supports": [
+        "primary assessment linked by MNHN and the IUCN specialist group"
+      ],
+      "access": "Direct species-page fetch failed because robots.txt was unreachable; DOI 10.2305/IUCN.UK.2016-3.RLTS.T6814A67621462.en also could not be opened. Do not report direct IUCN access."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.17,
+    "nominalAdultLengthBasis": "An illustrative 17 cm adult, slightly below the 18 cm maximum in Australian Museum and current Museums Victoria accounts. Seed variation is illustrative, not a measured size distribution.",
+    "depth": [
+      5,
+      56
+    ],
+    "depthChoice": "FoA quick-facts species range 5–56 m is retained for consistent metadata. Its prose says usually shallow protected reefs/caves to about 10 m, and a Singapore museum field record is shallower than 1 m; 5 m is not a biological lower boundary. The guide should avoid presenting the metadata interval as exhaustive.",
+    "anatomy": "Narrow elongated angular body, very long thin tubular snout, tiny fins and a distinct reddish caudal flag. Pale/red-to-black transverse bands extend over the head and snout. Caudal fin has white dorsal/ventral margins and usually 1–3 central pale spots; do not assume one invariant exact spot shape. FoA gives head length 3.7–4.6 in standard length, snout length 1.4–1.8 in head length, snout depth 10.6–20.8 in snout length. These are proportions, not exact target millimetres.",
+    "motion": "A restrained hovering presentation near sheltered reef structure is supported. Fine fin motion and small local flex are artistic teaching choices, not measured kinematics. Avoid a pronounced moray-like body wave, seahorse tail coil, or school animation. Existing organisms must retain their positions and seeds.",
+    "sexBrooding": "The educational fact concerns real male brood care. The model need not depict a male or brooding eggs; do not present an opaque closed pouch as diagnostic anatomy."
+  },
+  "integration": {
+    "maintainedSource": "Root will add this record to docs and make guarded insertions into SPECIES_META, speciesText, marineProfiles and marineProfileSources. Do not regenerate older records from this research file.",
+    "practice": "Matching metadata/text/profile/model IDs may enter guide and existing practice choice generation. Adding the specimen must not mark it seen or alter notes, bookmarks, identifications, achievements or saved progress.",
+    "lookalikeNote": "D. naia and D. boylei are genuine biological lookalikes but are not existing guide specimens; leave lookalikes empty rather than assigning garden eels or morays on the basis of slenderness alone."
+  }
+}

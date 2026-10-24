@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Konservi la nunan flugstaton",
+  "stem.flightsim.flight_assistance_targets": "Direkto {hdg}° · Alto {alt} ft MSL · Rapido {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Direkto {hdg}° · Alto {alt} ft MSL · Antaŭenira rapido {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Turnu maldekstren je {degrees}° al {airport}.",
+  "stem.flightsim.challenge_turn_right": "Turnu dekstren je {degrees}° al {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Vi direktiĝas al {airport}. Sekvu la kursindikilon.",
+  "stem.flightsim.challenge_runway_reference": "Ekzerca kurejo {runway}: direkto {heading}°. Vicigu la aviadilon laŭ la kurejo antaŭ ol malsupreniri por surteriĝi."
+}

@@ -141,10 +141,15 @@ describe('EPPP legacy retirement contract', () => {
     const compatibilityBuilder = readWorkspace('_build_test_prep_hub_module.js');
     const releaseBuilder = readWorkspace('dev-tools/build_test_prep_hub_release.cjs');
     const libraryBuilder = readWorkspace('dev-tools/build_eppp_learning_library.cjs');
-    expect(compatibilityBuilder).toContain('build_eppp_migration_source_archive.cjs');
-    expect(compatibilityBuilder).toContain('--verify');
+    // Since 2026-08-16 the compatibility entry point is a delegator: every build forwards to the
+    // release builder, which verifies the archive before regenerating the EPPP learning library.
+    expect(compatibilityBuilder).toMatch(/\nrun\('build_test_prep_hub_release\.cjs', forwarded\);\s*$/);
+    expect(compatibilityBuilder).not.toMatch(/eppp_legacy/i);
     expect(releaseBuilder).toContain('build_eppp_migration_source_archive.cjs');
     expect(releaseBuilder).toContain("'--verify'");
+    const archiveVerify = releaseBuilder.indexOf("'build_eppp_migration_source_archive.cjs'), '--verify'");
+    expect(archiveVerify).toBeGreaterThan(-1);
+    expect(releaseBuilder.indexOf("'build_eppp_learning_library.cjs'", archiveVerify)).toBeGreaterThan(archiveVerify);
     expect(libraryBuilder).toContain('openEpppMigrationSourceArchive');
   });
 });

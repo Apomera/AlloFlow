@@ -1,8 +1,0 @@
-Starting investigation-discovery-1060-dark
-Checked investigation-discovery-1060-dark
-Starting investigation-discovery-1060-light
-Checked investigation-discovery-1060-light
-Starting investigation-discovery-320-dark
-Checked investigation-discovery-320-dark
-Starting investigation-discovery-320-light
-Checked investigation-discovery-320-light

@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { indexOfOrThrow } from './helpers/anchored_slice.js';
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
-const a=source.indexOf('function updateVegetationWind('),b=source.indexOf('function applyVegetationWind(',a);
-const update=Function('return ('+source.slice(a,b).trim()+')')();
+// Cut exactly one function by brace depth: other helpers now sit between it and its old neighbour.
+const a=indexOfOrThrow(source,'function updateVegetationWind(',{file:'stem_tool_raptorhunt.js'});
+let b=indexOfOrThrow(source,'{',{from:a}),depth=1;
+while(depth){b++;if(b>=source.length)throw Error('Unclosed updateVegetationWind');if(source[b]==='{')depth++;if(source[b]==='}')depth--;}
+const update=Function('return ('+source.slice(a,b+1)+')')();
 describe('Raptor vegetation weather response',()=>{
   it('follows compass direction, settles in calm air, and caps extreme wind',()=>{
     const state={x:0,z:0};update(state,0,0,false,1);expect(state).toEqual({x:0,z:0});

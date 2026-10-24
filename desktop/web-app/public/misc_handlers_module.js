@@ -582,11 +582,18 @@ function _createProjectLoadOperationManager(controllerFactory) {
             try { owner.onComplete(payload); } catch (_) {}
         }
     };
+    const settleCompletion = (owner, payload) => {
+        if (!owner || !owner.resolveCompletion) return;
+        const resolve = owner.resolveCompletion;
+        owner.resolveCompletion = null;
+        resolve(payload);
+    };
     const abortOwner = (owner, notifyLifecycle) => {
         if (!owner) return;
         try { if (owner.controller && typeof owner.controller.abort === 'function') owner.controller.abort(); } catch (_) {}
         try { if (owner.reader && typeof owner.reader.abort === 'function') owner.reader.abort(); } catch (_) {}
         if (notifyLifecycle !== false) completeLifecycle(owner, { success: false, cancelled: true });
+        settleCompletion(owner, { success: false, cancelled: true });
     };
     const cancelActive = (options) => {
         const owner = active;
@@ -601,7 +608,11 @@ function _createProjectLoadOperationManager(controllerFactory) {
             cancelActive({ notifyLifecycle: true });
             const opts = options || {};
             const controller = makeController();
+            let resolveCompletion;
+            const completion = new Promise(resolve => { resolveCompletion = resolve; });
             const owner = {
+                completion,
+                resolveCompletion,
                 generation: ++generation,
                 controller,
                 signal: controller && controller.signal ? controller.signal : null,
@@ -635,6 +646,7 @@ function _createProjectLoadOperationManager(controllerFactory) {
             active = null;
             generation += 1;
             completeLifecycle(owner, { success: success === true });
+            settleCompletion(owner, { success: success === true });
             return true;
         },
         cancel(owner, options) {
@@ -1120,7 +1132,6 @@ const handleLoadProject = (e, deps) => {
                 const hydratedHistory = typeof normalizeArtifactInstanceIds === 'function'
                     ? normalizeArtifactInstanceIds(hydrated)
                     : hydrated;
-                setHistory(hydratedHistory);
                 // Restore only after the loaded resource list is known. The
                 // host validates the draft envelope against this exact history,
                 // sanitizes imported HTML, and clears any previous-project draft.
@@ -1131,6 +1142,7 @@ const handleLoadProject = (e, deps) => {
                     });
                 }
                 if (!projectLoadIsCurrent()) return;
+                setHistory(hydratedHistory);
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);
@@ -1204,6 +1216,7 @@ function handleRestoreView(item, options = {}, deps = {}) {
     debugLog,
     directionsProgress,
     history,
+    hydrateWordSoundsFromSync,
     isTeacherMode,
     isWide,
     setActiveSidebarTab,
@@ -1243,8 +1256,8 @@ function handleRestoreView(item, options = {}, deps = {}) {
   } = deps || {};
     const rejectIncompleteResource = () => {
         const key = 'history.resource_incomplete';
-        const value = typeof t === 'function' ? t(key) : null;
-        if (typeof addToast === 'function') addToast(typeof value === 'string' && value.trim() && value !== key ? value : 'This saved resource is incomplete and could not be opened. Your current work is still available.', 'error');
+        const tr = (k, fb) => { const v = typeof t === 'function' ? t(k) : null; return typeof v === 'string' && v.trim() && v !== k ? v : fb; };
+        if (typeof addToast === 'function') addToast(tr(key, 'This saved resource is incomplete and could not be opened. Your current work is still available.'), 'error');
         return false;
     };
     let restoredTranscript = '';
@@ -1377,6 +1390,7 @@ function handleRestoreView(item, options = {}, deps = {}) {
         // Assessment Center selection from an earlier run must not receive
         // this result merely because the resource was reopened.
         if (item.isProbeMode) setProbeTargetStudent(null);
+        let restoredWords = Array.isArray(item.data) ? item.data : [];
         if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
             debugLog("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
             // ttsReady means "a portable clip is in _ttsAssets", and it is
@@ -1400,40 +1414,14 @@ function handleRestoreView(item, options = {}, deps = {}) {
                 _runtimeAudioReady: false,
                 _audioRequested: false
             }));
-            setWsPreloadedWords(wordsWithFreshTtsFlags);
+            restoredWords = wordsWithFreshTtsFlags;
         } else if (item.data && Array.isArray(item.data) && item.data.length > 0) {
             debugLog("📥 Restoring preloaded words from item.data:", item.data.length);
-            setWsPreloadedWords(item.data);
         }
-        if (isTeacherMode) {
-            setIsWordSoundsMode(false);
-            setWordSoundsAutoReview(false);
-        } else {
-            setIsWordSoundsMode(false);
-            setWordSoundsAutoReview(false);
-            // Honor the saved lesson-plan sequence on student self-open
-            // (parity with the live-push hydration): start at sequence[0],
-            // not always 'counting', and hydrate wsActivitySequence so the
-            // modal can advance through the plan.
-            const _selfOpenSeq = Array.isArray(item.lessonPlanSequence) ? item.lessonPlanSequence : [];
-            if (_selfOpenSeq.length > 0) setWsActivitySequence(_selfOpenSeq);
-            setTimeout(() => {
-                setIsWordSoundsMode(true);
-                setCurrentWordSoundsWord(null);
-                setWordSoundsActivity(_selfOpenSeq.length > 0 ? _selfOpenSeq[0] : 'counting');
-                setWordSoundsAutoReview(false);
-            }, 50);
-        }
-        // Phase 3 — DA-generated word-sounds PROBE entry. Drop into the
-        // clinician-guided probe flow at the activity the probe specifies.
-        if (item.isProbeMode && item.probeActivity) {
-            setIsProbeMode(true);
-            setProbeActivity(item.probeActivity);
-            setTimeout(() => {
-                setWordSoundsActivity(item.probeActivity);
-                setIsWordSoundsMode(true);
-            }, 50);
-        }
+        // Reopening is an explicit fresh run, including the same saved form.
+        // Use the shared host boundary so incoming IDs/settings are prepared
+        // before launch instead of a timer reading the previous resource.
+        hydrateWordSoundsFromSync({ ...item, wsPreloadedWords: restoredWords }, { openProbe: true, restart: true });
     }
     if (item.type === 'adventure' && item.data?.snapshot) {
         setAdventureState(prev => ({

@@ -1,7 +1,6 @@
-// Only five dinosaurs in this catalog have colour we actually MEASURED, from
-// fossil melanosomes: Microraptor, Sinosauropteryx, Psittacosaurus, Anchiornis
-// and Borealopelta. For the other 357 the colour on screen is an
-// evidence-compatible illustration - a choice, not a finding.
+// Five taxa in this catalog have direct fossil evidence relevant to colour.
+// Their displayed appearance still involves reconstruction; screen swatches
+// are not literal colour readings from fossils.
 //
 // The tool knew this (integumentEvidenceFor carries a `direct` flag) but said
 // it only inside the screen-reader description, about 10,000 characters in. A
@@ -12,8 +11,18 @@
 // grey "Colour illustrated" - the muting itself carrying the message.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { parseExpressionAt } from 'acorn';
 
 const SRC = readFileSync('stem_lab/stem_tool_dinolab.js', 'utf8');
+
+function colourChipSource() {
+  const start = SRC.indexOf("readoutChip('Colour '");
+  expect(start, 'the colour chip was not found').toBeGreaterThan(-1);
+  const expression = parseExpressionAt(SRC, start, { ecmaVersion: 'latest' });
+  const call = expression.type === 'SequenceExpression' ? expression.expressions[0] : expression;
+  expect(call.type).toBe('CallExpression');
+  return SRC.slice(call.start, call.end);
+}
 
 // Run the SHIPPED classifier rather than a retyped copy.
 function classifier() {
@@ -66,6 +75,11 @@ describe('the direct-evidence set is exactly the melanosome taxa', () => {
     // what is still reconstructed, or the chip overclaims.
     const f = classifier();
     for (const id of MEASURED) {
+      if (id === 'microraptor') {
+        expect(f({ id }).note).toMatch(/melanosomes support iridescent black plumage/);
+        expect(f({ id }).note).toMatch(/sheen, hue shifts, and viewing angles are illustrative rather than measured/);
+        continue;
+      }
       expect(f({ id }).note.toLowerCase(), `${id} states measured colour with no hedge`)
         .toMatch(/remain(s)? reconstructed|reconstructed/);
     }
@@ -84,12 +98,8 @@ describe('the distinction is visible in the readout row', () => {
   });
 
   it('uses a different colour for each case', () => {
-    const open = SRC.indexOf("readoutChip('Colour '");
-    expect(open, 'the colour chip was not found').toBeGreaterThan(-1);
-    // Bound by the NEXT chip - a fixed window would count its colours too.
-    const next = SRC.indexOf("readoutChip('Fossils '", open);
-    expect(next, 'could not bound the colour chip').toBeGreaterThan(open);
-    const block = SRC.slice(open, next);
+    // Read this call only; the neighboring sheen chip has its own palette.
+    const block = colourChipSource();
     const colours = [...block.matchAll(/rgba\([^)]+\)/g)].map((m) => m[0]);
     expect(colours.length, 'expected two colours').toBe(2);
     expect(new Set(colours).size, 'both cases share a colour').toBe(2);
@@ -97,9 +107,7 @@ describe('the distinction is visible in the readout row', () => {
 
   it('reads the flag rather than hardcoding a species list', () => {
     // A hardcoded list in the view would drift from the classifier.
-    const open = SRC.indexOf("readoutChip('Colour '");
-    const next = SRC.indexOf("readoutChip('Fossils '", open);
-    const block = SRC.slice(open, next);
+    const block = colourChipSource();
     expect(block).toContain('integumentEvidence.direct');
     for (const id of MEASURED) {
       expect(block.toLowerCase(), `the chip hardcodes ${id}`).not.toContain(id);

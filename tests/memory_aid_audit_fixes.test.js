@@ -21,7 +21,7 @@ import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const src = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
+const src = (file) => readFileSync(resolve(process.cwd(), file), 'utf8').replace(/\r\n/g, '\n');
 const PNG = 'data:image/png;base64,QUJDRA==';
 
 let H;

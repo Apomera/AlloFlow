@@ -33,7 +33,7 @@ function mount(props) {
 
 const byLabel = (host, label) =>
   host.querySelector(`button[aria-label="${label}"]`);
-/** The Edit toggle is labelled common.confirm and titled Edit. */
+/** The Edit toggle is titled (and, since 2026-10-18, also named) Edit. */
 const editButton = (host) =>
   [...host.querySelectorAll('button')].find((b) => (b.getAttribute('title') || '') === 'Edit');
 const reviewButton = (host) => byLabel(host, 'common.review_and_edit_word_list');

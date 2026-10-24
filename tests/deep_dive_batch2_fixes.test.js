@@ -72,8 +72,10 @@ describe('H4 — repeated content headings are KEPT; real running heads still st
     expect(dp).toContain('window.__alloStrippedEdgeLines = (rec && rec.strippedEdgeLines) || []');
     expect(dp).toContain("kind: 'pageEdge'");
     // read is staleness-gated like the echo-collapse note (a born-digital doc after a scanned one
-    // must not inherit the stash)
-    expect(dp).toContain("const _sel = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];");
+    // must not inherit the stash). Since 2026-10-20 the gate is _ocrDisclosuresOn (audit said scanned
+    // OR this run's text came from OCR) and the stash is reset at the start of every run.
+    expect(dp.includes("const _sel = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];"), 'edge-line note gate').toBe(true);
+    expect(dp.includes('window.__alloStrippedEdgeLines = [];'), 'per-run stash reset').toBe(true);
   });
 });
 

@@ -3,16 +3,22 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const PATHS = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'];
-const BASELINE_PATH = 'reports/watercycle-storm-caption-clarity/baseline-runtime.js';
-const BASELINE_SHA = '141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8';
+// Re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words). The review manifest
+// (reports/watercycle-storm-caption-clarity/paint-changes.json) no longer matched the shipped
+// code: 79e3e5eae rewrote the air-crossing caption and the foreground caption pass, so two of
+// its behavioural checks were running a superseded draft. The regenerated manifest holds the
+// eight regions exactly as shipped (original === replacement), so those checks run real code.
+const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const TEST_PATH = 'tests/watercycle_storm_caption_clarity.test.js';
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const loadedAt = new Date().toISOString();
-const sources = PATHS.map(path => { const bytes = readFileSync(path); return { path, bytes, text: bytes.toString('utf8') }; });
+// Compare committed (LF) text: Windows working copies can carry stray CRLF that git normalizes away.
+const sources = PATHS.map(path => { const bytes = readFileSync(path); return { path, bytes, text: bytes.toString('utf8').replace(/\r\n/g, '\n') }; });
 const baselineBytes = readFileSync(BASELINE_PATH);
 const baseline = baselineBytes.toString('utf8');
 const loadedTest = readFileSync(TEST_PATH);
-const PAINT_MANIFEST_PATH = 'reports/watercycle-storm-caption-clarity/paint-changes.json';
+const PAINT_MANIFEST_PATH = 'reports/watercycle-freeze-reference/storm-caption-paint-regions.json';
 const paintManifestBytes = readFileSync(PAINT_MANIFEST_PATH);
 const paintManifest = JSON.parse(paintManifestBytes.toString('utf8'));
 const PAINT_NAMES = ['caption-helpers', 'cloud-caption', 'caption-reset', 'air-crossing-caption', 'virga-caption', 'orographic-captions', 'lifecycle-caption', 'foreground-caption-pass'];
@@ -235,10 +241,13 @@ describe('Water Cycle Storm 2D caption clarity', () => {
 
       it('distinguishes air crossings from a claim that a particle instantly froze', () => {
         for (const [kind, meaning] of [['melting', 'Warmer below'], ['freezing', 'Colder below']]) {
-          const requests = [];
-          runPaintChange('air-crossing-caption', { thermalCrossing: { kind }, thermalCrossingIndex: 1, freezingLevelY: 183.625, w: 240, stormCaptionRequests2d: requests });
+          const requests = [], keys = [];
+          // The direction words are translatable copy, read through the tool's __alloT.
+          const __alloT = (key, fallback) => { keys.push(key); return fallback; };
+          runPaintChange('air-crossing-caption', { thermalCrossing: { kind }, thermalCrossingIndex: 1, freezingLevelY: 183.625, w: 240, stormCaptionRequests2d: requests, __alloT });
           expect(requests).toHaveLength(1);
           expect(requests[0].body).toContain(meaning);
+          expect(keys.length > 0 && keys.every(key => /^stem\.watercycle\.[a-z0-9_]+$/.test(key)), 'direction words are keyed').toBe(true);
           expect(requests[0].body).toContain('schematic');
           expect(requests[0].title).toContain('0°C');
           expect([requests[0].title, requests[0].body].join(' ')).not.toMatch(/particle.*(?:froze|freezes)|solid ice|frozen particles/i);

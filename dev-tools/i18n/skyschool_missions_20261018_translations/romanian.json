@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Observațiile misiunii",
+  "stem.flightsim.mission_journal_targets": "Ținte înregistrate: {captured} din {total}.",
+  "stem.flightsim.mission_journal_complete": "Au fost înregistrate toate obiectivele misiunii și aterizarea la întoarcere.",
+  "stem.flightsim.mission_journal_ended": "Misiunea s-a încheiat înainte de înregistrarea tuturor dovezilor de finalizare.",
+  "stem.flightsim.mission_journal_recovery": "Recuperarea supraviețuitorului înregistrată: {value}.",
+  "stem.flightsim.mission_journal_return": "Aterizarea la întoarcerea la bază înregistrată: {value}.",
+  "stem.flightsim.mission_guidance_title": "Îndrumări pentru misiune",
+  "stem.flightsim.mission_route": "{target} · relevment {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Punct de decolare",
+  "stem.flightsim.mission_read_status": "Citește starea misiunii",
+  "stem.flightsim.mission_return_criterion": "Aterizează la cel mult {distance} nm de {target}, cu viteza față de sol sub {speed} kt și rata de coborâre sub {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Datele țintei misiunii nu sunt disponibile. Încheie acest zbor și începe o misiune nouă.",
+  "stem.flightsim.mission_capture_criterion": "Rămâi pe o rază de {distance} ft, deasupra a {min} și sub {max} ft față de sol, cu viteza față de sol sub {speed} kt timp de {hold} s."
+}

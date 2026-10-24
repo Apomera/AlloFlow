@@ -260,7 +260,10 @@ describe('Submission Inbox scores quiz responses against the teacher copy', () =
     new Function(read('FIX0928_INBOX_MOD', 'view_submission_inbox_module.js'))();
     inbox = window.AlloModules.SubmissionInbox;
   });
-  const row = (number, type, question, response, answer) => ({ number, type, question, answered: response != null, response: response || '', answer: answer || null });
+  // Current submissions bind positional answers to the public item stimulus.
+  const row = (number, type, question, response, answer) => ({ number, type, question,
+    questionSignature: window.AlloModules.QuizLiveAggregators.assessmentItemSignature(questions()[number - 1]),
+    answered: response != null, response: response || '', answer: answer || null });
   const snapshot = () => ({ kind: 'alloflow-assessment-responses', version: 1, status: 'submitted', answered: 6, total: 9, items: [
     row(1, 'mcq', 'Closest planet to the Sun?', 'Mercury', { optionIdx: 1, optionText: 'Mercury' }),
     row(2, 'multi-select', 'Which are gas giants?', 'Jupiter', { selectedIndices: [0], selectedOptions: ['Jupiter'] }),

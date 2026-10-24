@@ -138,7 +138,8 @@ describe('G2: language tools follow the glossary translation columns', () => {
     window.__alloPrepareGlossaryAudio = vi.fn(async () => ({ ok: true, ready: 3, total: 3 }));
     const c = mount({ generatedContent: spanishGlossary, selectedLanguages: [], displayLanguages: ['Spanish'] });
     await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.includes('glossary.more_tools')).click());
-    const scope = c.querySelector('select[aria-label="common.download_audio"]');
+    // 900752ce7 (2026-10-16) names the scope select "Audio to prepare" (glossary.audio_scope).
+    const scope = c.querySelector('select[aria-label="Audio to prepare"], select[aria-label="glossary.audio_scope"]');
     expect([...scope.options].map(o => o.value)).toContain('all');
     await act(async () => { scope.value = 'all'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
     await act(async () => c.querySelector('[data-help-key="glossary_prepare_audio"], button[aria-label="common.download_audio"]').click());
@@ -151,7 +152,8 @@ describe('G1: health check in the view scores against the related analysis', () 
     const runGlossaryHealthCheck = vi.fn();
     const c = mount({ generatedContent: { ...glossA, data: [{ ...glossA.data[0], entryId: 'e' }] }, history: HISTORY, runGlossaryHealthCheck });
     await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.includes('glossary.more_tools')).click());
-    await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.trim() === 'common.check').click());
+    // Named "Run health check" since 2026-10-19 (it read "Check Answer").
+    await act(async () => [...c.querySelectorAll('button')].find(b => b.textContent.trim() === 'Run health check').click());
     expect(runGlossaryHealthCheck).toHaveBeenCalledTimes(1);
     expect(runGlossaryHealthCheck.mock.calls[0][1]).toBe('Text A');
   });

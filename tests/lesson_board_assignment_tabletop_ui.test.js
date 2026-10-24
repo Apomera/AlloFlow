@@ -3,6 +3,8 @@ import {createRequire} from 'node:module';
 import * as engine from '../lesson_board_engine.js';
 import {assignmentItineraries} from '../lesson_board_assignments.js';
 import {planningKey,simulatePlan} from '../lesson_board_sandbox.js';
+// Tabletop spaces keep a short name; their details are the accessible description.
+const spoken=node=>[node?.getAttribute('aria-label'),...(node?.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent)].filter(Boolean).join('. ');
 const require=createRequire(import.meta.url),React=require('../desktop/web-app/node_modules/react'),{createRoot}=require('../desktop/web-app/node_modules/react-dom/client'),{act}=React;
 const {makeBoard}=require('../dev-tools/fixtures/lesson_board.cjs');
 let UI,root,element;
@@ -45,7 +47,7 @@ describe('Private assignment routes on the live tabletop',()=>{
     expect(find('[data-assignment-map-preview]').textContent).toContain('Private assignment plan');expect(find('[data-plan-pin]')).toBeNull();
     expect(find('[data-party-position]').dataset.partyPosition).toBe(actualParty);expect(all('[data-location]').map(node=>[node.dataset.location,node.dataset.state])).toEqual(actualTiles);
     expect(find('[data-assignment-map-priority]').dataset.assignmentTarget).toBe('cooler');
-    expect(find('[data-location="cooler"]').getAttribute('aria-label')).toContain('Private plan priority 1: Expedition destination');
+    expect(spoken(find('[data-location="cooler"]'))).toContain('Private plan priority 1: Expedition destination');
     await click('[data-assignment-map-inspect]');expect(onSelect).toHaveBeenCalledWith('cooler');
     await click('[data-clear-assignment-preview]');expect(onClearAssignmentPreview).toHaveBeenCalledTimes(1);expect(JSON.stringify({b,run,preview})).toBe(saved);
     await render({b,run});expect(find('[data-assignment-map-priority]')).toBeNull();expect(find('[data-assignment-map-route]')).toBeNull();

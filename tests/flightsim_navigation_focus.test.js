@@ -5,7 +5,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let host, root, tool, latest, updateSaved, outside;
 const heading = id => host.querySelector('#' + id);
-const button = text => [...host.querySelectorAll('button')].find(element => element.textContent.includes(text));
+const button = text => [...host.querySelectorAll(text === 'Next' ? '.skyschool-quiz-nav button' : 'button')].find(element => element.textContent.includes(text));
 async function click(element) {
   expect(element).toBeTruthy();
   await act(async () => { element.focus(); element.click(); });
@@ -105,7 +105,7 @@ describe('SkySchool activity navigation focus', () => {
     expect(question.textContent).not.toBe(firstText);
   });
 
-  it('does not steal focus after an answer or explicit practice of the same question', async () => {
+  it('keeps answer focus and restores the question when the practice control disappears', async () => {
     await mount({ view: 'quiz' });
     const question = heading('skyschool-quiz-question');
     const answer = host.querySelector('button[aria-label^="Answer "]');
@@ -113,8 +113,9 @@ describe('SkySchool activity navigation focus', () => {
     expect(latest.quizTotal).toBe(1);
     expect(document.activeElement).not.toBe(question);
     await click(button('Practice this question'));
+    await act(async () => { vi.runOnlyPendingTimers(); });
     expect(host.querySelector('[data-quiz-practice]')).toBeTruthy();
-    expect(document.activeElement).not.toBe(question);
+    expect(document.activeElement).toBe(question);
   });
 
   it('focuses a selected Learn topic while preserving focus during search and checklist review', async () => {

@@ -197,7 +197,8 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
         </div>
       </div>
 
-      {quest.excludedQuestions > 0 && <p role="status" className="mt-3 rounded-lg bg-amber-50 p-2 text-sm text-amber-900">{tr('excluded_questions', '{count} source question(s) were skipped because they lack a supported multiple-choice answer key.', { count: quest.excludedQuestions })}</p>}
+      {debrief.coverage && <p data-concept-quest-coverage role="status" className="mt-3 rounded-lg bg-indigo-100 p-2 text-sm text-indigo-950">{tr('assessment_coverage', '{attempted} of {total} supported assessment items explored.', debrief.coverage)}{!debrief.coverage.complete && ' ' + tr('assessment_coverage_help', 'The final barrier stays open until every supported item has been explored.')}</p>}
+      {quest.excludedQuestions > 0 && <p role="status" className="mt-3 rounded-lg bg-amber-50 p-2 text-sm text-amber-900">{tr('excluded_questions_review', '{count} source question(s) were skipped because their format or answer key needs teacher review.', { count: quest.excludedQuestions })}</p>}
       <fieldset disabled={syncing || busy} className="min-w-0">
       <legend className="sr-only">{tr('teacher_heading', 'Concept Quest teacher controls')}</legend>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -276,7 +277,8 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
         </section>
       </div>
 
-      <p className="mt-4 text-sm font-bold text-emerald-900">{tr(debrief.rounds === 1 ? 'recent_evidence_one' : 'recent_evidence', debrief.rounds === 1 ? 'Learning evidence · last round' : 'Learning evidence · last {count} rounds', { count: debrief.rounds })}</p>
+      <p className="mt-4 text-sm font-bold text-emerald-900">{debrief.completeHistory === false ? tr('available_evidence', 'Learning evidence · {count} available saved rounds', { count: debrief.rounds }) : tr('whole_quest_evidence', 'Learning evidence · whole quest · {count} rounds', { count: debrief.rounds })}</p>
+      {debrief.completeHistory === false && <p data-concept-quest-history-limit className="mt-1 text-xs text-slate-700">{tr('history_limit', 'This older save no longer contains its earliest rounds. These totals include the available saved rounds and all new rounds.')}</p>}
       <div role="group" className="mt-2 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6" aria-label={tr('campaign_summary_aria', 'Campaign evidence summary')}>
         <span><strong className="block text-lg text-emerald-800">{debrief.accuracy}%</strong>{tr('accuracy', 'Accuracy')}</span><span><strong className="block text-lg text-emerald-800">{debrief.combos}</strong>{tr('combos', 'Combos')}</span><span><strong className="block text-lg text-emerald-800">{debrief.roleSynergies}</strong>{tr('role_synergies', 'Role synergies')}</span><span><strong className="block text-lg text-emerald-800">{debrief.peerAssists}</strong>{tr('peer_assists', 'Peer assists')}</span><span><strong className="block text-lg text-emerald-800">{debrief.puzzlesSolved}</strong>{tr('puzzles', 'Puzzles')}</span><span><strong className="block text-lg text-emerald-800">{debrief.rounds}</strong>{tr('rounds', 'Rounds')}</span>
       </div>

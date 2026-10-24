@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Eerdere quizpogingen",
+  "stem.flightsim.quiz_history_scope": "Bij een nieuwe poging worden maximaal vier eerdere pogingen met vastgelegde eerste antwoorden bewaard. Je huidige quiz blijft ongewijzigd wanneer je ze bekijkt.",
+  "stem.flightsim.quiz_history_empty": "Er zijn nog geen eerdere quizpogingen opgeslagen.",
+  "stem.flightsim.quiz_history_attempt": "Opgeslagen op {date} · {score}/{answered} eerste antwoorden juist",
+  "stem.flightsim.quiz_history_progress": "{answered} van {total} vragen vastgelegd · {unanswered} onbeantwoord",
+  "stem.flightsim.quiz_history_question": "Vraag {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Juiste antwoord: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} opgeslagen vragen komen niet meer overeen met deze quiz. Scores gebruiken alleen overeenkomende vraaggegevens."
+}

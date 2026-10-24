@@ -35,7 +35,7 @@ The arm crown still partly masks the funnel aperture in natural close views. Eig
 | kelp-reef | [Original](initial-kelp-reef.png) | [Enhanced](kelp-reef.png) |
 | kelp-bladder | [Original](initial-kelp-bladder.png) | [Enhanced](kelp-bladder.png) |
 | kelp-blades | [Original](initial-kelp-blades.png) | [Enhanced](kelp-blades.png) |
-| squid-phone | [Original](initial-squid-phone.png) | [Enhanced](squid-phone.png) |
+| squid-phone | [Original](initial-squid-phone.png) | [Enhanced](../pass-twenty-four/initial-squid-phone.png) |
 | kelp-phone | [Original](initial-kelp-phone.png) | [Enhanced](kelp-phone.png) |
 
 ## Working tree and preview

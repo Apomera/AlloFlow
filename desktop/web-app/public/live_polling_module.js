@@ -2117,6 +2117,49 @@
   // in the teacher's local state. Application data is never written to
   // Firestore.
   // ──────────────────────────────────────────────────────────────────────
+  // Keep each learner's current Assess attempt separate from prior attempts.
+  // This state stays on the teacher's device with the peer response bank.
+  function mergeAssessmentResponse(previous, questionIndex, response) {
+    const current = previous && typeof previous === 'object' ? previous : {};
+    const packet = response && typeof response === 'object' ? response : {};
+    const owner = current.__assessmentAttempt;
+    const attemptId = typeof packet.assessmentAttemptId === 'string' && /^[A-Za-z0-9_-]{1,96}$/.test(packet.assessmentAttemptId) ? packet.assessmentAttemptId : '';
+    const startedAt = Number(packet.assessmentAttemptStartedAt);
+    const reject = () => ({ accepted: false, responses: current });
+    if (!Number.isInteger(questionIndex) || questionIndex < 0 || questionIndex > 9999) return reject();
+    if (!attemptId) {
+      if (owner || packet.assessmentAttemptId || packet.itemType === 'assessment-start') return reject();
+      return { accepted: true, responses: { ...current, [questionIndex]: response } };
+    }
+    if (!Number.isFinite(startedAt) || startedAt <= 0) return reject();
+    const sameAttempt = owner && owner.attemptId === attemptId;
+    if (owner && !sameAttempt && startedAt <= owner.startedAt) return reject();
+    if (sameAttempt && startedAt !== owner.startedAt) return reject();
+    if (sameAttempt && owner.status === 'submitted') {
+      if (packet.itemType === 'assessment-start') return { accepted: true, responses: current };
+      if (packet.assessmentFinal !== true) return reject();
+    }
+    const existing = sameAttempt && current[questionIndex];
+    // Final answers arrive one at a time before the completion marker. A late
+    // practice packet (for example from another tab) must not replace an
+    // acknowledged final answer or prevent the saved final snapshot arriving.
+    const finalPacket = packet.assessmentFinal === true;
+    const existingFinal = existing && existing.assessmentFinal === true;
+    if (existingFinal && !finalPacket) return reject();
+    if (existing && (!finalPacket || existingFinal)
+        && Number(packet.timestamp || 0) < Number(existing.timestamp || 0)) return reject();
+    let next;
+    if (sameAttempt) next = { ...current };
+    else {
+      const priorItems = Object.fromEntries(Object.entries(current).filter(([key]) => /^\d+$/.test(key) || /^r\d+$/.test(key)));
+      const history = Array.isArray(current.__assessmentHistory) ? current.__assessmentHistory.slice(-7) : [];
+      if (Object.keys(priorItems).length) history.push({ attemptId: owner?.attemptId || '', startedAt: owner?.startedAt || 0, status: owner?.status || 'legacy', responses: priorItems });
+      next = history.length ? { __assessmentHistory: history } : {};
+    }
+    next.__assessmentAttempt = { attemptId, startedAt, status: packet.itemType === 'assessment-complete' || sameAttempt && owner.status === 'submitted' ? 'submitted' : 'in-progress' };
+    next[questionIndex] = response;
+    return { accepted: true, responses: next };
+  }
   const normalizeResponseRequestId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,96}$/.test(value) ? value : '';
   const normalizeResponseReceipt = value => {
     if (!value || typeof value !== 'object' || !normalizeResponseRequestId(value.requestId) || typeof value.pollId !== 'string' || !value.pollId || value.pollId.length > 180) return null;
@@ -7092,6 +7135,7 @@
     uniqueResponsesForSummary: uniqueResponsesForSummary,
     shouldApplyPollClose: shouldApplyPollClose,
     PollingHost: PollingHost,
+    mergeAssessmentResponse: mergeAssessmentResponse,
     PollingGuest: PollingGuest,
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,

@@ -875,6 +875,13 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     if (seen.has(value)) return seen.get(value);
     const out = Array.isArray(value) ? [] : {};
     seen.set(value, out);
+    // defineProperty keeps a "__proto__" word key (restored above) as an own key.
+    const put = (key, nested) => Object.defineProperty(out, key, {
+      value: nested,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
     let reading = typeof value.data === 'string' ? value.data : typeof value.text === 'string' ? value.text : null;
     let decoded = false,
       withholdEncodedReading = false;
@@ -906,13 +913,13 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
           preview,
           ...snapshot
         } = nested;
-        out[key] = sanitizeResearch(snapshot, seen);
+        put(key, sanitizeResearch(snapshot, seen));
         return;
       }
       if (['generationInputText', 'fromText'].includes(key) && typeof nested === 'string' && appendix.test(nested)) return;
-      if (typeof nested === 'string') out[key] = publicText(key === 'data' && decoded ? reading : nested, record);else {
+      if (typeof nested === 'string') put(key, publicText(key === 'data' && decoded ? reading : nested, record));else {
         const safe = sanitizeResearch(nested, seen);
-        if (safe !== undefined) out[key] = safe;
+        if (safe !== undefined) put(key, safe);
       }
     });
     if (decoded) out.dataEncoding = 'text/v1';

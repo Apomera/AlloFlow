@@ -242,9 +242,14 @@ const renderJsonToHtml = (blocks) => {
               // list inside a cell, so literal "<ul><li>" (or "• " lines) in a cell string is rebuilt as a
               // real nested list instead of shipping escaped tags as visible text.
               const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));
+              // rowHeaders (2026-10-19, 1954 Form 1040 scan): when the first cell of each body row labels
+              // that row (line number, item, year), it is a row header. An empty first cell stays a <td>.
+              const _rowHdr = block.rowHeaders === true;
               const rows = rowsArr.map(row => {
                 if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(row)+`</td></tr>`;
-                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
+                return `<tr>`+row.map((cell, ci) => (_rowHdr && ci === 0 && row.length > 1 && String(cell == null ? '' : cell).trim())
+                  ? `<th scope="row" style="border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+_cellEsc(cell)+`</th>`
+                  : `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
               }).join('');
               return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
@@ -312,7 +317,11 @@ const renderJsonToHtml = (blocks) => {
               const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var _lL=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||null;var _pL=(function(){try{return window.parent&&window.parent.__alloflowExtractedImages;}catch(_){return null;}})();var list=(_pL&&_pL.length)?_pL:((_lL&&_lL.length)?_lL:(_pL||_lL||[]));var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click the \\u201CUpload image\\u201D button to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
               // One-click removal (2026-06-11, user report: deleting a
               // placeholder required manual selection — not intuitive).
-              return `<figure id="${_imgId}-figure" data-img-placeholder="true" style="position:relative;margin:1em 0">`
+              // The block's own short alt (document language, written for this spot) rides along so the
+              // pipeline can name the image with it; the longer description stays the caption (2026-10-19).
+              const _attr = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+              const _shortAlt = typeof block.alt === 'string' ? block.alt.replace(/\s+/g, ' ').trim() : '';
+              return `<figure id="${_imgId}-figure" data-img-placeholder="true"${_shortAlt ? ` data-allo-alt="${_attr(_shortAlt)}"` : ''} style="position:relative;margin:1em 0">`
                 + `<button type="button" contenteditable="false" onclick="(function(){var f=document.getElementById('${_imgId}-figure');if(f)f.remove();try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}})()" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer">×</button>`
                 + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem" ondragover="${_dragOver}" ondragleave="${_dragLeave}" ondrop="${_dropHandler}">`
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`

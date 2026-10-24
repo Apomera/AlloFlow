@@ -130,7 +130,9 @@ describe('Cephalopod Hunter world-anchored seafloor geology',()=>{
 
   it('limits the exact source change to the shader and cache binding, preserving terrain, resource creation, interaction, and cleanup code',()=>{
     const from='        function shadeCLHuntSandLight(',to='        // Fine rough mineral variation';
-    const currentRegion=section(source,from,to),beforeRegion=section(baseline,from,to);const sourceAtPass61=(source.includes('function shadeCLHuntCausticFlow(')||source.includes('function findCLHuntCrevice('))?require('./helpers/cephalopod_pass62_reference.cjs').restorePass62Source(source):source;assert.equal(sourceAtPass61.replace(currentRegion,beforeRegion),baseline);assert.equal(helper(source,'terrainHeight'),helper(baseline,'terrainHeight'));
+    const currentRegion=section(source,from,to),beforeRegion=section(baseline,from,to);const sourceAtPass61=(source.includes('function shadeCLHuntCausticFlow(')||source.includes('function findCLHuntCrevice('))?require('./helpers/cephalopod_pass62_reference.cjs').restorePass62Source(source):source;
+    // Pass74 later adds habitat tints in this same region, so compare the pass61 region itself.
+    const pass61Region=section(sourceAtPass61,from,to);assert.equal(sourceAtPass61.replace(pass61Region,()=>beforeRegion),baseline);assert.equal(helper(source,'terrainHeight'),helper(baseline,'terrainHeight'));
     const protectedSource=source.replace(currentRegion,'');assert.ok(protectedSource.includes("floor.name='cl-seafloor'"));assert.ok(protectedSource.includes('floorGeo.computeVertexNormals()'));assert.ok(protectedSource.includes('try { sandTex.dispose(); } catch (e) {}'));assert.ok(protectedSource.includes('cl-pearl-'));
   });
 });

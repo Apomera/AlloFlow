@@ -19,7 +19,9 @@ const SESSION = process.env.FIX0927_AD_SESSION || 'adventure_session_handlers_so
 const VIEW_SRC = process.env.FIX0927_AD_VIEW_SRC || 'view_adventure_source.jsx';
 const ANTI = process.env.FIX0927_AD_ANTI || 'AlloFlowANTI.txt';
 const anti = fs.readFileSync(ANTI, 'utf8');
-const lessonKeyStart = anti.indexOf('const _alloAdventureLessonKey = (history, inputText) => {');
+// f3c6402f3 (2026-10-16) added an optional reading-source argument.
+const lessonKeyStart = anti.indexOf('const _alloAdventureLessonKey = (history, inputText, options = null) => {');
+if (lessonKeyStart < 0) throw new Error('_alloAdventureLessonKey anchor not found in ' + ANTI);
 const lessonKey = new Function(anti.slice(lessonKeyStart, anti.indexOf('window._alloAdventureLessonKey = _alloAdventureLessonKey;', lessonKeyStart)) + '\nreturn _alloAdventureLessonKey;')();
 const handlerSource = fs.readFileSync(HANDLERS, 'utf8');
 const loadHandlers = () => new Function('window', handlerSource + '\nreturn window.AlloModules.AdventureHandlers;')({ AlloModules: {}, _alloAdventureLessonKey: lessonKey });

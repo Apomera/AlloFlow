@@ -1,2 +1,0 @@
-PASS Command entry keeps readable previews, cancel behavior, and keyboard focus within the visual layout
-{"passed":1,"failed":0,"errors":[],"sourceStable":true}

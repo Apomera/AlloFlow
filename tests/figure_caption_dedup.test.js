@@ -28,8 +28,10 @@ describe('figure captions do not double-announce the alt text', () => {
     expect(src).not.toContain("'<figcaption>' + _escTxt(im.alt) + '</figcaption>'");
   });
 
+  // Since 2026-10-19 the alt is imgAlt: the structure block's short alt (data-allo-alt), falling back
+  // to the description (tests/image_alt_from_block.test.js); the figcaption still repeats the description.
   it('keeps the alt itself (de-dup must not regress 1.1.1 / the figure leaf walk)', () => {
-    expect(src).toContain('<img src="${srcToken}" alt="${desc.replace(/"/g, \'&quot;\')}"');
+    expect(src.includes('<img src="${srcToken}" alt="${imgAlt.replace(/"/g, \'&quot;\')}"'), 'img alt template').toBe(true);
   });
 });
 

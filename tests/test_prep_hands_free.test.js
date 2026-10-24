@@ -72,7 +72,8 @@ describe('Test Prep hands-free contracts', () => {
     expect(source).toContain("acquireVoiceSession('test-prep'");
     expect(source).toContain('if (wasGlobalVoiceActive && loop.stop) loop.stop();');
     expect(source).toContain('handsFreeResumeGlobalVoiceRef.current = wasGlobalVoiceActive');
-    expect(host).toMatch(/moduleKey="TestPrepHub"[\s\S]{0,500}callTTS,[\s\S]{0,120}callGemini,[\s\S]{0,120}selectedVoice,/);
+    // Since 346c2ee42 the host withholds callGemini (null) when student AI features are hidden.
+    expect(host).toMatch(/moduleKey="TestPrepHub"[\s\S]{0,500}callTTS,\s*callGemini: \(studentAiFeaturesHidden \? null : callGemini\),[\s\S]{0,120}selectedVoice,/);
   });
 
   it('normalizes and preserves assisted-item audit metadata without conflating narration', () => {

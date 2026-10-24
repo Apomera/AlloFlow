@@ -30,9 +30,15 @@ afterEach(() => {
 describe('Word Sounds reduced motion', () => {
   it('gates every pulse, spin, and bounce utility at the point of use', () => {
     const source = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
-    const motionLines = source.split(/\r?\n/).filter((line) => /animate-(?:pulse|spin|bounce)/.test(line));
-    expect(motionLines).toHaveLength(32);
-    for (const line of motionLines) expect(line).toContain('motion-reduce:animate-none');
+    // Count-free: removing an animation is fine; an ungated one is not. Each
+    // line needs at least as many gates as animations, so a gated line that
+    // gains a second animation fails too.
+    const motionLines = source.split(/\r?\n/).filter((line) => /\banimate-(?:pulse|spin|bounce)\b/.test(line));
+    expect(motionLines.length, 'the scan found no animations; is the regex broken?').toBeGreaterThan(0);
+    const ungated = motionLines.filter((line) =>
+      (line.match(/\banimate-(?:pulse|spin|bounce)\b/g) || []).length
+        > (line.match(/motion-reduce:animate-none/g) || []).length);
+    expect(ungated).toEqual([]);
   });
 
   it('covers overlay roots and the minimized widget, including descendant transitions', async () => {

@@ -1,0 +1,277 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tmp/shared-release/dino-native-prepared-1-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dinolab-dromaeosaur-pelvis-inquiry.spec.ts",
+      "file": "dinolab-dromaeosaur-pelvis-inquiry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pelvis inquiry compares separate native bones and restored covering while retaining student reasoning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18383,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T02:59:43.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7e408df7b89c063e5d9b-92e083c74d36f78df5a9",
+          "file": "dinolab-dromaeosaur-pelvis-inquiry.spec.ts",
+          "line": 38,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dinolab-hadrosaur-extremities-inquiry.spec.ts",
+      "file": "dinolab-hadrosaur-extremities-inquiry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "hadrosaur distal inquiry compares actual ray bundles and inferred covering while retaining learner reasoning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 420000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18671,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T03:00:02.219Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b85d7d9cf56528fe6f86-241d2ee65d5e0f3bc4df",
+          "file": "dinolab-hadrosaur-extremities-inquiry.spec.ts",
+          "line": 77,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dinolab-hadrosaur-extremities-models.spec.ts",
+      "file": "dinolab-hadrosaur-extremities-models.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "five hadrosaur hands and feet retain native ray frames and coherent bone and living views",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 420000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66419,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T03:00:20.930Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3de0f55be0449c835d00-008c1cb25d6bfe193f9d",
+          "file": "dinolab-hadrosaur-extremities-models.spec.ts",
+          "line": 44,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dinolab-lambeosaur-body-inquiry.spec.ts",
+      "file": "dinolab-lambeosaur-body-inquiry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "lambeosaur regional inquiry compares actual whole bodies and source gaps while preserving student writing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 27496,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T03:01:27.395Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1331c3fa01ae933ae3b9-0867e2f0b91e257446c9",
+          "file": "dinolab-lambeosaur-body-inquiry.spec.ts",
+          "line": 53,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dinolab-sauropod-extremities-inquiry.spec.ts",
+      "file": "dinolab-sauropod-extremities-inquiry.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "sauropod foot inquiry explores actual hand and hindfoot frames while preserving learner reasoning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 360000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12994,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T03:01:54.927Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d23c815c478d8ee74f49-5cee87d30c842418dbfa",
+          "file": "dinolab-sauropod-extremities-inquiry.spec.ts",
+          "line": 121,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-22T02:59:42.674Z",
+    "duration": 145399.096,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

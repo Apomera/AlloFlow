@@ -1,0 +1,74 @@
+[
+  {
+    "resourceId": "cu-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "THE RING",
+      "bullets": [
+        "Most watchers are not cruel",
+        "They are waiting for someone else",
+        "More watchers, fewer movers"
+      ],
+      "iconPrompt": "a ring of small figures around an empty center"
+    },
+    "to": {
+      "label": "THE RING",
+      "bullets": [
+        "Most watchers are not cruel",
+        "They are waiting for someone else",
+        "More watchers, fewer movers"
+      ],
+      "iconPrompt": "a ring of small figures around an empty center",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cu-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "A SMALL MOVE",
+      "bullets": [
+        "\"Wait, what happened next?\"",
+        "\"Come sit with us.\"",
+        "Change seats, start a new topic"
+      ],
+      "iconPrompt": "one figure in the ring taking a half step forward"
+    },
+    "to": {
+      "label": "A SMALL MOVE",
+      "bullets": [
+        "\"Wait, what happened next?\"",
+        "\"Come sit with us.\"",
+        "Change seats, start a new topic"
+      ],
+      "iconPrompt": "one figure in the ring taking a half step forward",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cu-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "WHY SMALL WORKS",
+      "bullets": [
+        "Low risk for everyone",
+        "Keeps it ordinary, not a spectacle",
+        "Shows the ring that moving is possible"
+      ],
+      "iconPrompt": "a single domino tipping the next"
+    },
+    "to": {
+      "label": "WHY SMALL WORKS",
+      "bullets": [
+        "Low risk for everyone",
+        "Keeps it ordinary, not a spectacle",
+        "Shows the ring that moving is possible"
+      ],
+      "iconPrompt": "a single domino tipping the next",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

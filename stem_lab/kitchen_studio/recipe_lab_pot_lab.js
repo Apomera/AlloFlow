@@ -12,7 +12,7 @@
     var current=R.restore(Object.assign({},source,{log:[],submitted:false}));if(!current)return null;
     var first=snapshot(current),events=[{index:0,action:'start',label:source.rescue?'Supplied rescue dish':'Empty pot · starting reading',before:first,after:first,accepted:true}],log=Array.isArray(source.log)?source.log.slice(0,1200):[];
     log.forEach(function(entry,index){if(!entry||typeof entry.action!=='string')return;var before=snapshot(current),next=R.act(current,entry.action,entry.value,entry.interaction);if(next===current)return;var actual=next.log[next.log.length-1],after=snapshot(next);
-      if(changed(before,after)||actual.accepted&&actual.action==='sample')events.push({index:index+1,action:actual.action,label:names[actual.action]||'Pot observation',before:before,after:after,accepted:actual.accepted,inspection:actual.inspection||null});current=next;
+      if(changed(before,after)||actual.accepted&&actual.action==='sample'){var event={index:index+1,action:actual.action,label:names[actual.action]||'Pot observation',before:before,after:after,accepted:actual.accepted,inspection:actual.inspection||null};if((current.thermalModel===1||current.thermalModel===2||current.thermalModel===3)&&actual.action==='advance'&&actual.accepted&&current.pan.damage<1&&next.pan.damage>=1)event.panWarning=true;events.push(event);}current=next;
     });
     var result={events:events,current:snapshot(current),rescue:!!source.rescue};cache.set(source,result);return result;
   }
@@ -40,7 +40,7 @@
     if(e.action==='lidPlace')return (b.lid==='covered'?'The lid covered the pot.':'The lid returned to its rest.')+' '+temp(a.temp)+' → '+temp(b.temp)+': no clock time passed. Covering changes modeled heat retention and water loss during later clock steps.';
     if(e.action==='potHeat')return 'The dial changed from '+['off','low','medium','high'][a.heat]+' to '+['off','low','medium','high'][b.heat]+'. '+temp(a.temp)+' → '+temp(b.temp)+': no clock time passed.';
     if(e.action==='pasta')return b.grams+' g of cooler pasta entered '+Math.round(b.water)+' mL of water. '+temp(a.temp)+' → '+temp(b.temp)+': a '+Math.abs(delta).toFixed(1)+'°C drop at the same simulated time.';
-    if(e.action==='advance')return (b.time-a.time)+' seconds passed for both vessels. The pot changed '+(delta>=0?'+':'')+delta.toFixed(1)+'°C with the burner '+['off','low','medium','high'][b.heat]+'.'+(!e.accepted?' The recorded step also raised a pan warning.':'');
+    if(e.action==='advance')return (b.time-a.time)+' seconds passed for both vessels. The pot changed '+(delta>=0?'+':'')+delta.toFixed(1)+'°C with the burner '+['off','low','medium','high'][b.heat]+'.'+(e.panWarning||!e.accepted?' The recorded step also raised a pan warning.':'');
     if(e.action==='sample')return e.inspection?e.inspection.label+'. '+e.inspection.observation:'A fork sample was checked at this moment.';
     if(e.action==='fill')return Math.round(b.water)+' mL of fresh water entered at '+temp(b.temp)+'. Carrying and filling did not advance the clock.';
     return Math.round(a.water)+' → '+Math.round(b.water)+' mL left in the pot. Saving or draining water is recorded separately from heating it.';

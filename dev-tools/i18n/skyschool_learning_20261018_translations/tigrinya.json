@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "ምዝዛም ተልእኾን ተመሊስካ ምዕላብን ተመዝጊቡ ኣሎ። ኣብ መቆጻጸሪ ወይ መንገዲ ሓደ ነገር ብዕላማ ብምቕያር ነዚ ተልእኾ ዳግማይ ፈትኖ፣ ድሕሪኡ ነቲ ዝተዓቀበ ትዕዝብቲ ኣወዳድሮ።",
+  "stem.flightsim.coaching_mission_depleted": "ቻርጅ ባትሪ ናይታ ድሮን ተወዲኡ። ሓድሽ ተልእኾ ጀምር፣ ሓጸርቲ መንገድታት ተጠቐም፣ ባትሪ ቅድሚ ምንካዩ ክትምለስ መደብ ግበር።",
+  "stem.flightsim.coaching_mission_unknown": "ናይዚ ተልእኾ መርትዖ ዘይተማልአ ወይ ዝጋጮ እዩ። እቲ ዝተመዝገበ ርአ፣ ድሕሪኡ ሓድሽ ፈተነ ጀምር።",
+  "stem.flightsim.coaching_mission_capture": "ገለ ዕላማታት ገና ስእሊ ኣይተወስዱን። ኣብ ሓድሽ ተልእኾ፣ በብሓደ ዕላማ ቅረብ፣ ስእሊ ምውሳድ ክሳዕ ዝምዝገብ ድማ ኣብቲ ዝተሓበረ ደረት ቁመትን ንመሬት ብዝምልከት ፍጥነትን ጽናሕ።",
+  "stem.flightsim.coaching_mission_recovery": "እቲ ብህይወት ዝተረፈ ሰብ ኣይተወስደን። ኣብ ሓድሽ ተልእኾ ረድኤት፣ ናብ መደበር ቅድሚ ምምላስካ ኣብቲ ዝተሓበረ ደረት ቁመት፣ ካብ ቦታ ምንሽርታትን ቀጥታዊ ፍጥነትን ኣብ ሓደ ቦታ ብርግኣት እናተንሳፈፍካ ምጽናሕ ተለማመድ።",
+  "stem.flightsim.coaching_mission_return": "ሰብ ምውሳድ ወይ ስእሊ ምውሳድ ዝምልከቱ ዕላማታት ተመዝጊቦም፤ ተመሊስካ ምዕላብ ይተርፍ ኣሎ። ሓድሽ ተልእኾ ጀምር፣ ናብ መደበር ንምምላስ ድማ ግዜን ባትርን ዓቅብ።",
+  "stem.flightsim.mission_reflection_prompt": "ብዛዕባ ዕላማ፣ ኣብ ሓደ ቦታ ምንሳፋፍ ወይ ምምላስ እንታይ ውሳነ ምቐየርካ? ነቲ ምርጫኻ ንምግላጽን ንሓድሽ ፈተነ ሓደ ለውጢ ንምምዳብን ትዕዝብቲ ናይቲ ተልእኾ ተጠቐም። መግለጺኻ ምስዚ በረራ ይዕቀብ።",
+  "stem.flightsim.journal_different_airport": "እዞም ንምዕላብ ዝተገብሩ ምቕራባት ዝተፈላለዩ መዓርፎ ነፈርቲ ተጠቒሞም። ትዕዝብቶም በበይኑ ርአ፤ ፍልልይ መለክዒታት ኣይሕሰብን።",
+  "stem.flightsim.journal_approach_airport": "ንምዕላብ እትቐርቦ መዓርፎ ነፈርቲ፦ {airport}።",
+  "stem.flightsim.mission_evidence_heading": "መርትዖ ተልእኾ",
+  "stem.flightsim.challenge_brake_release": "ሓይሊ ቅድሚ ምውሳኽካ መፍትሕ X ልቐቕ፣ ኣብ ሰሌዳ መቆጻጸሪ ድማ ፍሬን መንኰራዅር ኣጥፍእ።"
+}

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "検索結果：{topics} トピックに {cards} 枚のカードがあります。",
+  "stem.flightsim.learn_library_counts": "{cards} 枚のカード · {topics} トピック",
+  "stem.flightsim.learn_search_clear": "検索をクリア",
+  "stem.flightsim.learn_search_empty": "「{query}」に一致する学習カードはありません。別の言葉を試すか、検索をクリアしてください。",
+  "stem.flightsim.learn_search_none": "一致する学習カードはありません",
+  "stem.flightsim.learn_search_cards": "{count} 枚の学習カード",
+  "stem.flightsim.quiz_review_progress": "{total} 問中 {answered} 問に回答済み · 誤答 {missed} 問",
+  "stem.flightsim.quiz_review_missed": "間違えた問題を復習",
+  "stem.flightsim.quiz_next_unanswered": "次の未回答の問題",
+  "stem.flightsim.quiz_review_all_answered": "すべての問題に初回の回答が記録されています。間違えた問題を採点なしで練習するか、新しい挑戦を始めてください。",
+  "stem.flightsim.planner_drone_agl": "地上 {ft} フィート",
+  "stem.flightsim.sprint_native_title": "地理スプリント",
+  "stem.flightsim.sprint_timed_hint": "回答中もルートは進みます。読むときは一時停止し、回答を選ぶ前に再開してください。",
+  "stem.flightsim.sprint_warp_reference": "この地理学習では移動を加速しています。速度表示は設定された巡航速度を示します。このルートは機体性能の測定には使用しません。",
+  "stem.flightsim.sprint_save_menu": "スプリントを保存してメニューに戻る",
+  "stem.flightsim.sprint_next_stop": "次の地点：{place}",
+  "stem.flightsim.geoq_approaching_city": "どの都市に近づいていますか？",
+  "stem.flightsim.sprint_time_remaining": "残り時間：{seconds} 秒"
+}

@@ -11,6 +11,14 @@ function nativeFunction(name, indent) {
   if (a < 0 || b <= a) throw new Error('Missing native dorsal-spine function: ' + name);
   return source.slice(a, b);
 }
+const registration = "window.StemLab.registerTool('dinoLab'";
+if (!source.includes(registration)) throw new Error('Missing Dino Lab registration');
+window.StemLab = { registerTool() {} };
+const nativeApiNames = [...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match => match[1]))];
+new Function(source.replace(registration,
+  'globalThis.__dorsalSpineNative = { DINOS, skeletalAnatomyProfileFor, ' + nativeApiNames.join(',') + ' };' + registration))();
+const art = globalThis.__dorsalSpineNative;
+delete globalThis.__dorsalSpineNative;
 const geometryFor = new Function(nativeFunction('dinoDorsalSpineGeometry', 2) + '\nreturn dinoDorsalSpineGeometry;')();
 const callerCode = nativeFunction('addDorsalSpine', 12);
 const chainCode = nativeFunction('addVertebralChain', 12);
@@ -197,7 +205,11 @@ describe('Dino Lab native dorsal spine caller', () => {
 function nativeChain({ scale = 1, region = 'dorsal', reverse = false, legacy = false, showSkeleton = true, collapsed = false } = {}) {
   const model = new THREE.Group(), boneMat = new THREE.MeshStandardMaterial(), jointMat = new THREE.MeshStandardMaterial();
   const start = vec(reverse ? 1 : -1, 2, .1).multiplyScalar(scale), end = collapsed ? start.clone() : vec(reverse ? -1 : 1, 2.15, -.1).multiplyScalar(scale);
-  const context = { THREE, vec, model, boneMat, jointMat, props: { showSkeleton }, skeletalProfile: { proximalCaudalProcessCount: 3 }, dinoDorsalSpineGeometry: geometryFor };
+  const dn = art.DINOS.find(species => species.id === 'tyrannosaurus');
+  const context = { THREE, vec, ...art, model, boneMat, jointMat, dn, props: { showSkeleton },
+    len: 8 * scale, ht: 3 * scale, bodyHeight: .58 * scale, shoulder: start.clone(), head: end.clone(),
+    skeletalProfile: { ...art.skeletalAnatomyProfileFor(dn), proximalCaudalProcessCount: 3 },
+    dinoDorsalSpineGeometry: geometryFor };
   const legacyReplacement = legacy ? '\naddDorsalSpine = function(a,b,r0,r1,m) { var spine = addTaperedBoneSegment(a,b,r0,r1,m); if (spine) spine.userData.legacyDorsalSpine = true; return spine; };\n' : '';
   const add = new Function('context', 'with (context) {' + nativeHelpers + callerCode + chainCode + legacyReplacement + '\nreturn addVertebralChain;}')(context);
   add(start, end, 8, .05 * scale, .055 * scale, 1.55, region);

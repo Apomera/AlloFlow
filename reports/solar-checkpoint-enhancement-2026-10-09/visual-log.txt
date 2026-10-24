@@ -1,8 +1,0 @@
-Starting checkpoint-1060-dark
-Checked checkpoint-1060-dark
-Starting checkpoint-1060-light
-Checked checkpoint-1060-light
-Starting checkpoint-320-dark
-Checked checkpoint-320-dark
-Starting checkpoint-320-light
-Checked checkpoint-320-light

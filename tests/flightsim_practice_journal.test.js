@@ -285,7 +285,7 @@ describe('SkySchool practice journal learning flow', () => {
     const prior = JSON.parse(JSON.stringify(latest.lastDebrief));
     expect(prior.reflection).toBe('Final evidence-based revision after reviewing the flight.');
     expect(latest.challengeReflections.first_flight).toBe(prior.reflection);
-    await click('Retry challenge');
+    await click('🔁 Try the challenge again');
     expect(latest.lastDebrief.reflection).toBe(prior.reflection);
     await click('End challenge');
     expect(host.querySelector('#challenge-reflection').value).toBe('');
@@ -312,8 +312,8 @@ describe('SkySchool practice journal learning flow', () => {
   it('keeps cumulative World Tour objectives out of per-session measurement deltas', async () => {
     const first = challenge('world_tour'); first.arrivals = ['kpwm'];
     const second = challenge('world_tour'); second.arrivals = ['kpwm', 'kjfk'];
-    const current = flight({ challenge: second, startedAirborne: true });
-    const prior = flight({ attemptId: 'tour-earlier', challenge: first, startedAirborne: true });
+    const current = flight({ challenge: second, startedAirborne: true, approachAirportId: 'kpwm' });
+    const prior = flight({ attemptId: 'tour-earlier', challenge: first, startedAirborne: true, approachAirportId: 'kpwm' });
     const comparison = FS.flightPracticeComparison(current, prior);
     expect(comparison).toMatchObject({ comparable: true, reason: 'matching' });
     expect(comparison.deltas).not.toHaveProperty('objectives');
@@ -343,7 +343,7 @@ describe('SkySchool completed sprint journal lifecycle', () => {
     await frame();
     expect(hooks().getSprintRef().current).toMatchObject({ active: false, phase: 'result' });
     expect(hooks().pausedRef.current).toBe(true);
-    expect(canvasContext.fillText.mock.calls.some(([text]) => String(text).includes('SPRINT COMPLETE'))).toBe(true);
+    expect(host.querySelector('[data-flight-sprint="result"] #skyschool-sprint-question').textContent).toContain('SPRINT COMPLETE');
     expect(canvasContext.fillText.mock.calls.some(([text]) => String(text).includes('PAUSED'))).toBe(false);
     await act(async () => vi.advanceTimersByTime(50));
     const announcement = document.getElementById('skyschool-a11y-live');

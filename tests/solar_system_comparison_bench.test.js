@@ -150,8 +150,9 @@ describe('Solar System comparison bench', () => {
     expect(ratio(env, 'gravity')).toBe(2.53);
     assertBars(env, 'diameter', [12742, 139822], 'km');
     assertBars(env, 'gravity', [1, 2.53], 'g');
-    expect(meters(env, 'gravity')[0].getAttribute('aria-valuetext')).toBe('1.00 g');
-    expect(meters(env, 'gravity')[1].getAttribute('aria-valuetext')).toBe('2.53 g');
+    // Each meter also speaks its Earth-relative ratio (Earth reference markers, 10-12).
+    expect(meters(env, 'gravity')[0].getAttribute('aria-valuetext')).toBe('1.00 g; 1.00× Earth’s listed gravity');
+    expect(meters(env, 'gravity')[1].getAttribute('aria-valuetext')).toBe('2.53 g; 2.53× Earth’s listed gravity');
   });
 
   it.each([['Earth', 'Jupiter'], ['Mercury', 'Mars'], ['Pluto', 'Jupiter']])(

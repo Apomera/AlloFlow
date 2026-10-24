@@ -2107,8 +2107,11 @@ const _ensureVisualGenerationApi = async () => {
           finish();
       });
   };
-const handlePrintGame = () => {
+// The answer key prints only when asked for: copies for a class must not carry it.
+// An onClick event arrives as the first argument, so only `true` counts.
+const handlePrintGame = (withAnswerKey) => {
       if (!__d.gameData || !Array.isArray(__d.gameData.grid) || !__d.gameData.grid.length) return;
+      const includeKey = withAnswerKey === true;
       const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
       const solutions = new Set(__d.gameData.solutions || []);
       const columns = Math.max(1, ...__d.gameData.grid.map(row => row.length));
@@ -2121,7 +2124,7 @@ const handlePrintGame = () => {
       // and depends on app-only Tailwind styles that a new window does not have.
       win.document.write('<!doctype html><html lang="' + esc(document.documentElement.lang || 'en') + '" dir="' + direction + '"><head><meta charset="utf-8"><title>' + esc(__d.t('glossary.print_puzzle_title')) + '</title><style>' +
           '@page{margin:12mm}*{box-sizing:border-box}body{font:12pt/1.4 Arial,sans-serif;margin:0;color:#000;background:#fff}h1,h2,h3{text-align:center}h1,h2{font-size:20pt;margin:0 0 12pt}h3{font-size:12pt;font-weight:normal}.student-version,.teacher-version{max-width:180mm;margin:0 auto}.teacher-version{break-before:page}.puzzle-grid{border-collapse:collapse;table-layout:fixed;width:100%;max-width:160mm;margin:12pt auto;break-inside:avoid}.puzzle-grid td{border:1px solid #777;text-align:center;padding:0;width:' + (100 / columns) + '%}.puzzle-grid td span{display:flex;align-items:center;justify-content:center;aspect-ratio:1;font:700 ' + Math.min(16, 360 / columns) + 'pt monospace}.solution span{outline:2px solid #000;outline-offset:-3px;border-radius:50%}.word-list{display:flex;flex-wrap:wrap;justify-content:center;gap:8pt 18pt;padding:0;list-style:none}.word-list li{overflow-wrap:anywhere;max-width:100%}.name-line{display:flex;justify-content:space-between;font-size:11pt;margin-bottom:14pt}' +
-          '</style></head><body><section class="student-version"><h1>' + esc(__d.t('glossary.word_search_title')) + '</h1><div class="name-line"><span>' + esc(__d.t('matching.print_name')) + ': ____________________</span><span>' + esc(__d.t('matching.print_date')) + ': ______________</span></div>' + grid(false) + '<h3>' + esc(__d.t('glossary.word_search_find')) + '</h3>' + words + '</section><section class="teacher-version"><h2>' + esc(__d.t('glossary.print_answer_key')) + '</h2><h3>' + esc(__d.t('glossary.print_teacher_copy')) + '</h3>' + grid(true) + words + '</section></body></html>');
+          '</style></head><body><section class="student-version"><h1>' + esc(__d.t('glossary.word_search_title')) + '</h1><div class="name-line"><span>' + esc(__d.t('matching.print_name')) + ': ____________________</span><span>' + esc(__d.t('matching.print_date')) + ': ______________</span></div>' + grid(false) + '<h3>' + esc(__d.t('glossary.word_search_find')) + '</h3>' + words + '</section>' + (includeKey ? '<section class="teacher-version"><h2>' + esc(__d.t('glossary.print_answer_key')) + '</h2><h3>' + esc(__d.t('glossary.print_teacher_copy')) + '</h3>' + grid(true) + words + '</section>' : '') + '</body></html>');
       win.document.close();
       setTimeout(() => win.print(), 500);
   };
@@ -2755,6 +2758,11 @@ const handleSubmitLiveAnswer = async (payload) => {
           if (!Number.isInteger(payload.questionIdx) || payload.questionIdx < 0 || payload.questionIdx > 9999) return { status: 'invalid' };
           return guest.sendConfirmedResponse(payload.questionIdx, {
               itemType: payload.itemType, answer: payload.answer, conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
+              confidence: ['knew', 'guessed', 'no-idea'].includes(payload.confidence) ? payload.confidence : null,
+              questionSignature: typeof payload.questionSignature === 'string' ? payload.questionSignature.slice(0, 80) : '',
+              assessmentAttemptId: typeof payload.assessmentAttemptId === 'string' ? payload.assessmentAttemptId.slice(0, 96) : '',
+              assessmentAttemptStartedAt: Number(payload.assessmentAttemptStartedAt) || 0,
+              assessmentFinal: payload.itemType !== 'assessment-start',
               timestamp: payload.timestamp || Date.now(), submitted: payload.answered !== false, assessmentActivityId: activityId,
           }, String(payload.requestId || ''));
       }
@@ -2778,6 +2786,10 @@ const handleSubmitLiveAnswer = async (payload) => {
           itemType: normalizedItemType,
           timestamp: typeof payload.timestamp === 'number' && Number.isFinite(payload.timestamp) ? payload.timestamp : Date.now(),
           conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
+          questionSignature: typeof payload.questionSignature === 'string' ? payload.questionSignature.slice(0, 80) : '',
+          assessmentAttemptId: typeof payload.assessmentAttemptId === 'string' ? payload.assessmentAttemptId.slice(0, 96) : '',
+          assessmentAttemptStartedAt: Number(payload.assessmentAttemptStartedAt) || 0,
+          assessmentActivityId: String(__d.sessionData?.quizState?.activityId || ''),
           submitted: true,
       };
       if (isStructured) {
@@ -4312,7 +4324,7 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
       const studioApi = window.AlloModules && window.AlloModules.StudioResponse;
       const needsStudioResponse = filteredContent.some(item => ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type));
       if (needsStudioResponse && (!studioApi || ['supports', 'toSubmission', 'toResponseEntries'].some(name => typeof studioApi[name] !== 'function'))) {
-          __d.addToast(__d.t('toasts.export_tools_still_loading_try') || 'Submission tools are still loading. Try Submit again.', 'error');
+          __d.addToast(__d.t('toasts.submission_tools_still_loading'), 'error');
           return { ok: false, retryable: true, reason: 'studio-tools-not-ready' };
       }
       const cleanContent = __d.sanitizeSubmissionData(filteredContent.filter(item => !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type) || studioApi).map(item =>
@@ -4572,7 +4584,7 @@ const handleDeleteHistoryItem = (e, id, itemRef = null) => {
       }) : [];
       if (dependents.length) {
         const titles = dependents.slice(0, 3).map(it => String(it.title || 'Lesson Directions')).join(', ');
-        __d.addToast(__d.t('directions.delete_ref_notice', { titles }) || ('Heads up: ' + titles + ' still uses this resource for a goal or activity choice. Edit the directions to update them.'), 'warning');
+        __d.addToast(__d.t('directions.delete_ref_notice', { titles }), 'warning');
       }
     } catch (_) {}
     if (deletingActiveResource) {
@@ -5071,7 +5083,7 @@ const handleRestoreImage = async (options) => {
             applied = commit(data => _alloRegeneratedImageData(data, { imageUrl: imageBase64 }));
             if (applied !== false) __d.addToast(__d.t('toasts.image_restored') || 'Image regenerated!', "success");
         }
-        if (applied === false) __d.addToast(__d.t('visuals.regenerate_superseded') || 'The visual changed while new pictures were being made, so they were not applied. Try again.', 'warning');
+        if (applied === false) __d.addToast(__d.t('visuals.regenerate_superseded'), 'warning');
     } catch (e) {
         __d.warnLog("Image regeneration failed", e);
         __d.setError(__d.t('visuals.actions.restore_error'));
@@ -5326,8 +5338,53 @@ const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) =
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? { ...item, data: newData } : item));
   };
-const handleQuizQuestionAction = async (qIndex, action, payload = null) => {
+const handleQuizQuestionAction = async (qIndex, action, payload = null, guard = null) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'quiz' || !__d.generatedContent.data) return;
+    if (action === 'replace' && guard != null) {
+        if (!guard || typeof guard !== 'object' || !Number.isInteger(qIndex) || qIndex < 0
+            || guard.questionIndex !== qIndex || guard.resourceId == null || !guard.question
+            || typeof guard.questionSignature !== 'string' || !payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+        const targetId = String(guard.resourceId);
+        const originalQuestion = guard.question;
+        const originalSignature = guard.questionSignature;
+        const matchesTarget = (item, requireIdentity) => {
+            if (!item || item.type !== 'quiz' || String(item.id) !== targetId || !Array.isArray(item.data?.questions)) return false;
+            const question = item.data.questions[qIndex];
+            if (!question || requireIdentity && question !== originalQuestion) return false;
+            try { return JSON.stringify(question) === originalSignature; } catch (_) { return false; }
+        };
+        // The caller may have completed after navigation or a target edit.
+        // Recheck now, and again against each latest state inside the updaters.
+        if (!matchesTarget(__d.generatedContent, true)) return false;
+        const replacement = { ...payload, type: payload.type || originalQuestion.type || 'mcq', factCheck: null };
+        const applyReplacement = (item, requireIdentity) => {
+            if (!matchesTarget(item, requireIdentity)) return item;
+            const questions = item.data.questions.slice();
+            questions[qIndex] = { ...replacement };
+            const actualMix = {};
+            questions.forEach(question => {
+                const type = question && question.type || 'mcq';
+                actualMix[type] = (actualMix[type] || 0) + 1;
+            });
+            const data = { ...item.data, questions, actualItemTypeMix: actualMix };
+            if (data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object') {
+                const keys = new Set([...Object.keys(data.requestedItemTypeMix), ...Object.keys(actualMix)]);
+                data.itemCountMismatch = Array.from(keys).some(key => (data.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
+            }
+            return { ...item, data };
+        };
+        __d.setGeneratedContent(previous => applyReplacement(previous, true));
+        __d.setHistory(previous => {
+            if (!Array.isArray(previous)) return previous;
+            // Public ids must identify one saved resource. Do not guess when
+            // imported history contains ambiguous copies with the same id.
+            if (previous.filter(item => item && item.type === 'quiz' && String(item.id) === targetId).length !== 1) return previous;
+            return previous.map(item => applyReplacement(item, false));
+        });
+        // React may defer or replay the pure updaters. This acknowledges that
+        // a guarded commit was queued, not that it has already been applied.
+        return { status: 'queued' };
+    }
     if (action === 'release-feedback') {
         if (!__d.isTeacherMode || !payload || typeof payload.signature !== 'string' || !payload.signature) return false;
         const targetId = __d.generatedContent.id;
@@ -6212,12 +6269,12 @@ const handleAiRefineSource = async () => {
           const lengthRatio = refined.length / Math.max(1, currentText.length);
           if (!refined || (currentText.length >= 40 && (lengthRatio < 0.25 || lengthRatio > 4))) {
               __d.warnLog("Refinement rejected: empty or drastic length change", lengthRatio);
-              __d.addToast(__d.t('analysis.refine_rejected') || 'The AI returned text that was empty or far shorter or longer than the source, so nothing was changed. Try a more specific instruction.', "warning");
+              __d.addToast(__d.t('analysis.refine_rejected'), "warning");
               return;
           }
           // Id-bound and revision-checked: a late result never lands on another resource or over newer edits.
           if (!onCorrectAnalysisText(refineResourceId, expectedText, refined, [])) {
-              __d.addToast(__d.t('analysis.refine_source_changed') || 'The source changed while the AI was revising it, so the revision was not applied. Review the text and try again.', "warning");
+              __d.addToast(__d.t('analysis.refine_source_changed'), "warning");
               return;
           }
           __d.setSourceRefineInstruction('');
@@ -6306,7 +6363,7 @@ const handleGenerateRubric = async () => {
         const applied = __d.onUpdateResource(rubricResourceId, previous => previous && previous.type === 'sentence-frames' && scaffoldKey(previous.data) === requestedKey
             ? { ...previous, data: { ...previous.data, rubric: rubricText } } : previous);
         if (!applied) {
-            __d.addToast(__d.t('scaffolds.rubric_stale') || 'The writing scaffold changed while the rubric was being written, so it was not added. Generate it again.', "warning");
+            __d.addToast(__d.t('scaffolds.rubric_stale'), "warning");
             return;
         }
         __d.addToast(__d.isIndependentMode ? __d.t('toasts.checklist_generated') : __d.t('toasts.rubric_generated'), "success");
@@ -11152,16 +11209,21 @@ const downloadSubmissionBackup = (submissionData, filename) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
   };
-const loadProjectFromJson = (parsed) => {
+const loadProjectFromJson = async (parsed) => {
     try {
       const jsonString = JSON.stringify(parsed);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const fileName = (parsed && parsed.title ? parsed.title : 'community-lesson') + '.json';
       const file = new File([blob], fileName, { type: 'application/json' });
       const fakeEvent = { target: { files: [file] } };
-      __d.handleLoadProject(fakeEvent);
+      const owner = await __d.handleLoadProject(fakeEvent);
+      if (!owner || !owner.completion || typeof owner.completion.then !== 'function') {
+        throw new Error('Project import completion is unavailable. Refresh AlloFlow and try again.');
+      }
+      return await owner.completion;
     } catch (err) {
       __d.addToast && __d.addToast(__d.t('toasts.failed_load_lesson') + (err && err.message), 'error');
+      return { success: false };
     }
   };
 const handleBotFinishedSpeaking = () => {

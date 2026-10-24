@@ -21,12 +21,13 @@ const SEAS = [
   { key: 'H', name: 'Mare Nubium', label: 'Sea of Clouds', lon: -17, lat: -21 },
 ];
 
+// Non-finite numbers reaching Canvas are collected and checked once per test
+// (afterEach): an expect() per number made the marker test exceed 5 s.
+let nonFinite = [];
 function canvasRecorder() {
   const calls = [];
   const record = (key, args) => {
-    for (const value of args) {
-      if (typeof value === 'number') expect(Number.isFinite(value), String(key)).toBe(true);
-    }
+    if (args.some((value) => typeof value === 'number' && !Number.isFinite(value))) nonFinite.push([String(key), ...args]);
     calls.push([key, ...args]);
   };
   const gradient = (...args) => {
@@ -41,7 +42,7 @@ function canvasRecorder() {
   const ctx = new Proxy({}, {
     get: (target, key) => known[key] || target[key] || ((...args) => record(key, args)),
     set: (target, key, value) => {
-      if (typeof value === 'number') expect(Number.isFinite(value), String(key)).toBe(true);
+      if (typeof value === 'number' && !Number.isFinite(value)) nonFinite.push(['set', String(key), value]);
       target[key] = value;
       calls.push(['set', key, value]);
       return true;
@@ -56,8 +57,12 @@ beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
   loadTool(process.env.MM_SOURCE || 'stem_lab/stem_tool_moonmission.js', 'moonMission');
   P = window.MoonMissionPure;
+  nonFinite = [];
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  expect(nonFinite, 'Canvas calls with non-finite numbers').toEqual([]);
+});
 
 describe('lunar atlas geographic lighting', () => {
   it('matches the independent Sun dot surface normal in geographic and projected coordinates', () => {

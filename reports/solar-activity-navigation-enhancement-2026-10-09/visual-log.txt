@@ -1,8 +1,0 @@
-Starting activity-finder-1060-dark
-Checked activity-finder-1060-dark
-Starting activity-finder-1060-light
-Checked activity-finder-1060-light
-Starting activity-finder-320-dark
-Checked activity-finder-320-dark
-Starting activity-finder-320-light
-Checked activity-finder-320-light

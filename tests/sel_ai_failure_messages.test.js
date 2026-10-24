@@ -72,7 +72,11 @@ describe('SEL Hub · an AI failure is never silent', () => {
     for (const tool of announcing) {
       const src = readFileSync(join(SEL, 'sel_tool_' + tool + '.js'), 'utf8');
       const failureAnnounces = (src.match(/announceToSR\(\s*'[^']*(could not|not be)|announceSR\(\s*(msg|'[^']*(could not|not be))/g) || []).length;
-      expect(failureAnnounces, tool + ': no failure is announced to a screen reader').toBeGreaterThan(0);
+      // Equivalent: the failure sentence is written to state that renders inside role="alert"
+      // (friendship since its 09-19 rewrite), which a screen reader announces on its own.
+      const alertStates = [...src.matchAll(/typeof d\.(\w+Error) === 'string' && d\.\1 && h\('p', \{ role: 'alert'/g)].map((m) => m[1]);
+      const alertAnnounces = alertStates.filter((key) => new RegExp(key + ": '[^']*(could not|not be)").test(src)).length;
+      expect(failureAnnounces + alertAnnounces, tool + ': no failure is announced to a screen reader').toBeGreaterThan(0);
     }
   });
 });

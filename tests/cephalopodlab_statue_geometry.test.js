@@ -177,7 +177,7 @@ describe('Cephalopod Hunter weathered carved statue', () => {
         assert.deepEqual(current.values, fixtures[0].values);
         current.group.children.forEach((mesh, part) => geometryEqual(mesh.geometry, fixtures[0].group.children[part].geometry));
         assert.deepEqual(current.queries, i === 0 ? [] : ['OES_standard_derivatives']);
-        if (i < 2) { assert.equal(material.extensions.derivatives, true); assert.equal(material.customProgramCacheKey(), 'cl-rock-surface-v1'); assert.match(shader.fragmentShader, /clRockRoughness/); assert.match(shader.fragmentShader, /fwidth\(clRockPosition/); assert.match(shader.vertexShader, /clRockPosition=position/); }
+        if (i < 2) { assert.equal(material.extensions.derivatives, true); assert.equal(material.customProgramCacheKey(), 'cl-rock-minerals-v2'); assert.match(shader.fragmentShader, /clRockRoughness/); assert.match(shader.fragmentShader, /fwidth\(clRockPosition/); assert.match(shader.vertexShader, /clRockPosition=position/); }
         else { assert.equal(material.extensions?.derivatives, undefined); assert.equal(shader.vertexShader, before.vertexShader); assert.equal(shader.fragmentShader, before.fragmentShader); }
         assert.deepEqual(shader.uniforms, {}, 'Stone adds no time uniform or frame update');
       }

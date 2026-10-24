@@ -288,7 +288,7 @@ window.StemLab = window.StemLab || {
     var T = null;                    // window.THREE once loaded
     var state = 'idle';              // 'idle' | 'loading' | 'ready' | 'failed'
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var batch = null, analyticMesh = null, shadowPlane = null, gridHelper = null;
+    var batch = null, analyticMesh = null, shadowPlane = null, gridHelper = null, ghostLines = null;
     var clipPlane = null, dirLight = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null, raycaster = null, ndc = null;
@@ -421,6 +421,31 @@ window.StemLab = window.StemLab || {
       batch.commit(n);
 
       buildAnalytic(mdl);
+
+      // Ghost outlines of a freeform challenge target: the twelve edges of each
+      // unplaced target cube, so the target reads in this view as in Blocks.
+      disposeMesh(ghostLines);
+      ghostLines = null;
+      var ghosts = mdl.ghosts || [];
+      if (ghosts.length) {
+        var gpos = new Float32Array(ghosts.length * 72), gi = 0, hs = 0.48;
+        var GC = [[-1,-1,-1],[1,-1,-1],[1,-1,1],[-1,-1,1],[-1,1,-1],[1,1,-1],[1,1,1],[-1,1,1]];
+        var GE = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+        ghosts.forEach(function (g) {
+          var cx = g.x - ox, cy = g.z + 0.5, cz = g.y - oz;
+          GE.forEach(function (e) {
+            for (var k = 0; k < 2; k++) {
+              var c = GC[e[k]];
+              gpos[gi++] = cx + c[0] * hs; gpos[gi++] = cy + c[1] * hs; gpos[gi++] = cz + c[2] * hs;
+            }
+          });
+        });
+        var ggeo = new T.BufferGeometry();
+        ggeo.setAttribute('position', new T.BufferAttribute(gpos, 3));
+        ghostLines = new T.LineSegments(ggeo, new T.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.85, depthWrite: false }));
+        ghostLines.frustumCulled = false;
+        scene.add(ghostLines);
+      }
 
       if (gridHelper) { scene.remove(gridHelper); gridHelper.geometry.dispose(); gridHelper.material.dispose(); gridHelper = null; }
       if (mdl.isFreeform) {
@@ -561,6 +586,7 @@ window.StemLab = window.StemLab || {
           instanceCount: batch ? batch.drawnCount() : 0,
           edgeCount: batch ? batch.outlinedCount() : 0,
           hasAnalytic: !!analyticMesh,
+          ghostCount: ghostLines ? ghostLines.geometry.attributes.position.count / 24 : 0,
           analyticShape: analyticMesh ? analyticMesh.geometry.type : null,
           clipConstant: clipPlane ? clipPlane.constant : null,
           clippingOn: !!renderer.localClippingEnabled,
@@ -616,9 +642,9 @@ window.StemLab = window.StemLab || {
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (canvasEl) canvasEl.removeEventListener('webglcontextlost', onContextLost, false);
-        if (scene) { if (batch) batch.dispose(scene); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); }
+        if (scene) { if (batch) batch.dispose(scene); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); disposeMesh(ghostLines); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        batch = null; analyticMesh = shadowPlane = gridHelper = null;
+        batch = null; analyticMesh = shadowPlane = gridHelper = ghostLines = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = ''; appliedViewSig = '';
         if (state !== 'failed') state = 'idle';
@@ -788,8 +814,38 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  // Slider maximum for length, width and height. Anything the tool offers as
+  // a prism to jump to must stay within it.
+  var VOLUME_DIM_MAX = 10;
+
+  // A library structure is the same shape wherever it sits on the grid and
+  // whichever way it is turned on the table (quarter turns about the vertical
+  // axis). Cells are "x-y-z" keys; the count alone passed a flat slab of 20
+  // cubes as the 4-step staircase.
+  function volumeShapeKey(cells) {
+    var mx = Infinity, my = Infinity, mz = Infinity;
+    cells.forEach(function(c) { mx = Math.min(mx, c[0]); my = Math.min(my, c[1]); mz = Math.min(mz, c[2]); });
+    return cells.map(function(c) { return (c[0] - mx) + '-' + (c[1] - my) + '-' + (c[2] - mz); }).sort().join(',');
+  }
+  function volumeShapeMatches(placed, target) {
+    var parse = function(list) {
+      var seen = {};
+      return (list || []).filter(function(k) { if (seen[k]) return false; seen[k] = true; return true; })
+        .map(function(k) { return String(k).split('-').map(Number); });
+    };
+    var cells = parse(placed), want = parse(target);
+    if (!cells.length || cells.length !== want.length) return false;
+    var wantKey = volumeShapeKey(want);
+    for (var turn = 0; turn < 4; turn++) {
+      if (volumeShapeKey(cells) === wantKey) return true;
+      cells = cells.map(function(c) { return [-c[1], c[0], c[2]]; });
+    }
+    return false;
+  }
+
   // Deterministic seams for focused science tests.
   window.__alloVolumePure = {
+    volumeShapeMatches: volumeShapeMatches,
     displacementOffset: displacementOffset,
     calculateDisplacementTrial: calculateDisplacementTrial,
     calculateSinkerCorrectionTrial: calculateSinkerCorrectionTrial,
@@ -860,7 +916,21 @@ window.StemLab = window.StemLab || {
         }
       };
 
-      var dims = _v.dims || { l: 3, w: 2, h: 2 };
+      // Read l, w, h within the slider range. State saved before the sliders
+      // stopped at VOLUME_DIM_MAX can hold a 24 (the old "1 x 1 x 24" jump),
+      // which the slider could not show while the model drew it.
+      var clampSliderDims = function(d) {
+        if (!d || typeof d !== 'object') return d;
+        var lo = _v.allowFractional ? 0.5 : 1, out = d;
+        ['l', 'w', 'h'].forEach(function(k) {
+          var n = Number(d[k]);
+          if (!isFinite(n) || (n <= VOLUME_DIM_MAX && n >= lo)) return;
+          if (out === d) out = Object.assign({}, d);
+          out[k] = n > VOLUME_DIM_MAX ? VOLUME_DIM_MAX : lo;
+        });
+        return out;
+      };
+      var dims = clampSliderDims(_v.dims) || { l: 3, w: 2, h: 2 };
       var mode = _v.mode || 'slider';
       var rotation = _v.rotation || { x: -25, y: -35 };
       var scale = _v.scale || 1.0;
@@ -874,6 +944,15 @@ window.StemLab = window.StemLab || {
       var builderFeedback = _v.builderFeedback || null;
       var score = _v.score || { correct: 0, total: 0 };
       var paintSurfaceArea = _v.paintSurfaceArea || false;
+      // Once a checker has printed an item's answer, the item is locked: no more
+      // score, streak, XP, quest or badge credit. Kept in tool state by item, so a
+      // reload or a slider trip away and back cannot reopen it.
+      var revealedItems = (_v.revealedItems && typeof _v.revealedItems === 'object' && !Array.isArray(_v.revealedItems)) ? _v.revealedItems : {};
+      var itemRevealed = function(key) { return Object.prototype.hasOwnProperty.call(revealedItems, key); };
+      var revealItem = function(key) { var next = Object.assign({}, revealedItems); next[key] = true; upd({ revealedItems: next }); };
+      var sliderItemKey = function(c) { return 'slider:' + c.l + 'x' + c.w + 'x' + c.h; };
+      var lockedMsg = __alloT('stem.volume.answer_shown_try_next', 'Answer shown. Try the next one.');
+      var sliderLocked = !!challenge && itemRevealed(sliderItemKey(challenge));
 
       // Extended state for badges & AI
       var badges = _v.badges || {};
@@ -993,7 +1072,7 @@ window.StemLab = window.StemLab || {
         if (!entry) return;
         upd({
           positions: entry.positions || [],
-          dims: entry.dims || dims,
+          dims: clampSliderDims(entry.dims) || dims,
           mode: entry.mode || mode,
           layerColors: entry.layerColors || layerColors,
           activeBuildLayer: entry.activeBuildLayer != null ? entry.activeBuildLayer : activeBuildLayer,
@@ -1303,11 +1382,17 @@ window.StemLab = window.StemLab || {
         });
         commitFreeformLayerChange(next, added, added ? 'Duplicated ' + added + ' blocks to layer ' + (targetLayer + 1) + '.' : 'Layer ' + (targetLayer + 1) + ' already contains those blocks.', targetLayer);
       };
+      // Stats follow the selected solid. They used the box formulas for every
+      // shape, so a 4x4x6 cone read V = 96 beside its own (1/3)pi r^2 h = 25.13.
+      // Word problems are box stories, so they always use the prism.
+      var solid = isWord ? 'prism' : shape;
       var volume = isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume : 0)
-        : (isSlider ? dims.l * dims.w * dims.h : posSet.size);
+        : (isSlider ? analyticVolume(solid, dims.l, dims.w, dims.h) : posSet.size);
       var surfaceArea = isDisplacement ? 0 : (isSlider
-        ? 2 * (dims.l * dims.w + dims.l * dims.h + dims.w * dims.h)
+        ? analyticSurfaceArea(solid, dims.l, dims.w, dims.h)
         : getSA(posSet));
+      var volumeShown = Math.round(volume * 100) / 100;
+      var surfaceShown = Math.round(surfaceArea * 100) / 100;
       // ── Volume predictor: commit-then-check state ──
       // Three phases. 'idle' is the default and changes nothing, so the normal
       // "watch it grow" readout stays untouched for anyone not mid-prediction.
@@ -1316,6 +1401,11 @@ window.StemLab = window.StemLab || {
       var volPred = _v._volPred || {};
       var volPredPhase = (volPred.phase === 'armed' || volPred.phase === 'locked') ? volPred.phase : 'idle';
       var volPredArmed = !isDisplacement && volPredPhase === 'armed';
+      // A readout that prints the answer to an open question turns it into copying.
+      var answerMasked = volPredArmed
+        || (isSlider && !isWord && !!challenge && !feedback)
+        || (isWord && !(wpFeedback && wpFeedback.correct))
+        || (isFreeform && !!builderChallenge && builderChallenge.type === 'volume');
 
       var cubeUnit = isSlider
         ? Math.max(18, Math.min(36, 240 / Math.max(dims.l, dims.w, dims.h)))
@@ -1343,6 +1433,8 @@ window.StemLab = window.StemLab || {
         return h('div', { 
           key: isGhost ? ('ghost-'+x+'-'+y+'-'+z) : (x+'-'+y+'-'+z),
           'data-volume-cube': isGhost ? undefined : 'true',
+          'data-volume-ghost': isGhost ? 'true' : undefined,
+          'data-volume-ghost-cell': isGhost ? (x+'-'+y+'-'+z) : undefined,
           'data-volume-layer': isGhost ? undefined : String(z),
           'data-volume-layer-color': !isGhost && layerColor ? layerColor : undefined,
           onClick: clickable ? function(e) { e.stopPropagation(); onClick && onClick(); } : undefined,
@@ -1361,6 +1453,21 @@ window.StemLab = window.StemLab || {
           }});
         }));
       };
+
+      // Target cells a freeform challenge outlines: the Build Prism box, or the
+      // library structure ("the cubes will appear as ghost outlines"). The
+      // Blocks view, the WebGL view and the layer grid all mark them.
+      var ghostCells = [];
+      if (isFreeform && builderChallenge) {
+        if (builderChallenge.type === 'prism' && builderChallenge.target) {
+          var gT = builderChallenge.target;
+          for (var gx2 = 0; gx2 < gT.l; gx2++) for (var gy2 = 0; gy2 < gT.w; gy2++) for (var gz2 = 0; gz2 < gT.h; gz2++) ghostCells.push([gx2, gy2, gz2]);
+        } else if (builderChallenge.library && Array.isArray(builderChallenge.libraryPositions)) {
+          builderChallenge.libraryPositions.forEach(function(k) { ghostCells.push(String(k).split('-').map(Number)); });
+        }
+      }
+      var ghostTargetSet = new Set(ghostCells.map(function(g) { return g.join('-'); }));
+      var openGhosts = ghostCells.filter(function(g) { return !posSet.has(g.join('-')); });
 
       // Build cube grid
       var cubes = [];
@@ -1460,19 +1567,10 @@ window.StemLab = window.StemLab || {
           }
         });
 
-        // Render ghost target for prism challenge
-        if (builderChallenge && builderChallenge.type === 'prism') {
-          var tgt = builderChallenge.target;
-          for (var gx2 = 0; gx2 < tgt.l; gx2++) {
-            for (var gy2 = 0; gy2 < tgt.w; gy2++) {
-              for (var gz2 = 0; gz2 < tgt.h; gz2++) {
-                if (!posSet.has(gx2+'-'+gy2+'-'+gz2)) {
-                  cubes.push(renderCube(gx2, gy2, gz2, 210, 80, cubeUnit, false, null, true));
-                }
-              }
-            }
-          }
-        }
+        // Ghost target: the Build Prism box or the picked library structure.
+        openGhosts.forEach(function(g) {
+          cubes.push(renderCube(g[0], g[1], g[2], 210, 80, cubeUnit, false, null, true));
+        });
       }
 
       var fw = isSlider ? dims.l * cubeUnit : 8 * cubeUnit;
@@ -1483,7 +1581,8 @@ window.StemLab = window.StemLab || {
       // inside VolGL diffs `sig` and uploads on the next frame.
       var glStackH = isSlider
         ? (showLayers != null ? Math.min(showLayers, dims.h) : dims.h)
-        : Math.max(1, glVoxels.reduce(function(m, v) { return Math.max(m, v.z + 1); }, 0));
+        : Math.max(1, glVoxels.reduce(function(m, v) { return Math.max(m, v.z + 1); }, 0),
+            openGhosts.reduce(function(m, g) { return Math.max(m, g[2] + 1); }, 0));
       var glCrossSection = (isSlider && showCrossSection)
         ? Math.min(crossSectionLayer, dims.h - 1)
         : null;
@@ -1497,6 +1596,7 @@ window.StemLab = window.StemLab || {
         showAnalytic: isSlider && showAnalytic,
         crossSection: glCrossSection,
         isFreeform: isFreeform,
+        ghosts: openGhosts.map(function(g) { return { x: g[0], y: g[1], z: g[2] }; }),
         rotX: rotation.x, rotY: rotation.y, scale: scale,
         onToggle: toggleFreeformCube,
         // ensureThree resolves asynchronously, long after this render. Bump
@@ -1518,7 +1618,8 @@ window.StemLab = window.StemLab || {
           isSlider ? 's' : 'f', shape, dims.l, dims.w, dims.h, glStackH,
           glCrossSection, showAnalytic, paintSurfaceArea, glVoxels.length,
           glVoxels.length ? glVoxels[glVoxels.length - 1].color : '',
-          isFreeform ? positions.join(',') : ''
+          isFreeform ? positions.join(',') : '',
+          openGhosts.map(function(g) { return g.join('-'); }).join(',')
         ].join('|')
       };
       if (glMode && !isDisplacement) VolGL.submit(glModel);
@@ -1648,7 +1749,7 @@ window.StemLab = window.StemLab || {
       var BUILD_CHALLENGES = [
         {
           id: 'staircase', icon: '🪜', label: __alloT('stem.volume.staircase_4_steps', 'Staircase (4 steps)'),
-          desc: __alloT('stem.volume.4_steps_of_decreasing_size_v_4_3_2_1_1', '4 steps of decreasing size. V = 4 + 3 + 2 + 1 = 10 cubes.'),
+          desc: __alloT('stem.volume.staircase_4_steps_2_deep_v_8_6_4_2_20', '4 steps of decreasing size, 2 cubes deep. V = 8 + 6 + 4 + 2 = 20 cubes.'),
           positions: ['0-0-0','1-0-0','2-0-0','3-0-0','0-1-0','1-1-0','2-1-0','3-1-0','0-0-1','1-0-1','2-0-1','0-1-1','1-1-1','2-1-1','0-0-2','1-0-2','0-1-2','1-1-2','0-0-3','0-1-3'],
           targetVolume: 20
         },
@@ -1673,13 +1774,13 @@ window.StemLab = window.StemLab || {
         },
         {
           id: 'bridge', icon: '🌉', label: __alloT('stem.volume.bridge', 'Bridge'),
-          desc: __alloT('stem.volume.two_pillars_connected_by_a_deck_v_6_6_', 'Two pillars connected by a deck — V = 6 + 6 + 5 = 17.'),
+          desc: __alloT('stem.volume.bridge_two_pillars_5x2_deck_v_6_6_10_22', 'Two pillars, each 2 cubes wide and 3 high, under a 5×2 deck. V = 6 + 6 + 10 = 22 cubes.'),
           positions: ['0-0-0','0-1-0','0-0-1','0-1-1','0-0-2','0-1-2','4-0-0','4-1-0','4-0-1','4-1-1','4-0-2','4-1-2','0-0-3','1-0-3','2-0-3','3-0-3','4-0-3','0-1-3','1-1-3','2-1-3','3-1-3','4-1-3'],
           targetVolume: 22
         },
         {
           id: 'tower', icon: '🗼', label: __alloT('stem.volume.tower_eiffel_ish', 'Tower (Eiffel-ish)'),
-          desc: __alloT('stem.volume.tapering_tower_each_level_smaller_than', 'Tapering tower. Each level smaller than the last.'),
+          desc: __alloT('stem.volume.tower_3x3_2x2_spire_v_9_4_2_15', 'Tapering tower: a 3×3 base, a 2×2 level, then a 2-cube spire. V = 9 + 4 + 2 = 15 cubes.'),
           positions: (function() {
             var p = [];
             // Base 3x3
@@ -1748,13 +1849,25 @@ window.StemLab = window.StemLab || {
         return 'Build it in layers: the bottom layer is ' + l + ' × ' + w + ' = ' + (l * w) + ' cubes, and there are ' + hh + ' layers — ' + (l * w) + ' × ' + hh + ' = ' + correct + '.';
       };
 
+      // Grade a typed volume as a number. parseInt truncated it: an exact
+      // half-unit answer (22.5) was marked wrong and 24.7 passed for 24.
+      var volumeAnswerMatches = function(raw, correct) {
+        var n = parseFloat(raw);
+        return isFinite(n) && Math.abs(n - correct) < 1e-9;
+      };
       // ── Check challenge ──
       var checkChallenge = function() {
         if (isSlider && challenge) {
-          var ans = parseInt(answer);
-          var ok = ans === challenge.answer;
+          // Solved stays solved: re-pressing Check re-counted score, streak and XP.
+          if (feedback && feedback.correct) return;
+          var sKey = sliderItemKey(challenge);
+          if (itemRevealed(sKey)) return;
+          var ans = parseFloat(answer);
+          var ok = volumeAnswerMatches(answer, challenge.answer);
           var sliderFb = ok ? '' : diagnoseVolumeError(challenge.l, challenge.w, challenge.h, ans);
-          announceToSR(ok ? 'Correct!' : 'Incorrect. ' + sliderFb);
+          // A wrong check prints the volume and unmasks the readouts: lock the item.
+          if (!ok) revealItem(sKey);
+          announceToSR(ok ? 'Correct!' : 'Incorrect. ' + sliderFb + ' ' + lockedMsg);
           playSound(ok ? 'correct' : 'wrong');
           var newStreak = ok ? streak + 1 : 0;
           if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
@@ -1772,6 +1885,7 @@ window.StemLab = window.StemLab || {
           }
         }
         if (isFreeform && builderChallenge) {
+          if (builderFeedback && builderFeedback.correct) return;
           var vol = posSet.size;
           if (builderChallenge.type === 'prism') {
             var tgtP = builderChallenge.target;
@@ -1804,23 +1918,47 @@ window.StemLab = window.StemLab || {
               checkBadges({ firstVolume: true, prismBuilder: true, streak5: newStreak2 >= 5, streak10: newStreak2 >= 10 });
             }
           } else {
-            var ok2 = vol === builderChallenge.answer;
+            var isLBlock = builderChallenge.shape === 'L-Block';
+            // The L-block asks for the volume of a block the tool already built,
+            // so grade the typed answer: counting the pre-placed cubes passed
+            // with no answer at all.
+            if (isLBlock && !String(answer).trim()) return;
+            var ok2 = isLBlock ? volumeAnswerMatches(answer, builderChallenge.answer) : vol === builderChallenge.answer;
+            // A library structure is graded as a shape ("Match the shape"), not
+            // only by its cube count.
+            var shapeMiss = false;
+            if (ok2 && builderChallenge.library && Array.isArray(builderChallenge.libraryPositions)) {
+              ok2 = volumeShapeMatches(positions, builderChallenge.libraryPositions);
+              shapeMiss = !ok2;
+            }
+            var missMsg = isLBlock ? 'Not quite. Count the cubes in each layer, then add the layers together.'
+              : shapeMiss ? __alloT('stem.volume.library_shape_mismatch', 'Right number of cubes, but not the same shape yet. Compare your build with the ghost outlines.')
+              : 'You placed '+vol+' cubes. Correct: '+builderChallenge.answer+'.';
             playSound(ok2 ? 'correct' : 'wrong');
             var newStreak3 = ok2 ? streak + 1 : 0;
-            var isLBlock = builderChallenge.shape === 'L-Block';
             upd({
               builderFeedback: ok2
                 ? { correct: true, msg: '\u2705 Correct! Volume = '+builderChallenge.answer+' cubic units' + (newStreak3 >= 3 ? '  \uD83D\uDD25 ' + newStreak3 + ' streak!' : '') }
-                : { correct: false, msg: '\u274c You placed '+vol+' cubes. Correct: '+builderChallenge.answer+'.' },
-              score: { correct: score.correct + (ok2 ? 1 : 0), total: score.total + 1 },
-              streak: newStreak3
+                : { correct: false, msg: '\u274c ' + missMsg },
+              score: builderChallenge.revealed ? score : { correct: score.correct + (ok2 ? 1 : 0), total: score.total + 1 },
+              streak: builderChallenge.revealed ? streak : newStreak3
             });
-            if (ok2) {
+            // A revealed solution ("gives up - no badge") earns nothing.
+            if (ok2 && !builderChallenge.revealed) {
               awardStemXP('volume', 5, 'volume quiz');
               checkBadges({ firstVolume: true, lBlockSolver: isLBlock, streak5: newStreak3 >= 5, streak10: newStreak3 >= 10 });
             }
           }
         }
+      };
+      // A new slider challenge (button and N key), skipping boxes whose answer was shown.
+      var newSliderChallenge = function() {
+        var l, w, hh;
+        for (var tries = 0; tries < 25; tries++) {
+          l = Math.floor(Math.random()*8)+1; w = Math.floor(Math.random()*6)+1; hh = Math.floor(Math.random()*6)+1;
+          if (!itemRevealed(sliderItemKey({ l: l, w: w, h: hh }))) break;
+        }
+        upd({ shape: 'prism', dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
       };
 
       // ── AI Tutor ──
@@ -1850,6 +1988,8 @@ window.StemLab = window.StemLab || {
           if (builderChallenge) {
             if (builderChallenge.type === 'prism') {
               prompt += 'Challenge: build a ' + builderChallenge.target.l + '\u00d7' + builderChallenge.target.w + '\u00d7' + builderChallenge.target.h + ' prism. ';
+            } else if (builderChallenge.library) {
+              prompt += 'Challenge: build the "' + builderChallenge.shape + '" structure from ' + builderChallenge.answer + ' cubes (' + builderChallenge.libraryDesc + '). The shape must match, not just the count. ';
             } else {
               prompt += 'Challenge: build a shape with volume = ' + builderChallenge.answer + '. ';
             }
@@ -1887,10 +2027,7 @@ window.StemLab = window.StemLab || {
         if (key === 'd' && !isDisplacement) { e.preventDefault(); upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); }
         if (key === 'n') {
           e.preventDefault();
-          if (isSlider) {
-            var rl = Math.floor(Math.random()*8)+1, rw = Math.floor(Math.random()*6)+1, rh = Math.floor(Math.random()*6)+1;
-            upd({ dims: {l:rl,w:rw,h:rh}, challenge: {l:rl,w:rw,h:rh,answer:rl*rw*rh}, answer: '', feedback: null, showLayers: null });
-          }
+          if (isSlider) newSliderChallenge();
         }
         if (key === 'p') { e.preventDefault(); upd({ paintSurfaceArea: !paintSurfaceArea }); if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true }); }
         if (key === 'b') { e.preventDefault(); upd({ showBadges: !showBadges }); }
@@ -2110,10 +2247,14 @@ window.StemLab = window.StemLab || {
       };
       var renderCompare = function() {
         var V = volume;
-        var allFactors = getFactorizations(V);
+        // Offer only boxes the sliders can make: tapping "1 x 1 x 24" set a
+        // 24 the slider (max 10) could neither show nor reach. Factor triples
+        // are sorted, so f[2] is the longest side.
+        var allFactors = getFactorizations(V).filter(function(f) { return f[2] <= VOLUME_DIM_MAX; });
         if (allFactors.length === 0) {
+          // Only half-unit dimensions get here; the sliders cap V at 1000.
           return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3 text-center text-xs text-slate-600' },
-            __alloT('stem.volume.volume_out_of_range_for_comparison_try', 'Volume out of range for comparison. Try a smaller prism (V ≤ 1000).')
+            __alloT('stem.volume.compare_needs_whole_number_sides', 'Same-volume comparison works with whole-number sides from 1 to 10. Set whole-number dimensions to compare shapes.')
           );
         }
         var allWithSA = allFactors.map(function(f) {
@@ -2862,27 +3003,27 @@ window.StemLab = window.StemLab || {
                 h('input', { id: 'volume-dimension-' + dim,
                   type: 'range',
                   min: _v.allowFractional ? '0.5' : '1',
-                  max: '10',
+                  max: String(VOLUME_DIM_MAX),
                   step: _v.allowFractional ? '0.5' : '1',
                   value: dims[dim],
                   onChange: function(e) {
                     var nd = Object.assign({}, dims);
                     nd[dim] = parseFloat(e.target.value);
-                    var newVol = nd.l * nd.w * nd.h;
-                    upd({ dims: nd, challenge: null, feedback: null, showLayers: null });
+                    var newVol = analyticVolume(solid, nd.l, nd.w, nd.h);
+                    upd({ dims: nd, challenge: null, feedback: null, showLayers: null, wpAnswer: '', wpFeedback: null });
                     if (window._volSrTimer) clearTimeout(window._volSrTimer);
                     window._volSrTimer = setTimeout(function() {
                       announceToSR(volPredArmed
                         ? label + ' ' + nd[dim] + '. Volume hidden until you lock your prediction.'
-                        : label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.');
+                        : (isWord ? label + ' ' + nd[dim] + '.' : label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.'));
                     }, 350);
                     if (nd.l === 10 && nd.w === 10 && nd.h === 10) checkBadges({ dimensionKing: true });
                   },
                   'aria-label': label + ' slider, currently ' + dims[dim] +
-                    (volPredArmed ? ', volume hidden until you lock your prediction' : ', volume ' + volume + ' cubic units'),
+                    (volPredArmed ? ', volume hidden until you lock your prediction' : (answerMasked ? '' : ', volume ' + volumeShown + ' cubic units')),
                   'aria-valuenow': dims[dim],
                   'aria-valuemin': _v.allowFractional ? 0.5 : 1,
-                  'aria-valuemax': 10,
+                  'aria-valuemax': VOLUME_DIM_MAX,
                   className: 'h-3 w-full cursor-pointer appearance-none rounded-lg bg-emerald-200 accent-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2'
                 }),
                 h('div', { className: 'mt-1 text-center text-lg font-bold text-emerald-700' }, dims[dim])
@@ -2929,7 +3070,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
                 [
                   { label: 'Mode', value: volumeModeLabel },
-                  { label: 'Volume', value: isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume + ' mL' : '?') : String(Math.round(volume * 100) / 100) },
+                  { label: 'Volume', value: isDisplacement ? ((dispFeedback && dispFeedback.correct) ? dispTrial.measuredVolume + ' mL' : '?') : (answerMasked ? '?' : String(volumeShown)) },
                   { label: 'Solved', value: String(score.correct) }
                 ].map(function(metric) {
                   return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
@@ -3140,6 +3281,41 @@ window.StemLab = window.StemLab || {
         isWord && (function() {
           var ctx2 = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
           var story = ctx2.story.replace(/\{l\}/g, dims.l).replace(/\{w\}/g, dims.w).replace(/\{h\}/g, dims.h);
+          // The item is the story at these dimensions; a wrong number prints its volume.
+          var wpItemKey = 'word:' + wpCtxIdx + ':' + dims.l + 'x' + dims.w + 'x' + dims.h;
+          var wpLocked = itemRevealed(wpItemKey);
+          // One graded path for Enter and the Check button. A story at one set of
+          // dimensions counts once: re-pressing Check re-counted score, streak,
+          // wpSolved (the word_3 quest) and XP every time.
+          var checkWordProblem = function() {
+            if (!wpAnswer || wpLocked) return;
+            var correct = dims.l * dims.w * dims.h;
+            var ok = volumeAnswerMatches(wpAnswer, correct);
+            var wpKey = wpCtxIdx + ':' + dims.l + 'x' + dims.w + 'x' + dims.h;
+            var wpSeen = (_v.wpSolvedKeys && typeof _v.wpSolvedKeys === 'object') ? _v.wpSolvedKeys : {};
+            var okMsg = '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit;
+            if (ok && wpSeen[wpKey]) { upd({ wpFeedback: { correct: true, msg: okMsg } }); return; }
+            playSound(ok ? 'correct' : 'wrong');
+            var newStreak = ok ? streak + 1 : 0;
+            if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
+            var newSolved = wpSolved + (ok ? 1 : 0);
+            var nextSeen = wpSeen;
+            if (ok) { nextSeen = Object.assign({}, wpSeen); nextSeen[wpKey] = true; }
+            var wpReveals = !ok && !isNaN(parseFloat(wpAnswer));
+            if (wpReveals) revealItem(wpItemKey);
+            announceToSR(ok ? 'Correct!' : (wpReveals ? 'Incorrect. ' + lockedMsg : 'Try again'));
+            upd({
+              wpFeedback: ok
+                ? { correct: true, msg: okMsg + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
+                : { correct: false, msg: '❌ ' + diagnoseVolumeError(dims.l, dims.w, dims.h, parseFloat(wpAnswer)) + ' (in ' + ctx2.unit + ')' },
+              score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
+              streak: newStreak, wpSolved: newSolved, wpSolvedKeys: nextSeen
+            });
+            if (ok) {
+              awardStemXP('volume', 5, 'word problem');
+              checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10, wordWizard: newSolved >= 5 });
+            }
+          };
           return h('div', { className: 'space-y-2' },
             // Context picker row
             h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
@@ -3170,60 +3346,21 @@ window.StemLab = window.StemLab || {
                 h('input', { 'aria-label': __alloT('stem.volume.volume_answer_for_word_problem', 'Volume answer for word problem'),
                   type: 'number', value: wpAnswer,
                   onChange: function(e) { upd({ wpAnswer: e.target.value }); },
-                  onKeyDown: function(e) {
-                    if (e.key === 'Enter' && wpAnswer) {
-                      var correct = dims.l * dims.w * dims.h;
-                      var ok = parseInt(wpAnswer) === correct;
-                      playSound(ok ? 'correct' : 'wrong');
-                      var newStreak = ok ? streak + 1 : 0;
-                      if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
-                      var newSolved = wpSolved + (ok ? 1 : 0);
-                      announceToSR(ok ? 'Correct!' : 'Try again');
-                      upd({
-                        wpFeedback: ok
-                          ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
-                          : { correct: false, msg: '❌ ' + diagnoseVolumeError(dims.l, dims.w, dims.h, parseInt(wpAnswer)) + ' (in ' + ctx2.unit + ')' },
-                        score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
-                        streak: newStreak, wpSolved: newSolved
-                      });
-                      if (ok) {
-                        awardStemXP('volume', 5, 'word problem');
-                        checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10, wordWizard: newSolved >= 5 });
-                      }
-                    }
-                  },
+                  onKeyDown: function(e) { if (e.key === 'Enter' && wpAnswer) checkWordProblem(); },
+                  disabled: wpLocked,
                   placeholder: __alloT('stem.volume.v', 'V = ?'),
-                  className: 'min-w-0 flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
+                  className: 'min-w-0 flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono disabled:opacity-60'
                 }),
                 h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
                 h('button', {
-                  onClick: function() {
-                    if (!wpAnswer) return;
-                    var correct = dims.l * dims.w * dims.h;
-                    var ok = parseInt(wpAnswer) === correct;
-                    playSound(ok ? 'correct' : 'wrong');
-                    var newStreak = ok ? streak + 1 : 0;
-                    if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
-                    var newSolved = wpSolved + (ok ? 1 : 0);
-                    announceToSR(ok ? 'Correct!' : 'Try again');
-                    upd({
-                      wpFeedback: ok
-                        ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
-                        : { correct: false, msg: '❌ ' + diagnoseVolumeError(dims.l, dims.w, dims.h, parseInt(wpAnswer)) + ' (in ' + ctx2.unit + ')' },
-                      score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
-                      streak: newStreak, wpSolved: newSolved
-                    });
-                    if (ok) {
-                      awardStemXP('volume', 5, 'word problem');
-                      checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10, wordWizard: newSolved >= 5 });
-                    }
-                  },
-                  disabled: !wpAnswer,
+                  onClick: checkWordProblem,
+                  disabled: !wpAnswer || wpLocked,
                   'aria-label': __alloT('stem.volume.check_answer', 'Check answer'),
                   className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all'
                 }, __alloT('stem.volume.check', 'Check'))
               ),
               wpFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (wpFeedback.correct ? 'text-green-700' : 'text-red-600'), 'aria-live': 'polite' }, wpFeedback.msg),
+              wpLocked && h('p', { 'data-volume-locked': 'true', className: 'text-sm font-bold mt-1 text-amber-900' }, lockedMsg),
               wpFeedback && wpFeedback.correct && h('div', { className: 'mt-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-200' },
                 h('p', { className: 'text-[0.6875rem] text-amber-700' },
                   __alloT('stem.volume.the_rectangular_prism_above_shows_exac', '💡 The rectangular prism above shows exactly what the words describe. Volume is the count of unit cubes that fit inside.')
@@ -3252,18 +3389,25 @@ window.StemLab = window.StemLab || {
               (function(cellX, cellY) {
                 var cellKey = cellX + '-' + cellY + '-' + activeBuildLayer;
                 var occupied = posSet.has(cellKey);
+                // Challenge target squares carry the ghost outline here too:
+                // this grid is the keyboard / screen-reader building surface.
+                var isTarget = ghostTargetSet.has(cellKey);
                 placementCells.push(h('button', {
                   key: 'builder-' + cellKey,
                   type: 'button',
                   'data-volume-cell': cellKey,
                   'data-volume-cell-layer': String(activeBuildLayer),
-                  'aria-label': (occupied ? 'Remove' : 'Place') + ' cube at column ' + (cellX + 1) + ', row ' + (cellY + 1) + ', layer ' + (activeBuildLayer + 1),
+                  'data-volume-target': isTarget ? 'true' : undefined,
+                  'aria-label': (occupied ? 'Remove' : 'Place') + ' cube at column ' + (cellX + 1) + ', row ' + (cellY + 1) + ', layer ' + (activeBuildLayer + 1)
+                    + (isTarget ? __alloT('stem.volume.a11y_cell_part_of_target', ', part of the target shape') : ''),
                   'aria-pressed': occupied,
                   onClick: function() { toggleFreeformCube(cellX, cellY, activeBuildLayer); },
                   className: 'aspect-square min-w-0 rounded-md border-2 text-sm font-black transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
                   style: occupied
                     ? { backgroundColor: activeLayerColor, borderColor: activeLayerColor, color: volumeLayerTextColor(activeLayerColor, activeBuildLayer) }
-                    : { backgroundColor: '#ffffff', borderColor: activeLayerColor + '88', color: activeLayerColor }
+                    : isTarget
+                      ? { backgroundColor: '#e0f2fe', borderColor: '#0369a1', borderStyle: 'dashed', color: '#075985' }
+                      : { backgroundColor: '#ffffff', borderColor: activeLayerColor + '88', color: activeLayerColor }
                 }, occupied ? '\u2713' : '+'));
               })(col, row);
             }
@@ -3577,13 +3721,14 @@ window.StemLab = window.StemLab || {
             var sf = SHAPES_META.find(function(m) { return m.id === shape; });
             if (!sf) return null;
             var L = dims.l, W = dims.w, H = dims.h;
-            var rx = (L / 2).toFixed(L % 2 === 0 ? 0 : 1);
-            var ry = (W / 2).toFixed(W % 2 === 0 ? 0 : 1);
+            // Exact halves: toFixed(1) printed r = 1.3 for 2.5 / 2 = 1.25.
+            var rx = String(L / 2);
+            var ry = String(W / 2);
             var rAvg = ((L + W) / 4).toFixed(2);
             var stepStr, resultStr;
             if (shape === 'prism') {
               stepStr = 'V = ' + L + ' × ' + W + ' × ' + H;
-              resultStr = (L * W * H).toFixed(0);
+              resultStr = String(Math.round(L * W * H * 1000) / 1000);
             } else if (shape === 'cylinder') {
               stepStr = L === W
                 ? 'V = π × (' + rx + ')² × ' + H
@@ -3611,7 +3756,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-emerald-600 mx-1' }, '='),
               // The substituted dimensions stay visible (they are on the sliders anyway);
               // only the evaluated result is masked while a prediction is armed.
-              h('span', { className: 'font-extrabold text-emerald-900' }, volPredArmed ? '?' : resultStr),
+              h('span', { className: 'font-extrabold text-emerald-900' }, answerMasked ? '?' : resultStr),
               h('span', { className: 'text-emerald-700 ml-1 not-italic' }, __alloT('stem.volume.cubic_units', ' cubic units'))
             );
           })()
@@ -3702,8 +3847,8 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xl font-bold text-emerald-800' },
               // Armed predictions mask the whole breakdown, not just the total \u2014 the
               // "Area of Base x Height" line reconstructs the answer on its own.
-              volPredArmed ? h('span', null, h('span', { className: 'text-2xl text-emerald-600' }, '?')) :
-              isSlider && !challenge ? h('div', { className: 'flex flex-col items-center gap-1' },
+              answerMasked ? h('span', null, h('span', { className: 'text-2xl text-emerald-600' }, '?')) :
+              isSlider && !challenge && solid === 'prism' ? h('div', { className: 'flex flex-col items-center gap-1' },
                 h('div', { className: 'text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200' },
                   'Area of Base ('+dims.l+'\u00d7'+dims.w+') = ' + (dims.l * dims.w)),
                 h('div', { className: 'whitespace-nowrap' },
@@ -3712,21 +3857,20 @@ window.StemLab = window.StemLab || {
               ) : h('span', null,
                 h('span', { className: 'text-2xl text-emerald-600' },
                   (isSlider && challenge && !feedback) ? '?' :
-                  (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : volume))
+                  (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : volumeShown))
             ),
             volPredArmed ? h('div', { className: 'text-xs text-slate-600 italic' },
               __alloT('stem.volume.hidden_until_you_lock', 'hidden until you lock your prediction')) :
-            (isSlider && challenge && !feedback) ? null :
-            (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? null :
-            h('div', { className: 'text-xs text-slate-600' }, volume + ' unit cube' + (volume !== 1 ? 's' : ''))
+            answerMasked ? null :
+            h('div', { className: 'text-xs text-slate-600' }, volumeShown + ' unit cube' + (volumeShown !== 1 ? 's' : ''))
           ),
           h('div', { className: 'bg-white rounded-xl p-3 border border-teal-100 text-center' },
             h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-1' }, __alloT('stem.volume.surface_area', 'Surface Area')),
             h('div', { className: 'text-xl font-bold text-teal-800' },
               __alloT('stem.volume.sa', 'SA = '), h('span', { className: 'text-2xl text-teal-600' },
                 (isSlider && challenge && !feedback) ? '?' :
-                (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceArea)),
-            isSlider && !challenge && h('div', { className: 'text-xs text-slate-600' },
+                (isFreeform && builderChallenge && builderChallenge.type === 'volume') ? '?' : surfaceShown)),
+            isSlider && !challenge && solid === 'prism' && h('div', { className: 'text-xs text-slate-600' },
               '2('+dims.l+'\u00d7'+dims.w+' + '+dims.l+'\u00d7'+dims.h+' + '+dims.w+'\u00d7'+dims.h+')')
           )
         ),
@@ -3861,10 +4005,7 @@ window.StemLab = window.StemLab || {
         !isWord && !isDisplacement && h('div', { className: 'flex gap-2 flex-wrap' },
           mode === 'slider' ? h(React.Fragment, null,
             h('button', { 'aria-label': __alloT('stem.volume.random_challenge', 'Random Challenge'),
-              onClick: function() {
-                var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
-                upd({ dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
-              },
+              onClick: newSliderChallenge,
               className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md',
               title: __alloT('stem.volume.new_challenge_n', 'New challenge (N)')
             }, __alloT('stem.volume.random_challenge_2', '\uD83C\uDFB2 Random Challenge')),
@@ -3883,7 +4024,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': __alloT('stem.volume.l_block_vol', 'L-Block Vol'),
               onClick: function() {
                 var lb = generateLBlock();
-                upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
+                upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, answer: '', challenge: null, feedback: null });
               },
               className: 'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
             }, __alloT('stem.volume.l_block_vol_2', '\uD83D\uDCD0 L-Block Vol')),
@@ -3917,10 +4058,9 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: 'bch-' + ch.id,
                 onClick: function() {
-                  // Set the challenge as a custom prism-like target where the
-                  // student must place exactly these positions. We reuse the
-                  // existing prism-ghost rendering by making target dims that
-                  // bound the positions, then validate by exact position match.
+                  // The target cells draw as ghost outlines (ghostCells) and
+                  // Check grades the shape: volumeShapeMatches allows moving
+                  // and turning it on the grid.
                   pushUndo();
                   playSound('place');
                   upd({
@@ -3955,7 +4095,7 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 pushUndo();
                 playSound('place');
-                upd({ positions: builderChallenge.libraryPositions.slice() });
+                upd({ positions: builderChallenge.libraryPositions.slice(), builderChallenge: Object.assign({}, builderChallenge, { revealed: true }) });
                 announceToSR(__alloT('stem.volume.sr_solution_shown', 'Solution shown'));
               },
               title: __alloT('stem.volume.reveal_the_solution_gives_up_no_badge', 'Reveal the solution (gives up \u2014 no badge)'),
@@ -3972,10 +4112,11 @@ window.StemLab = window.StemLab || {
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
+              disabled: sliderLocked,
+              placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono disabled:opacity-60'
             }),
             h('button', { 'aria-label': __alloT('stem.volume.check_2', 'Check'),
-              onClick: checkChallenge, disabled: !answer,
+              onClick: checkChallenge, disabled: !answer || sliderLocked,
               className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, __alloT('stem.volume.check_3', 'Check')),
             h('button', { onClick: askAI,
@@ -3983,7 +4124,8 @@ window.StemLab = window.StemLab || {
               title: __alloT('stem.volume.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
           ),
-          feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg)
+          feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
+          sliderLocked && h('p', { 'data-volume-locked': 'true', className: 'text-sm font-bold mt-1 text-amber-900' }, lockedMsg)
         ),
 
         // Builder challenge (freeform mode)
@@ -3993,16 +4135,27 @@ window.StemLab = window.StemLab || {
               ? '\uD83C\uDFD7\uFE0F Build a '+builderChallenge.target.l+'\u00d7'+builderChallenge.target.w+'\u00d7'+builderChallenge.target.h+' rectangular prism'
               : builderChallenge.shape === 'L-Block'
                 ? '\uD83D\uDCD0 What is the volume of this L-shaped block?'
-                : '\uD83C\uDFB2 Build a shape with volume = '+builderChallenge.answer
+                : builderChallenge.library
+                  ? '\uD83D\uDCDA ' + __alloT('stem.volume.build_this_structure', 'Build this structure:') + ' ' + builderChallenge.shape + ' (V = ' + builderChallenge.answer + ')'
+                  : '\uD83C\uDFB2 Build a shape with volume = '+builderChallenge.answer
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            h('span', { className: 'text-xs text-indigo-600' }, __alloT('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
+            // The L-block asks for its volume, so it takes a typed answer; a live
+            // cube count beside the question printed that answer.
+            builderChallenge.shape === 'L-Block'
+              ? h('input', { 'aria-label': __alloT('stem.volume.volume_answer', 'Volume answer'),
+                  type: 'number', value: answer,
+                  onChange: function(e) { upd({ answer: e.target.value }); },
+                  onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
+                  placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'w-28 px-3 py-1.5 border border-indigo-600 rounded-lg text-sm font-mono'
+                })
+              : h('span', { className: 'text-xs text-indigo-600' }, __alloT('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
             h('button', { 'aria-label': __alloT('stem.volume.hint', 'Hint'),
               onClick: askAI,
               className: 'px-3 py-1.5 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: __alloT('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')
             }, __alloT('stem.volume.hint_2', '\uD83E\uDDE0 Hint')),
-            h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700' }, __alloT('stem.volume.check_5', '\u2714 Check'))
+            h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, disabled: builderChallenge.shape === 'L-Block' && !answer, className: 'ml-auto px-4 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700' }, __alloT('stem.volume.check_5', '\u2714 Check'))
           ),
           builderFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (builderFeedback.correct ? 'text-green-600' : 'text-red-600') }, builderFeedback.msg)
         ),
@@ -4112,7 +4265,7 @@ window.StemLab = window.StemLab || {
           // Real-world unit display strip
           unitId !== 'unit' && h('div', { className: 'bg-emerald-50 rounded-md p-2 border border-emerald-200 text-[0.6875rem] text-emerald-800' },
             __alloT('stem.volume.in_real_world_units_volume', '🌍 In real-world units: Volume = '), h('b', null, formatVolumeWithUnit(volume)),
-            __alloT('stem.volume.surface_area_2', ' · Surface area = '), h('b', null, formatVolumeWithUnit(surfaceArea).replace('cubic', 'square').replace('³', '²').replace('cm³', 'cm²').replace('in³', 'in²').replace('ft³', 'ft²').replace('m³', 'm²'))
+            __alloT('stem.volume.surface_area_2', ' · Surface area = '), h('b', null, surfaceShown + ' ' + unit.short.replace('³', '²'))
           ),
           // Saved constructions list
           showSaved && h('div', { className: 'border-t border-emerald-100 pt-2' },
@@ -4450,7 +4603,8 @@ window.StemLab = window.StemLab || {
     });
 
     // Stats footer
-    var unitShort = (unit && unit.short) || 'unit';
+    // unit.short already carries the cube (cm³); appending ³ and ² printed cm³³ and cm³².
+    var unitShort = (unit && unit.id && unit.id !== 'unit') ? unit.id : 'unit';
     var statY = h2 - 40;
     svgParts.push('<text x="20" y="' + statY + '" font-family="monospace" font-size="13" fill="#0f172a">Volume: ' + (Math.round(volume * 100) / 100) + ' ' + unitShort + '³ &#160;·&#160; Surface area: ' + (Math.round(surfaceArea * 100) / 100) + ' ' + unitShort + '²</text>');
     svgParts.push('<text x="20" y="' + (statY + 18) + '" font-family="sans-serif" font-size="10" fill="#64748b">' + (isFreeform ? cubeList.length + ' unit cubes' : (dims.l + ' × ' + dims.w + ' × ' + dims.h + ' prism')) + ' · generated ' + new Date().toLocaleDateString() + '</text>');

@@ -19,9 +19,9 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `simplified` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `image` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -37,18 +37,18 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `memory-aid` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `applied-challenge` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **reaching / 21** | **19** | **21** | **0** | **17** | **13** | **17** | **18** | **14** |
+| **reaching / 21** | **20** | **21** | **0** | **17** | **13** | **18** | **18** | **14** |
 
 ## cloud backend
 
 | resource type | grade | lang | uiLang | standards | interests | dok | custom | emoji |
 |---|---|---|---|---|---|---|---|---|
 | `simplified` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❔ |
 | `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `image` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -64,7 +64,7 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `memory-aid` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `applied-challenge` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **reaching / 21** | **18** | **20** | **0** | **16** | **12** | **16** | **17** | **14** |
+| **reaching / 21** | **19** | **20** | **0** | **16** | **12** | **17** | **17** | **13** |
 
 ## Local/cloud prompt divergence
 
@@ -72,7 +72,7 @@ Many branches ship two prompts behind `if (usesLocalTextBackend)`. A source-text
 cannot tell them apart because both live in the same branch body. Divergence here means
 the offline no-egress path silently behaves differently from the cloud path.
 
-- none
+- `glossary` — **emoji**: cloud ❔ / local ✅
 
 _Excluded as unmeasurable (cloud prompt builders are stubbed in this harness): `lesson-plan`._
 

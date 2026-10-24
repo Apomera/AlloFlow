@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "A conclusão da missão e a aterragem de regresso foram registadas. Repete esta missão com uma alteração intencional nos comandos ou na rota e compara depois as observações guardadas.",
+  "stem.flightsim.coaching_mission_depleted": "A bateria do drone esgotou-se. Inicia uma missão nova, usa rotas curtas e planeia o regresso antes de a bateria ficar fraca.",
+  "stem.flightsim.coaching_mission_unknown": "Esta missão tem provas incompletas ou contraditórias. Revê o que foi registado e inicia depois uma nova tentativa.",
+  "stem.flightsim.coaching_mission_capture": "Alguns alvos ainda não foram fotografados. Numa missão nova, aproxima-te de um alvo de cada vez e mantém-te dentro dos limites apresentados de altura e velocidade em relação ao solo até a captura ficar registada.",
+  "stem.flightsim.coaching_mission_recovery": "O sobrevivente não foi recolhido. Numa nova missão de salvamento, pratica um voo estacionário estável dentro dos limites apresentados de altura, deriva e velocidade vertical antes de regressares à base.",
+  "stem.flightsim.coaching_mission_return": "Os objectivos de recolha ou captura foram registados; falta a aterragem de regresso. Inicia uma missão nova e reserva tempo e bateria para regressar à base.",
+  "stem.flightsim.mission_reflection_prompt": "Que decisão sobre um alvo, o voo estacionário ou o regresso mudarias? Usa as observações da missão para explicar a tua escolha e planear uma alteração para uma nova tentativa. A tua explicação fica guardada com este voo.",
+  "stem.flightsim.journal_different_airport": "Estas aproximações usaram aeroportos diferentes. Revê as observações separadamente; as diferenças entre medições não são calculadas.",
+  "stem.flightsim.journal_approach_airport": "Aeroporto de aproximação: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "PROVAS DA MISSÃO",
+  "stem.flightsim.challenge_brake_release": "Solta a tecla X e desliga os Travões das Rodas no painel de comandos antes de aumentares a potência."
+}

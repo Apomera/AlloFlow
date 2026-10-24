@@ -31,7 +31,10 @@ describe('Colony-to-Drone prediction check', () => {
 
     expect(stressed).toContain('A stressed colony should launch a drone with less usable energy');
     expect(watch).toContain('Changing colony condition should change launch energy');
-    expect(source).toContain("'aria-labelledby': 'drone-carryover-hypothesis-title'");
-    expect(source).toContain("'aria-describedby': 'drone-carryover-hypothesis-text'");
+    // f7b4d993f moved the brief into a labelled note inside a disclosure; the
+    // prediction is now named by its own heading instead of an ARIA group.
+    expect(stressed).toContain('<section data-drone-carryover-brief="true" role="note" aria-label="Colony Network colony field evidence carried into Drone Flight">');
+    expect(stressed).toMatch(/<div data-drone-carryover-hypothesis="true"><h4>Prediction to test<\/h4><p>A stressed colony should launch a drone with less usable energy/);
+    expect(source.includes("h('div', { 'data-drone-carryover-hypothesis': 'true' }, h('h4', null, 'Prediction to test'), h('p', null, droneCarryoverBrief.hypothesis)"), 'heading names the prediction').toBe(true);
   });
 });

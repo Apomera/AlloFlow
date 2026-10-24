@@ -151,13 +151,20 @@ describe('Dino Lab anatomy explorer contract', () => {
     const selection = vi.fn(), preset = vi.fn(), study = vi.fn(), camera = vi.fn(), interaction = vi.fn();
     const controls = { open: false }, closest = vi.fn(() => controls);
     const focus = vi.fn(() => expect(controls.open).toBe(true)), scroll = vi.fn(), selectedRef = { current: '' }, yaw = { current: { study: 'full' } };
-    const make = new Function('bodyPartDefinitions', 'selectedBodyPartRef', 'setBodyPartSelection', 'props', 'notifyOrientationInteraction', 'setCameraPreset', 'yawRef', 'setStudyView', 'cameraControlRef', 'anatomyGuideRef', 'window', selectionSource + '\nreturn selectBodyPart;');
-    const choose = make(definitions('archaeopteryx'), selectedRef, selection, { species: { id: 'archaeopteryx' } }, interaction, preset, yaw, study, { current: camera }, { current: { closest, focus, scrollIntoView: scroll } }, { requestAnimationFrame(callback) { callback(); } });
+    // A new selection must discard the frame saved for a different landmark.
+    const inspectionFrame = { current: { part: 'head', study: 'head' } };
+    const endTrace = vi.fn();
+    const make = new Function('bodyPartDefinitions', 'selectedBodyPartRef', 'setBodyPartSelection', 'props', 'notifyOrientationInteraction', 'setCameraPreset', 'yawRef', 'setStudyView', 'cameraControlRef', 'anatomyGuideRef', 'window', 'partInspectionFrameRef', 'endSupportingRelation', selectionSource + '\nreturn selectBodyPart;');
+    const choose = make(definitions('archaeopteryx'), selectedRef, selection, { species: { id: 'archaeopteryx' } }, interaction, preset, yaw, study, { current: camera }, { current: { closest, focus, scrollIntoView: scroll } }, { requestAnimationFrame(callback) { callback(); } }, inspectionFrame, endTrace);
     choose('wing', true); expect(selectedRef.current).toBe('wing'); expect(interaction).toHaveBeenCalledOnce();
+    expect(inspectionFrame.current).toBeNull();
+    expect(endTrace).toHaveBeenCalledWith(false);
     expect(closest).toHaveBeenCalledWith('details.dinolab-3d-controls-disclosure'); expect(controls.open).toBe(true);
     expect(focus).toHaveBeenCalledWith({ preventScroll: true }); expect(scroll).toHaveBeenCalledWith({ block: 'nearest' });
     expect(camera.mock.calls[0].at(-1)).toBe('body');
+    inspectionFrame.current = { part: 'wing', study: 'body' };
     choose('', false); expect(selectedRef.current).toBe(''); expect(camera.mock.calls.at(-1).at(-1)).toBe('full');
+    expect(inspectionFrame.current).toBeNull();
     expect(yaw.current.study).toBe('full'); expect(preset.mock.calls.at(-1)).toEqual([null]);
   });
 
@@ -176,12 +183,20 @@ describe('Dino Lab anatomy explorer contract', () => {
   });
 });
 
-const landmarkSource = block('            // DINO_DETAILED_LANDMARKS_V2', '            // Frame anatomy, not sprites');
+// 79e3e5eae appended surface-normal blends (neck, limbs, tail) and beak closure after the
+// landmarks; they shade geometry and add no landmarks, so the landmark slice stops before them.
+const landmarkSource = block('            // DINO_DETAILED_LANDMARKS_V2', '            // Soften only the rear cranial join');
 const anchorSource = block('            function addBodyPartAnchor(', '            function addTextLabel(');
-const boundsSource = block('            var bodyPartStudyBounds = {};', '            function boundsForStudy(');
+// Capture generic landmark bounds through their public metadata materialization.
+// Subsequent species-specific focus caches have separate native geometry tests.
+const boundsStart = source.indexOf('            var bodyPartStudyBounds = {};');
+const boundsMetadata = source.indexOf('            model.userData.anatomyPartBounds = {};', boundsStart);
+const boundsEnd = source.indexOf('            });', boundsMetadata);
+if (boundsStart < 0 || boundsMetadata <= boundsStart || boundsEnd <= boundsMetadata) throw Error('Generic landmark bounds capture missing');
+const boundsSource = source.slice(boundsStart, boundsEnd + '            });'.length);
 const sceneNames = ['THREE','model','bodyPartDefinitions','bodyPartAnchors','bodyShell','headShell','lowerJawShell','idleMotion','head','hip','tail','shoulder','bodyCenter','surfaceSnout','surfaceHeadDepth','surfaceHeadHeight','surfaceHeadLength','surfaceBodyHeight','surfaceBodyDepth','eyeCenterX','ht','len','bodyDepth','bodyHeight'];
 const buildLandmarks = new Function(...sceneNames, 'function vec(x,y,z){return new THREE.Vector3(x,y,z);}\n' + anchorSource + landmarkSource + '\nreturn anatomyMeshParts;');
-const buildBounds = new Function('THREE','model','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len',boundsSource + '\nreturn bodyPartStudyBounds;');
+const buildBounds = new Function('THREE','model','bodyPartDefinitions','bodyPartAnchors','anatomyMeshParts','studyBounds','ht','len','dn','dromaeosaurHeadFocus','sauropodHeadFocus',boundsSource + '\nreturn bodyPartStudyBounds;');
 function sceneFixture() {
   const model = new THREE.Group(); model.position.set(.4,.2,-.3); model.rotation.y=.31;
   function mesh(name, position, feature) {
@@ -203,7 +218,7 @@ function sceneFixture() {
   model.updateMatrixWorld(true);
   const full=new THREE.Box3().setFromObject(model), seed=new THREE.Box3(new THREE.Vector3(-.4,.4,-.3),new THREE.Vector3(.6,1,.3));
   const study={full,head:seed.clone(),body:seed.clone(),tail:seed.clone()};
-  const bounds=buildBounds(THREE,model,parts,anchors,meshParts,study,1,3);
+  const bounds=buildBounds(THREE,model,parts,anchors,meshParts,study,1,3,art.DINOS.find(dn=>dn.id==='archaeopteryx'),null,null);
   return {model,parts,anchors,meshParts,bounds,headShell,limb};
 }
 

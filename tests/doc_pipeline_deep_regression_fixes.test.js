@@ -319,9 +319,12 @@ describe('deep remediation pipeline regression fixes', () => {
     expect(source).toContain('const _cancelAuditNow = () => {');
     expect(source).toContain('while (!_auditCancelled() && parsedAudits.length < numAuditors');
     expect(source).toContain("if (!_auditCancelled() && parsedAudits.length === 0 && !_auditedViaSlices && _sliceCapable)");
-    expect(source).toContain("if (!_auditCancelled() && parsedAudits.length >= 2 && parsedAudits.length < allVariants.length");
+    // 0309732e9 (2026-09-13) put the adaptive auditors behind a size/throttle gate; the
+    // cancellation check still guards the branch that actually adds auditors.
+    expect(source).toContain("if (_adaptiveGate.allowed && !_auditCancelled() && parsedAudits.length >= 2 && parsedAudits.length < allVariants.length");
     expect(source).toContain('signal: _fileCtrl.signal');
-    expect(source).toContain('_auditPdfInSlices(base64Data, auditPrompt, _auditCancelled)');
+    // f5b045fc9 (2026-09-20) also passes the page range and abort signal through to the slices.
+    expect(source.includes('_auditPdfInSlices(base64Data, auditPrompt, _auditCancelled, _auditPageRange, _auditSignal)'), 'sliced audit keeps the cancellation probe').toBe(true);
     expect(source).toContain('waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _sliceCancelled })');
     expect(source).toContain('try { return _parseStrictInitialAudit(_restoreNeutralizedPromptFences(raw)); }');
     expect(source).toContain('const _outputAuditCancelled = () => !!(_outputAuditSignal && _outputAuditSignal.aborted);');

@@ -30,7 +30,7 @@ async function packet(type='word_cloud',resources=[]){
 function intake(value,{decode}={}){
   const changes={activity:null,history:['previous-resource'],receivedResources:[{id:'previous-delivery',type:'quiz'}],pending:{id:'previous-pending'},show:false};let cleanup;
   const env={
-    useEffect:fn=>{cleanup=fn();},_alloReadMailboxEntryParam:()=>({u:'https://mailbox.example.invalid',id:'PK-local-fixture',k:'fixture-secret'}),
+    useEffect:fn=>{cleanup=fn();},workspaceReplacementGenerationRef:{current:0},_alloReadMailboxEntryParam:()=>({u:'https://mailbox.example.invalid',id:'PK-local-fixture',k:'fixture-secret'}),
     setMbHostedAssignment:vi.fn(),setSharedHostedActivity:vi.fn(next=>changes.activity=next),
     _alloSetQrStudentAiPolicy:vi.fn(),_alloApplyAuthoritativeStudentAiPolicy:vi.fn(),
     setHasSelectedMode:vi.fn(),setHasSelectedRole:vi.fn(),setShowWizard:vi.fn(),setShowStudentWelcome:vi.fn(),

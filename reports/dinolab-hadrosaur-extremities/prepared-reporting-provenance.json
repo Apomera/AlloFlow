@@ -1,0 +1,39 @@
+{
+  "startedAtUTC": "2026-10-22T03:02:36.4444145Z",
+  "reportingCommit": "8b857d90cac5ee10cbcc878002f24b9a70a097f6",
+  "inputSHA256": {
+    "tests/bug_report_delivery.test.js": "12B39FBB0A55A90344D0FF2C8A7D7A49DA67AC8CA4813EF5EAE41B9F946A8BE4",
+    "tests/error_reporter_tts_tab.test.js": "562D863E2D48C743EE89E10F975E7B792CC4B65E9E05E90B2259681F41F66CBA",
+    "catalog/cloudflare-worker/src/bug_inbox.js": "C8119A44F193AD2F01B9B74AB0A3EB50431E134A009110DF35D194FAF151436C",
+    "desktop/web-app/public/error_reporter_module.js": "25CDF85593E524F14BFFEE434538DFCC9C93A094555B9430581D63905E676E20",
+    "catalog/cloudflare-worker/smoke_test.mjs": "A27F2B4E6A61480A394BACA163383C7A37656E990EFB12A47AA0F4A47113C856",
+    "tests/bug_report_inbox_ui.test.js": "42251FC14C49C3F31B5B3C0166438836AC0B5229145B435A0569A05D0030B986",
+    "error_reporter_module.js": "25CDF85593E524F14BFFEE434538DFCC9C93A094555B9430581D63905E676E20",
+    "tests/error_reporter_submission_receipt.test.js": "8934493246F5CB15A2A77E5A3B59733A4ACF6DF387CFDAA3ECFE77FF85A6A6C3",
+    "dev-tools/cf_worker.cjs": "10DB57ED4817B9E76746C6B67E212F04CE454E37BDF59BDF419C0BA093DCC2FE",
+    "catalog/cloudflare-worker/src/index.js": "3FE1314B3FABAD6FE70A8F247876FCBBABB6C25F0C135CFC27F9F45B429F4941",
+    "tests/cf_worker_upload.test.js": "F060ABD23EE44C95B3E91883A1800C1923C93B94A3C1920E0F81FED3DA5F1760",
+    "tests/error_reporter_tool_loading.test.js": "70C328D35A3BF541D019E5D4D5E9C2BE42E6B44E1B6D7CDE44E264F2892558A8",
+    "tests/error_reporter_stale_entries_and_secrets.test.js": "2C1FF920AB657DADABEFF8645BF1ECDA4040F4D291FD3CC9029B819E7B480414",
+    "desktop/web-app/src/App.jsx": "4A7670F07FD94A7063319778A71792F0D431E8A38D2EEB71377E845D18743BD6",
+    "dev-tools/cf_worker_upload.cjs": "B70B0FE0AADB3406F2D6B6C80E5848EC474899169E86718892F6C1B7C466FAB6",
+    "AlloFlowANTI.txt": "4A7670F07FD94A7063319778A71792F0D431E8A38D2EEB71377E845D18743BD6",
+    "tests/report_error_feedback_reporter.test.js": "0C1C848DB9258AB6279C815CD73B92D708E786A3F3E79CAEADD6B5D2C3357EDD"
+  },
+  "scope": "Combined local reporting source, synthetic data, mocked network only; no live requests or credential reads",
+  "files": [
+    "tests/bug_report_delivery.test.js",
+    "tests/bug_report_inbox_ui.test.js",
+    "tests/error_reporter_submission_receipt.test.js",
+    "tests/error_reporter_stale_entries_and_secrets.test.js",
+    "tests/error_reporter_tool_loading.test.js",
+    "tests/error_reporter_tts_tab.test.js",
+    "tests/report_error_feedback_reporter.test.js",
+    "tests/cf_worker_upload.test.js"
+  ],
+  "changedInputs": [],
+  "finishedAtUTC": "2026-10-22T03:02:51.6980033Z",
+  "smokeExitCode": 0,
+  "unitExitCode": 0,
+  "attempt": 1
+}

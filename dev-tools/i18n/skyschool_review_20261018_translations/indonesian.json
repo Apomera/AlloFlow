@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Percobaan kuis sebelumnya",
+  "stem.flightsim.quiz_history_scope": "Memulai percobaan baru menyimpan hingga empat percobaan sebelumnya yang memiliki jawaban pertama tercatat. Meninjaunya tidak mengubah kuis Anda saat ini.",
+  "stem.flightsim.quiz_history_empty": "Belum ada percobaan kuis sebelumnya yang disimpan.",
+  "stem.flightsim.quiz_history_attempt": "Disimpan {date} · {score}/{answered} jawaban pertama benar",
+  "stem.flightsim.quiz_history_progress": "{answered} dari {total} pertanyaan tercatat · {unanswered} belum dijawab",
+  "stem.flightsim.quiz_history_question": "Pertanyaan {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Jawaban benar: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} pertanyaan tersimpan tidak lagi cocok dengan kuis ini. Skor hanya menggunakan catatan pertanyaan yang cocok."
+}

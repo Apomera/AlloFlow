@@ -63,18 +63,28 @@ describe('phase terminators are squashed across the disc, not along it', () => {
     });
 
     it(`keeps the Venus phase shadow inside Venus (${path})`, () => {
-      const line = source.split('\n').find((l) => l.includes("'M ' + (335)"));
-      expect(line, 'the Venus terminator path must exist').toBeTruthy();
-      const expr = line.slice(line.indexOf("'M ' + (335)"), line.indexOf(", fill:"));
+      // The 10-12 Venus investigation draws its discs with phaseDisc(): a lit semicircle
+      // closed by the terminator arc, over a night-side circle. Run the shipped function.
+      const start = source.indexOf('function phaseDisc(cx, cy, radius, cosine, id)');
+      expect(start, 'the Venus phase disc builder must exist').toBeGreaterThan(-1);
+      let end = source.indexOf('{', start), depth = 1;
+      while (depth) { end++; if (source[end] === '{') depth++; if (source[end] === '}') depth--; }
+      const React = { createElement: (type, props, ...kids) => ({ type, props: props || {}, kids }) };
       // eslint-disable-next-line no-new-func
-      const pathFor = new Function('apparentSize', 'illum', 'return ' + expr + ';');
+      const phaseDisc = new Function('React', 'return (' + source.slice(start, end + 1) + ');')(React);
+      const litPath = (radius, cosine) => phaseDisc(0, 0, radius, cosine, 'v').kids.find((k) => k.type === 'path').props.d;
 
-      for (const size of [6, 14, 22]) {
-        for (const illum of [0, 0.25, 0.5, 0.75, 1]) {
-          const { rx, ry } = terminatorRadii(pathFor(size, illum));
-          expect(ry, `size ${size}, illum ${illum}: ry must span the disc`).toBeCloseTo(size, 6);
-          expect(rx, `size ${size}, illum ${illum}: rx must stay inside the disc`)
+      for (const size of [6, 14, 22, 44]) {
+        for (const cosine of [-0.75, -0.25, 0.25, 0.75, 1]) {
+          const d = litPath(size, cosine);
+          const limb = d.match(/A\s+(-?[\d.]+)\s+(-?[\d.]+)/);
+          expect(Number(limb[1]), 'the lit limb is the disc itself').toBeCloseTo(size, 6);
+          expect(Number(limb[2])).toBeCloseTo(size, 6);
+          const { rx, ry } = terminatorRadii(d);
+          expect(ry, `size ${size}, cos ${cosine}: ry must span the disc`).toBeCloseTo(size, 6);
+          expect(rx, `size ${size}, cos ${cosine}: rx must stay inside the disc`)
             .toBeLessThanOrEqual(size + 1e-9);
+          expect(rx).toBeCloseTo(Math.abs(cosine) * size, 6);
         }
       }
     });

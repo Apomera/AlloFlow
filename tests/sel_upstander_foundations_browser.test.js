@@ -93,7 +93,9 @@ describe('Upstander foundations depth', () => {
     await page.evaluate(()=>window.depthSetBand('elementary'));
     await map(kind).getByLabel(labels[0],{exact:true}).fill('Elementary note.');
     await page.evaluate(()=>window.depthSetBand('middle'));
-    expect(await map(kind).getByLabel(pickers[kind],{exact:true}).inputValue()).toBe(data.middle[1].id);
+    // A band switch is a React state update that lands after evaluate() returns; on a loaded CI
+    // runner the next read could see the previous band, so wait for the re-render.
+    await expect.poll(()=>map(kind).getByLabel(pickers[kind],{exact:true}).inputValue()).toBe(data.middle[1].id);
     const saved=await page.evaluate(()=>JSON.parse(JSON.stringify(window.depthSnapshot.upstander)));
     await mount('middle','light',1100,saved);
     expect(await map(kind).getByLabel(labels[0],{exact:true}).inputValue()).toBe('Second example.');
@@ -101,7 +103,7 @@ describe('Upstander foundations depth', () => {
     await expand(kind);
     for(const [index,label] of labels.entries()) expect(await map(kind).getByLabel(label,{exact:true}).inputValue()).toBe('Middle note '+index+'\nA separate line.');
     await page.evaluate(()=>window.depthSetBand('elementary'));
-    expect(await map(kind).getByLabel(labels[0],{exact:true}).inputValue()).toBe('Elementary note.');
+    await expect.poll(()=>map(kind).getByLabel(labels[0],{exact:true}).inputValue()).toBe('Elementary note.');
     expect(errors).toEqual([]);
   },120000);
 

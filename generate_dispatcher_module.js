@@ -2696,6 +2696,14 @@ const _analysisGrammarText = (value) => {
     const text = [original && correction ? original + ' -> ' + correction : (original || correction), why].filter(Boolean).join(': ');
     return text || _analysisFieldText(value, []);
 };
+// The Depth of Knowledge a text can support: a whole level 1-4, a reason, and up to four ideas.
+const _normalizeAnalysisDok = (raw, toList) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const level = Math.round(Number(String(raw.level ?? '').replace(/[^0-9.]/g, '')));
+    if (!(level >= 1 && level <= 4)) return null;
+    const ideas = toList(raw.ideas, item => _analysisFieldText(item, ['idea', 'text', 'suggestion', 'description'])).list.slice(0, 4);
+    return { level, reason: _analysisFieldText(raw.reason, ['reason', 'text', 'explanation']), ideas };
+};
 const normalizeAnalysisResult = (raw) => {
     const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const toList = (value, mapItem) => {
@@ -2723,12 +2731,26 @@ const normalizeAnalysisResult = (raw) => {
     const grammar = toList(grammarSource, _analysisGrammarText);
     const result = { readingLevel, concepts, accuracy, grammar: grammar.list,
         translatedText: typeof source.translatedText === 'string' && source.translatedText.trim() ? source.translatedText : undefined };
+    const depthOfKnowledge = _normalizeAnalysisDok(source.depthOfKnowledge, toList);
+    if (depthOfKnowledge) result.depthOfKnowledge = depthOfKnowledge;
     if (grammar.unreadable) result.grammarUnreadable = grammar.unreadable;
     if (discrepancies.unreadable) result.accuracy.discrepanciesUnreadable = discrepancies.unreadable;
     return result;
 };
 // Language views are companions to one source-bound report. Never let model
 // output or a display-language change replace the text downstream tools read.
+// Lesson Images by grade: how many labels, how hard their words, and how much the picture shows.
+// Teacher instructions override the picture scope; label limits apply whenever labels are drawn.
+const _imageGradeGuidance = (grade) => {
+    const label = String(grade || '');
+    const digits = label.match(/(\d+)/);
+    const num = /kindergarten/i.test(label) ? 0 : digits ? Number(digits[1]) : /college|graduate|adult/i.test(label) ? 13 : null;
+    if (num === null) return null;
+    if (num <= 2) return { maxLabels: 4, words: 'one or two everyday words each (for example "root", "leaf")', scope: 'one idea with a few big, simple parts' };
+    if (num <= 5) return { maxLabels: 6, words: 'one to three words each; key subject terms are fine when the text uses them', scope: 'the main parts and one simple relationship, such as an arrow or a sequence' };
+    if (num <= 8) return { maxLabels: 8, words: 'subject vocabulary from the text, up to four words each', scope: 'the main parts and how they connect, such as a process or a cycle' };
+    return { maxLabels: 10, words: 'precise technical terms, up to five words each', scope: 'parts, sub-parts and the processes or relationships the text describes' };
+};
 const createAnalysisSourceContent = (report, raw, options = {}) => {
     const sourceText = String(options.sourceText == null ? '' : options.sourceText);
     const reportLanguage = String(options.reportLanguage || 'English').trim();
@@ -2769,6 +2791,11 @@ const createAnalysisSourceContent = (report, raw, options = {}) => {
                     discrepancies: translated.accuracy.discrepancies.slice(), verifiedFacts: translated.accuracy.verifiedFacts.slice() },
                 grammar: translated.grammar.slice(),
             };
+            const baseDok = report.depthOfKnowledge, translatedDok = translated.depthOfKnowledge;
+            if (baseDok && translatedDok && typeof translatedDok.reason === 'string' && Array.isArray(translatedDok.ideas)
+                && translatedDok.ideas.length === baseDok.ideas.length && translatedDok.ideas.every(idea => typeof idea === 'string')) {
+                reportTranslations[target].depthOfKnowledge = { level: baseDok.level, reason: translatedDok.reason, ideas: translatedDok.ideas.slice() };
+            }
         }
         for (const language of options.includeSourceTranslations === false ? [] : new Set([reportLanguage, target])) {
             const companion = raw?.sourceTranslations?.[language];
@@ -4499,7 +4526,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
       const isMultiChunk = chunks.length > 1;
       if (isMultiChunk) {
-            addToast(t('meta.processing_sections', { count: chunks.length }) || `Text is long. Processing ${chunks.length} sections...`, "info");
+            addToast(t('meta.processing_sections', { count: chunks.length }), "info");
             setGenerationTaskProgress(0, chunks.length, t('status_steps.adapting_text'));
       }
       const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -5182,6 +5209,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
         setGenerationStatus(t('status_steps.analyzing_visuals'), 'analyze');
         const imageSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4500) : textToProcess;
+        const _imageGuide = _imageGradeGuidance(effectiveGrade);
         const promptGenPrompt = `
             Analyze the following text to create a visual plan for an educational diagram: "${imageSourceText}".
             ${effCustomInstructions ? `Specific instructions: "${effCustomInstructions}".` : ''}
@@ -5189,6 +5217,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             1. List key visual elements (physical objects, icons, spatial relationships) for the image generator prompt.
             2. Write a concise (1-sentence) Alt Text description for screen readers describing what the final diagram will show (e.g. "A diagram showing the water cycle stages").
             Constraints: ${noText ? "NO TEXT LABELS." : fillInTheBlank ? "NO TEXT LABELS. Include empty white boxes for students to write in." : `Include essential labels only in ${effectiveLanguage}.`}
+            ${_imageGuide ? `Audience: ${effectiveGrade} students. Show ${_imageGuide.scope}${noText || fillInTheBlank ? '.' : `. Labels: at most ${_imageGuide.maxLabels}, ${_imageGuide.words}.`} If the specific instructions above ask for something different, follow them.` : ''}
             ${useEmojis ? 'Emphasize simple, emoji-like iconography.' : ''}
             Return ONLY JSON:
             {
@@ -5219,7 +5248,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              if (noText) styleDescription += " No text labels, visual only.";
         }
         if (useEmojis) styleDescription += " Style: Flat, colorful, emoji-like icons.";
-        const finalPrompt = `Educational diagram: ${imagePrompt}. Style: ${styleDescription}. White background, high contrast, clear lines.`;
+        const _gradeLabelRule = _imageGuide && !noText && !fillInTheBlank ? ` For ${effectiveGrade} students: at most ${_imageGuide.maxLabels} short labels, ${_imageGuide.words}.` : '';
+        const finalPrompt = `Educational diagram: ${imagePrompt}. Style: ${styleDescription}.${_gradeLabelRule} White background, high contrast, clear lines.`;
         const targetWidth = useLowQualityVisuals ? 300 : 800;
         const targetQual = useLowQualityVisuals ? 0.5 : 0.9;
         let visualPlan = null;
@@ -5705,9 +5735,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     base.evidenceOptions = Array.isArray(q.evidenceOptions) ? q.evidenceOptions.filter(function (s) { return typeof s === 'string' && s; }) : [];
                     base.correctEvidence = q.correctEvidence || '';
                 } else if (itemType === 'numeric-response') {
-                    const parsedCorrectValue = Number(q.correctValue);
+                    const hasCorrectValue = (typeof q.correctValue === 'number' || typeof q.correctValue === 'string') && String(q.correctValue).trim() !== '';
+                    const parsedCorrectValue = hasCorrectValue ? Number(q.correctValue) : NaN;
                     const parsedTolerance = Number(q.tolerance);
-                    base.correctValue = Number.isFinite(parsedCorrectValue) ? parsedCorrectValue : 0;
+                    base.correctValue = Number.isFinite(parsedCorrectValue) ? parsedCorrectValue : null;
                     base.tolerance = Number.isFinite(parsedTolerance) ? Math.max(0, parsedTolerance) : 0;
                     base.unit = typeof q.unit === 'string' ? q.unit.trim() : '';
                     base.acceptableUnits = Array.isArray(q.acceptableUnits) ? q.acceptableUnits.filter(function (s) { return typeof s === 'string' && s.trim(); }).map(function (s) { return s.trim(); }) : [];
@@ -6001,6 +6032,8 @@ ${_itemsBlock}`;
         // passages have separate fields; neither changes the source or its findings.
         const targetUiLang = _xlate.target || effectiveLanguage;
         const isTranslatedAnalysis = _xlate.enabled && !usesLocalTextBackend;
+        const _analysisDokTarget = (!dokLevel || _isolatedContext) ? ''
+            : dokLevel === 'Mixed' ? 'a mix of levels that reaches DOK 3 (Strategic Thinking)' : `Webb's Depth of Knowledge ${dokLevel}`;
         const prompt = `
           Analyze the following text for an educator.
           ${verificationContext ? `
@@ -6020,6 +6053,7 @@ ${_itemsBlock}`;
           3. Estimated Accuracy (e.g. "High", "Moderate", with a short explanation).
           4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
           5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
+          6. Depth of Knowledge: the highest level of Webb's Depth of Knowledge (1 Recall, 2 Skill/Concept, 3 Strategic Thinking, 4 Extended Thinking) that lessons built on this text alone could reasonably reach, with a one-sentence reason. ${_analysisDokTarget ? `The teacher is aiming for ${_analysisDokTarget}. Give 2 or 3 short, concrete ideas for reaching it with this text (for example, what to add, compare or ask).` : 'Give 2 or 3 short, concrete ideas for taking students beyond what the text alone supports.'}
           Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${effectiveLanguage}.
           Always quote source examples and proposed spelling/grammar corrections in the ORIGINAL source language.
           Calculate reading level and all findings from the ORIGINAL SOURCE, never from a translation.
@@ -6046,12 +6080,14 @@ ${_itemsBlock}`;
                 "reason": "..."${checkAccuracyWithSearch ? ', \n"discrepancies": ["Error found... [1]", "Inaccuracy... [2]"], \n"verifiedFacts": ["Fact verified... [3]", "Date confirmed... [1]"]' : ''}
             },
             "grammar": ["..."],
+            "depthOfKnowledge": { "level": 2, "reason": "...", "ideas": ["..."] },
             "sourceLanguage": "English language name"${isTranslatedAnalysis ? `,
             "reportTranslations": { ${JSON.stringify(targetUiLang)}: {
                 "readingLevel": { "range": "same range", "explanation": "translated explanation" },
                 "concepts": ["translated concept"],
                 "accuracy": { "rating": "same rating", "reason": "translated reason", "discrepancies": [], "verifiedFacts": [] },
-                "grammar": ["translated note with original source examples"]
+                "grammar": ["translated note with original source examples"],
+                "depthOfKnowledge": { "level": "same level", "reason": "translated reason", "ideas": ["translated idea"] }
             } },
             "sourceTranslations": { ${JSON.stringify(effectiveLanguage)}: "source translation, only if language differs" }` : ''}
           }
@@ -6240,6 +6276,8 @@ ${_itemsBlock}`;
             // a model-translated appendix to a student-facing companion.
             includeSourceTranslations: analysisPublicSource === textToProcess
         });
+        // The targets in force when this ran; the view compares the local measurement with them.
+        content.analysisTargets = { grade: effectiveGrade || '', dok: (!dokLevel || _isolatedContext) ? '' : dokLevel };
         metaInfo = `${isSearchActive ? t('meta.analysis_verified') : t('meta.analysis_standard')}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'faq') {
         if (usesLocalTextBackend) {
@@ -7713,8 +7751,7 @@ ${modeListForAuto}
              content = normalizeConceptSortContent(content);
              const orphanCount = content.items.filter(it => !content.categories.some(c => c.id === it.categoryId)).length;
              if (orphanCount) {
-                 const orphanMsg = t('concept_sort.orphans_generated', { count: orphanCount });
-                 addToast((orphanMsg && orphanMsg !== 'concept_sort.orphans_generated') ? orphanMsg : `${orphanCount} card(s) did not match a category. Assign them in the review panel before students play.`, 'warning');
+                 addToast(t('concept_sort.orphans_generated', { count: orphanCount }), 'warning');
              }
              const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
              const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);

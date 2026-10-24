@@ -6,7 +6,8 @@ import { createRequire } from 'node:module';
 const THREE=createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source=readFileSync(process.env.DINO_CRANIAL_DISPLAY_PROXY_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8');
 window.StemLab={registerTool(){}};
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__cranialDisplay={DINOS,reconstructionProfileFor,postureProfileFor,cranialSurfaceProfileFor,postcranialSurfaceProfileFor,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoCranialGeometry,dinoTheropodCranialRadii,dinoCranialDisplayProfile,dinoConnectedCranialPose};window.StemLab.registerTool('dinoLab'"))();
+const nativeHelpers=[...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]).join(',');
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__cranialDisplay={DINOS,"+nativeHelpers+"};window.StemLab.registerTool('dinoLab'"))();
 const api=globalThis.__cranialDisplay;delete globalThis.__cranialDisplay;
 const modes=[{head:.90,neck:.88,body:.91},{head:.97,neck:.97,body:.98},{head:1,neck:1,body:1},{head:1.04,neck:1.07,body:1.05}];
 const axis=new THREE.Vector3(1.031,-.577,.137).normalize();
@@ -16,31 +17,33 @@ const assembly=seam('var detailScale = Math.min(1, ht / 2);','var evidenceAnchor
 const envelope=seam('var surfaceHeadFactor = reconstructionProfile.head','if (headShell) {');
 const chain=seam('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {','function addContourGroup(meshes)');
 const ellipsoid=seam('function addSkeletonEllipsoid(pos, scale, mat) {','function addSkeletonCone(base, tip, radius, mat)');
-const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,','addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))');
+const sizing=seam('var skullLength = Math.max(0.20 * detailScale,','var neckAxis =');
+const bulkEnd=['if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))','if(!theropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))','addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))'].find(marker=>source.includes(marker));
+const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,',bulkEnd);
 const createSkin=new Function('context','with(context){'+chain+'return addSoftTissueChain;}');
 const createBone=new Function('context','with(context){'+ellipsoid+'return addSkeletonEllipsoid;}');
-const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,headShell,detailScale,len,ht,reconstructionProfile};}');
+const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,shoulder,ceratopsidCranium,armoredCranium,carnotaurusCranium:typeof carnotaurusCranium === "undefined"?null:carnotaurusCranium,stegosaurCranium:typeof stegosaurCranium === "undefined"?null:stegosaurCranium,theropodCranium:typeof theropodCranium === "undefined"?null:theropodCranium,sauropodCranium:typeof sauropodCranium === "undefined"?null:sauropodCranium,headShell,detailScale,len,ht,reconstructionProfile};}');
+const createSizing=new Function('context','with(context){'+sizing+'return {skullLength,skullHeight,skullDepth};}');
 const createBulk=new Function('context','with(context){'+bulk+'return {vault:cranialVault,rostrum:cranialRostrum,rostrumCenter,profile:cranialDisplay};}');
 function build(scale=1,mode=modes[2],id='triceratops',showSkeleton=true){
   const dn=api.DINOS.find(d=>d.id===id),skinModel=new THREE.Group(),boneModel=new THREE.Group();
   const skinMaterial=new THREE.MeshBasicMaterial({side:THREE.DoubleSide}),boneMaterial=new THREE.MeshBasicMaterial();
-  const c={THREE,dn,len:dn.lengthM*scale,ht:dn.heightM*scale,isTheropod:dn.group==='theropod',isSauropod:dn.group==='sauropod',cladeName:dn.clade,
+  const c={...api,THREE,dn,len:dn.lengthM*scale,ht:dn.heightM*scale,isTheropod:dn.group==='theropod',isSauropod:dn.group==='sauropod',cladeName:dn.clade,
     reconstructionProfile:api.reconstructionProfileFor(dn),posture:api.postureProfileFor(dn),cranialSurface:api.cranialSurfaceProfileFor(dn),postcranialSurface:api.postcranialSurfaceProfileFor(dn),
     surfaceHypothesis:{headSoftTissueScale:mode.head,neckSoftTissueScale:mode.neck,bodyHeightScale:mode.body},
     vec:(x,y,z)=>new THREE.Vector3(x,y,z),headMat:skinMaterial,bodyMat:skinMaterial,model:skinModel,props:{species:dn,showBody:true,showSkeleton},
-    dinoCervicalEnvelope:api.dinoCervicalEnvelope,dinoNeckJunction:api.dinoNeckJunction,dinoTheropodCranialRadii:api.dinoTheropodCranialRadii,dinoCranialGeometry:api.dinoCranialGeometry,dinoSurfaceGeometry:api.dinoSurfaceGeometry};
+    dinoTyrannosaurPose:api.dinoTyrannosaurPose,dinoLongSnoutedTyrannosaurAnchors:api.dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope:api.dinoCervicalEnvelope,dinoNeckJunction:api.dinoNeckJunction,dinoTheropodCranialRadii:api.dinoTheropodCranialRadii,dinoCranialGeometry:api.dinoCranialGeometry,dinoSurfaceGeometry:api.dinoSurfaceGeometry};
   c.addSoftTissueChain=createSkin(c);
   const b=createEnvelope(c);
-  const skullLength=Math.max(.20*b.detailScale,b.len*(c.isSauropod?.040:.066))*c.reconstructionProfile.head;
-  const skullHeight=Math.max(.045*b.detailScale,b.ht*(c.isTheropod?.080:.058))*c.reconstructionProfile.head;
-  const skullDepth=Math.max(.035*b.detailScale,b.ht*(c.isTheropod?.073:.058))*c.reconstructionProfile.head;
-  const boneContext={...c,...b,model:boneModel,boneMat:boneMaterial,skullLength,skullHeight,skullDepth,dinoCranialDisplayProfile:api.dinoCranialDisplayProfile};
+  const boneContext={...c,...b,model:boneModel,boneMat:boneMaterial};
   // Proxy construction must not inspect the selected soft-tissue hypothesis.
   Object.defineProperty(boneContext,'surfaceHypothesis',{get(){throw new Error('Bone proxy depends on tissue hypothesis');}});
+  const dimensions=createSizing(boneContext);
+  Object.assign(boneContext,dimensions);
   boneContext.addSkeletonEllipsoid=createBone(boneContext);
   const bones=createBulk(boneContext);
   b.headShell.geometry.computeBoundingBox();b.headShell.geometry.computeBoundingSphere();b.headShell.updateMatrixWorld(true);boneModel.updateMatrixWorld(true);
-  return {...b,...bones,skullLength,skullHeight,skullDepth,scale,dn,skinModel,boneModel,skinMaterial,boneMaterial};
+  return {...b,...bones,...dimensions,scale,dn,skinModel,boneModel,skinMaterial,boneMaterial};
 }
 function dispose(b){b.headShell.geometry.dispose();b.skinMaterial.dispose();for(const mesh of [b.vault,b.rostrum])if(mesh)mesh.geometry.dispose();b.boneMaterial.dispose();}
 function point(mesh,i){return new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position,i).applyMatrix4(mesh.matrixWorld);}
@@ -77,11 +80,21 @@ describe('Dino Lab fixed cranial display proxies',()=>{
   });
   it('retains the exact generic volume and transforms for other species and missing identifiers',()=>{
     const head=new THREE.Vector3(.2,.3,.13),snout=new THREE.Vector3(-1,.25,.13);
-    for(const species of [undefined,{}, {id:'TRICERATOPS'},...['styracosaurus','protoceratops','tyrannosaurus','brachiosaurus'].map(id=>api.DINOS.find(d=>d.id===id))])for(const theropod of [false,true]){
+    for(const species of [undefined,{}, {id:'TRICERATOPS'},...['pachyrhinosaurus','protoceratops','tyrannosaurus','brachiosaurus'].map(id=>api.DINOS.find(d=>d.id===id))])for(const theropod of [false,true]){
       const p=api.dinoCranialDisplayProfile(THREE,species,head,snout,.8,.3,.24,.2,theropod);
       expect(p.refined).toBe(false);expect(p.vaultCenter.toArray()).toEqual(head.toArray());expect(p.vaultScale.toArray()).toEqual([.8*.68,.3,.24]);expect(p.rostrumCenter.toArray()).toEqual(head.clone().lerp(snout,.62).toArray());expect(p.rostrumScale.toArray()).toEqual([Math.max(.09*.2,.8*.62),.3*(theropod?.58:.48),.24*.72]);
     }
-    for(const id of ['styracosaurus','protoceratops','tyrannosaurus','brachiosaurus']){const b=build(1,modes[2],id);try{expect(b.vault.position.toArray()).toEqual(b.head.toArray());expect(b.rostrum.position.toArray()).toEqual(b.rostrumCenter.toArray());expect(b.vault.userData.dinoCranialDisplayProxy).toBeUndefined();expect(b.rostrum.userData.dinoCranialDisplayProxy).toBeUndefined();}finally{dispose(b);}}
+    for(const id of ['pachyrhinosaurus','protoceratops','tyrannosaurus','brachiosaurus']){const b=build(1,modes[2],id);try{expect(b.vault.position.toArray()).toEqual(b.head.toArray());expect(b.rostrum.position.toArray()).toEqual(b.rostrumCenter.toArray());expect(b.vault.userData.dinoCranialDisplayProxy).toBeUndefined();expect(b.rostrum.userData.dinoCranialDisplayProxy).toBeUndefined();}finally{dispose(b);}}
+  });
+  it('uses the shared fixed cranial frame and native sizing for the four reviewed ceratopsids',()=>{
+    for(const id of ['triceratops','styracosaurus','centrosaurus','chasmosaurus']){const b=build(1,modes[2],id);try{
+      expect(b.profile.refined).toBe(true);expect(b.ceratopsidCranium).not.toBeNull();
+      expect(b.head.toArray()).toEqual(b.ceratopsidCranium.head.toArray());expect(b.snout.toArray()).toEqual(b.ceratopsidCranium.snout.toArray());
+      expect([b.skullLength,b.skullHeight,b.skullDepth]).toEqual([b.ceratopsidCranium.boneLength,b.ceratopsidCranium.boneHeight,b.ceratopsidCranium.boneDepth]);
+      expect(b.vault.position.toArray()).toEqual(b.profile.vaultCenter.toArray());expect(b.rostrum.position.toArray()).toEqual(b.profile.rostrumCenter.toArray());
+      expect(b.vault.scale.toArray()).toEqual(b.profile.vaultScale.toArray());expect(b.rostrum.scale.toArray()).toEqual(b.profile.rostrumScale.toArray());
+      expect(b.vault.userData.dinoCranialDisplayProxy.tissueHypothesisIndependent).toBe(true);expect(b.rostrum.userData.dinoCranialDisplayProxy.tissueHypothesisIndependent).toBe(true);
+    }finally{dispose(b);}}
   });
   it('keeps bone buffers, centers and radii identical across every tissue hypothesis',()=>{
     const builds=modes.map(mode=>build(1,mode));try{for(const b of builds.slice(1))for(const region of ['vault','rostrum']){const first=builds[0][region],mesh=b[region];expect(mesh.position.toArray()).toEqual(first.position.toArray());expect(mesh.scale.toArray()).toEqual(first.scale.toArray());for(const attr of ['position','normal','uv'])expect(mesh.geometry.attributes[attr].array).toEqual(first.geometry.attributes[attr].array);expect(mesh.geometry.index.array).toEqual(first.geometry.index.array);}}
@@ -96,7 +109,7 @@ describe('Dino Lab fixed cranial display proxies',()=>{
   });
   it('creates no proxy meshes when the skeleton layer is disabled',()=>{const b=build(1,modes[2],'triceratops',false);try{expect(b.vault).toBeNull();expect(b.rostrum).toBeNull();expect(b.boneModel.children).toHaveLength(0);}finally{dispose(b);}});
   it('moves both proxies rigidly with the established cranial pivot without changing their buffers',()=>{
-    const b=build(),rig=new THREE.Group(),neck=new THREE.Object3D(),shoulder=new THREE.Vector3(-1.44,1.35,0),rest=neck.quaternion.clone(),snapshots=[b.vault,b.rostrum].map(mesh=>({position:mesh.position.toArray(),scale:mesh.scale.toArray(),buffers:Object.fromEntries(['position','normal','uv'].map(k=>[k,mesh.geometry.attributes[k].array.slice()]))}));
+    const b=build(),rig=new THREE.Group(),neck=new THREE.Object3D(),shoulder=b.shoulder.clone(),rest=neck.quaternion.clone(),snapshots=[b.vault,b.rostrum].map(mesh=>({position:mesh.position.toArray(),scale:mesh.scale.toArray(),buffers:Object.fromEntries(['position','normal','uv'].map(k=>[k,mesh.geometry.attributes[k].array.slice()]))}));
     b.boneModel.add(rig,neck);rig.add(b.vault,b.rostrum);neck.position.copy(shoulder);neck.rotation.set(.04,.08,.02);
     try{api.dinoConnectedCranialPose(THREE,rig,shoulder,neck,rest);b.boneModel.updateMatrixWorld(true);for(const [i,mesh] of [b.vault,b.rostrum].entries()){
       let error=0;for(let j=0;j<mesh.geometry.attributes.position.count;j++){const local=new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position,j),restPoint=local.clone().multiply(mesh.scale).add(mesh.position),expected=restPoint.sub(shoulder).applyQuaternion(neck.quaternion).add(shoulder);error=Math.max(error,point(mesh,j).distanceTo(expected));}expect(error).toBeLessThan(1e-6);expect(mesh.position.toArray()).toEqual(snapshots[i].position);expect(mesh.scale.toArray()).toEqual(snapshots[i].scale);for(const key of ['position','normal','uv'])expect(mesh.geometry.attributes[key].array).toEqual(snapshots[i].buffers[key]);}

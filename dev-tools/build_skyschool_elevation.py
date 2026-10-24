@@ -23,6 +23,9 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'vendor' / 'skyschool-elevation'
 SOURCE = 'https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc'
+# The native 15 arc-second product is tiled in 15-degree squares named by their
+# north-west corner (N45W120 spans 30-45 N, 120-105 W); rows run south to north.
+SOURCE15 = 'https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/15s/15s_surface_elev_netcdf/ETOPO_2022_v1_15s_{tile}_surface.nc'
 MASK = ROOT / 'vendor' / 'skyschool-geography' / 'land-water-mask.json'
 MASK_SHA = '104393a0970b3239dcafb4b0a4fb2f64c6816ca114e02e3af9ec991a53481a86'
 AIRPORTS = [('portland',43.646,-70.309),('new-york',40.640,-73.779),
@@ -31,6 +34,17 @@ AIRPORTS = [('portland',43.646,-70.309),('new-york',40.640,-73.779),
  ('tokyo',35.553,139.780),('johannesburg',-26.134,28.242),
  ('sydney',-33.946,151.177),('sao-paulo',-23.432,-46.470),
  ('everest',27.9881,86.925)]
+# Mountain and canyon scenery at ETOPO's native 15 arc-second spacing (about
+# 460 m north/south), four times finer than the airport patches. Boxes are
+# (south, west, north, east) and each lies inside one 15-degree source tile.
+MOUNTAINS = [('grand-canyon', 35.70, -113.15, 36.55, -111.55),
+ ('everest-khumbu', 27.45, 86.35, 28.35, 87.35), ('annapurna', 28.25, 83.50, 28.95, 84.40),
+ ('front-range', 39.45, -105.95, 40.55, -105.15), ('alps-matterhorn', 45.65, 6.70, 46.25, 7.95),
+ ('yosemite', 37.45, -119.85, 38.05, -119.25), ('rainier-st-helens', 46.10, -122.35, 47.15, -121.45),
+ ('mount-washington', 44.05, -71.55, 44.50, -71.05), ('denali', 62.85, -151.40, 63.30, -150.55),
+ ('mount-fuji', 35.10, 138.42, 35.62, 139.02), ('kilimanjaro', -3.40, 37.00, -2.75, 37.70),
+ ('aconcagua', -32.95, -70.30, -32.35, -69.70), ('table-mountain', -34.40, 18.10, -33.70, 18.70),
+ ('mauna-kea', 19.30, -155.75, 20.10, -155.20)]
 CHECK_POINTS = [('Denver',39.739,-104.990),('Front Range',39.75,-105.6),
  ('San Francisco',37.775,-122.418),('Portland inland',43.7,-70.4),
  ('Death Valley',36.25,-116.825),('Tibetan Plateau',32,86),
@@ -39,7 +53,11 @@ CHECK_POINTS = [('Denver',39.739,-104.990),('Front Range',39.75,-105.6),
  ('Atlantic Ocean',0,-30),('Johannesburg',-26.2,28.05),('Sydney',-33.9,151.1),
  ('Everest',27.9881,86.925),('Fuji',35.3606,138.7274),('Dead Sea',31.5,35.5),
  ('Dateline west',-16,-179.999),('Dateline east',-16,179.999),
- ('North Pole',90,0),('South Pole',-90,0)]
+ ('North Pole',90,0),('South Pole',-90,0),
+ ('Grand Canyon rim',36.0544,-112.1401),('Longs Peak',40.2549,-105.6160),('Matterhorn',45.9763,7.6586),
+ ('Half Dome',37.7459,-119.5332),('Mount Rainier',46.8523,-121.7603),('Mount Washington',44.2706,-71.3033),
+ ('Denali',63.0695,-151.0074),('Kilimanjaro',-3.0674,37.3556),('Aconcagua',-32.6532,-70.0109),
+ ('Table Mountain',-33.9628,18.4098),('Mauna Kea',19.8207,-155.4681),('Annapurna',28.5961,83.8203)]
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
@@ -154,9 +172,12 @@ def fetch(grid, download):
     path = cache / (grid['id'] + '.dods.gz')
     metadata_path = cache / (grid['id'] + '.json')
     rs, cs, stride = grid['sourceRowStart'], grid['sourceColStart'], grid['sourceStride']
+    if grid['sourceArcSeconds'] == 15:
+        # 15 arc-second requests index rows and columns within their own tile.
+        rs, cs = grid['tileRowStart'], grid['tileColStart']
     re_, ce = rs + stride * (grid['height'] - 1), cs + stride * (grid['width'] - 1)
     query = f'z.z[{rs}:{stride}:{re_}][{cs}:{stride}:{ce}]'
-    url = SOURCE + '.dods?' + query
+    url = (SOURCE15.format(tile=grid['sourceTile']) if grid['sourceArcSeconds'] == 15 else SOURCE) + '.dods?' + query
     if not path.exists():
         if not download:
             raise FileNotFoundError(str(path) + '; use --download')
@@ -194,10 +215,27 @@ def definitions(stride):
         result.append({'id': name + '-1min', 'sourceRowStart': int((lat + 90) * 60) - 120,
           'sourceColStart': int((lon + 180) * 60) - 120, 'sourceStride': 1, 'width': 241, 'height': 241})
     for grid in result:
-        grid['lat0'] = -90 + (grid['sourceRowStart'] + .5) / 60
-        grid['lon0'] = -180 + (grid['sourceColStart'] + .5) / 60
-        grid['step'] = grid['sourceStride'] / 60
-        grid['resolutionArcSeconds'] = grid['sourceStride'] * 60
+        grid['sourceArcSeconds'] = 60
+    for name, south, west, north, east in MOUNTAINS:
+        tile_south, tile_west = math.floor(south / 15) * 15, math.floor(west / 15) * 15
+        if north > tile_south + 15 or east > tile_west + 15:
+            raise ValueError(name + ' crosses a 15-degree source tile')
+        tile = ('N' if tile_south + 15 >= 0 else 'S') + '%02d' % abs(tile_south + 15) + \
+            ('E' if tile_west >= 0 else 'W') + '%03d' % abs(tile_west)
+        row0, col0 = math.floor((south - tile_south) * 240), math.floor((west - tile_west) * 240)
+        rows, cols = math.ceil((north - tile_south) * 240) - row0, math.ceil((east - tile_west) * 240) - col0
+        # Row and column indices are recorded in a global 15 arc-second frame
+        # (row 0 at 90 S, column 0 at 180 W), matching the 60-second convention.
+        result.append({'id': name + '-15s', 'sourceArcSeconds': 15, 'sourceTile': tile,
+          'tileRowStart': row0, 'tileColStart': col0,
+          'sourceRowStart': (tile_south + 90) * 240 + row0, 'sourceColStart': (tile_west + 180) * 240 + col0,
+          'sourceStride': 1, 'width': cols, 'height': rows})
+    for grid in result:
+        cells = 3600 // grid['sourceArcSeconds']
+        grid['lat0'] = -90 + (grid['sourceRowStart'] + .5) / cells
+        grid['lon0'] = -180 + (grid['sourceColStart'] + .5) / cells
+        grid['step'] = grid['sourceStride'] / cells
+        grid['resolutionArcSeconds'] = grid['sourceStride'] * grid['sourceArcSeconds']
     return result
 
 def build(args):
@@ -273,9 +311,10 @@ def build(args):
       'doi':'10.25921/fd45-gt74','sourceResolutionArcSeconds':60,'horizontalDatum':'WGS84 EPSG:4326',
       'verticalDatum':'EGM2008 EPSG:3855','sourceUnits':'meters, positive up','sourceFillValue':-99999,
       'license':'CC0 1.0 Universal','licenseMetadataUrl':'https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem%3Aetopo_2022',
-      'source':SOURCE,'sources':sources,'waterMaskSha256':MASK_SHA,'packageSha256':sha(data),
+      'source':SOURCE,'detailSource':SOURCE15,'detailSourceResolutionArcSeconds':15,
+      'detailSourceDoi':'10.25921/fd45-gt74','sources':sources,'waterMaskSha256':MASK_SHA,'packageSha256':sha(data),
       'packageBytes':len(data),'builderSha256':sha(Path(__file__).read_bytes()),
-      'limitations':[f'{args.global_stride} arc-minute global samples are approximately {args.global_stride * 1.852:.2f} km apart north/south; 1 arc-minute training/scenic-region samples are approximately 1.85 km apart.',
+      'limitations':[f'{args.global_stride} arc-minute global samples are approximately {args.global_stride * 1.852:.2f} km apart north/south; 1 arc-minute training/scenic-region samples are approximately 1.85 km apart; 15 arc-second mountain patches are approximately 0.46 km apart.',
         'Striding, metre quantization, bilinear interpolation and water masking reduce detail. Small peaks, cliffs, valleys and narrow channels cannot be represented faithfully.',
         'ETOPO is a merged Earth-surface model, not live terrain or a surveyed airport obstruction database. Training airport flattening and lake levels are simulator adjustments.']})
     print(json.dumps({'packageBytes':len(data),'packageSha256':sha(data),'grids':len(grids),'sourceSamples':len(fixtures)}),flush=True)

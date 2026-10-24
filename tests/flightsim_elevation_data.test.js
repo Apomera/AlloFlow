@@ -101,10 +101,19 @@ describe('retained NOAA source and runtime elevations', () => {
     expect(data.units).toBe('meters'); expect(data.verticalDatum).toBe('EGM2008');
     expect(new Set(data.grids.map(grid => grid.id)).size).toBe(data.grids.length);
     expect(data.grids[0].step).toBeCloseTo(5 / 60, 12);
-    expect(data.grids.slice(1).every(grid => grid.step === 1 / 60)).toBe(true);
+    // Airport regions keep the 60 arc-second source; mountain patches use the
+    // native 15 arc-second product, indexed in a global 15-second frame.
+    const airports = data.grids.filter(grid => grid.id.endsWith('-1min'));
+    const mountains = data.grids.filter(grid => grid.id.endsWith('-15s'));
+    expect(airports).toHaveLength(11);
+    expect(mountains.length).toBeGreaterThanOrEqual(12);
+    expect(airports.every(grid => grid.step === 1 / 60 && grid.sourceArcSeconds === 60)).toBe(true);
+    expect(mountains.every(grid => grid.step === 1 / 240 && grid.sourceArcSeconds === 15 && /^[NS]\d\d[EW]\d{3}$/.test(grid.sourceTile))).toBe(true);
+    expect(airports.length + mountains.length).toBe(data.grids.length - 1);
     for (const grid of data.grids) {
-      expect(grid.lat0).toBeCloseTo(-90 + (grid.sourceRowStart + 0.5) / 60, 10);
-      expect(grid.lon0).toBeCloseTo(-180 + (grid.sourceColStart + 0.5) / 60, 10);
+      const cells = 3600 / grid.sourceArcSeconds;
+      expect(grid.lat0).toBeCloseTo(-90 + (grid.sourceRowStart + 0.5) / cells, 10);
+      expect(grid.lon0).toBeCloseTo(-180 + (grid.sourceColStart + 0.5) / cells, 10);
       expect(grid.rows).toHaveLength(grid.height);
     }
   });
@@ -136,7 +145,20 @@ describe('retained NOAA source and runtime elevations', () => {
   });
 
   it('reproduces official sample centres with metre-to-foot conversion and lake surface overrides', () => {
-    for (const sample of fixtures.samples) {
+    // A finer patch that reaches a sample replaces (or blends over) the coarser grid there,
+    // and 15-second nodes do not coincide with 60-second ones, so each sample
+    // is checked only where its own grid is the finest at full weight.
+    const covers = (grid, lat, lon) => {
+      const dx = lon - grid.lon0, dy = lat - grid.lat0;
+      return Math.min(dx, dy, (grid.width - 1) * grid.step - dx, (grid.height - 1) * grid.step - dy) > 0;
+    };
+    const finest = sample => {
+      const grid = data.grids.find(item => item.id === sample.gridId);
+      return !data.grids.some(other => other.step < grid.step && covers(other, sample.lat, sample.lon));
+    };
+    const checked = fixtures.samples.filter(finest);
+    expect(checked.filter(sample => sample.gridId.endsWith('-15s')).length).toBeGreaterThanOrEqual(12);
+    for (const sample of checked) {
       expect(sourceWater(sample.lat, sample.lon)).toBe(sample.waterMask);
       expect(api.getFlightTerrainHeight(sample.lat, sample.lon) * 0.3048, sample.label + ' ' + sample.gridId)
         .toBeCloseTo(surfaceAtSourceSample(sample), 5);
@@ -230,7 +252,9 @@ describe('continuous geographic sampling and bounded decoding', () => {
       }
     }
     const info = api.getFlightElevationInfo();
-    expect(info.cacheLimit).toBe(128); expect(info.cachedRows).toBe(info.cacheLimit); expect(info.decodeFailure).toBe(false);
+    // 512 rows hold a full 15 arc-second patch (up to 217 rows) plus the
+    // global and airport rows one terrain rebuild and the distant ring visit.
+    expect(info.cacheLimit).toBe(512); expect(info.cachedRows).toBe(info.cacheLimit); expect(info.decodeFailure).toBe(false);
     expect(api.getFlightTerrainHeight(sample.lat, sample.lon)).toBe(before);
   });
 

@@ -21,6 +21,11 @@ const editorEnd = source.indexOf(anchor, editorStart);
 if (editorStart < 0 || editorEnd < editorStart) throw new Error('Missing canonical syllable recording editor boundaries');
 const editorBlock = source.slice(editorStart, editorEnd + anchor.length);
 next = next.replace(/\/\/ BEGIN WORD SOUNDS SYLLABLE RECORDING EDITOR[\s\S]*?\/\/ END WORD SOUNDS SYLLABLE RECORDING EDITOR/, () => editorBlock);
+// The editor's reviewed-recording library (and its message keys) ships in both entry points too.
+const libraryPattern = /\/\/ BEGIN WORD SOUNDS REVIEWED RECORDING LIBRARY[\s\S]*?\/\/ END WORD SOUNDS REVIEWED RECORDING LIBRARY/;
+const libraryBlock = source.match(libraryPattern);
+if (!libraryBlock || !libraryPattern.test(next)) throw new Error('Missing reviewed recording library boundaries');
+next = next.replace(libraryPattern, () => libraryBlock[0]);
 if (process.argv.includes('--check')) {
   if (next !== current) throw new Error('Stale runtime syllable review components');
 } else if (next !== current) fs.writeFileSync(file, next);

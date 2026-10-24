@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Wcześniejsze podejścia do quizu",
+  "stem.flightsim.quiz_history_scope": "Rozpoczęcie nowego podejścia zapisuje do czterech wcześniejszych podejść z zarejestrowanymi pierwszymi odpowiedziami. Ich przeglądanie nie zmienia bieżącego quizu.",
+  "stem.flightsim.quiz_history_empty": "Nie zapisano jeszcze wcześniejszych podejść do quizu.",
+  "stem.flightsim.quiz_history_attempt": "Zapisano {date} · {score}/{answered} poprawnych pierwszych odpowiedzi",
+  "stem.flightsim.quiz_history_progress": "Zarejestrowano {answered} z {total} pytań · {unanswered} bez odpowiedzi",
+  "stem.flightsim.quiz_history_question": "Pytanie {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Poprawna odpowiedź: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} zapisanych pytań nie pasuje już do tego quizu. Wyniki uwzględniają tylko zgodne zapisy pytań."
+}

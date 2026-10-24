@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ਮਿਸ਼ਨ ਦੇ ਨਿਰੀਖਣ",
+  "stem.flightsim.mission_journal_targets": "ਤਸਵੀਰ ਲਏ ਗਏ ਟੀਚੇ: {total} ਵਿੱਚੋਂ {captured}।",
+  "stem.flightsim.mission_journal_complete": "ਮਿਸ਼ਨ ਦੇ ਸਾਰੇ ਉਦੇਸ਼ ਅਤੇ ਵਾਪਸੀ ਉੱਤੇ ਉਤਰਨਾ ਦਰਜ ਹੋਏ।",
+  "stem.flightsim.mission_journal_ended": "ਪੂਰਾ ਹੋਣ ਦੇ ਸਾਰੇ ਸਬੂਤ ਦਰਜ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਮਿਸ਼ਨ ਖ਼ਤਮ ਹੋ ਗਿਆ।",
+  "stem.flightsim.mission_journal_recovery": "ਬਚੇ ਹੋਏ ਵਿਅਕਤੀ ਦਾ ਬਚਾਅ ਦਰਜ: {value}।",
+  "stem.flightsim.mission_journal_return": "ਅੱਡੇ ਉੱਤੇ ਵਾਪਸੀ ਦਾ ਉਤਰਨਾ ਦਰਜ: {value}।",
+  "stem.flightsim.mission_guidance_title": "ਮਿਸ਼ਨ ਲਈ ਮਾਰਗਦਰਸ਼ਨ",
+  "stem.flightsim.mission_route": "{target} · ਦਿਸ਼ਾ ਕੋਣ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "ਉਡਾਣ ਸ਼ੁਰੂ ਕਰਨ ਦਾ ਸਥਾਨ",
+  "stem.flightsim.mission_read_status": "ਮਿਸ਼ਨ ਦੀ ਸਥਿਤੀ ਪੜ੍ਹੋ",
+  "stem.flightsim.mission_return_criterion": "{target} ਤੋਂ {distance} nm ਦੇ ਅੰਦਰ ਉਤਰੋ; ਜ਼ਮੀਨ ਦੇ ਮੁਕਾਬਲੇ ਰਫ਼ਤਾਰ {speed} kt ਤੋਂ ਘੱਟ ਅਤੇ ਹੇਠਾਂ ਉਤਰਨ ਦੀ ਦਰ {fpm} fpm ਤੋਂ ਘੱਟ ਰੱਖੋ।",
+  "stem.flightsim.mission_unavailable": "ਮਿਸ਼ਨ ਦੇ ਟੀਚੇ ਦਾ ਡਾਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਇਹ ਉਡਾਣ ਖ਼ਤਮ ਕਰਕੇ ਨਵਾਂ ਮਿਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ।",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft ਦੇ ਅੰਦਰ, ਜ਼ਮੀਨ ਤੋਂ {min} ft ਉੱਪਰ ਅਤੇ {max} ft ਹੇਠਾਂ ਰਹੋ; ਜ਼ਮੀਨ ਦੇ ਮੁਕਾਬਲੇ ਗਤੀ {speed} kt ਤੋਂ ਘੱਟ ਰੱਖ ਕੇ {hold} s ਟਿਕੇ ਰਹੋ।"
+}

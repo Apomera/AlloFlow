@@ -161,6 +161,20 @@ describe('Memory Aid export rules are shared with the live view', () => {
 });
 
 describe('Memory Aid interactive HTML export', () => {
+  it('withholds an earlier cue from student study and recall sheets while retaining it for teacher review', () => {
+    const held = { ...verifiedCard, studentDraft: 'OLD_LEARNER_CUE', aiExample: 'OLD_TEACHER_CUE', mapping: 'OLD_CUE_MAPPING', cueNeedsReview: true };
+    for (const doc of [section(fullExport([held])), worksheet([held])]) {
+      expect(doc.textContent).toContain('earlier memory cue is waiting for teacher review');
+      expect(doc.textContent).not.toContain('OLD_LEARNER_CUE');
+      expect(doc.textContent).not.toContain('OLD_TEACHER_CUE');
+      expect(doc.textContent).not.toContain('OLD_CUE_MAPPING');
+      expect(doc.querySelector('.memory-aid-recall-sheet')).toBeNull();
+      expect(doc.querySelector('textarea')).toBeNull();
+    }
+    const teacher = fullExport([held], { includeTeacherKey: true });
+    expect(teacher).toContain('OLD_TEACHER_CUE');
+    expect(teacher).toContain('Review the earlier cue, scaffold, and explanation below');
+  });
   it('gives students real autosaving fields in the downloaded HTML but not on paper or in the teacher appendix', () => {
     const doc = section(fullExport([verifiedCard]));
     const draft = doc.querySelector('textarea.interactive-textarea[data-allo-response-key="ma-lockstep:card0:draft"]');

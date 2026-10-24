@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Missio perfecta et reditus cum appulsu in acta relati sunt. Hanc missionem iterum tenta, una ratione gubernandi vel itineris consulto mutata; deinde observationes servatas compara.",
+  "stem.flightsim.coaching_mission_depleted": "Aeronavicula sine gubernatore vim electricam consumpsit. Missionem novam incipe, itinera brevia elige, et reditum antequam vis deficiat para.",
+  "stem.flightsim.coaching_mission_unknown": "Documenta huius missionis aut desunt aut inter se discrepant. Ea quae relata sunt recognosce, deinde novum conatum incipe.",
+  "stem.flightsim.coaching_mission_capture": "Nonnullae metae nondum photographice captae sunt. In nova missione ad unam quamque metam accede et intra fines altitudinis et velocitatis respectu terrae indicatos mane, donec imago relata sit.",
+  "stem.flightsim.coaching_mission_recovery": "Superstes nondum receptus est. In nova missione auxilii, ante reditum ad stationem, volatum stabilem in eodem loco exerce intra fines altitudinis, motus lateralis et velocitatis verticalis indicatos.",
+  "stem.flightsim.coaching_mission_return": "Receptio aut imagines metarum relatae sunt; reditus cum appulsu restat. Missionem novam incipe, deinde tempus et vim electricam ad reditum ad stationem reserva.",
+  "stem.flightsim.mission_reflection_prompt": "Quod consilium de meta, volatu in eodem loco aut reditu mutares? Observationibus missionis utere ad electionem explicandam et unam mutationem novo conatui proponendam. Explicatio tua cum hoc volatu servatur.",
+  "stem.flightsim.journal_different_airport": "Hi accessus ad diversos aeroportus facti sunt. Observationes separatim recognosce; differentiae mensurarum non computantur.",
+  "stem.flightsim.journal_approach_airport": "Aeroportus accessus: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "DOCUMENTA MISSIONIS",
+  "stem.flightsim.challenge_brake_release": "Clavem X remitte et frena rotarum in tabula gubernationis solve antequam vim augeas."
+}

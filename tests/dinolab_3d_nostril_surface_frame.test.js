@@ -56,7 +56,7 @@ function constructNostrils(side, size, normal, isTheropod = true, materialKind =
     return projected;
   };
   const context = {
-    THREE: T, model, head, surfaceSnout, surfaceHeadHeight, surfaceHeadDepth,
+    THREE: T, model, head, surfaceSnout, surfaceHeadHeight, surfaceHeadDepth, sauropodCranium: null,
     faceSide: side, cranialSurface, isTheropod, mouthMat, nostrilMat: null, headMat, headShell: {},
     vec: (x, y, z) => new T.Vector3(x, y, z), faceSurfacePoint,
     dinoEyeSurfaceFrame: frameFor,

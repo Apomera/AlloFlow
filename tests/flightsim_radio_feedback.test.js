@@ -220,15 +220,18 @@ describe('contextual radio in the production frame loop', () => {
     const assertClear = () => {
       const coaching = texts.find(item => item.font === 'bold 20px system-ui' && item.text === cue);
       expect(coaching).toBeDefined();
+      const coachingWidth = measure(coaching.text);
+      expect(coachingWidth).toBeGreaterThan(0);
+      if (coaching.maxWidth != null) expect(coaching.maxWidth).toBeGreaterThanOrEqual(coachingWidth);
       const cards = rects.filter(box => box.font === 'bold 20px system-ui' && box.y === 667 * 0.25 - 28 && box.h === 54);
       expect(cards).toHaveLength(2); // Filled card and its outline share the fitted bounds.
       for (const card of cards) {
         expect(card.x).toBeGreaterThanOrEqual(8); expect(card.x + card.w).toBeLessThanOrEqual(375 - 56);
         expect(card.w).toBeLessThanOrEqual(375 - 64);
         expect(coaching.x).toBeCloseTo(card.x + card.w / 2);
-        expect(coaching.maxWidth).toBeGreaterThan(0); expect(coaching.maxWidth).toBeLessThanOrEqual(card.w - 40);
-        expect(coaching.x - coaching.maxWidth / 2).toBeGreaterThanOrEqual(card.x + 20 - 1e-8);
-        expect(coaching.x + coaching.maxWidth / 2).toBeLessThanOrEqual(card.x + card.w - 20 + 1e-8);
+        expect(coachingWidth).toBeLessThanOrEqual(card.w - 40 + 1e-8);
+        expect(coaching.x - coachingWidth / 2).toBeGreaterThanOrEqual(card.x + 20 - 1e-8);
+        expect(coaching.x + coachingWidth / 2).toBeLessThanOrEqual(card.x + card.w - 20 + 1e-8);
       }
       const painted = recordedRadio(); expect(painted.length).toBeGreaterThan(0);
       for (const text of painted) {

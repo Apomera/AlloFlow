@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Предыдущие попытки теста",
+  "stem.flightsim.quiz_history_scope": "При начале новой попытки сохраняются до четырёх предыдущих попыток с записанными первыми ответами. Их просмотр не меняет текущий тест.",
+  "stem.flightsim.quiz_history_empty": "Предыдущие попытки теста ещё не сохранены.",
+  "stem.flightsim.quiz_history_attempt": "Сохранено {date} · {score}/{answered} первых ответов верны",
+  "stem.flightsim.quiz_history_progress": "Записано {answered} из {total} вопросов · {unanswered} без ответа",
+  "stem.flightsim.quiz_history_question": "Вопрос {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Правильный ответ: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} сохранённых вопросов больше не соответствуют этому тесту. Баллы учитывают только записи соответствующих вопросов."
+}

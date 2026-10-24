@@ -92,7 +92,8 @@ describe('_alloMbStallTracker', () => {
 describe('the student poll loop reports into it', () => {
   const loop = slice(anti, "const presence = { kind: 'student'", "// Real-time upgrade: the student offers");
   it('creates one tracker per loop and resets it on success', () => {
-    expect(anti).toMatch(/const stall = _alloMbStallTracker\(\);\s*const noteStall = \(next\) => \{ if \(next !== null\) setMbStudentStalled\(next\); \};\s*const announce = async \(\) => \{\s*lastAnnounce = Date\.now\(\);\s*const presence = \{ kind: 'student'/);
+    // announce() now also bails out once the loop is torn down (`if (cancelled) return;`).
+    expect(anti).toMatch(/const stall = _alloMbStallTracker\(\);\s*const noteStall = \(next\) => \{ if \(next !== null\) setMbStudentStalled\(next\); \};\s*const announce = async \(\) => \{\s*(?:if \(cancelled\) return;\s*)?lastAnnounce = Date\.now\(\);\s*const presence = \{ kind: 'student'/);
     expect(loop).toMatch(/errorCount = 0;\s*noteStall\(stall\.ok\(\)\);/);
   });
   it('counts failures with the data-channel state', () => {
@@ -183,7 +184,7 @@ describe('module watchdog tolerates sleep and background tabs', () => {
   it('arms every watchdog with its own start time and re-arms once', () => {
     const loader = slice(anti, '      var watchdogRearmed = false;', '      var clearModuleLoadWatchdog = function() {');
     expect(loader).toMatch(/var expireModuleLoad = function\(armedAt\) \{/);
-    expect(loader).toMatch(/if \(_alloModuleWatchdogShouldWait\(armedAt, Date\.now\(\), typeof document !== 'undefined' && document\.hidden, watchdogRearmed\)\) \{\s*watchdogRearmed = true;\s*moduleLoadWatchdog = setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\);\s*return;\s*\}\s*console\.error\('\[CDN-TIMEOUT\]/);
+    expect(loader).toMatch(/if \(_alloModuleWatchdogShouldWait\(armedAt, Date\.now\(\), typeof document !== 'undefined' && document\.hidden, watchdogRearmed\)\) \{\s*watchdogRearmed = true;\s*entry\.watchdogDeadlineAt = Date\.now\(\) \+ 30000;\s*moduleLoadWatchdog = setTimeout\(expireModuleLoad, 30000, Date\.now\(\)\);\s*return;\s*\}\s*console\.error\('\[CDN-TIMEOUT\]/);
     expect(loader).toContain('var moduleLoadWatchdog = setTimeout(expireModuleLoad, 30000, Date.now());');
     expect(anti).not.toContain('setTimeout(expireModuleLoad, 30000);');
   });

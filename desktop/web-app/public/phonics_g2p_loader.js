@@ -244,7 +244,8 @@
      *  - phoneme COUNT + IPA come from eSpeak.
      *  - graphemes: when Gemini's phoneme count == eSpeak's, use Gemini's
      *    graphemes (best spelling alignment) zipped with eSpeak IPA; otherwise
-     *    fall back to the local digraph-aware aligner; otherwise the raw letters.
+     *    fall back to the local digraph-aware aligner. An unalignable spelling
+     *    leaves graphemes empty; it never changes the valid sound sequence.
      *  - agreement = do eSpeak and Gemini agree on the count? (triangulation)
      * `geminiPhonemes` is Gemini's phonemes array ([{ipa,grapheme}] or strings);
      * pass null/[] when Gemini was unavailable. Pure + fully offline.
@@ -258,14 +259,13 @@
       var graphemes = null;
       if (agree && geminiCount) {
         graphemes = gp.map(function (p) { return (typeof p === 'string') ? p : ((p && (p.grapheme || p.g)) || ''); });
-        if (graphemes.some(function (g) { return !g; })) graphemes = null; // gaps → use aligner
+        if (graphemes.some(function (g) { return typeof g !== 'string' || !g.trim(); }) ||
+          graphemes.join('').normalize('NFC').toLowerCase() !== String(word || '').normalize('NFC').toLowerCase()) graphemes = null;
       }
       if (!graphemes) graphemes = alignGraphemes(word, ipa.length);
-      if (!graphemes) { // last resort: spread the raw letters as evenly as we can
-        var letters = String(word || '').toLowerCase().replace(/[^\p{L}\p{M}']/gu, '').split('');
-        graphemes = ipa.map(function (_, i) { return letters[i] || ''; });
-      }
-      var phonemes = ipa.map(function (sym, i) { return { ipa: sym, grapheme: graphemes[i] || '' }; });
+      // A letter can represent more than one sound (box: /b/ /ɑ/ /k/ /s/).
+      // Inventing a partial one-letter-per-sound mapping hides that distinction.
+      var phonemes = ipa.map(function (sym, i) { return { ipa: sym, grapheme: graphemes && graphemes[i] || '' }; });
       var mid = ipa.length ? ipa[Math.floor((ipa.length - 1) / 2)] : '';
       return {
         phonemes: phonemes,

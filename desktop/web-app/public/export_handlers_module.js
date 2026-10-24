@@ -2814,7 +2814,7 @@
           const facts = (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).map(function(f) { return String(f == null ? '' : f).slice(0, 600).trim(); }).filter(Boolean);
           const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
           const cueBlock = rules && typeof rules.cueBlock === 'function' ? rules.cueBlock(c) : null;
-          const cue = cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
+          const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
           slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
             + '<p style="font-size:16px;font-weight:700">' + esc(c.target || _maT('memory_target', 'Memory target')) + '</p>'
             + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + esc(cue.slice(0, 700)) + '</p>' : '')
@@ -2823,7 +2823,14 @@
             + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + esc(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + esc(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
             + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
             + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '')
-            + (c.mapping ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '')
+            + (function() {
+                const connections = rules && typeof rules.activeConnections === 'function' ? rules.activeConnections(c) : [];
+                if (connections.length) return '<dl style="margin-top:8px;font-size:13px;color:#334155">' + connections.filter(function(row) { return facts[row.factIndex]; }).map(function(row) {
+                  return '<dt style="font-weight:700">' + esc(row.cue) + '</dt><dd>' + esc(facts[row.factIndex]) + (row.explanation ? ' ' + esc(row.explanation) : '') + '</dd>';
+                }).join('') + '</dl>';
+                const customCue = !(rules && typeof rules.customCue === 'function') || rules.customCue(c);
+                return c.mapping && !c.cueNeedsReview && !customCue ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '';
+              })()
             + (function() {
                 const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null;
                 if (!hook) return '';

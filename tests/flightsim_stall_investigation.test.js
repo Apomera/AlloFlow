@@ -59,8 +59,10 @@ async function change(element, value) {
   expect(element).toBeTruthy();
   const prototype = element.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
   await act(async () => {
+    if (element.type === 'number') element.focus();
     Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, String(value));
     element.dispatchEvent(new Event('input', { bubbles: true }));
+    if (element.type === 'number') element.blur();
   });
 }
 const record = () => latest.stallInvestigation;

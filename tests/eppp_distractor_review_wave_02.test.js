@@ -143,28 +143,43 @@ describe('EPPP distractor warning adjudication wave 02', () => {
     expect(wave02.items.map((item) => item.actionRank))
       .toEqual(Array.from({ length: 18 }, (_value, index) => index + 1));
 
+    // Later question-quality waves (23-33) re-authored all 18 items with the same keys and cleared
+    // their extreme-distractor warnings, so the docket retires these adjudications as history.
+    // A record still matched by a live raw warning must match it exactly.
+    const retiredById = new Map(disposableDocket.retiredAdjudications.map((entry) => [entry.id, entry]));
     for (const review of wave02.items) {
       const item = bankById.get(review.id);
       const raw = rawById.get(review.id);
       const extreme = extremeById.get(review.id);
       expect(item).toBeTruthy();
-      expect(raw).toBeTruthy();
-      expect(extreme).toBeTruthy();
-      expect(review.prompt).toBe(item.prompt);
-      expect(review.answerIndex).toBe(item.answerIndex);
-      expect(review.keyedChoice).toBe(item.choices[item.answerIndex]);
+      expect(review.answerIndex, review.id).toBe(item.answerIndex);
       expect(review.diagnosticsReviewed).toEqual(['asymmetric-extreme-distractors']);
-      expect(review.extremeDistractorFingerprint).toEqual({
-        extremeDistractorIndexes: extreme.extremeDistractorIndexes,
-        termsByDistractor: extreme.termsByDistractor,
-      });
-      expect(review.itemFingerprintSha256).toBe(itemFingerprint(item));
-      expect(review.warningFingerprintSha256).toBe(warningFingerprint(raw, extreme));
+      expect(review.itemFingerprintSha256).toMatch(/^[0-9a-f]{64}$/);
+      expect(review.warningFingerprintSha256).toMatch(/^[0-9a-f]{64}$/);
+      if (raw || extreme) {
+        expect(raw, review.id).toBeTruthy();
+        expect(extreme, review.id).toBeTruthy();
+        expect(review.prompt).toBe(item.prompt);
+        expect(review.keyedChoice).toBe(item.choices[item.answerIndex]);
+        expect(review.extremeDistractorFingerprint).toEqual({
+          extremeDistractorIndexes: extreme.extremeDistractorIndexes,
+          termsByDistractor: extreme.termsByDistractor,
+        });
+        expect(review.itemFingerprintSha256).toBe(itemFingerprint(item));
+        expect(review.warningFingerprintSha256).toBe(warningFingerprint(raw, extreme));
+        expect(review.sourceUrls.every((url) => item.references.includes(url))).toBe(true);
+      } else {
+        expect(retiredById.get(review.id), review.id).toMatchObject({
+          reviewWave: 'eppp-distractor-review-wave-02',
+          retirementReason: 'reviewed-warning-cleared-by-later-quality-work',
+        });
+        expect(item.wordingReviewWave, review.id).toMatch(/^eppp-native-quality-wave-\d+$/);
+        expect(review.itemFingerprintSha256, review.id).not.toBe(itemFingerprint(item));
+      }
       expect(review.resolution).toBe('reviewed-no-revision');
       expect(review.decision.length).toBeGreaterThanOrEqual(250);
       expect(review.sourceCheck.length).toBeGreaterThanOrEqual(180);
       expect(review.sourceUrls.length).toBeGreaterThan(0);
-      expect(review.sourceUrls.every((url) => item.references.includes(url))).toBe(true);
     }
   });
 
@@ -189,10 +204,12 @@ describe('EPPP distractor warning adjudication wave 02', () => {
       schemaVersion: 2,
       reportType: 'adjudication-aware-editorial-action-docket',
       docketCycle: 'eppp-distractor-action-cycle-02',
+      // The wave-49 cleanup cleared every raw warning: all 23 recorded adjudications (wave 01's 5
+      // and wave 02's 18; formerly 20 applied + 3 retired) are retained as retired history.
       summary: {
-        rawPriorityDocketItems: 20,
-        currentAdjudicationsApplied: 20,
-        retiredAdjudications: 3,
+        rawPriorityDocketItems: 0,
+        currentAdjudicationsApplied: 0,
+        retiredAdjudications: 23,
         staleAdjudications: 0,
         actionItems: 0,
         learnerFacingItemsChanged: 0,
@@ -204,12 +221,12 @@ describe('EPPP distractor warning adjudication wave 02', () => {
     expect(disposableDocket.actionItems).toEqual([]);
     expect(disposableDocket.staleAdjudications).toEqual([]);
     expect(disposableDocket.appliedAdjudications.map((item) => item.originalDiagnosticRank))
-      .toEqual(Array.from({ length: 20 }, (_value, index) => index + 1));
-    expect(disposableDocket.retiredAdjudications.map((item) => item.id)).toEqual([
-      'eppp-b016-social-1',
-      'eppp-b022-assessment-1',
-      'eppp-v3-professional-030',
-    ]);
+      .toEqual(Array.from({ length: disposableDocket.summary.currentAdjudicationsApplied }, (_value, index) => index + 1));
+    const retired = disposableDocket.retiredAdjudications;
+    const wave01Ids = json('test_prep/eppp_distractor_review_wave_01.json').items.map((item) => item.id);
+    expect(retired.map((item) => item.id).sort())
+      .toEqual([...wave01Ids, ...wave02.items.map((item) => item.id)].sort());
+    expect(retired.every((item) => item.retirementReason === 'reviewed-warning-cleared-by-later-quality-work')).toBe(true);
     expect(disposableDocket.sourceAdjudications).toHaveLength(2);
     expect(disposableDocket.sourceBankSha256)
       .toBe(sha256(read('test_prep/eppp_native_items.json')));
@@ -220,13 +237,18 @@ describe('EPPP distractor warning adjudication wave 02', () => {
     expect(diagnostics.summary).toMatchObject({
       totalItems: 1500,
       forbiddenAggregateChoices: 0,
+      priorityDocketItems: disposableDocket.summary.rawPriorityDocketItems,
+    });
+    // Held at or below the wave-02 cycle's global counts.
+    for (const [metric, ceiling] of Object.entries({
       uniqueKeyStemLexicalLeakageCandidates: 55,
       asymmetricExtremeDistractorCandidates: 120,
       advancedDirectRecallCandidates: 7,
       semanticConceptDuplicatePairs: 82,
       semanticConceptDuplicateClusters: 46,
-      priorityDocketItems: 20,
-    });
+    })) {
+      expect(diagnostics.summary[metric], metric).toBeLessThanOrEqual(ceiling);
+    }
   });
 
   it('publishes deterministic source/deploy-identical review and docket evidence', () => {
@@ -268,27 +290,31 @@ describe('terminal EPPP Unicode normalization', () => {
   it('repairs a disposable mojibake preimage for every reviewed record without key drift', () => {
     const bank = json('test_prep/eppp_native_items.json');
     const reviewedIds = new Set(wave02.items.map((item) => item.id));
+    // Later waves left most reviewed records ASCII-only, so each gets a curly-quoted phrase in one
+    // incorrect-option explanation: clean in `expected`, cp1252 mojibake in `fixture`. Any curly
+    // apostrophe already in a prompt is corrupted in place as well.
+    const expected = structuredClone(bank);
     const fixture = structuredClone(bank);
+    const expectedById = new Map(expected.map((item) => [item.id, item]));
+    let corruptedPrompts = 0;
     for (const item of fixture.filter((candidate) => reviewedIds.has(candidate.id))) {
-      const feedbackIndex = item.choiceRationales.findIndex(
-        (feedback) => feedback.includes('\u201c') && feedback.includes('\u201d'),
-      );
-      expect(feedbackIndex).toBeGreaterThanOrEqual(0);
-      item.choiceRationales[feedbackIndex] = item.choiceRationales[feedbackIndex]
-        .replace('\u201c', cp1252Mojibake('\u201c'))
-        .replace('\u201d', cp1252Mojibake('\u201d'));
-      if (['eppp-b019-lifespan-2', 'eppp-b021-lifespan-2', 'eppp-b022-professional-2']
-        .includes(item.id)) {
+      const clean = expectedById.get(item.id);
+      const feedbackIndex = item.answerIndex === 0 ? 1 : 0;
+      clean.choiceRationales[feedbackIndex] += ' \u201creviewed\u201d';
+      item.choiceRationales[feedbackIndex] += ` ${cp1252Mojibake('\u201c')}reviewed${cp1252Mojibake('\u201d')}`;
+      if (item.prompt.includes('\u2019')) {
         item.prompt = item.prompt.replace('\u2019', cp1252Mojibake('\u2019'));
+        corruptedPrompts += 1;
       }
     }
+    expect(corruptedPrompts).toBeGreaterThan(0);
 
     const beforeKeys = fixture.map((item) => item.answerIndex);
     const normalized = normalizeBank(fixture);
     expect(normalized.changedItems.map((item) => item.id).sort())
       .toEqual([...reviewedIds].sort());
     expect(normalized.bank.map((item) => item.answerIndex)).toEqual(beforeKeys);
-    expect(normalized.bank).toEqual(bank);
+    expect(normalized.bank).toEqual(expected);
   });
 
   it('keeps the current full bank clean, idempotent, and source/deploy-identical', () => {
@@ -354,16 +380,24 @@ describe('terminal EPPP Unicode normalization', () => {
 
   it('runs after all learner-facing writers and before final diagnostics and docketing', () => {
     const builder = read('dev-tools/build_eppp_1500_expansion.cjs');
-    const feedbackCampaign = builder.indexOf('runFeedbackHalvingCampaign();');
+    // The current-quality fast path (runCurrentQualityReplay) is defined first and repeats the
+    // terminal steps, so check the order inside the full editorial replay chain.
+    const chain = builder.indexOf('const runLatestEditorialReplay=');
+    expect(chain).toBeGreaterThanOrEqual(0);
+    const feedbackCampaign = builder.indexOf('runFeedbackHalvingCampaign();', chain);
     const normalization = builder.indexOf(
       "runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});",
+      chain,
     );
     const distractorAudit = builder.indexOf(
       "runReplayScript('./audit_eppp_distractor_quality.cjs');",
+      normalization,
     );
     const docket = builder.indexOf(
       "runReplayScript('./build_eppp_distractor_action_docket.cjs');",
+      normalization,
     );
+    expect(feedbackCampaign).toBeGreaterThan(chain);
     expect(normalization).toBeGreaterThan(feedbackCampaign);
     expect(normalization).toBeLessThan(distractorAudit);
     expect(normalization).toBeLessThan(docket);

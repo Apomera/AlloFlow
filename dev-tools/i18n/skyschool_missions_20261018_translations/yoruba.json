@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Àwọn àkíyèsí iṣẹ́ àyànfúnni",
+  "stem.flightsim.mission_journal_targets": "Àwọn ibi àfojúsùn tí a ti ya fọ́tò: {captured} nínú {total}.",
+  "stem.flightsim.mission_journal_complete": "A ti ṣe àkọsílẹ̀ gbogbo ète iṣẹ́ náà àti bíbàlẹ̀ lẹ́yìn ìpadà.",
+  "stem.flightsim.mission_journal_ended": "Iṣẹ́ náà parí kí a tó ṣe àkọsílẹ̀ gbogbo ẹ̀rí ìparí.",
+  "stem.flightsim.mission_journal_recovery": "Àkọsílẹ̀ gbígbà ẹni tó là á já sílẹ̀: {value}.",
+  "stem.flightsim.mission_journal_return": "Àkọsílẹ̀ bíbàlẹ̀ ní ibùdó lẹ́yìn ìpadà: {value}.",
+  "stem.flightsim.mission_guidance_title": "Ìtọ́sọ́nà iṣẹ́ àyànfúnni",
+  "stem.flightsim.mission_route": "{target} · igun ìtọ́sọ́nà {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Ibi tí a ti gbéra",
+  "stem.flightsim.mission_read_status": "Ka ipò iṣẹ́ àyànfúnni",
+  "stem.flightsim.mission_return_criterion": "Bàlẹ̀ láàárín {distance} nm sí {target}, pẹ̀lú ìyára ní ìbámu pẹ̀lú ilẹ̀ tí ó kéré ju {speed} kt àti ìyára ìsọ̀kalẹ̀ tí ó kéré ju {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Kò sí dátà ibi àfojúsùn iṣẹ́ náà. Parí ìfò yìí, kí o sì bẹ̀rẹ̀ iṣẹ́ tuntun.",
+  "stem.flightsim.mission_capture_criterion": "Dúró láàárín {distance} ft, lókè {min} àti ní ìsàlẹ̀ {max} ft sí ilẹ̀, pẹ̀lú ìyára sí ilẹ̀ tó kéré ju {speed} kt fún {hold} s."
+}

@@ -1,0 +1,1431 @@
+{
+  "sourceHash": "4831937ee7c95260084fc5dac0fae6b623ee1ba83f0ab1ee56ced1d27b7abae9",
+  "species": {
+    "parasaurolophus": {
+      "body": {
+        "species": "parasaurolophus",
+        "family": "ornithopods",
+        "profile": "parasaurolophus-normal-back",
+        "profileId": "parasaurolophus-normal-back",
+        "label": "Normal-backed Parasaurolophus",
+        "specimen": "Parasaurolophus walkeri ROM 768",
+        "evidence": "ROM 768 supports a long scapula and robust forelimbs. The familiar V-shaped saddle in its back reflects injury and is not restored as normal anatomy.",
+        "claim": "ROM 768 supports a long scapula and robust forelimbs. The familiar V-shaped saddle in its back reflects injury and is not restored as normal anatomy.",
+        "uncertainty": "ROM 768 lacks most of the tail and the hindlimb below the femur. Those regions, body width, joint angles and tissue thickness are comparative restorations.",
+        "limit": "ROM 768 lacks most of the tail and the hindlimb below the femur. Those regions, body width, joint angles and tissue thickness are comparative restorations.",
+        "sources": [
+          {
+            "title": "Godefroit et al. 2012: Olorotitan osteology",
+            "url": "https://doi.org/10.4202/app.2011.0051"
+          },
+          {
+            "title": "Bertozzo et al. 2021: Parasaurolophus paleopathology",
+            "url": "https://doi.org/10.1111/joa.13363"
+          },
+          {
+            "title": "Brown 1916: Corythosaurus skeleton, musculature and epidermis",
+            "url": "https://hdl.handle.net/2246/1330"
+          },
+          {
+            "title": "Evans and Reisz 2007: Lambeosaurus anatomy and comparisons",
+            "url": "https://doi.org/10.1671/0272-4634%282007%2927%5B373%3AAAROLM%5D2.0.CO%3B2"
+          }
+        ],
+        "proportionBasis": "Authored comparative joint-center proportions informed by described lambeosaurine anatomy; not exact fossil dimensions or a species mean.",
+        "authoredDimensions": true,
+        "referenceDimensions": null,
+        "sampledSeries": true,
+        "interpretive": true,
+        "jointAnglesAreInterpretive": true,
+        "softFormIsInterpretive": true,
+        "anchors": {
+          "shoulder": [
+            -1.596,
+            1.74,
+            0
+          ],
+          "hip": [
+            1.235,
+            2.22,
+            0
+          ],
+          "head": [
+            -2.85,
+            2.5296000000000003,
+            0
+          ],
+          "snout": [
+            -3.5625,
+            2.4496,
+            0
+          ],
+          "tail": [
+            4.94,
+            1.82,
+            0
+          ]
+        },
+        "axial": {
+          "neck": [
+            [
+              -1.596,
+              1.74,
+              0
+            ],
+            [
+              -2.0235,
+              1.801968,
+              0
+            ],
+            [
+              -2.5152200000000002,
+              2.3265864000000005,
+              0
+            ],
+            [
+              -2.406172299925524,
+              2.226919599789546,
+              0
+            ]
+          ],
+          "torso": [
+            [
+              -1.596,
+              1.74,
+              0
+            ],
+            [
+              -0.88825,
+              1.9322304000000001,
+              0
+            ],
+            [
+              0.2441500000000003,
+              2.1513168,
+              0
+            ],
+            [
+              1.235,
+              2.22,
+              0
+            ]
+          ],
+          "tail": [
+            [
+              1.235,
+              2.22,
+              0
+            ],
+            [
+              2.0501,
+              2.1952016000000003,
+              0
+            ],
+            [
+              3.34685,
+              2.0236008,
+              0
+            ],
+            [
+              4.854785,
+              1.8292000000000002,
+              0
+            ]
+          ]
+        },
+        "limbs": [
+          {
+            "front": false,
+            "side": 1,
+            "top": [
+              1.235,
+              2.1477696,
+              0.5112187111342081
+            ],
+            "joint": [
+              0.8027787490115875,
+              1.1274722391419953,
+              0.6003439839331337
+            ],
+            "distal": [
+              1.5675000000000001,
+              0.42,
+              0.6816249481789443
+            ],
+            "contact": [
+              1.4440000000000002,
+              0.04,
+              0.7348768972554243
+            ],
+            "knee": [
+              0.8027787490115875,
+              1.1274722391419953,
+              0.6003439839331337
+            ],
+            "ankle": [
+              1.5675000000000001,
+              0.42,
+              0.6816249481789443
+            ],
+            "foot": [
+              1.4440000000000002,
+              0.04,
+              0.7348768972554243
+            ]
+          },
+          {
+            "front": false,
+            "side": -1,
+            "top": [
+              1.235,
+              2.1477696,
+              -0.5112187111342081
+            ],
+            "joint": [
+              0.8027787490115875,
+              1.1274722391419953,
+              -0.6003439839331337
+            ],
+            "distal": [
+              1.5675000000000001,
+              0.42,
+              -0.6816249481789443
+            ],
+            "contact": [
+              1.4440000000000002,
+              0.04,
+              -0.7348768972554243
+            ],
+            "knee": [
+              0.8027787490115875,
+              1.1274722391419953,
+              -0.6003439839331337
+            ],
+            "ankle": [
+              1.5675000000000001,
+              0.42,
+              -0.6816249481789443
+            ],
+            "foot": [
+              1.4440000000000002,
+              0.04,
+              -0.7348768972554243
+            ]
+          },
+          {
+            "front": true,
+            "side": 1,
+            "top": [
+              -1.653,
+              1.5413664,
+              0.5644706602106883
+            ],
+            "joint": [
+              -1.4687398045253452,
+              0.9005238417868139,
+              0.6078572126704412
+            ],
+            "distal": [
+              -1.824,
+              0.36,
+              0.6496737787330562
+            ],
+            "contact": [
+              -1.976,
+              0.04,
+              0.6816249481789443
+            ],
+            "knee": [
+              -1.4687398045253452,
+              0.9005238417868139,
+              0.6078572126704412
+            ],
+            "ankle": [
+              -1.824,
+              0.36,
+              0.6496737787330562
+            ],
+            "foot": [
+              -1.976,
+              0.04,
+              0.6816249481789443
+            ]
+          },
+          {
+            "front": true,
+            "side": -1,
+            "top": [
+              -1.653,
+              1.5413664,
+              -0.5644706602106883
+            ],
+            "joint": [
+              -1.4687398045253452,
+              0.9005238417868139,
+              -0.6078572126704412
+            ],
+            "distal": [
+              -1.824,
+              0.36,
+              -0.6496737787330562
+            ],
+            "contact": [
+              -1.976,
+              0.04,
+              -0.6816249481789443
+            ],
+            "knee": [
+              -1.4687398045253452,
+              0.9005238417868139,
+              -0.6078572126704412
+            ],
+            "ankle": [
+              -1.824,
+              0.36,
+              -0.6496737787330562
+            ],
+            "foot": [
+              -1.976,
+              0.04,
+              -0.6816249481789443
+            ]
+          }
+        ]
+      },
+      "crest": {
+        "profile": "parasaurolophus-tube",
+        "shape": "long backswept tube",
+        "specimen": "ROM 768",
+        "source": "https://doi.org/10.7717/peerj.10669",
+        "root": [
+          -2.9267448000000003,
+          2.6834160000000002,
+          0
+        ],
+        "dimensionsInterpretive": true,
+        "coveringInterpretive": true,
+        "lumenModeled": false,
+        "wallThicknessMeasured": false
+      }
+    },
+    "corythosaurus": {
+      "body": {
+        "species": "corythosaurus",
+        "family": "ornithopods",
+        "profile": "corythosaurus-curved-trunk",
+        "profileId": "corythosaurus-curved-trunk",
+        "label": "Corythosaurus trunk and limbs",
+        "specimen": "Corythosaurus casuarius AMNH 5240; forelimb comparison AMNH 5338",
+        "evidence": "The AMNH 5240 skeleton supports a deep trunk and strong hindlimbs. Brown restored missing forelimb parts from AMNH 5338, whose forearm was longer than its humerus.",
+        "claim": "The AMNH 5240 skeleton supports a deep trunk and strong hindlimbs. Brown restored missing forelimb parts from AMNH 5338, whose forearm was longer than its humerus.",
+        "uncertainty": "The mounted reference combines individuals and the trunk was compressed. Width, joint angles and this complete surface are authored comparative restorations.",
+        "limit": "The mounted reference combines individuals and the trunk was compressed. Width, joint angles and this complete surface are authored comparative restorations.",
+        "sources": [
+          {
+            "title": "Godefroit et al. 2012: Olorotitan osteology",
+            "url": "https://doi.org/10.4202/app.2011.0051"
+          },
+          {
+            "title": "Bertozzo et al. 2021: Parasaurolophus paleopathology",
+            "url": "https://doi.org/10.1111/joa.13363"
+          },
+          {
+            "title": "Brown 1916: Corythosaurus skeleton, musculature and epidermis",
+            "url": "https://hdl.handle.net/2246/1330"
+          },
+          {
+            "title": "Evans and Reisz 2007: Lambeosaurus anatomy and comparisons",
+            "url": "https://doi.org/10.1671/0272-4634%282007%2927%5B373%3AAAROLM%5D2.0.CO%3B2"
+          }
+        ],
+        "proportionBasis": "Authored comparative joint-center proportions informed by described lambeosaurine anatomy; not exact fossil dimensions or a species mean.",
+        "authoredDimensions": true,
+        "referenceDimensions": null,
+        "sampledSeries": true,
+        "interpretive": true,
+        "jointAnglesAreInterpretive": true,
+        "softFormIsInterpretive": true,
+        "anchors": {
+          "shoulder": [
+            -1.575,
+            1.505,
+            0
+          ],
+          "hip": [
+            1.1880000000000002,
+            1.9600000000000002,
+            0
+          ],
+          "head": [
+            -2.6999999999999997,
+            2.2134000000000005,
+            0
+          ],
+          "snout": [
+            -3.3749999999999996,
+            2.1434000000000006,
+            0
+          ],
+          "tail": [
+            4.68,
+            1.5925,
+            0
+          ]
+        },
+        "axial": {
+          "neck": [
+            [
+              -1.575,
+              1.505,
+              0
+            ],
+            [
+              -1.96425,
+              1.5635970000000001,
+              0
+            ],
+            [
+              -2.403,
+              2.0301631,
+              0
+            ],
+            [
+              -2.269367900756059,
+              1.9421526877600503,
+              0
+            ]
+          ],
+          "torso": [
+            [
+              -1.575,
+              1.505,
+              0
+            ],
+            [
+              -0.88425,
+              1.6819515999999999,
+              0
+            ],
+            [
+              0.22094999999999998,
+              1.8876522,
+              0
+            ],
+            [
+              1.1880000000000002,
+              1.9600000000000002,
+              0
+            ]
+          ],
+          "tail": [
+            [
+              1.1880000000000002,
+              1.9600000000000002,
+              0
+            ],
+            [
+              1.9562400000000002,
+              1.9344514000000002,
+              0
+            ],
+            [
+              3.1784399999999997,
+              1.7781757,
+              0
+            ],
+            [
+              4.599684,
+              1.6009525,
+              0
+            ]
+          ]
+        },
+        "limbs": [
+          {
+            "front": false,
+            "side": 1,
+            "top": [
+              1.1880000000000002,
+              1.8967984000000002,
+              0.45704064120422416
+            ],
+            "joint": [
+              0.8162150717194077,
+              0.986436320027129,
+              0.536720572592394
+            ],
+            "distal": [
+              1.5030000000000001,
+              0.3675,
+              0.6093875216056323
+            ],
+            "contact": [
+              1.3860000000000001,
+              0.035,
+              0.6569959217310722
+            ],
+            "knee": [
+              0.8162150717194077,
+              0.986436320027129,
+              0.536720572592394
+            ],
+            "ankle": [
+              1.5030000000000001,
+              0.3675,
+              0.6093875216056323
+            ],
+            "foot": [
+              1.3860000000000001,
+              0.035,
+              0.6569959217310722
+            ]
+          },
+          {
+            "front": false,
+            "side": -1,
+            "top": [
+              1.1880000000000002,
+              1.8967984000000002,
+              -0.45704064120422416
+            ],
+            "joint": [
+              0.8162150717194077,
+              0.986436320027129,
+              -0.536720572592394
+            ],
+            "distal": [
+              1.5030000000000001,
+              0.3675,
+              -0.6093875216056323
+            ],
+            "contact": [
+              1.3860000000000001,
+              0.035,
+              -0.6569959217310722
+            ],
+            "knee": [
+              0.8162150717194077,
+              0.986436320027129,
+              -0.536720572592394
+            ],
+            "ankle": [
+              1.5030000000000001,
+              0.3675,
+              -0.6093875216056323
+            ],
+            "foot": [
+              1.3860000000000001,
+              0.035,
+              -0.6569959217310722
+            ]
+          },
+          {
+            "front": true,
+            "side": 1,
+            "top": [
+              -1.629,
+              1.3311955999999998,
+              0.5046490413296643
+            ],
+            "joint": [
+              -1.4737884691102274,
+              0.8038032322802053,
+              0.541393481876965
+            ],
+            "distal": [
+              -1.791,
+              0.315,
+              0.5808224815303682
+            ],
+            "contact": [
+              -1.935,
+              0.035,
+              0.6093875216056323
+            ],
+            "knee": [
+              -1.4737884691102274,
+              0.8038032322802053,
+              0.541393481876965
+            ],
+            "ankle": [
+              -1.791,
+              0.315,
+              0.5808224815303682
+            ],
+            "foot": [
+              -1.935,
+              0.035,
+              0.6093875216056323
+            ]
+          },
+          {
+            "front": true,
+            "side": -1,
+            "top": [
+              -1.629,
+              1.3311955999999998,
+              -0.5046490413296643
+            ],
+            "joint": [
+              -1.4737884691102274,
+              0.8038032322802053,
+              -0.541393481876965
+            ],
+            "distal": [
+              -1.791,
+              0.315,
+              -0.5808224815303682
+            ],
+            "contact": [
+              -1.935,
+              0.035,
+              -0.6093875216056323
+            ],
+            "knee": [
+              -1.4737884691102274,
+              0.8038032322802053,
+              -0.541393481876965
+            ],
+            "ankle": [
+              -1.791,
+              0.315,
+              -0.5808224815303682
+            ],
+            "foot": [
+              -1.935,
+              0.035,
+              -0.6093875216056323
+            ]
+          }
+        ]
+      },
+      "crest": {
+        "profile": "corythosaurus-helmet",
+        "shape": "rounded helmet",
+        "specimen": "ROM 1933",
+        "source": "https://doi.org/10.1002/ar.70125",
+        "root": [
+          -2.7727055999999997,
+          2.3479890000000005,
+          0
+        ],
+        "dimensionsInterpretive": true,
+        "coveringInterpretive": true,
+        "lumenModeled": false,
+        "wallThicknessMeasured": false
+      }
+    },
+    "lambeosaurus": {
+      "body": {
+        "species": "lambeosaurus",
+        "family": "ornithopods",
+        "profile": "lambeosaurus-expanded-prepubis",
+        "profileId": "lambeosaurus-expanded-prepubis",
+        "label": "Lambeosaurus pelvic and trunk frame",
+        "specimen": "Lambeosaurus lambei ROM 1218; comparative lambeosaurine postcrania",
+        "evidence": "Lambeosaurus lambei has an expanded anterior prepubic blade, separate from the rearward ischium. Its complete trunk and limbs here use a comparative lambeosaurine frame.",
+        "claim": "Lambeosaurus lambei has an expanded anterior prepubic blade, separate from the rearward ischium. Its complete trunk and limbs here use a comparative lambeosaurine frame.",
+        "uncertainty": "Measurements of Lambeosaurus magnicristatus are not presented as measurements of L. lambei. Width, complete limb proportions and tissue thickness remain authored.",
+        "limit": "Measurements of Lambeosaurus magnicristatus are not presented as measurements of L. lambei. Width, complete limb proportions and tissue thickness remain authored.",
+        "sources": [
+          {
+            "title": "Godefroit et al. 2012: Olorotitan osteology",
+            "url": "https://doi.org/10.4202/app.2011.0051"
+          },
+          {
+            "title": "Bertozzo et al. 2021: Parasaurolophus paleopathology",
+            "url": "https://doi.org/10.1111/joa.13363"
+          },
+          {
+            "title": "Brown 1916: Corythosaurus skeleton, musculature and epidermis",
+            "url": "https://hdl.handle.net/2246/1330"
+          },
+          {
+            "title": "Evans and Reisz 2007: Lambeosaurus anatomy and comparisons",
+            "url": "https://doi.org/10.1671/0272-4634%282007%2927%5B373%3AAAROLM%5D2.0.CO%3B2"
+          }
+        ],
+        "proportionBasis": "Authored comparative joint-center proportions informed by described lambeosaurine anatomy; not exact fossil dimensions or a species mean.",
+        "authoredDimensions": true,
+        "referenceDimensions": null,
+        "sampledSeries": true,
+        "interpretive": true,
+        "jointAnglesAreInterpretive": true,
+        "softFormIsInterpretive": true,
+        "anchors": {
+          "shoulder": [
+            -1.485,
+            1.512,
+            0
+          ],
+          "hip": [
+            1.1880000000000002,
+            1.9495000000000002,
+            0
+          ],
+          "head": [
+            -2.6999999999999997,
+            2.2134000000000005,
+            0
+          ],
+          "snout": [
+            -3.3749999999999996,
+            2.1434000000000006,
+            0
+          ],
+          "tail": [
+            4.68,
+            1.5925,
+            0
+          ]
+        },
+        "axial": {
+          "neck": [
+            [
+              -1.485,
+              1.512,
+              0
+            ],
+            [
+              -1.8967500000000002,
+              1.568847,
+              0
+            ],
+            [
+              -2.3742,
+              2.0324031000000002,
+              0
+            ],
+            [
+              -2.269367900756059,
+              1.9421526877600503,
+              0
+            ]
+          ],
+          "torso": [
+            [
+              -1.485,
+              1.512,
+              0
+            ],
+            [
+              -0.8167500000000001,
+              1.6845766,
+              0
+            ],
+            [
+              0.25245000000000006,
+              1.8832772000000002,
+              0
+            ],
+            [
+              1.1880000000000002,
+              1.9495000000000002,
+              0
+            ]
+          ],
+          "tail": [
+            [
+              1.1880000000000002,
+              1.9495000000000002,
+              0
+            ],
+            [
+              1.9562400000000002,
+              1.9262614000000002,
+              0
+            ],
+            [
+              3.1784399999999997,
+              1.7736607,
+              0
+            ],
+            [
+              4.599684,
+              1.600711,
+              0
+            ]
+          ]
+        },
+        "limbs": [
+          {
+            "front": false,
+            "side": 1,
+            "top": [
+              1.1880000000000002,
+              1.8862984000000003,
+              0.4764891791278082
+            ],
+            "joint": [
+              0.8169636551717211,
+              0.9932209671723007,
+              0.5583163093028981
+            ],
+            "distal": [
+              1.5030000000000001,
+              0.3675,
+              0.6353189055037443
+            ],
+            "contact": [
+              1.3860000000000001,
+              0.035,
+              0.6849531949962242
+            ],
+            "knee": [
+              0.8169636551717211,
+              0.9932209671723007,
+              0.5583163093028981
+            ],
+            "ankle": [
+              1.5030000000000001,
+              0.3675,
+              0.6353189055037443
+            ],
+            "foot": [
+              1.3860000000000001,
+              0.035,
+              0.6849531949962242
+            ]
+          },
+          {
+            "front": false,
+            "side": -1,
+            "top": [
+              1.1880000000000002,
+              1.8862984000000003,
+              -0.4764891791278082
+            ],
+            "joint": [
+              0.8169636551717211,
+              0.9932209671723007,
+              -0.5583163093028981
+            ],
+            "distal": [
+              1.5030000000000001,
+              0.3675,
+              -0.6353189055037443
+            ],
+            "contact": [
+              1.3860000000000001,
+              0.035,
+              -0.6849531949962242
+            ],
+            "knee": [
+              0.8169636551717211,
+              0.9932209671723007,
+              -0.5583163093028981
+            ],
+            "ankle": [
+              1.5030000000000001,
+              0.3675,
+              -0.6353189055037443
+            ],
+            "foot": [
+              1.3860000000000001,
+              0.035,
+              -0.6849531949962242
+            ]
+          },
+          {
+            "front": true,
+            "side": 1,
+            "top": [
+              -1.5390000000000001,
+              1.3381956,
+              0.5261234686202882
+            ],
+            "joint": [
+              -1.3848685671197971,
+              0.7893700283729592,
+              0.5658309002142723
+            ],
+            "distal": [
+              -1.701,
+              0.315,
+              0.6055383318082562
+            ],
+            "contact": [
+              -1.8450000000000002,
+              0.035,
+              0.6353189055037443
+            ],
+            "knee": [
+              -1.3848685671197971,
+              0.7893700283729592,
+              0.5658309002142723
+            ],
+            "ankle": [
+              -1.701,
+              0.315,
+              0.6055383318082562
+            ],
+            "foot": [
+              -1.8450000000000002,
+              0.035,
+              0.6353189055037443
+            ]
+          },
+          {
+            "front": true,
+            "side": -1,
+            "top": [
+              -1.5390000000000001,
+              1.3381956,
+              -0.5261234686202882
+            ],
+            "joint": [
+              -1.3848685671197971,
+              0.7893700283729592,
+              -0.5658309002142723
+            ],
+            "distal": [
+              -1.701,
+              0.315,
+              -0.6055383318082562
+            ],
+            "contact": [
+              -1.8450000000000002,
+              0.035,
+              -0.6353189055037443
+            ],
+            "knee": [
+              -1.3848685671197971,
+              0.7893700283729592,
+              -0.5658309002142723
+            ],
+            "ankle": [
+              -1.701,
+              0.315,
+              -0.6055383318082562
+            ],
+            "foot": [
+              -1.8450000000000002,
+              0.035,
+              -0.6353189055037443
+            ]
+          }
+        ]
+      },
+      "crest": {
+        "profile": "lambeosaurus-hatchet",
+        "shape": "hatchet with a rear process",
+        "specimen": "TMP 1982.038.0001",
+        "source": "https://doi.org/10.1002/ar.70125",
+        "root": [
+          -2.7727055999999997,
+          2.3479890000000005,
+          0
+        ],
+        "dimensionsInterpretive": true,
+        "coveringInterpretive": true,
+        "lumenModeled": false,
+        "wallThicknessMeasured": false
+      }
+    },
+    "olorotitan": {
+      "body": {
+        "species": "olorotitan",
+        "family": "ornithopods",
+        "profile": "olorotitan-extended-neck",
+        "profileId": "olorotitan-extended-neck",
+        "label": "Long-necked Olorotitan",
+        "specimen": "Olorotitan arharensis AEHM 2/845",
+        "evidence": "AEHM 2/845 preserves an unusually long 18-vertebra cervical region and a tibia about as long as its femur. A longer curved neck distinguishes this restored body.",
+        "claim": "AEHM 2/845 preserves an unusually long 18-vertebra cervical region and a tibia about as long as its femur. A longer curved neck distinguishes this restored body.",
+        "uncertainty": "All hands, feet and pubes are absent. Some forearm elements are referred rather than articulated; widths and posture are comparative. Age- or injury-related tail fusions are omitted.",
+        "limit": "All hands, feet and pubes are absent. Some forearm elements are referred rather than articulated; widths and posture are comparative. Age- or injury-related tail fusions are omitted.",
+        "sources": [
+          {
+            "title": "Godefroit et al. 2012: Olorotitan osteology",
+            "url": "https://doi.org/10.4202/app.2011.0051"
+          },
+          {
+            "title": "Bertozzo et al. 2021: Parasaurolophus paleopathology",
+            "url": "https://doi.org/10.1111/joa.13363"
+          },
+          {
+            "title": "Brown 1916: Corythosaurus skeleton, musculature and epidermis",
+            "url": "https://hdl.handle.net/2246/1330"
+          },
+          {
+            "title": "Evans and Reisz 2007: Lambeosaurus anatomy and comparisons",
+            "url": "https://doi.org/10.1671/0272-4634%282007%2927%5B373%3AAAROLM%5D2.0.CO%3B2"
+          }
+        ],
+        "proportionBasis": "Authored comparative joint-center proportions informed by described lambeosaurine anatomy; not exact fossil dimensions or a species mean.",
+        "authoredDimensions": true,
+        "referenceDimensions": null,
+        "sampledSeries": true,
+        "interpretive": true,
+        "jointAnglesAreInterpretive": true,
+        "softFormIsInterpretive": true,
+        "anchors": {
+          "shoulder": [
+            -0.824,
+            1.254,
+            0
+          ],
+          "hip": [
+            1.16,
+            1.6800000000000002,
+            0
+          ],
+          "head": [
+            -2.4,
+            1.8972000000000002,
+            0
+          ],
+          "snout": [
+            -3,
+            1.8372000000000002,
+            0
+          ],
+          "tail": [
+            4.16,
+            1.365,
+            0
+          ]
+        },
+        "axial": {
+          "neck": [
+            [
+              -0.824,
+              1.254,
+              0
+            ],
+            [
+              -1.314,
+              1.313226,
+              0
+            ],
+            [
+              -1.95168,
+              1.7286198000000002,
+              0
+            ],
+            [
+              -2.013344045686082,
+              1.6623505865330865,
+              0
+            ]
+          ],
+          "torso": [
+            [
+              -0.824,
+              1.254,
+              0
+            ],
+            [
+              -0.32799999999999996,
+              1.4146728,
+              0
+            ],
+            [
+              0.4656000000000001,
+              1.6053876000000002,
+              0
+            ],
+            [
+              1.16,
+              1.6800000000000002,
+              0
+            ]
+          ],
+          "tail": [
+            [
+              1.16,
+              1.6800000000000002,
+              0
+            ],
+            [
+              1.8199999999999998,
+              1.6581012,
+              0
+            ],
+            [
+              2.87,
+              1.5241506,
+              0
+            ],
+            [
+              4.091,
+              1.372245,
+              0
+            ]
+          ]
+        },
+        "limbs": [
+          {
+            "front": false,
+            "side": 1,
+            "top": [
+              1.16,
+              1.6258272000000002,
+              0.36674385798758413
+            ],
+            "joint": [
+              0.8400591093139953,
+              0.8721676608006295,
+              0.4278678343188482
+            ],
+            "distal": [
+              1.44,
+              0.315,
+              0.4889918106501122
+            ],
+            "contact": [
+              1.3359999999999999,
+              0.03,
+              0.5271942958571522
+            ],
+            "knee": [
+              0.8400591093139953,
+              0.8721676608006295,
+              0.4278678343188482
+            ],
+            "ankle": [
+              1.44,
+              0.315,
+              0.4889918106501122
+            ],
+            "foot": [
+              1.3359999999999999,
+              0.03,
+              0.5271942958571522
+            ]
+          },
+          {
+            "front": false,
+            "side": -1,
+            "top": [
+              1.16,
+              1.6258272000000002,
+              -0.36674385798758413
+            ],
+            "joint": [
+              0.8400591093139953,
+              0.8721676608006295,
+              -0.4278678343188482
+            ],
+            "distal": [
+              1.44,
+              0.315,
+              -0.4889918106501122
+            ],
+            "contact": [
+              1.3359999999999999,
+              0.03,
+              -0.5271942958571522
+            ],
+            "knee": [
+              0.8400591093139953,
+              0.8721676608006295,
+              -0.4278678343188482
+            ],
+            "ankle": [
+              1.44,
+              0.315,
+              -0.4889918106501122
+            ],
+            "foot": [
+              1.3359999999999999,
+              0.03,
+              -0.5271942958571522
+            ]
+          },
+          {
+            "front": true,
+            "side": 1,
+            "top": [
+              -0.872,
+              1.1050248,
+              0.4049463431946242
+            ],
+            "joint": [
+              -0.7521746380512209,
+              0.6544321224793512,
+              0.4355083313602562
+            ],
+            "distal": [
+              -1.016,
+              0.27,
+              0.4660703195258882
+            ],
+            "contact": [
+              -1.1440000000000001,
+              0.03,
+              0.4889918106501122
+            ],
+            "knee": [
+              -0.7521746380512209,
+              0.6544321224793512,
+              0.4355083313602562
+            ],
+            "ankle": [
+              -1.016,
+              0.27,
+              0.4660703195258882
+            ],
+            "foot": [
+              -1.1440000000000001,
+              0.03,
+              0.4889918106501122
+            ]
+          },
+          {
+            "front": true,
+            "side": -1,
+            "top": [
+              -0.872,
+              1.1050248,
+              -0.4049463431946242
+            ],
+            "joint": [
+              -0.7521746380512209,
+              0.6544321224793512,
+              -0.4355083313602562
+            ],
+            "distal": [
+              -1.016,
+              0.27,
+              -0.4660703195258882
+            ],
+            "contact": [
+              -1.1440000000000001,
+              0.03,
+              -0.4889918106501122
+            ],
+            "knee": [
+              -0.7521746380512209,
+              0.6544321224793512,
+              -0.4355083313602562
+            ],
+            "ankle": [
+              -1.016,
+              0.27,
+              -0.4660703195258882
+            ],
+            "foot": [
+              -1.1440000000000001,
+              0.03,
+              -0.4889918106501122
+            ]
+          }
+        ]
+      },
+      "crest": {
+        "profile": "olorotitan-fan",
+        "shape": "tall rearward fan",
+        "specimen": "AEHM 2/845",
+        "source": "https://doi.org/10.4202/app.2011.0051",
+        "root": [
+          -2.4646272,
+          2.0125620000000004,
+          0
+        ],
+        "dimensionsInterpretive": true,
+        "coveringInterpretive": true,
+        "lumenModeled": false,
+        "wallThicknessMeasured": false
+      }
+    },
+    "edmontosaurus": {
+      "body": {
+        "family": "ornithopods",
+        "profile": "hindlimb-dominant-edmontosaurus",
+        "sources": [
+          {
+            "title": "Maidment and colleagues (2012): ornithischian limb proportions",
+            "url": "https://doi.org/10.1371/journal.pone.0036904"
+          }
+        ],
+        "anchors": {
+          "hip": [
+            1.44,
+            1.796256,
+            0
+          ],
+          "shoulder": [
+            -2.16,
+            1.2571646976,
+            0
+          ],
+          "head": [
+            -3.5999999999999996,
+            2.0478222105600006,
+            0
+          ],
+          "tail": [
+            6.24,
+            1.4063616,
+            0
+          ]
+        },
+        "forearmRatio": 0.94,
+        "proportionBasis": "Edmontosaurus annectens ROM 801 has a 675 mm humerus and 633 mm radius in the published dataset (ratio 0.938). The rounded display parameter is not an individual scan.",
+        "interpretive": true,
+        "jointAnglesAreInterpretive": true,
+        "softFormIsInterpretive": true,
+        "locomotorLimit": "Weight-bearing hands and limb anatomy support a quadrupedal stance. This resting pose does not determine gait frequency, running speed or age-dependent behavior.",
+        "limbs": [
+          {
+            "front": false,
+            "side": 1,
+            "top": [
+              1.44,
+              1.796256,
+              0.6888023847936003
+            ],
+            "joint": [
+              1.2351051329413196,
+              0.7081883804301111,
+              0.758821395722442
+            ],
+            "distal": [
+              2.04,
+              0.28740096000000004,
+              0.8103557468160004
+            ],
+            "contact": [
+              2.2824,
+              0.035,
+              0.8913913214976005
+            ],
+            "knee": [
+              1.2351051329413196,
+              0.7081883804301111,
+              0.758821395722442
+            ],
+            "ankle": [
+              2.04,
+              0.28740096000000004,
+              0.8103557468160004
+            ],
+            "foot": [
+              2.2824,
+              0.035,
+              0.8913913214976005
+            ]
+          },
+          {
+            "front": false,
+            "side": -1,
+            "top": [
+              1.44,
+              1.796256,
+              -0.6888023847936003
+            ],
+            "joint": [
+              1.2351051329413196,
+              0.7081883804301111,
+              -0.758821395722442
+            ],
+            "distal": [
+              2.04,
+              0.28740096000000004,
+              -0.8103557468160004
+            ],
+            "contact": [
+              2.2824,
+              0.035,
+              -0.8913913214976005
+            ],
+            "knee": [
+              1.2351051329413196,
+              0.7081883804301111,
+              -0.758821395722442
+            ],
+            "ankle": [
+              2.04,
+              0.28740096000000004,
+              -0.8103557468160004
+            ],
+            "foot": [
+              2.2824,
+              0.035,
+              -0.8913913214976005
+            ]
+          },
+          {
+            "front": true,
+            "side": 1,
+            "top": [
+              -2.16,
+              1.2571646976,
+              0.6888023847936003
+            ],
+            "joint": [
+              -2.0785448834945592,
+              0.6375152159900248,
+              0.7518534921148071
+            ],
+            "distal": [
+              -2.472,
+              0.201146351616,
+              0.8103557468160004
+            ],
+            "contact": [
+              -2.8080000000000003,
+              0.035,
+              0.8913913214976005
+            ],
+            "knee": [
+              -2.0785448834945592,
+              0.6375152159900248,
+              0.7518534921148071
+            ],
+            "ankle": [
+              -2.472,
+              0.201146351616,
+              0.8103557468160004
+            ],
+            "foot": [
+              -2.8080000000000003,
+              0.035,
+              0.8913913214976005
+            ]
+          },
+          {
+            "front": true,
+            "side": -1,
+            "top": [
+              -2.16,
+              1.2571646976,
+              -0.6888023847936003
+            ],
+            "joint": [
+              -2.0785448834945592,
+              0.6375152159900248,
+              -0.7518534921148071
+            ],
+            "distal": [
+              -2.472,
+              0.201146351616,
+              -0.8103557468160004
+            ],
+            "contact": [
+              -2.8080000000000003,
+              0.035,
+              -0.8913913214976005
+            ],
+            "knee": [
+              -2.0785448834945592,
+              0.6375152159900248,
+              -0.7518534921148071
+            ],
+            "ankle": [
+              -2.472,
+              0.201146351616,
+              -0.8103557468160004
+            ],
+            "foot": [
+              -2.8080000000000003,
+              0.035,
+              -0.8913913214976005
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

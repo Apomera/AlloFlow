@@ -2488,7 +2488,7 @@ it.each(TOOL_PATHS)('%s: train wheels show theme-aware physical rotation with re
     'const carArc = sim.S - Math.floor(i / 4) * CAR_GAP;',
     'wheel.rotation.x = animateWheels ? carArc / 0.16 : 0;',
     'for(const marker of trainWheelMarkers) marker.visible = !fxLite;',
-    'High-contrast wheel markers rotate with each car?s traveled distance and remain still in reduced-motion mode.',
+    'High-contrast wheel markers rotate with each car’s traveled distance and remain still in reduced-motion mode.',
   ]) expect(src).toContain(marker);
 });
 

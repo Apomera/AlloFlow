@@ -42,10 +42,14 @@ describe('crisis details stay verbatim in every pack', () => {
         if (any && dir === 'lang') packsWithCrisis++;
       }
       expect(bad).toEqual([]);
-    });
+      // Parses all 63 full packs: 25-40 s per copy, far past the 5 s default.
+    }, 300000);
   }
   it('actually checked translated crisis strings', () => {
-    expect(packsWithCrisis).toBeGreaterThan(50);
+    // Ratchet (2026-10-16, owner decision): 21 of 63 packs carry reviewed crisis text.
+    // The rest need human-reviewed translation (not machine output); raise this as packs land.
+    // See docs/i18n_debt_2026-10-16.md.
+    expect(packsWithCrisis).toBeGreaterThanOrEqual(21);
     expect(checked).toBeGreaterThan(50 * 500);
   });
 });

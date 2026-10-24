@@ -1,0 +1,148 @@
+{
+  "generatedAtUTC": "2026-10-22T03:37:21.0684388Z",
+  "deploymentHeld": true,
+  "source": {
+    "canonical": "stem_lab/stem_tool_dinolab.js",
+    "mirror": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+    "sha256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585",
+    "mirrorsIdentical": true,
+    "scientificModelSnapshotSHA256": "5dd0435c997bebb797acc05e80682f84df83071cac138be4b33a286013f9589f"
+  },
+  "anatomicalContinuity": {
+    "inverseByteIdentical": true,
+    "accessibleLabelExpressions": 14,
+    "scalarSelectGuards": 4,
+    "previousScientificVerification": "verification-summary.json",
+    "previousVisualReview": "visual-review.json",
+    "audit": "prepared-source-verification.json"
+  },
+  "unit": {
+    "files": 211,
+    "total": 3273,
+    "passed": 3273,
+    "failed": 0,
+    "pending": 0,
+    "report": "prepared-unit-regression.json",
+    "provenance": "prepared-unit-provenance.json",
+    "inputsChanged": false
+  },
+  "nativeBrowser": {
+    "passed": 5,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "report": "prepared-browser-results.json",
+    "provenance": "prepared-browser-provenance.json",
+    "inputsChanged": false,
+    "hadrosaurScreenshotsRecaptured": 52,
+    "recapturesByteIdenticalToReviewedScientificImages": 52
+  },
+  "testReview": {
+    "historicalPreservation": "prepared-historical-preservation.json",
+    "independentReview": "prepared-test-review.json",
+    "approvedGoldenSnapshots": [
+      "field3d",
+      "birds",
+      "anatomy"
+    ],
+    "originalDigestLiteralsRetained": 31,
+    "originalTrackedHistoricalFixturesRetained": 14,
+    "geometricTolerancesUnchanged": true
+  },
+  "accessibilityBehavior": {
+    "passed": 18,
+    "failed": 0,
+    "inputsChanged": false,
+    "report": "prepared-accessibility-tests.json",
+    "provenance": "prepared-accessibility-provenance.json"
+  },
+  "workerUploadBehavior": {
+    "passed": 15,
+    "failed": 0,
+    "inputsChanged": false,
+    "report": "prepared-upload-and-initial-accessibility-tests.json",
+    "provenance": "prepared-upload-and-initial-accessibility-provenance.json",
+    "scope": "Local multipart module packaging and invalid-graph rejection before credentials/network. The initial accessibility cases in this raw report are superseded by the separate clean accessibility rerun."
+  },
+  "inboxIntegration": {
+    "reportingCommit": "8b857d90cac5ee10cbcc878002f24b9a70a097f6",
+    "unitPassed": 116,
+    "unitFiles": 8,
+    "workerSmokePassed": 75,
+    "workerSmokeFailed": 0,
+    "inputsChanged": false,
+    "networkMocked": true,
+    "liveCredentialsRead": false,
+    "unitReport": "prepared-reporting-tests.json",
+    "provenance": "prepared-reporting-provenance.json",
+    "handoffParity": "prepared-reporting-handoff-parity.json"
+  },
+  "releasePreparation": {
+    "accessibleLabels": 239,
+    "faithfulRegisteredKeys": 234,
+    "originalRegistryLeavesPreserved": 149412,
+    "pairedWatercyclePlaceholderRepairs": 126,
+    "placeholderMismatches": 0,
+    "mirrorDrift": 0
+  },
+  "remaining": [
+    "Release pushes and full deployment remain held."
+  ],
+  "knownCoverageDebt": {
+    "uiMissing": 3916190,
+    "runtimeMissing": 430338,
+    "uiPlaceholderMismatches": 0,
+    "runtimePlaceholderMismatches": 0,
+    "mirrorDrift": 0,
+    "baselinesChanged": false
+  },
+  "localCommits": {
+    "sourcePreparation": "d13d75438a8a00ebddcb233eb556cee605d46eda",
+    "reportingMerge": "6820dfaef7d39c3dcc58632badd4be80deb73dcf",
+    "previouslyDeliveredReportingParent": "8b857d90cac5ee10cbcc878002f24b9a70a097f6",
+    "preparationAndMergePushed": false
+  },
+  "localBuild": {
+    "attempt": 3,
+    "success": true,
+    "combinedSourceHEAD": "6820dfaef7d39c3dcc58632badd4be80deb73dcf",
+    "startedAtUTC": "2026-10-22T03:26:56.9820056Z",
+    "finishedAtUTC": "2026-10-22T03:37:21.0684388Z",
+    "receipt": "prepared-build-only-receipt.json",
+    "before": "prepared-build-only-before.json",
+    "after": "prepared-build-only-after.json",
+    "authoredSourcesGuarded": 189,
+    "authoredSourcesUnchanged": true,
+    "headAndIndexUnchanged": true,
+    "dinoSourceSHA256": "ab6b09823e2e937a7d099259803f21c77febb085e1f0d7df7e0df51b03475585",
+    "phases": [
+      {
+        "name": "01-root-prod",
+        "exitCode": 0
+      },
+      {
+        "name": "02-hosted-build",
+        "exitCode": 0
+      },
+      {
+        "name": "03-desktop-space",
+        "exitCode": 0
+      },
+      {
+        "name": "04-desktop-isolated",
+        "exitCode": 0
+      },
+      {
+        "name": "05-desktop-verify",
+        "exitCode": 0
+      },
+      {
+        "name": "06-mirror-verify",
+        "exitCode": 0
+      }
+    ],
+    "scope": "Completed local production, hosted and isolated desktop builds with required artifact/mirror verification. Release-wide CI and deployment remain separate.",
+    "releasePushExecuted": false,
+    "fullDeploymentExecuted": false
+  }
+}

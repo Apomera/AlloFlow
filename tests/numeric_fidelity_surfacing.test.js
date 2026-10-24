@@ -8,8 +8,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const pipeSrc =readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 // ── Mirror of the shipped fidelityLimited derivation ──
@@ -43,8 +44,24 @@ describe('anti-drift: the view surfaces numeric losses + an integrity-aware "Wha
     // H6 (2026-07-09): the amber emphasis class is shared with the placement kind now.
     expect(viewSrc).toMatch(/\(n\.kind === 'numeric' \|\| n\.kind === 'placement'\) \? 'text-amber-800 font-semibold'/);
   });
+  // b4d7ed714 (2026-09-13): the "what now" guidance moved to the workspace header's status line
+  // (state.title / state.detail / its one action), built by _pdfWorkspaceState in
+  // remediation_workspace_component.jsx. Run it for a limited result.
   it('the "What now?" strip leads with Diff-review (not "share-ready") when fidelity is limited', () => {
-    expect(viewSrc).toMatch(/pdf_audit\.whatnow\.fidelity/);
-    expect(viewSrc).toMatch(/\(pdfFixResult && pdfFixResult\.fidelityLimited\)\s*\n?\s*\? \(t\('pdf_audit\.whatnow\.fidelity'\)/);
+    expect(viewSrc).toContain('const _workspaceState = _pdfWorkspaceState({ audit: pdfAuditResult, result: pdfFixResult,');
+    expect(viewSrc).toContain('<_PdfWorkspaceHeader t={t} state={_workspaceState}');
+    const ws = readFileSync(resolve(process.cwd(), 'remediation_workspace_component.jsx'), 'utf8');
+    expect(ws).toContain('<p className="pdf-workspace-status-detail">{state.detail}</p>');
+    const fn = (name) => sliceBetween(ws, 'function ' + name + '(', '\nfunction ', { file: 'remediation_workspace_component.jsx', label: name });
+    const workspaceState = new Function(['_pdfWorkspaceText', '_pdfWorkspaceHasPreservationConcern', '_pdfWorkspaceState'].map(fn).join('\n') + '\nreturn _pdfWorkspaceState;')();
+    const evidence = { fullyVerifiedSuccess: true, allThreeComplete: true, totalEngineFindings: 0, reviewCount: 0, verification: { verificationState: 'complete', engineExecutionComplete: true } };
+    for (const result of [{ fidelityLimited: true }, { fidelityNotes: [{ kind: 'numeric', msg: '1 value changed' }] }]) {
+      const limited = workspaceState({ result: { accessibleHtml: '<p>Score 12</p>', ...result }, evidence, verdict: { level: 'review' } });
+      expect(limited.title).toBe('Needs review');
+      expect(limited.detail).toMatch(/^Compare the output with the source/);
+      expect(limited.destination).toBe('#pdf-content-fidelity-review');
+    }
+    const clean = workspaceState({ result: { accessibleHtml: '<p>Score 12</p>' }, evidence, verdict: { level: 'ready' } });
+    expect(clean.destination).toBe('#allo-sec-downloads');
   });
 });

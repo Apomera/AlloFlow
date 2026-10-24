@@ -1,7 +1,7 @@
 /* Shared response boundary for Memory Aid and Applied Challenge. */
 (function () {
   'use strict';
-  const memoryFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview'];
+  const memoryFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview', 'visualReviewBasis'];
   const appliedFields = ['sourceRecords', 'reasoningReferences', 'workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
   const noteFields = ['title', 'author', 'pageRange', 'cues', 'notes', 'summary', 'question', 'hypothesis', 'materials', 'procedure', 'data', 'analysis', 'conclusion', 'favoriteLine', 'thinkings', 'connection', 'entries', 'blanks', 'notesExtra', 'pairs', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'];
   const anchorFields = ['studentAnswers', 'feedback', 'prevFeedbackScore'];
@@ -9,15 +9,61 @@
   const noteLearnerRows = { notes: 'text', entries: 'response', blanks: 'studentAnswer' };
   const noteLearnerKeys = data => ['summary', 'hypothesis', 'data', 'analysis', 'conclusion', 'thinkings', 'connection', 'notesExtra', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'].concat(data?.templateType === 'reading-response' ? ['favoriteLine', 'question', 'pageRange'] : []);
   // Memory Aid visuals stay teacher-owned unless the card is student-authored and the learner changed them.
-  const memoryLearnerFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint'];
-  function memoryOwned(card, base, writing) {
+  const memoryLearnerFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'cueFactBasis', 'visualReviewBasis'];
+  function memoryCueFactBasis(card) {
+    const shared = window.AlloModules?.MemoryAid?.exportRules?.cueFactBasis;
+    if (typeof shared === 'function') return shared(card);
+    const fold = (value, max) => String(value == null ? '' : value).slice(0, max).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
+    const facts = (Array.isArray(card?.essentialFacts || card?.facts) ? card.essentialFacts || card.facts : []).slice(0, 10).map(value => String(value == null ? '' : value).slice(0, 600).trim()).filter(Boolean);
+    const text = [fold(card?.target || card?.concept, 1000), ...facts.map(value => fold(value, 1000))].join('\n').slice(0, 24000);
+    let hash = 2166136261;
+    for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
+    return 'memory-cue-facts-v1:' + (hash >>> 0).toString(36);
+  }
+  const memoryImageHashes = new Map();
+  function memoryVisualHash(text) {
+    let hash = 2166136261;
+    for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
+    return text.length.toString(36) + ':' + (hash >>> 0).toString(36);
+  }
+  function memoryVisualImageBasis(value) {
+    const image = typeof value === 'string' ? value : '';
+    if (memoryImageHashes.has(image)) return memoryImageHashes.get(image);
+    const hash = memoryVisualHash(image);
+    // Cover eight template and eight learner pictures without rehashing data URLs on every keystroke.
+    if (memoryImageHashes.size >= 16) memoryImageHashes.delete(memoryImageHashes.keys().next().value);
+    memoryImageHashes.set(image, hash);
+    return hash;
+  }
+  function memoryVisualReviewBasis(base, card) {
+    const context = row => ['type', 'mode', 'studentDraft', 'aiExample', 'scaffoldStarter', 'mapping'].map(key => typeof row?.[key] === 'string' ? row[key] : '');
+    return 'memory-visual-review-v1:' + memoryVisualHash(JSON.stringify([
+      memoryCueFactBasis(base || card), context(base), context(card),
+      memoryVisualImageBasis(base?.visualImage), memoryVisualImageBasis(card?.visualImage),
+    ]));
+  }
+  function memoryOwned(card, base, writing, previous) {
     card = card && typeof card === 'object' ? card : {};
     const out = pick(card, memoryLearnerFields), value = (row, key) => row?.[key] ?? null;
+    if (typeof out.cueFactBasis === 'string') out.cueFactBasis = out.cueFactBasis.slice(0, 80);
+    else delete out.cueFactBasis;
+    if (typeof out.visualReviewBasis === 'string') out.visualReviewBasis = out.visualReviewBasis.slice(0, 160);
+    else delete out.visualReviewBasis;
+    if (writing && typeof card.studentDraft === 'string' && card.studentDraft.trim() && !out.cueFactBasis && !card.studentCueNeedsReview) out.cueFactBasis = memoryCueFactBasis(base || card);
     const differs = key => { const a = value(card, key), b = value(base, key); return typeof a === 'object' || typeof b === 'object' ? !same(a, b) : a !== b; };
+    // A new picture/description or an explicit release of the shown hold approves current context.
+    // Existing learner pictures differ from the template on every save; that is not a new approval.
+    const prior = previous || base;
+    const canApprove = previous || !out.visualReviewBasis;
+    if (writing && canApprove && card.visualImage && card.visualNeedsReview === false
+      && ((prior?.visualNeedsReview === true) || (base?.mode === 'student-authored'
+        && (card.visualImage !== prior?.visualImage || (typeof card.visualAlt === 'string' && card.visualAlt.trim() && card.visualAlt !== prior?.visualAlt))))) {
+      out.visualReviewBasis = memoryVisualReviewBasis(base, card);
+    }
     if ('visualNeedsReview' in card && (!writing || differs('visualNeedsReview'))) out.visualNeedsReview = card.visualNeedsReview;
     if (base?.mode !== 'student-authored') return out;
     const ownPicture = !writing || differs('visualImage');
-    memoryFields.filter(key => key.startsWith('visual') && key !== 'visualNeedsReview' && key in card).forEach(key => {
+    memoryFields.filter(key => key.startsWith('visual') && !['visualNeedsReview', 'visualReviewBasis'].includes(key) && key in card).forEach(key => {
       if (ownPicture || (key === 'visualCheck' ? card[key] && differs(key) : ['visualPrompt', 'visualAlt'].includes(key) ? differs(key) : key === 'visualAltSource' && differs('visualAlt'))) out[key] = card[key];
     });
     return out;
@@ -97,7 +143,7 @@
   const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
   // Bound and allowlist text trees. Media, private practice, teacher source,
   // and unknown future fields must never enter a response submission.
-  const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
+  const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactUrlDraft artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
   function textTree(value, depth = 0) {
     if (depth > 8) return null;
     if (typeof value === 'string') return value.slice(0, 12000);
@@ -116,11 +162,21 @@
       const key=text(row?.factKey,80); if(!/^link:[a-zA-Z0-9_-]+$/.test(key)||seen.has(key)) return false; seen.add(key); return true;
     }).slice(-20).map(row => ({factKey:text(row.factKey,80),cue:text(row.cue,200),explanation:text(row.explanation,600),cueKey:text(row.cueKey,80)}));
   }
-  function responseFromData(type, data, reference) {
+  function appliedWorkspaceResponse(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.artifactUrlDraft !== 'string') return value;
+    // A link draft is one learner-owned field. Its validated URL is derived by
+    // the view, so cross-tab merges cannot combine another tab's URL with it.
+    const workspace = { ...value };
+    delete workspace.artifactUrl;
+    return workspace;
+  }
+  function responseFromData(type, data, reference, previous) {
     if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(data, data.studentAnswers), feedback: data.feedback || null, prevFeedbackScore: Number(data.prevFeedbackScore) || 0 };
     if (type === 'note-taking') return { schemaVersion: 1, ...legacyNotes(data || {}) };
-    if (type === 'memory-aid') { const base = memoryCards(reference || data); return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true) })) }; }
-    return { schemaVersion: 1, ...pick(data, appliedFields) };
+    if (type === 'memory-aid') { const base = memoryCards(reference || data), prior = previous ? memoryCards(previous) : []; return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true, prior.find(item => item.id === card.id)) })) }; }
+    const fields = pick(data, appliedFields);
+    if (fields.workspace) fields.workspace = appliedWorkspaceResponse(fields.workspace);
+    return { schemaVersion: 1, ...fields };
   }
   function project(resource, response) {
     const data = resource.data || {};
@@ -132,7 +188,18 @@
     }
     if (!response) return resource.type === 'memory-aid' ? { ...resource, data: { ...data, cards: memoryCards(data) } } : resource;
     if (resource.type === 'memory-aid') {
-      const cards = memoryCards(data).map(card => ({ ...card, ...memoryOwned((response.cards || []).find(item => item?.id === card.id), card, false) }));
+      const cards = memoryCards(data).map(card => {
+        const owned = memoryOwned((response.cards || []).find(item => item?.id === card.id), card, false);
+        const studentCueNeedsReview = !!(typeof owned.studentDraft === 'string' && owned.studentDraft.trim() && owned.cueFactBasis !== memoryCueFactBasis(card));
+        const merged = { ...card, ...owned };
+        const ownsPicture = Object.prototype.hasOwnProperty.call(owned, 'visualImage') && !!owned.visualImage;
+        const ownsDescription = typeof owned.visualAlt === 'string' && !!owned.visualAlt.trim();
+        const validVisualReview = owned.visualReviewBasis === memoryVisualReviewBasis(card, merged);
+        // Preserve stale learner work, but never let its earlier approval clear a new teacher hold.
+        const visualNeedsReview = owned.visualNeedsReview === true || ((ownsPicture || ownsDescription) && !validVisualReview)
+          || (card.visualNeedsReview === true && !(owned.visualNeedsReview === false && validVisualReview));
+        return { ...merged, visualNeedsReview, teacherCueNeedsReview: card.cueNeedsReview === true, studentCueNeedsReview, cueNeedsReview: card.cueNeedsReview === true || studentCueNeedsReview, ...(studentCueNeedsReview ? { feedback: null } : {}) };
+      });
       return { ...resource, data: { ...data, cards } };
     }
     return { ...resource, data: { ...data, ...pick(response, appliedFields) } };
@@ -164,8 +231,8 @@
     }
     const baseCards = resource.type === 'memory-aid' ? memoryCards(resource.data) : [];
     const data = resource.type === 'memory-aid'
-      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), studentConnections: memoryConnections(card?.studentConnections) })) }
-      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(raw[key])])) };
+      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), ...(typeof card?.cueFactBasis === 'string' ? { cueFactBasis: card.cueFactBasis.slice(0, 80) } : {}), studentConnections: memoryConnections(card?.studentConnections) })) }
+      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(key === 'workspace' ? appliedWorkspaceResponse(raw[key]) : raw[key])])) };
     return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
   }
   function toResponseEntries(resource, response) {
@@ -228,7 +295,7 @@
       if (!Array.isArray(raw.cards) || raw.cards.length !== validIds.size || raw.cards.some(card => {
         if (!record(card) || typeof card.id !== 'string' || !validIds.has(card.id) || seen.has(card.id)) return true;
         seen.add(card.id);
-        return ['studentDraft', 'studentReasoning', 'visualAlt', 'coachHint'].some(key => key in card && typeof card[key] !== 'string') || ('feedback' in card && card.feedback !== null && !record(card.feedback));
+        return ['studentDraft', 'studentReasoning', 'visualAlt', 'coachHint', 'cueFactBasis'].some(key => key in card && typeof card[key] !== 'string') || ('feedback' in card && card.feedback !== null && !record(card.feedback));
       })) throw new Error('Invalid memory response');
     } else if (resource.type === 'anchor-chart') {
       if (!record(raw.studentAnswers) || Object.values(raw.studentAnswers).some(row=>!record(row) || Object.values(row).some(text=>typeof text!=='string'))) throw new Error('Invalid anchor answers');
@@ -254,6 +321,31 @@
     if (record(restored.feedback)) delete restored.feedback.earlierDraft;
     if (resource.type === 'memory-aid' && previous) restored.cards = restored.cards.map(card => ({ ...pick((previous.cards || []).find(item => item.id === card.id), memoryFields), ...card }));
     return restored;
+  }
+  function WorkConflict({ conflict, status, onResolve, onDownload, resource, t }) {
+    const React = window.React;
+    const tr = (key, fallback) => { const value = t?.('studio_response.' + key); return value && value !== 'studio_response.' + key ? value : fallback; };
+    const describe = value => value === undefined ? tr('work_conflict_deleted', 'Removed') : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    const label = path => {
+      const last = path.filter(part => part !== '$rows' && part !== 'studio').at(-1) || 'response';
+      const field = String(last).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]/g, ' ');
+      const readable = tr('work_field_' + last, field.charAt(0).toUpperCase() + field.slice(1));
+      const title = path[0] === resource?.id ? (resource.title || resource.data?.title || tr('work_conflict_activity', 'This activity')) : path[0];
+      return title ? title + ' · ' + readable : readable;
+    };
+    return React.createElement('section', { className: 'mb-3 rounded-xl border border-amber-500 bg-amber-50 p-3', role: 'region', 'aria-label': tr('work_conflict_title', 'Choose which saved changes to keep') },
+      React.createElement('p', { role: 'alert' }, conflict.reason === 'changed-again'
+        ? tr('work_conflict_changed', 'The work changed again. Review the updated comparison before choosing.')
+        : tr('work_conflict', 'Another tab changed the same work. Your changes are still here, but have not been saved. Changes to other fields are kept.')),
+      React.createElement('p', { className: 'mt-2 text-sm' }, tr('work_conflict_scope', 'This choice applies only to the conflicting fields shown below.')),
+      React.createElement('ul', { className: 'mt-2 space-y-2' }, (conflict.conflicts || []).map((item, index) => React.createElement('li', { key: index, className: 'rounded border border-amber-200 p-2 text-sm' },
+        React.createElement('p', { className: 'font-semibold' }, label(item.path)),
+        React.createElement('p', { className: 'whitespace-pre-wrap break-words' }, tr('work_conflict_mine', 'My change:') + ' ' + describe(item.mine)),
+        React.createElement('p', { className: 'whitespace-pre-wrap break-words' }, tr('work_conflict_saved', 'Saved change:') + ' ' + describe(item.saved))))),
+      React.createElement('div', { className: 'mt-3 flex flex-wrap gap-2' },
+        React.createElement('button', { type: 'button', className: 'min-h-11 rounded border px-3 py-2', disabled: status === 'saving', onClick: () => onResolve?.('saved') }, tr('work_conflict_use_saved', 'Use saved changes')),
+        React.createElement('button', { type: 'button', className: 'min-h-11 rounded border px-3 py-2', disabled: status === 'saving', onClick: () => onResolve?.('mine') }, tr('work_conflict_keep_mine', 'Keep my changes')),
+        onDownload && React.createElement('button', { type: 'button', className: 'min-h-11 rounded border px-3 py-2', onClick: onDownload }, tr('download_work', 'Download my work'))));
   }
   function Boundary(props) {
     const React = window.React;
@@ -300,7 +392,7 @@
       }
       if (!(state.resource.type === 'memory-aid' ? key === 'cards' : state.resource.type === 'anchor-chart' ? anchorFields.includes(key) : state.resource.type === 'note-taking' ? noteFields.includes(key) : appliedFields.includes(key))) return;
       const value = typeof change === 'function' ? change(shown.data?.[key]) : change;
-      const next = state.resource.type === 'note-taking' ? { ...(state.response || responseFromData(state.resource.type, shown.data)), [key]: noteResponseField(key,value) } : responseFromData(state.resource.type, { ...shown.data, [key]: value }, state.resource.data);
+      const next = state.resource.type === 'note-taking' ? { ...(state.response || responseFromData(state.resource.type, shown.data)), [key]: noteResponseField(key,value) } : responseFromData(state.resource.type, { ...shown.data, [key]: value }, state.resource.data, shown.data);
       // Update immediately so multiple functional writes in one event compose.
       current.current = { ...state, response: next };
       if (state.isTeacherMode) { previewOwner.current = scope; setPreviewResponse(next); }
@@ -338,7 +430,8 @@
       React.createElement('div', { className: 'mb-3 flex flex-wrap items-center gap-3', role: 'region', 'aria-label': tr('mode_label', 'Workspace mode'), 'aria-live': 'polite' },
         isTeacherMode && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', 'aria-pressed': preview, onClick: () => { setPreview(!preview); setPreviewResponse(null); } }, preview ? tr('close_preview', 'Close student preview') : tr('preview', 'Preview as student')),
         preview && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border px-3 py-2 focus-visible:ring-2', onClick: () => setPreviewResponse(null) }, tr('reset_preview', 'Reset preview')),
-        React.createElement('span', { role: 'status' }, preview ? tr('preview_private', 'Preview work is temporary and is never submitted.') : isTeacherMode ? tr('authoring', 'Teacher authoring') : tr(resource.type === 'applied-challenge' && ['idle','saved'].includes(studentWorkStatus || 'idle') ? (studentWorkStatus === 'saved' ? 'local_saved' : 'local_idle') : studentWorkStatus || 'idle', ({ saving: 'Saving…', saved: resource.type === 'applied-challenge' ? 'Saved on this device · Not submitted' : 'Saved on this device', error: 'Could not save on this device. Keep this page open and download your work.', idle: resource.type === 'applied-challenge' ? 'Work stays on this device · Not submitted' : 'Learner workspace' })[studentWorkStatus || 'idle'] || 'Learner workspace'))),
+        React.createElement('span', { role: 'status' }, preview ? tr('preview_private', 'Preview work is temporary and is never submitted.') : isTeacherMode ? tr('authoring', 'Teacher authoring') : tr(resource.type === 'applied-challenge' && ['idle','saved'].includes(studentWorkStatus || 'idle') ? (studentWorkStatus === 'saved' ? 'local_saved' : 'local_idle') : studentWorkStatus || 'idle', ({ conflict: 'Unsaved changes need review', saving: 'Saving…', saved: resource.type === 'applied-challenge' ? 'Saved on this device · Not submitted' : 'Saved on this device', error: 'Could not save on this device. Keep this page open and download your work.', idle: resource.type === 'applied-challenge' ? 'Work stays on this device · Not submitted' : 'Learner workspace' })[studentWorkStatus || 'idle'] || 'Learner workspace'))),
+      !isTeacherMode && props.studentWorkConflict && React.createElement(WorkConflict, { conflict: props.studentWorkConflict, status: studentWorkStatus, onResolve: props.onResolveWorkConflict, onDownload: download, resource, t: viewProps.t }),
       !isTeacherMode && React.createElement(resource.type === 'applied-challenge' ? 'details' : 'div', { className: 'mb-3 flex flex-wrap items-center gap-2 studio-recovery', ...(resource.type === 'applied-challenge' ? { open: studentWorkStatus === 'error' || undefined } : {}) },
         resource.type === 'applied-challenge' && React.createElement('summary', { className: 'min-h-11 cursor-pointer rounded-xl border px-3 py-2 text-sm font-semibold' }, tr('work_menu', 'My work: backup and restore')),
         studentWorkStatus === 'error' && typeof props.onRetrySave === 'function' && React.createElement('button', { type: 'button', className: 'min-h-11 rounded-xl border border-amber-700 px-3 py-2 focus-visible:ring-2', onClick: props.onRetrySave }, tr('retry_save', 'Retry save')),
@@ -351,6 +444,6 @@
       React.createElement(View, { ...viewProps, key: identity, generatedContent: shown, referenceResource: resource, isTeacherMode: isTeacherMode && !preview, learnerReadOnly: isTeacherMode && !preview, previewMode: preview, activeProfileId: viewProps.activeProfileId, handleNoteUpdate }));
   }
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.StudioResponse = { supports, responseFromData, project, projectForExport, anchorSections, toSubmission, toResponseEntries, emptyResponse, maxBackupBytes, backup, serializeBackup, readBackup, Boundary };
+  window.AlloModules.StudioResponse = { supports, responseFromData, project, projectForExport, anchorSections, toSubmission, toResponseEntries, emptyResponse, maxBackupBytes, backup, serializeBackup, readBackup, WorkConflict, Boundary };
   window.AlloModules.StudioResponseModule = true;
 })();

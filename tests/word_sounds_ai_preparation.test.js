@@ -18,10 +18,15 @@ const section = (start, end) => {
 const helperSource = section('function parseWordSoundsAnalysis(', 'const WordSoundsGenerator =');
 const { parse, useTopic } = new Function('React', helperSource + '; return {parse:parseWordSoundsAnalysis,useTopic:useWordSoundsAiTopic};')(React);
 const preparationLoop = section('             for (let i = 0; i < wordsToProcess.length; i++) {', '             // Flag generated words');
+const WS_CORE = new Function(readFileSync('word_sounds_core.js','utf8')+';return createWordSoundsCore();')();
+const rhymePreparation = new Function('WS_CORE','espeakPackPhonemes',
+  section('const PACK_COMMON_WORDS =','// ── eSpeak G2P')+
+  section('const preparePackRhyme =','// BEGIN WORD SOUNDS REVIEWED RECORDING LIBRARY')+
+  ';return preparePackRhyme;');
 const prepare = new Function('env', `
   const {wordsToProcess, processed, preloadedMap, isGenerationActive, wordSoundsLanguage, gradeLevel, packIsEnglish,
     signal, awaitGeneration, callImagen, effectiveImageTheme, callGemini, espeakPackPhonemes, estimatePackPhonemes,
-    derivePackRhyme, isUnusableAsPhonicsWord, setGeneratedCount, warnLog, parseWordSoundsAnalysis} = env;
+    WS_CORE, preparePackRhyme, isUnusableAsPhonicsWord, setGeneratedCount, warnLog, parseWordSoundsAnalysis} = env;
   return (async () => { ${preparationLoop} return processed; })();
 `);
 function generation(response, selected = 'cat') {
@@ -30,8 +35,9 @@ function generation(response, selected = 'cat') {
     awaitGeneration: value => value, effectiveImageTheme: '',
     callGemini: vi.fn().mockResolvedValue(JSON.stringify(response)), callImagen: vi.fn().mockResolvedValue('image:cat'),
     espeakPackPhonemes: vi.fn().mockResolvedValue(['k','a','t']), estimatePackPhonemes: () => [],
-    derivePackRhyme: () => '', isUnusableAsPhonicsWord: () => false, setGeneratedCount: () => {}, warnLog: vi.fn(),
+    WS_CORE, isUnusableAsPhonicsWord: () => false, setGeneratedCount: () => {}, warnLog: vi.fn(),
     parseWordSoundsAnalysis: parse };
+  env.preparePackRhyme=rhymePreparation(WS_CORE,env.espeakPackPhonemes);
   return { env, run: () => prepare(env) };
 }
 
@@ -60,9 +66,9 @@ describe('generated analysis belongs to the selected word', () => {
 });
 
 const markup = section('<div className={`p-3 rounded-xl border-2 transition-all ${includeAI', '\n                            </div>\n                            <div className="space-y-3');
-const hostCode = transformSync(`return function Host({callGemini,capture,language='en',gradeLevel='K',range={min:1,max:4}}) {
+const hostCode = transformSync(`return function Host({callGemini,capture,language='en',gradeLevel='K',range={min:1,max:4},authoringSession}) {
   const [includeAI,setIncludeAI]=React.useState(true), [aiTopic,setAiTopic]=React.useState('Ocean');
-  const aiSuggestions=useTopic({enabled:includeAI,topic:aiTopic,language,gradeLevel,syllableRange:range,callGemini,warnLog:()=>{}});
+  const aiSuggestions=useTopic({enabled:includeAI,topic:aiTopic,language,gradeLevel,syllableRange:range,callGemini,warnLog:()=>{},authoringSession});
   const {busy:isAiGenerating,generate:handleAiGenerate}=aiSuggestions;
   const tf=(_key,fallback)=>fallback, t=key=>key, Check=()=>null, Sparkles=()=>null;
   capture({includeAI,aiTopic,...aiSuggestions});
@@ -82,6 +88,24 @@ beforeEach(() => {
 afterEach(() => {if(root)act(()=>root.unmount());container.remove();vi.unstubAllGlobals();});
 
 describe('topic suggestions respect the current teacher choices', () => {
+  it('restores a completed source list after review remount without requesting it again', async () => {
+    const authoringSession={},provider=vi.fn().mockResolvedValue('fish, crab');
+    await render({authoringSession,callGemini:provider});await click('Go');
+    expect(state.terms).toEqual(['fish','crab']);
+    await act(async()=>root.unmount());root=createRoot(container);await render();
+    expect(state.terms).toEqual(['fish','crab']);expect(provider).toHaveBeenCalledTimes(1);
+    await act(async()=>root.unmount());root=createRoot(container);await render({authoringSession:{}});
+    expect(state.terms).toEqual([]);
+  });
+
+  it('cannot carry a late source result into a different authoring session', async () => {
+    const request=deferred(),oldSession={},newSession={};
+    await render({authoringSession:oldSession,callGemini:()=>request.promise});await click('Go');
+    await act(async()=>root.unmount());root=createRoot(container);await render({authoringSession:newSession});
+    await act(async()=>request.resolve('fish, crab'));
+    expect(state.terms).toEqual([]);expect(oldSession.aiResult).toBeUndefined();expect(newSession.aiResult).toBeUndefined();
+  });
+
   it('ignores a late response after the source is switched off in the actual control', async () => {
     const request=deferred(), provider=vi.fn(()=>request.promise);
     await render({callGemini:provider});await click('Go');

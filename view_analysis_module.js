@@ -206,6 +206,93 @@ function AnalysisView(props) {
     explanation: isRecord(reportData.readingLevel) ? reportData.readingLevel.explanation ?? baseReadingLevel.explanation : baseReadingLevel.explanation
   } : null;
   const verifiedFactList = (Array.isArray(accuracy.verifiedFacts) ? accuracy.verifiedFacts : []).filter(fact => typeof fact === 'string' && fact.trim());
+  // Fit to the lesson's targets. The reading-level gap comes from the local Flesch-Kincaid
+  // measurement and the grade calibration table, never from the AI's estimate. Depth of
+  // Knowledge is the AI's estimate, shown with its reason.
+  const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => values[key] != null ? values[key] : match);
+  const analysisTargets = isRecord(analysisData.analysisTargets) ? analysisData.analysisTargets : {};
+  const fitStats = isRecord(analysisData.localStats) ? analysisData.localStats : null;
+  const complexityTarget = analysisTargets.grade && typeof readingApi?.getComplexityTarget === 'function' ? readingApi.getComplexityTarget(analysisTargets.grade) : null;
+  const measuredGrade = fitStats ? Number(fitStats.score) : NaN;
+  const englishSource = typeof readingApi?.isEnglishLanguage !== 'function' || readingApi.isEnglishLanguage(asText(analysisData.sourceLanguage) || 'English');
+  // The grade picker's own translated labels, keyed like its options.
+  const gradeName = label => {
+    const key = /^kindergarten$/i.test(label) ? 'k' : /^college$/i.test(label) ? 'college' : /^graduate/i.test(label) ? 'grad' : (String(label).match(/^(\d+)(?:st|nd|rd|th) Grade$/i) || [])[1] ? 'g' + String(label).match(/^(\d+)/)[1] : '';
+    return key ? analysisLabel('input.level_options.' + key, label) : label;
+  };
+  const gradeFit = complexityTarget && Number.isFinite(measuredGrade) ? (() => {
+    const status = measuredGrade > complexityTarget.fkRange.max ? 'above' : measuredGrade < complexityTarget.fkRange.min ? 'below' : 'within';
+    const asl = fitStats.sentences ? fitStats.words / fitStats.sentences : NaN;
+    const asw = fitStats.words ? fitStats.syllables / fitStats.words : NaN;
+    return {
+      status,
+      asl,
+      asw,
+      aslMax: complexityTarget.averageSentenceLengthMax,
+      aswMax: complexityTarget.averageSyllablesPerWordMax,
+      range: complexityTarget.fkLabel,
+      grade: gradeName(complexityTarget.label),
+      score: measuredGrade.toFixed(1)
+    };
+  })() : null;
+  const baseDok = isRecord(analysisData.depthOfKnowledge) && Number(analysisData.depthOfKnowledge.level) >= 1 ? analysisData.depthOfKnowledge : null;
+  const dok = baseDok ? {
+    ...baseDok,
+    ...(isRecord(reportData.depthOfKnowledge) ? reportData.depthOfKnowledge : {}),
+    level: Number(baseDok.level)
+  } : null;
+  const dokTarget = analysisTargets.dok === 'Mixed' ? 3 : Number((asText(analysisTargets.dok).match(/([1-4])/) || [])[1]) || null;
+  // The same level names the Depth of Knowledge setting shows (already translated).
+  const dokName = level => analysisLabel('wizard.dok_levels.l' + level, {
+    1: 'Level 1: Recall & Reproduction',
+    2: 'Level 2: Skill/Concept',
+    3: 'Level 3: Strategic Thinking',
+    4: 'Level 4: Extended Thinking'
+  }[level] || '');
+  const dokIdeas = dok && Array.isArray(dok.ideas) ? dok.ideas.map(asText).filter(idea => idea.trim()) : [];
+  const targetFitCard = (gradeFit || complexityTarget && !englishSource || dok) && /*#__PURE__*/React.createElement("section", {
+    "data-analysis-target-fit": true,
+    className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6 text-sm text-slate-700"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-3"
+  }, analysisLabel('analysis.fit_title', 'Fit to your targets')), gradeFit && englishSource && /*#__PURE__*/React.createElement("div", {
+    "data-grade-fit": gradeFit.status,
+    className: "mb-3"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "leading-relaxed"
+  }, fillLabel(gradeFit.status === 'within' ? analysisLabel('analysis.fit_within', 'Reads within your target for {grade} (Flesch-Kincaid {range}).') : gradeFit.status === 'above' ? analysisLabel('analysis.fit_above', 'Reads above your target for {grade}: Flesch-Kincaid {score}, target {range}.') : analysisLabel('analysis.fit_below', 'Reads below your target for {grade}: Flesch-Kincaid {score}, target {range}. That suits independent reading; for instruction, a richer text or more subject vocabulary would stretch students.'), gradeFit)), gradeFit.status === 'above' && /*#__PURE__*/React.createElement("ul", {
+    className: "mt-2 list-disc pl-5 space-y-1"
+  }, gradeFit.asl > gradeFit.aslMax && /*#__PURE__*/React.createElement("li", {
+    "data-fit-tip": "sentences"
+  }, fillLabel(analysisLabel('analysis.fit_sentences', 'Sentences average {value} words; for this grade aim for about {max} or fewer.'), {
+    value: gradeFit.asl.toFixed(1),
+    max: gradeFit.aslMax
+  })), gradeFit.asw > gradeFit.aswMax && /*#__PURE__*/React.createElement("li", {
+    "data-fit-tip": "syllables"
+  }, fillLabel(analysisLabel('analysis.fit_syllables', 'Words average {value} syllables; for this grade aim for about {max} or fewer.'), {
+    value: gradeFit.asw.toFixed(2),
+    max: gradeFit.aswMax.toFixed(2)
+  })))), complexityTarget && !englishSource && /*#__PURE__*/React.createElement("p", {
+    className: "mb-3 leading-relaxed"
+  }, analysisLabel('analysis.fit_not_english', 'Readability formulas measure English text only, so there is no grade comparison for this source.')), dok && /*#__PURE__*/React.createElement("div", {
+    "data-dok-level": dok.level,
+    "data-dok-target": dokTarget || undefined
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "leading-relaxed"
+  }, /*#__PURE__*/React.createElement("strong", null, fillLabel(analysisLabel('analysis.dok_supports', 'This text supports up to Depth of Knowledge {name}.'), {
+    name: dokName(dok.level)
+  })), asText(dok.reason) ? ' ' : '', formatInlineText(asText(dok.reason), false)), dokTarget && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 leading-relaxed"
+  }, fillLabel(dok.level >= dokTarget ? analysisLabel('analysis.dok_target_met', 'Your target is DOK {target}; this text can support it.') : analysisLabel('analysis.dok_target_below', 'Your target is DOK {target}; this text alone reaches DOK {level}.'), {
+    target: dokTarget,
+    level: dok.level
+  })), dokIdeas.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h5", {
+    className: "mt-3 text-xs font-bold text-slate-600"
+  }, dokTarget && dok.level < dokTarget ? analysisLabel('analysis.dok_ideas_reach', 'Ideas to reach your target') : analysisLabel('analysis.dok_ideas_beyond', 'Ideas to go further')), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-1 list-disc pl-5 space-y-1"
+  }, dokIdeas.map((idea, index) => /*#__PURE__*/React.createElement("li", {
+    key: index
+  }, formatInlineText(idea, false)))))));
   const isTranslatedDisplay = typeof analysisData.translatedText === 'string' && !!analysisData.translatedText.trim();
   const canChangeReportNotes = isTeacherMode && !isTranslatedReport;
   const normalizedText = text => asText(text).trim().replace(/\s+/g, ' ');
@@ -287,7 +374,7 @@ function AnalysisView(props) {
   }, conceptList.map((concept, idx) => /*#__PURE__*/React.createElement("span", {
     key: idx,
     className: "bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100"
-  }, formatInlineText(concept, false)))))), /*#__PURE__*/React.createElement("div", {
+  }, formatInlineText(concept, false)))))), targetFitCard, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mb-3"

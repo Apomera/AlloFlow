@@ -67,11 +67,11 @@ function AiSetupNotice({ t }) {
 // the measured data. Do not hand-edit the lists without re-running the probe.
 const UNIVERSAL_SETTING_COVERAGE = {
   measuredTypes: 21,
-  grade: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
+  grade: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
   language: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'analysis', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
   standards: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
   interests: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'lesson-plan', 'adventure', 'applied-challenge'],
-  dok: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
+  dok: ['simplified', 'glossary', 'outline', 'quiz', 'analysis', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'],
   emoji: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'adventure', 'note-taking', 'anchor-chart', 'memory-aid'],
   // N6 (2026-08-16): every measured type, so a control can name what it does NOT
   // reach and not only what it does. Same source as the lists above
@@ -234,41 +234,6 @@ function universalDiffLevelCount(range, customGrades) {
   if (range === '1' || range === '2') return 3;
   if (range === 'Both') return 5;
   return 1;
-}
-
-// Per-control honesty chip: "Applies to N of M resource types", expandable to
-// the measured list. This is the panel telling the truth instead of implying
-// every setting reaches every resource.
-function UniversalApplicability({ settingKey, t }) {
-  const list = UNIVERSAL_SETTING_COVERAGE[settingKey] || [];
-  const total = UNIVERSAL_SETTING_COVERAGE.measuredTypes;
-  // Show the teacher-facing tool names, not the dispatcher slugs. tool_catalog
-  // already carries a sidebarKey per id; fall back to the slug if the catalog
-  // module has not loaded or an entry lacks a key.
-  const catalog = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ToolCatalog) || null;
-  const label = (id) => {
-    const entry = catalog && typeof catalog.getToolEntry === 'function' ? catalog.getToolEntry(id) : null;
-    const key = entry && entry.sidebarKey;
-    return (key && t(key)) || id;
-  };
-  // N6: naming the excluded types too. "Applies to 17 of 19" left the teacher to work
-  // out which two, and the specific confusion Aaron hit was believing a setting reached
-  // Analyze Source Material (it reaches none of them: analysis is in no coverage list).
-  const excluded = (UNIVERSAL_SETTING_COVERAGE.allTypes || []).filter((id) => !list.includes(id));
-  return (
-    <details className="mt-1">
-      <summary className="text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1">
-        <CheckCircle2 size={9} className="text-emerald-600 shrink-0" />
-        {(t('universal.applies') || 'Applies to {n} of {m} resource types').replace('{n}', String(list.length)).replace('{m}', String(total))}
-      </summary>
-      <p className="text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200">{list.map(label).join(', ')}</p>
-      {excluded.length > 0 && (
-        <p className="text-[10px] text-amber-700 leading-snug mt-1 pl-3 border-l-2 border-amber-200">
-          <span className="font-bold">{t('universal.not_used_by') || 'Not used by'}:</span> {excluded.map(label).join(', ')}
-        </p>
-      )}
-    </details>
-  );
 }
 
 // ── ResourceCustomInstructions: the one implementation of the per-resource custom-instructions field ──
@@ -699,14 +664,10 @@ function UniversalSettingsPanel(props) {
               </button>
               {isOpen && (
                 <div className="animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200">
-                    {/* N6 (2026-08-16): Aaron asked whether Analyze Source Material should move
-                        ABOVE this panel, since these settings do not govern it. Order is a weak
-                        signal and moving the card would not stop a teacher assuming grade level
-                        steered the analysis; a stated scope does. Analyze Source Material appears
-                        in none of the six measured coverage lists, so it is named here explicitly,
-                        and every control's chip now also lists what it does not reach. */}
-                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-900">
-                      {t('universal.scope_note') || 'These steer what AlloFlow writes for you. Analyze Source Material is not affected: it reads your text exactly as written and reports the level it actually finds. Each setting below lists the resources it reaches.'}
+                    {/* One sentence on what these do (2026-10-19). Analyze Source now compares its own
+                        measurement with the grade and Depth of Knowledge targets, so no exception is stated. */}
+                    <p className="text-[11px] leading-relaxed text-slate-600">
+                      {t('universal.scope_note') || 'These steer what AlloFlow writes for you.'}
                     </p>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
@@ -733,7 +694,6 @@ function UniversalSettingsPanel(props) {
                                 <option value="College">{t('grades.college')}</option>
                                 <option value="Graduate Level">{t('grades.grad')}</option>
                             </select>
-                            <UniversalApplicability settingKey="grade" t={t} />
                         </div>
                         <div>
                             <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_language')}</label>
@@ -747,7 +707,6 @@ function UniversalSettingsPanel(props) {
                                 {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
                                 {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
                             </select>
-                            <UniversalApplicability settingKey="language" t={t} />
                             {/* The builder for this list used to live in the Glossary panel while
                                 its main consumer was this dropdown — so adding a language meant
                                 opening an unrelated tool. The list is shared by three consumers
@@ -849,7 +808,6 @@ function UniversalSettingsPanel(props) {
                                     teacher had chosen it there. */}
                                 <option value="Mixed">{t('wizard.dok_levels.mixed')}</option>
                             </select>
-                            <UniversalApplicability settingKey="dok" t={t} />
                         </div>
                     </div>
                     <div>
@@ -1032,7 +990,6 @@ function UniversalSettingsPanel(props) {
                                     )}
                                 </div>
                             )}
-                            <UniversalApplicability settingKey="standards" t={t} />
                         </div>
                         {targetStandards.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2 mb-2">
@@ -1081,7 +1038,6 @@ function UniversalSettingsPanel(props) {
                                 ))}
                                 {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
                             </div>
-                            <UniversalApplicability settingKey="interests" t={t} />
                         </div>
                         <div className="mt-2" data-help-key="simplified_emojis">
                             <div className="flex items-center gap-2">
@@ -1096,7 +1052,6 @@ function UniversalSettingsPanel(props) {
                                     <Smile size={12} className="text-indigo-500"/> {t('simplified.use_emojis')}
                                 </label>
                             </div>
-                            <UniversalApplicability settingKey="emoji" t={t} />
                         </div>
                         <div className="mt-3 pt-3 border-t border-slate-200" data-help-key="simplified_differentiation">
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
@@ -1546,11 +1501,16 @@ function MathPanel(props) {
                                     // An interrupted or early-ended run is not a score. Probe
                                     // history has no validity flag, so anything written here is
                                     // read as a real CBM by the tier calculation. Say so rather
-                                    // than dropping it silently.
+                                    // than dropping it silently. A form finished in full was not
+                                    // interrupted or ended early, only too fast to prorate.
+                                    const secs = Math.round(Number(r.elapsedSeconds) || 0);
+                                    const minSecs = r.prorationMinimumSeconds || 20;
                                     if (r.validForComparison === false || !hasScore) {
-                                        if (typeof addToast === 'function') addToast(
-                                            t('math_fluency.probe_not_recorded')
-                                            || 'Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.',
+                                        if (typeof addToast === 'function') addToast(r.completionStatus === 'complete'
+                                            ? (t('math_fluency.probe_not_recorded_too_fast', { seconds: secs, minimum: minSecs })
+                                                || `Probe not recorded: every item was finished in ${secs} seconds, under the ${minSecs} seconds needed to prorate the rate to a full minute. Re-administer for a comparable score.`)
+                                            : (t('math_fluency.probe_not_recorded')
+                                            || 'Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.'),
                                             'warning');
                                         return;
                                     }
@@ -1558,6 +1518,11 @@ function MathPanel(props) {
                                         activity: 'math_dcpm',
                                         grade: r.grade,
                                         form: r.form,
+                                        // Rebuilt forms carry a version; records made before are 1.
+                                        formVersion: r.formVersion || 1,
+                                        scoringVersion: r.scoringVersion || null,
+                                        prorated: r.prorated === true,
+                                        elapsedSeconds: r.elapsedSeconds,
                                         // Assessment Center reads itemsPerMin through
                                         // _probeTypeAndScore and dcpm through the AlloSheet score
                                         // walker. Both must see the same number, or two surfaces
@@ -1572,8 +1537,10 @@ function MathPanel(props) {
                                         source: 'math_fluency_probe'
                                     });
                                     if (typeof addToast === 'function') addToast(
-                                        t('math_fluency.probe_recorded_for', { student: r.student })
-                                        || `Probe recorded for ${r.student}.`,
+                                        (t('math_fluency.probe_recorded_for', { student: r.student })
+                                        || `Probe recorded for ${r.student}.`)
+                                        + (r.prorated === true ? ' ' + (t('math_fluency.probe_recorded_prorated')
+                                        || 'All items were finished early, so the rate was prorated to a full minute.') : ''),
                                         'success');
                                 }}
                             />;

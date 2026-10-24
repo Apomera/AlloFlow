@@ -1,0 +1,175 @@
+{
+  "checked": "2026-10-22",
+  "scope": "One additional living invertebrate for the species guide, optional identification activity and illustrative reef encounters. The model represents an unsexed Pacific adult with one documented colour appearance, not a mixture of purported species or an invariant regional pattern. New copy is paraphrased from aquarium, museum and primary-research accounts.",
+  "iucnYearConvention": "No reliable current global IUCN assessment was located. SeaLifeBase's full accessible summary labels Hymenocera picta Not Evaluated in its IUCN 2025-1 export, and its current indexed field guide also reports NE. Use NE and null assessment/publication dates. NE is not evidence that populations are secure, and no assessment year is invented.",
+  "specimens": [
+    {
+      "id": "harlequin_shrimp",
+      "name": "Harlequin shrimp",
+      "scientific": "Hymenocera picta",
+      "group": "invertebrate",
+      "iucn": "NE",
+      "iucnYear": null,
+      "iucnPublishedYear": null,
+      "iucnDateAssessed": null,
+      "lookalikes": [
+        "cleaner_shrimp"
+      ],
+      "marks": [
+        "Cream-white body with large wine-purple and blue blotches",
+        "Two broad, flattened paddle-like claws held in front",
+        "Petal-like sensory antennules spread above the head",
+        "A curved, segmented abdomen ends in a small tail fan"
+      ],
+      "role": "Specialist predator of sea stars in reef food webs.",
+      "fact": "Experiments found that males can recognize and prefer the scent of their usual partner.",
+      "habitat": "Sheltered holes and crevices in tropical coral reefs across the Indian and Pacific oceans, including Hawai‘i and documented eastern Pacific reefs.",
+      "diet": "Specializes in sea stars, including Linckia species. It eats tube feet and other soft tissue using specialised feeding limbs.",
+      "behavior": "Often found in pairs near a reef shelter. The petal-like antennules move as the shrimp samples chemical cues from the water.",
+      "observe": "Compare the broad paddles and large blotches with the cleaner shrimp’s long white antennae and striped back. Trace the separate head structures, jointed limbs and curved abdomen rather than relying on colour alone.",
+      "sources": [
+        "dx-waikiki-harlequin_shrimp",
+        "dx-field-harlequin_shrimp",
+        "dx-seibt-harlequin_shrimp",
+        "dx-worms-harlequin_shrimp",
+        "dx-sealifebase-harlequin_shrimp"
+      ],
+      "claimSupport": {
+        "acceptedName": "dx-worms-harlequin_shrimp accepts Hymenocera picta Dana, 1852 and treats H. elegans Heller, 1861 as a junior subjective synonym. dx-itis-harlequin_shrimp and dx-vienna-harlequin_shrimp independently corroborate the synonymy.",
+        "marks": "dx-field-harlequin_shrimp describes white animals with blue/wine blotches, expanded antennular flagellum and enlarged second pereopod. Its identified adult photographs support body shape; dx-waikiki-harlequin_shrimp supports flattened claws and petal-like antennules.",
+        "roleDiet": "dx-waikiki-harlequin_shrimp supports specialised sea-star feeding, Linckia prey and soft tissues. dx-feeding-harlequin_shrimp is a captive feeding observation; it is not treated as a complete wild prey inventory.",
+        "fact": "dx-seibt-harlequin_shrimp reports male partner preference using scent cues. This does not establish lifelong exclusive mating or obligatory cooperation in hunting.",
+        "habitatBehavior": "dx-waikiki-harlequin_shrimp supports reef habitat and male-female pairs; dx-field-harlequin_shrimp documents Pacific reef encounters; dx-seibt-harlequin_shrimp describes waving sensory antennules.",
+        "sizeDepth": "The nominal 4.5 cm individual matches the approximate total lengths in dx-field-harlequin_shrimp. Waikīkī says individuals rarely exceed two inches; Lizard Island gives up to 5 cm. SeaLifeBase gives 5 cm body length and 1–20 m; these length conventions are not assumed interchangeable. Primary Pacific field records at 10–15 m support encounters within that depth interval.",
+        "sexAndColour": "The model is unsexed and carries no egg mass or diagnostic reproductive structures. dx-wickler-harlequin_shrimp describes sex differences in pleopod tips and abdominal patches in East African animals; these are not generalized to every colour form or copied into the Pacific model.",
+        "comparison": "One-way teaching contrast with the existing Lysmata amboinensis record: flattened paddles/large blotches versus long white antennae/back stripes. The existing cleaner shrimp record and sources remain unchanged.",
+        "iucn": "dx-sealifebase-harlequin_shrimp accessible full summary and indexed field-guide export report Not Evaluated. No current global assessment or assessment date was located."
+      },
+      "caution": "Colour alone does not reliably split picta and elegans: current WoRMS includes the latter as a synonym. The selected Pacific appearance is illustrative, not a rule that all Pacific animals share these hues. Published accounts differ in old family names and informal walking-leg numbering; public marks avoid those numbered claims. Anatomical provenance follows the enlarged second pereopods. The model is unsexed. No lifelong sexual fidelity, required pair hunting, toxicity, guaranteed identification or reef-wide crown-of-thorns control is claimed. Sea-star feeding does not make this a cleaner of fish."
+    }
+  ],
+  "references": [
+    {
+      "id": "dx-waikiki-harlequin_shrimp",
+      "text": "Waikīkī Aquarium, University of Hawai‘i. Harlequin Shrimp: animal guide. Accessed October 2026.",
+      "url": "https://www.waikikiaquarium.org/experience/animal-guide/invertebrates/crustaceans/harlequin-shrimp/",
+      "urlLabel": "waikikiaquarium.org",
+      "supports": [
+        "Flattened claws, sensory antennules, sea-star diet, reef habitat, pair encounters and approximate size"
+      ],
+      "access": "Full official aquarium account opened successfully. The unrelated waikikiaquarium.site imitation is not used. Public copy omits the aquarium's informal claw-pair numbering; primary morphology identifies the enlarged second pereopod pair."
+    },
+    {
+      "id": "dx-field-harlequin_shrimp",
+      "text": "Valencia-Mendez, O., Lopez-Perez, A., Martinez-Guerrero, B., Antonio-Perez, V. & Ramirez-Chavez, E. (2017). A new record of Harlequin Shrimp (Malacostraca: Decapoda: Palaemonidae: Hymenocera picta Dana, 1852) in the southern Mexican Pacific Reefs. Journal of Threatened Taxa 9(8): 10571–10576. DOI: 10.11609/jott.3238.9.8.10571-10576.",
+      "url": "https://www.vliz.be/imisdocs/publications/306090.pdf",
+      "urlLabel": "vliz.be (primary research)",
+      "supports": [
+        "Pacific colour appearance and morphology, identified adult photographs, size and documented reef depth"
+      ],
+      "access": "Full primary research PDF opened successfully. Identifications were checked by named crustacean specialists. Distribution-model predictions are not imported as confirmed occurrences or physiological depth limits."
+    },
+    {
+      "id": "dx-seibt-harlequin_shrimp",
+      "text": "Seibt, U. (1973). Sense of Smell and Pair-Bond in Hymenocera picta Dana. Micronesica 9(2): 231–236. University of Guam.",
+      "url": "https://micronesica.org/volumes/9",
+      "urlLabel": "micronesica.org",
+      "supports": [
+        "Primary scent-cue experiments, antennule movement and male partner recognition"
+      ],
+      "access": "University journal's indexed abstract and archive entry read in full. The temporary PDF-token URL returned 404; no successful full-paper access is claimed. The guide limits the finding to male scent preference shown experimentally."
+    },
+    {
+      "id": "dx-worms-harlequin_shrimp",
+      "text": "DecaNet eds. (2026). Hymenocera picta Dana, 1852, AphiaID 210554. World Register of Marine Species. Accessed October 2026.",
+      "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=210554",
+      "urlLabel": "marinespecies.org",
+      "supports": [
+        "Accepted name and Hymenocera elegans junior subjective synonym"
+      ],
+      "access": "Detailed current indexed taxon record read; direct record returned 403. Accepted status and synonymy corroborated by ITIS, the Australian Museum field guide and the Vienna museum type catalog."
+    },
+    {
+      "id": "dx-sealifebase-harlequin_shrimp",
+      "text": "SeaLifeBase. Hymenocera picta, species 20753: summary and IUCN export. Accessed October 2026.",
+      "url": "https://www.sealifebase.se/summary/Hymenocera-picta.html",
+      "urlLabel": "sealifebase.se",
+      "supports": [
+        "Not Evaluated status, 1–20 m reported interval and 5 cm body-length entry"
+      ],
+      "access": "Full accessible summary opened successfully and explicitly labels its IUCN export Version 2025-1. A current indexed field-guide record also reports NE. No assessment year is supplied. Order-level reproductive generalizations and modelled environmental estimates are not used."
+    },
+    {
+      "id": "dx-wickler-harlequin_shrimp",
+      "text": "Wickler, W. (1973). Biology of Hymenocera picta Dana. Micronesica 9(2): 225–230. University of Guam.",
+      "url": "https://micronesica.org/file/544/download?token=at0bw855",
+      "urlLabel": "micronesica.org",
+      "supports": [
+        "Primary pair and feeding observations, East African sex differences and limits of cooperation claims"
+      ],
+      "access": "Full primary PDF opened successfully. Adult male/female marking differences apply to the studied East African material, not an invariant global field key. The study distinguishes partner preference from sexual exclusivity and does not require two shrimp for successful hunting."
+    },
+    {
+      "id": "dx-feeding-harlequin_shrimp",
+      "text": "Prakash, S. & Kumar, T.T.A. (2013). Feeding behavior of Harlequin Shrimp Hymenocera picta Dana, 1852 (Hymenoceridae) on Sea Star Linckia laevigata (Ophidiasteridae). Journal of Threatened Taxa 5(13): 4819–4821. DOI: 10.11609/JoTT.o3506.4819-21.",
+      "url": "https://threatenedtaxa.org/index.php/JoTT/article/view/1519/0",
+      "urlLabel": "threatenedtaxa.org",
+      "supports": [
+        "Primary captive observation of feeding on blue sea star soft tissue"
+      ],
+      "access": "Publisher abstract and detailed indexed primary account read. Captive observations are labelled as such; husbandry instructions and ecosystem-control claims are not imported."
+    },
+    {
+      "id": "dx-lifg-harlequin_shrimp",
+      "text": "Australian Museum / Lizard Island Research Station. Harlequin Shrimp, Hymenocera picta: Lizard Island Field Guide. Accessed October 2026.",
+      "url": "https://lifg.australian.museum/Group.html?groupId=8y39Rd1H",
+      "urlLabel": "lifg.australian.museum",
+      "supports": [
+        "Museum size up to 5 cm, current family and elegans synonym"
+      ],
+      "access": "Detailed current indexed museum account read. Its size entry cites Humann & DeLoach (2010)."
+    },
+    {
+      "id": "dx-itis-harlequin_shrimp",
+      "text": "Integrated Taxonomic Information System. Hymenocera picta Dana, 1852, TSN 659886. Accessed October 2026.",
+      "url": "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=659886",
+      "urlLabel": "itis.gov",
+      "supports": [
+        "Valid name and Hymenocera elegans synonym"
+      ],
+      "access": "Detailed current indexed government taxonomic report read; standing valid, verified standards met."
+    },
+    {
+      "id": "dx-vienna-harlequin_shrimp",
+      "text": "De Grave, S., Dworschak, P.C., Low, M.E.Y. & Ng, P.K.L. (2022). The Decapoda described by the Austrian carcinologist Camill Heller (1823–1917): checklist, dates of publication and bibliography. Annalen des Naturhistorischen Museums in Wien, Serie B 124: 265–299. Entry Hymenocera elegans.",
+      "url": "https://www.zobodat.at/pdf/ANNA_124B_0265-0299.pdf",
+      "urlLabel": "zobodat.at (museum publication)",
+      "supports": [
+        "Museum type-catalog confirmation that H. elegans is a junior synonym of H. picta"
+      ],
+      "access": "Full primary museum catalog opened successfully. Records the Red Sea type locality and NHMW 7865 syntypes without treating them as a separately accepted current species."
+    }
+  ],
+  "modelProvenance": {
+    "nominalAdultLengthM": 0.045,
+    "maximumLengthM": 0.05,
+    "depth": [
+      1,
+      20
+    ],
+    "origin": "base",
+    "habit": "bottom",
+    "zone": "rubbleEdge",
+    "representative": "Unsexed Pacific adult with a cream-white body, wine-magenta patches and blue-violet accents, informed by identified southern Mexican Pacific photographs. This is one illustrative appearance; regional colours are not a species-splitting rule.",
+    "basis": "Illustrative nominal length is 4.5 cm, guided by the approximate field total lengths. Fine appendage extents and different published length conventions are not treated as identical measurements. About 5 cm is the common aquarium/museum size account, not a hard anatomical limit. Depth 1–20 m is SeaLifeBase's reported interval; the primary Pacific observations at 10–15 m fall within it. It does not establish complete depth tolerance or encounter frequency.",
+    "anatomy": "Segmented carapace and curved abdomen, small tail fan, stalked eyes, expanded petal-like antennular flagella, greatly expanded second-pereopod claws, a smaller anterior chelate pair and three posterior walking-leg pairs. Fine mouthparts and plate edges may be simplified, while the broad claws remain distinct from the head leaflets.",
+    "anatomyLimits": "No egg mass or sex-specific pleopod colour is assigned. Hue and patch shape vary in nature. Colour illustration does not establish a separate elegans species, spectral vision, fluorescence or bioluminescence.",
+    "motion": "Conservative bottom placement beside rubble, with gentle independent sensory and appendage movement. This illustrative stationary encounter does not imply wild shrimp never walk or forage. No new locomotion or mandatory paired-hunting simulation is required."
+  },
+  "integration": {
+    "maintainedSource": "Append this specimen and used references without regenerating existing guide records.",
+    "practice": "Identification and inspection must not award dive discoveries or persist session-only answers and reflections.",
+    "lookalikeNote": "One-way cleaner_shrimp link supports a clear novice comparison between two reef shrimps. It is a teaching contrast, not a claim that Lysmata amboinensis is the closest taxonomic or visual counterpart. Preserve its existing record exactly.",
+    "identificationLimit": "Combine appendage shape, body structure and markings. The simplified model supports learning, not definitive wild species identification."
+  }
+}

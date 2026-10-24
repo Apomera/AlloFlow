@@ -57,7 +57,8 @@ describe('landing page pack coverage', () => {
     }
   });
 
-  it('uses each pack\'s own established abbreviation for AI', () => {
+  // Parses 11 multi-megabyte packs: same budget reasoning as the mirror check above.
+  it('uses each pack\'s own established abbreviation for AI', { timeout: 60000 }, () => {
     // Writing "AI" into a pack that already says KI/IA/ИИ everywhere else reads
     // as a half-finished import, so the two AI-bearing strings must match the
     // term the pack already uses.

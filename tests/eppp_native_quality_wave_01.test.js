@@ -12,7 +12,14 @@ const supersedingReviewWaveById = new Map([
   ['eppp-v3-intervention-060', 'eppp-native-quality-wave-16'],
   ['eppp-v2-biological-014', 'eppp-native-quality-wave-13'],
   ['eppp-v2-biological-045', 'eppp-native-quality-wave-14'],
+  // Later question-quality and application-rewrite waves (each lists the id in its audit).
+  ['eppp-v3-social-cultural-012', 'eppp-native-quality-wave-33'],
+  ['eppp-v3-professional-018', 'eppp-application-rewrite-wave-52'],
+  ['eppp-v2-lifespan-009', 'eppp-application-rewrite-wave-53'],
 ]);
+const supersedingStatus = (wave) => (/^eppp-application-rewrite-wave-/.test(wave)
+  ? 'editorial-application-rewrite'
+  : 'editorial-deep-rewrite-pass');
 
 describe('EPPP native quality repair wave 01', () => {
   it('records the exact completed repair scope and the honest follow-up queue', () => {
@@ -58,7 +65,7 @@ describe('EPPP native quality repair wave 01', () => {
       const supersedingWave = supersedingReviewWaveById.get(id);
       expect(item).toBeTruthy();
       expect(item).toMatchObject({
-        wordingReviewStatus: supersedingWave ? 'editorial-deep-rewrite-pass' : 'editorial-rewrite-pass',
+        wordingReviewStatus: supersedingWave ? supersedingStatus(supersedingWave) : 'editorial-rewrite-pass',
         wordingReviewWave: supersedingWave || 'eppp-native-quality-wave-01',
       });
       expect(item.choices).toHaveLength(4);

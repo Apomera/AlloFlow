@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Meydan okumanın hedefleri gözlemlendi. Ardından enerji yönetimi alıştırmasında, motor rölantideyken alçalmayı motor gücüyle tırmanmayla karşılaştır.",
+  "stem.flightsim.coaching_energy_complete": "Enerji yönetimi hedefleri gözlemlendi. Ardından kısa bir havaalanı yaklaşmasında enerjiyi kontrol etme alıştırması yap; sonra alçalma hızını ve piste teması karşılaştır.",
+  "stem.flightsim.drone_battery_low": "Pil zayıf: %{pct} kaldı. Kalkış noktasına dön ve kısa süre içinde in.",
+  "stem.flightsim.drone_battery_depleted_title": "Dronun pili tükendi",
+  "stem.flightsim.drone_battery_depleted_body": "Pil %0 olduğunda uçuş duraklatıldı. Bu denemeyi incelemek için görevi bitir, ardından dolu pille yeni bir göreve başla.",
+  "stem.flightsim.end_drone_mission": "Görevi bitir ve incele",
+  "stem.flightsim.geoq_nearest_place": "Şu anki konumuna en yakın yer hangisi?",
+  "stem.flightsim.geoq_paused": "Bu soru için uçuş duraklatıldı. Testi kapat, ardından uçmaya hazır olduğunda Devam et seçeneğini seç.",
+  "stem.flightsim.geoq_close": "Testi kapat",
+  "stem.flightsim.geoq_unavailable": "Yakınlarda kullanılabilecek bir coğrafya sorusu yok. Keşfetmeye devam et ve yeniden dene.",
+  "stem.flightsim.geoq_answer_feedback": "Yanıtın: {answer}. Doğru yanıt: {expected}."
+}

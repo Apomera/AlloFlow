@@ -1,6 +1,7 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import * as engine from './lesson_board_engine.js';
 import {destinationJourney} from './lesson_board_journey.js';
-import {tr} from './lesson_board_strings.js';
+import { tr, signedAmount } from './lesson_board_strings.js';
 const React=window.React;
 
 // A suggestion selects a legal next stop; it never moves or solves a space.
@@ -27,7 +28,7 @@ export function nextContractStep(board,run,contract){
   return null;
 }
 
-export function ContractStyles(){return <style>{`
+export function ContractStyles(){return addBoardStyle(`
 .lb .lb-contract-hand{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:0 14px;margin-top:18px}
 .lb .lb-contract-hand>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px}
 .lb .lb-contract-hand>summary:before{content:'⚑';color:var(--accent);font-size:1.35em}
@@ -53,9 +54,9 @@ export function ContractStyles(){return <style>{`
 .lb .lb-contract-editor{display:grid;gap:8px}.lb .lb-contract-editor fieldset{border:1px solid var(--line);border-radius:12px;padding:12px}.lb .lb-contract-editor .lb-row label{display:flex;align-items:center;gap:6px}.lb .lb-contract-editor input[type=checkbox]{width:auto}
 @media(max-width:760px){.lb .lb-contract-cards{grid-template-columns:1fr}.lb .lb-contract-card{padding:12px}.lb .lb-contract-card ul{margin:8px 0}}
 @media(forced-colors:active){.lb .lb-contract-card[data-tracked=true]{outline-color:Highlight}.lb .lb-contract-reward{border-color:CanvasText}}
-`}</style>;}
+`);}
 
-const prize=(board,reward)=>reward.map((value,index)=>value?'+'+value+' '+board.resources[index]:'').filter(Boolean).join(' · ');
+const prize=(board,reward)=>reward.map((value,index)=>value?signedAmount(value)+' '+board.resources[index]:'').filter(Boolean).join(' · ');
 
 export function ContractHand({board,run,trackedId,onTrack,onInspect,t}){
   const contracts=engine.contractProgress(board,run),progress=engine.derive(board,run);

@@ -381,6 +381,8 @@
           id: 'solve',
           label: '✏️ Solve One'
         }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
+          // The chosen mode was shown by colour alone (WCAG 1.4.1, 4.1.2).
+          "aria-pressed": stemLabCreateMode === m.id,
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
           className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
@@ -408,15 +410,18 @@
         }, /*#__PURE__*/React.createElement("span", {
           className: "text-xs font-bold text-slate-500 uppercase"
         }, "Style:"), [{
-          val: t('stem.solver.stepbystep'),
-          label: t('stem.solver.stepbystep')
+          // Values are the fixed mode ids the sidebar select and the math prompt use;
+          // a translated label as the value broke both outside English.
+          val: 'Step-by-Step',
+          label: t('stem.solver.stepbystep') || 'Step-by-Step'
         }, {
-          val: t('stem.solver.conceptual'),
-          label: t('stem.solver.conceptual')
+          val: 'Conceptual',
+          label: t('stem.solver.conceptual') || 'Conceptual'
         }, {
           val: 'Real-World Application',
-          label: t('stem.solver.realworld')
+          label: t('stem.solver.realworld') || 'Real-World'
         }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
+          "aria-pressed": mathMode === s.val,
           key: s.val,
           onClick: () => setMathMode(s.val),
           className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`

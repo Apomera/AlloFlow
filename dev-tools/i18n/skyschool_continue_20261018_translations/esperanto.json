@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "La observoj montris, ke la celoj de la defio estis plenumitaj. Poste, en la ekzerco pri energiadministrado, komparu descendon kun motoro je minimuma rapido kun supreniro per motora potenco.",
+  "stem.flightsim.coaching_energy_complete": "La observoj montris, ke la celoj pri energiadministrado estis plenumitaj. Poste ekzercu energiregadon dum mallonga alproksimiĝo al flughaveno, kaj komparu la descendrapidon kaj la tuŝon de la grundo.",
+  "stem.flightsim.drone_battery_low": "Malalta baterinivelo: restas {pct}%. Reiru al la ekflugejo kaj surteriĝu baldaŭ.",
+  "stem.flightsim.drone_battery_depleted_title": "La baterio de la drono elĉerpiĝis",
+  "stem.flightsim.drone_battery_depleted_body": "La flugo estas paŭzigita ĉe 0% da baterio. Finu la mision por revizii ĉi tiun provon, kaj poste komencu novan mision kun plena baterio.",
+  "stem.flightsim.end_drone_mission": "Fini la mision kaj revizii",
+  "stem.flightsim.geoq_nearest_place": "Kiu loko estas plej proksima al via nuna pozicio?",
+  "stem.flightsim.geoq_paused": "La flugo estas paŭzigita por ĉi tiu demando. Fermu la kvizon, kaj elektu Daŭrigi kiam vi pretos flugi.",
+  "stem.flightsim.geoq_close": "Fermi la kvizon",
+  "stem.flightsim.geoq_unavailable": "Neniu geografia demando pri proksima loko disponeblas. Daŭrigu esploradon kaj reprovu.",
+  "stem.flightsim.geoq_answer_feedback": "Via respondo: {answer}. Ĝusta respondo: {expected}."
+}

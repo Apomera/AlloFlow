@@ -7,14 +7,14 @@
     "name": "axe"
   },
   "testEnvironment": {
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
     "windowWidth": 390,
     "windowHeight": 1000,
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-09-30T23:55:22.580Z",
-  "url": "http://127.0.0.1:60701/__harness",
+  "timestamp": "2026-10-18T02:11:00.748Z",
+  "url": "http://127.0.0.1:57931/__harness",
   "toolOptions": {
     "runOnly": {
       "type": "tag",
@@ -103,25 +103,6 @@
       "description": "Ensure aria-hidden=\"true\" is not present on the document body.",
       "help": "aria-hidden=\"true\" must not be present on the document body",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-hidden-body?application=axeAPI",
-      "nodes": []
-    },
-    {
-      "id": "aria-hidden-focus",
-      "impact": null,
-      "tags": [
-        "cat.name-role-value",
-        "wcag2a",
-        "wcag412",
-        "TTv5",
-        "TT6.a",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "RGAAv4",
-        "RGAA-10.8.1"
-      ],
-      "description": "Ensure aria-hidden elements are not focusable nor contain focusable elements",
-      "help": "ARIA hidden element must not be focusable or contain focusable elements",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-hidden-focus?application=axeAPI",
       "nodes": []
     },
     {
@@ -842,25 +823,6 @@
       "nodes": []
     },
     {
-      "id": "summary-name",
-      "impact": null,
-      "tags": [
-        "cat.name-role-value",
-        "wcag2a",
-        "wcag412",
-        "section508",
-        "section508.22.a",
-        "TTv5",
-        "TT6.a",
-        "EN-301-549",
-        "EN-9.4.1.2"
-      ],
-      "description": "Ensure summary elements have discernible text",
-      "help": "Summary elements must have discernible text",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/summary-name?application=axeAPI",
-      "nodes": []
-    },
-    {
       "id": "svg-img-alt",
       "impact": null,
       "tags": [
@@ -1064,7 +1026,106 @@
             }
           ],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Learning cycle progress\">",
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
+          "target": [
+            "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1151,7 +1212,61 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Learning cycle progress\">",
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
+          "target": [
+            "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1209,12 +1324,260 @@
           "target": [
             "#diss-learning-checkpoint"
           ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "deprecatedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "minor",
+              "message": "ARIA role is not deprecated"
+            }
+          ],
+          "impact": null,
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "deprecatedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "minor",
+              "message": "ARIA role is not deprecated"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
+          "target": [
+            ".diss-learning-check__phases"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aria-hidden-focus",
+      "impact": null,
+      "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag412",
+        "TTv5",
+        "TT6.a",
+        "EN-301-549",
+        "EN-9.4.1.2",
+        "RGAAv4",
+        "RGAA-10.8.1"
+      ],
+      "description": "Ensure aria-hidden elements are not focusable nor contain focusable elements",
+      "help": "ARIA hidden element must not be focusable or contain focusable elements",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-hidden-focus?application=axeAPI",
+      "nodes": [
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">1</span>",
+          "target": [
+            "li[data-technique-action=\"inspect\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">2</span>",
+          "target": [
+            "li[data-technique-action=\"scalpel\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">3</span>",
+          "target": [
+            "li[data-technique-action=\"scissors\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">4</span>",
+          "target": [
+            "li[data-technique-action=\"forceps\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">5</span>",
+          "target": [
+            "li[data-technique-action=\"pin\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "focusable-modal-open",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements while a modal is open"
+            },
+            {
+              "id": "focusable-disabled",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            },
+            {
+              "id": "focusable-not-tabbable",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "No focusable elements contained within element"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-technique-roadmap__number\" aria-hidden=\"true\">6</span>",
+          "target": [
+            "li[data-technique-action=\"probe\"] > .diss-technique-roadmap__number[aria-hidden=\"true\"]"
+          ]
         }
       ]
     },
     {
       "id": "aria-prohibited-attr",
-      "impact": "serious",
+      "impact": null,
       "tags": [
         "cat.aria",
         "wcag2a",
@@ -1244,6 +1607,78 @@
           "html": "<section id=\"diss-learning-checkpoint\" class=\"diss-learning-check\" data-phase=\"perform\" data-learning-action=\"inspect\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-learning-check-title\">",
           "target": [
             "#diss-learning-checkpoint"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
+          "target": [
+            "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         },
         {
@@ -1299,6 +1734,42 @@
           "target": [
             "#diss-learning-checkpoint"
           ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-required-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "All required ARIA attributes are present"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-required-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "All required ARIA attributes are present"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
+          "target": [
+            ".diss-learning-check__phases"
+          ]
         }
       ]
     },
@@ -1348,6 +1819,70 @@
           "html": "<section id=\"diss-learning-checkpoint\" class=\"diss-learning-check\" data-phase=\"perform\" data-learning-action=\"inspect\" tabindex=\"-1\" role=\"region\" aria-labelledby=\"diss-learning-check-title\">",
           "target": [
             "#diss-learning-checkpoint"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "invalidrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is valid"
+            },
+            {
+              "id": "abstractrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Abstract roles are not used"
+            },
+            {
+              "id": "unsupportedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "invalidrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is valid"
+            },
+            {
+              "id": "abstractrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Abstract roles are not used"
+            },
+            {
+              "id": "unsupportedrole",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA role is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
+          "target": [
+            ".diss-learning-check__phases"
           ]
         }
       ]
@@ -1427,7 +1962,103 @@
           ],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Learning cycle progress\">",
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
+          "target": [
+            "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1513,7 +2144,61 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Learning cycle progress\">",
+          "html": "<div id=\"diss-technique-roadmap\" class=\"diss-technique-roadmap\" role=\"group\" aria-labelledby=\"diss-technique-roadmap-position\" data-current-technique=\"inspect\">",
+          "target": [
+            "#diss-technique-roadmap"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
+          "target": [
+            "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<div class=\"diss-learning-check__phases\" role=\"group\" aria-label=\"Learning cycle progress\">",
           "target": [
             ".diss-learning-check__phases"
           ]
@@ -1616,6 +2301,81 @@
       "help": "Elements must meet minimum color contrast ratio thresholds",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
       "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#173f69",
+                "bgColor": "#ffffff",
+                "contrastRatio": 10.76,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 10.76"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h4 id=\"diss-technique-roadmap-position\" class=\"diss-technique-roadmap__position\">Technique 1 of 6</h4>",
+          "target": [
+            "#diss-technique-roadmap-position"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#173f69",
+                "bgColor": "#ffffff",
+                "contrastRatio": 10.76,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 10.76"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"diss-technique-roadmap-count\" class=\"diss-technique-roadmap__count\">0 of 6 steps verified</p>",
+          "target": [
+            "#diss-technique-roadmap-count"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#173f69",
+                "bgColor": "#f8fbff",
+                "contrastRatio": 10.36,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 10.36"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>View technique sequence</summary>",
+          "target": [
+            ".diss-technique-roadmap__sequence > summary"
+          ]
+        },
         {
           "any": [
             {
@@ -1738,7 +2498,7 @@
           "impact": null,
           "html": "<span>3 Explain</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"upcoming\"] > span:nth-child(1)"
+            "span[data-state=\"upcoming\"] > span:nth-child(1)"
           ]
         },
         {
@@ -1763,7 +2523,7 @@
           "impact": null,
           "html": "<span class=\"diss-learning-check__phase-status\">Upcoming</span>",
           "target": [
-            ".diss-learning-check__phase[data-state=\"upcoming\"] > .diss-learning-check__phase-status"
+            "span[data-state=\"upcoming\"] > .diss-learning-check__phase-status"
           ]
         },
         {
@@ -1838,6 +2598,24 @@
           "any": [
             {
               "id": "duplicate-id-aria",
+              "data": "diss-technique-roadmap-position",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<h4 id=\"diss-technique-roadmap-position\" class=\"diss-technique-roadmap__position\">Technique 1 of 6</h4>",
+          "target": [
+            "#diss-technique-roadmap-position"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
               "data": "diss-learning-check-title",
               "relatedNodes": [],
               "impact": "critical",
@@ -1847,9 +2625,27 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<h3 id=\"diss-learning-check-title\">Demonstrate your plan</h3>",
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
           "target": [
             "#diss-learning-check-title"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "diss-learning-check-prompt",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p id=\"diss-learning-check-prompt\" class=\"diss-learning-check__prompt\">Use Probe to inspect ventral landmarks and confirm symmetry. Perform the action on the specimen, then explain the result.</p>",
+          "target": [
+            "#diss-learning-check-prompt"
           ]
         }
       ]
@@ -1872,6 +2668,42 @@
       "help": "Interactive controls must not be nested",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/nested-interactive?application=axeAPI",
       "nodes": [
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<progress max=\"6\" value=\"0\" aria-label=\"Verified technique steps\" aria-valuetext=\"0 of 6 steps verified\"></progress>",
+          "target": [
+            "progress[max=\"6\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>View technique sequence</summary>",
+          "target": [
+            ".diss-technique-roadmap__sequence > summary"
+          ]
+        },
         {
           "any": [
             {
@@ -1909,53 +2741,47 @@
           ]
         }
       ]
+    },
+    {
+      "id": "summary-name",
+      "impact": null,
+      "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag412",
+        "section508",
+        "section508.22.a",
+        "TTv5",
+        "TT6.a",
+        "EN-301-549",
+        "EN-9.4.1.2"
+      ],
+      "description": "Ensure summary elements have discernible text",
+      "help": "Summary elements must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/summary-name?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>View technique sequence</summary>",
+          "target": [
+            ".diss-technique-roadmap__sequence > summary"
+          ]
+        }
+      ]
     }
   ],
   "incomplete": [
-    {
-      "id": "aria-prohibited-attr",
-      "impact": "serious",
-      "tags": [
-        "cat.aria",
-        "wcag2a",
-        "wcag412",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "RGAAv4",
-        "RGAA-7.1.1"
-      ],
-      "description": "Ensure ARIA attributes are not prohibited for an element's role",
-      "help": "Elements must only use permitted ARIA attributes",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/aria-prohibited-attr?application=axeAPI",
-      "nodes": [
-        {
-          "any": [],
-          "all": [],
-          "none": [
-            {
-              "id": "aria-prohibited-attr",
-              "data": {
-                "role": null,
-                "nodeName": "div",
-                "messageKey": "noRoleSingular",
-                "prohibited": [
-                  "aria-label"
-                ]
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "aria-label attribute is not well supported on a div with no valid role attribute."
-            }
-          ],
-          "impact": "serious",
-          "html": "<div class=\"diss-learning-check__phases\" aria-label=\"Learning cycle progress\">",
-          "target": [
-            ".diss-learning-check__phases"
-          ],
-          "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
-        }
-      ]
-    },
     {
       "id": "color-contrast",
       "impact": "serious",
@@ -2033,7 +2859,7 @@
           "all": [],
           "none": [],
           "impact": "serious",
-          "html": "<h3 id=\"diss-learning-check-title\">Demonstrate your plan</h3>",
+          "html": "<h3 id=\"diss-learning-check-title\" tabindex=\"-1\" aria-describedby=\"diss-learning-check-prompt\">Demonstrate your plan</h3>",
           "target": [
             "#diss-learning-check-title"
           ],
@@ -2065,9 +2891,9 @@
           "all": [],
           "none": [],
           "impact": "serious",
-          "html": "<p class=\"diss-learning-check__prompt\">Use Probe to inspect ventral landmarks and confirm symmetry. Perform the action on the specimen, then explain the result.</p>",
+          "html": "<p id=\"diss-learning-check-prompt\" class=\"diss-learning-check__prompt\">Use Probe to inspect ventral landmarks and confirm symmetry. Perform the action on the specimen, then explain the result.</p>",
           "target": [
-            ".diss-learning-check__prompt"
+            "#diss-learning-check-prompt"
           ],
           "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
         },

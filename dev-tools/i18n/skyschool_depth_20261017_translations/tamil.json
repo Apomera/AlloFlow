@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "தற்போதைய பறக்கும் நிலையைப் பேணவும்",
+  "stem.flightsim.flight_assistance_targets": "திசை {hdg}° · உயரம் {alt} ft MSL · வேகம் {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "திசை {hdg}° · உயரம் {alt} ft MSL · முன்னோக்கிச் செல்லும் வேகம் {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} நோக்கி இடதுபுறம் {degrees}° திரும்பவும்.",
+  "stem.flightsim.challenge_turn_right": "{airport} நோக்கி வலதுபுறம் {degrees}° திரும்பவும்.",
+  "stem.flightsim.challenge_course_aligned": "{airport} நோக்கிப் பறக்கிறீர்கள். பாதைக் குறியீட்டைப் பின்பற்றவும்.",
+  "stem.flightsim.challenge_runway_reference": "பயிற்சி ஓடுபாதை {runway}: திசை {heading}°. தரையிறங்க உயரத்தைக் குறைக்கும் முன், விமானத்தை ஓடுபாதையுடன் நேராகச் சீரமைக்கவும்."
+}

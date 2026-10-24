@@ -124,7 +124,8 @@ describe('legacy resource response integration',()=>{
   act(()=>host.querySelector('[data-help-key="notes_feedback_button"]').click());
   await change(host.querySelectorAll('textarea')[1],'New draft while pending');
   await act(async()=>finish(JSON.stringify({strength:'Feedback on old draft',growthNudge:'Old nudge'})));
-  expect(get().responses.n.studio.feedback).toBeNull();expect(host.textContent).not.toContain('Feedback on old draft');
+  // No feedback recorded: the learner response omits the key (or holds null) once the stale reply is dropped.
+  expect(get().responses.n.studio.feedback ?? null).toBeNull();expect(host.textContent).not.toContain('Feedback on old draft');
  });
  it('discards a backup read that completes after a profile switch on the same resource',async()=>{
   let finish;const save=vi.fn(),r=chart();function View(){return null;}

@@ -7,12 +7,53 @@
 //    engine's state bag.
 //  - ui_modals: `targetAppId || appId` fell through to a host-only binding.
 import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { loadAlloModule } from './setup.js';
 
 const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf8').replace(/\r\n/g, '\n');
+
+describe('the free-variable gate recognizes browser geometry without hiding typos', () => {
+  const validSource = 'function transformPointer(matrix) { return new DOMPoint(1, 2).matrixTransform(matrix); }\n';
+  function checkFixture(name, contents, inspect) {
+    const root = process.cwd(), tempRoot = resolve(root, 'tmp');
+    mkdirSync(tempRoot, { recursive: true });
+    const directory = mkdtempSync(join(tempRoot, 'free-vars-dompoint-'));
+    const file = join(directory, name);
+    try {
+      writeFileSync(file, contents, 'utf8');
+      const result = spawnSync(process.execPath, ['dev-tools/check_free_vars.cjs', file], {
+        cwd: root, encoding: 'utf8', timeout: 4000, windowsHide: true,
+      });
+      expect(result.error).toBeUndefined();
+      inspect(result, file);
+    } finally {
+      // Delete only this owned fixture, then its empty unique directory.
+      if (existsSync(file)) unlinkSync(file);
+      rmdirSync(directory);
+    }
+  }
+
+  it('accepts an actual DOMPoint matrix transform without an injection baseline', () => {
+    checkFixture('dompoint-valid.js', validSource, (result, file) => {
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain(file + ': no NEW free variables (0 baselined injection-contract names)');
+      expect(result.stdout).toContain('check_free_vars: all clean');
+      expect(result.stderr).toBe('');
+    });
+  });
+
+  it('rejects DOMPiont in a file that also uses the real DOMPoint global', () => {
+    checkFixture('dompoint-typo.js', validSource + 'function brokenPointer(matrix) { return new DOMPiont(1, 2).matrixTransform(matrix); }\n', (result, file) => {
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(file + ': 1 NEW undeclared identifier(s)');
+      expect(result.stderr).toMatch(/DOMPiont\s+\(×1\)/);
+      expect(result.stderr).not.toMatch(/\bDOMPoint\s+\(×/);
+      expect(result.stdout).not.toContain('check_free_vars: all clean');
+    });
+  });
+});
 
 describe('view_renderers aliases the single-letter X icon', () => {
   it('the built module declares X and the scanner accepts one-letter icon names', () => {

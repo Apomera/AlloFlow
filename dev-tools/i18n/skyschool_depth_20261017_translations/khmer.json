@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "រក្សាស្ថានភាពហោះហើរបច្ចុប្បន្ន",
+  "stem.flightsim.flight_assistance_targets": "ទិសដៅ {hdg}° · រយៈកម្ពស់ {alt} ft MSL · ល្បឿន {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ទិសដៅ {hdg}° · រយៈកម្ពស់ {alt} ft MSL · ល្បឿនទៅមុខ {spd} kt",
+  "stem.flightsim.challenge_turn_left": "បត់ឆ្វេង {degrees}° ឆ្ពោះទៅ {airport}។",
+  "stem.flightsim.challenge_turn_right": "បត់ស្តាំ {degrees}° ឆ្ពោះទៅ {airport}។",
+  "stem.flightsim.challenge_course_aligned": "កំពុងឆ្ពោះទៅ {airport}។ សូមធ្វើតាមសញ្ញាសម្គាល់ផ្លូវហោះហើរ។",
+  "stem.flightsim.challenge_runway_reference": "ផ្លូវរត់ហ្វឹកហាត់ {runway}៖ ទិសដៅ {heading}°។ តម្រង់យន្តហោះឱ្យស្របនឹងផ្លូវរត់ មុនពេលចុះកម្ពស់ដើម្បីចុះចត។"
+}

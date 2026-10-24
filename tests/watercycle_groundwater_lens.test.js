@@ -12,7 +12,7 @@ const BASELINE_SHA = 'ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20
 // Earlier Journey diagram enhancements are frozen in the accepted prior runtime.
 // Only these four exact drawing anchors use that reference; all others keep the original.
 const REVIEWED_DIAGRAM_PATH = 'reports/watercycle-land-cutaway/candidate-runtime.js';
-const REVIEWED_DIAGRAM_SHA = '3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875';
+const REVIEWED_DIAGRAM_SHA = '2a811d710d850db54543dc95301000fb24a3b1046568f1c517f2860f0a513ef7';
 const REVIEWED_DIAGRAM_ANCHORS = ['canvasRef', 'drawFlowChevrons2d', 'drawMatterEnergyEvidence2d', 'drawPhysicalTimeGlyph2d'];
 const PRESERVED = [
   'WCExploreNotebook', 'WCJourneyChapters', 'WCCheckInvestigation', 'WCProcessCompare',
@@ -397,7 +397,9 @@ function renderer(source, overrides = {}) {
   const context = { d: initial, isDark: false, isContrast: false, WC_GROUNDWATER_LENS_STYLE: '',
     React: { createElement(type, props, ...children) { return { type, props: props || {}, children }; } },
     upd(key, value) { writes.push(key); context.d = { ...context.d, [key]: value }; },
-    focusWcComparisonTarget(id) { focus.push(id); } };
+    focusWcComparisonTarget(id) { focus.push(id); },
+    // The shipped renderer reads copy through the tool's __alloT(key, fallback) wrapper.
+    __alloT: (_key, fallback) => fallback };
   const api = runInNewContext(Object.entries(initializers).map(([name, value]) => 'var ' + name + ' = ' + value + ';').join('\n') + '\n' + functions.renderWcGroundwaterLens + '\n({render:renderWcGroundwaterLens,check:WCCheckInvestigation});', context, { filename: source.path + ':groundwater-renderer', timeout: 30000 });
   function elements(scope) {
     const nodes = [];
@@ -478,7 +480,8 @@ describe('Water Cycle groundwater lens: independent simulation preservation', ()
     expect(sha(sources[0].bytes)).toBe(sha(sources[1].bytes));
   });
   it('preserves complete model, routes, physical-time traces and engines with exact reviewed 2D drawing anchors', () => {
-    expect(sha(reviewedDiagramBytes)).toBe(REVIEWED_DIAGRAM_SHA);
+    // Hash the committed (LF) text: the old raw-byte pin matched only a CRLF-mixed Windows working copy, so CI failed it.
+    expect(sha(reviewedDiagramBytes.toString('utf8').replace(/\r\n/g, '\n'))).toBe(REVIEWED_DIAGRAM_SHA);
     const original = productionNodes(baselineBytes.toString('utf8'));
     const reviewed = productionNodes(reviewedDiagramBytes.toString('utf8'));
     function rawDrawingAnchors(text) {

@@ -106,6 +106,9 @@ function entryFromPack(repoRoot, published) {
     if (published[key] !== undefined && published[key] !== null) derived[key] = published[key];
   }
   derived.tags = reconcileCapabilityTags(pack, derived.tags);
+  // Share aliases are independent of catalog ids: old ?lesson= links stay valid.
+  derived.share_slug = derived.share_slug || derived.slug.toLowerCase().replace(/_/g, '-');
+  if (!/^[a-z0-9][a-z0-9-]{0,127}$/.test(derived.share_slug)) throw new Error('Invalid share alias for ' + rel);
   return derived;
 }
 

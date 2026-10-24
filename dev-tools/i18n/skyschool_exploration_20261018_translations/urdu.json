@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "تلاش کے نتائج: {topics} موضوعات میں {cards} کارڈ۔",
+  "stem.flightsim.learn_library_counts": "{cards} کارڈ · {topics} موضوعات",
+  "stem.flightsim.learn_search_clear": "تلاش صاف کریں",
+  "stem.flightsim.learn_search_empty": "“{query}” سے مطابقت رکھنے والا کوئی تعلیمی کارڈ نہیں ملا۔ کوئی اور لفظ آزمائیں یا تلاش صاف کریں۔",
+  "stem.flightsim.learn_search_none": "کوئی مماثل تعلیمی کارڈ نہیں",
+  "stem.flightsim.learn_search_cards": "{count} تعلیمی کارڈ",
+  "stem.flightsim.quiz_review_progress": "{total} میں سے {answered} سوالات کے جواب دیے گئے · {missed} غلط جواب",
+  "stem.flightsim.quiz_review_missed": "غلط جوابات کا جائزہ لیں",
+  "stem.flightsim.quiz_next_unanswered": "اگلا بے جواب سوال",
+  "stem.flightsim.quiz_review_all_answered": "ہر سوال کا پہلا جواب موجود ہے۔ بغیر نمبر کی مشق کے لیے غلط جواب والے سوالات کا جائزہ لیں، یا نئی کوشش شروع کریں۔",
+  "stem.flightsim.planner_drone_agl": "زمین سے {ft} فٹ اونچائی پر",
+  "stem.flightsim.sprint_native_title": "جغرافیے کا تیز رفتار مقابلہ",
+  "stem.flightsim.sprint_timed_hint": "آپ کے جواب دیتے وقت راستہ آگے بڑھتا رہتا ہے۔ پڑھنے کے لیے وقفہ کریں؛ جواب منتخب کرنے سے پہلے دوبارہ جاری کریں۔",
+  "stem.flightsim.sprint_warp_reference": "جغرافیے کی اس سرگرمی کے لیے سفر تیز کیا گیا ہے۔ رفتار کی پیمائشیں بتائی گئی کروز رفتار دکھاتی ہیں؛ یہ راستہ طیارے کی کارکردگی نہیں ناپتا۔",
+  "stem.flightsim.sprint_save_menu": "مقابلہ محفوظ کریں اور مینو پر واپس جائیں",
+  "stem.flightsim.sprint_next_stop": "اگلا پڑاؤ: {place}",
+  "stem.flightsim.geoq_approaching_city": "آپ کس شہر کے قریب پہنچ رہے ہیں؟",
+  "stem.flightsim.sprint_time_remaining": "باقی وقت: {seconds} سیکنڈ"
+}

@@ -244,10 +244,15 @@ export function installThreeStub() {
     Vector3: function (x, y, z) { return vec(x, y, z); },
     Color: function (input) { return colorLike(input); },
     BufferAttribute: function (array, itemSize) {
-      return { __kind: 'BufferAttribute', array, itemSize, needsUpdate: false };
+      return { __kind: 'BufferAttribute', array, itemSize, count: array.length / itemSize, needsUpdate: false };
     },
     BufferGeometry: function () { return geometry('BufferGeometry'); },
-    RingGeometry: function () { return geometry('RingGeometry'); },
+    RingGeometry: function (innerRadius, outerRadius, thetaSegments = 8, phiSegments = 1) {
+      const ring = geometry('RingGeometry');
+      const count = (Math.max(3, thetaSegments) + 1) * (Math.max(1, phiSegments) + 1);
+      ring.setAttribute('position', { array: new Float32Array(count * 3), itemSize: 3, count });
+      return ring;
+    },
     SphereGeometry: function () { return geometry('SphereGeometry'); },
     TorusGeometry: function () { return geometry('TorusGeometry'); },
     ConeGeometry: function () { return geometry('ConeGeometry'); },
@@ -318,10 +323,17 @@ export function installLoopStubs() {
   const prevRAF = window.requestAnimationFrame;
   const prevCAF = window.cancelAnimationFrame;
 
-  const intersectionObservers = [];
+  const intersectionObservers = [], resizeObservers = [];
 
   window.ResizeObserver = function (cb) {
-    return { __cb: cb, observe() {}, unobserve() {}, disconnect() {} };
+    const ro = {
+      __cb: cb, __targets: new Set(), __disconnected: false,
+      observe(el) { ro.__disconnected = false; ro.__targets.add(el); },
+      unobserve(el) { ro.__targets.delete(el); },
+      disconnect() { ro.__disconnected = true; ro.__targets.clear(); },
+    };
+    resizeObservers.push(ro);
+    return ro;
   };
   window.IntersectionObserver = function (cb) {
     const io = {
@@ -366,6 +378,14 @@ export function installLoopStubs() {
   };
   /** Every IntersectionObserver created since install, newest last. */
   api.intersectionObservers = intersectionObservers;
+  /** Notifies every active resize observer, or only those watching `el`. */
+  api.resize = function resize(el) {
+    resizeObservers.filter(ro => !ro.__disconnected && ro.__targets.size && (!el || ro.__targets.has(el))).forEach(ro => {
+      const targets = el ? [el] : Array.from(ro.__targets);
+      ro.__cb(targets.map(target => ({ target, contentRect: target.getBoundingClientRect() })), ro);
+    });
+  };
+  api.resizeObservers = resizeObservers;
   /** Drives the observer watching `el` to the given intersecting state. */
   api.setIntersecting = function setIntersecting(el, isIntersecting) {
     const io = intersectionObservers.filter((o) => o.__targets.includes(el)).pop();

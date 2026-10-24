@@ -63,10 +63,10 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     expect(init).toMatch(/mission\.id === 'thermalKettle' \? 650/);
     expect(init).toMatch(/raptor\.y\s*>\s*missionCeiling/);
   });
-  // Two full renders of a 3.26 MB tool. Alone it takes ~2.4 s; sharing a worker pool
-  // with the other three raptor files it can pass 5 s on CPU contention alone, which
-  // is a scheduling fact about this machine and not a regression in the tool.
-  it('renders both a visible engine state and the ready responsive flight shell', { timeout: 20000 }, () => {
+  // Four full startup renders exercise missing dependencies and the ready shell.
+  // jsdom's CSS parser exceeded 20 s in the serial local run; retain every state
+  // assertion while allowing 60 s for this render-heavy compatibility check.
+  it('renders both a visible engine state and the ready responsive flight shell', { timeout: 60000 }, () => {
     const previousThree = window.THREE;
     const previousFeatherArt = window.AvianFeatherArt;
     const previousWoodland = window.AvianWoodlandBirds;
@@ -118,7 +118,7 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     }
   });
 
-  it('renders talon mechanics as visual ratio meters with explicit kill thresholds', () => {
+  it('renders talon mechanics as a contact-pressure experiment with explicit model limits', () => {
     resetStemLab();
     loadTool(CANONICAL, 'raptorHunt');
     const html = renderTool('raptorHunt', {
@@ -128,13 +128,13 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
         talonVsPrey: { predatorId: 'peregrine', preyId: 'pigeon' },
       },
     });
-    expect(html).toContain('data-raptor-talon-ratios="true"');
-    expect(html).toContain('Mechanics check');
-    expect(html).toContain('role="meter"');
-    expect(html).toContain('Grip force');
-    expect(html).toContain('Talon reach');
-    expect(html).toContain('data-ratio-kind="grip"');
-    expect(html).toContain('data-ratio-kind="reach"');
+    expect(html).toContain('data-raptor-contact-study="true"');
+    expect(html).toContain('Total normal force');
+    expect(html).toContain('Total contact area');
+    expect(html).toContain('2.000 MPa');
+    expect(html).toContain('data-contact-disk="current"');
+    expect(html).toContain('does not predict injuries');
+    expect(html).not.toContain('CLEAN KILL');
   });
 
   it('renders the Vision Lab field balance map with scan and depth cues', () => {
@@ -167,13 +167,16 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     expect(html).toContain('data-raptor-flight-tradeoff-map="true"');
     expect(html).toContain('data-raptor-flight-profile="true"');
     expect(html).toContain('Golden Eagle');
-    expect(html).toContain('SOAR + CLIMB');
-    expect(html).toContain('FAST + GLIDE');
+    expect(html).toContain('data-raptor-wing-atlas="true"');
+    expect(html).toContain('Wing loading (kg/m²) →');
+    expect(html).toContain('Aspect ratio →');
+    expect(html).toContain('Compare with');
+    expect(html).toContain('data-wing-profile="B"');
     expect(html).toContain('data-map-selected="true"');
     expect(html).toContain('Read the map');
   });
 
-  it('renders the Stoop Calculator impact scale with log-spaced reference markers', () => {
+  it('distinguishes terminal reference energy from sampled fall values and impact', () => {
     resetStemLab();
     loadTool(CANONICAL, 'raptorHunt');
     const html = renderTool('raptorHunt', {
@@ -183,29 +186,41 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
       },
     });
     expect(html).toContain('data-raptor-stoop-impact="true"');
-    expect(html).toContain('Impact scale');
-    expect(html).toContain('Where does this dive land?');
+    expect(html).toContain('Ideal terminal-energy scale');
+    expect(html).toContain('An upper limit for this model');
     expect(html).toContain('role="meter"');
-    expect(html).toContain('Current kinetic energy at impact');
+    expect(html).toContain('Kinetic energy at the modeled terminal speed');
     expect(html).toContain('data-impact-marker="baseball"');
     expect(html).toContain('data-impact-marker="peregrine"');
     expect(html).toContain('Log scale');
+    expect(html).toContain('Reference energies for scale, not measured species records');
+    expect(html).toContain('Drag timescale');
+    expect(html).toContain('data-raptor-stoop-inspector="true"');
+    expect(html).toContain('Inspect fall time');
+    expect(html).toContain('data-stoop-chart-cursor="true"');
+    expect(html).toContain('data-window-end="aloft"');
+    expect(html).toContain('This is not an impact speed.');
+    expect(html).not.toContain('joules at impact');
+    expect(html).not.toContain('Terminal velocity is reached in ~5-7 seconds');
   });
 
-  it('renders the Silent Flight mechanism stack as a readable signal path', () => {
+  it('renders the Silent Flight feather studio with scoped scientific evidence', () => {
     resetStemLab();
     loadTool(CANONICAL, 'raptorHunt');
     const html = renderTool('raptorHunt', {
       raptorHunt: { activeSection: 'silent' },
     });
-    expect(html).toContain('data-raptor-silent-stack="true"');
-    expect(html).toContain('Signal path');
-    expect(html).toContain('From airflow to stealth');
+    expect(html).toContain('data-raptor-feather-lab="true"');
+    expect(html).toContain('Inside an owl feather');
+    expect(html).toContain('What has actually been tested?');
     expect(html).toContain('Comb edge');
-    expect(html).toContain('Soft fringe');
+    expect(html).toContain('Vane fringe');
     expect(html).toContain('Velvet surface');
-    expect(html).toContain('Mouse hears less');
-    expect(html).toContain('aria-label="Owl silent-flight mechanism sequence"');
+    expect(html).not.toContain('Mouse hears less');
+    expect(html).not.toContain('16 kHz');
+    expect(html).toContain('aria-label="Silent flight feather studio"');
+    expect(html).toContain('No decibels, flight speeds, or prey-hearing predictions');
+    expect(html).toContain('10.1177/1475472X17706131');
   });
 
   it('tracks a mission outcome from actual flight events instead of leaving the picker cosmetic', () => {
@@ -507,14 +522,15 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(html).toContain('Return to collection');
   });
 
-  it('keeps the Acuity meadow visual free of invalid function children', () => {
+  it('keeps the visual-angle meadow free of invalid function children', () => {
     resetStemLab();
     loadTool(CANONICAL, 'raptorHunt');
     const html = renderTool('raptorHunt', {
       raptorHunt: { activeSection: 'acuity', selectedSpecies: 'peregrine' },
     });
 
-    expect(html).toContain('Vision Acuity Demo');
+    expect(html).toContain('data-raptor-angle-study="true"');
+    expect(html).toContain('How much of the view does a target fill?');
     expect(source()).not.toContain('[80, 180, 280, 360, 440, 520].forEach,');
   });
 
@@ -3040,7 +3056,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('.rh-section-intro{display:grid');
     expect(text).toContain('.rh-section-progress>span');
     expect(text).toContain('.rh-roster-active{display:inline-flex');
-    expect(text).toContain('rh-lab-page-talons');
+    expect(text.includes("'data-raptor-contact-study': 'true'")).toBe(true);
     expect(text).toContain('rh-lab-banner-vision');
     expect(text).toContain('rh-lab-banner-flight');
     expect(text).toContain("'aria-labelledby': 'rh-active-section-title'");
@@ -3554,7 +3570,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
   });
 
   it('keeps the packaged desktop copy byte-identical to the canonical tool source', () => {
-    expect(source(MIRROR)).toBe(source());
+    expect(readFileSync(MIRROR).equals(readFileSync(CANONICAL))).toBe(true);
   }, 30000);
 });
 

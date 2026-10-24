@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Missiewaarnemingen",
+  "stem.flightsim.mission_journal_targets": "Vastgelegde doelen: {captured} van {total}.",
+  "stem.flightsim.mission_journal_complete": "Alle missiedoelen en de landing na terugkeer zijn vastgelegd.",
+  "stem.flightsim.mission_journal_ended": "De missie eindigde voordat al het bewijs voor voltooiing was vastgelegd.",
+  "stem.flightsim.mission_journal_recovery": "Redding van de overlevende vastgelegd: {value}.",
+  "stem.flightsim.mission_journal_return": "Terugkeer en landing op de basis vastgelegd: {value}.",
+  "stem.flightsim.mission_guidance_title": "Missiebegeleiding",
+  "stem.flightsim.mission_route": "{target} · peiling {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Startpunt",
+  "stem.flightsim.mission_read_status": "Missiestatus voorlezen",
+  "stem.flightsim.mission_return_criterion": "Land binnen {distance} nm van {target}, met een grondsnelheid onder {speed} kt en een daalsnelheid onder {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "De doelgegevens van de missie zijn niet beschikbaar. Beëindig deze vlucht en begin een nieuwe missie.",
+  "stem.flightsim.mission_capture_criterion": "Blijf {hold} s binnen {distance} ft, hoger dan {min} en lager dan {max} ft boven de grond, met een grondsnelheid onder {speed} kt."
+}

@@ -411,7 +411,7 @@ function GlossaryImageControls({
       setResults(found);
       setStatus(found.length ? text('glossary.images.symbols_found', '{count} symbols found. Choose an image that fits the definition.').replace('{count}', found.length) : text('glossary.images.no_symbols', 'No symbols found. Try a simpler word.'));
     } catch (_) {
-      if (mountedRef.current && searchRef.current === controller) setError('Mulberry search is unavailable. Check your connection and try again.');
+      if (mountedRef.current && searchRef.current === controller) setError(text('glossary.images.mulberry_unavailable', 'Mulberry search is unavailable. Check your connection and try again.'));
     } finally {
       clearTimeout(timeout);
       if (mountedRef.current && searchRef.current === controller) {
@@ -453,7 +453,7 @@ function GlossaryImageControls({
     try {
       const image = await load(task.signal);
       if (!task.isCurrent()) {
-        if (mountedRef.current && task.isOwner()) setError('The term changed while the image loaded. Please try again.');
+        if (mountedRef.current && task.isOwner()) setError(text('glossary.images.term_changed_loading', 'The term changed while the image loaded. Please try again.'));
         return;
       }
       const creditBand = glossaryCreditBands.get(image) || 0;
@@ -462,7 +462,7 @@ function GlossaryImageControls({
         imageCreditBand: creditBand
       }, typeof extraFor === 'function' ? extraFor(image) : null)));
       if (mountedRef.current) {
-        if (saved) recordReplacement(before, image);else setError('The term changed while the image loaded. Please try again.');
+        if (saved) recordReplacement(before, image);else setError(text('glossary.images.term_changed_loading', 'The term changed while the image loaded. Please try again.'));
       }
     } catch (err) {
       if (mountedRef.current && pendingRef.current === task && (task.isOwner() || timedOut)) setError(timedOut ? text('glossary.images.load_timeout', 'The image took too long to load. Please try again.') : err.message || text('glossary.images.load_failed', 'The image could not be loaded.'));
@@ -487,9 +487,9 @@ function GlossaryImageControls({
     try {
       const image = await onGenerate(index, item.term);
       if (!mountedRef.current || generationRef.current !== token) return;
-      if (typeof image === 'string' && image) recordReplacement(before, image);else setError('The image was not changed. You can try again or choose another source.');
+      if (typeof image === 'string' && image) recordReplacement(before, image);else setError(text('glossary.images.not_changed', 'The image was not changed. You can try again or choose another source.'));
     } catch (_) {
-      if (mountedRef.current && generationRef.current === token) setError('The image could not be generated. Please try again.');
+      if (mountedRef.current && generationRef.current === token) setError(text('glossary.images.generate_failed', 'The image could not be generated. Please try again.'));
     } finally {
       if (generationRef.current === token) {
         generationRef.current = null;
@@ -506,9 +506,9 @@ function GlossaryImageControls({
     if (saved) {
       setUndo(null);
       setError('');
-      setStatus('Previous image restored.');
+      setStatus(text('glossary.images.previous_restored', 'Previous image restored.'));
       setDescription(glossaryCurrentDescription(undo.before));
-    } else setError('The term changed. Reopen the image picker to try again.');
+    } else setError(text('glossary.images.term_changed_reopen', 'The term changed. Reopen the image picker to try again.'));
   }
   function saveDescription() {
     if (!item.image || working || !beginTask) return;
@@ -524,18 +524,18 @@ function GlossaryImageControls({
     if (saved) {
       setError('');
       setStatus(text('glossary.images.description_saved', 'Image description saved.'));
-    } else setError('The image changed. Reopen the image picker before describing it.');
+    } else setError(text('glossary.images.image_changed_reopen', 'The image changed. Reopen the image picker before describing it.'));
   }
   function upload(event) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
     if (!GLOSSARY_IMAGE_TYPES.test(file.type)) {
-      setError('Choose a PNG, JPEG, GIF, WebP, or AVIF image.');
+      setError(text('glossary.images.type_invalid', 'Choose a PNG, JPEG, GIF, WebP, or AVIF image.'));
       return;
     }
     if (!file.size || file.size > 10 * 1024 * 1024) {
-      setError('Choose an image smaller than 10 MB.');
+      setError(text('glossary.images.too_large', 'Choose an image smaller than 10 MB.'));
       return;
     }
     replace(signal => readGlossaryImageFile(file, signal), null);
@@ -709,7 +709,7 @@ function GlossaryImageControls({
     href: "https://creativecommons.org/licenses/by-sa/4.0/",
     target: "_blank",
     rel: "noopener noreferrer"
-  }, "CC BY-SA 4.0"), ". Credit is included in saved images."), /*#__PURE__*/React.createElement("button", {
+  }, "CC BY-SA 4.0"), ". ", text('glossary.images.credit_included', 'Credit is included in saved images.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
     onClick: () => {
@@ -798,6 +798,16 @@ function glossaryAiText(value) {
   return '';
 }
 
+// Use the canonical speech/export adapter when loaded, with a string-safe
+// fallback so the live view can open before the audio service finishes loading.
+function glossaryTranslationText(value) {
+  var normalize = window.AlloModules?.normalizeGlossaryTranslation;
+  if (typeof normalize === 'function') return normalize(value).spoken;
+  var text = input => typeof input === 'string' ? input.trim() : '';
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return text(value);
+  return text(value.text) || text(value.translation) || [text(value.term) || text(value.word), text(value.def) || text(value.definition) || text(value.meaning)].filter(Boolean).join(': ');
+}
+
 // Keep caught launch failures inspectable without attaching the lesson or audio.
 // This also works when a newer glossary view is served to an older app shell.
 function glossaryWordPracticeDiagnostic(error, wordCount, startedAt) {
@@ -867,6 +877,13 @@ var _lazyIcon = function (name) {
     return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
 };
+
+// These helpers sit outside the component and get only `t`: a key it does not
+// know (or echoes back) falls back to the English written here.
+function dictText(t, key, fallback) {
+  var value = typeof t === 'function' ? t(key) : '';
+  return value && value !== key ? value : fallback;
+}
 
 // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
 // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
@@ -966,7 +983,7 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
   }), React.createElement('span', null, isAudioPlaying ? t('glossary.popups.playing') || 'Playing...' : t('glossary.popups.real_audio') || 'Recording')));
   body.push(React.createElement('details', {
     key: 'src',
-    className: 'pt-2 mt-2 border-t border-blue-300/40 text-[11px] leading-snug text-blue-50',
+    className: 'pt-2 mt-2 border-t border-blue-300/40 text-[0.6875rem] leading-snug text-blue-50',
     onClick: stopCardControlEvent,
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent
@@ -974,7 +991,7 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
     className: 'cursor-pointer font-bold text-blue-50 select-none'
   }, t('common.resource')), React.createElement('p', {
     className: 'mt-1'
-  }, 'Verified dictionary data from ' + sourceLabel + ', sense-matched against the lesson definition when possible and cached for offline reuse.'), sourceUrl ? React.createElement('a', {
+  }, dictText(t, 'glossary.verified_dictionary_note', 'Verified dictionary data from {source}, sense-matched against the lesson definition when possible and cached for offline reuse.').split('{source}').join(sourceLabel)), sourceUrl ? React.createElement('a', {
     href: sourceUrl,
     target: '_blank',
     rel: 'noopener noreferrer',
@@ -994,7 +1011,7 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
     onKeyDown: stopCardControlEvent
   }, React.createElement('summary', {
     className: 'text-xs font-bold text-white uppercase cursor-pointer select-none tracking-wide'
-  }, 'Verified dictionary'), React.createElement('div', {
+  }, dictText(t, 'glossary.verified_dictionary', 'Verified dictionary')), React.createElement('div', {
     className: 'mt-2 space-y-1.5'
   }, body));
 }
@@ -1063,6 +1080,75 @@ function ensureGlossaryHoverStyles() {
   } catch (_e) {/* no document */}
 }
 ensureGlossaryHoverStyles();
+
+// A translation remembers the English it came from (item.translationSource[lang]);
+// a different fingerprint now means the term or definition changed since. The
+// host records it with this same function (GlossaryView.translationFingerprint, below).
+function glossaryTranslationFingerprint(item) {
+  var text = String(item && item.term || '').trim() + '\n' + String(item && item.def || '').trim();
+  var h = 0x811c9dc5;
+  for (var i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return 'fp-' + text.length.toString(36) + '-' + h.toString(36);
+}
+
+// One Tab stop per word row: its buttons share a roving tabindex, and the
+// arrow keys, Home and End move between the ones showing. Text fields and
+// the image picker dialog keep their own Tab order.
+function glossaryRowControls(row) {
+  return Array.prototype.filter.call(row.querySelectorAll('button, summary'), function (el) {
+    return !el.closest('dialog, [role="dialog"]');
+  });
+}
+function glossaryRowItemShown(el, row) {
+  if (el.disabled || el.closest('[hidden]')) return false;
+  for (var node = el; node && node !== row; node = node.parentElement) {
+    if (node.style && node.style.display === 'none') return false;
+    if (node.tagName === 'DETAILS' && !node.open && !(el.tagName === 'SUMMARY' && el.parentElement === node)) return false;
+  }
+  return true;
+}
+function syncGlossaryRowTabStop(row, memory) {
+  var controls = glossaryRowControls(row);
+  var items = controls.filter(function (el) {
+    return glossaryRowItemShown(el, row);
+  });
+  var active = memory.get(row.getAttribute('data-glossary-entry-key'));
+  if (items.indexOf(active) < 0) active = items[0] || null;
+  controls.forEach(function (el) {
+    var value = el === active ? '0' : '-1';
+    if (el.getAttribute('tabindex') !== value) el.setAttribute('tabindex', value);
+  });
+  return items;
+}
+// "Aa" reading settings (font, size, spacing) for full-screen glossary activities.
+// Rendered only once the host publishes them; the panel opens inside the opener's dialog.
+function GlossaryReadingSettingsButton(props) {
+  var handleRef = React.useRef(null);
+  React.useEffect(function () {
+    return function () {
+      if (handleRef.current) handleRef.current.close(false);
+    };
+  }, []);
+  var lib = window.AlloModules && window.AlloModules.UIFontLibrary;
+  if (!lib || typeof lib.readingSettingsAvailable !== 'function' || !lib.readingSettingsAvailable()) return null;
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-haspopup": "dialog",
+    "aria-label": props.label,
+    title: props.label,
+    "data-reading-settings-button": "true",
+    onClick: function (e) {
+      handleRef.current = lib.openReadingSettings({
+        opener: e.currentTarget,
+        t: props.t
+      });
+    },
+    className: 'min-h-11 min-w-11 inline-flex items-center justify-center rounded-full font-bold leading-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 ' + (props.className || '')
+  }, "Aa");
+}
 function GlossaryView(props) {
   // Pure data + state reads
   var t = props.t;
@@ -1076,7 +1162,7 @@ function GlossaryView(props) {
     var translations = item && item.translations;
     if (!translations || typeof translations !== 'object' || Array.isArray(translations)) return;
     Object.keys(translations).forEach(function (lang) {
-      if (lang && String(translations[lang] || '').trim() && glossaryLanguages.indexOf(lang) < 0) glossaryLanguages.push(lang);
+      if (lang && glossaryTranslationText(translations[lang]) && glossaryLanguages.indexOf(lang) < 0) glossaryLanguages.push(lang);
     });
   });
   var leveledTextLanguage = props.leveledTextLanguage;
@@ -1137,8 +1223,6 @@ function GlossaryView(props) {
   var glossaryHealthCheck = props.glossaryHealthCheck;
   var isRunningHealthCheck = props.isRunningHealthCheck;
   var showHealthCheckPanel = props.showHealthCheckPanel;
-  var screenerSession = props.screenerSession;
-  var rosterQueue = props.rosterQueue;
   // Game state
   var gameMode = props.gameMode;
   var gameData = props.gameData;
@@ -1225,11 +1309,6 @@ function GlossaryView(props) {
   var fetchReplacementSuggestion = props.fetchReplacementSuggestion;
   var toggleLetterSelection = props.toggleLetterSelection;
   // Screener helpers
-  var classifyScreeningRisk = props.classifyScreeningRisk;
-  var advanceRoster = props.advanceRoster;
-  var setScreenerSession = props.setScreenerSession;
-  var setRosterQueue = props.setRosterQueue;
-  var exportScreeningCSV = props.exportScreeningCSV;
   var handleGameScoreUpdate = props.handleGameScoreUpdate;
   var handleGameCompletion = props.handleGameCompletion;
   var handleScoreUpdate = props.handleScoreUpdate;
@@ -1348,6 +1427,7 @@ function GlossaryView(props) {
         selectedVoice: selectedVoice,
         ttsSpeed: voiceSpeed,
         t: t,
+        currentUiLanguage: currentUiLanguage,
         signal: controller.signal
       });
       if (!controller.signal.aborted) {
@@ -1366,7 +1446,7 @@ function GlossaryView(props) {
         if (!diagnostic.launcherAvailable) notice = activityText('glossary.practice_launcher_unavailable', 'Presentation tools are unavailable in this app version. Save your work, then reload or update AlloFlow.');else if (diagnostic.error.code === 'allo-lazy-module-failed') notice = activityText('glossary.practice_load_failed', 'Presentation tools could not load. Check your connection, then try Present & Export again.');else if (diagnostic.error.code === 'allo-lazy-module-timeout') notice = activityText('glossary.practice_load_timeout', 'Presentation tools took too long to load. Check your connection, then try Present & Export again.');
         // Match only the presenter's known validation messages, including older
         // cached versions. Arbitrary exceptions stay in the diagnostic details.
-        else if (/^Use up to 200 (different )?words in one practice set\.$/.test(diagnostic.error.message)) notice = activityText('glossary.practice_word_limit', 'Use up to 200 different words in one practice set. Choose Current filtered words or split the glossary into smaller lists, then retry.');else if (diagnostic.error.message === 'Each word or short phrase must be 120 characters or fewer.') notice = activityText('glossary.practice_term_limit', 'Each word or short phrase must be 120 characters or fewer. Shorten the long terms in Edit, then retry.');else if (diagnostic.error.message === 'This practice set has too much audio. Split it into smaller word lists.') notice = activityText('glossary.practice_audio_limit', 'This practice set has too much audio. Split it into smaller word lists, or choose Current filtered words, then retry.');
+        else if (/^Use up to 200 (different )?words in one practice set\.$/.test(diagnostic.error.message)) notice = activityText('glossary.practice_word_limit', 'Use up to 200 different words in one practice set. Choose Current filtered words or split the glossary into smaller lists, then retry.');else if (diagnostic.error.message === 'Each word or short phrase must be 120 characters or fewer.') notice = activityText('glossary.practice_term_limit', 'Each word or short phrase must be 120 characters or fewer. Shorten the long terms in Edit, then retry.');else if (/^The (definition|example|translation|sentence prompt) for .+ must be 12,000 characters or fewer\./.test(diagnostic.error.message)) notice = activityText('glossary.practice_text_limit', 'A definition, example, translation, or sentence prompt is too long. Use up to 12,000 characters per field, then retry.');else if (/^This practice set has too much instructional text\./.test(diagnostic.error.message)) notice = activityText('glossary.practice_text_total_limit', 'This set has too much instructional text. Split it into smaller word lists, then retry.');else if (diagnostic.error.message === 'This practice set has too much audio. Split it into smaller word lists.') notice = activityText('glossary.practice_audio_limit', 'This practice set has too much audio. Split it into smaller word lists, or choose Current filtered words, then retry.');
         wordPracticeDiagnosticRef.current = diagnostic;
         setWordPracticeStatus({
           busy: false,
@@ -1697,7 +1777,6 @@ function GlossaryView(props) {
   var flashcardCloseRef = React.useRef(null);
   var phonicsDialogRef = React.useRef(null);
   var phonicsCloseRef = React.useRef(null);
-  var screenerDialogRef = React.useRef(null);
   React.useEffect(function () {
     glossaryMountedRef.current = true;
     setFlashcardReviewState({});
@@ -1803,23 +1882,6 @@ function GlossaryView(props) {
       if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!phonicsData, activeView]);
-  function closeScreenerResults(e) {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    setScreenerSession(null);
-    setRosterQueue([]);
-  }
-  React.useEffect(function () {
-    if (!screenerSession || screenerSession.status !== 'complete') return undefined;
-    var previouslyFocused = document.activeElement;
-    var timer = setTimeout(function () {
-      var firstAction = screenerDialogRef.current && screenerDialogRef.current.querySelector('button:not([disabled])');
-      if (firstAction) firstAction.focus();
-    }, 0);
-    return function () {
-      clearTimeout(timer);
-      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
-    };
-  }, [screenerSession && screenerSession.status]);
   var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
   // Keep a small, local stack of reversible mutations. Receipts restore only
   // the deleted part of the resource, never an old copy of the whole glossary.
@@ -1948,6 +2010,210 @@ function GlossaryView(props) {
       "aria-hidden": "true"
     })))));
   }
+  // Word rows: Tab stops, translation status and retry, and reordering.
+  // Their messages share the undo status region above.
+  var glossaryRowFocusRef = React.useRef(new Map());
+  var glossaryMoveFocusRef = React.useRef(null);
+  var glossaryRetryPendingRef = React.useRef(new Set());
+  var [glossaryRetryState, setGlossaryRetryState] = React.useState({});
+  React.useEffect(function () {
+    glossaryRowFocusRef.current = new Map();
+    glossaryMoveFocusRef.current = null;
+    glossaryRetryPendingRef.current = new Set();
+    setGlossaryRetryState(function (previous) {
+      return Object.keys(previous).length ? {} : previous;
+    });
+  }, [glossaryResourceKey]);
+  React.useLayoutEffect(function () {
+    var list = glossaryWordListRef.current;
+    if (!list) return;
+    var memory = glossaryRowFocusRef.current;
+    var rows = Array.prototype.slice.call(list.querySelectorAll('tr[data-glossary-entry-key]'));
+    rows.forEach(function (row) {
+      syncGlossaryRowTabStop(row, memory);
+    });
+    var pending = glossaryMoveFocusRef.current;
+    if (!pending) return;
+    var row = rows.find(function (node) {
+      return node.getAttribute('data-glossary-entry-key') === pending.entryKey;
+    });
+    var button = row && row.querySelector('[data-glossary-move="' + pending.which + '"]');
+    if (!button) {
+      if (++pending.tries > 2) glossaryMoveFocusRef.current = null;
+      return;
+    }
+    glossaryMoveFocusRef.current = null;
+    memory.set(pending.entryKey, button);
+    syncGlossaryRowTabStop(row, memory);
+    button.focus();
+  });
+  function handleGlossaryRowFocus(event) {
+    var row = event.currentTarget,
+      target = event.target;
+    if (!target || target.closest('dialog, [role="dialog"]') || glossaryRowControls(row).indexOf(target) < 0 || !glossaryRowItemShown(target, row)) return;
+    glossaryRowFocusRef.current.set(row.getAttribute('data-glossary-entry-key'), target);
+    syncGlossaryRowTabStop(row, glossaryRowFocusRef.current);
+  }
+  function handleGlossaryRowKeyDown(event) {
+    var key = event.key;
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End' || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    var row = event.currentTarget,
+      target = event.target;
+    if (!target || target.closest('dialog, [role="dialog"]')) return;
+    var items = glossaryRowControls(row).filter(function (el) {
+      return glossaryRowItemShown(el, row);
+    });
+    var at = items.indexOf(target);
+    if (at < 0) return;
+    event.preventDefault();
+    var step = key === 'ArrowRight' ? 1 : -1;
+    var dirHost = target.closest('[dir="rtl"], [dir="ltr"]');
+    if (dirHost && dirHost.getAttribute('dir') === 'rtl') step = -step;
+    var next = items[key === 'Home' ? 0 : key === 'End' ? items.length - 1 : Math.max(0, Math.min(items.length - 1, at + step))];
+    glossaryRowFocusRef.current.set(row.getAttribute('data-glossary-entry-key'), next);
+    syncGlossaryRowTabStop(row, glossaryRowFocusRef.current);
+    next.focus();
+  }
+  // 'missing' (empty or the "not available" placeholder) or 'outdated' (the
+  // English changed after this translation was made); '' otherwise.
+  var glossaryUnavailableText = glossaryText('glossary.translation_unavailable', 'Translation not available');
+  function glossaryTranslationStatus(item, lang) {
+    var value = String(item && item.translations && glossaryTranslationText(item.translations[lang]) || '').trim();
+    if (!value || /^translation not available\.?$/i.test(value) || value === glossaryUnavailableText) return 'missing';
+    var source = item.translationSource && typeof item.translationSource === 'object' ? item.translationSource[lang] : '';
+    return source && source !== glossaryTranslationFingerprint(item) ? 'outdated' : '';
+  }
+  async function retryGlossaryTranslation(item, idx, lang) {
+    var retry = props.handleRetryGlossaryTranslation;
+    var pending = glossaryRetryPendingRef.current;
+    var key = getGlossaryEntryKey(item, idx) + '|' + lang;
+    if (!isTeacherMode || typeof retry !== 'function' || pending.has(key)) return;
+    var owner = glossaryViewSessionRef.current;
+    pending.add(key);
+    setGlossaryRetryState(function (previous) {
+      return {
+        ...previous,
+        [key]: {
+          busy: true,
+          error: ''
+        }
+      };
+    });
+    var result = null;
+    try {
+      result = await retry(idx, lang);
+    } catch (_error) {
+      result = null;
+    }
+    pending.delete(key);
+    if (!isGlossaryViewCurrent(owner) || glossaryRetryPendingRef.current !== pending) return;
+    var params = {
+      term: item.term || '',
+      lang: lang
+    };
+    var reason = result && result.reason;
+    var message = result && result.ok ? glossaryText('glossary.translation_retry_done', 'Translated {term} into {lang}.', params) : reason === 'ai-disabled' ? glossaryText('glossary.translation_retry_ai_off', 'AI translation is turned off. You can type the translation in Edit.') : reason === 'ai-unavailable' ? glossaryText('glossary.translation_retry_unavailable', 'AI translation is not available right now. You can type the translation in Edit.') : reason === 'changed' ? glossaryText('glossary.translation_retry_changed', '{term} changed while it was being translated. Try again.', params) : glossaryText('glossary.translation_retry_failed', 'Could not translate {term} into {lang}. Try again.', params);
+    setGlossaryRetryState(function (previous) {
+      var next = {
+        ...previous
+      };
+      if (result && result.ok) delete next[key];else next[key] = {
+        busy: false,
+        error: message
+      };
+      return next;
+    });
+    setGlossaryUndoAnnouncement(message);
+  }
+  function renderGlossaryTranslationStatus(status, retry) {
+    var busy = !!(retry && retry.busy);
+    return /*#__PURE__*/React.createElement("div", {
+      "data-glossary-translation-status": status,
+      className: "flex flex-col items-center gap-1 not-italic"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: 'rounded-full border px-2 py-0.5 text-[11px] font-bold ' + (status === 'missing' ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-orange-300 bg-orange-50 text-orange-900')
+    }, busy ? glossaryText('glossary.translation_retrying', 'Translating…') : status === 'missing' ? glossaryText('glossary.translation_missing', 'Missing') : glossaryText('glossary.translation_outdated', 'May be out of date')), !busy && retry && retry.error && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-red-700"
+    }, retry.error));
+  }
+  function renderGlossaryRetryButton(item, idx, lang, retry) {
+    var busy = !!(retry && retry.busy);
+    var label = glossaryText('glossary.retry_translation_aria', 'Translate {term} into {lang} again', {
+      term: item.term || '',
+      lang: lang
+    });
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-retry-translation": lang,
+      "aria-label": label,
+      title: label,
+      "aria-disabled": busy ? 'true' : undefined,
+      onClick: () => {
+        if (!busy) retryGlossaryTranslation(item, idx, lang);
+      },
+      className: 'min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (busy ? 'cursor-wait text-indigo-700' : 'text-indigo-700 hover:bg-indigo-50')
+    }, busy ? /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 14,
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(Languages, {
+      size: 14,
+      "aria-hidden": "true"
+    }));
+  }
+  var GLOSSARY_LESSON_ORDER = ['lesson', 'lesson-order', 'lesson_order', 'original', 'default', 'none'];
+  function glossaryReorderBlocked() {
+    var sort = props.glossarySort;
+    var data = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+    return !!String(glossarySearchTerm || '').trim() || !!glossaryFilter && glossaryFilter !== 'all' || !(sort == null || sort === '' || GLOSSARY_LESSON_ORDER.indexOf(String(sort)) >= 0) || !Array.isArray(filteredGlossaryData) || filteredGlossaryData.length !== data.length;
+  }
+  function moveGlossaryRow(item, idx, delta) {
+    var move = props.handleMoveGlossaryItem;
+    var total = Array.isArray(generatedContent?.data) ? generatedContent.data.length : 0;
+    var to = idx + delta;
+    if (!canEditGlossary || typeof move !== 'function' || glossaryReorderBlocked() || to < 0 || to >= total) return;
+    if (move(idx, delta) === false) return;
+    glossaryMoveFocusRef.current = {
+      entryKey: getGlossaryEntryKey({
+        ...item,
+        _originalIdx: to
+      }, to),
+      which: delta < 0 ? 'up' : 'down',
+      tries: 0
+    };
+    setGlossaryUndoAnnouncement(glossaryText('glossary.moved_to_position', '{term} moved to position {n} of {total}.', {
+      term: item.term || '',
+      n: to + 1,
+      total: total
+    }));
+  }
+  function renderGlossaryMoveButton(item, idx, delta) {
+    var total = Array.isArray(generatedContent?.data) ? generatedContent.data.length : 0;
+    var blocked = glossaryReorderBlocked();
+    var unavailable = blocked || idx + delta < 0 || idx + delta >= total;
+    var label = delta < 0 ? glossaryText('glossary.move_up_aria', 'Move {term} up', {
+      term: item.term || ''
+    }) : glossaryText('glossary.move_down_aria', 'Move {term} down', {
+      term: item.term || ''
+    });
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: delta < 0 ? 'up' : 'down',
+      "data-glossary-move": delta < 0 ? 'up' : 'down',
+      "aria-label": label,
+      title: label,
+      "aria-disabled": unavailable ? 'true' : undefined,
+      "aria-describedby": blocked ? 'glossary-reorder-help' : undefined,
+      onClick: () => {
+        if (!unavailable) moveGlossaryRow(item, idx, delta);
+      },
+      className: 'min-h-11 min-w-11 inline-flex items-center justify-center rounded-full text-slate-600 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (unavailable ? 'opacity-50 cursor-not-allowed' : 'hover:text-indigo-700 hover:bg-indigo-50')
+    }, /*#__PURE__*/React.createElement(ArrowDown, {
+      size: 14,
+      "aria-hidden": "true",
+      className: delta < 0 ? 'rotate-180' : ''
+    }));
+  }
   function getGlossaryEntryKey(item, idx) {
     if (item && item.entryId != null && String(item.entryId).trim()) return 'entry:' + String(item.entryId);
     if (item && item.glossaryEntryId != null && String(item.glossaryEntryId).trim()) return 'entry:' + String(item.glossaryEntryId);
@@ -1984,6 +2250,18 @@ function GlossaryView(props) {
     });
     return text;
   }
+  // A word root read aloud or named for a screen reader, as whole translatable
+  // sentences (it was English glue: ", meaning " / "Related words: ").
+  function glossaryRootText(root, meaning, related, joiner) {
+    var parts = [meaning ? glossaryText('glossary.root_meaning', '{root}, meaning {meaning}', {
+      root: root,
+      meaning: meaning
+    }) : root];
+    if (related && related.length) parts.push(glossaryText('glossary.root_related', 'Related words: {words}', {
+      words: related.join(', ')
+    }));
+    return parts.join(joiner);
+  }
   function glossaryAudioActionLabel(contentId, field, term, lang) {
     var stopping = playingContentId === contentId;
     var labels = {
@@ -2008,7 +2286,9 @@ function GlossaryView(props) {
     setFlashcardReviewState({});
     flashcardNavigationRef.current += 1;
     clearTimeout(flashcardMoveTimerRef.current);
-  }, [isInteractiveFlashcards, flashcardMode, flashcardLang, standardDeckLang]);
+    // Not standardDeckLang: adding a support-language line to the Standard
+    // Deck changes nothing being studied, so it must not wipe the ratings.
+  }, [isInteractiveFlashcards, flashcardMode, flashcardLang]);
   React.useEffect(function () {
     if (flashcardDialogRef.current) flashcardDialogRef.current.scrollTop = 0;
   }, [flashcardIndex, isFlashcardFlipped, flashcardSummary]);
@@ -2017,8 +2297,10 @@ function GlossaryView(props) {
   }, [flashcardSummary]);
   var flashcardTermLabel = t('flashcards.front_label_term') || t('glossary.table_term') || '';
   var flashcardDefinitionLabel = t('flashcards.back_label_def') || t('glossary.table_def') || '';
-  var flashcardKnownLabel = t('common.correct') || t('flashcards.correct_msg') || '';
-  var flashcardLearningLabel = t('flashcards.try_again') || t('flashcards.practice_mode') || '';
+  // Self-ratings use the round summary's words: they were "Correct" and
+  // "Try Again!", which the summary then counted as "Known" / "Needs practice".
+  var flashcardKnownLabel = flashcardText('flashcards.known_count', 'Known');
+  var flashcardLearningLabel = flashcardText('flashcards.practice_count', 'Needs practice');
   var audioReviewLabel = glossaryText('common.listen', 'Listen');
   var audioStopLabel = glossaryText('common.stop', 'Stop');
   var audioGenerateLabel = glossaryText('common.generate', 'Generate');
@@ -2027,15 +2309,20 @@ function GlossaryView(props) {
   var glossaryPreparingAudioLabel = glossaryText('glossary.preparing_audio', 'Preparing audio…');
   var glossaryProgressLabel = t('common.progress') || '';
   var glossaryQuizToggleLabel = t('flashcards.tooltip_toggle_quiz') || '';
-  var glossaryNextLabel = t('flashcards.next') || t('common.next_flashcard') || '';
-  var glossarySkipLabel = t('common.skip') || '';
-  var glossaryDoneLabel = t('common.done') || '';
   var audioFieldLabel = function (field, language) {
     return field === 'term' ? flashcardTermLabel : field === 'definition' ? flashcardDefinitionLabel : glossaryText('glossary.audio_translation_field', '{lang} translation', {
       lang: language || ''
     });
   };
-  var flashcardStatusText = currentFlashcardItem ? flashcardTermLabel + ' ' + (flashcardRoundPosition + 1) + ' of ' + flashcardRoundIndices.length + ': ' + (currentFlashcardItem.term || flashcardTermLabel.toLowerCase()) + '. ' + (isFlashcardFlipped ? flashcardDefinitionLabel + ' side.' : flashcardTermLabel + ' side.') + ' ' + (currentFlashcardConfidence === 'known' ? flashcardKnownLabel + '.' : currentFlashcardConfidence === 'learning' ? flashcardLearningLabel + '.' : (t('common.progress') || '') + '.') : '';
+  // One translatable sentence (it was English glue around translated labels).
+  var flashcardStatusText = currentFlashcardItem ? glossaryText('glossary.flashcard_status', '{label} {position} of {total}: {term}. {side} side. {rating}.', {
+    label: flashcardTermLabel,
+    position: flashcardRoundPosition + 1,
+    total: flashcardRoundIndices.length,
+    term: currentFlashcardItem.term || flashcardTermLabel.toLowerCase(),
+    side: isFlashcardFlipped ? flashcardDefinitionLabel : flashcardTermLabel,
+    rating: currentFlashcardConfidence === 'known' ? flashcardKnownLabel : currentFlashcardConfidence === 'learning' ? flashcardLearningLabel : t('common.progress') || ''
+  }) : '';
   React.useEffect(function () {
     if (!isFlashcardEditDrawerOpen) return;
     var timer = setTimeout(function () {
@@ -2101,6 +2388,17 @@ function GlossaryView(props) {
     }));
     var owner = glossaryViewSessionRef.current,
       token = ++flashcardNavigationRef.current;
+    if (option !== answer) {
+      // A miss waits for Next so the student can read the right answer (it
+      // used to say "Try Again!" and move on after 1.5 s). The no-op callback
+      // stops the host's auto-advance; focus goes to Next, as the options lock.
+      handleQuizOptionClick(e, option, function () {});
+      setTimeout(function () {
+        var next = flashcardDialogRef.current && flashcardDialogRef.current.querySelector('[data-help-key="flashcard_next"]');
+        if (next && isGlossaryViewCurrent(owner) && flashcardNavigationRef.current === token) next.focus();
+      }, 0);
+      return;
+    }
     handleQuizOptionClick(e, option, function () {
       if (isGlossaryViewCurrent(owner) && flashcardNavigationRef.current === token) goToNextReviewCard();
     });
@@ -2233,20 +2531,46 @@ function GlossaryView(props) {
   }
   function renderFlashcardProgressDots() {
     if (!flashcardDeck.length) return null;
+    // One Tab stop for the dots (it was one per card: 50 cards, 50 Tabs); the
+    // arrow keys, Home and End move between them. The current card's dot holds
+    // the stop, or the first dot shown when the current card is not in the round.
+    var inRound = function (item, idx) {
+      return !flashcardRoundKeys || flashcardRoundKeys.includes(getFlashcardReviewKey(item, idx));
+    };
+    var tabStopIdx = flashcardDeck[flashcardIndex] && inRound(flashcardDeck[flashcardIndex], flashcardIndex) ? flashcardIndex : flashcardDeck.findIndex(inRound);
+    var onDotsKeyDown = function (e) {
+      var step = {
+        ArrowRight: 1,
+        ArrowDown: 1,
+        ArrowLeft: -1,
+        ArrowUp: -1
+      }[e.key];
+      if (!step && e.key !== 'Home' && e.key !== 'End') return;
+      var dots = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button'));
+      if (!dots.length) return;
+      e.preventDefault();
+      var rtl = (e.currentTarget.closest('[dir]') || document.documentElement).getAttribute('dir') === 'rtl';
+      if (rtl && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) step = -step;
+      var at = dots.indexOf(document.activeElement);
+      var next = e.key === 'Home' ? 0 : e.key === 'End' ? dots.length - 1 : Math.max(0, Math.min(dots.length - 1, (at < 0 ? 0 : at) + step));
+      dots[next].focus();
+    };
     return /*#__PURE__*/React.createElement("div", {
       role: "group",
       className: "mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 pr-1",
-      "aria-label": t('common.progress')
+      "aria-label": t('common.progress'),
+      onKeyDown: onDotsKeyDown
     }, flashcardDeck.map(function (item, idx) {
       var key = getFlashcardReviewKey(item, idx);
       if (flashcardRoundKeys && !flashcardRoundKeys.includes(key)) return null;
       var status = flashcardReviewState[key];
       var isCurrent = idx === flashcardIndex;
-      var statusLabel = status === 'known' ? t('common.correct') || t('flashcards.correct_msg') : status === 'learning' ? t('flashcards.try_again') || t('flashcards.practice_mode') : t('common.progress');
+      var statusLabel = status === 'known' ? flashcardKnownLabel : status === 'learning' ? flashcardLearningLabel : t('common.progress');
       var fillClass = status === 'known' ? 'bg-emerald-400 text-emerald-950' : status === 'learning' ? 'bg-amber-400 text-amber-950' : 'bg-white/35 text-white';
       return /*#__PURE__*/React.createElement("button", {
         key: key + '-' + idx,
         type: "button",
+        tabIndex: idx === tabStopIdx ? 0 : -1,
         onClick: function (e) {
           handleProgressDotClick(idx, e);
         },
@@ -2501,7 +2825,7 @@ function GlossaryView(props) {
     if (!path.length) {
       setWordSearchStart(end);
       setWordSearchPath([wordSearchCellKey(end.r, end.c)]);
-      setWordSearchAnnouncement('Choose an ending letter in the same row or column. A new starting letter is selected.');
+      setWordSearchAnnouncement(glossaryText('glossary.word_search_pick_end', 'Choose an ending letter in the same row or column. A new starting letter is selected.'));
       return;
     }
     var entries = Object.entries(gameData && gameData.wordLocations ? gameData.wordLocations : {});
@@ -2535,9 +2859,11 @@ function GlossaryView(props) {
         isPerfect: true
       });
     } else if (match) {
-      setWordSearchAnnouncement(match[0] + ' was already found.');
+      setWordSearchAnnouncement(glossaryText('glossary.word_search_already_found', '{word} was already found.', {
+        word: match[0]
+      }));
     } else {
-      setWordSearchAnnouncement('That path is not one of the listed words. Try another start and end.');
+      setWordSearchAnnouncement(glossaryText('glossary.word_search_not_a_word', 'That path is not one of the listed words. Try another start and end.'));
       if (typeof playSound === 'function') playSound('incorrect');
     }
     if (wordSearchPathTimerRef.current) clearTimeout(wordSearchPathTimerRef.current);
@@ -2555,7 +2881,10 @@ function GlossaryView(props) {
     if (!wordSearchStart) {
       setWordSearchStart(next);
       setWordSearchPath([wordSearchCellKey(r, c)]);
-      setWordSearchAnnouncement('Starting letter selected at row ' + (r + 1) + ', column ' + (c + 1) + '. Choose the last letter.');
+      setWordSearchAnnouncement(glossaryText('glossary.word_search_start_selected', 'Starting letter selected at row {row}, column {col}. Choose the last letter.', {
+        row: r + 1,
+        col: c + 1
+      }));
       return;
     }
     if (wordSearchStart.r === r && wordSearchStart.c === c) {
@@ -2587,13 +2916,22 @@ function GlossaryView(props) {
     } else return;
     event.preventDefault();
     setWordSearchActive(next);
-    setWordSearchAnnouncement('Row ' + (next.r + 1) + ', column ' + (next.c + 1) + ': ' + gameData.grid[next.r][next.c]);
+    setWordSearchAnnouncement(glossaryText('glossary.word_search_position', 'Row {row}, column {col}: {letter}', {
+      row: next.r + 1,
+      col: next.c + 1,
+      letter: gameData.grid[next.r][next.c]
+    }));
   }
   function handleToggleFlashcardQuizMode() {
-    restartFlashcardRound(false);
+    // Switching between flip and quiz keeps the student's ratings, card and
+    // focus. It used to restart the round: every rating was wiped and focus
+    // jumped to Close, so pressing Enter again closed the deck.
+    flashcardNavigationRef.current += 1;
+    clearTimeout(flashcardMoveTimerRef.current);
+    setFlashcardSummary(false);
+    setQuizSelectedOption(null);
     setIsFlashcardQuizMode(!isFlashcardQuizMode);
     setFlashcardScore(0);
-    setFlashcardIndex(0);
     setIsFlashcardFlipped(false);
     setFlashcardOptions([]);
     setFlashcardFeedback(null);
@@ -2791,7 +3129,7 @@ function GlossaryView(props) {
     return term + ': ' + definition;
   }
   function glossarySpeechText(item, field, text) {
-    return field === 'definition' ? formatGlossaryDefinitionSpeech(item && (item.term || item.word), text) : String(text == null ? '' : text).trim();
+    return field === 'definition' ? formatGlossaryDefinitionSpeech(item && (item.term || item.word), text) : field === 'translation' ? glossaryTranslationText(text) : String(text == null ? '' : text).trim();
   }
   async function handleGlossarySpeak(item, field, spokenText, contentId, language) {
     var text = glossarySpeechText(item, field, spokenText);
@@ -3223,10 +3561,10 @@ function GlossaryView(props) {
         className: "mt-2 rounded-lg border border-slate-200 bg-white p-2"
       }, /*#__PURE__*/React.createElement("summary", {
         className: "min-h-11 cursor-pointer py-2 text-xs font-bold text-indigo-800"
-      }, t('glossary.edit_translation')), /*#__PURE__*/React.createElement("div", {
+      }, glossaryText('glossary.translation_audio', 'Translation audio')), /*#__PURE__*/React.createElement("div", {
         className: "grid gap-2 pt-2 lg:grid-cols-2"
       }, glossaryLanguages.map(function (lang) {
-        var translation = item.translations?.[lang] || '';
+        var translation = glossaryTranslationText(item.translations?.[lang]) || '';
         return /*#__PURE__*/React.createElement("div", {
           key: lang,
           className: "rounded-lg border border-indigo-100 bg-indigo-50/40 p-2"
@@ -3243,25 +3581,42 @@ function GlossaryView(props) {
     var toolButton = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
     var secondaryButton = toolButton + ' bg-white text-slate-700 border-slate-300 hover:border-indigo-300 hover:bg-indigo-50';
     var gameCard = 'grid min-h-[88px] w-full min-w-0 grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-lg border border-slate-300 bg-white p-4 text-start text-sm font-bold leading-5 text-slate-700 break-words transition-colors hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-    // Skip past the study, game and teacher tools straight to the word list.
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    // Sort is a view setting the host applies to filteredGlossaryData; hidden when an older host cannot sort.
+    var setGlossarySort = props.setGlossarySort;
+    var glossarySortValue = ['az', 'za', 'tier'].indexOf(props.glossarySort) >= 0 ? props.glossarySort : 'lesson';
+    // One compact row stays visible in a 500 px frame; practice, games and teacher tools sit behind one disclosure.
+    var glossaryToolbarToolsOpen = !!glossaryToolsOpen.tools;
+    function toggleGlossaryToolbarTools() {
+      setGlossaryToolsOpen(function (current) {
+        return current.tools ? {
+          games: false,
+          teacher: false,
+          tools: false
+        } : Object.assign({}, current, {
+          tools: true
+        });
+      });
+    }
+    // Skip past the study, game and teacher tools straight to the word list. One wrapper, so the
+    // parent's space-y margin does not open a gap above the toolbar.
+    return /*#__PURE__*/React.createElement("div", {
+      "data-glossary-toolbar": true
+    }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-glossary-skip": true,
       onClick: () => document.querySelector('[data-glossary-word-list]')?.focus(),
       className: "sr-only focus:not-sr-only focus:mb-2 focus:inline-block focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:font-bold focus:text-white"
     }, t('glossary.skip_to_words') || 'Skip to the word list'), /*#__PURE__*/React.createElement("section", {
       "aria-label": t('glossary.title'),
-      className: "mb-4 space-y-4 rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm"
+      className: "mb-4 space-y-2 rounded-xl border border-blue-200 bg-blue-50 p-2 shadow-sm sm:p-3"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
-    }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
-      "data-glossary-udl-goal": true,
-      className: "max-w-xl text-sm text-blue-800"
-    }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('glossary.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
-      className: "relative w-full sm:max-w-sm",
+      className: "flex flex-wrap items-center gap-2",
+      "data-glossary-compact-toolbar": true
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "relative min-w-0 flex-[1_1_10rem]",
       "data-help-key": "glossary_search"
     }, /*#__PURE__*/React.createElement(Search, {
-      className: "absolute left-3 top-1/2 -translate-y-1/2 text-blue-700",
+      className: "pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-blue-700",
       size: 16,
       "aria-hidden": "true"
     }), /*#__PURE__*/React.createElement("input", {
@@ -3271,16 +3626,78 @@ function GlossaryView(props) {
       placeholder: t('glossary.search_placeholder'),
       value: glossarySearchTerm,
       onChange: e => setGlossarySearchTerm(e.target.value),
-      className: "min-h-11 w-full rounded-lg border border-blue-400 bg-white py-2 pl-10 pr-11 text-sm focus:ring-2 focus:ring-indigo-500"
+      className: "min-h-11 w-full rounded-lg border border-blue-400 bg-white py-2 ps-10 pe-11 text-sm focus:ring-2 focus:ring-indigo-500"
     }), glossarySearchTerm && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: clearGlossarySearch,
-      className: "absolute right-0 top-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-r-lg text-blue-700 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-indigo-600",
+      className: "absolute end-0 top-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-e-lg text-blue-700 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-indigo-600",
       "aria-label": glossaryText('glossary.clear_search', 'Clear search')
     }, /*#__PURE__*/React.createElement(X, {
       size: 16,
       "aria-hidden": "true"
-    })))), /*#__PURE__*/React.createElement("div", {
+    }))), /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": t('glossary.title'),
+      "aria-describedby": "glossary-tier-help",
+      className: "inline-flex max-w-full flex-wrap rounded-lg border border-blue-200 bg-white p-0.5"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": glossaryFilter === 'all',
+      "aria-label": t('glossary.filter_all'),
+      "data-help-key": "glossary_filter_all",
+      onClick: handleSetGlossaryFilterToAll,
+      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (glossaryFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'text-slate-700 hover:bg-slate-50')
+    }, t('glossary.filter_all')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": glossaryFilter === 'academic',
+      "aria-label": t('glossary.label_tier2'),
+      "data-help-key": "glossary_filter_tier2",
+      onClick: handleSetGlossaryFilterToAcademic,
+      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (glossaryFilter === 'academic' ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-50')
+    }, t('glossary.label_tier2')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": glossaryFilter === 'domain',
+      "aria-label": t('glossary.label_tier3'),
+      "data-help-key": "glossary_filter_tier3",
+      onClick: handleSetGlossaryFilterToDomain,
+      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (glossaryFilter === 'domain' ? 'bg-purple-700 text-white' : 'text-slate-700 hover:bg-slate-50')
+    }, t('glossary.label_tier3'))), typeof setGlossarySort === 'function' && /*#__PURE__*/React.createElement("label", {
+      "data-glossary-sort": true,
+      className: "inline-flex min-h-11 min-w-0 max-w-full flex-[1_1_9rem] items-center gap-2 text-sm font-bold text-blue-900 sm:flex-none"
+    }, glossaryText('glossary.sort_label', 'Sort'), /*#__PURE__*/React.createElement("select", {
+      value: glossarySortValue,
+      onChange: e => setGlossarySort(e.target.value),
+      className: "min-h-11 min-w-0 max-w-full flex-1 rounded-lg border border-blue-300 bg-white px-2 text-sm font-normal text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "lesson"
+    }, glossaryText('glossary.sort_lesson', 'Lesson order')), /*#__PURE__*/React.createElement("option", {
+      value: "az"
+    }, glossaryText('glossary.sort_az', 'A to Z')), /*#__PURE__*/React.createElement("option", {
+      value: "za"
+    }, glossaryText('glossary.sort_za', 'Z to A')), /*#__PURE__*/React.createElement("option", {
+      value: "tier"
+    }, glossaryText('glossary.sort_tier', 'By vocabulary tier')))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-tools-toggle": true,
+      onClick: toggleGlossaryToolbarTools,
+      "aria-expanded": glossaryToolbarToolsOpen,
+      "aria-controls": "glossary-toolbar-tools",
+      className: toolButton + ' shrink-0 bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-50'
+    }, isTeacherMode ? glossaryText('glossary.tools_toggle', 'Tools') : glossaryText('glossary.tools_toggle_student', 'Practice'), " ", /*#__PURE__*/React.createElement(ChevronDown, {
+      size: 16,
+      "aria-hidden": "true",
+      className: 'motion-safe:transition-transform ' + (glossaryToolbarToolsOpen ? 'rotate-180' : '')
+    }))), /*#__PURE__*/React.createElement("div", {
+      id: "glossary-toolbar-tools",
+      hidden: !glossaryToolbarToolsOpen,
+      style: {
+        display: glossaryToolbarToolsOpen ? undefined : 'none'
+      },
+      className: "space-y-3"
+    }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
+      "data-glossary-udl-goal": true,
+      className: "max-w-xl text-sm text-blue-800"
+    }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('glossary.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
       className: "grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]"
     }, /*#__PURE__*/React.createElement("div", {
       role: "group",
@@ -3337,7 +3754,9 @@ function GlossaryView(props) {
     }, activityText('glossary.activities.filtered', 'Current filtered words')))), /*#__PURE__*/React.createElement("p", {
       id: "glossary-presentation-help",
       className: "mt-2 text-xs text-slate-600"
-    }, activityWords.length, " ", activityText('glossary.practice_export_help', 'words: project practice or download HTML and PowerPoint with meanings and optional audio.')), /*#__PURE__*/React.createElement("p", {
+    }, glossaryText('glossary.practice_export_help', '{count} words: project practice or download HTML and PowerPoint with meanings and optional audio.', {
+      count: activityWords.length
+    })), /*#__PURE__*/React.createElement("p", {
       role: "status",
       "aria-live": "polite",
       className: "mt-1 text-sm text-amber-900"
@@ -3410,7 +3829,10 @@ function GlossaryView(props) {
       size: 16,
       "aria-hidden": "true",
       className: glossaryToolsOpen.teacher ? 'rotate-180' : ''
-    })))), glossaryToolsOpen.games && /*#__PURE__*/React.createElement("div", {
+    })))), /*#__PURE__*/React.createElement("p", {
+      id: "glossary-tier-help",
+      className: "text-xs text-blue-800"
+    }, glossaryText('glossary.tier_help', 'Academic vocabulary appears across subjects; subject vocabulary is specific to this topic.'))), glossaryToolsOpen.games && /*#__PURE__*/React.createElement("div", {
       role: "group",
       id: "glossary-games-tools",
       className: "rounded-lg border border-indigo-200 bg-indigo-50/70 p-3",
@@ -3445,7 +3867,9 @@ function GlossaryView(props) {
     }, activityText('glossary.activities.standard_size', 'Standard')), [4, 6, 8].map(size => /*#__PURE__*/React.createElement("option", {
       key: size,
       value: String(size)
-    }, size, " ", activityText('glossary.activities.pairs', 'pairs'))))), glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("label", {
+    }, glossaryText('glossary.activities.pair_count', '{count} pairs', {
+      count: size
+    }))))), glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("label", {
       className: "flex min-w-0 flex-col gap-1 text-sm font-semibold"
     }, activityText('glossary.activities.word_search_language', 'Word Search language'), /*#__PURE__*/React.createElement("select", {
       "aria-label": activityText('glossary.activities.word_search_language', 'Word Search language'),
@@ -3465,7 +3889,9 @@ function GlossaryView(props) {
       id: "glossary-activity-pool",
       role: "status",
       className: "mb-2 text-sm text-slate-700"
-    }, activityWords.length, " ", activityText('glossary.activities.available', 'words available for games.'), " ", activityText('glossary.activities.next_round', 'Changes apply when you start an activity.')), !activityWords.length && /*#__PURE__*/React.createElement("p", {
+    }, glossaryText('glossary.activities.available_count', '{count} words available for games.', {
+      count: activityWords.length
+    }), " ", activityText('glossary.activities.next_round', 'Changes apply when you start an activity.')), !activityWords.length && /*#__PURE__*/React.createElement("p", {
       className: "mb-3 text-sm text-slate-700"
     }, activityText('glossary.activities.empty', 'No words are available in this selection. Choose all glossary words or adjust your search and filters.'), " ", /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -3531,7 +3957,9 @@ function GlossaryView(props) {
     }, t('glossary.memory_game')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-memory-help",
       className: "block text-xs font-normal leading-5 text-slate-600"
-    }, Math.min(activityMemoryCount, activityBoardSize === 'standard' ? 10 : Number(activityBoardSize)), " ", activityText('glossary.activities.memory_help', 'pairs: remember words, pictures, or meanings')))), /*#__PURE__*/React.createElement("button", {
+    }, glossaryText('glossary.activities.memory_help_count', '{count} pairs: remember words, pictures, or meanings', {
+      count: Math.min(activityMemoryCount, activityBoardSize === 'standard' ? 10 : Number(activityBoardSize))
+    })))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.crossword'),
       "data-help-key": "glossary_crossword",
@@ -3569,7 +3997,9 @@ function GlossaryView(props) {
     }, t('glossary.matching')), /*#__PURE__*/React.createElement("span", {
       id: "glossary-activity-matching-help",
       className: "block text-xs font-normal leading-5 text-slate-600"
-    }, Math.min(activityMatchingCount, activityBoardSize === 'standard' ? 8 : Number(activityBoardSize)), " ", activityText('glossary.activities.matching_help', 'pairs: connect words with meanings or pictures')))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    }, glossaryText('glossary.activities.matching_help_count', '{count} pairs: connect words with meanings or pictures', {
+      count: Math.min(activityMatchingCount, activityBoardSize === 'standard' ? 8 : Number(activityBoardSize))
+    })))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('glossary.bingo'),
       "data-help-key": "glossary_bingo",
@@ -3652,7 +4082,18 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Languages, {
       size: 16,
       "aria-hidden": "true"
-    }), " ", t('flashcards.export_language')), /*#__PURE__*/React.createElement("label", {
+    }), " ", t('flashcards.export_language')), typeof props.handleExportGlossaryFile === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-export-word-list": true,
+      "aria-haspopup": "dialog",
+      onClick: e => props.handleExportGlossaryFile('chooser', {
+        opener: e.currentTarget
+      }),
+      className: secondaryButton
+    }, /*#__PURE__*/React.createElement(Download, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", glossaryText('glossary.export_word_list', 'Export word list…')), /*#__PURE__*/React.createElement("label", {
       "data-help-key": "glossary_image_size",
       className: "min-h-11 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
     }, /*#__PURE__*/React.createElement(ImageIcon, {
@@ -3679,7 +4120,7 @@ function GlossaryView(props) {
     }) : /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 16,
       "aria-hidden": "true"
-    }), " ", isRunningHealthCheck ? t('common.processing') : glossaryHealthCheck ? t('common.refresh') : t('common.check')), /*#__PURE__*/React.createElement("label", {
+    }), " ", isRunningHealthCheck ? t('common.processing') : glossaryHealthCheck ? glossaryText('glossary_health.rerun', 'Re-run health check') : glossaryText('glossary_health.run', 'Run health check')), /*#__PURE__*/React.createElement("label", {
       className: "min-h-11 inline-flex min-w-0 max-w-full flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-bold text-violet-900"
     }, /*#__PURE__*/React.createElement("span", null, glossaryText('glossary.audio_scope', 'Audio to prepare')), /*#__PURE__*/React.createElement("select", {
       "aria-label": glossaryText('glossary.audio_scope', 'Audio to prepare'),
@@ -3720,35 +4161,6 @@ function GlossaryView(props) {
       "aria-live": "polite",
       className: "mt-2 text-xs text-slate-600"
     }, glossaryAudioPrep.message)), /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-col gap-2 border-t border-blue-200 pt-3 sm:flex-row sm:items-center sm:justify-between"
-    }, /*#__PURE__*/React.createElement("div", {
-      role: "group",
-      "aria-label": t('glossary.title'),
-      className: "inline-flex w-fit max-w-full flex-wrap rounded-lg border border-blue-200 bg-white p-1"
-    }, /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "aria-pressed": glossaryFilter === 'all',
-      "aria-label": t('glossary.filter_all'),
-      "data-help-key": "glossary_filter_all",
-      onClick: handleSetGlossaryFilterToAll,
-      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'all' ? 'bg-blue-100 text-blue-800' : 'text-slate-700 hover:bg-slate-50')
-    }, t('glossary.filter_all')), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "aria-pressed": glossaryFilter === 'academic',
-      "aria-label": t('glossary.label_tier2'),
-      "data-help-key": "glossary_filter_tier2",
-      onClick: handleSetGlossaryFilterToAcademic,
-      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'academic' ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-50')
-    }, t('glossary.label_tier2')), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "aria-pressed": glossaryFilter === 'domain',
-      "aria-label": t('glossary.label_tier3'),
-      "data-help-key": "glossary_filter_tier3",
-      onClick: handleSetGlossaryFilterToDomain,
-      className: 'min-h-11 rounded-md px-3 py-2 text-sm font-bold ' + (glossaryFilter === 'domain' ? 'bg-purple-700 text-white' : 'text-slate-700 hover:bg-slate-50')
-    }, t('glossary.label_tier3'))), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-blue-800"
-    }, glossaryText('glossary.tier_help', 'Academic vocabulary appears across subjects; subject vocabulary is specific to this topic.'))), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-center justify-between gap-2 print:hidden",
       "data-glossary-search-feedback": true
     }, /*#__PURE__*/React.createElement("p", {
@@ -3778,11 +4190,17 @@ function GlossaryView(props) {
     },
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": t('flashcards.deck_standard') || 'Interactive flashcards',
+    "aria-label": flashcardMode === 'language' ? t('flashcards.deck_language', {
+      lang: flashcardLang || ''
+    }) || 'Interactive flashcards' : t('flashcards.deck_standard') || 'Interactive flashcards',
     tabIndex: -1,
     onKeyDown: e => containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards),
     className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
+    t: t,
+    label: glossaryText('reading_settings.title', 'Reading settings'),
+    className: "absolute top-6 right-20 z-50 w-12 h-12 text-lg text-white/80 hover:text-white bg-white/10 hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-slate-950"
+  }), /*#__PURE__*/React.createElement("button", {
     ref: flashcardCloseRef,
     type: "button",
     onClick: closeInteractiveFlashcards,
@@ -3822,7 +4240,7 @@ function GlossaryView(props) {
     size: 16,
     "aria-hidden": "true"
   }), isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode'))), flashcardMode === 'standard' && glossaryLanguages.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-4 max-w-[calc(100%-6rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
+    className: "absolute top-6 left-4 max-w-[calc(100%-9.5rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
   }, /*#__PURE__*/React.createElement("select", {
     "aria-label": t('flashcards.deck_standard'),
     value: standardDeckLang,
@@ -3834,7 +4252,7 @@ function GlossaryView(props) {
     key: l,
     value: l
   }, "+ ", l)))), flashcardMode === 'language' && glossaryLanguages.length > 1 && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-4 max-w-[calc(100%-6rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
+    className: "absolute top-6 left-4 max-w-[calc(100%-9.5rem)] sm:left-1/2 sm:-translate-x-1/2 z-50"
   }, /*#__PURE__*/React.createElement("select", {
     "aria-label": t('flashcards.deck_language'),
     value: flashcardLang,
@@ -3928,29 +4346,31 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-indigo-600 uppercase mb-1"
   }, standardDeckLang), /*#__PURE__*/React.createElement("h3", {
-    className: "text-3xl md:text-4xl font-bold text-indigo-600"
+    className: "text-3xl md:text-4xl font-bold text-indigo-600",
+    dir: isRtlLang(standardDeckLang) ? 'rtl' : 'ltr'
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-      const term = fullTrans.includes(':') ? fullTrans.split(':')[0].trim() : "";
+      const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "";
+      const term = fullTrans.search(/[:：]/) >= 0 ? fullTrans.split(/[:：]/)[0].trim() : "";
       if (term) handleUncachedGlossarySpeak(term, `fc-front-${standardDeckLang}`);
     },
-    disabled: !((generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").includes(":") && (generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "").split(":")[0].trim()),
+    disabled: !((glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "").search(/[:：]/) >= 0 && (glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "").split(/[:：]/)[0].trim()),
     "aria-label": `${t('common.click_read_aloud')}: ${standardDeckLang}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, (() => {
-    const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-    if (fullTrans.includes(":")) {
-      return fullTrans.split(":")[0].trim();
+    const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "";
+    if (fullTrans.search(/[:：]/) >= 0) {
+      return fullTrans.split(/[:：]/)[0].trim();
     }
     return "";
   })())))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "self-start mb-4 text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Globe, {
-    size: 14
-  }), " English"), showFlashcardImages && generatedContent?.data[flashcardIndex].image && /*#__PURE__*/React.createElement("div", {
+    size: 14,
+    "aria-hidden": "true"
+  }), " ", t('languages.english') || 'English'), showFlashcardImages && generatedContent?.data[flashcardIndex].image && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 w-full flex justify-center"
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
@@ -3996,9 +4416,9 @@ function GlossaryView(props) {
   }, (() => {
     const item = generatedContent?.data[flashcardIndex];
     if (flashcardMode === 'language' && flashcardLang) {
-      const trans = item.translations?.[flashcardLang];
-      if (trans && trans.includes(":")) {
-        return trans.split(":")[0].trim();
+      const trans = glossaryTranslationText(item.translations?.[flashcardLang]);
+      if (trans && trans.search(/[:：]/) >= 0) {
+        return trans.split(/[:：]/)[0].trim();
       }
       return item.term;
     }
@@ -4007,8 +4427,11 @@ function GlossaryView(props) {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
-    className: "text-xs font-bold mb-4 text-white/80 uppercase tracking-widest"
-  }, flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? t('flashcards.try_again') : t('flashcards.select_match')), /*#__PURE__*/React.createElement("div", {
+    "data-flashcard-quiz-feedback": "true",
+    className: 'text-xs font-bold mb-4 text-white/80 tracking-widest' + (flashcardFeedback === 'incorrect' ? ' normal-case text-sm text-white' : ' uppercase')
+  }, flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? glossaryText('glossary.quiz_answer_was', 'Not quite. The answer is: {answer}', {
+    answer: typeof flashcardCorrectAnswer === 'function' ? flashcardCorrectAnswer(generatedContent?.data[flashcardIndex], flashcardMode, flashcardLang) : generatedContent?.data[flashcardIndex]?.def
+  }) : t('flashcards.select_match')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3 w-full  pr-1"
   }, flashcardOptions.map((opt, idx) => {
     const isSelected = quizSelectedOption === opt;
@@ -4035,12 +4458,18 @@ function GlossaryView(props) {
     }
     return /*#__PURE__*/React.createElement("button", {
       key: idx,
+      type: "button",
       onClick: e => handleReviewedQuizOption(e, opt),
       disabled: !!quizSelectedOption,
       className: `p-3 rounded-xl text-xs sm:text-sm font-medium transition-all text-left shadow-sm flex items-center gap-3 ${btnClass}`
-    }, icon && /*#__PURE__*/React.createElement("span", null, icon), /*#__PURE__*/React.createElement("span", {
+    }, icon && /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, icon), /*#__PURE__*/React.createElement("span", {
       className: "break-words"
-    }, opt));
+    }, opt), quizSelectedOption && (isCorrectAnswer || isSelected) && /*#__PURE__*/React.createElement("span", {
+      className: "sr-only",
+      "data-quiz-option-result": "true"
+    }, ' (' + (isCorrectAnswer ? glossaryText('glossary.quiz_correct_answer', 'correct answer') : glossaryText('glossary.quiz_your_answer', 'your answer')) + ')'));
   }))) : flashcardMode === 'standard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "self-start mb-4 text-xs font-bold text-white uppercase tracking-widest"
   }, t('flashcards.back_label_def')), /*#__PURE__*/React.createElement("div", {
@@ -4048,7 +4477,7 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 shadow-inner"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] font-black text-white uppercase tracking-widest mb-1"
+    className: "text-[0.625rem] font-black text-white uppercase tracking-widest mb-1"
   }, flashcardDefinitionLabel), /*#__PURE__*/React.createElement("p", {
     className: "text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-50 transition-colors cursor-pointer"
   }, /*#__PURE__*/React.createElement("button", {
@@ -4061,27 +4490,28 @@ function GlossaryView(props) {
     title: t('flashcards.tooltip_audio'),
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, generatedContent?.data[flashcardIndex].def)), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] leading-snug text-blue-50"
+    className: "mt-2 text-[0.6875rem] leading-snug text-blue-50"
   }, glossaryText('glossary.flashcard_provenance', "Provenance: generated from this lesson's source text and selected grade level."))), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-white uppercase mb-2"
   }, standardDeckLang), /*#__PURE__*/React.createElement("p", {
-    className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer"
+    className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer",
+    dir: isRtlLang(standardDeckLang) ? 'rtl' : 'ltr'
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || "";
-      const def = fullTrans.includes(':') ? fullTrans.substring(fullTrans.indexOf(':') + 1).trim() : fullTrans;
+      const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || "";
+      const def = fullTrans.search(/[:：]/) >= 0 ? fullTrans.substring(fullTrans.search(/[:：]/) + 1).trim() : fullTrans;
       handleUncachedGlossarySpeak(def, `fc-back-def-${standardDeckLang}`);
     },
     "aria-label": `${t('common.read_translated_definition')}: ${standardDeckLang}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, (() => {
-    const fullTrans = generatedContent?.data[flashcardIndex].translations?.[standardDeckLang] || glossaryText('glossary.translation_unavailable', 'Translation not available');
-    if (fullTrans.includes(":")) {
-      return fullTrans.substring(fullTrans.indexOf(':') + 1).trim();
+    const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[standardDeckLang]) || glossaryText('glossary.translation_unavailable', 'Translation not available');
+    if (fullTrans.search(/[:：]/) >= 0) {
+      return fullTrans.substring(fullTrans.search(/[:：]/) + 1).trim();
     }
     return fullTrans;
   })()))), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
@@ -4099,11 +4529,11 @@ function GlossaryView(props) {
     "aria-label": `${t('common.click_read_aloud')}: ${t('glossary.etymology_label') || 'Word roots'}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
   }, generatedContent.data[flashcardIndex].etymology))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, playGlossaryDictionaryAudio))) : (() => {
-    const fullTrans = generatedContent?.data[flashcardIndex].translations?.[flashcardLang] || glossaryText('glossary.translation_unavailable', 'Translation not available');
+    const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[flashcardLang]) || glossaryText('glossary.translation_unavailable', 'Translation not available');
     let transTerm = "";
     let transDef = fullTrans;
-    if (fullTrans.includes(":")) {
-      const splitIdx = fullTrans.indexOf(":");
+    if (fullTrans.search(/[:：]/) >= 0) {
+      const splitIdx = fullTrans.search(/[:：]/);
       transTerm = fullTrans.substring(0, splitIdx).trim();
       transDef = fullTrans.substring(splitIdx + 1).trim();
     }
@@ -4112,17 +4542,21 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Globe, {
       size: 14
     }), " ", flashcardLang), transTerm && /*#__PURE__*/React.createElement("h2", {
-      className: "text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer"
+      className: "text-4xl md:text-6xl font-black text-white mb-6 hover:text-indigo-200 transition-colors cursor-pointer",
+      dir: isRtlLang(flashcardLang) ? 'rtl' : 'ltr'
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: e => {
         e.stopPropagation();
         handleUncachedGlossarySpeak(transTerm, 'fc-back-term');
       },
-      "aria-label": `Read ${flashcardLang} term`,
+      "aria-label": glossaryText('glossary.read_language_term', 'Read {lang} term', {
+        lang: flashcardLang
+      }),
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transTerm)), /*#__PURE__*/React.createElement("p", {
-      className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer"
+      className: "text-xl md:text-2xl text-indigo-100 leading-relaxed font-serif italic hover:text-white transition-colors cursor-pointer",
+      dir: isRtlLang(flashcardLang) ? 'rtl' : 'ltr'
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: e => {
@@ -4133,7 +4567,7 @@ function GlossaryView(props) {
       className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-indigo-700 focus-visible:ring-offset-2"
     }, transDef)));
   })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), detectiveOpen && (DefinitionDetectiveGame ? /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Definition Detective encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(DefinitionDetectiveGame, {
     data: activityData('detective'),
     onClose: () => setDetectiveOpen(false),
@@ -4152,7 +4586,7 @@ function GlossaryView(props) {
     className: "min-h-11 p-3 font-bold",
     onClick: () => setDetectiveOpen(false)
   }, t('common.close')))), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Memory Game encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(MemoryGame, {
     data: activityData('memory'),
     roundSize: activitySize('memory'),
@@ -4160,15 +4594,16 @@ function GlossaryView(props) {
     onScoreUpdate: handleGameScoreUpdate,
     onGameComplete: handleGameCompletion
   })), isCrosswordGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Crossword Puzzle encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(CrosswordGame, {
     data: activityData('crossword'),
     onClose: closeCrossword,
+    isTeacherMode: isTeacherMode,
     playSound: playSound,
     onScoreUpdate: handleGameScoreUpdate,
     onGameComplete: handleGameCompletion
   })), isMatchingGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Matching Game encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(MatchingGame, {
     data: activityData('matching'),
     roundSize: activitySize('matching'),
@@ -4177,7 +4612,7 @@ function GlossaryView(props) {
     onScoreUpdate: handleGameScoreUpdate,
     onGameComplete: handleGameCompletion
   })), isBingoGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Bingo Generator encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(BingoGame, {
     data: activityData('bingo'),
     onClose: closeBingo,
@@ -4190,130 +4625,21 @@ function GlossaryView(props) {
     selectedVoice: selectedVoice,
     alloBotRef: alloBotRef
   })), isStudentBingoGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Bingo Game encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(StudentBingoGame, {
     data: activityData('studentBingo'),
     onClose: closeStudentBingo,
     playSound: playSound,
     onGameComplete: handleGameCompletion
   })), isWordScrambleGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Word Scramble Game encountered an error."
+    fallbackMessage: glossaryText('glossary.game_error', 'This activity ran into a problem. Close it and try again.')
   }, /*#__PURE__*/React.createElement(WordScrambleGame, {
     data: activityData('scramble'),
     onClose: handleCloseWordScramble,
     playSound: playSound,
     onScoreUpdate: handleGameScoreUpdate,
     onGameComplete: handleGameCompletion
-  })), screenerSession && screenerSession.status === 'interstitial' && /*#__PURE__*/React.createElement("div", {
-    role: "presentation",
-    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    "aria-live": "polite",
-    "aria-atomic": "true",
-    "aria-label": glossaryProgressLabel,
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"
-  }, /*#__PURE__*/React.createElement(CheckCircle, {
-    size: 32
-  })), /*#__PURE__*/React.createElement("h3", {
-    className: "text-xl font-black text-slate-800 mb-2"
-  }, screenerSession.subtests[screenerSession.currentIndex - 1]?.replace(/^./, c => c.toUpperCase()), " ", glossaryDoneLabel, "!"), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 mb-4"
-  }, glossaryNextLabel, ":"), /*#__PURE__*/React.createElement("p", {
-    className: "text-2xl font-black text-emerald-600 mb-6"
-  }, screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase())), /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-slate-100 rounded-full h-2 mb-4",
-    role: "progressbar",
-    "aria-label": glossaryProgressLabel,
-    "aria-valuemin": 0,
-    "aria-valuemax": screenerSession.subtests.length,
-    "aria-valuenow": screenerSession.currentIndex
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-500 h-2 rounded-full transition-all duration-500 motion-reduce:transition-none",
-    style: {
-      width: `${Math.round(screenerSession.currentIndex / screenerSession.subtests.length * 100)}%`
-    }
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600"
-  }, screenerSession.currentIndex, " of ", screenerSession.subtests.length, " ", glossaryDoneLabel))), screenerSession && screenerSession.status === 'complete' && /*#__PURE__*/React.createElement("div", {
-    role: "presentation",
-    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
-  }, /*#__PURE__*/React.createElement("div", {
-    ref: screenerDialogRef,
-    role: "dialog",
-    "aria-modal": "true",
-    "aria-labelledby": "glossary-screener-results-title",
-    tabIndex: -1,
-    onKeyDown: e => containModalFocus(e, screenerDialogRef.current, closeScreenerResults),
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border-4 border-violet-100"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-center mb-6"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-16 h-16 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-violet-200"
-  }, /*#__PURE__*/React.createElement(Award, {
-    size: 32
-  })), /*#__PURE__*/React.createElement("h3", {
-    id: "glossary-screener-results-title",
-    className: "text-2xl font-black text-slate-800"
-  }, t('common.screening_complete')), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 text-sm mt-1"
-  }, screenerSession.student, " — Grade ", screenerSession.grade, " — Form ", screenerSession.form)), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3 mb-6"
-  }, screenerSession.results.map((r, idx) => /*#__PURE__*/React.createElement("div", {
-    key: idx,
-    className: "flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-400"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold text-slate-700 capitalize"
-  }, r.activity), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm text-slate-600"
-  }, r.correct, "/", r.total), /*#__PURE__*/React.createElement("span", {
-    className: `text-sm font-bold px-2 py-0.5 rounded-full ${r.accuracy >= 80 ? 'bg-emerald-100 text-emerald-700' : r.accuracy >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`
-  }, r.accuracy, "%"), r.itemsPerMin > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-600"
-  }, r.itemsPerMin, " items/min"))))), (() => {
-    const risk = classifyScreeningRisk(screenerSession.results);
-    return /*#__PURE__*/React.createElement("div", {
-      className: "text-center p-4 rounded-xl border-2 mb-6",
-      style: {
-        background: risk.bg,
-        borderColor: risk.border
-      }
-    }, /*#__PURE__*/React.createElement("p", {
-      className: "text-3xl mb-1"
-    }, risk.emoji), /*#__PURE__*/React.createElement("p", {
-      className: "text-sm font-bold",
-      style: {
-        color: risk.color
-      }
-    }, risk.label), /*#__PURE__*/React.createElement("p", {
-      className: `text-4xl font-black ${risk.tier === 1 ? 'text-emerald-600' : risk.tier === 2 ? 'text-amber-600' : 'text-red-600'}`
-    }, risk.avgAccuracy, "%"), /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-slate-600 mt-1"
-    }, t('glossary_health.composite_accuracy')), risk.reasons.length > 0 && /*#__PURE__*/React.createElement("div", {
-      className: "mt-3 space-y-1"
-    }, risk.reasons.map((r, ri) => /*#__PURE__*/React.createElement("p", {
-      key: ri,
-      className: "text-xs",
-      style: {
-        color: risk.color
-      }
-    }, r))));
-  })(), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-3"
-  }, rosterQueue.length > 0 && /*#__PURE__*/React.createElement("button", {
-    onClick: advanceRoster,
-    className: "flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg transition-colors"
-  }, "▶ ", glossaryNextLabel, " (", rosterQueue[0], ")"), /*#__PURE__*/React.createElement("button", {
-    onClick: closeScreenerResults,
-    className: `${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`
-  }, rosterQueue.length > 0 ? glossarySkipLabel + ' / ' + glossaryDoneLabel : glossaryDoneLabel)), /*#__PURE__*/React.createElement("button", {
-    onClick: exportScreeningCSV,
-    className: "w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
-  }, "📊 Export Screening CSV"))), gameMode === 'wordsearch' && gameData && /*#__PURE__*/React.createElement("div", {
+  })), gameMode === 'wordsearch' && gameData && /*#__PURE__*/React.createElement("div", {
     className: "mb-6 bg-white p-4 sm:p-6 rounded-xl border-2 border-teal-200 shadow-md animate-in motion-reduce:animate-none fade-in slide-in-from-top-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-between items-center gap-2 mb-4 border-b border-slate-100 pb-2"
@@ -4343,7 +4669,20 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 14,
     "aria-hidden": "true"
-  }), " ", t('glossary.print_puzzle')), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('glossary.print_puzzle')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-word-search-print-key": "true",
+    onClick: () => handlePrintGame(true),
+    "aria-label": (t('common.print') || 'Print') + ': ' + (t('glossary.print_answer_key') || 'Answer key'),
+    className: "min-h-11 text-xs flex items-center gap-1 bg-slate-100 text-slate-700 px-3 py-2 rounded-full font-bold hover:bg-slate-200 transition-colors"
+  }, /*#__PURE__*/React.createElement(Printer, {
+    size: 14,
+    "aria-hidden": "true"
+  }), " ", t('glossary.print_answer_key') || 'Answer key'), /*#__PURE__*/React.createElement(GlossaryReadingSettingsButton, {
+    t: t,
+    label: glossaryText('reading_settings.title', 'Reading settings'),
+    className: "no-print text-base bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:ring-teal-600"
+  }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetGameModeToNull,
     className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors",
@@ -4369,7 +4708,11 @@ function GlossaryView(props) {
     role: "grid",
     tabIndex: 0,
     dir: gameData.isRtl ? 'rtl' : 'ltr',
-    "aria-label": (t('glossary.word_search_title') || 'Word search') + '. ' + wordSearchFoundWords.size + ' of ' + gameData.words.length + ' words found.',
+    "aria-label": glossaryText('glossary.word_search_grid_label', '{title}. {found} of {total} words found.', {
+      title: t('glossary.word_search_title') || 'Word search',
+      found: wordSearchFoundWords.size,
+      total: gameData.words.length
+    }),
     "aria-rowcount": gameData.grid.length,
     "aria-colcount": gameData.grid[0]?.length || 0,
     "aria-activedescendant": 'word-search-cell-' + wordSearchActive.r + '-' + wordSearchActive.c,
@@ -4408,7 +4751,10 @@ function GlossaryView(props) {
   }))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 text-sm font-bold text-teal-800",
     role: "status"
-  }, "Found ", wordSearchFoundWords.size, " of ", gameData.words.length), /*#__PURE__*/React.createElement("div", {
+  }, glossaryText('glossary.word_search_found_count', 'Found {found} of {total}', {
+    found: wordSearchFoundWords.size,
+    total: gameData.words.length
+  })), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 w-full max-w-md"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2 text-center"
@@ -4435,8 +4781,8 @@ function GlossaryView(props) {
     className: "w-full sm:w-1/3 min-w-0 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "block text-[11px] font-bold text-indigo-900 mb-1"
-  }, "Image style"), /*#__PURE__*/React.createElement("select", {
-    "aria-label": "Glossary image style source",
+  }, glossaryText('glossary.image_style_label', 'Image style')), /*#__PURE__*/React.createElement("select", {
+    "aria-label": glossaryText('glossary.image_style_source_aria', 'Glossary image style source'),
     "data-help-key": "glossary_image_style_mode",
     value: glossaryStyleMode,
     onChange: handleGlossaryStyleModeChange,
@@ -4444,11 +4790,13 @@ function GlossaryView(props) {
     className: "w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs focus:ring-2 focus:ring-indigo-500"
   }, /*#__PURE__*/React.createElement("option", {
     value: "inherit"
-  }, "Use Universal style"), /*#__PURE__*/React.createElement("option", {
+  }, glossaryText('glossary.image_style_inherit', 'Use Universal style')), /*#__PURE__*/React.createElement("option", {
     value: "override"
-  }, "Override for this resource")), glossaryStyleMode === 'inherit' ? /*#__PURE__*/React.createElement("p", {
+  }, glossaryText('glossary.image_style_override', 'Override for this resource'))), glossaryStyleMode === 'inherit' ? /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[10px] leading-snug text-indigo-800"
-  }, String(universalImageStyle || '').trim() ? 'Using Universal style: ' + String(universalImageStyle).trim() : 'No Universal style is set; the app default will be used.') : /*#__PURE__*/React.createElement("input", {
+  }, String(universalImageStyle || '').trim() ? glossaryText('glossary.image_style_using_universal', 'Using Universal style: {style}', {
+    style: String(universalImageStyle).trim()
+  }) : glossaryText('glossary.image_style_no_universal', 'No Universal style is set; the app default will be used.')) : /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_glossary_image_style'),
     "data-help-key": "glossary_image_style",
     type: "text",
@@ -4459,7 +4807,7 @@ function GlossaryView(props) {
     disabled: isAddingTerm
   }), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[10px] leading-snug text-slate-600"
-  }, "Applies to new or regenerated term images.")), /*#__PURE__*/React.createElement("input", {
+  }, glossaryText('glossary.image_style_applies', 'Applies to new or regenerated term images.'))), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_new_glossary_term'),
     type: "text",
     value: newGlossaryTerm,
@@ -4505,13 +4853,13 @@ function GlossaryView(props) {
   }, "📊"), /*#__PURE__*/React.createElement("span", {
     id: "glossary-health-check-title",
     className: "font-bold text-amber-900 text-sm"
-  }, t('glossary_health.composite_accuracy') || 'Glossary Health Check'), isRunningHealthCheck && /*#__PURE__*/React.createElement(RefreshCw, {
+  }, glossaryText('glossary_health.title', 'Glossary Health Check')), isRunningHealthCheck && /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none text-amber-600",
     "aria-hidden": "true"
   }), glossaryHealthCheck && !glossaryHealthCheck.error && !isRunningHealthCheck && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full font-medium"
-  }, glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : '', " — ", glossaryHealthCheck.definitionGradeLevel || 'Analyzed')), /*#__PURE__*/React.createElement(ChevronDown, {
+  }, glossaryHealthCheck.overallScore ? `${glossaryHealthCheck.overallScore}/5` : '', " — ", glossaryHealthCheck.definitionGradeLevel || glossaryText('glossary_health.analyzed', 'Analyzed'))), /*#__PURE__*/React.createElement(ChevronDown, {
     size: 16,
     "aria-hidden": "true",
     className: `shrink-0 text-amber-600 transition-transform motion-reduce:transition-none ${showHealthCheckPanel ? 'rotate-180' : ''}`
@@ -4531,7 +4879,7 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     "aria-hidden": "true"
-  }), " Re-analyze"), /*#__PURE__*/React.createElement("button", {
+  }), " ", glossaryText('glossary_health.reanalyze', 'Re-analyze')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.dismiss_analysis'),
     onClick: () => {
@@ -4566,19 +4914,23 @@ function GlossaryView(props) {
     className: `text-sm font-bold px-2.5 py-0.5 rounded-full ${glossaryHealthCheck.gradeAppropriate ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`
   }, glossaryHealthCheck.definitionGradeLevel), glossaryHealthCheck.gradeAppropriate ? /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-emerald-600"
-  }, "✓ Appropriate") : /*#__PURE__*/React.createElement("span", {
+  }, glossaryText('glossary_health.appropriate', '✓ Appropriate')) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-amber-600"
-  }, "⚠ May need adjustment"))), glossaryHealthCheck.tierAudit && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, glossaryText('glossary_health.may_need_adjustment', '⚠ May need adjustment')))), glossaryHealthCheck.tierAudit && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-600 uppercase"
   }, t('glossary_health.vocabulary_tiers')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex flex-wrap gap-1.5"
   }, (Array.isArray(glossaryHealthCheck.tierAudit.tier2) ? glossaryHealthCheck.tierAudit.tier2 : []).map((t, i) => /*#__PURE__*/React.createElement("span", {
     key: `t2-${i}`,
     className: "text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium"
-  }, "Tier 2: ", t)), (Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => /*#__PURE__*/React.createElement("span", {
+  }, glossaryText('glossary_health.tier2_term', 'Tier 2: {term}', {
+    term: t
+  }))), (Array.isArray(glossaryHealthCheck.tierAudit.tier3) ? glossaryHealthCheck.tierAudit.tier3 : []).map((t, i) => /*#__PURE__*/React.createElement("span", {
     key: `t3-${i}`,
     className: "text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium"
-  }, "Tier 3: ", t))), Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, glossaryText('glossary_health.tier3_term', 'Tier 3: {term}', {
+    term: t
+  })))), Array.isArray(glossaryHealthCheck.tierAudit.notes) && glossaryHealthCheck.tierAudit.notes.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-1.5 space-y-0.5"
   }, glossaryHealthCheck.tierAudit.notes.map((note, i) => /*#__PURE__*/React.createElement("p", {
     key: i,
@@ -4640,7 +4992,7 @@ function GlossaryView(props) {
     role: "region",
     "aria-labelledby": "glossary-health-check-title",
     className: "px-4 pb-3 text-sm text-amber-600 italic border-t border-amber-200/50 pt-2"
-  }, "Analysis could not be completed. Click \"Re-analyze\" to try again."), showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && /*#__PURE__*/React.createElement("div", {
+  }, glossaryText('glossary_health.failed', 'Analysis could not be completed. Click "Re-analyze" to try again.')), showHealthCheckPanel && isRunningHealthCheck && !glossaryHealthCheck && /*#__PURE__*/React.createElement("div", {
     id: "glossary-health-check-details",
     role: "status",
     "aria-live": "polite",
@@ -4650,7 +5002,7 @@ function GlossaryView(props) {
     size: 12,
     className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
-  }), " Analyzing glossary quality...")), !isMemoryGame && /*#__PURE__*/React.createElement("div", {
+  }), " ", glossaryText('glossary_health.analyzing', 'Analyzing glossary quality...'))), !isMemoryGame && /*#__PURE__*/React.createElement("div", {
     "data-help-key": "glossary_terms_table",
     className: "overflow-hidden rounded-lg border border-slate-400 shadow-sm"
   }, isEditingGlossary && /*#__PURE__*/React.createElement("p", {
@@ -4658,7 +5010,10 @@ function GlossaryView(props) {
     className: "border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 print:hidden"
   }, glossaryText('glossary.selection_scope', 'Selection applies to all {total} words, including words hidden by filters.', {
     total: glossaryTotalCount
-  })), /*#__PURE__*/React.createElement("p", {
+  })), isEditingGlossary && typeof props.handleMoveGlossaryItem === 'function' && glossaryReorderBlocked() && /*#__PURE__*/React.createElement("p", {
+    id: "glossary-reorder-help",
+    className: "border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 print:hidden"
+  }, glossaryText('glossary.reorder_blocked_help', 'To move words, clear the search and filters and sort in lesson order.')), /*#__PURE__*/React.createElement("p", {
     id: "glossary-table-layout-hint",
     className: "px-3 py-2 text-xs text-slate-600 bg-slate-50 sm:hidden print:hidden"
   }, glossaryText('glossary.table_stacked_hint', 'Definitions and translations follow each word.')), /*#__PURE__*/React.createElement("div", {
@@ -4724,7 +5079,9 @@ function GlossaryView(props) {
       role: "row",
       "data-glossary-entry-key": getGlossaryEntryKey(item, idx),
       key: getGlossaryEntryKey(item, idx),
-      className: "group/row allo-vghov-row"
+      className: "group/row allo-vghov-row",
+      onKeyDown: handleGlossaryRowKeyDown,
+      onFocus: handleGlossaryRowFocus
     }, isEditingGlossary && /*#__PURE__*/React.createElement("td", {
       role: "cell",
       "data-glossary-selection": true,
@@ -4766,6 +5123,7 @@ function GlossaryView(props) {
     }, t('glossary.edit_tier_domain'))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-start gap-2 w-full"
     }, /*#__PURE__*/React.createElement("textarea", {
+      dir: "auto",
       "aria-label": t('glossary.edit_term') || 'Edit glossary term',
       value: item.term,
       onChange: e => handleGlossaryChange(idx, 'term', e.target.value),
@@ -4782,7 +5140,8 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 14
     })))) : /*#__PURE__*/React.createElement("div", {
-      className: "px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center"
+      className: "px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center",
+      dir: "auto"
     }, item.emoji ? /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
       className: "mr-1"
@@ -4881,7 +5240,11 @@ function GlossaryView(props) {
       generating: !!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]),
       t: t
     }), /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-1  mt-1"
+      role: "toolbar",
+      "aria-label": glossaryText('glossary.row_actions_aria', 'Actions for {term}', {
+        term: item.term || ''
+      }),
+      className: "flex flex-wrap items-center justify-center gap-1  mt-1"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryAudioActionLabel(`term-${idx}`, 'term', item.term),
@@ -4905,6 +5268,7 @@ function GlossaryView(props) {
     // (phonetic spelling + IPA + syllables + audio playback). Only rendered if
     // the host wired handlePhonicsClick into the props.
     handlePhonicsClick && /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: ev => handlePhonicsClick(item.term, ev),
       className: "text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 font-bold text-[11px] tracking-tight",
       "aria-label": (t('glossary.pronounce_term') || 'Pronounce') + ': ' + item.term,
@@ -4929,7 +5293,7 @@ function GlossaryView(props) {
     }) : /*#__PURE__*/React.createElement(Download, {
       size: 14,
       "aria-hidden": "true"
-    }))))), /*#__PURE__*/React.createElement("td", {
+    })), canEditGlossary && typeof props.handleMoveGlossaryItem === 'function' && [renderGlossaryMoveButton(item, idx, -1), renderGlossaryMoveButton(item, idx, 1)]))), /*#__PURE__*/React.createElement("td", {
       role: "cell",
       className: "p-4 text-slate-600 align-top"
     }, /*#__PURE__*/React.createElement("span", {
@@ -4938,6 +5302,7 @@ function GlossaryView(props) {
     }, t('glossary.table_def')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2 items-center"
     }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
+      dir: "auto",
       "aria-label": glossaryText('glossary.edit_definition_aria', 'Edit definition for {term}', {
         term: item.term
       }),
@@ -4946,10 +5311,15 @@ function GlossaryView(props) {
       rows: getRows(item.def, 45),
       className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-center"
     }) : /*#__PURE__*/React.createElement("div", {
-      className: "px-2 py-1 text-slate-600 whitespace-pre-wrap"
+      className: "px-2 py-1 text-slate-600 whitespace-pre-wrap",
+      dir: "auto"
     }, currentUiLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
       className: "block font-bold text-indigo-900 text-xs mb-1 uppercase tracking-wide"
     }, item.term), item.def), /*#__PURE__*/React.createElement("div", {
+      role: "toolbar",
+      "aria-label": glossaryText('glossary.definition_actions_aria', 'Definition actions for {term}', {
+        term: item.term || ''
+      }),
       className: "flex items-center gap-1 "
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -5007,7 +5377,7 @@ function GlossaryView(props) {
         onClick: () => handleUncachedGlossarySpeak(etymologyProse, `etym-${idx}`),
         disabled: isGeneratingAudio && playingContentId !== `etym-${idx}`,
         className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
-        "aria-label": t('glossary.etymology_label') || 'Word roots'
+        "aria-label": (t('glossary.etymology_label') || 'Word roots') + ': ' + item.term
       }, playingContentId === `etym-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
         className: "animate-spin motion-reduce:animate-none"
@@ -5027,10 +5397,12 @@ function GlossaryView(props) {
           return /*#__PURE__*/React.createElement("button", {
             key: ri,
             type: "button",
-            onClick: () => handleUncachedGlossarySpeak(`${r.root}${r.meaning ? ', meaning ' + r.meaning : ''}${related.length > 0 ? '. Related words: ' + related.join(', ') : ''}`, `root-${idx}-${ri}`),
-            title: `${r.lang || ''}${related.length > 0 ? (r.lang ? ' · ' : '') + 'Related: ' + related.join(', ') : ''}`.trim(),
+            onClick: () => handleUncachedGlossarySpeak(glossaryRootText(r.root, r.meaning, related, '. '), `root-${idx}-${ri}`),
+            title: [r.lang || '', related.length > 0 ? glossaryText('glossary.root_related_short', 'Related: {words}', {
+              words: related.join(', ')
+            }) : ''].filter(Boolean).join(' · '),
             className: "inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 hover:bg-indigo-100 hover:border-indigo-300 transition-colors text-indigo-900",
-            "aria-label": `${r.root}${r.lang ? ' (' + r.lang + ')' : ''}${r.meaning ? ', meaning ' + r.meaning : ''}${related.length > 0 ? ', related to ' + related.join(', ') : ''}`
+            "aria-label": glossaryRootText(r.root + (r.lang ? ' (' + r.lang + ')' : ''), r.meaning, related, '; ')
           }, /*#__PURE__*/React.createElement("span", {
             className: "font-bold"
           }, r.root), r.lang && /*#__PURE__*/React.createElement("span", {
@@ -5079,596 +5451,607 @@ function GlossaryView(props) {
     }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
       className: "animate-spin motion-reduce:animate-none"
-    }), " ", t('glossary.actions.generating_etymology') || 'Finding roots…') : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", t('glossary.actions.show_etymology') || 'Show word roots')) : null)), displayLanguages.map(lang => /*#__PURE__*/React.createElement("td", {
-      role: "cell",
-      key: lang,
-      className: "p-4 text-slate-600 italic border-l border-slate-50 align-top"
-    }, /*#__PURE__*/React.createElement("span", {
-      "data-glossary-mobile-label": true,
-      "aria-hidden": "true"
-    }, lang), /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-col gap-2",
-      dir: isRtlLang(lang) ? 'rtl' : 'ltr'
-    }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": glossaryText('glossary.edit_translation_aria', 'Edit {lang} translation for {term}', {
-        lang: lang,
-        term: item.term
-      }),
-      value: item.translations?.[lang] || "",
-      onChange: e => handleGlossaryChange(idx, 'translations', e.target.value, lang),
-      rows: getRows(item.translations?.[lang], 30),
-      className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center"
-    }) : /*#__PURE__*/React.createElement("div", {
-      className: "px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center"
-    }, item.translations?.[lang] || ""), item.translations?.[lang] && /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-1  justify-center",
-      dir: "ltr"
-    }, /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "aria-label": glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
-      title: glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
-      onClick: () => handleGlossarySpeak(item, 'translation', item.translations[lang], `trans-${idx}-${lang}`, lang),
-      disabled: isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`,
-      className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
-    }, playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
-      size: 14,
-      className: "animate-spin motion-reduce:animate-none",
-      "aria-hidden": "true"
-    }) : playingContentId === `trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(StopCircle, {
-      size: 14,
-      "aria-hidden": "true"
-    }) : /*#__PURE__*/React.createElement(Volume2, {
-      size: 14,
-      "aria-hidden": "true"
-    })), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      "aria-label": glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
-        lang: lang,
-        term: item.term
-      }),
-      title: glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
-        lang: lang,
-        term: item.term
-      }),
-      onClick: () => handleDownloadAudio(item.translations[lang], `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`),
-      disabled: downloadingContentId === `dl-trans-${idx}-${lang}`,
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors"
-    }, downloadingContentId === `dl-trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(RefreshCw, {
-      size: 14,
-      className: "animate-spin motion-reduce:animate-none",
-      "aria-hidden": "true"
-    }) : /*#__PURE__*/React.createElement(Download, {
-      size: 14,
-      "aria-hidden": "true"
-    }))), item.translations?.[lang] && (() => {
-      const etyLangProse = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang[lang] : null;
-      const hasOwnProse = typeof etyLangProse === 'string' && etyLangProse.trim() && etyLangProse.trim() !== 'NONE';
-      const hasEnglishEty = !!(item.etymology || item.etymologyByLang && (item.etymologyByLang.English || Object.keys(item.etymologyByLang).length > 0));
-      const ETYMOLOGY_LABELS = {
-        Spanish: {
-          roots: 'Raíces',
-          show: 'Ver raíces',
-          loading: 'Buscando raíces…',
-          related: 'Palabras relacionadas:'
-        },
-        French: {
-          roots: 'Racines',
-          show: 'Voir les racines',
-          loading: 'Recherche en cours…',
-          related: 'Mots apparentés :'
-        },
-        German: {
-          roots: 'Wortwurzeln',
-          show: 'Wortwurzeln zeigen',
-          loading: 'Wurzeln werden gesucht…',
-          related: 'Verwandte Wörter:'
-        },
-        Italian: {
-          roots: 'Radici',
-          show: 'Mostra radici',
-          loading: 'Ricerca radici…',
-          related: 'Parole correlate:'
-        },
-        Portuguese: {
-          roots: 'Raízes',
-          show: 'Ver raízes',
-          loading: 'Buscando raízes…',
-          related: 'Palavras relacionadas:'
-        },
-        Dutch: {
-          roots: 'Woordwortels',
-          show: 'Woordwortels tonen',
-          loading: 'Wortels zoeken…',
-          related: 'Verwante woorden:'
-        },
-        Russian: {
-          roots: 'Корни',
-          show: 'Показать корни',
-          loading: 'Поиск корней…',
-          related: 'Родственные слова:'
-        },
-        Polish: {
-          roots: 'Rdzenie',
-          show: 'Pokaż rdzenie',
-          loading: 'Szukanie rdzeni…',
-          related: 'Słowa pokrewne:'
-        },
-        Ukrainian: {
-          roots: 'Корені',
-          show: 'Показати корені',
-          loading: 'Пошук коренів…',
-          related: 'Споріднені слова:'
-        },
-        Arabic: {
-          roots: 'الجذور',
-          show: 'عرض جذور الكلمة',
-          loading: 'جاري البحث…',
-          related: 'كلمات ذات صلة:'
-        },
-        Hebrew: {
-          roots: 'שורשים',
-          show: 'הצג שורשי מילה',
-          loading: 'מחפש שורשים…',
-          related: 'מילים קשורות:'
-        },
-        Hindi: {
-          roots: 'शब्द-मूल',
-          show: 'शब्द-मूल दिखाएँ',
-          loading: 'मूल खोज रहे हैं…',
-          related: 'संबंधित शब्द:'
-        },
-        Chinese: {
-          roots: '词根',
-          show: '显示词根',
-          loading: '正在查找词根…',
-          related: '相关词语：'
-        },
-        Japanese: {
-          roots: '語源',
-          show: '語源を表示',
-          loading: '語源を検索中…',
-          related: '関連語：'
-        },
-        Korean: {
-          roots: '어근',
-          show: '어근 보기',
-          loading: '어근 검색 중…',
-          related: '관련 단어:'
-        },
-        Vietnamese: {
-          roots: 'Gốc từ',
-          show: 'Xem gốc từ',
-          loading: 'Đang tìm gốc từ…',
-          related: 'Từ liên quan:'
-        },
-        Turkish: {
-          roots: 'Kökler',
-          show: 'Kökleri göster',
-          loading: 'Kökler aranıyor…',
-          related: 'İlgili kelimeler:'
-        },
-        Swahili: {
-          roots: 'Mizizi',
-          show: 'Onyesha mizizi',
-          loading: 'Inatafuta mizizi…',
-          related: 'Maneno yanayohusiana:'
-        },
-        Somali: {
-          roots: 'Xididada',
-          show: 'Muuji xididada',
-          loading: 'Raadinta xididada…',
-          related: 'Ereyada la xidhiidha:'
-        },
-        Tagalog: {
-          roots: 'Ugat ng salita',
-          show: 'Ipakita ang ugat',
-          loading: 'Naghahanap ng ugat…',
-          related: 'Mga kaugnay na salita:'
-        }
-      };
-      const langLabels = ETYMOLOGY_LABELS[lang] || null;
-      const rootsLabel = langLabels?.roots || t('glossary.etymology_label') || 'Word roots';
-      const showLabel = langLabels?.show || t('glossary.actions.show_etymology') || 'Show word roots';
-      const loadingLabel = langLabels?.loading || t('glossary.actions.generating_etymology') || 'Finding roots…';
-      const relatedLabel = langLabels?.related || t('glossary.related_words_label') || 'Related words:';
-      const ORIGIN_LANG_LOCALIZED = {
-        Spanish: {
-          Latin: 'latín',
-          Greek: 'griego',
-          'Old English': 'inglés antiguo',
-          French: 'francés',
-          'Old French': 'francés antiguo',
-          Germanic: 'germánico',
-          'Proto-Germanic': 'protogermánico',
-          Sanskrit: 'sánscrito',
-          Arabic: 'árabe',
-          Hebrew: 'hebreo',
-          Norse: 'nórdico',
-          'Old Norse': 'nórdico antiguo'
-        },
-        French: {
-          Latin: 'latin',
-          Greek: 'grec',
-          'Old English': 'vieil anglais',
-          French: 'français',
-          'Old French': 'ancien français',
-          Germanic: 'germanique',
-          'Proto-Germanic': 'proto-germanique',
-          Sanskrit: 'sanskrit',
-          Arabic: 'arabe',
-          Hebrew: 'hébreu',
-          Norse: 'norrois',
-          'Old Norse': 'vieux norrois'
-        },
-        German: {
-          Latin: 'lateinisch',
-          Greek: 'griechisch',
-          'Old English': 'altenglisch',
-          French: 'französisch',
-          'Old French': 'altfranzösisch',
-          Germanic: 'germanisch',
-          'Proto-Germanic': 'urgermanisch',
-          Sanskrit: 'sanskrit',
-          Arabic: 'arabisch',
-          Hebrew: 'hebräisch',
-          Norse: 'nordisch',
-          'Old Norse': 'altnordisch'
-        },
-        Italian: {
-          Latin: 'latino',
-          Greek: 'greco',
-          'Old English': 'inglese antico',
-          French: 'francese',
-          'Old French': 'francese antico',
-          Germanic: 'germanico',
-          'Proto-Germanic': 'protogermanico',
-          Sanskrit: 'sanscrito',
-          Arabic: 'arabo',
-          Hebrew: 'ebraico',
-          Norse: 'norreno',
-          'Old Norse': 'norreno antico'
-        },
-        Portuguese: {
-          Latin: 'latim',
-          Greek: 'grego',
-          'Old English': 'inglês antigo',
-          French: 'francês',
-          'Old French': 'francês antigo',
-          Germanic: 'germânico',
-          'Proto-Germanic': 'protogermânico',
-          Sanskrit: 'sânscrito',
-          Arabic: 'árabe',
-          Hebrew: 'hebraico',
-          Norse: 'nórdico',
-          'Old Norse': 'nórdico antigo'
-        },
-        Dutch: {
-          Latin: 'Latijn',
-          Greek: 'Grieks',
-          'Old English': 'Oudengels',
-          French: 'Frans',
-          'Old French': 'Oudfrans',
-          Germanic: 'Germaans',
-          'Proto-Germanic': 'Proto-Germaans',
-          Sanskrit: 'Sanskriet',
-          Arabic: 'Arabisch',
-          Hebrew: 'Hebreeuws',
-          Norse: 'Noors',
-          'Old Norse': 'Oudnoors'
-        },
-        Russian: {
-          Latin: 'латинский',
-          Greek: 'греческий',
-          'Old English': 'древнеанглийский',
-          French: 'французский',
-          'Old French': 'старофранцузский',
-          Germanic: 'германский',
-          'Proto-Germanic': 'прагерманский',
-          Sanskrit: 'санскрит',
-          Arabic: 'арабский',
-          Hebrew: 'иврит',
-          Norse: 'норвежский',
-          'Old Norse': 'древнескандинавский'
-        },
-        Polish: {
-          Latin: 'łaciński',
-          Greek: 'grecki',
-          'Old English': 'staroangielski',
-          French: 'francuski',
-          'Old French': 'starofrancuski',
-          Germanic: 'germański',
-          'Proto-Germanic': 'pragermański',
-          Sanskrit: 'sanskryt',
-          Arabic: 'arabski',
-          Hebrew: 'hebrajski',
-          Norse: 'nordycki',
-          'Old Norse': 'staronordycki'
-        },
-        Ukrainian: {
-          Latin: 'латинська',
-          Greek: 'грецька',
-          'Old English': 'давньоанглійська',
-          French: 'французька',
-          'Old French': 'старофранцузька',
-          Germanic: 'германська',
-          'Proto-Germanic': 'прагерманська',
-          Sanskrit: 'санскрит',
-          Arabic: 'арабська',
-          Hebrew: 'іврит'
-        },
-        Arabic: {
-          Latin: 'اللاتينية',
-          Greek: 'اليونانية',
-          'Old English': 'الإنجليزية القديمة',
-          French: 'الفرنسية',
-          'Old French': 'الفرنسية القديمة',
-          Germanic: 'الجرمانية',
-          Sanskrit: 'السنسكريتية',
-          Arabic: 'العربية',
-          Hebrew: 'العبرية',
-          Norse: 'الإسكندنافية'
-        },
-        Hebrew: {
-          Latin: 'לטינית',
-          Greek: 'יוונית',
-          'Old English': 'אנגלית עתיקה',
-          French: 'צרפתית',
-          'Old French': 'צרפתית עתיקה',
-          Germanic: 'גרמאנית',
-          Sanskrit: 'סנסקריט',
-          Arabic: 'ערבית',
-          Hebrew: 'עברית',
-          Norse: 'נורדית'
-        },
-        Hindi: {
-          Latin: 'लैटिन',
-          Greek: 'ग्रीक',
-          'Old English': 'पुरानी अंग्रेज़ी',
-          French: 'फ्रेंच',
-          Germanic: 'जर्मेनिक',
-          Sanskrit: 'संस्कृत',
-          Arabic: 'अरबी',
-          Hebrew: 'हिब्रू',
-          Norse: 'नॉर्स'
-        },
-        Chinese: {
-          Latin: '拉丁语',
-          Greek: '希腊语',
-          'Old English': '古英语',
-          French: '法语',
-          'Old French': '古法语',
-          Germanic: '日耳曼语',
-          'Proto-Germanic': '原始日耳曼语',
-          Sanskrit: '梵语',
-          Arabic: '阿拉伯语',
-          Hebrew: '希伯来语',
-          Norse: '北欧语',
-          'Old Norse': '古诺尔斯语'
-        },
-        Japanese: {
-          Latin: 'ラテン語',
-          Greek: 'ギリシャ語',
-          'Old English': '古英語',
-          French: 'フランス語',
-          'Old French': '古フランス語',
-          Germanic: 'ゲルマン語',
-          Sanskrit: 'サンスクリット語',
-          Arabic: 'アラビア語',
-          Hebrew: 'ヘブライ語',
-          Norse: 'ノルド語',
-          'Old Norse': '古ノルド語'
-        },
-        Korean: {
-          Latin: '라틴어',
-          Greek: '그리스어',
-          'Old English': '고대 영어',
-          French: '프랑스어',
-          'Old French': '고대 프랑스어',
-          Germanic: '게르만어',
-          Sanskrit: '산스크리트어',
-          Arabic: '아랍어',
-          Hebrew: '히브리어',
-          Norse: '노르드어',
-          'Old Norse': '고대 노르드어'
-        },
-        Vietnamese: {
-          Latin: 'tiếng La-tinh',
-          Greek: 'tiếng Hy Lạp',
-          'Old English': 'tiếng Anh cổ',
-          French: 'tiếng Pháp',
-          'Old French': 'tiếng Pháp cổ',
-          Germanic: 'tiếng Giéc-manh',
-          Sanskrit: 'tiếng Phạn',
-          Arabic: 'tiếng Ả Rập',
-          Hebrew: 'tiếng Hê-brơ'
-        },
-        Turkish: {
-          Latin: 'Latince',
-          Greek: 'Yunanca',
-          'Old English': 'Eski İngilizce',
-          French: 'Fransızca',
-          'Old French': 'Eski Fransızca',
-          Germanic: 'Germence',
-          Sanskrit: 'Sanskritçe',
-          Arabic: 'Arapça',
-          Hebrew: 'İbranice',
-          Norse: 'Norsça',
-          'Old Norse': 'Eski Norsça'
-        },
-        Swahili: {
-          Latin: 'Kilatini',
-          Greek: 'Kigiriki',
-          'Old English': 'Kiingereza cha Kale',
-          French: 'Kifaransa',
-          Germanic: 'Kijerumani',
-          Arabic: 'Kiarabu',
-          Hebrew: 'Kiebrania'
-        },
-        Somali: {
-          Latin: 'Laatiin',
-          Greek: 'Giriig',
-          'Old English': 'Ingiriisi qadiim ah',
-          French: 'Faransiis',
-          Arabic: 'Carabi',
-          Hebrew: 'Cibraani'
-        },
-        Tagalog: {
-          Latin: 'Latin',
-          Greek: 'Griyego',
-          'Old English': 'Lumang Ingles',
-          French: 'Pranses',
-          Germanic: 'Germaniko',
-          Arabic: 'Arabe',
-          Hebrew: 'Hebreo'
-        }
-      };
-      const localizeRoot = function (r) {
-        var langLocalized = r.langByLocale && r.langByLocale[lang] || ORIGIN_LANG_LOCALIZED[lang] && ORIGIN_LANG_LOCALIZED[lang][r.lang] || r.lang || '';
-        var meaningLocalized = r.meaningByLang && r.meaningByLang[lang] || r.meaning || '';
-        return {
-          langLocalized: langLocalized,
-          meaningLocalized: meaningLocalized
+    }), " ", t('glossary.actions.generating_etymology') || 'Finding roots…') : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", t('glossary.actions.show_etymology') || 'Show word roots')) : null)), displayLanguages.map(lang => {
+      const translationStatus = isTeacherMode ? glossaryTranslationStatus(item, lang) : '';
+      const canRetryTranslation = !!translationStatus && typeof props.handleRetryGlossaryTranslation === 'function';
+      const retryState = glossaryRetryState[entryKey + '|' + lang];
+      return /*#__PURE__*/React.createElement("td", {
+        role: "cell",
+        key: lang,
+        "aria-busy": retryState && retryState.busy ? 'true' : undefined,
+        className: "p-4 text-slate-600 italic border-l border-slate-50 align-top"
+      }, /*#__PURE__*/React.createElement("span", {
+        "data-glossary-mobile-label": true,
+        "aria-hidden": "true"
+      }, lang), /*#__PURE__*/React.createElement("div", {
+        className: "flex flex-col gap-2",
+        dir: isRtlLang(lang) ? 'rtl' : 'ltr'
+      }, isEditingGlossary ? /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": glossaryText('glossary.edit_translation_aria', 'Edit {lang} translation for {term}', {
+          lang: lang,
+          term: item.term
+        }),
+        value: glossaryTranslationText(item.translations?.[lang]) || "",
+        onChange: e => handleGlossaryChange(idx, 'translations', e.target.value, lang),
+        rows: getRows(glossaryTranslationText(item.translations?.[lang]), 30),
+        className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm italic text-center"
+      }) : /*#__PURE__*/React.createElement("div", {
+        className: "px-2 py-1 text-slate-600 italic whitespace-pre-wrap text-center"
+      }, glossaryTranslationText(item.translations?.[lang]) || ""), translationStatus && renderGlossaryTranslationStatus(translationStatus, retryState), (glossaryTranslationText(item.translations?.[lang]) || canRetryTranslation) && /*#__PURE__*/React.createElement("div", {
+        role: "toolbar",
+        "aria-label": glossaryText('glossary.translation_actions_aria', '{lang} actions for {term}', {
+          lang: lang,
+          term: item.term || ''
+        }),
+        className: "flex items-center gap-1  justify-center",
+        dir: "ltr"
+      }, glossaryTranslationText(item.translations?.[lang]) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "aria-label": glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
+        title: glossaryAudioActionLabel(`trans-${idx}-${lang}`, 'translation', item.term, lang),
+        onClick: () => handleGlossarySpeak(item, 'translation', glossaryTranslationText(item.translations[lang]), `trans-${idx}-${lang}`, lang),
+        disabled: isGeneratingAudio && playingContentId !== `trans-${idx}-${lang}`,
+        className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `trans-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
+      }, playingContentId === `trans-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 14,
+        className: "animate-spin motion-reduce:animate-none",
+        "aria-hidden": "true"
+      }) : playingContentId === `trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(StopCircle, {
+        size: 14,
+        "aria-hidden": "true"
+      }) : /*#__PURE__*/React.createElement(Volume2, {
+        size: 14,
+        "aria-hidden": "true"
+      })), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "aria-label": glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
+          lang: lang,
+          term: item.term
+        }),
+        title: glossaryText('glossary.download_translation_audio_aria', 'Download {lang} translation audio for {term}', {
+          lang: lang,
+          term: item.term
+        }),
+        onClick: () => handleDownloadAudio(glossaryTranslationText(item.translations[lang]), `trans-${idx}-${lang}-audio`, `dl-trans-${idx}-${lang}`),
+        disabled: downloadingContentId === `dl-trans-${idx}-${lang}`,
+        className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 rounded-full transition-colors"
+      }, downloadingContentId === `dl-trans-${idx}-${lang}` ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 14,
+        className: "animate-spin motion-reduce:animate-none",
+        "aria-hidden": "true"
+      }) : /*#__PURE__*/React.createElement(Download, {
+        size: 14,
+        "aria-hidden": "true"
+      }))), canRetryTranslation && renderGlossaryRetryButton(item, idx, lang, retryState)), glossaryTranslationText(item.translations?.[lang]) && (() => {
+        const etyLangProse = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang[lang] : null;
+        const hasOwnProse = typeof etyLangProse === 'string' && etyLangProse.trim() && etyLangProse.trim() !== 'NONE';
+        const hasEnglishEty = !!(item.etymology || item.etymologyByLang && (item.etymologyByLang.English || Object.keys(item.etymologyByLang).length > 0));
+        const ETYMOLOGY_LABELS = {
+          Spanish: {
+            roots: 'Raíces',
+            show: 'Ver raíces',
+            loading: 'Buscando raíces…',
+            related: 'Palabras relacionadas:'
+          },
+          French: {
+            roots: 'Racines',
+            show: 'Voir les racines',
+            loading: 'Recherche en cours…',
+            related: 'Mots apparentés :'
+          },
+          German: {
+            roots: 'Wortwurzeln',
+            show: 'Wortwurzeln zeigen',
+            loading: 'Wurzeln werden gesucht…',
+            related: 'Verwandte Wörter:'
+          },
+          Italian: {
+            roots: 'Radici',
+            show: 'Mostra radici',
+            loading: 'Ricerca radici…',
+            related: 'Parole correlate:'
+          },
+          Portuguese: {
+            roots: 'Raízes',
+            show: 'Ver raízes',
+            loading: 'Buscando raízes…',
+            related: 'Palavras relacionadas:'
+          },
+          Dutch: {
+            roots: 'Woordwortels',
+            show: 'Woordwortels tonen',
+            loading: 'Wortels zoeken…',
+            related: 'Verwante woorden:'
+          },
+          Russian: {
+            roots: 'Корни',
+            show: 'Показать корни',
+            loading: 'Поиск корней…',
+            related: 'Родственные слова:'
+          },
+          Polish: {
+            roots: 'Rdzenie',
+            show: 'Pokaż rdzenie',
+            loading: 'Szukanie rdzeni…',
+            related: 'Słowa pokrewne:'
+          },
+          Ukrainian: {
+            roots: 'Корені',
+            show: 'Показати корені',
+            loading: 'Пошук коренів…',
+            related: 'Споріднені слова:'
+          },
+          Arabic: {
+            roots: 'الجذور',
+            show: 'عرض جذور الكلمة',
+            loading: 'جاري البحث…',
+            related: 'كلمات ذات صلة:'
+          },
+          Hebrew: {
+            roots: 'שורשים',
+            show: 'הצג שורשי מילה',
+            loading: 'מחפש שורשים…',
+            related: 'מילים קשורות:'
+          },
+          Hindi: {
+            roots: 'शब्द-मूल',
+            show: 'शब्द-मूल दिखाएँ',
+            loading: 'मूल खोज रहे हैं…',
+            related: 'संबंधित शब्द:'
+          },
+          Chinese: {
+            roots: '词根',
+            show: '显示词根',
+            loading: '正在查找词根…',
+            related: '相关词语：'
+          },
+          Japanese: {
+            roots: '語源',
+            show: '語源を表示',
+            loading: '語源を検索中…',
+            related: '関連語：'
+          },
+          Korean: {
+            roots: '어근',
+            show: '어근 보기',
+            loading: '어근 검색 중…',
+            related: '관련 단어:'
+          },
+          Vietnamese: {
+            roots: 'Gốc từ',
+            show: 'Xem gốc từ',
+            loading: 'Đang tìm gốc từ…',
+            related: 'Từ liên quan:'
+          },
+          Turkish: {
+            roots: 'Kökler',
+            show: 'Kökleri göster',
+            loading: 'Kökler aranıyor…',
+            related: 'İlgili kelimeler:'
+          },
+          Swahili: {
+            roots: 'Mizizi',
+            show: 'Onyesha mizizi',
+            loading: 'Inatafuta mizizi…',
+            related: 'Maneno yanayohusiana:'
+          },
+          Somali: {
+            roots: 'Xididada',
+            show: 'Muuji xididada',
+            loading: 'Raadinta xididada…',
+            related: 'Ereyada la xidhiidha:'
+          },
+          Tagalog: {
+            roots: 'Ugat ng salita',
+            show: 'Ipakita ang ugat',
+            loading: 'Naghahanap ng ugat…',
+            related: 'Mga kaugnay na salita:'
+          }
         };
-      };
-      const validRootsL = Array.isArray(item.roots) ? item.roots.filter(r => r && typeof r.root === 'string' && r.root.trim()) : [];
-      if (hasOwnProse) {
-        return /*#__PURE__*/React.createElement("details", {
-          className: "mt-1 text-xs w-full",
-          dir: isRtlLang(lang) ? 'rtl' : 'ltr'
-        }, /*#__PURE__*/React.createElement("summary", {
-          className: "cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none text-center"
-        }, "📜 ", rootsLabel), /*#__PURE__*/React.createElement("div", {
-          className: "mt-1 pl-3 border-l-2 border-indigo-200 space-y-2"
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "flex items-start gap-1"
-        }, /*#__PURE__*/React.createElement("p", {
-          className: "text-slate-700 leading-relaxed italic flex-1 not-italic"
-        }, etyLangProse), /*#__PURE__*/React.createElement("button", {
-          onClick: () => handleUncachedGlossarySpeak(etyLangProse, `etym-${idx}-${lang}`),
-          disabled: isGeneratingAudio && playingContentId !== `etym-${idx}-${lang}`,
-          className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
-          "aria-label": rootsLabel
-        }, playingContentId === `etym-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
-          size: 12,
-          className: "animate-spin motion-reduce:animate-none"
-        }) : /*#__PURE__*/React.createElement(Volume2, {
-          size: 12
-        }))), validRootsL.length > 0 && /*#__PURE__*/React.createElement("div", {
-          role: "group",
-          className: "space-y-1.5",
-          "aria-label": t('glossary.etymology_roots_label') || 'Source roots',
-          dir: "ltr"
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "flex flex-wrap gap-1.5 justify-center"
-        }, validRootsL.map((r, ri) => {
-          const relatedL = Array.isArray(r.related) ? r.related.filter(w => typeof w === 'string' && w.trim()) : [];
-          const _loc = localizeRoot(r);
-          const _langLoc = _loc.langLocalized;
-          const _meaningLoc = _loc.meaningLocalized;
-          return /*#__PURE__*/React.createElement("button", {
-            key: ri,
-            type: "button",
-            onClick: () => handleUncachedGlossarySpeak(`${r.root}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? '. ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`, `root-${idx}-${lang}-${ri}`),
-            title: `${_langLoc || ''}${relatedL.length > 0 ? (_langLoc ? ' · ' : '') + relatedLabel + ' ' + relatedL.join(', ') : ''}`.trim(),
-            className: "inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 hover:bg-indigo-100 hover:border-indigo-300 transition-colors text-indigo-900",
-            "aria-label": `${r.root}${_langLoc ? ' (' + _langLoc + ')' : ''}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? ', ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`
-          }, /*#__PURE__*/React.createElement("span", {
-            className: "font-bold"
-          }, r.root), _langLoc && /*#__PURE__*/React.createElement("span", {
-            className: "text-[10px] text-indigo-600/80 uppercase tracking-wide"
-          }, _langLoc), _meaningLoc && /*#__PURE__*/React.createElement("span", {
-            className: "text-slate-600"
-          }, "= ", _meaningLoc));
-        })), (() => {
-          const allRelL = [];
-          const seenL = new Set();
-          validRootsL.forEach(r => {
-            if (Array.isArray(r.related)) r.related.forEach(w => {
-              const k = String(w || '').trim();
-              if (k && !seenL.has(k.toLowerCase())) {
-                seenL.add(k.toLowerCase());
-                allRelL.push(k);
-              }
+        const langLabels = ETYMOLOGY_LABELS[lang] || null;
+        const rootsLabel = langLabels?.roots || t('glossary.etymology_label') || 'Word roots';
+        const showLabel = langLabels?.show || t('glossary.actions.show_etymology') || 'Show word roots';
+        const loadingLabel = langLabels?.loading || t('glossary.actions.generating_etymology') || 'Finding roots…';
+        const relatedLabel = langLabels?.related || t('glossary.related_words_label') || 'Related words:';
+        const ORIGIN_LANG_LOCALIZED = {
+          Spanish: {
+            Latin: 'latín',
+            Greek: 'griego',
+            'Old English': 'inglés antiguo',
+            French: 'francés',
+            'Old French': 'francés antiguo',
+            Germanic: 'germánico',
+            'Proto-Germanic': 'protogermánico',
+            Sanskrit: 'sánscrito',
+            Arabic: 'árabe',
+            Hebrew: 'hebreo',
+            Norse: 'nórdico',
+            'Old Norse': 'nórdico antiguo'
+          },
+          French: {
+            Latin: 'latin',
+            Greek: 'grec',
+            'Old English': 'vieil anglais',
+            French: 'français',
+            'Old French': 'ancien français',
+            Germanic: 'germanique',
+            'Proto-Germanic': 'proto-germanique',
+            Sanskrit: 'sanskrit',
+            Arabic: 'arabe',
+            Hebrew: 'hébreu',
+            Norse: 'norrois',
+            'Old Norse': 'vieux norrois'
+          },
+          German: {
+            Latin: 'lateinisch',
+            Greek: 'griechisch',
+            'Old English': 'altenglisch',
+            French: 'französisch',
+            'Old French': 'altfranzösisch',
+            Germanic: 'germanisch',
+            'Proto-Germanic': 'urgermanisch',
+            Sanskrit: 'sanskrit',
+            Arabic: 'arabisch',
+            Hebrew: 'hebräisch',
+            Norse: 'nordisch',
+            'Old Norse': 'altnordisch'
+          },
+          Italian: {
+            Latin: 'latino',
+            Greek: 'greco',
+            'Old English': 'inglese antico',
+            French: 'francese',
+            'Old French': 'francese antico',
+            Germanic: 'germanico',
+            'Proto-Germanic': 'protogermanico',
+            Sanskrit: 'sanscrito',
+            Arabic: 'arabo',
+            Hebrew: 'ebraico',
+            Norse: 'norreno',
+            'Old Norse': 'norreno antico'
+          },
+          Portuguese: {
+            Latin: 'latim',
+            Greek: 'grego',
+            'Old English': 'inglês antigo',
+            French: 'francês',
+            'Old French': 'francês antigo',
+            Germanic: 'germânico',
+            'Proto-Germanic': 'protogermânico',
+            Sanskrit: 'sânscrito',
+            Arabic: 'árabe',
+            Hebrew: 'hebraico',
+            Norse: 'nórdico',
+            'Old Norse': 'nórdico antigo'
+          },
+          Dutch: {
+            Latin: 'Latijn',
+            Greek: 'Grieks',
+            'Old English': 'Oudengels',
+            French: 'Frans',
+            'Old French': 'Oudfrans',
+            Germanic: 'Germaans',
+            'Proto-Germanic': 'Proto-Germaans',
+            Sanskrit: 'Sanskriet',
+            Arabic: 'Arabisch',
+            Hebrew: 'Hebreeuws',
+            Norse: 'Noors',
+            'Old Norse': 'Oudnoors'
+          },
+          Russian: {
+            Latin: 'латинский',
+            Greek: 'греческий',
+            'Old English': 'древнеанглийский',
+            French: 'французский',
+            'Old French': 'старофранцузский',
+            Germanic: 'германский',
+            'Proto-Germanic': 'прагерманский',
+            Sanskrit: 'санскрит',
+            Arabic: 'арабский',
+            Hebrew: 'иврит',
+            Norse: 'норвежский',
+            'Old Norse': 'древнескандинавский'
+          },
+          Polish: {
+            Latin: 'łaciński',
+            Greek: 'grecki',
+            'Old English': 'staroangielski',
+            French: 'francuski',
+            'Old French': 'starofrancuski',
+            Germanic: 'germański',
+            'Proto-Germanic': 'pragermański',
+            Sanskrit: 'sanskryt',
+            Arabic: 'arabski',
+            Hebrew: 'hebrajski',
+            Norse: 'nordycki',
+            'Old Norse': 'staronordycki'
+          },
+          Ukrainian: {
+            Latin: 'латинська',
+            Greek: 'грецька',
+            'Old English': 'давньоанглійська',
+            French: 'французька',
+            'Old French': 'старофранцузька',
+            Germanic: 'германська',
+            'Proto-Germanic': 'прагерманська',
+            Sanskrit: 'санскрит',
+            Arabic: 'арабська',
+            Hebrew: 'іврит'
+          },
+          Arabic: {
+            Latin: 'اللاتينية',
+            Greek: 'اليونانية',
+            'Old English': 'الإنجليزية القديمة',
+            French: 'الفرنسية',
+            'Old French': 'الفرنسية القديمة',
+            Germanic: 'الجرمانية',
+            Sanskrit: 'السنسكريتية',
+            Arabic: 'العربية',
+            Hebrew: 'العبرية',
+            Norse: 'الإسكندنافية'
+          },
+          Hebrew: {
+            Latin: 'לטינית',
+            Greek: 'יוונית',
+            'Old English': 'אנגלית עתיקה',
+            French: 'צרפתית',
+            'Old French': 'צרפתית עתיקה',
+            Germanic: 'גרמאנית',
+            Sanskrit: 'סנסקריט',
+            Arabic: 'ערבית',
+            Hebrew: 'עברית',
+            Norse: 'נורדית'
+          },
+          Hindi: {
+            Latin: 'लैटिन',
+            Greek: 'ग्रीक',
+            'Old English': 'पुरानी अंग्रेज़ी',
+            French: 'फ्रेंच',
+            Germanic: 'जर्मेनिक',
+            Sanskrit: 'संस्कृत',
+            Arabic: 'अरबी',
+            Hebrew: 'हिब्रू',
+            Norse: 'नॉर्स'
+          },
+          Chinese: {
+            Latin: '拉丁语',
+            Greek: '希腊语',
+            'Old English': '古英语',
+            French: '法语',
+            'Old French': '古法语',
+            Germanic: '日耳曼语',
+            'Proto-Germanic': '原始日耳曼语',
+            Sanskrit: '梵语',
+            Arabic: '阿拉伯语',
+            Hebrew: '希伯来语',
+            Norse: '北欧语',
+            'Old Norse': '古诺尔斯语'
+          },
+          Japanese: {
+            Latin: 'ラテン語',
+            Greek: 'ギリシャ語',
+            'Old English': '古英語',
+            French: 'フランス語',
+            'Old French': '古フランス語',
+            Germanic: 'ゲルマン語',
+            Sanskrit: 'サンスクリット語',
+            Arabic: 'アラビア語',
+            Hebrew: 'ヘブライ語',
+            Norse: 'ノルド語',
+            'Old Norse': '古ノルド語'
+          },
+          Korean: {
+            Latin: '라틴어',
+            Greek: '그리스어',
+            'Old English': '고대 영어',
+            French: '프랑스어',
+            'Old French': '고대 프랑스어',
+            Germanic: '게르만어',
+            Sanskrit: '산스크리트어',
+            Arabic: '아랍어',
+            Hebrew: '히브리어',
+            Norse: '노르드어',
+            'Old Norse': '고대 노르드어'
+          },
+          Vietnamese: {
+            Latin: 'tiếng La-tinh',
+            Greek: 'tiếng Hy Lạp',
+            'Old English': 'tiếng Anh cổ',
+            French: 'tiếng Pháp',
+            'Old French': 'tiếng Pháp cổ',
+            Germanic: 'tiếng Giéc-manh',
+            Sanskrit: 'tiếng Phạn',
+            Arabic: 'tiếng Ả Rập',
+            Hebrew: 'tiếng Hê-brơ'
+          },
+          Turkish: {
+            Latin: 'Latince',
+            Greek: 'Yunanca',
+            'Old English': 'Eski İngilizce',
+            French: 'Fransızca',
+            'Old French': 'Eski Fransızca',
+            Germanic: 'Germence',
+            Sanskrit: 'Sanskritçe',
+            Arabic: 'Arapça',
+            Hebrew: 'İbranice',
+            Norse: 'Norsça',
+            'Old Norse': 'Eski Norsça'
+          },
+          Swahili: {
+            Latin: 'Kilatini',
+            Greek: 'Kigiriki',
+            'Old English': 'Kiingereza cha Kale',
+            French: 'Kifaransa',
+            Germanic: 'Kijerumani',
+            Arabic: 'Kiarabu',
+            Hebrew: 'Kiebrania'
+          },
+          Somali: {
+            Latin: 'Laatiin',
+            Greek: 'Giriig',
+            'Old English': 'Ingiriisi qadiim ah',
+            French: 'Faransiis',
+            Arabic: 'Carabi',
+            Hebrew: 'Cibraani'
+          },
+          Tagalog: {
+            Latin: 'Latin',
+            Greek: 'Griyego',
+            'Old English': 'Lumang Ingles',
+            French: 'Pranses',
+            Germanic: 'Germaniko',
+            Arabic: 'Arabe',
+            Hebrew: 'Hebreo'
+          }
+        };
+        const localizeRoot = function (r) {
+          var langLocalized = r.langByLocale && r.langByLocale[lang] || ORIGIN_LANG_LOCALIZED[lang] && ORIGIN_LANG_LOCALIZED[lang][r.lang] || r.lang || '';
+          var meaningLocalized = r.meaningByLang && r.meaningByLang[lang] || r.meaning || '';
+          return {
+            langLocalized: langLocalized,
+            meaningLocalized: meaningLocalized
+          };
+        };
+        const validRootsL = Array.isArray(item.roots) ? item.roots.filter(r => r && typeof r.root === 'string' && r.root.trim()) : [];
+        if (hasOwnProse) {
+          return /*#__PURE__*/React.createElement("details", {
+            className: "mt-1 text-xs w-full",
+            dir: isRtlLang(lang) ? 'rtl' : 'ltr'
+          }, /*#__PURE__*/React.createElement("summary", {
+            className: "cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none text-center"
+          }, "📜 ", rootsLabel), /*#__PURE__*/React.createElement("div", {
+            className: "mt-1 pl-3 border-l-2 border-indigo-200 space-y-2"
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "flex items-start gap-1"
+          }, /*#__PURE__*/React.createElement("p", {
+            className: "text-slate-700 leading-relaxed italic flex-1 not-italic"
+          }, etyLangProse), /*#__PURE__*/React.createElement("button", {
+            onClick: () => handleUncachedGlossarySpeak(etyLangProse, `etym-${idx}-${lang}`),
+            disabled: isGeneratingAudio && playingContentId !== `etym-${idx}-${lang}`,
+            className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
+            "aria-label": rootsLabel
+          }, playingContentId === `etym-${idx}-${lang}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
+            size: 12,
+            className: "animate-spin motion-reduce:animate-none"
+          }) : /*#__PURE__*/React.createElement(Volume2, {
+            size: 12
+          }))), validRootsL.length > 0 && /*#__PURE__*/React.createElement("div", {
+            role: "group",
+            className: "space-y-1.5",
+            "aria-label": t('glossary.etymology_roots_label') || 'Source roots',
+            dir: "ltr"
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "flex flex-wrap gap-1.5 justify-center"
+          }, validRootsL.map((r, ri) => {
+            const relatedL = Array.isArray(r.related) ? r.related.filter(w => typeof w === 'string' && w.trim()) : [];
+            const _loc = localizeRoot(r);
+            const _langLoc = _loc.langLocalized;
+            const _meaningLoc = _loc.meaningLocalized;
+            return /*#__PURE__*/React.createElement("button", {
+              key: ri,
+              type: "button",
+              onClick: () => handleUncachedGlossarySpeak(`${r.root}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? '. ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`, `root-${idx}-${lang}-${ri}`),
+              title: `${_langLoc || ''}${relatedL.length > 0 ? (_langLoc ? ' · ' : '') + relatedLabel + ' ' + relatedL.join(', ') : ''}`.trim(),
+              className: "inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 hover:bg-indigo-100 hover:border-indigo-300 transition-colors text-indigo-900",
+              "aria-label": `${r.root}${_langLoc ? ' (' + _langLoc + ')' : ''}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? ', ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`
+            }, /*#__PURE__*/React.createElement("span", {
+              className: "font-bold"
+            }, r.root), _langLoc && /*#__PURE__*/React.createElement("span", {
+              className: "text-[10px] text-indigo-600/80 uppercase tracking-wide"
+            }, _langLoc), _meaningLoc && /*#__PURE__*/React.createElement("span", {
+              className: "text-slate-600"
+            }, "= ", _meaningLoc));
+          })), (() => {
+            const allRelL = [];
+            const seenL = new Set();
+            validRootsL.forEach(r => {
+              if (Array.isArray(r.related)) r.related.forEach(w => {
+                const k = String(w || '').trim();
+                if (k && !seenL.has(k.toLowerCase())) {
+                  seenL.add(k.toLowerCase());
+                  allRelL.push(k);
+                }
+              });
             });
-          });
-          if (allRelL.length === 0) return null;
-          return /*#__PURE__*/React.createElement("div", {
-            className: "text-[11px] text-slate-600 leading-snug pl-1"
-          }, /*#__PURE__*/React.createElement("span", {
-            className: "font-semibold text-slate-700"
-          }, relatedLabel), " ", allRelL.slice(0, 6).map((w, wi) => /*#__PURE__*/React.createElement("span", {
-            key: wi
-          }, wi > 0 && /*#__PURE__*/React.createElement("span", {
-            className: "text-slate-600"
-          }, ", "), /*#__PURE__*/React.createElement("span", {
-            className: "font-medium text-indigo-800"
-          }, w))));
-        })())));
-      }
-      if (validRootsL.length > 0) {
-        return /*#__PURE__*/React.createElement("details", {
-          className: "mt-1 text-xs w-full",
-          dir: isRtlLang(lang) ? 'rtl' : 'ltr'
-        }, /*#__PURE__*/React.createElement("summary", {
-          className: "cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none text-center"
-        }, "📜 ", rootsLabel), /*#__PURE__*/React.createElement("div", {
-          className: "mt-1 pl-3 border-l-2 border-indigo-200 space-y-2",
-          dir: "ltr"
-        }, /*#__PURE__*/React.createElement("div", {
-          className: "flex flex-wrap gap-1.5 justify-center"
-        }, validRootsL.map((r, ri) => {
-          const relatedL = Array.isArray(r.related) ? r.related.filter(w => typeof w === 'string' && w.trim()) : [];
-          const _loc = localizeRoot(r);
-          const _langLoc = _loc.langLocalized;
-          const _meaningLoc = _loc.meaningLocalized;
+            if (allRelL.length === 0) return null;
+            return /*#__PURE__*/React.createElement("div", {
+              className: "text-[11px] text-slate-600 leading-snug pl-1"
+            }, /*#__PURE__*/React.createElement("span", {
+              className: "font-semibold text-slate-700"
+            }, relatedLabel), " ", allRelL.slice(0, 6).map((w, wi) => /*#__PURE__*/React.createElement("span", {
+              key: wi
+            }, wi > 0 && /*#__PURE__*/React.createElement("span", {
+              className: "text-slate-600"
+            }, ", "), /*#__PURE__*/React.createElement("span", {
+              className: "font-medium text-indigo-800"
+            }, w))));
+          })())));
+        }
+        if (validRootsL.length > 0) {
+          return /*#__PURE__*/React.createElement("details", {
+            className: "mt-1 text-xs w-full",
+            dir: isRtlLang(lang) ? 'rtl' : 'ltr'
+          }, /*#__PURE__*/React.createElement("summary", {
+            className: "cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none text-center"
+          }, "📜 ", rootsLabel), /*#__PURE__*/React.createElement("div", {
+            className: "mt-1 pl-3 border-l-2 border-indigo-200 space-y-2",
+            dir: "ltr"
+          }, /*#__PURE__*/React.createElement("div", {
+            className: "flex flex-wrap gap-1.5 justify-center"
+          }, validRootsL.map((r, ri) => {
+            const relatedL = Array.isArray(r.related) ? r.related.filter(w => typeof w === 'string' && w.trim()) : [];
+            const _loc = localizeRoot(r);
+            const _langLoc = _loc.langLocalized;
+            const _meaningLoc = _loc.meaningLocalized;
+            return /*#__PURE__*/React.createElement("button", {
+              key: ri,
+              type: "button",
+              onClick: () => handleUncachedGlossarySpeak(`${r.root}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? '. ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`, `root-${idx}-${lang}-${ri}`),
+              title: `${_langLoc || ''}${relatedL.length > 0 ? (_langLoc ? ' · ' : '') + relatedLabel + ' ' + relatedL.join(', ') : ''}`.trim(),
+              className: "inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 hover:bg-indigo-100 hover:border-indigo-300 transition-colors text-indigo-900",
+              "aria-label": `${r.root}${_langLoc ? ' (' + _langLoc + ')' : ''}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? ', ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`
+            }, /*#__PURE__*/React.createElement("span", {
+              className: "font-bold"
+            }, r.root), _langLoc && /*#__PURE__*/React.createElement("span", {
+              className: "text-[10px] text-indigo-600/80 uppercase tracking-wide"
+            }, _langLoc), _meaningLoc && /*#__PURE__*/React.createElement("span", {
+              className: "text-slate-600"
+            }, "= ", _meaningLoc));
+          })), /*#__PURE__*/React.createElement("button", {
+            hidden: !canEditGlossary,
+            style: {
+              display: canEditGlossary ? undefined : 'none'
+            },
+            onClick: () => handleGenerateTermEtymology(idx, item.term),
+            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
+            "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
+            className: "mt-1 text-[11px] text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1",
+            title: rootsLabel
+          }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+            size: 10,
+            className: "animate-spin motion-reduce:animate-none"
+          }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "+ ", showLabel))));
+        }
+        if (includeEtymology || hasEnglishEty) {
           return /*#__PURE__*/React.createElement("button", {
-            key: ri,
-            type: "button",
-            onClick: () => handleUncachedGlossarySpeak(`${r.root}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? '. ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`, `root-${idx}-${lang}-${ri}`),
-            title: `${_langLoc || ''}${relatedL.length > 0 ? (_langLoc ? ' · ' : '') + relatedLabel + ' ' + relatedL.join(', ') : ''}`.trim(),
-            className: "inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 hover:bg-indigo-100 hover:border-indigo-300 transition-colors text-indigo-900",
-            "aria-label": `${r.root}${_langLoc ? ' (' + _langLoc + ')' : ''}${_meaningLoc ? ', ' + _meaningLoc : ''}${relatedL.length > 0 ? ', ' + relatedLabel + ' ' + relatedL.join(', ') : ''}`
-          }, /*#__PURE__*/React.createElement("span", {
-            className: "font-bold"
-          }, r.root), _langLoc && /*#__PURE__*/React.createElement("span", {
-            className: "text-[10px] text-indigo-600/80 uppercase tracking-wide"
-          }, _langLoc), _meaningLoc && /*#__PURE__*/React.createElement("span", {
-            className: "text-slate-600"
-          }, "= ", _meaningLoc));
-        })), /*#__PURE__*/React.createElement("button", {
-          hidden: !canEditGlossary,
-          style: {
-            display: canEditGlossary ? undefined : 'none'
-          },
-          onClick: () => handleGenerateTermEtymology(idx, item.term),
-          disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
-          "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
-          className: "mt-1 text-[11px] text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1",
-          title: rootsLabel
-        }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
-          size: 10,
-          className: "animate-spin motion-reduce:animate-none"
-        }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "+ ", showLabel))));
-      }
-      if (includeEtymology || hasEnglishEty) {
-        return /*#__PURE__*/React.createElement("button", {
-          hidden: !canEditGlossary,
-          style: {
-            display: canEditGlossary ? undefined : 'none'
-          },
-          onClick: () => handleGenerateTermEtymology(idx, item.term),
-          disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
-          "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
-          className: "mt-1 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1 justify-center",
-          title: rootsLabel,
-          dir: isRtlLang(lang) ? 'rtl' : 'ltr'
-        }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
-          size: 12,
-          className: "animate-spin motion-reduce:animate-none"
-        }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", showLabel));
-      }
-      return null;
-    })()))));
+            hidden: !canEditGlossary,
+            style: {
+              display: canEditGlossary ? undefined : 'none'
+            },
+            onClick: () => handleGenerateTermEtymology(idx, item.term),
+            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
+            "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
+            className: "mt-1 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1 justify-center",
+            title: rootsLabel,
+            dir: isRtlLang(lang) ? 'rtl' : 'ltr'
+          }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+            size: 12,
+            className: "animate-spin motion-reduce:animate-none"
+          }), " ", loadingLabel) : /*#__PURE__*/React.createElement(React.Fragment, null, "📜 ", showLabel));
+        }
+        return null;
+      })()));
+    }));
   }), filteredGlossaryData.length === 0 && /*#__PURE__*/React.createElement("tr", {
     role: "row"
   }, /*#__PURE__*/React.createElement("td", {
@@ -5713,10 +6096,11 @@ function GlossaryView(props) {
     ref: phonicsCloseRef,
     type: "button",
     onClick: closePhonics,
-    className: "text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
+    className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }))), phonicsData.isLoading ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
@@ -5734,7 +6118,8 @@ function GlossaryView(props) {
   }, t('glossary.phonetic_spelling')), /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-serif italic text-slate-700"
   }, "/", phonicsData.data.phoneticSpelling, "/")), /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.volume'),
+    type: "button",
+    "aria-label": t('glossary.popups.replay') || t('common.volume'),
     onClick: function () {
       if (phonicsData.audioUrl) {
         var audio = new Audio(phonicsData.audioUrl);
@@ -5768,12 +6153,32 @@ function GlossaryView(props) {
     }, "•"), /*#__PURE__*/React.createElement("span", {
       className: "bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm"
     }, glossaryAiText(syl)));
-  }))))) : /*#__PURE__*/React.createElement("div", {
-    className: "text-center text-red-600 text-xs font-bold py-4"
-  }, t('glossary.popups.failed')), /*#__PURE__*/React.createElement("div", {
+  }))))) : (() => {
+    // Say WHY there is no AI help (turned off for the class, or the check
+    // failed), keep the dictionary recording and IPA, and offer a retry
+    // when one can work. It used to say only "Could not analyze word."
+    var availability = typeof phonicsData.getAiAvailability === 'function' ? phonicsData.getAiAvailability() : null;
+    var aiOff = window.__alloStudentAiDisabled === true || availability === 'disabled' || availability == null && phonicsData.aiStatus === 'disabled';
+    var canRetry = !aiOff && availability !== 'unavailable' && typeof phonicsData.retry === 'function';
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 py-2",
+      "data-phonics-status": aiOff ? 'ai-disabled' : 'error'
+    }, /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "text-center text-slate-700 text-xs font-bold"
+    }, aiOff ? glossaryText('glossary.popups.ai_disabled', 'AI pronunciation help is turned off for this class.') : phonicsData.aiErrorReason === 'timeout' ? glossaryText('glossary.popups.timeout', 'The pronunciation check took too long.') : t('glossary.popups.failed')), renderPhonicsDictRow(phonicsData, t, playGlossaryDictionaryAudio), canRetry && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-phonics-retry": "true",
+      onClick: function () {
+        phonicsData.retry();
+      },
+      className: "mx-auto flex min-h-11 items-center justify-center rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-50"
+    }, glossaryText('glossary.popups.retry', 'Try again')));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"
   })))));
 }
+GlossaryView.translationFingerprint = glossaryTranslationFingerprint;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.GlossaryView = GlossaryView;

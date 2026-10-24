@@ -9,6 +9,18 @@ const row = (i = 0) => ({ t: i * 2, lat: 43.646, lon: -70.309, alt: 5000 + i * 1
 const flight = patch => ({ aircraftId: 'cessna172', aircraft: 'Cessna 172 Skyhawk', airborneSeconds: 30,
   flightTime: 30, peakAGL: 1000, bestStableSeconds: 15, landings: 1, bestLanding: 180,
   stallSeconds: 0, samples: Array.from({ length: 12 }, (_, i) => row(i)), ...patch });
+function completedChallenge(id) {
+  const challenge = FS.createFlightChallenge(id, {});
+  challenge.elapsedSeconds = 30;
+  challenge.airborneSeconds = 30;
+  challenge.status = 'complete';
+  Object.keys(challenge.objectives).forEach(key => { challenge.objectives[key] = true; });
+  if (id === 'world_tour') {
+    challenge.arrivals = FS.WAYPOINTS.slice(0, 5).map(airport => airport.id);
+    challenge.tourElapsedSeconds = 150;
+  }
+  return challenge;
+}
 
 async function mount(data = {}) {
   if (root) await act(async () => root.unmount());
@@ -137,6 +149,35 @@ describe('SkySchool evidence-based coaching priorities', () => {
     expect(FS.flightCoachingPlan(flight({ landings: 0, bestLanding: null })).reason).toBe('approach');
     expect(FS.flightCoachingPlan(flight()).reason).toBe('energy');
   });
+  it.each(['first_flight', 'mountain_flying', 'cross_country', 'world_tour'])('moves completed %s forward without changing its generic milestone evidence', id => {
+    const record = flight({ challenge: completedChallenge(id), bestStableSeconds: 0 });
+    expect(FS.flightCoachingPlan(record)).toEqual({ reason: 'challenge_complete', challenge: 'energy_management', lesson: 'weight' });
+    expect(FS.flightPracticeEvidence(record).steady).toBe(false);
+    expect(record.bestStableSeconds).toBe(0);
+  });
+  it.each([0, 15])('transfers completed energy practice to an approach with %s seconds of generic steady flight', bestStableSeconds => {
+    const record = flight({ challenge: completedChallenge('energy_management'), bestStableSeconds, landings: 0, bestLanding: null });
+    expect(FS.flightCoachingPlan(record)).toEqual({ reason: 'energy_complete', challenge: 'world_tour', lesson: 'weight' });
+    expect(FS.flightPracticeEvidence(record).landing).toBe(false);
+  });
+  it('uses saved completed objectives when generic measurements are missing, without inventing them', () => {
+    const record = { challenge: completedChallenge('world_tour') };
+    expect(FS.flightCoachingPlan(record).reason).toBe('challenge_complete');
+    expect(FS.flightPracticeEvidence(record)).toMatchObject({ steady: false, landing: false, airborne: false });
+    expect(record.airborneSeconds).toBeUndefined();
+  });
+  it.each(['energy_management', 'world_tour'])('keeps actual stall and hard-touchdown priorities after completed %s', id => {
+    const challenge = completedChallenge(id);
+    expect(FS.flightCoachingPlan(flight({ challenge, stallSeconds: 2, bestLanding: 700 })))
+      .toMatchObject({ reason: 'stall', activity: 'stallHunt' });
+    expect(FS.flightCoachingPlan(flight({ challenge, bestLanding: 700 })))
+      .toMatchObject({ reason: 'landing', challenge: 'world_tour' });
+  });
+  it('does not treat a saved complete status as completed objective evidence', () => {
+    const challenge = { ...FS.createFlightChallenge('energy_management', {}), status: 'complete' };
+    expect(FS.flightCoachingPlan(flight({ challenge, bestStableSeconds: 0 })))
+      .toMatchObject({ reason: 'challenge', challenge: 'energy_management' });
+  });
 });
 
 describe('SkySchool debrief evidence explorer', () => {
@@ -233,6 +274,26 @@ describe('SkySchool debrief evidence explorer', () => {
     await click('Start recommended practice');
     expect(latest).toMatchObject({ view: 'flying', aircraft: 'cessna172', selectedChallenge: 'first_flight' });
     expect(latest.flightChallenge.objectives).toEqual({ climb: false, steady: false, landing: false });
+  });
+  it.each([
+    ['cross_country', 'energy_management', 'Challenge objectives were observed.'],
+    ['world_tour', 'energy_management', 'Challenge objectives were observed.'],
+    ['energy_management', 'world_tour', 'The energy-management objectives were observed.'],
+  ])('recognizes completed %s and launches its next practice without claiming missing milestones', async (id, next, message) => {
+    const challenge = completedChallenge(id);
+    await mount({ lastDebrief: flight({ challenge, startedAirborne: true, bestStableSeconds: 0,
+      ...(id === 'energy_management' ? { landings: 0, bestLanding: null } : {}) }) });
+    const coaching = host.querySelector('[aria-label="Next flight coaching tip"]');
+    expect(coaching.textContent).toContain(message);
+    expect(coaching.textContent).not.toContain('A ten-second steady-flight hold was not observed');
+    expect(coaching.textContent).not.toContain('The basic practice milestones were observed');
+    expect(host.querySelector('[aria-label="Observed practice milestones"]').textContent).toContain('○ Steady flight:');
+    expect(host.querySelector('[data-flight-debrief-headline]').textContent).toContain('Challenge complete:');
+    await click('Start recommended practice');
+    expect(latest).toMatchObject({ view: 'flying', selectedChallenge: next });
+    expect(latest.flightChallenge).toMatchObject({ id: next, status: 'active' });
+    expect(Object.values(latest.flightChallenge.objectives).every(value => value === false)).toBe(true);
+    expect(latest.lastDebrief.challenge.status).toBe('complete');
   });
   it('seeds an airborne TAS maximum and records later TAS peaks instead of indicated airspeed', async () => {
     await mount();

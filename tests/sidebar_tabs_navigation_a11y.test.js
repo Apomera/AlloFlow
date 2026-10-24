@@ -17,26 +17,37 @@ beforeEach(() => {
   host = document.createElement('div'); document.body.append(host); root = createRoot(host); submissions = 0;
 });
 afterEach(() => { act(() => root.unmount()); host.remove(); window.History = originalHistoryIcon; });
-function mount(t = () => undefined) {
+function mount(t = () => undefined, roleProps = {}) {
   function Harness() {
     const [active, setActive] = React.useState('create');
     return React.createElement('form', { onSubmit: e => { e.preventDefault(); submissions++; } },
-      React.createElement(Tabs, { t, activeSidebarTab: active, handleSetActiveSidebarTabToCreate: () => setActive('create'), setActiveSidebarTab: setActive, setIsHistoryPulsing: () => {} }));
+      React.createElement(Tabs, { t, activeSidebarTab: active, handleSetActiveSidebarTabToCreate: () => setActive('create'), setActiveSidebarTab: setActive, setIsHistoryPulsing: () => {}, ...roleProps }));
   }
   act(() => root.render(React.createElement(Harness)));
   return [...host.querySelectorAll('[role="tab"]')];
 }
 const key = (element, value) => act(() => element.dispatchEvent(new KeyboardEvent('keydown', { key: value, bubbles: true, cancelable: true })));
 describe('sidebar tab keyboard and names', () => {
+  // 2026-10-16 onboarding redesign (a023e75fa): the second tab is named for the role:
+  // teacher "Class & Materials", family "Materials", learner/independent "My Resources".
   it.each([['missing', () => undefined], ['key echo', key => key]])('provides visible and tablist fallback names for %s translations', (_, t) => {
     const [create, history] = mount(t);
-    expect(create.textContent.trim()).toBe('Create'); expect(history.textContent.trim()).toBe('History');
+    expect(create.textContent.trim()).toBe('Create'); expect(history.textContent.trim()).toBe('Class & Materials');
     expect(host.querySelector('[role="tablist"]').getAttribute('aria-label')).toBe('Content tabs');
     expect(create.hasAttribute('aria-label')).toBe(false); expect(history.hasAttribute('aria-label')).toBe(false);
   });
+  it.each([
+    [{ isParentMode: true }, 'Materials'],
+    [{ isIndependentMode: true }, 'My Resources'],
+    [{ isTeacherMode: false }, 'My Resources'],
+  ])('names the second tab for the role %o', (roleProps, name) => {
+    const [, history] = mount(key => key, roleProps);
+    expect(history.textContent.trim()).toBe(name);
+    expect(history.hasAttribute('aria-label')).toBe(false);
+  });
   it('keeps the visible translated name instead of an independently translated override', () => {
-    const [create, history] = mount(k => ({ 'sidebar.create_tab': 'Crear', 'sidebar.history_tab': 'Historial', 'common.create_new_content': 'Contenido nuevo', 'common.history': 'Archivo' })[k]);
-    expect(create.textContent.trim()).toBe('Crear'); expect(history.textContent.trim()).toBe('Historial');
+    const [create, history] = mount(k => ({ 'sidebar.create_tab': 'Crear', 'sidebar.class_materials_tab': 'Clase y materiales', 'sidebar.history_tab': 'Historial', 'common.create_new_content': 'Contenido nuevo', 'common.history': 'Archivo' })[k]);
+    expect(create.textContent.trim()).toBe('Crear'); expect(history.textContent.trim()).toBe('Clase y materiales');
     expect(create.hasAttribute('aria-label')).toBe(false); expect(history.hasAttribute('aria-label')).toBe(false);
   });
   it('wraps in both directions and supports Home/End without activating on arrow focus', () => {

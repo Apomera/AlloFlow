@@ -1,0 +1,96 @@
+[
+  {
+    "resourceId": "cp-anchor",
+    "path": "data.sections.0",
+    "from": {
+      "label": "A FACT",
+      "bullets": [
+        "Anyone in the room would agree it happened",
+        "Example: She walked past without saying hi"
+      ],
+      "iconPrompt": "a plain camera"
+    },
+    "to": {
+      "label": "A FACT",
+      "bullets": [
+        "Anyone in the room would agree it happened",
+        "Example: She walked past without saying hi"
+      ],
+      "iconPrompt": "a plain camera",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cp-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "A STORY",
+      "bullets": [
+        "Your explanation for the fact",
+        "Written in half a second",
+        "Example: She is mad at me"
+      ],
+      "iconPrompt": "a thought bubble with a question mark"
+    },
+    "to": {
+      "label": "A STORY",
+      "bullets": [
+        "Your explanation for the fact",
+        "Written in half a second",
+        "Example: She is mad at me"
+      ],
+      "iconPrompt": "a thought bubble with a question mark",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cp-anchor",
+    "path": "data.sections.2",
+    "from": {
+      "label": "THE GAP",
+      "bullets": [
+        "Other people: \"that is who they are\"",
+        "Ourselves: \"I was in a hurry\"",
+        "Many conflicts start here"
+      ],
+      "iconPrompt": "two arrows pointing at one dot from different sides"
+    },
+    "to": {
+      "label": "THE GAP",
+      "bullets": [
+        "Other people: \"that is who they are\"",
+        "Ourselves: \"I was in a hurry\"",
+        "Many conflicts start here"
+      ],
+      "iconPrompt": "two arrows pointing at one dot from different sides",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "cp-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "NOTICE, HOLD, ASK",
+      "bullets": [
+        "Notice the story",
+        "Hold it loosely",
+        "Ask one open question"
+      ],
+      "iconPrompt": "an open hand with a small speech bubble above it"
+    },
+    "to": {
+      "label": "NOTICE, HOLD, ASK",
+      "bullets": [
+        "Notice the story",
+        "Hold it loosely",
+        "Ask one open question"
+      ],
+      "iconPrompt": "an open hand with a small speech bubble above it",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

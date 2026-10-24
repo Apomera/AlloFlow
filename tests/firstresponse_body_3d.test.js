@@ -1152,6 +1152,8 @@ describe('body 3D — the recovery position performs its own steps', () => {
     expect(moved(before, after), 'watching them breathe moved them').toBe(false);
   });
 
+  // This and the next test build 21-27 full scenes; each build costs ~0.3 s
+  // since the October face and hand refinements, beyond the 5 s default.
   it('keeps every joint above the mat, at every step and every age', () => {
     for (const age of ['adult', 'child', 'infant']) {
       for (let p = 0; p <= ORDER.length; p++) {
@@ -1161,7 +1163,7 @@ describe('body 3D — the recovery position performs its own steps', () => {
         }
       }
     }
-  });
+  }, 60000);
 
   it('does not stretch a limb to reach a pose', () => {
     // Both rolled poses re-pin joints that the body rotation would otherwise
@@ -1189,7 +1191,7 @@ describe('body 3D — the recovery position performs its own steps', () => {
         }
       }
     }
-  });
+  }, 60000);
 
   it('lifts the body as it comes onto its side instead of sinking into the mat', () => {
     // A body on its side is taller than one on its back. Holding the supine

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Uchunguzi wa misheni",
+  "stem.flightsim.mission_journal_targets": "Malengo yaliyopigwa picha: {captured} kati ya {total}.",
+  "stem.flightsim.mission_journal_complete": "Malengo yote ya misheni na kutua baada ya kurudi vimerekodiwa.",
+  "stem.flightsim.mission_journal_ended": "Misheni iliisha kabla ya kurekodi ushahidi wote wa kukamilika.",
+  "stem.flightsim.mission_journal_recovery": "Uokoaji wa manusura uliorekodiwa: {value}.",
+  "stem.flightsim.mission_journal_return": "Kutua baada ya kurudi kambini kulikorekodiwa: {value}.",
+  "stem.flightsim.mission_guidance_title": "Mwongozo wa misheni",
+  "stem.flightsim.mission_route": "{target} · mwelekeo {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Sehemu ya kuondokea",
+  "stem.flightsim.mission_read_status": "Soma hali ya misheni",
+  "stem.flightsim.mission_return_criterion": "Tua ndani ya umbali wa {distance} nm kutoka {target}, kwa kasi ikilinganishwa na ardhi chini ya {speed} kt na kasi ya kushuka chini ya {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Data ya lengo la misheni haipatikani. Maliza safari hii ya ndege na uanze misheni mpya.",
+  "stem.flightsim.mission_capture_criterion": "Kaa ndani ya umbali wa {distance} ft, juu ya {min} na chini ya {max} ft kutoka ardhini, kwa kasi kulingana na ardhi iliyo chini ya {speed} kt kwa {hold} s."
+}

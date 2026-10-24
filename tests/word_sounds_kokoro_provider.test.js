@@ -141,20 +141,23 @@ describe('Word Sounds setup passes its current voice and language', () => {
     // Execute the actual call site. The surrounding preparation loop also
     // packages images/boards; those are not involved in provider selection.
     const start = SETUP_SOURCE.indexOf('const voiceForTts = generationVoiceRef.current || undefined;');
-    const end = SETUP_SOURCE.indexOf('const asset = await packTtsSource(src);', start);
+    // 79e3e5eae (2026-10-10) wrapped the request in awaitGeneration(...) for cancellation.
+    const end = SETUP_SOURCE.indexOf('if (!isGenerationActive()) throw generationAbortError();', start);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
     const issueRequest = new AsyncFunction(
       'generationVoiceRef', 'callTTS', 'text', 'speedForTts', 'wordSoundsLanguage',
+      'awaitGeneration', 'signal', 'isGenerationActive',
       SETUP_SOURCE.slice(start, end),
     );
     const requests = [];
     const voice = { current: 'Kore' };
     const record = async (...args) => { requests.push(args); return 'blob:prepared-test-audio'; };
-    await issueRequest(voice, record, 'first word', 1, 'English');
+    const run = text => issueRequest(voice, record, text, 1, 'English', promise => promise, undefined, () => true);
+    await run('first word');
     voice.current = 'af_heart';
-    await issueRequest(voice, record, 'retry word', 1, 'English');
+    await run('retry word');
     expect(requests[0][1]).toBe('Kore');
     expect(requests[0][3].allowProviderFallback).toBe(true);
     expect(requests[1][1]).toBe('af_heart');

@@ -3,10 +3,10 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-let tool, host, root, latest, FS;
+let tool, host, root, latest, FS, updateSaved, xp;
 const hooks = () => window.__testHooks.flightSim;
 const active = () => hooks().getFlightChallengeRef().current;
-const missionIds = ['first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'];
+const missionIds = ['first_climb', 'first_flight', 'cross_country', 'mountain_flying', 'energy_management', 'world_tour'];
 
 async function mount(seed = {}) {
   if (root) await act(async () => { root.unmount(); });
@@ -17,9 +17,11 @@ async function mount(seed = {}) {
   function App() {
     const [data, updateData] = React.useState({ flightSim: { view: 'menu', menuSections: { challenges: true }, ...seed } });
     latest = data.flightSim;
+    updateSaved = patch => updateData(previous => ({ ...previous, flightSim: { ...previous.flightSim, ...patch } }));
     return tool.render(makeCtx({
       toolData: data,
       setToolData: updateData,
+      awardXP: (id, points, reason, done) => { xp.push({ id, points, reason }); if (done) done(points); },
       update: (id, key, value) => updateData(previous => ({ ...previous, [id]: { ...previous[id], [key]: value } })),
       updateMulti: (id, patch) => updateData(previous => ({ ...previous, [id]: { ...previous[id], ...patch } })),
     }));
@@ -33,6 +35,12 @@ function button(text, scope = host) {
   return element;
 }
 async function click(text, scope) { await act(async () => { button(text, scope).click(); }); }
+async function reviewTourLeg() {
+  const continueLeg = host.querySelector('[data-flight-continue-tour]');
+  if (continueLeg) await act(async () => continueLeg.click());
+  else await click('End challenge');
+  expect(latest.view).toBe('debrief');
+}
 async function clickContaining(text, scope = host) {
   const element = [...scope.querySelectorAll('button')].find(item => item.textContent.includes(text));
   expect(element, `Button containing: ${text}`).toBeTruthy();
@@ -66,6 +74,7 @@ async function finishFirstFlight() {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  xp = [];
   resetStemLab();
   window.__testHooks = {};
   window.__RR_TEST_EXPORTS__ = {};
@@ -155,7 +164,7 @@ describe('SkySchool measured flight challenges', () => {
     expect(latest.challengeResults.first_flight.status).toBe('complete');
     expect(host.querySelector('[aria-label="Challenge result"]').textContent).toContain('All challenge objectives observed');
     const completed = JSON.parse(JSON.stringify(latest.challengeResults.first_flight));
-    await click('Retry challenge');
+    await click('🔁 Try the challenge again');
     expect(latest.challengeResults.first_flight).toEqual(completed);
     expect(active()).toMatchObject({ status: 'active', elapsedSeconds: 0, airborneSeconds: 0, objectives: { climb: false, steady: false, landing: false } });
     expect(hooks().getLandingRef().current.scored).toBe(false);
@@ -195,18 +204,103 @@ describe('SkySchool measured flight challenges', () => {
     expect(host.querySelector('#challenge-reflection').value).toBe(explanation);
   });
 
-  it('preserves interrupted evidence on reload and returns to launch without pretending to restore the aircraft', async () => {
+  it('preserves interrupted checkpoint evidence in a review without pretending to restore the aircraft', async () => {
     await mount();
     await start('first_flight');
     airborne();
     await evaluate();
     const saved = JSON.parse(JSON.stringify(latest));
     await mount(saved);
-    expect(latest.view).toBe('menu');
+    expect(latest.view).toBe('debrief');
     expect(latest.flightChallenge).toBeNull();
     expect(latest.selectedChallenge).toBeNull();
     expect(latest.challengeResults.first_flight).toMatchObject({ interrupted: true, objectives: { climb: true, steady: false, landing: false } });
+    expect(latest.lastDebrief).toMatchObject({ interrupted: true, challenge: { id: 'first_flight', objectives: { climb: true, steady: false, landing: false } } });
     expect(active()).toBeNull();
+    expect(hooks().flyingRef.current).toBe(false);
+  });
+
+  it('recovers a cockpit hydrated after mount without replacing the prior debrief', async () => {
+    const prior = { aircraftId: 'cessna172', flightTime: 90, reflection: 'Keep this completed flight.' };
+    await mount({ lastDebrief: prior });
+    await act(async () => updateSaved({ view: 'flying', selectedChallenge: 'first_flight',
+      flightChallenge: { version: 1, id: 'first_flight', elapsedSeconds: 20,
+        objectives: { climb: true, steady: false, landing: false } } }));
+    expect(latest.view).toBe('menu');
+    expect(latest.challengeResults.first_flight).toMatchObject({ interrupted: true, objectives: { climb: true, steady: false } });
+    expect(latest.lastDebrief).toEqual(prior);
+    expect(hooks().flyingRef.current).toBe(false);
+    expect(xp).toEqual([]);
+  });
+
+  it('keeps live flights running while their persisted challenge progress changes', async () => {
+    await mount(); await start('first_flight'); airborne(); await evaluate();
+    expect(latest.view).toBe('flying');
+    expect(hooks().flyingRef.current).toBe(true);
+    expect(latest.flightChallenge.objectives.climb).toBe(true);
+    expect(latest.challengeResults).toBeUndefined();
+  });
+
+  it('saves completion before End challenge and retains it after an interrupted incomplete retry', async () => {
+    await mount({ personalBests: { challenges: { first_flight: 100 } } });
+    await start('first_flight'); await finishFirstFlight();
+    expect(latest.challengeCompleted.first_flight).toEqual(expect.any(String));
+    expect(latest.personalBests.challenges.first_flight).toBeLessThan(100);
+    const completedAt = latest.challengeCompleted.first_flight;
+    const best = latest.personalBests.challenges.first_flight;
+    expect(xp).toHaveLength(1);
+    await mount(JSON.parse(JSON.stringify(latest)));
+    expect(latest.view).toBe('debrief');
+    expect(latest.lastDebrief).toMatchObject({ interrupted: true, challenge: { id: 'first_flight', status: 'complete' } });
+    expect(latest.challengeResults.first_flight.status).toBe('complete');
+    expect(latest.personalBests.challenges.first_flight).toBe(best);
+    expect(xp).toHaveLength(1);
+    await clickContaining('Menu');
+    expect(latest.view).toBe('menu');
+    await start('first_flight'); airborne(); await evaluate();
+    await mount(JSON.parse(JSON.stringify(latest)));
+    expect(latest.view).toBe('debrief');
+    expect(latest.challengeResults.first_flight).toMatchObject({ status: 'active', interrupted: true, objectives: { climb: true, steady: false, landing: false } });
+    expect(latest.challengeCompleted.first_flight).toBe(completedAt);
+    expect(latest.personalBests.challenges.first_flight).toBe(best);
+    await clickContaining('Menu');
+    expect(latest.view).toBe('menu');
+    expect(host.querySelector('[data-flight-start-step="first_flight"]').dataset.done).toBe('true');
+    expect(xp).toHaveLength(1);
+  });
+
+  it('recovers legacy completed evidence into durable achievements without awarding XP', async () => {
+    await mount({ view: 'flying', selectedChallenge: 'first_flight',
+      flightChallenge: { version: 1, id: 'first_flight', elapsedSeconds: 44,
+        completedAt: '2026-10-18T01:02:03.000Z', objectives: { climb: true, steady: true, landing: true } } });
+    expect(latest.challengeCompleted.first_flight).toBe('2026-10-18T01:02:03.000Z');
+    expect(latest.personalBests.challenges.first_flight).toBe(44);
+    expect(xp).toEqual([]);
+    await mount(JSON.parse(JSON.stringify(latest)));
+    expect(latest.personalBests.challenges.first_flight).toBe(44);
+    expect(xp).toEqual([]);
+  });
+
+  it('keeps the new-best debrief marker after completion was already persisted', async () => {
+    await mount({ personalBests: { challenges: { first_flight: 100 } } });
+    await start('first_flight'); await finishFirstFlight();
+    await click('End challenge');
+    expect(latest.lastDebrief.newBest).toBe('challenge');
+    expect(xp).toHaveLength(1);
+  });
+
+  it.each([false, true])('recovers tour achievements and records only a trusted whole-tour clock (trusted: %s)', async trusted => {
+    const tour = { version: 1, id: 'world_tour', elapsedSeconds: 11,
+      arrivals: FS.WAYPOINTS.slice(0, 5).map(item => item.id),
+      completedAt: '2026-10-18T01:02:03.000Z' };
+    if (trusted) Object.assign(tour, { tourTimingValid: true, tourElapsedSeconds: 75 });
+    await mount({ view: 'flying', selectedChallenge: 'world_tour', flightChallenge: tour,
+      personalBests: { challenges: { world_tour: 10 } } });
+    expect(latest.challengeCompleted.world_tour).toBe(tour.completedAt);
+    expect(latest.challengeResults.world_tour.status).toBe('complete');
+    expect(latest.personalBests.challenges.world_tour).toBe(trusted ? 75 : 10);
+    expect(latest.personalBests.challengeTimings?.world_tour).toBe(trusted ? 'tour-total-v1' : undefined);
+    expect(xp).toEqual([]);
   });
 
   it('free flight clears stale challenge, rescue, and survey tracking while retaining the saved result', async () => {
@@ -260,7 +354,7 @@ describe('SkySchool measured flight challenges', () => {
     }
     await landAt(destinations[0]);
     expect(active().arrivals).toEqual([destinations[0].id]);
-    await click('End challenge');
+    await reviewTourLeg();
     expect(latest.challengeResults.world_tour.arrivals).toEqual([destinations[0].id]);
 
     // Repeating the same airport is allowed for practice but earns no extra
@@ -271,7 +365,7 @@ describe('SkySchool measured flight challenges', () => {
     expect(hooks().getLandingRef().current.scored).toBe(false);
     await landAt(destinations[0]);
     expect(active().arrivals).toEqual([destinations[0].id]);
-    await click('End challenge');
+    await reviewTourLeg();
     await mount(JSON.parse(JSON.stringify(latest)));
     expect(host.querySelector('[aria-label="Challenge result"]').textContent).toContain('1 of 5 objectives observed');
 
@@ -280,12 +374,60 @@ describe('SkySchool measured flight challenges', () => {
       await click('Continue airport tour');
       expect(hooks().getLandingRef().current.scored).toBe(false);
       await landAt(wp);
-      await click('End challenge');
+      await reviewTourLeg();
     }
     expect(latest.challengeResults.world_tour).toMatchObject({ status: 'complete', arrivals: destinations.map(item => item.id) });
+    // Six complete approaches were flown, including the repeat airport.
+    expect(latest.personalBests.challenges.world_tour).toBe(66);
+    expect(latest.personalBests.challengeTimings.world_tour).toBe('tour-total-v1');
     expect(host.querySelector('[aria-label="Challenge result"]').textContent).toContain('All challenge objectives observed');
     await click('Start a new airport tour');
     expect(active()).toMatchObject({ status: 'active', arrivals: [], elapsedSeconds: 0, airborneSeconds: 0 });
     expect(latest.challengeResults.world_tour.status).toBe('complete');
+  });
+
+  it('consumes an airport choice and defaults the following leg to an unvisited airport after reload', async () => {
+    const portland = FS.WAYPOINTS.find(item => item.id === 'kpwm');
+    const jfk = FS.WAYPOINTS.find(item => item.id === 'kjfk');
+    async function landAt(airport) {
+      airborne({ altitude: airport.alt + 300, fieldElev: airport.alt, lat: airport.lat, lon: airport.lon });
+      for (let second = 0; second < 10; second++) await evaluate();
+      Object.assign(hooks().getLandingRef().current, { scored: true, touchdownFPM: 180 });
+      Object.assign(hooks().flightRef.current, { onGround: true, altitude: airport.alt, vsi: 0 });
+      await evaluate();
+      await reviewTourLeg();
+    }
+    await mount(); await start('world_tour', portland.id); await landAt(portland);
+    await setField(host.querySelector('#challenge-next-airport'), jfk.id);
+    await click('Continue airport tour');
+    expect(latest.challengeApproachAirport).toBe(jfk.id);
+    expect(latest.challengeNextAirport).toBeNull();
+    expect(latest.challengeNextAirportAttempt).toBeNull();
+    await landAt(jfk);
+    const savedTour = JSON.parse(JSON.stringify(latest.challengeResults.world_tour));
+    expect(savedTour.arrivals).toEqual([portland.id, jfk.id]);
+    expect(savedTour.tourElapsedSeconds).toBe(22);
+    await mount(JSON.parse(JSON.stringify(latest)));
+    const suggested = host.querySelector('#challenge-next-airport').value;
+    expect(savedTour.arrivals).not.toContain(suggested);
+    await click('Continue airport tour');
+    expect(latest.challengeApproachAirport).toBe(suggested);
+    expect(active()).toMatchObject({ arrivals: savedTour.arrivals, tourElapsedSeconds: 22, elapsedSeconds: 0 });
+  });
+
+  it('ignores a stale visited-airport default but preserves an explicit repeat selected for this debrief', async () => {
+    const tour = { version: 1, id: 'world_tour', status: 'active', arrivals: ['kpwm', 'kjfk'],
+      elapsedSeconds: 11, tourElapsedSeconds: 22, tourTimingValid: true };
+    await mount({ view: 'debrief', lastDebrief: { attemptId: 'tour-second-leg', aircraftId: 'cessna172', challenge: tour },
+      challengeResults: { world_tour: tour }, challengeNextAirport: 'kjfk' });
+    expect(tour.arrivals).not.toContain(host.querySelector('#challenge-next-airport').value);
+    await setField(host.querySelector('#challenge-next-airport'), 'kjfk');
+    expect(latest.challengeNextAirportAttempt).toBe('tour-second-leg');
+    await mount(JSON.parse(JSON.stringify(latest)));
+    expect(host.querySelector('#challenge-next-airport').value).toBe('kjfk');
+    await click('Continue airport tour');
+    expect(latest.challengeApproachAirport).toBe('kjfk');
+    expect(active()).toMatchObject({ arrivals: ['kpwm', 'kjfk'], tourElapsedSeconds: 22, elapsedSeconds: 0 });
+    expect(latest.challengeNextAirport).toBeNull();
   });
 });

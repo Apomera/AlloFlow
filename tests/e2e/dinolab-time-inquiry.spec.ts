@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { GlHarness } from './helpers/stem_gl_harness';
+// Explicit screenshots cover this suite. Recording native WebGL fullscreen
+// can stall Chromium's video context during teardown on Windows.
+test.use({ video: 'off' });
 const dir = 'reports/dinolab-improvements-2026-09-27';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dinolab.js', toolId: 'dinoLab', width: 1180, height: 920, appStyles: true });
 test.beforeAll(async () => { fs.mkdirSync(dir, { recursive: true }); await harness.start(); });

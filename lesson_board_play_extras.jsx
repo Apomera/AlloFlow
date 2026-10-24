@@ -14,12 +14,12 @@ import { practicePlan } from './lesson_board_results.js';
 import { practiceReason } from './lesson_board_followthrough.jsx';
 import * as engine from './lesson_board_engine.js';
 import { learningSummary, planningSummary, responseText } from './lesson_board_insights.js';
-import { tr } from './lesson_board_strings.js';
+import { tr, arrow } from './lesson_board_strings.js';
 const React = window.React;
 const { useState, useRef, useEffect } = React;
 
 export function Amounts({ board, values, prefix = '', zeros = false }) {
-  return <span className="lb-tokens">{values.map((amount, index) => (zeros || amount > 0) && <span className="lb-token" key={index}><span aria-hidden="true">{index ? '◆' : '●'}</span> {prefix}{amount} <span>{board.resources[index]}</span></span>)}</span>;
+  return <span className="lb-tokens">{values.map((amount, index) => (zeros || amount > 0) && <span className="lb-token" key={index}><span aria-hidden="true">{index ? '◆' : '●'}</span> <bdi dir="ltr">{prefix}{amount}</bdi> <span>{board.resources[index]}</span></span>)}</span>;
 }
 
 export function MissionDashboard({ board, run, role, t, compact = false }) {
@@ -55,18 +55,33 @@ export function RoutePlanner({ board, run, onSelect, goal: requestedGoal, onGoal
     <h4>{tr(t, 'useful_moves', 'Useful locations open now')}</h4>
     <div className="lb-plan-options">{plan.reachable.map(node => <button type="button" key={node.id} data-planner-location={node.id} onClick={() => onSelect(node.id)}><strong>{node.name}</strong><Amounts board={board} values={node.reward} prefix="+"/><small>{node.newConcept ? tr(t, 'planner_new_concept', 'Covers an unexplored concept') : tr(t, 'planner_reinforce', 'Reinforces a concept')}{node.opens.length > 0 ? ' · ' + tr(t, 'planner_opens', 'Opens {count} locations', { count: node.opens.length }) : ''}</small>{node.contribution?.some(value => value > 0) && <small>{tr(t, 'planner_contributes', 'Helps fund the selected project')}</small>}</button>)}</div>
     {!plan.reachable.length && <p>{tr(t, 'no_open_locations', 'All currently reachable locations are explored. Inspect an available construction.')}</p>}
-    {plan.routes.length > 0 && <><h4>{tr(t, 'routes_ahead', 'Routes to unexplored locations')}</h4><ul className="lb-route-list">{plan.routes.map(route => <li key={route.id}><button type="button" onClick={() => onSelect(route.id)}>{route.name}</button><small>{route.path.map(node => node.name).join(' → ')}</small></li>)}</ul></>}
+    {plan.routes.length > 0 && <><h4>{tr(t, 'routes_ahead', 'Routes to unexplored locations')}</h4><ul className="lb-route-list">{plan.routes.map(route => <li key={route.id}><button type="button" onClick={() => onSelect(route.id)}>{route.name}</button><small>{route.path.map(node => node.name).join(' '+arrow()+' ')}</small></li>)}</ul></>}
   </details>;
 }
 
-export function MoveRecap({ board, run, role, uid, t }) {
+// Which responses the class chose this round, most common first; the key is marked only once it is shown.
+function ResponseSpread({ node, answers, showKey, t }) {
+  const counts = new Map(), key = engine.solution(node);
+  for (const answer of Object.values(answers || {})) { const text = responseText(node, answer?.value); if (text) { const entry = counts.get(text) || { text, count: 0, correct: answer.value === key }; entry.count++; counts.set(text, entry); } }
+  const rows = [...counts.values()].sort((a, b) => b.count - a.count);
+  if (!rows.length) return null;
+  return <div data-board-response-spread><h4>{tr(t, 'response_spread', 'Responses this round')}</h4><ul>{rows.map(row => <li key={row.text} data-response-correct={showKey ? row.correct : undefined}>{tr(t, 'response_spread_row', '{response}: {count}', { response: row.text, count: row.count })}{showKey && row.correct ? ' · ' + tr(t, 'correct', 'Correct') : ''}</li>)}</ul></div>;
+}
+export function MoveRecap({ board, run, role, uid, onReveal, t }) {
   const step = engine.stepOf(run), result = step.result, node = board.locations.find(item => item.id === step.targetId), project = board.projects.find(item => item.id === step.targetId);
   if (!result || (!node && !project)) return null;
   const progress = engine.derive(board, run), beforeRun = { ...run, steps: { ...run.steps, ['t' + run.turn]: { ...step, result: undefined } } }, before = engine.derive(board, beforeRun), priorReady = engine.targets(board, beforeRun).map(item => item.id), newlyReady = engine.targets(board, run).filter(item => !item.cost && !priorReady.includes(item.id)), reward = progress.balance.map((value, index) => value - engine.derive(board,{...run,turn:run.turn-1}).balance[index]), personal = result.marks?.[uid];
   return <div data-board-recap><FundingReceipt board={board} run={run} t={t}/><TacticsReward board={board} run={run} t={t}/><ContractRewards board={board} run={run} t={t}/>
     <p className="lb-notice">{project ? tr(t, 'project_completed', 'Project built. Its effect now applies to your board.') : result.success ? tr(t, 'location_completed', 'Location explored. Resources collected and connected paths opened.') : tr(t, 'retry_activity_now', 'This idea needs another look. No resources were lost. Review the evidence, then retry or choose another route.')}</p>
     {result.success && <div className="lb-move-rewards" data-board-rewards><h4>{project ? tr(t, 'spent_this_move', 'Spent on this construction') : tr(t, 'earned_this_move', 'Earned this move')}</h4><Amounts board={board} values={project ? fundingCost(board,project,step.funding||'standard')||project.cost : reward} prefix={project ? '' : '+'}/>{newlyReady.length > 0 && <p>{tr(t, 'new_routes', 'New locations open: {names}', { names: newlyReady.map(item => item.name).join(', ') })}</p>}</div>}
-    {node && <>{role!=='teacher'&&<ChallengeReview node={node} value={step.answers?.[uid]?.value} t={t}/>}<PuzzleReview node={node} value={role==='teacher'?engine.solution(node):step.answers?.[uid]?.value} t={t}/><div className="lb-answer-review" data-board-answer-review>{role !== 'teacher' && step.answers?.[uid]?.value && <p><strong>{tr(t, 'response', 'Your response')}: </strong>{responseText(node, step.answers[uid].value)}</p>}<p><strong>{tr(t, 'solution', 'Solution')}: </strong>{responseText(node, engine.solution(node))}</p></div><p>{node.explanation}</p><blockquote>{node.sourceQuote}</blockquote>{typeof personal === 'boolean' && <p>{personal ? tr(t, 'your_correct', 'Your response demonstrated this idea.') : tr(t, 'your_revisit', 'Revisit your response using this explanation.')}</p>}{role === 'teacher' && <p>{tr(t, 'round_learning', '{correct}/{total} submitted responses were correct.', { correct: Object.values(result.marks || {}).filter(Boolean).length, total: Object.keys(result.marks || {}).length })}</p>}</>}
+    {node && (() => {
+      // While a retry is open the key stays behind a disclosure, so another try is real practice.
+      const own = step.answers?.[uid]?.value, keyHidden = engine.turnLimit(board, run).canRetry, quote = String(node.sourceQuote || '').trim() !== String(node.explanation || '').trim() ? <blockquote>{node.sourceQuote}</blockquote> : null;
+      const solution = <p data-board-solution><strong>{tr(t, 'solution', 'Solution')}: </strong>{responseText(node, engine.solution(node))}</p>, explained = <><p>{node.explanation}</p>{quote}</>, keyPuzzle = role === 'teacher' && <PuzzleReview node={node} value={engine.solution(node)} t={t}/>;
+      return <>{role!=='teacher'&&<ChallengeReview node={node} value={own} t={t}/>}{role!=='teacher'&&<PuzzleReview node={node} value={own} hideKey={keyHidden} t={t}/>}{!keyHidden&&keyPuzzle}<div className="lb-answer-review" data-board-answer-review>{role !== 'teacher' && own && <p><strong>{tr(t, 'response', 'Your response')}: </strong>{responseText(node, own)}</p>}{!keyHidden && solution}</div>
+        {keyHidden ? <>{Array.isArray(node.hints) && node.hints.length > 0 && <div data-board-retry-hints><h4>{tr(t, 'retry_hints', 'Hints for another try')}</h4><ul>{node.hints.map((hint, index) => <li key={index}>{hint}</li>)}</ul></div>}<details data-board-reveal onToggle={event => { if (event.currentTarget.open) onReveal?.(node.id); }}><summary>{tr(t, 'reveal_answer', 'Show the answer and explanation')}</summary>{keyPuzzle}{solution}{explained}</details></> : explained}
+        {typeof personal === 'boolean' && <p>{personal ? tr(t, 'your_correct', 'Your response demonstrated this idea.') : keyHidden ? tr(t, 'your_retry', 'Use the hints and the lesson evidence, then try again. Open the answer only if you are stuck.') : tr(t, 'your_revisit', 'Revisit your response using this explanation.')}</p>}{role === 'teacher' && <p>{tr(t, 'round_learning', '{correct}/{total} submitted responses were correct.', { correct: Object.values(result.marks || {}).filter(Boolean).length, total: Object.keys(result.marks || {}).length })}</p>}{role === 'teacher' && <ResponseSpread node={node} answers={step.answers} showKey={!keyHidden} t={t}/>}</>;
+    })()}
   </div>;
 }
 

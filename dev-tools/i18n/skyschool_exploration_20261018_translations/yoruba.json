@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Àbájáde ìṣàwárí: káàdì {cards} nínú kókó {topics}.",
+  "stem.flightsim.learn_library_counts": "Káàdì {cards} · kókó {topics}",
+  "stem.flightsim.learn_search_clear": "Pa ìṣàwárí rẹ́",
+  "stem.flightsim.learn_search_empty": "Kò sí káàdì ẹ̀kọ́ tó bá “{query}” mu. Gbìyànjú ọ̀rọ̀ míì tàbí pa ìṣàwárí rẹ́.",
+  "stem.flightsim.learn_search_none": "Kò sí káàdì ẹ̀kọ́ tó bá a mu",
+  "stem.flightsim.learn_search_cards": "Káàdì ẹ̀kọ́ {count}",
+  "stem.flightsim.quiz_review_progress": "A ti dáhùn ìbéèrè {answered} nínú {total} · {missed} ni a ṣàṣìṣe",
+  "stem.flightsim.quiz_review_missed": "Ṣàtúnyẹ̀wò àwọn tí o ṣàṣìṣe",
+  "stem.flightsim.quiz_next_unanswered": "Ìbéèrè tó kàn tí kò tíì ní ìdáhùn",
+  "stem.flightsim.quiz_review_all_answered": "Gbogbo ìbéèrè ní ìdáhùn àkọ́kọ́. Ṣàtúnyẹ̀wò àwọn ìbéèrè tí o ṣàṣìṣe fún àṣàṣe láìsí àmì, tàbí bẹ̀rẹ̀ ìgbìyànjú tuntun.",
+  "stem.flightsim.planner_drone_agl": "Ẹsẹ̀ bàtà {ft} lókè ilẹ̀",
+  "stem.flightsim.sprint_native_title": "Ìdíje jíọ́gíràfì kíákíá",
+  "stem.flightsim.sprint_timed_hint": "Ọ̀nà náà ń tẹ̀síwájú bí o ṣe ń dáhùn. Dádúró díẹ̀ láti kà; tẹ̀síwájú kí o tó yan ìdáhùn.",
+  "stem.flightsim.sprint_warp_reference": "A mú ìrìnàjò yára fún ìṣe jíọ́gíràfì yìí. Àwọn ìwọ̀n iyára fi iyára ìrìnàjò tí a kéde hàn; ọ̀nà yìí kò wọn iṣẹ́ ọkọ̀ òfuurufú.",
+  "stem.flightsim.sprint_save_menu": "Fi ìdíje pamọ́ kí o sì padà sí àkójọ",
+  "stem.flightsim.sprint_next_stop": "Ibùdó tó kàn: {place}",
+  "stem.flightsim.geoq_approaching_city": "Ìlú wo ni o ń sún mọ́?",
+  "stem.flightsim.sprint_time_remaining": "Àkókò tó kù: ìṣẹ́jú àáyá {seconds}"
+}

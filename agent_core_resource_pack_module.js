@@ -18,6 +18,7 @@
   var MAX_PLAN_ITEMS = 16;
   var MAX_PACK_CHARS = 500000;
   var MAX_ITEM_CHARS = 120000;
+  var MAX_ILLUSTRATED_CHARS = 2000000;
   var MAX_TITLE_CHARS = 240;
   var MAX_TYPES = [
     'directions', 'simplified', 'glossary', 'outline', 'quiz', 'sentence-frames',
@@ -25,6 +26,24 @@
   ];
   var TYPE_SET = Object.create(null);
   MAX_TYPES.forEach(function (type) { TYPE_SET[type] = true; });
+  var ILLUSTRATED_TYPES = MAX_TYPES.concat(['image', 'memory-aid', 'applied-challenge']);
+  function supportedType(type, profile) {
+    return typeof type === 'string' && (TYPE_SET[type] || (profile === 'illustrated' && ILLUSTRATED_TYPES.indexOf(type) !== -1));
+  }
+  function resolveMediaModule() {
+    if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AgentCorePackMedia) return window.AlloModules.AgentCorePackMedia;
+    if (typeof module !== 'undefined' && typeof require === 'function') {
+      try { return require('./agent_core_pack_media_module.js'); } catch (_) {}
+    }
+    return null;
+  }
+  function textSize(value) {
+    // Invalid or misplaced payloads still fail the media validator. Valid pixels
+    // have their own byte budget instead of consuming the instructional text cap.
+    return JSON.stringify(value, function (key, child) {
+      return typeof child === 'string' && /^data:image\//i.test(child) ? '[image bytes]' : child;
+    }).length;
+  }
 
   function isObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -234,6 +253,10 @@
     }
     Object.keys(value).forEach(function (key) {
       var next = path ? path + '.' + key : key;
+      if (key === '__proto__' || key === 'prototype' || key === 'constructor') {
+        errors.push(error('unsafe-object-key', next, 'Prototype-related keys are not allowed in resource packs.'));
+        return;
+      }
       if (/(?:api[_-]?key|access[_-]?token|secret|password|credential)/i.test(key)) {
         errors.push(error('secret-like-field', next, 'Secret-like fields are not allowed in AlloPacks.'));
         return;
@@ -266,11 +289,12 @@
       requestId: 1, title: 1, sourceTopic: 1, sourceText: 1, gradeLevel: 1,
       language: 1, standards: 1, learningGoal: 1, resourcePlan: 1,
       standardsContext: 1, instructionalContext: 1,
-      privacy: 1, providerPolicy: 1, author: 1
+      privacy: 1, providerPolicy: 1, author: 1, profile: 1
     };
     Object.keys(request).forEach(function (key) {
       if (!allowed[key]) errors.push(error('unsupported-field', 'request.' + key, 'Unsupported request field.'));
     });
+    if (request.profile !== undefined && request.profile !== 'text' && request.profile !== 'illustrated') errors.push(error('invalid-pack-profile', 'request.profile', 'Use text or illustrated.'));
     ['requestId', 'title', 'sourceTopic', 'sourceText', 'gradeLevel', 'language', 'learningGoal', 'author'].forEach(function (key) {
       if (request[key] !== undefined && (typeof request[key] !== 'string' || request[key].length > (key === 'sourceText' ? MAX_SOURCE_CHARS : 1000))) {
         errors.push(error('invalid-string', 'request.' + key, 'Field must be a bounded string.'));
@@ -286,7 +310,7 @@
       request.resourcePlan.forEach(function (entry, index) {
         var path = 'request.resourcePlan[' + index + ']';
         var type = typeof entry === 'string' ? entry : (isObject(entry) ? entry.type : '');
-        if (typeof type !== 'string' || !TYPE_SET[type]) errors.push(error('unsupported-resource-type', path + '.type', 'Unsupported resource type: ' + text(type, '(non-string or empty)') + '.'));
+        if (!supportedType(type, request.profile)) errors.push(error('unsupported-resource-type', path + '.type', 'Unsupported resource type: ' + text(type, '(non-string or empty)') + '.'));
         if (isObject(entry)) {
           Object.keys(entry).forEach(function (key) {
             if (key !== 'type' && key !== 'directive' && key !== 'uiId' && key !== 'instructionalText') {
@@ -347,7 +371,7 @@
       resourcePlan = resourcePlan.filter(function (row) { return row.type !== 'simplified'; });
     }
     return {
-      requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
+      profile: request.profile || 'text', requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
       sourceTopic: text(request.sourceTopic), sourceText: String(request.sourceText || '').trim(),
       gradeLevel: text(request.gradeLevel, 'middle school'), language: text(request.language, 'en').toLowerCase(),
       standards: text(request.standards), learningGoal: text(request.learningGoal),
@@ -374,6 +398,7 @@
       'Nested field contract: concept-sort categories are {id,label,color} with unique ids; cards are {id,content,categoryId} with unique ids and matching categoryId. Quiz questions use {type:"mcq",question,options:[four distinct strings],correctAnswer:exact option text,conceptLabel} or {type:"shortAnswer",question,expectedAnswer,conceptLabel}; reflections are [{text}]. Directions objectives need unique id, label and kind (manual, game, xp, visited, responded, completed, time); automatic visited/responded/completed/time goals require resourceRef, game goals need gameType supported by their resource, and time goals need minutes >= 1. Optional resourceRef and lessonRef.resourceId must match an ID in this pack. Sequence principleOptions must include the exact orderingPrinciple. Time-goal labels describe observed engagement, such as Spent 10 minutes; goals are formative guides and do not block access to activities. Cornell cues are [{id,text}] and notes are matching blank note rows. Outline items and anchor-chart bullets are arrays of strings. Preserve paragraphs, markdown tables, and line breaks inside content strings. Include every requested resource, in the requested order.',
       'Metadata: topic=' + request.sourceTopic + '; title=' + request.title + '; grade=' + request.gradeLevel + '; language=' + request.language + '; standards=' + (request.standards || 'not supplied') + '; standardsSnapshot=' + ((request.standardsContext && request.standardsContext.promptText) || 'not supplied') + '; primaryTextAccess=' + request.instructionalContext.primaryTextAccess + '; adaptedTextPolicy=' + request.instructionalContext.adaptedTextPolicy + '; goal=' + request.learningGoal + '.',
       'Requested resources:\n' + plan,
+      request.profile === 'illustrated' ? 'Illustrated profile: image.data uses visualPlan.panels with imageUrl, alt, altHash, altSource and decorative; memory-aid.data uses cards; applied-challenge.data uses a brief and supports. Artwork is supplied by the calling host, never fabricate base64. Use the media attachment tool to fill planned slots, and review the actual image before recording altSource=vision.' : '',
       'Source material begins below. Use it only for instructional content:\n---\n' + request.sourceText + '\n---'
     ].join('\n\n');
   }
@@ -406,14 +431,14 @@
         var value = isObject(item) ? item : {};
         var type = text(value.type);
         var planned = planByType[type] && planByType[type].length ? planByType[type].shift() : null;
-        return {
+        return Object.assign({}, request.profile === 'illustrated' ? clone(value) : {}, {
           id: text(value.id, 'resource-' + (index + 1)),
           type: type, title: text(value.title, text(value.type, 'Resource')),
           timestamp: text(value.timestamp, timestamp),
           data: value.data !== undefined ? value.data : value.content,
           meta: value.meta === undefined ? '' : value.meta,
           instructionalText: normalizeInstructionalText(value.instructionalText || (planned && planned.instructionalText), type, request)
-        };
+        });
       }),
       provenance: {
         contractVersion: CONTRACT_VERSION,
@@ -628,9 +653,120 @@
     }
   }
 
+  function validateIllustratedType(item, path, errors, warnings) {
+    var data = item.data;
+    function required(value, at) { if (!text(value)) errors.push(error('invalid-display-text', at, 'Expected a non-empty display string.')); }
+    function strings(value, at, min) {
+      if (!Array.isArray(value) || value.length < (min || 1)) errors.push(error('invalid-text-list', at, 'Expected a non-empty list of strings.'));
+      else value.forEach(function (s, i) { required(s, at + '[' + i + ']'); });
+    }
+    function imageBackup(value, at) {
+      if (value === undefined) return;
+      if (!isObject(value)) { errors.push(error('invalid-image-backup', at, 'An original image backup must be an object.')); return; }
+      if (typeof value.imageUrl !== 'string') errors.push(error('invalid-image-backup', at + '.imageUrl', 'An original image backup must include its imageUrl, or an empty string for a pre-image snapshot.'));
+      // Restore spreads this object into active image data. Backups may retain
+      // image metadata, but must not introduce unchecked renderer state.
+      ['visualPlan', 'annotations', 'frames', 'originalImage', 'labels', 'type'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) errors.push(error('unsupported-image-backup-state', at + '.' + key, 'Original image backups cannot replace visual plans, annotations, animation or other renderer controls.'));
+      });
+      ['prompt', 'title', 'caption', 'role', 'imagePrompt', 'imagenPrompt', 'motionPrompt', 'imageSource'].forEach(function (key) {
+        if (value[key] !== undefined && typeof value[key] !== 'string') errors.push(error('invalid-display-text', at + '.' + key, 'Expected a display string.'));
+      });
+    }
+    if (!isObject(data)) { errors.push(error('invalid-native-resource', path + '.data', 'Expected a native resource object.')); return; }
+    if (item.type === 'image') {
+      imageBackup(data.originalImage, path + '.data.originalImage');
+      // Saved view overrides can replace the image, captions and labels after
+      // validation. This profile authors native still-image fields, not runtime
+      // annotation state; reject such state explicitly instead of losing it.
+      if (data.annotations !== undefined && (!isObject(data.annotations) || Object.keys(data.annotations).length)) errors.push(error('unsupported-image-annotations', path + '.data.annotations', 'Saved image-view annotations are outside this profile. Use native panel images, captions and labels; no annotations are removed automatically.'));
+      ['prompt', 'title', 'caption'].forEach(function (key) {
+        if (data[key] !== undefined && typeof data[key] !== 'string') errors.push(error('invalid-display-text', path + '.data.' + key, 'Expected a display string.'));
+      });
+      if (data.visualPlan !== undefined && !isObject(data.visualPlan)) errors.push(error('invalid-visual-plan', path + '.data.visualPlan', 'Expected a native visual plan object.'));
+      if (isObject(data.visualPlan)) ['title', 'summary', 'description', 'layout'].forEach(function (key) {
+        if (data.visualPlan[key] !== undefined && typeof data.visualPlan[key] !== 'string') errors.push(error('invalid-display-text', path + '.data.visualPlan.' + key, 'Expected a display string.'));
+      });
+      var panels = isObject(data.visualPlan) ? data.visualPlan.panels : null;
+      if (!Array.isArray(panels) || !panels.length) {
+        if (typeof data.imageUrl !== 'string' || !data.imageUrl) errors.push(error('invalid-image-resource', path + '.data', 'Use visualPlan.panels or a native imageUrl with altText.'));
+        return;
+      }
+      panels.forEach(function (panel, i) {
+        var at = path + '.data.visualPlan.panels[' + i + ']';
+        if (!isObject(panel)) { errors.push(error('invalid-image-panel', at, 'Each panel must be an object.')); return; }
+        imageBackup(panel.originalImage, at + '.originalImage');
+        if (panel.id !== undefined && typeof panel.id !== 'string' && !Number.isFinite(panel.id)) errors.push(error('invalid-panel-id', at + '.id', 'Panel ids must be strings or finite numbers.'));
+        if (!text(panel.imageUrl) && !text(panel.prompt) && !text(panel.imagePrompt) && !text(panel.imagenPrompt)) errors.push(error('empty-image-panel', at, 'Supply artwork or a prompt for a planned image slot.'));
+        else if (!text(panel.imageUrl)) warnings.push({ code: 'image-slot-unfilled', path: at + '.imageUrl', message: 'This planned panel still needs artwork. Attach and inspect the actual image before distribution.' });
+        ['caption', 'title', 'role', 'prompt', 'imagePrompt', 'imagenPrompt', 'motionPrompt'].forEach(function (key) {
+          if (panel[key] !== undefined && typeof panel[key] !== 'string') errors.push(error('invalid-display-text', at + '.' + key, 'Expected a display string.'));
+        });
+        if (panel.type === 'process_animation' || (panel.frames !== undefined && (!Array.isArray(panel.frames) || panel.frames.length > 0))) errors.push(error('unsupported-animation-profile', at, 'The illustrated profile supports still images. Remove animation frames before exporting with this profile.'));
+        if (panel.labels !== undefined) {
+          if (!Array.isArray(panel.labels)) errors.push(error('invalid-image-labels', at + '.labels', 'Labels must be an array.'));
+          else panel.labels.forEach(function (label, j) {
+            var labelPath = at + '.labels[' + j + ']';
+            if (!isObject(label)) { errors.push(error('invalid-image-label', labelPath, 'Expected an editable label object.')); return; }
+            if (label.id !== undefined && typeof label.id !== 'string' && !Number.isFinite(label.id)) errors.push(error('invalid-label-id', labelPath + '.id', 'Label ids must be strings or finite numbers.'));
+            required(label.text, labelPath + '.text');
+            if (label.position !== undefined && typeof label.position !== 'string') errors.push(error('invalid-display-text', labelPath + '.position', 'Label positions must be strings.'));
+            ['anchorX', 'anchorY'].forEach(function (axis) {
+              if (label[axis] !== undefined && (!Number.isFinite(label[axis]) || label[axis] < 0 || label[axis] > 100)) errors.push(error('invalid-label-anchor', labelPath + '.' + axis, 'Label anchors must be percentages from 0 to 100.'));
+            });
+          });
+        }
+      });
+    } else if (item.type === 'memory-aid') {
+      required(data.title, path + '.data.title');
+      required(data.instructions, path + '.data.instructions');
+      if (!Array.isArray(data.cards) || !data.cards.length) errors.push(error('invalid-memory-cards', path + '.data.cards', 'Memory aids need native cards.'));
+      else {
+        var ids = Object.create(null);
+        var types = ['acronym-acrostic', 'rhyme-rhythm', 'chunking', 'story-chain', 'keyword-association', 'visual-association', 'analogy-pattern', 'sequence-cue'];
+        data.cards.forEach(function (card, i) {
+          var at = path + '.data.cards[' + i + ']';
+          if (!isObject(card)) { errors.push(error('invalid-memory-card', at, 'Expected a memory card object.')); return; }
+          if (!text(card.id) || ids[card.id]) errors.push(error('duplicate-or-missing-id', at + '.id', 'Cards need unique ids.'));
+          if (typeof card.id === 'string') ids[card.id] = true;
+          ['target', 'aiExample', 'mapping', 'studentPrompt', 'reasoningPrompt'].forEach(function (key) { required(card[key], at + '.' + key); });
+          strings(card.essentialFacts, at + '.essentialFacts');
+          if (types.indexOf(card.type) === -1) errors.push(error('invalid-memory-type', at + '.type', 'Use a native memory-aid type.'));
+        });
+      }
+    } else if (item.type === 'applied-challenge') {
+      required(data.title, path + '.data.title');
+      required(data.instructions, path + '.data.instructions');
+      if (['investigate', 'design', 'decide', 'propose', 'explore'].indexOf(data.family) === -1) errors.push(error('invalid-challenge-family', path + '.data.family', 'Use a native challenge family.'));
+      if (!isObject(data.brief)) errors.push(error('invalid-challenge-brief', path + '.data.brief', 'Expected a native challenge brief.'));
+      else {
+        if (data.brief.family !== data.family) errors.push(error('challenge-family-mismatch', path + '.data.brief.family', 'The brief and resource family must match.'));
+        ['context', 'role', 'audience', 'drivingQuestion', 'deliverable'].forEach(function (key) { required(data.brief[key], path + '.data.brief.' + key); });
+        ['lockedLessonFacts', 'criteria', 'constraints'].forEach(function (key) { strings(data.brief[key], path + '.data.brief.' + key); });
+      }
+      if (!isObject(data.supports)) errors.push(error('invalid-challenge-supports', path + '.data.supports', 'Expected native challenge supports.'));
+    }
+  }
+
   function validatePack(pack, options) {
     var errors = [], warnings = [], strict = !options || options.strict !== false;
+    var profile = options && options.profile !== undefined ? options.profile : 'text';
+    if (profile !== 'text' && profile !== 'illustrated') return bad([error('invalid-pack-profile', 'profile', 'Use text or illustrated. Existing illustrated packs require the illustrated profile.')]);
+    var illustrated = profile === 'illustrated';
     if (!isObject(pack)) return bad([error('invalid-pack', 'pack', 'AlloPack must be an object.')]);
+    var serialized;
+    try { serialized = JSON.stringify(pack); } catch (_) { return bad([error('invalid-json-pack', 'pack', 'Pack must be JSON serializable.')]); }
+    var maxChars = illustrated ? MAX_ILLUSTRATED_CHARS : MAX_PACK_CHARS;
+    if (serialized.length > maxChars) return bad([error('pack-too-large', 'pack', 'Serialized AlloPack exceeds ' + maxChars + ' characters.')]);
+    var mediaReport = null;
+    if (illustrated) {
+      var media = resolveMediaModule();
+      if (!media) return bad([error('media-validator-unavailable', 'profile', 'The illustrated pack media module must be available.')]);
+      mediaReport = media.validatePackMedia(pack);
+      errors = errors.concat(mediaReport.errors || []);
+      warnings = warnings.concat(mediaReport.warnings || []);
+      if (textSize(pack) > MAX_PACK_CHARS) errors.push(error('pack-text-too-large', 'pack', 'Instructional text exceeds ' + MAX_PACK_CHARS + ' characters.'));
+    }
     if (!isObject(pack.allopack) || pack.allopack.spec !== ALLOPACK_SPEC) errors.push(error('invalid-envelope', 'pack.allopack.spec', 'AlloPack spec must be ' + ALLOPACK_SPEC + '.'));
     if (!text(pack.sourceTopic)) errors.push(error('missing-source-topic', 'pack.sourceTopic', 'sourceTopic is required.'));
     if (!Array.isArray(pack.history) || !pack.history.length || pack.history.length > MAX_PLAN_ITEMS + 8) errors.push(error('invalid-history', 'pack.history', 'history must contain between 1 and ' + (MAX_PLAN_ITEMS + 8) + ' items.'));
@@ -643,12 +779,16 @@
       if (!isObject(item)) { errors.push(error('invalid-item', itemPath, 'Every history entry must be an object.')); return; }
       if (!text(item.id) || ids[item.id]) errors.push(error('duplicate-or-missing-id', itemPath + '.id', 'Every item needs a unique id.'));
       if (typeof item.id === 'string') { ids[item.id] = true; resourcesById[item.id] = item; }
-      var registeredType = typeof item.type === 'string' && TYPE_SET[item.type];
+      var registeredType = supportedType(item.type, profile);
       if (!registeredType) errors.push(error('unregistered-type', itemPath + '.type', 'Unsupported AlloPack type: ' + text(item.type, '(non-string or empty)') + '.'));
       if (!text(item.title) || item.title.length > MAX_TITLE_CHARS) errors.push(error('invalid-item-title', itemPath + '.title', 'Every item needs a bounded title.'));
-      if (typeof item.meta !== 'string') errors.push(error('invalid-meta', itemPath + '.meta', 'meta must be a display string.'));
-      if (JSON.stringify(item).length > MAX_ITEM_CHARS) errors.push(error('item-too-large', itemPath, 'Resource item exceeds the size limit.'));
-      if (registeredType) { validateType(item, itemPath, errors, warnings); validateNestedFields(item, itemPath, errors); }
+      if (typeof item.meta !== 'string' && !(illustrated && item.meta === undefined)) errors.push(error('invalid-meta', itemPath + '.meta', 'meta must be a display string when present.'));
+      if ((illustrated ? textSize(item) : JSON.stringify(item).length) > MAX_ITEM_CHARS) errors.push(error('item-too-large', itemPath, 'Resource instructional text exceeds the size limit.'));
+      if (registeredType) {
+        if (TYPE_SET[item.type]) validateType(item, itemPath, errors, warnings);
+        else validateIllustratedType(item, itemPath, errors, warnings);
+        validateNestedFields(item, itemPath, errors);
+      }
     });
     // Resolve references after indexing the complete history so forward links work.
     (Array.isArray(pack.history) ? pack.history : []).forEach(function (item, index) {
@@ -678,19 +818,19 @@
     });
     scanUnsafe(pack, 'pack', errors, 0);
     if (privacyRisk(pack)) errors.push(error('privacy-risk-detected', 'pack', 'The generated pack appears to contain identifying or sensitive records.'));
-    var serialized = JSON.stringify(pack);
-    if (serialized.length > MAX_PACK_CHARS) errors.push(error('pack-too-large', 'pack', 'Serialized AlloPack exceeds ' + MAX_PACK_CHARS + ' characters.'));
-    if (/data:image\//i.test(serialized)) errors.push(error('embedded-image-payload', 'pack', 'Use image slots or approved asset handles; do not embed image bytes.'));
+    if (!illustrated && /data:image\//i.test(serialized)) errors.push(error('embedded-image-payload', 'pack', 'Use profile: illustrated to validate embedded PNG, JPEG or WebP artwork.'));
     if (strict && (!Array.isArray(pack.history) || !pack.history.some(function (item) { return item && item.type === 'directions'; }))) warnings.push({ code: 'missing-directions', path: 'pack.history', message: 'A student-ready pack should include directions.' });
-    return errors.length ? bad(errors, warnings) : ok(clone(pack), warnings);
+    var result = errors.length ? bad(errors, warnings) : ok(clone(pack), warnings);
+    if (mediaReport) result.media = mediaReport.stats;
+    return result;
   }
 
-  function previewPack(pack) {
-    var report = validatePack(pack, { strict: false });
+  function previewPack(pack, options) {
+    var report = validatePack(pack, Object.assign({}, options, { strict: false }));
     if (!report.ok) return { ok: false, errors: report.errors, warnings: report.warnings };
     return {
       ok: true, warnings: report.warnings, studentSafe: true,
-      title: pack.allopack.title, sourceTopic: pack.sourceTopic,
+      title: pack.allopack.title, sourceTopic: pack.sourceTopic, media: report.media,
       resources: pack.history.map(function (item, index) {
         return { order: index + 1, id: item.id, type: item.type, title: item.title, hasData: item.data !== undefined,
           role: item.instructionalText && item.instructionalText.role,
@@ -700,18 +840,60 @@
     };
   }
 
-  function exportPack(pack) {
-    var report = validatePack(pack, { strict: false });
+  function exportPack(pack, options) {
+    var report = validatePack(pack, Object.assign({}, options, { strict: false }));
     if (!report.ok) return { ok: false, errors: report.errors, warnings: report.warnings };
-    var json = JSON.stringify(pack, null, 2) + '\n';
+    var json = options && options.profile === 'illustrated' ? JSON.stringify(pack) : JSON.stringify(pack, null, 2) + '\n';
     return { ok: true, filename: text(pack.allopack.title, 'alloflow-resource-pack').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.allopack.json', contentType: 'application/json', bytes: json.length, json: json, warnings: report.warnings };
+  }
+
+  function attachImage(pack, attachment, options) {
+    if (!options || options.profile !== 'illustrated') return bad([error('illustrated-profile-required', 'profile', 'Image attachment requires profile: illustrated.')]);
+    if (!isObject(pack) || !Array.isArray(pack.history)) return bad([error('invalid-pack', 'pack', 'Expected an AlloPack with history.')]);
+    if (!isObject(attachment)) return bad([error('invalid-attachment', 'attachment', 'Expected a native image attachment.')]);
+    var errors = [];
+    var allowed = ['resourceId', 'slot', 'index', 'dataUrl', 'alt', 'decorative', 'altSource'];
+    Object.keys(attachment).forEach(function (key) {
+      if (allowed.indexOf(key) === -1) errors.push(error('unsupported-field', 'attachment.' + key, 'Unsupported attachment field.'));
+    });
+    if (!text(attachment.resourceId)) errors.push(error('missing-resource-id', 'attachment.resourceId', 'Name the target resource id.'));
+    if (['glossary', 'panel', 'anchor', 'sort'].indexOf(attachment.slot) === -1) errors.push(error('invalid-image-slot', 'attachment.slot', 'Use glossary, panel, anchor, or sort.'));
+    if (!Number.isInteger(attachment.index) || attachment.index < 0) errors.push(error('invalid-slot-index', 'attachment.index', 'Use a nonnegative native row index.'));
+    if (typeof attachment.alt !== 'string' || attachment.alt.length > 250) errors.push(error('invalid-image-alt', 'attachment.alt', 'Provide image-specific alt text, at most 250 characters; use empty text only for decorative art.'));
+    if (attachment.decorative !== undefined && typeof attachment.decorative !== 'boolean') errors.push(error('invalid-decorative', 'attachment.decorative', 'decorative must be boolean.'));
+    if (attachment.altSource !== undefined && ['vision', 'author', 'planning'].indexOf(attachment.altSource) === -1) errors.push(error('invalid-alt-source', 'attachment.altSource', 'Use vision, author, or planning.'));
+    if (errors.length) return bad(errors);
+    var media = resolveMediaModule();
+    if (!media) return bad([error('media-validator-unavailable', 'profile', 'The illustrated pack media module must be available.')]);
+    var imageReport = media.inspectDataImage(attachment.dataUrl);
+    if (!imageReport.ok) return bad(imageReport.errors);
+    var serialized;
+    try { serialized = JSON.stringify(pack); } catch (_) { return bad([error('invalid-json-pack', 'pack', 'Pack must be JSON serializable.')]); }
+    if (serialized.length > MAX_ILLUSTRATED_CHARS) return bad([error('pack-too-large', 'pack', 'Reduce the pack below the illustrated size cap before attaching artwork.')]);
+    var next = JSON.parse(serialized);
+    var item = next.history.find(function (row) { return row && row.id === attachment.resourceId; });
+    if (!item) return bad([error('unknown-resource', 'attachment.resourceId', 'The resource id must belong to this pack.')]);
+    var rows = null;
+    if (attachment.slot === 'glossary' && item.type === 'glossary') rows = item.data;
+    if (attachment.slot === 'panel' && item.type === 'image' && isObject(item.data) && isObject(item.data.visualPlan)) rows = item.data.visualPlan.panels;
+    if (attachment.slot === 'anchor' && item.type === 'anchor-chart' && isObject(item.data)) rows = item.data.sections;
+    if (attachment.slot === 'sort' && item.type === 'concept-sort' && isObject(item.data)) rows = item.data.items;
+    if (!Array.isArray(rows) || !isObject(rows[attachment.index])) return bad([error('unknown-image-slot', 'attachment.index', 'The slot and index must select an existing native row in the matching resource type.')]);
+    var fields = media.IMAGE_FIELDS[attachment.slot], row = rows[attachment.index];
+    row[fields.image] = attachment.dataUrl;
+    row[fields.alt] = attachment.alt;
+    row[fields.hash] = media.hashImage(attachment.dataUrl);
+    row[fields.source] = attachment.altSource || 'planning';
+    row[fields.decorative] = attachment.decorative === true;
+    return validatePack(next, options);
   }
 
   function compose(request) {
     var errors = [];
     if (!isObject(request)) return bad([error('invalid-request', 'request', 'Resource-pack compose request must be an object.')]);
-    var allowed = { requestId: 1, title: 1, sourceTopic: 1, gradeLevel: 1, language: 1, standards: 1, standardsContext: 1, instructionalContext: 1, learningGoal: 1, author: 1, history: 1, privacy: 1 };
+    var allowed = { requestId: 1, title: 1, sourceTopic: 1, gradeLevel: 1, language: 1, standards: 1, standardsContext: 1, instructionalContext: 1, learningGoal: 1, author: 1, history: 1, privacy: 1, profile: 1 };
     Object.keys(request).forEach(function (key) { if (!allowed[key]) errors.push(error('unsupported-field', 'request.' + key, 'Unsupported compose field.')); });
+    if (request.profile !== undefined && request.profile !== 'text' && request.profile !== 'illustrated') errors.push(error('invalid-pack-profile', 'request.profile', 'Use text or illustrated.'));
     if (!text(request.requestId)) errors.push(error('missing-request-id', 'request.requestId', 'requestId is required.'));
     if (!text(request.sourceTopic)) errors.push(error('missing-topic', 'request.sourceTopic', 'sourceTopic is required.'));
     if (!text(request.learningGoal)) errors.push(error('missing-learning-goal', 'request.learningGoal', 'learningGoal is required.'));
@@ -721,14 +903,14 @@
     scanUnsafe(request, 'request', errors, 0);
     if (errors.length) return bad(errors);
     var normalized = {
-      requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
+      profile: request.profile || 'text', requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
       sourceTopic: text(request.sourceTopic), gradeLevel: text(request.gradeLevel, 'middle school'), language: text(request.language, 'en').toLowerCase(),
       standards: text(request.standards), standardsContext: clone(request.standardsContext || null),
       instructionalContext: normalizeInstructionalContext(request.instructionalContext, request),
       learningGoal: text(request.learningGoal), author: text(request.author, 'Agent Draft'), resourcePlan: []
     };
     var pack = normalizePack({ history: request.history }, normalized, { provider: 'agent-context', model: 'agent-selected', generatedAt: nowIso() });
-    var report = validatePack(pack, { strict: true });
+    var report = validatePack(pack, { strict: true, profile: normalized.profile });
     if (!report.ok) return bad(report.errors, report.warnings);
     return ok(pack, report.warnings);
   }
@@ -743,15 +925,15 @@
     if (pack.history.length !== normalized.resourcePlan.length || normalized.resourcePlan.some(function (row, index) { return !pack.history[index] || pack.history[index].type !== row.type; })) {
       return bad([error('resource-plan-mismatch', 'pack.history', 'Generated resource types, counts, and order must match the normalized request plan: ' + normalized.resourcePlan.map(function (row) { return row.type; }).join(', ') + '.')]);
     }
-    var report = validatePack(pack, { strict: true });
+    var report = validatePack(pack, { strict: true, profile: normalized.profile });
     if (!report.ok) return bad(report.errors, report.warnings);
     return ok(pack, report.warnings);
   }
 
   var api = {
-    CONTRACT_VERSION: CONTRACT_VERSION, ALLOPACK_SPEC: ALLOPACK_SPEC, MAX_TYPES: MAX_TYPES.slice(),
+    CONTRACT_VERSION: CONTRACT_VERSION, ALLOPACK_SPEC: ALLOPACK_SPEC, MAX_TYPES: MAX_TYPES.slice(), ILLUSTRATED_TYPES: ILLUSTRATED_TYPES.slice(),
     validateRequest: validateRequest, buildPrompt: buildPrompt, normalizePack: normalizePack,
-    validatePack: validatePack, previewPack: previewPack, exportPack: exportPack, compose: compose, generate: generate
+    validatePack: validatePack, previewPack: previewPack, exportPack: exportPack, attachImage: attachImage, compose: compose, generate: generate
   };
   if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};

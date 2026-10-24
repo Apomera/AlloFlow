@@ -16,12 +16,13 @@
       '<div class="fold-studio-stage"></div>' +
       '<ol class="fold-studio-sequence" aria-label="Mixing sequence"><li id="foldStudioStep1">Gather around</li><li id="foldStudioStep2">Draw inward</li><li id="foldStudioStep3">Release</li></ol>' +
       '<p id="foldStudioHelp" class="fold-studio-help">Drag from the dotted ring in a full circle, either way. Keep holding and draw inward to the center; release to finish. Keyboard: Enter picks up, Left or Right gathers a quarter turn, Down draws inward, Enter releases. Escape cancels.</p>' +
+      '<p id="foldStudioTiming" class="fold-studio-note" hidden></p><p id="foldStudioPool" class="fold-studio-note" hidden></p>' +
       '<p id="mixGestureStatus" class="fold-studio-instruction" role="status" aria-live="polite" aria-atomic="true"></p>' +
-      '<dl class="fold-studio-readings"><div><dt>Saved water awaiting a mix</dt><dd id="foldStudioWater">0 mL</dd></div><div><dt>Tomato juice awaiting a mix</dt><dd id="foldStudioJuice">0 mL</dd></div></dl>' +
+      '<dl class="fold-studio-readings"><div><dt id="foldStudioWaterLabel">Saved water awaiting a mix</dt><dd id="foldStudioWater">0 mL</dd></div><div id="foldStudioPlainRow" hidden><dt>Plain water awaiting a mix</dt><dd id="foldStudioPlain">0 mL</dd></div><div><dt id="foldStudioJuiceLabel">Tomato juice awaiting a mix</dt><dd id="foldStudioJuice">0 mL</dd></div></dl>' +
       '<div class="fold-studio-controls" role="group" aria-label="Step through a fold"><button type="button" id="foldStudioPick">Pick up spoon</button><button type="button" id="foldStudioCW">Gather ↻</button><button type="button" id="foldStudioCCW">Gather ↺</button><button type="button" id="foldStudioInward">Draw inward</button><button type="button" id="foldStudioRelease">Release spoon</button><button type="button" id="foldStudioCancel">Put back · cancel</button></div>' +
       '<p class="fold-studio-note">The controls above follow the same path one step at a time. There is no speed or dexterity score. An unfinished movement changes nothing.</p>' +
       '<div class="fold-studio-observation"><p id="foldStudioReceipt"></p><button type="button" id="foldStudioCheck">Inspect the coating</button></div>' +
-      '<p class="fold-studio-learning">Mixing spreads the liquid already in the pan. It does not add water or reduce excess liquid. Look at a fresh sauce trail before deciding what to change.</p>';
+      '<p id="foldStudioLearning" class="fold-studio-learning">Mixing spreads the liquid already in the pan. It does not add water or reduce excess liquid. Look at a fresh sauce trail before deciding what to change.</p>';
     var svg = document.createElementNS(ns, 'svg');
     svg.id = 'mixSvg';
     svg.setAttribute('viewBox', '0 0 400 320');
@@ -77,6 +78,7 @@
       if (view.submitted) return 'This submitted cook is read-only.';
       if (view.plated) return 'This dish has been plated. Start another cook to practice a fold.';
       if (view.time >= 3600 || view.log.length >= 1200) return 'This cook has reached its limit and is read-only.';
+      if (view.time + F.duration(view) > 3600) return 'Fewer than ' + F.duration(view) + ' simulated seconds remain in this cook. There is not enough time to complete another mix.';
       if (R.serving(view).started) return 'Return the spoonfuls to the pan before mixing again.';
       if (!view.pan.produce) return 'Add prepared produce to the pan before mixing.';
       return view.pan.combined ? 'Start on the dotted ring. Gather a full circle, draw into the center, then release to fold.' :
@@ -157,7 +159,7 @@
       var after = host.getState(); view = after;
       paint();
       if (after !== before && expected !== before && entry && entry.accepted && stamp(after) === stamp(expected)) {
-        text('mixGestureStatus', g.trace.fold ? 'Fold recorded · the liquid is spread through the pasta. Inspect the coating before another splash.' :
+        text('mixGestureStatus', after.mixingModel === 2 ? 'Mix recorded. ' + F.pool(after).text : g.trace.fold ? 'Fold recorded · the liquid is spread through the pasta. Inspect the coating before another splash.' :
           'Sweep recorded · the produce has been redistributed. Observe it before the next cooking step.');
       } else text('mixGestureStatus', 'The kitchen changed before the mix could be recorded. Check the pan before trying again.');
     }
@@ -220,7 +222,10 @@
       $('foldStudioPasta').setAttribute('visibility', hasFood && s.pan.combined ? 'visible' : 'hidden');
       $('foldStudioSauce').setAttribute('fill', s.id === 'tomato' ? '#bf5737' : '#b6a36a');
       $('foldStudioSauce').setAttribute('opacity', String(Math.min(.65, .12 + Math.max(0, s.pan.moisture) / 400)));
-      var liquid = hasFood ? Math.max(0, mixing.liquidSinceMix) : 0;
+      var pooling = s.mixingModel === 2 ? F.pool(s) : null;
+      var liquid = hasFood ? pooling ? pooling.visible ? pooling.amount : 0 : Math.max(0, mixing.liquidSinceMix) : 0;
+      $('foldStudioPool').hidden = !pooling; text('foldStudioPool', pooling ? pooling.text : '');
+      if (pooling) studio.dataset.liquidPool = hasFood && pooling.visible ? 'visible' : 'not-visible'; else delete studio.dataset.liquidPool;
       $('foldStudioUnmixedPool').setAttribute('opacity', liquid ? String(Math.min(.82, .3 + liquid / 150)) : '0');
       $('foldStudioUnmixedPool').setAttribute('rx', String(12 + Math.min(22, liquid * .2)));
       $('foldStudioUnmixedPool').setAttribute('ry', String(5 + Math.min(10, liquid * .08)));
@@ -234,9 +239,9 @@
         }
         food.node.setAttribute('transform', 'translate(' + (200 + pose.x * scale) + ' ' + (152 + pose.z * scale - pose.y * 70) + ') rotate(' + (food.angle + rotation * 180 / Math.PI) + ')');
       });
-      text('foldStudioWater', volume(mixing.waterSinceMix)); text('foldStudioJuice', volume(mixing.juiceSinceMix));
+      text('foldStudioWater', volume(mixing.waterSinceMix)); var hasPlain = typeof mixing.plainSinceMix === 'number'; $('foldStudioPlainRow').hidden = !hasPlain; text('foldStudioPlain', volume(mixing.plainSinceMix || 0)); text('foldStudioWaterLabel', s.mixingModel === 2 ? hasPlain ? 'Reduced cooking water added since previous mix' : 'Saved water added since previous mix' : hasPlain ? 'Reduced cooking water awaiting a mix' : 'Saved water awaiting a mix'); text('foldStudioJuiceLabel', s.mixingModel === 2 ? 'Tomato juice added since previous mix' : 'Tomato juice awaiting a mix'); $('foldStudioPlainRow').querySelector('dt').textContent = s.mixingModel === 2 ? 'Plain water added since previous mix' : 'Plain water awaiting a mix'; text('foldStudioJuice', volume(mixing.juiceSinceMix));
       var last = F.lastMix(s);
-      text('foldStudioReceipt', last ? (last.water + last.juice ? 'Last mix spread ' + volume(last.water) + ' saved water and ' + volume(last.juice) + ' released juice. ' : 'Last mix redistributed the ingredients. ') + last.observation : 'No mix recorded yet. The food moves as a preview until you release a complete path.');
+      text('foldStudioReceipt', s.mixingModel === 2 ? F.receipt(s, last) : last ? (last.water + last.juice + (last.plainWater || 0) ? 'Last mix spread ' + (last.plainWater !== undefined ? volume(last.water) + ' reduced cooking water, ' + volume(last.plainWater) + ' plain water and ' : volume(last.water) + ' saved water and ') + volume(last.juice) + ' released juice. ' : 'Last mix redistributed the ingredients. ') + last.observation : 'No mix recorded yet. The food moves as a preview until you release a complete path.');
     }
     function paint() {
       if (disposed) return;
@@ -325,6 +330,10 @@
     function render(s, historical, isActive) {
       if (disposed) return;
       view = s; locked = !!historical; active = !!isActive;
+      var seconds = F.duration(s);
+      $('foldStudioTiming').hidden = !seconds; text('foldStudioTiming', F.timingNote(s));
+      svg.setAttribute('aria-describedby', 'foldStudioHelp ' + (seconds ? 'foldStudioTiming ' : '') + 'mixGestureStatus');
+      text('foldStudioLearning', seconds ? 'Mixing distributes liquid and disperses oil. The spoon adds no water; while time passes, water can evaporate or move into pasta. Mixing cannot undo scorching. Look at a fresh sauce trail before deciding what to change.' : 'Mixing spreads the liquid already in the pan. It does not add water or reduce excess liquid. Look at a fresh sauce trail before deciding what to change.');
       if (gesture && !fresh(gesture)) cancel('Movement canceled because the kitchen changed. Nothing was mixed.');
       paint(); if (!gesture) instruction();
     }

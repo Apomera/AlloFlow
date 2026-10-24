@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Результати пошуку: {cards} карток у {topics} темах.",
+  "stem.flightsim.learn_library_counts": "{cards} карток · {topics} тем",
+  "stem.flightsim.learn_search_clear": "Очистити пошук",
+  "stem.flightsim.learn_search_empty": "За запитом «{query}» навчальних карток не знайдено. Спробуйте інше слово або очистіть пошук.",
+  "stem.flightsim.learn_search_none": "Немає відповідних навчальних карток",
+  "stem.flightsim.learn_search_cards": "{count} навчальних карток",
+  "stem.flightsim.quiz_review_progress": "Дано відповіді на {answered} із {total} запитань · {missed} помилок",
+  "stem.flightsim.quiz_review_missed": "Повторити запитання з помилками",
+  "stem.flightsim.quiz_next_unanswered": "Наступне запитання без відповіді",
+  "stem.flightsim.quiz_review_all_answered": "На кожне запитання дано першу відповідь. Повторіть запитання з помилками без нарахування балів або почніть нову спробу.",
+  "stem.flightsim.planner_drone_agl": "{ft} футів над землею",
+  "stem.flightsim.sprint_native_title": "Географічний спринт",
+  "stem.flightsim.sprint_timed_hint": "Рух маршрутом триває, поки ви відповідаєте. Призупиніть його, щоб прочитати запитання; відновіть рух перед вибором відповіді.",
+  "stem.flightsim.sprint_warp_reference": "У цьому географічному завданні подорож прискорена. Покажчики швидкості відображають заявлену крейсерську швидкість; цей маршрут не вимірює льотні характеристики літака.",
+  "stem.flightsim.sprint_save_menu": "Зберегти спринт і повернутися до меню",
+  "stem.flightsim.sprint_next_stop": "Наступна зупинка: {place}",
+  "stem.flightsim.geoq_approaching_city": "До якого міста ви наближаєтеся?",
+  "stem.flightsim.sprint_time_remaining": "Залишилося часу: {seconds} секунд"
+}

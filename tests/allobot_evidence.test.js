@@ -55,7 +55,7 @@ describe('Allobot public evidence', () => {
     expect(run.messages()[0].evidence.sources).toHaveLength(1);
     expect(run.messages()[0].evidence.basis).toBe('search-excerpts');
   });
-  it.each(['Verify my student John Smith scored 40%', 'Research avery@example.com', 'Fact check student ID 123456789', 'Verify John Smith reads at grade 2', 'Check this claim: her diagnosis is ADHD'])('does not search personal query: %s',async question=>{
+  it.each(['Verify my student John Smith scored 40%', 'Research avery@example.com', 'Fact check student ID 123456789', 'Verify that a student named Maya reads at grade 2', 'Fact check: our class scored 40% on the test'])('does not search personal query: %s',async question=>{
     const run=harness(); await chat.generateStandardChatResponse(question,run.deps);
     expect(run.deps.callGemini).toHaveBeenCalledTimes(1);
     expect(run.messages()[0].evidence.status).toBe('private-query');

@@ -76,7 +76,8 @@ describe('take-home: teacher side', () => {
     const teacherOnly = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);
     expect(teacherOnly).not.toContain("'directions'");
     expect(anti).toContain("case 'directions': return <ClipboardList size={16} />;");
-    expect(anti).toContain("case 'directions': return t('directions.title') || 'Assignment Directions';");
+    // 91652c2fe (2026-10-12) renamed the resource "Lesson Directions" (directions.title).
+    expect(anti).toContain("case 'directions': return t('directions.title') || 'Lesson Directions';");
   });
 });
 

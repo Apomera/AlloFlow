@@ -1,0 +1,79 @@
+{
+  "status": "pages-deployed-further-publication-paused-native-sample-correction-local-only",
+  "baseCommit": "2f69704ab4161680431012d9222386914e19fbdb",
+  "isolatedRelease": "tmp/novak-release-isolated",
+  "sharedWorkspacePreserved": true,
+  "sourceFiles": 19,
+  "uniqueSourceBlobsVerified": 14,
+  "publicationMethod": "Authenticated GitHub connector; saved git/gh CLI credential unavailable",
+  "checks": {
+    "nativeActualHostAndImport": {
+      "passed": 24
+    },
+    "loadingAndBlueprintVitest": {
+      "passed": 72
+    },
+    "catalogVitest": {
+      "passed": 116
+    },
+    "scopedFreeVariableCheck": "passed for catalog, host handlers, misc handlers",
+    "sourceAndAppJSXSyntax": "passed",
+    "nativeCatalogPreview": "all four resources, readable cover, contextual heading, no answer leakage or inert controls, scripts blocked",
+    "productionBuild": "passed with documented .env.example settings",
+    "browserAppMirror": {
+      "files": 47,
+      "result": "byte-identical"
+    },
+    "isolatedFullApp": {
+      "result": "passed before runtime reset",
+      "readinessOverrides": false,
+      "preview": "four resources, no automatic import",
+      "close": "launchpad and unchanged history",
+      "import": "exact four resources",
+      "runtimeErrors": 0,
+      "modelRequests": 0,
+      "receipt": "artifacts/novak-investigation-2026-10-21/full-app-original-pass-recovered-summary.json"
+    }
+  },
+  "environmentNotes": [
+    "Sparse-checkout fixture omissions caused early test ENOENT failures; clean tracked fixtures were materialized and affected suites passed.",
+    "An initial formatter test exceeded the default five-second timeout; it passed with the existing 30-second test-run allowance.",
+    "First production attempt omitted committed .env.example build settings and stopped at legacy ESLint diagnostics. Retry uses documented GENERATE_SOURCEMAP=false, ESLINT_NO_DEV_ERRORS=true, DISABLE_ESLINT_PLUGIN=true; no private environment files copied.",
+    "Second production build spends time gzip-measuring approximately 800 MB of previous copied assets before compilation.",
+    "Production build completed successfully; generated app and public/app mirrors verified. Removed only isolated transient build output after verification.",
+    "Runtime reset made local shell/network unavailable; later loopback browser repeat stopped at ERR_NETWORK_ACCESS_DENIED before app boot. Public Chrome DevTools browser remains usable."
+  ],
+  "canvas": {
+    "prepared": "artifacts/novak-investigation-2026-10-21/AlloFlowANTI.canvas-ready.txt",
+    "sharedArtifactUpdated": false,
+    "authenticatedGenerationVerified": false
+  },
+  "notIncluded": [
+    "Unrelated shared-workspace edits",
+    "Private feedback/evidence artifacts",
+    "Source-intake misleading success-status follow-up",
+    "Firebase deployment",
+    "Separate Cloudflare Worker build settings"
+  ],
+  "commit": "73be313d6d0771426557c0a956d97efb1997ac6f",
+  "finalTree": "5c2976c5e1c86dc2e0081ad4e10cfe9e70973afb",
+  "releaseId": "da7196dcf009fc4c28ac2e5583545313cdd05b0dcad59e6312f937127f1cba6e",
+  "importLimitations": [
+    "Existing importer preserves global generator grade; set Universal Settings to 6th Grade before generating additional resources.",
+    "First-run Quick Start may appear after successful import; visible Skip dismisses setup."
+  ],
+  "pagesCheck": {
+    "id": 119493499097,
+    "status": "completed",
+    "conclusion": "success",
+    "completedAt": "2026-10-21T21:26:47Z",
+    "immutableUrl": "https://dfed5a0a.alloflow-cdn.pages.dev"
+  },
+  "nativeSampleFollowup": {
+    "publishedQuizPreflight": "3 unsupported shortAnswer question types; written-answer controls omitted",
+    "localCorrection": "3 tags changed to short-answer; real native renderer displays all 3 answer controls",
+    "correctedPackSHA256": "97a10e7483808352025b30d9d03eeadf4b8e00b386f14d055c3009a07e1c5e63",
+    "published": false,
+    "studentEndToEndVerified": false
+  }
+}

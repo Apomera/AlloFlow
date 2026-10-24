@@ -329,5 +329,6 @@ describe('First Response finger and wrist folds', () => {
         expect(minimumWorldY(wrist), wrist.name + ' original underside height').toBeCloseTo(unchangedPole.y, 7);
       }
     }
-  });
+  // 19 full scene builds at ~0.3 s each since the October face and hand refinements.
+  }, 60000);
 });

@@ -212,10 +212,17 @@ describe('SEL Hub · migrated tools have no unwrapped tinted-surface literals (t
     it(`${c.id}: every tinted surface in the render body routes through ${c.helper}()`, () => {
       const src = readFileSync(resolve(process.cwd(), 'sel_hub', `sel_tool_${c.id}.js`), 'utf8');
       const mark = ': hex); };'; // end of the _xxC = function(hex){...} helper definition
-      const body = src.slice(src.indexOf(mark) + mark.length);
+      let body = src.slice(src.indexOf(mark) + mark.length);
+      // Light-base tools (since 3f3ae1896) also route through wrappers that translate the shared
+      // panel helpers' dark-base hexes and then call the remap, e.g.
+      //   var _DWW_BG = { '#0f172a': '#f8fafc' }; var _dwW_bg = function(hex) { return _dwC(_DWW_BG[hex] || hex); };
+      // A wrapper's argument and its translation map are routed; anything else still must be wrapped.
+      const wrappers = [...body.matchAll(new RegExp(`var (_\\w+) = function\\(hex\\) \\{ return ${esc(c.helper)}\\((_[A-Z]+_[A-Z]+)\\[hex\\] \\|\\| hex\\); \\};`, 'g'))];
+      for (const [, , map] of wrappers) body = body.replace(new RegExp(`var ${esc(map)} = \\{[^}]*\\};`, 'g'), '');
+      const routed = [c.helper, ...new Set(wrappers.map((w) => w[1]))].map(esc).join('|');
       const leaks = [];
       for (const hex of SURFACE_HEXES) {
-        const re = new RegExp(`(?<!${esc(c.helper)}\\()'${esc(hex)}'`, 'g');
+        const re = new RegExp(`(?<!(?:${routed})\\()'${esc(hex)}'`, 'g');
         const m = body.match(re);
         if (m) leaks.push(`${hex} ×${m.length}`);
       }

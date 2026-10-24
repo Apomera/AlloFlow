@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ናይ ቅድሚ ሕጂ ፈተና ፈተነታት",
+  "stem.flightsim.quiz_history_scope": "ሓድሽ ፈተነ ምጅማር፣ ቀዳሞት መልስታቶም ዝተመዝገቡ ክሳብ ኣርባዕተ ዝሓለፉ ፈተነታት ይዕቅብ። ንዓኣቶም ምኽላስ ነቲ ሕጂ እትገብሮ ፈተና ኣይቅይሮን።",
+  "stem.flightsim.quiz_history_empty": "ክሳብ ሕጂ ዝተዓቀቡ ናይ ቅድሚ ሕጂ ፈተና ፈተነታት የለዉን።",
+  "stem.flightsim.quiz_history_attempt": "ኣብ {date} ተዓቂቡ · ካብ {answered} ቀዳሞት መልስታት {score} ቅኑዓት እዮም",
+  "stem.flightsim.quiz_history_progress": "ካብ {total} ሕቶታት {answered} ተመዝጊቦም · {unanswered} ዘይተመለሱ",
+  "stem.flightsim.quiz_history_question": "ሕቶ {number}፦ {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ቅኑዕ መልሲ፦ {answer}",
+  "stem.flightsim.quiz_history_changed": "ዝተዓቀቡ {count} ሕቶታት ድሕሪ ሕጂ ምስዚ ፈተና ኣይሰማምዑን። ነጥብታት ካብ ዝሰማምዑ መዝገባት ሕቶታት ጥራይ ይሕሰቡ።"
+}

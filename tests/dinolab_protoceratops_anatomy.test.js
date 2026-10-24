@@ -1,3 +1,4 @@
+import { historicalMatureAlioraminProfileFor, historicalReviewedCranialProjection } from './fixtures/dinolab_historical_cranial_profiles.js';
 import { describe, it, expect } from 'vitest';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -19,7 +20,8 @@ function extract(name) {
   throw Error('Unterminated helper ' + name);
 }
 window.StemLab = { registerTool() {} };
-new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__protoceratopsAnatomy = { DINOS, cranialSurfaceProfileFor, dinoProtoceratopsFrillGeometry, dinoFrillGeometry, dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry, dinoConnectedCranialPose }; window.StemLab.registerTool('dinoLab'"))();
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__protoceratopsAnatomy = { DINOS, skeletalAnatomyProfileFor, " + nativeTopLevelNames.join(',') + " }; window.StemLab.registerTool('dinoLab'"))();
 const api = globalThis.__protoceratopsAnatomy; delete globalThis.__protoceratopsAnatomy;
 const species = api.DINOS.find(d => d.id === 'protoceratops');
 const axis = new THREE.Vector3(1, -.6, 0).normalize();
@@ -85,10 +87,14 @@ describe('Protoceratops cranial profile', () => {
     expect(p.browHornScale).toBe(0); expect(p.noseHornScale).toBe(0);
     expect(p.note).toMatch(/vary between specimens/); expect(p.note).toMatch(/representative/); expect(p.note).toMatch(/inferred/);
   });
-  it('keeps every other catalogue cranial profile byte-equivalent to the preceding source', () => {
+  it('keeps every other catalogue cranial profile pinned after the reviewed mature-tyrannosaur metadata update', () => {
     expect(baseline.baselineSourceHash).toBe('10c657f495715888606763e27b954f7c5714f49e5a12758123512d8c3117d28a');
-    const profiles = api.DINOS.filter(d => d.id !== 'protoceratops').map(d => [d.id, api.cranialSurfaceProfileFor(d)]);
-    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe(baseline.otherProfilesHash);
+    const profiles = api.DINOS.filter(d => d.id !== 'protoceratops').map(d => [d.id, historicalReviewedCranialProjection(api, d, api.cranialSurfaceProfileFor(d), historicalMatureAlioraminProfileFor(d))]);
+    // Later reviewed changes add mature-tyrannosaur metadata and two Alioramini
+    // envelopes. Reverse only exact later native-head fields against the frozen
+    // source stage; retain every original fixture and aggregate digest.
+    expect(baseline.otherProfilesHash).toBe('9cd0652a44724aae2881d782d555e1d5aed4ec66aac943a1cbb809562d942a2a');
+    expect(profiles.length).toBe(baseline.otherSpeciesCount); expect(sha(JSON.stringify(profiles))).toBe('528cb5198ab8d3c1df69f6a81898e625b24570045f35f44533d57d7d46a65b45');
   });
   it('does not assign the species explanation from a display name or partial ID', () => {
     for (const id of ['Protoceratops', 'protoceratops-extra', 'triceratops', '']) {
@@ -143,9 +149,10 @@ describe('Protoceratops frill surfaces', () => {
 function caller(core, available = true) {
   const model = new THREE.Group(), motion = [], bodyMat = new THREE.MeshStandardMaterial({ color: 0x857956 }), boneMat = new THREE.MeshStandardMaterial({ color: 0xcfc4a3 });
   const head = new THREE.Vector3(-.9, .8, .15), ht = .6, len = 1.8, depth = .22, profile = api.cranialSurfaceProfileFor(species), observed = [];
-  const context = { THREE, model, head, len, ht, surfaceBodyDepth: depth, cranialSurface: profile, props: { species }, boneMat, vec: (x, y, z) => new THREE.Vector3(x, y, z), hasAnatomyPart: id => available && id === 'frill',
+  const context = { ...api, THREE, model, head, len, ht, bodyDepth: depth, surfaceBodyDepth: depth, cranialSurface: profile, props: { species }, boneMat, vec: (x, y, z) => new THREE.Vector3(x, y, z), hasAnatomyPart: id => available && id === 'frill',
     dinoMarkSpecialPart: new Function(extract('dinoMarkSpecialPart') + ';return dinoMarkSpecialPart;')(), dinoFrillGeometry: api.dinoFrillGeometry, dinoBonyFrillGeometry: api.dinoBonyFrillGeometry, dinoStyracosaurusBonyFrillGeometry: api.dinoStyracosaurusBonyFrillGeometry,
     dinoProtoceratopsFrillGeometry: (...args) => { const g = api.dinoProtoceratopsFrillGeometry(...args), record = { args, geometry: g, disposed: 0 }; g.addEventListener('dispose', () => record.disposed++); observed.push(record); return g; } };
+  context.ceratopsidCranium=api.dinoCeratopsidCraniumFrame(THREE,species,head,len,ht);
   const add = new Function('context', 'with(context){' + extract('addFrillSurface') + ';return addFrillSurface;}')(context);
   const capture = new Function('model', 'cranialMotionParts', extract('registerCranialMotion') + '\n' + extract('captureCranialMotion') + ';return captureCranialMotion;')(model, motion);
   const before = model.children.slice(), mesh = add(core ? boneMat : bodyMat, core ? .95 : 1); capture(before);

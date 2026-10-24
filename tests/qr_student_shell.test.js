@@ -423,7 +423,9 @@ describe('Cloudflare student shell build wiring', () => {
     for (const asset of precachePaths) {
       expect(readFileSync(resolve(shellDir, asset)).length, 'Missing precache asset: ' + asset).toBeGreaterThan(0);
     }
-    expect(index).toContain('src="./ai_backend_module.js"');
+    // postbuild pins the preload to its content hash; the exact pin is checked in
+    // tests/maine_sld_state_search_policy.test.js.
+    expect(index).toMatch(/src="\.\/ai_backend_module\.js(?:\?v=[a-f0-9]{8})?"/);
     expect(index).toContain('src="./alloflow_desktop_bridge.js"');
     expect(readFileSync(resolve(shellDir, 'ai_backend_module.js')).length).toBeGreaterThan(0);
     expect(files.length).toBeGreaterThanOrEqual(9);

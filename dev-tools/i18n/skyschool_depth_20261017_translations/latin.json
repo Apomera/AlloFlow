@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Serva statum volatus praesentem",
+  "stem.flightsim.flight_assistance_targets": "Directio {hdg}° · Altitudo {alt} ft MSL · Celeritas {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Directio {hdg}° · Altitudo {alt} ft MSL · Celeritas progressionis {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Flecte {degrees}° ad sinistram versus {airport}.",
+  "stem.flightsim.challenge_turn_right": "Flecte {degrees}° ad dextram versus {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Volas versus {airport}. Sequere indicem cursus.",
+  "stem.flightsim.challenge_runway_reference": "Via decollationis ad exercitationem {runway}: directio {heading}°. Aeronavem cum via decollationis dirige antequam ad terram descendere incipias."
+}

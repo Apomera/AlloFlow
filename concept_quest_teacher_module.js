@@ -275,10 +275,14 @@
       setEndConfirm(true);
     },
     className: "min-h-11 rounded-lg bg-red-600 px-3 text-sm font-bold text-white"
-  }, tr('end_quest', 'End quest')))), quest.excludedQuestions > 0 && /*#__PURE__*/React.createElement("p", {
+  }, tr('end_quest', 'End quest')))), debrief.coverage && /*#__PURE__*/React.createElement("p", {
+    "data-concept-quest-coverage": true,
+    role: "status",
+    className: "mt-3 rounded-lg bg-indigo-100 p-2 text-sm text-indigo-950"
+  }, tr('assessment_coverage', '{attempted} of {total} supported assessment items explored.', debrief.coverage), !debrief.coverage.complete && ' ' + tr('assessment_coverage_help', 'The final barrier stays open until every supported item has been explored.')), quest.excludedQuestions > 0 && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-3 rounded-lg bg-amber-50 p-2 text-sm text-amber-900"
-  }, tr('excluded_questions', '{count} source question(s) were skipped because they lack a supported multiple-choice answer key.', {
+  }, tr('excluded_questions_review', '{count} source question(s) were skipped because their format or answer key needs teacher review.', {
     count: quest.excludedQuestions
   })), /*#__PURE__*/React.createElement("fieldset", {
     disabled: syncing || busy,
@@ -679,9 +683,14 @@
     className: "min-h-11 flex-1 rounded-lg bg-emerald-700 font-bold text-white"
   }, tr('publish_to_class', 'Publish to class')))))), /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-sm font-bold text-emerald-900"
-  }, tr(debrief.rounds === 1 ? 'recent_evidence_one' : 'recent_evidence', debrief.rounds === 1 ? 'Learning evidence · last round' : 'Learning evidence · last {count} rounds', {
+  }, debrief.completeHistory === false ? tr('available_evidence', 'Learning evidence · {count} available saved rounds', {
     count: debrief.rounds
-  })), /*#__PURE__*/React.createElement("div", {
+  }) : tr('whole_quest_evidence', 'Learning evidence · whole quest · {count} rounds', {
+    count: debrief.rounds
+  })), debrief.completeHistory === false && /*#__PURE__*/React.createElement("p", {
+    "data-concept-quest-history-limit": true,
+    className: "mt-1 text-xs text-slate-700"
+  }, tr('history_limit', 'This older save no longer contains its earliest rounds. These totals include the available saved rounds and all new rounds.')), /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-2 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6",
     "aria-label": tr('campaign_summary_aria', 'Campaign evidence summary')

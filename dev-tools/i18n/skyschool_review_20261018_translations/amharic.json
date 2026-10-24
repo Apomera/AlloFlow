@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "ቀደም ያሉ የጥያቄ ሙከራዎች",
+  "stem.flightsim.quiz_history_scope": "አዲስ ሙከራ ሲጀመር፣ የመጀመሪያ መልሶች የተመዘገቡባቸው እስከ አራት ያለፉ ሙከራዎች ይቀመጣሉ። እነሱን መከለስ የአሁኑን ጥያቄ ሙከራዎን አይቀይርም።",
+  "stem.flightsim.quiz_history_empty": "እስካሁን የተቀመጡ ቀደም ያሉ የጥያቄ ሙከራዎች የሉም።",
+  "stem.flightsim.quiz_history_attempt": "የተቀመጠው {date} · ከ{answered} የመጀመሪያ መልሶች {score} ትክክል ናቸው",
+  "stem.flightsim.quiz_history_progress": "ከ{total} ጥያቄዎች {answered} ተመዝግበዋል · {unanswered} ያልተመለሱ",
+  "stem.flightsim.quiz_history_question": "ጥያቄ {number}፦ {question}",
+  "stem.flightsim.quiz_history_correct_answer": "ትክክለኛው መልስ፦ {answer}",
+  "stem.flightsim.quiz_history_changed": "የተቀመጡ {count} ጥያቄዎች ከዚህ ጥያቄ ሙከራ ጋር ከእንግዲህ አይዛመዱም። ነጥቦቹ የሚጠቀሙት በሚዛመዱ የጥያቄ መዝገቦች ብቻ ነው።"
+}

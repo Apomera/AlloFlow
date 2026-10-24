@@ -1,15 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const { act } = React;
 const source = readFileSync('stem_lab/stem_tool_birdlab.js', 'utf8');
-const componentSource = source.slice(source.indexOf('  function Birdlab3DObservatory('), source.indexOf('  // ── Reduced motion CSS'));
+// Keep the real resident studio and compass in the same lexical scope as the
+// observatory, matching the complete production module rather than stubbing them.
+const componentSource = sliceBetween(source, '  function BirdlabResidentStudio(', '  // ── Reduced motion CSS', { file: 'stem_tool_birdlab.js' });
 let root, host, previousMedia;
 const state = { ready: true, paused: false, camera: 'orbit', lighting: 'daylight', speed: 1, phase: 'gliding', label: 'Gliding through the clearing', altitude: 6, airspeed: 8.3, wingbeat: 0, time: 12 };
 
 function controller() {
-  return Object.fromEntries(['setPaused', 'setSpeed', 'setCamera', 'setLighting', 'setRepeatFlights', 'setMode', 'setBinoculars', 'setCrouching', 'recordSighting', 'lockPointer', 'setMove', 'stepMove', 'seek', 'resetView', 'restart', 'dispose', 'getState'].map(name => [name, vi.fn()]));
+  return Object.fromEntries(['pinResidentShape', 'clearResidentShape', 'setResidentFrozenSurface', 'setResidentFrozenOpacity', 'setResidentPart', 'setResidentView', 'setStudyOverlay', 'setPaused', 'setSpeed', 'setCamera', 'setLighting', 'setRepeatFlights', 'setMode', 'setBinoculars', 'setCrouching', 'recordSighting', 'lockPointer', 'setMove', 'stepMove', 'seek', 'resetView', 'restart', 'dispose', 'getState'].map(name => [name, vi.fn()]));
 }
 function button(label) { return [...host.querySelectorAll('button')].find(el => el.textContent === label); }
 async function mount(load, props = {}) {
@@ -35,6 +38,160 @@ afterEach(async () => {
 });
 
 describe('BirdLab optional 3D view lifecycle', () => {
+  it('saves and clears resident shapes through the engine and reflects its comparison state', async () => {
+    const scene=controller();let publish;
+    const inspection={part:'wing',view:'side',active:true,bounds:null};
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,camera:'americanGoldfinch',residentInspection:inspection});return scene;})};
+    await mount(()=>Promise.resolve());
+    const panel=()=>host.querySelector('[data-resident-comparison-panel]');
+    expect(panel().querySelector('[data-resident-comparison-toggle]').disabled).toBe(true);
+    expect(panel().querySelector('[data-resident-comparison-opacity]').disabled).toBe(true);
+    expect(panel().querySelector('[data-resident-comparison-clear]').disabled).toBe(true);
+    expect(panel().querySelector('[data-resident-comparison-status]').textContent).toContain('Save a pose');
+    await act(async()=>panel().querySelector('[data-resident-comparison-pin]').click());
+    expect(scene.pinResidentShape).toHaveBeenCalledOnce();
+    const comparison={pinned:{species:'americanGoldfinch',part:'wing',time:8.63},matching:true,enabled:false,opacity:.25,visible:false};
+    await act(async()=>publish({paused:true,residentInspection:{...inspection,comparison}}));
+    expect(panel().querySelector('[data-resident-comparison-pin]').textContent).toBe('Replace saved shape');
+    expect(panel().querySelector('[data-resident-comparison-status]').textContent).toContain('American goldfinch · Wing feathers · 8.6 s');
+    expect(panel().querySelector('[data-resident-comparison-toggle]').checked).toBe(false);
+    await act(async()=>panel().querySelector('[data-resident-comparison-toggle]').click());
+    expect(scene.setResidentFrozenSurface).toHaveBeenLastCalledWith(true);
+    await act(async()=>publish({residentInspection:{...inspection,comparison:{...comparison,enabled:true,visible:true,opacity:.42}}}));
+    expect(panel().querySelector('[data-resident-comparison-toggle]').checked).toBe(true);
+    expect(panel().querySelector('[data-resident-comparison-opacity]').value).toBe('42');
+    expect(panel().querySelector('[data-resident-comparison-opacity-value]').textContent).toBe('42%');
+    expect(panel().querySelector('[data-resident-comparison-status]').textContent).toContain('Cyan holds the saved pose');
+    await act(async()=>panel().querySelector('[data-resident-comparison-clear]').click());
+    expect(scene.clearResidentShape).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(panel().querySelector('[data-resident-comparison-pin]'));
+    expect(scene.seek).not.toHaveBeenCalled();expect(scene.recordSighting).not.toHaveBeenCalled();expect(scene.setPaused).not.toHaveBeenCalled();
+    expect(window.BirdLab3D.mount).toHaveBeenCalledOnce();
+  });
+  it('returns to a saved resident part at the current time and allows hiding a mismatched pin', async () => {
+    const scene=controller();let publish;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,camera:'easternBluebird',residentInspection:{part:'head',view:'front',active:true,bounds:null,comparison:{pinned:{species:'whiteThroatedSparrow',part:'tail',time:6.03},matching:false,enabled:true,opacity:.25,visible:false}}});return scene;})};
+    await mount(()=>Promise.resolve());
+    const panel=host.querySelector('[data-resident-comparison-panel]');
+    expect(panel.querySelector('[data-resident-comparison-status]').textContent).toContain('White-throated sparrow · Tail fan · 6.0 s');
+    await act(async()=>panel.querySelector('[data-resident-comparison-toggle]').click());
+    expect(scene.setResidentFrozenSurface).toHaveBeenLastCalledWith(false);
+    await act(async()=>panel.querySelector('[data-resident-comparison-return]').click());
+    expect(scene.setCamera).toHaveBeenLastCalledWith('whiteThroatedSparrow');
+    expect(scene.setResidentPart).toHaveBeenLastCalledWith('tail');
+    expect(scene.seek).not.toHaveBeenCalled();expect(scene.recordSighting).not.toHaveBeenCalled();expect(scene.setPaused).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(panel.querySelector('[data-resident-comparison-pin]'));
+    await act(async()=>publish({mode:'free',camera:'walk',residentInspection:null}));
+    expect(host.querySelector('[data-resident-comparison-panel]')).toBeNull();
+  });
+  it('disables saved-shape actions when graphics become unavailable', async () => {
+    const scene=controller();let errorHandler;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{errorHandler=options.onError;options.onState({...state,camera:'robin',residentInspection:{part:'whole',view:'side',active:true,comparison:{pinned:{species:'robin',part:'wing',time:1},matching:false,enabled:false,opacity:.25,visible:false}}});return scene;})};
+    await mount(()=>Promise.resolve());
+    await act(async()=>errorHandler('Graphics interrupted'));
+    const controls=[...host.querySelectorAll('[data-resident-comparison-panel] button,[data-resident-comparison-panel] input')];
+    expect(controls).toHaveLength(5);expect(controls.every(control=>control.disabled)).toBe(true);
+    await act(async()=>controls.forEach(control=>control.click()));
+    expect(scene.pinResidentShape).not.toHaveBeenCalled();expect(scene.clearResidentShape).not.toHaveBeenCalled();expect(scene.setResidentFrozenSurface).not.toHaveBeenCalled();expect(scene.setResidentFrozenOpacity).not.toHaveBeenCalled();
+  });
+  it('provides a return route when playback hides a matching whole-bird comparison', async () => {
+    const scene=controller();
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{options.onState({...state,camera:'robin',residentInspection:{part:'whole',view:'free',active:false,comparison:{pinned:{species:'robin',part:'whole',time:1},matching:true,enabled:true,opacity:.25,visible:false}}});return scene;})};
+    await mount(()=>Promise.resolve());
+    expect(host.querySelector('[data-resident-comparison-status]').textContent).toContain('Choose Return to saved part to pause and compare');
+    await act(async()=>host.querySelector('[data-resident-comparison-return]').click());
+    expect(scene.setCamera).toHaveBeenLastCalledWith('robin');
+    expect(scene.setResidentPart).toHaveBeenLastCalledWith('whole');
+    expect(scene.seek).not.toHaveBeenCalled();expect(scene.setPaused).not.toHaveBeenCalled();expect(scene.recordSighting).not.toHaveBeenCalled();
+  });
+  it('frames resident parts and views through the engine, reflects its paused pose, and never seeks or records', async () => {
+    const scene=controller();let publish;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,camera:'easternBluebird',residentInspection:{part:'whole',view:'free',active:false,bounds:null}});return scene;})};
+    await mount(()=>Promise.resolve());
+    const studio=()=>host.querySelector('[data-birdlab-resident-inspection]');
+    expect(studio().getAttribute('data-birdlab-resident-inspection')).toBe('easternBluebird');
+    expect(studio().querySelector('[data-resident-part-choice="whole"]').getAttribute('aria-pressed')).toBe('true');
+    for(const part of ['whole','head','wing','tail']){
+      await act(async()=>studio().querySelector('[data-resident-part-choice="'+part+'"]').click());
+      expect(scene.setResidentPart).toHaveBeenLastCalledWith(part);
+    }
+    for(const view of ['free','side','front','above']){
+      await act(async()=>studio().querySelector('[data-resident-view-choice="'+view+'"]').click());
+      expect(scene.setResidentView).toHaveBeenLastCalledWith(view);
+    }
+    await act(async()=>publish({paused:true,time:12,residentInspection:{part:'head',view:'front',active:true,bounds:{min:[0,0,0],max:[1,1,1],center:[.5,.5,.5],size:[1,1,1]}}}));
+    expect(studio().querySelector('[data-resident-part-choice="head"]').getAttribute('aria-pressed')).toBe('true');
+    expect(studio().querySelector('[data-resident-view-choice="front"]').getAttribute('aria-pressed')).toBe('true');
+    expect(studio().querySelector('[data-resident-inspection-status]').textContent).toBe('Head and bill · Front · Paused on this pose');
+    expect(studio().querySelector('[data-resident-field-mark="head"]').textContent).toContain('short, straight bill');
+    expect(studio().textContent).toContain('Play resumes the current pose');
+    expect(studio().textContent).toContain('arrow keys');
+    expect(scene.seek).not.toHaveBeenCalled();expect(scene.recordSighting).not.toHaveBeenCalled();expect(scene.setPaused).not.toHaveBeenCalled();
+    await act(async()=>button('Play flight').click());
+    expect(scene.setPaused).toHaveBeenLastCalledWith(false);
+    expect(scene.seek).not.toHaveBeenCalled();
+    expect(window.BirdLab3D.mount).toHaveBeenCalledTimes(1);
+  });
+  it('provides distinct focus prompts for all twelve residents and hides them outside guided resident cameras', async () => {
+    const scene=controller();let publish;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,camera:'robin',residentInspection:{part:'whole',view:'free',active:false,bounds:null}});return scene;})};
+    await mount(()=>Promise.resolve());
+    const ids=['robin','chickadee','mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow'];
+    const notes={head:new Set(),wing:new Set(),tail:new Set()};
+    for(const id of ids){
+      for(const part of ['head','wing','tail']){
+        await act(async()=>publish({camera:id,paused:true,residentInspection:{part,view:'side',active:true,bounds:null}}));
+        const studio=host.querySelector('[data-birdlab-resident-inspection="'+id+'"]');
+        expect(studio).not.toBeNull();
+        const note=studio.querySelector('[data-resident-field-mark="'+part+'"]');
+        expect(note.textContent.length).toBeGreaterThan(35);notes[part].add(note.textContent);
+      }
+    }
+    for(const part of ['head','wing','tail'])expect(notes[part].size).toBe(12);
+    await act(async()=>publish({mode:'free',camera:'walk',residentInspection:null}));
+    expect(host.querySelector('[data-birdlab-resident-inspection]')).toBeNull();
+    await act(async()=>publish({mode:'guided',camera:'orbit',residentInspection:null}));
+    expect(host.querySelector('[data-birdlab-resident-inspection]')).toBeNull();
+    await act(async()=>publish({camera:'robin',residentInspection:{part:'whole',view:'free',active:false,bounds:null}}));
+    expect(host.querySelector('[data-resident-field-mark="whole"]').textContent).toContain('warm orange breast');
+    expect(scene.seek).not.toHaveBeenCalled();expect(scene.recordSighting).not.toHaveBeenCalled();
+    expect(window.BirdLab3D.mount).toHaveBeenCalledTimes(1);
+  });
+  it('disables resident framing controls while graphics are unavailable', async () => {
+    const scene=controller();let publish,errorHandler;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;errorHandler=options.onError;publish({...state,camera:'robin',residentInspection:{part:'whole',view:'free',active:false,bounds:null}});return scene;})};
+    await mount(()=>Promise.resolve());
+    await act(async()=>errorHandler('Graphics interrupted'));
+    const parts=[...host.querySelectorAll('[data-resident-part-choice]')],views=[...host.querySelectorAll('[data-resident-view-choice]')],choices=[...parts,...views];
+    expect(parts.map(choice=>choice.getAttribute('data-resident-part-choice'))).toEqual(['whole','head','wing','tail']);
+    expect(views.map(choice=>choice.getAttribute('data-resident-view-choice'))).toEqual(['free','side','opposite','front','rear','above']);
+    expect(choices).toHaveLength(10);expect(choices.every(choice=>choice.disabled)).toBe(true);
+    await act(async()=>choices.forEach(choice=>choice.click()));
+    expect(scene.setResidentPart).not.toHaveBeenCalled();expect(scene.setResidentView).not.toHaveBeenCalled();
+  });
+
+  it('offers a hawk course overlay without starting playback or recording a sighting', async () => {
+    const scene=controller(); let publish;
+    window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,paused:true,studyOverlay:false});return scene;})};
+    await mount(()=>Promise.resolve());
+    expect(button('Flight study overlay').getAttribute('aria-pressed')).toBe('false');
+    await act(async()=>button('Flight study overlay').click());
+    expect(scene.setStudyOverlay).toHaveBeenCalledWith(true);
+    await act(async()=>publish({studyOverlay:true,studyOverlayVisible:true}));
+    expect(host.querySelector('[data-birdlab-3d-study-key]').textContent).toContain('illustrative course');
+    expect(host.querySelector('[data-birdlab-3d-study-key]').textContent).toContain('not a force');
+    await act(async()=>button('See whole route').click());
+    expect(scene.setCamera).toHaveBeenCalledWith('wide');
+    expect(scene.setPaused).not.toHaveBeenCalled();
+    expect(scene.seek).not.toHaveBeenCalled();
+    expect(scene.recordSighting).not.toHaveBeenCalled();
+    await act(async()=>publish({camera:'robin',studyOverlayVisible:false}));
+    expect(button('Flight study overlay')).toBeUndefined();
+    expect(host.querySelector('[data-birdlab-3d-study-key]')).toBeNull();
+    await act(async()=>publish({camera:'orbit',studyOverlayVisible:true}));
+    expect(button('Flight study overlay').getAttribute('aria-pressed')).toBe('true');
+    expect(window.BirdLab3D.mount).toHaveBeenCalledTimes(1);
+  });
   it('identifies and records a mammal in the same notebook without revealing an unobserved species', async () => {
     const scene=controller(); let publish;
     const squirrel={id:'graySquirrel',category:'mammal',name:'Eastern gray squirrel',scientificName:'Sciurus carolinensis',behavior:'Handling a seed',distance:3.2,progress:.4,identified:false};
@@ -205,7 +362,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await act(async()=>button('Ruffed grouse').click());expect(button('Repeat flights').getAttribute('aria-pressed')).toBe('false');
     await act(async()=>root.unmount());root=null;expect(scene.dispose).toHaveBeenCalledTimes(1);
   });
-  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
+  it.each([['mourningDove','Mourning dove',12.7],['grouse','Ruffed grouse',18.55],['blueJay','Blue jay',15.9],['northernCardinal','Northern cardinal',13.6],['darkEyedJunco','Dark-eyed junco',17.05],['tuftedTitmouse','Tufted titmouse',20.8],['easternTowhee','Eastern towhee',15.1],['americanGoldfinch','American goldfinch',18],['easternBluebird','Eastern bluebird',22.3],['whiteThroatedSparrow','White-throated sparrow',12.97]])('studies the shared %s without redirecting its flight controls to the hawk', async (id,label,time) => {
     const scene = controller();
     window.BirdLab3D = { mount: vi.fn((canvas, options) => { options.onState({...state,wildlife:[{id,name:label,behavior:'Foraging'}]}); return scene; }) };
     await mount(() => Promise.resolve());
@@ -345,6 +502,18 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await act(async () => publish({ lighting: 'daylight' }));
     expect(button('Daylight').getAttribute('aria-pressed')).toBe('true');
     expect(button('Golden hour').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('names its controls through the host translator', async () => {
+    window.BirdLab3D = { mount: vi.fn((canvas, options) => { options.onState(state); return controller(); }) };
+    await mount(() => Promise.resolve(), { t: (key, fallback) => '[' + key + '] ' + fallback });
+    for (const key of ['a11y_observation_mode', 'a11y_interactive_3d_woodland', 'a11y_flight_playback', 'a11y_flight_playback_speed',
+      'a11y_camera_view', 'a11y_woodland_lighting', 'a11y_observe_woodland_birds', 'a11y_study_a_flight_moment']) {
+      expect(host.querySelector('[aria-label^="[stem.birdlab.' + key + '] "]'), key).not.toBeNull();
+    }
+    expect(host.querySelector('[aria-label="Camera view"]')).toBeNull();
+    // The tool passes its own translator in; without it the labels stay English.
+    expect(source.includes('h(Birdlab3DObservatory, {React:React, t:__alloT,'), 'render passes __alloT').toBe(true);
   });
 
   it('provides a retry and a working 2D exit after a load failure', async () => {

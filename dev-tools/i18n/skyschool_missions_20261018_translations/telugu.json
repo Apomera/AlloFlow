@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "మిషన్ పరిశీలనలు",
+  "stem.flightsim.mission_journal_targets": "చిత్రీకరించిన లక్ష్యాలు: {total}లో {captured}.",
+  "stem.flightsim.mission_journal_complete": "అన్ని మిషన్ లక్ష్యాలు మరియు తిరిగి వచ్చి దిగడం నమోదయ్యాయి.",
+  "stem.flightsim.mission_journal_ended": "పూర్తయినట్లు తెలిపే అన్ని ఆధారాలు నమోదు కాకముందే మిషన్ ముగిసింది.",
+  "stem.flightsim.mission_journal_recovery": "ప్రాణాలతో ఉన్న వ్యక్తి రక్షణ నమోదు: {value}.",
+  "stem.flightsim.mission_journal_return": "స్థావరానికి తిరిగి వచ్చి దిగిన నమోదు: {value}.",
+  "stem.flightsim.mission_guidance_title": "మిషన్ మార్గదర్శకం",
+  "stem.flightsim.mission_route": "{target} · దిశా కోణం {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "బయలుదేరిన స్థలం",
+  "stem.flightsim.mission_read_status": "మిషన్ స్థితిని చదవండి",
+  "stem.flightsim.mission_return_criterion": "{target} నుండి {distance} nm లోపు దిగండి; నేలతో పోల్చిన వేగాన్ని {speed} kt కంటే తక్కువగా, కిందికి దిగే రేటును {fpm} fpm కంటే తక్కువగా ఉంచండి.",
+  "stem.flightsim.mission_unavailable": "మిషన్ లక్ష్య సమాచారం అందుబాటులో లేదు. ఈ విమాన ప్రయాణాన్ని ముగించి కొత్త మిషన్ ప్రారంభించండి.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft పరిధిలో, నేల నుండి {min} ft కంటే పైన మరియు {max} ft కంటే దిగువన ఉండండి; నేలతో పోలిస్తే వేగాన్ని {speed} kt కంటే తక్కువగా ఉంచి {hold} s కొనసాగించండి."
+}

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Mga resulta ng paghahanap: {cards} kard sa {topics} paksa.",
+  "stem.flightsim.learn_library_counts": "{cards} kard · {topics} paksa",
+  "stem.flightsim.learn_search_clear": "Burahin ang paghahanap",
+  "stem.flightsim.learn_search_empty": "Walang kard sa pag-aaral na tumutugma sa “{query}”. Subukan ang ibang salita o burahin ang paghahanap.",
+  "stem.flightsim.learn_search_none": "Walang tumutugmang kard sa pag-aaral",
+  "stem.flightsim.learn_search_cards": "{count} kard sa pag-aaral",
+  "stem.flightsim.quiz_review_progress": "Nasagot ang {answered} sa {total} tanong · {missed} mali",
+  "stem.flightsim.quiz_review_missed": "Balikan ang mga maling sagot",
+  "stem.flightsim.quiz_next_unanswered": "Susunod na hindi pa nasasagot",
+  "stem.flightsim.quiz_review_all_answered": "May unang sagot na ang bawat tanong. Balikan ang mga maling sagot para magsanay nang walang puntos, o magsimula ng bagong pagsubok.",
+  "stem.flightsim.planner_drone_agl": "{ft} talampakan sa ibabaw ng lupa",
+  "stem.flightsim.sprint_native_title": "Mabilisang hamon sa heograpiya",
+  "stem.flightsim.sprint_timed_hint": "Tuloy ang paglalakbay habang sumasagot ka. I-pause para magbasa; ipagpatuloy bago pumili ng sagot.",
+  "stem.flightsim.sprint_warp_reference": "Pinabilis ang paglalakbay para sa gawaing ito sa heograpiya. Ipinapakita ng mga sukat ng bilis ang itinakdang bilis ng paglalakbay; hindi sinusukat ng rutang ito ang kakayahan ng sasakyang panghimpapawid.",
+  "stem.flightsim.sprint_save_menu": "I-save ang hamon at bumalik sa menu",
+  "stem.flightsim.sprint_next_stop": "Susunod na hinto: {place}",
+  "stem.flightsim.geoq_approaching_city": "Aling lungsod ang nilalapitan mo?",
+  "stem.flightsim.sprint_time_remaining": "Natitirang oras: {seconds} segundo"
+}

@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Risultati di ricerca: {cards} schede in {topics} argomenti.",
+  "stem.flightsim.learn_library_counts": "{cards} schede · {topics} argomenti",
+  "stem.flightsim.learn_search_clear": "Cancella ricerca",
+  "stem.flightsim.learn_search_empty": "Nessuna scheda didattica corrisponde a «{query}». Prova un altro termine o cancella la ricerca.",
+  "stem.flightsim.learn_search_none": "Nessuna scheda didattica corrispondente",
+  "stem.flightsim.learn_search_cards": "{count} schede didattiche",
+  "stem.flightsim.quiz_review_progress": "{answered} domande su {total} con risposta · {missed} errate",
+  "stem.flightsim.quiz_review_missed": "Rivedi gli errori",
+  "stem.flightsim.quiz_next_unanswered": "Prossima domanda senza risposta",
+  "stem.flightsim.quiz_review_all_answered": "Ogni domanda ha una prima risposta. Rivedi le domande sbagliate per esercitarti senza punti oppure inizia un nuovo tentativo.",
+  "stem.flightsim.planner_drone_agl": "{ft} piedi sopra il suolo",
+  "stem.flightsim.sprint_native_title": "Sprint di geografia",
+  "stem.flightsim.sprint_timed_hint": "Il percorso avanza mentre rispondi. Metti in pausa per leggere e riprendi prima di scegliere una risposta.",
+  "stem.flightsim.sprint_warp_reference": "Il viaggio è accelerato per questa attività di geografia. Gli indicatori di velocità mostrano la velocità di crociera dichiarata; questo percorso non misura le prestazioni dell’aeromobile.",
+  "stem.flightsim.sprint_save_menu": "Salva lo sprint e torna al menu",
+  "stem.flightsim.sprint_next_stop": "Prossima tappa: {place}",
+  "stem.flightsim.geoq_approaching_city": "A quale città ti stai avvicinando?",
+  "stem.flightsim.sprint_time_remaining": "Tempo rimanente: {seconds} secondi"
+}

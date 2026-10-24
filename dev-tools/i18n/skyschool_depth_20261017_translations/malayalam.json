@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "നിലവിലെ പറക്കൽ നില നിലനിർത്തുക",
+  "stem.flightsim.flight_assistance_targets": "ദിശ {hdg}° · ഉയരം {alt} ft MSL · വേഗം {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "ദിശ {hdg}° · ഉയരം {alt} ft MSL · മുന്നോട്ടുള്ള വേഗം {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} ദിശയിൽ ഇടത്തേക്ക് {degrees}° തിരിയുക.",
+  "stem.flightsim.challenge_turn_right": "{airport} ദിശയിൽ വലത്തേക്ക് {degrees}° തിരിയുക.",
+  "stem.flightsim.challenge_course_aligned": "{airport} ലക്ഷ്യമാക്കി പറക്കുന്നു. പാതാസൂചകം പിന്തുടരുക.",
+  "stem.flightsim.challenge_runway_reference": "പരിശീലന റൺവേ {runway}: ദിശ {heading}°. ഇറങ്ങുന്നതിനായി ഉയരം കുറയ്ക്കും മുമ്പ് റൺവേയുമായി നേർരേഖയിൽ വരുക."
+}

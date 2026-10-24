@@ -12,7 +12,12 @@ const ids=['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coc
 const collisionSource=source.slice(source.indexOf('function createCLHuntRockCollisionFootprint('),source.indexOf('// Small rock-rooted fragments'));
 const collision=new Function(collisionSource+';return{footprint:createCLHuntRockCollisionFootprint,find:findCLHuntCrevice};')();
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:true,squeezeBlend:1,refugeHideBlend:1,refugePeekBlend:0,...extra});
-function rig(id='commonOcto',old=false){return(old?prior:build)(T,{id,bodyColor:0x99775d},math);}
+// Pass74 reef head, eye and arm tip/curl anatomy is gated on reefMantle (orbital_form, arm_tip_form,
+// living_arm_motion). Exact comparisons with the Pass73 baseline turn only those gates off.
+const gatedBuild=factory(require('./helpers/cephalopod_pass74_reference.cjs').withoutPass74ReefAnatomy(source));
+function rig(id='commonOcto',old=false,gated=false){return(old?prior:gated?gatedBuild:build)(T,{id,bodyColor:0x99775d},math);}
+// Compare digests: a failing deepEqual on these multi-megabyte snapshots exhausts the worker heap.
+const digest=rows=>require('node:crypto').createHash('sha256').update(JSON.stringify(rows)).digest('hex');
 function release(a){const gs=new Set(),ms=new Set();a.root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material)ms.add(o.material);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());}
 function corridor(width=.30){const rocks=[-1,1].map(sign=>{const r=new T.Mesh(new T.BoxGeometry(2,2,3),new T.MeshBasicMaterial());r.position.set(sign*(1+width/2),1,0);r.updateMatrixWorld(true);return r;});const gap=collision.find({x:0,z:0},.55,rocks,rocks.map(r=>collision.footprint(T,r)),1,'commonOcto',0,.55);for(const r of rocks){r.geometry.dispose();r.material.dispose();}assert.ok(gap?.walls?.length===2);return gap;}
 function pose(a,s=state()){a.arms.forEach(l=>l.compressCurrent=.55);a.update(7,0,s);a.root.updateMatrixWorld(true);}
@@ -38,7 +43,7 @@ describe('Pass73 passage-aligned octopus body posture',()=>{
   for(const id of ids){const a=rig(id),s=state({crevice:corridor(id==='giantPacific'?.42:.3),refugeHideBlend:0});a.root.position.y=.55*a.scale;pose(a,s);const open=bounds(a);pose(a,{...s,refugeHideBlend:1});const tucked=bounds(a);assert.ok(tucked.maxY<open.maxY-.10*a.scale,id+' not visibly tucked');assert.ok(tucked.minY>=0,id+' body crossed floor');release(a);}
  });
  it('preserves all twelve ordinary mesh world matrices and geometry exactly',()=>{
-  for(const id of [...ids,...swimmers]){const a=rig(id),b=rig(id,true);for(const s of [state({squeezeBlend:0}),state({moving:true,reducedMotion:false}),state({jet:true,moving:true,reducedMotion:false}),state({strike:.65,strikeAim:{x:.3,y:.1,z:1},strikeBrace:.5,reducedMotion:false})]){a.update(7,.05,s);b.update(7,.05,s);assert.deepEqual(snapshot(a),snapshot(b),id);}release(a);release(b);}
+  for(const id of [...ids,...swimmers]){const a=rig(id,false,true),b=rig(id,true);for(const s of [state({squeezeBlend:0}),state({moving:true,reducedMotion:false}),state({jet:true,moving:true,reducedMotion:false}),state({strike:.65,strikeAim:{x:.3,y:.1,z:1},strikeBrace:.5,reducedMotion:false})]){a.update(7,.05,s);b.update(7,.05,s);assert.equal(digest(snapshot(a)),digest(snapshot(b)),id);}release(a);release(b);}
  });
  it('does not change swimmer species when refuge inputs are supplied accidentally',()=>{
   for(const id of swimmers){const a=rig(id),b=rig(id,true),s=state({crevice:corridor()});pose(a,s);pose(b,s);assert.deepEqual(snapshot(a),snapshot(b),id);assert.equal(body(a),undefined);release(a);release(b);}
@@ -57,7 +62,7 @@ describe('Pass73 passage-aligned octopus body posture',()=>{
   for(const w of turned.walls){p.set(w.nx,0,w.nz).applyQuaternion(rotation);w.nx=p.x;w.nz=p.z;for(const prefix of ['a','b']){p.set(w[prefix+'x'],0,w[prefix+'z']).applyQuaternion(rotation);w[prefix+'x']=p.x+17;w[prefix+'z']=p.z-23;}}b.root.position.set(17,0,-23);b.root.quaternion.copy(rotation);pose(a,state({crevice:plain}));pose(b,state({crevice:turned}));assert.ok(distance(body(a).matrix.elements,body(b).matrix.elements)<1e-10);release(a);release(b);
  });
  it('rejects malformed wall metadata without stale body transforms or invalid normals',()=>{
-  const first=corridor().walls[0],second=corridor().walls[1];for(const crevice of [{width:.3,walls:[{...first,nx:NaN},second]},{width:.3,walls:[{...first,bx:first.ax,bz:first.az},second]},{width:.3,walls:[first,{...second,nx:first.nx,nz:first.nz}]},{width:Infinity,walls:[first,second]}]){const a=rig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));pose(a,state({crevice}));pose(b);assert.ok(body(a).matrix.equals(new T.Matrix4()));assert.deepEqual(snapshot(a),snapshot(b));for(const m of bodyMeshes(a))for(const normal of m.geometry.attributes.normal.array)assert.ok(Number.isFinite(normal));release(a);release(b);}
+  const first=corridor().walls[0],second=corridor().walls[1];for(const crevice of [{width:.3,walls:[{...first,nx:NaN},second]},{width:.3,walls:[{...first,bx:first.ax,bz:first.az},second]},{width:.3,walls:[first,{...second,nx:first.nx,nz:first.nz}]},{width:Infinity,walls:[first,second]}]){const a=rig('commonOcto',false,true),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));pose(a,state({crevice}));pose(b);assert.ok(body(a).matrix.equals(new T.Matrix4()));assert.equal(digest(snapshot(a)),digest(snapshot(b)));for(const m of bodyMeshes(a))for(const normal of m.geometry.attributes.normal.array)assert.ok(Number.isFinite(normal));release(a);release(b);}
  });
  it('keeps wall clearance and a continuous body transform through a full turn',()=>{
   const a=rig(),s=state({crevice:corridor()});pose(a,s);let previous=body(a).matrix.elements.slice();for(let yaw=.02;yaw<Math.PI*2;yaw+=.02){a.root.rotation.y=yaw;pose(a,s);assert.equal(bounds(a).penetrating,0,'yaw '+yaw);const current=body(a).matrix.elements.slice();assert.ok(distance(current,previous)<.04,'Body flipped at yaw '+yaw);previous=current;}release(a);

@@ -6,7 +6,12 @@ const React = require('../desktop/web-app/node_modules/react');
 const { createRoot } = require('../desktop/web-app/node_modules/react-dom/client');
 const { act } = React;
 let host, root, api, write;
-const t = (key, params) => params?.defaultValue || key;
+// Student round labels moved to quiz.live_student.* keys (a9ae02cb5, 2026-09-30); read that
+// namespace from the shipped English strings and leave every other key raw.
+const LIVE_STUDENT = JSON.parse(require('node:fs').readFileSync('ui_strings.js', 'utf8')).quiz.live_student;
+const t = (key, params) => (key.startsWith('quiz.live_student.') && typeof LIVE_STUDENT[key.slice(18)] === 'string'
+  ? LIVE_STUDENT[key.slice(18)].replace(/\{(\w+)\}/g, (m, n) => (params && params[n] != null ? params[n] : m))
+  : params?.defaultValue || key);
 const q = { id:'p1', type:'mcq', linkedObjectId:'o1', question:'Choose the star', options:['Star','Moon'], correctIndex:0, hint:'A star shines.' };
 const room = (patch={}) => ({ isActive:true, isPaused:false, startedAt:100, endsAt:Date.now()+300000, timeRemaining:300, room:{theme:'Observatory',description:'Find the clues.'}, objects:[{id:'o1',name:'Telescope',emoji:'🔭'}], puzzles:[q], teams:{u:'Red'}, teamProgress:{Red:{progressVersion:2,maxLives:3,maxHints:3,solved:{},misses:{},revealedHints:{}}}, ...patch });
 const quiz = (patch={}) => ({isActive:true, activityId:'quiz:test', roundId:'r1', currentQuestionIndex:0, phase:'answering', mode:'live-pulse', responses:{}, teams:{}, ...patch});

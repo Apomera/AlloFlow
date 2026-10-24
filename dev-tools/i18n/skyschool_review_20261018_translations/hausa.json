@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Ƙoƙarin jarabawa na baya",
+  "stem.flightsim.quiz_history_scope": "Fara sabon ƙoƙari yana adana har ƙoƙari huɗu na baya waɗanda aka rubuta amsoshinsu na farko. Duba su ba ya canza jarabawarka ta yanzu.",
+  "stem.flightsim.quiz_history_empty": "Ba a adana ƙoƙarin jarabawa na baya ba tukuna.",
+  "stem.flightsim.quiz_history_attempt": "An adana {date} · Amsoshin farko {score}/{answered} daidai ne",
+  "stem.flightsim.quiz_history_progress": "An rubuta tambayoyi {answered} cikin {total} · {unanswered} ba a amsa ba",
+  "stem.flightsim.quiz_history_question": "Tambaya ta {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Amsa daidai: {answer}",
+  "stem.flightsim.quiz_history_changed": "Tambayoyi {count} da aka adana ba su ƙara dacewa da wannan jarabawar ba. Ana ƙididdige maki daga bayanan tambayoyin da suka dace kawai."
+}

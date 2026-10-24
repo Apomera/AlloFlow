@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {planReview, previewSupport} from './lesson_board_plan_review.js';
 import {targets,stepOf} from './lesson_board_engine.js';
 import {simulatePlan} from './lesson_board_sandbox.js';
@@ -56,5 +57,5 @@ function PreviewWorld({board,base,ids,title,support,showImages,Icon,t}) {
 
 export function PlanMapPreview(props) {
   const [open,setOpen]=React.useState(false);
-  return <details className="lb-plan-preview" data-plan-preview onToggle={event=>{if(event.target===event.currentTarget)setOpen(event.currentTarget.open);}}><summary>{tr(props.t,'plan_preview_title','Preview this plan on the map')}</summary><style>{`.lb .lb-plan-preview{margin:16px 0;border:1px solid var(--line);border-radius:12px;padding:12px}.lb .lb-plan-preview-world{margin-top:12px}.lb .lb-plan-preview-controls{display:grid;gap:12px}.lb .lb-plan-preview-controls label{min-width:0}.lb .lb-plan-preview-controls select{width:100%;max-width:100%}.lb .lb-plan-preview .lb-tabletop{margin-top:14px}.lb .lb-plan-preview [data-plan-preview-selection]{overflow-wrap:anywhere}.lb [data-plan-tradeoffs] h4{margin-top:0}.lb [data-plan-mission-review]{margin-top:14px}.lb [data-plan-mission-review] li{margin:6px 0}`}</style>{open&&<PreviewWorld {...props}/>}</details>;
+  return <details className="lb-plan-preview" data-plan-preview onToggle={event=>{if(event.target===event.currentTarget)setOpen(event.currentTarget.open);}}><summary>{tr(props.t,'plan_preview_title','Preview this plan on the map')}</summary>{addBoardStyle(`.lb .lb-plan-preview{margin:16px 0;border:1px solid var(--line);border-radius:12px;padding:12px}.lb .lb-plan-preview-world{margin-top:12px}.lb .lb-plan-preview-controls{display:grid;gap:12px}.lb .lb-plan-preview-controls label{min-width:0}.lb .lb-plan-preview-controls select{width:100%;max-width:100%}.lb .lb-plan-preview .lb-tabletop{margin-top:14px}.lb .lb-plan-preview [data-plan-preview-selection]{overflow-wrap:anywhere}.lb [data-plan-tradeoffs] h4{margin-top:0}.lb [data-plan-mission-review]{margin-top:14px}.lb [data-plan-mission-review] li{margin:6px 0}`)}{open&&<PreviewWorld {...props}/>}</details>;
 }

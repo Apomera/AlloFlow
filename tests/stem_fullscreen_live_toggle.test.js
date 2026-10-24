@@ -55,12 +55,16 @@ const CASES = [
   { file: 'stem_lab/stem_tool_wave.js', id: 'wave', stage: 'data-allo-fs-stage', seed: { wave: { frequency: 2, amplitude: 50, waveType: 'sine', amplitude2: 30, frequency2: 3, phase2: 0, harmonic: 1 } } },
   { file: 'stem_lab/stem_tool_universe.js', id: 'universe', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_fractions.js', id: 'fractions', stage: 'data-allo-fs-stage' },
-  { file: 'stem_lab/stem_tool_nuclearlab.js', id: 'nuclearLab', stage: 'data-allo-fs-stage' },
+  // Since 09-29 Nuclear Lab opens on the Experiment studio; the decay-chart stage
+  // lives in the "All topics & routes" reference view.
+  { file: 'stem_lab/stem_tool_nuclearlab.js', id: 'nuclearLab', stage: 'data-allo-fs-stage', seed: { _nuclearLab: { nkView: 'reference' } } },
   { file: 'stem_lab/stem_tool_economicslab.js', id: 'economicsLab', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_singing.js', id: 'singing', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_moonmission.js', id: 'moonMission', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_spacestation.js', id: 'spaceStation', stage: 'data-allo-fs-stage', seed: { spaceStation: { tab: 'missions' } } },
-  { file: 'stem_lab/stem_tool_platetectonics.js', id: 'plateTectonics', stage: 'data-allo-fs-stage' },
+  // Since 09-30 Plate Tectonics opens on its hub; picking the simulation shows the
+  // epicentre map stage.
+  { file: 'stem_lab/stem_tool_platetectonics.js', id: 'plateTectonics', stage: 'data-allo-fs-stage', seed: { plateTectonics: { simTab: 'sim', _ptPicked: true } } },
   { file: 'stem_lab/stem_tool_bridgelab.js', id: 'bridgeLab', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_money.js', id: 'moneyMath', stage: 'data-allo-fs-stage', seed: { _moneyMath: { tab: 'inquiry', showDollarLab: true } } },
   { file: 'stem_lab/stem_tool_manipulatives.js', id: 'base10', stage: 'data-allo-fs-stage', seed: { _manipulatives: { b10Solid: true } } },
@@ -226,10 +230,18 @@ describe('fullscreen copy calls an i18n helper its tool actually defines', () =>
       // the control character), so it matched nothing and the guard passed every
       // tool for free. Reading the receiver is both what the test is actually
       // about and impossible to break that quietly.
+      // Find each call, then walk back over the receiver. A leading identifier group
+      // retried at every offset of the long data runs Flight Sim now embeds, which
+      // is quadratic: that file alone took over 13 s and timed the test out.
       const receivers = [];
-      var __fsCallRe = /([A-Za-z_$][A-Za-z0-9_$]*)\('stem\.[^']*(?:enter|exit)_fullscreen/g;
+      var __fsCallRe = /\('stem\.[^']*(?:enter|exit)_fullscreen/g;
       var __fsM;
-      while ((__fsM = __fsCallRe.exec(src)) !== null) receivers.push(__fsM[1]);
+      while ((__fsM = __fsCallRe.exec(src)) !== null) {
+        let from = __fsM.index;
+        while (from > 0 && /[A-Za-z0-9_$]/.test(src[from - 1])) from -= 1;
+        const receiver = src.slice(from, __fsM.index).replace(/^[0-9]+/, '');
+        if (receiver) receivers.push(receiver);
+      }
       const callsT = receivers.indexOf('t') !== -1;
       const callsAlloT = receivers.indexOf('__alloT') !== -1;
       if (callsAlloT) expect(definesAlloT, file + ' calls __alloT but never defines it').toBe(true);

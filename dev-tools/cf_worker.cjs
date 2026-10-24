@@ -29,6 +29,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { createWorkerUpload } = require('./cf_worker_upload.cjs');
 
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '37d398da2811e2beead8fe41dac52058';
 const WRANGLER_CLIENT_ID = '54d11594-84e4-41aa-b438-e81b8fa78ee7';
@@ -281,7 +282,6 @@ async function cmdDeploy(args) {
   requireYes(args, `deploy ${scriptName} from ${WORKER_DIR}`);
 
   const entry = path.join(WORKER_DIR, 'src', 'index.js');
-  const source = fs.readFileSync(entry, 'utf8');
   const tomlPath = path.join(WORKER_DIR, 'wrangler.toml');
   const toml = fs.readFileSync(tomlPath, 'utf8');
 
@@ -320,9 +320,9 @@ async function cmdDeploy(args) {
     keep_bindings: ['secret_text'],
   };
 
-  const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  form.append('index.js', new Blob([source], { type: 'application/javascript+module' }), 'index.js');
+  // Validate and include every local ESM dependency before reading credentials
+  // or making a network request. Keep the same metadata, bindings and secrets.
+  const form = createWorkerUpload(entry, metadata);
 
   const auth = await getAuth();
   const res = await fetch(`${API}/accounts/${ACCOUNT_ID}/workers/scripts/${scriptName}`, {

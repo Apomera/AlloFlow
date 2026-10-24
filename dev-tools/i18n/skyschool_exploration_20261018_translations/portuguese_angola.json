@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Resultados da pesquisa: {cards} fichas em {topics} temas.",
+  "stem.flightsim.learn_library_counts": "{cards} fichas · {topics} temas",
+  "stem.flightsim.learn_search_clear": "Limpar pesquisa",
+  "stem.flightsim.learn_search_empty": "Nenhuma ficha de aprendizagem corresponde a «{query}». Experimente outro termo ou limpe a pesquisa.",
+  "stem.flightsim.learn_search_none": "Nenhuma ficha de aprendizagem correspondente",
+  "stem.flightsim.learn_search_cards": "{count} fichas de aprendizagem",
+  "stem.flightsim.quiz_review_progress": "{answered} de {total} perguntas respondidas · {missed} erradas",
+  "stem.flightsim.quiz_review_missed": "Rever respostas erradas",
+  "stem.flightsim.quiz_next_unanswered": "Próxima pergunta sem resposta",
+  "stem.flightsim.quiz_review_all_answered": "Todas as perguntas têm uma primeira resposta. Reveja as perguntas erradas para praticar sem pontuação ou inicie uma nova tentativa.",
+  "stem.flightsim.planner_drone_agl": "{ft} pés acima do solo",
+  "stem.flightsim.sprint_native_title": "Desafio rápido de geografia",
+  "stem.flightsim.sprint_timed_hint": "O percurso avança enquanto responde. Faça uma pausa para ler e retome antes de escolher uma resposta.",
+  "stem.flightsim.sprint_warp_reference": "A viagem é acelerada nesta actividade de geografia. Os indicadores de velocidade mostram a velocidade de cruzeiro anunciada; este percurso não mede o desempenho da aeronave.",
+  "stem.flightsim.sprint_save_menu": "Guardar o desafio e voltar ao menu",
+  "stem.flightsim.sprint_next_stop": "Próxima paragem: {place}",
+  "stem.flightsim.geoq_approaching_city": "De que cidade se está a aproximar?",
+  "stem.flightsim.sprint_time_remaining": "Tempo restante: {seconds} segundos"
+}

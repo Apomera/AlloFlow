@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Încercări anterioare la test",
+  "stem.flightsim.quiz_history_scope": "Începerea unei încercări noi salvează până la patru încercări anterioare cu primele răspunsuri înregistrate. Consultarea lor nu modifică testul curent.",
+  "stem.flightsim.quiz_history_empty": "Nu sunt salvate încă încercări anterioare la test.",
+  "stem.flightsim.quiz_history_attempt": "Salvată la {date} · {score}/{answered} prime răspunsuri corecte",
+  "stem.flightsim.quiz_history_progress": "{answered} din {total} întrebări înregistrate · {unanswered} fără răspuns",
+  "stem.flightsim.quiz_history_question": "Întrebarea {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Răspuns corect: {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} întrebări salvate nu mai corespund acestui test. Punctajele folosesc doar înregistrările întrebărilor care corespund."
+}

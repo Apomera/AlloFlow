@@ -138,9 +138,11 @@ describe('Enlarged recorded drawings', () => {
       await act(async () => document.activeElement.dispatchEvent(event));
       expect(event.defaultPrevented).toBe(true);
     };
-    await tab(true); expect(document.activeElement).toBe(guides('viewer'));
+    // 79e3e5eae added an Inspect/Fit frame action after the guides toggle; it is now the last stop.
+    const frameAction = host.querySelector('[data-perception-recorded-frame-action="viewer"]');
+    await tab(true); expect(document.activeElement).toBe(frameAction);
     await tab(false); expect(document.activeElement).toBe(button('Close enlarged drawing', dialog()));
-    await tab(true); expect(document.activeElement).toBe(guides('viewer'));
+    await tab(true); expect(document.activeElement).toBe(frameAction);
     expect(selector('viewer').value).toBe('2');
     expect(guides('viewer').getAttribute('aria-pressed')).toBe('false');
     for (const trial of [1, 2, 3]) {
@@ -248,6 +250,31 @@ describe('Enlarged recorded drawings', () => {
     const before = latest, beforeWrites = writes; await open('review');
     expect(dialog().open).toBe(false); expect(preview('review')).toBeTruthy(); expect(preview('viewer')).toBeNull();
     expect(announce).toHaveBeenCalledWith('The enlarged drawing could not open. You can still inspect it in the recorded drawing panel.'); expectLocalOnly(before, beforeWrites);
+  });
+
+  it.each([false, true])('inspects, zooms, nudges and fits an enlarged recorded drawing (StrictMode %s)', async strict => {
+    // StrictMode replays state updaters after render has replaced the camera ref; an updater
+    // that re-read it dropped every recorded camera change, so Inspect drawing did nothing.
+    await mount(seed(group('study')), { strict }); await review('study'); await open('review');
+    const before = latest, beforeWrites = writes;
+    const frame = () => host.querySelector('[data-perception-recorded-frame-action="viewer"]');
+    const viewport = () => host.querySelector('[data-perception-recorded-viewport="viewer"]');
+    const inspector = () => host.querySelector('[data-perception-recorded-inspector]');
+    expect(frame().dataset.action).toBe('inspect'); expect(inspector().hidden).toBe(true);
+    // jsdom has no scrollIntoView; Inspect moves focus to the zoom control and scrolls it into view.
+    const scrolled = vi.fn();
+    Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', { configurable: true, writable: true, value: scrolled });
+    try { await act(async () => frame().click()); } finally { delete window.HTMLElement.prototype.scrollIntoView; }
+    const zoom = host.querySelector('[data-perception-recorded-zoom]');
+    expect(inspector().hidden).toBe(false); expect(host.querySelector('[data-perception-recorded-inspect]').getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(zoom); expect(scrolled).toHaveBeenCalled();
+    await input(zoom, 2);
+    expect(viewport().dataset.cameraZoom).toBe('2'); expect(frame().dataset.action).toBe('fit');
+    await act(async () => viewport().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })));
+    expect(Number(viewport().dataset.cameraX)).toBeCloseTo(.55, 10);
+    await act(async () => frame().click());
+    expect(viewport().dataset.cameraZoom).toBe('1'); expect(viewport().dataset.cameraX).toBe('0.5'); expect(frame().dataset.action).toBe('inspect');
+    expectLocalOnly(before, beforeWrites);
   });
 
   it('is stable through StrictMode and unmounts without retained drawing content', async () => {

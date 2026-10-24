@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Obiectivele provocării au fost observate. În continuare, compară o coborâre cu motorul la ralanti cu o urcare cu putere în exercițiul de gestionare a energiei.",
+  "stem.flightsim.coaching_energy_complete": "Obiectivele de gestionare a energiei au fost observate. În continuare, exersează controlul energiei pe o apropiere scurtă de aeroport, apoi compară rata de coborâre și contactul cu pista.",
+  "stem.flightsim.drone_battery_low": "Nivel scăzut al bateriei: au rămas {pct}%. Revino la locul de decolare și aterizează curând.",
+  "stem.flightsim.drone_battery_depleted_title": "Bateria dronei este epuizată",
+  "stem.flightsim.drone_battery_depleted_body": "Zborul a fost întrerupt la 0% baterie. Încheie misiunea pentru a analiza această încercare, apoi începe o misiune nouă cu bateria plină.",
+  "stem.flightsim.end_drone_mission": "Încheie misiunea și analizează",
+  "stem.flightsim.geoq_nearest_place": "Care loc este cel mai apropiat de poziția ta actuală?",
+  "stem.flightsim.geoq_paused": "Zborul este întrerupt pentru această întrebare. Închide testul, apoi alege Reluare când ești pregătit să zbori.",
+  "stem.flightsim.geoq_close": "Închide testul",
+  "stem.flightsim.geoq_unavailable": "Nu este disponibilă nicio întrebare de geografie în apropiere. Continuă explorarea și încearcă din nou.",
+  "stem.flightsim.geoq_answer_feedback": "Răspunsul tău: {answer}. Răspunsul corect: {expected}."
+}

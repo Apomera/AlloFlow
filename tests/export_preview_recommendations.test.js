@@ -1052,12 +1052,16 @@ describe('Document Builder export recommendations', () => {
     const result = helpers._builderExportPreflight(document, 'epub');
     expect(result.issues.map((issue) => issue.code)).toEqual(expect.arrayContaining(['epub-images', 'epub-styles']));
     expect(source).toContain("add('warning', 'epub-media'");
-    expect(source).toContain('aria-label="Quiz to export as QTI"');
+    // 585a61ba2 (2026-10-10) localized the name; the English fallback is unchanged.
+    expect(source).toContain('aria-label={t("export_preview.accessibility.quiz_to_export_as_qti") || "Quiz to export as QTI"}');
     expect(source).toContain('await handler({ generatedContent: selected.item })');
     expect(source).toContain('await handler({ liveHtml: clean.html, liveTitle: clean.title })');
     expect(source).toContain('const downloadBuilderBlob = React.useCallback');
     expect(source).toContain("downloadBuilderBlob(blob, { extension: 'epub' })");
-    expect(source).toContain("response = await fetch(absolute");
+    // 0bb48eb97 (2026-09-08) moved the remote-image fetch into _builderFetchExportImage (bounded,
+    // credential-free; its behavior is tested in document_builder_export_fidelity.test.js).
+    expect(source).toContain('await _builderFetchExportImage(absolute)');
+    expect(source).toContain("const response = await fetchImage(url, { credentials: 'omit', signal: controller.signal });");
     expect(source).toContain(".replace(/@font-face");
     expect(exportSource).toContain('builder-live-document');
     expect(compiled).toContain('Building ePub...');

@@ -10,9 +10,8 @@
  *   badge in the bottom-right ONLY after at least one error is captured.
  * - Clicking the badge opens a modal with the captured log + metadata
  *   (URL, user agent, viewport size, timestamps).
- * - "Send to Developers" pre-fills a Google Form with the report and opens it
- *   in a new tab so the user reviews before submitting (privacy-respecting
- *   — no silent fetch).
+ * - "Send to Developers" saves the report privately and keeps a receipt visible.
+ *   If saving fails, the user can copy the log into a separate report form.
  *
  * Capture policy (default):
  *   ✓ Uncaught Errors (window.onerror)
@@ -46,9 +45,11 @@
 
   // Primary submit path: the community Cloudflare Worker → PRIVATE KV. Bug reports carry error
   // logs + free text that can include FERPA-sensitive data, so they go to private KV, NOT the
-  // public repo. If the worker is unreachable (e.g. not yet deployed), we fall back to the
-  // pre-filled Google Form (private responses Sheet) so a report is never lost.
+  // public repo. If the worker is unreachable, offer the separate Google Form
+  // (private responses Sheet) and make clear that it still requires submission.
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
+  var SUBMIT_TIMEOUT_MS = 20000;
+  var DESCRIPTION_MAX_LENGTH = 2000;
 
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
@@ -77,7 +78,7 @@
   function redactSecrets(s) {
     if (!s) return s || '';
     return String(s)
-      .replace(/([?&#]allo_mbp?=)[^&#\s"']*/g, '$1[redacted]')
+      .replace(/([?&#]allo_(?:mbp?|pack)=)[^&#\s"']*/g, '$1[redacted]')
       .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
   }
 
@@ -301,21 +302,65 @@
     }).join('\n');
   }
 
+
+  function moduleLoadTraceLines() {
+    var stages = ['module-wait', 'blueprint-preflight', 'blueprint-generation', 'background-queue'];
+    var outcomes = ['started', 'slow', 'ready', 'recovered', 'failed', 'timeout', 'cancelled', 'completed', 'partial', 'blocked', 'waiting', 'stopped', 'paused'];
+    var statuses = ['queued', 'pending', 'loaded', 'failed', 'idle', 'unknown'];
+    var idPattern = /^ml-[a-z0-9-]{1,80}$/i;
+    var count = function (v) { return Number.isInteger(v) && v >= 0 ? Math.min(v, 10000) : 0; };
+    try {
+      var entries = Array.isArray(window.__alloModuleLoadTrace) ? window.__alloModuleLoadTrace : [];
+      var lines = entries.slice(-60).filter(function (e) {
+        return e && e.schemaVersion === 1 && stages.indexOf(e.stage) >= 0 && outcomes.indexOf(e.outcome) >= 0
+          && idPattern.test(e.attemptId || '') && idPattern.test(e.correlationId || '');
+      }).slice(-8).map(function (e) {
+        var date = Number.isFinite(e.at) ? new Date(e.at) : null;
+        var when = date && Number.isFinite(date.getTime()) ? date.toISOString().slice(11, 19) : '?';
+        var elapsed = Number.isFinite(e.elapsedMs) ? Math.max(0, Math.min(Math.round(e.elapsedMs), 86400000)) : 0;
+        var modules = (Array.isArray(e.modules) ? e.modules : []).filter(function (m) {
+          return m && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(m.name || '') && statuses.indexOf(m.status) >= 0;
+        }).slice(0, 8).map(function (m) { return m.name + ':' + m.status; }).join(',');
+        var counts = e.counts || {};
+        return when + ' ' + e.stage + '/' + e.outcome + ' ' + elapsed + 'ms attempt=' + e.attemptId
+          + ' group=' + e.correlationId + ' queued=' + count(counts.queued) + ' pending=' + count(counts.pending)
+          + ' failed=' + count(counts.failed) + (modules ? ' [' + modules + ']' : '');
+      });
+      var kept = [];
+      var used = 0;
+      for (var i = lines.length - 1; i >= 0; i--) {
+        if (used + lines[i].length + 1 > 2800) break;
+        kept.unshift(lines[i]);
+        used += lines[i].length + 1;
+      }
+      return kept.join('\n');
+    } catch (_) { return ''; }
+  }
+
   function identityLine() {
     var bits = [];
     try {
       var stamp = window.__alloBuildStamp;
       if (stamp && stamp.hash) bits.push('build ' + stamp.hash + (stamp.surface ? ' · ' + stamp.surface : ''));
+      if (stamp && /^\d{4}-\d{2}-\d{2}-stall-v\d+$/.test(stamp.hostLoaderRevision || '')) bits.push('loader ' + stamp.hostLoaderRevision);
     } catch (_) {}
     bits.push(APP_BUILD_TAG);
     try {
-      if (typeof window.__alloModuleSnapshot === 'function') {
-        var snap = window.__alloModuleSnapshot();
-        if (snap.failed.length) bits.push(snap.failed.length + ' module(s) FAILED: ' + snap.failed.join(', '));
-        else if (snap.pending.length) bits.push(snap.pending.length + ' module(s) still loading');
-        else bits.push('all modules loaded');
+      var snap = typeof window.__alloModuleSnapshot === 'function' ? window.__alloModuleSnapshot() : null;
+      if (!snap || !Array.isArray(snap.failed) || !Array.isArray(snap.pending)) {
+        bits.push('module status unavailable');
+      } else {
+        var queued = Array.isArray(snap.queued) ? snap.queued : [];
+        if (snap.failed.length) {
+          var failedNames = snap.failed.filter(function (name) { return typeof name === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,79}$/.test(name); }).slice(0, 8);
+          bits.push(snap.failed.length + ' module(s) FAILED: ' + failedNames.join(', ') + (snap.failed.length > failedNames.length ? ' …' : ''));
+        }
+        if (snap.pending.length) bits.push(snap.pending.length + ' module(s) still loading');
+        if (queued.length) bits.push(queued.length + ' module(s) queued');
+        if (!Array.isArray(snap.queued)) bits.push('queue status unavailable');
+        else if (!snap.failed.length && !snap.pending.length && !queued.length) bits.push('all modules loaded');
       }
-    } catch (_) {}
+    } catch (_) { bits.push('module status unavailable'); }
     return bits.join(' · ');
   }
 
@@ -324,6 +369,8 @@
   // sync refusal rarely THROWS — without these, reports arrived blind.
   function buildReportExtras() {
     var parts = ['== Diagnostics: ' + identityLine() + ' =='];
+    var moduleTrace = moduleLoadTraceLines();
+    if (moduleTrace) parts.push('-- Tool-loading trace (latest attempts) --\n' + moduleTrace);
     try {
       var tts = (window.__alloTtsTrace || []);
       if (tts.length) parts.push('-- Read-aloud trace (last ' + Math.min(tts.length, 25) + ') --\n' + traceLinesForReport(tts, 25));
@@ -336,6 +383,7 @@
   }
 
   function buildReportPayload() {
+    captureDescriptionDraft();
     var ua = navigator.userAgent;
     var browserDevice = ua + ' · ' + (window.screen ? (window.screen.width + 'x' + window.screen.height) : '?') +
       ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
@@ -351,8 +399,10 @@
     }).join('\n\n---\n\n');
     if (!what) what = '(No errors captured. Sending a manual report.)';
     else what = 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '. Others below are labelled.\n\n' + what;
-    try { what += '\n\n' + buildReportExtras(); } catch (_) {}
+    try { what = buildReportExtras().slice(0, 4000) + '\n\n' + what; } catch (_) {}
     what = redactSecrets(what);
+    var description = redactSecrets(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
+    if (description) what = '== What happened? ==\n' + description + '\n\n' + what;
 
     var steps = 'URL: ' + redactSecrets(window.location.href);
     if (window.location.hash) steps += '\nHash: ' + redactSecrets(window.location.hash);
@@ -383,6 +433,22 @@
   var badge = null;
   var panel = null;
   var panelTrigger = null;
+  // Kept outside the panel DOM so log refreshes, tab switches, and closing the
+  // dialog cannot lose a pending submission or enable a duplicate send.
+  var submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
+  var activeSubmission = null;
+  // Free text stays only in this page's memory, never in the persisted error log.
+  var descriptionDraft = '';
+  var descriptionComposing = false;
+  var descriptionRefreshPending = false;
+
+  function captureDescriptionDraft() {
+    var field = panel && panel.querySelector('#aer-description');
+    if (field && submission.status !== 'sending' && submission.status !== 'saved') {
+      descriptionDraft = field.value.slice(0, DESCRIPTION_MAX_LENGTH);
+      if (field.value !== descriptionDraft) field.value = descriptionDraft;
+    }
+  }
 
   // Translator. The badge is built with raw DOM, so its accessible name never
   // passed through React and stayed English in every language.
@@ -720,6 +786,88 @@
       '</footer>';
   }
 
+  function descriptionHtml() {
+    var locked = submission.status === 'sending' || submission.status === 'saved';
+    return '<div style="margin:0 0 16px;">' +
+      '<label for="aer-description" style="display:block;margin-bottom:6px;font:700 14px/1.4 system-ui,sans-serif;color:#1e293b;">' +
+        escapeHtml(_errT('error_reporter_description_label', 'What happened? (optional)')) + '</label>' +
+      '<textarea id="aer-description" rows="3" maxlength="' + DESCRIPTION_MAX_LENGTH + '" aria-describedby="aer-description-help"' + (locked ? ' readonly' : '') +
+        ' placeholder="' + escapeHtml(_errT('error_reporter_description_placeholder', 'What were you doing? What did you expect, and what happened instead?')) + '"' +
+        ' style="display:block;box-sizing:border-box;width:100%;min-height:84px;max-height:220px;resize:vertical;padding:9px 10px;border:1px solid #94a3b8;border-radius:8px;background:#fff;color:#0f172a;font:16px/1.45 system-ui,sans-serif;">' + escapeHtml(descriptionDraft) + '</textarea>' +
+      '<p id="aer-description-help" style="margin:6px 0 0;font:12px/1.5 system-ui,sans-serif;color:#475569;">' +
+        escapeHtml(_errT('error_reporter_description_help', 'Do not include student details or other private information. Up to 2,000 characters.')) + '</p>' +
+      '</div>';
+  }
+
+  function submissionFooterHtml() {
+    var busy = submission.status === 'sending';
+    var saved = submission.status === 'saved';
+    var failed = submission.status === 'failed' || submission.status === 'uncertain';
+    var text = 'Send this log privately to the developers. A saved receipt confirms storage, not developer review.';
+    if (busy) text = 'Sending your report. You can close this window; the result will be here when you reopen it.';
+    if (failed) text = submission.message;
+    if (saved) text = 'Report saved. This confirms storage, not that a developer has reviewed it.';
+    return '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-shrink:0;">' +
+      '<div id="aer-submit-status" role="status" aria-live="polite" aria-atomic="true" style="width:100%;font:12px/1.5 system-ui,sans-serif;color:#334155;overflow-wrap:anywhere;">' +
+        '<p style="margin:0;">' + escapeHtml(text) + '</p>' +
+        (saved ? '<p style="margin:6px 0 0;"><strong>' + (submission.id ? 'Receipt: <span id="aer-receipt-id">' + escapeHtml(submission.id) + '</span>' : 'No receipt ID was returned by the server.') + '</strong><br>Saved: ' + escapeHtml(submission.savedAt) + '</p>' : '') +
+        (failed ? '<p style="margin:6px 0 0;">You can use Copy log above, paste it into the report form, and press Submit there. Opening the form does not send your report.' + (submission.formOpened ? ' This app cannot confirm a submission made in that form.' : '') + '</p>' : '') +
+      '</div>' +
+      '<button id="aer-send" type="button"' + (busy || saved ? ' disabled' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved ? 'default' : 'pointer') + ';">' +
+        (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : '📬 Send to Developers') + '</button>' +
+      (saved && submission.id ? '<button id="aer-copy-receipt" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Copy receipt</button>' : '') +
+      (saved ? '<button id="aer-new-report" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">New report</button>' : '') +
+      (failed ? '<a id="aer-report-form" href="' + escapeHtml(FORM_BASE) + '" target="_blank" rel="noopener noreferrer" style="color:#0f766e;font:700 12px/1.5 system-ui,sans-serif;">Open report form</a>' : '') +
+      '</footer>';
+  }
+
+  function submitReport() {
+    if (submission.status === 'sending' || submission.status === 'saved') return;
+    var p = buildReportPayload();
+    var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
+    var attempt = { controller: typeof AbortController === 'function' ? new AbortController() : null, timer: null };
+    activeSubmission = attempt;
+    submission = { status: 'sending', id: '', savedAt: '', message: '', formOpened: false };
+    refreshPanelIfOpen();
+    var finish = function (status, message, id) {
+      if (activeSubmission !== attempt) return;
+      clearTimeout(attempt.timer);
+      activeSubmission = null;
+      submission = { status: status, id: id || '', savedAt: status === 'saved' ? new Date().toISOString() : '', message: message || '', formOpened: false };
+      refreshPanelIfOpen();
+    };
+    attempt.timer = setTimeout(function () {
+      finish('uncertain', 'Save not confirmed. The request timed out and may have reached the server. Retrying could create a second report.');
+      if (attempt.controller) attempt.controller.abort();
+    }, SUBMIT_TIMEOUT_MS);
+    try {
+      var options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+      if (attempt.controller) options.signal = attempt.controller.signal;
+      fetch(SUBMIT_URL, options)
+        .then(function (response) {
+          return response.json().then(function (json) { return { ok: response.ok, json: json }; }, function () { return { ok: response.ok, json: null }; });
+        })
+        .then(function (result) {
+          if (result.ok && result.json && result.json.ok === true) {
+            var id = typeof result.json.id === 'string' ? result.json.id.trim() : '';
+            // Older endpoints confirm saving without returning an ID. Keep that
+            // confirmation honest; never invent a receipt or invite a duplicate.
+            if (!id || id.length > 200 || /[\u0000-\u001f\u007f]/.test(id)) id = '';
+            finish('saved', '', id);
+          } else if (!result.ok || result.json && result.json.ok === false) {
+            finish('failed', 'Report not saved. The reporting service did not accept this submission.');
+          } else {
+            finish('uncertain', 'Save not confirmed. The server did not return a valid confirmation. Retrying could create a second report.');
+          }
+        })
+        .catch(function () {
+          finish('uncertain', 'Save not confirmed. The connection was interrupted and the report may have reached the server. Retrying could create a second report.');
+        });
+    } catch (_) {
+      finish('uncertain', 'Save not confirmed. The report could not be sent from this browser.');
+    }
+  }
+
   function panelHtml() {
     var visible = buffer.filter(function (e) {
       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
@@ -756,16 +904,12 @@
         '<button id="aer-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy log</button>' +
       '</div>' +
       // Log scroll
-      '<div role="region" aria-label="Captured error entries" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
+      '<div id="aer-error-content" role="region" aria-label="Captured error entries" style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
+        descriptionHtml() +
         entriesHtml +
       '</div>' +
       // Footer / submit
-      '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
-        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;flex:1;min-width:200px;">' +
-          'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
-        '</p>' +
-        '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
-      '</footer>';
+      submissionFooterHtml();
     } else if (activeTab === 'session') {
       body = sessionTabHtml();
     } else if (activeTab === 'search') {
@@ -838,6 +982,9 @@
   }
 
   function closePanel() {
+    captureDescriptionDraft();
+    descriptionComposing = false;
+    descriptionRefreshPending = false;
     if (panel) { panel.remove(); panel = null; }
     var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
     panelTrigger = null;
@@ -846,24 +993,46 @@
 
   function refreshPanelIfOpen() {
     if (!panel) return;
+    // Replacing an active IME composition would lose unfinished input.
+    if (descriptionComposing) { descriptionRefreshPending = true; return; }
+    captureDescriptionDraft();
+    var description = panel.querySelector('#aer-description');
+    var selection = description ? { start: description.selectionStart, end: description.selectionEnd, direction: description.selectionDirection, top: description.scrollTop, left: description.scrollLeft } : null;
+    var content = panel.querySelector('#aer-error-content');
+    var contentTop = content ? content.scrollTop : 0;
     var focusedId = panel.contains(document.activeElement) ? document.activeElement.id : '';
     panel.innerHTML = panelHtml();
+    var replacement = panel.querySelector('#aer-description');
+    if (description && replacement) {
+      // Retain the field itself across incoming logs, including its editing state.
+      description.readOnly = replacement.readOnly;
+      description.placeholder = replacement.placeholder;
+      if (description.value !== descriptionDraft) description.value = descriptionDraft;
+      replacement.parentNode.replaceChild(description, replacement);
+      description.setSelectionRange(selection.start, selection.end, selection.direction);
+    }
     wirePanelHandlers();
     if (focusedId) {
-      var target = document.getElementById(focusedId) || document.getElementById('aer-close');
-      if (target) target.focus();
+      var target = document.getElementById(focusedId);
+      if (!target || target.disabled || target.tabIndex < 0 || target.hidden || target.closest('[hidden]')) target = document.getElementById('aer-close');
+      if (target) {
+        try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
+      }
     }
+    if (description && replacement) { description.scrollTop = selection.top; description.scrollLeft = selection.left; }
+    content = panel.querySelector('#aer-error-content');
+    if (content) content.scrollTop = contentTop;
   }
 
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
   // existing per-tab copy handlers (async clipboard, execCommand fallback).
-  function copyDiagnosticsText(text, btnId) {
+  function copyDiagnosticsText(text, btnId, resetLabel) {
     var $ = function (id) { return document.getElementById(id); };
     var flash = function (label) {
       var b = $(btnId);
       if (!b) return;
       b.textContent = label;
-      setTimeout(function () { var b2 = $(btnId); if (b2) b2.textContent = 'Copy diagnostics'; }, 1500);
+      setTimeout(function () { var b2 = $(btnId); if (b2) b2.textContent = resetLabel || 'Copy diagnostics'; }, 1500);
     };
     var fallback = function () {
       try {
@@ -1045,42 +1214,44 @@
         copyFallback(text);
       }
     };
-    if ($('aer-send')) $('aer-send').onclick = function () {
-      var btn = $('aer-send');
-      // Fallback: the original Google-Form path (private responses Sheet), used if the worker POST fails.
-      var openFormFallback = function () {
-        try {
-          var url = buildPrefilledFormUrl();
-          // Defensive: Google Forms imposes a URL length limit (~8000-ish chars).
-          // If we exceed, drop stack traces from older entries.
-          if (url.length > 7500) {
-            var p = buildReportPayload();
-            p.whatHappened = p.whatHappened.slice(0, 6000) + '\n\n[Log truncated due to URL length limit]';
-            url = FORM_BASE +
-              '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
-              '&entry.' + ENTRY_WHAT    + '=' + encodeURIComponent(p.whatHappened) +
-              '&entry.' + ENTRY_STEPS   + '=' + encodeURIComponent(p.stepsRepro) +
-              '&entry.' + ENTRY_BROWSER + '=' + encodeURIComponent(p.browserDevice);
-          }
-          var win = window.open(url, '_blank', 'noopener,noreferrer');
-          if (!win) {
-            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(function () {}); }
-            if (window.AlloFlowUX) window.AlloFlowUX.toast('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.', 'error'); else alert('Pop-up blocked. The pre-filled report URL has been copied to your clipboard — paste it into a new browser tab.');
-          }
-        } catch (e) { origConsoleError('[ErrorReporter] Submit failed:', e); }
+    if ($('aer-description')) {
+      $('aer-description').oninput = function () {
+        if (this !== $('aer-description') || submission.status === 'sending' || submission.status === 'saved') {
+          this.value = descriptionDraft;
+          return;
+        }
+        captureDescriptionDraft();
       };
-      // Primary: POST to the worker → private KV. No new tab, no PII to a public surface.
-      var p = buildReportPayload();
-      var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
-      btn.disabled = true; btn.textContent = 'Sending…';
-      var done = function (text, color) { if (!$('aer-send')) return; var b = $('aer-send'); b.textContent = text; if (color) b.style.background = color; setTimeout(closePanel, 1300); };
-      var fail = function () { if ($('aer-send')) { $('aer-send').disabled = false; $('aer-send').textContent = '📬 Send to Developers'; } openFormFallback(); };
-      try {
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok) done('Sent ✓ Thank you!', '#15803d'); else fail(); })
-          .catch(function () { fail(); });
-      } catch (_) { fail(); }
+      $('aer-description').oncompositionstart = function () {
+        if (this === $('aer-description') && !this.readOnly) descriptionComposing = true;
+      };
+      $('aer-description').oncompositionend = function () {
+        if (this !== $('aer-description')) return;
+        descriptionComposing = false;
+        captureDescriptionDraft();
+        if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+      };
+    }
+    if ($('aer-send')) $('aer-send').onclick = submitReport;
+    if ($('aer-copy-receipt')) $('aer-copy-receipt').onclick = function () {
+      if (submission.status !== 'saved' || !submission.id) return;
+      copyDiagnosticsText('AlloFlow report saved\nReceipt: ' + submission.id + '\nSaved: ' + submission.savedAt + '\nStorage confirmed; developer review is not confirmed.', 'aer-copy-receipt', 'Copy receipt');
+    };
+    if ($('aer-new-report')) $('aer-new-report').onclick = function () {
+      if (submission.status !== 'saved') return;
+      submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
+      descriptionDraft = '';
+      if ($('aer-description')) $('aer-description').value = '';
+      refreshPanelIfOpen();
+      if ($('aer-description')) $('aer-description').focus();
+    };
+    if ($('aer-report-form')) $('aer-report-form').onclick = function () {
+      if (submission.formOpened) return;
+      submission.formOpened = true;
+      // A form in another tab has its own Submit action. Never treat opening it
+      // as a successful report or put the captured log in its public URL.
+      var status = $('aer-submit-status');
+      if (status) status.appendChild(document.createTextNode(' This app cannot confirm a submission made in that form.'));
     };
   }
 
@@ -1100,10 +1271,23 @@
     // captures no error, so the Search tab has to be reachable with an empty
     // error buffer. Grounded features link here when a search comes back dry.
     openSearchLog: function () { openPanel('search'); },
-    // Alias kept for API stability — just opens the panel. The form's "what
-    // happened?" field falls back to "(No errors captured. Sending a manual
-    // report.)" when the buffer is empty, so we don't need to inject anything.
-    openManualReport: openPanel
+    // Manual entry always opens the report form, even after visiting another
+    // diagnostics tab. Repeated entry must not toggle the dialog closed.
+    openManualReport: function () {
+      openPanel('errors');
+      var reportPanel = panel;
+      var description = reportPanel && reportPanel.querySelector('#aer-description');
+      if (description) description.focus();
+      // A settings dialog that launched us may restore its old focus as it
+      // closes. Repair that handoff without moving focus inside this dialog.
+      var restoreReportFocus = function () {
+        if (panel !== reportPanel || activeTab !== 'errors' || !reportPanel || reportPanel.contains(document.activeElement)) return;
+        var field = reportPanel.querySelector('#aer-description');
+        if (field) field.focus();
+      };
+      if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(restoreReportFocus);
+      else setTimeout(restoreReportFocus, 0);
+    }
   };
   // Generation modules can finish before this async reporter script arrives.
   // Drain their bounded hand-off queue so the first failed pack is not lost.

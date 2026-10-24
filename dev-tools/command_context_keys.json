@@ -1,11 +1,12 @@
 {
   "generated": "2026-09-13",
-  "count": 283,
+  "count": 286,
   "keys": [
     "t",
     "addToast",
     "callGemini",
     "commandAudience",
+    "commandScopeToken",
     "openSchoolStoreRecognition",
     "openSchoolStoreGuide",
     "onboardingStage",
@@ -109,6 +110,8 @@
     "stemLabTool",
     "behaviorLensOpen",
     "contentLoaded",
+    "hasSourceText",
+    "generationBusy",
     "zenActive",
     "focusActive",
     "hasSourceOrAnalysis",

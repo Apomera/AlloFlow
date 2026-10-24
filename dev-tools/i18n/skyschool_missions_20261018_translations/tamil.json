@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "பணிக் கண்காணிப்புகள்",
+  "stem.flightsim.mission_journal_targets": "பதிவுசெய்த இலக்குகள்: {total}-இல் {captured}.",
+  "stem.flightsim.mission_journal_complete": "அனைத்துப் பணி நோக்கங்களும் திரும்பி வந்து தரையிறங்கியதும் பதிவுசெய்யப்பட்டன.",
+  "stem.flightsim.mission_journal_ended": "நிறைவுக்கான அனைத்துச் சான்றுகளும் பதிவுசெய்யப்படுவதற்கு முன் பணி முடிந்தது.",
+  "stem.flightsim.mission_journal_recovery": "உயிர் பிழைத்தவரை மீட்டதன் பதிவு: {value}.",
+  "stem.flightsim.mission_journal_return": "தளத்திற்குத் திரும்பித் தரையிறங்கியதன் பதிவு: {value}.",
+  "stem.flightsim.mission_guidance_title": "பணி வழிகாட்டல்",
+  "stem.flightsim.mission_route": "{target} · திசைக் கோணம் {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "புறப்பட்ட இடம்",
+  "stem.flightsim.mission_read_status": "பணி நிலையைப் படிக்கவும்",
+  "stem.flightsim.mission_return_criterion": "{target}-இலிருந்து {distance} nm தொலைவுக்குள் தரையிறங்கவும்; நிலத்துடன் ஒப்பிடும் வேகம் {speed} kt-க்கும் இறங்கும் வீதம் {fpm} fpm-க்கும் குறைவாக இருக்க வேண்டும்.",
+  "stem.flightsim.mission_unavailable": "பணி இலக்குத் தரவு கிடைக்கவில்லை. இந்தப் பறப்பை முடித்து புதிய பணியைத் தொடங்கவும்.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft தொலைவுக்குள், தரையிலிருந்து {min} ft-க்கு மேலாகவும் {max} ft-க்குக் கீழாகவும், தரைவேகம் {speed} kt-க்குக் குறைவாகவும் {hold} s நிலைத்திருக்கவும்."
+}

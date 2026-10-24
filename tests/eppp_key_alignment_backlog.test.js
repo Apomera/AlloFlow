@@ -1,8 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
+const require = createRequire(import.meta.url);
 const items = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_native_items.json'), 'utf8'));
+// Later question-quality waves (and the wave-49 cleanup) reworded several of these keyed choices
+// without moving the key. Such an item must carry exactly that wave's keyed text at the same index.
+const waveData = (wave) => {
+  const match = /^eppp-native-quality-wave-(\d+)$/.exec(wave || '');
+  return match ? require(`../dev-tools/eppp_native_quality_wave_${match[1]}_data.cjs`) : null;
+};
+const laterKeyFor = (item) => {
+  const cleanup = waveData(item.wordingCleanupWave)?.revisions.find((entry) => entry.id === item.id);
+  if (cleanup) return { answerIndex: cleanup.answerIndex, key: cleanup.key ?? cleanup.choices?.[cleanup.answerIndex] };
+  const revision = waveData(item.wordingReviewWave)?.revisions.find((entry) => entry.id === item.id);
+  return revision ? { answerIndex: revision.expectedAnswerIndex, key: revision.choices[revision.expectedAnswerIndex] } : null;
+};
 const expected = new Map([
   ['eppp-b007-intervention-1', 'Beginning with prolonged exposure to a highly feared stimulus rather than moving up a hierarchy gradually'],
   ['eppp-b013-cognitive-1', 'Selectively enhances processing within a limited spatial region'],
@@ -21,7 +35,13 @@ describe('EPPP editorial-backlog answer-key alignment', () => {
     for (const [id, supportedChoice] of expected) {
       const item = items.find((candidate) => candidate.id === id);
       expect(item, id).toBeTruthy();
-      expect(item.choices[item.answerIndex], id).toBe(supportedChoice);
+      const later = laterKeyFor(item);
+      if (later) {
+        expect(later.answerIndex, id).toBe(item.answerIndex);
+        expect(item.choices[item.answerIndex], id).toBe(later.key);
+      } else {
+        expect(item.choices[item.answerIndex], id).toBe(supportedChoice);
+      }
       expect(item.keyAlignmentReviewWave, id).toBe('eppp-key-alignment-wave-02');
       expect(item.keyAlignmentReviewedAt, id).toBe('2026-07-16');
     }

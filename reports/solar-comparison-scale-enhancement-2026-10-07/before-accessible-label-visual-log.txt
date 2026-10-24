@@ -1,7 +1,0 @@
-locator.click: Timeout 120000ms exceeded.
-Call log:
-[2m  - waiting for locator('#solar-visual-comparison').locator('[data-solar-planet-comparison]').getByRole('button', { name: 'Fixed across worlds', exact: true })[22m
-
-    at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\reports\solar-comparison-scale-enhancement-2026-10-07\visual-qa.cjs:57:90 {
-  name: 'TimeoutError'
-}

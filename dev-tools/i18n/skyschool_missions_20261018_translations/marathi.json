@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "मोहिमेतील निरीक्षणे",
+  "stem.flightsim.mission_journal_targets": "टिपलेली लक्ष्ये: {total} पैकी {captured}.",
+  "stem.flightsim.mission_journal_complete": "मोहिमेची सर्व उद्दिष्टे आणि परत येऊन केलेले अवतरण नोंदवले गेले.",
+  "stem.flightsim.mission_journal_ended": "पूर्णत्वाचे सर्व पुरावे नोंदवण्यापूर्वी मोहीम संपली.",
+  "stem.flightsim.mission_journal_recovery": "बचावलेल्या व्यक्तीची सुटका नोंदवली: {value}.",
+  "stem.flightsim.mission_journal_return": "तळावर परत येऊन केलेले अवतरण नोंदवले: {value}.",
+  "stem.flightsim.mission_guidance_title": "मोहिमेचे मार्गदर्शन",
+  "stem.flightsim.mission_route": "{target} · दिशाकोन {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "उड्डाण सुरू केलेले ठिकाण",
+  "stem.flightsim.mission_read_status": "मोहिमेची स्थिती वाचा",
+  "stem.flightsim.mission_return_criterion": "{target} पासून {distance} nm च्या आत उतरा; जमिनीच्या तुलनेतील वेग {speed} kt पेक्षा कमी आणि खाली उतरण्याचा दर {fpm} fpm पेक्षा कमी ठेवा.",
+  "stem.flightsim.mission_unavailable": "मोहिमेच्या लक्ष्याचा डेटा उपलब्ध नाही. हे उड्डाण संपवून नवी मोहीम सुरू करा.",
+  "stem.flightsim.mission_capture_criterion": "{distance} ft च्या आत, जमिनीपासून {min} ft पेक्षा वर आणि {max} ft पेक्षा खाली राहा; भूवेग {speed} kt पेक्षा कमी ठेवून {hold} s थांबा."
+}

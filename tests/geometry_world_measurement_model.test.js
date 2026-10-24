@@ -602,7 +602,8 @@ describe('Geometry World measurement model', () => {
     ]);
     expect(summary).toMatchObject({ retrievalAttempts: 3, retrievalCorrect: 2, retrievalCheckpoints: 2, retrievalCheckpointsCorrect: 2, retrievalFirstTryCorrect: 1 });
     expect(SOURCE).toContain("'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept");
-    expect(SOURCE).toContain("'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry'");
+    // 79e3e5eae renamed the feedback to the active checkpoint's result.
+    expect(SOURCE.includes("'data-geometry-retrieval-result': activeRetrievalResult.correct ? 'correct' : 'retry'"), 'retrieval result marker').toBe(true);
     expect(SOURCE).toContain("eng.logEvent('retrieval_check'");
     expect(SOURCE).toContain('Checkpoints mastered');
     expect(SOURCE).toContain('First-try retrieval');

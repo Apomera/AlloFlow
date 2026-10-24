@@ -30,6 +30,13 @@
       "pendingSortImages": 0,
       "review": "Visually reviewed; educator review pending",
       "textPolicy": "Original activity text stays editable; contextual illustrations recur only where appropriate"
+    },
+    "contentRefinements": {
+      "count": 0,
+      "sourceOnlyResourceIds": [],
+      "auditBasis": "Current text-only source to current illustrated edition; native picture-panel directions appended before comparison",
+      "updatedAt": "2026-09-19",
+      "log": "allopacks/media/map_skills_grade3/content-refinements.json"
     }
   },
   "sourceTopic": "Map Skills and What Maps Leave Out",

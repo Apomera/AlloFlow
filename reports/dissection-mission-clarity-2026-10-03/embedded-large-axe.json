@@ -7,14 +7,14 @@
     "name": "axe"
   },
   "testEnvironment": {
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
     "windowWidth": 1440,
     "windowHeight": 1000,
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-10-04T02:33:17.122Z",
-  "url": "http://127.0.0.1:64123/__harness",
+  "timestamp": "2026-10-18T02:09:14.494Z",
+  "url": "http://127.0.0.1:62588/__harness",
   "toolOptions": {
     "runOnly": {
       "type": "tag",
@@ -789,25 +789,6 @@
       "nodes": []
     },
     {
-      "id": "summary-name",
-      "impact": null,
-      "tags": [
-        "cat.name-role-value",
-        "wcag2a",
-        "wcag412",
-        "section508",
-        "section508.22.a",
-        "TTv5",
-        "TT6.a",
-        "EN-301-549",
-        "EN-9.4.1.2"
-      ],
-      "description": "Ensure summary elements have discernible text",
-      "help": "Summary elements must have discernible text",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/summary-name?application=axeAPI",
-      "nodes": []
-    },
-    {
       "id": "svg-img-alt",
       "impact": null,
       "tags": [
@@ -1011,9 +992,42 @@
             }
           ],
           "impact": null,
+          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
+          "target": [
+            ".diss-mission-shortcuts"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            },
+            {
+              "id": "aria-allowed-attr-elm",
+              "data": null,
+              "relatedNodes": [],
+              "message": "ARIA attributes are allowed for this element",
+              "impact": "critical"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         },
         {
@@ -1047,39 +1061,6 @@
           "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
           "target": [
             "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [],
-          "all": [
-            {
-              "id": "aria-allowed-attr",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "ARIA attributes are used correctly for the defined role"
-            },
-            {
-              "id": "aria-allowed-attr-elm",
-              "data": null,
-              "relatedNodes": [],
-              "message": "ARIA attributes are allowed for this element",
-              "impact": "critical"
-            }
-          ],
-          "none": [
-            {
-              "id": "aria-unsupported-attr",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "ARIA attribute is supported"
-            }
-          ],
-          "impact": null,
-          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
-          "target": [
-            ".diss-mission-shortcuts"
           ]
         },
         {
@@ -1164,9 +1145,27 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
+          "target": [
+            ".diss-mission-shortcuts"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         },
         {
@@ -1185,24 +1184,6 @@
           "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
           "target": [
             "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [],
-          "all": [
-            {
-              "id": "aria-conditional-attr",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "ARIA attribute is allowed"
-            }
-          ],
-          "none": [],
-          "impact": null,
-          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
-          "target": [
-            ".diss-mission-shortcuts"
           ]
         },
         {
@@ -1340,7 +1321,7 @@
           "impact": null,
           "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>",
           "target": [
-            "li:nth-child(2) > .diss-workflow__number[aria-hidden=\"true\"]"
+            "li[data-state=\"neutral\"]:nth-child(2) > .diss-workflow__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1372,7 +1353,7 @@
           "impact": null,
           "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>",
           "target": [
-            "li:nth-child(3) > .diss-workflow__number[aria-hidden=\"true\"]"
+            "li[data-state=\"neutral\"]:nth-child(3) > .diss-workflow__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1404,7 +1385,7 @@
           "impact": null,
           "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>",
           "target": [
-            "li:nth-child(4) > .diss-workflow__number[aria-hidden=\"true\"]"
+            "li[data-state=\"neutral\"]:nth-child(4) > .diss-workflow__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1436,7 +1417,7 @@
           "impact": null,
           "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>",
           "target": [
-            "li:nth-child(5) > .diss-workflow__number[aria-hidden=\"true\"]"
+            "li[data-state=\"neutral\"]:nth-child(5) > .diss-workflow__number[aria-hidden=\"true\"]"
           ]
         },
         {
@@ -1468,7 +1449,7 @@
           "impact": null,
           "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>",
           "target": [
-            "li:nth-child(6) > .diss-workflow__number[aria-hidden=\"true\"]"
+            "li[data-state=\"neutral\"]:nth-child(6) > .diss-workflow__number[aria-hidden=\"true\"]"
           ]
         }
       ]
@@ -1520,9 +1501,27 @@
             }
           ],
           "impact": null,
+          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
+          "target": [
+            ".diss-mission-shortcuts"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         },
         {
@@ -1541,24 +1540,6 @@
           "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
           "target": [
             "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [],
-          "all": [],
-          "none": [
-            {
-              "id": "aria-prohibited-attr",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "ARIA attribute is allowed"
-            }
-          ],
-          "impact": null,
-          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
-          "target": [
-            ".diss-mission-shortcuts"
           ]
         },
         {
@@ -1742,9 +1723,41 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
+          "target": [
+            ".diss-mission-shortcuts"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         },
         {
@@ -1777,38 +1790,6 @@
           "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
           "target": [
             "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [],
-          "all": [
-            {
-              "id": "aria-valid-attr-value",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "ARIA attribute values are valid"
-            },
-            {
-              "id": "aria-errormessage",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
-            },
-            {
-              "id": "aria-level",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-level values are valid"
-            }
-          ],
-          "none": [],
-          "impact": null,
-          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
-          "target": [
-            ".diss-mission-shortcuts"
           ]
         },
         {
@@ -1892,9 +1873,27 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
+          "target": [
+            ".diss-mission-shortcuts"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         },
         {
@@ -1913,24 +1912,6 @@
           "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
           "target": [
             "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "aria-valid-attr",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "ARIA attribute name is valid"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<nav class=\"diss-mission-shortcuts\" aria-label=\"Lab workspace shortcuts\"><button type=\"button\">Go to specimen</button><button type=\"button\">Structures and notes</button><button type=\"button\">Continue activity</button></nav>",
-          "target": [
-            ".diss-mission-shortcuts"
           ]
         },
         {
@@ -2032,7 +2013,7 @@
     },
     {
       "id": "color-contrast",
-      "impact": null,
+      "impact": "serious",
       "tags": [
         "cat.color",
         "wcag2aa",
@@ -2121,307 +2102,7 @@
           "impact": null,
           "html": "<p class=\"diss-mission__copy\">Work through the specimen one clear action at a time. Current focus: Predict before contact.</p>",
           "target": [
-            ".diss-mission__copy:nth-child(3)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
-          "target": [
-            "li[data-state=\"current\"][aria-current=\"step\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>",
-          "target": [
-            "li[data-state=\"current\"][aria-current=\"step\"] > .diss-workflow__number[aria-hidden=\"true\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>Prepare</li>",
-          "target": [
-            "li:nth-child(2)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>",
-          "target": [
-            "li:nth-child(2) > .diss-workflow__number[aria-hidden=\"true\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>Reveal</li>",
-          "target": [
-            "li:nth-child(3)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>",
-          "target": [
-            "li:nth-child(3) > .diss-workflow__number[aria-hidden=\"true\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>Identify</li>",
-          "target": [
-            "li:nth-child(4)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>",
-          "target": [
-            "li:nth-child(4) > .diss-workflow__number[aria-hidden=\"true\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>Record evidence</li>",
-          "target": [
-            "li:nth-child(5)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>",
-          "target": [
-            "li:nth-child(5) > .diss-workflow__number[aria-hidden=\"true\"]"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>Review</li>",
-          "target": [
-            "li:nth-child(6)"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
-                "fontWeight": "bold",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>",
-          "target": [
-            "li:nth-child(6) > .diss-workflow__number[aria-hidden=\"true\"]"
+            ".diss-mission__main > .diss-mission__copy"
           ]
         },
         {
@@ -2444,9 +2125,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<p class=\"diss-mission__copy\">Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.</p>",
+          "html": "<p class=\"diss-mission__context\">🐷 Fetal Pig (Sus scrofa) · Visceral Organs · 1/27 structures viewed</p>",
           "target": [
-            ".diss-mission__copy:nth-child(5)"
+            ".diss-mission__context"
           ]
         },
         {
@@ -2522,6 +2203,356 @@
           "html": "<button type=\"button\">Continue activity</button>",
           "target": [
             ".diss-mission-shortcuts > button[type=\"button\"]:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>Workflow and progress · 1/6 Orient</summary>",
+          "target": [
+            ".diss-mission__overview > summary"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"current\" aria-current=\"step\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>Orient</li>",
+          "target": [
+            "li[data-state=\"current\"][aria-current=\"step\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">1</span>",
+          "target": [
+            "li[data-state=\"current\"][aria-current=\"step\"] > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>Prepare</li>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(2)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(2) > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>Reveal</li>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(3)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(3) > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>Identify</li>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(4)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(4) > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>Record evidence</li>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(5)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(5) > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>Review</li>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(6)"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "bold",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>",
+          "target": [
+            "li[data-state=\"neutral\"]:nth-child(6) > .diss-workflow__number[aria-hidden=\"true\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#000000",
+                "bgColor": "#ffffff",
+                "contrastRatio": 21,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "normal",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has sufficient color contrast of 21"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<p class=\"diss-mission__copy\">Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.</p>",
+          "target": [
+            ".diss-mission__overview > .diss-mission__copy"
           ]
         },
         {
@@ -2633,31 +2664,6 @@
                 "bgColor": "#ffffff",
                 "contrastRatio": 21,
                 "fontSize": "12.0pt (16px)",
-                "fontWeight": "normal",
-                "expectedContrastRatio": "4.5:1"
-              },
-              "relatedNodes": [],
-              "impact": "serious",
-              "message": "Element has sufficient color contrast of 21"
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": null,
-          "html": "<span class=\"diss-stat__label\">Structures viewed</span>",
-          "target": [
-            ".diss-stat:nth-child(3) > .diss-stat__label"
-          ]
-        },
-        {
-          "any": [
-            {
-              "id": "color-contrast",
-              "data": {
-                "fgColor": "#000000",
-                "bgColor": "#ffffff",
-                "contrastRatio": 21,
-                "fontSize": "12.0pt (16px)",
                 "fontWeight": "bold",
                 "expectedContrastRatio": "4.5:1"
               },
@@ -2743,7 +2749,7 @@
           "impact": null,
           "html": "<ol class=\"diss-workflow\" aria-label=\"Dissection workflow\">",
           "target": [
-            "ol"
+            ".diss-workflow"
           ]
         }
       ]
@@ -2795,9 +2801,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>Prepare</li>",
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">2</span>Prepare</li>",
           "target": [
-            "li:nth-child(2)"
+            "li[data-state=\"neutral\"]:nth-child(2)"
           ]
         },
         {
@@ -2813,9 +2819,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>Reveal</li>",
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">3</span>Reveal</li>",
           "target": [
-            "li:nth-child(3)"
+            "li[data-state=\"neutral\"]:nth-child(3)"
           ]
         },
         {
@@ -2831,9 +2837,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>Identify</li>",
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">4</span>Identify</li>",
           "target": [
-            "li:nth-child(4)"
+            "li[data-state=\"neutral\"]:nth-child(4)"
           ]
         },
         {
@@ -2849,9 +2855,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>Record evidence</li>",
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">5</span>Record evidence</li>",
           "target": [
-            "li:nth-child(5)"
+            "li[data-state=\"neutral\"]:nth-child(5)"
           ]
         },
         {
@@ -2867,9 +2873,9 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<li data-state=\"upcoming\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>Review</li>",
+          "html": "<li data-state=\"neutral\"><span class=\"diss-workflow__number\" aria-hidden=\"true\">6</span>Review</li>",
           "target": [
-            "li:nth-child(6)"
+            "li[data-state=\"neutral\"]:nth-child(6)"
           ]
         }
       ]
@@ -2945,10 +2951,113 @@
           "target": [
             ".diss-mission-shortcuts > button[type=\"button\"]:nth-child(3)"
           ]
+        },
+        {
+          "any": [
+            {
+              "id": "no-focusable-content",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element does not have focusable descendants"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>Workflow and progress · 1/6 Orient</summary>",
+          "target": [
+            ".diss-mission__overview > summary"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "summary-name",
+      "impact": null,
+      "tags": [
+        "cat.name-role-value",
+        "wcag2a",
+        "wcag412",
+        "section508",
+        "section508.22.a",
+        "TTv5",
+        "TT6.a",
+        "EN-301-549",
+        "EN-9.4.1.2"
+      ],
+      "description": "Ensure summary elements have discernible text",
+      "help": "Summary elements must have discernible text",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/summary-name?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "has-visible-text",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element has text that is visible to screen readers"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<summary>Workflow and progress · 1/6 Orient</summary>",
+          "target": [
+            ".diss-mission__overview > summary"
+          ]
         }
       ]
     }
   ],
-  "incomplete": [],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "12.0pt (16px)",
+                "fontWeight": "normal",
+                "messageKey": "elmPartiallyObscuring",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span class=\"diss-stat__label\">Structures viewed</span>",
+          "target": [
+            ".diss-stat:nth-child(3) > .diss-stat__label"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+        }
+      ]
+    }
+  ],
   "violations": []
 }

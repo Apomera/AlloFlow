@@ -100,11 +100,17 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(fs.existsSync(resolve(process.cwd(), 'quality/eppp_provenance/evidence/review/review_ledger.json'))).toBe(true);
     expect(fs.existsSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_inventory.json'))).toBe(false);
     expect(inventoryBuilder).toContain('openEpppMigrationSourceArchive');
-    expect(builder).toContain('MIGRATION_ARCHIVE_SCRIPT');
-    expect(builder).toContain('LEARNING_LIBRARY_SCRIPT');
-    expect(builder).toContain('QA_SCRIPT');
-    expect(builder).not.toContain('inventory_eppp_learning_content.cjs');
-    expect(builder).not.toContain('build_eppp_review_ledger.cjs');
-    expect(builder).not.toContain('build_eppp_1500_curation_manifest.cjs');
+    // Since 2026-08-16 _build_test_prep_hub_module.js delegates to the release builder, which owns
+    // the archive-verified learning-library step; the delegator keeps only the Part 1 refresh + QA.
+    const releaseBuilder = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_test_prep_hub_release.cjs'), 'utf8');
+    expect(builder).toMatch(/\nrun\('build_test_prep_hub_release\.cjs', forwarded\);\s*$/);
+    expect(builder).toContain("run('qa_eppp_native_pack.cjs');");
+    expect(releaseBuilder).toContain("'build_eppp_migration_source_archive.cjs'), '--verify'");
+    expect(releaseBuilder).toContain("'build_eppp_learning_library.cjs'");
+    for (const hubBuilder of [builder, releaseBuilder]) {
+      expect(hubBuilder).not.toContain('inventory_eppp_learning_content.cjs');
+      expect(hubBuilder).not.toContain('build_eppp_review_ledger.cjs');
+      expect(hubBuilder).not.toContain('build_eppp_1500_curation_manifest.cjs');
+    }
   });
 });

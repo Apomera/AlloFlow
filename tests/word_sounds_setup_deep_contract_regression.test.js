@@ -101,17 +101,22 @@ describe('Word Sounds setup modal lifecycle and controls', () => {
   });
 
   it('cancels an in-flight generation and cannot launch after close', () => {
+    // 79e3e5eae (2026-10-10) moved the epoch bump into cancelGeneration, shared by
+    // close and unmount; 2adff44c5 (2026-10-16) gave handleStart an options argument.
+    const cancel = sliceBetween(setupSource, 'const cancelGeneration = React.useCallback(', '}, []);');
     const close = sliceBetween(
       setupSource,
       'const handleGeneratorClose =',
       'React.useEffect(() => {',
     );
-    const start = sliceBetween(setupSource, 'const handleStart = async () => {', 'if (isMinimized) {');
+    const start = sliceBetween(setupSource, 'const handleStart = async (', 'if (isMinimized) {');
 
-    expect(close).toContain('generationEpochRef.current += 1');
-    expect(close).toContain('startRunRef.current = false');
+    expect(close).toContain('cancelGeneration();');
+    expect(cancel).toContain('generationEpochRef.current += 1');
+    expect(cancel).toContain('startRunRef.current = false');
+    expect(cancel).toContain('controller.abort()');
     expect(start).toContain('const generationEpoch = ++generationEpochRef.current');
-    expect(start).toContain('const isGenerationActive = () => generationEpochRef.current === generationEpoch');
+    expect(start).toMatch(/const isGenerationActive = \(\) =>[^;]*generationEpochRef\.current === generationEpoch;/);
     expect(start).toContain('const waitWhileActive =');
     expect((start.match(/if \(!isGenerationActive\(\)\)/g) || []).length).toBeGreaterThanOrEqual(4);
     expect(start).toMatch(/if \(!isGenerationActive\(\)\) return;\s*onStartGame\(/);

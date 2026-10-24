@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Riƙe yanayin jirgi na yanzu",
+  "stem.flightsim.flight_assistance_targets": "Alƙiblar jirgi {hdg}° · Tsayi {alt} ft MSL · Gudu {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Alƙiblar jirgi {hdg}° · Tsayi {alt} ft MSL · Gudun zuwa gaba {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Juya hagu da {degrees}° zuwa {airport}.",
+  "stem.flightsim.challenge_turn_right": "Juya dama da {degrees}° zuwa {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Kana nufin {airport}. Bi alamar hanyar jirgi.",
+  "stem.flightsim.challenge_runway_reference": "Hanyar saukar jirgi ta atisaye {runway}: alƙibla {heading}°. Daidaita jirgin da hanyar sauka kafin ka rage tsayi domin sauka."
+}

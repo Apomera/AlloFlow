@@ -180,7 +180,8 @@ describe('Stationary switching of enlarged recorded drawings', () => {
 
   it.each(['a', 'b'])('excludes inactive controls from the modal focus trap while showing %s', async side => {
     await pairMount(); await click(switchLayout()); await click(show(side)); const first = button('Close enlarged drawing', dialog());
-    first.focus(); await key(first, 'Tab', { shiftKey: true }); expect(document.activeElement).toBe(guides('viewer-' + side));
+    // 79e3e5eae: the shown panel's Inspect/Fit frame action is its last control.
+    first.focus(); await key(first, 'Tab', { shiftKey: true }); expect(document.activeElement).toBe(query('[data-perception-recorded-frame-action="viewer-' + side + '"]'));
     await key(document.activeElement, 'Tab'); expect(document.activeElement).toBe(first);
     await key(first, 'Escape'); expect(dialog().open).toBe(false); expect(document.activeElement).toBe(button('Compare enlarged drawings'));
   });

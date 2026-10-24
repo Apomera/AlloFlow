@@ -85,7 +85,8 @@ describe('Free woodland flight continuity', () => {
           wildlife.update(frame/120,1/120,observer);
           const current=wildlife.snapshot().find(b=>b.id===id),dx=current.position[0]-previous.position[0],dz=current.position[2]-previous.position[2];
           if(current.altitude>.04&&previous.altitude>.04&&Math.hypot(dx,dz)>.0001) {
-            const bearing=Math.atan2(dx,dz)+(id==='robin'||id==='chickadee'?Math.PI:0);
+            // Shared-model residents face +Z; only the local fallback models face -Z.
+            const bearing=Math.atan2(dx,dz)+(wildlife.isShared(id)?0:Math.PI);
             expect(Math.abs(turn(current.heading-bearing)),id+' tangent').toBeLessThan(.025);
             expect(Math.hypot(current.position[0]-observer.position.x,current.position[2]-observer.position.z)).toBeGreaterThanOrEqual(
               Math.hypot(previous.position[0]-observer.position.x,previous.position[2]-observer.position.z)-1e-8);

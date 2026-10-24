@@ -62,7 +62,7 @@ test('the artery is warmer than the vein beside it all the way down the leg', as
   expect(got.heat).toBeGreaterThan(0);
   expect(got.loss).toBe(3);
   expect(got.caption).toContain('Countercurrent heat exchange');
-  expect(got.caption).toContain('Foot just above freezing');
+  expect(got.caption).toContain('Cooler foot; varies');
 });
 
 test('the cold front map puts winds, hawks and rain on the right sides', async ({ page }) => {

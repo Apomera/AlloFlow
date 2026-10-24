@@ -108,13 +108,15 @@ describe('G6 the sticky state that produced it is now reset at the source', () =
 describe('G7 the crossword prints through the existing mechanism', () => {
   const crossword = region(games, 'const CrosswordGame =', 'const SyntaxScramble =');
 
-  it('uses window.print over the live modal, like Matching and Bingo', () => {
-    expect(crossword).toContain('const printCrossword = ()');
-    expect(crossword).toContain('window.print()');
-    // No popup window: the word search's separate document.write printer stays
-    // where it is and is not duplicated here.
-    expect(crossword).not.toContain('window.open(');
-    expect(crossword).not.toContain('document.write');
+  it('prints the live modal from its own window, like Matching and Bingo, with the key for teachers only', () => {
+    // 2026-10-19: Gemini Canvas ignores window.print() on the app, so all three
+    // sheets go through the shared printGlossarySheet (its own window, the
+    // page's stylesheets). The answer key used to print with every student copy.
+    expect(crossword).toContain('const printCrossword = (withAnswerKey)');
+    expect(crossword).toContain('printGlossarySheet(crosswordDialogRef.current, labels)');
+    expect(crossword).toContain("if (withAnswerKey !== true || !isTeacherMode)");
+    expect(crossword).toContain('{isTeacherMode && <button type="button" data-crossword-print-key="true" onClick={() => printCrossword(true)}');
+    expect(crossword.includes('try { window.print(); }'), 'no direct window.print() on the app').toBe(false);
   });
 
   it('prints a header, the grid, the clue list and a separate answer key', () => {
@@ -133,7 +135,7 @@ describe('G7 the crossword prints through the existing mechanism', () => {
 
   it('keeps screen-only chrome off the sheet', () => {
     expect(crossword).toContain('<span className="no-print"><SpeakButton');
-    expect(crossword).toContain('bg-slate-50 text-[11px] text-center text-slate-600 border-t no-print');
+    expect(crossword).toContain('bg-slate-50 text-[0.6875rem] text-center text-slate-600 border-t no-print');
     expect(crossword).toContain('print:hidden');
   });
 

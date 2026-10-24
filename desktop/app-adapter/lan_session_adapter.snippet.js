@@ -40,7 +40,7 @@ function _alloLanConfig() {
       // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
       // demo cloud) on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
-        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '' };
+        cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '', uid: typeof parsed.lanUid === 'string' ? parsed.lanUid : '' };
       }
     }
   } catch (_) { cfg = null; }
@@ -49,10 +49,13 @@ function _alloLanConfig() {
   return cfg;
 }
 function _alloLanBridgeUser() {
-  if (!_alloLanConfig()) return null;
+  var cfg = _alloLanConfig();
+  if (!cfg) return null;
   var storageKey = 'alloflow_lan_participant_uid';
-  var uid = '';
-  try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {}
+  // The LAN share assigns a student's uid with the token; every tab of that join uses it.
+  var uid = /^lan-[a-z0-9_-]{6,80}$/i.test(cfg.uid || '') ? cfg.uid : '';
+  if (uid) { try { window.sessionStorage.setItem(storageKey, uid); } catch (_) {} }
+  else { try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {} }
   if (!/^lan-[a-z0-9_-]{6,80}$/i.test(uid)) {
     var isStudent = false;
     try { isStudent = new URLSearchParams(window.location.search || '').has('allo_lan_join'); } catch (_) {}

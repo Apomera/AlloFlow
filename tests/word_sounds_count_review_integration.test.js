@@ -33,7 +33,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function mount(initial) {
+async function mount(initial, extraProps = {}) {
   originalPanel = window.WordSoundsReviewPanel;
   originalAudio = window.Audio;
   window.AlloModules.WordSoundsPronunciations = { lookup: word => word === 'fire' ? ['1', '10'] : [] };
@@ -68,7 +68,7 @@ async function mount(initial) {
       initialShowReviewPanel: true, initialActivitySequence: ['syllable_counting'], playInstructions: false,
       currentWordSoundsWord: 'fire', wordSoundsPhonemes: current, setWordSoundsPhonemes: setCurrent,
       wsPreloadedWords: words, setWsPreloadedWords: setWords, selectedVoice: 'new-default-voice',
-      onClose: state.close, onBackToSetup: state.back,
+      onClose: state.close, onBackToSetup: state.back, ...extraProps,
     });
   }
   container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
@@ -95,6 +95,17 @@ describe('count approvals in the actual pre-activity modal', () => {
     return { word: 'fire', phonemes: ['f', 'ire'], ttsReady: true, _ttsAssets: { fire: clip },
       activityItems: { syllable_counting: approval, ...(recording ? { syllable_blending: recording } : {}) } };
   };
+
+  it('shows the count review in the teacher\'s language when a translation exists', async () => {
+    // The review used to look up keys without their namespace, so every label
+    // stayed English whatever the interface language.
+    const spanish = { 'word_sounds.count_answer': 'Número de sílabas', 'word_sounds.count_save': 'Guardar recuento' };
+    const getWordSoundsString = (_t, key) => spanish[key] || key;
+    await mount([{ word: 'fire', phonemes: ['f', 'ire'], ttsReady: true, _ttsAssets: { fire: audio(31) } }], { getWordSoundsString });
+    expect(container.textContent).toContain('Número de sílabas');
+    expect(container.textContent).toContain('Guardar recuento');
+    expect(container.textContent).not.toContain('Save reviewed count');
+  });
 
   it('requires a completed whole-word preview and explicit count confirmation after saving syllable recordings', async () => {
     const wholeWord = audio(21);

@@ -35,11 +35,12 @@ describe('extracted view localization catalog', () => {
         .map((key) => key.startsWith('directions.') ? key : `directions.${key}`),
     )].sort();
 
-    expect(assignmentKeys).toHaveLength(120);
+    // 119 since the Assignment Center dropped one share_collect call site (catalog follows it).
+    expect(assignmentKeys).toHaveLength(119);
     expect(directionKeys).toHaveLength(32);
     expect(catalog.ASSIGNMENT_KEYS).toEqual(assignmentKeys);
     expect(catalog.DIRECTION_KEYS).toEqual(directionKeys);
-    expect(catalog.EXTRACTED_VIEW_KEYS).toHaveLength(152);
+    expect(catalog.EXTRACTED_VIEW_KEYS).toHaveLength(151);
     expect(flatten(manifest.ENGLISH_ADDITIONS)).toEqual(expect.objectContaining(english));
   });
 
@@ -48,11 +49,14 @@ describe('extracted view localization catalog', () => {
       .toBe(read('view_assignment_center_module.js'));
     expect(read('desktop/web-app/public/view_directions_result_module.js'))
       .toBe(read('view_directions_result_module.js'));
+    // The 63 packs total ~500 MB per copy: compare raw bytes (no UTF-8 decode, and no
+    // multi-megabyte string diff on failure) under a timeout sized for that read.
     for (const slug of Object.keys(manifest.LANGUAGE_CODES)) {
-      expect(read(`desktop/web-app/public/lang/${slug}.js`), `${slug} mirror drift`)
-        .toBe(read(`lang/${slug}.js`));
+      const mirror = readFileSync(resolve(ROOT, `desktop/web-app/public/lang/${slug}.js`));
+      const rootPack = readFileSync(resolve(ROOT, `lang/${slug}.js`));
+      expect(mirror.equals(rootPack), `${slug} mirror drift`).toBe(true);
     }
-  });
+  }, 120000);
 
   it('requires reviewed payload values to preserve placeholders and never copy English', () => {
     expect(payload.locales).toEqual(Object.keys(manifest.LANGUAGE_CODES));

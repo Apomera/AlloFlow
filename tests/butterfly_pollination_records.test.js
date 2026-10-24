@@ -77,7 +77,7 @@ describe('Student-recorded model pollination visits',()=>{
     }
     const s=BF.freshState({pollination:{visits},restoration:{design:'mixed'}});expect(s.pollination.visits).toHaveLength(8);
     expect(new Set(s.pollination.visits.map(row=>row.patch+':'+row.plan+':'+row.contact)).size).toBe(8);
-    const saved=BF.save(s);expect(saved.version).toBe(5);expect(BF.freshState(saved).pollination).toEqual(s.pollination);
+    const saved=BF.save(s);expect(saved.version).toBe(6);expect(BF.freshState(saved).pollination).toEqual(s.pollination);
     saved.pollination.visits[0].contact=!saved.pollination.visits[0].contact;saved.pollination.visits.push({patch:'lawn'});
     expect(saved.pollination).not.toEqual(s.pollination);expect(s.pollination.visits).toHaveLength(8);expect(JSON.stringify(s.pollination)).not.toContain('seedCount');
   });

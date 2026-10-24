@@ -466,6 +466,22 @@ describe('focus-visible restoration (sanitizeStyleForWCAG step 5, WCAG 2.4.7)', 
     const twice = applyFocusVisibleFix(once);
     expect(twice.html.match(/a11y-focus-visible/g)).toHaveLength(1);
   });
+  // 2026-10-16: skip links inserted with an INLINE left:-9999px stayed off-screen when focused
+  // (Chromium measured x = -9999). Only !important rules can beat the inline style.
+  it('brings a focused skip link / .sr-only element on screen, overriding inline off-screen styles', () => {
+    const block = applyFocusVisibleFix('<html><head></head></html>').html;
+    const rule = (block.match(/\.sr-only:focus[^{]*\{([^}]*)\}/) || [])[1] || '';
+    expect(block).toContain('.skip-link:focus');
+    for (const decl of ['position:fixed!important', 'left:8px!important', 'top:8px!important', 'width:auto!important', 'height:auto!important', 'overflow:visible!important']) {
+      expect(rule, 'missing ' + decl).toContain(decl);
+    }
+  });
+  it('upgrades an older focus block that lacks the skip-link reveal', () => {
+    const legacy = '<html><head>\n<style>/* a11y-focus-visible */\na:focus-visible{outline:2px solid #2563eb}\n</style></head></html>';
+    const r = applyFocusVisibleFix(legacy);
+    expect(r.html).toContain('.sr-only:focus');
+    expect(r.html.match(/a11y-focus-visible/g)).toHaveLength(1);
+  });
 });
 
 describe('prefers-reduced-motion gating (sanitizeStyleForWCAG step 6, WCAG 2.3.3)', () => {

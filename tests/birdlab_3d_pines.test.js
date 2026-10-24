@@ -1,24 +1,27 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source = readFileSync('stem_lab/birdlab_3d_habitat.js', 'utf8');
-const treeBody = source.slice(source.indexOf('var branches = [], leaves ='), source.indexOf('// Reserve a corridor'));
-const cardsBody = source.slice(source.indexOf('function cardGeometry('), source.indexOf('function applyWind('));
-const paintingBody = source.slice(source.indexOf('function canopyCanvas('), source.indexOf('function canopyTexture('));
-const math = source.slice(source.indexOf('function smooth('), source.indexOf('function groundHeight('));
+const file = 'stem_lab/birdlab_3d_habitat.js';
+const treeBody = sliceBetween(source, 'var branches = [], leaves =', '// Reserve a corridor', { file });
+const cardsBody = sliceBetween(source, 'function cardGeometry(', 'function applyWind(', { file });
+const paintingBody = sliceBetween(source, 'function canopyCanvas(', 'function canopyTexture(', { file });
+const math = sliceBetween(source, 'function smooth(', 'function groundHeight(', { file });
 
 function pine(detailed, initialSeed = 972031, height = 20) {
   let seed = initialSeed, calls = 0;
   const random = () => { calls++; seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
-  const result = new Function('detailed', 'random', 'height', `
+  // The cut-out body also declares observationPerches (THREE.Vector3 landing points).
+  const result = new Function('THREE', 'detailed', 'random', 'height', `
     function groundHeight() { return 0; }
     ${math}
     ${treeBody}
     tree(0, 0, height, true);
     return { branches, leaves, treeLocations };
-  `)(detailed, random, height);
+  `)(THREE, detailed, random, height);
   return { ...result, calls, seed };
 }
 function cardGeometry() {

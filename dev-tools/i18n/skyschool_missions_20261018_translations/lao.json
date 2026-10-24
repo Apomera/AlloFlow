@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "ບັນທຶກການສັງເກດພາລະກິດ",
+  "stem.flightsim.mission_journal_targets": "ເປົ້າໝາຍທີ່ຖ່າຍແລ້ວ: {captured} ຈາກ {total}.",
+  "stem.flightsim.mission_journal_complete": "ໄດ້ບັນທຶກທຸກເປົ້າໝາຍຂອງພາລະກິດ ແລະ ການລົງຈອດກັບຄືນແລ້ວ.",
+  "stem.flightsim.mission_journal_ended": "ພາລະກິດສິ້ນສຸດກ່ອນຈະບັນທຶກຫຼັກຖານການສຳເລັດຄົບທັງໝົດ.",
+  "stem.flightsim.mission_journal_recovery": "ບັນທຶກການຊ່ວຍຜູ້ລອດຊີວິດ: {value}.",
+  "stem.flightsim.mission_journal_return": "ບັນທຶກການລົງຈອດກັບຖານ: {value}.",
+  "stem.flightsim.mission_guidance_title": "ຄຳແນະນຳພາລະກິດ",
+  "stem.flightsim.mission_route": "{target} · ມຸມທິດ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "ຈຸດຂຶ້ນບິນ",
+  "stem.flightsim.mission_read_status": "ອ່ານສະຖານະພາລະກິດ",
+  "stem.flightsim.mission_return_criterion": "ລົງຈອດພາຍໃນ {distance} nm ຈາກ {target}, ດ້ວຍຄວາມໄວທຽບພື້ນດິນຕ່ຳກວ່າ {speed} kt ແລະ ອັດຕາການລົງຕ່ຳກວ່າ {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "ບໍ່ມີຂໍ້ມູນເປົ້າໝາຍພາລະກິດ. ຈົບການບິນນີ້ ແລະ ເລີ່ມພາລະກິດໃໝ່.",
+  "stem.flightsim.mission_capture_criterion": "ຢູ່ພາຍໃນ {distance} ft, ສູງກວ່າ {min} ແລະ ຕ່ຳກວ່າ {max} ft ເໜືອພື້ນດິນ, ດ້ວຍຄວາມໄວທຽບພື້ນດິນຕ່ຳກວ່າ {speed} kt ເປັນເວລາ {hold} s."
+}

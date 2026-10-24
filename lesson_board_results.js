@@ -1,21 +1,30 @@
 import { derive, goalOf } from './lesson_board_engine.js';
-import { learningSummary } from './lesson_board_insights.js';
+import { learningSummary, responseText } from './lesson_board_insights.js';
 export function practicePlan(board, run, uid, roster = {}) {
   const learner = learningSummary(board, run, { [uid]: roster[uid] || {} }).learners[0];
   const reviewed = new Set(Object.values(run.steps || {}).filter(step => step.result || step.retryStats).map(step => step.targetId));
   const complete = derive(board, run).complete;
   return learner.locations.filter(item => complete || reviewed.has(item.id)).map(item => ({ id: item.id, name: item.name, conceptId: item.conceptId, reason: !item.answered ? 'unattempted' : !item.lastCorrect ? 'revisit' : item.improved ? 'strengthen' : 'secure' })).filter(item => item.reason !== 'secure').sort((a, b) => ['revisit', 'unattempted', 'strengthen'].indexOf(a.reason) - ['revisit', 'unattempted', 'strengthen'].indexOf(b.reason));
 }
+// context.responses comes from lesson_board_responses.js: chosen answers and answer reveals per stop.
+function responseDetails(board, location, uid, responses) {
+  const stop = responses?.[location.id] || {}, own = stop[uid] || {}, node = board.locations.find(item => item.id === location.id);
+  const text = value => typeof value === 'string' && node ? responseText(node, value) || '' : '', assisted = location.improved && !!(own.revealed || stop['*']?.revealed);
+  return { ...(text(own.first) ? { firstResponse: text(own.first) } : {}), ...(text(own.latest) ? { latestResponse: text(own.latest) } : {}), ...(assisted ? { assisted: true, improved: false } : {}) };
+}
 export function learningReport(board, run, roster, context = {}) {
-  const summary = learningSummary(board, run, roster), progress = derive(board, run);
+  const summary = learningSummary(board, run, roster), progress = derive(board, run), responses = context.responses || {};
   return { format: 'alloflow-board-learning', version: 1, savedAt: Date.now(), boardTitle: board.title, goal: goalOf(board), complete: progress.complete, mode: context.preview ? 'preview' : context.mode === 'teacher' ? 'classroom' : 'solo', attempt: String(context.attemptId || ''),
     scope: context.mode === 'teacher' ? String(context.sessionCode || '') : '',
     coverage: context.coverage || null,
     progress: { explored: progress.visited.length, locations: board.locations.length, projects: progress.built.length, concepts: progress.concepts.length, totalConcepts: board.concepts.length },
     concepts: board.concepts.map(item => ({ id: item.id, name: item.name })),
-    learners: summary.learners.map(item => ({ uid: item.uid, name: item.name, answered: item.answered, correct: item.correct, firstCorrectCount: item.firstCorrectCount, latestCorrectCount: item.latestCorrectCount, attemptedLocations: item.attemptedLocations, retries: item.retries,
-      locations: item.locations.map(location => ({ id: location.id, name: location.name, conceptId: location.conceptId, answered: location.answered, correct: location.correct, firstCorrect: location.firstCorrect, lastCorrect: location.lastCorrect, improved: location.improved })),
-      practice: practicePlan(board, run, item.uid, roster) })) };
+    learners: summary.learners.map(item => {
+      const locations = item.locations.map(location => ({ id: location.id, name: location.name, conceptId: location.conceptId, answered: location.answered, correct: location.correct, firstCorrect: location.firstCorrect, lastCorrect: location.lastCorrect, improved: location.improved, ...responseDetails(board, location, item.uid, responses) }));
+      const assisted = new Set(locations.filter(location => location.assisted).map(location => location.id)), order = ['revisit', 'unattempted', 'strengthen'];
+      return { uid: item.uid, name: item.name, answered: item.answered, correct: item.correct, firstCorrectCount: item.firstCorrectCount, latestCorrectCount: item.latestCorrectCount, attemptedLocations: item.attemptedLocations, retries: item.retries, assistedCount: assisted.size, locations,
+        practice: practicePlan(board, run, item.uid, roster).map(entry => assisted.has(entry.id) && entry.reason === 'strengthen' ? { ...entry, reason: 'revisit' } : entry).sort((a, b) => order.indexOf(a.reason) - order.indexOf(b.reason)) };
+    }) };
 }
 const identity = (appId, owner) => ({ appId: String(appId || 'alloflow-local'), owner: String(owner || 'local') });
 export const reportStorageKey = (appId, owner) => { const who = identity(appId, owner); return 'allo-board-reports-v1:' + encodeURIComponent(who.appId) + ':' + encodeURIComponent(who.owner); };
@@ -26,7 +35,7 @@ function validReport(report) {
   return report && report.format === 'alloflow-board-learning' && report.version === 1 && Number.isFinite(report.savedAt) && report.savedAt > 0 && report.savedAt <= 8640000000000000 && label(report.boardTitle,120) && ['solo','classroom','preview'].includes(report.mode)
     && Array.isArray(report.concepts) && report.concepts.length <= 4 && report.concepts.every(item => item && label(item.id,40) && label(item.name,100))
     && Array.isArray(report.learners) && report.learners.length <= 500 && report.learners.every(item => item && label(item.uid,128) && label(item.name) && ['answered','correct','firstCorrectCount','latestCorrectCount','attemptedLocations','retries'].every(key => count(item[key]))
-      && Array.isArray(item.locations) && item.locations.length <= 12 && item.locations.every(node => node && label(node.id,40) && label(node.name,80) && label(node.conceptId,40) && count(node.answered) && count(node.correct) && truth(node.firstCorrect) && truth(node.lastCorrect) && typeof node.improved === 'boolean')
+      && Array.isArray(item.locations) && item.locations.length <= 12 && item.locations.every(node => node && label(node.id,40) && label(node.name,80) && label(node.conceptId,40) && count(node.answered) && count(node.correct) && truth(node.firstCorrect) && truth(node.lastCorrect) && typeof node.improved === 'boolean' && ['firstResponse', 'latestResponse'].every(key => node[key] === undefined || label(node[key], 1200)) && (node.assisted === undefined || typeof node.assisted === 'boolean'))
       && Array.isArray(item.practice) && item.practice.length <= 12 && item.practice.every(node => node && label(node.id,40) && label(node.name,80) && ['revisit','unattempted','strengthen'].includes(node.reason)))
     && (!report.coverage || count(report.coverage.total) && count(report.coverage.linked) && report.coverage.linked <= report.coverage.total && Array.isArray(report.coverage.items) && report.coverage.items.length <= 48 && report.coverage.items.every(item => item && count(item.index) && label(item.label,180) && Array.isArray(item.locations) && item.locations.length <= 12 && item.locations.every(node => node && label(node.id,40) && label(node.name,80))));
 }
@@ -64,8 +73,8 @@ export function removeReport(storage, appId, owner, report) {
 }
 const cell = value => { let text = String(value ?? ''); if (/^[\s]*[=+@-]/.test(text) || /^[\t\r\n]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; };
 export function reportCSV(report) {
-  const rows = [['Board', 'Mode', 'Saved at', 'Learner', 'Concept', 'Location', 'Recorded attempts', 'First response correct', 'Latest response correct', 'Improved after review', 'Suggested practice']];
-  for (const learner of report.learners) for (const location of learner.locations) rows.push([report.boardTitle, report.mode, new Date(report.savedAt).toISOString(), learner.name, report.concepts.find(concept => concept.id === location.conceptId)?.name || '', location.name, location.answered, location.firstCorrect === null ? 'No recorded response' : location.firstCorrect, location.lastCorrect === null ? 'No recorded response' : location.lastCorrect, location.improved, learner.practice.find(item => item.id === location.id)?.reason || '']);
+  const rows = [['Board', 'Mode', 'Saved at', 'Learner', 'Concept', 'Location', 'Recorded attempts', 'First response correct', 'Latest response correct', 'Improved after review', 'Suggested practice', 'First response', 'Latest response', 'Correct only after the answer was shown']];
+  for (const learner of report.learners) for (const location of learner.locations) rows.push([report.boardTitle, report.mode, new Date(report.savedAt).toISOString(), learner.name, report.concepts.find(concept => concept.id === location.conceptId)?.name || '', location.name, location.answered, location.firstCorrect === null ? 'No recorded response' : location.firstCorrect, location.lastCorrect === null ? 'No recorded response' : location.lastCorrect, location.improved, learner.practice.find(item => item.id === location.id)?.reason || '', location.firstResponse || '', location.latestResponse || '', location.assisted === true]);
   return rows.map(row => row.map(cell).join(',')).join('\r\n');
 }
 export function downloadReport(report, type = 'json') {

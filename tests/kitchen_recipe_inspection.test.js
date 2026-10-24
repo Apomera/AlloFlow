@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {readFileSync} from 'node:fs';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js'),G=require('../stem_lab/kitchen_studio/recipe_lab_inspection.js'),cook=require('../dev-tools/kitchen_recipe_fixture.cjs');
 function sample(progress){const s=R.start();s.pot.pasta=true;s.pot.progress=progress;return R.act(s,'sample',undefined,'sample-press');}
-function sauce(moisture,servings=2){const s=R.startRescue('dry',0);s.servings=servings;s.pan.moisture=moisture;return R.act(s,'taste',undefined,'sauce-trail');}
+function sauce(moisture,servings=2){const s=R.startRescue('dry',0);delete s.sauceModel;delete s.sauceObservationModel;delete s.mixingModel;delete s.pan.chemistry;s.servings=servings;s.pan.moisture=moisture;return R.act(s,'taste',undefined,'sauce-trail');}
 describe('Food inspection observations',()=>{
  it('reveals progressively smaller pasta cores and increasing deformation only after sampling',()=>{
   expect(R.inspections(R.start())).toEqual([]);const readings=[.2,.7,1,1.3,1.6].map(p=>R.inspections(sample(p))[0]);
@@ -14,13 +14,13 @@ describe('Food inspection observations',()=>{
   for(const action of ['sample','taste'])expect(R.inspections(R.act(R.start(),action))).toEqual([]);
   const ended={...sample(1),plated:true};expect(R.act(ended,'sample')).toBe(ended);
  });
- it('distinguishes dry, coating and watery trails at scaled portion thresholds',()=>{
+ it('preserves historical dry, coating and watery trails at scaled portion thresholds',()=>{
   expect(R.inspections(sauce(19))[0].type).toBe('dry');expect(R.inspections(sauce(20))[0].type).toBe('coating');expect(R.inspections(sauce(180))[0].type).toBe('coating');expect(R.inspections(sauce(181))[0].type).toBe('watery');
   expect(R.inspections(sauce(300,4))[0].type).toBe('coating');expect(R.inspections(sauce(361,4))[0].type).toBe('watery');expect(R.inspections(sauce(19))[0].closureSeconds).toBe(0);
   expect(R.inspections(sauce(100))[0].closureSeconds).toBeGreaterThan(R.inspections(sauce(200))[0].closureSeconds);
  });
  it('shows unmixed liquid until folding and keeps scorch damage visible after adding water',()=>{
-  let s=R.startRescue('dry',0);s=R.act(s,'pour',50);s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('unmixed');s=R.act(s,'stirSweep','button');s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('coating');s.pan.damage=1;s=R.act(s,'pour',50);s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('scorched');
+  let s=R.startRescue('dry',0);s=R.act(s,'pour',50);s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('unmixed');s=R.act(s,'stirSweep','button');s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('unmixed');s=R.act(s,'stirSweep','button');s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('coating');s.pan.damage=1;s=R.act(s,'pour',50);s=R.act(s,'taste');expect(R.inspections(s).at(-1).type).toBe('scorched');
  });
  it('keeps observations as snapshots after the food continues cooking and isolates returned copies',()=>{
   let s=sample(.7);const first=R.inspections(s)[0];s.pot.temp=100;s.pot.water=1200;s.pot.heat=3;s=R.act(s,'advance',60);expect(R.inspections(s)[0]).toEqual(first);s=R.act(s,'sample');expect(R.inspections(s)[1].time).toBe(60);R.inspections(s)[0].label='changed';expect(R.inspections(s)[0].label).toBe('Still firm');
@@ -29,7 +29,7 @@ describe('Food inspection observations',()=>{
   const s=R.startRescue('dry',0),gesture=R.act(s,'taste',undefined,'sauce-trail'),keyboard=R.act(s,'taste',undefined,'keyboard');expect(gesture.pan).toEqual(keyboard.pan);expect(R.inspections(gesture)).toEqual(R.inspections(keyboard));expect(gesture.time).toBe(s.time);expect(gesture.log.at(-1).interaction).toBe('sauce-trail');
  });
  it('rebuilds inspection evidence from actions, ignoring forged saved observations',()=>{
-  let s=R.startRescue('dry',0);s=R.act(s,'pour',50);s=R.act(s,'stirSweep','gesture');s=R.act(s,'taste',undefined,'sauce-trail');s=R.act(s,'plate');s=R.submit({...s,answers:[0,null]});const raw=JSON.parse(JSON.stringify(s));raw.log.find(e=>e.inspection).inspection.label='Forged';
+  let s=R.startRescue('dry',0);s=R.act(s,'pour',50);s=R.act(s,'stirSweep','gesture');s=R.act(s,'stirSweep','gesture');s=R.act(s,'taste',undefined,'sauce-trail');s=R.act(s,'plate');s=R.submit({...s,answers:[0,null]});const raw=JSON.parse(JSON.stringify(s));raw.log.find(e=>e.inspection).inspection.label='Forged';
   const restored=R.restore(raw);expect(restored).toEqual(s);expect(R.evidence(restored).inspections[0].label).toBe('Coating the spoon');expect(R.replay(restored,restored.log.length).state.log).toEqual(s.log);
  });
  it('retains all sample and sauce observations through a completed recipe and replay',()=>{

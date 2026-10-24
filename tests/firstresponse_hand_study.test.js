@@ -107,10 +107,13 @@ function model(age = 'adult', phase = 4, guides = false, contrast = false, tab =
   const sample = () => { content.frame(0, {}, true); scene.updateMatrixWorld(true); };
   sample(); return { scene, content, sample };
 }
-function assertFocus(content, id) {
+function assertFocus(content, id, narrow = false) {
   const [actualId, options] = focus.mock.calls.at(-1); expect(actualId).toBe(id);
   expect(options.immediate).toBe(true); expect(options.padding).toBeUndefined();
-  expect(Object.values(options.target)).toEqual(content.meshes[id].userData.inspection.center);
+  // Below a 1.15 stage aspect the supporting-hand close-up also frames the posed head.
+  const inspection = content.meshes[id].userData.inspection;
+  if (narrow) expect(inspection.faceFrame.center, 'narrow framing differs from the hand-only sphere').not.toEqual(inspection.center);
+  expect(Object.values(options.target)).toEqual(narrow ? inspection.faceFrame.center : inspection.center);
   expect(options.distance).toBeGreaterThanOrEqual(.8); expect(options.distance).toBeLessThanOrEqual(config.home.dist);
 }
 
@@ -499,7 +502,7 @@ describe('First Response hand study evidence cameras', () => {
     const before = state; click('Near palm before turn', study()); expect(state.b3dRecView).toBe(4);
     expect(focus).not.toHaveBeenCalled(); const near = model('adult', 4); assertFocus(near.content, 'nearPalm');
     click('Supporting hand after turn', study()); expect(state.b3dRecView).toBe(5); const support = model('adult', 5);
-    assertFocus(support.content, 'supportingHand'); untouched(before, ['b3dRecView']); expect(state.b3dHandStudy).toBe(saved);
+    assertFocus(support.content, 'supportingHand', true); untouched(before, ['b3dRecView']); expect(state.b3dHandStudy).toBe(saved);
   });
   it('handles absent targets and rejected focus without changing observations or reviving stale focus', () => {
     const saved = { adult: correctRecord('Keep this study.') }; mount({ b3dHandStudy: saved });

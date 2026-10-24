@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "E dekọrọ mmecha ọrụ na ịlaghachi rute n’ala. Gbalịa ọrụ a ọzọ site n’ịgbanwe otu ihe n’ịchịkwa ma ọ bụ n’ụzọ n’ụma, wee tụnyere ihe ndị a hụrụ echekwara.",
+  "stem.flightsim.coaching_mission_depleted": "Ike batrị ụgbọ elu na-enweghị onye na-anya ya agwụla. Malite ọrụ ọhụrụ, jiri ụzọ dị mkpirikpi ma mee atụmatụ ịlaghachi tupu batrị adalata.",
+  "stem.flightsim.coaching_mission_unknown": "Ọrụ a nwere ihe akaebe ezughị ezu ma ọ bụ ndị na-emegiderịta ibe ha. Nyochaa ihe e dekọrọ, wee malite mgbalị ọhụrụ.",
+  "stem.flightsim.coaching_mission_capture": "A ka dekọbeghị ụfọdụ ebumnuche. N’ọrụ ọhụrụ, bịaruo otu ebumnuche nso n’otu oge ma nọrọ n’ime oke ịdị elu na ọsọ n’ihe metụtara ala e gosiri ruo mgbe e dekọrọ ya.",
+  "stem.flightsim.coaching_mission_recovery": "Azọpụtaghị onye lanarịrị. N’ọrụ nnapụta ọhụrụ, mụta ịnọ n’otu ebe n’ikuku n’udo n’ime oke ịdị elu, ịchapụ n’ebe na ọsọ ịrị elu ma ọ bụ ịda ala e gosiri tupu ịlaghachi n’ogige.",
+  "stem.flightsim.coaching_mission_return": "E dekọrọ ebumnuche ịnapụta ma ọ bụ idekọ; ịlaghachi rute n’ala ka fọdụrụ. Malite ọrụ ọhụrụ ma debe oge na ike batrị maka ịlaghachi n’ogige.",
+  "stem.flightsim.mission_reflection_prompt": "Kedu mkpebi gbasara ebumnuche, ịnọ n’otu ebe n’ikuku ma ọ bụ ịlaghachi ka ị ga-agbanwe? Jiri ihe ndị a hụrụ n’ọrụ ahụ kọwaa nhọrọ gị ma mee atụmatụ otu mgbanwe maka mgbalị ọhụrụ. A ga-echekwa nkọwa gị na ụgbọ elu a.",
+  "stem.flightsim.journal_different_airport": "Ụzọ ịbịaru ala ndị a jiri ọdụ ụgbọ elu dị iche iche. Nyochaa ihe ndị a hụrụ n’otu n’otu; a naghị agbakọ mgbanwe n’ihe atụpụtara.",
+  "stem.flightsim.journal_approach_airport": "Ọdụ ụgbọ elu a na-abịaru maka ịda ala: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "IHE AKAEBE ỌRỤ",
+  "stem.flightsim.challenge_brake_release": "Hapụ X ma gbanyụọ breeki wiil na Deck tupu ịgbakwunye ike."
+}

@@ -7339,7 +7339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             completed[pw.id] = true; delete routes[pw.id]; accepted = true;
             return Object.assign({},previous,{anatomy:Object.assign({},state,{_pathwaysCompleted:completed,_activePathway:null,_pathwayStep:0,_pathwayRecap:null,_pathwayRecapReturn:null,_pathwaySessions:{version:1,routes:routes}})});
           });
-          finishPathwayUpdate(function(){return accepted;},function(){playSound('badge');if(addToast)addToast(t('stem.anatomy.pathway_flow_completed', 'Pathway complete: {pathway}.').replace('{pathway}',pw.title));if(typeof announceToSR==='function')announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), {value1:pw.title}));focusPathwayMenu();setTimeout(checkAnatomyChallenges,50);});
+          finishPathwayUpdate(function(){return accepted;},function(){playSound('badge');if(addToast)addToast(__alloFill(t('stem.anatomy.pathway_flow_completed', 'Pathway complete: {pathway}.'), {pathway:pw.title}));if(typeof announceToSR==='function')announceToSR(__alloFill(__alloT('stem.anatomy.sr_pathway_complete', 'Pathway complete: {value1}.'), {value1:pw.title}));focusPathwayMenu();setTimeout(checkAnatomyChallenges,50);});
         }
         function renderPathwayRecap(pw) {
           var questions = getPathwayRecapQuestions(), answered = Object.keys(pathwayRecapAnswers).length;
@@ -17070,7 +17070,9 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                           return h('button', { key: filterOption.id, type: 'button', 'aria-pressed': filterActive, 'aria-label': filterOption.label, 'data-anatomy-browser-filter': filterOption.id, title: filterOption.count + ' ' + t('stem.anatomy.browser_structures', 'structures'),
                             onClick: function() { upd('_studyFilter', filterOption.id); resetAnatomyBrowserScroll(); },
                             className: 'px-2.5 py-1 text-[0.6875rem] font-bold border transition-all active:scale-[0.97] ' +
-                              (filterActive ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')
+                              // Pressed colours come from .anatomy-study-filters button[aria-pressed=true] (theme-aware);
+                              // Tailwind bg classes here are remapped by the dark theme and broke contrast.
+                              (filterActive ? '' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')
                           }, filterOption.label, h('span', { className: 'anatomy-browser-filter-count', 'aria-hidden': 'true' }, filterOption.count));
                         })
                       ),

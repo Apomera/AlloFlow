@@ -10,6 +10,7 @@
 
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
+import { sliceBetween } from './helpers/anchored_slice.js';
 import { resolve } from 'node:path';
 import { setupWordSounds, baseProps } from './helpers/word_sounds_harness.js';
 import { makePackItem, makeThrowingAi, installCanvasStub } from './helpers/word_sounds_pack_fixture.js';
@@ -192,7 +193,36 @@ describe('pack compiler gates English pools (source pins — packed boards outra
     expect(src).toMatch(/_procPrompt_nonEnglish/);
     expect(src).toContain('NEVER return English words');
     expect(src).toMatch(/const prompt = packIsEnglish \? _procPrompt_english : _procPrompt_nonEnglish;/);
-    expect(src).toMatch(/_genIsEnglish/);
+  });
+
+  it('the AI topic word list is English-only for English packs and in-language otherwise', async () => {
+    // Runs the real topic hook (it replaced the inline _genIsEnglish gate) with
+    // a minimal React stub and a fake model reply containing accented words.
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx'), 'utf8');
+    const hookSource = sliceBetween(src, 'function useWordSoundsAiTopic(', 'const WordSoundsGenerator = React.memo(', { label: 'AI topic hook' });
+    expect(src).toMatch(/useWordSoundsAiTopic\(\{ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage,/);
+    const run = async (language) => {
+      const updates = [];
+      const ReactStub = { useState: (v) => [v, (next) => updates.push(next)], useRef: (v) => ({ current: v }),
+        useCallback: (fn) => fn, useEffect: (fn) => { fn(); } };
+      const useTopic = new Function('React', `${hookSource}\nreturn useWordSoundsAiTopic;`)(ReactStub);
+      let prompt = '';
+      const hook = useTopic({ enabled: true, topic: 'farm', language, gradeLevel: 'K', syllableRange: { min: 1, max: 2 },
+        callGemini: async (p) => { prompt = p; return 'niño, café, cow'; }, warnLog: () => {} });
+      await hook.generate();
+      return { prompt, terms: updates.find((u) => u && Array.isArray(u.terms))?.terms };
+    };
+    for (const language of [undefined, 'en', 'en-US', 'en_GB']) {
+      const { prompt, terms } = await run(language);
+      expect(prompt, String(language)).toContain('phonics-rich words');
+      expect(terms, String(language)).toEqual(['nio', 'caf', 'cow']);
+    }
+    for (const language of ['es', 'es-ES', 'fr-FR', 'ar']) {
+      const { prompt, terms } = await run(language);
+      expect(prompt, language).toContain(`in the language with code "${language}"`);
+      expect(terms, language).toEqual(['niño', 'café', 'cow']);
+    }
   });
 
   it('the shell passes wordSoundsLanguage into the generator', async () => {

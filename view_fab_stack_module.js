@@ -72,6 +72,8 @@ function FabStack(props) {
   const toolsCloseLabel = isTeacherMode ? toolLabel("toolbar.reading_tools_close", "Close reading tools") : t("toolbar.student_tools_close");
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
+  const stackRef = React.useRef(null);
+  const [footerClearance, setFooterClearance] = React.useState(0);
   const dictationPhase = dictationStatus?.state || (isDictationMode ? "listening" : "idle");
   const dictationEngineLabel = dictationStatus?.engineLabel || "";
   const dictationBusy = dictationPhase === "starting" || dictationPhase === "transcribing";
@@ -87,6 +89,51 @@ function FabStack(props) {
     }, 0);
     return () => window.clearTimeout(focusTimer);
   }, [isFabExpanded]);
+  React.useEffect(() => {
+    const workspace = document.getElementById("workspace-preview-pane");
+    if (!generatedContent || !workspace) {
+      setFooterClearance(0);
+      return void 0;
+    }
+    let frame = 0;
+    let footer = null;
+    const measure = () => {
+      frame = 0;
+      const candidate = workspace.querySelector("[data-resource-navigation]") || Array.from(workspace.children).find((node) => node.classList.contains("shrink-0") && node.classList.contains("no-print") && node.querySelectorAll(":scope > button").length === 2);
+      if (candidate !== footer) {
+        if (footer) observer?.unobserve(footer);
+        footer = candidate || null;
+        if (footer) observer?.observe(footer);
+      }
+      const rect = footer?.getBoundingClientRect();
+      const stack = stackRef.current?.getBoundingClientRect();
+      const viewportBottom = window.innerHeight;
+      const overlapsHorizontally = rect && stack && rect.right > stack.left && rect.left < stack.right;
+      const visible = rect && rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportBottom;
+      const next = visible && overlapsHorizontally ? Math.max(0, Math.ceil(viewportBottom - rect.top + 12)) : 0;
+      setFooterClearance((previous) => previous === next ? previous : next);
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(measure);
+    };
+    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(schedule) : null;
+    observer?.observe(workspace);
+    if (stackRef.current) observer?.observe(stackRef.current);
+    const mutations = typeof MutationObserver === "function" ? new MutationObserver(schedule) : null;
+    mutations?.observe(workspace, { childList: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("scroll", schedule, true);
+    window.visualViewport?.addEventListener("resize", schedule);
+    measure();
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      mutations?.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+      window.visualViewport?.removeEventListener("resize", schedule);
+    };
+  }, [!!generatedContent, activeView, runTour]);
   const closeStudentTools = () => {
     if (!isFabExpanded) return;
     handleToggleIsFabExpanded();
@@ -102,13 +149,19 @@ function FabStack(props) {
           display: none !important;
         }
 
+        .alloflow-fab-stack {
+          --alloflow-fab-bottom: max(calc(32px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px));
+          bottom: var(--alloflow-fab-bottom) !important;
+          transition-property: opacity, transform;
+        }
+
         .alloflow-student-tools-panel {
           position: absolute;
           z-index: 2;
           right: 0;
           bottom: 64px;
           width: min(380px, calc(100vw - 32px));
-          max-height: min(72vh, 680px);
+          max-height: min(72vh, 680px, calc(100dvh - var(--alloflow-fab-bottom) - 80px));
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -176,8 +229,8 @@ function FabStack(props) {
 
         @media (max-width: 767px) {
           .alloflow-fab-stack {
+            --alloflow-fab-bottom: max(calc(14px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px));
             right: calc(12px + env(safe-area-inset-right, 0px)) !important;
-            bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
           }
           .alloflow-student-tools-panel {
             position: fixed !important;
@@ -236,8 +289,9 @@ function FabStack(props) {
       `), /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: stackRef,
       "data-floating-control": "fab-stack",
-      style: { zIndex: 180 },
+      style: { zIndex: 180, "--alloflow-fab-footer-clearance": `${footerClearance}px` },
       className: `alloflow-floating-control alloflow-fab-stack ${isFabExpanded ? "is-expanded" : ""} fixed bottom-24 md:bottom-8 z-[180] flex flex-col items-end no-print transition-all duration-300 motion-reduce:transition-none ${runTour ? "right-[530px]" : "right-6"}`
     },
     isFabExpanded && /* @__PURE__ */ React.createElement(

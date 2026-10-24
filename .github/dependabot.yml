@@ -1,0 +1,43 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /desktop
+      - /desktop/web-app
+      - /desktop/web-app/functions
+      - /a11y-audit
+      - /trailer
+      - /dev-tools/security
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    exclude-paths:
+      - '**/mcp/**'
+      - '**/alloflow-remote-mcp/**'
+    groups:
+      security-patches:
+        applies-to: security-updates
+        update-types: [patch, minor]
+  # Temporary hold while MCP development is active. Alerts remain visible;
+  # this prevents automatic dependency PRs from interfering with that work.
+  - package-ecosystem: npm
+    directories:
+      - /desktop/mcp
+      - /desktop/mcp/runtime
+      - /services/alloflow-remote-mcp
+      - /services/alloflow-remote-mcp/runner
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: '*'
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    exclude-paths:
+      - .github/workflows/remote-mcp-verify.yml
+      - .github/workflows/mcp-registry-publish.yml
+      - .github/workflows/mcpb-release.yml

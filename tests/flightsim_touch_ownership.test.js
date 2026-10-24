@@ -28,7 +28,7 @@ function cruiseTrim(current) {
   const powerAt = pitch => bisect(throttle =>
     FS.Physics.step(current, 1 / 60, input({ pitch, throttle })).speed - current.speed, 0, 1);
   const pitch = bisect(angle =>
-    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 4);
+    FS.Physics.step(current, 1 / 60, input({ pitch: angle, throttle: powerAt(angle) })).vsi, -2, 3); // propeller thrust falls with speed: full power cannot hold 100 KIAS at 4 degrees
   expect(pitch).toBeGreaterThan(1); expect(pitch).toBeLessThan(3);
   return input({ pitch, throttle: powerAt(pitch) });
 }
@@ -65,7 +65,7 @@ async function mount({ assisted = true } = {}) {
   await act(async () => root.render(React.createElement(App)));
   await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
   cockpit = host.querySelector('canvas[role="application"]');
-  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600 });
+  vi.spyOn(cockpit, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 50, width: 1000, height: 600, right: 1100, bottom: 650 });
   cockpit.focus();
   const current = cruise(), trim = cruiseTrim(current);
   Object.assign(hooks().flightRef.current, current); Object.assign(controls(), trim);
@@ -108,10 +108,12 @@ describe('unclaimed touches preserve assisted flight', () => {
       if (lifecycle !== 'start') touch('touchmove', [finger(point.identifier, point.clientX + 0.5, point.clientY - 0.5)]);
       if (lifecycle === 'end') touch('touchend', [point], []);
       else if (lifecycle === 'cancel') touch('touchcancel', [point], []);
-      else if (lifecycle === 'blur') window.dispatchEvent(new Event('blur'));
+      else if (lifecycle === 'blur') await act(async () => { window.dispatchEvent(new Event('blur')); });
       else if (lifecycle === 'visibility') {
-        Object.defineProperty(document, 'hidden', { configurable: true, value: true });
-        document.dispatchEvent(new Event('visibilitychange'));
+        await act(async () => {
+          Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+          document.dispatchEvent(new Event('visibilitychange'));
+        });
       } else if (lifecycle === 'pause') {
         await act(async () => host.querySelector('button[aria-label="Pause flight"]').click());
       } else if (lifecycle === 'help') {
@@ -120,13 +122,24 @@ describe('unclaimed touches preserve assisted flight', () => {
       expect(controls()).toEqual(before);
       expect(apUpdates).toEqual([]);
       expect(latest.autopilot).toMatchObject({ hdg: true, alt: true, spd: true });
+      const pausedLifecycle = ['blur', 'visibility', 'pause', 'help'].includes(lifecycle);
+      expect(hooks().pausedRef.current).toBe(pausedLifecycle);
       await frames(30);
-      if (lifecycle === 'pause' || lifecycle === 'help') {
+      if (pausedLifecycle) {
         expect(hooks().timeRef.current).toBe(clock); expect(controls()).toEqual(before);
-        await act(async () => (lifecycle === 'pause'
-          ? host.querySelector('button[aria-label="Resume flight"]') : host.querySelector('#skyschool-close-help')).click());
+        if (lifecycle === 'visibility') {
+          await act(async () => {
+            Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+            document.dispatchEvent(new Event('visibilitychange'));
+          });
+          expect(hooks().pausedRef.current).toBe(true);
+        }
+        await act(async () => (lifecycle === 'help'
+          ? host.querySelector('#skyschool-close-help') : host.querySelector('button[aria-label="Resume flight"]')).click());
+        expect(hooks().pausedRef.current).toBe(false);
         await frames(30);
       }
+      expect(hooks().timeRef.current).toBeGreaterThan(clock);
       expect(controls().pitch).toBeCloseTo(trim.pitch, 6);
       expect(controls().throttle).toBeCloseTo(trim.throttle, 6);
       expect(hooks().flightRef.current.altitude).toBeCloseTo(5000, 3);

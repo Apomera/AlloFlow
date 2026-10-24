@@ -131,7 +131,8 @@ describe('Cephalopod Hunter softly recurved kelp blade tips',()=>{
         for(const name of Object.keys(current.attributes))assert.deepEqual(current.attributes[name].array,duplicate.attributes[name].array);assert.deepEqual(current.index.array,duplicate.index.array);
         const arrays=Object.fromEntries(Object.entries(current.attributes).map(([name,attr])=>[name,attr.array])),motion=actual.configure(THREE,mesh,7,true),mask=current.attributes.clPlantRibbon;
         assert.equal(mask.count,301);for(let vertex=0;vertex<301;vertex++)assert.equal(mask.getX(vertex),vertex>=141&&vertex<277?0:1);
-        assert.equal(material.customProgramCacheKey(),'cl-plant-flex-v57-tissue');
+        // The later rib-relief finish in the same commit raised the tissue program key (plant_rib_relief test).
+        assert.equal(material.customProgramCacheKey(),'cl-plant-flex-v58-rib-relief');
         assert.equal(current.boundingBox.min.x,originalBox.min.x-7*.12);assert.equal(current.boundingBox.max.x,originalBox.max.x+7*.12);assert.equal(current.boundingBox.min.z,originalBox.min.z-7*.035);assert.equal(current.boundingBox.max.z,originalBox.max.z+7*.035);
         actual.update(motion,1200,.8,.0008,false);assert.equal(motion.value.w,1);actual.update(motion,2000,.8,.0008,true);assert.equal(motion.value.w,0);
         for(const [name,array]of Object.entries(arrays))assert.equal(current.attributes[name].array,array,'Flex must retain '+name+' buffers');

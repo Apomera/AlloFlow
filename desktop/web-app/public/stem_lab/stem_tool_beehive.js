@@ -1151,7 +1151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-coach-readings dd { margin-top:.2rem; font-size:.9375rem; line-height:1.5; font-weight:750; font-variant-numeric:tabular-nums; }
       .bee-coach .bee-coach-action { align-self:start; padding:1rem; border:1px solid var(--coach-line); border-inline-start:4px solid var(--coach-accent); border-radius:.75rem; background:var(--coach-card); }
       .bee-coach-action h3 { font-size:.9375rem; line-height:1.5; font-weight:800; }
-      .bee-coach-action button { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.5rem; width:100%; min-width:0; min-height:44px; padding:.65rem .875rem; margin-top:.65rem; border:1px solid var(--coach-accent); border-radius:.6rem; background:var(--coach-accent); color:var(--coach-paper); font-size:.9375rem; line-height:1.5; font-weight:750; }
+      .bee-coach-action button { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.5rem; width:100%; min-width:0; min-height:44px; padding:.65rem .875rem; margin-top:.65rem; border:1px solid var(--coach-accent); border-radius:.6rem; background:var(--coach-accent); color:var(--coach-paper); font-size:.9375rem; line-height:1.5; font-weight:750; } [data-beehive-root] .bee-coach-action button { min-height:44px; }
       .bee-coach-action button:disabled { color:var(--coach-muted); background:var(--coach-paper); border-color:var(--coach-line); cursor:not-allowed; }
       .bee-coach-action button:enabled:hover { text-decoration:underline; text-underline-offset:.2em; }
       .bee-coach-action button:focus-visible { outline:3px solid var(--coach-accent); outline-offset:3px; }
@@ -1246,7 +1246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flow h2 { margin:0; font-size:1.125rem; line-height:1.5; font-weight:800; }
       .bee-flow p { margin:.25rem 0 0; font-size:.875rem; line-height:1.6; color:var(--flow-muted); }
       .bee-flow-layout { max-width:28rem; }
-      .bee-flow-layout button { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; min-height:44px; max-width:100%; padding:.5rem .75rem; border:1px solid var(--flow-line); border-radius:.5rem; color:var(--flow-ink); background:var(--flow-soft); font-size:.875rem; line-height:1.5; font-weight:700; text-align:start; }
+      .bee-flow-layout button { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; min-height:44px; max-width:100%; padding:.5rem .75rem; border:1px solid var(--flow-line); border-radius:.5rem; color:var(--flow-ink); background:var(--flow-soft); font-size:.875rem; line-height:1.5; font-weight:700; text-align:start; } [data-beehive-root] .bee-flow-layout button { min-height:44px; }
       .bee-flow-layout button[aria-pressed="true"] { border-color:var(--flow-accent); box-shadow:inset 0 0 0 1px var(--flow-accent); }
       .bee-flow .bee-flow-links { display:grid; grid-template-columns:minmax(0,1fr); gap:.6rem; margin:.85rem 0 0; padding:0; list-style:none; }
       .bee-flow-links li { min-width:0; }
@@ -26993,7 +26993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function droneReplayChart(samples, dark, run) {
           var model = bhDroneReplayModel(samples, run, droneData.replayIndex);
-          if (!model) return h('section', { className: 'bfd bee-flight-replay', 'data-flight-replay': 'true', 'data-replay-empty': 'true', role: 'region', 'aria-label': 'Recorded flight moments' },
+          if (!model) return h('section', { className: 'bfd bee-flight-replay', 'data-flight-replay': 'true', 'data-replay-empty': 'true', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_recorded_flight_moments', 'Recorded flight moments') },
             h('h4', null, 'Recorded flight moments'), h('p', null, 'No telemetry was recorded for this run.'));
           samples = model.samples;
           var selectedIndex = model.index, selectedSample = model.sample;
@@ -27012,7 +27012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function axisTime(value) { return String(Math.abs(value) <= Number.MAX_VALUE / 10 ? Math.round(value * 10) / 10 : value); }
           var axisStart = model.timed ? axisTime(model.firstTime) : '1';
           var axisEnd = model.timed ? axisTime(model.lastTime) : String(samples.length);
-          return h('section', { 'data-flight-replay': 'true', className: 'bfd bee-flight-replay', role: 'region', 'aria-label': 'Recorded flight moments' },
+          return h('section', { 'data-flight-replay': 'true', className: 'bfd bee-flight-replay', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_recorded_flight_moments', 'Recorded flight moments') },
             h('h4', null, 'Recorded flight moments'),
             h('p', { className: 'bee-replay-intro' }, 'Inspect the recorded readings. Moving through samples does not fly the bee or change the recorded outcome.'),
             h('div', { className: 'bee-replay-navigation' },
@@ -27065,11 +27065,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         : h('polyline', { key: 'trace-' + index, 'data-flight-replay-trace': lane.id, points: points.join(' '), fill: 'none', stroke: 'var(--br-trace)', strokeWidth: 3, strokeDasharray: dash, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }); }),
                       h('line', { 'data-replay-selected': 'true', x1: xAt(selectedIndex), x2: xAt(selectedIndex), y1: top, y2: bottom, stroke: 'var(--bf-ink)', strokeWidth: 4, strokeDasharray: '5 4', vectorEffect: 'non-scaling-stroke' }),
                       Number.isFinite(selectedSample[lane.id]) && h('circle', { cx: xAt(selectedIndex), cy: yAt(selectedSample[lane.id]), r: 4, fill: 'var(--bf-paper)', stroke: 'var(--br-trace)', strokeWidth: 3, vectorEffect: 'non-scaling-stroke' })))),
-                h('div', { className: 'bee-replay-x-axis', 'aria-label': 'Horizontal axis' }, h('span', null, axisStart), h('span', null, axisEnd)),
+                h('div', { className: 'bee-replay-x-axis', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_horizontal_axis', 'Horizontal axis') }, h('span', null, axisStart), h('span', null, axisEnd)),
                 h('p', { className: 'bee-replay-axis-caption' }, model.timed ? 'Time (model seconds)' : 'Sample order'),
                 !samples.some(function(sample) { return Number.isFinite(sample[lane.id]); }) && h('p', { className: 'bee-replay-missing' }, 'No ' + lane.label.toLowerCase() + ' readings were retained.'));
             })),
-            h('div', { className: 'bee-replay-key', 'aria-label': 'Chart marks' },
+            h('div', { className: 'bee-replay-key', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_chart_marks', 'Chart marks') },
               h('span', null, h('i', { 'aria-hidden': 'true', className: 'bee-replay-selected-key' }), 'Dashed vertical line: selected sample'),
               h('span', null, h('i', { 'aria-hidden': 'true', className: 'bee-replay-hazard-key' }), 'Solid vertical mark: hazard flagged')),
             h('p', { className: 'bee-replay-note' }, 'Gaps mean a reading was not retained; they do not mean zero. Changes compare neighboring retained samples, which may be several model seconds apart. These readings show what was recorded, not the exact timing or cause of every event.'));
@@ -27482,7 +27482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderDroneCommandHeader() {
           var state = _droneState.current, cue = droneTrainingStatus(state);
-          return h('header', { className: 'bee-flight-command-header', 'data-flight-command-header': 'true', 'aria-label': 'Flight controls and guidance' },
+          return h('header', { className: 'bee-flight-command-header', 'data-flight-command-header': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_controls_and_guidance', 'Flight controls and guidance') },
             h('div', { className: 'bee-flight-command-title' }, h('h3', null, 'Flight deck'),
               h('span', { 'data-flight-command-status': 'true', 'data-beehive-flight-paused-overlay': dronePaused && dronePacing !== 'steps' ? 'true' : undefined, role: 'status', 'aria-live': 'off' }, droneCommandStatus(state))),
             h('div', { className: 'bee-flight-command-actions' },
@@ -27776,7 +27776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('path', { d: 'M350 35 L365 20 L380 35 L365 50 Z', fill: 'var(--bf-paper)', stroke: 'currentColor', strokeWidth: 3 }),
                   h('path', { d: 'M107 83 L117 76 L114 89 M310 35 L323 34 L316 44', fill: 'none', stroke: 'currentColor', strokeWidth: 3 })),
                 h('figcaption', null, 'Hive → DCA volume → queen cue', h('br'), 'Route schematic · not to scale'))),
-            h('section', { 'data-beehive-flight-plan': 'true', 'aria-label': 'Required flight targets and optional practice' },
+            h('section', { 'data-beehive-flight-plan': 'true', 'aria-label': __alloT('stem.beehive.a11y_required_flight_targets_and_optional_practice', 'Required flight targets and optional practice') },
               h('h3', null, 'Preflight route'), h('p', null, 'Two required targets. Route markers are optional practice.'),
               h('ol', { role: 'list', className: 'bee-flight-mission', 'data-mobile-rail': 'drone-preflight' },
                 h('li', null, h('div', { className: 'bee-flight-target-title' }, h('span', { 'aria-hidden': 'true' }, '01'), h('h4', null, 'Enter the DCA volume')),
@@ -27788,7 +27788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('li', null, h('div', { className: 'bee-flight-target-title' }, h('span', { 'aria-hidden': 'true' }, '02'), h('h4', null, 'Acquire queen')),
                   h('p', null, 'After DCA entry, follow the golden queen signal. Use small turns and keep enough energy for the approach.'),
                   h('p', null, 'Reaching the queen cue completes this game route.'))),
-              h('aside', { className: 'bee-flight-optional', 'aria-label': 'Optional route marker practice' }, h('strong', null, 'Optional · Pass route markers'),
+              h('aside', { className: 'bee-flight-optional', 'aria-label': __alloT('stem.beehive.a11y_optional_route_marker_practice', 'Optional route marker practice') }, h('strong', null, 'Optional · Pass route markers'),
                 h('p', null, 'Glowing gates measure low-altitude control. They are not required for DCA entry and do not restore energy or time.'))),
             renderDronePacing(),
             h('section', { 'data-drone-scenarios': 'true', 'aria-labelledby': 'bee-flight-scenario-title' },
@@ -27810,7 +27810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }))),
             h('section', { 'aria-labelledby': 'bee-flight-launch-title' },
               h('h3', { id: 'bee-flight-launch-title' }, '4. Choose a difficulty to launch'),
-              h('div', { className: 'bee-flight-ready', 'data-flight-launch-summary': 'true', role: 'group', 'aria-label': 'Configured flight' },
+              h('div', { className: 'bee-flight-ready', 'data-flight-launch-summary': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_configured_flight', 'Configured flight') },
                 h('strong', null, paceLabel + ' · ' + DRONE_SCENARIOS[droneScenario].label + ' · ' + DRONE_ROUTE_PLANS[droneRoutePlan].label),
                 h('p', { 'data-flight-start-behavior': 'true' }, startBehavior),
                 h('p', null, droneCarryoverBrief.label + '. Previewed energy includes the current colony condition.')),
@@ -27914,10 +27914,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           var route = run && Object.prototype.hasOwnProperty.call(DRONE_ROUTE_PLANS, run.routePlan) ? DRONE_ROUTE_PLANS[run.routePlan] : null;
           var extras = snapshot.extras.concat([{ id: 'route', label: 'Route plan', value: route ? route.label : 'Not recorded', detail: 'The route plan saved with this flight.', known: !!route }]);
-          return h('section', { className: 'bfd bee-recorded-snapshot', 'data-flight-recorded-snapshot': 'true', role: 'region', 'aria-label': 'Recorded flight snapshot', 'aria-live': 'off' },
+          return h('section', { className: 'bfd bee-recorded-snapshot', 'data-flight-recorded-snapshot': 'true', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_recorded_flight_snapshot', 'Recorded flight snapshot'), 'aria-live': 'off' },
             h('h4', { className: 'bee-result-heading' }, 'Recorded flight snapshot'),
             h('p', { className: 'bee-result-intro' }, 'Read the outcome, then compare height, travel, and energy.'),
-            h('ul', { className: 'bee-result-milestones', 'aria-label': 'Recorded flight outcomes' }, snapshot.milestones.map(function(item) {
+            h('ul', { className: 'bee-result-milestones', 'aria-label': __alloT('stem.beehive.a11y_recorded_flight_outcomes', 'Recorded flight outcomes') }, snapshot.milestones.map(function(item) {
               var path = item.status === 'recorded' ? 'M3 12L9 18L21 6' : item.status === 'not-reached' ? 'M6 6L18 18M18 6L6 18' : 'M9 8A3 3 0 1 1 14 10C12 11 12 12 12 14M12 18V19';
               return h('li', { key: item.id, 'data-result-milestone': item.id, 'data-result-status': item.status },
                 icon(path), h('div', null, h('h5', null, item.label), h('p', { 'data-result-milestone-value': 'true' }, item.value)));
@@ -27969,7 +27969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var description = 'Top-down map with the same distance scale in both horizontal directions. ' + (r.known ? 'Triangle: your position and heading. ' : 'Your position is unavailable. ') +
             'Square: hive. Circle: the DCA horizontal entry boundary. ' + (r.queen ? 'Diamond: queen cue. ' : state.reachedDca ? 'The queen cue position is unavailable. ' : 'The queen cue unlocks after DCA entry. ') +
             r.sampleCount + ' recorded maneuver endpoints. Solid lines join consecutive recorded endpoints; they do not show the exact path. ' + (r.player && r.target ? 'The dashed line points toward ' + r.targetLabel + '; it does not identify an obstacle-free route. ' : 'The bearing is unavailable because a position is missing. ') + 'Height is not shown.';
-          return h('figure', { className: 'bfd-map bee-plan-map', 'data-flight-plan-route': 'true', tabIndex: -1, 'aria-label': 'Top-down flight route' },
+          return h('figure', { className: 'bfd-map bee-plan-map', 'data-flight-plan-route': 'true', tabIndex: -1, 'aria-label': __alloT('stem.beehive.a11y_top_down_flight_route', 'Top-down flight route') },
             h('div', { className: 'bee-plan-map-header' }, h('h4', null, 'Route map'), h('span', null, 'Target: ' + r.targetLabel)),
             h('p', { className: 'bee-plan-map-orientation' }, 'Top down · orientation stays fixed · equal distance scale'),
             h('svg', { className: 'bee-plan-map-plot', 'data-flight-plan-map': 'true', viewBox: '0 0 360 320', role: 'img', 'aria-labelledby': 'bee-flight-map-title bee-flight-map-desc' },
@@ -27989,7 +27989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('path', { 'data-plan-map-scale': 'true', d: 'M24 304V312M24 308h' + r.scaleBar.width + 'm0 -4v8', fill: 'none', stroke: 'var(--bf-ink)', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })),
             h('figcaption', null,
               h('p', { className: 'bee-plan-map-scale', 'data-plan-map-scale-label': 'true' }, 'Scale bar: ' + r.scaleBar.label),
-              h('ul', { className: 'bee-plan-map-key', 'data-plan-map-key': 'true', 'aria-label': 'Map symbols and lines' },
+              h('ul', { className: 'bee-plan-map-key', 'data-plan-map-key': 'true', 'aria-label': __alloT('stem.beehive.a11y_map_symbols_and_lines', 'Map symbols and lines') },
                 key('player', 'You · heading', h('path', { d: 'M12 3L20 21L12 17L4 21Z', fill: 'var(--bf-accent)' })),
                 key('hive', 'Hive', h('rect', { x: 5, y: 5, width: 14, height: 14, fill: 'currentColor' })),
                 key('dca', 'DCA range', h('circle', { cx: 12, cy: 12, r: 8, fill: 'none', stroke: 'currentColor', strokeWidth: 2 })),
@@ -28006,7 +28006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var scaleKey = (altitude.markerPct == null ? 'Current height unavailable' : 'Triangle: current height') + ' · ' + (altitude.kind === 'dca' ? 'outlined band: DCA entry.' : altitude.referencePct == null ? 'queen cue height unavailable.' : 'dashed mark: queen cue height.');
           function icon(path) { return h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: path, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })); }
           function x(pct) { return 16 + pct * 2.68; }
-          return h('section', { className: 'bee-plan-readings', 'data-flight-current-readings': 'true', 'aria-label': 'Current flight readings', 'aria-live': 'off' },
+          return h('section', { className: 'bee-plan-readings', 'data-flight-current-readings': 'true', 'aria-label': __alloT('stem.beehive.a11y_current_flight_readings', 'Current flight readings'), 'aria-live': 'off' },
             h('div', { className: 'bee-plan-readings-heading' }, h('h4', null, 'Current flight readings'), h('span', null, 'Before your next maneuver')),
             h('div', { className: 'bee-plan-readings-grid' },
               h('article', { className: 'bee-plan-reading', 'data-planning-reading': 'range', 'data-reading-status': r.range.status },
@@ -28058,7 +28058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           return h('details', { className: 'bee-planning-surroundings', 'data-flight-surroundings': 'true' },
             h('summary', null, 'Read direction, wind, and nearby obstacles'),
-            h('div', { 'data-flight-surroundings-content': 'true', role: 'group', 'aria-label': 'Flight surroundings', 'aria-live': 'off' },
+            h('div', { 'data-flight-surroundings-content': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_flight_surroundings', 'Flight surroundings'), 'aria-live': 'off' },
               h('p', { className: 'bee-surroundings-intro' }, 'Current readings from this paused flight. Open this panel before a maneuver, then compare what changed.'),
               h('p', { className: 'bee-surroundings-key', 'data-surroundings-dial-key': 'true' }, 'On both dials: top = ahead · center = your bee.'),
               h('div', { className: 'bee-surroundings-grid' }, ['target', 'wind', 'obstacle', 'traffic'].map(function(id) {
@@ -28084,7 +28084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return h('section', { className: 'bfd', 'data-flight-decision-panel': 'true', 'aria-labelledby': 'bee-flight-decision-title' },
             h('h3', { id: 'bee-flight-decision-title' }, 'Pause, read the route, choose a maneuver'),
             h('p', null, 'Nothing advances while you read. Each choice spends only its stated model time; there is no real-time response deadline.'),
-            h('nav', { className: 'bfd-plan-nav', 'data-flight-plan-navigation': 'true', 'aria-label': 'Flight plan navigation' },
+            h('nav', { className: 'bfd-plan-nav', 'data-flight-plan-navigation': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_plan_navigation', 'Flight plan navigation') },
               [{ id: 'route', label: 'Read route' }, { id: 'choose', label: 'Choose maneuver' }, { id: 'compare', label: 'Compare last maneuver' }].map(function(item, index) {
                 return h('button', { key: item.id, type: 'button', 'data-flight-plan-jump': item.id, disabled: item.id === 'compare' && !hasComparison,
                   'aria-describedby': item.id === 'compare' && !hasComparison ? 'bee-flight-comparison-unavailable' : undefined,
@@ -32647,7 +32647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
             } }, 'Manage held reference'),
             h('p', { id: 'beehive-interior-comparison-status', 'data-interior-comparison-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, !snapshot.available && !comparison ? snapshot.reason : message),
-            h('ol', { 'data-interior-inquiry': 'true', className: 'bee-interior-inquiry', 'aria-label': 'Use your hive comparison in an inquiry' },
+            h('ol', { 'data-interior-inquiry': 'true', className: 'bee-interior-inquiry', 'aria-label': __alloT('stem.beehive.a11y_use_your_hive_comparison_in_an_inquiry', 'Use your hive comparison in an inquiry') },
               h('li', null, h('strong', null, '1 · Predict'),
                 h('p', null, 'Which reading do you expect to change, in which direction, and after what choice or interval?'),
                 h('button', { type: 'button', 'data-interior-inquiry-prediction': 'true', onClick: function(event) { openHiveNotebookField('prediction', event); } }, 'Open prediction')),
@@ -32729,7 +32729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function renderStudySymbols() {
             var roles = selectedRole ? [selectedRole] : BH_HIVE_INTERIOR_ROLES.filter(function(role) { return role.topic === topic.id; });
             return h(React.Fragment, null,
-              roles.length > 0 && h('ul', { 'data-interior-symbol-key': 'true', className: 'bee-interior-study-key', 'aria-label': 'Symbols for this study' }, roles.map(function(role) {
+              roles.length > 0 && h('ul', { 'data-interior-symbol-key': 'true', className: 'bee-interior-study-key', 'aria-label': __alloT('stem.beehive.a11y_symbols_for_this_study', 'Symbols for this study') }, roles.map(function(role) {
                 return h('li', { key: role.id, 'data-interior-symbol-sample': role.id },
                   h('svg', { viewBox: '0 0 32 32', className: 'bee-interior-key-symbol bee-interior-study-symbol', 'aria-hidden': 'true', focusable: 'false' }, h('polygon', { points: '16,2 28,9 28,23 16,30 4,23 4,9' }), mark(role.id, 16, 16, 1.4)),
                   h('span', null, role.label));
@@ -32763,7 +32763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function renderDiagramGuide() {
             if (!comparison || !comparison.available) return null;
             var canFind = diagramChanges && diagramChanges.available && diagramChanges.changes.length > 0;
-            return h('section', { 'data-interior-diagram-guide': 'true', className: 'bee-interior-diagram-guide', 'aria-label': 'Compare diagram marks' },
+            return h('section', { 'data-interior-diagram-guide': 'true', className: 'bee-interior-diagram-guide', 'aria-label': __alloT('stem.beehive.a11y_compare_diagram_marks', 'Compare diagram marks') },
               h('strong', null, 'Find changed marks'),
               h('p', null, h('svg', { className: 'bee-interior-change-symbol', viewBox: '0 0 32 32', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M16 2L28 9V23L16 30L4 23V9Z M16 7L24 12V20L16 25L8 20V12Z' })), 'An extra inner hexagon outlines a diagram position with a different mark. The dashed circle shows the position you are inspecting.'),
               h('div', { className: 'bee-interior-change-controls' },
@@ -32791,7 +32791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           function renderPositionKey() {
             var keyRoles = selectedRole ? [selectedRole] : BH_HIVE_INTERIOR_ROLES.filter(function(role) { return role.topic === topic.id; });
-            return h('div', { 'data-position-study-key': 'true', className: 'bee-interior-position-key', role: 'group', 'aria-label': 'Symbols for the selected pattern' },
+            return h('div', { 'data-position-study-key': 'true', className: 'bee-interior-position-key', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_symbols_for_the_selected_pattern', 'Symbols for the selected pattern') },
               h('p', null, 'Selected pattern · ', h('strong', { 'data-position-study-category': 'true' }, frameGuide.label)),
               keyRoles.length ? h('ul', null, keyRoles.map(function(role) {
                 return h('li', { key: role.id, 'data-position-study-key-role': role.id },
@@ -32918,7 +32918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h5', null, 'Browse changed marks'),
                 h('p', { id: 'beehive-interior-lens-change-progress', 'data-interior-lens-change-progress': 'true' }, changeProgress),
                 h('p', { 'data-interior-lens-change': 'true', className: 'bee-interior-lens-change' }, changeStatus),
-                h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': 'Browse changed diagram marks' }, [
+                h('div', { className: 'bee-interior-lens-steps', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_browse_changed_diagram_marks', 'Browse changed diagram marks') }, [
                   { id: 'previous', label: 'Previous changed mark', symbol: '←', direction: -1 },
                   { id: 'next', label: 'Next changed mark', symbol: '→', direction: 1 }
                 ].map(function(step) {
@@ -32973,7 +32973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('strong', null, 'Frame ' + (item.frame + 1)), h('span', null, item.frameKind),
                     item.status !== 'unmapped' && h('span', { 'data-interior-frame-presence': 'true', className: 'bee-interior-frame-presence' }, h('span', { 'aria-hidden': 'true' }, item.status === 'shown' ? '● ' : item.status === 'absent' ? '— ' : '? '), item.label));
                 }))),
-              h('div', { 'data-interior-frame-guide': 'true', className: 'bee-interior-frame-guide', role: 'group', 'aria-label': 'Current frame pattern guide' },
+              h('div', { 'data-interior-frame-guide': 'true', className: 'bee-interior-frame-guide', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_current_frame_pattern_guide', 'Current frame pattern guide') },
                 h('div', { className: 'bee-interior-frame-guide-heading' },
                   h('p', null, h('strong', null, 'Current frame pattern'), ' · ', h('span', { 'data-interior-frame-guide-category': 'true' }, frameGuide.label)),
                   h('button', { type: 'button', 'data-interior-next-match': 'true', disabled: !frameGuide.available || frameGuide.nextFrame === null, 'aria-describedby': 'beehive-interior-frame-guide-status', onClick: selectNextHivePatternFrame }, 'Next matching frame')),
@@ -34567,7 +34567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             return h('button', { key: value, type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false', tabIndex: on || !chosen[key] && value === values[0] ? 0 : -1,
               'data-inspection-choice': key + ':' + value, onClick: function() { choose(key, value); },
               onKeyDown: function(event) { handleBeeTabKey(event, values.map(function(item) { return key + ':' + item; }), key + ':' + value, 'data-inspection-choice', function(nextId) { choose(key, nextId.slice(key.length + 1)); }); },
-              className: 'bee-inspection-choice min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-bold ' + (on ? 'border-amber-600 bg-amber-600 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-100' : 'border-slate-300 bg-white text-slate-800')) },
+              className: 'bee-inspection-choice min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-bold ' + (on ? 'border-amber-700 bg-amber-700 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-100' : 'border-slate-300 bg-white text-slate-800')) },
               h('span', { className: 'bee-inspection-choice-mark', 'aria-hidden': 'true' }, on ? '\u2713' : ''), h('span', { className: 'bee-inspection-choice-label' }, label));
           }
           function openInspectionReviewResource(id, event) {
@@ -34648,7 +34648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h4', { id: 'beehive-inspection-frames-title' }, '1. Explore the six frames'),
                 h('p', { 'data-inspection-frame-progress': 'true' }, h('strong', null, 'Frames explored: ' + framesSeen + ' of 6')),
                 h('p', null, 'Choose a frame to open its cutaway. Previous frame and Next frame also work in the 3D view when available.'),
-                h('div', { className: 'bee-inspection-route-frames', role: 'group', 'aria-label': 'Explore frames for the guided inspection' }, Array.from({ length: 6 }, function(_, index) {
+                h('div', { className: 'bee-inspection-route-frames', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_explore_frames_for_the_guided_inspection', 'Explore frames for the guided inspection') }, Array.from({ length: 6 }, function(_, index) {
                   var visited = visitedFrames.indexOf(index) !== -1;
                   return h('button', { key: index, type: 'button', 'data-inspection-frame': String(index), 'data-visited': visited ? 'true' : 'false', 'aria-pressed': index === hive3dFrame ? 'true' : 'false', className: 'bee-inspection-route-frame', onClick: function(event) { inspectGuidedHiveFrame(index, event); } },
                     h('strong', null, 'Frame ' + (index + 1)), h('span', null, index === 0 || index === 5 ? 'Outside' : index === 1 || index === 4 ? 'Shoulder' : 'Centre'),
@@ -36126,7 +36126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', { 'data-notebook-projection-status': 'true', role: 'status' }, context.available ? 'Saved from Day ' + context.sourceDay + ' · Current Day ' + context.currentDay + ' · Projected Day ' + record.selected.day + '.' : context.reason + ' Your notebook writing is kept. Capture a new projection from a current comparison.'),
             record && h(React.Fragment, null,
               h('p', null, record.action.label + ' (' + record.action.cost + ' AP) · ' + record.metric.label + ' · ' + record.daysCompared + ' of ' + record.requestedDays + ' projected days compared.'),
-              h('dl', { className: 'bee-projection-readings', 'aria-label': 'Saved projected readings' },
+              h('dl', { className: 'bee-projection-readings', 'aria-label': __alloT('stem.beehive.a11y_saved_projected_readings', 'Saved projected readings') },
                 h('div', null, h('dt', null, 'Do nothing'), h('dd', { 'data-notebook-projection-reading': 'baseline' }, reading(record.selected.baseline, false))),
                 h('div', null, h('dt', null, record.action.label), h('dd', { 'data-notebook-projection-reading': 'action' }, reading(record.selected.withAction, false))),
                 h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-notebook-projection-reading': 'difference' }, reading(record.selected.delta, true)))),
@@ -36138,7 +36138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var timeline = bhManagementPreviewTimeline(preview, managementTimelineMetric);
           function reading(value) { return Number.isFinite(value) ? (value === 0 ? 0 : value).toLocaleString('en-US', { maximumFractionDigits: 3 }) + timeline.metric.suffix : 'Not recorded'; }
           function signedReading(value) { return (value > 0 ? '+' : '') + reading(value); }
-          if (!timeline.available) return h('section', { 'data-management-timing': 'true', className: 'bee-management-timing', 'aria-label': 'Explore management timing' }, h('h4', null, 'Explore the timing'), h('p', { role: 'status' }, timeline.reason));
+          if (!timeline.available) return h('section', { 'data-management-timing': 'true', className: 'bee-management-timing', 'aria-label': __alloT('stem.beehive.a11y_explore_management_timing', 'Explore management timing') }, h('h4', null, 'Explore the timing'), h('p', { role: 'status' }, timeline.reason));
           var landmarks = bhManagementTimelineLandmarks(timeline);
           var offset = Math.max(1, Math.min(timeline.points.length, managementTimelineOffset)), selected = timeline.points[offset - 1];
           var first = timeline.points[0], last = timeline.points[timeline.points.length - 1];
@@ -36183,14 +36183,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-management-timing-controls' },
               h('label', null, 'Measure', h('select', { 'data-preview-timeline-metric': 'true', value: timeline.metric.id, onChange: function(event) { setManagementTimelineMetric(event.target.value); } }, preview.differences.map(function(metric) { return h('option', { key: metric.key, value: metric.key }, metric.label); }))),
               h('label', null, 'Projected day', h('select', { 'data-preview-timeline-day': 'true', value: offset, onChange: function(event) { setManagementTimelineOffset(Number(event.target.value)); } }, timeline.points.map(function(point) { return h('option', { key: point.offset, value: point.offset }, 'Day ' + point.day); })))),
-            h('div', { 'data-preview-timeline-day-navigation': 'true', className: 'bee-timing-day-navigation', role: 'group', 'aria-label': 'Step through projected days' },
+            h('div', { 'data-preview-timeline-day-navigation': 'true', className: 'bee-timing-day-navigation', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_step_through_projected_days', 'Step through projected days') },
               h('p', { id: 'beehive-management-selected-day', 'data-preview-timeline-selected-day': 'true' }, 'Selected: Day ' + selected.day + ' · ' + offset + ' of ' + timeline.points.length),
               [{ id: 'previous', label: 'Previous projected day', step: -1, atEdge: offset === 1 }, { id: 'next', label: 'Next projected day', step: 1, atEdge: offset === timeline.points.length }].map(function(item) {
                 return h('button', { key: item.id, type: 'button', 'data-preview-timeline-step': item.id, className: 'bee-forecast-button', 'aria-disabled': item.atEdge ? 'true' : 'false', 'aria-describedby': 'beehive-management-selected-day', onClick: function() {
                   if (!item.atEdge) setManagementTimelineOffset(offset + item.step);
                 } }, item.label);
               })),
-            h('ul', { className: 'bee-management-timing-legend', 'aria-label': 'Projected scenarios' },
+            h('ul', { className: 'bee-management-timing-legend', 'aria-label': __alloT('stem.beehive.a11y_projected_scenarios', 'Projected scenarios') },
               h('li', null, sample('baseline'), h('span', null, 'Do nothing · dashed line and circle')),
               h('li', null, sample('action'), h('span', null, preview.action.label + ' · solid line and square'))),
             h('figure', { className: 'bee-management-timing-chart' },
@@ -36212,7 +36212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('section', { 'data-preview-timeline-inspector': 'true', className: 'bee-timing-inspector', 'aria-labelledby': 'beehive-management-inspector-title' },
               h('h5', { id: 'beehive-management-inspector-title' }, 'Read the selected day'),
               h('p', { 'data-preview-timeline-context': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Projected Day ' + selected.day + ' · ' + selected.offset + ' of ' + timeline.points.length + ' days compared. These are model projections, not observed colony readings.'),
-              h('dl', { className: 'bee-management-timing-readings', 'aria-label': 'Exact projected readings' },
+              h('dl', { className: 'bee-management-timing-readings', 'aria-label': __alloT('stem.beehive.a11y_exact_projected_readings', 'Exact projected readings') },
                 h('div', null, h('dt', null, sample('baseline'), h('span', null, 'Do nothing')), h('dd', { 'data-preview-timeline-reading': 'baseline' }, reading(selected.baseline))),
                 h('div', null, h('dt', null, sample('action'), h('span', null, preview.action.label)), h('dd', { 'data-preview-timeline-reading': 'action' }, reading(selected.withAction))),
                 h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-preview-timeline-reading': 'difference' }, signedReading(selected.delta)))),
@@ -38776,7 +38776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 'aria-valuetext': badgeCount + ' of ' + BADGE_DEFS.length + ' badges earned; ' + (BADGE_DEFS.length - badgeCount) + ' not yet earned.' },
                 h('span', { 'data-badges-progress-fill': 'true', style: { width: (100 * badgeCount / BADGE_DEFS.length) + '%' } }))),
             h('p', { 'data-badges-history': 'true' }, 'Earned badges remain saved when you start a new colony. A recorded model day may belong to an earlier colony.'),
-            h('ul', { role: 'list', 'data-badges-grid': 'true', 'aria-label': 'Badge requirements and saved achievements' },
+            h('ul', { role: 'list', 'data-badges-grid': 'true', 'aria-label': __alloT('stem.beehive.a11y_badge_requirements_and_saved_achievements', 'Badge requirements and saved achievements') },
               BADGE_DEFS.map(function(bd) {
                 var record = newBadges[bd.id], earned = !!record;
                 var recordedDay = record && typeof record === 'object' ? record.day : null;
@@ -39011,7 +39011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('dd', null, h('span', { 'data-queen-condition-value': 'true' }, queenHealth + ' / 100'),
                     h('span', { 'data-queen-condition-unit': 'true' }, 'condition points'))),
                 h('p', { 'data-queen-condition-basis': 'true' }, 'A model condition score, not a population count.'),
-                h('div', { className: 'bee-colony-queen-meter', 'data-queen-condition-meter': 'true', role: 'meter', 'aria-label': 'Queen condition model score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': queenHealth,
+                h('div', { className: 'bee-colony-queen-meter', 'data-queen-condition-meter': 'true', role: 'meter', 'aria-label': __alloT('stem.beehive.a11y_queen_condition_model_score', 'Queen condition model score'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': queenHealth,
                   'aria-valuetext': queenHealth + ' of 100 condition points. Higher values indicate better modeled condition.' }, h('span', { style: { width: queenHealth + '%' } })),
                 h('div', { className: 'bee-colony-queen-scale', 'aria-hidden': 'true' }, h('span', null, '0'), h('span', null, '100')),
                 h('p', { 'data-queen-condition-direction': 'true' }, 'Higher values indicate better queen condition in this model.'))),

@@ -10,9 +10,10 @@
 //     response's first line, so a rationale like "nothing critical here" or
 //     "not a false alarm" can no longer flip the tier.
 //  3. HONEST PROMISES: the consent screen and safety disclosure state only
-//     what each mode actually does — solo/Canvas copy never claims an adult
-//     will be notified (no code path delivers that); live copy promises an
-//     alert (a flag), never the student's words.
+//     what each mode actually does. No mode claims an adult or teacher will
+//     be alerted: no code path delivers a flag to a teacher (the live-session
+//     studentProgress write is denied by firestore.rules and nothing reads it).
+//     A live session still discloses that saved/submitted work is visible.
 
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { React, ReactDOMServer } from './helpers/sel_tool_harness.js';
@@ -24,7 +25,7 @@ const render = (vnode) => ReactDOMServer.renderToStaticMarkup(vnode);
 
 beforeAll(() => {
   // Load the REAL safety layer IIFE against the jsdom window.
-  new Function(readFileSync(resolve(process.cwd(), 'sel_hub/sel_safety_layer.js'), 'utf8'))();
+  new Function(readFileSync(resolve(process.cwd(), process.env.SAFETY_LAYER_FILE || 'sel_hub/sel_safety_layer.js'), 'utf8'))();
 });
 
 beforeEach(() => {
@@ -154,12 +155,16 @@ describe('consent screen — promises match the mode (the CRISIS-1 fix)', () => 
     expect(html).toMatch(/tell a trusted adult right away/i);
   });
 
-  it('live session: promises an alert (a flag), explicitly not the words', () => {
-    const html = render(window.SelHub.renderConsentScreen(h, 'middle', () => {}, 'ABC123'));
-    expect(html).toMatch(/alert/i);
-    expect(html).toMatch(/not your words/i);
-    expect(html).not.toMatch(/will be told|will be notified/i);
-  });
+  // Both bands, live session: no flag reaches the teacher, so no alert promise.
+  for (const band of ['middle', 'elementary']) {
+    it('live session (' + band + '): discloses teacher visibility but never promises an alert', () => {
+      const html = render(window.SelHub.renderConsentScreen(h, band, () => {}, 'ABC123'));
+      expect(html).toMatch(/can be seen by (your teacher|them)/i);
+      expect(html).not.toMatch(/alert|dashboard|will be told|will be notified|check on you/i);
+      expect(html).toMatch(band === 'middle' ? /cannot notify an adult on its own/i : /cannot tell an adult for you/i);
+      expect(html).toMatch(/A grown-up can only help if a person tells them|never assume an adult has been told/i);
+    });
+  }
 });
 
 describe('safety disclosure — honest in both modes (the SEL-PRIV-3 fix)', () => {
@@ -170,11 +175,22 @@ describe('safety disclosure — honest in both modes (the SEL-PRIV-3 fix)', () =
     expect(html).toMatch(/No adult is notified automatically/i);
   });
 
-  it('live: discloses teacher visibility, the alert (not words), and the AI service', () => {
+  it('live: discloses teacher visibility and the AI service, and says no adult is notified', () => {
     const html = render(window.SelHub.renderSafetyDisclosure(h, 'middle', 'ABC123'));
     expect(html).toMatch(/live session/i);
-    expect(html).toMatch(/alert, not your words/i);
+    expect(html).toMatch(/can be seen by them/i);
     expect(html).toMatch(/sent to the AI service/i);
+    expect(html).toMatch(/No adult is notified automatically/i);
+    expect(html).not.toMatch(/alert|dashboard/i);
+  });
+
+  it('the educator guide (file and in-hub copy) promises teachers no alert either', () => {
+    const md = readFileSync(resolve(process.cwd(), process.env.SAFETY_GUIDE_MD || 'sel_hub/FOR_EDUCATORS.md'), 'utf8');
+    const hub = readFileSync(resolve(process.cwd(), process.env.SAFETY_GUIDE_HUB || 'sel_hub/sel_hub_module.js'), 'utf8');
+    for (const [name, text] of [['FOR_EDUCATORS.md', md], ['sel_hub_module.js', hub]]) {
+      expect(/your dashboard shows|count-based safety alert|live-session alert/i.test(text), name + ' promises a teacher alert').toBe(false);
+      expect(text.includes('In every mode, including a live web session'), name + ' lost the no-alert statement').toBe(true);
+    }
   });
 });
 

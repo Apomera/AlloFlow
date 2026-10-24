@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "A ti ṣe àkọsílẹ̀ ìparí iṣẹ́ àyànfúnni àti bíbàlẹ̀ lẹ́yìn ìpadà. Gbìyànjú iṣẹ́ yìí lẹ́ẹ̀kan sí i pẹ̀lú ìyípadà kan tí o mọ̀ọ́mọ̀ ṣe sí ìdarí tàbí ọ̀nà, lẹ́yìn náà kí o fi àwọn àkíyèsí tí a fi pamọ́ wéra.",
+  "stem.flightsim.coaching_mission_depleted": "Agbára bátírì ọkọ̀ òfuurufú aláìní awakọ̀ ti tán. Bẹ̀rẹ̀ iṣẹ́ tuntun, lo àwọn ọ̀nà kúkúrú, kí o sì ṣètò ìpadà kí bátírì tó dín kù.",
+  "stem.flightsim.coaching_mission_unknown": "Ẹ̀rí iṣẹ́ yìí kò pé tàbí ó tako ara rẹ̀. Ṣàyẹ̀wò ohun tí a ti kọ sílẹ̀, kí o sì bẹ̀rẹ̀ ìgbìyànjú tuntun.",
+  "stem.flightsim.coaching_mission_capture": "A kò tíì ya fọ́tò àwọn ibi àfojúsùn kan. Nínú iṣẹ́ tuntun, sún mọ́ ibi àfojúsùn kan lẹ́ẹ̀kan, kí o sì dúró láàárín ààlà gíga àti ìyára ní ìfiwéra pẹ̀lú ilẹ̀ tí a fihàn títí tí a fi máa ṣe àkọsílẹ̀ yíya fọ́tò.",
+  "stem.flightsim.coaching_mission_recovery": "A kò gbé ẹni tí ó là á já sí ọkọ̀. Nínú iṣẹ́ ìgbàlà tuntun, ṣe ìdánrawò dídúró ṣinṣin lójú afẹ́fẹ́ láàárín ààlà gíga, yíyọ kúrò ní ipò àti ìyára sókè-sísàlẹ̀ tí a fihàn kí o tó padà sí ibùdó.",
+  "stem.flightsim.coaching_mission_return": "A ti ṣe àkọsílẹ̀ àwọn ète gbígbé ènìyàn sí ọkọ̀ tàbí yíya fọ́tò; bíbàlẹ̀ lẹ́yìn ìpadà ṣì kù. Bẹ̀rẹ̀ iṣẹ́ tuntun, kí o sì fi àkókò àti agbára bátírì sílẹ̀ fún ìpadà sí ibùdó.",
+  "stem.flightsim.mission_reflection_prompt": "Ìpinnu wo nípa ibi àfojúsùn, dídúró lójú afẹ́fẹ́ tàbí ìpadà ni o máa yí padà? Lo àwọn àkíyèsí iṣẹ́ náà láti ṣàlàyé ohun tí o yàn, kí o sì ṣètò ìyípadà kan fún ìgbìyànjú tuntun. A ó fi àlàyé rẹ pamọ́ pẹ̀lú ìfò yìí.",
+  "stem.flightsim.journal_different_airport": "Àwọn ìsúnmọ́ láti bàlẹ̀ wọ̀nyí lo àwọn pápá òfuurufú tó yàtọ̀. Ṣàyẹ̀wò àwọn àkíyèsí wọn lọ́tọ̀ọ̀tọ̀; a kò ṣírò ìyàtọ̀ láàárín àwọn ìwọ̀n.",
+  "stem.flightsim.journal_approach_airport": "Pápá òfuurufú tí a ń sún mọ́ láti bàlẹ̀: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "Ẹ̀RÍ IṢẸ́ ÀYÀNFÚNNI",
+  "stem.flightsim.challenge_brake_release": "Tú bọ́tìnì X sílẹ̀, kí o sì pa bíréèkì àwọn kẹ̀kẹ́ nínú pánẹ́ẹ̀lì ìdarí kí o tó fi agbára kún un."
+}

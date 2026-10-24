@@ -46,7 +46,8 @@ describe('Hands-on recipe decisions',()=>{
   });
   it('requires mixing water added after combining and invalidates checks after either mixing control',()=>{
     let s=R.startRescue('dry',0);s=R.act(s,'pour',50,'tilt');s=R.act(s,'taste');expect(R.criteria(s)[0].met).toBe(false);
-    s=R.act(s,'stirSweep','gesture');expect(s.pan.tasted).toBe(false);expect(R.criteria(s)[0].met).toBe(true);
+    s=R.act(s,'stirSweep','gesture');expect(s.pan.tasted).toBe(false);expect(R.needsMixing(s)).toBe(true);expect(R.criteria(s)[0].met).toBe(false);
+    for(let fold=0;fold<8&&R.needsMixing(s);fold++)s=R.act(s,'stirSweep','gesture');expect(R.needsMixing(s)).toBe(false);expect(s.pan.tasted).toBe(false);expect(R.criteria(s)[0].met).toBe(true);
     let normal={...cook().state,plated:false};normal=R.act(normal,'pour',10,'tilt');expect(R.criteria(normal)[3].met).toBe(false);
     normal=R.act(normal,'stirPan');expect(R.criteria(normal)[3].met).toBe(true);expect(normal.pan.tasted).toBe(false);
   });

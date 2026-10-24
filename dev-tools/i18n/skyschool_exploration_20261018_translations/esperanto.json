@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Serĉrezultoj: {cards} kartoj pri {topics} temoj.",
+  "stem.flightsim.learn_library_counts": "{cards} kartoj · {topics} temoj",
+  "stem.flightsim.learn_search_clear": "Forviŝi serĉon",
+  "stem.flightsim.learn_search_empty": "Neniuj lernokartoj kongruas kun “{query}”. Provu alian terminon aŭ forviŝu la serĉon.",
+  "stem.flightsim.learn_search_none": "Neniuj kongruaj lernokartoj",
+  "stem.flightsim.learn_search_cards": "{count} lernokartoj",
+  "stem.flightsim.quiz_review_progress": "{answered} el {total} demandoj responditaj · {missed} eraraj",
+  "stem.flightsim.quiz_review_missed": "Revizii erarajn respondojn",
+  "stem.flightsim.quiz_next_unanswered": "Sekva nerespondita demando",
+  "stem.flightsim.quiz_review_all_answered": "Ĉiu demando havas unuan respondon. Reviziu erarajn respondojn por ekzercado sen poentoj, aŭ komencu novan provon.",
+  "stem.flightsim.planner_drone_agl": "{ft} futoj super la grundo",
+  "stem.flightsim.sprint_native_title": "Geografia sprinto",
+  "stem.flightsim.sprint_timed_hint": "La itinero progresas dum vi respondas. Paŭzu por legi; rekomencu antaŭ ol elekti respondon.",
+  "stem.flightsim.sprint_warp_reference": "La vojaĝo estas akcelita por ĉi tiu geografia agado. La rapidindikiloj montras la anoncitan krozrapidon; ĉi tiu itinero ne mezuras la rendimenton de la aviadilo.",
+  "stem.flightsim.sprint_save_menu": "Konservi la sprinton kaj reveni al la menuo",
+  "stem.flightsim.sprint_next_stop": "Sekva haltejo: {place}",
+  "stem.flightsim.geoq_approaching_city": "Al kiu urbo vi proksimiĝas?",
+  "stem.flightsim.sprint_time_remaining": "Restanta tempo: {seconds} sekundoj"
+}

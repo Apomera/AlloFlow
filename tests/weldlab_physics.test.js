@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+const WELD_SRC = process.env.WELDLAB_SRC || 'stem_lab/stem_tool_weldlab.js';
 
 /**
  * WeldLab is a 9.7k-line vocational tool whose numbers a student is graded against,
@@ -14,7 +15,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 beforeEach(() => {
   resetStemLab();
-  loadTool('stem_lab/stem_tool_weldlab.js', 'weldLab');
+  loadTool(WELD_SRC, 'weldLab');
 });
 
 describe('WeldLab heat input', () => {
@@ -288,7 +289,7 @@ describe('WeldLab progress tier never claims a credential', () => {
   // which is the same drift that left BADGE_LABELS with 11 entries for 22 ids.
   // A test that hardcodes what it is testing stops testing it.
   const ALL_MODULES = (function () {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     const m = /var BADGE_IDS = \[([^\]]+)\]/.exec(src);
     expect(m, 'BADGE_IDS not found in the tool').toBeTruthy();
     return m[1].split(',').map((x) => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
@@ -462,7 +463,7 @@ describe('WeldLab menu card colours are measured', () => {
     // gradient band. Measured before this gate existed: 5 of 23 titles under
     // 3:1 (1.92:1 on yellow-500), 15 subtitles and 20 pills under 4.5:1. axe
     // cannot see any of it — it files gradient-backed text as `incomplete`.
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     const helpers = src.slice(src.indexOf('  var TW_HEX = {'), src.indexOf('  // ── localStorage helpers ──'));
     const box = {};
     // eslint-disable-next-line no-new-func
@@ -511,7 +512,7 @@ describe('WeldLab quiz answers are not clustered in one slot', () => {
   }
 
   function readQuestions() {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     const re = new RegExp('(opts|choices|options)(\\s*:\\s*)\\[', 'g');
     const out = [];
     let m;
@@ -552,7 +553,7 @@ describe('WeldLab quiz answers are not clustered in one slot', () => {
   });
 
   it('routes every card gradient through the helper, not straight to a class', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
     // ★ The assertion above only proves cardGradient() WOULD return a legible
     // pair. It says nothing about whether a card actually calls it. Three card
@@ -576,7 +577,7 @@ describe('WeldLab quiz answers are not clustered in one slot', () => {
 describe('WeldLab 3D defect legend matches the markers it labels', () => {
   it('paints each swatch the colour of the mesh it identifies', () => {
     const { DEFECT_3D_COLOR } = window.__WeldLabCore;
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
     // The legend and the THREE materials used to be two hand-maintained lists,
     // and three of the six had drifted: undercut showed #7c2d12 against a
@@ -605,7 +606,7 @@ describe('WeldLab 3D defect legend matches the markers it labels', () => {
 
 describe('WeldLab teacher scaffolding covers every module', () => {
   it('gives all 24 view modules standards, questions, misconceptions and an extension', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     const lines = src.split('\n');
     const marks = [];
     lines.forEach((l, i) => {
@@ -663,7 +664,7 @@ describe('WeldLab quiz chips are readable', () => {
   });
 
   it('never hands a raw colour straight to a chip label', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     expect(src).not.toMatch(/color:\s*pr\.color\s*,/);
     expect(src).not.toMatch(/color:\s*c\.color\s*,/);
     expect(src).not.toMatch(/color:\s*psAns \? color : pr\.color\b/);
@@ -671,7 +672,7 @@ describe('WeldLab quiz chips are readable', () => {
   });
 
   it('keeps every string-concatenated colour a literal hex', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
     // These colours are concatenated with an alpha byte ("#dc2626" + "15") to
     // build a CSS value. A var(--x, #fallback) there produces
@@ -700,7 +701,7 @@ describe('WeldLab states each career fact the same way everywhere', () => {
   // $20-30K in Underwater Welding and $25-30K in Career Pathways; and CWI pay was
   // ~$70-110K on the menu card against $60-110K in the module that owns the topic.
   // Same defect as one bead getting three verdicts, but in prose, where no gate looked.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   // Each contradiction pattern is SUBJECT-SCOPED. A bare /\$1,?500/ also matches
   // "$1500-3000 industrial machine" and the "$1500-3000 seminar", which are
@@ -746,7 +747,7 @@ describe('WeldLab radiogroups honour the keyboard contract', () => {
   // These assertions are structural on purpose. jsdom reports focus in ways that
   // do not match a browser, so a jsdom focus assertion would pass whether or not
   // the fix worked; the behaviour is pinned by the browser probe instead.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('wires every radiogroup container to the shared key handler', () => {
     const src = read();
@@ -801,7 +802,7 @@ describe('WeldLab never flashes above the photosensitivity threshold', () => {
   const HZ_LIMIT = 3;
 
   function oscillators() {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     const out = [];
     const re = /Math\.(?:sin|cos)\(\s*([^)]{0,70})\)/g;
     let m;
@@ -830,16 +831,17 @@ describe('WeldLab never flashes above the photosensitivity threshold', () => {
   });
 
   it('drives both arc views from the same retuned waveform', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
-    // THREE views draw a pulsing arc — top-down, 3-D scene and helmet POV. Two
-    // carried the retuned waveform and the helmet kept the old one; pin all three
-    // to each other so the next edit cannot fix two of them again.
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
+    // FOUR views draw a pulsing arc — top-down, 3-D scene, helmet POV and the
+    // Live Bead Run weld station (lane RUN). Two carried the retuned waveform
+    // and the helmet kept the old one; pin all four to each other so the next
+    // edit cannot fix some of them again.
     const waveform = /0\.78 \+ 0\.12 \* Math\.sin\(elapsed \* 15\.1\) \+ 0\.06 \* Math\.sin\(elapsed \* 5\.7\)/g;
-    expect((src.match(waveform) || []).length, 'an arc view uses a different pulse').toBe(3);
+    expect((src.match(waveform) || []).length, 'an arc view uses a different pulse').toBe(4);
   });
 
   it('reads prefers-reduced-motion live rather than once at module load', () => {
-    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const src = readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
     // The CSS guard is a media query and updates itself; the canvas guard is a
     // variable, and a variable sampled at module load never changes — in the
     // bundled desktop shell that is the lifetime of the app.
@@ -857,7 +859,7 @@ describe('WeldLab progress bars survive the contrast theme', () => {
   // blackened fill AND track, so all six bars measured exactly 1.00:1.
   // Marking the value with an EDGE fixes both: that rule only touches
   // background-color, so a border survives it.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('marks the value with a border rather than a hue difference', () => {
     const src = read();
@@ -899,7 +901,7 @@ describe('WeldLab rating dots survive the contrast theme', () => {
   // matrix was six identical black dots, and the module's whole point conveyed
   // nothing. Light was not clean either: orange-500 on slate-200 is 2.27:1,
   // under the 3:1 WCAG 1.4.11 floor for a graphic that carries meaning.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('distinguishes filled from empty by border style, not only by fill', () => {
     const src = read();
@@ -928,7 +930,7 @@ describe('WeldLab print stylesheet keeps its promises', () => {
   // `.weldlab-page-break` was declared while NO element in the file ever carried
   // the class: confirmed dead at runtime by walking document.styleSheets and
   // counting querySelectorAll matches per rule.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   function printBlock(src) {
     const at = src.indexOf("'@media print {'");
@@ -992,7 +994,7 @@ describe('WeldLab saved progress uses one precedence rule', () => {
   // The window slot is what the host's handleLoadProject populates, and the
   // project file is the only layer that survives a Canvas session, so the slot
   // has to win.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('reads all three collections through the same helper', () => {
     const src = read();
@@ -1044,7 +1046,7 @@ describe('WeldLab treats a saved project as untrusted input', () => {
   // `Cannot read properties of undefined` — and in this shell one tool's throw
   // takes the surrounding error boundary with it, so a single bad file can blank
   // the whole lab. All ten mount cleanly once the values are coerced on the way in.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('coerces and clamps every persisted number', () => {
     const src = read();
@@ -1098,7 +1100,7 @@ describe('WeldLab heat-input inquiry notebook', () => {
   // physics was 60x off (a per-minute factor on a mm/s slider). The cycle now
   // lives on the Heat Input Calculator, which already teaches this relationship
   // with correct units, and the orphan is gone.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   it('has no unreachable dispatch arm any more', () => {
     const src = read();
@@ -1155,7 +1157,7 @@ describe('WeldLab menu, badges and labels agree with each other', () => {
   //  - 22 BADGE_IDS, 11 BADGE_LABELS. The "Try next" nudge names the first
   //    UNVISITED id, so every prompt after the first eleven modules rendered
   //    "→ Try next:" and then nothing. Measured: nudge text "" at 11 visits.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
 
   const badgeIds = () => {
     const m = /var BADGE_IDS = \[([^\]]+)\]/.exec(read());
@@ -1195,58 +1197,107 @@ describe('WeldLab menu, badges and labels agree with each other', () => {
 });
 
 describe('WeldLab Speed Challenge does not narrate the run', () => {
-  // Measured in Chromium before the fix: the countdown (aria-live, one mutation
-  // per second) plus the in-spec card (aria-live, its text carries the running
-  // sample count, one mutation per 250 ms) queued roughly 360 announcements in
-  // a 60-second run. That buries the only event a listener needs — leaving or
-  // regaining spec. After: one announcement at start, then only transitions
-  // ("Out of spec. Adjust voltage or amperage." / "Back in spec.") and two time
-  // milestones, verified by a probe that drives the voltage slider mid-run.
+  // Measured in Chromium before the first fix: the countdown (aria-live, one
+  // mutation per second) plus the in-spec card (aria-live, its text carries the
+  // running sample count, one mutation per 250 ms) queued roughly 360
+  // announcements in a 60-second run. That buries the only events a listener
+  // needs — leaving or regaining spec, and what the joint is doing.
   //
-  // Structural on purpose — the run is a requestAnimationFrame loop jsdom cannot
-  // time; behaviour is pinned by the browser probe.
-  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+  // Lane RUN rebuilt the module as the Live Bead Run; these are the same four
+  // intents restated against the new code. Narration now lives in a pure
+  // function (runMakeNarrator, lane RUN block), so on top of the structural pins
+  // the run is narrated headless below and the announcements are COUNTED.
+  // (Test file weldlab_run.test.js adds the behavioural checks.)
+  const read = () => readFileSync(resolve(process.cwd(), WELD_SRC), 'utf8');
   // Comments stripped before any negative match: the explanation of WHY the
-  // timer is not aria-live contains the words "aria-live", and a gate that
+  // readouts are not aria-live contains the words "aria-live", and a gate that
   // cannot tell prose from code reports its own explanation as the defect.
-  // (Fourth time this session a negative regex tripped on a comment.)
-  const speed = (src) => src
-    .slice(src.indexOf('function SpeedChallenge('), src.indexOf('function ComingSoon('))
-    .split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+  const strip = (s) => s.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+  const speed = (src) => strip(src.slice(src.indexOf('function SpeedChallenge('), src.indexOf('function ComingSoon(')));
+  const narrator = (src) => strip(src.slice(src.indexOf('function runMakeNarrator('), src.indexOf('function runSimulate(')));
 
   it('keeps the countdown and the in-spec card out of live regions', () => {
     const sc = speed(read());
-    // the timer readout
-    const timerAt = sc.indexOf("(T.duration - Math.floor(elapsed)) + 's')");
-    expect(timerAt).toBeGreaterThan(-1);
-    expect(sc.slice(timerAt - 400, timerAt)).not.toMatch(/aria-live/);
-    // the in-spec card: from its comment to its first child
-    const cardAt = sc.indexOf("running ? (liveInSpec ? 'IN SPEC' : 'OUT OF SPEC");
-    expect(cardAt).toBeGreaterThan(-1);
-    expect(sc.slice(cardAt - 700, cardAt)).not.toMatch(/aria-live/);
+    // The live readouts (joint progress + elapsed seconds), the in-spec status
+    // card and the event strip all exist...
+    expect(sc).toContain('function renderReadouts(');
+    expect(sc).toContain('function statusPill(');
+    expect(sc).toContain('function renderEventStrip(');
+    expect(sc).toContain("'stem.weldlab.run_ro_time'");
+    expect(sc).toContain("'stem.weldlab.run_st_out'");
+    // ...and NOTHING in the view is a live region: every word a screen reader
+    // hears goes through announce(), which the narrator gates.
+    expect(sc).not.toMatch(/aria-live/);
+    expect(sc).not.toMatch(/role: '(status|alert|log|timer)'/);
   });
 
   it('announces the spec transition, debounced, from the sampling loop', () => {
-    const sc = speed(read());
-    expect(sc).toMatch(/inSpec !== lastInSpec && now - lastTransitionAt > 1500/);
-    expect(sc).toContain("'stem.weldlab.sr_out_of_spec_adjust'");
+    const src = read();
+    const nar = narrator(src);
+    // debounced 1.5 s, and only once the new state has held 0.4 s
+    expect(nar).toMatch(/nowMs - lastSaidAt > 1500/);
+    expect(nar).toMatch(/nowMs - flipAt >= 400/);
+    // only at a real change: compared with what was last SAID
+    expect(nar).toMatch(/if \(inSpec === said\)/);
+    expect(nar).toMatch(/said = inSpec;/);
+    const sc = speed(src);
+    // the run loop feeds every new slice to the narrator, nothing else announces mid-run
+    expect(sc).toMatch(/var narrate = runMakeNarrator\(st\.plan\);/);
+    expect(sc).toContain("'stem.weldlab.run_sr_out_deep'");
     expect(sc).toContain("'stem.weldlab.sr_back_in_spec'");
-    // and only at a real change: the previous value is tracked, not re-announced
-    expect(sc).toMatch(/lastInSpec = inSpec;/);
+
+    // and behaviourally: an idle Pro run (it leaves spec at the gap and the step)
+    const R = window.__WeldLabCore.liveRun;
+    const st = R.init('pro', 7);
+    const narrate = R.makeNarrator(st.plan);
+    const transitions = [];
+    let now = 0;
+    while (!st.done) {
+      now += 1000 / 60;
+      R.step(st, { V: 22, A: 190, TS: 13 }, 1 / 60).forEach((s) => {
+        narrate(now, s, st).forEach((m) => { if (m.kind === 'spec_in' || m.kind === 'spec_out') transitions.push(now); });
+      });
+    }
+    expect(transitions.length).toBeGreaterThan(0);
+    for (let i = 1; i < transitions.length; i++) {
+      expect(transitions[i] - transitions[i - 1]).toBeGreaterThan(1500);
+    }
   });
 
   it('announces two time milestones rather than every second', () => {
-    const sc = speed(read());
-    expect(sc).toMatch(/\[30, 10\]\.forEach/);
-    expect(sc).toMatch(/!milestoneDone\[m\]/);
-    expect(sc).toContain("'stem.weldlab.sr_seconds_left'");
+    const src = read();
+    const nar = narrator(src);
+    // two distance milestones (the run ends at the end of the JOINT, not a clock)
+    expect(nar).toMatch(/\[2, 1\]\.forEach/);
+    expect(nar).toMatch(/!milestones\[m\]/);
+    expect(speed(src)).toContain("'stem.weldlab.run_sr_inches_left'");
+    // a whole idle run produces exactly two, and a small total — not one a second
+    const R = window.__WeldLabCore.liveRun;
+    const st = R.init('biw', 3);
+    const narrate = R.makeNarrator(st.plan);
+    const all = [];
+    let now = 0;
+    while (!st.done) {
+      now += 1000 / 60;
+      R.step(st, { V: 24, A: 220, TS: 15 }, 1 / 60).forEach((s) => { all.push(...narrate(now, s, st)); });
+    }
+    expect(all.filter((m) => m.kind === 'milestone').length).toBe(2);
+    expect(all.length).toBeLessThan(st.t / 2);
   });
 
   it('still announces the result once, where a live region belongs', () => {
     const sc = speed(read());
-    // The result card renders once when the run ends; that one may stay live.
-    const resultAt = sc.indexOf("'Final Score: ' + finalScore + '%'");
-    expect(resultAt).toBeGreaterThan(-1);
-    expect(sc.slice(resultAt - 700, resultAt)).toMatch(/aria-live/);
+    // The result is announced from finishRun, in ONE announce() call...
+    const fin = sc.slice(sc.indexOf('function finishRun('), sc.indexOf('function stopRun('));
+    expect(fin.length).toBeGreaterThan(200);
+    expect((fin.match(/announce\(/g) || []).length).toBe(1);
+    expect(fin).toContain("'stem.weldlab.run_sr_result'");
+    expect(fin).toContain("'stem.weldlab.run_sr_result_best'");
+    expect(fin).toContain("'stem.weldlab.run_sr_stopped'");
+    // ...and the review card is NOT a live region, so it is not read a second
+    // time; focus moves to its heading instead.
+    const rv = sc.slice(sc.indexOf('function renderReview('), sc.indexOf('var stationPlan'));
+    expect(rv).not.toMatch(/aria-live/);
+    expect(rv).toMatch(/ref: reviewRef, tabIndex: -1/);
   });
 });

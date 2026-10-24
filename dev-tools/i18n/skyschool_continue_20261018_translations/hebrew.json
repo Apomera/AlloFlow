@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "נצפתה עמידה ביעדי האתגר. כעת, בתרגיל ניהול האנרגיה, השוו הנמכה כשהמנוע בסרק לנסיקה בעזרת כוח המנוע.",
+  "stem.flightsim.coaching_energy_complete": "נצפתה עמידה ביעדי ניהול האנרגיה. כעת תרגלו שליטה באנרגיה במהלך גישה קצרה לשדה תעופה, ואז השוו את קצב ההנמכה ואת הנגיעה בקרקע.",
+  "stem.flightsim.drone_battery_low": "הסוללה חלשה: נותרו {pct}%. חזרו לנקודת ההמראה ונחתו בקרוב.",
+  "stem.flightsim.drone_battery_depleted_title": "סוללת הרחפן התרוקנה",
+  "stem.flightsim.drone_battery_depleted_body": "הטיסה הושהתה כשהסוללה הגיעה ל־0%. סיימו את המשימה כדי לעיין בניסיון הזה, ואז התחילו משימה חדשה עם סוללה מלאה.",
+  "stem.flightsim.end_drone_mission": "סיום המשימה ועיון בניסיון",
+  "stem.flightsim.geoq_nearest_place": "איזה מקום הוא הקרוב ביותר למיקומכם הנוכחי?",
+  "stem.flightsim.geoq_paused": "הטיסה הושהתה לצורך השאלה הזאת. סגרו את החידון ובחרו בהמשך כשתהיו מוכנים לטוס.",
+  "stem.flightsim.geoq_close": "סגירת החידון",
+  "stem.flightsim.geoq_unavailable": "אין שאלה גאוגרפית זמינה על מקום קרוב. המשיכו לחקור ונסו שוב.",
+  "stem.flightsim.geoq_answer_feedback": "התשובה שלכם: {answer}. התשובה הנכונה: {expected}."
+}

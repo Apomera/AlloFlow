@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Dumisha hali ya sasa ya ndege",
+  "stem.flightsim.flight_assistance_targets": "Mwelekeo {hdg}° · Kimo {alt} ft MSL · Kasi {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Mwelekeo {hdg}° · Kimo {alt} ft MSL · Kasi ya kwenda mbele {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Geuka kushoto kwa {degrees}° kuelekea {airport}.",
+  "stem.flightsim.challenge_turn_right": "Geuka kulia kwa {degrees}° kuelekea {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Unaelekea {airport}. Fuata alama ya njia ya ndege.",
+  "stem.flightsim.challenge_runway_reference": "Njia ya kurukia ya mazoezi {runway}: mwelekeo {heading}°. Linganisha ndege na njia ya kurukia kabla ya kushuka ili kutua."
+}

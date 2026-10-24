@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "Tentatives précédentes du quiz",
+  "stem.flightsim.quiz_history_scope": "Commencer une nouvelle tentative conserve jusqu’à quatre tentatives précédentes avec les premières réponses enregistrées. Les consulter ne modifie pas votre quiz en cours.",
+  "stem.flightsim.quiz_history_empty": "Aucune tentative précédente du quiz n’est encore enregistrée.",
+  "stem.flightsim.quiz_history_attempt": "Enregistrée le {date} · {score}/{answered} premières réponses correctes",
+  "stem.flightsim.quiz_history_progress": "{answered} questions sur {total} enregistrées · {unanswered} sans réponse",
+  "stem.flightsim.quiz_history_question": "Question {number} : {question}",
+  "stem.flightsim.quiz_history_correct_answer": "Bonne réponse : {answer}",
+  "stem.flightsim.quiz_history_changed": "{count} questions enregistrées ne correspondent plus à ce quiz. Les scores utilisent uniquement les réponses aux questions qui correspondent."
+}

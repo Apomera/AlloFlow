@@ -79,13 +79,16 @@ function loadFs() {
 }
 
 const makeStage = () => {
-  const props = {};
+  // The helper now snapshots and restores each property's !important priority too,
+  // so the stub style keeps priorities like CSSStyleDeclaration does.
+  const props = {}, priorities = {};
   return {
     isConnected: true, attrs: {},
     style: {
-      setProperty: (p, v) => { props[p] = v; },
-      removeProperty: (p) => { delete props[p]; },
-      getPropertyValue: (p) => props[p] || ''
+      setProperty: (p, v, priority) => { props[p] = v; priorities[p] = priority || ''; },
+      removeProperty: (p) => { delete props[p]; delete priorities[p]; },
+      getPropertyValue: (p) => props[p] || '',
+      getPropertyPriority: (p) => priorities[p] || ''
     },
     setAttribute(k, v) { this.attrs[k] = v; },
     removeAttribute(k) { delete this.attrs[k]; }

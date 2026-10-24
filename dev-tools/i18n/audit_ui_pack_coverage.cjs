@@ -11,6 +11,7 @@
 //   node dev-tools/i18n/audit_ui_pack_coverage.cjs --namespace=behavior_lens
 //   node dev-tools/i18n/audit_ui_pack_coverage.cjs --json
 //   node dev-tools/i18n/audit_ui_pack_coverage.cjs --namespace=stem --gate
+//   node dev-tools/i18n/audit_ui_pack_coverage.cjs --ratchet      (verify:gate; see coverage_ratchet.cjs)
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -187,6 +188,29 @@ if (BY_NAMESPACE && !JSON_OUTPUT) {
   for (const [group, stats] of Object.entries(report.byNamespace)) {
     console.log(`  ${group.padEnd(26)}${String(stats.sourceKeys).padStart(8)}${String(stats.missing).padStart(10)}${String(stats.invalidType).padStart(10)}${String(stats.passthrough).padStart(13)}${String(stats.translated).padStart(12)}${String(stats.placeholderMismatch).padStart(13)}`);
   }
+}
+
+// verify:gate runs --ratchet: zero-tolerance for invalid types, placeholder
+// mismatches, mirror drift and read errors; missing entries may only go down
+// (see coverage_ratchet.cjs for why --gate could never pass on the full catalog).
+if (argv.includes('--ratchet') || argv.includes('--update-ratchet')) {
+  if (namespace) {
+    console.error('audit_ui_pack_coverage: --ratchet covers the whole catalog; drop --namespace.');
+    process.exit(1);
+  }
+  const hard = errors.length > 0 || totalInvalidType > 0 || totalPlaceholderMismatches > 0 || mirrorDrift > 0;
+  if (hard) console.error(`❌ audit_ui_pack_coverage: errors=${errors.length} invalidType=${totalInvalidType} placeholderMismatches=${totalPlaceholderMismatches} mirrorDrift=${mirrorDrift} (all must be 0).${errors.length ? ' ' + errors.slice(0, 5).join('; ') : ''}`);
+  const code = require('./coverage_ratchet.cjs').run({
+    argv,
+    tool: 'audit_ui_pack_coverage',
+    defaultBaseline: path.join(__dirname, 'ui_pack_coverage_ratchet.json'),
+    current: {
+      perPack: Object.fromEntries(rows.map((row) => [row.slug, row.missing])),
+      perNamespace: Object.fromEntries(Object.entries(namespaceSummary).map(([group, stats]) => [group, stats.missing])),
+    },
+    missingSamples: Object.fromEntries(rows.map((row) => [row.slug, row.missingSample])),
+  });
+  process.exit(hard || code ? 1 : 0);
 }
 
 if (errors.length || (GATE && (totalMissing > 0 || totalInvalidType > 0 || totalPlaceholderMismatches > 0 || mirrorDrift > 0))) process.exit(1);

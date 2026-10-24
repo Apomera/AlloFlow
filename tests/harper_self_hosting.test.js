@@ -83,7 +83,11 @@ describe('self-hosted Harper 2.4.0 runtime', () => {
     for (const sourcePath of sourceFiles) {
       const source = readFileSync(sourcePath, 'utf8');
       expect(source).toContain('value != null && all.indexOf(value) === index');
-      expect(source).not.toContain('.filter(Boolean).slice(0, 3)');
+      // Scoped to the Harper suggestion lines: the audit's judgment queue legitimately
+      // trims empty snippets with .filter(Boolean) (2026-09-13), which is not this concern.
+      const suggestionLines = source.split('\n').filter((line) => line.includes('get_replacement_text'));
+      expect(suggestionLines.length, sourcePath).toBeGreaterThan(0);
+      for (const line of suggestionLines) expect(line.includes('.filter(Boolean)'), sourcePath).toBe(false);
       expect(source).toContain("s || (t('export_preview.writing.remove') || '(remove)')");
     }
   });

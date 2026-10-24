@@ -72,15 +72,18 @@ describe('EPPP distractor warning adjudication wave 01', () => {
       .filter((item) => item.reviewWave === 'eppp-distractor-review-wave-01')
       .map((item) => item.id);
     const retiredIds = docket.retiredAdjudications.map((item) => item.id);
-    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, 2))
+    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, wave01AppliedIds.length))
       .toEqual(wave01AppliedIds);
+    // The wave-49 cleanup cleared every raw distractor warning, so all 23 recorded adjudications
+    // (formerly 20 applied + 3 retired) are now retired history; none may be lost or go stale.
+    expect(diagnostics.priorityDocket).toEqual([]);
     expect(docket).toMatchObject({
       schemaVersion: 2,
       reportType: 'adjudication-aware-editorial-action-docket',
       summary: {
-        rawPriorityDocketItems: 20,
-        currentAdjudicationsApplied: 20,
-        retiredAdjudications: 3,
+        rawPriorityDocketItems: 0,
+        currentAdjudicationsApplied: 0,
+        retiredAdjudications: 23,
         staleAdjudications: 0,
         actionItems: 0,
         learnerFacingItemsChanged: 0,
@@ -89,8 +92,11 @@ describe('EPPP distractor warning adjudication wave 01', () => {
         status: 'pass',
       },
     });
-    expect(wave01AppliedIds).toEqual([reviewedIds[0], reviewedIds[4]]);
-    expect(retiredIds).toEqual(reviewedIds.slice(1, 4));
+    expect(docket.appliedAdjudications).toHaveLength(docket.summary.currentAdjudicationsApplied);
+    expect(retiredIds).toHaveLength(docket.summary.retiredAdjudications);
+    expect(new Set(retiredIds).size).toBe(retiredIds.length);
+    expect(wave01AppliedIds).toEqual([]);
+    expect(reviewedIds.every((id) => retiredIds.includes(id))).toBe(true);
     expect(docket.retiredAdjudications.every(
       (item) => item.retirementReason === 'reviewed-warning-cleared-by-later-quality-work',
     )).toBe(true);

@@ -5,6 +5,7 @@ const paths = ['games_source.jsx', 'games_module.js', 'desktop/web-app/public/ga
 const files = paths.map(path => [path, fs.readFileSync(path, 'utf8')]);
 const source = files[0][1];
 const component = source.slice(source.indexOf('const VennGame ='), source.indexOf('const CauseEffectSortGame ='));
+const tipComponent = source.slice(source.indexOf('const DiagramSortTip ='), source.indexOf('const VennGame ='));
 const countInComponent = value => component.split(value).length - 1;
 
 describe('Venn Sort dialog accessibility', () => {
@@ -51,13 +52,16 @@ describe('Venn Sort dialog accessibility', () => {
     expect(component).toContain('event.stopPropagation()');
   });
 
-  it('announces outcomes and cleans up transient hint state', () => {
+  it('announces outcomes and uses shared untimed sorting support', () => {
     expect(component).toContain('concept_map.venn.victory_title');
     expect(countInComponent('concept_map.venn.move_correct')).toBeGreaterThanOrEqual(2);
-    expect(countInComponent('games.ce_sort.hint_try')).toBeGreaterThanOrEqual(3);
-    expect(component).toContain('useEffect(() => () =>');
-    expect(component).toContain('clearTimeout(hintTimerRef.current)');
-    expect(component).toContain('setLastHint(null)');
+    expect(component).toContain('useDiagramSortHints');
+    expect(component).toContain('DiagramSortTip');
+    expect(component).not.toContain('showZoneHint(item.correctZone)');
+    expect(component).not.toContain('showZoneHint(draggedItem.correctZone)');
+    expect(component).not.toContain('hintTimerRef');
+    expect(tipComponent).toContain('aria-expanded={hints.isOpen}');
+    expect(tipComponent).toContain('aria-controls=');
   });
 
   it('honors reduced motion and hides visual-only icons', () => {
@@ -66,12 +70,12 @@ describe('Venn Sort dialog accessibility', () => {
     expect(component).toContain("reducedMotion ? '' : 'animate-in");
     expect(component).toContain('<Layout size={24} aria-hidden="true"/>');
     expect(component).toContain('<ArrowDown className="rotate-90" size={14} aria-hidden="true"/>');
-    expect(component).toContain('<HelpCircle size={16} aria-hidden="true" />');
+    expect(tipComponent).toContain('<HelpCircle className="shrink-0" size={16} aria-hidden="true" />');
   });
 
   it('marks translated items and set labels with their displayed language', () => {
     expect(component).toContain('const getTitleLang = (key) =>');
-    expect(countInComponent('lang={getTitleLang')).toBeGreaterThanOrEqual(7);
+    expect(countInComponent('lang={getTitleLang')).toBeGreaterThanOrEqual(6);
     expect(component).toContain('lang={getTextLang(item)}');
   });
 

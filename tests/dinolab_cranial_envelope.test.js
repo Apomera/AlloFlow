@@ -46,6 +46,10 @@ describe('Dino Lab clade muzzle silhouettes', () => {
       }
       for(const attr of ['position','normal']) expect(finite[attr],dino.id+' '+attr).toBe(true);
     }
-    for(const scale of scales) expect(profiles.get(scale).size,'unique radius profiles at scale '+scale).toBe(10);
-    expect(finiteByInput.size,'ten exact radius profiles at three scales').toBe(30);
+    // The reviewed Allosaurus, Dilophosaurus and Coelophysis surface profiles
+    // intentionally change this generic-helper grouping from the saved 10 to
+    // 12 distinct inputs. Keep the exact count and every per-species finite
+    // check; actual reviewed native envelopes have separate geometry coverage.
+    for(const scale of scales) expect(profiles.get(scale).size,'unique radius profiles at scale '+scale).toBe(12);
+    expect(finiteByInput.size,'twelve exact radius profiles at three scales').toBe(36);
   });});

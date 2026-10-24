@@ -514,7 +514,7 @@ describe('main resource host: learner studio boundaries and Notebook wiring', ()
     const { submit, downloadSubmissionBackup, addToast } = submissionHarness(history, responses);
     expect(await submit('Learner', {})).toEqual({ ok: false, retryable: true, reason: 'studio-tools-not-ready' });
     expect(downloadSubmissionBackup).not.toHaveBeenCalled();
-    expect(addToast).toHaveBeenCalledExactlyOnceWith('toasts.export_tools_still_loading_try', 'error');
+    expect(addToast).toHaveBeenCalledExactlyOnceWith('toasts.submission_tools_still_loading', 'error');
     expect({ history, responses }).toEqual(before);
   });
 

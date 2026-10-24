@@ -257,7 +257,30 @@
 .diss-directory-item__state[data-tone="hidden"] { border-color: #d3a35c; background: #fff6df; color: #78350f; }
 .diss-directory-item__state[data-tone="prior"] { border-color: #9db8d4; background: #eaf2fb; color: #234b73; }
 [data-dissection-root][data-text-size="large"] .diss-directory-browser :is(.diss-directory-item__name, .diss-directory-search-label) { font-size: 1rem !important; }
-.diss-directory-browser .diss-directory-item[aria-disabled="true"] { background: #f8fafc; cursor: help; }
+.diss-directory-browser .diss-directory-item[data-directory-action="recover"] { background: #f8fafc; cursor: help; }
+/* Keep control text and its authored surface together when the host changes theme. */
+[data-dissection-root][data-high-contrast] .diss-toolbar { background: #f8fafc !important; }
+[data-dissection-root][data-high-contrast] .diss-zoom-bar { background: #f3f7fc !important; }
+[data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item) { background: #fff !important; }
+[data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #203e52 !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: #92400e; --diss-fact-button-surface: #fff; --diss-fact-button-focus: #1766d2; background: linear-gradient(90deg, #fffbeb, #fff7ed) !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: #92400e !important; }
+[data-dissection-root] .diss-biology-fact__position { margin: 0 0 .35rem; font-weight: 700; }
+[data-dissection-root] .diss-biology-fact__nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button { flex: 1; min-width: 0; min-height: 2.75rem; padding: .5rem .65rem; border: 1px solid var(--diss-fact-button-ink); border-color: var(--diss-fact-button-ink) !important; border-radius: .5rem; background: var(--diss-fact-button-surface) !important; color: var(--diss-fact-button-ink) !important; font: inherit; font-weight: 700; line-height: 1.4; cursor: pointer; }
+[data-dissection-root] .diss-biology-fact__nav button:focus-visible { outline: 3px solid var(--diss-fact-button-focus); outline-offset: -5px; box-shadow: none !important; }
+[data-dissection-root] .diss-evidence-metric-heading { flex-wrap: wrap; }
+[data-dissection-root] .diss-evidence-metric-heading > span { min-width: 0; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-evidence-metric-heading > span:last-child { flex: 0 0 auto; }
+[data-dissection-root][data-high-contrast="true"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact) { background: #fff !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #000 !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact { --diss-fact-button-ink: #000; --diss-fact-button-focus: #111827; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact :is(summary, p, span) { color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root][data-high-contrast] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-directory-browser .diss-directory-item, .diss-biology-fact) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: CanvasText; --diss-fact-button-surface: Canvas; --diss-fact-button-focus: Highlight; }
+  [data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title), [data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: CanvasText !important; }
+}
 .diss-directory-browser .diss-directory-item:hover { border-color: #1766d2; background: #eff6ff; }
 .diss-directory-browser .diss-directory-item:focus-visible { outline: 3px solid #1766d2; outline-offset: 1px; }
 .diss-directory-browser .diss-directory-empty { padding: .85rem; font-size: .875rem; line-height: 1.55; }
@@ -349,6 +372,10 @@
 .diss-stat { min-width: 0; padding: .75rem .85rem; border: 1px solid #7fabbf; border-radius: .8rem; background: rgba(15,23,42,.34); }
 .diss-stat__label { display: block; color: #bae6fd; font-size: .875rem; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
 .diss-stat__value { display: block; margin-top: .2rem; color: #fff; font-size: 1rem; font-weight: 800; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+.diss-mission__context { margin: .5rem 0 0; color: #e2edff; font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.diss-mission__overview { min-width: 0; margin-top: .8rem; padding-top: .35rem; border-top: 1px solid #7fabbf; }
+.diss-mission__overview > summary { display: list-item; min-height: 2.75rem; padding: .6rem .2rem; color: #fff; font-size: .875rem; font-weight: 750; line-height: 1.5; cursor: pointer; overflow-wrap: anywhere; }
+.diss-mission__overview .diss-mission__stats { margin-top: .7rem; }
 .diss-workspace-mode__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; gap: .4rem; padding: .3rem; border: 1px solid #9cb3cc; border-radius: .75rem; background: #edf3fa; }
 .diss-workspace-mode__choices button { min-width: 0; min-height: 3rem !important; padding: .6rem .65rem; border: 1px solid #9cb3cc; border-radius: .55rem; background: #fff; color: #274563; font-size: .875rem; font-weight: 800; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
 .diss-workspace-mode__choices button[aria-pressed="true"] { border: 3px solid #1766d2; background: #1766d2; color: #fff; text-decoration: underline; text-underline-offset: .18em; }
@@ -378,7 +405,7 @@
   overflow-wrap: anywhere;
   cursor: pointer;
 }
-.diss-mode-rail .diss-route-button[data-active="true"] { border: 3px solid #1766d2; background: #eaf3ff; color: #154a7e; text-decoration: underline; text-underline-offset: .18em; }
+.diss-mode-rail .diss-route-button[data-active="true"] { border: 3px solid #0f766e; background: #e9f7f3; color: #134e4a; text-decoration: underline; text-underline-offset: .18em; }
 .diss-mode-rail .diss-route-button:disabled { border-style: dashed; background: #f1f5f9; color: #475569; opacity: 1; cursor: not-allowed; }
 [data-dissection-root][data-workspace-mode="essentials"] .diss-advanced-only,
 [data-dissection-root][data-workspace-mode="essentials"] .diss-shortcuts,
@@ -445,10 +472,11 @@
   .diss-objective-item__meter span { forced-color-adjust: none; background: Highlight; }
 }
 .diss-picker, .diss-layer-stepper { padding: .75rem; border: 1px solid var(--diss-line); border-radius: 1rem; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.05); }
-.diss-section-heading { display: flex; align-items: end; justify-content: space-between; gap: .75rem; margin-bottom: .55rem; }
+.diss-section-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .65rem; }
 .diss-section-heading h3 { margin: 0; color: #193454; font-size: .8rem; font-weight: 900; }
 .diss-section-heading p { margin: 0; color: var(--diss-muted); font-size: .68rem; }
 .diss-specimen-rail { display: flex; gap: .45rem; overflow-x: auto; padding: .15rem .05rem .35rem; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.diss-specimen-scroll-help { margin: .35rem .05rem 0; color: #52647d; font-size: .875rem; line-height: 1.5; }
 .diss-specimen-tab {
   min-height: 2.75rem !important;
   flex: 0 0 auto;
@@ -458,11 +486,17 @@
   border-radius: .8rem;
   background: #f8fafc;
   color: #435771;
-  font-size: .74rem;
-  font-weight: 850;
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.45;
   cursor: pointer;
 }
-.diss-specimen-tab[aria-selected="true"] { border-color: #1766d2; background: linear-gradient(135deg, #1766d2, #0b7a77); box-shadow: 0 7px 18px rgba(23,102,210,.2); color: #fff; }
+.diss-specimen-tab[aria-selected="true"] { border-color: #0f766e; background: #0f766e; box-shadow: inset 0 0 0 1px #0f766e; color: #fff; text-decoration: underline; text-underline-offset: .18em; }
+@container dissection (min-width: 960px) {
+  .diss-specimen-rail { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; align-items: stretch; }
+  .diss-specimen-tab { min-width: 0; min-height: 3.5rem !important; padding: .55rem .4rem; white-space: normal; overflow-wrap: anywhere; }
+  .diss-specimen-scroll-help { display: none; }
+}
 .diss-layer-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: .5rem; padding: .2rem; }
 .diss-layer-button {
   min-height: 5rem !important;
@@ -520,6 +554,7 @@
 [data-dissection-root] .diss-toolbar { max-width: 100%; min-width: 0; gap: .5rem !important; padding: .6rem !important; border-color: #9db2c7; }
 [data-dissection-root] .diss-toolbar__label { padding-inline: .25rem; color: #334155; font-size: .875rem; line-height: 1.45; letter-spacing: .04em; }
 [data-dissection-root] .diss-toolbar > button { min-height: 3rem !important; max-width: 100%; padding: .65rem .8rem; border: 1px solid #9db2c7; background: #fff; color: #334155; font-size: 1rem !important; line-height: 1.45 !important; white-space: normal; text-align: start; box-shadow: none; }
+[data-dissection-root] .diss-layer-stepper .diss-toolbar { gap: .4rem !important; padding: .35rem !important; border-radius: .75rem !important; }
 [data-dissection-root][data-workspace-mode="advanced"] #diss-lab-tools, [data-dissection-root] #diss-study-tools { display: grid !important; }
 #diss-lab-tools, #diss-study-tools { min-width: 0; gap: .65rem !important; padding: .85rem !important; border-color: #9fb8b0; background: #f0f8f4; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 #diss-study-tools { grid-template-columns: repeat(3, minmax(0, 1fr)); border-color: #c9b894; background: #fff9ed; }
@@ -847,10 +882,10 @@
 .diss-workspace { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem); align-items: start; gap: 1rem !important; }
 .diss-primary-column, .diss-sidebar { min-width: 0; }
 .diss-primary-column { display: grid; gap: .85rem; }
-.diss-stage { overflow: hidden; padding: .9rem; border: 1px solid #c3d3d4; border-radius: 1.15rem; background: #fff; box-shadow: 0 8px 26px rgba(24,63,67,.07); }
-.diss-stage__header { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .2rem 0 .55rem; margin-bottom: .65rem; border-bottom: 1px solid #e1ebea; }
-.diss-stage__eyebrow { color: #0f766e; font-size: .62rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
-.diss-stage__title { margin: .25rem 0 0; color: #102f37; font-size: 1.08rem; line-height: 1.4; font-weight: 850; }
+.diss-stage { overflow: hidden; padding: .9rem; border: 1px solid #abc8c5; border-radius: 1.15rem; background: #fff; box-shadow: 0 6px 22px rgba(24,63,67,.08); }
+.diss-stage__header { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .2rem .1rem .7rem; margin-bottom: .7rem; border-bottom: 1px solid #d8e7e3; }
+.diss-stage__eyebrow { color: #0f766e; font-size: .75rem; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.diss-stage__title { margin: .25rem 0 0; color: #102f37; font-size: 1.2rem; line-height: 1.4; font-weight: 800; }
 .diss-stage__status { max-width: 50%; padding: .42rem .6rem; border: 1px solid #cbdcf0; border-radius: 999px; background: #eef6ff; color: #24517f; font-size: .68rem; font-weight: 850; text-align: right; }
 .diss-stage__handoff { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: .28rem .55rem; margin: -.1rem 0 .58rem; padding: .48rem .58rem; border: 1px solid #93b4d7; border-radius: .7rem; background: #eff6ff; color: #174d86; }
 .diss-stage__handoff[data-tone="ready"], .diss-stage__handoff[data-tone="complete"] { border-color: #059669; background: #ecfdf5; color: #065f46; }
@@ -949,8 +984,16 @@
 @media (forced-colors: active) { .diss-replay-specimen, .diss-replay-jump { border-color: CanvasText; background: Canvas; color: CanvasText; } .diss-replay-jump:focus-visible { outline-color: Highlight; } }
 .diss-canvas-layout { display: grid; gap: .65rem; }
 .diss-canvas-layout[data-split="true"] { grid-template-columns: minmax(0, 1fr) minmax(11rem, .56fr); align-items: stretch; }
-.diss-canvas-frame { overflow: hidden; padding: .55rem; border: 1px solid #9fb8ba; border-radius: 1rem; background: linear-gradient(135deg, #eaf2f1, #d8e5e5 55%, #c8d9da); box-shadow: inset 0 1px 0 #fff, 0 5px 16px rgba(24,63,67,.10); }
-.diss-canvas { display: block; width: min(100%, 650px) !important; height: auto; margin: 0 auto; border: 0 !important; border-radius: .65rem !important; box-shadow: 0 2px 12px rgba(24,63,67,.14); }
+.diss-canvas-frame { overflow: hidden; padding: .55rem; border: 1px solid #b5ccc8; border-radius: 1rem; background: #edf4f2; box-shadow: inset 0 1px 0 #fff; }
+.diss-canvas { display: block; width: min(100%, 650px) !important; height: auto; margin: 0 auto; border: 0 !important; border-radius: .65rem !important; box-shadow: 0 2px 8px rgba(24,63,67,.08); }
+[data-dissection-root] .diss-canvas:focus-visible { outline: 3px solid #1766d2; outline-offset: -5px; box-shadow: none; }
+[data-dissection-root][data-high-contrast="true"] .diss-canvas-frame { border-color: #111827; background: #fff; box-shadow: none; }
+[data-dissection-root][data-high-contrast="true"] .diss-canvas:focus-visible { outline-color: #111827; }
+@container dissection (max-width: 520px) { .diss-canvas-frame { padding: .3rem; border-radius: .8rem; } }
+@media (forced-colors: active) {
+  [data-dissection-root] .diss-canvas-frame { border-color: CanvasText; background: Canvas; box-shadow: none; }
+  [data-dissection-root] .diss-canvas:focus-visible { outline-color: Highlight !important; }
+}
 .diss-split-reference { display: flex; min-width: 0; flex-direction: column; gap: .75rem; padding: 1rem; border: 1px solid #91a8c4; border-radius: 1rem; background: #0f172a; color: #e2e8f0; }
 .diss-split-reference__header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .75rem; }
 .diss-split-reference__header > div { display: grid; flex: 1 1 10rem; min-width: 0; gap: .35rem; }
@@ -2474,12 +2517,13 @@
 [data-dissection-root] .diss-protocol > div[data-aligned="false"] .diss-protocol__state { color: #92400e; }
 [data-dissection-root] .diss-protocol__help { margin: .65rem 0 0; }
 [data-dissection-root] .diss-protocol .diss-protocol__align { min-height: 3rem !important; max-width: 100%; margin: 0; padding: .6rem .85rem; border: 2px solid #0f766e; border-radius: .55rem; background: #0f766e; color: #fff; white-space: normal; text-align: start; }
-[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
-[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
+[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { --diss-protocol-focus: #1766d2; border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
+[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid var(--diss-protocol-focus, #fff) !important; outline-offset: -5px !important; box-shadow: none !important; }
 [data-dissection-root] .diss-protocol__landmarks { margin: 0; padding-left: 1.25rem; list-style: disc; }
 [data-dissection-root] .diss-protocol__landmarks li + li { margin-top: .35rem; }
 [data-dissection-root][data-text-size="large"] .diss-protocol :is(dt, dd, p, span, strong, li, button) { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-protocol-align { --diss-protocol-focus: #111827; }
 @container dissection (max-width: 760px) { [data-dissection-root] .diss-protocol, [data-dissection-root] .diss-protocol__views { grid-template-columns: minmax(0, 1fr); } }
 @media (forced-colors: active) { [data-dissection-root] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline-color: Highlight !important; } }
 .diss-selection-header { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .55rem .75rem; margin-bottom: .5rem; }
@@ -2568,7 +2612,7 @@
 [data-dissection-root][data-text-size="large"] .diss-mission :is(p, li, span, button) { font-size: 1rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-mission { border-color: #111827; background: #fff; color: #000; box-shadow: none; }
 [data-dissection-root][data-high-contrast="true"] .diss-mission::after { display: none; }
-[data-dissection-root][data-high-contrast="true"] .diss-mission :is(p, h2, li, span, button) { color: #000; }
+[data-dissection-root][data-high-contrast="true"] .diss-mission :is(p, h2, li, span, button, summary) { color: #000; }
 [data-dissection-root][data-high-contrast="true"] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button) { border-color: #111827; background: #fff; }
 [data-dissection-root][data-high-contrast="true"] .diss-mission-shortcuts button:focus-visible { outline-color: #111827; }
 [data-dissection-root][data-high-contrast="true"] .diss-workflow li[aria-current="step"] { text-decoration: underline; text-underline-offset: .15em; }
@@ -2579,7 +2623,7 @@
 @media (forced-colors: active) {
   [data-dissection-root] .diss-mission { border-color: CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }
   .diss-mission::after { display: none; }
-  [data-dissection-root] .diss-mission :is(p, h2, li, span, button) { color: CanvasText; }
+  [data-dissection-root] .diss-mission :is(p, h2, li, span, button, summary) { color: CanvasText; }
   [data-dissection-root] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button) { border-color: CanvasText; background: Canvas; }
   .diss-workflow li[aria-current="step"] { border-width: 3px; text-decoration: underline; text-underline-offset: .15em; }
 }
@@ -2590,7 +2634,11 @@
 [data-dissection-root][data-high-contrast="true"] .diss-mode-rail button { border-color: #111827; background: #fff; color: #000; }
 [data-dissection-root][data-high-contrast="true"] .diss-mode-rail button:focus-visible { outline-color: #111827; }
 @container dissection (max-width: 980px) { .diss-mode-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diss-workspace-mode__choices { grid-column: 1 / -1; justify-self: end; width: min(100%, 22rem); } }
-@container dissection (max-width: 440px) { .diss-mode-rail { grid-template-columns: minmax(0, 1fr); } .diss-workspace-mode__choices { justify-self: stretch; width: 100%; } }
+@container dissection (max-width: 520px) {
+  .diss-mode-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diss-mode-rail .diss-route-button { min-height: 3.5rem !important; padding: .55rem .45rem; font-size: .875rem; line-height: 1.45; }
+  .diss-workspace-mode__choices { grid-column: 1 / -1; justify-self: stretch; width: 100%; }
+}
 @media (forced-colors: active) {
   [data-dissection-root] .diss-mode-rail, [data-dissection-root] .diss-workspace-mode__choices { border-color: CanvasText; background: Canvas; }
   [data-dissection-root] .diss-mode-rail button { border-color: CanvasText; background: Canvas; color: CanvasText; }
@@ -2683,6 +2731,50 @@
   }
   function isPlainDissectionRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+  function dissectionEvidenceNote(notes, key) {
+    var value = notes && notes[key];
+    return typeof value === 'string' ? value : '';
+  }
+  function normalizeDissectionDisplayPreferences(data) {
+    data = data || {};
+    return {
+      procedureMode: data.procedureMode === 'independent' ? 'independent' : 'guided',
+      livingFunctionEnabled: !!data.livingFunctionEnabled,
+      livingFunctionPaused: !!data.livingFunctionPaused,
+      visualRealism: ['guided', 'realistic', 'accessible'].indexOf(data.visualRealism) >= 0 ? data.visualRealism : 'guided',
+      labLight: ['neutral', 'warm', 'cool'].indexOf(data.labLight) >= 0 ? data.labLight : 'neutral',
+      inspectionLens: !!data.inspectionLens,
+      lensPinned: !!data.lensPinned,
+      macroInset: data.macroInset !== false,
+      sceneDetail: data.sceneDetail !== false,
+      depthAtlas: data.depthAtlas !== false,
+      tissueRelief: data.tissueRelief !== false,
+      relationshipMotion: data.relationshipMotion !== false,
+      focusMode: data.focusMode !== false,
+      parallaxDepth: data.parallaxDepth !== false,
+      splitComparison: !!data.splitComparison,
+      lightDirection: ['overhead', 'left', 'right', 'raking'].indexOf(data.lightDirection) >= 0 ? data.lightDirection : 'overhead',
+      crossSectionMode: !!data.crossSectionMode,
+      specimenCondition: ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen'].indexOf(data.specimenCondition) >= 0 ? data.specimenCondition : 'standard',
+      relationshipMode: !!data.relationshipMode,
+      renderQuality: ['auto', 'high', 'balanced'].indexOf(data.renderQuality) >= 0 ? data.renderQuality : 'auto'
+    };
+  }
+  function dissectionWorkspaceSettings(data, mode) {
+    var settings = normalizeDissectionDisplayPreferences(data);
+    if (mode === 'advanced') return settings;
+    return Object.assign(settings, {
+      procedureMode: 'guided', procedureScenario: 'precision-access',
+      visualRealism: 'guided', labLight: 'neutral', lightDirection: 'overhead',
+      inspectionLens: false, lensPinned: false, macroInset: false,
+      sceneDetail: true, depthAtlas: false, relationshipMotion: false, parallaxDepth: false,
+      splitComparison: false, beforeTechniqueView: false,
+      crossSectionMode: false, specimenCondition: 'standard', relationshipMode: false,
+      renderQuality: 'auto', livingFunctionEnabled: false, livingFunctionPaused: false,
+      traceNervous: false, traceCirculation: false, traceDigestion: false,
+      traceRespiration: false, traceExcretory: false, showEndocrine: false, animSpeed: 'normal'
+    });
   }
   function dissectionUndoFieldsForAction(action) {
     return ({
@@ -2903,6 +2995,10 @@
     for (var mapIndex = 0; mapIndex < mapFields.length; mapIndex++) {
       var mapField = mapFields[mapIndex];
       if (data[mapField] != null && !isPlainDissectionRecord(data[mapField])) return { ok: false, kind: 'unsafe-shape', field: mapField, raw: raw };
+    }
+    var noteKeys = Object.keys(data.organNotes || {});
+    for (var noteIndex = 0; noteIndex < noteKeys.length; noteIndex++) {
+      if (typeof data.organNotes[noteKeys[noteIndex]] !== 'string') return { ok: false, kind: 'unsafe-shape', field: 'organNotes.' + noteKeys[noteIndex], raw: raw };
     }
     var arrayFields = ['annotations', 'quizReviewQueue', 'visualEvidence'];
     for (var arrayIndex = 0; arrayIndex < arrayFields.length; arrayIndex++) {
@@ -3240,6 +3336,31 @@
   }
   function defaultDissectionInquiry() {
     return { specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+  }
+  function dissectionSentenceExcerpt(value, limit) {
+    var text = typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+    if (!text) return '';
+    var sentences = [], start = 0, boundary = /[.!?]["'\u201d\u2019)\]]*(?=\s|$)/g, match;
+    var count = Math.max(1, Math.floor(Number(limit) || 1));
+    while ((match = boundary.exec(text))) {
+      var before = text.slice(start, match.index + 1);
+      // A decimal point has no following space. Common abbreviations and
+      // initials need a separate check before treating a period as a boundary.
+      if (text.charAt(match.index) === '.' && (/(?:\b(?:e\.g|i\.e|etc|vs|approx|fig|no|dr|mr|mrs|ms|prof|st)|\b[A-Z]|(?:\b[A-Z]\.)+[A-Z])\.$/i.test(before))) continue;
+      var end = match.index + match[0].length;
+      sentences.push(text.slice(start, end).trim());
+      start = end;
+      if (sentences.length >= count) return sentences.join(' ');
+    }
+    if (text.slice(start).trim()) sentences.push(text.slice(start).trim());
+    var excerpt = sentences.join(' ');
+    return /[.!?]["'\u201d\u2019)\]]*$/.test(excerpt) ? excerpt : excerpt + '.';
+  }
+  function dissectionStructureCue(organ, kind) {
+    var field = kind === 'observation' ? 'observationCue' : (kind === 'explanation' ? 'assessmentExplanation' : 'functionClue');
+    var authored = organ && typeof organ[field] === 'string' ? organ[field].replace(/\s+/g, ' ').trim() : '';
+    if (authored) return /[.!?]["'\u201d\u2019)\]]*$/.test(authored) ? authored : authored + '.';
+    return dissectionSentenceExcerpt(organ && organ.fn, kind === 'explanation' ? 2 : 1) || 'Description not available.';
   }
   function dissectionInquiryMetrics(inquiry) {
     var damage = (inquiry.layerDepth * inquiry.timePress) / Math.max(1, inquiry.careLevel * (inquiry.specimenSize / 8));
@@ -4066,19 +4187,19 @@ var d = labToolData.dissection || {};
 
                   { id: 'gallbladder', name: 'Gallbladder', x: 0.53, y: 0.45, fn: 'Small green sac between liver lobes. Stores/concentrates bile. Bright green color \u2014 key dissection landmark.', clinical: 'Bright green color makes it one of the easiest organs to identify in dissection.' },
 
-                  { id: 'stomach', name: 'Stomach', x: 0.41, y: 0.51, fn: 'J-shaped muscular organ. Frogs swallow prey whole and use eye retraction to push food down.', clinical: 'Frogs push food into stomach by retracting eyes into mouth roof \u2014 unique swallowing mechanism.' },
+                  { id: 'stomach', name: 'Stomach', x: 0.41, y: 0.51, fn: 'An expandable muscular sac stores food and begins digestion. Its narrower pyloric end continues into the duodenum.', clinical: 'Trace the gastric body through the pyloric neck and duodenum into the coiled intestine. The unopened surface is smooth; digestive folds lie inside.' },
 
-                  { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.59, fn: 'Coiled tube (duodenum + ileum). Primary nutrient absorption site. Shorter than in herbivorous tadpoles.', clinical: 'Tadpoles (herbivores) have much longer intestines than adult frogs (carnivores) \u2014 diet drives gut length.' },
+                  { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.59, fn: 'Coiled tube (duodenum + ileum). Primary nutrient absorption site. Intestinal length changes with diet and developmental stage.', clinical: 'Tadpole diets and gut proportions vary among species. Metamorphosis reorganizes the gut as feeding changes.' },
 
                   { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.66, fn: 'Short wide tube to cloaca. Absorbs water. Opens into cloaca (shared digestive/urinary/reproductive exit).', clinical: 'The cloaca \u2014 shared exit for 3 systems \u2014 is the ancestral vertebrate condition; separate openings evolved later.' },
 
-                  { id: 'spleen', name: 'Spleen', x: 0.41, y: 0.55, fn: 'Small reddish organ near stomach. Filters blood, removes old RBCs, immune function.', clinical: 'Spleen plus antimicrobial skin peptides form a dual immune defense system.' },
+                  { id: 'spleen', name: 'Spleen', x: 0.41, y: 0.55, fn: 'A small, compact dark-red organ in the intestinal mesentery. Filters blood, removes old red blood cells, and supports immune responses.', clinical: 'Compare its compact outline with the long, flat spleen of the fetal pig.' },
 
-                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.62, fn: "Elongated paired organs along the dorsal body wall. Filter blood and help regulate water and salts; urine drains toward the cloaca.", clinical: "Amphibian and mammalian kidneys differ in development and organization. Living species are not steps on a ladder from primitive to advanced." },
+                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.62, fn: 'Elongated, flattened paired organs along the dorsal body wall filter blood and regulate water and salts. Urine drains toward the cloaca. Small yellow-brown adrenal patches adhere to their ventral surfaces.', clinical: 'Locate the exposed lower renal surfaces behind the intestinal loops. Compare the irregular ochre adrenal patches with the darker kidney tissue around them.' },
 
-                  { id: 'fat_bodies', name: 'Fat Bodies', x: 0.43, y: 0.42, fn: 'Yellow finger-like structures on kidneys/gonads. Energy reserves for hibernation and reproduction.', clinical: 'Fat body size indicates nutritional status \u2014 shrunken = environmental stress.' },
+                  { id: 'fat_bodies', name: 'Fat Bodies', x: 0.43, y: 0.42, fn: 'Yellow, finger-like fat stores near the anterior gonads. Provide energy for periods of reduced feeding and reproduction.', clinical: 'Fat reserves vary with feeding, season and reproductive condition; size alone does not establish environmental stress.' },
 
-                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.54, fn: 'Thin pale organ between stomach and duodenum. Produces digestive enzymes and insulin/glucagon.', clinical: 'Frog pancreatic islets used in early insulin research.' },
+                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.54, fn: 'Thin pale tissue between the stomach and duodenum. Produces digestive enzymes and the hormones insulin and glucagon.', clinical: 'Locate its pale irregular surface between the stomach and duodenum, then follow the neighboring gut course.' },
 
                   { id: 'cloaca', name: 'Cloaca', x: 0.50, y: 0.72, fn: 'Common chamber for digestive, urinary, and reproductive output. Present in amphibians, reptiles, birds.', clinical: 'Represents ancestral vertebrate design \u2014 separate openings evolved independently in mammals.' }
 
@@ -4108,7 +4229,7 @@ var d = labToolData.dissection || {};
 
                 nervous: [
 
-                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.17, fn: 'Small brain with prominent optic lobes (largest region). Olfactory lobes, cerebrum, cerebellum (small), medulla.', clinical: 'Vision dominates \u2014 classic Lettvin 1959 study: "What the Frog\'s Eye Tells the Frog\'s Brain."' },
+                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.17, fn: 'Contains olfactory regions, paired smooth cerebral hemispheres, prominent optic lobes, a narrow cerebellum, and a medulla continuous with the spinal cord.', clinical: 'Compare the smooth paired regions and narrow cerebellum, then trace continuity into the spinal cord.' },
 
                   { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.44, fn: '10 spinal nerve pairs. Ends with filum terminale. Classic spinal frog preparation demonstrates reflexes.', clinical: 'A "spinal frog" (brain destroyed) still shows coordinated reflex responses \u2014 foundational neuroscience.' },
 
@@ -4118,7 +4239,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'cranial_n', name: 'Cranial Nerves', x: 0.57, y: 0.20, fn: '10 pairs (mammals have 12). Key: optic (II, large), trigeminal (V), vagus (X, viscera).', clinical: 'Frogs have 10 cranial nerve pairs vs 12 in mammals \u2014 lacking spinal accessory (XI) and hypoglossal (XII).' },
 
-                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.16, fn: 'Largest brain region processing visual "bug detector" neurons \u2014 respond to small moving dark objects.', clinical: 'Optic tectum "bug detectors" inspired early computer vision and AI motion detection algorithms.' }
+                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.16, fn: 'Paired midbrain structures that receive visual input and help guide orienting and prey-catching behavior.', clinical: 'Visual processing begins in the retina and continues through brain circuits, including the optic tectum.' }
 
                 ]
 
@@ -4143,7 +4264,7 @@ var d = labToolData.dissection || {};
               objectiveTargets: [['aortic_arches'], ['circular_m', 'longitudinal_m'], ['nephridia'], ['clitellum']],
               specTerms: [
                 { term: 'Peristalsis', def: 'Wave-like contraction of circular and longitudinal muscles for locomotion.' },
-                { term: 'Nephridium', def: 'Excretory tubule in each segment; filters coelomic fluid similar to a kidney nephron.' },
+                { term: 'Nephridium', def: 'A coiled excretory tubule; paired metanephridia occur in most Lumbricus segments.' },
                 { term: 'Aortic arch', def: 'One of five paired muscular vessels that pump blood; analogous to a heart.' },
                 { term: 'Clitellum', def: 'Glandular band that secretes a cocoon for egg deposition.' },
                 { term: 'Setae', def: 'Chitinous bristles providing traction during locomotion.' }
@@ -4196,21 +4317,21 @@ var d = labToolData.dissection || {};
 
                   { id: 'intestine', name: 'Intestine', x: 0.50, y: 0.58, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
 
-                  { id: 'aortic_arches', name: "Aortic Arches (5 pairs)", x: 0.52, y: 0.23, fn: '5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.', clinical: "These contractile vessels pump blood between major vessels. They are not five miniature vertebrate hearts." },
+                  { id: 'aortic_arches', name: "Aortic Arches (5 pairs)", x: 0.52, y: 0.23, fn: 'Five pairs of contractile vessels wrap around the esophagus and move blood from the dorsal vessel to the ventral vessel in the closed circulatory system.', clinical: "These contractile vessels pump blood between major vessels. They are not five miniature vertebrate hearts." },
 
-                  { id: 'nephridia', name: 'Nephridia', x: 0.54, y: 0.52, fn: 'Paired excretory organs per segment. Filter coelomic fluid. Equivalent of kidneys.', clinical: 'Segmentally repeated kidneys \u2014 unique annelid design with one pair per segment.' },
+                  { id: 'nephridia', name: 'Nephridia', x: 0.54, y: 0.52, fn: 'Pale, coiled excretory tubules occur as pairs in most segments. Each connects a coelomic funnel to a body-wall outlet.', clinical: 'Compare their roles in waste removal and water balance with vertebrate kidneys; their structures differ. The drawing shows representative pairs.' },
 
-                  { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.50, y: 0.25, fn: 'White organs (segments 9-12). Store sperm. Earthworms are hermaphrodites but cross-fertilize.', clinical: 'Despite being hermaphrodites, self-fertilization is rare \u2014 they mate with partners.' }
+                  { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.50, y: 0.25, fn: 'Three pairs of irregular, pale sacs in the anterior reproductive region. They support maturation and storage of the worm\'s own sperm. The posterior pair is largest.', clinical: 'Seminal vesicles hold the worm\'s own developing sperm; seminal receptacles instead receive sperm from a partner.' }
 
                 ],
 
                 nervous: [
 
-                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12, fn: 'Paired ganglia above pharynx (segment 3). Process sensory input. "Brain."', clinical: 'Very simple \u2014 a headless earthworm can still burrow, eat, and mate.' },
+                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12, fn: 'Paired pale ganglia lie dorsally in the anterior region. Lateral connectives pass around the pharynx to a subpharyngeal ganglion and the ventral nerve cord.', clinical: 'Trace continuity between the paired cerebral ganglia, the surrounding connectives and the ventral cord.' },
 
-                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.58, fn: 'Runs entire ventral length. Giant fibers enable rapid escape contraction (20-45 m/s).', clinical: 'Giant axons transmit signals fast \u2014 enabling rapid withdrawal when disturbed.' },
+                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.58, fn: 'A compact ventral nerve cord links segmental ganglia and carries signals along the body. Closely united longitudinal components appear as one cord.', clinical: 'The slight lateral displacement in this teaching view reveals the ventral course; it does not place the cord on the dorsal surface.' },
 
-                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.51, y: 0.44, fn: 'Paired ganglia per segment. Control local reflexes independently.', clinical: 'Each ganglion controls its segment \u2014 why cut segments still move.' }
+                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.51, y: 0.44, fn: 'Ganglia along the ventral cord coordinate segmental motor activity and local reflexes. The drawing shows representative swellings; anatomical repetition occurs in every segment.', clinical: 'Look for continuity between each swelling and the cord. Local reflex activity does not imply that a separated segment can survive independently.' }
 
                 ]
 
@@ -4230,7 +4351,7 @@ var d = labToolData.dissection || {};
               specTerms: [
                 { term: 'Diaphragm', def: 'Dome-shaped respiratory muscle separating thorax from abdomen; mammalian innovation.' },
                 { term: 'Umbilical vein', def: 'Carries oxygenated blood from placenta to fetus through the umbilical cord.' },
-                { term: 'Spiral colon', def: 'Uniquely porcine coiled large intestine resembling a watch spring.' },
+                { term: 'Spiral colon', def: 'A tightly coiled part of the porcine ascending colon; ruminants also have spiral colons with a different organization.' },
                 { term: 'Urachus', def: 'Fetal canal connecting the bladder to the umbilicus; becomes the median umbilical ligament.' },
                 { term: 'Xenotransplantation', def: 'Transplanting cells, tissues, or organs between species; pigs are studied as donor sources, but immune, infectious, and physiological barriers remain.' }
               ],
@@ -4279,19 +4400,21 @@ var d = labToolData.dissection || {};
 
                   { id: 'liver_p', name: 'Liver', x: 0.55, y: 0.44, fn: 'Five gross lobes, with a more visibly lobated form than the human liver. Core roles include bile production, metabolism, protein synthesis, and glycogen storage.', clinical: 'Pig liver is studied as a comparative and transplantation model; shared roles do not imply identical anatomy or physiology.' },
 
-                  { id: 'stomach_p', name: 'Stomach', x: 0.54, y: 0.49, fn: 'Monogastric stomach with cardiac, fundic, and pyloric regions that produces acid and pepsin. Shape and mucosal regions remain species-specific.', clinical: 'The porcine stomach is a useful monogastric comparison, not a direct substitute for human gastric anatomy.' },
+                  { id: 'stomach_p', name: 'Stomach', x: 0.54, y: 0.49, fn: 'Monogastric stomach with cardiac, fundic, and pyloric regions that produces acid and pepsin. Shape and mucosal regions remain species-specific.', clinical: 'Trace the pyloric neck into the duodenum and proximal intestine. Compare porcine and human gastric anatomy while retaining species and developmental differences.' },
 
                   { id: 'sm_int_p', name: 'Small Intestine', x: 0.59, y: 0.55, fn: 'Long (~15m adult). Duodenum, jejunum, ileum. Villi for nutrient absorption.', clinical: 'Proportionally longer than human \u2014 used for surgical anastomosis training.' },
 
-                  { id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Spiral colon is uniquely porcine \u2014 coiled like a watch spring.' },
+                  { id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Pigs and ruminants have different spiral-colon arrangements; compare the overall course of the gut as well as its coils.' },
 
-                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Bean-shaped, retroperitoneal, multipyramidal kidneys that filter blood and regulate fluid and electrolytes. Vascular and collecting-system details are porcine.', clinical: 'Pig kidneys are studied for xenotransplantation, but immune compatibility, infection risk, and physiological fit require dedicated evaluation.' },
+                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Paired, smooth, bean-shaped kidneys lie against the dorsal body wall. They filter blood and help regulate water and salts. Blood vessels and the ureter pass through each medial hilum.', clinical: 'Identify the continuous outer capsule and medial indentation. Internal cortex, medulla, pyramids and collecting calyces are seen after the kidney is opened.' },
 
-                  { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
+                  { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'A prominent, lobulated immune organ in fetal and young pigs. Thymic tissue extends through the neck toward the cranial thorax and supports T-cell maturation.', clinical: 'Observe its exposed lobulated surface near the cranial heart and lungs. Its size and organization change with age.' },
 
                   { id: 'pancreas_p', name: 'Pancreas', x: 0.60, y: 0.53, fn: 'Produces exocrine digestive enzymes and the endocrine hormones insulin and glucagon. Gross form, ducts, and tissue properties are porcine.', clinical: 'Porcine insulin treated human diabetes before recombinant human insulin; shared hormone function does not make the organs anatomically identical.' },
 
-                  { id: 'bladder_p', name: 'Urinary Bladder', x: 0.67, y: 0.53, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' }
+                  { id: 'bladder_p', name: 'Urinary Bladder', x: 0.67, y: 0.53, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' },
+
+                  { id: 'spleen_p', name: 'Spleen', x: 0.517, y: 0.506, fn: 'A flat, elongated organ beside the stomach that filters blood and supports immune function.', clinical: 'Identify its long outline along the greater curvature of the stomach. Compare its shape with the compact frog spleen.' }
 
                 ],
 
@@ -4342,10 +4465,10 @@ var d = labToolData.dissection || {};
               objectiveTargets: [['gills'], ['heart_f', 'gills'], ['swim_bladder'], ['lat_line']],
               specTerms: [
                 { term: 'Operculum', def: 'Bony gill cover that protects gills and actively pumps water for respiration.' },
-                { term: 'Countercurrent exchange', def: 'Blood flows opposite to water across gills, maximizing O\u2082 extraction (~80%).' },
+                { term: 'Countercurrent exchange', def: 'Blood and water flow in opposite directions across the gill exchange surface, helping maintain an oxygen gradient.' },
                 { term: 'Swim bladder', def: 'Gas-filled organ homologous to lungs; provides neutral buoyancy without effort.' },
                 { term: 'Lateral line', def: 'Sensory system detecting water pressure changes for navigation and predator detection.' },
-                { term: 'Pyloric ceca', def: 'Finger-like pouches at stomach-intestine junction unique to fish; increase absorption area.' }
+                { term: 'Pyloric ceca', def: 'Blind-ended pouches near the stomach-intestine junction that add digestive and absorptive surface.' }
               ],
 
               layers: [
@@ -4386,19 +4509,19 @@ var d = labToolData.dissection || {};
 
                   { id: 'gills', name: 'Gills', x: 0.31, y: 0.44, fn: 'Gill arches bear filaments with thin lamellae that provide gas-exchange area. Water and blood flow in opposite directions across the exchange region, helping maintain an oxygen gradient. Extraction varies with conditions; no fixed percentage applies.', clinical: 'Compare the thin exchange surface and water flow with air movement in lungs. The water and blood remain separated by the exchange barrier.' },
 
-                  { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51, fn: "One atrium and one ventricle are the main pumping chambers. Single circulation: heart → gills → body → heart. Associated inflow and outflow regions are not counted as additional pumping chambers.", clinical: "Compare single circulation in perch with the two circulation routes in amphibians and mammals. This comparison is not a linear evolutionary ladder." },
+                  { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51, fn: "One atrium and one muscular ventricle are the main pumping chambers. Blood passes through the sinus venosus, atrium, ventricle and bulbus arteriosus to the ventral aorta, then through the gills and body before returning to the heart.", clinical: "Compare single circulation in perch with the two circulation routes in amphibians and mammals. This comparison is not a linear evolutionary ladder." },
 
                   { id: 'swim_bladder', name: 'Swim Bladder', x: 0.51, y: 0.40, fn: "Gas-filled sac that regulates buoyancy. Gas is added and removed through the blood in this closed swim bladder. Gill surfaces perform gas exchange with the water.", clinical: 'Homologous to the tetrapod lung \u2014 both evolved from pharyngeal outpocketing in ancestral fish.' },
 
                   { id: 'liver_f', name: 'Liver', x: 0.40, y: 0.47, fn: 'Large lobed organ. Bile production, glycogen/lipid storage.', clinical: 'Fish liver oil is a concentrated energy reserve \u2014 cod liver oil rich in vitamins A and D.' },
 
-                  { id: 'stomach_f', name: 'Stomach', x: 0.46, y: 0.50, fn: 'J-shaped. HCl + pepsin. Expandable for large prey.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
+                  { id: 'stomach_f', name: 'Stomach', x: 0.46, y: 0.50, fn: 'An expandable muscular stomach. Acid and pepsin help digest food before it passes through the pyloric outlet to the intestine.', functionClue: 'Secretes acid and pepsin to digest food in an expandable muscular sac.', observationCue: 'A broad gastric sac narrows into a short pyloric outlet near the three pyloric caeca.', assessmentExplanation: 'The stomach is an expandable muscular sac between the esophagus and intestine. Its acid and pepsin help digest food.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
 
-                  { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.50, y: 0.53, fn: 'Finger-like pouches at stomach-intestine junction (3-5 in perch). Increase absorption area.', clinical: 'Unique to fish \u2014 no mammalian homolog. Number used in species identification.' },
+                  { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.50, y: 0.53, fn: 'Three blind-ended pouches open from the proximal intestine near the stomach outlet. They add surface for digestion and nutrient absorption.', clinical: 'Count the separate pouches and trace their attachment near the stomach outlet. Each ends blindly; the main intestine continues toward the anus.' },
 
-                  { id: 'kidneys_f', name: 'Kidneys', x: 0.52, y: 0.37, fn: 'Dark elongated organs along dorsal wall. Head kidney (immune) + trunk kidney (excretion).', clinical: 'Freshwater fish excrete dilute urine \u2014 constantly fighting water influx through gills.' },
+                  { id: 'kidneys_f', name: 'Kidneys', x: 0.52, y: 0.37, fn: 'Dark, elongated renal tissue lies against the dorsal body wall, above the swim bladder. The trunk kidney forms urine and helps regulate water and salts.', clinical: 'In freshwater, water enters the fish by osmosis. The kidneys remove excess water as dilute urine while conserving salts.' },
 
-                  { id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46, fn: 'Paired dorsal organs. External fertilization. Ovaries can be 20-30% of body weight when full.', clinical: 'Enormous reproductive investment \u2014 some fish produce millions of eggs per spawning.' }
+                  { id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46, fn: 'Male yellow perch have paired, elongate testes (shown); females have a single ovary. Reproductive tissue varies with maturity and season. Fertilization is external.', clinical: 'Size and appearance change with reproductive stage; use organ relationships as well as color when identifying gonadal tissue.' }
 
                 ],
 
@@ -4473,15 +4596,15 @@ var d = labToolData.dissection || {};
 
                   { id: 'heart_c', name: 'Heart', x: 0.54, y: 0.40, fn: "A dorsal heart pumps hemolymph through arteries into tissue spaces (sinuses). Hemolymph returns through openings called ostia: an open circulatory system.", clinical: "Open circulation includes vessels. The distinction is whether circulating fluid remains separate from the fluid surrounding tissues." },
 
-                  { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Feathery gills lie in branchial chambers beneath the carapace. Scaphognathites (gill bailers, associated with the mouthparts) drive water over the exchange surfaces, where gases pass between water and hemolymph.', clinical: 'Gill attachment near the legs does not mean walking is the main ventilation pump. Distinguish the gill surface from the gill bailer that moves water.' },
+                  { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Plume-like gills lie in branchial chambers beneath the carapace. Each has a central axis bearing many fine, tubular filaments. Mouthpart gill bailers move water over these exchange surfaces, where gases pass between water and hemolymph.', clinical: 'Four representative gills are shown per side; count and spacing are simplified. Distinguish the gill exchange surface from the mouthpart gill bailer that moves water.' },
 
-                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
+                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: 'Three main cuticular grinding teeth, one median and two lateral, work inside the cardiac stomach. The mineralized teeth are supported by ossicles and grind swallowed food.', clinical: 'This opened-stomach teaching view separates the main grinding surfaces. Ridges are representative; their shape and number vary between species. Gastroliths are separate calcium stores associated with molting.' },
 
-                  { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Excretory organs at antenna base. Filter hemolymph, produce urine. Equivalent of kidneys.', clinical: 'Excrete ammonia directly \u2014 possible because aquatic environments flush waste.' },
+                  { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Paired antennal excretory organs near the bases of the antennae. They filter hemolymph and form urine, helping regulate water and salts.', clinical: 'Freshwater crayfish conserve salts while removing excess water in dilute urine. The gills also help excrete ammonia.' },
 
-                  { id: 'hepato', name: 'Hepatopancreas', x: 0.48, y: 0.47, fn: 'Combined liver + pancreas. Digestive enzymes, nutrient absorption, energy storage. Largest internal organ.', clinical: 'Called "tomalley" in lobster cuisine. Accumulates toxins in polluted waters.' },
+                  { id: 'hepato', name: 'Hepatopancreas', x: 0.48, y: 0.47, fn: 'Paired digestive-gland masses near the stomach and anterior intestine secrete digestive enzymes, absorb nutrients, and store energy reserves.', clinical: 'Look for soft yellow-brown lobular tissue beside the stomach. A thin bordering membrane holds the fine digestive tubules compact beneath the surface.' },
 
-                  { id: 'gonads_c', name: 'Gonads', x: 0.57, y: 0.44, fn: 'Dorsal to hepatopancreas. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
+                  { id: 'gonads_c', name: 'Gonads', x: 0.57, y: 0.44, fn: 'Reproductive organs lie between the digestive glands, below and behind the dorsal heart. Their size and appearance vary with sex and maturity. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
 
                 ],
 
@@ -4532,7 +4655,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'sclera', name: 'Sclera', x: 0.72, y: 0.28, fn: 'Tough white outer coat. Dense connective tissue protecting eye contents. Attachment for extraocular muscles. "White of the eye."', clinical: 'Yellow sclera (scleral icterus) = jaundice from liver disease. Blue sclera = osteogenesis imperfecta.' },
 
-                  { id: 'optic_nerve', name: 'Optic Nerve', x: 0.84, y: 0.51, fn: '~1.2 million retinal ganglion cell axons. Exits at optic disc (blind spot). Surrounded by meninges extension.', clinical: 'Optic disc has no photoreceptors = blind spot. Papilledema (optic disc swelling) = increased intracranial pressure.' },
+                  { id: 'optic_nerve', name: 'Optic Nerve', x: 0.84, y: 0.51, fn: '~1.2 million retinal ganglion cell axons. Exits at optic disc (blind spot). Surrounded by meninges extension.', functionClue: 'Carries retinal signals from the eye toward the brain and exits at the optic disc.', observationCue: 'A nerve bundle leaves the back of the eye; its retinal exit is the optic disc, which lacks photoreceptors.', assessmentExplanation: 'The optic nerve carries signals from retinal ganglion cells toward the brain. It exits at the optic disc, where there are no photoreceptors.', clinical: 'Optic disc has no photoreceptors = blind spot. Papilledema (optic disc swelling) = increased intracranial pressure.' },
 
                   { id: 'ext_muscles', name: 'Extraocular Muscles', x: 0.67, y: 0.17, fn: '6 muscles control eye movement: 4 rectus (sup/inf/med/lat) + 2 oblique (sup/inf). Cranial nerves III, IV, VI.', clinical: 'CN III palsy: eye "down and out," ptosis. CN IV: difficulty looking down stairs. CN VI: medial deviation.' },
 
@@ -4550,7 +4673,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'ciliary_body', name: 'Ciliary Body', x: 0.35, y: 0.31, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
 
-                  { id: 'retina', name: 'Retina', x: 0.69, y: 0.35, fn: 'Neural sensory tissue containing rods and cones. In the sheep specimen, observe the retina as a delicate layer against the choroid; avoid applying human fovea and macula measurements directly to sheep anatomy.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
+                  { id: 'retina', name: 'Retina', x: 0.69, y: 0.35, fn: 'Neural sensory tissue containing rods and cones. Follow the delicate, pale lining between the vitreous and darker choroid toward the optic disc. The shallow sheen represents a continuous membrane; human fovea and macula measurements do not directly describe sheep anatomy.', clinical: 'Specimen observation: the retina lies loosely against the choroid and attaches at the optic disc. Handling can lift or bunch this fragile lining; a detached fold is not its normal attached shape.' },
 
                   { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.67, y: 0.27, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
 
@@ -4599,7 +4722,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'aorta_h', name: 'Aorta', x: 0.54, y: 0.12, fn: 'Largest artery. The ascending aorta exits the left ventricle and distributes oxygenated blood to the body. Aortic-arch branch patterns differ between sheep and humans.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
 
-                  { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.62, y: 0.20, fn: 'Exits RV, bifurcates into R and L pulmonary arteries carrying deoxygenated blood to lungs. Only arteries carrying deoxy blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
+                  { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.62, y: 0.20, fn: 'Exits the right ventricle and divides into right and left pulmonary arteries carrying deoxygenated blood to the lungs. Arteries are named for blood flow away from the heart, not oxygen content; fetal umbilical arteries also carry deoxygenated blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
 
                   { id: 'coronary_aa', name: 'Coronary Arteries', x: 0.49, y: 0.45, fn: 'Left main \u2192 LAD + circumflex. Right coronary artery (RCA). Supply myocardium with oxygenated blood. First aortic branches.', clinical: 'LAD = "widow maker." Coronary artery disease is #1 cause of death. CABG bypasses blockages using vein/artery grafts.' },
 
@@ -4607,7 +4730,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'inf_vena_h', name: 'Caudal (Inferior) Vena Cava', x: 0.69, y: 0.66, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
 
-                  { id: 'apex', name: 'Apex', x: 0.45, y: 0.73, fn: 'Inferior tip of heart formed by LV. Points left and anterior. PMI (point of maximum impulse) at 5th intercostal space, midclavicular line.', clinical: 'Displaced PMI = ventricular enlargement. PMI palpation is key clinical exam finding.' }
+                  { id: 'apex', name: 'Apex', x: 0.45, y: 0.73, fn: 'Pointed tip of the heart formed mainly by the left ventricle. Follow the ventricular walls away from the broad base to locate it.', clinical: 'Human clinical comparison: the point of maximum impulse is an examination landmark on the chest, not a measurement on this sheep specimen. A displaced impulse can accompany ventricular enlargement.' }
 
                 ],
 
@@ -4625,9 +4748,9 @@ var d = labToolData.dissection || {};
 
                   { id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43, fn: 'AV valve with 2 cusps between LA and LV. Most commonly affected valve in rheumatic heart disease. "Bicuspid" = 2 leaflets.', clinical: 'Mitral stenosis from rheumatic fever. Mitral valve prolapse (MVP) in 2-3% of population. "Lub" = AV valves closing.' },
 
-                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.48, y: 0.29, fn: '3 semilunar cusps at LV-aorta junction. Opens during systole for ejection. Coronary ostia just above valve.', clinical: 'Aortic stenosis: calcified valve \u2192 syncope, angina, HF. "Dub" = semilunar valves closing. Bicuspid aortic valve (1-2% prevalence).' },
+                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.48, y: 0.29, fn: 'Three thin semilunar cusps guard the left ventricular outflow into the aorta and limit backflow during ventricular relaxation. The intact valve has cusps arranged around one opening; this view spreads them out for inspection.', clinical: 'Specimen observation: compare the curved wall attachments with the delicate free edges. Semilunar cusps have no chordae tendineae; their support differs from the atrioventricular valves.' },
 
-                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.57, y: 0.30, fn: '3 semilunar cusps at RV-pulmonary trunk junction. Prevents backflow into RV during diastole.', clinical: 'Pulmonary stenosis: congenital narrowing (part of Tetralogy of Fallot). Least commonly affected valve.' },
+                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.57, y: 0.30, fn: 'Three thin semilunar cusps guard the right ventricular outflow into the pulmonary trunk and limit backflow during ventricular relaxation. The intact valve has cusps arranged around one opening; this view spreads them out for inspection.', clinical: 'Specimen observation: trace the thin leaflet attachments into the outflow wall. The pulmonary valve has no chordae or papillary-muscle connections.' },
 
                   { id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53, fn: 'Muscular wall separating L and R ventricles. Thick muscular portion + thin membranous portion. LAD supplies anterior septum.', clinical: 'VSD (ventricular septal defect): most common congenital heart defect. Septal MI from LAD occlusion.' },
 
@@ -4969,7 +5092,7 @@ var d = labToolData.dissection || {};
             var confidence = Number((d.organConfidence || {})[key]);
             if (confidence !== 1 && confidence !== 2 && confidence !== 3) confidence = 0;
             var inspected = !!(d.exploredOrgans || {})[key];
-            var hasNote = !!String((d.organNotes || {})[key] || '').trim();
+            var hasNote = !!dissectionEvidenceNote(d.organNotes, key).trim();
             return { inspected: inspected, hasNote: hasNote, confidence: confidence, recorded: inspected && hasNote && !!confidence };
           }
           function scenarioCompletionTimestamp(data, complete) {
@@ -5304,34 +5427,36 @@ var d = labToolData.dissection || {};
             return isFinite(numericValue) ? Math.max(0, Math.min(2, Math.round(numericValue))) : 1;
           }
           var toolCalibration = normalizeToolCalibration(d.toolCalibration);
-          var procedureMode = advancedWorkspace && d.procedureMode === 'independent' ? 'independent' : 'guided';
-          livingFunctionEnabled = advancedWorkspace && livingFunctionEnabled;
-          var visualRealism = advancedWorkspace ? (d.visualRealism || 'guided') : 'guided';
-          var labLight = advancedWorkspace ? (d.labLight || 'neutral') : 'neutral';
+          var workspaceSettings = dissectionWorkspaceSettings(d, workspaceMode);
+          var procedureMode = workspaceSettings.procedureMode;
+          livingFunctionEnabled = workspaceSettings.livingFunctionEnabled;
+          livingFunctionPaused = workspaceSettings.livingFunctionPaused;
+          var visualRealism = workspaceSettings.visualRealism;
+          var labLight = workspaceSettings.labLight;
           var lightIntensity = Math.max(20, Math.min(100, Number(d.lightIntensity) || 68));
-          var inspectionLens = advancedWorkspace && !!d.inspectionLens;
-          var lensPinned = advancedWorkspace && !!d.lensPinned;
+          var inspectionLens = workspaceSettings.inspectionLens;
+          var lensPinned = workspaceSettings.lensPinned;
           var lensMagnification = [2, 4, 6].indexOf(Number(d.lensMagnification)) >= 0 ? Number(d.lensMagnification) : 2;
           var lensFocusDepth = ['surface', 'structure', 'deep'].indexOf(d.lensFocusDepth) >= 0 ? d.lensFocusDepth : 'structure';
           var instrumentVisuals = d.instrumentVisuals !== false;
-          var macroInset = advancedWorkspace && d.macroInset !== false;
-          var sceneDetail = advancedWorkspace ? d.sceneDetail !== false : true;
-          var depthAtlasEnabled = advancedWorkspace && d.depthAtlas !== false;
-          var tissueReliefEnabled = d.tissueRelief !== false;
-          var relationshipMotion = advancedWorkspace && d.relationshipMotion !== false;
-          var focusMode = d.focusMode !== false;
-          var parallaxDepth = advancedWorkspace && d.parallaxDepth !== false;
+          var macroInset = workspaceSettings.macroInset;
+          var sceneDetail = workspaceSettings.sceneDetail;
+          var depthAtlasEnabled = workspaceSettings.depthAtlas;
+          var tissueReliefEnabled = workspaceSettings.tissueRelief;
+          var relationshipMotion = workspaceSettings.relationshipMotion;
+          var focusMode = workspaceSettings.focusMode;
+          var parallaxDepth = workspaceSettings.parallaxDepth;
           var evidenceFrameLimit = 6;
           var evidenceCaptureContents = d.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen';
           var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
-          var splitComparison = advancedWorkspace && !!d.splitComparison;
-          var lightDirection = advancedWorkspace && ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
+          var splitComparison = workspaceSettings.splitComparison;
+          var lightDirection = workspaceSettings.lightDirection;
           var variationSeed = Number(d.variationSeed) || 1;
           var anatomicalView = ['dorsal', 'ventral', 'lateral', 'internal'].indexOf(d.anatomicalView) >= 0 ? d.anatomicalView : 'dorsal';
-          var crossSectionMode = advancedWorkspace && !!d.crossSectionMode;
-          var specimenCondition = advancedWorkspace && ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen'].indexOf(d.specimenCondition) >= 0 ? d.specimenCondition : 'standard';
-          var relationshipMode = advancedWorkspace && !!d.relationshipMode;
-          var renderQuality = advancedWorkspace && ['auto', 'high', 'balanced'].indexOf(d.renderQuality) >= 0 ? d.renderQuality : 'auto';
+          var crossSectionMode = workspaceSettings.crossSectionMode;
+          var specimenCondition = workspaceSettings.specimenCondition;
+          var relationshipMode = workspaceSettings.relationshipMode;
+          var renderQuality = workspaceSettings.renderQuality;
           var procedureScenario = advancedWorkspace ? (d.procedureScenario || 'precision-access') : 'precision-access';
           var instructorTarget = Math.max(60, Math.min(95, Number(d.instructorTarget) || 75));
           var instructorMaxCautions = normalizeInstructorMaxCautions(d.instructorMaxCautions);
@@ -5543,7 +5668,7 @@ var d = labToolData.dissection || {};
           var VIEW_OCCLUSIONS = {
             frog: { dorsal: ['ventral_skin', 'rectus_abd', 'liver', 'stomach', 'sm_intestine', 'lg_intestine'], ventral: ['dorsal_skin', 'kidneys', 'brain', 'spinal_cord', 'vertebral_col'], lateral: ['rectus_abd', 'pectoral_gird', 'pelvic_girdle'], internal: ['dorsal_skin', 'ventral_skin', 'tympanum', 'nictitating'] },
             worm: { dorsal: ['setae'], ventral: ['cerebral_g'], lateral: ['aortic_arches', 'seminal_v'], internal: ['cuticle', 'setae'] },
-            pig: { dorsal: ['umbilical', 'mammary', 'stomach_p', 'sm_int_p', 'lg_int_p', 'bladder_p'], ventral: ['vert_col_p', 'brain_p', 'spinal_p'], lateral: ['kidneys_p', 'thymus_p'], internal: ['epidermis_p', 'mammary'] },
+            pig: { dorsal: ['umbilical', 'mammary', 'stomach_p', 'sm_int_p', 'lg_int_p', 'bladder_p', 'spleen_p'], ventral: ['vert_col_p', 'brain_p', 'spinal_p'], lateral: ['kidneys_p', 'thymus_p'], internal: ['epidermis_p', 'mammary'] },
             fish: { dorsal: ['gills', 'heart_f', 'liver_f', 'stomach_f'], ventral: ['swim_bladder', 'kidneys_f', 'vert_col_f'], lateral: [], internal: ['scales', 'lat_line', 'operculum'] },
             crayfish: { dorsal: ['gills_c', 'green_gland', 'ventral_c'], ventral: ['heart_c', 'carapace'], lateral: ['green_gland', 'gonads_c'], internal: ['carapace', 'telson'] },
             eye: { dorsal: ['retina', 'choroid', 'tapetum'], ventral: ['optic_nerve', 'retina'], lateral: ['fat_pad', 'conjunctiva'], internal: ['ext_muscles', 'conjunctiva', 'fat_pad'] },
@@ -5559,6 +5684,116 @@ var d = labToolData.dissection || {};
             heart: { ventral: { rv: [0.02, 0.018], lv: [-0.018, 0.018] }, lateral: { ra: [-0.025, 0], la: [0.025, 0], septum: [0, 0.02] }, internal: { tricuspid: [-0.02, 0.015], mitral: [0.02, 0.015], chordae: [0, 0.03] } }
           };
           // Material response values drive incision width, flap movement, and live tool-contact deformation.
+          function drawDissectionSpeciesSurfaceTexture(ctx, owner, options) {
+            if (!ctx || !owner || !options || options.highContrast || options.visualMode === 'accessible' || !options.sceneDetail || !options.surfaceLayer) return;
+            var pattern = options.pattern;
+            if (['chromatophores', 'follicles', 'scales', 'facets', 'segments'].indexOf(pattern) < 0) return;
+            var realistic = options.visualMode === 'realistic';
+            var width = Math.max(1, Number(options.width) || 1), height = Math.max(1, Number(options.height) || 1);
+            var resolution = realistic ? 1.6 : 1;
+            var textureWidth = Math.max(64, Math.min(512, Math.ceil(width * resolution)));
+            var textureHeight = Math.max(64, Math.min(512, Math.ceil(height * resolution)));
+            var lightDirection = ['left', 'right', 'raking'].indexOf(options.lightDirection) >= 0 ? options.lightDirection : 'overhead';
+            var annulusCount = Math.max(8, Math.min(40, Math.round(Number(options.density) || (realistic ? 28 : 16))));
+            var cacheKey = [options.specimen, options.seed, pattern, realistic ? 1 : 0, textureWidth, textureHeight, lightDirection, annulusCount].join('|');
+            var cached = owner._dissSpeciesSurfaceTexture;
+            if (!cached || cached.key !== cacheKey) {
+              var texture = document.createElement('canvas');
+              texture.width = textureWidth; texture.height = textureHeight;
+              var paint = texture.getContext('2d');
+              if (!paint) return;
+              // All generated marks use logical material coordinates, independent of DPR,
+              // camera position, frame count, pointer movement, and wall-clock time.
+              paint.scale(textureWidth / width, textureHeight / height);
+              var seedText = String(options.specimen) + '|' + String(options.seed) + '|' + pattern;
+              var seed = 2166136261;
+              for (var seedIndex = 0; seedIndex < seedText.length; seedIndex++) seed = Math.imul(seed ^ seedText.charCodeAt(seedIndex), 16777619) >>> 0;
+              function random() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+              var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection];
+              var lightLength = Math.sqrt(light[0] * light[0] + light[1] * light[1]);
+              var lightX = light[0] / lightLength, lightY = light[1] / lightLength;
+              var marks = 0;
+              function ellipse(x, y, rx, ry, angle, color) {
+                paint.beginPath(); paint.ellipse(x, y, rx, ry, angle, 0, Math.PI * 2);
+                paint.fillStyle = color; paint.fill(); marks++;
+              }
+              function stroke(color, lineWidth) { paint.strokeStyle = color; paint.lineWidth = lineWidth; paint.stroke(); marks++; }
+              // Sparse, low-contrast grain breaks uniform vector fills without covering
+              // the established species pattern or introducing a photographic measurement.
+              var grainCount = realistic ? (pattern === 'scales' ? 40 : 96) : (pattern === 'scales' ? 22 : 46);
+              for (var grain = 0; grain < grainCount; grain++) {
+                var grainX = random() * width, grainY = random() * height;
+                var grainSize = 0.20 + random() * 0.45;
+                ellipse(grainX, grainY, grainSize, grainSize * (0.65 + random() * 0.65), random() * Math.PI,
+                  grain % 3 === 0 ? 'rgba(255,255,245,0.16)' : 'rgba(25,32,22,0.12)');
+              }
+              if (pattern === 'chromatophores') {
+                var mottles = realistic ? 36 : 19;
+                for (var mottle = 0; mottle < mottles; mottle++) {
+                  var mottleX = random() * width, mottleY = random() * height;
+                  var radius = (0.008 + random() * 0.021) * Math.min(width, height);
+                  var asymmetry = 0.72 + random() * 0.50;
+                  paint.beginPath(); paint.moveTo(mottleX, mottleY - radius);
+                  paint.bezierCurveTo(mottleX + radius * 1.18, mottleY - radius * 0.83, mottleX + radius * asymmetry, mottleY + radius * 0.52, mottleX + radius * 0.20, mottleY + radius * 0.84);
+                  paint.bezierCurveTo(mottleX - radius * 1.03, mottleY + radius * 0.76, mottleX - radius * 0.68, mottleY - radius * 0.80, mottleX, mottleY - radius);
+                  paint.closePath(); paint.fillStyle = mottle % 4 === 0 ? 'rgba(105,94,47,0.14)' : 'rgba(26,53,30,0.16)'; paint.fill(); marks++;
+                }
+              } else if (pattern === 'follicles' || pattern === 'facets') {
+                var pores = realistic ? 86 : 40;
+                for (var pore = 0; pore < pores; pore++) {
+                  var poreX = random() * width, poreY = random() * height;
+                  var poreRadius = pattern === 'facets' ? 0.35 + random() * 0.90 : 0.25 + random() * 0.42;
+                  // Recesses have a dark center and a restrained rim facing the same lamp
+                  // as the body pass. Their centers do not move when the lamp changes.
+                  ellipse(poreX, poreY, poreRadius, poreRadius * 0.78, 0, 'rgba(56,34,27,0.18)');
+                  ellipse(poreX + lightX * poreRadius * 0.58, poreY + lightY * poreRadius * 0.58,
+                    poreRadius * 0.60, poreRadius * 0.25, Math.atan2(lightY, lightX) + Math.PI / 2, 'rgba(255,244,220,0.15)');
+                  if (pattern === 'follicles' && realistic && pore % 5 === 0) {
+                    paint.beginPath(); paint.moveTo(poreX, poreY);
+                    paint.quadraticCurveTo(poreX + 0.4, poreY - 1.2, poreX + 1.5, poreY - 2.4);
+                    stroke('rgba(91,65,53,0.11)', 0.35);
+                  }
+                }
+              } else if (pattern === 'scales') {
+                var rows = realistic ? 9 : 6, columns = realistic ? 15 : 10;
+                var scaleWidth = width / columns, scaleHeight = height / rows;
+                for (var row = 0; row < rows; row++) {
+                  for (var column = 0; column < columns; column++) {
+                    var scaleX = (column + 0.5 + (row % 2) * 0.5) * scaleWidth;
+                    var scaleY = (row + 0.7) * scaleHeight;
+                    // Short nested edge arcs supply overlapping relief, not a bright
+                    // grid across the entire scale. The old scale silhouette stays intact.
+                    paint.beginPath(); paint.ellipse(scaleX, scaleY, scaleWidth * 0.43, scaleHeight * 0.31, 0, 0.28, Math.PI - 0.28);
+                    stroke('rgba(33,59,61,0.15)', 0.70);
+                    if ((row + column) % 2 === 0) {
+                      paint.beginPath(); paint.ellipse(scaleX + lightX * 0.65, scaleY + lightY * 0.65, scaleWidth * 0.38, scaleHeight * 0.27, 0, 0.34, Math.PI - 0.34);
+                      stroke('rgba(234,250,242,0.19)', 0.50);
+                    }
+                  }
+                }
+              } else if (pattern === 'segments') {
+                var annuli = annulusCount;
+                for (var annulus = 0; annulus < annuli; annulus++) {
+                  var annulusY = (annulus + 1) / (annuli + 1) * height;
+                  var curvature = Math.sin(annulus) * 2;
+                  paint.beginPath(); paint.moveTo(0, annulusY); paint.quadraticCurveTo(width * 0.5, annulusY + curvature, width, annulusY);
+                  stroke('rgba(61,29,29,0.18)', 0.70);
+                  paint.beginPath(); paint.moveTo(0, annulusY - lightY * 0.65); paint.quadraticCurveTo(width * 0.5, annulusY + curvature - lightY * 0.65, width, annulusY - lightY * 0.65);
+                  stroke('rgba(255,228,222,0.16)', 0.45);
+                }
+              }
+              cached = { key: cacheKey, canvas: texture, marks: marks };
+              owner._dissSpeciesSurfaceTexture = cached;
+            }
+            var moisture = Math.max(0, Math.min(1, Number(options.moisture) / 100 || 0));
+            var intensity = Math.max(0.2, Math.min(1, Number(options.lightIntensity) / 100 || 0.68));
+            ctx.save();
+            ctx.globalCompositeOperation = 'soft-light';
+            ctx.globalAlpha *= (realistic ? 0.72 : 0.42) * (0.78 + moisture * 0.22) * (0.70 + intensity * 0.30);
+            ctx.drawImage(cached.canvas, options.x, options.y, width, height);
+            ctx.restore();
+          }
+
           var SPECIMEN_MATERIAL_PROFILES = {
             frog: { pattern: 'chromatophores', label: 'moist chromatophore surface', response: 'elastic skin', compliance: 0.78, moisture: 0.90, accent: '#86efac', cx: 0.50, cy: 0.49, rx: 0.25, ry: 0.35, density: 34 },
             worm: { pattern: 'segments', label: 'segmented iridescent cuticle', response: 'segment compression', compliance: 0.92, moisture: 0.72, accent: '#f9a8d4', cx: 0.50, cy: 0.49, rx: 0.095, ry: 0.39, density: 28 },
@@ -5597,7 +5832,2922 @@ var d = labToolData.dissection || {};
             var liveVariationSeed = Number(d.variationSeed) || variationSeed;
             return (dissHash(specimen + '|' + liveVariationSeed + '|' + salt) % 1001) / 1000;
           }
+          function earthwormCenterlinePoint(t) {
+            var clamped = Math.max(0, Math.min(1, Number(t) || 0));
+            return {
+              x: 0.5 + Math.sin(clamped * Math.PI * 2.15 + 0.32) * 0.026 + Math.sin(clamped * Math.PI * 5.1) * 0.005,
+              y: 0.07 + 0.76 * clamped
+            };
+          }
+          function earthwormAnatomyFrame(t, logicalWidth, logicalHeight) {
+            if (!isFinite(t) || !isFinite(logicalWidth) || !isFinite(logicalHeight) || logicalWidth <= 0 || logicalHeight <= 0) return null;
+            t = Math.max(0, Math.min(1, Number(t)));
+            var point = earthwormCenterlinePoint(t);
+            var before = earthwormCenterlinePoint(Math.max(0, t - 0.004));
+            var after = earthwormCenterlinePoint(Math.min(1, t + 0.004));
+            var tx = after.x * logicalWidth - before.x * logicalWidth, ty = after.y * logicalHeight - before.y * logicalHeight;
+            var length = Math.sqrt(tx * tx + ty * ty) || 1;
+            tx /= length; ty /= length;
+            var anteriorTaper = Math.min(1, Math.max(0, t / 0.055));
+            var posteriorTaper = Math.min(1, Math.max(0, (1 - t) / 0.105));
+            var taper = 0.34 + Math.min(anteriorTaper, posteriorTaper) * 0.66;
+            var rampIn = (t - 0.245) / 0.045, rampOut = (0.435 - t) / 0.045;
+            var blend = Math.max(0, Math.min(1, Math.min(rampIn, rampOut)));
+            var expansion = 1 + 0.16 * blend * blend * (3 - 2 * blend);
+            return { point: { x: point.x * logicalWidth, y: point.y * logicalHeight }, tx: tx, ty: ty, nx: -ty, ny: tx,
+              width: logicalWidth * 0.047 * taper * expansion,
+              segmentPitch: logicalHeight * 0.76 / 40 };
+          }
+
+          function earthwormNeuralGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var original = [], stepCount = 44, joinT = 0.10;
+            function point(x, y) { return { x: x / width, y: y / height }; }
+            for (var index = 0; index <= stepCount; index++) {
+              var t = 0.06 + (0.97 - 0.06) * index / stepCount, frame = earthwormAnatomyFrame(t, width, height);
+              if (!frame) return null;
+              original.push({ t: t, point: point(frame.point.x + frame.nx * frame.width * 0.28,
+                frame.point.y + frame.ny * frame.width * 0.28) });
+            }
+            function onCord(t) {
+              var position = Math.max(0, Math.min(stepCount, (t - 0.06) / (0.97 - 0.06) * stepCount));
+              var lower = Math.min(stepCount - 1, Math.floor(position)), blend = position - lower;
+              return { x: original[lower].point.x + (original[lower + 1].point.x - original[lower].point.x) * blend,
+                y: original[lower].point.y + (original[lower + 1].point.y - original[lower].point.y) * blend };
+            }
+            function capsule(center, frame, across, along, paired) {
+              function local(a, b) { return { x: center.x + (frame.nx * a * across + frame.tx * b * along) / width,
+                y: center.y + (frame.ny * a * across + frame.ty * b * along) / height }; }
+              // Four smooth gross contours describe intact neural tissue, without exposed
+              // cell bodies, axons, or microscopic fascicles.
+              var start = local(0, paired ? -0.72 : -1), curves = paired ? [
+                [local(0.45, -1.14), local(0.98, -0.88), local(1, 0)],
+                [local(0.98, 0.88), local(0.45, 1.14), local(0, 0.72)],
+                [local(-0.45, 1.14), local(-0.98, 0.88), local(-1, 0)],
+                [local(-0.98, -0.88), local(-0.45, -1.14), start]
+              ] : [
+                [local(0.45, -1), local(0.80, -0.60), local(0.92, -0.15)],
+                [local(1.10, 0.65), local(0.70, 1), local(0, 1)],
+                [local(-0.70, 1), local(-1.10, 0.65), local(-0.92, -0.15)],
+                [local(-0.80, -0.60), local(-0.45, -1), start]
+              ];
+              var all = [start].concat.apply([start], curves), xs = all.map(function (p) { return p.x; }), ys = all.map(function (p) { return p.y; });
+              var bounds = { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) };
+              return { start: start, curves: curves, center: center, across: across, along: along, frame: frame, bounds: bounds,
+                extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 } };
+            }
+            var brainFrame = earthwormAnatomyFrame(0.065, width, height), brain = [], connectives = [];
+            var join = onCord(joinT), cord = [join];
+            original.forEach(function (sample) { if (sample.t > joinT) cord.push(sample.point); });
+            [-1, 1].forEach(function (side) {
+              var center = point(brainFrame.point.x + brainFrame.nx * side * width * 0.0068,
+                brainFrame.point.y + brainFrame.ny * side * width * 0.0068);
+              var region = capsule(center, brainFrame, width * 0.0065, height * 0.006);
+              brain.push({ side: side, region: region });
+              var bendFrame = earthwormAnatomyFrame(0.085, width, height), endFrame = earthwormAnatomyFrame(joinT, width, height);
+              function lateral(frame, across, along) { return point(frame.point.x + frame.nx * frame.width * across + frame.tx * height * along,
+                frame.point.y + frame.ny * frame.width * across + frame.ty * height * along); }
+              var start = { x: center.x + brainFrame.tx * height * 0.0025 / width,
+                y: center.y + brainFrame.ty * 0.0025 };
+              var bend = lateral(bendFrame, side * 0.66, 0);
+              connectives.push({ side: side, start: start, curves: [
+                [lateral(brainFrame, side * 0.48, 0.008), lateral(bendFrame, side * 0.66, -0.008), bend],
+                [lateral(bendFrame, side * 0.66, 0.010), lateral(endFrame, side * 0.48, -0.001), join]
+              ] });
+            });
+            var ganglia = [];
+            // Representative segmental swellings retain the existing every-third-segment
+            // teaching budget. Their centers lie on the painted cord, not a parallel axis.
+            for (var segment = 7; segment < 39; segment += 3) {
+              var nodeT = segment / 40, nodeFrame = earthwormAnatomyFrame(nodeT, width, height);
+              ganglia.push({ segment: segment, t: nodeT, region: capsule(onCord(nodeT), nodeFrame, 1.65, 2.05, true) });
+            }
+            // This anterior joining swelling projects beneath the pharynx at the existing
+            // fourth-segment level; the nervous layer omits the overlying foregut.
+            ganglia.unshift({ segment: 4, t: joinT, region: capsule(join, earthwormAnatomyFrame(joinT, width, height), 1.65, 2.05, true) });
+            var bx = [], by = [];
+            brain.forEach(function (part) { bx.push(part.region.bounds.minX, part.region.bounds.maxX); by.push(part.region.bounds.minY, part.region.bounds.maxY); });
+            var bounds = { minX: Math.min.apply(Math, bx), maxX: Math.max.apply(Math, bx), minY: Math.min.apply(Math, by), maxY: Math.max.apply(Math, by) };
+            var anteriorX = bx.concat([ganglia[0].region.bounds.minX, ganglia[0].region.bounds.maxX]);
+            var anteriorY = by.concat([ganglia[0].region.bounds.minY, ganglia[0].region.bounds.maxY]);
+            connectives.forEach(function (route) {
+              [route.start].concat.apply([route.start], route.curves).forEach(function (p) { anteriorX.push(p.x); anteriorY.push(p.y); });
+            });
+            var anteriorBounds = { minX: Math.min.apply(Math, anteriorX), maxX: Math.max.apply(Math, anteriorX),
+              minY: Math.min.apply(Math, anteriorY), maxY: Math.max.apply(Math, anteriorY) };
+            var fieldX = anteriorX.slice(), fieldY = anteriorY.slice();
+            cord.forEach(function (p) { fieldX.push(p.x); fieldY.push(p.y); });
+            ganglia.forEach(function (node) {
+              fieldX.push(node.region.bounds.minX, node.region.bounds.maxX);
+              fieldY.push(node.region.bounds.minY, node.region.bounds.maxY);
+            });
+            var fieldBounds = { minX: Math.min.apply(Math, fieldX), maxX: Math.max.apply(Math, fieldX),
+              minY: Math.min.apply(Math, fieldY), maxY: Math.max.apply(Math, fieldY) };
+            // Midshaft interpolation lies exactly on a retained native line segment.
+            return { width: width, height: height, brain: brain, connectives: connectives, cord: cord, ganglia: ganglia,
+              originalCord: original, joinT: joinT, join: join, brainBounds: bounds, anteriorBounds: anteriorBounds, bounds: fieldBounds,
+              brainCenter: { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
+              brainExtent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              commissure: [brain[0].region.center, brain[1].region.center],
+              targets: { cerebral_g: brain[0].region.center, ventral_cord: onCord(0.64), segmental_g: ganglia[5].region.center } };
+          }
+
+          function traceEarthwormNeuralRegion(context, region, width, height, append) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            if (!append) context.beginPath();
+            context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+
+          function traceEarthwormNeuralRoute(context, route, width, height, append) {
+            if (!context || !route) return false;
+            if (!append) context.beginPath();
+            if (Array.isArray(route)) {
+              route.forEach(function (point, index) { if (!index) context.moveTo(point.x * width, point.y * height); else context.lineTo(point.x * width, point.y * height); });
+            } else {
+              context.moveTo(route.start.x * width, route.start.y * height);
+              route.curves.forEach(function (curve) { context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height); });
+            }
+            return true;
+          }
+
+          function drawEarthwormNeuralComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = earthwormNeuralGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), lampValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              // Connective and cord caliber describe one gross continuous neural route.
+              // The thin highlight models surface sheen, not an exposed giant fiber.
+              context.beginPath();
+              geometry.connectives.forEach(function (route) { traceEarthwormNeuralRoute(context, route, width, height, true); });
+              traceEarthwormNeuralRoute(context, geometry.cord, width, height, true);
+              traceEarthwormNeuralRoute(context, geometry.commissure, width, height, true);
+              if (detailed) {
+                context.strokeStyle = 'rgba(99,102,83,0.72)'; context.lineWidth = 1.95; context.stroke();
+                context.strokeStyle = '#d8d6b7'; context.lineWidth = 1.35; context.stroke();
+                context.strokeStyle = 'rgba(255,248,218,' + (0.38 * gloss).toFixed(3) + ')'; context.lineWidth = 0.30; context.stroke();
+              } else {
+                context.strokeStyle = '#fbbf24'; context.lineWidth = options.accessible ? 2 : 1.35; context.stroke();
+              }
+              function paint(region, node) {
+                var x = region.center.x * width, y = region.center.y * height;
+                var radius = Math.max(region.across, region.along), fill = node ? '#f59e0b' : '#fde047';
+                traceEarthwormNeuralRegion(context, region, width, height);
+                if (detailed) {
+                  fill = context.createRadialGradient(x + lx * radius * 0.34, y + ly * radius * 0.34, radius * 0.05, x, y, radius * 1.14);
+                  fill.addColorStop(0, '#f0ead0'); fill.addColorStop(0.42, '#ded9bb'); fill.addColorStop(0.82, '#babca1'); fill.addColorStop(1, '#8f9e8d');
+                }
+                context.fillStyle = fill; context.fill();
+                context.strokeStyle = detailed ? 'rgba(111,126,105,0.48)' : '#b77909';
+                context.lineWidth = detailed ? 0.32 : 0.45; context.stroke();
+                if (detailed && node) {
+                  context.save();
+                  try {
+                    traceEarthwormNeuralRegion(context, region, width, height); context.clip();
+                    // Three very small material marks, without per-node general tissue
+                    // passes or cell-like rings that would turn these swellings into beads.
+                    for (var grain = 0; grain < 3; grain++) {
+                      var across = (grain - 1) * region.across * 0.32, along = (grain % 2 ? 0.20 : -0.24) * region.along;
+                      var px = x + region.frame.nx * across + region.frame.tx * along;
+                      var py = y + region.frame.ny * across + region.frame.ty * along;
+                      context.beginPath(); context.moveTo(px, py);
+                      context.lineTo(px + region.frame.tx * 0.28, py + region.frame.ty * 0.28);
+                      context.strokeStyle = grain === 1 ? 'rgba(93,112,88,0.13)' : 'rgba(255,246,217,' + (0.14 * gloss).toFixed(3) + ')';
+                      context.lineWidth = 0.18; context.stroke();
+                    }
+                  } finally { context.restore(); }
+                }
+              }
+              context.beginPath();
+              geometry.brain.forEach(function (part) { traceEarthwormNeuralRegion(context, part.region, width, height, true); });
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(geometry.brainExtent.x * width, geometry.brainExtent.y * height); } finally { context.restore(); }
+              }
+              geometry.brain.forEach(function (part) { paint(part.region, false); });
+              if (detailed && typeof options.finish === 'function') {
+                context.save();
+                try {
+                  context.beginPath();
+                  geometry.brain.forEach(function (part) { traceEarthwormNeuralRegion(context, part.region, width, height, true); });
+                  context.clip();
+                  options.finish(geometry.brainCenter.x * width, geometry.brainCenter.y * height,
+                    geometry.brainExtent.x * width, geometry.brainExtent.y * height, 'capsule', 'earthworm-cerebral-ganglia');
+                } finally { context.restore(); }
+              }
+              geometry.ganglia.forEach(function (node) { paint(node.region, true); });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function earthwormNephridialGeometry(segment, side, logicalWidth, logicalHeight) {
+            if (typeof segment !== 'number' || segment % 1 !== 0 || segment < 5 || segment > 35 || segment % 2 !== 1 ||
+                (side !== -1 && side !== 1)) return null;
+            var t = (segment + 0.5) / 40;
+            var frame = earthwormAnatomyFrame(t, logicalWidth, logicalHeight);
+            if (!frame) return null;
+            var centerX = frame.point.x + frame.nx * side * frame.width * 0.60;
+            var centerY = frame.point.y + frame.ny * side * frame.width * 0.60;
+            var halfWidth = frame.width * 0.13;
+            var halfLength = Math.min(logicalHeight * 0.0075, frame.segmentPitch * 0.30);
+            function point(across, along) {
+              return { x: (centerX + frame.nx * side * halfWidth * across + frame.tx * halfLength * along) / logicalWidth,
+                y: (centerY + frame.ny * side * halfWidth * across + frame.ty * halfLength * along) / logicalHeight };
+            }
+            function curve(values) {
+              return [point(values[0], values[1]), point(values[2], values[3]), point(values[4], values[5])];
+            }
+            // Gross coiled tubule, not a reconstruction of microscopic nephrostomes,
+            // capillary beds or a species-specific number of physiological loops.
+            var detailed = [
+              [-0.90, -0.08, -1.00, -0.88, -0.38, -0.94],
+              [0.38, -1.00, 1.00, -0.66, 0.72, -0.20],
+              [0.46, 0.24, -0.78, 0.08, -0.66, 0.61],
+              [-0.56, 1.00, 0.42, 1.00, 0.68, 0.57],
+              [0.88, 0.25, 0.45, 0.24, 0.72, 0.60]
+            ].map(curve);
+            var simple = [
+              [-0.80, -0.32, -0.65, -0.95, 0.08, -0.88],
+              [1.00, -0.78, 0.96, 0.72, 0.22, 0.83],
+              [-0.46, 0.90, -0.34, 0.26, 0.72, 0.60]
+            ].map(curve);
+            // A short teaching cue terminates at the lateral wall, with no enlarged pore.
+            var outletEndX = frame.point.x + frame.nx * side * frame.width * 0.735 + frame.tx * halfLength * 0.80;
+            var outletEndY = frame.point.y + frame.ny * side * frame.width * 0.735 + frame.ty * halfLength * 0.80;
+            return { segment: segment, side: side, t: t, center: point(0, 0), start: point(0, 0),
+              detailed: detailed, simple: simple, halfWidth: halfWidth, halfLength: halfLength,
+              frame: frame, width: logicalWidth, height: logicalHeight,
+              outlet: [point(0.72, 0.60), { x: outletEndX / logicalWidth, y: outletEndY / logicalHeight }] };
+          }
+
+          function traceEarthwormNephridialField(context, logicalWidth, logicalHeight) {
+            if (!context || !earthwormAnatomyFrame(0.5, logicalWidth, logicalHeight)) return false;
+            context.beginPath();
+            for (var left = 0; left <= 12; left++) {
+              var leftFrame = earthwormAnatomyFrame(0.065 + (0.945 - 0.065) * left / 12, logicalWidth, logicalHeight);
+              var x = leftFrame.point.x + leftFrame.nx * leftFrame.width * 0.84;
+              var y = leftFrame.point.y + leftFrame.ny * leftFrame.width * 0.84;
+              if (left === 0) context.moveTo(x, y); else context.lineTo(x, y);
+            }
+            for (var right = 12; right >= 0; right--) {
+              var rightFrame = earthwormAnatomyFrame(0.065 + (0.945 - 0.065) * right / 12, logicalWidth, logicalHeight);
+              context.lineTo(rightFrame.point.x - rightFrame.nx * rightFrame.width * 0.84,
+                rightFrame.point.y - rightFrame.ny * rightFrame.width * 0.84);
+            }
+            context.closePath(); return true;
+          }
+
+          function traceEarthwormNephridialTubule(context, geometry, detailed, append) {
+            if (!context || !geometry || !geometry.start || !geometry.simple || !geometry.detailed) return false;
+            if (!append) context.beginPath();
+            context.moveTo(geometry.start.x * geometry.width, geometry.start.y * geometry.height);
+            (detailed ? geometry.detailed : geometry.simple).forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * geometry.width, curve[0].y * geometry.height,
+                curve[1].x * geometry.width, curve[1].y * geometry.height,
+                curve[2].x * geometry.width, curve[2].y * geometry.height);
+            });
+            return true;
+          }
+
+          function sheepSemilunarGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var radius = width * 0.011, strokeMargin = 1.15 / 2;
+            var valves = [
+              { id: 'aortic_v', center: { x: 0.5 - 0.022, y: 0.45 - 0.095 }, color: '#fde68a' },
+              { id: 'pulm_v', center: { x: 0.5 + 0.052, y: 0.45 - 0.085 }, color: '#bfdbfe' }
+            ];
+            var targets = {};
+            valves.forEach(function (valve) {
+              valve.radius = radius;
+              // The original side-by-side cusp layout is an illustrative teaching
+              // projection, not a plan view or named coronary-cusp orientation.
+              valve.cusps = [-1, 0, 1].map(function (offset) {
+                var center = { x: valve.center.x + offset * 0.009, y: valve.center.y };
+                var control = { x: center.x, y: center.y + radius * 0.16 / height };
+                var bounds = { minX: center.x - radius / width, maxX: center.x + radius / width,
+                  minY: center.y, maxY: center.y + radius / height };
+                return { offset: offset, center: center, radius: radius, bounds: bounds,
+                  pocket: { type: 'pocket', center: center, radius: radius, control: control },
+                  arc: { type: 'arc', center: center, radius: radius },
+                  freeEdge: { type: 'free-edge', center: center, radius: radius, control: control } };
+              });
+              // A small physical inset lies inside the leaflet surface and inside the
+              // unchanged native arc stroke in every display mode. The cutaway remains
+              // fixed after the external myocardial pulse transform is restored.
+              valve.target = { x: valve.center.x, y: valve.center.y + (radius - Math.min(0.25, radius * 0.08)) / height };
+              targets[valve.id] = valve.target;
+              valve.bounds = { minX: valve.center.x - 0.009 - (radius + strokeMargin) / width,
+                maxX: valve.center.x + 0.009 + (radius + strokeMargin) / width,
+                minY: valve.center.y - strokeMargin / height, maxY: valve.center.y + (radius + strokeMargin) / height };
+            });
+            return { width: width, height: height, radius: radius, valves: valves, targets: targets,
+              scaleCenter: { x: 0.5, y: 0.45 },
+              bounds: { minX: Math.min(valves[0].bounds.minX, valves[1].bounds.minX), maxX: Math.max(valves[0].bounds.maxX, valves[1].bounds.maxX),
+                minY: Math.min(valves[0].bounds.minY, valves[1].bounds.minY), maxY: Math.max(valves[0].bounds.maxY, valves[1].bounds.maxY) } };
+          }
+
+          function traceSheepSemilunarRegion(context, region, width, height, append) {
+            if (!context || !region || !region.center || !isFinite(region.radius) || region.radius <= 0) return false;
+            if (!append) context.beginPath();
+            var x = region.center.x * width, y = region.center.y * height, radius = region.radius;
+            if (region.type === 'free-edge') {
+              context.moveTo(x - radius, y);
+              context.quadraticCurveTo(region.control.x * width, region.control.y * height, x + radius, y);
+            } else {
+              if (append) context.moveTo(x + radius, y);
+              // Keep the actual native half-circle. Its lower curve attaches the
+              // pocket-like cusp to the outflow wall; the shallow top is the free edge.
+              context.arc(x, y, radius, 0, Math.PI);
+              if (region.type === 'pocket') {
+                context.quadraticCurveTo(region.control.x * width, region.control.y * height, x + radius, y);
+                context.closePath();
+              }
+            }
+            return true;
+          }
+
+          function drawSheepSemilunarValves(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = sheepSemilunarGeometry(width, height);
+            if (!context || !geometry) return false;
+            var accessible = options.accessible === true, detailed = options.detailed === true && !accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.78;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.35 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.valves.forEach(function (valve) {
+                if (detailed) {
+                  valve.cusps.forEach(function (cusp) {
+                    var x = cusp.center.x * width, y = cusp.center.y * height, radius = cusp.radius;
+                    traceSheepSemilunarRegion(context, cusp.pocket, width, height);
+                    var volume = context.createLinearGradient(x + lx * radius, y + radius * 0.45 + ly * radius * 0.55,
+                      x - lx * radius, y + radius * 0.45 - ly * radius * 0.55);
+                    // Muted ivory and translucency are restrained rendering choices,
+                    // not a calibrated sheep tissue color or magnified collagen fibers.
+                    volume.addColorStop(0, 'rgba(238,231,215,0.92)'); volume.addColorStop(0.34, 'rgba(215,204,182,0.92)');
+                    volume.addColorStop(0.76, 'rgba(183,170,148,0.92)'); volume.addColorStop(1, 'rgba(143,132,113,0.92)');
+                    context.fillStyle = volume; context.fill();
+                  });
+                  context.save();
+                  try {
+                    context.beginPath();
+                    valve.cusps.forEach(function (cusp) { traceSheepSemilunarRegion(context, cusp.pocket, width, height, true); });
+                    context.clip();
+                    var cx = valve.center.x * width, cy = valve.center.y * height;
+                    var rim = context.createLinearGradient(cx + lx * width * 0.020, cy + ly * geometry.radius,
+                      cx - lx * width * 0.020, cy - ly * geometry.radius);
+                    rim.addColorStop(0, 'rgba(255,249,231,' + (0.23 * gloss).toFixed(3) + ')');
+                    rim.addColorStop(0.52, 'rgba(255,249,231,' + (0.05 * gloss).toFixed(3) + ')'); rim.addColorStop(1, 'rgba(255,249,231,0)');
+                    valve.cusps.forEach(function (cusp) {
+                      traceSheepSemilunarRegion(context, cusp.freeEdge, width, height);
+                      context.strokeStyle = rim; context.lineWidth = 0.25; context.stroke();
+                    });
+                  } finally { context.restore(); }
+                }
+                valve.cusps.forEach(function (cusp) {
+                  traceSheepSemilunarRegion(context, cusp.arc, width, height);
+                  context.strokeStyle = detailed ? 'rgba(125,112,92,0.78)' : valve.color;
+                  context.lineWidth = accessible ? 1.15 : 0.75; context.stroke();
+                });
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function sheepRetinalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var radius = Math.min(width * 0.285, height * 0.36), eyeRy = radius * 0.83;
+            var center = { x: 0.515, y: 0.45 }, angle = -0.015, co = Math.cos(angle), si = Math.sin(angle);
+            function point(theta, position) {
+              var rx = radius * (0.845 + 0.045 * position), ry = eyeRy * (0.81 + 0.055 * position);
+              var x = rx * Math.cos(theta), y = ry * Math.sin(theta);
+              return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+            }
+            function ellipse(scaleX, scaleY) {
+              var rx = radius * scaleX, ry = eyeRy * scaleY;
+              var ex = Math.hypot(rx * co, ry * si) / width, ey = Math.hypot(rx * si, ry * co) / height;
+              return { ellipse: true, center: center, rx: rx, ry: ry, angle: angle,
+                bounds: { minX: center.x - ex, maxX: center.x + ex, minY: center.y - ey, maxY: center.y + ey } };
+            }
+            var outer = ellipse(0.89, 0.865), inner = ellipse(0.845, 0.81), targetAngle = 0.65;
+            var glints = [[-1.12, 0.14], [0.94, 0.11], [2.30, 0.10]].map(function (entry) {
+              var start = point(entry[0], 0.46), curves = [[point(entry[0] + entry[1] * 0.33, 0.61),
+                point(entry[0] + entry[1] * 0.68, 0.39), point(entry[0] + entry[1], 0.54)]];
+              var ps = [start].concat.apply([start], curves), xs = ps.map(function (p) { return p.x; }), ys = ps.map(function (p) { return p.y; });
+              return { start: start, curves: curves, closed: false,
+                bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+            });
+            // Thin peripheral sector boxes reserve the exposed membrane while leaving
+            // central vitreous space available for labels. Full ellipse bounds are for geometry validation.
+            function arcBounds(arcStart, arcEnd) {
+              var arcPoints = [];
+              [0, 1].forEach(function (position) {
+                arcPoints.push(point(arcStart, position), point(arcEnd, position));
+                var rx = radius * (0.845 + 0.045 * position), ry = eyeRy * (0.81 + 0.055 * position);
+                [Math.atan2(-si * ry, co * rx), Math.atan2(co * ry, si * rx)].forEach(function (critical) {
+                  for (var turn = -2; turn <= 2; turn++) {
+                    var theta = critical + turn * Math.PI;
+                    if (theta > arcStart && theta < arcEnd) arcPoints.push(point(theta, position));
+                  }
+                });
+              });
+              var xs = arcPoints.map(function (p) { return p.x; }), ys = arcPoints.map(function (p) { return p.y; });
+              return { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) };
+            }
+            var bandSectors = [];
+            for (var sector = 0; sector < 16; sector++) bandSectors.push(arcBounds(sector * Math.PI / 8, (sector + 1) * Math.PI / 8));
+            return { width: width, height: height, radius: radius, eyeRy: eyeRy, center: center, angle: angle,
+              outer: outer, inner: inner, glints: glints, bounds: outer.bounds, bandSectors: bandSectors,
+              targetAngle: targetAngle, target: point(targetAngle, 0.5), targetArcBounds: arcBounds(targetAngle - 0.14, targetAngle + 0.14) };
+          }
+
+          function traceSheepRetinalRegion(context, region, width, height, append) {
+            if (!context || !region) return false;
+            if (!append) context.beginPath();
+            if (region.ellipse) {
+              var x = region.center.x * width, y = region.center.y * height;
+              if (append) context.moveTo(x + Math.cos(region.angle) * region.rx, y + Math.sin(region.angle) * region.rx);
+              context.ellipse(x, y, region.rx, region.ry, region.angle, 0, Math.PI * 2);
+              if (append) context.closePath();
+            } else {
+              context.moveTo(region.start.x * width, region.start.y * height);
+              region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+                c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+              if (region.closed) context.closePath();
+            }
+            return true;
+          }
+
+          function drawSheepRetinalMembrane(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = sheepRetinalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var accessible = options.accessible === true, detailed = options.detailed === true && !accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.82;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.35 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.45 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              traceSheepRetinalRegion(context, geometry.outer, width, height);
+              // Keep the original full retinal lining and semantic outline. The
+              // unchanged vitreous and connected vessel ribbons are painted later.
+              context.fillStyle = accessible ? 'rgba(254,249,195,0.92)' : 'rgba(244,230,183,0.72)'; context.fill();
+              context.strokeStyle = 'rgba(253,230,138,0.65)'; context.lineWidth = accessible ? 1.5 : 0.85; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  context.beginPath();
+                  traceSheepRetinalRegion(context, geometry.outer, width, height, true);
+                  traceSheepRetinalRegion(context, geometry.inner, width, height, true);
+                  context.clip('evenodd');
+                  var x = geometry.center.x * width, y = geometry.center.y * height;
+                  var pearl = context.createLinearGradient(x + lx * geometry.outer.rx, y + ly * geometry.outer.ry,
+                    x - lx * geometry.outer.rx, y - ly * geometry.outer.ry);
+                  pearl.addColorStop(0, 'rgba(255,249,225,' + (0.055 * gloss).toFixed(3) + ')');
+                  pearl.addColorStop(0.40, 'rgba(235,229,208,0.008)');
+                  pearl.addColorStop(0.78, 'rgba(125,118,103,0.012)');
+                  pearl.addColorStop(1, 'rgba(118,112,98,0.024)');
+                  context.fillStyle = pearl;
+                  context.fillRect(geometry.bounds.minX * width, geometry.bounds.minY * height,
+                    (geometry.bounds.maxX - geometry.bounds.minX) * width, (geometry.bounds.maxY - geometry.bounds.minY) * height);
+                  // Unequal, faint open highlights describe shallow optical undulation
+                  // of a delicate membrane, without detached flaps or histological layers.
+                  geometry.glints.forEach(function (glint) {
+                    traceSheepRetinalRegion(context, glint, width, height);
+                    context.strokeStyle = 'rgba(255,249,226,' + (0.10 * gloss).toFixed(3) + ')'; context.lineWidth = 0.28; context.stroke();
+                  });
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishGastricMillGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var x = width * 0.5 - width * 0.12, y = height * 0.45;
+            function point(dx, dy) { return { x: (x + width * dx) / width, y: (y + height * dy) / height }; }
+            function region(first, commands) {
+              var start = point(first[0], first[1]);
+              var segments = commands.map(function (command) {
+                var points = [];
+                for (var index = 1; index < command.length; index += 2) points.push(point(command[index], command[index + 1]));
+                return { kind: command[0], points: points };
+              });
+              var points = [start]; segments.forEach(function (segment) { points = points.concat(segment.points); });
+              var xs = points.map(function (p) { return p.x; }), ys = points.map(function (p) { return p.y; });
+              return { start: start, segments: segments, bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+            }
+            var teeth = [-1, 1].map(function (side) {
+              var tooth = region([side * 0.022, -0.006], [
+                ['C', side * 0.019, -0.012, side * 0.010, -0.009, side * 0.007, -0.003],
+                ['C', side * 0.004, 0.002, side * 0.006, 0.010, side * 0.011, 0.014],
+                ['C', side * 0.014, 0.017, side * 0.020, 0.015, side * 0.021, 0.010],
+                ['Q', side * 0.024, 0.002, side * 0.022, -0.006]
+              ]);
+              var ridges = [];
+              for (var index = 0; index < 3; index++) {
+                var ridgeY = -0.003 + index * 0.006;
+                ridges.push(region([side * 0.008, ridgeY], [['Q', side * 0.015, ridgeY + 0.002, side * 0.022, ridgeY - 0.001]]));
+              }
+              return { id: side < 0 ? 'lateral-left' : 'lateral-right', side: side, region: tooth, ridges: ridges,
+                color: '#d6c29a', center: point(side * 0.014, 0.003), radiusX: width * 0.010, radiusY: height * 0.015 };
+            });
+            teeth.push({ id: 'median', side: 0, color: '#e6d6b5', center: point(0, -0.015), radiusX: width * 0.011, radiusY: height * 0.012,
+              region: region([-0.009, -0.023], [
+                ['Q', 0, -0.026, 0.009, -0.023],
+                ['C', 0.011, -0.018, 0.008, -0.010, 0.006, -0.006],
+                ['Q', 0, -0.002, -0.006, -0.006],
+                ['C', -0.008, -0.010, -0.011, -0.018, -0.009, -0.023]
+              ]), ridges: [] });
+            return { width: width, height: height, center: point(0, 0), target: point(0, 0), radiusX: width * 0.025,
+              radiusY: height * 0.030, teeth: teeth,
+              bounds: { minX: (x - width * 0.025 - 0.35) / width, maxX: (x + width * 0.025 + 0.35) / width,
+                minY: (y - height * 0.030 - 0.35) / height, maxY: (y + height * 0.030 + 0.35) / height } };
+          }
+
+          function traceCrayfishGastricMillRegion(context, region, width, height, open) {
+            if (!context || !region || !region.start || !region.segments) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.segments.forEach(function (segment) {
+              var p = segment.points;
+              if (segment.kind === 'C') context.bezierCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height, p[2].x * width, p[2].y * height);
+              else context.quadraticCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height);
+            });
+            if (!open) context.closePath();
+            return true;
+          }
+
+          function drawCrayfishGastricMill(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishGastricMillGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(lamp[0], lamp[1]) || 1, lx = lamp[0] / length, ly = lamp[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = Number.isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = Number.isFinite(intensityValue) ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            var x = geometry.center.x * width, y = geometry.center.y * height;
+            context.save();
+            try {
+              context.beginPath(); context.ellipse(x, y, geometry.radiusX, geometry.radiusY, 0, 0, Math.PI * 2);
+              context.fillStyle = options.accessible ? '#78350f' : '#655346'; context.fill();
+              context.strokeStyle = '#a48b67'; context.lineWidth = 0.7; context.stroke();
+              context.save();
+              try {
+                context.clip();
+                if (typeof options.finishCavity === 'function') {
+                  context.save();
+                  try { options.finishCavity(x, y, geometry.radiusX, geometry.radiusY); } finally { context.restore(); }
+                }
+                geometry.teeth.forEach(function (tooth) {
+                  var tx = tooth.center.x * width, ty = tooth.center.y * height, fill = tooth.color;
+                  traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                  if (detailed) {
+                    // These are mineralized cuticular grinding surfaces. Color and gentle
+                    // edge relief are illustrative, without exposed microscopic layers.
+                    fill = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    fill.addColorStop(0, tooth.side ? '#eadbb9' : '#f0e5c9');
+                    fill.addColorStop(0.32, tooth.side ? '#d7c39c' : '#dfd0ad');
+                    fill.addColorStop(0.74, tooth.side ? '#b5a07c' : '#bfae89');
+                    fill.addColorStop(1, '#8e795a');
+                  }
+                  context.fillStyle = fill; context.fill(); context.strokeStyle = '#80694b'; context.lineWidth = 0.5; context.stroke();
+                  if (!detailed) return;
+                  context.save();
+                  try {
+                    context.clip(); context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+                    context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+                    // A thin light-facing rim stays clipped to the original tooth contour.
+                    var edge = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    edge.addColorStop(0, 'rgba(255,246,216,' + (0.30 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.40, 'rgba(244,226,187,' + (0.07 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.66, 'rgba(105,80,51,0.03)'); edge.addColorStop(1, 'rgba(82,60,37,0.20)');
+                    traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                    context.strokeStyle = edge; context.lineWidth = 1.35; context.stroke();
+                    tooth.ridges.forEach(function (ridge) {
+                      // Retain the established representative ridges. Their count is not
+                      // a species-specific cusp count or an additional set of teeth.
+                      traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                      context.strokeStyle = 'rgba(117,88,58,0.58)'; context.lineWidth = 0.35; context.stroke();
+                      context.save();
+                      try {
+                        context.translate(lx * 0.24, ly * 0.24);
+                        traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                        context.strokeStyle = 'rgba(255,242,207,' + (0.24 * gloss).toFixed(3) + ')';
+                        context.lineWidth = 0.22; context.stroke();
+                      } finally { context.restore(); }
+                    });
+                  } finally { context.restore(); }
+                });
+              } finally { context.restore(); }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishHepatopancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var masses = [];
+            [-1, 1].forEach(function (side) {
+              var center = { x: 0.5 - 0.015, y: 0.45 + side * 0.034 }, rx = width * 0.057, ry = height * 0.036;
+              var angle = side * 0.12, co = Math.cos(angle), si = Math.sin(angle);
+              function local(u, v, simple) {
+                var x = rx * u, y = ry * v * (simple ? 1 : side);
+                return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+              }
+              function region(start, values, simple, closed) {
+                var first = local(start[0], start[1], simple), curves = values.map(function (c) { return [local(c[0], c[1], simple), local(c[2], c[3], simple), local(c[4], c[5], simple)]; });
+                if (closed !== false) curves[curves.length - 1][2] = first;
+                var ps = [first].concat.apply([first], curves), xs = ps.map(function (p) { return p.x; }), ys = ps.map(function (p) { return p.y; });
+                return { start: first, curves: curves, closed: closed !== false,
+                  bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs), minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+              }
+              // Keep the original broad, soft seven-cubic envelope and its signed
+              // physical rotation. The surface cues do not prescribe a biological lobe count.
+              var body = region([-0.94, -0.08], [
+                [-0.97, -0.42, -0.73, -0.69, -0.48, -0.70],
+                [-0.30, -0.94, 0.05, -0.91, 0.23, -0.75],
+                [0.50, -0.83, 0.78, -0.57, 0.75, -0.33],
+                [1.00, -0.17, 0.96, 0.20, 0.76, 0.32],
+                [0.78, 0.57, 0.45, 0.83, 0.22, 0.73],
+                [0.00, 0.98, -0.35, 0.85, -0.47, 0.64],
+                [-0.77, 0.68, -0.97, 0.34, -0.94, -0.08]
+              ]);
+              // The established traceVisceralLobe fallback is four cubics with no
+              // signed Y mirror. Retain that authored distinction in clarity modes.
+              var simple = region([-0.87, -0.22], [
+                [-0.98, -0.80, -0.25, -1.08, 0.40, -0.83],
+                [0.96, -0.66, 1.10, 0.10, 0.60, 0.74],
+                [0.23, 1.05, -0.14, 0.91, -0.52, 0.48],
+                [-0.79, 0.28, -0.91, 0.10, -0.87, -0.22]
+              ], true);
+              var creases = [
+                region([-0.47, -0.60], [[-0.36, -0.50, -0.34, -0.30, -0.40, -0.17]], false, false),
+                region([0.66, 0.28], [[0.49, 0.24, 0.40, 0.30, 0.28, 0.42]], false, false)
+              ];
+              var bounds = { minX: Math.min(body.bounds.minX, simple.bounds.minX), maxX: Math.max(body.bounds.maxX, simple.bounds.maxX),
+                minY: Math.min(body.bounds.minY, simple.bounds.minY), maxY: Math.max(body.bounds.maxY, simple.bounds.maxY) };
+              masses.push({ side: side, center: center, rx: rx, ry: ry, angle: angle, body: body, simple: simple, bounds: bounds, creases: creases,
+                relief: [local(-0.47, -0.24), local(0.22, -0.30), local(0.22, 0.35)] });
+            });
+            return { width: width, height: height, masses: masses, target: masses[1].center,
+              bounds: { minX: Math.min(masses[0].bounds.minX, masses[1].bounds.minX), maxX: Math.max(masses[0].bounds.maxX, masses[1].bounds.maxX),
+                minY: Math.min(masses[0].bounds.minY, masses[1].bounds.minY), maxY: Math.max(masses[0].bounds.maxY, masses[1].bounds.maxY) } };
+          }
+
+          function traceCrayfishHepatopancreaticRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+              c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+            if (region.closed !== false) context.closePath();
+            return true;
+          }
+
+          function drawCrayfishHepatopancreas(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishHepatopancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.masses.forEach(function (mass) {
+                var region = detailed ? mass.body : mass.simple, x = mass.center.x * width, y = mass.center.y * height;
+                traceCrayfishHepatopancreaticRegion(context, region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(mass.rx, mass.ry); } finally { context.restore(); }
+                }
+                traceCrayfishHepatopancreaticRegion(context, region, width, height);
+                var fill = options.accessible ? '#d97706' : '#b38a4c';
+                if (detailed) {
+                  fill = context.createLinearGradient(x + lx * mass.rx, y + ly * mass.ry, x - lx * mass.rx, y - ly * mass.ry);
+                  fill.addColorStop(0, '#d8bf89'); fill.addColorStop(0.34, '#bb9b62');
+                  fill.addColorStop(0.76, '#947741'); fill.addColorStop(1, '#63573b');
+                }
+                context.fillStyle = fill; context.fill(); context.strokeStyle = '#765332'; context.lineWidth = 0.7; context.stroke();
+                if (detailed) {
+                  context.save();
+                  try {
+                    traceCrayfishHepatopancreaticRegion(context, mass.body, width, height); context.clip();
+                    mass.relief.forEach(function (p, index) {
+                      var radius = Math.max(mass.rx * 0.52, mass.ry * 0.42);
+                      var relief = context.createRadialGradient(p.x * width + lx * radius * 0.16, p.y * height + ly * radius * 0.16, 0,
+                        p.x * width, p.y * height, radius);
+                      relief.addColorStop(0, index === 1 ? 'rgba(105,100,53,0.09)' : 'rgba(255,234,185,' + (0.09 + 0.07 * gloss).toFixed(3) + ')');
+                      relief.addColorStop(0.56, index === 1 ? 'rgba(105,100,53,0.025)' : 'rgba(237,204,144,' + (0.022 + 0.018 * gloss).toFixed(3) + ')');
+                      relief.addColorStop(1, 'rgba(146,122,69,0)');
+                      context.fillStyle = relief; context.fillRect(x - mass.rx * 1.5, y - mass.ry * 1.5, mass.rx * 3, mass.ry * 3);
+                    });
+                    // Short faint curves suggest shallow changes of surface relief;
+                    // they do not partition the mass into tubules or sealed compartments.
+                    mass.creases.forEach(function (crease) {
+                      traceCrayfishHepatopancreaticRegion(context, crease, width, height);
+                      context.strokeStyle = 'rgba(101,78,40,0.15)'; context.lineWidth = 0.33; context.stroke();
+                      context.save();
+                      try {
+                        context.translate(lx * 0.25, ly * 0.25);
+                        traceCrayfishHepatopancreaticRegion(context, crease, width, height);
+                        context.strokeStyle = 'rgba(255,236,188,' + (0.10 * gloss).toFixed(3) + ')'; context.lineWidth = 0.22; context.stroke();
+                      } finally { context.restore(); }
+                    });
+                    if (typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        traceCrayfishHepatopancreaticRegion(context, mass.body, width, height);
+                        options.finish(x, y, mass.rx, mass.ry, 'lobular', 'cray-digestive-' + mass.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishAntennalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var rx = width * 0.012, ry = Math.min(rx, height * 0.0095);
+            // Whole closed antennal complexes keep their original paired centers. The
+            // shallow fullness remains one external surface, without exposed internal coils.
+            // A shorter cranial margin and aspect-limited height fit the anterior opening.
+            var courses = [
+              [0.62,0.86,0.90,0.54,0.92,0.18],
+              [0.99,-0.13,0.85,-0.53,0.60,-0.72],
+              [0.38,-0.90,0.03,-0.90,-0.18,-0.73],
+              [-0.40,-0.57,-0.46,-0.25,-0.43,-0.02],
+              [-0.42,0.18,-0.30,0.36,-0.17,0.48],
+              [-0.08,0.68,0.12,0.88,0.32,0.90]
+            ];
+            var glands = [-1, 1].map(function (side) {
+              var center = { x: 0.295, y: side < 0 ? 0.412 : 0.488 };
+              function point(x, y) { return { x: center.x + x * rx / width, y: center.y + side * y * ry / height }; }
+              var region = { start: point(0.32, 0.90), curves: courses.map(function (c) {
+                return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+              }) };
+              var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+              region.curves.forEach(function (curve) { curve.forEach(function (p) {
+                bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+                bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+              }); });
+              return { side: side, region: region, center: center, bounds: bounds,
+                extent: { x: Math.max(center.x - bounds.minX, bounds.maxX - center.x),
+                  y: Math.max(center.y - bounds.minY, bounds.maxY - center.y) },
+                frame: { radiusX: rx, radiusY: ry } };
+            });
+            return { target: { x: 0.295, y: 0.412 }, glands: glands };
+          }
+          function traceCrayfishAntennalRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawCrayfishAntennalGlands(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishAntennalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              geometry.glands.forEach(function (gland) {
+                var x = gland.center.x * width, y = gland.center.y * height, gx = gland.extent.x * width, gy = gland.extent.y * height;
+                traceCrayfishAntennalRegion(context, gland.region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(gx, gy); } finally { context.restore(); }
+                }
+                traceCrayfishAntennalRegion(context, gland.region, width, height);
+                var base = '#b6c2a2';
+                if (detailed) {
+                  base = context.createLinearGradient(x + lightX * gx, y + lightY * gy, x - lightX * gx, y - lightY * gy);
+                  base.addColorStop(0, '#d9dfc2'); base.addColorStop(0.35, '#b7c2a0');
+                  base.addColorStop(0.75, '#92a487'); base.addColorStop(1, '#667c69');
+                }
+                context.fillStyle = base; context.fill(); context.strokeStyle = '#71836d'; context.lineWidth = 0.40; context.stroke();
+                if (detailed && typeof options.finish === 'function') {
+                  context.save();
+                  try {
+                    traceCrayfishAntennalRegion(context, gland.region, width, height); context.clip();
+                    traceCrayfishAntennalRegion(context, gland.region, width, height);
+                    options.finish(x, y, gx, gy, 'capsule', 'cray-antennal-' + gland.side);
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishGillGeometry(index, side, logicalWidth, logicalHeight) {
+            if (typeof index !== 'number' || index % 1 !== 0 || index < 0 || index > 3 ||
+                (side !== -1 && side !== 1) || typeof logicalWidth !== 'number' ||
+                typeof logicalHeight !== 'number' || !isFinite(logicalWidth) || !isFinite(logicalHeight) ||
+                logicalWidth <= 0 || logicalHeight <= 0) return null;
+            var baseX = 0.485 + index * 0.033;
+            function point(t, lateral) {
+              return { x: baseX + 0.012 * t + 0.010 * Math.sin(Math.PI * t) * lateral,
+                y: 0.45 + side * (0.072 + 0.040 * t) };
+            }
+            var shaft = [point(0, 0), point(1 / 3, 0), point(2 / 3, 0), point(1, 0)];
+            var filaments = [];
+            // Fourteen representative levels suggest gross cylindrical filaments,
+            // not a microscopic filament count or a broad lamellar plate.
+            for (var tier = 0; tier < 14; tier++) {
+              var t = 0.065 + tier * 0.065;
+              [-1, 1].forEach(function (edge) {
+                var reach = 0.89 + 0.055 * Math.sin((tier + 1) * 1.8 + edge * 0.7);
+                var advance = 0.044 + (tier % 3) * 0.004 + edge * 0.003;
+                filaments.push({ start: point(t, 0), curve: [point(t + advance * 0.19, edge * 0.31),
+                  point(t + advance * 0.65, edge * reach * 0.84), point(t + advance, edge * reach)],
+                  depth: 'front', tier: tier, edge: edge, widthScale: 0.88 + (tier % 3) * 0.06 });
+              });
+              if (tier % 2 === 0) {
+                var rearEdge = tier % 4 === 0 ? -1 : 1;
+                filaments.push({ start: point(t + 0.016, 0),
+                  curve: [point(t + 0.025, rearEdge * 0.22), point(t + 0.044, rearEdge * 0.49),
+                    point(t + 0.056, rearEdge * 0.66)],
+                  depth: 'rear', tier: tier, edge: rearEdge, widthScale: 0.66 });
+              }
+            }
+            return { index: index, side: side, shaft: shaft, anchor: point(0.5, 0), filaments: filaments,
+              width: logicalWidth, height: logicalHeight };
+          }
+
+          function drawCrayfishGillPlumes(context, options) {
+            options = options || {};
+            var width = options.width, height = options.height;
+            if (!context || typeof width !== 'number' || typeof height !== 'number' ||
+                !isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) return false;
+            var detailed = options.detailed === true;
+            var moisture = Math.max(0, Math.min(1, Number(options.moisture) / 100 || 0));
+            var intensity = Math.max(0.2, Math.min(1, Number(options.lightIntensity) / 100 || 0.68));
+            var conditionSheen = options.condition === 'dehydrated' ? 0.40 : (options.condition === 'preserved' ? 0.72 : 1);
+            var tubeUnit = Math.max(0.28, Math.min(width * 0.00135, height * 0.00095));
+            function traceCurve(start, curve) {
+              context.moveTo(start.x * width, start.y * height);
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            function traceFilaments(geometry, depth, group, sheen) {
+              context.beginPath();
+              for (var f = 0; f < geometry.filaments.length; f++) {
+                var filament = geometry.filaments[f];
+                if (filament.depth !== depth || (group != null && (filament.widthScale < 0.94 ? 0 : 1) !== group) ||
+                    (sheen && (filament.tier + (filament.edge > 0 ? 1 : 0)) % 2 !== 0)) continue;
+                traceCurve(filament.start, filament.curve);
+              }
+            }
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              context.globalCompositeOperation = 'source-over';
+              context.lineCap = 'round'; context.lineJoin = 'round'; context.setLineDash([]);
+              [-1, 1].forEach(function (side) {
+                for (var index = 0; index < 4; index++) {
+                  var geometry = crayfishGillGeometry(index, side, width, height);
+                  if (!detailed) {
+                    // Keep the sparse teaching silhouette in clarity modes and detail-off views.
+                    context.beginPath(); context.moveTo(geometry.shaft[0].x * width, geometry.shaft[0].y * height);
+                    context.lineTo(geometry.shaft[3].x * width, geometry.shaft[3].y * height);
+                    context.strokeStyle = '#fda4af'; context.lineWidth = 1.4; context.stroke();
+                    for (var simple = 1; simple <= 7; simple++) {
+                      var t = simple / 8;
+                      var x = (0.485 + index * 0.033 + 0.012 * t) * width;
+                      var y = (0.45 + side * (0.072 + t * 0.040)) * height;
+                      var span = width * 0.010 * Math.sin(t * Math.PI);
+                      context.beginPath(); context.moveTo(x - span, y - side * height * 0.003);
+                      context.quadraticCurveTo(x, y + side * height * 0.001, x + span, y - side * height * 0.002);
+                      context.strokeStyle = simple % 2 ? '#dcb9ac' : '#b5827c'; context.lineWidth = 0.65; context.stroke();
+                    }
+                    continue;
+                  }
+                  // Open, round-ended filaments form a small three-dimensional bottlebrush.
+                  // The eight plumes are representative; no cells, lamellae or hidden channels
+                  // are enlarged into the whole-specimen drawing. All curves keep the old envelope.
+                  traceFilaments(geometry, 'rear', null, false);
+                  context.strokeStyle = '#9d8276'; context.lineWidth = tubeUnit * 0.90; context.stroke();
+                  context.beginPath(); traceCurve(geometry.shaft[0], geometry.shaft.slice(1));
+                  context.strokeStyle = '#8e7168'; context.lineWidth = tubeUnit * 2.55; context.stroke();
+                  context.strokeStyle = '#d2b99c'; context.lineWidth = tubeUnit * 0.95; context.stroke();
+                  var lamp = options.lightDirection === 'right' ? 1 : -1;
+                  var volume = context.createLinearGradient((geometry.anchor.x + lamp * 0.010) * width,
+                    geometry.anchor.y * height, (geometry.anchor.x - lamp * 0.010) * width, geometry.anchor.y * height);
+                  volume.addColorStop(0, '#e5d2b8'); volume.addColorStop(0.48, '#d6bea4'); volume.addColorStop(1, '#ae8c7d');
+                  for (var group = 0; group < 2; group++) {
+                    var thickness = group === 0 ? 0.88 : 1;
+                    traceFilaments(geometry, 'front', group, false);
+                    context.strokeStyle = '#987469'; context.lineWidth = tubeUnit * 1.85 * thickness; context.stroke();
+                    context.strokeStyle = volume; context.lineWidth = tubeUnit * 1.15 * thickness; context.stroke();
+                  }
+                  traceFilaments(geometry, 'front', null, true);
+                  context.strokeStyle = 'rgba(255,242,214,' + ((0.10 + moisture * 0.26) * intensity * conditionSheen).toFixed(3) + ')';
+                  context.lineWidth = Math.max(0.18, tubeUnit * 0.34); context.stroke();
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigThymicGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // One connected visible portion retains the existing cervical/thoracic projection.
+            // Shallow unequal scallops describe soft tissue, not separate follicles or acini.
+            var region = { start: { x: 0.347, y: 0.385 }, curves: [
+              [{x:0.350,y:0.378},{x:0.353,y:0.374},{x:0.358,y:0.372}],
+              [{x:0.361,y:0.367},{x:0.367,y:0.365},{x:0.372,y:0.367}],
+              [{x:0.377,y:0.363},{x:0.383,y:0.365},{x:0.387,y:0.370}],
+              [{x:0.393,y:0.370},{x:0.398,y:0.374},{x:0.400,y:0.382}],
+              [{x:0.406,y:0.385},{x:0.409,y:0.392},{x:0.410,y:0.400}],
+              [{x:0.414,y:0.404},{x:0.414,y:0.412},{x:0.412,y:0.418}],
+              [{x:0.414,y:0.426},{x:0.408,y:0.436},{x:0.402,y:0.439}],
+              [{x:0.397,y:0.445},{x:0.387,y:0.446},{x:0.380,y:0.443}],
+              [{x:0.372,y:0.444},{x:0.361,y:0.441},{x:0.355,y:0.438}],
+              [{x:0.353,y:0.429},{x:0.352,y:0.421},{x:0.353,y:0.414}],
+              [{x:0.351,y:0.408},{x:0.350,y:0.401},{x:0.351,y:0.395}],
+              [{x:0.349,y:0.392},{x:0.348,y:0.388},{x:0.347,y:0.385}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.3675, y: 0.37075 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.359,y:0.379}, curves: [[{x:0.360,y:0.382},{x:0.364,y:0.384},{x:0.367,y:0.385}]] },
+                { start: {x:0.377,y:0.374}, curves: [[{x:0.376,y:0.378},{x:0.380,y:0.381},{x:0.383,y:0.384}]] },
+                { start: {x:0.359,y:0.400}, curves: [[{x:0.361,y:0.403},{x:0.365,y:0.405},{x:0.369,y:0.405}]] },
+                { start: {x:0.362,y:0.423}, curves: [[{x:0.365,y:0.426},{x:0.369,y:0.427},{x:0.373,y:0.428}]] }
+              ] };
+          }
+          function tracePigThymicRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+          function drawPigThymicSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigThymicGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              tracePigThymicRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              tracePigThymicRegion(context, geometry.region, width, height);
+              var base = '#d9a0a7';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#efd0c8'); base.addColorStop(0.35, '#d5a9a5');
+                base.addColorStop(0.75, '#b27f84'); base.addColorStop(1, '#80545f');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#9f5e68'; context.lineWidth = 0.45; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePigThymicRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePigThymicRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(113,72,76,0.14)'; context.lineWidth = 0.42; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.28, lightY * 0.28);
+                      tracePigThymicRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(250,225,210,0.17)'; context.lineWidth = 0.26; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    tracePigThymicRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'pig-thymus');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigPancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // A single flattened gland follows the existing gastric/duodenal interval.
+            // Unequal shallow scallops describe the external tissue, not named lobes or acini.
+            var region = { start: { x: 0.554, y: 0.536 }, curves: [
+              [{x:0.559,y:0.534},{x:0.566,y:0.532},{x:0.573,y:0.533}],
+              [{x:0.579,y:0.533},{x:0.583,y:0.535},{x:0.589,y:0.534}],
+              [{x:0.596,y:0.534},{x:0.600,y:0.530},{x:0.607,y:0.530}],
+              [{x:0.613,y:0.528},{x:0.619,y:0.529},{x:0.624,y:0.530}],
+              [{x:0.630,y:0.529},{x:0.634,y:0.531},{x:0.639,y:0.533}],
+              [{x:0.645,y:0.534},{x:0.652,y:0.536},{x:0.655,y:0.539}],
+              [{x:0.657,y:0.541},{x:0.652,y:0.545},{x:0.647,y:0.544}],
+              [{x:0.641,y:0.544},{x:0.637,y:0.540},{x:0.631,y:0.540}],
+              [{x:0.625,y:0.538},{x:0.620,y:0.539},{x:0.614,y:0.541}],
+              [{x:0.608,y:0.541},{x:0.604,y:0.545},{x:0.597,y:0.545}],
+              [{x:0.591,y:0.546},{x:0.586,y:0.543},{x:0.580,y:0.542}],
+              [{x:0.570,y:0.540},{x:0.560,y:0.539},{x:0.554,y:0.536}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.63175, y: 0.533 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.580,y:0.535}, curves: [[{x:0.579,y:0.537},{x:0.581,y:0.539},{x:0.583,y:0.541}]] },
+                { start: {x:0.599,y:0.533}, curves: [[{x:0.597,y:0.535},{x:0.598,y:0.539},{x:0.600,y:0.542}]] },
+                { start: {x:0.620,y:0.531}, curves: [[{x:0.618,y:0.533},{x:0.619,y:0.536},{x:0.621,y:0.538}]] },
+                { start: {x:0.640,y:0.535}, curves: [[{x:0.638,y:0.536},{x:0.640,y:0.539},{x:0.642,y:0.541}]] }
+              ] };
+          }
+
+          function tracePigPancreaticRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+
+          function drawPigPancreaticSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigPancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              tracePigPancreaticRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              tracePigPancreaticRegion(context, geometry.region, width, height);
+              var base = '#c8b28e';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e6d6b7'); base.addColorStop(0.35, '#cbb893');
+                base.addColorStop(0.75, '#aa906d'); base.addColorStop(1, '#796346');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#826b4e'; context.lineWidth = 0.35; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePigPancreaticRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePigPancreaticRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(99,75,47,0.17)'; context.lineWidth = 0.42; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.28, lightY * 0.28);
+                      tracePigPancreaticRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,232,200,0.19)'; context.lineWidth = 0.26; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    // Material finishing may replace the current path. Give it the same
+                    // complete gland outline inside this exact external surface clip.
+                    tracePigPancreaticRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'pig-pancreas');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigRenalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var co = Math.cos(0.12), si = Math.sin(0.12);
+            var kidneys = [-1, 1].map(function (side) {
+              var center = { x: 0.5 + 0.115 + side * 0.028, y: 0.45 - (0.06 - side * 0.008) };
+              var hilumDirection = -side, rx = width * 0.028, ry = height * 0.045;
+              // Rotate in specimen pixels, as in the existing side-lying projection.
+              function point(x, y) {
+                var u = x * rx * hilumDirection, v = y * ry;
+                return { x: center.x + (u * co - v * si) / width, y: center.y + (u * si + v * co) / height };
+              }
+              function region(start, courses) {
+                var result = { start: point(start[0], start[1]), curves: courses.map(function (c) {
+                  return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+                }) };
+                var points = [result.start]; result.curves.forEach(function (c) { points = points.concat(c); });
+                result.bounds = { minX: Math.min.apply(null, points.map(function (p) { return p.x; })),
+                  maxX: Math.max.apply(null, points.map(function (p) { return p.x; })),
+                  minY: Math.min.apply(null, points.map(function (p) { return p.y; })),
+                  maxY: Math.max.apply(null, points.map(function (p) { return p.y; })) };
+                result.center = { x: (result.bounds.minX + result.bounds.maxX) / 2, y: (result.bounds.minY + result.bounds.maxY) / 2 };
+                result.extent = { x: (result.bounds.maxX - result.bounds.minX) / 2, y: (result.bounds.maxY - result.bounds.minY) / 2 };
+                return result;
+              }
+              // The retained six-cubic capsule is intact. The small contained crescent
+              // models medial surface relief, without exposing collecting anatomy.
+              var body = region([-0.10, -1], [
+                [0.60,-1.02,1,-0.70,0.82,-0.36],
+                [0.68,-0.19,0.30,-0.24,0.27,0],
+                [0.29,0.25,0.70,0.17,0.84,0.43],
+                [0.97,0.78,0.48,1.04,-0.12,1],
+                [-0.80,0.98,-1.04,0.50,-1,0],
+                [-1,-0.65,-0.70,-1.04,-0.10,-1]
+              ]);
+              var hilum = region([0.38,-0.42], [
+                [0.18,-0.42,0.04,-0.19,0.07,0],
+                [0.04,0.18,0.21,0.38,0.42,0.43],
+                [0.27,0.35,0.19,0.16,0.19,0],
+                [0.17,-0.16,0.29,-0.31,0.38,-0.42]
+              ]);
+              return { side: side, center: center, radii: { x: 0.028, y: 0.045 }, rotation: 0.12,
+                hilumDirection: hilumDirection, opacity: side < 0 ? 0.52 : 0.84,
+                body: body, hilum: hilum, bounds: body.bounds, extent: body.extent,
+                surfaceTarget: point(-0.48, -0.12) };
+            });
+            return { target: { x: 0.653, y: 0.390 }, kidneys: kidneys };
+          }
+          function tracePigRenalRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawPigRenalComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = pigRenalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              var inheritedAlpha = context.globalAlpha;
+              geometry.kidneys.forEach(function (kidney) {
+                context.save();
+                try {
+                  context.globalAlpha = inheritedAlpha * kidney.opacity;
+                  var x = kidney.body.center.x * width, y = kidney.body.center.y * height;
+                  var rx = kidney.extent.x * width, ry = kidney.extent.y * height;
+                  tracePigRenalRegion(context, kidney.body, width, height);
+                  if (detailed && typeof options.contact === 'function') {
+                    context.save();
+                    try { options.contact(rx, ry); } finally { context.restore(); }
+                  }
+                  tracePigRenalRegion(context, kidney.body, width, height);
+                  var base = '#78463a';
+                  if (detailed) {
+                    base = context.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                    base.addColorStop(0, '#b1826c'); base.addColorStop(0.34, '#95634f');
+                    base.addColorStop(0.74, '#704334'); base.addColorStop(1, '#432a2a');
+                  }
+                  context.fillStyle = base; context.fill(); context.strokeStyle = detailed ? 'rgba(69,39,34,0.74)' : '#4c2c26';
+                  context.lineWidth = detailed ? 0.55 : 0.7; context.stroke();
+                  context.save();
+                  try {
+                    tracePigRenalRegion(context, kidney.body, width, height); context.clip();
+                    tracePigRenalRegion(context, kidney.hilum, width, height);
+                    context.fillStyle = detailed ? 'rgba(72,41,33,0.19)' : 'rgba(249,199,159,0.22)'; context.fill();
+                    if (detailed && typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        tracePigRenalRegion(context, kidney.body, width, height);
+                        options.finish(x, y, rx, ry, 'capsule', 'pig-kidney-' + kidney.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                } finally { context.restore(); }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigSplenicGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var cx = width * 0.517, cy = height * 0.506, rx = width * 0.011, ry = height * 0.050;
+            var angle = -0.35, cosine = Math.cos(angle), sine = Math.sin(angle);
+            function point(x, y) {
+              return { x: (cx + x * rx * cosine - y * ry * sine) / width,
+                y: (cy + x * rx * sine + y * ry * cosine) / height };
+            }
+            // One flat, elongated whole spleen follows the existing gastric-side footprint.
+            // Unequal rounded ends and a gentle bend replace the perfectly elliptical badge.
+            var courses = [
+              [-0.53,-0.98,-0.79,-0.82,-0.79,-0.58],
+              [-0.80,-0.32,-0.64,-0.06,-0.57,0.20],
+              [-0.52,0.45,-0.44,0.72,-0.26,0.89],
+              [-0.15,0.98,0.01,1.00,0.16,0.90],
+              [0.36,0.77,0.45,0.52,0.50,0.29],
+              [0.57,0.03,0.59,-0.19,0.66,-0.41],
+              [0.75,-0.63,0.62,-0.82,0.42,-0.91],
+              [0.25,-1.00,0.04,-0.98,-0.14,-0.96]
+            ];
+            var region = { start: point(-0.14, -0.96), curves: courses.map(function (c) {
+              return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+            }) };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            return { target: { x: 0.517, y: 0.506 }, region: region, bounds: bounds,
+              center: { x: cx / width, y: cy / height },
+              extent: { x: Math.max(cx / width - bounds.minX, bounds.maxX - cx / width),
+                y: Math.max(cy / height - bounds.minY, bounds.maxY - cy / height) },
+              frame: { rotation: angle, radiusX: rx, radiusY: ry } };
+          }
+
+          function tracePigSplenicRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+
+          function drawPigSplenicSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height);
+            var geometry = pigSplenicGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            context.save();
+            try {
+              tracePigSplenicRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              tracePigSplenicRegion(context, geometry.region, width, height);
+              var base = '#713944';
+              if (detailed) {
+                var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+                var length = Math.hypot(light[0], light[1]) || 1;
+                var lightX = light[0] / length, lightY = light[1] / length;
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#a66d70'); base.addColorStop(0.35, '#854954');
+                base.addColorStop(0.72, '#5e303f'); base.addColorStop(1, '#352432');
+              }
+              context.fillStyle = base; context.fill();
+              context.strokeStyle = '#492b38'; context.lineWidth = 0.5; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                // Finish the exact intact capsule. No exposed pulp, lobules, or hilar
+                // structures are inferred from this external teaching projection.
+                tracePigSplenicRegion(context, geometry.region, width, height);
+                options.finish(x, y, rx, ry, 'capsule', 'pig-spleen');
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigGastricGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var root = { x: 0.576, y: 0.513 }, controlA = { x: 0.585, y: 0.513 };
+            var controlB = { x: 0.598, y: 0.5184 }, junction = { x: 0.605, y: 0.522 };
+            var t = 0.72, u = 1 - t;
+            var center = {
+              x: u*u*u*root.x + 3*u*u*t*controlA.x + 3*u*t*t*controlB.x + t*t*t*junction.x,
+              y: u*u*u*root.y + 3*u*u*t*controlA.y + 3*u*t*t*controlB.y + t*t*t*junction.y
+            };
+            var dx = 3 * (u*u*(controlA.x-root.x) + 2*u*t*(controlB.x-controlA.x) + t*t*(junction.x-controlB.x)) * width;
+            var dy = 3 * (u*u*(controlA.y-root.y) + 2*u*t*(controlB.y-controlA.y) + t*t*(junction.y-controlB.y)) * height;
+            var length = Math.hypot(dx, dy) || 1, tx = dx / length, ty = dy / length, nx = -ty, ny = tx;
+            // Measure the neck across the physical tube, rather than stretching a fixed
+            // vertical slit when the logical specimen becomes wide or tall.
+            var tubeWidth = width * 0.0105;
+            var halfWidthPx = Math.min((tubeWidth + Math.min(0.65, tubeWidth * 0.12)) * 0.60, Math.min(width, height) * 0.025);
+            var extensionPx = Math.min(width * 0.0025, height * 0.0035);
+            var upper = { x: center.x - nx * halfWidthPx / width, y: center.y - ny * halfWidthPx / height };
+            var lower = { x: center.x + nx * halfWidthPx / width, y: center.y + ny * halfWidthPx / height };
+            return {
+              target: { x: 0.562, y: 0.503 },
+              stomach: {
+                closed: true, outlineBreak: 3,
+                center: { x: 0.562, y: 0.501 }, extent: { x: 0.040, y: 0.051 },
+                start: { x: 0.545, y: 0.454 },
+                curves: [
+                  [{x:0.563,y:0.450},{x:0.582,y:0.454},{x:0.590,y:0.470}],
+                  [{x:0.598,y:0.482},{x:0.595,y:0.496},{x:0.589,y:0.503}],
+                  [{x:0.586,y:0.509},{x:0.589,y:0.512},upper],
+                  [{x:upper.x+tx*extensionPx/width,y:upper.y+ty*extensionPx/height},
+                    {x:lower.x+tx*extensionPx/width,y:lower.y+ty*extensionPx/height},lower],
+                  [{x:0.591,y:0.526},{x:0.587,y:0.526},{x:0.579,y:0.536}],
+                  [{x:0.565,y:0.549},{x:0.548,y:0.546},{x:0.538,y:0.531}],
+                  [{x:0.526,y:0.515},{x:0.525,y:0.493},{x:0.530,y:0.476}],
+                  [{x:0.532,y:0.464},{x:0.537,y:0.457},{x:0.545,y:0.454}]
+                ]
+              },
+              // This root is hidden by the overlying stomach. The visible course continues
+              // to the unchanged jejunum with its incoming tangent, not an isolated loop.
+              duodenum: { closed: false, start: root, curves: [[controlA, controlB, junction]] },
+              jejunumStart: junction,
+              pylorus: { center: center, upper: upper, lower: lower, tx: tx, ty: ty, nx: nx, ny: ny,
+                halfWidthPx: halfWidthPx, extensionPx: extensionPx }
+            };
+          }
+
+          function tracePigGastricRegion(context, region, width, height, outline, append) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            if (!append) context.beginPath();
+            context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve, index) {
+              if (outline && index === region.outlineBreak) {
+                context.moveTo(curve[2].x * width, curve[2].y * height);
+              } else {
+                context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                  curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+              }
+            });
+            if (region.closed && !outline) context.closePath();
+            return true;
+          }
+
+          function drawPigGastricComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height);
+            var geometry = pigGastricGeometry(width, height);
+            if (!context || !geometry) return false;
+            var stomach = geometry.stomach, detailed = !!options.detailed;
+            var x = stomach.center.x * width, y = stomach.center.y * height;
+            var rx = stomach.extent.x * width, ry = stomach.extent.y * height;
+            context.save();
+            try {
+              context.save();
+              try {
+                // Preserve the specimen's inherited translucency without revealing the
+                // hidden intestinal root through the unopened gastric wall.
+                context.beginPath(); context.rect(0, 0, width, height);
+                tracePigGastricRegion(context, stomach, width, height, false, true);
+                context.clip('evenodd');
+                tracePigGastricRegion(context, geometry.duodenum, width, height);
+                if (typeof options.strokeTube === 'function') {
+                  options.strokeTube(width * 0.0105, '#c99c83', '#ecd0b1', '#82554a');
+                } else {
+                  context.strokeStyle = '#c99c83'; context.lineWidth = width * 0.0105;
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.stroke();
+                }
+              } finally { context.restore(); }
+              if (detailed && typeof options.contact === 'function') {
+                tracePigGastricRegion(context, stomach, width, height, true);
+                options.contact(rx, ry);
+              }
+              tracePigGastricRegion(context, stomach, width, height);
+              var base = '#d1ac8b';
+              if (detailed) {
+                var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+                var length = Math.hypot(light[0], light[1]) || 1;
+                var lightX = light[0] / length, lightY = light[1] / length;
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#ead0b1'); base.addColorStop(0.35, '#d4ad8e');
+                base.addColorStop(0.74, '#b48168'); base.addColorStop(1, '#795047');
+              }
+              context.fillStyle = base; context.fill();
+              // Only the decorative cap is omitted. The intact gastric fill and its
+              // material clip remain closed, with no exposed lumen or external rugae.
+              tracePigGastricRegion(context, stomach, width, height, true);
+              context.strokeStyle = '#855a4a'; context.lineWidth = 0.55; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                tracePigGastricRegion(context, stomach, width, height);
+                options.finish(x, y, rx, ry, 'serosa', 'pig-stomach');
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogRenalGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var kidneys = [];
+            [-1, 1].forEach(function (side) {
+              var center = { x: 0.5 + side * 0.052, y: 0.45 + 0.115 }, rx = width * 0.025, ry = height * 0.088;
+              var angle = side * 0.08, co = Math.cos(angle), si = Math.sin(angle);
+              function local(u, v) {
+                var x = side * rx * u, y = ry * v;
+                return { x: center.x + (co * x - si * y) / width, y: center.y + (si * x + co * y) / height };
+              }
+              function region(start, controls) {
+                var first = local(start[0], start[1]), curves = controls.map(function (c) {
+                  return [local(c[0], c[1]), local(c[2], c[3]), local(c[4], c[5])];
+                });
+                // Reuse the exact first point to close without a fractional seam.
+                curves[curves.length - 1][2] = first;
+                var points = [first].concat.apply([first], curves), xs = points.map(function (p) { return p.x; }), ys = points.map(function (p) { return p.y; });
+                return { start: first, curves: curves, bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                  minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+              }
+              // Preserve the authored five-cubic, gently flattened amphibian silhouette.
+              var body = region([-0.08, -1], [
+                [-0.62, -1.02, -0.78, -0.55, -0.75, -0.12],
+                [-0.68, 0.32, -0.79, 0.75, -0.34, 0.97],
+                [0.15, 1.06, 0.72, 0.73, 0.87, 0.25],
+                [1.02, -0.24, 0.81, -0.78, 0.35, -0.96],
+                [0.22, -1, 0.06, -1, -0.08, -1]
+              ]);
+              var ellipseExtentX = Math.hypot(rx * co, ry * si) / width, ellipseExtentY = Math.hypot(rx * si, ry * co) / height;
+              var simple = { ellipse: true, center: center, radius: { x: 0.025, y: 0.088 }, angle: angle,
+                bounds: { minX: center.x - ellipseExtentX, maxX: center.x + ellipseExtentX,
+                  minY: center.y - ellipseExtentY, maxY: center.y + ellipseExtentY } };
+              // Small adherent yellow-brown patches suggest the adrenal tissue on the
+              // ventral renal surface. Their shallow irregular edges are not a duct.
+              var adrenal = [
+                region([0.28, -0.76], [
+                  [0.37, -0.75, 0.48, -0.65, 0.47, -0.55],
+                  [0.44, -0.45, 0.40, -0.40, 0.32, -0.38],
+                  [0.23, -0.43, 0.30, -0.55, 0.25, -0.62],
+                  [0.22, -0.68, 0.25, -0.74, 0.28, -0.76]
+                ]),
+                region([0.34, -0.28], [
+                  [0.45, -0.23, 0.48, -0.10, 0.43, 0.02],
+                  [0.40, 0.14, 0.46, 0.22, 0.35, 0.29],
+                  [0.27, 0.22, 0.32, 0.11, 0.28, 0.04],
+                  [0.21, -0.06, 0.28, -0.20, 0.34, -0.28]
+                ]),
+                region([0.36, 0.36], [
+                  [0.45, 0.37, 0.46, 0.43, 0.40, 0.47],
+                  [0.36, 0.51, 0.39, 0.55, 0.31, 0.60],
+                  [0.23, 0.56, 0.30, 0.49, 0.25, 0.46],
+                  [0.22, 0.42, 0.29, 0.38, 0.36, 0.36]
+                ])
+              ];
+              var bounds = { minX: Math.min(body.bounds.minX, simple.bounds.minX), maxX: Math.max(body.bounds.maxX, simple.bounds.maxX),
+                minY: Math.min(body.bounds.minY, simple.bounds.minY), maxY: Math.max(body.bounds.maxY, simple.bounds.maxY) };
+              kidneys.push({ side: side, center: center, rx: rx, ry: ry, angle: angle, body: body, simple: simple,
+                adrenal: adrenal, bounds: bounds, target: local(-0.08, 0.82),
+                mottles: [local(-0.25, -0.48), local(0.17, 0.06), local(-0.12, 0.59)] });
+            });
+            return { width: width, height: height, kidneys: kidneys, target: kidneys[1].target,
+              bounds: { minX: Math.min(kidneys[0].bounds.minX, kidneys[1].bounds.minX), maxX: Math.max(kidneys[0].bounds.maxX, kidneys[1].bounds.maxX),
+                minY: Math.min(kidneys[0].bounds.minY, kidneys[1].bounds.minY), maxY: Math.max(kidneys[0].bounds.maxY, kidneys[1].bounds.maxY) } };
+          }
+
+          function traceFrogRenalRegion(context, region, width, height) {
+            if (!context || !region) return false;
+            context.beginPath();
+            if (region.ellipse) {
+              context.ellipse(region.center.x * width, region.center.y * height,
+                region.radius.x * width, region.radius.y * height, region.angle, 0, Math.PI * 2);
+            } else {
+              context.moveTo(region.start.x * width, region.start.y * height);
+              region.curves.forEach(function (c) { context.bezierCurveTo(c[0].x * width, c[0].y * height,
+                c[1].x * width, c[1].y * height, c[2].x * width, c[2].y * height); });
+              context.closePath();
+            }
+            return true;
+          }
+
+          function drawFrogRenalComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogRenalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var simple = options.accessible === true || options.highContrast === true;
+            var detailed = options.detailed === true && !simple;
+            var light = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowColor = 'rgba(0,0,0,0)'; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              geometry.kidneys.forEach(function (kidney) {
+                var region = simple ? kidney.simple : kidney.body, x = kidney.center.x * width, y = kidney.center.y * height;
+                traceFrogRenalRegion(context, region, width, height);
+                if (detailed && typeof options.contact === 'function') {
+                  context.save();
+                  try { options.contact(kidney.rx, kidney.ry); } finally { context.restore(); }
+                }
+                traceFrogRenalRegion(context, region, width, height);
+                var fill = '#5b3429';
+                if (detailed) {
+                  fill = context.createLinearGradient(x + lx * kidney.rx, y + ly * kidney.ry,
+                    x - lx * kidney.rx, y - ly * kidney.ry);
+                  fill.addColorStop(0, '#a37c68'); fill.addColorStop(0.34, '#80594d');
+                  fill.addColorStop(0.76, '#603d3c'); fill.addColorStop(1, '#3c2c32');
+                }
+                context.fillStyle = fill; context.fill(); context.strokeStyle = '#3f241d'; context.lineWidth = 0.65; context.stroke();
+                if (detailed) {
+                  context.save();
+                  try {
+                    traceFrogRenalRegion(context, kidney.body, width, height); context.clip();
+                    kidney.mottles.forEach(function (p, index) {
+                      var mottle = context.createRadialGradient(p.x * width, p.y * height, 0, p.x * width, p.y * height, kidney.rx * (1.1 + index * 0.12));
+                      mottle.addColorStop(0, index % 2 ? 'rgba(56,31,39,0.10)' : 'rgba(214,178,140,0.10)');
+                      mottle.addColorStop(0.58, index % 2 ? 'rgba(56,31,39,0.035)' : 'rgba(214,178,140,0.035)');
+                      mottle.addColorStop(1, 'rgba(140,110,94,0)');
+                      context.fillStyle = mottle; context.fillRect(x - kidney.rx * 1.5, y - kidney.ry * 1.5, kidney.rx * 3, kidney.ry * 3);
+                    });
+                    var adrenalVolume = context.createLinearGradient(x + lx * kidney.rx, y + ly * kidney.ry,
+                      x - lx * kidney.rx, y - ly * kidney.ry);
+                    adrenalVolume.addColorStop(0, '#d7bd79'); adrenalVolume.addColorStop(0.38, '#b89a57');
+                    adrenalVolume.addColorStop(0.80, '#94763e'); adrenalVolume.addColorStop(1, '#79613a');
+                    kidney.adrenal.forEach(function (patch) { traceFrogRenalRegion(context, patch, width, height); context.fillStyle = adrenalVolume; context.fill(); });
+                    if (typeof options.finish === 'function') {
+                      context.save();
+                      try {
+                        traceFrogRenalRegion(context, kidney.body, width, height);
+                        options.finish(x, y, kidney.rx, kidney.ry, 'capsule', 'frog-kidney-' + kidney.side);
+                      } finally { context.restore(); }
+                    }
+                  } finally { context.restore(); }
+                }
+              });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogPancreaticGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            // A narrow rising portion follows the existing frog stomach/duodenal interval.
+            // Unequal shallow scallops describe gross tissue without acini or duct diagrams.
+            var region = { start: { x: 0.488, y: 0.550 }, curves: [
+              [{x:0.492,y:0.548},{x:0.498,y:0.546},{x:0.504,y:0.546}],
+              [{x:0.509,y:0.544},{x:0.513,y:0.542},{x:0.519,y:0.542}],
+              [{x:0.525,y:0.5385},{x:0.528,y:0.5377},{x:0.534,y:0.5375}],
+              [{x:0.539,y:0.535},{x:0.545,y:0.534},{x:0.550,y:0.533}],
+              [{x:0.555,y:0.530},{x:0.562,y:0.529},{x:0.567,y:0.528}],
+              [{x:0.571,y:0.529},{x:0.571,y:0.532},{x:0.567,y:0.534}],
+              [{x:0.563,y:0.536},{x:0.558,y:0.535},{x:0.553,y:0.537}],
+              [{x:0.547,y:0.539},{x:0.541,y:0.540},{x:0.536,y:0.542}],
+              [{x:0.530,y:0.545},{x:0.524,y:0.545},{x:0.519,y:0.547}],
+              [{x:0.513,y:0.549},{x:0.508,y:0.549},{x:0.503,y:0.551}],
+              [{x:0.497,y:0.552},{x:0.491,y:0.552},{x:0.488,y:0.550}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            var center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            return { target: { x: 0.528, y: 0.5405 }, region: region, bounds: bounds, center: center,
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              surfaceCreases: [
+                { start: {x:0.501,y:0.547}, curves: [[{x:0.502,y:0.548},{x:0.502,y:0.549},{x:0.503,y:0.550}]] },
+                { start: {x:0.519,y:0.5428}, curves: [[{x:0.520,y:0.5435},{x:0.521,y:0.5447},{x:0.521,y:0.5457}]] },
+                { start: {x:0.538,y:0.5374}, curves: [[{x:0.539,y:0.538},{x:0.540,y:0.5386},{x:0.540,y:0.5395}]] },
+                { start: {x:0.556,y:0.532}, curves: [[{x:0.557,y:0.5325},{x:0.558,y:0.533},{x:0.558,y:0.534}]] }
+              ] };
+          }
+
+          function traceFrogPancreaticRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+
+          function drawFrogPancreaticSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogPancreaticGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              traceFrogPancreaticRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              traceFrogPancreaticRegion(context, geometry.region, width, height);
+              var base = '#cfbd96';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e6ddbd'); base.addColorStop(0.35, '#cbbd98');
+                base.addColorStop(0.75, '#ad9874'); base.addColorStop(1, '#7e6a4f');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = 'rgba(115,92,62,0.70)'; context.lineWidth = 0.35; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  traceFrogPancreaticRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    traceFrogPancreaticRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(102,85,57,0.15)'; context.lineWidth = 0.40; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.25, lightY * 0.25);
+                      traceFrogPancreaticRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,238,208,0.17)'; context.lineWidth = 0.25; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    // Material finishing may replace the current path. Give it the same
+                    // complete gland outline inside this exact external surface clip.
+                    traceFrogPancreaticRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'lobular', 'frog-pancreas');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogSplenicGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var cx = width * 0.408, cy = height * 0.565, rx = width * 0.012, ry = height * 0.009;
+            var rotation = -0.2, cosine = Math.cos(rotation), sine = Math.sin(rotation);
+            function point(x, y) {
+              return { x: (cx + x * rx * cosine - y * ry * sine) / width,
+                y: (cy + x * rx * sine + y * ry * cosine) / height };
+            }
+            // The compact whole spleen keeps a smooth external surface. Small differences
+            // between its rounded ends do not imply lobules, a renal notch, or exposed pulp.
+            var courses = [
+              [0.42,-1.00,0.85,-0.65,0.91,-0.20],
+              [1.00,-0.01,0.94,0.41,0.67,0.68],
+              [0.42,0.97,-0.06,1.00,-0.40,0.84],
+              [-0.74,0.69,-0.98,0.33,-0.94,-0.08],
+              [-0.97,-0.43,-0.66,-0.80,-0.36,-0.91],
+              [-0.25,-0.97,-0.16,-1.01,-0.03,-0.97]
+            ];
+            var region = { start: point(-0.03, -0.97), curves: courses.map(function (c) {
+              return [point(c[0], c[1]), point(c[2], c[3]), point(c[4], c[5])];
+            }) };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            return { target: { x: 0.408, y: 0.565 }, region: region, bounds: bounds,
+              center: { x: cx / width, y: cy / height },
+              extent: { x: Math.max(cx / width - bounds.minX, bounds.maxX - cx / width),
+                y: Math.max(cy / height - bounds.minY, bounds.maxY - cy / height) },
+              frame: { rotation: rotation, radiusX: rx, radiusY: ry } };
+          }
+
+          function traceFrogSplenicRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+
+          function drawFrogSplenicSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogSplenicGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            context.save();
+            try {
+              traceFrogSplenicRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(rx, ry); } finally { context.restore(); }
+              }
+              traceFrogSplenicRegion(context, geometry.region, width, height);
+              var base = '#74363e';
+              if (detailed) {
+                var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+                var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#ad6f68'); base.addColorStop(0.35, '#82484b');
+                base.addColorStop(0.75, '#532d37'); base.addColorStop(1, '#2e202a');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#4b2b36'; context.lineWidth = 0.45; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                context.save();
+                try {
+                  traceFrogSplenicRegion(context, geometry.region, width, height); context.clip();
+                  traceFrogSplenicRegion(context, geometry.region, width, height);
+                  options.finish(x, y, rx, ry, 'capsule', 'frog-spleen');
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogNeuralGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            function region(start, courses) {
+              var result = { start: { x: start[0], y: start[1] }, curves: courses.map(function (c) {
+                return [{ x: c[0], y: c[1] }, { x: c[2], y: c[3] }, { x: c[4], y: c[5] }];
+              }) };
+              var points = [result.start]; result.curves.forEach(function (c) { points = points.concat(c); });
+              result.bounds = { minX: Math.min.apply(null, points.map(function (p) { return p.x; })),
+                maxX: Math.max.apply(null, points.map(function (p) { return p.x; })),
+                minY: Math.min.apply(null, points.map(function (p) { return p.y; })),
+                maxY: Math.max.apply(null, points.map(function (p) { return p.y; })) };
+              result.center = { x: (result.bounds.minX + result.bounds.maxX) / 2, y: (result.bounds.minY + result.bounds.maxY) / 2 };
+              result.extent = { x: (result.bounds.maxX - result.bounds.minX) / 2, y: (result.bounds.maxY - result.bounds.minY) / 2 };
+              return result;
+            }
+            // One continuous dorsal surface carries the regional relief. The covered
+            // medulla narrows into the existing cord, without exposed ventricular anatomy.
+            var body = region([0.500,0.136], [
+              [0.505,0.134,0.511,0.132,0.514,0.135],
+              [0.518,0.137,0.520,0.141,0.519,0.145],
+              [0.526,0.145,0.530,0.151,0.528,0.157],
+              [0.536,0.157,0.544,0.161,0.544,0.168],
+              [0.545,0.175,0.537,0.180,0.525,0.181],
+              [0.520,0.182,0.519,0.186,0.515,0.188],
+              [0.512,0.191,0.507,0.193,0.505,0.198],
+              [0.503,0.199,0.497,0.199,0.495,0.198],
+              [0.493,0.193,0.488,0.191,0.485,0.188],
+              [0.481,0.186,0.480,0.182,0.475,0.181],
+              [0.463,0.180,0.455,0.175,0.456,0.168],
+              [0.456,0.161,0.464,0.157,0.472,0.157],
+              [0.470,0.151,0.474,0.145,0.481,0.145],
+              [0.480,0.141,0.482,0.137,0.486,0.135],
+              [0.489,0.132,0.495,0.134,0.500,0.136]
+            ]);
+            function oval(id, cx, cy, rx, ry, tilt) {
+              function p(x, y) { return [cx + x * rx + y * tilt, cy + y * ry]; }
+              var start = p(0,-1), k = 0.55228475;
+              var courses = [[k,-1,1,-k,1,0],[1,k,k,1,0,1],[-k,1,-1,k,-1,0],[-1,-k,-k,-1,0,-1]];
+              var shape = region(start, courses.map(function (c) { return p(c[0],c[1]).concat(p(c[2],c[3]),p(c[4],c[5])); }));
+              return { id: id, region: shape, center: shape.center, extent: shape.extent, bounds: shape.bounds };
+            }
+            var regions = [
+              oval('olfactory-left',0.490,0.1395,0.0068,0.0051,-0.0006),
+              oval('olfactory-right',0.510,0.1395,0.0068,0.0051,0.0006),
+              oval('cerebral-left',0.486,0.1525,0.0096,0.0090,-0.0008),
+              oval('cerebral-right',0.514,0.1525,0.0096,0.0090,0.0008),
+              oval('optic-left',0.478,0.1694,0.0190,0.0100,-0.0003),
+              oval('optic-right',0.522,0.1694,0.0190,0.0100,0.0003),
+              oval('cerebellum',0.500,0.1837,0.0170,0.0029,0)
+            ];
+            return { target: { x: 0.500, y: 0.170 }, opticTarget: { x: 0.522, y: 0.170 },
+              nerveTargets: { spinal_cord: { x: 0.500, y: 0.440 }, cranial_n: { x: 0.56665, y: 0.16975 },
+                brachial_n: { x: 0.371775, y: 0.3837875 }, sciatic_n: { x: 0.311199375, y: 0.6774775 } },
+              cordJunction: { x: 0.500, y: 0.195 }, body: body, regions: regions,
+              center: body.center, extent: body.extent, bounds: body.bounds };
+          }
+          function traceFrogNeuralRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            context.closePath(); return true;
+          }
+          function drawFrogNeuralComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = frogNeuralGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lx = light[0] / length, ly = light[1] / length;
+            context.save();
+            try {
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              traceFrogNeuralRegion(context, geometry.body, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(geometry.extent.x * width, geometry.extent.y * height); } finally { context.restore(); }
+              }
+              function paint(region, id) {
+                var x = region.center.x * width, y = region.center.y * height, rx = region.extent.x * width, ry = region.extent.y * height;
+                traceFrogNeuralRegion(context, region, width, height);
+                var base = id === 'base' ? '#c4b5fd' : (id.indexOf('optic') === 0 ? '#a78bfa' : '#d4c7f5');
+                if (detailed) {
+                  base = context.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                  base.addColorStop(0, '#eeeade'); base.addColorStop(0.36, '#d8d5c8');
+                  base.addColorStop(0.76, '#bcbfb6'); base.addColorStop(1, '#8e9b94');
+                }
+                context.fillStyle = base; context.fill();
+                context.strokeStyle = detailed ? (id === 'base' ? 'rgba(100,117,109,0.76)' : (id.indexOf('cerebral-') === 0 ? 'rgba(126,139,128,0.22)' : 'rgba(126,139,128,0.38)')) : '#7c3aed';
+                context.lineWidth = detailed ? (id === 'base' ? 0.50 : 0.30) : 0.55; context.stroke();
+              }
+              paint(geometry.body, 'base');
+              context.save();
+              try {
+                traceFrogNeuralRegion(context, geometry.body, width, height); context.clip();
+                geometry.regions.forEach(function (part) { paint(part.region, part.id); });
+                if (detailed && typeof options.finish === 'function') {
+                  context.save();
+                  try {
+                    traceFrogNeuralRegion(context, geometry.body, width, height);
+                    options.finish(geometry.center.x * width, geometry.center.y * height,
+                      geometry.extent.x * width, geometry.extent.y * height, 'capsule', 'frog-brain');
+                  } finally { context.restore(); }
+                }
+              } finally { context.restore(); }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function frogGastricGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            // The pyloric opening accommodates the physical tube caliber at each aspect.
+            var pyloricHalfY = Math.min(0.012, Math.max(0.004, (width * 0.009 + 0.65) * 0.55 / height));
+            var pyloricTop = 0.5585 - pyloricHalfY, pyloricBottom = 0.5585 + pyloricHalfY;
+            return {
+              target: { x: 0.441, y: 0.530 },
+              stomach: {
+                closed: true, outlineBreak: 4,
+                center: { x: 0.440, y: 0.529 }, extent: { x: 0.043, y: 0.053 },
+                start: { x: 0.446, y: 0.480 },
+                curves: [
+                  [{x:0.423,y:0.480},{x:0.405,y:0.493},{x:0.405,y:0.519}],
+                  [{x:0.401,y:0.549},{x:0.416,y:0.573},{x:0.443,y:0.579}],
+                  [{x:0.461,y:0.584},{x:0.475,y:0.570},{x:0.477,y:0.558}],
+                  [{x:0.479,y:pyloricBottom},{x:0.482,y:pyloricBottom},{x:0.484,y:pyloricBottom}],
+                  [{x:0.486,y:pyloricBottom-0.001},{x:0.485,y:pyloricTop},{x:0.483,y:pyloricTop}],
+                  [{x:0.475,y:pyloricTop+0.001},{x:0.466,y:0.548},{x:0.465,y:0.542}],
+                  [{x:0.458,y:0.532},{x:0.457,y:0.513},{x:0.452,y:0.500}],
+                  [{x:0.449,y:0.491},{x:0.453,y:0.482},{x:0.446,y:0.480}]
+                ]
+              },
+              // The hidden root sits inside the gastric body. Its course passes through the
+              // narrow pyloric neck and finishes exactly on the existing ileal centerline.
+              duodenum: {
+                closed: false, start: { x: 0.462, y: 0.552 },
+                curves: [
+                  [{x:0.487,y:0.560},{x:0.514,y:0.568},{x:0.537,y:0.558}],
+                  [{x:0.544,y:0.555},{x:0.548,y:0.544},{x:0.555,y:0.550}]
+                ]
+              },
+              ileumStart: { x: 0.555, y: 0.550 }
+            };
+          }
+
+          function traceFrogGastricRegion(context, region, width, height, outline) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve, index) {
+              // Leave the gastric outline open only at the joined pyloric outlet, so its
+              // decorative border cannot draw an artificial partition across the gut.
+              if (outline && index === region.outlineBreak) {
+                context.moveTo(curve[2].x * width, curve[2].y * height);
+              } else {
+                context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                  curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+              }
+            });
+            if (region.closed && !outline) context.closePath();
+            return true;
+          }
+
+          function drawFrogGastricComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height);
+            if (!context || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return false;
+            var geometry = frogGastricGeometry(width, height), stomach = geometry.stomach, detailed = !!options.detailed;
+            var x = stomach.center.x * width, y = stomach.center.y * height;
+            var rx = stomach.extent.x * width, ry = stomach.extent.y * height;
+            context.save();
+            try {
+              // Paint the proximal intestine first; the overlying gastric surface covers the
+              // internal overlap while the visible course leaves through the open border.
+              traceFrogGastricRegion(context, geometry.duodenum, width, height);
+              if (typeof options.strokeTube === 'function') {
+                options.strokeTube(width * 0.009, '#cba38a', '#eed3b5', '#895b4b');
+              } else {
+                context.strokeStyle = '#cba38a'; context.lineWidth = width * 0.009;
+                context.lineCap = 'round'; context.lineJoin = 'round'; context.stroke();
+              }
+              if (detailed && typeof options.contact === 'function') {
+                traceFrogGastricRegion(context, stomach, width, height, true);
+                options.contact(rx, ry);
+              }
+              traceFrogGastricRegion(context, stomach, width, height);
+              var base = '#d6b493';
+              if (detailed) {
+                var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+                var length = Math.hypot(light[0], light[1]) || 1;
+                var lightX = light[0] / length, lightY = light[1] / length;
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#ecd3b4'); base.addColorStop(0.34, '#d7b292');
+                base.addColorStop(0.74, '#b7856b'); base.addColorStop(1, '#7a5147');
+              }
+              context.fillStyle = base; context.fill();
+              traceFrogGastricRegion(context, stomach, width, height, true);
+              context.strokeStyle = '#895e4c'; context.lineWidth = 0.6; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                // The finish clips the full closed gastric surface, not the open border.
+                traceFrogGastricRegion(context, stomach, width, height);
+                options.finish(x, y, rx, ry, 'serosa', 'frog-stomach');
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function pigCardiacGeometry() {
+            function region(key, center, extent, start, courses) {
+              return { key: key, center: { x: center[0], y: center[1] }, extent: { x: extent[0], y: extent[1] },
+                start: { x: start[0], y: start[1] }, curves: courses.map(function (c) {
+                  return [{ x: c[0], y: c[1] }, { x: c[2], y: c[3] }, { x: c[4], y: c[5] }];
+                }) };
+            }
+            // Whole epicardial surfaces in the lab's existing side-lying teaching projection.
+            // The appendages overlap the broad ventricular base; this is not a chamber cutaway.
+            return {
+              target: { x: 0.432, y: 0.450 },
+              ventricle: region('ventricle', [0.438, 0.447], [0.038, 0.052], [0.421, 0.409], [
+                [0.428,0.400,0.452,0.399,0.464,0.413],
+                [0.474,0.428,0.466,0.457,0.451,0.483],
+                [0.448,0.490,0.445,0.495,0.442,0.496],
+                [0.435,0.494,0.421,0.476,0.411,0.457],
+                [0.401,0.438,0.401,0.416,0.421,0.409]
+              ]),
+              appendages: [
+                region('auricle-tubular', [0.423, 0.405], [0.016, 0.016], [0.432, 0.417], [
+                  [0.425,0.417,0.421,0.417,0.417,0.411],
+                  [0.411,0.404,0.407,0.396,0.412,0.391],
+                  [0.416,0.389,0.421,0.395,0.425,0.401],
+                  [0.431,0.405,0.436,0.408,0.437,0.412],
+                  [0.438,0.415,0.435,0.418,0.432,0.417]
+                ]),
+                region('auricle-triangular', [0.459, 0.411], [0.014, 0.015], [0.446, 0.417], [
+                  [0.448,0.406,0.459,0.393,0.466,0.397],
+                  [0.468,0.405,0.473,0.414,0.470,0.422],
+                  [0.463,0.424,0.453,0.422,0.446,0.417]
+                ])
+              ],
+              coronaryCourse: { start: { x: 0.451, y: 0.417 }, curves: [[
+                { x: 0.458, y: 0.437 }, { x: 0.439, y: 0.460 }, { x: 0.439, y: 0.486 }
+              ]] }
+            };
+          }
+
+          function tracePigCardiacRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath();
+            return true;
+          }
+
+          function drawPigCardiacComplex(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height);
+            if (!context || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return false;
+            var geometry = pigCardiacGeometry(), detailed = !!options.detailed;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var lightLength = Math.hypot(light[0], light[1]) || 1;
+            var lightX = light[0] / lightLength, lightY = light[1] / lightLength;
+            function paintSurface(region, appendage) {
+              var x = region.center.x * width, y = region.center.y * height;
+              var rx = region.extent.x * width, ry = region.extent.y * height;
+              tracePigCardiacRegion(context, region, width, height);
+              if (detailed && typeof options.contact === 'function') options.contact(rx, ry);
+              var base = appendage ? '#8f4b51' : '#a64c4d';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, appendage ? '#c68a83' : '#cf8178');
+                base.addColorStop(0.36, appendage ? '#a65d60' : '#b25d57');
+                base.addColorStop(0.72, appendage ? '#7b3e49' : '#873c42');
+                base.addColorStop(1, '#4e2833');
+              }
+              context.fillStyle = base; context.fill();
+              context.strokeStyle = appendage ? '#65313e' : '#632c37'; context.lineWidth = appendage ? 0.5 : 0.65; context.stroke();
+              if (detailed && typeof options.finish === 'function') {
+                options.finish(x, y, rx, ry, 'serosa', 'pig-heart-' + region.key);
+              }
+            }
+            context.save();
+            try {
+              paintSurface(geometry.ventricle, false);
+              if (detailed) {
+                // The visible coronary course is a shallow surface landmark, not an exposed septum.
+                // Re-trace after material finishing because that helper creates its own grain paths.
+                tracePigCardiacRegion(context, geometry.ventricle, width, height);
+                context.save();
+                try {
+                  context.clip(); context.lineCap = 'round'; context.lineJoin = 'round'; context.shadowBlur = 0;
+                  tracePigCardiacRegion(context, geometry.coronaryCourse, width, height, false);
+                  context.strokeStyle = 'rgba(56,24,35,0.27)'; context.lineWidth = Math.max(0.65, Math.min(width, height) * 0.0021); context.stroke();
+                  context.strokeStyle = 'rgba(126,44,52,0.70)'; context.lineWidth = Math.max(0.28, Math.min(width, height) * 0.0009); context.stroke();
+                  context.translate(lightX * 0.35, lightY * 0.35);
+                  tracePigCardiacRegion(context, geometry.coronaryCourse, width, height, false);
+                  context.strokeStyle = 'rgba(245,193,175,0.24)'; context.lineWidth = 0.28; context.stroke();
+                } finally { context.restore(); }
+              }
+              geometry.appendages.forEach(function (region) { paintSurface(region, true); });
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function perchCardiacGeometry(logicalWidth, logicalHeight) {
+            if (typeof logicalWidth !== 'number' || typeof logicalHeight !== 'number' ||
+                !isFinite(logicalWidth) || !isFinite(logicalHeight) || logicalWidth <= 0 || logicalHeight <= 0) return null;
+            function compartment(x, y, rx, ry, rotation, start, curves) {
+              var cosine = Math.cos(rotation), sine = Math.sin(rotation);
+              function point(p) {
+                var u = p[0] * rx * logicalWidth, v = p[1] * ry * logicalHeight;
+                return { x: x + (u * cosine - v * sine) / logicalWidth,
+                  y: y + (u * sine + v * cosine) / logicalHeight };
+              }
+              return { center: { x: x, y: y }, rx: rx, ry: ry, rotation: rotation,
+                start: point(start), curves: curves.map(function (c) {
+                  return [point([c[0], c[1]]), point([c[2], c[3]]), point([c[4], c[5]])];
+                }) };
+            }
+            // Closed external contours use the original four rotated ellipse envelopes.
+            // The ventricular shoulder contains a point safely inside the existing coelomic rim.
+            // No valves, trabeculae or microscopic muscle layers are exposed on these surfaces.
+            return { width: logicalWidth, height: logicalHeight, target: { x: 0.330, y: 0.505 },
+              sinus: compartment(0.295, 0.500, 0.013, 0.013, -0.20, [-0.79, -0.15], [
+                [-0.82,-0.50,-0.43,-0.76,-0.11,-0.68], [0.26,-0.76,0.70,-0.45,0.82,-0.09],
+                [0.80,0.21,0.45,0.55,0.10,0.63], [-0.26,0.76,-0.70,0.41,-0.79,-0.15]
+              ]),
+              atrium: compartment(0.312, 0.506, 0.018, 0.018, 0.20, [-0.16, -0.89], [
+                [0.19,-0.97,0.71,-0.69,0.79,-0.36], [0.94,-0.07,0.78,0.28,0.63,0.51],
+                [0.34,0.81,-0.15,0.94,-0.49,0.71], [-0.80,0.54,-0.94,0.15,-0.81,-0.19],
+                [-0.86,-0.43,-0.55,-0.75,-0.16,-0.89]
+              ]),
+              ventricle: compartment(0.335, 0.518, 0.022, 0.024, -0.12, [-0.82, -0.42], [
+                [-0.64,-0.74,-0.25,-0.91,0.15,-0.78], [0.45,-0.84,0.80,-0.58,0.92,-0.30],
+                [0.97,0.02,0.68,0.50,0.30,0.91], [0.16,0.97,-0.07,0.92,-0.26,0.70],
+                [-0.56,0.43,-0.93,-0.03,-0.82,-0.42]
+              ]),
+              bulbus: compartment(0.358, 0.501, 0.017, 0.012, -0.38, [-0.20, -0.91], [
+                [0.06,-0.95,0.19,-0.66,0.44,-0.57], [0.77,-0.40,0.94,-0.08,0.80,0.27],
+                [0.65,0.59,0.31,0.83,-0.07,0.86], [-0.45,0.81,-0.77,0.52,-0.84,0.18],
+                [-0.90,-0.16,-0.65,-0.41,-0.47,-0.57], [-0.34,-0.70,-0.40,-0.88,-0.20,-0.91]
+              ]),
+              outflow: { start: { x: 0.358, y: 0.499 }, curves: [[{ x: 0.335, y: 0.478 },
+                { x: 0.322, y: 0.460 }, { x: 0.310, y: 0.445 }]] }
+            };
+          }
+
+          function tracePerchHeartRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            for (var curveIndex = 0; curveIndex < region.curves.length; curveIndex++) {
+              var curve = region.curves[curveIndex];
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            context.closePath(); return true;
+          }
+
+          function drawPerchCardiacComplex(context, options) {
+            options = options || {};
+            var width = options.width, height = options.height;
+            var geometry = perchCardiacGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true, accessible = options.accessible === true;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.78;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var conditionSheen = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * conditionSheen;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            function traceOutflow() {
+              var region = geometry.outflow, curve = region.curves[0];
+              context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            function traceTeachingRegion(name) {
+              var region = geometry[name];
+              context.beginPath(); context.ellipse(region.center.x * width, region.center.y * height,
+                region.rx * width, region.ry * height, region.rotation, 0, Math.PI * 2);
+            }
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]);
+              context.lineCap = 'round'; context.lineJoin = 'round';
+              if (!detailed) {
+                // The established teaching colors and ellipse geometry remain available.
+                traceTeachingRegion('sinus'); context.fillStyle = accessible ? '#7dd3fc' : 'rgba(56,189,248,0.72)'; context.fill();
+                traceTeachingRegion('atrium'); context.fillStyle = accessible ? '#be123c' : 'rgba(190,24,93,0.90)'; context.fill();
+                context.strokeStyle = 'rgba(254,205,211,0.56)'; context.lineWidth = 0.7; context.stroke();
+                traceTeachingRegion('ventricle');
+                var teachingVolume = context.createRadialGradient(width * 0.328, height * 0.508, 1, width * 0.335, height * 0.518, width * 0.024);
+                teachingVolume.addColorStop(0, accessible ? '#fb7185' : 'rgba(244,63,94,0.96)');
+                teachingVolume.addColorStop(1, accessible ? '#9f1239' : 'rgba(136,19,55,0.98)');
+                context.fillStyle = teachingVolume; context.fill(); context.strokeStyle = 'rgba(254,205,211,0.62)'; context.lineWidth = 1; context.stroke();
+                traceTeachingRegion('bulbus'); context.fillStyle = accessible ? '#fda4af' : 'rgba(251,113,133,0.84)'; context.fill();
+                traceOutflow(); context.strokeStyle = accessible ? '#fb7185' : 'rgba(251,113,133,0.86)'; context.lineWidth = 1.8; context.stroke();
+                return true;
+              }
+              // The closed external surfaces remain in the existing cutaway. Subtle material
+              // differences distinguish the inflow, muscular pump and elastic outflow region.
+              // No internal valves, trabeculae or exposed muscle fibers are drawn through the wall.
+              traceOutflow(); context.strokeStyle = '#805c56'; context.lineWidth = 2.2; context.stroke();
+              context.strokeStyle = '#c9ac92'; context.lineWidth = 1.35; context.stroke();
+              context.strokeStyle = 'rgba(246,229,198,' + (0.32 * gloss).toFixed(3) + ')'; context.lineWidth = 0.40; context.stroke();
+              var regions = [
+                ['sinus', '#a18b96', '#705b6b', '#433640'],
+                ['atrium', '#a86f79', '#744453', '#432f3d'],
+                ['ventricle', '#d29586', '#a05d5d', '#58353f'],
+                ['bulbus', '#efe2c5', '#cfbb9d', '#917969']
+              ];
+              for (var regionIndex = 0; regionIndex < regions.length; regionIndex++) {
+                var entry = regions[regionIndex], region = geometry[entry[0]];
+                var x = region.center.x * width, y = region.center.y * height;
+                var rx = region.rx * width, ry = region.ry * height;
+                tracePerchHeartRegion(context, region, width, height);
+                context.strokeStyle = 'rgba(37,22,29,0.36)'; context.lineWidth = 1.7; context.stroke();
+                var volume = context.createLinearGradient(x + lamp[0] * rx, y + lamp[1] * ry,
+                  x - lamp[0] * rx, y - lamp[1] * ry);
+                volume.addColorStop(0, entry[1]); volume.addColorStop(0.43, entry[2]); volume.addColorStop(1, entry[3]);
+                context.fillStyle = volume; context.fill();
+                context.strokeStyle = entry[0] === 'bulbus' ? 'rgba(119,93,76,0.72)' : 'rgba(80,43,52,0.76)';
+                context.lineWidth = 0.48; context.stroke();
+                context.save();
+                try {
+                  // Capture the actual contour before any finish starts another path.
+                  context.clip();
+                  var sheen = context.createRadialGradient(x + lamp[0] * rx * 0.40, y + lamp[1] * ry * 0.40, 0,
+                    x + lamp[0] * rx * 0.12, y + lamp[1] * ry * 0.12, Math.max(rx, ry) * 1.10);
+                  sheen.addColorStop(0, 'rgba(255,238,216,' + (0.24 * gloss).toFixed(3) + ')');
+                  sheen.addColorStop(0.50, 'rgba(255,238,216,' + (0.05 * gloss).toFixed(3) + ')');
+                  sheen.addColorStop(1, 'rgba(255,238,216,0)');
+                  context.fillStyle = sheen; context.fillRect(x - rx * 1.5, y - ry * 1.5, rx * 3, ry * 3);
+                  if (entry[0] === 'ventricle') {
+                    // Sparse sub-pixel tone variation avoids a uniform plastic surface.
+                    // The fixed pattern is stable across lighting, camera and evidence capture.
+                    for (var grain = 0; grain < 8; grain++) {
+                      var angle = grain * 2.399963, distance = Math.sqrt((grain + 0.5) / 8) * 0.68;
+                      context.beginPath(); context.ellipse(x + Math.cos(angle) * rx * distance, y + Math.sin(angle) * ry * distance,
+                        0.28, 0.19, -0.25, 0, Math.PI * 2);
+                      context.fillStyle = grain % 3 ? 'rgba(247,205,183,0.10)' : 'rgba(51,27,36,0.10)'; context.fill();
+                    }
+                  } else if (entry[0] === 'atrium') {
+                    context.beginPath(); context.moveTo(x - rx * 0.54, y - ry * 0.12);
+                    context.bezierCurveTo(x - rx * 0.24, y - ry * 0.40, x + rx * 0.05, y - ry * 0.31, x + rx * 0.38, y - ry * 0.38);
+                    context.strokeStyle = 'rgba(52,29,43,0.24)'; context.lineWidth = 0.42; context.stroke();
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function earthwormAorticGeometry(logicalWidth, logicalHeight) {
+            if (typeof logicalWidth !== 'number' || typeof logicalHeight !== 'number' ||
+                !isFinite(logicalWidth) || !isFinite(logicalHeight) || logicalWidth <= 0 || logicalHeight <= 0) return null;
+            var pairs = [], dorsalNodes = [], halfLength = logicalHeight * 0.009;
+            var firstFrame = earthwormAnatomyFrame(0.14, logicalWidth, logicalHeight);
+            var lastFrame = earthwormAnatomyFrame(0.28, logicalWidth, logicalHeight);
+            if (!firstFrame || !lastFrame) return null;
+            function normalized(x, y) { return { x: x / logicalWidth, y: y / logicalHeight }; }
+            dorsalNodes.push({ point: normalized(firstFrame.point.x, firstFrame.point.y), frame: firstFrame });
+            for (var index = 0; index < 5; index++) {
+              var t = 0.16 + index * 0.026;
+              var frame = earthwormAnatomyFrame(t, logicalWidth, logicalHeight);
+              if (!frame) return null;
+              function point(across, along) {
+                return normalized(frame.point.x + frame.nx * frame.width * across + frame.tx * halfLength * along,
+                  frame.point.y + frame.ny * frame.width * across + frame.ty * halfLength * along);
+              }
+              var start = point(0, -1), ventral = point(0, 1), arms = [];
+              [-1, 1].forEach(function (side) {
+                var junction = point(side * 0.71, 0);
+                arms.push({ side: side, start: start, junction: junction,
+                  front: [[point(side * 0.28, -0.98), point(side * 0.71, -0.62), junction]],
+                  rear: [[point(side * 0.71, 0.62), point(side * 0.28, 0.98), ventral]] });
+              });
+              pairs.push({ t: t, frame: frame, arms: arms });
+              dorsalNodes.push({ point: start, frame: frame });
+            }
+            dorsalNodes.push({ point: normalized(lastFrame.point.x, lastFrame.point.y), frame: lastFrame });
+            var dorsal = { start: dorsalNodes[0].point, curves: [] };
+            for (var node = 1; node < dorsalNodes.length; node++) {
+              var previous = dorsalNodes[node - 1], next = dorsalNodes[node];
+              var distance = Math.hypot((next.point.x - previous.point.x) * logicalWidth,
+                (next.point.y - previous.point.y) * logicalHeight) / 3;
+              dorsal.curves.push([
+                { x: previous.point.x + previous.frame.tx * distance / logicalWidth,
+                  y: previous.point.y + previous.frame.ty * distance / logicalHeight },
+                { x: next.point.x - next.frame.tx * distance / logicalWidth,
+                  y: next.point.y - next.frame.ty * distance / logicalHeight }, next.point
+              ]);
+            }
+            return { width: logicalWidth, height: logicalHeight, pairs: pairs, dorsal: dorsal,
+              target: pairs[0].arms[0].junction };
+          }
+
+          function traceEarthwormAorticVessel(context, start, curves, width, height, append) {
+            if (!context || !start || !curves) return false;
+            if (!append) context.beginPath();
+            context.moveTo(start.x * width, start.y * height);
+            for (var curveIndex = 0; curveIndex < curves.length; curveIndex++) {
+              var curve = curves[curveIndex];
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            return true;
+          }
+
+          function drawEarthwormAorticArches(context, options) {
+            options = options || {};
+            var width = options.width, height = options.height, stage = options.stage;
+            if (!context || (stage !== 'rear' && stage !== 'front')) return false;
+            var geometry = earthwormAorticGeometry(width, height);
+            if (!geometry) return false;
+            var detailed = options.detailed === true;
+            var clarity = options.accessible === true || options.highContrast === true;
+            var unit = Math.max(0.38, Math.min(width * 0.0020, height * 0.0015));
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var conditionGloss = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * conditionGloss;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]);
+              context.lineCap = 'round'; context.lineJoin = 'round';
+              // Use the actual exposed body-wall band for both depth passes. The gut is
+              // painted between them and hides the buried return, rather than exposing a
+              // complete ring or a ventral longitudinal vessel through the intact esophagus.
+              traceEarthwormNephridialField(context, width, height); context.clip();
+              for (var pairIndex = 0; pairIndex < geometry.pairs.length; pairIndex++) {
+                var pair = geometry.pairs[pairIndex];
+                context.beginPath();
+                for (var armIndex = 0; armIndex < pair.arms.length; armIndex++) {
+                  var arm = pair.arms[armIndex];
+                  traceEarthwormAorticVessel(context, stage === 'rear' ? arm.junction : arm.start,
+                    stage === 'rear' ? arm.rear : arm.front, width, height, true);
+                }
+                if (!detailed) {
+                  context.strokeStyle = clarity ? '#be123c' : '#c63d49';
+                  context.lineWidth = stage === 'rear' ? 1.20 : 1.65; context.stroke();
+                } else if (stage === 'rear') {
+                  context.strokeStyle = 'rgba(67,26,35,0.62)'; context.lineWidth = unit * 1.95; context.stroke();
+                  context.strokeStyle = '#8d454b'; context.lineWidth = unit * 1.10; context.stroke();
+                } else {
+                  context.strokeStyle = 'rgba(58,24,32,0.72)'; context.lineWidth = unit * 2.50; context.stroke();
+                  var volume = context.createLinearGradient(pair.frame.point.x + lamp[0] * pair.frame.width * 0.72,
+                    pair.frame.point.y + lamp[1] * height * 0.009, pair.frame.point.x - lamp[0] * pair.frame.width * 0.72,
+                    pair.frame.point.y - lamp[1] * height * 0.009);
+                  volume.addColorStop(0, '#d88b7b'); volume.addColorStop(0.43, '#af4e54'); volume.addColorStop(1, '#77333f');
+                  context.strokeStyle = volume; context.lineWidth = unit * 1.60; context.stroke();
+                  context.strokeStyle = 'rgba(255,210,183,' + (0.32 * gloss).toFixed(3) + ')';
+                  context.lineWidth = Math.max(0.22, unit * 0.42); context.stroke();
+                }
+              }
+              if (stage === 'front') {
+                // All paired arms attach to this short visible dorsal-vessel course.
+                // Its ends are a limited exposed portion of the longitudinal vessel.
+                traceEarthwormAorticVessel(context, geometry.dorsal.start, geometry.dorsal.curves, width, height, false);
+                if (!detailed) {
+                  context.strokeStyle = clarity ? '#be123c' : '#b43d49'; context.lineWidth = 1.25; context.stroke();
+                } else {
+                  context.strokeStyle = 'rgba(61,25,34,0.70)'; context.lineWidth = unit * 1.85; context.stroke();
+                  context.strokeStyle = '#ad4c53'; context.lineWidth = unit * 1.10; context.stroke();
+                  context.strokeStyle = 'rgba(247,188,166,' + (0.26 * gloss).toFixed(3) + ')';
+                  context.lineWidth = Math.max(0.18, unit * 0.30); context.stroke();
+                }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function perchRenalGeometry(logicalWidth, logicalHeight) {
+            if (typeof logicalWidth !== 'number' || typeof logicalHeight !== 'number' ||
+                !isFinite(logicalWidth) || !isFinite(logicalHeight) || logicalWidth <= 0 || logicalHeight <= 0) return null;
+            var upper = [{ x: 0.355, y: 0.362 }, { x: 0.445, y: 0.344 }, { x: 0.605, y: 0.350 }, { x: 0.690, y: 0.378 }];
+            var lower = [{ x: 0.355, y: 0.389 }, { x: 0.455, y: 0.379 }, { x: 0.615, y: 0.381 }, { x: 0.690, y: 0.378 }];
+            function cubic(points, t) {
+              var u = 1 - t;
+              return { x: u * u * u * points[0].x + 3 * u * u * t * points[1].x + 3 * u * t * t * points[2].x + t * t * t * points[3].x,
+                y: u * u * u * points[0].y + 3 * u * u * t * points[1].y + 3 * u * t * t * points[2].y + t * t * t * points[3].y };
+            }
+            function ribbon(t, roof) {
+              var top = cubic(upper, t), bottom = cubic(lower, t);
+              return { x: top.x * roof + bottom.x * (1 - roof), y: top.y * roof + bottom.y * (1 - roof) };
+            }
+            // One lateral renal projection remains against the dorsal wall. A rounded
+            // anterior end and gently uneven free margin replace the straight cut edge;
+            // these are whole-organ contours, not enlarged nephrons or a separate head mass.
+            var nodes = [ribbon(0.045, 0.85), ribbon(0.20, 0.89), ribbon(0.40, 0.88),
+              ribbon(0.60, 0.82), ribbon(0.80, 0.60), ribbon(0.94, 0.28), ribbon(0.965, 0.12),
+              ribbon(0.94, 0.11), ribbon(0.78, 0.20), ribbon(0.60, 0.26), ribbon(0.43, 0.15),
+              ribbon(0.26, 0.23), ribbon(0.07, 0.18), { x: 0.3575, y: 0.374 }];
+            var curves = [];
+            for (var index = 0; index < nodes.length; index++) {
+              var previous = nodes[(index + nodes.length - 1) % nodes.length], start = nodes[index];
+              var end = nodes[(index + 1) % nodes.length], next = nodes[(index + 2) % nodes.length];
+              curves.push([{ x: start.x + (end.x - previous.x) * 0.12, y: start.y + (end.y - previous.y) * 0.12 },
+                { x: end.x - (next.x - start.x) * 0.12, y: end.y - (next.y - start.y) * 0.12 }, end]);
+            }
+            return { width: logicalWidth, height: logicalHeight, detailed: { start: nodes[0], curves: curves },
+              fallback: { start: upper[0], curves: [[upper[1], upper[2], upper[3]], [lower[2], lower[1], lower[0]]] },
+              target: { x: 0.515, y: 0.366 } };
+          }
+
+          function tracePerchRenalRegion(context, region, width, height) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            for (var curveIndex = 0; curveIndex < region.curves.length; curveIndex++) {
+              var curve = region.curves[curveIndex];
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            context.closePath(); return true;
+          }
+
+          function drawPerchRenalTissue(context, options) {
+            options = options || {};
+            var width = options.width, height = options.height;
+            var geometry = perchRenalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true, accessible = options.accessible === true;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.intensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.78;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var conditionSheen = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var sheenAmount = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * conditionSheen;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              context.globalCompositeOperation = 'source-over'; context.setLineDash([]);
+              context.lineCap = 'round'; context.lineJoin = 'round';
+              if (!detailed) {
+                tracePerchRenalRegion(context, geometry.fallback, width, height);
+                var teachingVolume = context.createLinearGradient(width * 0.5, height * 0.45 - height * 0.102, width * 0.5, height * 0.45 - height * 0.060);
+                teachingVolume.addColorStop(0, accessible ? '#7f1d1d' : 'rgba(69,26,31,0.98)');
+                teachingVolume.addColorStop(1, accessible ? '#991b1b' : 'rgba(103,35,39,0.94)');
+                context.fillStyle = teachingVolume; context.fill();
+                context.strokeStyle = 'rgba(254,202,202,0.30)'; context.lineWidth = 0.7; context.stroke();
+                return true;
+              }
+              // A low, attached renal ribbon follows the dorsal wall. Surface tone is
+              // deliberately broad and subdued; no microscopic units are exposed here.
+              tracePerchRenalRegion(context, geometry.detailed, width, height);
+              var volume = context.createLinearGradient(width * (0.515 + lamp[0] * 0.10), height * (0.366 + lamp[1] * 0.014),
+                width * (0.515 - lamp[0] * 0.10), height * (0.366 - lamp[1] * 0.014));
+              volume.addColorStop(0, '#79514d'); volume.addColorStop(0.38, '#59363b'); volume.addColorStop(1, '#30232d');
+              context.fillStyle = volume; context.fill();
+              // Keep every material mark, including the contact shadow, inside the real contour.
+              context.clip();
+              context.strokeStyle = 'rgba(25,16,24,0.48)'; context.lineWidth = 1.5; context.stroke();
+              var surfaceWash = context.createLinearGradient(width * 0.355, height * 0.370, width * 0.690, height * 0.370);
+              surfaceWash.addColorStop(0, 'rgba(158,108,89,0.02)');
+              surfaceWash.addColorStop(0.32, 'rgba(182,130,105,' + (0.09 * sheenAmount).toFixed(3) + ')');
+              surfaceWash.addColorStop(0.68, 'rgba(182,130,105,' + (0.035 * sheenAmount).toFixed(3) + ')');
+              surfaceWash.addColorStop(1, 'rgba(28,19,27,0.13)');
+              context.fillStyle = surfaceWash; context.fillRect(width * 0.35, height * 0.34, width * 0.35, height * 0.06);
+              for (var patch = 0; patch < 8; patch++) {
+                var t = (patch + 0.5) / 8, x = 0.365 + t * 0.310;
+                var y = 0.373 - Math.sin(t * Math.PI) * 0.012 + t * 0.005;
+                context.beginPath(); context.ellipse(width * x, height * y, width * (0.010 + (patch % 3) * 0.002),
+                  height * (0.0022 + (patch % 2) * 0.0010), -0.07, 0, Math.PI * 2);
+                context.fillStyle = patch % 3 ? 'rgba(165,111,91,0.075)' : 'rgba(24,17,26,0.105)'; context.fill();
+              }
+              // Sparse, fixed tonal grain stays stable when the specimen or camera moves.
+              for (var grain = 0; grain < 6; grain++) {
+                var grainT = (grain + 0.6) / 6.5;
+                context.beginPath(); context.ellipse(width * (0.370 + grainT * 0.288),
+                  height * (0.369 - Math.sin(grainT * Math.PI) * 0.007 + (grain % 2) * 0.003),
+                  0.38, 0.24, -0.2, 0, Math.PI * 2);
+                context.fillStyle = grain % 2 ? 'rgba(218,172,140,0.12)' : 'rgba(27,18,26,0.18)'; context.fill();
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function perchGastricGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return null;
+            var caecal = perchCaecalGeometry(width, height);
+            if (!caecal || !caecal.inlet || !caecal.inlet.start) return null;
+            var root = { x: caecal.inlet.start.x, y: caecal.inlet.start.y };
+            var tubeWidth = width * 0.009;
+            var halfY = Math.max(0.0045, Math.min(0.0105, (tubeWidth + Math.min(0.65, tubeWidth * 0.12)) * 0.60 / height));
+            var top = root.y - halfY, bottom = root.y + halfY;
+            // A broad distensible sac retains a blunt caudal fullness beside its short
+            // pyloric branch. The outline does not imply a mammalian curled return limb.
+            var region = { start: { x: 0.432, y: 0.478 }, curves: [
+              [{x:0.451,y:0.474},{x:0.472,y:0.477},{x:0.483,y:0.486}],
+              [{x:0.491,y:0.490},{x:0.492,y:0.499},{x:0.496,y:0.506}],
+              [{x:root.x-0.004,y:top},{x:root.x+0.004,y:top},{x:root.x+0.006,y:top+0.001}],
+              [{x:root.x+0.010,y:root.y},{x:root.x+0.006,y:bottom},{x:root.x,y:bottom}],
+              [{x:root.x-0.005,y:bottom+0.001},{x:0.496,y:0.521},{x:0.493,y:0.522}],
+              [{x:0.494,y:0.528},{x:0.488,y:0.533},{x:0.481,y:0.534}],
+              [{x:0.470,y:0.537},{x:0.459,y:0.530},{x:0.457,y:0.522}],
+              [{x:0.453,y:0.515},{x:0.454,y:0.507},{x:0.449,y:0.501}],
+              [{x:0.446,y:0.492},{x:0.440,y:0.483},{x:0.432,y:0.478}]
+            ] };
+            var bounds = { minX: region.start.x, maxX: region.start.x, minY: region.start.y, maxY: region.start.y };
+            region.curves.forEach(function (curve) { curve.forEach(function (p) {
+              bounds.minX = Math.min(bounds.minX, p.x); bounds.maxX = Math.max(bounds.maxX, p.x);
+              bounds.minY = Math.min(bounds.minY, p.y); bounds.maxY = Math.max(bounds.maxY, p.y);
+            }); });
+            return { target: { x: 0.472, y: 0.501 }, region: region, bounds: bounds,
+              center: { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 },
+              extent: { x: (bounds.maxX - bounds.minX) / 2, y: (bounds.maxY - bounds.minY) / 2 },
+              pyloricRoot: root, pyloricHalfY: halfY, inletWidth: tubeWidth,
+              surfaceCreases: [
+                { start: {x:0.455,y:0.495}, curves: [[{x:0.456,y:0.500},{x:0.458,y:0.503},{x:0.460,y:0.505}]] },
+                { start: {x:0.477,y:0.523}, curves: [[{x:0.481,y:0.525},{x:0.484,y:0.524},{x:0.486,y:0.522}]] }
+              ] };
+          }
+          function tracePerchGastricRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.curves.forEach(function (curve) {
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            });
+            if (closed !== false) context.closePath(); return true;
+          }
+          function drawPerchGastricSurface(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = perchGastricGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = !!options.detailed, x = geometry.center.x * width, y = geometry.center.y * height;
+            var rx = geometry.extent.x * width, ry = geometry.extent.y * height;
+            var light = { overhead: [-0.12,-1], left: [-1,-0.14], right: [1,-0.14], raking: [-0.72,0.70] }[options.lightDirection] || [-0.12,-1];
+            var length = Math.hypot(light[0], light[1]) || 1, lightX = light[0] / length, lightY = light[1] / length;
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0; context.shadowColor = 'rgba(0,0,0,0)';
+              context.setLineDash([]); context.globalCompositeOperation = 'source-over'; context.lineCap = 'round'; context.lineJoin = 'round';
+              tracePerchGastricRegion(context, geometry.region, width, height);
+              if (detailed && typeof options.contact === 'function') {
+                context.save();
+                try { options.contact(rx, ry); } finally { context.restore(); }
+              }
+              tracePerchGastricRegion(context, geometry.region, width, height);
+              var base = '#cba98d';
+              if (detailed) {
+                base = context.createLinearGradient(x + lightX * rx, y + lightY * ry, x - lightX * rx, y - lightY * ry);
+                base.addColorStop(0, '#e2c2ab'); base.addColorStop(0.35, '#c59d84');
+                base.addColorStop(0.75, '#a77765'); base.addColorStop(1, '#765047');
+              }
+              context.fillStyle = base; context.fill(); context.strokeStyle = '#79564d'; context.lineWidth = 0.45; context.stroke();
+              if (detailed) {
+                context.save();
+                try {
+                  tracePerchGastricRegion(context, geometry.region, width, height); context.clip();
+                  context.lineCap = 'round'; context.lineJoin = 'round';
+                  geometry.surfaceCreases.forEach(function (crease) {
+                    tracePerchGastricRegion(context, crease, width, height, false);
+                    context.strokeStyle = 'rgba(116,77,66,0.11)'; context.lineWidth = 0.32; context.stroke();
+                    context.save();
+                    try {
+                      context.translate(lightX * 0.22, lightY * 0.22);
+                      tracePerchGastricRegion(context, crease, width, height, false);
+                      context.strokeStyle = 'rgba(248,229,210,0.12)'; context.lineWidth = 0.20; context.stroke();
+                    } finally { context.restore(); }
+                  });
+                  if (typeof options.finish === 'function') {
+                    tracePerchGastricRegion(context, geometry.region, width, height);
+                    options.finish(x, y, rx, ry, 'serosa', 'perch-stomach');
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function perchCaecalGeometry(W, H) {
+            if (typeof W !== 'number' || typeof H !== 'number' || !Number.isFinite(W) || !Number.isFinite(H) || W <= 0 || H <= 0) return null;
+            // Three gross blind pouches share the proximal intestinal course. All path
+            // coordinates and bounds are normalized; frame vectors and sizes use pixels.
+            var caeca = [], halfWidth = Math.min(W * 0.0040, H * 0.0060), capK = 0.5522847498307936;
+            var bowelStart = { x: 0.518, y: 0.521 }, bowelC1 = { x: 0.570, y: 0.552 }, bowelC2 = { x: 0.605, y: 0.502 }, bowelEnd = { x: 0.635, y: 0.526 };
+            function pointOnCubic(a, b, c, d, t) {
+              var u = 1 - t;
+              return { x: u * u * u * a.x + 3 * u * u * t * b.x + 3 * u * t * t * c.x + t * t * t * d.x,
+                y: u * u * u * a.y + 3 * u * u * t * b.y + 3 * u * t * t * c.y + t * t * t * d.y };
+            }
+            function shifted(p, nx, ny, distance) { return { x: p.x + nx * distance / W, y: p.y + ny * distance / H }; }
+            function frameAt(a, q, b, t) {
+              var dx = 2 * ((1 - t) * (q.x - a.x) + t * (b.x - q.x)) * W;
+              var dy = 2 * ((1 - t) * (q.y - a.y) + t * (b.y - q.y)) * H;
+              var length = Math.hypot(dx, dy), tx = dx / length, ty = dy / length;
+              return { tx: tx, ty: ty, nx: -ty, ny: tx };
+            }
+            var courses = [
+              { u: 0, control: { x: 0.505, y: 0.532 }, end: { x: 0.513, y: 0.547 } },
+              { u: 0.045, control: { x: 0.529, y: 0.533 }, end: { x: 0.534, y: 0.5485 } },
+              { u: 0.090, control: { x: 0.546, y: 0.536 }, end: { x: 0.554, y: 0.5505 } }
+            ];
+            for (var i = 0; i < courses.length; i++) {
+              var course = courses[i], a = pointOnCubic(bowelStart, bowelC1, bowelC2, bowelEnd, course.u), q = course.control, b = course.end;
+              var c1 = { x: a.x + (q.x - a.x) * 2 / 3, y: a.y + (q.y - a.y) * 2 / 3 };
+              var c2 = { x: b.x + (q.x - b.x) * 2 / 3, y: b.y + (q.y - b.y) * 2 / 3 };
+              var f0 = frameAt(a, q, b, 0), f1 = frameAt(a, q, b, 1 / 3), f2 = frameAt(a, q, b, 2 / 3), f3 = frameAt(a, q, b, 1);
+              var w0 = halfWidth * 0.60, w3 = halfWidth * 0.68, nose = halfWidth * 0.65, root = halfWidth * 0.28;
+              var start = shifted(a, f0.nx, f0.ny, w0), far = shifted(b, f3.nx, f3.ny, w3), opposite = shifted(b, f3.nx, f3.ny, -w3);
+              var tip = shifted(b, f3.tx, f3.ty, nose), base = shifted(a, f0.tx, f0.ty, -root), near = shifted(a, f0.nx, f0.ny, -w0);
+              var curves = [
+                [shifted(c1, f1.nx, f1.ny, halfWidth * 1.20), shifted(c2, f2.nx, f2.ny, halfWidth * 1.10), far],
+                [shifted(far, f3.tx, f3.ty, nose * capK), shifted(tip, f3.nx, f3.ny, w3 * capK), tip],
+                [shifted(tip, f3.nx, f3.ny, -w3 * capK), shifted(opposite, f3.tx, f3.ty, nose * capK), opposite],
+                [shifted(c2, f2.nx, f2.ny, -halfWidth * 1.10), shifted(c1, f1.nx, f1.ny, -halfWidth * 1.20), near],
+                [shifted(near, f0.tx, f0.ty, -root * capK), shifted(base, f0.nx, f0.ny, -w0 * capK), base],
+                [shifted(base, f0.nx, f0.ny, w0 * capK), shifted(start, f0.tx, f0.ty, -root * capK), start]
+              ];
+              var points = [start];
+              curves.forEach(function (curve) { points.push(curve[0], curve[1], curve[2]); });
+              var center = pointOnCubic(a, c1, c2, b, 0.55), materialFrame = frameAt(a, q, b, 0.55), lengthPx = 0, previous = a;
+              for (var j = 1; j <= 8; j++) {
+                var p = pointOnCubic(a, c1, c2, b, j / 8);
+                lengthPx += Math.hypot((p.x - previous.x) * W, (p.y - previous.y) * H); previous = p;
+              }
+              caeca.push({ start: start, curves: curves, centerline: { start: a, curves: [[c1, c2, b]] }, center: center,
+                bounds: { minX: Math.min.apply(null, points.map(function (p) { return p.x; })), minY: Math.min.apply(null, points.map(function (p) { return p.y; })),
+                  maxX: Math.max.apply(null, points.map(function (p) { return p.x; })), maxY: Math.max.apply(null, points.map(function (p) { return p.y; })) },
+                frame: { nx: materialFrame.nx, ny: materialFrame.ny, tx: materialFrame.tx, ty: materialFrame.ty, halfWidthPx: halfWidth, lengthPx: lengthPx } });
+            }
+            var middle = caeca[1].centerline, target = pointOnCubic(middle.start, middle.curves[0][0], middle.curves[0][1], middle.curves[0][2], 0.70);
+            return { width: W, height: H, caeca: caeca, target: target,
+              inlet: { start: { x: 0.503, y: 0.516 }, curves: [[{ x: 0.509, y: 0.517 }, { x: 0.513, y: 0.520 }, { x: 0.518, y: 0.521 }]] } };
+          }
+
+          function tracePerchCaecalRegion(context, region, width, height, closed) {
+            if (!context || !region || !region.start || !region.curves) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            for (var curveIndex = 0; curveIndex < region.curves.length; curveIndex++) {
+              var curve = region.curves[curveIndex];
+              context.bezierCurveTo(curve[0].x * width, curve[0].y * height,
+                curve[1].x * width, curve[1].y * height, curve[2].x * width, curve[2].y * height);
+            }
+            if (closed !== false) context.closePath();
+            return true;
+          }
+
+          function drawPerchPyloricCaeca(context, options) {
+            options = options || {};
+            var width = options.width, height = options.height;
+            var geometry = perchCaecalGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true, accessible = options.accessible === true;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = isFinite(intensityValue) && intensityValue > 0 ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var conditionSheen = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * conditionSheen;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            function pointOnCourse(caecum, t) {
+              var p = caecum.centerline.start, curve = caecum.centerline.curves[0], u = 1 - t;
+              return { x: (u * u * u * p.x + 3 * u * u * t * curve[0].x + 3 * u * t * t * curve[1].x + t * t * t * curve[2].x) * width,
+                y: (u * u * u * p.y + 3 * u * u * t * curve[0].y + 3 * u * t * t * curve[1].y + t * t * t * curve[2].y) * height };
+            }
+            context.save();
+            try {
+              context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+              context.shadowColor = 'rgba(0,0,0,0)'; context.globalCompositeOperation = 'source-over';
+              context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+              for (var index = 0; index < geometry.caeca.length; index++) {
+                var caecum = geometry.caeca[index];
+                if (!detailed) {
+                  // Clarity modes share the corrected three courses and the established tube finish.
+                  tracePerchCaecalRegion(context, caecum.centerline, width, height, false);
+                  if (typeof options.strokeTeachingTube === 'function') {
+                    options.strokeTeachingTube(width * 0.005, accessible ? '#fef3c7' : '#dbbb94', '#f5e5c5', '#946d51');
+                  } else {
+                    context.strokeStyle = accessible ? '#fef3c7' : '#dbbb94'; context.lineWidth = width * 0.005; context.stroke();
+                  }
+                  continue;
+                }
+                var frame = caecum.frame, radius = frame.halfWidthPx;
+                var x = caecum.center.x * width, y = caecum.center.y * height;
+                var facing = lamp[0] * frame.nx + lamp[1] * frame.ny < 0 ? -1 : 1;
+                var bounds = caecum.bounds;
+                var left = bounds.minX * width - 1, top = bounds.minY * height - 1;
+                var paintWidth = (bounds.maxX - bounds.minX) * width + 2, paintHeight = (bounds.maxY - bounds.minY) * height + 2;
+                tracePerchCaecalRegion(context, caecum, width, height);
+                var volume = context.createLinearGradient(x + frame.nx * radius * facing, y + frame.ny * radius * facing,
+                  x - frame.nx * radius * facing, y - frame.ny * radius * facing);
+                volume.addColorStop(0, '#eedcc1'); volume.addColorStop(0.40, ['#d5b99b', '#d9bea3', '#cfb294'][index]);
+                volume.addColorStop(1, '#95755f'); context.fillStyle = volume; context.fill();
+                context.save();
+                try {
+                  // Only the smooth outer pouch surface is exposed. All finish stays inside
+                  // its closed contour; no rings, ducts or microscopic mucosal units are drawn.
+                  context.clip();
+                  context.strokeStyle = 'rgba(91,62,49,0.40)'; context.lineWidth = 0.55; context.stroke();
+                  var start = caecum.centerline.start, end = caecum.centerline.curves[0][2];
+                  var axial = context.createLinearGradient(start.x * width, start.y * height, end.x * width, end.y * height);
+                  axial.addColorStop(0, 'rgba(89,57,43,0.13)'); axial.addColorStop(0.43, 'rgba(89,57,43,0)');
+                  axial.addColorStop(1, 'rgba(248,224,189,0.08)');
+                  context.fillStyle = axial; context.fillRect(left, top, paintWidth, paintHeight);
+                  var sheen = context.createLinearGradient(x + frame.nx * radius * facing * 1.1, y + frame.ny * radius * facing * 1.1,
+                    x - frame.nx * radius * facing * 0.55, y - frame.ny * radius * facing * 0.55);
+                  sheen.addColorStop(0, 'rgba(255,244,221,' + (0.20 * gloss).toFixed(3) + ')');
+                  sheen.addColorStop(0.38, 'rgba(255,244,221,' + (0.065 * gloss).toFixed(3) + ')');
+                  sheen.addColorStop(1, 'rgba(255,244,221,0)');
+                  context.fillStyle = sheen; context.fillRect(left, top, paintWidth, paintHeight);
+                  // Fixed, sparse tonal grain follows each pouch instead of floating over the fan.
+                  for (var grain = 0; grain < 3; grain++) {
+                    var sample = pointOnCourse(caecum, 0.30 + grain * 0.24);
+                    var across = (grain % 2 ? -0.18 : 0.16) * radius;
+                    context.beginPath(); context.ellipse(sample.x + frame.nx * across, sample.y + frame.ny * across,
+                      Math.min(0.40, radius * 0.20), 0.23, -0.2, 0, Math.PI * 2);
+                    context.fillStyle = (grain + index) % 2 ? 'rgba(91,57,46,0.13)' : 'rgba(250,231,201,0.17)'; context.fill();
+                  }
+                } finally { context.restore(); }
+              }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function dissectionCalloutLeader(layout, labelUiScale, specimenTextScaleX) {
+            if (!layout || (layout.side !== 'left' && layout.side !== 'right') ||
+                typeof labelUiScale !== 'number' || !Number.isFinite(labelUiScale) || labelUiScale <= 0 ||
+                typeof specimenTextScaleX !== 'number' || !Number.isFinite(specimenTextScaleX) || specimenTextScaleX <= 0 ||
+                !['x', 'y', 'width', 'height', 'pointX', 'pointY'].every(function (key) {
+                  return typeof layout[key] === 'number' && Number.isFinite(layout[key]);
+                }) || layout.width <= 0 || layout.height <= 0) return null;
+            var connectorX = layout.side === 'right' ? layout.x : layout.x + layout.width;
+            var startX = layout.pointX + (layout.side === 'right' ? 6 : -6) * labelUiScale / specimenTextScaleX;
+            return { start: { x: startX, y: layout.pointY },
+              control: { x: startX + (connectorX - startX) * 0.54, y: layout.pointY },
+              end: { x: connectorX, y: layout.y + layout.height / 2 } };
+          }
+
+          function dissectionHotspotMarkerGeometry(layout, options) {
+            var result = { badge: null, point: null };
+            options = options || {};
+            if (!layout || !['x', 'y', 'width', 'height', 'pointX', 'pointY'].every(function (key) {
+                  return typeof layout[key] === 'number' && Number.isFinite(layout[key]);
+                }) || layout.width <= 0 || layout.height <= 0 ||
+                !['labelUiScale', 'specimenTextScaleX', 'specimenTextScaleY', 'canvasUiScale', 'zoom'].every(function (key) {
+                  return typeof options[key] === 'number' && Number.isFinite(options[key]) && options[key] > 0;
+                })) return result;
+            function finiteMarker(cx, cy, rx, ry) {
+              return [cx, cy, rx, ry].every(Number.isFinite) && rx > 0 && ry > 0 ? { cx: cx, cy: cy, rx: rx, ry: ry } : null;
+            }
+            if (!options.quizMode && layout.showCallout && !layout.fullLabel) {
+              var badgeRadius = (options.coarsePointer ? 12 : 10) * options.labelUiScale;
+              result.badge = finiteMarker(layout.x + layout.width / 2, layout.y + layout.height / 2,
+                badgeRadius / options.specimenTextScaleX, badgeRadius / options.specimenTextScaleY);
+            }
+            var selected = !!layout.selected, hovered = !!layout.hovered, exposureMuted = layout.visibility !== 'visible';
+            var radius = !selected && !exposureMuted ? 5.75 : 0;
+            if (exposureMuted) radius = Math.max(radius, (selected ? 7.5 : (hovered ? 7 : 6.2)) + (options.accessible ? 1.05 : 0.725));
+            if (hovered) radius = Math.max(radius, 10.85);
+            if (options.depthAtlasEnabled && !selected && (!exposureMuted || hovered)) {
+              var atlasRadius = hovered ? 9.5 : 8.5, halfStroke = options.accessible ? 1.2 : 0.775;
+              // The structure square rotates by 45 degrees. Include the stroke's rotated
+              // corner as well as the .7-radius face, so the box remains conservative.
+              var atlasExtent = layout.depth === 'surface' ? atlasRadius + halfStroke :
+                (layout.depth === 'structure' ? Math.SQRT2 * (atlasRadius * 0.7 + halfStroke) : atlasRadius + 2.5 + halfStroke);
+              radius = Math.max(radius, atlasExtent);
+            }
+            if (radius > 0) result.point = finiteMarker(layout.pointX, layout.pointY,
+              radius * options.canvasUiScale / (options.zoom * options.specimenTextScaleX),
+              radius * options.canvasUiScale / (options.zoom * options.specimenTextScaleY));
+            return result;
+          }
+
+          function dissectionLeaderScreenBoxes(curve, matrix, dpr, padding) {
+            if (padding === undefined) padding = 2;
+            if (!curve || !matrix || typeof dpr !== 'number' || !Number.isFinite(dpr) || dpr <= 0 ||
+                typeof padding !== 'number' || !Number.isFinite(padding) || padding < 0 ||
+                !['a', 'b', 'c', 'd', 'e', 'f'].every(function (key) { return typeof matrix[key] === 'number' && Number.isFinite(matrix[key]); }) ||
+                !['start', 'control', 'end'].every(function (key) { var p = curve[key];
+                  return p && typeof p.x === 'number' && Number.isFinite(p.x) && typeof p.y === 'number' && Number.isFinite(p.y);
+                })) return [];
+            var determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+            if (!Number.isFinite(determinant) || Math.abs(determinant) < 0.00000001) return [];
+            // Match canvasScreenBox: backing-space matrix coordinates become logical
+            // viewport coordinates after dividing by canvas._dpr, not display width.
+            function screen(p) { return { x: (matrix.a * p.x + matrix.c * p.y + matrix.e) / dpr,
+              y: (matrix.b * p.x + matrix.d * p.y + matrix.f) / dpr }; }
+            var first = screen(curve.start), control = screen(curve.control), last = screen(curve.end);
+            if (![first, control, last].every(function (p) { return Number.isFinite(p.x) && Number.isFinite(p.y); })) return [];
+            var boxes = [];
+            function midpoint(a, b) { return { x: a.x / 2 + b.x / 2, y: a.y / 2 + b.y / 2 }; }
+            function subdivide(a, b, c, remaining) {
+              if (remaining) {
+                var ab = midpoint(a, b), bc = midpoint(b, c), center = midpoint(ab, bc);
+                subdivide(a, ab, center, remaining - 1); subdivide(center, bc, c, remaining - 1); return;
+              }
+              var left = Math.min(a.x, b.x, c.x), top = Math.min(a.y, b.y, c.y);
+              // Every quadratic lies within its control triangle. Eight exact subcurves
+              // reserve a tight corridor while leaving space beside a long diagonal.
+              boxes.push({ x: left - padding, y: top - padding,
+                width: Math.max(a.x, b.x, c.x) - left + padding * 2,
+                height: Math.max(a.y, b.y, c.y) - top + padding * 2, priority: 9, keepClear: true });
+            }
+            subdivide(first, control, last, 3);
+            return boxes.every(function (box) { return Number.isFinite(box.x) && Number.isFinite(box.y) && Number.isFinite(box.width) && Number.isFinite(box.height); }) ? boxes : [];
+          }
+
+          function paintedSmallStructurePoint(org) {
+            if (!org) return null;
+            // These inspection targets follow their painted structures exactly.
+            // The common specimen/view transform is applied to both artwork and points later.
+            if (spec.bodyShape === 'worm') {
+              if (org.id === 'pharynx') return earthwormCenterlinePoint(0.105);
+              if (org.id === 'crop') return earthwormCenterlinePoint(0.315);
+              if (org.id === 'gizzard') return earthwormCenterlinePoint(0.37);
+              if (org.id === 'nephridia' || org.id === 'seminal_v' || org.id === 'aortic_arches' || org.id === 'cerebral_g' || org.id === 'ventral_cord' || org.id === 'segmental_g') {
+                var wormTargetCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var wormTargetWidth = wormTargetCanvas && Number(wormTargetCanvas._logicalW) || 500;
+                var wormTargetHeight = wormTargetCanvas && Number(wormTargetCanvas._logicalH) || 600;
+                if (org.id === 'cerebral_g' || org.id === 'ventral_cord' || org.id === 'segmental_g') {
+                  var wormNeuralGeometry = earthwormNeuralGeometry(wormTargetWidth, wormTargetHeight);
+                  return wormNeuralGeometry ? wormNeuralGeometry.targets[org.id] : null;
+                }
+                if (org.id === 'aortic_arches') {
+                  var wormArchGeometry = earthwormAorticGeometry(wormTargetWidth, wormTargetHeight);
+                  return wormArchGeometry ? wormArchGeometry.target : null;
+                }
+                if (org.id === 'nephridia') {
+                  var wormTargetTube = earthwormNephridialGeometry(23, -1, wormTargetWidth, wormTargetHeight);
+                  return wormTargetTube ? wormTargetTube.start : null;
+                }
+                var wormVesicleFrame = earthwormAnatomyFrame(0.265, wormTargetWidth, wormTargetHeight);
+                return wormVesicleFrame ? {
+                  x: (wormVesicleFrame.point.x - wormVesicleFrame.nx * wormVesicleFrame.width * 0.46) / wormTargetWidth,
+                  y: (wormVesicleFrame.point.y - wormVesicleFrame.ny * wormVesicleFrame.width * 0.46) / wormTargetHeight
+                } : null;
+              }
+              return null;
+            }
+            if (spec.bodyShape === 'crayfish') {
+              if (org.id === 'heart_c') return { x: 0.535, y: 0.415 };
+              if (org.id === 'gills_c') return { x: 0.557, y: 0.358 };
+              if (org.id === 'gastric_mill') return { x: 0.380, y: 0.450 };
+              if (org.id === 'green_gland') return crayfishAntennalGeometry().target;
+              if (org.id === 'hepato') {
+                var crayDigestiveCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var crayDigestiveWidth = crayDigestiveCanvas && Number(crayDigestiveCanvas._logicalW) || 500;
+                var crayDigestiveHeight = crayDigestiveCanvas && Number(crayDigestiveCanvas._logicalH) || 600;
+                var crayDigestiveGeometry = crayfishHepatopancreaticGeometry(crayDigestiveWidth, crayDigestiveHeight);
+                return crayDigestiveGeometry ? crayDigestiveGeometry.target : null;
+              }
+              if (org.id === 'gonads_c') return { x: 0.575, y: 0.450 };
+              return null;
+            }
+            if (spec.bodyShape === 'frog') {
+              if (org.id === 'kidneys') {
+                var frogTargetCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var frogTargetWidth = frogTargetCanvas && Number(frogTargetCanvas._logicalW) || 500;
+                var frogTargetHeight = frogTargetCanvas && Number(frogTargetCanvas._logicalH) || 600;
+                var frogTargetRenalGeometry = frogRenalGeometry(frogTargetWidth, frogTargetHeight);
+                return frogTargetRenalGeometry ? frogTargetRenalGeometry.target : null;
+              }
+              if (org.id === 'brain') return frogNeuralGeometry().target;
+              if (org.id === 'optic_lobe') return frogNeuralGeometry().opticTarget;
+              if (org.id === 'spinal_cord' || org.id === 'cranial_n' || org.id === 'brachial_n' || org.id === 'sciatic_n') return frogNeuralGeometry().nerveTargets[org.id];
+              if (org.id === 'pancreas') return frogPancreaticGeometry().target;
+              if (org.id === 'spleen') return frogSplenicGeometry().target;
+              if (org.id === 'liver') return { x: 0.500, y: 0.468 };
+              if (org.id === 'stomach') return frogGastricGeometry().target;
+              // Sample the longest visible right-hand fat finger after the liver overlap.
+              if (org.id === 'fat_bodies') return { x: 0.581, y: 0.508 };
+              // Follow the exposed front passage, rather than the space inside a loop.
+              if (org.id === 'sm_intestine') return { x: 0.470625, y: 0.609375 };
+              return null;
+            }
+            if (spec.bodyShape === 'pig') {
+              if (org.id === 'thymus_p') return pigThymicGeometry().target;
+              if (org.id === 'heart_p') return pigCardiacGeometry().target;
+              if (org.id === 'lungs_p') return { x: 0.385, y: 0.425 };
+              if (org.id === 'kidneys_p') return pigRenalGeometry().target;
+              if (org.id === 'pancreas_p') return pigPancreaticGeometry().target;
+              if (org.id === 'sm_int_p') return { x: 0.559375, y: 0.540625 };
+              if (org.id === 'liver_p') return { x: 0.526, y: 0.455 };
+              if (org.id === 'stomach_p') return pigGastricGeometry().target;
+              if (org.id === 'spleen_p') return pigSplenicGeometry().target;
+              return null;
+            }
+            if (spec.bodyShape === 'fish') {
+              if (org.id === 'heart_f' || org.id === 'kidneys_f' || org.id === 'pyloric_ceca') {
+                var fishTargetCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var fishTargetWidth = fishTargetCanvas && Number(fishTargetCanvas._logicalW) || 500;
+                var fishTargetHeight = fishTargetCanvas && Number(fishTargetCanvas._logicalH) || 600;
+                if (org.id === 'pyloric_ceca') {
+                  var fishCaecalGeometry = perchCaecalGeometry(fishTargetWidth, fishTargetHeight);
+                  return fishCaecalGeometry ? fishCaecalGeometry.target : null;
+                }
+                if (org.id === 'kidneys_f') {
+                  var fishRenalGeometry = perchRenalGeometry(fishTargetWidth, fishTargetHeight);
+                  return fishRenalGeometry ? fishRenalGeometry.target : null;
+                }
+                var fishHeartGeometry = perchCardiacGeometry(fishTargetWidth, fishTargetHeight);
+                return fishHeartGeometry ? fishHeartGeometry.target : null;
+              }
+              if (org.id === 'swim_bladder') return { x: 0.515, y: 0.407 };
+              if (org.id === 'gonads_f') return { x: 0.595, y: 0.471 };
+              if (org.id === 'liver_f') return { x: 0.385, y: 0.476 };
+              if (org.id === 'stomach_f') return perchGastricGeometry().target;
+              return null;
+            }
+            if (spec.bodyShape === 'heart') {
+              if (org.id === 'mitral') return { x: 0.427, y: 0.441 };
+              if (org.id === 'aortic_v' || org.id === 'pulm_v') {
+                var semilunarCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+                var semilunarWidth = semilunarCanvas && Number(semilunarCanvas._logicalW) || 500;
+                var semilunarHeight = semilunarCanvas && Number(semilunarCanvas._logicalH) || 600;
+                var semilunarGeometry = sheepSemilunarGeometry(semilunarWidth, semilunarHeight);
+                if (!semilunarGeometry) return null;
+                // The cutaway is painted after the outer myocardial pulse transform is restored.
+                return semilunarGeometry.targets[org.id];
+              }
+              return null;
+            }
+            if (spec.bodyShape !== 'eye' || ['ciliary_body', 'tapetum', 'lens', 'choroid', 'retina'].indexOf(org.id) < 0) return null;
+            var eyeCanvas = typeof queryDissectionNode === 'function' ? queryDissectionNode('[data-diss-canvas]') : null;
+            var eyeWidth = (eyeCanvas && Number(eyeCanvas._logicalW)) || 500;
+            var eyeHeight = (eyeCanvas && Number(eyeCanvas._logicalH)) || 600;
+            if (org.id === 'retina') {
+              var retinalTargetGeometry = sheepRetinalGeometry(eyeWidth, eyeHeight);
+              return retinalTargetGeometry ? retinalTargetGeometry.target : null;
+            }
+            var radius = Math.min(eyeWidth * 0.285, eyeHeight * 0.36);
+            var globeX = eyeWidth * 0.515, globeY = eyeHeight * 0.45;
+            var globeRX = radius, globeRY = radius * 0.83;
+            if (org.id === 'lens') return { x: (globeX - globeRX * 0.43) / eyeWidth, y: globeY / eyeHeight };
+            if (org.id === 'ciliary_body') return { x: (globeX - globeRX * 0.57) / eyeWidth, y: (globeY - globeRY * 0.43) / eyeHeight };
+            if (org.id === 'choroid') {
+              var choroidAngle = 0.70, choroidRotation = -0.015;
+              return {
+                x: (globeX + globeRX * 0.918 * Math.cos(choroidAngle) * Math.cos(choroidRotation) - globeRY * 0.895 * Math.sin(choroidAngle) * Math.sin(choroidRotation)) / eyeWidth,
+                y: (globeY + globeRX * 0.918 * Math.cos(choroidAngle) * Math.sin(choroidRotation) + globeRY * 0.895 * Math.sin(choroidAngle) * Math.cos(choroidRotation)) / eyeHeight
+              };
+            }
+            var tapetalAngle = -1.03, tapetalRotation = -0.02;
+            return {
+              x: (globeX + globeRX * 0.19 + globeRX * 0.71 * Math.cos(tapetalAngle) * Math.cos(tapetalRotation) - globeRY * 0.79 * Math.sin(tapetalAngle) * Math.sin(tapetalRotation)) / eyeWidth,
+              y: (globeY - globeRY * 0.08 + globeRX * 0.71 * Math.cos(tapetalAngle) * Math.sin(tapetalRotation) + globeRY * 0.79 * Math.sin(tapetalAngle) * Math.cos(tapetalRotation)) / eyeHeight
+            };
+          }
           function variedOrganPoint(org) {
+            var paintedPoint = paintedSmallStructurePoint(org);
+            if (paintedPoint) return paintedPoint;
             var variedMode = d.visualRealism || visualRealism;
             var amount = variedMode === 'accessible' ? 0 : (variedMode === 'realistic' ? 0.016 : 0.007);
             return viewSpecificOrganPoint(org, {
@@ -5637,6 +8787,8 @@ var d = labToolData.dissection || {};
           function structureOpticalDepth(organ) {
             if (!organ) return 'surface';
             if (viewOrganVisibility(organ) === 'occluded') return 'deep';
+            // Segmental ganglia are internal neural tissue, despite their segmental name.
+            if (organ.id === 'segmental_g') return 'deep';
             var layerId = String(activeLayer || '').toLowerCase();
             var organText = String((organ.id || '') + ' ' + (organ.name || '')).toLowerCase();
             if (/skin|surface|external|cornea|iris|scale|segment|setae|tympan|membrane|follicle/.test(layerId + ' ' + organText)) return 'surface';
@@ -6618,7 +9770,7 @@ var d = labToolData.dissection || {};
               React.createElement('div', { className: 'diss-replay-response__body' },
                 response.explanation && React.createElement('p', { className: 'diss-replay-response__explanation' }, response.explanation),
                 response.availableCount ? React.createElement('p', null, 'Before and after this action · simulation values out of 100. Lower risk is better.') : null,
-                response.availableCount ? React.createElement('dl', { className: 'diss-replay-response__metrics', 'aria-label': 'Saved tissue changes for this replay action' }, response.metrics.map(function (metric) {
+                response.availableCount ? React.createElement('dl', { className: 'diss-replay-response__metrics', 'aria-label': __alloT('stem.dissection.a11y_saved_tissue_changes_for_this_replay_action', 'Saved tissue changes for this replay action') }, response.metrics.map(function (metric) {
                   return React.createElement('div', { key: metric.key, className: 'diss-replay-response__metric', 'data-metric': metric.key, 'data-direction': metric.direction || 'neutral', 'data-available': metric.available ? 'true' : 'false' },
                     React.createElement('dt', null, metric.label),
                     React.createElement('dd', null, metric.available ? React.createElement(React.Fragment, null,
@@ -7533,6 +10685,24 @@ var d = labToolData.dissection || {};
             upd('_procedureDemo', demo);
             setProcedureFeedback('Safe-technique demonstration playing. Watch the moving marker follow the generalized teaching corridor.');
           }
+          function setDissectionLiveText(node, message) {
+            if (!node) return false;
+            var text = String(message == null ? '' : message), first = node.firstChild;
+            // React owns the selection announcement beside this message. Preserve
+            // its nodes when pointer feedback changes the existing text leaf.
+            if (first && first.nodeType === 3) {
+              if (first.nodeValue === text) return false;
+              first.nodeValue = text; return true;
+            }
+            if (!first) {
+              if (node.textContent === text) return false;
+              node.textContent = text; return true;
+            }
+            var owner = node.ownerDocument;
+            if (!owner || !owner.createTextNode || !node.insertBefore) return false;
+            node.insertBefore(owner.createTextNode(text), first); return true;
+          }
+
           function setProcedureFeedback(message, tone) {
             upd('procedureFeedback', { message: message, tone: tone || 'success', at: Date.now() });
             if (typeof announceToSR === 'function') announceToSR(message);
@@ -8106,7 +11276,7 @@ var d = labToolData.dissection || {};
             var liveStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
             if (liveStatus) {
               liveStatus.setAttribute('data-tone', 'working');
-              liveStatus.textContent = (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ' engaged. Keep dragging through the teaching corridor, then release to check the stroke.';
+              setDissectionLiveText(liveStatus, (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ' engaged. Keep dragging through the teaching corridor, then release to check the stroke.');
             }
             if (canvas.setPointerCapture && e.pointerId != null) canvas.setPointerCapture(e.pointerId); e.preventDefault();
           }
@@ -8132,9 +11302,9 @@ var d = labToolData.dissection || {};
               var resistanceStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
               if (resistanceStatus) {
                 resistanceStatus.setAttribute('data-tone', resistanceLevel === 'high' ? 'caution' : 'working');
-                resistanceStatus.textContent = ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors' ? 'Scissors' : 'Scalpel') + ': '
+                setDissectionLiveText(resistanceStatus, ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors' ? 'Scissors' : 'Scalpel') + ': '
                   + (resistanceLevel === 'low' ? 'on the teaching path' : (resistanceLevel === 'moderate' ? 'near the corridor edge' : 'drifting outside the safe corridor'))
-                  + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.';
+                  + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.');
               }
             }
             var strokeSafety = cuttingTrajectorySafety(point, canvas._toolVector, canvas);
@@ -8146,7 +11316,7 @@ var d = labToolData.dissection || {};
                 var strokeSafetyStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]');
                 if (strokeSafetyStatus) {
                   strokeSafetyStatus.setAttribute('data-tone', 'caution');
-                  strokeSafetyStatus.textContent = (strokeSafety.critical ? 'Stop trajectory: protect ' : 'Landmark ahead: ') + strokeSafety.organ.name + '. Redirect before continuing.';
+                  setDissectionLiveText(strokeSafetyStatus, (strokeSafety.critical ? 'Stop trajectory: protect ' : 'Landmark ahead: ') + strokeSafety.organ.name + '. Redirect before continuing.');
                 }
               }
             }
@@ -8221,7 +11391,7 @@ var d = labToolData.dissection || {};
             var message = finalMessage || (assessment.key === 'position' ? 'Forceps are outside the opened edge. Release, then grasp the highlighted corridor.' : (assessment.key === 'grasp' ? 'Forceps engaged. Drag away from the opening to lift the tissue, then release.' : (assessment.label + ': lift ' + assessment.liftPercent + ' percent; projected tension ' + assessment.projectedTension + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'controlled' ? 'Release to retract.' : 'Ease back into the solid safe envelope before releasing.'))));
             var stateChanged = canvas._forcepsDragStatusKey !== assessment.key;
             // Keep the canvas metrics visually live, but update the polite live region only at meaningful state changes so assistive technology is not flooded during pointer movement.
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'forceps', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: '', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._forcepsDragStatusKey = assessment.key; }
           }
@@ -8313,7 +11483,7 @@ var d = labToolData.dissection || {};
                 ? 'Pin engaged. Drag inward along the shaft direction, then release when the anchor reads stable.'
                 : (assessment.label + ': insertion ' + assessment.insertionPercent + ' percent; angle ' + assessment.angle + ' degrees; spacing ' + Math.round(assessment.spacing * 100) + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'stable' ? 'Release to place the anchor.' : 'Adjust the drag before releasing.'))));
             var stateChanged = canvas._pinDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'pin', valid: assessment.key === 'stable', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: '', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._pinDragStatusKey = assessment.key; }
           }
@@ -8423,7 +11593,7 @@ var d = labToolData.dissection || {};
                 ? 'Probe engaged on ' + targetName + '. Trace a short path while keeping the tip on the structure.'
                 : (assessment.label + ': pressure ' + assessment.pressure + ' percent; resistance ' + assessment.resistance + '; alignment ' + assessment.alignment + ' percent; contact ' + assessment.contactPercent + ' percent; control ' + assessment.control + ' percent. ' + (assessment.key === 'controlled' ? 'Release to record the trace.' : 'Adjust the path before releasing.')));
             var stateChanged = canvas._probeDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', assessment.key === 'controlled' ? 'working' : 'caution'); status.textContent = finalMessage || message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', assessment.key === 'controlled' ? 'working' : 'caution'); setDissectionLiveText(status, finalMessage || message); }
             canvas._toolIntentState = { tool: 'probe', valid: assessment.key === 'controlled', label: assessment.label, tone: assessment.key === 'controlled' ? 'working' : 'caution', target: assessment.targetPoint || null, targetLabel: targetName, at: Date.now() };
             if (stateChanged) { procedureTactile(assessment.key === 'controlled' ? 'tick' : 'warning'); canvas._probeDragStatusKey = assessment.key; }
           }
@@ -8519,7 +11689,7 @@ var d = labToolData.dissection || {};
             var caution = ['position', 'drift', 'saturated', 'broad', 'pooling', 'flow', 'spread'].indexOf(assessment.key) >= 0;
             var message = finalMessage || (assessment.key === 'position' ? 'Dropper is outside the specimen. Move to the highlighted surface.' : (assessment.key === 'grasp' ? 'Dropper engaged. Drag a short path with the specimen flow, then release.' : (assessment.label + ': dose ' + assessment.dose + '; contact ' + assessment.contactPercent + '%; flow ' + assessment.flowAlignment + '%; moisture ' + assessment.moisture + '%; pooling ' + assessment.poolingRisk + '/100; control ' + assessment.control + '%. ' + assessment.detail + '.')));
             var stateChanged = canvas._dropperDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'dropper', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: null, targetLabel: 'Specimen surface', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._dropperDragStatusKey = assessment.key; }
           }
@@ -8603,7 +11773,7 @@ var d = labToolData.dissection || {};
             var caution = ['position', 'drift', 'center', 'light', 'overreach', 'rough'].indexOf(assessment.key) >= 0;
             var message = finalMessage || (assessment.key === 'position' ? 'Wick is away from the pool edge. Follow the arrow to the saline footprint.' : (assessment.key === 'grasp' ? 'Wick engaged. Drag outward across the pool edge, then release when recovery reads controlled.' : (assessment.label + ': edge alignment ' + assessment.edgeAlignment + '%; recovery ' + assessment.recoveryPercent + '%; contact ' + assessment.contactPercent + '%; control ' + assessment.control + '%. ' + assessment.detail + '.')));
             var stateChanged = canvas._wickDragStatusKey !== assessment.key;
-            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); status.textContent = message; }
+            if (status && (stateChanged || finalMessage)) { status.setAttribute('data-tone', caution ? 'caution' : 'working'); setDissectionLiveText(status, message); }
             canvas._toolIntentState = { tool: 'wick', valid: assessment.key === 'controlled', label: assessment.label, tone: caution ? 'caution' : 'working', target: canvas._wickDrag && canvas._wickDrag.poolPoint ? canvas._wickDrag.poolPoint : null, targetLabel: 'Pool edge', at: Date.now() };
             if (stateChanged) { procedureTactile(caution ? 'warning' : 'tick'); canvas._wickDragStatusKey = assessment.key; }
           }
@@ -8741,6 +11911,11 @@ var d = labToolData.dissection || {};
               return dissHash(salt + '|' + a.id) - dissHash(salt + '|' + b.id);
             });
           }
+          function dissectionGuidedObservationChoices(target, visibleStructures, salt) {
+            if (!target) return [];
+            var distractors = dissStableOrder(visibleStructures.filter(function (organ) { return organ.id !== target.id; }), salt + '|distractors').slice(0, 2);
+            return dissStableOrder([target].concat(distractors), salt + '|options');
+          }
           var quizSalt = specimen + '|assessment|' + (d.quizSeed || 'default');
           var practicalTargetIds = Array.isArray(d.practicalTargetIds) && d.practicalTargetIds.length
             ? d.practicalTargetIds
@@ -8792,7 +11967,33 @@ var d = labToolData.dissection || {};
           var quizKind = requestedQuizKind === 'location' && hotspotQuizAvailable && sameRegionCandidates.length === 1 ? 'location' : 'function';
           var quizPrompt = quizQ ? (quizKind === 'location'
             ? 'Diagram location clue: which structure is in the ' + targetDiagramRegion + ' region of this view?'
-            : 'Function clue: "' + quizQ.fn.split('.')[0] + '."') : '';
+            : 'Function clue: "' + dissectionStructureCue(quizQ, 'function') + '"') : '';
+
+          var assessmentPromptId = 'diss-quiz-prompt-' + dissectionSaveOwner;
+          var assessmentFeedbackId = 'diss-quiz-feedback-' + dissectionSaveOwner;
+          function preserveAssessmentFocus(panelId, targetId) {
+            var focusRoot = currentDissectionRootNode();
+            var panel = scopedDissectionQuery(focusRoot, '#' + panelId);
+            var origin = typeof document !== 'undefined' ? document.activeElement : null;
+            if (!panel || !origin || !panel.contains(origin) || origin.tagName !== 'BUTTON') return;
+            var attemptsRemaining = 2;
+            function focusAfterAssessmentUpdate() {
+              if (!focusRoot || !focusRoot.isConnected) return;
+              var active = document.activeElement;
+              if (active !== origin && active !== document.body && active !== document.documentElement) return;
+              if (origin.isConnected && !origin.disabled) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              var target = scopedDissectionQuery(focusRoot, '#' + targetId);
+              if (!target) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              if (!target.disabled && target.focus) target.focus();
+            }
+            setTimeout(focusAfterAssessmentUpdate, 0);
+          }
 
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
@@ -8842,6 +12043,7 @@ var d = labToolData.dissection || {};
             if (supported && !d.quizReviewMode) supportedCount += 1;
             var nextScore = d.practicalMode || d.quizReviewMode ? (Number(d.quizScore) || 0) + (correct ? 1 : 0) : firstAttemptScore;
             var nextTotal = (d.quizTotal || 0) + 1;
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: correct, chosen: answerId, supported: supported },
               quizScore: nextScore,
@@ -8849,7 +12051,7 @@ var d = labToolData.dissection || {};
               quizFirstAttemptScore: firstAttemptScore,
               quizFirstAttemptTotal: firstAttemptTotal,
               quizSupportedCount: supportedCount,
-              quizExplanation: d.practicalMode ? null : quizQ.fn.split('.').slice(0, 2).join('.') + '.',
+              quizExplanation: d.practicalMode ? null : dissectionStructureCue(quizQ, 'explanation'),
               quizRetry: null,
               hoveredOrgan: null,
               quizReviewQueue: reviewQueue,
@@ -8865,11 +12067,12 @@ var d = labToolData.dissection || {};
             if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
             var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
             if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: false, chosen: d.quizRetry.chosen, supported: true },
               quizTotal: (Number(d.quizTotal) || 0) + 1,
               quizSupportedCount: (Number(d.quizSupportedCount) || 0) + (d.quizReviewMode ? 0 : 1),
-              quizExplanation: quizQ.fn.split('.').slice(0, 2).join('.') + '.',
+              quizExplanation: dissectionStructureCue(quizQ, 'explanation'),
               quizRetry: null,
               quizReviewQueue: reviewQueue,
               hoveredOrgan: null
@@ -9166,6 +12369,7 @@ var d = labToolData.dissection || {};
               if (window._dissectionKeyHandler === canvas._dissKeyHandler) window._dissectionKeyHandler = null;
               canvas._dissCleanup = null;
               canvas._dissKeyHandler = null; canvas._drawDissectionNow = null; canvas._dissMotionReduced = null; canvas._dissInViewport = null;
+              canvas._dissSpeciesSurfaceTexture = null;
               canvas._captureDissectionEvidence = null; canvas._captureFullDissectionEvidence = null; canvas._evidenceCaptureRequest = null; canvas._lastCaptureCamera = null;
             }
 
@@ -9246,6 +12450,8 @@ var d = labToolData.dissection || {};
               if (isDissectionHidden()) { cancelDissectionFrame(); return; }
 
               var drawState = canvas._drawD || d || {};
+              var drawWorkspaceMode = drawState.workspaceMode === 'advanced' || drawState.workspaceMode === 'essentials' ? drawState.workspaceMode : workspaceMode;
+              drawState = Object.assign({}, drawState, dissectionWorkspaceSettings(drawState, drawWorkspaceMode));
               var frameMotionReduced = !!drawState.reducedMotion || !!storedAccessibilityPreferences.reducedMotion;
               if (isDissectionOffscreen() && arguments[1] !== true) { cancelDissectionFrame(); return; }
               try { frameMotionReduced = frameMotionReduced || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -9343,9 +12549,13 @@ var d = labToolData.dissection || {};
                   width: Math.max.apply(null, corners.map(function (point) { return point.x; })) - left,
                   height: Math.max.apply(null, corners.map(function (point) { return point.y; })) - top };
               }
-              function rememberCanvasGuidanceBox(x, y, width, height, priority) {
+              function rememberCanvasGuidanceBox(x, y, width, height, priority, keepClear) {
                 var box = canvasScreenBox(x, y, width, height);
-                if (box) { box.priority = priority || 1; canvas._guidanceBoxes.push(box); }
+                if (box) {
+                  box.priority = priority || 1;
+                  if (keepClear) box.keepClear = true;
+                  canvas._guidanceBoxes.push(box);
+                }
               }
               function rememberCanvasHudBox(id, x, y, width, height) {
                 var box = { id: id, x: x, y: y, width: width, height: height, priority: 9 };
@@ -9353,6 +12563,44 @@ var d = labToolData.dissection || {};
                 if (id === 'scale') canvas._scaleHudBox = box;
                 if (id === 'orientation') canvas._orientationHudBox = box;
               }
+              function canvasOrientationHudLayout(context, canvasWidth, displayWidth, axis, uiScale, hudScale, status, start, end) {
+                if (!isFinite(canvasWidth) || !isFinite(displayWidth) || canvasWidth <= 28 || displayWidth <= 0 ||
+                    !isFinite(uiScale) || uiScale <= 0 || !isFinite(hudScale) || hudScale <= 0) return null;
+                var compact = displayWidth < 480, unit = canvasWidth / displayWidth;
+                var typeScale = compact ? Math.max(uiScale, unit * 1.2) : uiScale;
+                var fontSize = (compact ? 10 : 11) * typeScale;
+                var texts = compact ? [String(status || ''), String(start || ''), String(end || '')] : ['ANATOMICAL AXIS'];
+                var widths = texts.map(function (text) { return text.length * fontSize * 0.64; });
+                if (context && context.save && context.restore && context.measureText) {
+                  context.save();
+                  try {
+                    context.font = 'bold ' + fontSize + 'px Inter, system-ui';
+                    widths = texts.map(function (text) {
+                      var measured = Number(context.measureText(text).width);
+                      return isFinite(measured) && measured >= 0 ? measured : text.length * fontSize * 0.64;
+                    });
+                  } catch (e) {
+                    // The conservative text-length fallback keeps sizing finite if a platform
+                    // cannot measure during a resize. A later frame measures the same layout.
+                  } finally { context.restore(); }
+                }
+                if (!compact) {
+                  return { compact: false, width: Math.max(axis === 'horizontal' ? 188 : 126, widths[0] + 30 * uiScale),
+                    height: (axis === 'horizontal' ? 80 : 116) * uiScale, typeScale: uiScale, inset: 9 * hudScale };
+                }
+                // Preserve the label type scale and 12 CSSpx minimum; compact the layout's
+                // empty height rather than reducing the anatomy or shrinking the type.
+                var inset = 10 * unit;
+                var contentWidth = axis === 'horizontal' ? widths[1] + widths[2] + 30 * unit : Math.max(widths[1], widths[2]) + 54 * unit;
+                var width = Math.min(canvasWidth - 28, Math.max(154 * unit, widths[0] + inset * 2 + unit, contentWidth));
+                var labelBudget = Math.max(1, width - inset * 2 - 8 * unit), labelTotal = Math.max(1, widths[1] + widths[2]);
+                return { compact: true, width: width, height: 70 * unit, typeScale: typeScale, unit: unit, inset: inset,
+                  startTextWidth: labelBudget * widths[1] / labelTotal, endTextWidth: labelBudget * widths[2] / labelTotal,
+                  statusY: 19 * unit, axisTop: 35 * unit, axisBottom: 57 * unit,
+                  horizontalAxisY: 38 * unit, horizontalLabelY: 60 * unit,
+                  labelOffsetX: 22 * unit, labelBaselineOffset: 4 * unit, markerRadius: 3.5 * unit, diamondRadius: 4.5 * unit };
+              }
+
               function placeCanvasHudPanel(x, y, width, height, additionalBoxes, keepHudClear) {
                 var obstacles = canvas._guidanceBoxes.concat(canvas._canvasHudBoxes, additionalBoxes || []);
                 var candidates = [[x, y], [14, 14], [W - width - 14, 14],
@@ -9404,28 +12652,13 @@ var d = labToolData.dissection || {};
 
               sel = canvas._drawSel;
 
-              d = canvas._drawD || d;
+              d = drawState;
               var specimenEvidenceCapture = !!(canvas._evidenceCaptureRequest && canvas._evidenceCaptureRequest.contents === 'specimen');
               if (specimenEvidenceCapture) d = Object.assign({}, d, { hoveredOrgan: null, instrumentVisuals: false, _procedureDemo: null, _procedureReplay: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null });
 
               // Essentials keeps advanced preferences available for a later return to Advanced,
               // but the live specimen must not retain hidden scenarios, overlays, or challenge states.
-              var liveWorkspaceMode = d.workspaceMode === 'advanced' || d.workspaceMode === 'essentials' ? d.workspaceMode : workspaceMode;
-              if (liveWorkspaceMode !== 'advanced') {
-                d = Object.assign({}, d, {
-                  procedureMode: 'guided', procedureScenario: 'precision-access',
-                  visualRealism: 'guided', labLight: 'neutral', lightDirection: 'overhead',
-                  inspectionLens: false, lensPinned: false, macroInset: false,
-                  sceneDetail: true, depthAtlas: false, tissueRelief: true,
-                  relationshipMotion: false, focusMode: true, parallaxDepth: false,
-                  splitComparison: false, beforeTechniqueView: false,
-                  crossSectionMode: false, specimenCondition: 'standard', relationshipMode: false,
-                  renderQuality: 'auto', livingFunctionEnabled: false, livingFunctionPaused: false,
-                  traceNervous: false, traceCirculation: false, traceDigestion: false,
-                  traceRespiration: false, traceExcretory: false, showEndocrine: false,
-                  animSpeed: 'normal'
-                });
-              }
+              var liveWorkspaceMode = drawWorkspaceMode;
 
               specimen = canvas._drawSpecimen || specimen;
 
@@ -9450,6 +12683,7 @@ var d = labToolData.dissection || {};
               lensFocusDepth = ['surface', 'structure', 'deep'].indexOf(d.lensFocusDepth) >= 0 ? d.lensFocusDepth : 'structure';
               opticalPlaneMapActive = inspectionLens || lensPinned;
               instrumentVisuals = d.instrumentVisuals !== false;
+              var procedureGuidanceVisible = instrumentVisuals && !specimenEvidenceCapture;
               macroInset = d.macroInset !== false;
               sceneDetail = d.sceneDetail !== false;
               depthAtlasEnabled = d.depthAtlas !== false;
@@ -9470,22 +12704,13 @@ var d = labToolData.dissection || {};
               // that has to steer around it; drawAnatomicalOrientationCompass reads these same
               // values rather than recomputing them. The top is reserved conservatively because
               // the exact Y depends on specimenHudX, which is not resolved until much later.
-              var hudCompassAxis = anatomicalOrientationData().axis;
-              // Width follows the widest line rather than a fixed multiple of the authored 126.
-              // Scaling that number by the full HUD factor made the panel 195px wide and it
-              // reached across into the corridor safety label; the text it has to hold is only
-              // ~149px there. The authored widths stay the floor, so desktop does not move.
-              var hudCompassTitleWidth = 0;
-              try {
-                ctx.save();
-                ctx.font = 'bold ' + (11 * canvasUiScale) + 'px Inter, system-ui';
-                hudCompassTitleWidth = ctx.measureText('ANATOMICAL AXIS').width;
-                ctx.restore();
-              } catch (e) { hudCompassTitleWidth = 0; }
-              var hudCompassW = hudCompassAxis === 'horizontal'
-                ? Math.max(188, hudCompassTitleWidth + 30 * canvasUiScale)
-                : Math.max(126, hudCompassTitleWidth + 30 * canvasUiScale);
-              var hudCompassH = (hudCompassAxis === 'horizontal' ? 80 : 116) * canvasUiScale;
+              var hudCompassData = anatomicalOrientationData();
+              var hudCompassAxis = hudCompassData.axis;
+              var hudCompassStatus = hudCompassData.view.toUpperCase() + (hudCompassData.aligned ? ' · ALIGNED' : ' · TARGET ' + hudCompassData.targetView.toUpperCase());
+              var hudCompassLayout = canvasOrientationHudLayout(ctx, W, canvasDisplayWidth, hudCompassAxis,
+                canvasUiScale, canvasHudScale, hudCompassStatus, hudCompassData.start, hudCompassData.end);
+              var hudCompassW = hudCompassLayout.width;
+              var hudCompassH = hudCompassLayout.height;
               var hudCompassBox = (sceneDetail && detailedCanvasHud && !d.quizMode) ? { x: 14, y: 14, w: hudCompassW, h: 82 + hudCompassH - 14 } : null;
               // The instrument bay is bench scenery painted early, and the scale card below it
               // lifts by 76 * canvasHudScale when the inspection lens is parked in that corner.
@@ -9556,6 +12781,13 @@ var d = labToolData.dissection || {};
 
               ctx.clearRect(0, 0, W, H);
 
+              // Keep exposed viewport space opaque when the specimen and tray are panned.
+              // Native evidence capture includes this theme-aware surface as well.
+              var _p = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { canvas: '#0f172a', panel: '#1e293b' };
+              ctx.globalCompositeOperation = 'source-over';
+              // Cover the fractional edge introduced when the HiDPI buffer is rounded.
+              ctx.fillStyle = _p.canvas || '#0f172a'; ctx.fillRect(0, 0, W + 1, H + 1);
+
               var cx = W * 0.5, cy = H * 0.45;
 
               // Read zoom + pan from canvas element (always current, avoids stale closure)
@@ -9598,7 +12830,6 @@ var d = labToolData.dissection || {};
 
               // Route the dissection-tray gradient through the global theme palette so it
               // adapts to light/dark/contrast mode instead of forcing a fixed dark surface.
-              var _p = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { canvas: '#0f172a', panel: '#1e293b' };
               var trayGrad = ctx.createLinearGradient(0, 0, 0, H);
               var _topColor = (_p.panel && _p.panel !== _p.canvas) ? _p.panel : _p.canvas;
               trayGrad.addColorStop(0, _topColor); trayGrad.addColorStop(1, _p.canvas);
@@ -9886,6 +13117,610 @@ var d = labToolData.dissection || {};
 
 // €â€ Draw organ pins â€â€”€â”€ Draw specimen body based on bodyShape ──
 
+              // Finish the actual tissue silhouette, rather than adding detail around a label anchor.
+              // Each local seed is stable across frames, zoom, and pointer movement.
+              var currentAnatomyOpening = null;
+              function rememberAnatomyOpening(path, context) {
+                if (!path || !context || !context.getTransform) return null;
+                var transform = context.getTransform();
+                if (![transform.a, transform.b, transform.c, transform.d, transform.e, transform.f].every(isFinite)) return null;
+                return { path: path, transform: transform };
+              }
+
+              // Draw the true retracted cut rim above existing organ artwork. No new opaque
+              // tissue bed is painted, so the real organs remain visible in the opening.
+              function drawRegisteredRetractionRim(context, opening, accessible, color) {
+                if (!context || !opening || !opening.path || !opening.transform) return false;
+                context.save();
+                try {
+                  context.setTransform(opening.transform);
+                  context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+                  context.shadowColor = 'rgba(0,0,0,0)'; context.lineCap = 'round'; context.lineJoin = 'round';
+                  context.strokeStyle = accessible ? '#020617' : 'rgba(42,20,26,0.70)'; context.lineWidth = accessible ? 3.4 : 3;
+                  context.stroke(opening.path);
+                  context.strokeStyle = accessible ? '#facc15' : (color || 'rgba(239,204,180,0.58)');
+                  context.lineWidth = accessible ? 1.8 : 0.85; context.stroke(opening.path);
+                  return true;
+                } finally { context.restore(); }
+              }
+
+              // Keep existing folded tissue OUTSIDE the exact authored anatomical opening.
+              // The clip is fixed in device space before returning to the original overlay
+              // transform. Pins and tool feedback should be drawn after this helper returns.
+              function withFlapsOutsideAnatomy(context, opening, logicalWidth, logicalHeight, paintFlaps) {
+                if (!context || !opening || !opening.path || !opening.transform || typeof paintFlaps !== 'function') return false;
+                var overlayTransform = context.getTransform();
+                var outside = new Path2D();
+                outside.rect(-logicalWidth, -logicalHeight, logicalWidth * 3, logicalHeight * 3);
+                outside.addPath(opening.path);
+                context.save();
+                try {
+                  context.setTransform(opening.transform);
+                  context.clip(outside, 'evenodd');
+                  context.setTransform(overlayTransform);
+                  paintFlaps();
+                  return true;
+                } finally { context.restore(); }
+              }
+              function registerAnatomyOpening(trace) {
+                if (typeof Path2D === 'undefined' || !ctx.getTransform) return;
+                var path = new Path2D(); trace(path);
+                currentAnatomyOpening = rememberAnatomyOpening(path, ctx);
+              }
+
+              function finishCurrentTissuePath(x, y, rx, ry, material, salt) {
+                var tissueMode = d.visualRealism || visualRealism;
+                if (!sceneDetail || highContrastEnabled || tissueMode === 'accessible' ||
+                    !isFinite(x) || !isFinite(y) || !isFinite(rx) || !isFinite(ry) || rx < 1 || ry < 1) return;
+                var tissueSeed = dissHash(specimen + '|' + (Number(d.variationSeed) || variationSeed) + '|tissue|' + salt) >>> 0;
+                function tissueRandom() {
+                  tissueSeed = (Math.imul(tissueSeed, 1664525) + 1013904223) >>> 0;
+                  return tissueSeed / 4294967296;
+                }
+                var tissueLight = { overhead: [-0.28, -0.62], left: [-0.70, -0.18], right: [0.70, -0.18], raking: [-0.65, 0.55] }[lightDirection] || [-0.28, -0.62];
+                var lightLength = Math.sqrt(tissueLight[0] * tissueLight[0] + tissueLight[1] * tissueLight[1]) || 1;
+                var lightX = tissueLight[0] / lightLength, lightY = tissueLight[1] / lightLength;
+                var realistic = tissueMode === 'realistic', detail = realistic ? 1 : 0.72;
+                var unit = 1 / Math.max(rx, ry);
+                var key = String(salt || '').toLowerCase();
+                var muscle = material === 'muscle', spongy = material === 'spongy';
+                var lobular = material === 'lobular', serosa = material === 'serosa', collagen = material === 'collagen';
+                var capsule = !muscle && !spongy && !lobular && !serosa && !collagen;
+                // Capsule and closed serosa share the same lamp as the specimen surface.
+                // Keep the other established material finishes unchanged in this pass.
+                var smoothSurface = capsule || serosa;
+                var smoothLight = smoothSurface ? ({ overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1]) : tissueLight;
+                if (smoothSurface) {
+                  lightLength = Math.sqrt(smoothLight[0] * smoothLight[0] + smoothLight[1] * smoothLight[1]) || 1;
+                  lightX = smoothLight[0] / lightLength; lightY = smoothLight[1] / lightLength;
+                }
+                var lampValue = Number(d.lightIntensity);
+                var materialLamp = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+                var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 78;
+                var materialMoisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.78;
+                var materialCondition = d.specimenCondition || (typeof specimenCondition === 'string' ? specimenCondition : 'standard');
+                var materialIrradiance = smoothSurface ? 0.45 + materialLamp * 0.55 : 1;
+                var materialGloss = smoothSurface ? (0.22 + materialMoisture * 0.78) * materialIrradiance : 1;
+                if (smoothSurface && materialCondition === 'dehydrated') materialGloss *= 0.30;
+                else if (smoothSurface && materialCondition === 'preserved') materialGloss *= 0.76;
+                else if (smoothSurface && materialCondition === 'cloudy') materialGloss *= 0.64;
+
+                function tissueStroke(color, width) { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke(); }
+                function tissueEllipse(px, py, ex, ey, angle, color) {
+                  ctx.beginPath(); ctx.ellipse(px, py, ex, ey, angle, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+                }
+                function tissueCurve(yPosition, wave, tilt, offset) {
+                  ctx.beginPath(); ctx.moveTo(-1.42, yPosition + offset - tilt);
+                  ctx.bezierCurveTo(-0.54, yPosition + wave + offset, 0.46, yPosition - wave * 0.72 + offset, 1.42, yPosition + offset + tilt);
+                }
+                function tissueGrain(count, strength) {
+                  for (var grainIndex = 0; grainIndex < count; grainIndex++) {
+                    var grainX = tissueRandom() * 2.5 - 1.25, grainY = tissueRandom() * 2.5 - 1.25;
+                    // Fine grain stays sub-pixel to about one logical pixel, rather than
+                    // expanding into outlined "cells" on a large organ.
+                    var grainRadius = (0.22 + tissueRandom() * 0.38) * unit;
+                    tissueEllipse(grainX, grainY, grainRadius * 1.25, grainRadius * 0.75, -0.25,
+                      grainIndex % 3 ? 'rgba(255,225,203,' + strength + ')' : 'rgba(43,21,24,' + strength + ')');
+                  }
+                }
+
+                ctx.save();
+                try {
+                  ctx.clip(); ctx.shadowBlur = 0;
+                  ctx.translate(x, y); ctx.scale(rx, ry);
+
+                  // Large-scale volume does most of the work. The original fill remains the
+                  // organ's color; lighting uses neutral multiply/screen rather than repainting it.
+                  ctx.globalCompositeOperation = 'multiply';
+                  var volume = ctx.createLinearGradient(lightX * 1.35, lightY * 1.35, -lightX * 1.35, -lightY * 1.35);
+                  volume.addColorStop(0, 'rgba(25,15,20,0)');
+                  volume.addColorStop(0.42, 'rgba(25,15,20,0.025)');
+                  volume.addColorStop(0.78, 'rgba(25,15,20,' + (0.17 * detail).toFixed(3) + ')');
+                  volume.addColorStop(1, 'rgba(25,15,20,' + (0.43 * detail).toFixed(3) + ')');
+                  ctx.fillStyle = volume; ctx.fillRect(-1.5, -1.5, 3, 3);
+                  var edge = ctx.createRadialGradient(lightX * 0.12, lightY * 0.12, 0.18, 0, 0, 1.32);
+                  edge.addColorStop(0, 'rgba(30,17,24,0)'); edge.addColorStop(0.64, 'rgba(30,17,24,0.015)');
+                  edge.addColorStop(1, 'rgba(30,17,24,' + ((spongy ? 0.22 : 0.32) * detail).toFixed(3) + ')');
+                  ctx.fillStyle = edge; ctx.fillRect(-1.5, -1.5, 3, 3);
+                  ctx.globalCompositeOperation = 'screen';
+                  var broadSheen = ctx.createRadialGradient(lightX * 0.46, lightY * 0.46, 0.03, lightX * 0.18, lightY * 0.18, capsule ? 1.16 : 0.96);
+                  broadSheen.addColorStop(0, 'rgba(255,234,214,' + ((capsule ? 0.28 : 0.20) * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
+                  broadSheen.addColorStop(0.46, 'rgba(255,234,214,' + (0.075 * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
+                  broadSheen.addColorStop(1, 'rgba(255,234,214,0)');
+                  ctx.fillStyle = broadSheen; ctx.fillRect(-1.5, -1.5, 3, 3);
+                  ctx.globalCompositeOperation = 'source-over'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+                  if (muscle) {
+                    // Long neighboring fascicle bundles replace unrelated short random dashes.
+                    // The sweep is a gross material cue, not a map of individual muscle cells.
+                    var muscleBands = Math.round((realistic ? 24 : 17));
+                    var cardiac = /heart|myocard|ventric|lv-wall|rv-wall/.test(key);
+                    var longitudinal = /papillary|pharynx/.test(key);
+                    var muscleAngle = longitudinal ? Math.PI / 2 : (cardiac ? -0.36 : (ry > rx * 1.5 ? Math.PI / 2 : -0.12));
+                    var muscleLightY = -lightX * Math.sin(muscleAngle) + lightY * Math.cos(muscleAngle);
+                    ctx.rotate(muscleAngle);
+                    for (var band = 0; band < muscleBands; band++) {
+                      var bandY = -1.35 + (band + 0.5) * 2.7 / muscleBands + (tissueRandom() - 0.5) * 0.035;
+                      var bandWave = (cardiac ? 0.24 : 0.11) + tissueRandom() * 0.055;
+                      var bandTilt = (tissueRandom() - 0.5) * 0.08;
+                      tissueCurve(bandY, bandWave, bandTilt, 0);
+                      tissueStroke('rgba(74,25,34,' + (0.24 * detail).toFixed(3) + ')', unit * 1.65);
+                      tissueCurve(bandY, bandWave, bandTilt, muscleLightY * unit * 0.75);
+                      tissueStroke('rgba(255,206,184,' + (0.26 * detail).toFixed(3) + ')', unit * 0.72);
+                      if (band % 3 === 0) {
+                        tissueCurve(bandY, bandWave, bandTilt, -muscleLightY * unit * 1.05);
+                        tissueStroke('rgba(42,19,27,' + (0.13 * detail).toFixed(3) + ')', unit * 0.42);
+                      }
+                    }
+                    ctx.rotate(-muscleAngle); tissueGrain(realistic ? 32 : 20, realistic ? '0.12' : '0.09');
+                  } else if (spongy) {
+                    // Broad soft mottling and open surface puckers describe gross lung texture.
+                    // No closed honeycomb, alveoli, or enlarged cellular outlines are invented.
+                    var cloudCount = realistic ? 8 : 5;
+                    for (var cloud = 0; cloud < cloudCount; cloud++) {
+                      var cloudX = tissueRandom() * 1.8 - 0.9, cloudY = tissueRandom() * 1.9 - 0.95;
+                      var cloudRadius = 0.18 + tissueRandom() * 0.16;
+                      var cloudShade = ctx.createRadialGradient(cloudX, cloudY, cloudRadius * 0.10, cloudX, cloudY, cloudRadius);
+                      cloudShade.addColorStop(0, 'rgba(96,31,47,' + (0.22 * detail).toFixed(3) + ')');
+                      cloudShade.addColorStop(0.45, 'rgba(96,31,47,' + (0.10 * detail).toFixed(3) + ')');
+                      cloudShade.addColorStop(1, 'rgba(96,31,47,0)');
+                      ctx.fillStyle = cloudShade; ctx.fillRect(cloudX - cloudRadius, cloudY - cloudRadius, cloudRadius * 2, cloudRadius * 2);
+                    }
+                    var puckers = realistic ? 16 : 10;
+                    for (var pucker = 0; pucker < puckers; pucker++) {
+                      var puckerX = tissueRandom() * 2.1 - 1.05, puckerY = tissueRandom() * 2.1 - 1.05;
+                      var puckerReach = 0.07 + tissueRandom() * 0.10;
+                      ctx.beginPath(); ctx.moveTo(puckerX - puckerReach, puckerY + 0.025);
+                      ctx.quadraticCurveTo(puckerX, puckerY - 0.07, puckerX + puckerReach, puckerY);
+                      tissueStroke('rgba(83,29,42,' + (0.25 * detail).toFixed(3) + ')', unit * 0.75);
+                      ctx.beginPath(); ctx.moveTo(puckerX - puckerReach, puckerY + 0.025 + lightY * unit * 0.85);
+                      ctx.quadraticCurveTo(puckerX, puckerY - 0.07 + lightY * unit * 0.85, puckerX + puckerReach, puckerY + lightY * unit * 0.85);
+                      tissueStroke('rgba(255,219,205,' + (0.22 * detail).toFixed(3) + ')', unit * 0.48);
+                    }
+                    tissueGrain(realistic ? 30 : 18, realistic ? '0.12' : '0.09');
+                  } else if (lobular) {
+                    // Low rounded groups share soft grooves; they are lobules in the material
+                    // finish, not individual fat cells or new anatomical organ boundaries.
+                    var diffuseGland = /cray-digestive|pancreas|frog-fat-body|^pig-thymus$/.test(key);
+                    var groups = realistic ? 12 : 8;
+                    for (var group = 0; group < groups; group++) {
+                      var groupX = tissueRandom() * 2.0 - 1.0, groupY = tissueRandom() * 2.0 - 1.0;
+                      var groupRX = 0.12 + tissueRandom() * 0.12, groupRY = 0.08 + tissueRandom() * 0.10;
+                      var groupRadius = Math.max(groupRX, groupRY);
+                      var lobule = ctx.createRadialGradient(groupX + lightX * groupRX * 0.4, groupY + lightY * groupRY * 0.4, groupRadius * 0.08, groupX, groupY, groupRadius);
+                      // The authored outline supplies the gross shape.
+                      // Its coating varies softly instead of growing raised circular nodules.
+                      lobule.addColorStop(0, diffuseGland ? 'rgba(255,230,171,' + (0.11 * detail).toFixed(3) + ')' : 'rgba(255,237,189,' + (0.30 * detail).toFixed(3) + ')');
+                      lobule.addColorStop(0.52, diffuseGland ? 'rgba(98,66,40,' + (0.035 * detail).toFixed(3) + ')' : 'rgba(255,222,164,' + (0.10 * detail).toFixed(3) + ')');
+                      lobule.addColorStop(1, diffuseGland ? 'rgba(98,66,40,0)' : 'rgba(83,50,33,' + (0.18 * detail).toFixed(3) + ')');
+                      tissueEllipse(groupX, groupY, groupRX, groupRY, -0.16, lobule);
+                      if (!diffuseGland) {
+                        ctx.beginPath(); ctx.ellipse(groupX, groupY, groupRX, groupRY, -0.16, 0.40, Math.PI - 0.20);
+                        tissueStroke('rgba(83,50,33,' + (0.21 * detail).toFixed(3) + ')', unit * 0.65);
+                      }
+                    }
+                    tissueGrain(realistic ? 26 : 16, '0.10');
+                  } else if (serosa && !/mesenter/.test(key)) {
+                    // An unopened stomach exposes smooth serosa, not the internal rugae.
+                    // One fine marginal feeder gives rise to a few tapering surface branches.
+                    // Keep these as unobtrusive material cues, with no new targets or labels.
+                    if (/stomach/.test(key)) {
+                      var vesselAlpha = (realistic ? 0.32 : 0.22) * (0.72 + materialIrradiance * 0.28);
+                      var vesselBranches = realistic ? 5 : 3;
+                      var vesselBend = (tissueRandom() - 0.5) * 0.10;
+                      ctx.beginPath(); ctx.moveTo(-0.52, -1.10);
+                      ctx.bezierCurveTo(-0.67 + vesselBend, -0.38, -0.36 + vesselBend, 0.34, -0.48, 1.10);
+                      tissueStroke('rgba(122,58,58,' + vesselAlpha.toFixed(3) + ')', unit * 0.62);
+                      for (var vesselBranch = 0; vesselBranch < vesselBranches; vesselBranch++) {
+                        // Evaluate one point on the feeder, so every branch is exactly
+                        // attached rather than appearing as a floating red dash.
+                        var trunkPosition = 0.14 + vesselBranch * 0.72 / (vesselBranches - 1) + (tissueRandom() - 0.5) * 0.025;
+                        var trunkInverse = 1 - trunkPosition;
+                        var rootX = trunkInverse * trunkInverse * trunkInverse * -0.52 + 3 * trunkInverse * trunkInverse * trunkPosition * (-0.67 + vesselBend) + 3 * trunkInverse * trunkPosition * trunkPosition * (-0.36 + vesselBend) + trunkPosition * trunkPosition * trunkPosition * -0.48;
+                        var rootY = trunkInverse * trunkInverse * trunkInverse * -1.10 + 3 * trunkInverse * trunkInverse * trunkPosition * -0.38 + 3 * trunkInverse * trunkPosition * trunkPosition * 0.34 + trunkPosition * trunkPosition * trunkPosition * 1.10;
+                        var branchEndX = rootX + 0.44 + tissueRandom() * 0.47;
+                        var branchEndY = rootY - 0.14 - tissueRandom() * 0.12;
+                        var branchControlX = rootX + (branchEndX - rootX) * 0.42;
+                        var branchControlY = rootY + 0.08 + tissueRandom() * 0.05;
+                        ctx.beginPath(); ctx.moveTo(rootX, rootY);
+                        ctx.quadraticCurveTo(branchControlX, branchControlY, branchEndX, branchEndY);
+                        tissueStroke('rgba(137,64,61,' + (vesselAlpha * 0.86).toFixed(3) + ')', unit * 0.40);
+                        // A joined secondary fork remains shorter and finer than its parent.
+                        var forkT = 0.57 + tissueRandom() * 0.14, forkU = 1 - forkT;
+                        var forkX = forkU * forkU * rootX + 2 * forkU * forkT * branchControlX + forkT * forkT * branchEndX;
+                        var forkY = forkU * forkU * rootY + 2 * forkU * forkT * branchControlY + forkT * forkT * branchEndY;
+                        var forkReach = 0.12 + tissueRandom() * 0.12;
+                        ctx.beginPath(); ctx.moveTo(forkX, forkY);
+                        ctx.quadraticCurveTo(forkX + forkReach * 0.44, forkY + 0.05, forkX + forkReach, forkY + 0.15 + tissueRandom() * 0.08);
+                        tissueStroke('rgba(141,71,67,' + (vesselAlpha * 0.70).toFixed(3) + ')', unit * 0.26);
+                      }
+                    }
+                    tissueGrain(realistic ? 28 : 16, '0.09');
+                  } else if (serosa || collagen) {
+                    // Shallow folds follow one flow field. Mesentery can carry more folds;
+                    // stomach outer surfaces stay restrained rather than suggesting rugae.
+                    var mesentery = /mesenter/.test(key);
+                    var folds = collagen ? (realistic ? 24 : 16) : (mesentery ? 9 : 6);
+                    var foldWave = collagen ? 0.055 : (mesentery ? 0.19 : 0.10);
+                    var foldAngle = collagen ? -0.24 : (ry > rx * 1.35 ? Math.PI / 2 : -0.12);
+                    var foldLightY = -lightX * Math.sin(foldAngle) + lightY * Math.cos(foldAngle);
+                    ctx.rotate(foldAngle);
+                    for (var fold = 0; fold < folds; fold++) {
+                      var foldY = -1.25 + (fold + 0.5) * 2.5 / folds;
+                      var foldJitter = (tissueRandom() - 0.5) * 0.045;
+                      tissueCurve(foldY + foldJitter, foldWave, 0.025, 0);
+                      tissueStroke('rgba(74,35,38,' + ((collagen ? 0.12 : 0.21) * detail).toFixed(3) + ')', unit * (collagen ? 0.55 : 1.4));
+                      tissueCurve(foldY + foldJitter, foldWave, 0.025, foldLightY * unit * (collagen ? 0.55 : 1.10));
+                      tissueStroke('rgba(255,239,221,' + ((collagen ? 0.22 : 0.31) * detail).toFixed(3) + ')', unit * (collagen ? 0.42 : 0.70));
+                    }
+                    ctx.rotate(-foldAngle); tissueGrain(realistic ? 28 : 16, collagen ? '0.08' : '0.11');
+                  } else {
+                    // Liver/kidney capsules retain a smooth broad volume with fine grain.
+                    // Grain is pixel-sized; no lobule/cell diagrams are stamped on the capsule.
+                    tissueGrain(realistic ? 76 : 44, /kidney/.test(key) ? '0.12' : '0.15');
+                  }
+
+                  // A narrow, restrained wet highlight reinforces the same lamp direction.
+                  // Broad capsule highlights remain wider than muscular or lobulated tissue.
+                  ctx.globalCompositeOperation = 'screen';
+                  var wetRadius = capsule || serosa ? 0.52 : 0.33;
+                  if (smoothSurface) wetRadius *= 1.18 - materialMoisture * 0.32;
+                  var wet = ctx.createRadialGradient(lightX * 0.58, lightY * 0.58, 0, lightX * 0.54, lightY * 0.54, wetRadius);
+                  var wetStrength = smoothSurface ? materialGloss : (d.specimenCondition === 'dehydrated' ? 0.30 : 1);
+                  wet.addColorStop(0, 'rgba(255,242,225,' + ((spongy ? 0.12 : 0.22) * detail * wetStrength).toFixed(3) + ')');
+                  wet.addColorStop(0.34, 'rgba(255,242,225,' + (0.06 * detail * wetStrength).toFixed(3) + ')');
+                  wet.addColorStop(1, 'rgba(255,242,225,0)');
+                  ctx.fillStyle = wet; ctx.fillRect(-1.5, -1.5, 3, 3);
+                } finally { ctx.restore(); }
+              }
+
+              function strokeAnatomicalTube(width, base, light, dark) {
+                width = Number(width);
+                if (!isFinite(width) || width <= 0) return;
+                var tubeMode = d.visualRealism || visualRealism;
+                ctx.save();
+                try {
+                  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                  ctx.shadowColor = 'rgba(0,0,0,0)';
+                  if (!sceneDetail || highContrastEnabled || tubeMode === 'accessible') {
+                    ctx.strokeStyle = base; ctx.lineWidth = width; ctx.stroke();
+                    return;
+                  }
+                  var direction = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1];
+                  var length = Math.sqrt(direction[0] * direction[0] + direction[1] * direction[1]) || 1;
+                  var lx = direction[0] / length, ly = direction[1] / length;
+                  // Canvas shadows are specified in backing pixels rather than path units.
+                  // The largest transformed basis length gives a conservative bound under
+                  // zoom, DPR, mirroring, and mild specimen shear without moving the path.
+                  var transform = ctx.getTransform ? ctx.getTransform() : null;
+                  var density = transform ? Math.max(Math.sqrt(transform.a * transform.a + transform.b * transform.b), Math.sqrt(transform.c * transform.c + transform.d * transform.d)) : 1;
+                  density = Math.max(0.05, Math.min(12, Number(density) || 1));
+                  var pixelWidth = width * density;
+                  var realistic = tubeMode === 'realistic';
+                  var shoulder = pixelWidth * 0.14;
+                  var softness = Math.min(2.2, Math.max(0.20, pixelWidth * 0.055));
+
+                  // Restrained ground contact, then the intact base-color cylinder.
+                  ctx.strokeStyle = dark; ctx.lineWidth = width + Math.min(0.65, width * 0.12);
+                  ctx.globalAlpha *= realistic ? 0.74 : 0.62;
+                  ctx.shadowColor = 'rgba(30,15,21,0.22)'; ctx.shadowBlur = softness;
+                  ctx.shadowOffsetX = -lx * Math.min(1.4, pixelWidth * 0.12);
+                  ctx.shadowOffsetY = -ly * Math.min(1.4, pixelWidth * 0.12);
+                  ctx.stroke();
+                  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                  ctx.shadowColor = 'rgba(0,0,0,0)';
+                  // Restore the caller's opacity so translucent vessels remain translucent.
+                  ctx.globalAlpha /= realistic ? 0.74 : 0.62;
+                  ctx.strokeStyle = base; ctx.lineWidth = width; ctx.stroke();
+
+                  // A narrow core casts a dark shoulder away from the lamp. Repainting the
+                  // core in the next pass leaves that shoulder visible without a central stripe.
+                  ctx.strokeStyle = base; ctx.lineWidth = width * 0.46;
+                  ctx.shadowColor = dark; ctx.shadowBlur = softness;
+                  ctx.shadowOffsetX = -lx * shoulder; ctx.shadowOffsetY = -ly * shoulder;
+                  ctx.stroke();
+
+                  // The same intact path supplies the opposite light-facing rounded shoulder.
+                  // Its offset plus half-width stays within the broad base stroke for ordinary
+                  // unscaled/rotated paths; softness is intentionally small at thin vessels.
+                  ctx.strokeStyle = base; ctx.lineWidth = width * 0.42;
+                  ctx.shadowColor = light; ctx.shadowBlur = softness;
+                  ctx.shadowOffsetX = lx * shoulder; ctx.shadowOffsetY = ly * shoulder;
+                  ctx.stroke();
+
+                  // A low-opacity core specular completes volume while preserving base color.
+                  // It is subdued in Guided mode so it does not resemble a marked flow route.
+                  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                  ctx.shadowColor = 'rgba(0,0,0,0)';
+                  ctx.globalAlpha *= realistic ? 0.18 : 0.10;
+                  ctx.strokeStyle = light; ctx.lineWidth = Math.max(width * 0.14, Math.min(width * 0.24, 0.42)); ctx.stroke();
+                } finally { ctx.restore(); }
+              }
+
+              function drawEntericBowel(start, curves, width, base, light, dark, salt) {
+                width = Number(width);
+                if (!Array.isArray(start) || start.length !== 2 || !Array.isArray(curves) ||
+                    curves.length < 1 || curves.length > 3 || !isFinite(width) || width <= 0 ||
+                    !start.every(function (v) { return typeof v === 'number' && isFinite(v); }) ||
+                    !curves.every(function (curve) { return Array.isArray(curve) && curve.length === 6 && curve.every(function (v) { return typeof v === 'number' && isFinite(v); }); })) return false;
+                function traceEntericCenterline() {
+                  ctx.beginPath(); ctx.moveTo(start[0], start[1]);
+                  curves.forEach(function (curve) { ctx.bezierCurveTo.apply(ctx, curve); });
+                }
+                // Replay the former teaching path and shared tube finish exactly.
+                traceEntericCenterline();
+                if ((d.visualRealism || visualRealism) !== 'realistic' || !sceneDetail ||
+                    highContrastEnabled || typeof Path2D === 'undefined') {
+                  strokeAnatomicalTube(width, base, light, dark); return true;
+                }
+                var seed = dissHash(specimen + '|' + (Number(d.variationSeed) || variationSeed) + '|enteric|' + salt) >>> 0;
+                var phase = (seed % 1001) / 1000 * 0.15;
+                var ribbon = new Path2D(), pieces = [], samplesPerCurve = 18;
+                var previousEnd = start, valid = true;
+                curves.forEach(function (curve, curveIndex) {
+                  var p0 = previousEnd, points = [], pieceRibbon = new Path2D();
+                  for (var i = 0; i <= samplesPerCurve; i++) {
+                    var t = i / samplesPerCurve, u = 1 - t;
+                    var x = u * u * u * p0[0] + 3 * u * u * t * curve[0] + 3 * u * t * t * curve[2] + t * t * t * curve[4];
+                    var y = u * u * u * p0[1] + 3 * u * u * t * curve[1] + 3 * u * t * t * curve[3] + t * t * t * curve[5];
+                    var dx = 3 * u * u * (curve[0] - p0[0]) + 6 * u * t * (curve[2] - curve[0]) + 3 * t * t * (curve[4] - curve[2]);
+                    var dy = 3 * u * u * (curve[1] - p0[1]) + 6 * u * t * (curve[3] - curve[1]) + 3 * t * t * (curve[5] - curve[3]);
+                    var tangentLength = Math.sqrt(dx * dx + dy * dy);
+                    if (!isFinite(tangentLength) || tangentLength < 0.000001) { valid = false; break; }
+                    // One gradual caliber change across the whole bowel. No segmentation,
+                    // haustra, peristaltic beads, or microscopic structures are implied.
+                    var progress = (curveIndex + t) / curves.length;
+                    var caliber = 0.88 + 0.12 * (0.5 - 0.5 * Math.cos(Math.PI * 2 * (progress * 0.8 + phase)));
+                    points.push({ x: x, y: y, nx: -dy / tangentLength, ny: dx / tangentLength,
+                      radius: width * 0.5 * caliber, angle: Math.atan2(dy, dx) });
+                  }
+                  if (points.length !== samplesPerCurve + 1) return;
+                  for (var step = 1; step < points.length; step++) {
+                    var a = points[step - 1], b = points[step];
+                    // Consistently wound subpaths form a union at crossings. A single outer
+                    // polygon can cancel itself where an intestinal loop turns back on itself.
+                    pieceRibbon.moveTo(a.x + a.nx * a.radius, a.y + a.ny * a.radius);
+                    pieceRibbon.lineTo(a.x - a.nx * a.radius, a.y - a.ny * a.radius);
+                    pieceRibbon.lineTo(b.x - b.nx * b.radius, b.y - b.ny * b.radius);
+                    pieceRibbon.lineTo(b.x + b.nx * b.radius, b.y + b.ny * b.radius); pieceRibbon.closePath();
+                  }
+                  // Round shared joins and endpoints remain inside the former tube envelope.
+                  [points[0], points[points.length - 1]].forEach(function (p) {
+                    pieceRibbon.moveTo(p.x + p.radius, p.y);
+                    pieceRibbon.ellipse(p.x, p.y, p.radius, p.radius, 0, 0, Math.PI * 2); pieceRibbon.closePath();
+                  });
+                  ribbon.addPath(pieceRibbon);
+                  pieces.push({ start: p0, curve: curve, sheen: points[9], footprint: pieceRibbon });
+                  previousEnd = [curve[4], curve[5]];
+                });
+                if (!valid || pieces.length !== curves.length) {
+                  strokeAnatomicalTube(width, base, light, dark); return true;
+                }
+                var lampValue = Number(d.lightIntensity);
+                var irradiance = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+                var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 76;
+                var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+                var gloss = (0.25 + moisture * 0.75) * (0.45 + irradiance * 0.55);
+                if ((d.specimenCondition || specimenCondition) === 'dehydrated') gloss *= 0.35;
+                ctx.save();
+                try {
+                  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.shadowColor = 'rgba(0,0,0,0)';
+                  ctx.fillStyle = base; ctx.fill(ribbon); ctx.clip(ribbon);
+                  // Paint the same authored cubics in order. The later passing loop covers
+                  // the earlier one at a crossing instead of fusing into one outlined knot.
+                  pieces.forEach(function (piece) {
+                    ctx.beginPath(); ctx.moveTo(piece.start[0], piece.start[1]);
+                    ctx.bezierCurveTo.apply(ctx, piece.curve);
+                    strokeAnatomicalTube(width, base, light, dark);
+                    ctx.save();
+                    try {
+                      // Finish this passage before the next loop crosses over it. The local
+                      // clip also keeps a lower passage's glint off neighboring bowel.
+                      ctx.clip(piece.footprint); ctx.globalCompositeOperation = 'screen';
+                      var p = piece.sheen;
+                      ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.scale(width * 2.4, width * 0.70);
+                      var wet = ctx.createRadialGradient(-0.12, -0.18, 0.02, 0, 0, 1);
+                      wet.addColorStop(0, 'rgba(255,244,222,' + (0.15 * gloss).toFixed(3) + ')');
+                      wet.addColorStop(0.48, 'rgba(255,244,222,' + (0.035 * gloss).toFixed(3) + ')');
+                      wet.addColorStop(1, 'rgba(255,244,222,0)'); ctx.fillStyle = wet; ctx.fillRect(-1.2, -1.2, 2.4, 2.4);
+                    } finally { ctx.restore(); }
+                  });
+                  return true;
+                } finally {
+                  ctx.restore();
+                  // Canvas save/restore does not restore a current path. Leave the former
+                  // complete centerline available to the caller, including after a paint error.
+                  traceEntericCenterline();
+                }
+              }
+
+              function drawEarthwormNephridia(overlay) {
+                if (!isFinite(W) || !isFinite(H) || W <= 0 || H <= 0) return false;
+                var mode = d.visualRealism || visualRealism;
+                var accessible = highContrastEnabled || mode === 'accessible';
+                var detailed = sceneDetail && !accessible && mode === 'realistic';
+                var tubules = [];
+                for (var segment = 5; segment <= 35; segment += 2) {
+                  [-1, 1].forEach(function (side) { tubules.push(earthwormNephridialGeometry(segment, side, W, H)); });
+                }
+                if (tubules.some(function (tube) { return !tube; })) return false;
+                var tubeWidth = Math.max(0.65, Math.min(1.05, Math.min(W, H) * 0.0016));
+                ctx.save();
+                try {
+                  // Exact same 12-step 0.84 cavity band as the existing worm opening. The
+                  // subsequent gut paint naturally covers nephridia where the two overlap.
+                  traceEarthwormNephridialField(ctx, W, H); ctx.clip();
+                  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.shadowColor = 'rgba(0,0,0,0)';
+                  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]);
+                  if (overlay) {
+                    // Trace BOTH sides on the exact visible tubules, not a separate straight
+                    // line down one side of the specimen. Only these curves encode the route.
+                    ctx.beginPath();
+                    tubules.forEach(function (tube) { traceEarthwormNephridialTubule(ctx, tube, detailed, true); });
+                    ctx.strokeStyle = accessible ? '#ffffff' : '#84cc16'; ctx.lineWidth = tubeWidth + 0.55; ctx.stroke();
+                    ctx.strokeStyle = accessible ? '#facc15' : '#d9f99d'; ctx.lineWidth = Math.max(0.35, tubeWidth * 0.45); ctx.stroke();
+                    ctx.beginPath();
+                    tubules.forEach(function (tube) {
+                      ctx.moveTo(tube.outlet[0].x * W, tube.outlet[0].y * H);
+                      ctx.lineTo(tube.outlet[1].x * W, tube.outlet[1].y * H);
+                    });
+                    ctx.globalAlpha *= 0.62; ctx.strokeStyle = accessible ? '#facc15' : '#bef264';
+                    ctx.lineWidth = Math.max(0.45, tubeWidth * 0.65); ctx.stroke();
+                    return true;
+                  }
+                  var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 76;
+                  var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+                  var lampValue = Number(d.lightIntensity), illumination = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+                  var gloss = (0.25 + moisture * 0.75) * (0.45 + illumination * 0.55);
+                  if ((d.specimenCondition || specimenCondition) === 'dehydrated') gloss *= 0.35;
+                  tubules.forEach(function (tube) {
+                    traceEarthwormNephridialTubule(ctx, tube, detailed, false);
+                    ctx.strokeStyle = accessible ? '#111827' : 'rgba(65,49,42,0.68)';
+                    ctx.lineWidth = tubeWidth + (accessible ? 0.9 : 0.65); ctx.stroke();
+                    ctx.strokeStyle = accessible ? '#f8fafc' : (detailed ? '#d2bea1' : '#e8d8b7');
+                    ctx.lineWidth = tubeWidth; ctx.stroke();
+                    if (detailed) {
+                      ctx.strokeStyle = 'rgba(255,244,220,' + (0.45 * gloss).toFixed(3) + ')';
+                      ctx.lineWidth = Math.max(0.28, tubeWidth * 0.36); ctx.stroke();
+                    }
+                  });
+                  return true;
+                } finally { ctx.restore(); }
+              }
+
+              function paintCurrentOrganContact(rx, ry) {
+                if (!sceneDetail || highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible') return;
+                // Use the organ's current closed path before its fill covers the inner stroke.
+                var contactSize = Math.max(1, Math.min(rx, ry));
+                var contactLight = { overhead: [-0.28, -0.62], left: [-0.70, -0.18], right: [0.70, -0.18], raking: [-0.65, 0.55] }[lightDirection] || [-0.28, -0.62];
+                ctx.save();
+                try {
+                  ctx.shadowColor = 'rgba(35,18,23,0.38)';
+                  ctx.shadowBlur = Math.min(3, Math.max(1.1, contactSize * 0.16));
+                  ctx.shadowOffsetX = -contactLight[0] * Math.min(2, contactSize * 0.10);
+                  ctx.shadowOffsetY = -contactLight[1] * Math.min(2, contactSize * 0.10);
+                  ctx.strokeStyle = 'rgba(49,28,30,0.40)'; ctx.lineWidth = Math.min(1.4, Math.max(0.6, contactSize * 0.055)); ctx.stroke();
+                } finally { ctx.restore(); }
+              }
+
+              function finishCurrentCavityPath(x, y, rx, ry) {
+                if (!sceneDetail || highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible') return;
+                // The cut rim belongs to the existing opening, so it cannot drift from the body wall.
+                ctx.save();
+                try {
+                  ctx.shadowBlur = 0;
+                  ctx.strokeStyle = 'rgba(226,184,159,0.48)'; ctx.lineWidth = Math.max(1.4, Math.min(W, H) * 0.0035); ctx.stroke();
+                  ctx.clip(); ctx.translate(x, y); ctx.scale(rx, ry);
+                  var cavityWall = ctx.createRadialGradient(-0.09, -0.12, 0.12, 0, 0, 1.10);
+                  cavityWall.addColorStop(0, 'rgba(40,17,24,0)'); cavityWall.addColorStop(0.68, 'rgba(40,17,24,0.04)');
+                  cavityWall.addColorStop(0.91, 'rgba(37,17,23,0.37)'); cavityWall.addColorStop(1, 'rgba(18,11,17,0.65)');
+                  ctx.fillStyle = cavityWall; ctx.fillRect(-1.5, -1.5, 3, 3);
+                } finally { ctx.restore(); }
+              }
+
+              function drawCurrentMembraneFolds(rootX, rootY, edgePoints) {
+                if (!sceneDetail || highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible') return;
+                ctx.save(); ctx.clip(); ctx.shadowBlur = 0;
+                edgePoints.forEach(function (edge, index) {
+                  var bow = (index % 2 ? 1 : -1) * W * 0.006;
+                  ctx.beginPath(); ctx.moveTo(rootX, rootY);
+                  ctx.quadraticCurveTo((rootX + edge.x) / 2 + bow, (rootY + edge.y) / 2, edge.x, edge.y);
+                  ctx.strokeStyle = 'rgba(96,52,48,0.30)'; ctx.lineWidth = Math.max(0.5, W * 0.001); ctx.stroke();
+                  ctx.strokeStyle = 'rgba(248,225,197,0.35)'; ctx.lineWidth = Math.max(0.3, W * 0.0005); ctx.stroke();
+                });
+                ctx.restore();
+              }
+
+              function traceVisceralLobe(x, y, rx, ry, rotation) {
+                // A rounded attachment and tapered free margin give each overlapping lobe its own contour.
+                ctx.save(); ctx.translate(x, y); ctx.rotate(rotation || 0);
+                ctx.beginPath(); ctx.moveTo(-rx * 0.87, -ry * 0.22);
+                ctx.bezierCurveTo(-rx * 0.98, -ry * 0.80, -rx * 0.25, -ry * 1.08, rx * 0.40, -ry * 0.83);
+                ctx.bezierCurveTo(rx * 0.96, -ry * 0.66, rx * 1.10, ry * 0.10, rx * 0.60, ry * 0.74);
+                ctx.bezierCurveTo(rx * 0.23, ry * 1.05, -rx * 0.14, ry * 0.91, -rx * 0.52, ry * 0.48);
+                ctx.bezierCurveTo(-rx * 0.79, ry * 0.28, -rx * 0.91, ry * 0.10, -rx * 0.87, -ry * 0.22);
+                ctx.closePath(); ctx.restore();
+              }
+
+              function traceVisceralFluidSac(x, y, rx, ry, rotation) {
+                ctx.save();
+                try {
+                  ctx.translate(x, y); ctx.rotate(rotation || 0);
+                  ctx.beginPath();
+                  if (!sceneDetail || highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible') {
+                    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+                    return;
+                  }
+                  // The free dome is fuller than the narrow attachment. The original
+                  // center and envelope still own the sac's position and selection.
+                  ctx.moveTo(-rx * 0.16, ry * 0.94);
+                  ctx.bezierCurveTo(-rx * 0.30, ry * 0.65, -rx * 0.72, ry * 0.57, -rx * 0.87, ry * 0.20);
+                  ctx.bezierCurveTo(-rx * 1.00, -ry * 0.20, -rx * 0.78, -ry * 0.74, -rx * 0.30, -ry * 0.92);
+                  ctx.bezierCurveTo(rx * 0.16, -ry * 1.00, rx * 0.70, -ry * 0.77, rx * 0.88, -ry * 0.36);
+                  ctx.bezierCurveTo(rx * 1.00, ry * 0.05, rx * 0.69, ry * 0.50, rx * 0.39, ry * 0.69);
+                  ctx.quadraticCurveTo(rx * 0.25, ry * 0.79, rx * 0.16, ry * 0.94);
+                  ctx.quadraticCurveTo(0, ry, -rx * 0.16, ry * 0.94); ctx.closePath();
+                } finally { ctx.restore(); }
+              }
+
+              // Liver lobes are broad attached sheets with thinner free margins. The authored
+              // lobe centers, extents, rotation and overlap order remain the geometry budget.
+              function traceHepaticLobe(x, y, rx, ry, rotation, profile, mirror) {
+                if (!sceneDetail || highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible') {
+                  traceVisceralLobe(x, y, rx, ry, rotation); return;
+                }
+                ctx.save();
+                try {
+                  ctx.translate(x, y); ctx.rotate(rotation || 0); ctx.scale(rx * (mirror === -1 ? -1 : 1), ry);
+                  ctx.beginPath();
+                  if (profile === 'tongue') {
+                    ctx.moveTo(-0.82, -0.53);
+                    ctx.bezierCurveTo(-0.41, -0.81, 0.34, -0.87, 0.75, -0.55);
+                    ctx.bezierCurveTo(0.96, -0.33, 0.76, 0.09, 0.48, 0.37);
+                    ctx.bezierCurveTo(0.22, 0.64, 0.07, 0.95, -0.16, 0.93);
+                    ctx.bezierCurveTo(-0.40, 0.84, -0.39, 0.42, -0.60, 0.25);
+                    ctx.bezierCurveTo(-0.85, 0.04, -0.99, -0.26, -0.82, -0.53);
+                  } else if (profile === 'swept') {
+                    ctx.moveTo(-0.89, -0.32);
+                    ctx.bezierCurveTo(-0.75, -0.76, -0.07, -0.91, 0.43, -0.61);
+                    ctx.bezierCurveTo(0.73, -0.44, 0.93, -0.07, 0.86, 0.18);
+                    ctx.bezierCurveTo(0.77, 0.36, 0.38, 0.35, 0.08, 0.56);
+                    ctx.bezierCurveTo(-0.19, 0.78, -0.49, 0.83, -0.72, 0.51);
+                    ctx.bezierCurveTo(-0.91, 0.24, -1.00, -0.04, -0.89, -0.32);
+                  } else {
+                    ctx.moveTo(-0.92, -0.38);
+                    ctx.bezierCurveTo(-0.82, -0.76, -0.25, -0.93, 0.28, -0.84);
+                    ctx.bezierCurveTo(0.62, -0.75, 0.93, -0.39, 0.91, -0.06);
+                    ctx.bezierCurveTo(0.86, 0.19, 0.47, 0.34, 0.31, 0.53);
+                    ctx.bezierCurveTo(0.16, 0.72, 0.03, 0.93, -0.17, 0.92);
+                    ctx.bezierCurveTo(-0.43, 0.77, -0.58, 0.39, -0.73, 0.14);
+                    ctx.bezierCurveTo(-0.88, -0.08, -0.98, -0.20, -0.92, -0.38);
+                  }
+                  ctx.closePath();
+                } finally { ctx.restore(); }
+              }
+
               if (spec.bodyShape === 'frog') {
                 // Frog: integrated head-and-torso silhouette with articulated limbs and nested anatomy.
                 var frogAccessible = (d.visualRealism || visualRealism) === 'accessible';
@@ -10149,34 +13984,227 @@ var d = labToolData.dissection || {};
 
                 if (activeLayer === 'organs') {
                   // Organs are drawn posterior-to-anterior so overlap conveys their position in the coelom.
-                  ctx.save(); ctx.globalAlpha = frogAccessible ? 0.9 : 0.78;
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.015, W * 0.132, H * 0.215, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(252,231,207,0.16)'; ctx.fill(); ctx.strokeStyle = 'rgba(254,240,138,0.32)'; ctx.lineWidth = 0.8; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
-                  // Dorsal kidneys remain partially visible behind the gut.
-                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(cx + side * W * 0.052, cy + H * 0.115, W * 0.025, H * 0.088, side * 0.08, 0, Math.PI * 2); ctx.fillStyle = '#5b3429'; ctx.fill(); ctx.strokeStyle = '#3f241d'; ctx.lineWidth = 0.55; ctx.stroke(); });
-                  // Paired sac-like lungs.
-                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(cx + side * W * 0.071, cy - H * 0.105, W * 0.035, H * 0.057, side * 0.08, 0, Math.PI * 2); ctx.fillStyle = '#eaa1a1'; ctx.fill(); ctx.strokeStyle = '#a83a42'; ctx.lineWidth = 0.55; ctx.stroke(); ctx.save(); ctx.globalAlpha = 0.28; ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 0.35; for(var alveolar=0; alveolar<5; alveolar++){ctx.beginPath(); ctx.arc(cx + side * W * (0.061 + (alveolar%2)*0.018), cy - H * (0.13 - Math.floor(alveolar/2)*0.025), 2.4, 0, Math.PI*2); ctx.stroke();} ctx.restore(); });
-                  // Yellow branched fat bodies flank the anterior kidneys.
-                  [-1,1].forEach(function (side) { for(var fatFinger=0; fatFinger<4; fatFinger++){ var fatX=cx+side*W*(0.035+fatFinger*0.013); ctx.beginPath(); ctx.moveTo(cx+side*W*0.04,cy-H*0.045); ctx.quadraticCurveTo(fatX,cy+H*0.005,fatX+side*W*0.01,cy+H*(0.035+fatFinger*0.012)); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2.1-fatFinger*0.2; ctx.stroke(); } });
+                  ctx.save(); ctx.globalAlpha = frogAccessible ? 0.9 : (frogRealistic ? 0.96 : 0.90);
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.015, W * 0.132, H * 0.215, 0, 0, Math.PI * 2);
+                  var frogCavity = ctx.createRadialGradient(cx - W * 0.025, cy - H * 0.035, 1, cx, cy + H * 0.025, H * 0.235);
+                  frogCavity.addColorStop(0, frogAccessible ? '#6b5544' : '#796153'); frogCavity.addColorStop(1, '#302922');
+                  ctx.fillStyle = frogCavity; ctx.fill(); ctx.strokeStyle = 'rgba(236,197,161,0.48)'; ctx.lineWidth = 1.1; ctx.stroke();
+                  finishCurrentCavityPath(cx, cy + H * 0.015, W * 0.132, H * 0.215);
+                  registerAnatomyOpening(function (path) { path.ellipse(cx, cy + H * 0.015, W * 0.132, H * 0.215, 0, 0, Math.PI * 2); });
+                  // Dorsal renal surfaces retain their exact footprint behind the gut.
+                  drawFrogRenalComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    accessible: frogAccessible, highContrast: highContrastEnabled, lightDirection: lightDirection,
+                    contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  // Paired thin-walled sacs retain their authored centers and radius budget.
+                  [-1, 1].forEach(function (side) {
+                    var frogLungX = cx + side * W * 0.071, frogLungY = cy - H * 0.105;
+                    var frogLungRX = W * 0.035, frogLungRY = H * 0.057;
+                    if (frogAccessible || highContrastEnabled) {
+                      ctx.beginPath(); ctx.ellipse(frogLungX, frogLungY, frogLungRX, frogLungRY, side * 0.08, 0, Math.PI * 2);
+                    } else {
+                      // A narrower cranial neck opens into one fuller caudal sac. These are
+                      // external walls, so do not draw mammalian lobes or transverse chamber ribs.
+                      ctx.save(); ctx.translate(frogLungX, frogLungY); ctx.rotate(side * 0.08); ctx.scale(side, 1);
+                      ctx.beginPath(); ctx.moveTo(-frogLungRX * 0.18, -frogLungRY);
+                      ctx.bezierCurveTo(-frogLungRX * 0.52, -frogLungRY * 0.98, -frogLungRX * 0.78, -frogLungRY * 0.67, -frogLungRX * 0.80, -frogLungRY * 0.34);
+                      ctx.bezierCurveTo(-frogLungRX * 0.97, frogLungRY * 0.03, -frogLungRX * 0.88, frogLungRY * 0.56, -frogLungRX * 0.47, frogLungRY * 0.84);
+                      ctx.bezierCurveTo(-frogLungRX * 0.13, frogLungRY * 1.02, frogLungRX * 0.48, frogLungRY * 0.98, frogLungRX * 0.75, frogLungRY * 0.60);
+                      ctx.bezierCurveTo(frogLungRX * 0.99, frogLungRY * 0.20, frogLungRX * 0.90, -frogLungRY * 0.32, frogLungRX * 0.60, -frogLungRY * 0.68);
+                      ctx.bezierCurveTo(frogLungRX * 0.44, -frogLungRY * 0.92, frogLungRX * 0.14, -frogLungRY * 1.03, -frogLungRX * 0.18, -frogLungRY);
+                      ctx.closePath(); ctx.restore();
+                    }
+                    paintCurrentOrganContact(frogLungRX, frogLungRY);
+                    var frogLungVolume = ctx.createLinearGradient(frogLungX - frogLungRX, frogLungY - frogLungRY * 0.40,
+                      frogLungX + frogLungRX, frogLungY + frogLungRY * 0.30);
+                    frogLungVolume.addColorStop(0, '#d8aaa1'); frogLungVolume.addColorStop(0.44, '#bc8b83'); frogLungVolume.addColorStop(1, '#865659');
+                    ctx.fillStyle = frogAccessible || highContrastEnabled ? '#c99288' : frogLungVolume;
+                    ctx.fill(); ctx.strokeStyle = '#813f47'; ctx.lineWidth = 0.65; ctx.stroke();
+                    finishCurrentTissuePath(frogLungX, frogLungY, frogLungRX, frogLungRY, 'spongy', 'frog-lung-' + side);
+                  });
+                  // The existing four branches share their authored attachment and centerlines.
+                  // Soft, tapering outer margins describe whole fat-body fingers, not fat cells.
+                  function traceFrogFatBodies(side, onlyFinger) {
+                    ctx.beginPath();
+                    for (var fatFinger = 0; fatFinger < 4; fatFinger++) {
+                      if (typeof onlyFinger === 'number' && fatFinger !== onlyFinger) continue;
+                      var rootX = cx + side * W * 0.04, rootY = cy - H * 0.045;
+                      var bendX = cx + side * W * (0.035 + fatFinger * 0.013), bendY = cy + H * 0.005;
+                      var tipX = bendX + side * W * 0.01, tipY = cy + H * (0.035 + fatFinger * 0.012);
+                      var fatWidth = W * (0.006 - fatFinger * 0.0006);
+                      var rootLength = Math.hypot(bendX - rootX, bendY - rootY);
+                      var midLength = Math.hypot(tipX - rootX, tipY - rootY);
+                      var tipLength = Math.hypot(tipX - bendX, tipY - bendY);
+                      var rootTX = (bendX - rootX) / rootLength, rootTY = (bendY - rootY) / rootLength;
+                      var midNX = -(tipY - rootY) / midLength, midNY = (tipX - rootX) / midLength;
+                      var tipTX = (tipX - bendX) / tipLength, tipTY = (tipY - bendY) / tipLength;
+                      var rootNX = -rootTY, rootNY = rootTX, tipNX = -tipTY, tipNY = tipTX;
+                      var rootRadius = fatWidth * 0.19, bendRadius = fatWidth * 0.95, tipRadius = fatWidth * 0.20;
+                      ctx.moveTo(rootX + rootNX * rootRadius, rootY + rootNY * rootRadius);
+                      ctx.quadraticCurveTo(bendX + midNX * bendRadius, bendY + midNY * bendRadius,
+                        tipX + tipNX * tipRadius, tipY + tipNY * tipRadius);
+                      ctx.bezierCurveTo(tipX + tipNX * tipRadius + tipTX * tipRadius * 1.33,
+                        tipY + tipNY * tipRadius + tipTY * tipRadius * 1.33,
+                        tipX - tipNX * tipRadius + tipTX * tipRadius * 1.33,
+                        tipY - tipNY * tipRadius + tipTY * tipRadius * 1.33,
+                        tipX - tipNX * tipRadius, tipY - tipNY * tipRadius);
+                      ctx.quadraticCurveTo(bendX - midNX * bendRadius, bendY - midNY * bendRadius,
+                        rootX - rootNX * rootRadius, rootY - rootNY * rootRadius);
+                      ctx.bezierCurveTo(rootX - rootNX * rootRadius - rootTX * rootRadius * 1.33,
+                        rootY - rootNY * rootRadius - rootTY * rootRadius * 1.33,
+                        rootX + rootNX * rootRadius - rootTX * rootRadius * 1.33,
+                        rootY + rootNY * rootRadius - rootTY * rootRadius * 1.33,
+                        rootX + rootNX * rootRadius, rootY + rootNY * rootRadius);
+                      ctx.closePath();
+                    }
+                  }
+                  
+                  function drawFrogFatBodies(side) {
+                    ctx.save();
+                    try {
+                      traceFrogFatBodies(side); paintCurrentOrganContact(W * 0.032, H * 0.060);
+                      var fatLamp = { overhead: [-0.28, -0.62], left: [-0.70, -0.18], right: [0.70, -0.18], raking: [-0.65, 0.55] }[lightDirection] || [-0.28, -0.62];
+                      for (var fatFinger = 0; fatFinger < 4; fatFinger++) {
+                        var rootX = cx + side * W * 0.04, rootY = cy - H * 0.045;
+                        var bendX = cx + side * W * (0.035 + fatFinger * 0.013), bendY = cy + H * 0.005;
+                        var tipX = bendX + side * W * 0.01, tipY = cy + H * (0.035 + fatFinger * 0.012);
+                        var fatMidX = (rootX + 2 * bendX + tipX) * 0.25, fatMidY = (rootY + 2 * bendY + tipY) * 0.25;
+                        var fatWidth = W * (0.006 - fatFinger * 0.0006);
+                        var fatLength = Math.hypot(tipX - rootX, tipY - rootY);
+                        var normalX = -(tipY - rootY) / fatLength, normalY = (tipX - rootX) / fatLength;
+                        var lampSide = normalX * fatLamp[0] + normalY * fatLamp[1] < 0 ? -1 : 1;
+                        var fatVolume = ctx.createLinearGradient(fatMidX + normalX * fatWidth * lampSide,
+                          fatMidY + normalY * fatWidth * lampSide, fatMidX - normalX * fatWidth * lampSide,
+                          fatMidY - normalY * fatWidth * lampSide);
+                        fatVolume.addColorStop(0, '#eee0ae'); fatVolume.addColorStop(0.43, '#d0b66c'); fatVolume.addColorStop(1, '#94804b');
+                        traceFrogFatBodies(side, fatFinger); ctx.fillStyle = fatVolume; ctx.fill();
+                      }
+                      traceFrogFatBodies(side);
+                      ctx.strokeStyle = 'rgba(115,96,53,0.48)'; ctx.lineWidth = 0.35; ctx.stroke();
+                      // One finish for the entire side keeps grain and work bounded. Its clip is
+                      // the union of the four real fingers, including their shared attachment.
+                      finishCurrentTissuePath(cx + side * W * 0.060, cy + H * 0.014, W * 0.035, H * 0.062,
+                        'lobular', 'frog-fat-body-' + side);
+                    } finally { ctx.restore(); }
+                  }
+                  
+                  if (frogRealistic && sceneDetail && !frogAccessible && !highContrastEnabled) {
+                    [-1, 1].forEach(drawFrogFatBodies);
+                  } else {
+                    [-1,1].forEach(function (side) { for(var fatFinger=0; fatFinger<4; fatFinger++){ var fatX=cx+side*W*(0.035+fatFinger*0.013); ctx.beginPath(); ctx.moveTo(cx+side*W*0.04,cy-H*0.045); ctx.quadraticCurveTo(fatX,cy+H*0.005,fatX+side*W*0.01,cy+H*(0.035+fatFinger*0.012)); strokeAnatomicalTube(W * (0.006 - fatFinger * 0.0006), '#cdb458', '#f0dda0', '#82703d'); } });
+                  }
                   // Three-chambered heart: paired atria over one muscular ventricle and conus.
                   var frogHeartX = cx; var frogHeartY = cy - H * 0.105;
-                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(frogHeartX + side * W * 0.019, frogHeartY - H * 0.008, W * 0.022, H * 0.022, side * 0.15, 0, Math.PI * 2); ctx.fillStyle = side < 0 ? '#b4535a' : '#a64752'; ctx.fill(); ctx.strokeStyle='#7f1d1d';ctx.lineWidth=0.5;ctx.stroke(); });
-                  ctx.beginPath(); ctx.ellipse(frogHeartX, frogHeartY + H * 0.027, W * 0.031, H * 0.037, 0, 0, Math.PI * 2); ctx.fillStyle='#b91c1c';ctx.fill();ctx.strokeStyle='#7f1d1d';ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(frogHeartX + W * 0.012, frogHeartY - H * 0.022); ctx.quadraticCurveTo(frogHeartX + W * 0.032, frogHeartY - H * 0.075, frogHeartX + W * 0.018, frogHeartY - H * 0.102); ctx.strokeStyle='#dc2626';ctx.lineWidth=3;ctx.stroke();
+                  [-1, 1].forEach(function (side) {
+                    var frogAtriumX = frogHeartX + side * W * 0.019, frogAtriumY = frogHeartY - H * 0.008;
+                    var frogAtriumRX = W * 0.022, frogAtriumRY = H * 0.022;
+                    if (frogAccessible || highContrastEnabled) {
+                      ctx.beginPath(); ctx.ellipse(frogAtriumX, frogAtriumY, frogAtriumRX, frogAtriumRY, side * 0.15, 0, Math.PI * 2);
+                    } else {
+                      ctx.save(); ctx.translate(frogAtriumX, frogAtriumY); ctx.rotate(side * 0.15);
+                      ctx.beginPath(); ctx.moveTo(-frogAtriumRX * 0.64, -frogAtriumRY * 0.62);
+                      ctx.bezierCurveTo(-frogAtriumRX * 0.25, -frogAtriumRY * 1.03, frogAtriumRX * 0.54, -frogAtriumRY * 0.95, frogAtriumRX * 0.84, -frogAtriumRY * 0.30);
+                      ctx.bezierCurveTo(frogAtriumRX * 1.04, frogAtriumRY * 0.15, frogAtriumRX * 0.63, frogAtriumRY * 0.69, frogAtriumRX * 0.15, frogAtriumRY * 0.90);
+                      ctx.bezierCurveTo(-frogAtriumRX * 0.28, frogAtriumRY * 0.97, -frogAtriumRX * 0.90, frogAtriumRY * 0.44, -frogAtriumRX * 0.90, -frogAtriumRY * 0.08);
+                      ctx.bezierCurveTo(-frogAtriumRX * 0.91, -frogAtriumRY * 0.29, -frogAtriumRX * 0.81, -frogAtriumRY * 0.48, -frogAtriumRX * 0.64, -frogAtriumRY * 0.62);
+                      ctx.closePath(); ctx.restore();
+                    }
+                    paintCurrentOrganContact(frogAtriumRX, frogAtriumRY);
+                    var frogAtrialVolume = ctx.createLinearGradient(frogAtriumX - frogAtriumRX, frogAtriumY - frogAtriumRY,
+                      frogAtriumX + frogAtriumRX, frogAtriumY + frogAtriumRY);
+                    frogAtrialVolume.addColorStop(0, '#bd7b79'); frogAtrialVolume.addColorStop(0.52, side < 0 ? '#985457' : '#9f5960'); frogAtrialVolume.addColorStop(1, '#713945');
+                    ctx.fillStyle = frogAccessible || highContrastEnabled ? (side < 0 ? '#b4535a' : '#a64752') : frogAtrialVolume;
+                    ctx.fill(); ctx.strokeStyle = '#71323e'; ctx.lineWidth = 0.55; ctx.stroke();
+                    finishCurrentTissuePath(frogAtriumX, frogAtriumY, frogAtriumRX, frogAtriumRY, 'serosa', 'frog-atrium-' + side);
+                  });
+                  if (frogAccessible || highContrastEnabled) {
+                    ctx.beginPath(); ctx.ellipse(frogHeartX, frogHeartY + H * 0.027, W * 0.031, H * 0.037, 0, 0, Math.PI * 2);
+                  } else {
+                    // A broad cranial shoulder tapers to one rounded ventricular apex. No
+                    // mammalian interventricular division or heart-symbol cleft is introduced.
+                    ctx.beginPath(); ctx.moveTo(frogHeartX - W * 0.026, frogHeartY + H * 0.004);
+                    ctx.bezierCurveTo(frogHeartX - W * 0.020, frogHeartY - H * 0.010, frogHeartX + W * 0.015, frogHeartY - H * 0.011, frogHeartX + W * 0.027, frogHeartY + H * 0.003);
+                    ctx.bezierCurveTo(frogHeartX + W * 0.034, frogHeartY + H * 0.018, frogHeartX + W * 0.024, frogHeartY + H * 0.046, frogHeartX, frogHeartY + H * 0.064);
+                    ctx.bezierCurveTo(frogHeartX - W * 0.013, frogHeartY + H * 0.057, frogHeartX - W * 0.031, frogHeartY + H * 0.037, frogHeartX - W * 0.031, frogHeartY + H * 0.021);
+                    ctx.bezierCurveTo(frogHeartX - W * 0.032, frogHeartY + H * 0.014, frogHeartX - W * 0.030, frogHeartY + H * 0.009, frogHeartX - W * 0.026, frogHeartY + H * 0.004);
+                    ctx.closePath();
+                  }
+                  paintCurrentOrganContact(W * 0.031, H * 0.037);
+                  var frogVentricleVolume = ctx.createLinearGradient(frogHeartX - W * 0.027, frogHeartY + H * 0.004,
+                    frogHeartX + W * 0.024, frogHeartY + H * 0.059);
+                  frogVentricleVolume.addColorStop(0, '#b96960'); frogVentricleVolume.addColorStop(0.43, '#93413f'); frogVentricleVolume.addColorStop(1, '#602734');
+                  ctx.fillStyle = frogAccessible || highContrastEnabled ? '#a64043' : frogVentricleVolume;
+                  ctx.fill(); ctx.strokeStyle = '#641e2c'; ctx.lineWidth = 0.7; ctx.stroke();
+                  finishCurrentTissuePath(frogHeartX, frogHeartY + H * 0.027, W * 0.031, H * 0.037,
+                    frogRealistic ? 'serosa' : 'muscle', 'frog-heart');
+                  ctx.beginPath(); ctx.moveTo(frogHeartX + W * 0.012, frogHeartY - H * 0.022);
+                  ctx.quadraticCurveTo(frogHeartX + W * 0.032, frogHeartY - H * 0.075, frogHeartX + W * 0.018, frogHeartY - H * 0.102);
+                  strokeAnatomicalTube(3, frogAccessible || highContrastEnabled ? '#dc2626' : '#9c4d4b', '#d79485', '#5e2e36');
                   // Three liver lobes overlap the posterior heart margin.
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.057, cy - H * 0.015, W * 0.056, H * 0.055, -0.12, 0, Math.PI*2); ctx.fillStyle='#6f3529';ctx.fill();ctx.strokeStyle='#4a251f';ctx.lineWidth=0.55;ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.057, cy - H * 0.015, W * 0.056, H * 0.055, 0.12, 0, Math.PI*2); ctx.fillStyle='#74372b';ctx.fill();ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.018, W * 0.052, H * 0.046, 0, 0, Math.PI*2); ctx.fillStyle='#653027';ctx.fill();ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.027, cy + H * 0.018, W * 0.013, H * 0.022, 0.2, 0, Math.PI*2);ctx.fillStyle='#4d9a50';ctx.fill();ctx.strokeStyle='#1f6d35';ctx.lineWidth=0.45;ctx.stroke();
-                  // J-shaped stomach with a duodenal turn.
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.055, cy + H * 0.03); ctx.bezierCurveTo(cx - W * 0.105, cy + H * 0.035, cx - W * 0.105, cy + H * 0.12, cx - W * 0.055, cy + H * 0.13); ctx.bezierCurveTo(cx - W * 0.018, cy + H * 0.138, cx - W * 0.012, cy + H * 0.10, cx - W * 0.036, cy + H * 0.083); ctx.bezierCurveTo(cx - W * 0.06, cy + H * 0.065, cx - W * 0.035, cy + H * 0.045, cx - W * 0.055, cy + H * 0.03); ctx.closePath(); var stomachGrad=ctx.createLinearGradient(cx-W*0.10,cy+H*0.04,cx-W*0.02,cy+H*0.13);stomachGrad.addColorStop(0,'#f4d39a');stomachGrad.addColorStop(1,'#c88852');ctx.fillStyle=stomachGrad;ctx.fill();ctx.strokeStyle='#9a5b32';ctx.lineWidth=0.6;ctx.stroke();
-                  ctx.beginPath();ctx.moveTo(cx-W*0.01,cy+H*0.105);ctx.quadraticCurveTo(cx+W*0.035,cy+H*0.115,cx+W*0.068,cy+H*0.09);ctx.strokeStyle='#eabf72';ctx.lineWidth=3.2;ctx.stroke();
-                  ctx.beginPath();ctx.moveTo(cx-W*0.012,cy+H*0.10);ctx.quadraticCurveTo(cx+W*0.028,cy+H*0.092,cx+W*0.067,cy+H*0.078);ctx.strokeStyle='#e7b54d';ctx.lineWidth=1.4;ctx.stroke();
-                  ctx.beginPath();ctx.ellipse(cx-W*0.092,cy+H*0.115,W*0.012,H*0.009,-0.2,0,Math.PI*2);ctx.fillStyle='#7f1d1d';ctx.fill();
+                  [[-0.057,-0.015,0.056,0.055,-0.12],[0.057,-0.015,0.056,0.055,0.12],[0,0.018,0.052,0.046,0]].forEach(function (lobe, lobeIndex) {
+                    var lobeX = cx + W * lobe[0], lobeY = cy + H * lobe[1];
+                    traceHepaticLobe(lobeX, lobeY, W * lobe[2], H * lobe[3], lobe[4], lobeIndex === 2 ? 'tongue' : 'broad', lobeIndex === 0 ? -1 : 1);
+                    paintCurrentOrganContact(W * lobe[2], H * lobe[3]);
+                    var liverFinish = ctx.createLinearGradient(lobeX, lobeY - H * lobe[3], lobeX + W * lobe[2], lobeY + H * lobe[3]);
+                    liverFinish.addColorStop(0, lobeIndex === 2 ? '#91584a' : '#a16a53'); liverFinish.addColorStop(0.48, '#743e31'); liverFinish.addColorStop(1, '#3f2422');
+                    ctx.fillStyle = liverFinish; ctx.fill(); ctx.strokeStyle = '#3d2522'; ctx.lineWidth = 0.8; ctx.stroke();
+                    finishCurrentTissuePath(lobeX, lobeY, W * lobe[2], H * lobe[3], 'capsule', 'frog-liver-' + lobeIndex);
+                  });
+                  var frogBileX = cx + W * 0.027, frogBileY = cy + H * 0.018;
+                  traceVisceralFluidSac(frogBileX, frogBileY, W * 0.013, H * 0.022, 0.2);
+                  paintCurrentOrganContact(W * 0.013, H * 0.022);
+                  var frogBileVolume = ctx.createLinearGradient(frogBileX - W * 0.013, frogBileY - H * 0.018, frogBileX + W * 0.013, frogBileY + H * 0.022);
+                  frogBileVolume.addColorStop(0, '#97aa67'); frogBileVolume.addColorStop(0.40, '#597645'); frogBileVolume.addColorStop(1, '#293f2b');
+                  ctx.fillStyle = frogRealistic && !highContrastEnabled ? frogBileVolume : '#4d9a50'; ctx.fill();
+                  ctx.strokeStyle = frogRealistic && !highContrastEnabled ? '#354c2e' : '#1f6d35'; ctx.lineWidth = 0.45; ctx.stroke();
+                  finishCurrentTissuePath(frogBileX, frogBileY, W * 0.013, H * 0.022, 'capsule', 'frog-gallbladder');
+                  // The gastric body narrows into a continuous pyloric and duodenal course.
+                  drawFrogGastricComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, strokeTube: strokeAnatomicalTube,
+                    contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  drawFrogPancreaticSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  drawFrogSplenicSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+
+                  // Translucent mesentery sits beneath the coiled gut; its folds do not cover the bowel.
+                  if (!frogAccessible && sceneDetail) {
+                    ctx.beginPath(); ctx.moveTo(cx + W * 0.045, cy + H * 0.10);
+                    ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.16, cx + W * 0.035, cy + H * 0.23, cx - W * 0.025, cy + H * 0.20);
+                    ctx.bezierCurveTo(cx - W * 0.08, cy + H * 0.17, cx - W * 0.035, cy + H * 0.13, cx + W * 0.045, cy + H * 0.10);
+                    ctx.fillStyle = 'rgba(224,185,150,0.19)'; ctx.fill();
+                    drawCurrentMembraneFolds(cx + W * 0.045, cy + H * 0.10, [
+                      { x: cx + W * 0.055, y: cy + H * 0.17 }, { x: cx + W * 0.025, y: cy + H * 0.21 },
+                      { x: cx - W * 0.015, y: cy + H * 0.20 }, { x: cx - W * 0.045, y: cy + H * 0.17 }
+                    ]);
+                  }
                   // Coiled ileum sits centrally and feeds a short, broad large intestine.
-                  ctx.strokeStyle='#d78349';ctx.lineWidth=4.1;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx+W*0.055,cy+H*0.10);ctx.bezierCurveTo(cx+W*0.09,cy+H*0.13,cx-W*0.07,cy+H*0.14,cx-W*0.025,cy+H*0.17);ctx.bezierCurveTo(cx+W*0.04,cy+H*0.20,cx+W*0.085,cy+H*0.145,cx+W*0.035,cy+H*0.135);ctx.bezierCurveTo(cx-W*0.025,cy+H*0.12,cx-W*0.07,cy+H*0.19,cx+W*0.015,cy+H*0.21);ctx.stroke();
-                  ctx.beginPath();ctx.moveTo(cx+W*0.015,cy+H*0.205);ctx.bezierCurveTo(cx+W*0.02,cy+H*0.235,cx+W*0.008,cy+H*0.25,cx,cy+H*0.262);ctx.strokeStyle='#b86b42';ctx.lineWidth=6.2;ctx.stroke();
+                  drawEntericBowel([cx + W * 0.055, cy + H * 0.10], [
+                    [cx + W * 0.09, cy + H * 0.13, cx - W * 0.07, cy + H * 0.14, cx - W * 0.025, cy + H * 0.17],
+                    [cx + W * 0.04, cy + H * 0.20, cx + W * 0.085, cy + H * 0.145, cx + W * 0.035, cy + H * 0.135],
+                    [cx - W * 0.025, cy + H * 0.12, cx - W * 0.07, cy + H * 0.19, cx + W * 0.015, cy + H * 0.21]
+                  ], W * 0.012, '#c18c69', '#edd0aa', '#704335', 'frog-ileum');
+                  ctx.beginPath();ctx.moveTo(cx+W*0.015,cy+H*0.205);ctx.bezierCurveTo(cx+W*0.02,cy+H*0.235,cx+W*0.008,cy+H*0.25,cx,cy+H*0.262);
+                  strokeAnatomicalTube(W * 0.017, '#ad795e', '#dfb38f', '#653a30');
                   // Bilobed urinary bladder and shared cloacal outlet.
-                  ctx.save();ctx.globalAlpha=0.48;[-1,1].forEach(function(side){ctx.beginPath();ctx.ellipse(cx+side*W*0.025,cy+H*0.245,W*0.027,H*0.024,side*0.18,0,Math.PI*2);ctx.fillStyle='#bae6fd';ctx.fill();ctx.strokeStyle='#60a5fa';ctx.lineWidth=0.5;ctx.stroke();});ctx.restore();
+                  ctx.save(); ctx.globalAlpha = 0.48;
+                  [-1, 1].forEach(function (side) {
+                    var frogSacX = cx + side * W * 0.025, frogSacY = cy + H * 0.245;
+                    traceVisceralFluidSac(frogSacX, frogSacY, W * 0.027, H * 0.024, side * 0.18);
+                    var frogSacVolume = ctx.createRadialGradient(frogSacX - W * 0.008, frogSacY - H * 0.009, 0, frogSacX, frogSacY, W * 0.031);
+                    frogSacVolume.addColorStop(0, 'rgba(247,237,204,0.90)'); frogSacVolume.addColorStop(0.62, 'rgba(207,193,157,0.54)'); frogSacVolume.addColorStop(1, 'rgba(112,110,83,0.72)');
+                    ctx.fillStyle = frogRealistic && !highContrastEnabled ? frogSacVolume : '#bae6fd'; ctx.fill();
+                    ctx.strokeStyle = frogRealistic && !highContrastEnabled ? 'rgba(199,193,158,0.72)' : '#60a5fa'; ctx.lineWidth = 0.5; ctx.stroke();
+                    finishCurrentTissuePath(frogSacX, frogSacY, W * 0.027, H * 0.024, 'serosa', 'frog-urinary-bladder-' + side);
+                  });
+                  ctx.restore();
                   ctx.beginPath();ctx.ellipse(cx,cy+H*0.268,W*0.013,H*0.008,0,0,Math.PI*2);ctx.fillStyle='#704838';ctx.fill();
                   ctx.restore();
                 }
@@ -10197,8 +14225,12 @@ var d = labToolData.dissection || {};
 
                 if (activeLayer === 'nervous') {
                   ctx.save(); ctx.globalAlpha = frogAccessible ? 0.92 : 0.76;
-                  ctx.beginPath();ctx.ellipse(cx,cy-H*0.285,W*0.045,H*0.026,0,0,Math.PI*2);ctx.fillStyle='rgba(196,181,253,0.76)';ctx.fill();ctx.strokeStyle='#7c3aed';ctx.lineWidth=0.9;ctx.stroke();
-                  [-1,1].forEach(function(side){ctx.beginPath();ctx.ellipse(cx+side*W*0.025,cy-H*0.292,W*0.019,H*0.014,0,0,Math.PI*2);ctx.fillStyle='#a78bfa';ctx.fill();ctx.beginPath();ctx.moveTo(cx+side*W*0.027,cy-H*0.29);ctx.lineTo(cx+side*W*0.088,cy-H*0.275);ctx.strokeStyle='#c084fc';ctx.lineWidth=1;ctx.stroke();});
+                  drawFrogNeuralComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !frogAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  // Existing projected cranial routes and continuous spinal cord remain unchanged.
+                  [-1,1].forEach(function(side){ctx.beginPath();ctx.moveTo(cx+side*W*0.027,cy-H*0.29);ctx.lineTo(cx+side*W*0.088,cy-H*0.275);ctx.strokeStyle='#c084fc';ctx.lineWidth=1;ctx.stroke();});
                   ctx.beginPath();ctx.moveTo(cx,cy-H*0.255);ctx.lineTo(cx,cy+H*0.19);ctx.strokeStyle='#a78bfa';ctx.lineWidth=2.2;ctx.stroke();
                   for(var frogNerve=0;frogNerve<9;frogNerve++){var nerveY=cy-H*0.19+frogNerve*H*0.046;ctx.beginPath();ctx.moveTo(cx,nerveY);ctx.lineTo(cx-W*0.085,nerveY+H*0.012);ctx.moveTo(cx,nerveY);ctx.lineTo(cx+W*0.085,nerveY+H*0.012);ctx.strokeStyle='rgba(192,132,252,0.58)';ctx.lineWidth=0.65;ctx.stroke();}
                   [-1,1].forEach(function(side){ctx.beginPath();ctx.moveTo(cx+side*W*0.035,cy+H*0.14);ctx.bezierCurveTo(cx+side*W*0.13,cy+H*0.18,cx+side*W*0.23,cy+H*0.24,cx+side*W*0.29,cy+H*0.34);ctx.strokeStyle='#c084fc';ctx.lineWidth=1.8;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+side*W*0.02,cy-H*0.12);ctx.quadraticCurveTo(cx+side*W*0.10,cy-H*0.09,cx+side*W*0.19,cy-H*0.025);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.1;ctx.stroke();});
@@ -10216,13 +14248,13 @@ var d = labToolData.dissection || {};
                 var wormSegmentCount = 40;
                 var wormAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var wormRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                if (!wormAccessible && !highContrastEnabled && (activeLayer === 'skin' || activeLayer === 'organs')) {
+                  layerColor = '#ac8278'; layerStroke = '#674d50';
+                }
 
                 function earthwormPoint(t) {
-                  var clamped = Math.max(0, Math.min(1, t));
-                  return {
-                    x: cx + Math.sin(clamped * Math.PI * 2.15 + 0.32) * W * 0.026 + Math.sin(clamped * Math.PI * 5.1) * W * 0.005,
-                    y: wormTop + wormLength * clamped
-                  };
+                  var point = earthwormCenterlinePoint(t);
+                  return { x: point.x * W, y: point.y * H };
                 }
                 function earthwormWidth(t) {
                   var anteriorTaper = Math.min(1, Math.max(0, t / 0.055));
@@ -10272,22 +14304,128 @@ var d = labToolData.dissection || {};
                     if (lineStep === 0) ctx.moveTo(lineX, lineY); else ctx.lineTo(lineX, lineY);
                   }
                 }
-                function traceEarthwormBand(startT, endT, widthScale) {
+                function traceEarthwormBand(startT, endT, widthScale, traceContext) {
+                  traceContext = traceContext || ctx;
                   var bandSteps = 12;
-                  ctx.beginPath();
+                  if (traceContext.beginPath) traceContext.beginPath();
                   for (var bandLeft = 0; bandLeft <= bandSteps; bandLeft++) {
                     var bandLeftT = startT + (endT - startT) * bandLeft / bandSteps;
                     var bandLeftFrame = earthwormFrame(bandLeftT);
                     var bandLeftX = bandLeftFrame.point.x + bandLeftFrame.nx * bandLeftFrame.width * widthScale;
                     var bandLeftY = bandLeftFrame.point.y + bandLeftFrame.ny * bandLeftFrame.width * widthScale;
-                    if (bandLeft === 0) ctx.moveTo(bandLeftX, bandLeftY); else ctx.lineTo(bandLeftX, bandLeftY);
+                    if (bandLeft === 0) traceContext.moveTo(bandLeftX, bandLeftY); else traceContext.lineTo(bandLeftX, bandLeftY);
                   }
                   for (var bandRight = bandSteps; bandRight >= 0; bandRight--) {
                     var bandRightT = startT + (endT - startT) * bandRight / bandSteps;
                     var bandRightFrame = earthwormFrame(bandRightT);
-                    ctx.lineTo(bandRightFrame.point.x - bandRightFrame.nx * bandRightFrame.width * widthScale, bandRightFrame.point.y - bandRightFrame.ny * bandRightFrame.width * widthScale);
+                    traceContext.lineTo(bandRightFrame.point.x - bandRightFrame.nx * bandRightFrame.width * widthScale, bandRightFrame.point.y - bandRightFrame.ny * bandRightFrame.width * widthScale);
                   }
-                  ctx.closePath();
+                  traceContext.closePath();
+                }
+
+                function traceEarthwormDigestiveBulb(frame, rx, ry, kind) {
+                  if (!frame || !frame.point || !isFinite(frame.point.x) || !isFinite(frame.point.y) ||
+                      !isFinite(rx) || !isFinite(ry) || rx <= 0 || ry <= 0) return false;
+                  ctx.beginPath();
+                  if (!sceneDetail || wormAccessible || highContrastEnabled) {
+                    // Retain the original teaching ellipses, including their existing rotation.
+                    ctx.ellipse(frame.point.x, frame.point.y, rx, ry,
+                      kind === 'crop' ? -0.04 : (kind === 'pharynx' ? 0.05 : 0.04), 0, Math.PI * 2);
+                    return true;
+                  }
+                  ctx.save();
+                  try {
+                    ctx.translate(frame.point.x, frame.point.y);
+                    ctx.rotate(Math.atan2(frame.ty, frame.tx) - Math.PI / 2);
+                    if (kind === 'crop') {
+                      // A thin distensible sac expands gently from the esophagus and narrows
+                      // again. These are closed external walls, with no contents or lumen.
+                      ctx.moveTo(-rx * 0.25, -ry);
+                      ctx.bezierCurveTo(-rx * 0.41, -ry * 0.64, -rx * 0.85, -ry * 0.62, -rx * 0.94, -ry * 0.13);
+                      ctx.bezierCurveTo(-rx, ry * 0.36, -rx * 0.67, ry * 0.83, -rx * 0.25, ry);
+                      ctx.lineTo(rx * 0.25, ry);
+                      ctx.bezierCurveTo(rx * 0.76, ry * 0.78, rx * 0.98, ry * 0.17, rx * 0.84, -ry * 0.25);
+                      ctx.bezierCurveTo(rx * 0.74, -ry * 0.61, rx * 0.40, -ry * 0.64, rx * 0.25, -ry);
+                    } else if (kind === 'gizzard') {
+                      // A compact muscular barrel. Its small anterior neck matches the
+                      // esophagus and its broader posterior neck joins the intestine.
+                      ctx.moveTo(-rx * 0.22, -ry);
+                      ctx.bezierCurveTo(-rx * 0.66, -ry * 0.93, -rx * 0.94, -ry * 0.62, -rx * 0.97, -ry * 0.13);
+                      ctx.bezierCurveTo(-rx, ry * 0.35, -rx * 0.70, ry * 0.83, -rx * 0.33, ry);
+                      ctx.lineTo(rx * 0.33, ry);
+                      ctx.bezierCurveTo(rx * 0.70, ry * 0.83, rx, ry * 0.35, rx * 0.97, -ry * 0.13);
+                      ctx.bezierCurveTo(rx * 0.94, -ry * 0.62, rx * 0.66, -ry * 0.93, rx * 0.22, -ry);
+                    } else {
+                      // The pharynx is a short stout muscular bulb, not another crop sac.
+                      ctx.moveTo(-rx * 0.30, -ry);
+                      ctx.bezierCurveTo(-rx * 0.68, -ry * 0.86, -rx * 0.93, -ry * 0.49, -rx * 0.94, -ry * 0.07);
+                      ctx.bezierCurveTo(-rx * 0.93, ry * 0.45, -rx * 0.66, ry * 0.83, -rx * 0.30, ry);
+                      ctx.lineTo(rx * 0.30, ry);
+                      ctx.bezierCurveTo(rx * 0.68, ry * 0.83, rx * 0.95, ry * 0.41, rx * 0.92, -ry * 0.07);
+                      ctx.bezierCurveTo(rx * 0.90, -ry * 0.53, rx * 0.66, -ry * 0.86, rx * 0.30, -ry);
+                    }
+                    ctx.closePath();
+                    return true;
+                  } finally { ctx.restore(); }
+                }
+
+                function drawEarthwormDigestiveBulb(frame, rx, ry, kind) {
+                  ctx.save();
+                  try {
+                    if (!traceEarthwormDigestiveBulb(frame, rx, ry, kind)) return;
+                    var detailed = sceneDetail && !wormAccessible && !highContrastEnabled;
+                    if (!detailed) {
+                      ctx.fillStyle = kind === 'pharynx' ? '#fcd34d' : (kind === 'crop' ? (wormAccessible ? '#fde68a' : '#cbbd91') : (wormAccessible ? '#c084fc' : '#a78986'));
+                      ctx.fill();
+                      if (kind !== 'pharynx') {
+                        ctx.strokeStyle = kind === 'crop' ? (wormAccessible ? '#d97706' : '#887656') : (wormAccessible ? '#7c3aed' : '#644b50');
+                        ctx.lineWidth = 0.6; ctx.stroke();
+                      }
+                      return;
+                    }
+                    paintCurrentOrganContact(rx, ry);
+                    var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1];
+                    var lampLength = Math.sqrt(lamp[0] * lamp[0] + lamp[1] * lamp[1]) || 1;
+                    var lx = lamp[0] / lampLength, ly = lamp[1] / lampLength;
+                    var palette = kind === 'crop' ? ['#e5d7b0', '#c5b18b', '#8d7459'] : (kind === 'gizzard' ? ['#b49b91', '#8f706e', '#61474c'] : ['#d8b69c', '#ad8066', '#704b3e']);
+                    var body = ctx.createLinearGradient(frame.point.x + lx * rx, frame.point.y + ly * ry,
+                      frame.point.x - lx * rx, frame.point.y - ly * ry);
+                    body.addColorStop(0, palette[0]); body.addColorStop(0.48, palette[1]); body.addColorStop(1, palette[2]);
+                    ctx.fillStyle = body; ctx.fill();
+                    ctx.strokeStyle = kind === 'crop' ? 'rgba(119,98,72,0.64)' : 'rgba(91,60,59,0.76)';
+                    ctx.lineWidth = kind === 'crop' ? 0.40 : 0.65; ctx.stroke();
+
+                    // The visible peritoneal coating uses shared wet-volume lighting. Keep
+                    // generic fascicle bands off these tiny organs; gross gizzard relief is
+                    // painted separately below, rather than claiming visible muscle cells.
+                    finishCurrentTissuePath(frame.point.x, frame.point.y, rx, ry, 'serosa', 'worm-' + kind);
+                    if (kind !== 'gizzard') return;
+
+                    // The shared finish starts new paths. Re-trace the same authored contour
+                    // before clipping so every gross gizzard fold stays inside the organ.
+                    traceEarthwormDigestiveBulb(frame, rx, ry, kind);
+                    ctx.save();
+                    try {
+                      ctx.clip(); ctx.shadowBlur = 0;
+                      ctx.translate(frame.point.x, frame.point.y);
+                      ctx.rotate(Math.atan2(frame.ty, frame.tx) - Math.PI / 2); ctx.scale(rx, ry);
+                      var unit = 1 / Math.max(rx, ry), folds = wormRealistic ? 7 : 5;
+                      var localLX = lx * frame.ty - ly * frame.tx, localLY = lx * frame.tx + ly * frame.ty;
+                      ctx.lineCap = 'round';
+                      for (var fold = 0; fold < folds; fold++) {
+                        var fy = -0.67 + fold * 1.34 / (folds - 1);
+                        var reach = 0.82 * Math.sqrt(1 - fy * fy * 0.55);
+                        for (var shoulder = 0; shoulder < 2; shoulder++) {
+                          var ox = shoulder ? localLX * unit * 0.48 : 0, oy = shoulder ? localLY * unit * 0.48 : 0;
+                          ctx.beginPath(); ctx.moveTo(-reach + ox, fy - 0.045 + oy);
+                          ctx.bezierCurveTo(-reach * 0.42 + ox, fy + 0.115 + oy,
+                            reach * 0.46 + ox, fy - 0.10 + oy, reach + ox, fy + 0.045 + oy);
+                          ctx.strokeStyle = shoulder ? 'rgba(236,208,188,0.23)' : 'rgba(80,48,51,0.25)';
+                          ctx.lineWidth = unit * (shoulder ? 0.48 : 1.05); ctx.stroke();
+                        }
+                      }
+                    } finally { ctx.restore(); }
+                  } finally { ctx.restore(); }
                 }
 
                 var wormSurfaceGradient = ctx.createLinearGradient(cx - wormBaseWidth * 1.4, 0, cx + wormBaseWidth * 1.4, 0);
@@ -10396,47 +14534,150 @@ var d = labToolData.dissection || {};
                 }
 
                 if (activeLayer === 'organs') {
-                  ctx.globalAlpha = wormAccessible ? 0.82 : 0.64;
-                  // Digestive tube, pharynx, crop, and muscular gizzard follow the body axis.
-                  traceEarthwormLine(0, 0.055, 0.95); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = wormBaseWidth * 0.48; ctx.stroke();
-                  var pharynxFrame = earthwormFrame(0.105);
-                  ctx.beginPath(); ctx.ellipse(pharynxFrame.point.x, pharynxFrame.point.y, wormBaseWidth * 0.52, H * 0.018, 0.05, 0, Math.PI * 2); ctx.fillStyle = '#fcd34d'; ctx.fill();
-                  var cropFrame = earthwormFrame(0.315);
-                  ctx.beginPath(); ctx.ellipse(cropFrame.point.x, cropFrame.point.y, wormBaseWidth * 0.62, H * 0.018, -0.04, 0, Math.PI * 2); ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.6; ctx.stroke();
-                  var gizzardFrame = earthwormFrame(0.37);
-                  ctx.beginPath(); ctx.ellipse(gizzardFrame.point.x, gizzardFrame.point.y, wormBaseWidth * 0.72, H * 0.02, 0.04, 0, Math.PI * 2); ctx.fillStyle = '#c084fc'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.stroke();
-                  // Five paired aortic arches encircle the anterior digestive tract.
-                  for (var archIndex = 0; archIndex < 5; archIndex++) {
-                    var archFrame = earthwormFrame(0.16 + archIndex * 0.026);
-                    ctx.beginPath(); ctx.ellipse(archFrame.point.x, archFrame.point.y, archFrame.width * 0.72, H * 0.009, 0, 0, Math.PI * 2);
-                    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.3; ctx.stroke();
+                  ctx.globalAlpha = wormAccessible ? 0.82 : 0.94;
+                  if (sceneDetail && !wormAccessible && !highContrastEnabled) {
+                    ctx.save(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                    traceEarthwormBand(0.065, 0.945, 0.84);
+                    var wormCavityBed = ctx.createLinearGradient(cx - wormBaseWidth, 0, cx + wormBaseWidth, 0);
+                    wormCavityBed.addColorStop(0, '#493a37');
+                    wormCavityBed.addColorStop(0.27, '#796052');
+                    wormCavityBed.addColorStop(0.58, '#8b7060');
+                    wormCavityBed.addColorStop(1, '#3f3031');
+                    ctx.fillStyle = wormCavityBed; ctx.fill();
+                    ctx.save(); ctx.clip();
+                    // Retained lateral partition edges sit behind the gut rather than crossing it.
+                    ctx.lineWidth = 0.75;
+                    for (var cavitySegment = 4; cavitySegment < wormSegmentCount - 2; cavitySegment += 2) {
+                      var cavityFrame = earthwormFrame(cavitySegment / wormSegmentCount);
+                      [-1, 1].forEach(function (cavitySide) {
+                        var lateralX = cavityFrame.point.x + cavityFrame.nx * cavityFrame.width * 0.80 * cavitySide;
+                        var lateralY = cavityFrame.point.y + cavityFrame.ny * cavityFrame.width * 0.80 * cavitySide;
+                        var medialX = cavityFrame.point.x + cavityFrame.nx * cavityFrame.width * 0.30 * cavitySide;
+                        var medialY = cavityFrame.point.y + cavityFrame.ny * cavityFrame.width * 0.30 * cavitySide;
+                        ctx.beginPath(); ctx.moveTo(lateralX, lateralY);
+                        ctx.quadraticCurveTo((lateralX + medialX) / 2 - cavityFrame.tx * 1.8,
+                          (lateralY + medialY) / 2 - cavityFrame.ty * 1.8, medialX, medialY);
+                        ctx.strokeStyle = 'rgba(225,194,163,0.30)'; ctx.stroke();
+                      });
+                    }
+                    ctx.restore();
+                    // Two edge weights describe cut body wall, not a second external body outline.
+                    traceEarthwormBand(0.065, 0.945, 0.84);
+                    ctx.strokeStyle = 'rgba(45,26,29,0.60)'; ctx.lineWidth = 2.8; ctx.stroke();
+                    traceEarthwormBand(0.065, 0.945, 0.87);
+                    ctx.strokeStyle = 'rgba(225,190,163,0.65)'; ctx.lineWidth = 0.65; ctx.stroke();
+                    ctx.restore();
                   }
-                  // Paired seminal vesicles sit beside the arches.
-                  [0.22, 0.25].forEach(function (vesicleT) {
-                    var vesicleFrame = earthwormFrame(vesicleT);
-                    [-1, 1].forEach(function (vesicleSide) {
-                      ctx.beginPath(); ctx.ellipse(vesicleFrame.point.x + vesicleFrame.nx * vesicleFrame.width * 0.46 * vesicleSide, vesicleFrame.point.y + vesicleFrame.ny * vesicleFrame.width * 0.46 * vesicleSide, W * 0.007, H * 0.008, 0, 0, Math.PI * 2);
-                      ctx.fillStyle = '#f8fafc'; ctx.fill(); ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 0.5; ctx.stroke();
-                    });
-                  });
+                  registerAnatomyOpening(function (path) { traceEarthwormBand(0.065, 0.945, 0.84, path); });
+                  drawEarthwormNephridia(false);
+                  var wormArchOptions = {
+                    width: W, height: H, stage: 'rear',
+                    detailed: wormRealistic && sceneDetail && !wormAccessible && !highContrastEnabled,
+                    accessible: wormAccessible, highContrast: highContrastEnabled,
+                    moisture: liveTissueState && liveTissueState.moisture, lightIntensity: d.lightIntensity,
+                    lightDirection: lightDirection, condition: specimenCondition
+                  };
+                  drawEarthwormAorticArches(ctx, wormArchOptions);
+                  // One continuous gut axis links tapered bulb necks rather than detached ovals.
+                  if (sceneDetail && !wormAccessible && !highContrastEnabled) {
+                    traceEarthwormLine(0, 0.055, 0.37);
+                    strokeAnatomicalTube(wormBaseWidth * 0.31, '#aa906b', '#dfccaa', '#65533f');
+                    traceEarthwormLine(0, 0.37, 0.95);
+                    strokeAnatomicalTube(wormBaseWidth * 0.48, '#b49462', '#e8cf9c', '#67523e');
+                  } else {
+                    traceEarthwormLine(0, 0.055, 0.95);
+                    strokeAnatomicalTube(wormBaseWidth * 0.48, wormAccessible ? '#f59e0b' : '#b49462', '#e8cf9c', '#67523e');
+                  }
+                  var pharynxFrame = earthwormFrame(0.105);
+                  drawEarthwormDigestiveBulb(pharynxFrame, wormBaseWidth * 0.52, H * 0.018, 'pharynx');
+                  var cropFrame = earthwormFrame(0.315);
+                  drawEarthwormDigestiveBulb(cropFrame, wormBaseWidth * 0.62, H * 0.018, 'crop');
+                  var gizzardFrame = earthwormFrame(0.37);
+                  drawEarthwormDigestiveBulb(gizzardFrame, wormBaseWidth * 0.72, H * 0.02, 'gizzard');
+
+                  // Exposed paired arms and dorsal attachments sit above the intact esophagus.
+                  wormArchOptions.stage = 'front';
+                  drawEarthwormAorticArches(ctx, wormArchOptions);
+                  function traceEarthwormSeminalVesicle(x, y, rx, ry, rotation, detailed) {
+                    ctx.beginPath();
+                    if (!detailed) { ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2); return; }
+                    ctx.save();
+                    try {
+                      ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(rx, ry);
+                      // One irregular, closed gross sac; no enlarged sperm cells or follicles.
+                      ctx.moveTo(-0.18, -0.93);
+                      ctx.bezierCurveTo(-0.58, -0.80, -0.80, -0.56, -0.81, -0.25);
+                      ctx.bezierCurveTo(-0.99, 0.02, -0.81, 0.56, -0.50, 0.69);
+                      ctx.bezierCurveTo(-0.32, 0.94, 0.19, 0.96, 0.40, 0.75);
+                      ctx.bezierCurveTo(0.72, 0.68, 0.94, 0.30, 0.76, 0.04);
+                      ctx.bezierCurveTo(0.93, -0.22, 0.64, -0.70, 0.34, -0.77);
+                      ctx.bezierCurveTo(0.17, -0.97, -0.01, -0.97, -0.18, -0.93);
+                      ctx.closePath();
+                    } finally { ctx.restore(); }
+                  }
+
+                  function drawEarthwormSeminalVesicles() {
+                    var detailed = wormRealistic && sceneDetail && !wormAccessible && !highContrastEnabled;
+                    var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1];
+                    var lampLength = Math.hypot(lamp[0], lamp[1]) || 1, lx = lamp[0] / lampLength, ly = lamp[1] / lampLength;
+                    var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 76;
+                    var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+                    var gloss = (0.25 + 0.75 * moisture) * ((d.specimenCondition || specimenCondition) === 'dehydrated' ? 0.35 : 1);
+                    ctx.save();
+                    try {
+                      // Three pairs belong to Lumbricus. Their schematic longitudinal positions
+                      // preserve the anterior teaching field; the posterior pair is the largest.
+                      [0.205, 0.235, 0.265].forEach(function (vesicleT, pairIndex) {
+                        var frame = earthwormAnatomyFrame(vesicleT, W, H);
+                        var size = [0.85, 1, 1.25][pairIndex];
+                        [-1, 1].forEach(function (side) {
+                          var x = frame.point.x + frame.nx * frame.width * 0.46 * side;
+                          var y = frame.point.y + frame.ny * frame.width * 0.46 * side;
+                          var rx = W * 0.007 * size, ry = H * 0.008 * size;
+                          var rotation = Math.atan2(frame.ty, frame.tx) - Math.PI / 2;
+                          traceEarthwormSeminalVesicle(x, y, rx, ry, rotation, detailed);
+                          if (!detailed) {
+                            ctx.fillStyle = wormAccessible || highContrastEnabled ? '#f8fafc' : '#dfd4b4'; ctx.fill();
+                            ctx.strokeStyle = wormAccessible || highContrastEnabled ? '#64748b' : '#9b8d72'; ctx.lineWidth = 0.55; ctx.stroke();
+                            return;
+                          }
+                          paintCurrentOrganContact(rx, ry);
+                          var volume = ctx.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                          volume.addColorStop(0, '#eee4c9'); volume.addColorStop(0.46, '#cdbf9f'); volume.addColorStop(1, '#8f8068');
+                          ctx.fillStyle = volume; ctx.fill(); ctx.strokeStyle = 'rgba(113,98,78,0.62)'; ctx.lineWidth = 0.4; ctx.stroke();
+                          ctx.save();
+                          try {
+                            // Capture the exact lobed boundary before any surface mark starts a path.
+                            ctx.clip(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                            ctx.shadowColor = 'rgba(0,0,0,0)'; ctx.globalCompositeOperation = 'screen';
+                            var wet = ctx.createRadialGradient(x + lx * rx * 0.26, y + ly * ry * 0.26, 0, x, y, Math.max(rx, ry) * 1.12);
+                            wet.addColorStop(0, 'rgba(255,245,215,' + (0.22 * gloss).toFixed(3) + ')');
+                            wet.addColorStop(0.54, 'rgba(255,245,215,' + (0.05 * gloss).toFixed(3) + ')');
+                            wet.addColorStop(1, 'rgba(255,245,215,0)');
+                            ctx.fillStyle = wet; ctx.fillRect(x - rx * 1.4, y - ry * 1.4, rx * 2.8, ry * 2.8);
+                          } finally { ctx.restore(); }
+                        });
+                      });
+                    } finally { ctx.restore(); }
+                  }
+                  drawEarthwormSeminalVesicles();
                   ctx.globalAlpha = 1;
                 }
 
                 if (activeLayer === 'nervous') {
-                  ctx.globalAlpha = wormAccessible ? 0.88 : 0.72;
-                  // Ventral cord sits slightly off the digestive midline in this teaching view.
-                  traceEarthwormLine(0.28, 0.06, 0.97); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = wormAccessible ? 2 : 1.35; ctx.stroke();
-                  var cerebralFrame = earthwormFrame(0.065);
-                  [-1, 1].forEach(function (ganglionSide) {
-                    ctx.beginPath(); ctx.ellipse(cerebralFrame.point.x + cerebralFrame.nx * ganglionSide * W * 0.006, cerebralFrame.point.y + cerebralFrame.ny * ganglionSide * W * 0.006, W * 0.0065, H * 0.006, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fde047'; ctx.fill();
-                  });
-                  for (var ganglionIndex = 4; ganglionIndex < wormSegmentCount - 1; ganglionIndex += 3) {
-                    var ganglionFrame = earthwormFrame(ganglionIndex / wormSegmentCount);
-                    ctx.beginPath(); ctx.arc(ganglionFrame.point.x + ganglionFrame.nx * ganglionFrame.width * 0.28, ganglionFrame.point.y + ganglionFrame.ny * ganglionFrame.width * 0.28, wormAccessible ? 2.5 : 1.8, 0, Math.PI * 2);
-                    ctx.fillStyle = '#f59e0b'; ctx.fill();
-                  }
-                  ctx.globalAlpha = 1;
+                  ctx.save();
+                  try {
+                    traceEarthwormBody(); ctx.clip();
+                    ctx.globalAlpha = wormAccessible ? 0.88 : 0.72;
+                    // Ventral anatomy retains its slight teaching displacement from the digestive midline.
+                    drawEarthwormNeuralComplex(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !wormAccessible && !highContrastEnabled,
+                      accessible: wormAccessible || highContrastEnabled, highContrast: highContrastEnabled,
+                      lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                      lightIntensity: d.lightIntensity, condition: specimenCondition,
+                      contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
                 }
 
 
@@ -10446,10 +14687,13 @@ var d = labToolData.dissection || {};
                 // restrained landmarks and closed eyelid avoid a mascot-like face.
                 var pigAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var pigRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                if (!pigAccessible && !highContrastEnabled && (activeLayer === 'skin' || activeLayer === 'organs')) {
+                  layerColor = '#ceb2a4'; layerStroke = '#806360';
+                }
                 var pigOutlineWidth = pigAccessible ? 2.2 : 1.25;
                 var pigTissueGradient = ctx.createLinearGradient(cx - W * 0.16, cy - H * 0.15, cx + W * 0.20, cy + H * 0.16);
                 pigTissueGradient.addColorStop(0, layerStroke);
-                pigTissueGradient.addColorStop(0.18, layerColor);
+                pigTissueGradient.addColorStop(0.18, !pigAccessible && !highContrastEnabled && (activeLayer === 'skin' || activeLayer === 'organs') ? '#e2cabe' : layerColor);
                 pigTissueGradient.addColorStop(0.58, layerColor);
                 pigTissueGradient.addColorStop(1, layerStroke);
 
@@ -10522,7 +14766,7 @@ var d = labToolData.dissection || {};
                 ctx.bezierCurveTo(cx - W * 0.158, cy + H * 0.025, cx - W * 0.15, cy - H * 0.055, cx - W * 0.165, cy - H * 0.09);
                 ctx.closePath();
                 var pigHeadGradient = ctx.createLinearGradient(cx - W * 0.31, cy - H * 0.09, cx - W * 0.17, cy + H * 0.08);
-                pigHeadGradient.addColorStop(0, layerColor); pigHeadGradient.addColorStop(0.72, layerColor); pigHeadGradient.addColorStop(1, layerStroke);
+                pigHeadGradient.addColorStop(0, !pigAccessible && !highContrastEnabled && (activeLayer === 'skin' || activeLayer === 'organs') ? '#e1c4b6' : layerColor); pigHeadGradient.addColorStop(0.72, layerColor); pigHeadGradient.addColorStop(1, layerStroke);
                 ctx.fillStyle = pigHeadGradient; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = pigOutlineWidth; ctx.stroke();
 
                 // Blunt tapered muzzle, small nares, and a closed eyelid read as fetal anatomy.
@@ -10610,16 +14854,21 @@ var d = labToolData.dissection || {};
                   ctx.globalAlpha = pigOrganAlpha;
 
                   // Peritoneal cavity opening provides a shared depth field rather than isolated symbols.
-                  ctx.beginPath();
-                  ctx.moveTo(cx - W * 0.145, cy - H * 0.092);
-                  ctx.bezierCurveTo(cx - W * 0.055, cy - H * 0.135, cx + W * 0.13, cy - H * 0.12, cx + W * 0.188, cy - H * 0.065);
-                  ctx.bezierCurveTo(cx + W * 0.215, cy - H * 0.012, cx + W * 0.178, cy + H * 0.105, cx + W * 0.105, cy + H * 0.132);
-                  ctx.bezierCurveTo(cx + W * 0.015, cy + H * 0.165, cx - W * 0.115, cy + H * 0.12, cx - W * 0.145, cy + H * 0.055);
-                  ctx.bezierCurveTo(cx - W * 0.164, cy + H * 0.005, cx - W * 0.165, cy - H * 0.05, cx - W * 0.145, cy - H * 0.092);
-                  ctx.closePath();
+                  function tracePigCoelom(traceContext) {
+                    traceContext = traceContext || ctx;
+                  if (traceContext.beginPath) traceContext.beginPath();
+                  traceContext.moveTo(cx - W * 0.145, cy - H * 0.092);
+                  traceContext.bezierCurveTo(cx - W * 0.055, cy - H * 0.135, cx + W * 0.13, cy - H * 0.12, cx + W * 0.188, cy - H * 0.065);
+                  traceContext.bezierCurveTo(cx + W * 0.215, cy - H * 0.012, cx + W * 0.178, cy + H * 0.105, cx + W * 0.105, cy + H * 0.132);
+                  traceContext.bezierCurveTo(cx + W * 0.015, cy + H * 0.165, cx - W * 0.115, cy + H * 0.12, cx - W * 0.145, cy + H * 0.055);
+                  traceContext.bezierCurveTo(cx - W * 0.164, cy + H * 0.005, cx - W * 0.165, cy - H * 0.05, cx - W * 0.145, cy - H * 0.092);
+                  traceContext.closePath();
+                  }
+                  tracePigCoelom(); registerAnatomyOpening(tracePigCoelom);
                   var pigCavityGrad = ctx.createRadialGradient(cx - W * 0.035, cy - H * 0.045, 4, cx + W * 0.04, cy + H * 0.02, W * 0.25);
                   pigCavityGrad.addColorStop(0, 'rgba(102,55,57,0.72)'); pigCavityGrad.addColorStop(0.62, 'rgba(70,38,43,0.86)'); pigCavityGrad.addColorStop(1, 'rgba(39,25,31,0.92)');
                   ctx.fillStyle = pigCavityGrad; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.36)'; ctx.lineWidth = 0.85; ctx.stroke();
+                  finishCurrentCavityPath(cx + W * 0.025, cy + H * 0.015, W * 0.19, H * 0.145);
 
                   // Dorsal aorta and vena cava remain visible behind the viscera.
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.125, cy - H * 0.082); ctx.bezierCurveTo(cx - W * 0.015, cy - H * 0.105, cx + W * 0.105, cy - H * 0.09, cx + W * 0.18, cy - H * 0.065);
@@ -10627,69 +14876,175 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy - H * 0.068); ctx.bezierCurveTo(cx - W * 0.01, cy - H * 0.078, cx + W * 0.105, cy - H * 0.065, cx + W * 0.18, cy - H * 0.045);
                   ctx.strokeStyle = 'rgba(59,130,246,0.62)'; ctx.lineWidth = 1.2; ctx.stroke();
 
-                  // Large fetal thymus extends from the neck into the anterior mediastinum.
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.155, cy - H * 0.065);
-                  ctx.bezierCurveTo(cx - W * 0.135, cy - H * 0.10, cx - W * 0.10, cy - H * 0.095, cx - W * 0.088, cy - H * 0.055);
-                  ctx.bezierCurveTo(cx - W * 0.078, cy - H * 0.018, cx - W * 0.11, cy + H * 0.005, cx - W * 0.145, cy - H * 0.012);
-                  ctx.closePath(); ctx.fillStyle = '#d9a0a7'; ctx.fill(); ctx.strokeStyle = '#9f5e68'; ctx.lineWidth = 0.55; ctx.stroke();
-                  for (var thymusLobe = 0; thymusLobe < 4; thymusLobe++) { ctx.beginPath(); ctx.arc(cx - W * (0.142 - thymusLobe * 0.015), cy - H * (0.055 - (thymusLobe % 2) * 0.018), W * 0.012, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(126,59,71,0.38)'; ctx.lineWidth = 0.4; ctx.stroke(); }
+                  // A connected thymic portion retains the established partial-exposure projection.
+                  drawPigThymicSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
-                  // Lobed fetal lungs surround the four-chambered heart.
-                  function drawPigLungLobe(x, y, rx, ry, rotation, alpha) {
-                    ctx.save(); ctx.globalAlpha = alpha;
-                    var lungGrad = ctx.createRadialGradient(x - rx * 0.25, y - ry * 0.25, 1, x, y, Math.max(rx, ry));
-                    lungGrad.addColorStop(0, '#f4b7b2'); lungGrad.addColorStop(0.62, '#d98282'); lungGrad.addColorStop(1, '#a85360');
-                    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2); ctx.fillStyle = lungGrad; ctx.fill(); ctx.strokeStyle = '#8d4652'; ctx.lineWidth = 0.5; ctx.stroke();
-                    ctx.strokeStyle = 'rgba(127,29,29,0.25)'; ctx.lineWidth = 0.35;
-                    ctx.beginPath(); ctx.moveTo(x - rx * 0.65, y); ctx.quadraticCurveTo(x, y - ry * 0.22, x + rx * 0.65, y + ry * 0.18); ctx.stroke();
-                    ctx.restore();
+                  // These three overlapping visible components retain the current teaching
+                  // projection; their number is not a count of the pig's anatomical lung lobes.
+                  function drawPigLungLobe(x, y, rx, ry, rotation, alpha, form) {
+                    var lungDetail = sceneDetail && !pigAccessible && !highContrastEnabled;
+                    function tracePigPleuralSurface() {
+                      ctx.beginPath();
+                      if (!lungDetail) {
+                        ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2); return;
+                      }
+                      ctx.save();
+                      try {
+                        ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(rx, ry);
+                        if (form === 'swept') {
+                          ctx.moveTo(-0.50, -0.84);
+                          ctx.bezierCurveTo(-0.10, -0.98, 0.48, -0.85, 0.72, -0.51);
+                          ctx.bezierCurveTo(0.96, -0.18, 0.92, 0.25, 0.68, 0.51);
+                          ctx.bezierCurveTo(0.45, 0.76, 0.12, 0.94, -0.17, 0.96);
+                          ctx.bezierCurveTo(-0.40, 0.90, -0.42, 0.52, -0.33, 0.22);
+                          ctx.bezierCurveTo(-0.21, -0.08, -0.58, -0.09, -0.75, -0.32);
+                          ctx.bezierCurveTo(-0.82, -0.56, -0.61, -0.78, -0.50, -0.84);
+                        } else if (form === 'short') {
+                          ctx.moveTo(-0.83, -0.43);
+                          ctx.bezierCurveTo(-0.49, -0.83, 0.02, -0.93, 0.45, -0.68);
+                          ctx.bezierCurveTo(0.87, -0.44, 0.93, -0.05, 0.68, 0.29);
+                          ctx.bezierCurveTo(0.50, 0.57, 0.17, 0.83, -0.14, 0.88);
+                          ctx.bezierCurveTo(-0.44, 0.86, -0.75, 0.54, -0.85, 0.20);
+                          ctx.bezierCurveTo(-0.96, -0.08, -0.95, -0.29, -0.83, -0.43);
+                        } else {
+                          ctx.moveTo(-0.35, -0.90);
+                          ctx.bezierCurveTo(-0.66, -0.74, -0.91, -0.38, -0.92, -0.02);
+                          ctx.bezierCurveTo(-0.89, 0.39, -0.55, 0.80, -0.18, 0.94);
+                          ctx.bezierCurveTo(0.13, 0.95, 0.43, 0.60, 0.64, 0.39);
+                          ctx.bezierCurveTo(0.85, 0.20, 0.81, -0.08, 0.53, -0.19);
+                          ctx.bezierCurveTo(0.24, -0.30, 0.25, -0.62, 0.16, -0.83);
+                          ctx.bezierCurveTo(0.07, -0.97, -0.16, -0.98, -0.35, -0.90);
+                        }
+                        ctx.closePath();
+                      } finally { ctx.restore(); }
+                    }
+                    ctx.save();
+                    try {
+                      ctx.globalAlpha = alpha;
+                      var lungGrad;
+                      if (!lungDetail) {
+                        lungGrad = ctx.createRadialGradient(x - rx * 0.25, y - ry * 0.25, 1, x, y, Math.max(rx, ry));
+                      } else {
+                        var lungLamp = { overhead: [-0.28, -0.62], left: [-0.70, -0.18], right: [0.70, -0.18], raking: [-0.65, 0.55] }[lightDirection] || [-0.28, -0.62];
+                        lungGrad = ctx.createLinearGradient(x + lungLamp[0] * rx, y + lungLamp[1] * ry,
+                          x - lungLamp[0] * rx, y - lungLamp[1] * ry);
+                      }
+                      lungGrad.addColorStop(0, '#f4b7b2'); lungGrad.addColorStop(0.62, '#d98282'); lungGrad.addColorStop(1, '#a85360');
+                      tracePigPleuralSurface();
+                      paintCurrentOrganContact(rx, ry);
+                      ctx.fillStyle = lungGrad; ctx.fill(); ctx.strokeStyle = '#8d4652'; ctx.lineWidth = 0.5; ctx.stroke();
+                      ctx.save();
+                      try {
+                        // Capture the actual pleural boundary BEFORE the shared finish starts its
+                        // own paths. All subsequent surface effects stay in this organ's clip.
+                        ctx.clip();
+                        finishCurrentTissuePath(x, y, rx, ry, 'spongy', 'pig-lung-' + x + '-' + y);
+                        if (!lungDetail) {
+                          // Retain the former simple cue in the teaching fallback, now clipped.
+                          ctx.strokeStyle = 'rgba(127,29,29,0.25)'; ctx.lineWidth = 0.35;
+                          ctx.beginPath(); ctx.moveTo(x - rx * 0.65, y);
+                          ctx.quadraticCurveTo(x, y - ry * 0.22, x + rx * 0.65, y + ry * 0.18); ctx.stroke();
+                        }
+                      } finally { ctx.restore(); }
+                    } finally { ctx.restore(); }
                   }
-                  drawPigLungLobe(cx - W * 0.092, cy - H * 0.025, W * 0.042, H * 0.055, -0.16, 0.78);
-                  drawPigLungLobe(cx - W * 0.035, cy - H * 0.035, W * 0.039, H * 0.06, 0.08, 0.88);
-                  drawPigLungLobe(cx - W * 0.064, cy + H * 0.018, W * 0.035, H * 0.036, -0.12, 0.84);
+                  drawPigLungLobe(cx - W * 0.092, cy - H * 0.025, W * 0.042, H * 0.055, -0.16, 0.78, 'full');
+                  drawPigLungLobe(cx - W * 0.035, cy - H * 0.035, W * 0.039, H * 0.06, 0.08, 0.88, 'swept');
+                  drawPigLungLobe(cx - W * 0.064, cy + H * 0.018, W * 0.035, H * 0.036, -0.12, 0.84, 'short');
 
-                  var pigHeartX = cx - W * 0.058; var pigHeartY = cy - H * 0.012;
-                  ctx.beginPath(); ctx.moveTo(pigHeartX, pigHeartY - H * 0.042);
-                  ctx.bezierCurveTo(pigHeartX - W * 0.037, pigHeartY - H * 0.05, pigHeartX - W * 0.045, pigHeartY - H * 0.005, pigHeartX - W * 0.018, pigHeartY + H * 0.042);
-                  ctx.bezierCurveTo(pigHeartX - W * 0.002, pigHeartY + H * 0.066, pigHeartX + W * 0.037, pigHeartY + H * 0.025, pigHeartX + W * 0.034, pigHeartY - H * 0.012);
-                  ctx.bezierCurveTo(pigHeartX + W * 0.03, pigHeartY - H * 0.045, pigHeartX + W * 0.012, pigHeartY - H * 0.048, pigHeartX, pigHeartY - H * 0.042); ctx.closePath();
-                  var pigHeartGrad = ctx.createLinearGradient(pigHeartX - W * 0.03, pigHeartY - H * 0.04, pigHeartX + W * 0.03, pigHeartY + H * 0.05); pigHeartGrad.addColorStop(0,'#ca5358');pigHeartGrad.addColorStop(1,'#7f2734');ctx.fillStyle=pigHeartGrad;ctx.fill();ctx.strokeStyle='#631f2b';ctx.lineWidth=0.65;ctx.stroke();
-                  ctx.beginPath();ctx.moveTo(pigHeartX,pigHeartY-H*0.033);ctx.lineTo(pigHeartX-W*0.002,pigHeartY+H*0.038);ctx.strokeStyle='rgba(254,202,202,0.42)';ctx.lineWidth=0.55;ctx.stroke();
+                  // A shared external ventricular mass and paired appendages replace the sac icon.
+                  drawPigCardiacComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
                   // The diaphragm forms a curved muscular boundary between thorax and abdomen.
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.022, cy - H * 0.095); ctx.bezierCurveTo(cx - W * 0.002, cy - H * 0.02, cx + W * 0.003, cy + H * 0.065, cx - W * 0.005, cy + H * 0.112);
-                  ctx.strokeStyle = 'rgba(248,113,113,0.75)'; ctx.lineWidth = 2.4; ctx.stroke();
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.014, cy - H * 0.09); ctx.bezierCurveTo(cx + W * 0.005, cy - H * 0.015, cx + W * 0.01, cy + H * 0.06, cx + W * 0.002, cy + H * 0.105); ctx.strokeStyle='rgba(254,202,202,0.35)';ctx.lineWidth=0.6;ctx.stroke();
+                  ctx.lineTo(cx + W * 0.009, cy + H * 0.105);
+                  ctx.bezierCurveTo(cx + W * 0.018, cy + H * 0.06, cx + W * 0.012, cy - H * 0.015, cx - W * 0.008, cy - H * 0.09);
+                  ctx.closePath();
+                  var diaphragmSurface = ctx.createLinearGradient(cx - W * 0.022, cy, cx + W * 0.018, cy);
+                  diaphragmSurface.addColorStop(0, '#744046'); diaphragmSurface.addColorStop(0.44, '#cf9891'); diaphragmSurface.addColorStop(1, '#8f525a');
+                  ctx.fillStyle = diaphragmSurface; ctx.fill(); ctx.strokeStyle = '#6d3944'; ctx.lineWidth = 0.6; ctx.stroke();
+                  finishCurrentTissuePath(cx - W * 0.003, cy + H * 0.008, W * 0.022, H * 0.108, 'muscle', 'pig-diaphragm');
 
-                  // Five liver lobes overlap near the cranial abdomen.
+                  // Visible liver lobes overlap near the cranial abdomen.
                   var pigLiverLobes = [
                     [0.018,-0.052,0.055,0.044,-0.15],[0.062,-0.038,0.052,0.05,0.10],[0.026,0.005,0.052,0.042,0.12],[0.082,0.012,0.048,0.04,-0.08],[0.108,-0.012,0.034,0.035,0.20]
                   ];
-                  pigLiverLobes.forEach(function (lobe, lobeIndex) { ctx.beginPath();ctx.ellipse(cx+W*lobe[0],cy+H*lobe[1],W*lobe[2],H*lobe[3],lobe[4],0,Math.PI*2);ctx.fillStyle=lobeIndex%2?'#71362d':'#7c3d32';ctx.fill();ctx.strokeStyle='#4f2925';ctx.lineWidth=0.45;ctx.stroke(); });
+                  pigLiverLobes.forEach(function (lobe, lobeIndex) {
+                    var pigLobeX = cx + W * lobe[0], pigLobeY = cy + H * lobe[1];
+                    var pigLobeProfile = lobeIndex === 0 ? 'broad' : (lobeIndex === 4 ? 'swept' : 'tongue');
+                    traceHepaticLobe(pigLobeX, pigLobeY, W * lobe[2], H * lobe[3], lobe[4], pigLobeProfile, lobeIndex % 2 ? -1 : 1);
+                    paintCurrentOrganContact(W * lobe[2], H * lobe[3]);
+                    var pigLobeGradient = ctx.createLinearGradient(pigLobeX - W * lobe[2], pigLobeY - H * lobe[3], pigLobeX + W * lobe[2], pigLobeY + H * lobe[3]);
+                    pigLobeGradient.addColorStop(0, '#a16b59'); pigLobeGradient.addColorStop(0.43, lobeIndex % 2 ? '#713d36' : '#844a3e'); pigLobeGradient.addColorStop(1, '#43282b');
+                    ctx.fillStyle = pigLobeGradient; ctx.fill(); ctx.strokeStyle = '#49272a'; ctx.lineWidth = 0.7; ctx.stroke();
+                    finishCurrentTissuePath(pigLobeX, pigLobeY, W * lobe[2], H * lobe[3], 'capsule', 'pig-liver-' + lobeIndex);
+                  });
 
                   // Bean-shaped kidneys stay dorsal and posterior, one partly occluded by bowel.
-                  [-1,1].forEach(function (kidneySide) {
-                    var kidneyX = cx + W * (0.115 + kidneySide * 0.028); var kidneyY = cy - H * (0.06 - kidneySide * 0.008);
-                    ctx.save(); ctx.globalAlpha = kidneySide < 0 ? 0.52 : 0.84;
-                    ctx.beginPath(); ctx.ellipse(kidneyX, kidneyY, W * 0.028, H * 0.045, 0.12, 0, Math.PI * 2);ctx.fillStyle='#78463a';ctx.fill();ctx.strokeStyle='#4c2c26';ctx.lineWidth=0.5;ctx.stroke();
-                    ctx.beginPath();ctx.arc(kidneyX-W*0.008,kidneyY,W*0.008,-1.2,1.2);ctx.strokeStyle='rgba(248,190,150,0.42)';ctx.lineWidth=0.55;ctx.stroke();ctx.restore();
-                  });
+                  ctx.save();
+                  try {
+                    // The cranial poles pass under the established abdominal wall opening.
+                    tracePigCoelom(ctx); ctx.clip();
+                    // Preserve the original absolute near/far kidney opacity.
+                    ctx.globalAlpha = 1;
+                    drawPigRenalComplex(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                      lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
 
                   // Monogastric stomach, spleen, and pancreas share a visible spatial relationship.
                   var pigStomachX = cx + W * 0.062; var pigStomachY = cy + H * 0.038;
-                  ctx.beginPath();ctx.moveTo(pigStomachX-W*0.025,pigStomachY-H*0.035);ctx.bezierCurveTo(pigStomachX+W*0.045,pigStomachY-H*0.04,pigStomachX+W*0.055,pigStomachY+H*0.02,pigStomachX+W*0.015,pigStomachY+H*0.052);ctx.bezierCurveTo(pigStomachX-W*0.02,pigStomachY+H*0.075,pigStomachX-W*0.055,pigStomachY+H*0.025,pigStomachX-W*0.025,pigStomachY-H*0.035);ctx.closePath();var pigStomachGrad=ctx.createLinearGradient(pigStomachX,pigStomachY-H*0.04,pigStomachX,pigStomachY+H*0.06);pigStomachGrad.addColorStop(0,'#e7c18f');pigStomachGrad.addColorStop(1,'#b77a52');ctx.fillStyle=pigStomachGrad;ctx.fill();ctx.strokeStyle='#835236';ctx.lineWidth=0.55;ctx.stroke();
-                  ctx.beginPath();ctx.ellipse(pigStomachX-W*0.045,pigStomachY+H*0.018,W*0.011,H*0.05,-0.35,0,Math.PI*2);ctx.fillStyle='#762c38';ctx.fill();ctx.strokeStyle='#4c1d2a';ctx.lineWidth=0.45;ctx.stroke();
-                  ctx.beginPath();ctx.moveTo(pigStomachX-W*0.008,pigStomachY+H*0.048);ctx.bezierCurveTo(pigStomachX+W*0.035,pigStomachY+H*0.06,pigStomachX+W*0.065,pigStomachY+H*0.035,pigStomachX+W*0.09,pigStomachY+H*0.05);ctx.strokeStyle='#eabf6a';ctx.lineWidth=2.1;ctx.stroke();
+                  drawPigGastricComplex(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, strokeTube: strokeAnatomicalTube,
+                    contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  drawPigSplenicSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
+                  drawPigPancreaticSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !pigAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
                   // Jejunal loops sit ventrally while the porcine spiral colon forms a watch-spring coil.
-                  ctx.strokeStyle='#d88a57';ctx.lineWidth=3.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx+W*0.105,cy+H*0.072);ctx.bezierCurveTo(cx+W*0.14,cy+H*0.09,cx+W*0.065,cy+H*0.11,cx+W*0.105,cy+H*0.125);ctx.bezierCurveTo(cx+W*0.155,cy+H*0.145,cx+W*0.085,cy+H*0.155,cx+W*0.055,cy+H*0.125);ctx.bezierCurveTo(cx+W*0.025,cy+H*0.095,cx+W*0.075,cy+H*0.075,cx+W*0.12,cy+H*0.09);ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.067, cy + H * 0.064);
+                  ctx.bezierCurveTo(cx + W * 0.125, cy + H * 0.058, cx + W * 0.155, cy + H * 0.105, cx + W * 0.129, cy + H * 0.139);
+                  ctx.bezierCurveTo(cx + W * 0.091, cy + H * 0.163, cx + W * 0.031, cy + H * 0.126, cx + W * 0.043, cy + H * 0.091);
+                  ctx.quadraticCurveTo(cx + W * 0.050, cy + H * 0.070, cx + W * 0.067, cy + H * 0.064);
+                  ctx.closePath(); ctx.fillStyle = pigAccessible ? 'rgba(254,215,170,0.28)' : 'rgba(216,177,149,0.27)'; ctx.fill();
+                  drawCurrentMembraneFolds(cx + W * 0.067, cy + H * 0.064, [
+                    { x: cx + W * 0.137, y: cy + H * 0.11 }, { x: cx + W * 0.115, y: cy + H * 0.143 },
+                    { x: cx + W * 0.075, y: cy + H * 0.14 }, { x: cx + W * 0.042, y: cy + H * 0.11 }
+                  ]);
+                  drawEntericBowel([cx + W * 0.105, cy + H * 0.072], [
+                    [cx + W * 0.14, cy + H * 0.09, cx + W * 0.065, cy + H * 0.11, cx + W * 0.105, cy + H * 0.125],
+                    [cx + W * 0.155, cy + H * 0.145, cx + W * 0.085, cy + H * 0.155, cx + W * 0.055, cy + H * 0.125],
+                    [cx + W * 0.025, cy + H * 0.095, cx + W * 0.075, cy + H * 0.075, cx + W * 0.12, cy + H * 0.09]
+                  ], W * 0.0105, '#c58f77', '#edd0b3', '#7b4c43', 'pig-small-intestine');
                   var colonCx = cx + W * 0.155; var colonCy = cy + H * 0.075;
                   ctx.strokeStyle='#a95f43';ctx.lineWidth=3.4;ctx.beginPath();
-                  for(var colonStep=0;colonStep<=54;colonStep++){var colonT=colonStep/54*Math.PI*4.7;var colonRadius=W*(0.041-colonStep/54*0.034);var colonX=colonCx+Math.cos(colonT)*colonRadius;var colonY=colonCy+Math.sin(colonT)*colonRadius*0.58;if(colonStep===0)ctx.moveTo(colonX,colonY);else ctx.lineTo(colonX,colonY);}ctx.stroke();
+                  for(var colonStep=0;colonStep<=54;colonStep++){var colonT=colonStep/54*Math.PI*4.7;var colonRadius=W*(0.041-colonStep/54*0.034);var colonX=colonCx+Math.cos(colonT)*colonRadius;var colonY=colonCy+Math.sin(colonT)*colonRadius*0.58;if(colonStep===0)ctx.moveTo(colonX,colonY);else ctx.lineTo(colonX,colonY);}
+                  strokeAnatomicalTube(W * 0.0068, '#ab7862', '#dab393', '#6e453e');
 
                   // Urinary bladder and urachus connect directly toward the umbilical stump.
                   var pigBladderX = cx + W * 0.18; var pigBladderY = cy + H * 0.085;
-                  ctx.save();ctx.globalAlpha=0.62;ctx.beginPath();ctx.ellipse(pigBladderX,pigBladderY,W*0.028,H*0.038,0.18,0,Math.PI*2);ctx.fillStyle='#bae6fd';ctx.fill();ctx.strokeStyle='#60a5fa';ctx.lineWidth=0.55;ctx.stroke();ctx.restore();
+                  ctx.save(); ctx.globalAlpha = 0.62;
+                  traceVisceralFluidSac(pigBladderX, pigBladderY, W * 0.028, H * 0.038, 0.18);
+                  var pigBladderVolume = ctx.createRadialGradient(pigBladderX - W * 0.008, pigBladderY - H * 0.013, 0, pigBladderX, pigBladderY, W * 0.045);
+                  pigBladderVolume.addColorStop(0, 'rgba(249,237,211,0.96)'); pigBladderVolume.addColorStop(0.58, 'rgba(214,193,160,0.70)'); pigBladderVolume.addColorStop(1, 'rgba(133,111,89,0.72)');
+                  ctx.fillStyle = pigRealistic && !highContrastEnabled ? pigBladderVolume : '#bae6fd'; ctx.fill();
+                  ctx.strokeStyle = pigRealistic && !highContrastEnabled ? 'rgba(215,197,162,0.82)' : '#60a5fa'; ctx.lineWidth = 0.55; ctx.stroke();
+                  finishCurrentTissuePath(pigBladderX, pigBladderY, W * 0.028, H * 0.038, 'serosa', 'pig-urinary-bladder');
+                  ctx.restore();
                   ctx.beginPath();ctx.moveTo(pigBladderX-W*0.008,pigBladderY+H*0.028);ctx.bezierCurveTo(cx+W*0.13,cy+H*0.13,cx+W*0.07,cy+H*0.155,cx+W*0.025,cy+H*0.19);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1.1;ctx.stroke();
 
                   // Umbilical vein courses to the liver; paired arteries return alongside the bladder.
@@ -10949,11 +15304,12 @@ var d = labToolData.dissection || {};
 
                 var fishAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var fishRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                if (!fishAccessible && !highContrastEnabled) layerStroke = '#596148';
                 var fishBodyGradient = ctx.createLinearGradient(cx, cy - H * 0.15, cx, cy + H * 0.14);
-                fishBodyGradient.addColorStop(0, fishAccessible ? layerColor : 'rgba(240,220,132,0.96)');
-                fishBodyGradient.addColorStop(0.34, fishAccessible ? layerColor : 'rgba(176,166,78,0.98)');
-                fishBodyGradient.addColorStop(0.62, fishAccessible ? layerColor : 'rgba(116,121,66,0.98)');
-                fishBodyGradient.addColorStop(1, fishAccessible ? layerColor : 'rgba(78,88,54,0.98)');
+                fishBodyGradient.addColorStop(0, fishAccessible ? layerColor : '#536444');
+                fishBodyGradient.addColorStop(0.34, fishAccessible ? layerColor : '#9caa71');
+                fishBodyGradient.addColorStop(0.62, fishAccessible ? layerColor : '#c0c39a');
+                fishBodyGradient.addColorStop(1, fishAccessible ? layerColor : '#d6d3b3');
 
                 // ══ PERCH (Perca) — fusiform bony fish ══
 
@@ -11233,34 +15589,177 @@ var d = labToolData.dissection || {};
                   var perchOrganAlpha = fishAccessible ? 0.98 : (fishRealistic ? 0.93 : 0.88);
                   var swimBladderPulse = dissMotionReduced ? 0 : Math.sin(dissTick * 0.022) * H * 0.0018;
 
-                  function tracePerchCoelom() {
+                  function tracePerchCoelom(traceContext) {
+                    traceContext = traceContext || ctx;
+                    if (traceContext.beginPath) traceContext.beginPath();
+                    traceContext.moveTo(cx - W * 0.205, cy - H * 0.075);
+                    traceContext.bezierCurveTo(cx - W * 0.13, cy - H * 0.115, cx + W * 0.055, cy - H * 0.112, cx + W * 0.205, cy - H * 0.067);
+                    traceContext.bezierCurveTo(cx + W * 0.225, cy - H * 0.018, cx + W * 0.19, cy + H * 0.087, cx + W * 0.105, cy + H * 0.102);
+                    traceContext.bezierCurveTo(cx - W * 0.015, cy + H * 0.125, cx - W * 0.155, cy + H * 0.092, cx - W * 0.205, cy + H * 0.045);
+                    traceContext.bezierCurveTo(cx - W * 0.225, cy + H * 0.006, cx - W * 0.222, cy - H * 0.042, cx - W * 0.205, cy - H * 0.075);
+                    traceContext.closePath();
+                  }
+
+                  function tracePerchThinSac(x, y, rx, ry, rotation, kind) {
+                    if (!isFinite(x) || !isFinite(y) || !isFinite(rx) || !isFinite(ry) ||
+                        !isFinite(rotation) || rx <= 0 || ry <= 0) return false;
                     ctx.beginPath();
-                    ctx.moveTo(cx - W * 0.205, cy - H * 0.075);
-                    ctx.bezierCurveTo(cx - W * 0.13, cy - H * 0.115, cx + W * 0.055, cy - H * 0.112, cx + W * 0.205, cy - H * 0.067);
-                    ctx.bezierCurveTo(cx + W * 0.225, cy - H * 0.018, cx + W * 0.19, cy + H * 0.087, cx + W * 0.105, cy + H * 0.102);
-                    ctx.bezierCurveTo(cx - W * 0.015, cy + H * 0.125, cx - W * 0.155, cy + H * 0.092, cx - W * 0.205, cy + H * 0.045);
-                    ctx.bezierCurveTo(cx - W * 0.225, cy + H * 0.006, cx - W * 0.222, cy - H * 0.042, cx - W * 0.205, cy - H * 0.075);
-                    ctx.closePath();
+                    if (!fishRealistic || !sceneDetail || fishAccessible || highContrastEnabled) {
+                      ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2); return true;
+                    }
+                    ctx.save();
+                    try {
+                      ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(rx, ry);
+                      if (kind === 'gonad') {
+                        // A low-profile gonadal surface, gently narrowing posteriorly.
+                        // The retained paired regions illustrate the male pattern.
+                        ctx.moveTo(-1, 0);
+                        ctx.bezierCurveTo(-0.96, -0.62, -0.51, -0.98, -0.08, -0.91);
+                        ctx.bezierCurveTo(0.33, -0.83, 0.77, -0.44, 1, -0.06);
+                        ctx.bezierCurveTo(0.81, 0.22, 0.27, 0.72, -0.12, 0.85);
+                        ctx.bezierCurveTo(-0.60, 0.95, -0.94, 0.60, -1, 0);
+                      } else {
+                        // One closed, thin-walled bladder with a shallow posterior taper.
+                        // A duct or second chamber is not implied by the outer silhouette.
+                        ctx.moveTo(-1, -0.03);
+                        ctx.bezierCurveTo(-0.98, -0.60, -0.59, -1, -0.15, -0.96);
+                        ctx.bezierCurveTo(0.31, -0.92, 0.78, -0.62, 0.99, -0.14);
+                        ctx.bezierCurveTo(1, 0.20, 0.61, 0.72, 0.13, 0.91);
+                        ctx.bezierCurveTo(-0.35, 1, -0.94, 0.62, -1, -0.03);
+                      }
+                      ctx.closePath(); return true;
+                    } finally { ctx.restore(); }
+                  }
+                  
+                  function finishPerchThinSac(x, y, rx, ry, rotation, kind) {
+                    if (!fishRealistic || !sceneDetail || fishAccessible || highContrastEnabled ||
+                        !isFinite(x) || !isFinite(y) || !isFinite(rx) || !isFinite(ry) ||
+                        !isFinite(rotation) || rx <= 0 || ry <= 0) return;
+                    var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1];
+                    var lampLength = Math.sqrt(lamp[0] * lamp[0] + lamp[1] * lamp[1]) || 1;
+                    var lx = lamp[0] / lampLength, ly = lamp[1] / lampLength;
+                    var localLX = lx * Math.cos(rotation) + ly * Math.sin(rotation);
+                    var localLY = -lx * Math.sin(rotation) + ly * Math.cos(rotation);
+                    var lampValue = Number(d.lightIntensity);
+                    var strength = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+                    var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 76;
+                    var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+                    var gloss = (0.22 + moisture * 0.78) * (0.45 + strength * 0.55);
+                    if ((d.specimenCondition || specimenCondition) === 'dehydrated') gloss *= 0.35;
+                    ctx.save();
+                    try {
+                      ctx.clip(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                      ctx.shadowColor = 'rgba(0,0,0,0)';
+                      ctx.save();
+                      try {
+                        ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(rx, ry);
+                        ctx.globalCompositeOperation = 'multiply';
+                        var volume = ctx.createLinearGradient(localLX * 1.2, localLY * 1.2, -localLX * 1.2, -localLY * 1.2);
+                        volume.addColorStop(0, 'rgba(38,35,31,0)'); volume.addColorStop(0.48, 'rgba(38,35,31,0.015)');
+                        volume.addColorStop(1, 'rgba(38,35,31,' + (kind === 'gonad' ? '0.19' : '0.13') + ')');
+                        ctx.fillStyle = volume; ctx.fillRect(-1.3, -1.3, 2.6, 2.6);
+                        ctx.globalCompositeOperation = 'screen';
+                        var sheen = ctx.createRadialGradient(localLX * 0.24, localLY * 0.36, 0.02, 0, 0, 1.02);
+                        sheen.addColorStop(0, 'rgba(245,236,212,' + (0.17 * gloss).toFixed(3) + ')');
+                        sheen.addColorStop(0.46, 'rgba(245,236,212,' + (0.045 * gloss).toFixed(3) + ')');
+                        sheen.addColorStop(1, 'rgba(245,236,212,0)');
+                        ctx.fillStyle = sheen; ctx.fillRect(-1.3, -1.3, 2.6, 2.6);
+                      } finally { ctx.restore(); }
+                      // The two fills leave the authored path intact. Weight its exact inside
+                      // edge toward the lamp rather than adding a floating white oval highlight.
+                      var rim = ctx.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                      rim.addColorStop(0, 'rgba(244,232,205,' + (0.36 * gloss).toFixed(3) + ')');
+                      rim.addColorStop(0.52, 'rgba(244,232,205,0)'); rim.addColorStop(1, 'rgba(244,232,205,0)');
+                      ctx.globalCompositeOperation = 'screen'; ctx.strokeStyle = rim;
+                      ctx.lineWidth = kind === 'gonad' ? 0.48 : 0.62; ctx.stroke();
+                    } finally { ctx.restore(); }
+                  }
+                  
+                  function drawPerchBladderVascularBed() {
+                    if (!fishRealistic || !sceneDetail || fishAccessible || highContrastEnabled) return;
+                    // The caller re-traces the bladder first. This gross vascular cue is not a
+                    // diagram of individual countercurrent capillaries or gas-gland histology.
+                    ctx.save();
+                    try {
+                      ctx.clip(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                      ctx.shadowColor = 'rgba(0,0,0,0)';
+                      ctx.translate(cx - W * 0.080, cy - H * 0.035); ctx.rotate(-0.025);
+                      var px = W * 0.012, py = H * 0.008, unit = 1 / Math.max(px, py);
+                      ctx.scale(px, py); ctx.lineCap = 'round';
+                      var blush = ctx.createRadialGradient(0, 0, 0.05, 0, 0, 1.15);
+                      blush.addColorStop(0, 'rgba(120,62,61,0.10)'); blush.addColorStop(1, 'rgba(120,62,61,0)');
+                      ctx.fillStyle = blush; ctx.fillRect(-1.2, -1.2, 2.4, 2.4);
+                      for (var channel = 0; channel < 2; channel++) {
+                        var channelOffset = channel ? 0.18 : 0;
+                        ctx.beginPath(); ctx.moveTo(-1, 0.32 + channelOffset);
+                        ctx.bezierCurveTo(-0.44, -0.20 + channelOffset, 0.33, 0.36 + channelOffset, 1, -0.20 + channelOffset);
+                        ctx.strokeStyle = channel ? 'rgba(84,78,80,0.32)' : 'rgba(126,66,63,0.50)';
+                        ctx.lineWidth = unit * (channel ? 0.36 : 0.46); ctx.stroke();
+                      }
+                      for (var branch = 0; branch < 4; branch++) {
+                        var t = 0.18 + branch * 0.215, u = 1 - t;
+                        var rootX = -u * u * u - 3 * u * u * t * 0.44 + 3 * u * t * t * 0.33 + t * t * t;
+                        var rootY = u * u * u * 0.32 - 3 * u * u * t * 0.20 + 3 * u * t * t * 0.36 - t * t * t * 0.20;
+                        var branchSide = branch % 2 ? 1 : -1;
+                        ctx.beginPath(); ctx.moveTo(rootX, rootY);
+                        ctx.bezierCurveTo(rootX + 0.03, rootY + branchSide * 0.11,
+                          rootX + 0.13, rootY + branchSide * 0.26, rootX + 0.24, rootY + branchSide * 0.34);
+                        ctx.strokeStyle = 'rgba(132,75,69,0.40)'; ctx.lineWidth = unit * 0.32; ctx.stroke();
+                      }
+                    } finally { ctx.restore(); }
                   }
 
                   function drawPerchGillArch(archIndex) {
                     var archX = cx - W * (0.205 - archIndex * 0.011);
                     var archTopY = cy - H * (0.060 - archIndex * 0.003);
                     var archBottomY = cy + H * (0.045 - archIndex * 0.002);
-                    ctx.beginPath();
-                    ctx.moveTo(archX, archTopY);
-                    ctx.bezierCurveTo(archX - W * 0.018, cy - H * 0.018, archX - W * 0.018, cy + H * 0.018, archX, archBottomY);
-                    ctx.strokeStyle = fishAccessible ? '#dc2626' : 'rgba(153,27,27,0.96)';
-                    ctx.lineWidth = 2.4 - archIndex * 0.18; ctx.stroke();
-                    for (var filamentIndex = 0; filamentIndex < 7; filamentIndex++) {
-                      var filamentT = (filamentIndex + 1) / 8;
-                      var filamentY = archTopY + (archBottomY - archTopY) * filamentT;
-                      var filamentReach = W * (0.018 + Math.sin(filamentT * Math.PI) * 0.010);
-                      ctx.beginPath(); ctx.moveTo(archX - W * 0.007, filamentY);
-                      ctx.lineTo(archX - filamentReach, filamentY - H * 0.004);
-                      ctx.strokeStyle = fishAccessible ? '#fb7185' : 'rgba(248,113,113,0.86)';
-                      ctx.lineWidth = 0.9; ctx.stroke();
-                    }
+                    var detailedGill = sceneDetail && !fishAccessible && !highContrastEnabled;
+                    var filamentCount = detailedGill ? 9 : 7;
+                    ctx.save();
+                    try {
+                      ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                      // Each primary filament starts ON the existing arch, not on a detached
+                      // vertical grid line. Caudal is positive specimen x for this left-facing fish.
+                      for (var filamentIndex = 0; filamentIndex < filamentCount; filamentIndex++) {
+                        var filamentT = (filamentIndex + 1) / (filamentCount + 1), filamentU = 1 - filamentT;
+                        var filamentRootX = archX - W * 0.054 * filamentU * filamentT;
+                        var filamentRootY = filamentU * filamentU * filamentU * archTopY
+                          + 3 * filamentU * filamentU * filamentT * (cy - H * 0.018)
+                          + 3 * filamentU * filamentT * filamentT * (cy + H * 0.018)
+                          + filamentT * filamentT * filamentT * archBottomY;
+                        var filamentReach = W * (0.011 + Math.sin(filamentT * Math.PI) * 0.012) * (1 - archIndex * 0.06);
+                        var filamentSlope = (filamentT - 0.5) * 0.36;
+                        var filamentLength = Math.sqrt(1 + filamentSlope * filamentSlope);
+                        var filamentDX = 1 / filamentLength, filamentDY = filamentSlope / filamentLength;
+                        var filamentTipX = filamentRootX + filamentDX * filamentReach;
+                        var filamentTipY = filamentRootY + filamentDY * filamentReach;
+                        if (!detailedGill) {
+                          ctx.beginPath(); ctx.moveTo(filamentRootX, filamentRootY); ctx.lineTo(filamentTipX, filamentTipY);
+                          ctx.strokeStyle = fishAccessible || highContrastEnabled ? '#fb7185' : 'rgba(181,75,83,0.90)';
+                          ctx.lineWidth = 0.9; ctx.stroke();
+                        } else {
+                          // Short tapered ribbons describe gross filament tissue. Fine secondary
+                          // lamellae are intentionally omitted at this whole-specimen scale.
+                          var filamentHalf = Math.min(W * 0.0018, H * 0.0026);
+                          var filamentNX = -filamentDY * filamentHalf, filamentNY = filamentDX * filamentHalf;
+                          ctx.beginPath(); ctx.moveTo(filamentRootX + filamentNX, filamentRootY + filamentNY);
+                          ctx.quadraticCurveTo(filamentRootX + filamentDX * filamentReach * 0.56 + filamentNX * 0.78,
+                            filamentRootY + filamentDY * filamentReach * 0.56 + filamentNY * 0.78, filamentTipX, filamentTipY);
+                          ctx.quadraticCurveTo(filamentRootX + filamentDX * filamentReach * 0.57 - filamentNX * 0.72,
+                            filamentRootY + filamentDY * filamentReach * 0.57 - filamentNY * 0.72,
+                            filamentRootX - filamentNX, filamentRootY - filamentNY);
+                          ctx.closePath();
+                          var filamentVolume = ctx.createLinearGradient(filamentRootX, filamentRootY, filamentTipX, filamentTipY);
+                          filamentVolume.addColorStop(0, '#833f4b'); filamentVolume.addColorStop(0.52, '#b15f68'); filamentVolume.addColorStop(1, '#d39896');
+                          ctx.fillStyle = filamentVolume; ctx.fill(); ctx.strokeStyle = 'rgba(238,171,164,0.28)'; ctx.lineWidth = 0.35; ctx.stroke();
+                        }
+                      }
+                      // Repaint the unchanged supporting arch above the attachment points.
+                      ctx.beginPath(); ctx.moveTo(archX, archTopY);
+                      ctx.bezierCurveTo(archX - W * 0.018, cy - H * 0.018, archX - W * 0.018, cy + H * 0.018, archX, archBottomY);
+                      ctx.strokeStyle = fishAccessible || highContrastEnabled ? '#dc2626' : 'rgba(125,44,57,0.96)';
+                      ctx.lineWidth = 2.4 - archIndex * 0.18; ctx.stroke();
+                    } finally { ctx.restore(); }
                   }
 
                   ctx.save();
@@ -11272,6 +15771,8 @@ var d = labToolData.dissection || {};
                   ctx.fillStyle = perchCavityGradient; ctx.globalAlpha = perchOrganAlpha; ctx.fill();
                   ctx.strokeStyle = fishAccessible ? '#fbbf24' : 'rgba(253,230,138,0.62)';
                   ctx.lineWidth = fishAccessible ? 1.8 : 1.15; ctx.stroke();
+                  finishCurrentCavityPath(cx, cy, W * 0.225, H * 0.115);
+                  registerAnatomyOpening(tracePerchCoelom);
                   tracePerchCoelom(); ctx.clip(); ctx.globalAlpha = 1;
 
                   // A faint dorsal peritoneal reflection helps the cutaway read as depth rather than a flat diagram.
@@ -11280,81 +15781,111 @@ var d = labToolData.dissection || {};
                   perchCavitySheen.addColorStop(1, 'rgba(226,232,240,0)');
                   ctx.fillStyle = perchCavitySheen; ctx.fillRect(cx - W * 0.22, cy - H * 0.12, W * 0.46, H * 0.15);
 
-                  // The kidney is a dark, elongated organ fixed against the dorsal body wall.
-                  ctx.beginPath();
-                  ctx.moveTo(cx - W * 0.145, cy - H * 0.088);
-                  ctx.bezierCurveTo(cx - W * 0.055, cy - H * 0.106, cx + W * 0.105, cy - H * 0.100, cx + W * 0.190, cy - H * 0.072);
-                  ctx.bezierCurveTo(cx + W * 0.115, cy - H * 0.069, cx - W * 0.045, cy - H * 0.071, cx - W * 0.145, cy - H * 0.061);
-                  ctx.closePath();
-                  var perchKidneyGradient = ctx.createLinearGradient(cx, cy - H * 0.102, cx, cy - H * 0.060);
-                  perchKidneyGradient.addColorStop(0, fishAccessible ? '#7f1d1d' : 'rgba(69,26,31,0.98)');
-                  perchKidneyGradient.addColorStop(1, fishAccessible ? '#991b1b' : 'rgba(103,35,39,0.94)');
-                  ctx.fillStyle = perchKidneyGradient; ctx.fill();
-                  ctx.strokeStyle = 'rgba(254,202,202,0.30)'; ctx.lineWidth = 0.7; ctx.stroke();
+                  // The thin renal ribbon remains attached above the swim bladder at the dorsal wall.
+                  drawPerchRenalTissue(ctx, {
+                    width: W, height: H, detailed: fishRealistic && sceneDetail && !fishAccessible && !highContrastEnabled,
+                    accessible: fishAccessible, moisture: liveTissueState && liveTissueState.moisture,
+                    lightDirection: lightDirection, intensity: d.lightIntensity, condition: specimenCondition
+                  });
 
                   // Dorsal aorta follows the roof of the cavity; the ventral aorta feeds the gill arches.
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.175, cy - H * 0.058); ctx.bezierCurveTo(cx - W * 0.02, cy - H * 0.082, cx + W * 0.11, cy - H * 0.074, cx + W * 0.205, cy - H * 0.052);
                   ctx.strokeStyle = fishAccessible ? '#ef4444' : 'rgba(239,68,68,0.72)'; ctx.lineWidth = 1.15; ctx.stroke();
 
-                  // Swim bladder: a thin-walled dorsal sac with a vascular rete mirabile patch.
-                  ctx.beginPath();
-                  ctx.ellipse(cx + W * 0.015, cy - H * 0.043, W * 0.120, H * 0.032 + swimBladderPulse, -0.025, 0, Math.PI * 2);
-                  var perchBladderGradient = ctx.createRadialGradient(cx - W * 0.025, cy - H * 0.058, 2, cx + W * 0.015, cy - H * 0.043, W * 0.125);
-                  perchBladderGradient.addColorStop(0, fishAccessible ? 'rgba(255,255,255,0.96)' : 'rgba(239,246,255,0.90)');
-                  perchBladderGradient.addColorStop(0.56, fishAccessible ? 'rgba(186,230,253,0.90)' : 'rgba(191,219,254,0.63)');
-                  perchBladderGradient.addColorStop(1, fishAccessible ? 'rgba(56,189,248,0.72)' : 'rgba(96,165,250,0.32)');
-                  ctx.fillStyle = perchBladderGradient; ctx.fill();
-                  ctx.strokeStyle = fishAccessible ? '#38bdf8' : 'rgba(147,197,253,0.82)'; ctx.lineWidth = 1.1; ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.022, cy - H * 0.057, W * 0.052, H * 0.009, -0.04, Math.PI * 1.08, Math.PI * 1.88);
-                  ctx.strokeStyle = 'rgba(255,255,255,0.52)'; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Rete mirabile is represented as a compact vascular network along the anterior bladder wall.
-                  for (var reteIndex = 0; reteIndex < 7; reteIndex++) {
-                    var reteAngle = reteIndex * Math.PI * 2 / 7;
-                    var reteX = cx - W * 0.080 + Math.cos(reteAngle) * W * 0.012;
-                    var reteY = cy - H * 0.035 + Math.sin(reteAngle) * H * 0.010;
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.080, cy - H * 0.035); ctx.lineTo(reteX, reteY);
-                    ctx.strokeStyle = reteIndex % 2 ? '#60a5fa' : '#f87171'; ctx.lineWidth = 0.75; ctx.stroke();
+                  if (fishRealistic && sceneDetail && !fishAccessible && !highContrastEnabled) {
+                    ctx.save();
+                    try {
+                      var perchBladderX = cx + W * 0.015, perchBladderY = cy - H * 0.043;
+                      var perchBladderRX = W * 0.120, perchBladderRY = H * 0.032 + swimBladderPulse;
+                      tracePerchThinSac(perchBladderX, perchBladderY, perchBladderRX, perchBladderRY, -0.025, 'bladder');
+                      paintCurrentOrganContact(perchBladderRX, perchBladderRY);
+                      var perchSacVolume = ctx.createLinearGradient(perchBladderX - perchBladderRX * 0.25, perchBladderY - perchBladderRY,
+                        perchBladderX + perchBladderRX * 0.20, perchBladderY + perchBladderRY);
+                      perchSacVolume.addColorStop(0, '#eee9d8'); perchSacVolume.addColorStop(0.48, '#c8cbb8'); perchSacVolume.addColorStop(1, '#8f9f96');
+                      ctx.fillStyle = perchSacVolume; ctx.fill(); ctx.strokeStyle = 'rgba(128,143,132,0.68)'; ctx.lineWidth = 0.65; ctx.stroke();
+                      finishPerchThinSac(perchBladderX, perchBladderY, perchBladderRX, perchBladderRY, -0.025, 'bladder');
+                      // Re-trace the exact organ before the branching vascular cue starts paths.
+                      tracePerchThinSac(perchBladderX, perchBladderY, perchBladderRX, perchBladderRY, -0.025, 'bladder');
+                      drawPerchBladderVascularBed();
+                      [-1, 1].forEach(function (gonadSide) {
+                        var perchGonadX = cx + W * 0.095, perchGonadY = cy + H * (0.007 + gonadSide * 0.014);
+                        var perchGonadRX = W * 0.090, perchGonadRY = H * 0.014;
+                        tracePerchThinSac(perchGonadX, perchGonadY, perchGonadRX, perchGonadRY, gonadSide * 0.035, 'gonad');
+                        paintCurrentOrganContact(perchGonadRX, perchGonadRY);
+                        var perchGonadVolume = ctx.createLinearGradient(perchGonadX - perchGonadRX * 0.10, perchGonadY - perchGonadRY,
+                          perchGonadX + perchGonadRX * 0.10, perchGonadY + perchGonadRY);
+                        perchGonadVolume.addColorStop(0, '#d8c9aa'); perchGonadVolume.addColorStop(0.48, '#b3a386'); perchGonadVolume.addColorStop(1, '#837866');
+                        ctx.fillStyle = perchGonadVolume; ctx.fill(); ctx.strokeStyle = 'rgba(115,104,86,0.68)'; ctx.lineWidth = 0.48; ctx.stroke();
+                        finishPerchThinSac(perchGonadX, perchGonadY, perchGonadRX, perchGonadRY, gonadSide * 0.035, 'gonad');
+                      });
+                    } finally { ctx.restore(); }
+                  } else {
+                    // Swim bladder: a thin-walled dorsal sac with a vascular rete mirabile patch.
+                    ctx.beginPath();
+                    ctx.ellipse(cx + W * 0.015, cy - H * 0.043, W * 0.120, H * 0.032 + swimBladderPulse, -0.025, 0, Math.PI * 2);
+                    var perchBladderGradient = ctx.createRadialGradient(cx - W * 0.025, cy - H * 0.058, 2, cx + W * 0.015, cy - H * 0.043, W * 0.125);
+                    perchBladderGradient.addColorStop(0, fishAccessible ? 'rgba(255,255,255,0.96)' : 'rgba(249,243,223,0.96)');
+                    perchBladderGradient.addColorStop(0.56, fishAccessible ? 'rgba(186,230,253,0.90)' : 'rgba(218,221,202,0.86)');
+                    perchBladderGradient.addColorStop(1, fishAccessible ? 'rgba(56,189,248,0.72)' : 'rgba(146,167,164,0.72)');
+                    ctx.fillStyle = perchBladderGradient; ctx.fill();
+                    ctx.strokeStyle = fishAccessible ? '#38bdf8' : 'rgba(147,197,253,0.82)'; ctx.lineWidth = 1.1; ctx.stroke();
+                    finishCurrentTissuePath(cx + W * 0.015, cy - H * 0.043, W * 0.120, H * 0.032, 'serosa', 'perch-swim-bladder');
+                    ctx.beginPath(); ctx.ellipse(cx - W * 0.022, cy - H * 0.057, W * 0.052, H * 0.009, -0.04, Math.PI * 1.08, Math.PI * 1.88);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.52)'; ctx.lineWidth = 1; ctx.stroke();
+                    
+                    // Rete mirabile is represented as a compact vascular network along the anterior bladder wall.
+                    for (var reteIndex = 0; reteIndex < 7; reteIndex++) {
+                      var reteAngle = reteIndex * Math.PI * 2 / 7;
+                      var reteX = cx - W * 0.080 + Math.cos(reteAngle) * W * 0.012;
+                      var reteY = cy - H * 0.035 + Math.sin(reteAngle) * H * 0.010;
+                      ctx.beginPath(); ctx.moveTo(cx - W * 0.080, cy - H * 0.035); ctx.lineTo(reteX, reteY);
+                      ctx.strokeStyle = reteIndex % 2 ? '#60a5fa' : '#f87171'; ctx.lineWidth = 0.75; ctx.stroke();
+                    }
+                    
+                    // Existing gonad teaching regions; actual anatomy depends on sex and maturity.
+                    [-1, 1].forEach(function (gonadSide) {
+                      ctx.beginPath();
+                      ctx.ellipse(cx + W * 0.095, cy + H * (0.007 + gonadSide * 0.014), W * 0.090, H * 0.014, gonadSide * 0.035, 0, Math.PI * 2);
+                      ctx.fillStyle = fishAccessible ? 'rgba(253,224,71,0.90)' : 'rgba(250,204,21,0.64)'; ctx.fill();
+                      ctx.strokeStyle = 'rgba(254,240,138,0.52)'; ctx.lineWidth = 0.65; ctx.stroke();
+                    });
                   }
 
-                  // Paired gonads sit between the swim bladder and gut and taper posteriorly.
-                  [-1, 1].forEach(function (gonadSide) {
-                    ctx.beginPath();
-                    ctx.ellipse(cx + W * 0.095, cy + H * (0.007 + gonadSide * 0.014), W * 0.090, H * 0.014, gonadSide * 0.035, 0, Math.PI * 2);
-                    ctx.fillStyle = fishAccessible ? 'rgba(253,224,71,0.90)' : 'rgba(250,204,21,0.64)'; ctx.fill();
-                    ctx.strokeStyle = 'rgba(254,240,138,0.52)'; ctx.lineWidth = 0.65; ctx.stroke();
-                  });
-
                   // Three overlapping liver lobes occupy the anterior ventral cavity.
-                  [[-0.115, 0.026, 0.060, 0.033, -0.12], [-0.080, 0.046, 0.050, 0.028, 0.10], [-0.135, 0.052, 0.038, 0.024, -0.28]].forEach(function (liverLobe) {
-                    ctx.beginPath(); ctx.ellipse(cx + W * liverLobe[0], cy + H * liverLobe[1], W * liverLobe[2], H * liverLobe[3], liverLobe[4], 0, Math.PI * 2);
-                    var perchLiverGradient = ctx.createRadialGradient(cx + W * (liverLobe[0] - 0.012), cy + H * (liverLobe[1] - 0.010), 1, cx + W * liverLobe[0], cy + H * liverLobe[1], W * liverLobe[2]);
+                  [[-0.115, 0.026, 0.060, 0.033, -0.12], [-0.080, 0.046, 0.050, 0.028, 0.10], [-0.135, 0.052, 0.038, 0.024, -0.28]].forEach(function (liverLobe, liverLobeIndex) {
+                    var perchLobeX = cx + W * liverLobe[0], perchLobeY = cy + H * liverLobe[1];
+                    traceHepaticLobe(perchLobeX, perchLobeY, W * liverLobe[2], H * liverLobe[3], liverLobe[4], liverLobeIndex === 2 ? 'broad' : 'swept', 1);
+                    paintCurrentOrganContact(W * liverLobe[2], H * liverLobe[3]);
+                    var perchLiverGradient;
+                    if (!sceneDetail || fishAccessible || highContrastEnabled) {
+                      perchLiverGradient = ctx.createRadialGradient(cx + W * (liverLobe[0] - 0.012), cy + H * (liverLobe[1] - 0.010), 1, perchLobeX, perchLobeY, W * liverLobe[2]);
+                    } else {
+                      perchLiverGradient = ctx.createLinearGradient(perchLobeX - W * liverLobe[2] * 0.65, perchLobeY - H * liverLobe[3], perchLobeX + W * liverLobe[2] * 0.60, perchLobeY + H * liverLobe[3]);
+                    }
                     perchLiverGradient.addColorStop(0, fishAccessible ? '#b45309' : 'rgba(180,83,9,0.96)');
                     perchLiverGradient.addColorStop(1, fishAccessible ? '#78350f' : 'rgba(120,53,15,0.96)');
                     ctx.fillStyle = perchLiverGradient; ctx.fill(); ctx.strokeStyle = 'rgba(253,186,116,0.34)'; ctx.lineWidth = 0.6; ctx.stroke();
+                    finishCurrentTissuePath(perchLobeX, perchLobeY, W * liverLobe[2], H * liverLobe[3], 'capsule', 'perch-liver-' + liverLobe[0]);
                   });
 
-                  // J-shaped stomach passes posteriorly before turning into the pyloric region.
-                  ctx.beginPath();
-                  ctx.moveTo(cx - W * 0.070, cy + H * 0.027);
-                  ctx.bezierCurveTo(cx - W * 0.030, cy + H * 0.018, cx + W * 0.012, cy + H * 0.035, cx + W * 0.010, cy + H * 0.058);
-                  ctx.bezierCurveTo(cx + W * 0.008, cy + H * 0.080, cx - W * 0.022, cy + H * 0.086, cx - W * 0.038, cy + H * 0.070);
-                  ctx.bezierCurveTo(cx - W * 0.050, cy + H * 0.058, cx - W * 0.050, cy + H * 0.040, cx - W * 0.070, cy + H * 0.027);
-                  ctx.closePath();
-                  var perchStomachGradient = ctx.createLinearGradient(cx - W * 0.05, cy + H * 0.02, cx, cy + H * 0.085);
-                  perchStomachGradient.addColorStop(0, fishAccessible ? '#fed7aa' : 'rgba(253,186,116,0.90)');
-                  perchStomachGradient.addColorStop(1, fishAccessible ? '#fb923c' : 'rgba(194,65,12,0.86)');
-                  ctx.fillStyle = perchStomachGradient; ctx.fill(); ctx.strokeStyle = 'rgba(255,237,213,0.58)'; ctx.lineWidth = 0.9; ctx.stroke();
+                  // The broad gastric sac narrows into a short outlet at the existing caecal inlet.
+                  drawPerchGastricSurface(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !fishAccessible && !highContrastEnabled,
+                    lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                  });
 
-                  // Pyloric ceca are distinct blind fingers, not a single generic line.
+                  // The pyloric outlet joins the proximal intestine; three blind caeca open along it.
                   ctx.lineCap = 'round';
-                  for (var cecumIndex = 0; cecumIndex < 5; cecumIndex++) {
-                    var cecumBaseX = cx + W * (0.002 + cecumIndex * 0.008);
-                    var cecumBaseY = cy + H * (0.063 + cecumIndex * 0.003);
-                    ctx.beginPath(); ctx.moveTo(cecumBaseX, cecumBaseY);
-                    ctx.quadraticCurveTo(cecumBaseX + W * 0.014, cecumBaseY + H * 0.012, cecumBaseX + W * (0.010 + cecumIndex * 0.004), cecumBaseY + H * (0.034 + cecumIndex * 0.002));
-                    ctx.strokeStyle = fishAccessible ? '#fef3c7' : 'rgba(254,215,170,0.88)'; ctx.lineWidth = fishAccessible ? 2.4 : 1.8; ctx.stroke();
+                  var perchCaecalInletGeometry = perchCaecalGeometry(W, H);
+                  if (perchCaecalInletGeometry && tracePerchCaecalRegion(ctx, perchCaecalInletGeometry.inlet, W, H, false)) {
+                    strokeAnatomicalTube(W * 0.009, fishAccessible ? '#fdba74' : '#bd9171', '#e7cdb0', '#75503e');
                   }
+                  drawPerchPyloricCaeca(ctx, {
+                    width: W, height: H, detailed: fishRealistic && sceneDetail && !fishAccessible && !highContrastEnabled,
+                    accessible: fishAccessible, moisture: liveTissueState && liveTissueState.moisture,
+                    lightDirection: lightDirection, lightIntensity: d.lightIntensity, condition: specimenCondition,
+                    strokeTeachingTube: strokeAnatomicalTube
+                  });
 
                   // Intestine loops compactly through the posterior ventral cavity and exits near the anus.
                   ctx.beginPath();
@@ -11363,26 +15894,17 @@ var d = labToolData.dissection || {};
                   ctx.bezierCurveTo(cx + W * 0.165, cy + H * 0.100, cx + W * 0.185, cy + H * 0.056, cx + W * 0.122, cy + H * 0.045);
                   ctx.bezierCurveTo(cx + W * 0.082, cy + H * 0.038, cx + W * 0.080, cy + H * 0.082, cx + W * 0.183, cy + H * 0.084);
                   ctx.lineTo(cx + W * 0.215, cy + H * 0.080);
-                  ctx.strokeStyle = fishAccessible ? '#fdba74' : 'rgba(234,88,12,0.86)'; ctx.lineWidth = fishAccessible ? 4.6 : 3.4; ctx.stroke();
-                  ctx.strokeStyle = 'rgba(255,237,213,0.34)'; ctx.lineWidth = 0.8; ctx.stroke();
+                  strokeAnatomicalTube(W * 0.009, fishAccessible ? '#fdba74' : '#bd9171', '#e7cdb0', '#75503e');
 
                   // Four branchial arches carry dense filaments; the operculum remains visible outside the cutaway.
                   for (var gillArchIndex = 0; gillArchIndex < 4; gillArchIndex++) drawPerchGillArch(gillArchIndex);
 
-                  // Two functional chambers are shown with the sinus venosus and bulbus arteriosus in series.
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.205, cy + H * 0.050, W * 0.013, H * 0.013, -0.20, 0, Math.PI * 2);
-                  ctx.fillStyle = fishAccessible ? '#7dd3fc' : 'rgba(56,189,248,0.72)'; ctx.fill();
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.188, cy + H * 0.056, W * 0.018, H * 0.018, 0.20, 0, Math.PI * 2);
-                  ctx.fillStyle = fishAccessible ? '#be123c' : 'rgba(190,24,93,0.90)'; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.56)'; ctx.lineWidth = 0.7; ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.165, cy + H * 0.068, W * 0.022, H * 0.024, -0.12, 0, Math.PI * 2);
-                  var perchVentricleGradient = ctx.createRadialGradient(cx - W * 0.172, cy + H * 0.058, 1, cx - W * 0.165, cy + H * 0.068, W * 0.024);
-                  perchVentricleGradient.addColorStop(0, fishAccessible ? '#fb7185' : 'rgba(244,63,94,0.96)');
-                  perchVentricleGradient.addColorStop(1, fishAccessible ? '#9f1239' : 'rgba(136,19,55,0.98)');
-                  ctx.fillStyle = perchVentricleGradient; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.62)'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.142, cy + H * 0.051, W * 0.017, H * 0.012, -0.38, 0, Math.PI * 2);
-                  ctx.fillStyle = fishAccessible ? '#fda4af' : 'rgba(251,113,133,0.84)'; ctx.fill();
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.142, cy + H * 0.049); ctx.bezierCurveTo(cx - W * 0.165, cy + H * 0.028, cx - W * 0.178, cy + H * 0.010, cx - W * 0.190, cy - H * 0.005);
-                  ctx.strokeStyle = fishAccessible ? '#fb7185' : 'rgba(251,113,133,0.86)'; ctx.lineWidth = 1.8; ctx.stroke();
+                  // Closed external cardiac surfaces retain the original cutaway and outflow course.
+                  drawPerchCardiacComplex(ctx, {
+                    width: W, height: H, detailed: fishRealistic && sceneDetail && !fishAccessible && !highContrastEnabled,
+                    accessible: fishAccessible, moisture: liveTissueState && liveTissueState.moisture,
+                    lightDirection: lightDirection, lightIntensity: d.lightIntensity, condition: specimenCondition
+                  });
 
                   // Small spleen sits beside the stomach as a dark red reference landmark.
                   ctx.beginPath(); ctx.ellipse(cx + W * 0.016, cy + H * 0.042, W * 0.020, H * 0.009, 0.30, 0, Math.PI * 2);
@@ -11446,6 +15968,7 @@ var d = labToolData.dissection || {};
                 // Crayfish: articulated calcified plates, jointed appendages, and a layered tail fan.
                 var crayAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var crayRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                if (!crayAccessible && !highContrastEnabled) layerStroke = '#552f2b';
                 var crayOutlineWidth = crayAccessible ? 1.7 : 1.05;
                 // Appendage thicknesses below were authored as raw pixels against a ~420px
                 // canvas while every landmark around them is a fraction of W. On a desktop
@@ -11665,31 +16188,123 @@ var d = labToolData.dissection || {};
                 }
 
                 if (activeLayer === 'organs') {
-                  ctx.save(); ctx.globalAlpha = 0.62;
-                  // Gastric mill and paired green glands at the anterior end.
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.12, cy, W * 0.038, H * 0.048, 0, 0, Math.PI * 2); ctx.fillStyle = '#fcd34d'; ctx.fill();
-                  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.65;
-                  for (var tooth = -1; tooth <= 1; tooth++) { ctx.beginPath(); ctx.moveTo(cx - W * 0.14, cy + tooth * H * 0.014); ctx.lineTo(cx - W * 0.10, cy - tooth * H * 0.006); ctx.stroke(); }
-                  [-1,1].forEach(function (side) {
-                    ctx.beginPath(); ctx.arc(cx - W * 0.205, cy + side * H * 0.038, W * 0.012, 0, Math.PI * 2); ctx.fillStyle = '#86efac'; ctx.fill();
-                  });
-                  // Hepatopancreas lobes, dorsal heart, gonad, and feathery gills.
-                  [-1,1].forEach(function (side) {
-                    ctx.beginPath(); ctx.ellipse(cx - W * 0.015, cy + side * H * 0.034, W * 0.057, H * 0.036, side * 0.12, 0, Math.PI * 2); ctx.fillStyle = '#d97706'; ctx.fill();
-                  });
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.035, cy - H * 0.035, W * 0.027, H * 0.022, 0, 0, Math.PI * 2); ctx.fillStyle = '#dc2626'; ctx.fill();
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.075, cy, W * 0.042, H * 0.016, 0, 0, Math.PI * 2); ctx.fillStyle = '#f9a8d4'; ctx.fill();
-                  [-1,1].forEach(function (side) {
-                    for (var gill = 0; gill < 4; gill++) {
-                      var gillX = cx - W * 0.015 + gill * W * 0.033;
-                      ctx.beginPath(); ctx.moveTo(gillX, cy + side * H * 0.072); ctx.lineTo(gillX + W * 0.012, cy + side * H * 0.112);
-                      ctx.strokeStyle = '#fda4af'; ctx.lineWidth = 1.4; ctx.stroke();
-                      ctx.lineWidth = 0.45;
-                      for (var filament = 1; filament <= 3; filament++) {
-                        var fy = cy + side * H * (0.075 + filament * 0.009);
-                        ctx.beginPath(); ctx.moveTo(gillX + W * 0.002, fy); ctx.lineTo(gillX + W * 0.014, fy + side * H * 0.004); ctx.stroke();
-                      }
+                  ctx.save(); ctx.globalAlpha = crayAccessible ? 0.9 : 0.94;
+                    function traceCrayfishVisceralWindow(traceContext) {
+                      traceContext = traceContext || ctx;
+                      if (traceContext.beginPath) traceContext.beginPath(); traceContext.moveTo(cx - W * 0.225, cy);
+                      traceContext.bezierCurveTo(cx - W * 0.215, cy - H * 0.070, cx - W * 0.140, cy - H * 0.119, cx - W * 0.030, cy - H * 0.119);
+                      traceContext.bezierCurveTo(cx + W * 0.058, cy - H * 0.117, cx + W * 0.107, cy - H * 0.089, cx + W * 0.112, cy - H * 0.040);
+                      traceContext.bezierCurveTo(cx + W * 0.121, cy, cx + W * 0.113, cy + H * 0.082, cx + W * 0.061, cy + H * 0.110);
+                      traceContext.bezierCurveTo(cx - W * 0.022, cy + H * 0.131, cx - W * 0.151, cy + H * 0.111, cx - W * 0.197, cy + H * 0.064);
+                      traceContext.bezierCurveTo(cx - W * 0.216, cy + H * 0.046, cx - W * 0.225, cy + H * 0.022, cx - W * 0.225, cy);
+                      traceContext.closePath();
                     }
+                  if (sceneDetail && !crayAccessible && !highContrastEnabled) {
+
+                    ctx.save(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                    traceCrayfishVisceralWindow();
+                    var crayCavityBed = ctx.createLinearGradient(cx, cy - H * 0.12, cx + W * 0.04, cy + H * 0.12);
+                    crayCavityBed.addColorStop(0, '#493a37');
+                    crayCavityBed.addColorStop(0.35, '#82705a');
+                    crayCavityBed.addColorStop(0.68, '#77614f');
+                    crayCavityBed.addColorStop(1, '#352b2b');
+                    ctx.fillStyle = crayCavityBed; ctx.fill();
+                    ctx.save(); ctx.clip();
+                    // Lateral branchial recesses provide a bed for the existing feathery gills.
+                    // Open curves avoid implying sealed compartments in the open hemocoel.
+                    [-1, 1].forEach(function (branchialSide) {
+                      ctx.beginPath(); ctx.moveTo(cx - W * 0.050, cy + branchialSide * H * 0.075);
+                      ctx.bezierCurveTo(cx + W * 0.005, cy + branchialSide * H * 0.101,
+                        cx + W * 0.070, cy + branchialSide * H * 0.123, cx + W * 0.106, cy + branchialSide * H * 0.071);
+                      ctx.strokeStyle = 'rgba(35,24,27,0.36)'; ctx.lineWidth = H * 0.015; ctx.stroke();
+                      ctx.strokeStyle = 'rgba(237,211,177,0.25)'; ctx.lineWidth = 0.7; ctx.stroke();
+                    });
+                    ctx.restore();
+                    traceCrayfishVisceralWindow();
+                    ctx.strokeStyle = 'rgba(35,21,23,0.70)'; ctx.lineWidth = 3.2; ctx.stroke();
+                    ctx.strokeStyle = 'rgba(235,197,158,0.74)'; ctx.lineWidth = 0.75; ctx.stroke();
+                    ctx.restore();
+                  }
+                  if (typeof traceCrayfishVisceralWindow === 'function') registerAnatomyOpening(traceCrayfishVisceralWindow);
+                  // Gastric mill and paired green glands at the anterior end.
+                  var crayStomachX = cx - W * 0.12, crayStomachY = cy;
+                  var crayStomachRX = W * 0.038, crayStomachRY = H * 0.048;
+                  var crayStomachDetail = sceneDetail && !crayAccessible && !highContrastEnabled;
+                  if (!crayStomachDetail) {
+                    ctx.beginPath(); ctx.ellipse(crayStomachX, crayStomachY, crayStomachRX, crayStomachRY, 0, 0, Math.PI * 2);
+                  } else {
+                    // A broad cardiac sac narrows toward the posterior foregut. No new duct,
+                    // separate cavity, or displaced inspection target is introduced.
+                    ctx.save();
+                    try {
+                      ctx.translate(crayStomachX, crayStomachY); ctx.scale(crayStomachRX, crayStomachRY);
+                      ctx.beginPath(); ctx.moveTo(-0.88, -0.25);
+                      ctx.bezierCurveTo(-0.98, -0.80, -0.29, -1.00, 0.24, -0.85);
+                      ctx.bezierCurveTo(0.66, -0.72, 0.70, -0.28, 0.92, -0.08);
+                      ctx.bezierCurveTo(1.00, 0.06, 0.78, 0.22, 0.67, 0.38);
+                      ctx.bezierCurveTo(0.47, 0.79, -0.04, 0.98, -0.51, 0.78);
+                      ctx.bezierCurveTo(-0.87, 0.64, -1.00, 0.08, -0.88, -0.25); ctx.closePath();
+                    } finally { ctx.restore(); }
+                  }
+                  paintCurrentOrganContact(crayStomachRX, crayStomachRY);
+                  ctx.fillStyle = crayAccessible ? '#fcd34d' : '#c6b590'; ctx.fill();
+                  finishCurrentTissuePath(crayStomachX, crayStomachY, crayStomachRX, crayStomachRY, 'serosa', 'cray-stomach');
+                  // Opened cardiac-stomach teaching view, with the original three grinding surfaces.
+                  drawCrayfishGastricMill(ctx, {
+                    width: W, height: H, detailed: crayStomachDetail, accessible: crayAccessible, highContrast: highContrastEnabled,
+                    lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                    lightIntensity: d.lightIntensity, condition: specimenCondition, finishCavity: finishCurrentCavityPath
+                  });
+                  // The paired antennal complexes sit within the existing anterior opening.
+                  ctx.save();
+                  try {
+                    traceCrayfishVisceralWindow(ctx); ctx.clip();
+                    drawCrayfishAntennalGlands(ctx, {
+                      width: W, height: H, detailed: sceneDetail && !crayAccessible && !highContrastEnabled,
+                      lightDirection: lightDirection, contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
+                  // Hepatopancreas lobes, dorsal heart, gonad, and feathery gills.
+                  var craySoftDetail = sceneDetail && !crayAccessible && !highContrastEnabled;
+                  ctx.save();
+                  try {
+                    traceCrayfishVisceralWindow(ctx); ctx.clip();
+                    drawCrayfishHepatopancreas(ctx, {
+                      width: W, height: H, detailed: craySoftDetail, accessible: crayAccessible, highContrast: highContrastEnabled,
+                      lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                      lightIntensity: d.lightIntensity, condition: specimenCondition,
+                      contact: paintCurrentOrganContact, finish: finishCurrentTissuePath
+                    });
+                  } finally { ctx.restore(); }
+                  var crayHeartX = cx + W * 0.035, crayHeartY = cy - H * 0.035;
+                  var crayHeartRX = W * 0.027, crayHeartRY = H * 0.022;
+                  if (!craySoftDetail) {
+                    ctx.beginPath(); ctx.ellipse(crayHeartX, crayHeartY, crayHeartRX, crayHeartRY, 0, 0, Math.PI * 2);
+                  } else {
+                    // The compact dorsal heart is a rounded block, not a vertebrate-like sac.
+                    // Microscopic ostia are not enlarged into new whole-specimen landmarks.
+                    ctx.save();
+                    try {
+                      ctx.translate(crayHeartX, crayHeartY); ctx.scale(crayHeartRX, crayHeartRY);
+                      ctx.beginPath(); ctx.moveTo(-0.58, -0.73);
+                      ctx.bezierCurveTo(-0.27, -0.92, 0.13, -0.96, 0.43, -0.76);
+                      ctx.bezierCurveTo(0.72, -0.58, 0.88, -0.24, 0.84, 0.12);
+                      ctx.bezierCurveTo(0.80, 0.40, 0.48, 0.68, 0.18, 0.82);
+                      ctx.bezierCurveTo(-0.07, 0.93, -0.42, 0.76, -0.69, 0.52);
+                      ctx.bezierCurveTo(-0.92, 0.31, -0.87, -0.06, -0.78, -0.37);
+                      ctx.quadraticCurveTo(-0.74, -0.60, -0.58, -0.73); ctx.closePath();
+                    } finally { ctx.restore(); }
+                  }
+                  paintCurrentOrganContact(crayHeartRX, crayHeartRY);
+                  ctx.fillStyle = crayRealistic && craySoftDetail ? '#a0685e' : '#dc2626'; ctx.fill();
+                  finishCurrentTissuePath(crayHeartX, crayHeartY, crayHeartRX, crayHeartRY,
+                    crayRealistic && craySoftDetail ? 'serosa' : 'muscle', 'cray-heart');
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.075, cy, W * 0.042, H * 0.016, 0, 0, Math.PI * 2); ctx.fillStyle = '#f9a8d4'; ctx.fill();
+                  finishCurrentTissuePath(cx + W * 0.075, cy, W * 0.042, H * 0.016, 'lobular', 'cray-gonad');
+                  drawCrayfishGillPlumes(ctx, {
+                    width: W, height: H, detailed: crayRealistic && sceneDetail && !crayAccessible && !highContrastEnabled,
+                    moisture: liveTissueState && liveTissueState.moisture, lightIntensity: d.lightIntensity,
+                    lightDirection: lightDirection, condition: specimenCondition
                   });
                   ctx.restore();
                 }
@@ -11723,13 +16338,89 @@ var d = labToolData.dissection || {};
                 var eyeRx = eyeR;
                 var eyeRy = eyeR * 0.83;
 
-                var traceSheepEyeGlobe = function traceSheepEyeGlobe(scaleX, scaleY) {
+                var traceSheepEyeGlobe = function traceSheepEyeGlobe(scaleX, scaleY, traceContext) {
+                  traceContext = traceContext || ctx;
                   var rx = eyeRx * (scaleX == null ? 1 : scaleX);
                   var ry = eyeRy * (scaleY == null ? 1 : scaleY);
-                  ctx.beginPath();
-                  ctx.ellipse(eyeCx, eyeCy, rx, ry, -0.015, 0, Math.PI * 2);
+                  if (traceContext.beginPath) traceContext.beginPath();
+                  traceContext.ellipse(eyeCx, eyeCy, rx, ry, -0.015, 0, Math.PI * 2);
                 };
 
+                function finishCurrentOpticalSurface(x, y, rx, ry, kind, side) {
+                  if (!sceneDetail || eyeAccessible || highContrastEnabled ||
+                      ['cornea', 'lens', 'ciliary'].indexOf(kind) < 0 ||
+                      !isFinite(x) || !isFinite(y) || !isFinite(rx) || !isFinite(ry) || rx <= 0 || ry <= 0) return;
+                  var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[lightDirection] || [-0.12, -1];
+                  var lampLength = Math.sqrt(lamp[0] * lamp[0] + lamp[1] * lamp[1]) || 1;
+                  var lx = lamp[0] / lampLength, ly = lamp[1] / lampLength;
+                  var lampValue = Number(d.lightIntensity);
+                  var lampStrength = isFinite(lampValue) && lampValue > 0 ? Math.max(0.2, Math.min(1, lampValue / 100)) : 0.68;
+                  var moistureValue = typeof liveTissueState !== 'undefined' && liveTissueState ? Number(liveTissueState.moisture) : 82;
+                  var moisture = isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.82;
+                  var condition = d.specimenCondition || (typeof specimenCondition === 'string' ? specimenCondition : 'standard');
+                  var detail = eyeRealistic ? 1 : 0.72;
+                  var gloss = (0.22 + moisture * 0.78) * (0.45 + lampStrength * 0.55) * detail;
+                  if (condition === 'dehydrated') gloss *= 0.35;
+                  if (eyeCloudy) gloss *= 0.45;
+                  var glass = kind !== 'ciliary';
+                  ctx.save();
+                  try {
+                    // Clip BEFORE any material paths are started. The optical rim below uses
+                    // the unchanged authored path, rather than an approximate reflection arc.
+                    ctx.clip(); ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                    ctx.shadowColor = 'rgba(0,0,0,0)';
+                    ctx.save();
+                    try {
+                      ctx.translate(x, y); ctx.scale(rx, ry);
+                      ctx.globalCompositeOperation = 'multiply';
+                      var volume = ctx.createLinearGradient(lx * 1.2, ly * 1.2, -lx * 1.2, -ly * 1.2);
+                      volume.addColorStop(0, 'rgba(28,32,34,0)');
+                      volume.addColorStop(0.54, 'rgba(28,32,34,0.015)');
+                      volume.addColorStop(1, 'rgba(28,32,34,' + ((glass ? 0.11 : 0.30) * detail).toFixed(3) + ')');
+                      ctx.fillStyle = volume; ctx.fillRect(-1.35, -1.35, 2.7, 2.7);
+                      ctx.globalCompositeOperation = 'screen';
+                      var glow = ctx.createRadialGradient(lx * 0.34, ly * 0.32, 0.02, lx * 0.12, ly * 0.10, glass ? 0.84 : 1.08);
+                      glow.addColorStop(0, 'rgba(248,246,232,' + ((glass ? 0.20 : 0.17) * gloss).toFixed(3) + ')');
+                      glow.addColorStop(0.48, 'rgba(248,246,232,' + (0.045 * gloss).toFixed(3) + ')');
+                      glow.addColorStop(1, 'rgba(248,246,232,0)');
+                      ctx.fillStyle = glow; ctx.fillRect(-1.35, -1.35, 2.7, 2.7);
+                      ctx.globalCompositeOperation = 'source-over';
+                      if (glass) {
+                        // Clear central transmission and a subdued peripheral thickness cue.
+                        // No nested fiber rings, cell outlines, bubbles, or enlarged histology.
+                        var edge = ctx.createRadialGradient(0, 0, 0.35, 0, 0, 1.20);
+                        edge.addColorStop(0, 'rgba(103,132,137,0)');
+                        edge.addColorStop(0.62, 'rgba(103,132,137,0)');
+                        edge.addColorStop(1, 'rgba(103,132,137,' + ((kind === 'lens' ? 0.13 : 0.085) * detail).toFixed(3) + ')');
+                        ctx.fillStyle = edge; ctx.fillRect(-1.35, -1.35, 2.7, 2.7);
+                      } else {
+                        // A few broad, lens-facing folds distinguish pigmented ciliary tissue
+                        // from the adjoining transparent ligaments, without wood-grain stripes.
+                        var innerSide = side < 0 ? 1 : -1;
+                        ctx.lineCap = 'round'; ctx.lineWidth = 0.62 / Math.max(rx, ry);
+                        ctx.strokeStyle = 'rgba(42,25,29,' + (0.20 * detail).toFixed(3) + ')';
+                        for (var fold = 0; fold < 3; fold++) {
+                          var outerY = -0.50 + fold * 0.50;
+                          ctx.beginPath(); ctx.moveTo(-0.72, outerY);
+                          ctx.bezierCurveTo(-0.22, outerY * 0.90, 0.28, innerSide * 0.15,
+                            0.70, innerSide * (0.32 + fold * 0.10)); ctx.stroke();
+                        }
+                      }
+                    } finally { ctx.restore(); }
+                    if (glass) {
+                      // fillRect never changes the current path. This direction-weighted rim
+                      // therefore follows the exact cornea/lens boundary and is clipped inward.
+                      var rim = ctx.createLinearGradient(x + lx * rx, y + ly * ry, x - lx * rx, y - ly * ry);
+                      rim.addColorStop(0, 'rgba(255,253,240,' + (0.55 * gloss).toFixed(3) + ')');
+                      rim.addColorStop(0.34, 'rgba(255,253,240,' + (0.13 * gloss).toFixed(3) + ')');
+                      rim.addColorStop(0.70, 'rgba(255,253,240,0)'); rim.addColorStop(1, 'rgba(255,253,240,0)');
+                      ctx.globalCompositeOperation = 'screen'; ctx.strokeStyle = rim;
+                      ctx.lineWidth = kind === 'lens' ? 0.85 : 0.75; ctx.stroke();
+                    }
+                  } finally { ctx.restore(); }
+                }
+
+                if (activeLayer === 'organs') registerAnatomyOpening(function (path) { traceSheepEyeGlobe(1, 1, path); });
                 // Orbital fat and extraocular muscle remnants sit behind the isolated globe.
                 if (activeLayer === 'skin') {
                   ctx.save(); ctx.globalAlpha = eyeAccessible ? 0.34 : 0.5;
@@ -11756,6 +16447,7 @@ var d = labToolData.dissection || {};
                 traceSheepEyeGlobe(); ctx.fillStyle = scleraGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#475569' : '#6b625b'; ctx.lineWidth = eyeAccessible ? 2.2 : 1.45; ctx.stroke();
                 ctx.shadowBlur = 0;
 
+                finishCurrentTissuePath(eyeCx, eyeCy, eyeRx, eyeRy, 'collagen', 'sheep-sclera');
                 // Choroid: thin, vascular, heavily pigmented band inside the sclera.
                 var choroidGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.2, eyeCy - eyeRy * 0.25, eyeR * 0.08, eyeCx, eyeCy, eyeR);
                 choroidGrad.addColorStop(0, 'rgba(101,61,48,0.98)'); choroidGrad.addColorStop(0.72, 'rgba(54,33,34,0.99)'); choroidGrad.addColorStop(1, 'rgba(24,18,22,1)');
@@ -11771,9 +16463,12 @@ var d = labToolData.dissection || {};
                 ctx.restore();
 
                 // Retina is a delicate translucent lining over the choroid and tapetum.
-                traceSheepEyeGlobe(0.89,0.865);
-                ctx.fillStyle = eyeAccessible ? 'rgba(254,249,195,0.92)' : 'rgba(244,230,183,0.72)'; ctx.fill();
-                ctx.strokeStyle = 'rgba(253,230,138,0.65)'; ctx.lineWidth = eyeAccessible ? 1.5 : 0.85; ctx.stroke();
+                drawSheepRetinalMembrane(ctx, {
+                  width: W, height: H, detailed: sceneDetail && !eyeAccessible && !highContrastEnabled,
+                  accessible: eyeAccessible, highContrast: highContrastEnabled, lightDirection: lightDirection,
+                  moisture: liveTissueState && liveTissueState.moisture,
+                  lightIntensity: d.lightIntensity, condition: specimenCondition
+                });
 
                 // Vitreous gel fills the posterior globe with soft depth and condition-aware clarity.
                 var vitreousGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.28, eyeCy - eyeRy * 0.30, 2, eyeCx + eyeRx * 0.05, eyeCy, eyeRx * 0.86);
@@ -11793,6 +16488,7 @@ var d = labToolData.dissection || {};
                 ctx.strokeStyle = 'rgba(113,63,18,0.52)'; ctx.lineWidth = 0.7; ctx.stroke();
 
                 // Corneal dome and anterior chamber form a true bulge rather than a painted arc.
+                var opticalSurfaceDetail = sceneDetail && !eyeAccessible && !highContrastEnabled;
                 var corneaBaseX = eyeCx - eyeRx * 0.82;
                 var corneaTipX = eyeCx - eyeRx * 1.105;
                 ctx.beginPath();
@@ -11802,10 +16498,12 @@ var d = labToolData.dissection || {};
                 ctx.bezierCurveTo(eyeCx - eyeRx * 0.88, eyeCy + eyeRy * 0.24, eyeCx - eyeRx * 0.88, eyeCy - eyeRy * 0.24, corneaBaseX, eyeCy - eyeRy * 0.48);
                 ctx.closePath();
                 var corneaGrad = ctx.createLinearGradient(corneaTipX, eyeCy, corneaBaseX, eyeCy);
-                corneaGrad.addColorStop(0, eyeCloudy ? 'rgba(226,232,240,0.62)' : 'rgba(224,242,254,0.34)');
-                corneaGrad.addColorStop(0.58, eyeCloudy ? 'rgba(203,213,225,0.48)' : 'rgba(186,230,253,0.16)');
+                corneaGrad.addColorStop(0, eyeCloudy ? 'rgba(226,232,240,0.62)' : (opticalSurfaceDetail ? 'rgba(224,238,235,0.18)' : 'rgba(224,242,254,0.34)'));
+                corneaGrad.addColorStop(0.58, eyeCloudy ? 'rgba(203,213,225,0.48)' : (opticalSurfaceDetail ? 'rgba(201,226,226,0.075)' : 'rgba(186,230,253,0.16)'));
                 corneaGrad.addColorStop(1, 'rgba(125,211,252,0.05)');
-                ctx.fillStyle = corneaGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#38bdf8' : 'rgba(125,211,252,0.82)'; ctx.lineWidth = eyeAccessible ? 2.2 : 1.35; ctx.stroke();
+                ctx.fillStyle = corneaGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#38bdf8' : (opticalSurfaceDetail ? 'rgba(194,219,218,0.48)' : 'rgba(125,211,252,0.82)'); ctx.lineWidth = eyeAccessible ? 2.2 : (opticalSurfaceDetail ? 0.90 : 1.35); ctx.stroke();
+                finishCurrentOpticalSurface((corneaTipX + corneaBaseX) / 2, eyeCy,
+                  (corneaBaseX - corneaTipX) / 2, eyeRy * 0.48, 'cornea');
 
                 // Ciliary body, iris leaflets, and zonular fibers surround the biconvex lens.
                 var lensX = eyeCx - eyeRx * 0.43;
@@ -11814,6 +16512,7 @@ var d = labToolData.dissection || {};
                   var ciliaryY = eyeCy + side * eyeRy * 0.43;
                   ctx.beginPath(); ctx.ellipse(eyeCx - eyeRx * 0.57, ciliaryY, eyeRx * 0.12, eyeRy * 0.095, side * 0.28, 0, Math.PI * 2);
                   ctx.fillStyle = eyeAccessible ? '#92400e' : '#68453c'; ctx.fill(); ctx.strokeStyle = 'rgba(45,28,28,0.72)'; ctx.lineWidth = 0.75; ctx.stroke();
+                  finishCurrentOpticalSurface(eyeCx - eyeRx * 0.57, ciliaryY, eyeRx * 0.12, eyeRy * 0.095, 'ciliary', side);
                   ctx.beginPath(); ctx.moveTo(eyeCx - eyeRx * 0.67, ciliaryY - side * eyeRy * 0.025);
                   ctx.bezierCurveTo(eyeCx - eyeRx * 0.66, eyeCy + side * eyeRy * 0.28, eyeCx - eyeRx * 0.61, eyeCy + side * eyeRy * 0.16, eyeCx - eyeRx * 0.58, eyeCy + side * eyeRy * 0.115);
                   ctx.strokeStyle = eyeAccessible ? '#78350f' : '#54352f'; ctx.lineWidth = eyeR * 0.055; ctx.stroke();
@@ -11824,17 +16523,29 @@ var d = labToolData.dissection || {};
                     var zonuleEndX = lensX + eyeRx * (0.03 + zf * 0.08);
                     var zonuleEndY = eyeCy + side * lensRy * (0.68 + zf * 0.07);
                     ctx.beginPath(); ctx.moveTo(zonuleStartX, zonuleStartY); ctx.lineTo(zonuleEndX, zonuleEndY);
-                    ctx.strokeStyle = 'rgba(226,232,240,0.48)'; ctx.lineWidth = 0.48; ctx.stroke();
+                    if (opticalSurfaceDetail) {
+                      // Retain all authored endpoints and ten fine suspension strands. A soft
+                      // longitudinal reflection distinguishes taut filaments from muscle.
+                      var zonuleLight = ctx.createLinearGradient(zonuleStartX, zonuleStartY, zonuleEndX, zonuleEndY);
+                      zonuleLight.addColorStop(0, 'rgba(214,215,198,0.18)');
+                      zonuleLight.addColorStop(0.52, 'rgba(244,242,220,0.56)');
+                      zonuleLight.addColorStop(1, 'rgba(229,230,210,0.26)');
+                      ctx.strokeStyle = zonuleLight; ctx.lineWidth = zonule % 2 ? 0.40 : 0.48;
+                    } else {
+                      ctx.strokeStyle = 'rgba(226,232,240,0.48)'; ctx.lineWidth = 0.48;
+                    }
+                    ctx.stroke();
                   }
                 });
 
                 var lensGrad = ctx.createRadialGradient(lensX - lensRx * 0.34, eyeCy - lensRy * 0.35, 1, lensX, eyeCy, lensRy);
-                lensGrad.addColorStop(0, eyeCloudy ? 'rgba(248,250,252,0.95)' : 'rgba(255,255,255,0.82)');
-                lensGrad.addColorStop(0.55, eyeCloudy ? 'rgba(203,213,225,0.88)' : 'rgba(224,242,254,0.48)');
-                lensGrad.addColorStop(1, eyeCloudy ? 'rgba(148,163,184,0.75)' : 'rgba(125,211,252,0.22)');
+                lensGrad.addColorStop(0, eyeCloudy ? 'rgba(248,250,252,0.95)' : (opticalSurfaceDetail ? 'rgba(249,250,243,0.24)' : 'rgba(255,255,255,0.82)'));
+                lensGrad.addColorStop(0.55, eyeCloudy ? 'rgba(203,213,225,0.88)' : (opticalSurfaceDetail ? 'rgba(217,235,230,0.12)' : 'rgba(224,242,254,0.48)'));
+                lensGrad.addColorStop(1, eyeCloudy ? 'rgba(148,163,184,0.75)' : (opticalSurfaceDetail ? 'rgba(183,209,211,0.32)' : 'rgba(125,211,252,0.22)'));
                 ctx.beginPath(); ctx.ellipse(lensX, eyeCy, lensRx, lensRy, 0, 0, Math.PI * 2);
-                ctx.fillStyle = lensGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#0ea5e9' : 'rgba(186,230,253,0.82)'; ctx.lineWidth = eyeAccessible ? 1.5 : 0.9; ctx.stroke();
-                if (!eyeAccessible) {
+                ctx.fillStyle = lensGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#0ea5e9' : (opticalSurfaceDetail ? 'rgba(196,221,218,0.50)' : 'rgba(186,230,253,0.82)'); ctx.lineWidth = eyeAccessible ? 1.5 : 0.9; ctx.stroke();
+                finishCurrentOpticalSurface(lensX, eyeCy, lensRx, lensRy, 'lens');
+                if (!opticalSurfaceDetail && !eyeAccessible) {
                   ctx.beginPath(); ctx.ellipse(lensX - lensRx * 0.2, eyeCy - lensRy * 0.22, lensRx * 0.34, lensRy * 0.55, -0.08, Math.PI * 0.84, Math.PI * 1.52);
                   ctx.strokeStyle = 'rgba(255,255,255,0.34)'; ctx.lineWidth = 1.1; ctx.stroke();
                 }
@@ -11857,12 +16568,82 @@ var d = labToolData.dissection || {};
                 var opticDiscX = eyeCx + eyeRx * 0.76; var opticDiscY = eyeCy + eyeRy * 0.10;
                 ctx.beginPath(); ctx.ellipse(opticDiscX, opticDiscY, eyeR * 0.035, eyeR * 0.026, 0.2, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(253,186,116,0.86)'; ctx.fill(); ctx.strokeStyle = 'rgba(154,52,18,0.55)'; ctx.lineWidth = 0.55; ctx.stroke();
-                ctx.save(); ctx.globalAlpha = 0.46; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.7;
-                [-0.55,-0.18,0.20,0.52].forEach(function (vesselOffset) {
-                  ctx.beginPath(); ctx.moveTo(opticDiscX, opticDiscY);
-                  ctx.bezierCurveTo(eyeCx + eyeRx * 0.48, eyeCy + eyeRy * vesselOffset * 0.44, eyeCx + eyeRx * 0.12, eyeCy + eyeRy * vesselOffset * 0.72, eyeCx - eyeRx * 0.05, eyeCy + eyeRy * vesselOffset * 0.80); ctx.stroke();
-                });
-                ctx.restore();
+                ctx.save();
+                try {
+                  var retinalDetail = sceneDetail && !eyeAccessible && !highContrastEnabled;
+                  if (!retinalDetail) {
+                    // Preserve the established simple teaching pattern in inclusive/detail-off views.
+                    ctx.globalAlpha = 0.46; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.7;
+                    [-0.55,-0.18,0.20,0.52].forEach(function (vesselOffset) {
+                      ctx.beginPath(); ctx.moveTo(opticDiscX, opticDiscY);
+                      ctx.bezierCurveTo(eyeCx + eyeRx * 0.48, eyeCy + eyeRy * vesselOffset * 0.44,
+                        eyeCx + eyeRx * 0.12, eyeCy + eyeRy * vesselOffset * 0.72,
+                        eyeCx - eyeRx * 0.05, eyeCy + eyeRy * vesselOffset * 0.80); ctx.stroke();
+                    });
+                  } else {
+                    // This vascular overlay follows the exposed retinal fundus. Keep it inside
+                    // the authored retinal interior, separate from the yellow optical light path.
+                    traceSheepEyeGlobe(0.89, 0.865); ctx.clip();
+                    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                    ctx.globalAlpha = eyeRealistic ? 0.70 : 0.60;
+                    ctx.fillStyle = eyeRealistic ? '#965957' : '#b26560';
+                    var retinalWidth = Math.max(1.10, Math.min(1.75, eyeR * 0.008));
+                    function retinalSurfacePoint(x, y) { return { x: eyeCx + eyeRx * x, y: eyeCy + eyeRy * y }; }
+                    function retinalCurvePoint(curve, t) {
+                      var u = 1 - t;
+                      return {
+                        x: u * u * u * curve[0].x + 3 * u * u * t * curve[1].x + 3 * u * t * t * curve[2].x + t * t * t * curve[3].x,
+                        y: u * u * u * curve[0].y + 3 * u * u * t * curve[1].y + 3 * u * t * t * curve[2].y + t * t * t * curve[3].y
+                      };
+                    }
+                    function retinalCurveNormal(curve, t) {
+                      var u = 1 - t;
+                      var dx = 3 * u * u * (curve[1].x - curve[0].x) + 6 * u * t * (curve[2].x - curve[1].x) + 3 * t * t * (curve[3].x - curve[2].x);
+                      var dy = 3 * u * u * (curve[1].y - curve[0].y) + 6 * u * t * (curve[2].y - curve[1].y) + 3 * t * t * (curve[3].y - curve[2].y);
+                      var length = Math.sqrt(dx * dx + dy * dy) || 1;
+                      return { x: -dy / length, y: dx / length };
+                    }
+                    function paintRetinalVessel(curve, width) {
+                      // Two native cubic boundaries create one tapering ribbon. There are no
+                      // repeated bead markers, animated flow dots, or sampled polyline joints.
+                      var n0 = retinalCurveNormal(curve, 0), n1 = retinalCurveNormal(curve, 1 / 3), n2 = retinalCurveNormal(curve, 2 / 3);
+                      var half = width * 0.5;
+                      ctx.beginPath(); ctx.moveTo(curve[0].x + n0.x * half, curve[0].y + n0.y * half);
+                      ctx.bezierCurveTo(curve[1].x + n1.x * half * 0.78, curve[1].y + n1.y * half * 0.78,
+                        curve[2].x + n2.x * half * 0.40, curve[2].y + n2.y * half * 0.40, curve[3].x, curve[3].y);
+                      ctx.bezierCurveTo(curve[2].x - n2.x * half * 0.40, curve[2].y - n2.y * half * 0.40,
+                        curve[1].x - n1.x * half * 0.78, curve[1].y - n1.y * half * 0.78,
+                        curve[0].x - n0.x * half, curve[0].y - n0.y * half); ctx.closePath(); ctx.fill();
+                    }
+                    var retinalTrees = [
+                      { controls: [[0.75,-0.20],[0.50,-0.52],[0.18,-0.64]], width: 1.05,
+                        branches: [{ t: 0.38, end: [0.72,-0.46] }, { t: 0.68, end: [0.14,-0.45] }] },
+                      { controls: [[0.55,0.04],[0.18,-0.06],[-0.15,-0.22]], width: 0.90,
+                        branches: [{ t: 0.36, end: [0.32,0.19] }, { t: 0.70, end: [-0.23,-0.02] }] },
+                      { controls: [[0.63,0.32],[0.35,0.57],[-0.02,0.59]], width: 1.00,
+                        branches: [{ t: 0.38, end: [0.60,0.52] }, { t: 0.70, end: [0.12,0.34] }] }
+                    ];
+                    retinalTrees.forEach(function (tree) {
+                      // The three sparse trunks are representative, not a fixed sheep vessel count.
+                      var curve = [{ x: opticDiscX, y: opticDiscY }].concat(tree.controls.map(function (p) { return retinalSurfacePoint(p[0], p[1]); }));
+                      paintRetinalVessel(curve, retinalWidth * tree.width);
+                      tree.branches.forEach(function (branch) {
+                        // Evaluate the parent curve so every branch is physically attached.
+                        var root = retinalCurvePoint(curve, branch.t), normal = retinalCurveNormal(curve, branch.t);
+                        var end = retinalSurfacePoint(branch.end[0], branch.end[1]);
+                        var reach = Math.sqrt(Math.pow(end.x - root.x, 2) + Math.pow(end.y - root.y, 2));
+                        var parentDX = normal.y, parentDY = -normal.x;
+                        var fork = [root,
+                          { x: root.x + parentDX * reach * 0.24, y: root.y + parentDY * reach * 0.24 },
+                          { x: root.x + (end.x - root.x) * 0.72, y: root.y + (end.y - root.y) * 0.72 }, end];
+                        var parentU = 1 - branch.t;
+                        var parentTaper = parentU * parentU * parentU + 3 * parentU * parentU * branch.t * 0.78
+                          + 3 * parentU * branch.t * branch.t * 0.40;
+                        paintRetinalVessel(fork, retinalWidth * tree.width * parentTaper * 0.80);
+                      });
+                    });
+                  }
+                } finally { ctx.restore(); }
 
                 // Sheep retinal specialization is represented as an area centralis, not a human fovea/macula.
                 ctx.beginPath(); ctx.ellipse(eyeCx + eyeRx * 0.52, eyeCy - eyeRy * 0.02, eyeRx * 0.075, eyeRy * 0.038, -0.08, 0, Math.PI * 2);
@@ -11874,6 +16655,7 @@ var d = labToolData.dissection || {};
                 }
 
                 // Animated rays retain the optics lesson while respecting reduced-motion preferences.
+                if (!eyeRealistic || livingFunctionEnabled) {
                 var rayPhase = dissMotionReduced ? 0 : (dissTick * 0.02) % (Math.PI * 2);
                 var rayAlpha = eyeAccessible ? 0.72 : 0.43 + Math.sin(rayPhase) * 0.08;
                 var corneaHitX = eyeCx - eyeRx * 1.02;
@@ -11888,23 +16670,15 @@ var d = labToolData.dissection || {};
                 ctx.beginPath(); ctx.arc(focusX, eyeCy + eyeRy * 0.035, 5, 0, Math.PI * 2); ctx.fillStyle = focusGlow; ctx.fill();
                 if (!d.quizMode) {
                   ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-                  var refractedLabel = 'Refracted light';
-                  var refractedWidth = ctx.measureText(refractedLabel).width;
-                  // The label belongs at the start of the incoming ray, which is well to the
-                  // LEFT of the eye. The ventral transform mirrors about cx, so that anchor
-                  // landed at the right canvas edge and the word ran off it. Clamp where the
-                  // text actually lands on screen, then map the anchor back into specimen space.
-                  var refractedAnchorX = eyeCx - eyeRx * 1.46;
-                  var refractedScreenX = specimenScale.x < 0 ? 2 * cx - refractedAnchorX : refractedAnchorX;
-                  // 20, not 6: the decorative tray frame is drawn about 12px inside the canvas
-                  // edge, so clearing the canvas alone still left the last letter on the border.
-                  refractedScreenX = Math.max(20, Math.min(W - refractedWidth - 20, refractedScreenX));
-                  refractedAnchorX = specimenScale.x < 0 ? 2 * cx - refractedScreenX : refractedScreenX;
-                  fillReadableSpecimenText(refractedLabel, refractedAnchorX, eyeCy - eyeRy * 0.29);
+                  drawClampedSpecimenCaption(ctx, canvas, 'Refracted light',
+                    eyeCx - eyeRx * 1.46, eyeCy - eyeRy * 0.29, {
+                      fontSize: largeTextEnabled ? 14 : 12, padding: 12, color: '#fbbf24'
+                    });
                 }
                 ctx.restore();
 
-                if (eyeRealistic && !eyeCloudy) {
+                }
+                if (eyeRealistic && !eyeCloudy && !opticalSurfaceDetail) {
                   ctx.beginPath(); ctx.ellipse(eyeCx - eyeRx * 0.86, eyeCy - eyeRy * 0.18, eyeRx * 0.10, eyeRy * 0.17, -0.24, Math.PI * 0.84, Math.PI * 1.52);
                   ctx.strokeStyle = 'rgba(255,255,255,0.32)'; ctx.lineWidth = 1.15; ctx.stroke();
                 }
@@ -11916,16 +16690,18 @@ var d = labToolData.dissection || {};
                 var heartScale = heartMotionActive ? 1 + livingWave * 0.018 : 1;
                 var heartAccessible = (d.visualRealism || visualRealism) === 'accessible';
                 var heartRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                if (heartRealistic && !highContrastEnabled) layerStroke = '#593039';
 
-                var traceSheepHeartBody = function traceSheepHeartBody() {
-                  ctx.beginPath();
-                  ctx.moveTo(cx - W * 0.055, cy + H * 0.29);
-                  ctx.bezierCurveTo(cx - W * 0.145, cy + H * 0.235, cx - W * 0.235, cy + H * 0.095, cx - W * 0.215, cy - H * 0.035);
-                  ctx.bezierCurveTo(cx - W * 0.205, cy - H * 0.125, cx - W * 0.145, cy - H * 0.205, cx - W * 0.065, cy - H * 0.20);
-                  ctx.bezierCurveTo(cx - W * 0.015, cy - H * 0.245, cx + W * 0.095, cy - H * 0.225, cx + W * 0.155, cy - H * 0.155);
-                  ctx.bezierCurveTo(cx + W * 0.235, cy - H * 0.075, cx + W * 0.215, cy + H * 0.08, cx + W * 0.115, cy + H * 0.185);
-                  ctx.bezierCurveTo(cx + W * 0.055, cy + H * 0.25, cx - W * 0.015, cy + H * 0.295, cx - W * 0.055, cy + H * 0.29);
-                  ctx.closePath();
+                var traceSheepHeartBody = function traceSheepHeartBody(traceContext) {
+                  traceContext = traceContext || ctx;
+                  if (traceContext.beginPath) traceContext.beginPath();
+                  traceContext.moveTo(cx - W * 0.055, cy + H * 0.29);
+                  traceContext.bezierCurveTo(cx - W * 0.145, cy + H * 0.235, cx - W * 0.235, cy + H * 0.095, cx - W * 0.215, cy - H * 0.035);
+                  traceContext.bezierCurveTo(cx - W * 0.205, cy - H * 0.125, cx - W * 0.145, cy - H * 0.205, cx - W * 0.065, cy - H * 0.20);
+                  traceContext.bezierCurveTo(cx - W * 0.015, cy - H * 0.245, cx + W * 0.095, cy - H * 0.225, cx + W * 0.155, cy - H * 0.155);
+                  traceContext.bezierCurveTo(cx + W * 0.235, cy - H * 0.075, cx + W * 0.215, cy + H * 0.08, cx + W * 0.115, cy + H * 0.185);
+                  traceContext.bezierCurveTo(cx + W * 0.055, cy + H * 0.25, cx - W * 0.015, cy + H * 0.295, cx - W * 0.055, cy + H * 0.29);
+                  traceContext.closePath();
                 };
 
                 ctx.save();
@@ -11934,7 +16710,7 @@ var d = labToolData.dissection || {};
                 // Great vessels are layered behind the myocardial mass and retain lumen depth.
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 var aortaGrad = ctx.createLinearGradient(cx - W * 0.08, cy - H * 0.36, cx + W * 0.16, cy - H * 0.20);
-                aortaGrad.addColorStop(0, '#7f1d1d'); aortaGrad.addColorStop(0.46, '#dc2626'); aortaGrad.addColorStop(1, '#991b1b');
+                aortaGrad.addColorStop(0, heartRealistic ? '#8d5751' : '#7f1d1d'); aortaGrad.addColorStop(0.46, heartRealistic ? '#c49380' : '#dc2626'); aortaGrad.addColorStop(1, heartRealistic ? '#7d4d4c' : '#991b1b');
                 ctx.beginPath(); ctx.moveTo(cx - W * 0.035, cy - H * 0.12);
                 ctx.bezierCurveTo(cx - W * 0.045, cy - H * 0.25, cx - W * 0.02, cy - H * 0.34, cx + W * 0.055, cy - H * 0.34);
                 ctx.bezierCurveTo(cx + W * 0.125, cy - H * 0.34, cx + W * 0.155, cy - H * 0.285, cx + W * 0.155, cy - H * 0.225);
@@ -11943,12 +16719,12 @@ var d = labToolData.dissection || {};
                 ctx.beginPath(); ctx.moveTo(cx + W * 0.025, cy - H * 0.335); ctx.lineTo(cx + W * 0.015, cy - H * 0.405);
                 ctx.moveTo(cx + W * 0.070, cy - H * 0.335); ctx.lineTo(cx + W * 0.076, cy - H * 0.405);
                 ctx.moveTo(cx + W * 0.112, cy - H * 0.31); ctx.lineTo(cx + W * 0.14, cy - H * 0.375);
-                ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = W * 0.013; ctx.stroke();
+                ctx.strokeStyle = heartRealistic ? '#b17a6d' : '#b91c1c'; ctx.lineWidth = W * 0.013; ctx.stroke();
 
                 var pulmGrad = ctx.createLinearGradient(cx + W * 0.015, cy - H * 0.12, cx + W * 0.17, cy - H * 0.30);
-                pulmGrad.addColorStop(0, '#1e3a8a'); pulmGrad.addColorStop(0.52, '#2563eb'); pulmGrad.addColorStop(1, '#1e40af');
+                pulmGrad.addColorStop(0, heartRealistic ? '#634751' : '#1e3a8a'); pulmGrad.addColorStop(0.52, heartRealistic ? '#a27d83' : '#2563eb'); pulmGrad.addColorStop(1, heartRealistic ? '#5e424e' : '#1e40af');
                 ctx.beginPath(); ctx.moveTo(cx + W * 0.035, cy - H * 0.08); ctx.bezierCurveTo(cx + W * 0.055, cy - H * 0.19, cx + W * 0.09, cy - H * 0.26, cx + W * 0.145, cy - H * 0.29);
-                ctx.strokeStyle = 'rgba(23,37,84,0.88)'; ctx.lineWidth = W * 0.038; ctx.stroke(); ctx.strokeStyle = pulmGrad; ctx.lineWidth = W * 0.027; ctx.stroke();
+                ctx.strokeStyle = heartRealistic ? '#49303c' : 'rgba(23,37,84,0.88)'; ctx.lineWidth = W * 0.038; ctx.stroke(); ctx.strokeStyle = pulmGrad; ctx.lineWidth = W * 0.027; ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(cx + W * 0.135, cy - H * 0.282); ctx.quadraticCurveTo(cx + W * 0.20, cy - H * 0.29, cx + W * 0.235, cy - H * 0.255);
                 ctx.moveTo(cx + W * 0.13, cy - H * 0.286); ctx.quadraticCurveTo(cx + W * 0.09, cy - H * 0.34, cx + W * 0.045, cy - H * 0.35);
                 ctx.strokeStyle = pulmGrad; ctx.lineWidth = W * 0.017; ctx.stroke();
@@ -11956,8 +16732,26 @@ var d = labToolData.dissection || {};
                 // Cranial and caudal venae cavae enter the right atrium from opposite directions.
                 ctx.beginPath(); ctx.moveTo(cx + W * 0.17, cy - H * 0.09); ctx.lineTo(cx + W * 0.19, cy - H * 0.36);
                 ctx.moveTo(cx + W * 0.16, cy + H * 0.055); ctx.lineTo(cx + W * 0.205, cy + H * 0.235);
-                ctx.strokeStyle = 'rgba(30,58,138,0.92)'; ctx.lineWidth = W * 0.031; ctx.stroke();
-                ctx.strokeStyle = 'rgba(59,130,246,0.78)'; ctx.lineWidth = W * 0.021; ctx.stroke();
+                ctx.strokeStyle = heartRealistic ? '#72535e' : 'rgba(30,58,138,0.92)'; ctx.lineWidth = W * 0.031; ctx.stroke();
+                ctx.strokeStyle = heartRealistic ? '#ae8e96' : 'rgba(59,130,246,0.78)'; ctx.lineWidth = W * 0.021; ctx.stroke();
+
+                if (heartRealistic && sceneDetail && !highContrastEnabled) {
+                  // The isolated specimen has cut vessel ends with a visible wall around each lumen.
+                  function drawCutVesselFace(x, y, rx, ry, rotation, wall) {
+                    ctx.save(); ctx.shadowBlur = 0;
+                    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2);
+                    ctx.fillStyle = wall; ctx.fill(); ctx.strokeStyle = '#68474c'; ctx.lineWidth = 0.65; ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(x, y, rx * 0.64, ry * 0.56, rotation, 0, Math.PI * 2);
+                    ctx.fillStyle = '#35232c'; ctx.fill(); ctx.restore();
+                  }
+                  drawCutVesselFace(cx + W * 0.015, cy - H * 0.405, W * 0.008, H * 0.004, -0.12, '#c4a18e');
+                  drawCutVesselFace(cx + W * 0.076, cy - H * 0.405, W * 0.008, H * 0.004, 0.05, '#c4a18e');
+                  drawCutVesselFace(cx + W * 0.14, cy - H * 0.375, W * 0.008, H * 0.004, 0.34, '#c4a18e');
+                  drawCutVesselFace(cx + W * 0.19, cy - H * 0.36, W * 0.015, H * 0.006, 0.10, '#c5aaa8');
+                  drawCutVesselFace(cx + W * 0.205, cy + H * 0.235, W * 0.015, H * 0.006, -0.24, '#bea0a2');
+                  drawCutVesselFace(cx + W * 0.235, cy - H * 0.255, W * 0.010, H * 0.004, 0.55, '#bda19d');
+                  drawCutVesselFace(cx + W * 0.045, cy - H * 0.35, W * 0.010, H * 0.004, -0.65, '#bda19d');
+                }
 
                 var myocardiumGrad = ctx.createRadialGradient(cx - W * 0.11, cy - H * 0.14, W * 0.018, cx, cy + H * 0.04, W * 0.30);
                 myocardiumGrad.addColorStop(0, heartAccessible ? layerColor : '#c95f59');
@@ -11965,6 +16759,7 @@ var d = labToolData.dissection || {};
                 myocardiumGrad.addColorStop(0.78, heartAccessible ? layerColor : '#762f36');
                 myocardiumGrad.addColorStop(1, heartAccessible ? layerColor : '#4c2230');
                 traceSheepHeartBody(); ctx.fillStyle = myocardiumGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = heartAccessible ? 2.1 : 1.35; ctx.stroke();
+                finishCurrentTissuePath(cx, cy + H * 0.03, W * 0.23, H * 0.28, 'muscle', 'sheep-myocardium');
                 ctx.shadowBlur = 0;
 
                 // Atrial auricles break the silhouette at the base, as in a preserved mammalian heart.
@@ -12130,6 +16925,7 @@ var d = labToolData.dissection || {};
                   var valvePhase = dissMotionReduced ? 0 : Math.sin(dissTick * 0.05);
                   var valveLift = Math.max(0, valvePhase) * 2.4;
 
+                  registerAnatomyOpening(traceSheepHeartBody);
                   // The opened myocardial field retains the external silhouette around every chamber.
                   traceSheepHeartBody();
                   var cutawayBed = ctx.createRadialGradient(cx - W * 0.06, cy - H * 0.04, 4, cx, cy + H * 0.05, W * 0.27);
@@ -12141,6 +16937,21 @@ var d = labToolData.dissection || {};
                   // Atria sit above the atrioventricular plane with thinner, ridged walls.
                   function traceHeartAtrium(side) {
                     var atriumCx = cx + side * W * 0.085;
+                    if (sceneDetail && !heartCutawayAccessible && !highContrastEnabled) {
+                      ctx.save();
+                      try {
+                        ctx.translate(atriumCx, cy - H * 0.123); ctx.scale(side * W * 0.060, H * 0.088);
+                        ctx.beginPath(); ctx.moveTo(-0.92, -0.05);
+                        ctx.bezierCurveTo(-0.96, -0.40, -0.76, -0.83, -0.38, -0.92);
+                        ctx.bezierCurveTo(-0.22, -1.00, 0.01, -1.00, 0.17, -0.90);
+                        ctx.bezierCurveTo(0.36, -0.90, 0.58, -0.71, 0.69, -0.50);
+                        ctx.bezierCurveTo(0.92, -0.38, 1.05, -0.01, 0.98, 0.22);
+                        ctx.bezierCurveTo(0.94, 0.55, 0.68, 0.93, 0.20, 0.97);
+                        ctx.bezierCurveTo(-0.18, 1.01, -0.44, 0.74, -0.61, 0.51);
+                        ctx.bezierCurveTo(-0.88, 0.36, -0.96, 0.13, -0.92, -0.05); ctx.closePath();
+                      } finally { ctx.restore(); }
+                      return;
+                    }
                     ctx.beginPath();
                     ctx.moveTo(atriumCx - W * 0.057, cy - H * 0.13);
                     ctx.bezierCurveTo(atriumCx - W * 0.052, cy - H * 0.205, atriumCx + W * 0.035, cy - H * 0.215, atriumCx + W * 0.061, cy - H * 0.145);
@@ -12148,17 +16959,46 @@ var d = labToolData.dissection || {};
                     ctx.bezierCurveTo(atriumCx - W * 0.04, cy - H * 0.04, atriumCx - W * 0.066, cy - H * 0.08, atriumCx - W * 0.057, cy - H * 0.13);
                     ctx.closePath();
                   }
-                  traceHeartAtrium(-1); ctx.fillStyle = 'rgba(104,24,32,0.94)'; ctx.fill(); ctx.strokeStyle = 'rgba(248,113,113,0.62)'; ctx.lineWidth = 1.05; ctx.stroke();
-                  traceHeartAtrium(1); ctx.fillStyle = 'rgba(24,54,105,0.94)'; ctx.fill(); ctx.strokeStyle = 'rgba(96,165,250,0.64)'; ctx.stroke();
-                  [-1,1].forEach(function (side) {
+                  function drawHeartAtrialWall(side) {
                     var atriumCx = cx + side * W * 0.085;
-                    ctx.save(); ctx.globalAlpha = 0.34; ctx.strokeStyle = side < 0 ? '#fca5a5' : '#93c5fd'; ctx.lineWidth = 0.55;
-                    for (var atrialRidge = 0; atrialRidge < 4; atrialRidge++) {
-                      var ridgeY = cy - H * (0.17 - atrialRidge * 0.026);
-                      ctx.beginPath(); ctx.moveTo(atriumCx - W * 0.038, ridgeY); ctx.quadraticCurveTo(atriumCx, ridgeY + H * 0.014, atriumCx + W * 0.038, ridgeY - H * 0.004); ctx.stroke();
-                    }
-                    ctx.restore();
-                  });
+                    traceHeartAtrium(side);
+                    ctx.fillStyle = side < 0 ? 'rgba(104,24,32,0.94)' : (heartRealistic ? '#61363e' : 'rgba(24,54,105,0.94)'); ctx.fill();
+                    ctx.strokeStyle = side < 0 ? 'rgba(248,113,113,0.62)' : (heartRealistic ? '#b97b7b' : 'rgba(96,165,250,0.64)');
+                    ctx.lineWidth = 1.05; ctx.stroke();
+                    ctx.save();
+                    try {
+                      if (!sceneDetail || heartCutawayAccessible || highContrastEnabled) {
+                        ctx.globalAlpha = 0.34; ctx.strokeStyle = heartRealistic ? '#d6a29a' : (side < 0 ? '#fca5a5' : '#93c5fd'); ctx.lineWidth = 0.55;
+                        for (var atrialRidge = 0; atrialRidge < 4; atrialRidge++) {
+                          var ridgeY = cy - H * (0.17 - atrialRidge * 0.026);
+                          ctx.beginPath(); ctx.moveTo(atriumCx - W * 0.038, ridgeY); ctx.quadraticCurveTo(atriumCx, ridgeY + H * 0.014, atriumCx + W * 0.038, ridgeY - H * 0.004); ctx.stroke();
+                        }
+                        return;
+                      }
+                      finishCurrentCavityPath(atriumCx, cy - H * 0.123, W * 0.064, H * 0.088);
+                      traceHeartAtrium(side); ctx.clip();
+                      ctx.translate(atriumCx, cy - H * 0.123); ctx.scale(side * W * 0.060, H * 0.088);
+                      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                      var atrialUnit = 1 / Math.max(W * 0.060, H * 0.088);
+                      // Gross ridges stay in the appendage/lateral region. In particular,
+                      // the left atrial chamber retains a broad smooth central surface.
+                      var ridgeCount = side < 0 ? 4 : 6;
+                      for (var ridge = 0; ridge < ridgeCount; ridge++) {
+                        var fraction = ridge / (ridgeCount - 1);
+                        var fy = side < 0 ? -0.70 + fraction * 0.45 : -0.62 + fraction * 1.13;
+                        var outerX = 0.78 - fy * fy * 0.13;
+                        var innerX = side < 0 ? 0.38 + fraction * 0.06 : 0.22 + fraction * 0.12;
+                        for (var shoulder = 0; shoulder < 2; shoulder++) {
+                          var rise = shoulder ? -atrialUnit * 0.65 : 0;
+                          ctx.beginPath(); ctx.moveTo(outerX, fy + rise);
+                          ctx.bezierCurveTo(outerX - 0.08, fy + 0.08 + rise, innerX + 0.09, fy + 0.17 + rise, innerX, fy + 0.24 + rise);
+                          ctx.strokeStyle = shoulder ? (heartRealistic ? 'rgba(224,174,158,0.34)' : 'rgba(241,211,204,0.30)') : 'rgba(49,23,31,0.38)';
+                          ctx.lineWidth = atrialUnit * (shoulder ? 0.60 : 1.45); ctx.stroke();
+                        }
+                      }
+                    } finally { ctx.restore(); }
+                  }
+                  drawHeartAtrialWall(-1); drawHeartAtrialWall(1);
 
                   // Left ventricular myocardium is substantially thicker than the right ventricular wall.
                   ctx.beginPath();
@@ -12166,6 +17006,7 @@ var d = labToolData.dissection || {};
                   ctx.bezierCurveTo(cx - W * 0.19, cy + H * 0.055, cx - W * 0.155, cy + H * 0.205, cx - W * 0.06, cy + H * 0.272);
                   ctx.bezierCurveTo(cx - W * 0.015, cy + H * 0.23, cx + W * 0.005, cy + H * 0.075, cx - W * 0.015, cy - H * 0.02);
                   ctx.closePath(); ctx.fillStyle = '#8f333d'; ctx.fill(); ctx.strokeStyle = '#541f2a'; ctx.lineWidth = 1.2; ctx.stroke();
+                  finishCurrentTissuePath(cx - W * 0.08, cy + H * 0.12, W * 0.10, H * 0.15, 'muscle', 'sheep-lv-wall');
                   ctx.beginPath();
                   ctx.moveTo(cx - W * 0.112, cy + H * 0.005);
                   ctx.bezierCurveTo(cx - W * 0.135, cy + H * 0.072, cx - W * 0.112, cy + H * 0.176, cx - W * 0.061, cy + H * 0.226);
@@ -12180,14 +17021,15 @@ var d = labToolData.dissection || {};
                   ctx.bezierCurveTo(cx + W * 0.075, cy - H * 0.02, cx + W * 0.17, cy + H * 0.035, cx + W * 0.148, cy + H * 0.14);
                   ctx.bezierCurveTo(cx + W * 0.128, cy + H * 0.215, cx + W * 0.055, cy + H * 0.22, cx + W * 0.008, cy + H * 0.155);
                   ctx.closePath(); ctx.fillStyle = '#753543'; ctx.fill(); ctx.strokeStyle = '#49202d'; ctx.lineWidth = 0.9; ctx.stroke();
+                  finishCurrentTissuePath(cx + W * 0.077, cy + H * 0.09, W * 0.085, H * 0.13, 'muscle', 'sheep-rv-wall');
                   ctx.beginPath();
                   ctx.moveTo(cx + W * 0.038, cy + H * 0.005);
                   ctx.bezierCurveTo(cx + W * 0.092, cy + H * 0.005, cx + W * 0.138, cy + H * 0.058, cx + W * 0.12, cy + H * 0.127);
                   ctx.bezierCurveTo(cx + W * 0.105, cy + H * 0.17, cx + W * 0.058, cy + H * 0.175, cx + W * 0.026, cy + H * 0.132);
                   ctx.closePath();
                   var rvCavity = ctx.createLinearGradient(cx + W * 0.04, cy, cx + W * 0.12, cy + H * 0.15);
-                  rvCavity.addColorStop(0, 'rgba(30,64,175,0.94)'); rvCavity.addColorStop(1, 'rgba(23,37,84,0.98)');
-                  ctx.fillStyle = rvCavity; ctx.fill(); ctx.strokeStyle = 'rgba(147,197,253,0.42)'; ctx.lineWidth = 0.7; ctx.stroke();
+                  rvCavity.addColorStop(0, heartRealistic ? '#65323c' : 'rgba(30,64,175,0.94)'); rvCavity.addColorStop(1, heartRealistic ? '#291821' : 'rgba(23,37,84,0.98)');
+                  ctx.fillStyle = rvCavity; ctx.fill(); ctx.strokeStyle = heartRealistic ? 'rgba(219,174,160,0.50)' : 'rgba(147,197,253,0.42)'; ctx.lineWidth = 0.7; ctx.stroke();
 
                   // The interventricular septum is a muscular partition, not a single divider line.
                   ctx.beginPath();
@@ -12195,15 +17037,28 @@ var d = labToolData.dissection || {};
                   ctx.bezierCurveTo(cx + W * 0.012, cy + H * 0.075, cx + W * 0.012, cy + H * 0.18, cx - W * 0.055, cy + H * 0.248);
                   ctx.bezierCurveTo(cx - W * 0.025, cy + H * 0.17, cx - W * 0.022, cy + H * 0.07, cx - W * 0.038, cy - H * 0.008);
                   ctx.closePath(); ctx.fillStyle = '#9e4147'; ctx.fill(); ctx.strokeStyle = 'rgba(69,10,10,0.7)'; ctx.lineWidth = 0.65; ctx.stroke();
+                  finishCurrentTissuePath(cx - W * 0.022, cy + H * 0.12, W * 0.040, H * 0.14, 'muscle', 'sheep-heart-septum');
 
                   // AV valve leaflets open toward their ventricles; mitral has two, tricuspid three.
                   var mitralX = cx - W * 0.073; var mitralY = cy - H * 0.018;
                   var tricuspidX = cx + W * 0.074; var tricuspidY = cy - H * 0.012;
                   function drawHeartValveLeaflet(x, y, width, side, color) {
                     ctx.beginPath(); ctx.moveTo(x - width, y);
-                    ctx.quadraticCurveTo(x, y + side * (H * 0.024 + valveLift), x + width, y);
-                    ctx.quadraticCurveTo(x, y + side * H * 0.012, x - width, y);
-                    ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = 'rgba(120,53,15,0.7)'; ctx.lineWidth = 0.45; ctx.stroke();
+                    var leafletHeight = H * 0.024 + valveLift;
+                    if (heartCutawayAccessible || highContrastEnabled) {
+                      ctx.quadraticCurveTo(x, y + side * leafletHeight, x + width, y);
+                      ctx.quadraticCurveTo(x, y + side * H * 0.012, x - width, y);
+                    } else {
+                      // A broad attachment narrows to a softly scalloped free edge.
+                      ctx.bezierCurveTo(x - width * 0.74, y + side * leafletHeight * 0.72, x - width * 0.24, y + side * leafletHeight * 0.95, x, y + side * leafletHeight * 0.68);
+                      ctx.bezierCurveTo(x + width * 0.36, y + side * leafletHeight * 0.92, x + width * 0.87, y + side * leafletHeight * 0.40, x + width, y);
+                      ctx.quadraticCurveTo(x, y + side * H * 0.006, x - width, y);
+                    }
+                    ctx.closePath();
+                    var leafletSurface = ctx.createLinearGradient(x, y, x, y + side * leafletHeight);
+                    leafletSurface.addColorStop(0, heartRealistic ? '#b6a58c' : color); leafletSurface.addColorStop(0.48, heartRealistic ? '#e8dbc1' : color); leafletSurface.addColorStop(1, '#9e8b76');
+                    ctx.fillStyle = heartCutawayAccessible || highContrastEnabled ? color : leafletSurface; ctx.fill(); ctx.strokeStyle = 'rgba(120,53,15,0.7)'; ctx.lineWidth = 0.45; ctx.stroke();
+                    finishCurrentTissuePath(x, y + H * 0.01, width, H * 0.024, 'collagen', 'sheep-valve-' + x + '-' + width);
                   }
                   drawHeartValveLeaflet(mitralX - W * 0.012, mitralY, W * 0.027, 1, '#fde68a');
                   drawHeartValveLeaflet(mitralX + W * 0.022, mitralY, W * 0.022, 1, '#fef3c7');
@@ -12220,12 +17075,37 @@ var d = labToolData.dissection || {};
                   ];
                   heartPapillary.forEach(function (papillary) {
                     ctx.beginPath(); ctx.moveTo(papillary.x - W * 0.009, papillary.y + H * 0.018);
-                    ctx.quadraticCurveTo(papillary.x, papillary.y - H * 0.018, papillary.x + W * 0.009, papillary.y + H * 0.018);
-                    ctx.closePath(); ctx.fillStyle = papillary.color; ctx.fill(); ctx.strokeStyle = 'rgba(69,10,10,0.55)'; ctx.lineWidth = 0.45; ctx.stroke();
+                    if (heartCutawayAccessible || highContrastEnabled) {
+                      ctx.quadraticCurveTo(papillary.x, papillary.y - H * 0.018, papillary.x + W * 0.009, papillary.y + H * 0.018);
+                    } else {
+                      ctx.bezierCurveTo(papillary.x - W * 0.011, papillary.y + H * 0.004, papillary.x - W * 0.006, papillary.y - H * 0.014, papillary.x, papillary.y - H * 0.013);
+                      ctx.bezierCurveTo(papillary.x + W * 0.005, papillary.y - H * 0.011, papillary.x + W * 0.010, papillary.y + H * 0.007, papillary.x + W * 0.009, papillary.y + H * 0.018);
+                      ctx.quadraticCurveTo(papillary.x, papillary.y + H * 0.022, papillary.x - W * 0.009, papillary.y + H * 0.018);
+                    }
+                    ctx.closePath(); paintCurrentOrganContact(W * 0.009, H * 0.018);
+                    var papillaryVolume = ctx.createLinearGradient(papillary.x - W * 0.009, papillary.y, papillary.x + W * 0.009, papillary.y);
+                    papillaryVolume.addColorStop(0, '#60323b'); papillaryVolume.addColorStop(0.4, papillary.color); papillaryVolume.addColorStop(1, '#4b2633');
+                    ctx.fillStyle = heartCutawayAccessible || highContrastEnabled ? papillary.color : papillaryVolume; ctx.fill(); ctx.strokeStyle = 'rgba(69,10,10,0.55)'; ctx.lineWidth = 0.45; ctx.stroke();
+                    finishCurrentTissuePath(papillary.x, papillary.y, W * 0.009, H * 0.018, 'muscle', 'sheep-papillary-' + papillary.color);
                     for (var chord = -1; chord <= 1; chord++) {
+                      var chordStartY = papillary.y - H * 0.011;
+                      var chordControlX = (papillary.x + papillary.valveX) / 2 + chord * 2, chordControlY = (papillary.y + papillary.valveY) / 2;
+                      var chordEndX = papillary.valveX + chord * W * 0.009;
                       ctx.beginPath(); ctx.moveTo(papillary.x, papillary.y - H * 0.011);
-                      ctx.quadraticCurveTo((papillary.x + papillary.valveX) / 2 + chord * 2, (papillary.y + papillary.valveY) / 2, papillary.valveX + chord * W * 0.009, papillary.valveY);
-                      ctx.strokeStyle = 'rgba(254,240,138,0.74)'; ctx.lineWidth = heartCutawayAccessible ? 0.75 : 0.48; ctx.stroke();
+                      ctx.quadraticCurveTo(chordControlX, chordControlY, chordEndX, papillary.valveY);
+                      if (sceneDetail && !heartCutawayAccessible && !highContrastEnabled) {
+                        ctx.strokeStyle = 'rgba(53,30,35,0.48)'; ctx.lineWidth = 1.1; ctx.stroke();
+                      }
+                      ctx.strokeStyle = heartRealistic ? 'rgba(234,221,195,0.82)' : 'rgba(254,240,138,0.74)'; ctx.lineWidth = heartCutawayAccessible ? 0.75 : 0.55; ctx.stroke();
+                      if (sceneDetail && !heartCutawayAccessible && !highContrastEnabled) {
+                        // Fine terminal branches retain the original muscle-to-valve attachments.
+                        var branchT = 0.66, branchInverse = 1 - branchT;
+                        var branchX = branchInverse * branchInverse * papillary.x + 2 * branchInverse * branchT * chordControlX + branchT * branchT * chordEndX;
+                        var branchY = branchInverse * branchInverse * chordStartY + 2 * branchInverse * branchT * chordControlY + branchT * branchT * papillary.valveY;
+                        ctx.beginPath(); ctx.moveTo(branchX, branchY);
+                        ctx.quadraticCurveTo((branchX + chordEndX) / 2 + W * 0.003, (branchY + papillary.valveY) / 2, chordEndX + W * 0.004, papillary.valveY + H * 0.002);
+                        ctx.strokeStyle = 'rgba(228,217,194,0.68)'; ctx.lineWidth = 0.34; ctx.stroke();
+                      }
                     }
                   });
 
@@ -12235,24 +17115,22 @@ var d = labToolData.dissection || {};
                     var trabeculaT = trabecula / 6;
                     ctx.beginPath(); ctx.moveTo(cx - W * (0.108 - trabeculaT * 0.052), cy + H * (0.045 + trabeculaT * 0.15));
                     ctx.quadraticCurveTo(cx - W * 0.075, cy + H * (0.07 + trabeculaT * 0.12), cx - W * (0.04 + trabeculaT * 0.012), cy + H * (0.055 + trabeculaT * 0.14));
-                    ctx.strokeStyle = '#fca5a5'; ctx.stroke();
+                    strokeAnatomicalTube(W * 0.0036, '#b97477', '#e4b6a6', '#68353f');
                     if (trabecula < 5) {
                       ctx.beginPath(); ctx.moveTo(cx + W * (0.046 + trabeculaT * 0.04), cy + H * (0.035 + trabeculaT * 0.10));
                       ctx.quadraticCurveTo(cx + W * 0.09, cy + H * (0.05 + trabeculaT * 0.10), cx + W * (0.118 - trabeculaT * 0.015), cy + H * (0.045 + trabeculaT * 0.09));
-                      ctx.strokeStyle = '#93c5fd'; ctx.stroke();
+                      strokeAnatomicalTube(W * 0.0030, heartRealistic ? '#9d6c70' : '#93c5fd', '#d3afa1', '#52303c');
                     }
                   }
                   ctx.restore();
 
-                  // Semilunar cusps occupy the ventricular outflow tracts.
-                  function drawSemilunarValve(x, y, color) {
-                    [-1,0,1].forEach(function (cusp) {
-                      ctx.beginPath(); ctx.arc(x + cusp * W * 0.009, y, W * 0.011, 0, Math.PI);
-                      ctx.strokeStyle = color; ctx.lineWidth = heartCutawayAccessible ? 1.15 : 0.75; ctx.stroke();
-                    });
-                  }
-                  drawSemilunarValve(cx - W * 0.022, cy - H * 0.095, '#fde68a');
-                  drawSemilunarValve(cx + W * 0.052, cy - H * 0.085, '#bfdbfe');
+                  // Thin semilunar pockets retain the existing spread-out teaching projection.
+                  drawSheepSemilunarValves(ctx, {
+                    width: W, height: H, detailed: sceneDetail && !heartCutawayAccessible && !highContrastEnabled,
+                    accessible: heartCutawayAccessible, highContrast: highContrastEnabled,
+                    lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                    lightIntensity: d.lightIntensity, condition: specimenCondition
+                  });
 
                   // Compact labels remain inside the specimen instead of covering the tissue margins.
                   if (!d.quizMode) {
@@ -12264,6 +17142,7 @@ var d = labToolData.dissection || {};
                   }
 
                   // Flow paths bend through the valves and pause when reduced motion is requested.
+                  if (!heartRealistic || livingFunctionEnabled) {
                   ctx.save(); ctx.setLineDash([3,5]); ctx.lineDashOffset = dissMotionReduced ? 0 : -dissTick * 0.38; ctx.globalAlpha = 0.65;
                   ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 1.25;
                   ctx.beginPath(); ctx.moveTo(cx + W * 0.105, cy - H * 0.205); ctx.bezierCurveTo(cx + W * 0.10, cy - H * 0.10, tricuspidX, tricuspidY, cx + W * 0.075, cy + H * 0.12); ctx.stroke();
@@ -12272,6 +17151,7 @@ var d = labToolData.dissection || {};
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.11, cy - H * 0.20); ctx.bezierCurveTo(cx - W * 0.105, cy - H * 0.10, mitralX, mitralY, cx - W * 0.075, cy + H * 0.17); ctx.stroke();
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.075, cy + H * 0.17); ctx.bezierCurveTo(cx - W * 0.04, cy + H * 0.08, cx - W * 0.045, cy - H * 0.04, cx - W * 0.03, cy - H * 0.19); ctx.stroke();
                   ctx.restore();
+                  }
                   ctx.restore();
                 }
 
@@ -12440,7 +17320,8 @@ var d = labToolData.dissection || {};
                   var reliefX = reliefPoint.x * W, reliefY = reliefPoint.y * H;
                   var reliefDepth = structureOpticalDepth(organ);
                   var reliefSelected = d.selectedOrgan === organ.id, reliefHovered = !reliefSelected && d.hoveredOrgan === organ.id;
-                  if (reliefAccessible && !reliefSelected && !reliefHovered) return;
+                  // Inspection relief highlights the active target; organ-local materials supply the anatomical volume.
+                  if (!reliefSelected && !reliefHovered) return;
                   var lightAngle = Math.atan2(reliefLightY - reliefY, reliefLightX - reliefX);
                   var lightOffset = reliefDepth === 'surface' ? 0.20 : (reliefDepth === 'deep' ? 0.10 : 0.16);
                   var reliefRadius = reliefBaseRadius * (reliefDepth === 'deep' ? 1.20 : (reliefDepth === 'surface' ? 0.78 : 1));
@@ -12663,8 +17544,12 @@ var d = labToolData.dissection || {};
                 var conduit = /vessel|arter|vena|vein|aorta|cord|nerve|intestin|ureter|duct|esophagus|trachea|spinal|chordae/.test(structureKey);
                 var chambered = /heart|stomach|bladder|crop|gizzard|atrium|ventricle|cloaca|lens|humor/.test(structureKey);
                 var layered = /skin|integument|cuticle|scale|carapace|membrane|muscle|myomere|retina|cornea|sclera|choroid|conjunctiva|diaphragm|septum|pericardium|valve/.test(structureKey);
-                var lobed = /liver|lung|kidney|gonad|gill|pancreas|thymus|fat bod|gland/.test(structureKey);
+                // These intact surfaces stay smooth rather than displaying gross lobes.
+                var lobed = !(org && (org.id === 'green_gland' || org.id === 'kidneys_p' || org.id === 'kidneys')) && /liver|lung|kidney|gonad|gill|pancreas|thymus|fat bod|gland/.test(structureKey);
                 var morphology = conduit ? 'conduit' : (chambered ? 'chambered' : (layered ? 'layered' : (lobed ? 'lobed' : 'compact')));
+                var namedMorphologyLabels = { kidneys: 'RENAL', spleen_p: 'ELONGATE', pyloric_ceca: 'POUCHES', kidneys_p: 'RENAL', kidneys_f: 'RENAL', aortic_arches: 'VESSELS', gills: 'FILAMENTS', gills_c: 'FILAMENTS' };
+                var morphologyLabel = org && Object.prototype.hasOwnProperty.call(namedMorphologyLabels, org.id) ? namedMorphologyLabels[org.id] :
+                  (morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase());
                 var horizontalSpecimen = /pig|fish|crayfish|eye|heart/.test(String(spec.bodyShape || specimen || '').toLowerCase());
                 var rotation = morphology === 'conduit' ? (/worm/.test(String(spec.bodyShape || specimen || '').toLowerCase()) ? Math.PI / 2 : (horizontalSpecimen ? 0 : -0.35)) : (morphology === 'lobed' ? 0.18 : (morphology === 'layered' ? -0.10 : 0));
                 return {
@@ -12672,7 +17557,7 @@ var d = labToolData.dissection || {};
                   ry: baseRadius * (morphology === 'conduit' ? 0.48 : (morphology === 'lobed' ? 0.80 : (morphology === 'layered' ? 0.62 : (morphology === 'chambered' ? 1 : 0.95)))),
                   rotation: rotation,
                   morphology: morphology,
-                  morphologyLabel: morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase(),
+                  morphologyLabel: morphologyLabel,
                   depth: depth,
                   depthOffset: depth === 'surface' ? 3 : (depth === 'deep' ? 12 : 7)
                 };
@@ -12735,37 +17620,198 @@ var d = labToolData.dissection || {};
                 if (!selected && !hovered) return;
                 var profile = structureInspectionFootprint(org);
                 var footprintAccessible = highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible';
+                var footprintNaturalVisible = !footprintAccessible && (d.visualRealism || visualRealism) === 'realistic' && visibility === 'visible';
                 var footprintAccent = footprintAccessible ? '#ffffff' : (selected ? '#fbbf24' : '#60a5fa');
                 var plannedCallout = callout && callout.fullLabel ? canvasScreenBox(callout.x, callout.y, callout.width, callout.height) : null;
                 if (plannedCallout) plannedCallout.priority = 8;
+                // Reserve this callout's leader before the footprint applies its own transform.
+                var plannedLeader = !d.quizMode && callout && callout.showCallout ? dissectionCalloutLeader(callout, labelUiScale, specimenTextScaleX) : null;
+                var plannedLeaderBoxes = plannedLeader && ctx.getTransform ?
+                  dissectionLeaderScreenBoxes(plannedLeader, ctx.getTransform(), canvas._dpr || 1, 2 * canvasUiScale) : [];
+                // Measure every painted badge and point before the footprint changes the
+                // specimen transform. These reservations belong only to this caption.
+                var plannedMarkerBoxes = [];
+                organs.forEach(function (markerOrgan) {
+                  var markerGeometry = adaptiveHotspotMarkerGeometry(adaptiveHotspotById[markerOrgan.id]);
+                  [markerGeometry.badge, markerGeometry.point].forEach(function (marker) {
+                    if (!marker) return;
+                    var markerBox = canvasScreenBox(marker.cx - marker.rx, marker.cy - marker.ry, marker.rx * 2, marker.ry * 2);
+                    if (!markerBox) return;
+                    var markerPadding = 2 * canvasUiScale;
+                    markerBox.x -= markerPadding; markerBox.y -= markerPadding;
+                    markerBox.width += markerPadding * 2; markerBox.height += markerPadding * 2;
+                    markerBox.priority = 9; markerBox.keepClear = true;
+                    plannedMarkerBoxes.push(markerBox);
+                  });
+                });
+                // Keep both semilunar leaflet groups clear when either valve is inspected.
+                if (spec.bodyShape === 'heart' && org && (org.id === 'aortic_v' || org.id === 'pulm_v')) {
+                  var captionSemilunarGeometry = sheepSemilunarGeometry(W, H);
+                  if (captionSemilunarGeometry) captionSemilunarGeometry.valves.forEach(function (valve) {
+                    var bounds = valve.bounds;
+                    var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                      (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                    if (!box) return;
+                    var padding = 3 * canvasUiScale;
+                    box.x -= padding; box.y -= padding; box.width += padding * 2; box.height += padding * 2;
+                    box.priority = 10; box.keepClear = true; plannedMarkerBoxes.push(box);
+                  });
+                }
+                // Reserve the exposed retinal band, leaving the central vitreous available.
+                if (spec.bodyShape === 'eye' && org && org.id === 'retina') {
+                  var captionRetinalGeometry = sheepRetinalGeometry(W, H);
+                  if (captionRetinalGeometry) captionRetinalGeometry.bandSectors.forEach(function (bounds) {
+                    var retinalBox = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                      (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                    if (!retinalBox) return;
+                    var retinalPadding = 3 * canvasUiScale;
+                    retinalBox.x -= retinalPadding; retinalBox.y -= retinalPadding;
+                    retinalBox.width += retinalPadding * 2; retinalBox.height += retinalPadding * 2;
+                    retinalBox.priority = 10; retinalBox.keepClear = true;
+                    plannedMarkerBoxes.push(retinalBox);
+                  });
+                }
+                // Keep nearby depth captions off the complete opened gastric mill.
+                if (!d.quizMode && spec.bodyShape === 'crayfish' && activeLayer === 'organs') {
+                  var captionMillGeometry = crayfishGastricMillGeometry(W, H);
+                  if (captionMillGeometry) {
+                    var millBounds = captionMillGeometry.bounds;
+                    var millBox = canvasScreenBox(millBounds.minX * W, millBounds.minY * H,
+                      (millBounds.maxX - millBounds.minX) * W, (millBounds.maxY - millBounds.minY) * H);
+                    if (millBox) {
+                      var millPadding = 3 * canvasUiScale;
+                      millBox.x -= millPadding; millBox.y -= millPadding;
+                      millBox.width += millPadding * 2; millBox.height += millPadding * 2;
+                      millBox.priority = 10; millBox.keepClear = true;
+                      plannedMarkerBoxes.push(millBox);
+                    }
+                  }
+                }
+                // The digestive-gland caption leaves both intact masses unobscured.
+                if (spec.bodyShape === 'crayfish' && org && org.id === 'hepato') {
+                  var captionDigestiveGeometry = crayfishHepatopancreaticGeometry(W, H);
+                  if (captionDigestiveGeometry) captionDigestiveGeometry.masses.forEach(function (mass) {
+                    var digestiveBounds = mass.bounds;
+                    var digestiveBox = canvasScreenBox(digestiveBounds.minX * W, digestiveBounds.minY * H,
+                      (digestiveBounds.maxX - digestiveBounds.minX) * W, (digestiveBounds.maxY - digestiveBounds.minY) * H);
+                    if (!digestiveBox) return;
+                    var digestivePadding = 3 * canvasUiScale;
+                    digestiveBox.x -= digestivePadding; digestiveBox.y -= digestivePadding;
+                    digestiveBox.width += digestivePadding * 2; digestiveBox.height += digestivePadding * 2;
+                    digestiveBox.priority = 10; digestiveBox.keepClear = true;
+                    plannedMarkerBoxes.push(digestiveBox);
+                  });
+                }
+                // Keep the caption clear of both visible members of this paired organ.
+                if (spec.bodyShape === 'crayfish' && org && org.id === 'green_gland') {
+                  var pairedAntennalGeometry = crayfishAntennalGeometry(W, H);
+                  if (pairedAntennalGeometry) pairedAntennalGeometry.glands.forEach(function (gland) {
+                    var glandBounds = gland.bounds;
+                    var glandBox = canvasScreenBox(glandBounds.minX * W, glandBounds.minY * H,
+                      (glandBounds.maxX - glandBounds.minX) * W, (glandBounds.maxY - glandBounds.minY) * H);
+                    if (!glandBox) return;
+                    var glandPadding = 3 * canvasUiScale;
+                    glandBox.x -= glandPadding; glandBox.y -= glandPadding;
+                    glandBox.width += glandPadding * 2; glandBox.height += glandPadding * 2;
+                    glandBox.priority = 10; glandBox.keepClear = true;
+                    plannedMarkerBoxes.push(glandBox);
+                  });
+                }
+                // The depth caption also leaves the complete neural surface unobscured.
+                if (spec.bodyShape === 'frog' && activeLayer === 'nervous') {
+                  var captionNeuralGeometry = frogNeuralGeometry(W, H);
+                  if (captionNeuralGeometry) {
+                    var neuralBounds = captionNeuralGeometry.bounds;
+                    var neuralBox = canvasScreenBox(neuralBounds.minX * W, neuralBounds.minY * H,
+                      (neuralBounds.maxX - neuralBounds.minX) * W, (neuralBounds.maxY - neuralBounds.minY) * H);
+                    if (neuralBox) {
+                      var neuralPadding = 3 * canvasUiScale;
+                      neuralBox.x -= neuralPadding; neuralBox.y -= neuralPadding;
+                      neuralBox.width += neuralPadding * 2; neuralBox.height += neuralPadding * 2;
+                      neuralBox.priority = 10; neuralBox.keepClear = true;
+                      plannedMarkerBoxes.push(neuralBox);
+                    }
+                  }
+                }
+                // One renal label describes a pair; leave both frog kidneys unobscured.
+                if (spec.bodyShape === 'frog' && org && org.id === 'kidneys') {
+                  var captionFrogRenalGeometry = frogRenalGeometry(W, H);
+                  if (captionFrogRenalGeometry) captionFrogRenalGeometry.kidneys.forEach(function (kidney) {
+                    var frogRenalBounds = kidney.bounds;
+                    var frogRenalBox = canvasScreenBox(frogRenalBounds.minX * W, frogRenalBounds.minY * H,
+                      (frogRenalBounds.maxX - frogRenalBounds.minX) * W, (frogRenalBounds.maxY - frogRenalBounds.minY) * H);
+                    if (!frogRenalBox) return;
+                    var frogRenalPadding = 3 * canvasUiScale;
+                    frogRenalBox.x -= frogRenalPadding; frogRenalBox.y -= frogRenalPadding;
+                    frogRenalBox.width += frogRenalPadding * 2; frogRenalBox.height += frogRenalPadding * 2;
+                    frogRenalBox.priority = 10; frogRenalBox.keepClear = true;
+                    plannedMarkerBoxes.push(frogRenalBox);
+                  });
+                }
+                // One renal label describes a pair; keep its depth caption off both capsules.
+                if (spec.bodyShape === 'pig' && org && org.id === 'kidneys_p') {
+                  var captionRenalGeometry = pigRenalGeometry(W, H);
+                  if (captionRenalGeometry) captionRenalGeometry.kidneys.forEach(function (kidney) {
+                    var renalBounds = kidney.bounds;
+                    var renalBox = canvasScreenBox(renalBounds.minX * W, renalBounds.minY * H,
+                      (renalBounds.maxX - renalBounds.minX) * W, (renalBounds.maxY - renalBounds.minY) * H);
+                    if (!renalBox) return;
+                    var renalPadding = 3 * canvasUiScale;
+                    renalBox.x -= renalPadding; renalBox.y -= renalPadding;
+                    renalBox.width += renalPadding * 2; renalBox.height += renalPadding * 2;
+                    renalBox.priority = 10; renalBox.keepClear = true;
+                    plannedMarkerBoxes.push(renalBox);
+                  });
+                }
+                // Place neural depth text outside the continuous cord and ganglion course.
+                if (spec.bodyShape === 'worm' && activeLayer === 'nervous') {
+                  var captionWormGeometry = earthwormNeuralGeometry(W, H);
+                  if (captionWormGeometry) {
+                    var wormBounds = captionWormGeometry.bounds;
+                    var wormBox = canvasScreenBox(wormBounds.minX * W, wormBounds.minY * H,
+                      (wormBounds.maxX - wormBounds.minX) * W, (wormBounds.maxY - wormBounds.minY) * H);
+                    if (wormBox) {
+                      var wormPadding = 3 * canvasUiScale;
+                      wormBox.x -= wormPadding; wormBox.y -= wormPadding;
+                      wormBox.width += wormPadding * 2; wormBox.height += wormPadding * 2;
+                      wormBox.priority = 10; wormBox.keepClear = true;
+                      plannedMarkerBoxes.push(wormBox);
+                    }
+                  }
+                }
                 var footprintScale = selected ? 0.72 + focusEntryProgress * 0.28 : 1;
                 var backDash = visibility === 'visible' ? [] : (visibility === 'emerging' ? [5, 3] : (visibility === 'obscured' ? [2, 3] : [1, 4]));
                 ctx.save(); ctx.translate(x, y); ctx.scale(footprintScale, footprintScale); ctx.rotate(profile.rotation);
                 ctx.strokeStyle = footprintAccent; ctx.fillStyle = selected ? 'rgba(251,191,36,0.07)' : 'rgba(96,165,250,0.06)';
-                ctx.lineWidth = footprintAccessible ? 2.5 : (selected ? 1.8 : 1.35);
-                ctx.globalAlpha = visibility === 'visible' ? 0.92 : 0.74;
-                ctx.setLineDash(backDash);
-                traceStructureMorphologyContour(profile, profile.depthOffset, 0); ctx.fill(); ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.globalAlpha = 0.58;
-                ctx.beginPath(); ctx.moveTo(-profile.rx, 0); ctx.lineTo(-profile.rx, profile.depthOffset);
-                ctx.moveTo(profile.rx, 0); ctx.lineTo(profile.rx, profile.depthOffset); ctx.stroke();
+                // Visible Realistic anatomy keeps its authored surface; the existing target and depth caption identify it.
+                // Projected morphology remains a semantic cue in teaching/accessible modes and for covered anatomy.
+                if (!footprintNaturalVisible) {
+                  ctx.lineWidth = footprintAccessible ? 2.5 : (selected ? 1.8 : 1.35);
+                  ctx.globalAlpha = visibility === 'visible' ? 0.92 : 0.74;
+                  ctx.setLineDash(backDash);
+                  traceStructureMorphologyContour(profile, profile.depthOffset, 0); ctx.fill(); ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.globalAlpha = 0.58;
+                  ctx.beginPath(); ctx.moveTo(-profile.rx, 0); ctx.lineTo(-profile.rx, profile.depthOffset);
+                  ctx.moveTo(profile.rx, 0); ctx.lineTo(profile.rx, profile.depthOffset); ctx.stroke();
+                  ctx.globalAlpha = 1;
+                  traceStructureMorphologyContour(profile, 0, 0); ctx.stroke();
+                  drawStructureMorphologyTexture(profile);
+                  if (profile.depth === 'deep') {
+                    ctx.setLineDash([2, 2.8]); traceStructureMorphologyContour(profile, profile.depthOffset, 3); ctx.stroke(); ctx.setLineDash([]);
+                  }
+                  ctx.beginPath(); ctx.moveTo(0, -profile.ry); ctx.lineTo(0, profile.depthOffset - profile.ry); ctx.stroke();
+                  ctx.fillStyle = footprintAccent;
+                  if (profile.depth === 'surface') {
+                    ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 2.5, 0, Math.PI * 2); ctx.fill();
+                  } else if (profile.depth === 'structure') {
+                    ctx.save(); ctx.translate(0, profile.depthOffset - profile.ry); ctx.rotate(Math.PI / 4); ctx.fillRect(-2.5, -2.5, 5, 5); ctx.restore();
+                  } else {
+                    ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 3.3, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 1.25, 0, Math.PI * 2); ctx.fill();
+                  }
+                }
                 ctx.globalAlpha = 1;
-                traceStructureMorphologyContour(profile, 0, 0); ctx.stroke();
-                drawStructureMorphologyTexture(profile);
-                if (profile.depth === 'deep') {
-                  ctx.setLineDash([2, 2.8]); traceStructureMorphologyContour(profile, profile.depthOffset, 3); ctx.stroke(); ctx.setLineDash([]);
-                }
-                ctx.beginPath(); ctx.moveTo(0, -profile.ry); ctx.lineTo(0, profile.depthOffset - profile.ry); ctx.stroke();
-                ctx.fillStyle = footprintAccent;
-                if (profile.depth === 'surface') {
-                  ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 2.5, 0, Math.PI * 2); ctx.fill();
-                } else if (profile.depth === 'structure') {
-                  ctx.save(); ctx.translate(0, profile.depthOffset - profile.ry); ctx.rotate(Math.PI / 4); ctx.fillRect(-2.5, -2.5, 5, 5); ctx.restore();
-                } else {
-                  ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 3.3, 0, Math.PI * 2); ctx.stroke();
-                  ctx.beginPath(); ctx.arc(0, profile.depthOffset - profile.ry, 1.25, 0, Math.PI * 2); ctx.fill();
-                }
                 ctx.rotate(-profile.rotation);
                 // Keep the depth caption upright and readable independently of the
                 // specimen's zoom, mirrored view, and focus-entry animation.
@@ -12783,7 +17829,13 @@ var d = labToolData.dissection || {};
                     { x: 0, y: 0, width: W, height: 74, priority: 9 },
                     { x: 0, y: labelScreenBottom, width: W, height: H - labelScreenBottom, priority: 9 }
                   ];
+                  // Plan the compact direction panel before placing the active caption,
+                  // so later fixed panels can preserve both its text and the organ name.
+                  if (hudCompassLayout.compact && hudCompassBox) captionReservations.push({
+                    x: hudCompassBox.x, y: hudCompassBox.y, width: hudCompassBox.w, height: hudCompassBox.h, priority: 9
+                  });
                   if (plannedCallout) captionReservations.push(plannedCallout);
+                  captionReservations = captionReservations.concat(plannedLeaderBoxes, plannedMarkerBoxes);
                   var captionPlacement = placeCanvasHudPanel(captionLeft, captionTop, captionBox.width, captionBox.height, captionReservations);
                   captionLeft = captionPlacement.x; captionTop = captionPlacement.y;
                   var captionDX = captionLeft - captionBox.x, captionDY = captionTop - captionBox.y;
@@ -12797,7 +17849,7 @@ var d = labToolData.dissection || {};
                     ctx.translate(captionLocalX, captionLocalY);
                   }
                 }
-                rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8);
+                rememberCanvasGuidanceBox(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 8, selected || hovered);
                 ctx.fillStyle = footprintAccessible ? '#000000' : 'rgba(15,23,42,0.94)';
                 ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(-footprintCaptionW / 2, 0, footprintCaptionW, 17 * canvasUiScale, 4 * canvasUiScale);
@@ -12932,6 +17984,73 @@ var d = labToolData.dissection || {};
               function fillPanelText(text, panelX, panelWidth, inset, y) {
                 fillReadableSpecimenText(text, specimenScale.x < 0 ? panelX + panelWidth - inset : panelX + inset, y);
               }
+              function drawClampedSpecimenCaption(context, surface, text, x, y, options) {
+                options = options || {};
+                if (!context || !surface || !context.getTransform || !context.transform ||
+                    typeof text !== 'string' || !text || !isFinite(x) || !isFinite(y)) return null;
+                var matrix = context.getTransform();
+                if (!matrix || ![matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f].every(isFinite)) return null;
+                var determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+                if (!isFinite(determinant) || Math.abs(determinant) < 0.000001) return null;
+                var rect = surface.getBoundingClientRect ? surface.getBoundingClientRect() : null;
+                var cssWidth = Number(rect && rect.width), cssHeight = Number(rect && rect.height);
+                var backingWidth = Number(surface.width), backingHeight = Number(surface.height);
+                if (![cssWidth, cssHeight, backingWidth, backingHeight].every(isFinite) || !(cssWidth > 0) || !(cssHeight > 0) || !(backingWidth > 0) || !(backingHeight > 0)) return null;
+                var pixelsPerCssX = backingWidth / cssWidth, pixelsPerCssY = backingHeight / cssHeight;
+                var fontSize = Math.max(9, Math.min(20, Number(options.fontSize) || 12));
+                var padding = Math.max(4, Number(options.padding) || 12);
+                var screenX = (matrix.a * x + matrix.c * y + matrix.e) / pixelsPerCssX;
+                var screenY = (matrix.b * x + matrix.d * y + matrix.f) / pixelsPerCssY;
+                var maxWidth = cssWidth - padding * 2;
+                if (!(maxWidth > 0)) return null;
+
+                context.save();
+                try {
+                  context.font = (options.bold ? 'bold ' : '') + fontSize + 'px Inter, system-ui';
+                  context.textAlign = 'left'; context.textBaseline = 'alphabetic';
+                  var caption = text;
+                  // One short semantic caption normally fits. Preserve a complete string
+                  // whenever possible; only exceptional tiny hosts receive an ellipsis.
+                  if (context.measureText(caption).width > maxWidth) {
+                    var low = 0, high = caption.length;
+                    while (low < high) {
+                      var middle = Math.ceil((low + high) / 2);
+                      if (context.measureText(caption.slice(0, middle) + '\u2026').width <= maxWidth) low = middle;
+                      else high = middle - 1;
+                    }
+                    caption = caption.slice(0, low).trimEnd() + '\u2026';
+                  }
+                  var metrics = context.measureText(caption);
+                  var leftInk = Math.max(0, Number(metrics.actualBoundingBoxLeft) || 0);
+                  var rightInk = Math.max(Number(metrics.width) || 0, Number(metrics.actualBoundingBoxRight) || 0);
+                  var ascent = Math.max(1, Number(metrics.actualBoundingBoxAscent) || fontSize * 0.8);
+                  var descent = Math.max(0, Number(metrics.actualBoundingBoxDescent) || fontSize * 0.22);
+                  var minX = padding + leftInk, maxX = cssWidth - padding - rightInk;
+                  var minY = padding + ascent, maxY = cssHeight - padding - descent;
+                  if (maxX < minX || maxY < minY) return null;
+                  var clampedX = Math.max(minX, Math.min(maxX, screenX));
+                  var clampedY = Math.max(minY, Math.min(maxY, screenY));
+
+                  // Invert the complete affine anchor, including translation. Then cancel
+                  // its linear part while retaining CSS-pixel backing density for the glyphs.
+                  var backingX = clampedX * pixelsPerCssX - matrix.e;
+                  var backingY = clampedY * pixelsPerCssY - matrix.f;
+                  var localX = (matrix.d * backingX - matrix.c * backingY) / determinant;
+                  var localY = (-matrix.b * backingX + matrix.a * backingY) / determinant;
+                  context.translate(localX, localY);
+                  context.transform(
+                    matrix.d * pixelsPerCssX / determinant, -matrix.b * pixelsPerCssX / determinant,
+                    -matrix.c * pixelsPerCssY / determinant, matrix.a * pixelsPerCssY / determinant, 0, 0
+                  );
+                  context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+                  context.shadowColor = 'rgba(0,0,0,0)';
+                  if (options.color) context.fillStyle = options.color;
+                  context.fillText(caption, 0, 0);
+                  return { text: caption, x: clampedX - leftInk, y: clampedY - ascent,
+                    width: leftInk + rightInk, height: ascent + descent,
+                    anchorX: screenX, anchorY: screenY, clamped: clampedX !== screenX || clampedY !== screenY };
+                } finally { context.restore(); }
+              }
               function fillReadableSpecimenText(text, x, y) {
                 ctx.save(); ctx.translate(x, y);
                 ctx.scale(1 / (specimenScale.x || 1), 1 / (specimenScale.y || 1));
@@ -12996,7 +18115,7 @@ var d = labToolData.dissection || {};
                 var screenRight = (side === 'right') === (specimenScale.x > 0);
                 return labelSpecimenY(screenRight ? labelScreenTopRight : labelScreenTopLeft);
               }
-              ctx.font = (10 * labelUiScale) + 'px Inter, system-ui, sans-serif';
+              ctx.font = (12 * labelUiScale) + 'px Inter, system-ui, sans-serif';
               var canvasLabelsVisible = d.labelMode !== 'hidden' && !d.quizMode;
               var denseHotspotView = canvasLabelsVisible && organs.length >= 8 && zoom < 1.22;
               var adaptiveHotspotLayout = organs.filter(function (org) { return !d.quizMode || structureExposureState(org, currentProcedure) === 'visible'; }).map(function (org, oi) {
@@ -13007,17 +18126,23 @@ var d = labToolData.dissection || {};
                 var fullLabel = !d.quizMode && (selected || hovered || guidedCallout || (canvasLabelsVisible && !canvasCoarsePointer && (!denseHotspotView || related || (oi % 2 === 0 && visibility === 'visible'))));
                 var opticalDepth = structureOpticalDepth(org);
                 var baseLabel = visibility === 'occluded' ? org.name + ' \u00B7 occluded' : (visibility === 'obscured' ? org.name + ' \u00B7 covered' : (visibility === 'emerging' ? org.name + ' \u00B7 emerging' : org.name));
-                var depthDescriptor = depthAtlasEnabled && (selected || hovered) ? ' \u00B7 ' + anatomicalDepthLabel(opticalDepth) : '';
-                var displayLabel = selected ? baseLabel + depthDescriptor + ' \u00B7 selected' : baseLabel + depthDescriptor;
+                var depthDescriptor = canvasDisplayWidth >= 480 && depthAtlasEnabled && (selected || hovered) ? ' \u00B7 ' + anatomicalDepthLabel(opticalDepth) : '';
+                var displayLabel = selected && canvasDisplayWidth >= 480 ? baseLabel + depthDescriptor + ' \u00B7 selected' : baseLabel + depthDescriptor;
                 // Measure with the same weight used to paint the label. Keep text within
                 // one half of the tray so opposite columns cannot cover each other.
-                ctx.font = (selected ? 'bold ' : '') + (10 * labelUiScale) + 'px Inter, system-ui, sans-serif';
+                ctx.font = (selected ? 'bold ' : '600 ') + (12 * labelUiScale) + 'px Inter, system-ui, sans-serif';
                 var labelMaxWidth = Math.min(210 * labelUiScale, (W / 2 - 26 * canvasUiScale) / zoom);
+                if (canvasDisplayWidth < 480 && (selected || hovered)) {
+                  // Expand a primary card just enough to retain a long anatomical
+                  // word before wrapping; its reading size and full name take priority.
+                  var longestPrimaryWord = displayLabel.split(/\s+/).reduce(function (widest, word) { return Math.max(widest, ctx.measureText(word).width); }, 0);
+                  labelMaxWidth = Math.max(labelMaxWidth, Math.min((W - 32 * canvasUiScale) / zoom, longestPrimaryWord + 14 * labelUiScale));
+                }
                 var labelTextWidth = Math.max(30 / zoom, labelMaxWidth - 14 * labelUiScale);
                 var labelLines = fullLabel ? wrapTextToWidth(displayLabel, labelTextWidth, 3).map(function (line) { return fitTextToWidth(line, labelTextWidth); }) : [];
                 var measuredLabelWidth = labelLines.reduce(function (widest, line) { return Math.max(widest, ctx.measureText(line).width); }, 0);
                 var width = (fullLabel ? measuredLabelWidth + 14 * labelUiScale : 18 * labelUiScale) / specimenTextScaleX;
-                var height = (18 + Math.max(0, labelLines.length - 1) * 12) * labelUiScale / specimenTextScaleY;
+                var height = (24 + Math.max(0, labelLines.length - 1) * 15) * labelUiScale / specimenTextScaleY;
                 var pointX = point.x * W, pointY = point.y * H;
                 var side = pointX < labelViewportCenterX - W * 0.03 / zoom ? 'left' : (pointX > labelViewportCenterX + W * 0.03 / zoom ? 'right' : (oi % 2 ? 'left' : 'right'));
                 var rightReservedTop = labelColumnTop('right');
@@ -13031,9 +18156,95 @@ var d = labToolData.dissection || {};
                   x: Math.max(labelLeftBound, Math.min(labelRightBound - width, preferredX)), preferredY: Math.max(labelColumnTop(side), Math.min(labelSpecimenY(labelScreenBottom) - height, pointY - height / 2)),
                   y: pointY - height / 2, width: width, height: height, side: side, fullLabel: fullLabel,
                   showCallout: !labelCameraMoved || anchorOnScreen || selected || hovered || guidedCallout,
-                  displayLabel: displayLabel, labelLines: labelLines, visibility: visibility, depth: opticalDepth, selected: selected, hovered: hovered, related: related };
+                  displayLabel: displayLabel, labelLines: labelLines, visibility: visibility, depth: opticalDepth, selected: selected, hovered: hovered, related: related, guidedCallout: !!guidedCallout };
               }).filter(function (item) { return item.showCallout; });
-              var labelAnchorPoints = adaptiveHotspotLayout.slice().sort(function (a, b) { return a.pointY - b.pointY; });
+              var labelAnchorPoints = adaptiveHotspotLayout.slice();
+              // Reserve both complete valve groups in the fixed cutaway.
+              if (spec.bodyShape === 'heart' && ['organs', 'chambers', 'interior'].indexOf(activeLayer) >= 0) {
+                var semilunarLabelGeometry = sheepSemilunarGeometry(W, H);
+                if (semilunarLabelGeometry) semilunarLabelGeometry.valves.forEach(function (valve) {
+                  var bounds = valve.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (bounds.minX + bounds.maxX) * W / 2,
+                    pointY: (bounds.minY + bounds.maxY) * H / 2,
+                    clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Preserve the thin retinal surface without reserving the vitreous center.
+              if (spec.bodyShape === 'eye' && activeLayer === 'organs') {
+                var retinalLabelGeometry = sheepRetinalGeometry(W, H);
+                if (retinalLabelGeometry) retinalLabelGeometry.bandSectors.forEach(function (bounds) {
+                  labelAnchorPoints.push({
+                    pointX: (bounds.minX + bounds.maxX) * W / 2,
+                    pointY: (bounds.minY + bounds.maxY) * H / 2,
+                    clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Leave the paired digestive-gland surfaces clear beside the stomach.
+              if (spec.bodyShape === 'crayfish' && activeLayer === 'organs') {
+                var digestiveLabelGeometry = crayfishHepatopancreaticGeometry(W, H);
+                if (digestiveLabelGeometry) digestiveLabelGeometry.masses.forEach(function (mass) {
+                  var glandBounds = mass.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (glandBounds.minX + glandBounds.maxX) * W / 2,
+                    pointY: (glandBounds.minY + glandBounds.maxY) * H / 2,
+                    clearanceX: (glandBounds.maxX - glandBounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (glandBounds.maxY - glandBounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Keep neural callout cards outside the complete authored brain surface.
+              if (spec.bodyShape === 'frog' && activeLayer === 'nervous') {
+                var neuralLabelGeometry = frogNeuralGeometry(W, H);
+                if (neuralLabelGeometry) labelAnchorPoints.push({
+                  pointX: neuralLabelGeometry.center.x * W, pointY: neuralLabelGeometry.center.y * H,
+                  clearanceX: neuralLabelGeometry.extent.x * W + 3 * labelUiScale / specimenTextScaleX,
+                  clearanceY: neuralLabelGeometry.extent.y * H + 3 * labelUiScale / specimenTextScaleY
+                });
+              }
+              // Reserve both dorsal renal surfaces behind the frog's gut.
+              if (spec.bodyShape === 'frog' && activeLayer === 'organs') {
+                var frogRenalLabelGeometry = frogRenalGeometry(W, H);
+                if (frogRenalLabelGeometry) frogRenalLabelGeometry.kidneys.forEach(function (kidney) {
+                  var frogKidneyBounds = kidney.bounds;
+                  labelAnchorPoints.push({
+                    pointX: (frogKidneyBounds.minX + frogKidneyBounds.maxX) * W / 2,
+                    pointY: (frogKidneyBounds.minY + frogKidneyBounds.maxY) * H / 2,
+                    clearanceX: (frogKidneyBounds.maxX - frogKidneyBounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: (frogKidneyBounds.maxY - frogKidneyBounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Paired renal capsules remain clear even when a nearby callout is active.
+              if (spec.bodyShape === 'pig' && activeLayer === 'organs') {
+                var renalLabelGeometry = pigRenalGeometry(W, H);
+                if (renalLabelGeometry) renalLabelGeometry.kidneys.forEach(function (kidney) {
+                  labelAnchorPoints.push({
+                    pointX: kidney.body.center.x * W, pointY: kidney.body.center.y * H,
+                    clearanceX: kidney.extent.x * W + 3 * labelUiScale / specimenTextScaleX,
+                    clearanceY: kidney.extent.y * H + 3 * labelUiScale / specimenTextScaleY
+                  });
+                });
+              }
+              // Keep neural cards clear of the anterior ring and representative ganglia.
+              if (spec.bodyShape === 'worm' && activeLayer === 'nervous') {
+                var wormLabelGeometry = earthwormNeuralGeometry(W, H);
+                if (wormLabelGeometry) {
+                  var wormLabelBounds = [wormLabelGeometry.anteriorBounds].concat(wormLabelGeometry.ganglia.slice(1).map(function (node) { return node.region.bounds; }));
+                  wormLabelBounds.forEach(function (bounds) {
+                    labelAnchorPoints.push({
+                      pointX: (bounds.minX + bounds.maxX) * W / 2, pointY: (bounds.minY + bounds.maxY) * H / 2,
+                      clearanceX: (bounds.maxX - bounds.minX) * W / 2 + 3 * labelUiScale / specimenTextScaleX,
+                      clearanceY: (bounds.maxY - bounds.minY) * H / 2 + 3 * labelUiScale / specimenTextScaleY
+                    });
+                  });
+                }
+              }
+              labelAnchorPoints.sort(function (a, b) { return a.pointY - b.pointY; });
               function clearLabelAnchors(item, y, direction) {
                 // Match the constant-size hotspot symbols so labels can stay close
                 // to their anchors without covering the marker.
@@ -13041,13 +18252,99 @@ var d = labToolData.dissection || {};
                 var markerGapY = 12 * labelUiScale / specimenTextScaleY;
                 var anchors = direction > 0 ? labelAnchorPoints : labelAnchorPoints.slice().reverse();
                 anchors.forEach(function (anchor) {
-                  if (anchor.pointX + markerGapX < item.x || anchor.pointX - markerGapX > item.x + item.width) return;
-                  if (y < anchor.pointY + markerGapY && y + item.height > anchor.pointY - markerGapY) {
-                    y = direction > 0 ? anchor.pointY + markerGapY : anchor.pointY - markerGapY - item.height;
+                  var anchorGapX = anchor.clearanceX == null ? markerGapX : anchor.clearanceX;
+                  var anchorGapY = anchor.clearanceY == null ? markerGapY : anchor.clearanceY;
+                  if (anchor.pointX + anchorGapX < item.x || anchor.pointX - anchorGapX > item.x + item.width) return;
+                  if (y < anchor.pointY + anchorGapY && y + item.height > anchor.pointY - anchorGapY) {
+                    y = direction > 0 ? anchor.pointY + anchorGapY : anchor.pointY - anchorGapY - item.height;
                   }
                 });
                 return y;
               }
+              function placeDissectionCallout(card, viewport, obstacles) {
+                function finiteRect(rect) {
+                  return rect && [rect.x, rect.y, rect.width, rect.height].every(function (value) {
+                    return typeof value === 'number' && isFinite(value);
+                  }) && rect.width > 0 && rect.height > 0;
+                }
+                if (!finiteRect(card) || !finiteRect(viewport) || card.width > viewport.width || card.height > viewport.height) return null;
+                var boxes = (Array.isArray(obstacles) ? obstacles : []).filter(finiteRect);
+                var minX = viewport.x, maxX = viewport.x + viewport.width - card.width;
+                var minY = viewport.y, maxY = viewport.y + viewport.height - card.height;
+                function clearAt(x, y) {
+                  return !boxes.some(function (box) {
+                    return x < box.x + box.width && x + card.width > box.x && y < box.y + box.height && y + card.height > box.y;
+                  });
+                }
+                function result(x, y) { return { x: x, y: y, width: card.width, height: card.height }; }
+                if (card.x >= minX && card.x <= maxX && card.y >= minY && card.y <= maxY && clearAt(card.x, card.y)) return result(card.x, card.y);
+                var candidatesX = [Math.max(minX, Math.min(maxX, card.x)), minX, maxX];
+                boxes.forEach(function (box) {
+                  candidatesX.push(Math.max(minX, Math.min(maxX, box.x - card.width)),
+                    Math.max(minX, Math.min(maxX, box.x + box.width)));
+                });
+                var best = null, bestScore = Infinity, bestHorizontal = Infinity;
+                candidatesX.filter(function (x, index, values) { return values.indexOf(x) === index; }).forEach(function (x) {
+                  // For a fixed X, these are precisely the forbidden card-top intervals.
+                  // Keeping touching intervals separate retains a valid edge-touching slot.
+                  var blocked = boxes.filter(function (box) { return x < box.x + box.width && x + card.width > box.x; }).map(function (box) {
+                    return { start: box.y - card.height, end: box.y + box.height };
+                  }).sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+                  var merged = [];
+                  blocked.forEach(function (interval) {
+                    var previous = merged[merged.length - 1];
+                    if (previous && interval.start < previous.end) previous.end = Math.max(previous.end, interval.end);
+                    else merged.push({ start: interval.start, end: interval.end });
+                  });
+                  function consider(start, end) {
+                    if (end < start || end < minY || start > maxY) return;
+                    start = Math.max(minY, start); end = Math.min(maxY, end);
+                    var y = Math.max(start, Math.min(end, card.y));
+                    if (!clearAt(x, y)) return;
+                    var dx = x - card.x, dy = y - card.y, score = dx * dx + dy * dy;
+                    if (score < bestScore || (score === bestScore && Math.abs(dx) < bestHorizontal)) {
+                      best = result(x, y); bestScore = score; bestHorizontal = Math.abs(dx);
+                    }
+                  }
+                  var cursor = minY;
+                  merged.forEach(function (interval) {
+                    if (interval.end <= cursor || cursor > maxY) return;
+                    if (interval.start >= cursor) consider(cursor, interval.start);
+                    cursor = Math.max(cursor, interval.end);
+                  });
+                  consider(cursor, maxY);
+                });
+                return best;
+              }
+
+              function clampDissectionCalloutCard(item, left, top, right, bottom) {
+                if (!item || ![item.x, item.y, item.width, item.height, left, top, right, bottom].every(function (value) { return typeof value === 'number' && isFinite(value); }) ||
+                    item.width < 0 || item.height < 0 || right < left || bottom < top) return false;
+                item.x = Math.max(left, Math.min(right - item.width, item.x));
+                item.y = Math.max(top, Math.min(bottom - item.height, item.y));
+                return true;
+              }
+
+              function prioritizeDissectionCalloutColumn(items, availableHeight) {
+                if (!Array.isArray(items) || !isFinite(availableHeight) || availableHeight < 0) return items;
+                var visible = items.filter(function (item) { return item.showCallout !== false; });
+                var total = visible.reduce(function (sum, item) { return sum + item.height; }, 0);
+                if (total <= availableHeight) return visible;
+                var selected = visible.filter(function (item) { return item.selected; })[0];
+                function priority(item) { return item.selected ? 100 : (item.hovered ? 80 : (item.guidedCallout ? 60 : (item.related ? 10 : 0))); }
+                var candidates = visible.filter(function (item) { return !item.selected; }).sort(function (a, b) {
+                  return priority(a) - priority(b) ||
+                    (selected ? Math.abs(b.preferredY - selected.preferredY) - Math.abs(a.preferredY - selected.preferredY) : 0) || b.index - a.index;
+                });
+                candidates.forEach(function (item) {
+                  if (total <= availableHeight) return;
+                  item.showCallout = false; total -= item.height;
+                });
+                // Hidden passive callouts retain their anatomy markers and directory entries.
+                // They relinquish card space and their obsolete card hit rectangle only.
+                return visible.filter(function (item) { return item.showCallout !== false; });
+              }
+
               function resolveAdaptiveLabelColumn(items, minY, maxY) {
                 var gap = 4 * labelUiScale / specimenTextScaleY, cursorY = minY;
                 items.sort(function (a, b) { return a.preferredY - b.preferredY || a.index - b.index; });
@@ -13062,14 +18359,180 @@ var d = labToolData.dissection || {};
                   }
                 }
                 if (items[0].y < minY) { var underflow = minY - items[0].y; items.forEach(function (item) { item.y += underflow; }); }
+                // Anchor clearance can consume more vertical space than the cards.
+                // Reserve space for the remaining cards before accepting a push;
+                // viewport bounds take priority when no anchor-free slot fits.
+                var outsideColumn = items.some(function (item) { return item.y < minY || item.y + item.height > maxY; });
+                if (outsideColumn) {
+                  var availableHeight = Math.max(0, maxY - minY);
+                  var cardHeight = items.reduce(function (sum, item) { return sum + item.height; }, 0);
+                  if (cardHeight > availableHeight) {
+                    var compactCandidates = items.filter(function (item) {
+                      return item.fullLabel && !item.selected && !item.hovered && !(currentGuided && currentGuided.organId === item.id);
+                    }).sort(function (a, b) { return Number(a.related) - Number(b.related) || b.height - a.height || a.index - b.index; });
+                    compactCandidates.forEach(function (item) {
+                      if (cardHeight <= availableHeight) return;
+                      var previousHeight = item.height, previousWidth = item.width;
+                      var markerSize = (canvasCoarsePointer ? 24 : 20) * labelUiScale;
+                      item.fullLabel = false; item.labelLines = [];
+                      item.width = markerSize / specimenTextScaleX;
+                      item.height = markerSize / specimenTextScaleY;
+                      if (item.side === 'left') item.x += previousWidth - item.width;
+                      item.x = Math.max(labelLeftBound, Math.min(labelRightBound - item.width, item.x));
+                      cardHeight += item.height - previousHeight;
+                    });
+                  }
+                  if (canvasDisplayWidth < 480 && cardHeight > availableHeight) {
+                    items = prioritizeDissectionCalloutColumn(items, availableHeight);
+                    cardHeight = items.reduce(function (sum, item) { return sum + item.height; }, 0);
+                  }
+                  var packedGap = Math.min(gap, Math.max(0, (availableHeight - cardHeight) / Math.max(1, items.length - 1)));
+                  var remainingHeight = cardHeight + packedGap * Math.max(0, items.length - 1);
+                  if (remainingHeight <= availableHeight) {
+                    var packedCursor = minY;
+                    items.forEach(function (item) {
+                      var latestTop = maxY - remainingHeight;
+                      var preferredTop = Math.max(packedCursor, Math.min(latestTop, item.preferredY));
+                      var anchorClearTop = clearLabelAnchors(item, preferredTop, 1);
+                      item.y = anchorClearTop <= latestTop ? anchorClearTop : preferredTop;
+                      packedCursor = item.y + item.height + packedGap;
+                      remainingHeight -= item.height + packedGap;
+                    });
+                  }
+                }
               }
               resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'left'; }), labelColumnTop('left'), labelSpecimenY(labelScreenBottom));
               resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'right'; }), labelColumnTop('right'), labelSpecimenY(labelScreenBottom));
+              if (canvasDisplayWidth < 480) {
+                adaptiveHotspotLayout.forEach(function (item) {
+                  if (item.showCallout && (item.selected || item.hovered || item.guidedCallout)) {
+                    // A primary card may outgrow a HUD-reserved column. Keep its
+                    // full reading size inside the field; later HUDs steer around it.
+                    clampDissectionCalloutCard(item, labelLeftBound, labelSpecimenY(82), labelRightBound, labelSpecimenY(H - 14));
+                  }
+                });
+              }
+              // Column packing and viewport clamping can undo soft anchor clearance.
+              // Repair active eye cards against the complete exposed membrane last.
+              if (spec.bodyShape === 'eye' && activeLayer === 'organs' && retinalLabelGeometry) {
+                var retinalCardSectors = retinalLabelGeometry.bandSectors.map(function (bounds) {
+                  var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                    (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                  if (!box) return null;
+                  var padding = 3 * canvasUiScale;
+                  return { x: box.x - padding, y: box.y - padding,
+                    width: box.width + padding * 2, height: box.height + padding * 2 };
+                }).filter(Boolean);
+                var retinalCardViewport = { x: 16 * canvasUiScale, y: 82,
+                  width: W - 32 * canvasUiScale, height: labelScreenBottom - 82 };
+                adaptiveHotspotLayout.filter(function (item) {
+                  return item.showCallout && item.fullLabel && (item.selected || item.hovered || item.guidedCallout);
+                }).sort(function (a, b) { return Number(b.selected) - Number(a.selected) || a.index - b.index; }).forEach(function (item) {
+                  var card = canvasScreenBox(item.x, item.y, item.width, item.height);
+                  if (!card || !retinalCardSectors.some(function (box) {
+                    return card.x < box.x + box.width && card.x + card.width > box.x &&
+                      card.y < box.y + box.height && card.y + card.height > box.y;
+                  })) return;
+                  var obstacles = retinalCardSectors.slice();
+                  if (hudCompassBox) obstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y,
+                    width: hudCompassBox.w, height: hudCompassBox.h });
+                  adaptiveHotspotLayout.forEach(function (other) {
+                    if (other === item || !other.showCallout) return;
+                    var otherBox = canvasScreenBox(other.x, other.y, other.width, other.height);
+                    if (otherBox) obstacles.push(otherBox);
+                  });
+                  var placement = placeDissectionCallout(card, retinalCardViewport, obstacles);
+                  if (!placement) return;
+                  item.x = Math.min(labelSpecimenX(placement.x), labelSpecimenX(placement.x + card.width));
+                  item.y = labelSpecimenY(placement.y);
+                  item.side = item.x + item.width / 2 < item.pointX ? 'left' : 'right';
+                });
+              }
+              // Keep cards, compact badges, and their hit rectangles off both leaflet groups.
+              // The gastric mill uses the same placement repair to expose its small grinding plates.
+              var protectedCalloutBounds = spec.bodyShape === 'heart' && semilunarLabelGeometry
+                ? semilunarLabelGeometry.valves.map(function (valve) { return valve.bounds; })
+                : (spec.bodyShape === 'crayfish' && activeLayer === 'organs' ? [crayfishGastricMillGeometry(W, H).bounds] : null);
+              if (!d.quizMode && protectedCalloutBounds) {
+                var semilunarCardBoxes = protectedCalloutBounds.map(function (bounds) {
+                  var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
+                    (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
+                  if (!box) return null;
+                  var padding = 3 * canvasUiScale;
+                  return { x: box.x - padding, y: box.y - padding,
+                    width: box.width + padding * 2, height: box.height + padding * 2 };
+                }).filter(Boolean);
+                var semilunarCardViewport = { x: 16 * canvasUiScale, y: 82,
+                  width: W - 32 * canvasUiScale, height: labelScreenBottom - 82 };
+                adaptiveHotspotLayout.filter(function (item) {
+                  return item.showCallout;
+                }).sort(function (a, b) {
+                  return Number(b.selected) - Number(a.selected) || Number(b.hovered) - Number(a.hovered) ||
+                    Number(b.guidedCallout) - Number(a.guidedCallout) || a.index - b.index;
+                }).forEach(function (item) {
+                  var card = canvasScreenBox(item.x, item.y, item.width, item.height);
+                  var badge = adaptiveHotspotMarkerGeometry(item).badge;
+                  if (card && badge) {
+                    var badgeStroke = 0.4 / zoom;
+                    var badgeBox = canvasScreenBox(badge.cx - badge.rx - badgeStroke, badge.cy - badge.ry - badgeStroke,
+                      (badge.rx + badgeStroke) * 2, (badge.ry + badgeStroke) * 2);
+                    if (badgeBox) {
+                      var cardRight = Math.max(card.x + card.width, badgeBox.x + badgeBox.width);
+                      var cardBottom = Math.max(card.y + card.height, badgeBox.y + badgeBox.height);
+                      card.x = Math.min(card.x, badgeBox.x); card.y = Math.min(card.y, badgeBox.y);
+                      card.width = cardRight - card.x; card.height = cardBottom - card.y;
+                    }
+                  }
+                  if (!card || !semilunarCardBoxes.some(function (box) {
+                    return card.x < box.x + box.width && card.x + card.width > box.x &&
+                      card.y < box.y + box.height && card.y + card.height > box.y;
+                  })) return;
+                  var obstacles = semilunarCardBoxes.slice();
+                  if (hudCompassBox) obstacles.push({ x: hudCompassBox.x, y: hudCompassBox.y,
+                    width: hudCompassBox.w, height: hudCompassBox.h });
+                  adaptiveHotspotLayout.forEach(function (other) {
+                    if (other !== item && other.showCallout) {
+                      var otherBox = canvasScreenBox(other.x, other.y, other.width, other.height);
+                      if (otherBox) obstacles.push(otherBox);
+                    }
+                    var markers = adaptiveHotspotMarkerGeometry(other);
+                    [markers.badge, markers.point].forEach(function (point, markerIndex) {
+                      if (!point || (other === item && markerIndex === 0)) return;
+                      var markerBox = canvasScreenBox(point.cx - point.rx, point.cy - point.ry, point.rx * 2, point.ry * 2);
+                      if (!markerBox) return;
+                      var markerPadding = 2 * canvasUiScale;
+                      obstacles.push({ x: markerBox.x - markerPadding, y: markerBox.y - markerPadding,
+                        width: markerBox.width + markerPadding * 2, height: markerBox.height + markerPadding * 2 });
+                    });
+                  });
+                  var placement = placeDissectionCallout(card, semilunarCardViewport, obstacles);
+                  if (!placement) return;
+                  // Translate the existing card through the exact current affine inverse,
+                  // preserving its reading size under mirrored and parallax view transforms.
+                  var matrix = ctx.getTransform(), determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+                  if (!Number.isFinite(determinant) || Math.abs(determinant) < 1e-10) return;
+                  var dx = (placement.x - card.x) * (canvas._dpr || 1);
+                  var dy = (placement.y - card.y) * (canvas._dpr || 1);
+                  item.x += (matrix.d * dx - matrix.c * dy) / determinant;
+                  item.y += (matrix.a * dy - matrix.b * dx) / determinant;
+                  item.side = item.x + item.width / 2 < item.pointX ? 'left' : 'right';
+                });
+              }
               var adaptiveHotspotById = {};
               adaptiveHotspotLayout.forEach(function (item) { adaptiveHotspotById[item.id] = item; });
-              canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map(function (item) {
+              canvas._hotspotLabelBoxes = adaptiveHotspotLayout.filter(function (item) { return item.showCallout; }).map(function (item) {
                 return { id: item.id, x: item.x / W, y: item.y / H, width: item.width / W, height: item.height / H };
               });
+
+              function adaptiveHotspotMarkerGeometry(layout) {
+                return dissectionHotspotMarkerGeometry(layout, {
+                  quizMode: !!d.quizMode, coarsePointer: canvasCoarsePointer,
+                  labelUiScale: labelUiScale, specimenTextScaleX: specimenTextScaleX, specimenTextScaleY: specimenTextScaleY,
+                  canvasUiScale: canvasUiScale, zoom: zoom,
+                  accessible: highContrastEnabled || (d.visualRealism || visualRealism) === 'accessible',
+                  depthAtlasEnabled: depthAtlasEnabled
+                });
+              }
 
               function drawAdaptiveHotspotGuidance() {
               organs.forEach(function (org, oi) {
@@ -13080,6 +18543,11 @@ var d = labToolData.dissection || {};
                 var exposureMuted = layout.visibility !== 'visible';
                 ctx.save(); ctx.globalAlpha = focusMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.46 : 0.24) : (exposureMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.86 : 0.68) : 1);
                 var px = layout.pointX, py = layout.pointY;
+                if (canvasDisplayWidth < 480 && (isSel || isHov)) {
+                  var targetRadiusX = 30 * labelUiScale / specimenTextScaleX, targetRadiusY = 30 * labelUiScale / specimenTextScaleY;
+                  var targetClearance = canvasScreenBox(px - targetRadiusX, py - targetRadiusY, targetRadiusX * 2, targetRadiusY * 2);
+                  if (targetClearance) { targetClearance.priority = 10; targetClearance.keepClear = true; canvas._guidanceBoxes.push(targetClearance); }
+                }
                 drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility, layout);
                 if (!isSel && (!exposureMuted || isHov)) drawDepthAtlasMarker(px, py, layout.depth, false, isHov, focusMuted);
                 var pulse = 1;
@@ -13093,9 +18561,10 @@ var d = labToolData.dissection || {};
                   ctx.moveTo(0,-focusRadius-13); ctx.lineTo(0,-focusRadius-6); ctx.moveTo(0,focusRadius+6); ctx.lineTo(0,focusRadius+13); ctx.stroke(); ctx.restore();
                 }
                 var lx = layout.x, ly = layout.y, connectorX = layout.side === 'right' ? lx : lx + layout.width, connectorY = ly + layout.height / 2;
-                if (!d.quizMode) {
-                  var leaderStartX = px + (layout.side === 'right' ? 6 : -6) * labelUiScale / specimenTextScaleX, leaderControlX = leaderStartX + (connectorX - leaderStartX) * 0.54;
-                  ctx.beginPath(); ctx.moveTo(leaderStartX, py); ctx.quadraticCurveTo(leaderControlX, py, connectorX, connectorY);
+                var calloutLeader = !d.quizMode && layout.showCallout ? dissectionCalloutLeader(layout, labelUiScale, specimenTextScaleX) : null;
+                if (calloutLeader) {
+                  ctx.beginPath(); ctx.moveTo(calloutLeader.start.x, calloutLeader.start.y);
+                  ctx.quadraticCurveTo(calloutLeader.control.x, calloutLeader.control.y, calloutLeader.end.x, calloutLeader.end.y);
                   ctx.strokeStyle = isSel ? 'rgba(251,191,36,0.92)' : (isHov ? 'rgba(96,165,250,0.86)' : (isFocusRelated ? 'rgba(45,212,191,0.72)' : 'rgba(100,116,139,0.80)'));
                   ctx.lineWidth = (isSel ? 1.8 : (isHov ? 1.45 : 1.05)) * labelUiScale;
                   var depthLeaderDash = exposureMuted ? [1.2, 3.8] : (layout.depth === 'deep' ? [1.2, 3.2] : (layout.depth === 'structure' ? [4, 3] : []));
@@ -13103,23 +18572,24 @@ var d = labToolData.dissection || {};
                   ctx.save(); ctx.translate(connectorX, connectorY); scaleHotspotMarker();
                   ctx.beginPath(); ctx.arc(0, 0, isSel ? 2.2 : 1.5, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); ctx.restore();
                 }
-                if (layout.fullLabel) {
-                  rememberCanvasGuidanceBox(lx, ly, layout.width, layout.height, isSel || isHov ? 8 : 2);
+                if (layout.fullLabel && layout.showCallout) {
+                  // Fixed panels must preserve the complete active organ name as well as its reticle.
+                  rememberCanvasGuidanceBox(lx, ly, layout.width, layout.height, isSel || isHov ? 8 : 2, isSel || isHov);
                   ctx.fillStyle = isSel ? 'rgba(251,191,36,0.94)' : (isHov ? 'rgba(30,64,175,0.94)' : (isFocusRelated ? 'rgba(15,118,110,0.90)' : 'rgba(15,23,42,0.88)'));
                   ctx.strokeStyle = isSel ? '#f59e0b' : (isHov ? '#60a5fa' : (isFocusRelated ? '#2dd4bf' : 'rgba(148,163,184,0.48)')); ctx.lineWidth = (isSel || isHov ? 1.1 : 0.65) / zoom;
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx,ly,layout.width,layout.height,5 / zoom); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(lx,ly,layout.width,layout.height); ctx.strokeRect(lx,ly,layout.width,layout.height); }
                   if (isSel || isHov) { ctx.fillStyle = isSel ? '#92400e' : '#93c5fd'; ctx.fillRect(lx+1/zoom,ly+3/zoom,3/zoom,layout.height-6/zoom); }
-                  ctx.font = (isSel ? 'bold ' : '') + (10 * labelUiScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = isSel ? '#1e293b' : '#f8fafc';
+                  ctx.font = (isSel ? 'bold ' : '600 ') + (12 * labelUiScale) + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = isSel ? '#1e293b' : '#f8fafc';
                   var labelInsetX = 7 * labelUiScale / specimenTextScaleX;
                   var labelTextX = specimenScale.x < 0 ? lx + layout.width - labelInsetX : lx + labelInsetX;
                   layout.labelLines.forEach(function (line, lineIndex) {
-                    fillReadableSpecimenText(line, labelTextX, ly + (12.5 + lineIndex * 12) * labelUiScale / specimenTextScaleY);
+                    fillReadableSpecimenText(line, labelTextX, ly + (16 + lineIndex * 15) * labelUiScale / specimenTextScaleY);
                   });
-                } else if (!d.quizMode) {
-                  var markerNum = String(layout.index + 1), compactCX = lx + layout.width/2, compactCY = ly + layout.height/2;
-                  var compactMarkerRadius = (canvasCoarsePointer ? 11 : 8) * labelUiScale;
-                  ctx.beginPath(); ctx.ellipse(compactCX, compactCY, compactMarkerRadius / specimenTextScaleX, compactMarkerRadius / specimenTextScaleY, 0, 0, Math.PI*2); ctx.fillStyle = isFocusRelated ? 'rgba(15,118,110,0.94)' : 'rgba(30,41,59,0.90)'; ctx.fill();
-                  ctx.strokeStyle = isFocusRelated ? '#5eead4' : 'rgba(203,213,225,0.58)'; ctx.lineWidth=.8/zoom; ctx.stroke(); ctx.fillStyle='#fff'; ctx.font='bold ' + ((canvasCoarsePointer ? 9.5 : 8) * labelUiScale) + 'px Inter, system-ui';
+                } else if (!d.quizMode && layout.showCallout) {
+                  var compactBadge = adaptiveHotspotMarkerGeometry(layout).badge;
+                  var markerNum = String(layout.index + 1), compactCX = compactBadge.cx, compactCY = compactBadge.cy;
+                  ctx.beginPath(); ctx.ellipse(compactCX, compactCY, compactBadge.rx, compactBadge.ry, 0, 0, Math.PI*2); ctx.fillStyle = isFocusRelated ? 'rgba(15,118,110,0.94)' : 'rgba(30,41,59,0.90)'; ctx.fill();
+                  ctx.strokeStyle = isFocusRelated ? '#5eead4' : 'rgba(203,213,225,0.58)'; ctx.lineWidth=.8/zoom; ctx.stroke(); ctx.fillStyle='#fff'; ctx.font='bold ' + ((canvasCoarsePointer ? 11 : 10) * labelUiScale) + 'px Inter, system-ui';
                   ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   fillReadableSpecimenText(markerNum, compactCX, compactCY); ctx.restore();
                 }
@@ -13235,6 +18705,7 @@ var d = labToolData.dissection || {};
                 var corridorMaterial = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
                 var corridorDeep = (d.incisionDepth || 'shallow') === 'deep';
                 var corridorAccessible = corridorMode === 'accessible' || highContrastEnabled;
+                var corridorViewAligned = anatomicalView === procedureProtocol.recommendedView;
                 var corridorHalfWidth = (spec.bodyShape === 'worm' ? 6.2 : (spec.bodyShape === 'eye' ? 8.6 : 7.4)) + corridorMaterial.compliance * 3.2;
                 var corridorLeft = [], corridorRight = [], corridorSegments = [], corridorLength = 0;
                 for (var corridorIndex = 0; corridorIndex < points.length; corridorIndex++) {
@@ -13263,7 +18734,11 @@ var d = labToolData.dissection || {};
                   var y = (segment.from.y + (segment.to.y - segment.from.y) * localRatio) * H;
                   return { x: x, y: y, angle: Math.atan2((segment.to.y - segment.from.y) * H, (segment.to.x - segment.from.x) * W) };
                 }
+                var corridorStart = corridorPointAt(0), corridorFinish = corridorPointAt(1), corridorMid = corridorPointAt(0.5);
                 ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                // Access paths belong to the preparation view. In another view, show
+                // the orientation action without projecting a safe route onto that surface.
+                if (corridorViewAligned) {
                 ctx.beginPath(); ctx.moveTo(corridorLeft[0].x, corridorLeft[0].y);
                 for (var corridorLeftIndex = 1; corridorLeftIndex < corridorLeft.length; corridorLeftIndex++) ctx.lineTo(corridorLeft[corridorLeftIndex].x, corridorLeft[corridorLeftIndex].y);
                 for (var corridorRightIndex = corridorRight.length - 1; corridorRightIndex >= 0; corridorRightIndex--) ctx.lineTo(corridorRight[corridorRightIndex].x, corridorRight[corridorRightIndex].y);
@@ -13301,21 +18776,23 @@ var d = labToolData.dissection || {};
                   }
                   ctx.restore();
                 }
-                var corridorStart = corridorPointAt(0), corridorFinish = corridorPointAt(1), corridorMid = corridorPointAt(0.5);
                 ctx.fillStyle = corridorAccessible ? '#ffffff' : '#ccfbf1'; ctx.strokeStyle = corridorAccessible ? '#0f172a' : '#0f766e'; ctx.lineWidth = 1.8;
                 ctx.beginPath(); ctx.arc(corridorStart.x, corridorStart.y, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(corridorFinish.x, corridorFinish.y - 6.5); ctx.lineTo(corridorFinish.x + 6.5, corridorFinish.y); ctx.lineTo(corridorFinish.x, corridorFinish.y + 6.5); ctx.lineTo(corridorFinish.x - 6.5, corridorFinish.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+                }
                 var defaultCorridorDepthLabel = 'SAFE SHALLOW CORRIDOR';
-                var corridorDepthLabel = corridorDeep ? 'DEEP PRACTICE \u00B7 PROTECTED' : (procedureProtocol.corridorLabel ? 'SAFE \u00B7 ' + procedureProtocol.corridorLabel : defaultCorridorDepthLabel);
-                ctx.font = 'bold 8px Inter, system-ui';
-                var corridorLabelWidth = Math.ceil(ctx.measureText(corridorDepthLabel).width) + 12;
+                var corridorDepthLabel = !corridorViewAligned ? 'ORIENT TO ' + procedureProtocol.recommendedView.toUpperCase() + ' VIEW' : (corridorDeep ? 'DEEP PRACTICE \u00B7 PROTECTED' : (procedureProtocol.corridorLabel ? 'SAFE \u00B7 ' + procedureProtocol.corridorLabel : defaultCorridorDepthLabel));
+                var corridorTypeScale = canvasUiScale / zoom;
+                ctx.font = 'bold ' + (10 * corridorTypeScale) + 'px Inter, system-ui';
+                var corridorInsetX = 8 * corridorTypeScale / specimenTextScaleX;
+                var corridorLabelWidth = Math.ceil(ctx.measureText(corridorDepthLabel).width / specimenTextScaleX) + 2 * corridorInsetX;
                 // The hotspot pills are laid out before this runs but PAINTED after it, so they
                 // landed on top of the safety label: on the perch "SAFE - LATERAL WINDOW" was
                 // half covered by the "Lateral Line" pill, and on the frog, whose twelve organs
                 // stack in one narrow column, every position directly above the corridor is
                 // taken. Search along the corridor as well as across it and take the clearest
                 // box; the authored position is tried first and kept when it is already clear.
-                var corridorLabelHeight = 17;
+                var corridorLabelHeight = 24 * corridorTypeScale / specimenTextScaleY;
                 var corridorLabelOverlapAt = function (candidateX, candidateY) {
                   var overlapArea = 0;
                   var addCorridorOverlap = function (boxX, boxY, boxW, boxH) {
@@ -13340,14 +18817,14 @@ var d = labToolData.dissection || {};
                 var corridorLabelClampX = function (value) { return Math.max(8, Math.min(W - corridorLabelWidth - 8, value)); };
                 var corridorLabelClampY = function (value) { return Math.max(8, Math.min(H - corridorLabelHeight - 8, value)); };
                 var corridorLabelX = corridorLabelClampX(corridorMid.x - corridorLabelWidth / 2);
-                var corridorLabelY = corridorLabelClampY(corridorMid.y - corridorHalfWidth - 22);
+                var corridorLabelY = corridorLabelClampY(corridorMid.y - corridorHalfWidth - corridorLabelHeight - 6);
                 var corridorLabelBest = corridorLabelOverlapAt(corridorLabelX, corridorLabelY);
                 if (corridorLabelBest > 0) {
                   [0.5, 0.28, 0.72, 0.12, 0.88].forEach(function (corridorT) {
                     var alongPoint = corridorPointAt(corridorT);
                     var candidateX = corridorLabelClampX(alongPoint.x - corridorLabelWidth / 2);
-                    [alongPoint.y - corridorHalfWidth - 22,
-                     alongPoint.y - corridorHalfWidth - 22 - corridorLabelHeight - 6,
+                    [alongPoint.y - corridorHalfWidth - corridorLabelHeight - 6,
+                     alongPoint.y - corridorHalfWidth - corridorLabelHeight - 6 - corridorLabelHeight - 6,
                      alongPoint.y + corridorHalfWidth + 6,
                      alongPoint.y + corridorHalfWidth + 6 + corridorLabelHeight + 6].forEach(function (candidateY) {
                       var clampedY = corridorLabelClampY(candidateY);
@@ -13366,14 +18843,14 @@ var d = labToolData.dissection || {};
                 if (ctx.roundRect) ctx.roundRect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight, 5);
                 else ctx.rect(corridorLabelX, corridorLabelY, corridorLabelWidth, corridorLabelHeight);
                 ctx.fill();
-                ctx.strokeStyle = corridorDeep ? '#fb7185' : '#5eead4'; ctx.lineWidth = corridorAccessible ? 1.6 : 0.8; ctx.stroke();
-                ctx.fillStyle = corridorDeep ? (corridorAccessible ? '#9f1239' : '#fecdd3') : (corridorAccessible ? '#134e4a' : '#99f6e4');
+                ctx.strokeStyle = !corridorViewAligned ? '#d97706' : (corridorDeep ? '#fb7185' : '#5eead4'); ctx.lineWidth = (corridorAccessible ? 1.8 : 1.2) * corridorTypeScale / Math.max(specimenTextScaleX, specimenTextScaleY); ctx.stroke();
+                ctx.fillStyle = !corridorViewAligned ? (corridorAccessible ? '#92400e' : '#fef3c7') : (corridorDeep ? (corridorAccessible ? '#9f1239' : '#fecdd3') : (corridorAccessible ? '#134e4a' : '#99f6e4'));
                 // The ventral view mirrors the specimen (specimenScale.x = -1) and this label is
                 // drawn inside that transform, so it rendered back to front -- in the one view
                 // where a ventral-midline safety corridor matters most. Anchor from the far end
                 // when mirrored, then let fillReadableSpecimenText flip the glyphs back.
-                var corridorTextX = specimenScale.x < 0 ? corridorLabelX + corridorLabelWidth - 6 : corridorLabelX + 6;
-                fillReadableSpecimenText(corridorDepthLabel, corridorTextX, corridorLabelY + 12);
+                var corridorTextX = specimenScale.x < 0 ? corridorLabelX + corridorLabelWidth - corridorInsetX : corridorLabelX + corridorInsetX;
+                fillReadableSpecimenText(corridorDepthLabel, corridorTextX, corridorLabelY + 16 * corridorTypeScale / specimenTextScaleY);
                 ctx.restore();
               }
               function drawProcedureOpening(points, extended) {
@@ -13523,6 +19000,12 @@ var d = labToolData.dissection || {};
                   });
                 });
 
+                var cavityLightVector = {
+                  overhead: { x: 0, y: -1 }, left: { x: -1, y: -0.18 },
+                  right: { x: 1, y: -0.18 }, raking: { x: -0.74, y: 0.68 }
+                }[lightDirection] || { x: 0, y: -1 };
+                var cavityLightStrength = Math.max(0.2, Math.min(1, (Number(d.lightIntensity || lightIntensity) || 68) / 100));
+                if (!currentAnatomyOpening) {
                 // Next-layer tissue bed becomes visible beneath the retracted flaps.
                 var nextTissueLayer = spec.layers[Math.min(spec.layers.length - 1, currentLayerIdx + 1)] || {};
                 var nextTissueId = nextTissueLayer.id || 'organs';
@@ -13566,11 +19049,8 @@ var d = labToolData.dissection || {};
                   });
                   ctx.closePath();
                 }
-                var cavityLightVector = {
-                  overhead: { x: 0, y: -1 }, left: { x: -1, y: -0.18 },
-                  right: { x: 1, y: -0.18 }, raking: { x: -0.74, y: 0.68 }
-                }[lightDirection] || { x: 0, y: -1 };
-                var cavityLightStrength = Math.max(0.2, Math.min(1, (Number(d.lightIntensity || lightIntensity) || 68) / 100));
+
+
                 var cavityCenterX = midpoint.x * W, cavityCenterY = midpoint.y * H;
                 var cavitySpan = Math.max(18, bedSpread * Math.max(W, H) * 1.55);
                 ctx.save(); traceRetractedFieldContour(0.98); ctx.clip();
@@ -13619,6 +19099,10 @@ var d = labToolData.dissection || {};
                 ctx.restore();
                 ctx.restore();
 
+
+                }
+
+                function paintRetractionFlaps() {
                 flaps.forEach(function (flap, flapIdx) {
                   ctx.save(); ctx.beginPath(); ctx.moveTo(flap[0].x * W, flap[0].y * H);
                   for (var fi = 1; fi < flap.length; fi++) ctx.lineTo(flap[fi].x * W, flap[fi].y * H);
@@ -13652,6 +19136,11 @@ var d = labToolData.dissection || {};
                   }
                   ctx.restore();
                 });
+                }
+                if (currentAnatomyOpening) {
+                  withFlapsOutsideAnatomy(ctx, currentAnatomyOpening, W, H, paintRetractionFlaps);
+                  drawRegisteredRetractionRim(ctx, currentAnatomyOpening, flapMode === 'accessible' || highContrastEnabled);
+                } else { paintRetractionFlaps(); }
                 (pins || []).forEach(function (pin) {
                   var pinSide = ((pin.x - midpoint.x) * normalX + (pin.y - midpoint.y) * normalY) >= 0 ? 1 : -1;
                   var flapAnchor = offsetFlapPoint(middle, spread * pinSide);
@@ -14555,16 +20044,16 @@ var d = labToolData.dissection || {};
                 drawProcedureHandoffCue(nextProcedureInfo(), activeOpeningPath);
               }
               if (!d.quizMode && !d.annotateMode && !d.rulerMode) {
-                if (liveInstrument === 'forceps' && canvasProcedure.incisionExtended && !canvasProcedure.retracted && canvas._toolPointer) {
+                if (procedureGuidanceVisible && liveInstrument === 'forceps' && canvasProcedure.incisionExtended && !canvasProcedure.retracted && canvas._toolPointer) {
                   drawForcepsTractionPreview(activeOpeningPath, canvas._toolPointer);
                 }
-                if (liveInstrument === 'pin' && canvasProcedure.retracted && (canvasProcedure.pins || []).length < 2 && canvas._toolPointer) {
+                if (procedureGuidanceVisible && liveInstrument === 'pin' && canvasProcedure.retracted && (canvasProcedure.pins || []).length < 2 && canvas._toolPointer) {
                   drawPinStabilityPreview(activeOpeningPath, canvas._toolPointer, canvasProcedure.pins || []);
                 }
               }
               if (canvasProcedure.retracted) {
                 drawTissueFlaps(activeOpeningPath, canvasProcedure.pins || [], canvasProcedure.forcepsPoint);
-                if (canvasProcedure.forcepsPoint) {
+                if (procedureGuidanceVisible && canvasProcedure.forcepsPoint) {
                   var liftedX = canvasProcedure.forcepsPoint.x * W, liftedY = canvasProcedure.forcepsPoint.y * H;
                   ctx.save(); ctx.strokeStyle = '#5eead4'; ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.lineWidth = 1.4;
                   ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(liftedX, liftedY, 12, Math.PI * 0.12, Math.PI * 0.88); ctx.stroke(); ctx.setLineDash([]);
@@ -14739,8 +20228,10 @@ var d = labToolData.dissection || {};
                 var pinHeadRadius = (pinAccessible ? 7.5 : 6.3) * (0.72 + pinInsertionProgress * 0.28);
                 ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 // Tension tether terminates at the insertion point rather than passing through the pin.
-                ctx.setLineDash([3, 3]); ctx.strokeStyle = pinAccessible ? '#facc15' : 'rgba(226,232,240,0.48)'; ctx.lineWidth = pinAccessible ? 1.8 : 1;
-                ctx.beginPath(); ctx.moveTo(openingCenter.x * W, openingCenter.y * H); ctx.lineTo(pinX, pinY); ctx.stroke(); ctx.setLineDash([]);
+                if (procedureGuidanceVisible) {
+                  ctx.setLineDash([3, 3]); ctx.strokeStyle = pinAccessible ? '#facc15' : 'rgba(226,232,240,0.48)'; ctx.lineWidth = pinAccessible ? 1.8 : 1;
+                  ctx.beginPath(); ctx.moveTo(openingCenter.x * W, openingCenter.y * H); ctx.lineTo(pinX, pinY); ctx.stroke(); ctx.setLineDash([]);
+                }
                 // The elevated shaft casts away from the active lab light.
                 ctx.strokeStyle = pinAccessible ? '#020617' : 'rgba(2,6,23,0.42)'; ctx.lineWidth = pinAccessible ? 4.8 : 4;
                 ctx.beginPath(); ctx.moveTo(pinX - pinLightVector.x * pinShadowOffset, pinY - pinLightVector.y * pinShadowOffset);
@@ -14774,7 +20265,7 @@ var d = labToolData.dissection || {};
               }
               (canvasProcedure.pins || []).forEach(drawCommittedRetractionPin);
               var pinSettleVisible = liveTissueTransitionAction === 'pin' ? liveTissueTransitionProgress >= 0.72 : (liveTissueTransitionAction === 'undo-pin' ? liveTissueTransitionProgress < 0.36 : true);
-              if ((canvasProcedure.pins || []).length >= 2 && pinSettleVisible) {
+              if (procedureGuidanceVisible && (canvasProcedure.pins || []).length >= 2 && pinSettleVisible) {
                 var stablePinA = canvasProcedure.pins[0], stablePinB = canvasProcedure.pins[1];
                 var stablePinAX = stablePinA.x * W, stablePinAY = stablePinA.y * H;
                 var stablePinBX = stablePinB.x * W, stablePinBY = stablePinB.y * H;
@@ -15150,33 +20641,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#84cc16';
 
-                  // Nephridia along body
-
-                  for (var neph = 0; neph < 8; neph++) {
-
-                    var nephY = H * 0.22 + neph * H * 0.08;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.04, nephY);
-
-                    ctx.quadraticCurveTo(cx - W * 0.05, nephY + H * 0.02, cx - W * 0.045, nephY + H * 0.04);
-
-                    ctx.stroke();
-
-                    // Nephridiopore
-
-                    ctx.beginPath(); ctx.arc(cx - W * 0.045, nephY + H * 0.04, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#84cc16'; ctx.fill();
-
-                  }
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#84cc16';
-
-                  ctx.fillText('Nephridia', cx - W * 0.09, H * 0.35);
-
-                  ctx.fillText('Nephridiopores', cx - W * 0.10, H * 0.37);
+                  drawEarthwormNephridia(true);
 
                 } else if (spec.bodyShape === 'pig') {
 
@@ -15720,7 +21185,7 @@ var d = labToolData.dissection || {};
                 var hoverDepthLabel = anatomicalDepthLabel(structureOpticalDepth(hovOrg));
                 var hoverExposure = structureExposureState(hovOrg, currentProcedure);
                 var hoverMorphology = structureInspectionFootprint(hovOrg).morphologyLabel.toLowerCase();
-                var hText = hovOrg.name + ' \u00B7 ' + hoverDepthLabel + ' \u00B7 ' + hoverExposure + ' \u00B7 ' + hoverMorphology + ': ' + hovOrg.fn.split('.')[0] + '.';
+                var hText = hovOrg.name + ' \u00B7 ' + hoverDepthLabel + ' \u00B7 ' + hoverExposure + ' \u00B7 ' + hoverMorphology + ': ' + dissectionStructureCue(hovOrg, 'function');
 
                 ctx.font = '10px Inter, system-ui, sans-serif';
 
@@ -16030,6 +21495,16 @@ var d = labToolData.dissection || {};
                     ctx.bezierCurveTo(fiberStartX - 20, materialCY + materialRY * 0.32, fiberStartX + 32, materialCY - materialRY * 0.28, fiberStartX + materialRX * 0.6, materialCY - materialRY); ctx.stroke();
                   }
                 }
+                drawDissectionSpeciesSurfaceTexture(ctx, canvas, {
+                  specimen: specimen, seed: Number(d.variationSeed) || variationSeed,
+                  pattern: liveMaterialProfile.pattern, density: materialDensity,
+                  visualMode: liveVisualMode, highContrast: highContrastEnabled,
+                  sceneDetail: sceneDetail, surfaceLayer: surfaceMaterialLayer,
+                  lightDirection: liveLightDirection, lightIntensity: liveLightIntensity,
+                  moisture: liveTissueState.moisture,
+                  x: materialCX - materialRX, y: materialCY - materialRY,
+                  width: materialRX * 2, height: materialRY * 2
+                });
                 // Directional illumination turns the texture into surface relief; moisture sharpens sheen while dehydration breaks it up.
                 ctx.globalCompositeOperation = 'screen';
                 var materialSpecularStrength = liveLightStrength * (0.28 + materialMoistureRatio * 0.72) * (1 - materialRoughness * 0.58);
@@ -16316,11 +21791,16 @@ var d = labToolData.dissection || {};
 
               // A calibrated screen-fixed orientation and scale HUD keeps anatomical direction accurate across specimen shapes and zoom.
               var hudView = String(d.anatomicalView || anatomicalView || 'dorsal').toUpperCase();
-              var horizontalAxis = spec.bodyShape === 'pig' || spec.bodyShape === 'fish' || spec.bodyShape === 'crayfish' || spec.bodyShape === 'eye';
-              var cardiacAxis = spec.bodyShape === 'heart';
-              var axisStart = cardiacAxis ? 'BASE' : 'A';
-              var axisEnd = cardiacAxis ? 'APEX' : 'P';
+              // Reuse the same specimen axis and mirrored ordering as the orientation guide.
+              var scaleOrientation = anatomicalOrientationData();
+              var horizontalAxis = scaleOrientation.axis === 'horizontal';
+              var scaleFirstLandmark = horizontalAxis && scaleOrientation.mirrored ? scaleOrientation.end : scaleOrientation.start;
+              var scaleLastLandmark = horizontalAxis && scaleOrientation.mirrored ? scaleOrientation.start : scaleOrientation.end;
+              var scaleAxisShortNames = { ANTERIOR: 'A', POSTERIOR: 'P', CRANIAL: 'Cr', CAUDAL: 'Cd', CORNEA: 'C', 'OPTIC NERVE': 'ON' };
+              var axisStart = scaleAxisShortNames[scaleFirstLandmark] || scaleFirstLandmark;
+              var axisEnd = scaleAxisShortNames[scaleLastLandmark] || scaleLastLandmark;
               var orientationText = horizontalAxis ? axisStart + ' \u2190  \u2192 ' + axisEnd : axisStart + ' \u2191  \u2193 ' + axisEnd;
+              var orientationSubheading = scaleFirstLandmark.toLowerCase() + '-' + scaleLastLandmark.toLowerCase();
               ctx.save();
               var specimenHudLabel = spec.icon + ' ' + spec.name + '  /  ' + hudView;
               // The chip has the least room of any HUD panel, because the next-step card owns
@@ -16363,15 +21843,22 @@ var d = labToolData.dissection || {};
               else { ctx.fillRect(compassX, compassY, compassWidth, compassHeight); ctx.strokeRect(compassX, compassY, compassWidth, compassHeight); }
               ctx.font = 'bold ' + (12 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#bae6fd';
               ctx.fillText(orientationText, compassX + 10 * canvasHudScale, compassY + 16 * canvasHudScale);
-              ctx.font = (10 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
-              ctx.fillText(cardiacAxis ? 'base-apex' : 'anterior-posterior', compassX + 10 * canvasHudScale, compassY + 31 * canvasHudScale);
+              ctx.font = (11 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#cbd5e1';
+              // These bounded profile names fit at the normal size in the authored card.
+              // Measure the full words as a safeguard; do not ellipsise their anatomical meaning.
+              var scaleAxisAvailableWidth = compassWidth - 20 * canvasHudScale;
+              var scaleAxisMeasuredWidth = ctx.measureText(orientationSubheading).width;
+              if (scaleAxisMeasuredWidth > scaleAxisAvailableWidth && scaleAxisAvailableWidth > 0) {
+                ctx.font = (11 * canvasHudScale * scaleAxisAvailableWidth / scaleAxisMeasuredWidth) + 'px Inter, system-ui';
+              }
+              ctx.fillText(orientationSubheading, compassX + 10 * canvasHudScale, compassY + 31 * canvasHudScale);
               var scaleX = compassX + 10 * canvasHudScale, scaleY = compassY + 44 * canvasHudScale;
               ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 1.5; ctx.beginPath();
               ctx.moveTo(scaleX, scaleY); ctx.lineTo(scaleX + scalePixels, scaleY);
               ctx.moveTo(scaleX, scaleY - 4 * canvasHudScale); ctx.lineTo(scaleX, scaleY + 4 * canvasHudScale);
               ctx.moveTo(scaleX + scalePixels, scaleY - 4 * canvasHudScale); ctx.lineTo(scaleX + scalePixels, scaleY + 4 * canvasHudScale); ctx.stroke();
               var scaleLabel = scaleCm + ' cm  /  ' + zoom.toFixed(1) + 'x';
-              ctx.font = 'bold ' + (10 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
+              ctx.font = 'bold ' + (11 * canvasHudScale) + 'px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
               ctx.fillText(scaleLabel, scaleX, compassY + 58 * canvasHudScale);
               ctx.restore();
 
@@ -16566,6 +22053,56 @@ var d = labToolData.dissection || {};
                 compassX = orientationPlacement.x; compassY = orientationPlacement.y;
                 rememberCanvasHudBox('orientation', compassX, compassY, compassW, compassH);
                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
+                if (hudCompassLayout.compact) {
+                  ctx.save();
+                  try {
+                    var compactAxis = hudCompassLayout;
+                    ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+                    ctx.shadowColor = 'rgba(0,0,0,0)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+                    ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
+                    ctx.strokeStyle = compassAccent; ctx.lineWidth = compassAccessible ? 2 : 1;
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(compassX, compassY, compassW, compassH, 8); else ctx.rect(compassX, compassY, compassW, compassH);
+                    ctx.fill(); ctx.stroke();
+                    // One explicit view/target row replaces the redundant title, not the status.
+                    ctx.font = 'bold ' + (10 * compactAxis.typeScale) + 'px Inter, system-ui';
+                    ctx.fillStyle = compassAccessible ? '#ffffff' : compassAccent;
+                    ctx.fillText(fitTextToWidth(compassStatus, compassW - compactAxis.inset * 2),
+                      compassX + compactAxis.inset, compassY + compactAxis.statusY);
+                    var compactStartX, compactStartY, compactEndX, compactEndY;
+                    ctx.strokeStyle = compassAccent; ctx.fillStyle = compassAccent;
+                    ctx.lineWidth = compassAccessible ? 2.2 : 1.5;
+                    if (compass.axis === 'horizontal') {
+                      var compactLeftX = compassX + compactAxis.inset + compactAxis.markerRadius;
+                      var compactRightX = compassX + compassW - compactAxis.inset - compactAxis.diamondRadius;
+                      compactStartX = compass.mirrored ? compactRightX : compactLeftX;
+                      compactEndX = compass.mirrored ? compactLeftX : compactRightX;
+                      compactStartY = compactEndY = compassY + compactAxis.horizontalAxisY;
+                      ctx.beginPath(); ctx.moveTo(compactLeftX, compactStartY); ctx.lineTo(compactRightX, compactEndY); ctx.stroke();
+                      ctx.textAlign = compass.mirrored ? 'right' : 'left';
+                      ctx.fillText(fitTextToWidth(compass.start, compactAxis.startTextWidth), compass.mirrored ? compassX + compassW - compactAxis.inset : compassX + compactAxis.inset,
+                        compassY + compactAxis.horizontalLabelY);
+                      ctx.textAlign = compass.mirrored ? 'left' : 'right';
+                      ctx.fillText(fitTextToWidth(compass.end, compactAxis.endTextWidth), compass.mirrored ? compassX + compactAxis.inset : compassX + compassW - compactAxis.inset,
+                        compassY + compactAxis.horizontalLabelY);
+                    } else {
+                      compactStartX = compactEndX = compassX + compactAxis.inset + compactAxis.diamondRadius;
+                      compactStartY = compassY + compactAxis.axisTop; compactEndY = compassY + compactAxis.axisBottom;
+                      ctx.beginPath(); ctx.moveTo(compactStartX, compactStartY); ctx.lineTo(compactEndX, compactEndY); ctx.stroke();
+                      var compactVerticalText = compassX + compassW - compactAxis.inset - (compactStartX + compactAxis.labelOffsetX);
+                      ctx.fillText(fitTextToWidth(compass.start, compactVerticalText), compactStartX + compactAxis.labelOffsetX,
+                        compactStartY + compactAxis.labelBaselineOffset);
+                      ctx.fillText(fitTextToWidth(compass.end, compactVerticalText), compactEndX + compactAxis.labelOffsetX,
+                        compactEndY + compactAxis.labelBaselineOffset);
+                    }
+                    ctx.beginPath(); ctx.arc(compactStartX, compactStartY, compactAxis.markerRadius, 0, Math.PI * 2); ctx.fill();
+                    var compactDiamond = compactAxis.diamondRadius;
+                    ctx.beginPath(); ctx.moveTo(compactEndX, compactEndY - compactDiamond);
+                    ctx.lineTo(compactEndX + compactDiamond, compactEndY); ctx.lineTo(compactEndX, compactEndY + compactDiamond);
+                    ctx.lineTo(compactEndX - compactDiamond, compactEndY); ctx.closePath(); ctx.fill();
+                  } finally { ctx.restore(); }
+                  return;
+                }
                 ctx.save();
                 ctx.fillStyle = compassAccessible ? '#000000' : 'rgba(15,23,42,0.88)';
                 ctx.strokeStyle = compassAccent; ctx.lineWidth = compassAccessible ? 2 : 1;
@@ -17703,7 +23240,7 @@ var d = labToolData.dissection || {};
             activeDissectionSaveAccess = currentDissectionSaveAccess(activeDissectionSaveKey, dissectionSaveOwner);
           }
           if (d._dissLoadedSpec === specimen && activeDissectionSaveAccess.state === 'writable') {
-            scheduleDissectionSave(activeDissectionSaveKey, {
+            scheduleDissectionSave(activeDissectionSaveKey, Object.assign({
               schemaVersion: DISSECTION_SAVE_SCHEMA_VERSION,
               exploredOrgans: d.exploredOrgans || {},
               verifiedIdentifications: d.verifiedIdentifications || {},
@@ -17779,7 +23316,7 @@ var d = labToolData.dissection || {};
               instructorTarget: instructorTarget,
               instructorMaxCautions: instructorMaxCautions,
               instructorRequiredStructures: instructorRequiredStructures
-            }, dissectionSaveOwner);
+            }, normalizeDissectionDisplayPreferences(d)), dissectionSaveOwner);
           }
 
           // Load the selected specimen after render; defaults deliberately clear
@@ -18086,6 +23623,7 @@ var d = labToolData.dissection || {};
 
           // Keyboard shortcuts stay inside the active lab and never intercept form controls.
           var dissectionKeyHandler = function (e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
             var target = e.target;
             var tag = target && target.tagName ? target.tagName.toLowerCase() : '';
             if (tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable)) return;
@@ -18187,7 +23725,11 @@ var d = labToolData.dissection || {};
               if (cancelActiveCanvasGesture('Instrument gesture canceled with Escape; no action was recorded.', target, e)) return;
               if (d.resetConfirmPending) cancelSpecimenReset();
               else if (d.annotateMode || d.rulerMode) setObservationPointMode(null, !isCanvas);
-              else upd('selectedOrgan', null);
+              else {
+                var directoryReturnId = !isCanvas && d.selectedOrgan && target.closest('[data-dissection-selection]') ? d.selectedOrgan : null;
+                upd('selectedOrgan', null);
+                if (directoryReturnId) focusStructureDirectoryItem(directoryReturnId);
+              }
             } else if (e.key === '0' || e.key === 'r' || e.key === 'R') {
               e.preventDefault();
               applyCanvasZoom(target, 1, null, null, true);
@@ -18591,7 +24133,7 @@ var d = labToolData.dissection || {};
                 var previewStatus = queryDissectionNode('#diss-canvas-status');
                 if (previewStatus) {
                   previewStatus.setAttribute('data-tone', previewTone);
-                  previewStatus.textContent = previewMessage;
+                  setDissectionLiveText(previewStatus, previewMessage);
                 }
               }
             }
@@ -18641,7 +24183,7 @@ var d = labToolData.dissection || {};
 
           var currentGuided = guidedMode && guidedSteps.length ? guidedSteps[guidedStep % guidedSteps.length] : null;
           var guidedObservationOrgan = d.guidedObservationPending ? organs.find(function (organ) { return organ.id === d.guidedObservationPending; }) : null;
-          var guidedObservationOptions = guidedObservationOrgan ? [guidedObservationOrgan].concat(organs.filter(function (organ) { return organ.id !== guidedObservationOrgan.id && structureExposureState(organ, currentProcedure) === 'visible'; }).sort(function (a, b) { return dissHash(specimen + '|' + guidedObservationOrgan.id + '|' + a.id) - dissHash(specimen + '|' + guidedObservationOrgan.id + '|' + b.id); })).slice(0, 3) : [];
+          var guidedObservationOptions = dissectionGuidedObservationChoices(guidedObservationOrgan, guidedOrgans, specimen + '|guided-observation|' + (guidedObservationOrgan ? guidedObservationOrgan.id : ''));
           var currentGuidedOrgan = currentGuided ? organs.find(function (org) { return org.id === currentGuided.organId; }) : null;
           var currentGuidedVisible = !!currentGuidedOrgan && structureExposureState(currentGuidedOrgan, currentProcedure) === 'visible';
 
@@ -18780,7 +24322,7 @@ var d = labToolData.dissection || {};
             (spec.organs[layer.id] || []).forEach(function (org) {
               var key = specimen + '|' + org.id;
               if (!(d.exploredOrgans || {})[key]) return;
-              var note = String((d.organNotes || {})[key] || '');
+              var note = dissectionEvidenceNote(d.organNotes, key);
               var confidence = Number((d.organConfidence || {})[key]);
               if (confidence !== 1 && confidence !== 2 && confidence !== 3) confidence = 0;
               observationReviewEntries.push({ organ: org, layer: layer, available: layerIndex <= unlockedLayerIdx,
@@ -19076,7 +24618,7 @@ var d = labToolData.dissection || {};
                 return false;
               }
               if (!target) return false;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
               return true;
             }
@@ -19130,7 +24672,7 @@ var d = labToolData.dissection || {};
                 return;
               }
               if (!target) return;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
             }
             setTimeout(focusWhenRendered, 0);
@@ -19611,12 +25153,12 @@ var d = labToolData.dissection || {};
                 React.createElement('h4', { id: 'diss-technique-roadmap-position', className: 'diss-technique-roadmap__position' }, position),
                 React.createElement('p', { id: 'diss-technique-roadmap-count', className: 'diss-technique-roadmap__count' }, learning.verified + ' of ' + learning.total + ' steps verified')
               ),
-              React.createElement('progress', { max: learning.total, value: learning.verified, 'aria-label': 'Verified technique steps', 'aria-valuetext': learning.verified + ' of ' + learning.total + ' steps verified' }),
+              React.createElement('progress', { max: learning.total, value: learning.verified, 'aria-label': __alloT('stem.dissection.a11y_verified_technique_steps', 'Verified technique steps'), 'aria-valuetext': learning.verified + ' of ' + learning.total + ' steps verified' }),
               React.createElement('details', { className: 'diss-technique-roadmap__sequence' },
                 React.createElement('summary', null, 'View technique sequence'),
                 React.createElement('div', { className: 'diss-technique-roadmap__body' },
                   React.createElement('p', { id: 'diss-technique-roadmap-help' }, 'A step is verified after a correct plan, a recorded action and a correct explanation.'),
-                  React.createElement('ol', { className: 'diss-technique-roadmap__list', role: 'list', 'aria-label': 'Current layer technique sequence' },
+                  React.createElement('ol', { className: 'diss-technique-roadmap__list', role: 'list', 'aria-label': __alloT('stem.dissection.a11y_current_layer_technique_sequence', 'Current layer technique sequence') },
                     ordered.map(function (action, index) {
                       var entry = procedureLearningEntry(action, currentProcedure);
                       var complete = procedureActionComplete(currentProcedure, action);
@@ -19716,7 +25258,7 @@ var d = labToolData.dissection || {};
               ),
               React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": __alloT('stem.dissection.a11y_choose_the_matching_specimen_observation', 'Choose the matching specimen observation'), "aria-describedby": "diss-guided-observation-keyboard-help", onKeyDown: onLearningChoiceKeyDown },
                 guidedObservationOptions.map(function (option, index) {
-                  return renderLearningChoice(option.id, index, String(option.fn || 'No observation available.').split('.')[0] + '.', !!(guidedFeedback && guidedFeedback.choiceId === option.id), !!(guidedFeedback && guidedFeedback.correct), guidedFeedbackText ? 'diss-guided-observation-feedback' : null, function () { recordGuidedObservationChoice(option.id); }, guidedFeedbackText);
+                  return renderLearningChoice(option.id, index, dissectionStructureCue(option, 'observation'), !!(guidedFeedback && guidedFeedback.choiceId === option.id), !!(guidedFeedback && guidedFeedback.correct), guidedFeedbackText ? 'diss-guided-observation-feedback' : null, function () { recordGuidedObservationChoice(option.id); }, guidedFeedbackText);
                 })
               ),
               React.createElement("p", { id: "diss-guided-observation-keyboard-help", className: "diss-learning-check__keyboard-help" }, 'Arrow keys browse choices. Enter or Space checks the focused choice.'),
@@ -20636,6 +26178,7 @@ var d = labToolData.dissection || {};
               return false;
             }
             clearAssessmentTeachingTimers();
+            preserveAssessmentFocus('diss-assessment-summary', 'diss-quiz-panel');
             updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
               quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
               quizFirstAttemptScore: reviewOnly ? assessmentRecordedScore : 0,
@@ -20915,6 +26458,17 @@ var d = labToolData.dissection || {};
                 React.createElement("p", { className: "diss-mission__eyebrow" }, __alloT('stem.dissection.virtual_biology_laboratory', 'Virtual Biology Laboratory')),
                 React.createElement("h2", { id: "diss-mission-title" }, __alloT('stem.dissection.virtual_dissection_lab', 'Virtual Dissection Lab')),
                 React.createElement("p", { className: "diss-mission__copy" }, missionText),
+                React.createElement("p", { className: "diss-mission__context" }, spec.icon + ' ' + spec.name + ' · ' + currentLayerDef.name + ' · ' + exploredCount + '/' + totalOrgansInSpecimen + ' ' + __alloT('stem.dissection.structures_viewed_short', 'structures viewed')),
+                React.createElement("nav", { className: "diss-mission-shortcuts", "aria-label": __alloT('stem.dissection.workspace_shortcuts', 'Lab workspace shortcuts') },
+                  React.createElement("button", { type: "button", onClick: function () { focusDissectionTarget('diss-canvas'); } }, __alloT('stem.dissection.go_specimen', 'Go to specimen')),
+                  React.createElement("button", { type: "button", onClick: function () {
+                    if (d.quizMode) focusDissectionTarget(d.quizComplete ? 'diss-assessment-summary' : 'diss-quiz-panel');
+                    else { upd('selectedOrgan', null); focusDissectionTarget('diss-organ-search'); }
+                  } }, d.quizMode ? __alloT('stem.dissection.go_assessment', 'Go to assessment') : __alloT('stem.dissection.go_directory', 'Structures and notes')),
+                  React.createElement("button", { type: "button", disabled: !!(d._incisionAnim && d._incisionAnim.active), onClick: performPrimaryNextAction }, d._incisionAnim && d._incisionAnim.active ? 'Technique in progress...' : __alloT('stem.dissection.continue_activity', 'Continue activity'))
+                ),
+                React.createElement("details", { className: "diss-mission__overview", open: advancedWorkspace || undefined },
+                React.createElement("summary", null, __alloT('stem.dissection.workflow_and_progress', 'Workflow and progress') + ' · ' + nextActionModel.step + '/' + workflowSteps.length + ' ' + workflowSteps[Math.max(0, nextActionModel.step - 1)].label),
                 React.createElement("ol", { className: "diss-workflow", "aria-label": __alloT('stem.dissection.a11y_dissection_workflow', 'Dissection workflow') },
                   workflowSteps.map(function (step, stepIdx) {
                     var workflowPosition = stepIdx + 1;
@@ -20926,15 +26480,6 @@ var d = labToolData.dissection || {};
                   })
                 ),
                 React.createElement("p", { className: "diss-mission__copy" }, __alloT('stem.dissection.virtual_practice_notice', 'Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.')),
-                React.createElement("nav", { className: "diss-mission-shortcuts", "aria-label": __alloT('stem.dissection.workspace_shortcuts', 'Lab workspace shortcuts') },
-                  React.createElement("button", { type: "button", onClick: function () { focusDissectionTarget('diss-canvas'); } }, __alloT('stem.dissection.go_specimen', 'Go to specimen')),
-                  React.createElement("button", { type: "button", onClick: function () {
-                    if (d.quizMode) focusDissectionTarget(d.quizComplete ? 'diss-assessment-summary' : 'diss-quiz-panel');
-                    else { upd('selectedOrgan', null); focusDissectionTarget('diss-organ-search'); }
-                  } }, d.quizMode ? __alloT('stem.dissection.go_assessment', 'Go to assessment') : __alloT('stem.dissection.go_directory', 'Structures and notes')),
-                  React.createElement("button", { type: "button", disabled: !!(d._incisionAnim && d._incisionAnim.active), onClick: performPrimaryNextAction }, d._incisionAnim && d._incisionAnim.active ? 'Technique in progress...' : __alloT('stem.dissection.continue_activity', 'Continue activity'))
-                )
-              ),
               React.createElement("div", { className: "diss-mission__stats", role: "group", "aria-label": __alloT('stem.dissection.a11y_current_lab_status', 'Current lab status') },
                 [
                   { label: 'Specimen', value: spec.icon + ' ' + spec.name },
@@ -20946,6 +26491,7 @@ var d = labToolData.dissection || {};
                     React.createElement("span", { className: "diss-stat__value", title: stat.value }, stat.value)
                   );
                 })
+              ))
               )
             ),
 
@@ -21013,7 +26559,8 @@ var d = labToolData.dissection || {};
                     className: "diss-specimen-tab"
                   }, sp.icon + ' ' + sp.name);
                 })
-              )
+              ),
+              React.createElement("p", { className: "diss-specimen-scroll-help" }, __alloT('stem.dissection.specimen_scroll_help', 'Scroll to see all specimens.'))
             ),
 
             React.createElement("nav", { className: "diss-layer-stepper", "data-dissection-layer-stepper": true, "aria-labelledby": "diss-layer-heading" },
@@ -21100,16 +26647,16 @@ var d = labToolData.dissection || {};
               ),
               React.createElement("section",
                 { className: "diss-view-group", "data-diss-view-group": "specimen", role: "group", "aria-label": __alloT('stem.dissection.view_group_specimen', 'Specimen display') },
-                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_specimen', 'Specimen display')), React.createElement("div", { className: "diss-view-subgroup-grid" }, React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "presentation", role: "group", "aria-labelledby": "diss-view-subgroup-presentation" }, React.createElement("h5", { id: "diss-view-subgroup-presentation", className: "diss-view-subgroup__title" }, 'Anatomy and presentation'), React.createElement("p", { id: "diss-view-presentation-help", className: "diss-view-help" }, !advancedWorkspace ? 'Essentials uses Guided presentation. Select Advanced workspace to use the other presentation modes.' : (visualRealism === 'realistic' ? 'Realistic uses richer materials, natural landmark variation, and reduced teaching emphasis.' : visualRealism === 'accessible' ? 'Accessible applies high contrast, larger visual targets, and slower animation. High contrast and slow animation stay active when you change presentation.' : 'Guided uses balanced materials and visible technique targets.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-presentation-help", "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_specimen', 'Specimen display')), React.createElement("div", { className: "diss-view-subgroup-grid" }, React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "presentation", role: "group", "aria-labelledby": "diss-view-subgroup-presentation" }, React.createElement("h5", { id: "diss-view-subgroup-presentation", className: "diss-view-subgroup__title" }, 'Anatomy and presentation'), React.createElement("p", { id: "diss-view-presentation-help", className: "diss-view-help" }, !advancedWorkspace ? 'Essentials uses Guided presentation. Select Advanced workspace to use the other presentation modes.' : (visualRealism === 'realistic' ? 'Realistic uses richer materials, natural landmark variation, and reduced teaching emphasis.' : visualRealism === 'accessible' ? 'Accessible applies high contrast, larger visual targets, and slower animation. High contrast and slow animation stay active when you change presentation.' : 'Guided uses balanced materials and visible technique targets.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-presentation-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
                   !d.quizMode && React.createElement(React.Fragment, null, React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle schematic layer map'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Layer map ' + (crossSectionMode ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
-                  React.createElement("button", { "aria-describedby": "diss-view-quality-help", "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality))), !d.quizMode && React.createElement("p", { id: "diss-view-quality-help", className: "diss-view-help diss-view-help--after diss-advanced-only" }, 'Quality balances animation smoothness with device load.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "inspection", role: "group", "aria-labelledby": "diss-view-subgroup-inspection" }, React.createElement("h5", { id: "diss-view-subgroup-inspection", className: "diss-view-subgroup__title" }, 'Local inspection'), React.createElement("p", { id: "diss-view-inspection-help", className: "diss-view-help" }, advancedWorkspace ? 'Magnify a local area and choose its tissue depth. Specimen zoom stays separate.' : 'Local lens inspection is available in Advanced workspace.'), React.createElement("div", { className: "diss-view-control-grid" }, !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
-                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help diss-view-pin-help", "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
-                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
-                  !d.quizMode && React.createElement("button", { id: "diss-lens-focus-depth", "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
-                  !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
+                  React.createElement("button", { "aria-describedby": "diss-view-quality-help", "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality))), !d.quizMode && React.createElement("p", { id: "diss-view-quality-help", className: "diss-view-help diss-view-help--after diss-advanced-only" }, 'Quality balances animation smoothness with device load.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "inspection", role: "group", "aria-labelledby": "diss-view-subgroup-inspection" }, React.createElement("h5", { id: "diss-view-subgroup-inspection", className: "diss-view-subgroup__title" }, 'Local inspection'), React.createElement("p", { id: "diss-view-inspection-help", className: "diss-view-help" }, advancedWorkspace ? 'Magnify a local area and choose its tissue depth. Specimen zoom stays separate.' : 'Local lens inspection is available in Advanced workspace.'), React.createElement("div", { className: "diss-view-control-grid" }, !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help diss-view-pin-help", disabled: !advancedWorkspace, "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
+                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
+                  !d.quizMode && React.createElement("button", { id: "diss-lens-focus-depth", disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help diss-view-scene-help", "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
@@ -21206,10 +26753,10 @@ var d = labToolData.dissection || {};
                       link.download = specimen + '_dissection.png';
                       link.href = png;
                       link.click();
-                      if (addToast) addToast('Full canvas PNG saved', 'success');
+                      if (addToast) addToast(__alloT('stem.dissection.toast_full_canvas_png_saved', 'Full canvas PNG saved'), 'success');
                       setProcedureFeedback('Full canvas saved as ' + link.download + '.');
                     } catch (error) {
-                      if (addToast) addToast('Canvas download unavailable', 'error');
+                      if (addToast) addToast(__alloT('stem.dissection.toast_canvas_download_unavailable', 'Canvas download unavailable'), 'error');
                       setProcedureFeedback('Canvas download is unavailable in this view.', 'caution');
                     } finally {
                       if (sourceCanvas && hadCaptureCamera !== null) {
@@ -21218,7 +26765,7 @@ var d = labToolData.dissection || {};
                       }
                     }
                   },
-                  title: 'Download a fresh full-resolution PNG with canvas guides and lens windows',
+                  title: __alloT('stem.dissection.a11y_download_a_fresh_full_resolution_png_with', 'Download a fresh full-resolution PNG with canvas guides and lens windows'),
                   className: "diss-lab-download"
                 }, 'Download full canvas PNG')),
                 React.createElement("p", { className: "diss-lab-tool-note" }, 'Frame contents applies to Capture evidence. PNG downloads always include guides and lens windows.')
@@ -21263,7 +26810,7 @@ var d = labToolData.dissection || {};
                   report += 'Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view: ' + procedureProtocol.recommendedView + '; access route: ' + procedureProtocol.route + '; protected landmarks: ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '\n';
                   report += 'Dynamic simulation: exposure ' + currentExposure.score + '/100 (' + currentExposure.label + '); decision quality ' + currentDecisionScore + '/100; material resistance ' + currentMaterialInteraction.resistance + '/100; protocol deviations ' + (currentProcedure.protocolDeviations || 0) + '\n';
                   report += 'Active tool readiness: ' + currentToolReadiness.label + ' (' + currentToolReadiness.score + '/100); ' + currentToolReadiness.cue + '; checks: ' + currentToolReadiness.checks.map(function (check) { return check.label + ' ' + (check.ready ? 'ready' : 'needs attention'); }).join(', ') + '\n';
-                  report += 'Visual presentation: ' + visualRealism + '; lab light: ' + labLight + '; intensity: ' + lightIntensity + '%; light direction: ' + lightDirection + '; inspection lens: ' + (inspectionLens ? 'on' : 'off') + '; visual tools: ' + (instrumentVisuals ? 'on' : 'off') + '; access corridor: ' + (procedureMode === 'guided' && !currentProcedure.incisionStarted ? 'on' : 'off') + '; trajectory safety: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument pitch: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument lighting: ' + (instrumentVisuals ? 'light-aware elevation feedback on' : 'off') + '; instrument-tissue occlusion: foreground lip and paired depth notches encoded' + '; equivalent action replay: ' + (instrumentVisuals ? 'on' : 'off') + '; technique replay: pressure and alignment encoded' + '; forceps direct manipulation: press-drag-release lift, safe envelope, grip, slip, speed, control, and tension encoded' + '; pin stability preview: angle, depth, spacing, and tension encoded' + '; direct pin manipulation: press-drag-release insertion, angle, depth, spacing, alignment, and control encoded' + '; probe palpation preview: pressure, resistance, depth, and deformation encoded' + '; direct probe manipulation: press-drag-release trace, alignment, contact coverage, resistance, deformation, and control encoded' + '; direct dropper manipulation: press-drag-release hydration, dose, contact coverage, flow alignment, moisture, and pooling control encoded' + '; dropper spread forecast: dose, flow, saturation, and pooling encoded' + '; guided handoff cue: next instrument, anatomical target, and ' + (procedureProtocol.order || []).length + '-step progress encoded' + '; localized technique evidence: incision edge, grip, anchor, probe, and pooling consequences encoded' + '; localized action outcome: success or caution shape and changed tissue metric encoded' + '; tissue-state transitions: opening, retraction, stabilization, hydration, and risk interpolate spatially; Undo reverses opening, flap, pin, hydration, wick, and trace geometry; reduced motion snaps to final state' + '; macro view: ' + (macroInset ? 'on' : 'off') + '; scene detail: ' + (sceneDetail ? 'on' : 'off') + '; depth atlas: ' + (depthAtlasEnabled ? 'on' : 'off') + '; structure inspection footprint: front and back depth edges, exposure line styles, and boundary-attached relationships encoded; morphology contours: tubular, lobed, chambered, layered, and compact patterns encoded; relationship pathways: type-specific line rhythms and marker shapes encoded' + '; anatomical orientation axis: circle marks ' + anatomicalOrientationData().start.toLowerCase() + ', diamond marks ' + anatomicalOrientationData().end.toLowerCase() + ', view ' + anatomicalOrientationData().view + ', target ' + anatomicalOrientationData().targetView + '; tissue relief: ' + (tissueReliefEnabled ? 'on' : 'off') + '; relationship motion: ' + (relationshipMotion ? 'on' : 'off') + '; focus isolation: ' + (focusMode ? 'on' : 'off') + '; spatial navigation transitions: orientation sweep, circle start, diamond target, and layer depth rings encoded; reduced motion switches instantly' + '; depth motion: ' + (parallaxDepth ? 'on' : 'off') + '; evidence frames: ' + visualEvidence.length + '; split comparison: ' + (splitComparison && referenceEvidence ? 'on' : 'off') + '; tactile feedback: ' + (d.tactileFeedback !== false ? 'on' : 'off') + '\n';
+                  report += 'Visual presentation: ' + visualRealism + '; lab light: ' + labLight + '; intensity: ' + lightIntensity + '%; light direction: ' + lightDirection + '; inspection lens: ' + (inspectionLens ? 'on' : 'off') + '; visual tools: ' + (instrumentVisuals ? 'on' : 'off') + '; access corridor: ' + (procedureMode === 'guided' && !currentProcedure.incisionStarted ? 'on' : 'off') + '; trajectory safety: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument pitch: ' + (instrumentVisuals ? 'on' : 'off') + '; instrument lighting: ' + (instrumentVisuals ? 'light-aware elevation feedback on' : 'off') + '; instrument-tissue occlusion: foreground lip and paired depth notches encoded' + '; equivalent action replay: ' + (instrumentVisuals ? 'on' : 'off') + '; technique replay: pressure and alignment encoded' + '; forceps direct manipulation: press-drag-release lift, safe envelope, grip, slip, speed, control, and tension encoded' + '; pin stability preview: angle, depth, spacing, and tension encoded' + '; direct pin manipulation: press-drag-release insertion, angle, depth, spacing, alignment, and control encoded' + '; probe palpation preview: pressure, resistance, depth, and deformation encoded' + '; direct probe manipulation: press-drag-release trace, alignment, contact coverage, resistance, deformation, and control encoded' + '; direct dropper manipulation: press-drag-release hydration, dose, contact coverage, flow alignment, moisture, and pooling control encoded' + '; dropper spread forecast: dose, flow, saturation, and pooling encoded' + '; guided handoff cue: next instrument, anatomical target, and ' + (procedureProtocol.order || []).length + '-step progress encoded' + '; localized technique evidence: incision edge, grip, anchor, probe, and pooling consequences encoded' + '; localized action outcome: success or caution shape and changed tissue metric encoded' + '; tissue-state transitions: opening, retraction, stabilization, hydration, and risk interpolate spatially; Undo reverses opening, flap, pin, hydration, wick, and trace geometry; reduced motion snaps to final state' + '; macro view: ' + (macroInset ? 'on' : 'off') + '; scene detail: ' + (sceneDetail ? 'on' : 'off') + '; depth atlas: ' + (depthAtlasEnabled ? 'on' : 'off') + '; structure inspection: targets and depth labels retained; projected depth outlines in teaching modes and for covered anatomy; relationship pathways: type-specific line rhythms and marker shapes encoded' + '; anatomical orientation axis: circle marks ' + anatomicalOrientationData().start.toLowerCase() + ', diamond marks ' + anatomicalOrientationData().end.toLowerCase() + ', view ' + anatomicalOrientationData().view + ', target ' + anatomicalOrientationData().targetView + '; tissue relief: ' + (tissueReliefEnabled ? 'on' : 'off') + '; relationship motion: ' + (relationshipMotion ? 'on' : 'off') + '; focus isolation: ' + (focusMode ? 'on' : 'off') + '; spatial navigation transitions: orientation sweep, circle start, diamond target, and layer depth rings encoded; reduced motion switches instantly' + '; depth motion: ' + (parallaxDepth ? 'on' : 'off') + '; evidence frames: ' + visualEvidence.length + '; split comparison: ' + (splitComparison && referenceEvidence ? 'on' : 'off') + '; tactile feedback: ' + (d.tactileFeedback !== false ? 'on' : 'off') + '\n';
                   report += 'Specimen material model: ' + activeMaterialProfile.label + '; contact response: ' + activeMaterialProfile.response + '\n';
                   report += 'Surface microdetail: ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'suppressed for visual clarity' : activeMaterialProfile.pattern + '; directional light ' + lightDirection + '; condition ' + specimenCondition + '; moisture ' + currentTissueState.moisture + '%; roughness and sheen respond to tissue state') + '\n';
                   report += 'Specimen variation: ' + variationSeed + '\n';
@@ -21288,7 +26835,7 @@ var d = labToolData.dissection || {};
                       if (confidenceRating) {
                         report += '  Confidence self-rating: ' + dissectionConfidenceLabel(confidenceRating) + ' (' + confidenceRating + ' of 3)\n';
                       }
-                      if ((d.organNotes || {})[noteKey]) report += '  Evidence note: ' + (d.organNotes || {})[noteKey] + '\n';
+                      if (dissectionEvidenceNote(d.organNotes, noteKey)) report += '  Evidence note: ' + dissectionEvidenceNote(d.organNotes, noteKey) + '\n';
                     });
                   });
                   copyDissectionText(report, 'Lab report copied to the clipboard.', 'The lab report could not be copied in this view.');
@@ -21524,7 +27071,7 @@ var d = labToolData.dissection || {};
                       )
                     ) : null
                   ),
-                  !d.quizMode && activeProcedureReplay && activeProcedureReplay.paused && replayReviewVisible && React.createElement("section", { id: "diss-replay-specimen", className: "diss-replay-specimen", "aria-label": "Held replay action", onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
+                  !d.quizMode && activeProcedureReplay && activeProcedureReplay.paused && replayReviewVisible && React.createElement("section", { id: "diss-replay-specimen", className: "diss-replay-specimen", "aria-label": __alloT('stem.dissection.a11y_held_replay_action', "Held replay action"), onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
                     React.createElement("div", { className: "diss-replay-specimen__context" },
                       React.createElement("strong", null, 'Held action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeReplayEntry.label || procedureActionLabel(activeReplayEntry.action))),
                       React.createElement("span", null, 'Paused on the specimen below.')
@@ -21577,7 +27124,7 @@ var d = labToolData.dissection || {};
                         React.createElement("p", null, 'Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.'),
                         React.createElement("p", null, d.quizMode
                           ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (effectiveQuizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
-                          : spec.name + ' virtual dissection. Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view ' + procedureProtocol.recommendedView + '; access route ' + procedureProtocol.route + '; protected landmarks ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '. Current view: ' + anatomicalView + ', ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. ' + (livingFunctionEnabled ? 'Living function model active: ' + specimenLivingFunctionProfile().title + '; this represents in-life physiology, not preserved specimen motion. ' : '') + 'Progressive exposure: ' + currentExposure.label + ', ' + currentExposure.score + ' percent; decision quality ' + currentDecisionScore + ' percent. Observation field: ' + currentObservationField.label + ', ' + currentObservationField.quality + ' percent; limiting factor: ' + currentObservationField.limiter + '. Surface model: ' + activeMaterialProfile.label + '. Surface microtexture ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'is suppressed for visual clarity' : 'uses ' + activeMaterialProfile.pattern + ' detail aligned to ' + lightDirection + ' illumination, with sheen adjusted for ' + currentTissueState.moisture + ' percent moisture and ' + specimenCondition + ' condition') + (currentTissueState.salineDrops ? '. Hydration model: ' + specimenHydrationProfile().label + ', ' + currentTissueState.salineDrops + ' saline ' + (currentTissueState.salineDrops === 1 ? 'drop' : 'drops') + ' applied' : '') + '. Tool contact response: ' + activeMaterialProfile.response + '. Light direction: ' + lightDirection + '. Illumination ' + lightIntensity + ' percent: ' + currentIllumination.label + '; glare risk ' + currentIllumination.glareRisk + ' percent. Focus isolation ' + (focusMode ? 'on' : 'off') + (opticalPlaneMapActive ? '. Focus-plane map active at ' + lensFocusDepth + ' depth: ' + opticalPlaneCounts.resolved + ' resolved, ' + opticalPlaneCounts.soft + ' soft, and ' + opticalPlaneCounts.unresolved + ' unresolved structures' : '') + '. Tissue relief ' + (tissueReliefEnabled ? 'on and responsive to the inspection light' : 'off') + '. Depth atlas ' + (depthAtlasEnabled ? 'on, with circle surface markers, diamond mid-depth markers, and double-ring deep markers' : 'off') + '. Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels' + (sceneDetail ? '. Anatomical orientation axis uses a circle for ' + anatomicalOrientationData().start.toLowerCase() + ' and a diamond for ' + anatomicalOrientationData().end.toLowerCase() + '; current and target views are stated in text' : '') + '. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. Action readiness: ' + currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent. ' + currentToolReadiness.cue + (instrumentVisuals ? '. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion' : '') + ((procedureMode === 'guided' && !currentProcedure.incisionStarted) ? '. Guided anatomical access corridor active; circle marks start and diamond marks finish' : '') + ((instrumentVisuals && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) ? '. Predictive cutting trajectory safety feedback is active' : '') + (instrumentVisuals ? '. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned' : '') + '. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state' + (instrumentVisuals ? '. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Attempt replay follows saved action order and distinguishes saved paths from teaching illustrations; pressure and settings appear only when recorded. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control' : '') + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : (activeInstrument === 'forceps' ? 'Press the opened tissue edge, drag away while monitoring lift and tension, then release inside the solid safe envelope; the equivalent technique action button remains available.' : (activeInstrument === 'pin' ? 'Press an indicated endpoint, drag inward along the shaft while monitoring insertion and alignment, then release when stable; the equivalent technique action button remains available.' : (activeInstrument === 'probe' ? 'Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'dropper' ? 'Press the specimen surface, drag a short flow-aligned path while monitoring dose, contact, moisture, and pooling, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'wick' ? 'Press the saline pool edge, drag outward across a short recovery path while monitoring contact, alignment, and control, then release when controlled; the equivalent technique action button remains available.' : 'Select on the canvas or use the equivalent technique action button.')))))) + ' Occluded structures remain available in the structure directory.')
+                          : spec.name + ' virtual dissection. Specimen-specific procedure: ' + procedureProtocol.title + '; recommended view ' + procedureProtocol.recommendedView + '; access route ' + procedureProtocol.route + '; protected landmarks ' + (protectedLandmarkNames.join(', ') || 'underlying anatomy') + '. Current view: ' + anatomicalView + ', ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. ' + (livingFunctionEnabled ? 'Living function model active: ' + specimenLivingFunctionProfile().title + '; this represents in-life physiology, not preserved specimen motion. ' : '') + 'Progressive exposure: ' + currentExposure.label + ', ' + currentExposure.score + ' percent; decision quality ' + currentDecisionScore + ' percent. Observation field: ' + currentObservationField.label + ', ' + currentObservationField.quality + ' percent; limiting factor: ' + currentObservationField.limiter + '. Surface model: ' + activeMaterialProfile.label + '. Surface microtexture ' + ((visualRealism === 'accessible' || !sceneDetail) ? 'is suppressed for visual clarity' : 'uses ' + activeMaterialProfile.pattern + ' detail aligned to ' + lightDirection + ' illumination, with sheen adjusted for ' + currentTissueState.moisture + ' percent moisture and ' + specimenCondition + ' condition') + (currentTissueState.salineDrops ? '. Hydration model: ' + specimenHydrationProfile().label + ', ' + currentTissueState.salineDrops + ' saline ' + (currentTissueState.salineDrops === 1 ? 'drop' : 'drops') + ' applied' : '') + '. Tool contact response: ' + activeMaterialProfile.response + '. Light direction: ' + lightDirection + '. Illumination ' + lightIntensity + ' percent: ' + currentIllumination.label + '; glare risk ' + currentIllumination.glareRisk + ' percent. Focus isolation ' + (focusMode ? 'on' : 'off') + (opticalPlaneMapActive ? '. Focus-plane map active at ' + lensFocusDepth + ' depth: ' + opticalPlaneCounts.resolved + ' resolved, ' + opticalPlaneCounts.soft + ' soft, and ' + opticalPlaneCounts.unresolved + ' unresolved structures' : '') + '. Tissue relief ' + (tissueReliefEnabled ? 'on and responsive to the inspection light' : 'off') + '. Depth atlas ' + (depthAtlasEnabled ? 'on, with circle surface markers, diamond mid-depth markers, and double-ring deep markers' : 'off') + '. Selected and hovered structures retain a target and depth label. Teaching modes and covered anatomy also show a projected depth outline. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Teaching overlays distinguish tubes, lobes, chambers, layers, and compact structures with shapes and labels' + (sceneDetail ? '. Anatomical orientation axis uses a circle for ' + anatomicalOrientationData().start.toLowerCase() + ' and a diamond for ' + anatomicalOrientationData().end.toLowerCase() + '; current and target views are stated in text' : '') + '. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. Action readiness: ' + currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent. ' + currentToolReadiness.cue + (instrumentVisuals ? '. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion' : '') + ((procedureMode === 'guided' && !currentProcedure.incisionStarted) ? (anatomicalView === procedureProtocol.recommendedView ? '. Guided anatomical access corridor active; circle marks start and diamond marks finish' : '. Turn to the ' + procedureProtocol.recommendedView + ' view to see the guided anatomical access corridor') : '') + ((instrumentVisuals && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) ? '. Predictive cutting trajectory safety feedback is active' : '') + (instrumentVisuals ? '. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned' : '') + '. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state' + (instrumentVisuals ? '. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Attempt replay follows saved action order and distinguishes saved paths from teaching illustrations; pressure and settings appear only when recorded. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control' : '') + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : (activeInstrument === 'forceps' ? 'Press the opened tissue edge, drag away while monitoring lift and tension, then release inside the solid safe envelope; the equivalent technique action button remains available.' : (activeInstrument === 'pin' ? 'Press an indicated endpoint, drag inward along the shaft while monitoring insertion and alignment, then release when stable; the equivalent technique action button remains available.' : (activeInstrument === 'probe' ? 'Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'dropper' ? 'Press the specimen surface, drag a short flow-aligned path while monitoring dose, contact, moisture, and pooling, then release when controlled; the equivalent technique action button remains available.' : (activeInstrument === 'wick' ? 'Press the saline pool edge, drag outward across a short recovery path while monitoring contact, alignment, and control, then release when controlled; the equivalent technique action button remains available.' : 'Select on the canvas or use the equivalent technique action button.')))))) + ' Occluded structures remain available in the structure directory.')
                       ),
                       React.createElement("canvas", {
 
@@ -21865,7 +27412,7 @@ var d = labToolData.dissection || {};
                   // replay of the phase text that had not changed. Without atomic, only the node
                   // that actually changed is announced, so the selection sentence below is its own
                   // element. Visible text is byte-identical either way.
-                  !d.quizMode && activeProcedureReplay && replayReviewVisible && React.createElement("section", { id: "diss-replay-review", className: "diss-replay-review", role: "group", "aria-label": "Attempt replay controls", onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
+                  !d.quizMode && activeProcedureReplay && replayReviewVisible && React.createElement("section", { id: "diss-replay-review", className: "diss-replay-review", role: "group", "aria-label": __alloT('stem.dissection.a11y_attempt_replay_controls', "Attempt replay controls"), onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },
                     React.createElement("strong", null, 'Attempt review'),
                     React.createElement("p", { id: "diss-replay-review-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, activeProcedureReplay.paused
                       ? 'Paused · Action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeProcedureReplay.actions[activeReplayPosition.index].label || procedureActionLabel(activeProcedureReplay.actions[activeReplayPosition.index].action))
@@ -21904,7 +27451,7 @@ var d = labToolData.dissection || {};
                         ? 'Practice assessment: ' + quizPrompt + ' Select a visible structure to submit. Arrow keys preview and Enter submits.'
                         : 'Practice assessment: ' + quizPrompt + ' Choose an answer in the assessment panel. Canvas selection will not submit in multiple-choice mode.')
                       : (stageHandoffUsesTool ? ('Tool ' + nextToolDefinition.label + ' · ' + (nextToolReadiness ? nextToolReadiness.label + '. ' + nextToolReadiness.cue : nextActionModel.description) + ' ' + (sel
-                        ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
+                        ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + dissectionStructureCue(sel, 'function'))
                         : 'Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.'))
                         : [nextActionModel.phase + ': '
                           + (procedureLearningCheckpointVisible()
@@ -22227,12 +27774,12 @@ var d = labToolData.dissection || {};
                           ),
                           React.createElement("strong", { className: "diss-field-quality__score" }, currentObservationField.quality + '%')
                         ),
-                        React.createElement("div", { className: "diss-observation-meter", role: "meter", "aria-label": "Observation quality", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentObservationField.quality, "aria-valuetext": currentObservationField.quality + ' percent. ' + currentObservationField.label },
+                        React.createElement("div", { className: "diss-observation-meter", role: "meter", "aria-label": __alloT('stem.dissection.a11y_observation_quality', "Observation quality"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentObservationField.quality, "aria-valuetext": currentObservationField.quality + ' percent. ' + currentObservationField.label },
                           React.createElement("span", { className: "diss-observation-meter__fill", "aria-hidden": "true", style: { width: currentObservationField.quality + '%' } })
                         ),
                         React.createElement("div", { className: "diss-observation-meter__ends", "aria-hidden": "true" }, React.createElement("span", null, '0%'), React.createElement("span", null, '100%')),
                         React.createElement("p", { className: "diss-field-quality__guidance" }, 'Limiting factor: ' + currentObservationField.limiter + '. ' + currentObservationField.guidance),
-                        React.createElement("dl", { className: "diss-field-quality__metrics", "aria-label": "Readings contributing to observation quality" },
+                        React.createElement("dl", { className: "diss-field-quality__metrics", "aria-label": __alloT('stem.dissection.a11y_readings_contributing_to_observation_quality', "Readings contributing to observation quality") },
                           [
                             { id: 'exposure', label: 'Opening size', value: currentObservationField.aperture },
                             { id: 'clarity', label: 'Surface clarity', value: currentObservationField.clarity },
@@ -22262,7 +27809,7 @@ var d = labToolData.dissection || {};
                           React.createElement("b", { className: "diss-optics__score" }, currentOpticalInspection.quality + '%')
                         ),
                         React.createElement("p", { className: "diss-optics__scope" }, 'The lens and magnified inset show local detail. Use Specimen view to move or zoom the whole specimen.'),
-                        React.createElement("dl", { className: "diss-optics__readings", "aria-label": "Current optical readings" },
+                        React.createElement("dl", { className: "diss-optics__readings", "aria-label": __alloT('stem.dissection.a11y_current_optical_readings', "Current optical readings") },
                           [
                             { id: 'target', label: 'Inspection target', value: currentOpticalInspection.targetName },
                             { id: 'detail', label: 'Detail at current focus', value: currentOpticalInspection.detail },
@@ -22366,17 +27913,17 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, anatomicalView + ' view \u00B7 ' + specimenCondition),
                         React.createElement("p", null, specimenConditionDescription() + '. ' + visibleOrgansInView.length + '/' + organs.length + ' structures directly visible in this orientation. Material model: ' + activeMaterialProfile.label + '. Contact response: ' + activeMaterialProfile.response + '. Light: ' + lightDirection + '; focus isolation ' + (focusMode ? 'on' : 'off') + '.')
                       ),
-                      React.createElement("section", { id: "diss-exposure-readings", className: "diss-advanced-card diss-exposure-readings", "data-tone": currentExposure.score >= 58 ? "clear" : "developing", role: "group", "aria-label": "Progressive exposure readings" },
+                      React.createElement("section", { id: "diss-exposure-readings", className: "diss-advanced-card diss-exposure-readings", "data-tone": currentExposure.score >= 58 ? "clear" : "developing", role: "group", "aria-label": __alloT('stem.dissection.a11y_progressive_exposure_readings', "Progressive exposure readings") },
                         React.createElement("div", { className: "diss-exposure__header" },
                           React.createElement("div", null, React.createElement("strong", null, 'Progressive exposure'), React.createElement("span", { className: "diss-exposure__state" }, currentExposure.label)),
                           React.createElement("b", { className: "diss-exposure__score" }, currentExposure.score + '/100')
                         ),
-                        React.createElement("div", { className: "diss-exposure__meter", role: "meter", "aria-label": "Exposure score", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentExposure.score, "aria-valuetext": currentExposure.score + ' out of 100. ' + currentExposure.label },
+                        React.createElement("div", { className: "diss-exposure__meter", role: "meter", "aria-label": __alloT('stem.dissection.a11y_exposure_score', "Exposure score"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentExposure.score, "aria-valuetext": currentExposure.score + ' out of 100. ' + currentExposure.label },
                           React.createElement("span", { className: "diss-exposure__fill", "aria-hidden": "true", style: { width: currentExposure.score + '%' } })
                         ),
                         React.createElement("div", { className: "diss-exposure__ends", "aria-hidden": "true" }, React.createElement("span", null, '0'), React.createElement("span", null, '100')),
                         React.createElement("p", { id: "diss-exposure-guidance" }, currentExposure.next),
-                        React.createElement("dl", { className: "diss-exposure__readings", "aria-label": "Protocol and decision readings" },
+                        React.createElement("dl", { className: "diss-exposure__readings", "aria-label": __alloT('stem.dissection.a11y_protocol_and_decision_readings', "Protocol and decision readings") },
                           React.createElement("div", { "data-exposure-reading": "protocol" }, React.createElement("dt", null, 'Protocol progress'), React.createElement("dd", null, currentExposure.protocolProgress + '%')),
                           React.createElement("div", { "data-exposure-reading": "decision" }, React.createElement("dt", null, 'Decision quality'), React.createElement("dd", null, currentDecisionScore + '/100'))
                         ),
@@ -22388,16 +27935,16 @@ var d = labToolData.dissection || {};
                         ),
                         React.createElement("button", { id: "diss-exposure-review-protocol", type: "button", "aria-controls": "diss-protocol", "aria-describedby": "diss-exposure-guidance", onClick: reviewExposureProtocol }, 'Review access protocol')
                       ),
-                      React.createElement("section", { id: "diss-material-readings", className: "diss-advanced-card diss-material-readings", "data-tone": materialCuttingTool ? (currentMaterialInteraction.margin >= 0 ? "clear" : "caution") : "neutral", role: "group", "aria-label": "Material response readings" },
+                      React.createElement("section", { id: "diss-material-readings", className: "diss-advanced-card diss-material-readings", "data-tone": materialCuttingTool ? (currentMaterialInteraction.margin >= 0 ? "clear" : "caution") : "neutral", role: "group", "aria-label": __alloT('stem.dissection.a11y_material_response_readings', "Material response readings") },
                         React.createElement("div", { className: "diss-material__header" },
                           React.createElement("div", null, React.createElement("strong", null, 'Material response'), React.createElement("span", { className: "diss-material__state" }, currentMaterialInteraction.label)),
                           React.createElement("b", { className: "diss-material__score" }, currentMaterialInteraction.resistance + '/100')
                         ),
                         React.createElement("p", { className: "diss-material__tool" }, 'Selected instrument: ' + activeInstrumentDefinition.label),
-                        React.createElement("div", { className: "diss-material__meter", role: "meter", "aria-label": "Material resistance", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentMaterialInteraction.resistance, "aria-valuetext": currentMaterialInteraction.resistance + ' out of 100. ' + currentMaterialInteraction.label }, React.createElement("span", { className: "diss-material__fill", "aria-hidden": "true", style: { width: currentMaterialInteraction.resistance + '%' } })),
+                        React.createElement("div", { className: "diss-material__meter", role: "meter", "aria-label": __alloT('stem.dissection.a11y_material_resistance', "Material resistance"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentMaterialInteraction.resistance, "aria-valuetext": currentMaterialInteraction.resistance + ' out of 100. ' + currentMaterialInteraction.label }, React.createElement("span", { className: "diss-material__fill", "aria-hidden": "true", style: { width: currentMaterialInteraction.resistance + '%' } })),
                         React.createElement("div", { className: "diss-material__ends", "aria-hidden": "true" }, React.createElement("span", null, '0'), React.createElement("span", null, '100')),
                         React.createElement("p", { id: "diss-material-guidance" }, currentMaterialInteraction.response),
-                        materialCuttingTool && React.createElement("dl", { className: "diss-material__readings", "aria-label": "Current cutting calibration readings" },
+                        materialCuttingTool && React.createElement("dl", { className: "diss-material__readings", "aria-label": __alloT('stem.dissection.a11y_current_cutting_calibration_readings', "Current cutting calibration readings") },
                           React.createElement("div", { "data-material-reading": "calibration" }, React.createElement("dt", null, 'Current calibration quality'), React.createElement("dd", null, currentMaterialInteraction.calibration + '/100')),
                           React.createElement("div", { "data-material-reading": "required" }, React.createElement("dt", null, 'Required cutting quality'), React.createElement("dd", null, (currentMaterialInteraction.calibration - currentMaterialInteraction.margin) + '/100')),
                           React.createElement("div", { "data-material-reading": "margin" }, React.createElement("dt", null, 'Calibration margin'), React.createElement("dd", null, (currentMaterialInteraction.margin > 0 ? '+' : '') + currentMaterialInteraction.margin + ' points'))
@@ -22505,8 +28052,8 @@ var d = labToolData.dissection || {};
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": __alloT('stem.dissection.a11y_compare_the_current_technique_with_the_previous', 'Compare the current technique with the previous saved attempt') }, '\u21C4 Compare attempts'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
-                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": "diss-layer-review", onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
+                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": layerReviewAvailable() ? "diss-layer-review" : undefined, onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
                       React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
@@ -22881,7 +28428,7 @@ var d = labToolData.dissection || {};
                   ),
                   !d.quizMode && !d.practicalMode && (function () {
                     var studyVisible = structureExposureState(sel, currentProcedure) === 'visible';
-                    var studyNotePresent = String((d.organNotes || {})[specimen + '|' + sel.id] || '').trim().length > 0;
+                    var studyNotePresent = dissectionEvidenceNote(d.organNotes, specimen + '|' + sel.id).trim().length > 0;
                     return React.createElement("div", { className: "diss-study-actions", "data-diss-study-actions": true, role: "group", "aria-label": __alloT('stem.dissection.study_actions', 'Study actions') + ': ' + sel.name },
                       React.createElement("ol", { className: "diss-study-actions__steps" },
                         React.createElement("li", null,
@@ -22987,7 +28534,7 @@ var d = labToolData.dissection || {};
 
                   (function () {
                     var evidenceKey = specimen + '|' + sel.id;
-                    var noteValue = (d.organNotes || {})[evidenceKey] || '';
+                    var noteValue = dissectionEvidenceNote(d.organNotes, evidenceKey);
                     var confidenceValue = structureEvidenceData(sel).confidence;
                     var confidenceChoices = [
                       { level: 1, label: dissectionConfidenceLabel(1), cue: __alloT('stem.dissection.confidence_not_sure_yet_cue', 'Inspect one more visible feature and its location.') },
@@ -23146,7 +28693,7 @@ var d = labToolData.dissection || {};
 
                         } else if (addToast) {
 
-                          addToast('\uD83E\uDD16 AI not available. ' + sel.name + ': ' + sel.fn.split('.')[0] + '.', 'info');
+                          addToast('\uD83E\uDD16 AI not available. ' + sel.name + ': ' + dissectionStructureCue(sel, 'function'), 'info');
 
                         }
 
@@ -23281,7 +28828,6 @@ var d = labToolData.dissection || {};
 
                         type: "button",
                         "aria-pressed": d.selectedOrgan === org.id,
-                        "aria-disabled": directoryVisible || isExplored ? undefined : true,
                         "data-exposure-state": directoryExposureState,
                         "aria-describedby": "diss-record-" + org.id + (directoryContextOrgan && directoryContextOrgan.id === org.id ? " diss-directory-context-detail" : ""),
                         "data-directory-action": directoryAction,
@@ -23333,7 +28879,7 @@ var d = labToolData.dissection || {};
 
                 // Quiz card
 
-                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title" },
+                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title", "aria-describedby": assessmentPromptId },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -23345,7 +28891,7 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, quizPrompt),
+                  React.createElement("p", { id: assessmentPromptId, className: "text-xs text-amber-700 mb-2" }, quizPrompt),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.dissection.a11y_answer_method', 'Answer method') },
                     React.createElement("button", { type: "button", "aria-pressed": effectiveQuizAnswerMode === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, d.practicalMode ? 'Accessible choices' : 'Multiple choice'),
                     React.createElement("button", { type: "button", disabled: !hotspotQuizAvailable, title: hotspotQuizAvailable ? 'Answer directly on the visible specimen' : 'The current question is not visible on the specimen; use multiple choice', "aria-pressed": effectiveQuizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, hotspotQuizAvailable ? 'Select on specimen' : 'Specimen answer unavailable')
@@ -23387,17 +28933,19 @@ var d = labToolData.dissection || {};
                   ),
 
                   !d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 p-2.5 rounded-lg border " + (d.quizFeedback.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'),
                     role: "status",
                     "aria-live": "assertive"
                   }, d.quizFeedback.correct ? ((d.quizFeedback.supported ? 'Correct with support — ' : 'Correct — ') + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
                   d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
                     role: "status",
                     "aria-live": "assertive"
                   }, 'Response recorded. Correctness and the running score stay hidden while the timed practical is active.'),
 
-                  d.quizFeedback && React.createElement("button", { type: "button", "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
+                  d.quizFeedback && React.createElement("button", { id: "diss-quiz-continue", type: "button", "aria-describedby": assessmentFeedbackId, "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
 
                     onClick: function () {
                       var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
@@ -23506,24 +29054,31 @@ var d = labToolData.dissection || {};
 
 
 
-                // "Did You Know?" rotating trivia panel
+                // Learner-controlled biology facts
                 (function () {
                   var facts = SPECIMEN_TRIVIA[specimen] || [];
                   if (facts.length === 0) return null;
-                  var factIdx = Math.floor((Date.now() / 8000)) % facts.length;
-                  return React.createElement("details", { className: "diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
+                  var factIndices = d.biologyFactIndexBySpecimen && typeof d.biologyFactIndexBySpecimen === 'object' && !Array.isArray(d.biologyFactIndexBySpecimen) ? d.biologyFactIndexBySpecimen : {};
+                  var savedFactIndex = Object.prototype.hasOwnProperty.call(factIndices, specimen) ? factIndices[specimen] : 0;
+                  var factIdx = typeof savedFactIndex === 'number' && isFinite(savedFactIndex) && Math.floor(savedFactIndex) === savedFactIndex && savedFactIndex >= 0 && savedFactIndex < facts.length ? savedFactIndex : 0;
+                  var factReadingId = 'diss-biology-fact-reading-' + dissectionSaveOwner;
+                  function browseFact(direction) {
+                    var nextIndices = Object.assign({}, factIndices);
+                    nextIndices[specimen] = (factIdx + direction + facts.length) % facts.length;
+                    upd('biologyFactIndexBySpecimen', nextIndices);
+                  }
+                  return React.createElement("details", { className: "diss-biology-fact diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
                     React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                      React.createElement("span", { className: "text-sm" }, '\uD83D\uDCA1'),
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, '\uD83D\uDCA1'),
                       React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, 'Did You Know?')
                     ),
-                    React.createElement("p", { className: "text-[11px] text-amber-600 leading-relaxed" }, facts[factIdx]),
-                    React.createElement("div", { className: "flex gap-0.5 mt-1.5 justify-center" },
-                      facts.map(function (_, fi) {
-                        return React.createElement("div", {
-                          key: fi,
-                          className: "w-1 h-1 rounded-full " + (fi === factIdx ? 'bg-amber-500' : 'bg-amber-200')
-                        });
-                      })
+                    React.createElement("div", { id: factReadingId, role: "status", "aria-live": "polite", "aria-atomic": "true" },
+                      React.createElement("p", { className: "diss-biology-fact__position text-[11px]" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
+                      React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx])
+                    ),
+                    facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": "Biology fact navigation" },
+                      React.createElement("button", { type: "button", "aria-label": "Previous biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
+                      React.createElement("button", { type: "button", "aria-label": "Next biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(1); } }, 'Next')
                     )
                   );
                 })(),
@@ -23550,7 +29105,7 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": __alloT('stem.dissection.a11y_learning_evidence_dimensions', 'Learning evidence dimensions') },
                     masteryDimensions.map(function (dimension) {
                       return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
-                        React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px]" },
+                        React.createElement("div", { className: "diss-evidence-metric-heading flex items-center justify-between gap-2 text-[11px]" },
                           React.createElement("span", { className: "font-semibold text-slate-700" }, dimension.label),
                           React.createElement("span", { className: "font-bold text-blue-800" }, dimension.value + '%')
                         ),

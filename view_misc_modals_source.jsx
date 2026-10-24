@@ -14,7 +14,7 @@
 // an older pinned build still lands on the newest Canvas. The constant below is only
 // the offline fallback, and `node bump-link.mjs <url> "<notes>"` restamps it together
 // with launch.html and release.json - do not edit it by hand.
-const CANVAS_SHARE_URL_FALLBACK = 'https://share.gemini.google/xHbhRje39fUQ';
+const CANVAS_SHARE_URL_FALLBACK = 'https://share.gemini.google/igmVhCP2zfxj';
 const CANVAS_RELEASE_JSON_URL = 'https://alloflow-cdn.pages.dev/release.json';
 const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 
@@ -26,8 +26,7 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
   const status = found ? tx('chat_guide.evidence_found', 'Public sources found; review the evidence')
     : evidence.status === 'disabled' ? tx('chat_guide.evidence_disabled', 'Web lookup is off in AI backend settings.')
     : evidence.status === 'managed-disabled' ? tx('chat_guide.evidence_managed_off', 'Not searched: external research is disabled by this managed deployment.')
-    : evidence.status === 'public-topic-required' ? tx('chat_guide.evidence_public_topic', 'Not searched: external search accepts approved public topics and standard codes only. Try UDL, a standard code, photosynthesis or retrieval practice.')
-    : evidence.status === 'private-query' ? tx('chat_guide.evidence_private', 'Not searched: this question may contain personal information. Use a public topic or claim without personal details.')
+    : evidence.status === 'private-query' ? tx('chat_guide.evidence_private', 'Not searched: this looks like it contains an email address, phone number or ID number. Remove it and ask again.')
     : evidence.status === 'needs-public-query' ? tx('chat_guide.evidence_query_needed', 'Not searched: provide an official standard code or a standalone public claim.')
     : tx('chat_guide.evidence_unavailable', 'Web evidence unavailable. This answer is not web-verified.');
   return <section className="mt-3 border-t border-current/20 pt-2 min-w-0" aria-label={tx('chat_guide.evidence_label', 'Sources and evidence')}>
@@ -59,6 +58,33 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
   </section>;
 }
 
+
+// Keep each recommendation a native, independently named action. The host owns
+// availability and request freshness; the card only sends the selected identity.
+function AllobotCommandOptions({ options, requestId, tx, disabled, styles, onChoose }) {
+  const descriptionPrefix = React.useId();
+  return <ol className="mt-3 space-y-3 list-none p-0 min-w-0" aria-label={tx('chat_guide.command_options', 'Choose an action')} data-testid="command-options">
+    {options.map((option, index) => {
+      const descriptionId = descriptionPrefix + '-' + index;
+      return <li key={option.commandId} className="min-w-0 rounded-lg border border-current/20 p-3" style={{ overflowWrap: 'anywhere' }}>
+        <p className={`text-xs font-semibold mb-2 ${styles.subText}`}>
+          {index === 0 ? tx('chat_guide.command_suggested', 'Suggested') : tx('chat_guide.command_alternative', 'Alternative')}
+        </p>
+        <button type="button" disabled={disabled || !requestId}
+          aria-describedby={descriptionId}
+          className={`w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${index === 0 ? styles.button : styles.secondaryButton}`}
+          style={{ minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 }}
+          onClick={() => onChoose({ action: 'command-option', requestId, commandId: option.commandId })}>
+          {option.label}
+        </button>
+        <div id={descriptionId} className="mt-2 space-y-1 text-xs break-words" style={{ overflowWrap: 'anywhere' }}>
+          {option.effect && <p><span className="font-semibold">{tx('chat_guide.command_effect', 'What it does')}: </span>{option.effect}</p>}
+          {option.reason && <p><span className="font-semibold">{tx('chat_guide.command_reason', 'Why it fits')}: </span>{option.reason}</p>}
+        </div>
+      </li>;
+    })}
+  </ol>;
+}
 
 // Schema fields are local drafts. Applying a form never executes a command.
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {} }) {
@@ -281,6 +307,11 @@ function UDLGuideModal(props) {
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key, fallback) : null; return value && value !== key ? value : fallback; };
   const latestOperation = [...(udlMessages || [])].reverse().find(message => message.operationKind);
   const activeOperation = latestOperation && latestOperation.operationStatus !== 'closed' ? latestOperation : null;
+  const commandOptions = activeOperation?.operationKind === 'command' && Array.isArray(activeOperation.commandOptions)
+    ? activeOperation.commandOptions.filter((option, index, options) => option && typeof option.commandId === 'string' && option.commandId.trim()
+      && typeof option.label === 'string' && option.label.trim() && options.findIndex(candidate => candidate?.commandId === option.commandId) === index).slice(0, 5)
+    : [];
+  const isChoosingCommand = commandOptions.length > 0 && activeOperation.operationStatus === 'review';
   if (!(showUDLGuide)) return null;
   if (isCollapsed) {
       return (
@@ -451,14 +482,14 @@ function UDLGuideModal(props) {
                 <button data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
-        <AllobotContextControls messages={udlMessages} busy={isChatProcessing} setInput={setUdlInput} clearChat={() => { setUdlMessages([]); setUdlInput(''); }} t={t} />
+        <AllobotContextControls messages={udlMessages} busy={isChatProcessing} setInput={setUdlInput} clearChat={() => { setUdlMessages([]); setUdlInput(''); }} t={t} theme={theme} taskActive={Boolean(isAutoFillMode || activeBlueprint || activeOperation)} />
         {/* 4.1.3 Status Messages. The reply arrives with no focus change, so a
             screen-reader user got nothing. The transcript is the log; `polite`
             + `additions` announces only the new turn rather than re-reading the
             whole thread on every render. */}
         <div role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false"
           aria-label={tx('chat_guide.transcript_aria', 'Conversation transcript')}
-          className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
+          className={`flex-1 min-h-0 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
           {udlMessages.map((msg, idx) => (
             <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               {(!msg.type || (msg.type === 'choices' && msg.operationKind)) && (
@@ -625,12 +656,14 @@ function UDLGuideModal(props) {
           )}
         </div>
         {(activeOperation || activeBlueprint) && (
-          <div style={{ maxHeight: '45%' }} className={`shrink-0 border-t overflow-y-auto p-3 space-y-3 custom-scrollbar ${chatStyles.body}`} data-testid="allobot-active-work">
+          <div style={{ maxHeight: '45%', minHeight: 0, flexShrink: 1 }} className={`min-h-0 border-t overflow-y-auto p-3 space-y-3 custom-scrollbar ${chatStyles.body}`} data-testid="allobot-active-work">
             {activeOperation && (
               <section aria-label={tx('chat_guide.active_workflow', 'Current command workflow')} data-testid="active-command-workflow"
                 className={`p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
                 <div role="status" aria-live="polite">{renderFormattedText(activeOperation.text)}</div>
-                {activeOperation.commandReview && <AlloCommandFields
+                {commandOptions.length > 0 && <AllobotCommandOptions options={commandOptions} requestId={activeOperation.operationId}
+                  tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
+                {!commandOptions.length && activeOperation.commandReview && <AlloCommandFields
                   key={activeOperation.operationId + ':' + JSON.stringify(activeOperation.commandReview.params)}
                   fields={activeOperation.commandReview.fields} params={activeOperation.commandReview.params}
                   onDirty={dirty => markFieldsDirty(activeOperation.operationId, dirty)}
@@ -658,11 +691,13 @@ function UDLGuideModal(props) {
                 ))}
                 {hasUnappliedFields && <p role="status" className="mt-2 text-xs">{tx('chat_guide.apply_before_run', 'Apply your edited details before running the plan.')}</p>}
                 <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={tx('chat_guide.workflow_actions', 'Workflow actions')}>
-                  {(activeOperation.choices || []).map((choice, index) => (
+                  {(activeOperation.choices || []).filter(choice => !commandOptions.length || choice.value !== '__allo_do').map((choice, index) => (
                     <button key={index} type="button"
-                      disabled={choice.disabled || (isChatProcessing && choice.value !== '__allo_plan_stop') || (hasUnappliedFields && ['__allo_do', '__allo_plan_run'].includes(choice.value))}
+                      disabled={choice.disabled || (activeOperation.operationKind === 'command' && !activeOperation.operationId) || (isChatProcessing && choice.value !== '__allo_plan_stop') || (hasUnappliedFields && ['__allo_do', '__allo_plan_run'].includes(choice.value))}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 ${chatStyles.button}`}
-                      onClick={() => handleSendUDLMessage(choice.value)}>{choice.label}</button>
+                      onClick={() => handleSendUDLMessage(activeOperation.operationKind === 'command'
+                        ? { action: 'command-choice', requestId: activeOperation.operationId, value: choice.value }
+                        : choice.value)}>{choice.label}</button>
                   ))}
                 </div>
               </section>
@@ -754,23 +789,19 @@ function UDLGuideModal(props) {
             </div>
           </div>
         )}
-        <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} ${chatStyles.inputArea}`}>
+        <div className={`shrink-0 p-3 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} ${chatStyles.inputArea}`}>
+          {!isChoosingCommand && <>
           <button
               type="button"
               onClick={toggleStandardTools}
               aria-expanded={standardToolsOpen}
               aria-controls="udl-standard-tools"
               data-help-key="chat_standard_tools_toggle"
-              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`}
+              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-xs font-medium transition-colors ${chatStyles.subText}`}
           >
               {standardToolsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
               <ShieldCheck size={11} />
-              {t('standards.tools_disclosure') || 'Standards tools'}
-              {!standardToolsOpen && (
-                  <span className="font-normal normal-case ml-auto opacity-80">
-                      {t('standards.tools_disclosure_hint') || 'find / consult'}
-                  </span>
-              )}
+              {tx('chat_guide.curriculum_standards', 'Find or discuss curriculum standards')}
           </button>
           <div id="udl-standard-tools" hidden={!standardToolsOpen}>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
@@ -899,11 +930,7 @@ function UDLGuideModal(props) {
               </div>
           </div>
           </div>
-          <div className={`flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${
-             !isAutoFillMode && !hasUsedAutoFill
-                ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm motion-safe:animate-pulse'
-                : `border border-transparent px-1 ${chatStyles.subText}`
-          }`}>
+          <div className={`flex items-start gap-2 mb-2 px-2 py-2 rounded-lg border ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : theme === 'contrast' ? 'border-white bg-black' : 'border-slate-200 bg-slate-50'}`}>
              {/* No aria-label here on purpose: the visible <label htmlFor> below
                  already names this checkbox. An aria-label would OVERRIDE that
                  visible text and break 2.5.3 Label in Name for voice control. */}
@@ -911,16 +938,17 @@ function UDLGuideModal(props) {
                 type="checkbox"
                 checked={isAutoFillMode}
                 onChange={handleAutoFillToggle}
+                aria-describedby="udl-lesson-mode-help"
                 className={`rounded h-6 w-6 shrink-0 cursor-pointer ${theme === 'contrast' ? 'bg-black border-yellow-400 checked:bg-yellow-400' : 'border-slate-300 text-indigo-600 focus:ring-indigo-500'}`}
                 id="udl-autofill-check"
                 data-help-key="chat_autofill"
              />
-             <label htmlFor="udl-autofill-check" className={`flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? 'font-bold text-orange-900' : 'font-medium'}`}>
-                <Sparkles size={12} className={theme === 'contrast' ? "text-yellow-400" : "text-yellow-500 fill-current"} />
-                {t('chat_guide.blueprint_mode_label') || 'Blueprint Mode'}
-                {!isAutoFillMode && !hasUsedAutoFill && <span className="text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline">{t('common.recommended')}</span>}
-             </label>
+             <div className="min-w-0 text-xs">
+               <label htmlFor="udl-autofill-check" className="cursor-pointer font-semibold">{tx('chat_guide.plan_lesson_mode', 'Help me build a lesson')}</label>
+               <p id="udl-lesson-mode-help" className={`mt-1 ${chatStyles.subText}`}>{tx('chat_guide.plan_lesson_mode_help', 'Uses lesson settings and recent discussion to draft a plan for your review.')}</p>
+             </div>
           </div>
+          </>}
           <div className="flex gap-2">
              <input aria-label={tx('chat_guide.input_aria', 'Ask the UDL guide a question')}
                 ref={udlInputRef}

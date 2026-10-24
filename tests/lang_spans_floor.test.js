@@ -13,7 +13,12 @@ const rIdx = src.indexOf('return { html: fixed, fixCount };', start);
 const closeIdx = src.indexOf('\n  };', rIdx) + '\n  };'.length;
 if (start === -1 || rIdx === -1) throw new Error('extraction markers for fixLangSpans missing');
 const fnSrc = src.slice(start, closeIdx);
-const fixLangSpans = new Function('warnLog', fnSrc + '\n return fixLangSpans;')(() => {});
+// 2026-10-16: fixLangSpans calls two module-level helpers; extract them from the same source.
+const hStart = src.indexOf('var _ALLO_LANG_SCRIPTS = {');
+const hEnd = src.indexOf('// ── Alt-text QUALITY heuristics', hStart);
+if (hStart === -1 || hEnd === -1) throw new Error('extraction markers for the language helpers missing');
+const helpers = new Function(src.slice(hStart, hEnd) + '\nreturn { s: _alloScriptsForLang, l: _alloLangForScriptRun };')();
+const fixLangSpans = new Function('warnLog', '_alloScriptsForLang', '_alloLangForScriptRun', fnSrc + '\n return fixLangSpans;')(() => {}, helpers.s, helpers.l);
 
 const wrap = (s) => fixLangSpans('<p>' + s + '</p>').html;
 
@@ -85,5 +90,78 @@ describe('fixLangSpans — deterministic language-of-parts floor (§3)', () => {
   it('still tags pure-Han (no kana) text as zh (Chinese — no regression)', () => {
     const r = fixLangSpans('<p>中文测试内容</p>'); // all Han, no kana
     expect(r.html).toContain('lang="zh"');
+  });
+});
+
+// 2026-10-16: the pass ignored the document's own language. A correctly labelled lang="fa"
+// Persian letter had every paragraph wrapped lang="ar", and lang="uk" Ukrainian lang="ru",
+// so screen readers switched to the wrong voice. Text in the script of the language already
+// in force is now left alone; a run in another script is labelled from its letters.
+const doc = (lang, body) => '<html lang="' + lang + '"><body>' + body + '</body></html>';
+const FA = 'پدر و مادر عزیز';           // Persian: peh (U+067E), Farsi yeh (U+06CC)
+const FA_WEAK = 'این یک نامه است';       // Persian with only keheh (U+06A9) / Farsi yeh
+const AR = 'مدرسة جديدة';               // Arabic: teh marbuta (U+0629), Arabic yeh (U+064A)
+const UR = 'یہ ایک خط ہے';              // Urdu: yeh barree (U+06D2)
+const PS = 'ښوونځی ته ښه راغلاست';      // Pashto: sheen with dot (U+069A), hah with hamza (U+0681)
+const UK = 'Шановні батьки, це їхній лист'; // Ukrainian: yi (U+0457), i (U+0456)
+const RU = 'Привет мир друзья';
+const SR = 'Ђаци и њихови родитељи';    // Serbian: dje (U+0402), nje (U+045A), lje (U+0459)
+const KK = 'Қазақ тілі';                // Kazakh: ka with descender (U+049A)
+
+describe('fixLangSpans — respects the language already in force (2026-10-16)', () => {
+  it('leaves a lang="fa" Persian document unwrapped', () => {
+    const r = fixLangSpans(doc('fa', '<p>' + FA + '</p><p>' + FA_WEAK + '</p>'));
+    expect(r.html).not.toContain('<span lang=');
+    expect(r.fixCount).toBe(0);
+  });
+  it('leaves Dari (prs), Urdu (ur) and Pashto (ps) documents unwrapped', () => {
+    expect(fixLangSpans(doc('prs', '<p>' + FA + '</p>')).html).not.toContain('<span lang=');
+    expect(fixLangSpans(doc('ur', '<p>' + UR + '</p>')).html).not.toContain('<span lang=');
+    expect(fixLangSpans(doc('ps', '<p>' + PS + '</p>')).html).not.toContain('<span lang=');
+  });
+  it('leaves a lang="uk" Ukrainian document unwrapped', () => {
+    const r = fixLangSpans(doc('uk', '<p>' + UK + '</p>'));
+    expect(r.html).not.toContain('<span lang=');
+  });
+  it('honours region and script subtags', () => {
+    expect(fixLangSpans(doc('fa-IR', '<p>' + FA + '</p>')).html).not.toContain('<span lang=');
+    expect(fixLangSpans(doc('sr', '<p>' + SR + '</p>')).html).not.toContain('<span lang=');
+    // Serbian written in Latin: a Cyrillic run IS a change of script, labelled Serbian
+    expect(fixLangSpans(doc('sr-Latn', '<p>' + SR + '</p>')).html).toContain('<span lang="sr">');
+  });
+  it('uses the NEAREST ancestor lang, not just <html>', () => {
+    const r = fixLangSpans(doc('en', '<div lang="fa"><p>' + FA + '</p></div><p>' + FA + '</p>'));
+    expect((r.html.match(/<span lang="fa" dir="rtl">/g) || []).length).toBe(1);
+  });
+  it('survives unclosed <p> and void <br> tags', () => {
+    expect(fixLangSpans(doc('uk', '<p>' + UK + '<p>' + UK)).html).not.toContain('<span lang=');
+    expect(fixLangSpans(doc('fa', '<p>پدر<br>' + FA + '</p>')).html).not.toContain('<span lang=');
+  });
+  it('still tags a run in a DIFFERENT script (a Russian quote in a Persian letter)', () => {
+    const r = fixLangSpans(doc('fa', '<p>' + FA + '</p><p>' + RU + '</p>'));
+    expect(r.html).toContain('<span lang="ru">');
+    expect(r.html).not.toContain('lang="ar"');
+  });
+  it('leaves a lang="ja" document\'s kanji-only text alone (not zh)', () => {
+    expect(fixLangSpans(doc('ja', '<p>漢字辞典</p>')).html).not.toContain('lang="zh"');
+  });
+});
+
+describe('fixLangSpans — labels a foreign run from its letters (2026-10-16)', () => {
+  const run = (text) => fixLangSpans(doc('en', '<p>Dear parents: ' + text + '</p>')).html;
+  it('Persian is fa, not ar (strong and keheh/yeh-only evidence)', () => {
+    expect(run(FA)).toContain('<span lang="fa" dir="rtl">');
+    expect(run(FA_WEAK)).toContain('<span lang="fa" dir="rtl">');
+  });
+  it('Arabic stays ar', () => { expect(run(AR)).toContain('<span lang="ar" dir="rtl">'); });
+  it('Urdu is ur and Pashto is ps', () => {
+    expect(run(UR)).toContain('<span lang="ur" dir="rtl">');
+    expect(run(PS)).toContain('<span lang="ps" dir="rtl">');
+  });
+  it('Ukrainian is uk, Serbian sr, Kazakh kk; Russian stays ru', () => {
+    expect(run(UK)).toContain('<span lang="uk">');
+    expect(run(SR)).toContain('<span lang="sr">');
+    expect(run(KK)).toContain('<span lang="kk">');
+    expect(run(RU)).toContain('<span lang="ru">');
   });
 });

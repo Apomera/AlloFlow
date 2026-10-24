@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "ثبّت إعدادات الطيران الحالية",
+  "stem.flightsim.flight_assistance_targets": "الاتجاه {hdg}° · الارتفاع {alt} ft MSL · السرعة {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "الاتجاه {hdg}° · الارتفاع {alt} ft MSL · السرعة الأمامية {spd} kt",
+  "stem.flightsim.challenge_turn_left": "انعطف يسارًا بمقدار {degrees}° باتجاه {airport}.",
+  "stem.flightsim.challenge_turn_right": "انعطف يمينًا بمقدار {degrees}° باتجاه {airport}.",
+  "stem.flightsim.challenge_course_aligned": "أنت متجه نحو {airport}. اتبع مؤشر المسار.",
+  "stem.flightsim.challenge_runway_reference": "مدرج التدريب {runway}: الاتجاه {heading}°. حاذِ الطائرة مع المدرج قبل بدء النزول للهبوط."
+}

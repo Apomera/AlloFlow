@@ -142,8 +142,12 @@ describe('wiring pins', () => {
     expect(anti).toContain('if (!_directionsProgressLoadedRef.current) return; // never clobber storage with the initial {}');
   });
   it('NO GATING anywhere in Phase 1 — the checklist informs and celebrates only', () => {
-    // The extracted presentation must not condition travel on objective state.
-    expect(directionsViewSource).not.toMatch(/locked|disabled=\{!.*done|preventDefault/i);
+    // The extracted presentation must not condition travel on objective state. Since the map
+    // became travelable (directions_quest_map_travel.test.js), Enter/Space on a station calls
+    // preventDefault only to travel; that one activation handler is the allowed use.
+    const travelKey = "if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); travelTo(station); }";
+    expect(directionsViewSource).toContain(travelKey);
+    expect(directionsViewSource.split(travelKey).join('')).not.toMatch(/locked|disabled=\{!.*done|preventDefault/i);
     expect(directionsComposerSource).toContain('nothing is ever locked');
   });
   it('derivation excerpts: student-safe only, bounded, teacher-only contributes NOTHING', () => {
@@ -185,8 +189,9 @@ describe('wiring pins', () => {
   it('QUEST MAP: the knowledge web renders from the SAME signals as the checklist, checklist stays primary', () => {
     // visited marking is device-local, reserved-key, set on resource OPEN
     expect(handlers).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
-    // the map is an accessible IMAGE with a spoken progress summary; the checklist remains the interactive primary
-    expect(directionsViewSource).toMatch(/<svg\s+role="img"/);
+    // the map has a spoken progress summary; the checklist remains the primary. It is an
+    // interactive group of travel buttons now, not an image (directions_quest_map_travel.test.js).
+    expect(directionsViewSource).toMatch(/<svg\s+role="group"/);
     expect(directionsViewSource).toContain('mapSummary');
     // per-type station design now comes from the shared registry (superseded the old
     // two-shape _isStemStation rule — see directions_quest_map_travel.test.js)

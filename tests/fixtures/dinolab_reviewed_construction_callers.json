@@ -1,0 +1,245 @@
+{
+  "description": "Exact later anatomical caller reversals for the slender-skull construction guard. These normalize source text for six unchanged historical digests; they never execute or modify model code.",
+  "provenance": {
+    "reviewedSourcePath": "stem_lab/stem_tool_dinolab.js",
+    "reviewedSourceSha256": "5dd0435c997bebb797acc05e80682f84df83071cac138be4b33a286013f9589f",
+    "historicalRevisionExpression": "08d5e4b322^",
+    "historicalRevision": "8f00cbd9f7645097105d828cfe81ae4afd57f52a",
+    "historicalSourcePath": "stem_lab/stem_tool_dinolab.js",
+    "historicalSourceByteSha256": "320d9057598988e310f38fbccaa469e5a66ddf400789c048f8e596ceea0f67dd",
+    "historicalSourceLfSha256": "320d9057598988e310f38fbccaa469e5a66ddf400789c048f8e596ceea0f67dd",
+    "historicalDigestFixture": "tests/fixtures/dinolab_before_slender_skull.js",
+    "evidence": [
+      "All three historical source seams at the recorded Git revision match the unchanged historical fixture digests exactly.",
+      "Reapplying only the already reviewed mature tyrannosaur pose, long-snouted tyrannosaur anchors, neck radii/axis and robust skull section reproduces all three unchanged reviewed digests exactly.",
+      "Hunks are the exact remaining source-line differences after the existing nasal-rugosity and baryonychine normalizations. Each current hunk must occur exactly once before reversal.",
+      "The current pass head-landmark caller adds len/ht to the ornithopod body-frame context. Surface-head and skeletal-frame seams are byte-identical after LF decoding to immutable pass baseline4831937EE7C95260084FC5DAC0FAE6B623EE1BA83F0AB1EE56CED1D27B7ABAE9."
+    ]
+  },
+  "seams": [
+    {
+      "label": "head landmarks",
+      "historicalSha256": "49bc39413230e09a1c27cd178fd6639869371eb147e560ba27a8e215eba3211f",
+      "reviewedSha256": "b6d9be9507611be25b7d09f92de9a955ce7cee188e81e2170e6dc6af81f1fc22",
+      "sourceSeamSha256": "78a70732d61eb2f79420ad13534b1092f5391247f834f4c1e115b0d2505c7120",
+      "afterExistingNasalRosetteNormalizationSha256": "e647adddb0091d5c236e02fe809de6ccfa7f420cf19b0bb34309a7c10c5fdcca",
+      "hunks": [
+        {
+          "id": "reviewed-body-anchors",
+          "anatomicalPurpose": "Species-gated ornithopod, ceratopsid, ankylosaur and stegosaur whole-body anchors plus their evidence metadata.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_ornithopod_body.test.js",
+            "tests/dinolab_3d_ceratopsid_body.test.js",
+            "tests/dinolab_3d_ankylosaur_body.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js"
+          ],
+          "current": "            var ornithopodBodyPose = /^(iguanodon|edmontosaurus|maiasaura)$/.test(dn.id) ? dinoOrnithopodBodyAnchors(THREE, dn, { len: len, ht: ht, hip: hip, shoulder: shoulder, head: head, tail: tail }) : null;\n            if (ornithopodBodyPose) {\n              hip = ornithopodBodyPose.hip; shoulder = ornithopodBodyPose.shoulder;\n              head = ornithopodBodyPose.head; tail = ornithopodBodyPose.tail;\n              var ornithopodBodyProfile = dinoOrnithopodBodyProfileFor(dn);\n              model.userData.dinoFullBodyAnatomy = { family: 'ornithopods', profile: ornithopodBodyProfile.id, sources: ornithopodBodyProfile.sources,\n                anchors: { hip: hip.toArray(), shoulder: shoulder.toArray(), head: head.toArray(), tail: tail.toArray() },\n                forearmRatio: ornithopodBodyProfile.radiusHumerus, proportionBasis: ornithopodBodyProfile.proportionBasis,\n                interpretive: true, jointAnglesAreInterpretive: true, softFormIsInterpretive: true,\n                locomotorLimit: ornithopodBodyProfile.locomotorLimit };\n            }\n\n            var ceratopsidBodyPose = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidBodyAnchors(THREE, dn, { ht: ht, hip: hip, shoulder: shoulder, head: head, tail: tail }) : null;\n            if (ceratopsidBodyPose) {\n              hip = ceratopsidBodyPose.hip; shoulder = ceratopsidBodyPose.shoulder;\n              head = ceratopsidBodyPose.head; tail = ceratopsidBodyPose.tail;\n              var ceratopsidBodyProfile = dinoCeratopsidBodyProfileFor(dn);\n              model.userData.dinoFullBodyAnatomy = { family: 'ceratopsids', profile: ceratopsidBodyProfile.id, sources: ceratopsidBodyProfile.sources,\n                anchors: { hip: hip.toArray(), shoulder: shoulder.toArray(), head: head.toArray(), tail: tail.toArray() },\n                forearmRatio: ceratopsidBodyProfile.radiusHumerus, evidence: ceratopsidBodyProfile.evidence, limit: ceratopsidBodyProfile.limit,\n                interpretive: true, jointAnglesAreInterpretive: true, softFormIsInterpretive: true, limbs: [] };\n            }\n\n            var armoredBodyPose = /^(ankylosaurus|euoplocephalus|sauropelta|borealopelta)$/.test(dn.id) ? dinoAnkylosaurBodyAnchors(THREE,dn,{ len:len,ht:ht,hip:hip,shoulder:shoulder,head:head,tail:tail }) : null;\n            if (armoredBodyPose) {\n              hip = armoredBodyPose.hip; shoulder = armoredBodyPose.shoulder; head = armoredBodyPose.head; tail = armoredBodyPose.tail;\n              var armoredBodyProfile = dinoAnkylosaurBodyProfileFor(dn);\n              model.userData.dinoFullBodyAnatomy = { family:'ankylosaurs',profile:armoredBodyProfile.id,sources:armoredBodyProfile.sources,\n                anchors:{ hip:hip.toArray(),shoulder:shoulder.toArray(),head:head.toArray(),tail:tail.toArray() },\n                forearmRatio:armoredBodyProfile.radiusHumerus,evidence:armoredBodyProfile.evidence,limit:armoredBodyProfile.limit,\n                distalEvidence:armoredBodyProfile.distalEvidence,interpretive:true,jointAnglesAreInterpretive:true,softFormIsInterpretive:true,limbs:[] };\n            }\n            var stegosaurBodyPose = /^(stegosaurus|kentrosaurus|huayangosaurus|tuojiangosaurus)$/.test(dn.id) ? dinoStegosaurBodyAnchors(THREE,dn,{len:len,ht:ht,hip:hip,shoulder:shoulder,head:head,tail:tail}) : null;\n            if (stegosaurBodyPose) {\n              hip=stegosaurBodyPose.hip;shoulder=stegosaurBodyPose.shoulder;head=stegosaurBodyPose.head;tail=stegosaurBodyPose.tail;\n              var stegosaurBodyProfile=dinoStegosaurBodyProfileFor(dn);\n              model.userData.dinoFullBodyAnatomy={family:'stegosaurs',profile:stegosaurBodyProfile.id,sources:stegosaurBodyProfile.sources,\n                anchors:{hip:hip.toArray(),shoulder:shoulder.toArray(),head:head.toArray(),tail:tail.toArray()},\n                forearmRatio:stegosaurBodyProfile.radiusHumerus,evidence:stegosaurBodyProfile.evidence,proportionBasis:stegosaurBodyProfile.proportionBasis,\n                distalEvidence:stegosaurBodyProfile.distalEvidence,limit:stegosaurBodyProfile.limit,\n                interpretive:true,jointAnglesAreInterpretive:true,softFormIsInterpretive:true,limbs:[]};\n            }\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-theropod-anchors",
+          "anatomicalPurpose": "Species-gated theropod whole-body anchors and specimen-based segment-ratio evidence metadata.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js"
+          ],
+          "current": "            var theropodBodyPose=/^(tyrannosaurus|allosaurus|coelophysis|dilophosaurus|velociraptor|deinonychus)$/.test(dn.id)?dinoTheropodBodyAnchors(THREE,dn,{len:len,ht:ht,hip:hip,shoulder:shoulder,head:head,tail:tail}):null;\n            if(theropodBodyPose){\n              hip=theropodBodyPose.hip;shoulder=theropodBodyPose.shoulder;head=theropodBodyPose.head;tail=theropodBodyPose.tail;\n              var theropodBodyProfile=dinoTheropodBodyProfileFor(dn);\n              model.userData.dinoFullBodyAnatomy={family:'theropods',profile:theropodBodyProfile.id,sources:theropodBodyProfile.sources,\n                anchors:{hip:hip.toArray(),shoulder:shoulder.toArray(),head:head.toArray(),tail:tail.toArray()},\n                hindlimbSpecimen:theropodBodyProfile.specimen,hindlimbMeasurements:theropodBodyProfile.measurements.slice(),tibiaAnkleFemur:theropodBodyProfile.tibiaAnkleFemur,metatarsalFemur:theropodBodyProfile.metatarsalFemur,\n                evidence:theropodBodyProfile.evidence,proportionBasis:theropodBodyProfile.proportionBasis,distalEvidence:theropodBodyProfile.distalEvidence,limit:theropodBodyProfile.limit,\n                interpretive:true,jointAnglesAreInterpretive:true,softFormIsInterpretive:true,limbs:[]};\n            }\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-cranial-frames",
+          "anatomicalPurpose": "Species-gated ceratopsid, armored, Carnotaurus, stegosaur and theropod shared Bone/Life cranial frames.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_armored_cranium_armor.test.js",
+            "tests/dinolab_carnotaurus_form.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "            var ceratopsidCranium = /^(triceratops|styracosaurus|centrosaurus|chasmosaurus)$/.test(dn.id) ? dinoCeratopsidCraniumFrame(THREE,dn,head,len,ht) : null;\n            if (ceratopsidCranium) { snout.copy(ceratopsidCranium.snout); model.userData.dinoCeratopsidCranium = ceratopsidCranium.metadata; }\n            var armoredCranium=dinoArmoredCraniumFrame(THREE,dn,head,len,ht);\n            if(armoredCranium){snout.copy(armoredCranium.snout);model.userData.dinoArmoredCranium=armoredCranium.metadata;}\n            var carnotaurusCranium=dinoCarnotaurusCraniumFrame(THREE,dn,head,len,ht);\n            if(carnotaurusCranium){snout.copy(carnotaurusCranium.snout);model.userData.dinoCarnotaurusCranium=carnotaurusCranium.metadata;}\n            var stegosaurCranium=/^(stegosaurus|kentrosaurus|huayangosaurus|tuojiangosaurus)$/.test(dn.id)?dinoStegosaurBodyCraniumFrame(THREE,dn,head,len,ht):null;\n            if(stegosaurCranium){snout.copy(stegosaurCranium.snout);model.userData.dinoStegosaurCranium=stegosaurCranium.metadata;\n              if(model.userData.dinoFullBodyAnatomy)model.userData.dinoFullBodyAnatomy.anchors.snout=snout.toArray();}\n            var theropodCranium=/^(allosaurus|dilophosaurus|coelophysis|velociraptor|deinonychus)$/.test(dn.id)?dinoTheropodCraniumFrame(THREE,dn,{head:head,snout:snout,len:len,ht:ht,bodyHeight:bodyHeight,bodyDepth:bodyDepth}):null;\n            if(theropodCranium){model.userData.dinoTheropodCranium=theropodCranium.metadata;\n              if(model.userData.dinoFullBodyAnatomy)model.userData.dinoFullBodyAnatomy.anchors.snout=snout.toArray();}\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-long-neck-and-lambeosaur-frames",
+          "anatomicalPurpose": "Sauropod body frame, lambeosaur trunk frame and Diplodocus/Camarasaurus cranial frame callers and metadata.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "            var sauropodBody = isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id) ? dinoSauropodBodyFrame(THREE,dn,len,ht) : null;\n            if (sauropodBody) {\n              hip.copy(sauropodBody.hip); shoulder.copy(sauropodBody.shoulder); head.copy(sauropodBody.head); tail.copy(sauropodBody.tail); snout.copy(sauropodBody.snout);\n              bodyCenter.copy(sauropodBody.bodyCenter); bodyLen = sauropodBody.bodyLen; bodyHeight = sauropodBody.bodyHeight; bodyDepth = sauropodBody.bodyDepth;\n              model.userData.dinoFullBodyAnatomy = sauropodBody.metadata;\n            }\n            var lambeosaurBody=/^(parasaurolophus|corythosaurus|lambeosaurus|olorotitan)$/.test(dn.id)?dinoLambeosaurBodyFrame(THREE,dn,{len:len,ht:ht,headScale:reconstructionProfile.head,shoulder:shoulder,hip:hip,head:head,snout:snout,tail:tail,bodyHeight:bodyHeight,bodyDepth:bodyDepth}):null;\n            if(lambeosaurBody){shoulder.copy(lambeosaurBody.shoulder);hip.copy(lambeosaurBody.hip);tail.copy(lambeosaurBody.tail);bodyDepth=lambeosaurBody.bodyDepth;bodyCenter.copy(shoulder).lerp(hip,.5);bodyLen=Math.abs(hip.x-shoulder.x)*.72;\n              model.userData.dinoFullBodyAnatomy=lambeosaurBody.metadata;model.userData.dinoLambeosaurBody=lambeosaurBody.metadata;}\n            var sauropodCranium=/^(diplodocus|camarasaurus)$/.test(dn.id)?dinoSauropodCraniumFrame(THREE,dn,head,snout):null;\n            if(sauropodCranium)model.userData.dinoSauropodCranium=sauropodCranium.metadata;\n",
+          "reviewed": ""
+        }
+      ]
+    },
+    {
+      "label": "surface head",
+      "historicalSha256": "b2095f02c63ef94f1613d376e873ac2010697c7fbfb5d07cded1a4f6323ab569",
+      "reviewedSha256": "37326154da8deaa9e3b1dee9aaaa06e1b9778352b011a7c8c5c13a518278cedc",
+      "sourceSeamSha256": "b3c6d43cb8d0fa2fa5f27476384dcf207adc2277ba404088db0c137cfaec2152",
+      "afterExistingNasalRosetteNormalizationSha256": "6765c30002612ecbd44deb3fddd507f2d802b216ea9ea4711642271eb24feac3",
+      "hunks": [
+        {
+          "id": "reviewed-cranial-surface-dimensions",
+          "anatomicalPurpose": "Bone/Life shared cranial-frame dimensions replace only the selected reviewed species surface dimensions.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_armored_cranium_armor.test.js",
+            "tests/dinolab_carnotaurus_form.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "            if (ceratopsidCranium) {\n              surfaceHeadLength = ceratopsidCranium.length * surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadHeight = ceratopsidCranium.height * surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadDepth = ceratopsidCranium.depth * surfaceHypothesis.headSoftTissueScale;\n              surfaceSnout.copy(snout);\n            }\n            if(armoredCranium){\n              surfaceHeadLength=armoredCranium.length*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadHeight=armoredCranium.height*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadDepth=armoredCranium.depth*surfaceHypothesis.headSoftTissueScale;surfaceSnout.copy(snout);\n            }\n            if(carnotaurusCranium){\n              surfaceHeadLength=carnotaurusCranium.length*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadHeight=carnotaurusCranium.height*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadDepth=carnotaurusCranium.depth*surfaceHypothesis.headSoftTissueScale;surfaceSnout.copy(snout);\n            }\n            if(stegosaurCranium){\n              surfaceHeadLength=stegosaurCranium.length*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadHeight=stegosaurCranium.height*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadDepth=stegosaurCranium.depth*surfaceHypothesis.headSoftTissueScale;surfaceSnout.copy(snout);\n            }\n            if(theropodCranium){\n              surfaceHeadLength=theropodCranium.length*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadHeight=theropodCranium.height*surfaceHypothesis.headSoftTissueScale;\n              surfaceHeadDepth=theropodCranium.depth*surfaceHypothesis.headSoftTissueScale;surfaceSnout.copy(snout);\n            }\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-theropod-neck-base",
+          "anatomicalPurpose": "Reviewed theropod body profile sets the neck-base radius at the native trunk junction.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js"
+          ],
+          "current": "            if(/^(tyrannosaurus|allosaurus|coelophysis|dilophosaurus|velociraptor|deinonychus)$/.test(dn.id))neckBaseRadius=surfaceBodyHeight*dinoTheropodBodyProfileFor(dn).neckBase*surfaceHypothesis.neckSoftTissueScale*reconstructionProfile.neckBase*postcranialSurface.neckFullness;\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-cervical-envelopes",
+          "anatomicalPurpose": "Sauropod, theropod and lambeosaur body frames select their own connected cervical envelopes.",
+          "nativeCoverage": [
+            "tests/dinolab_3d_theropod_body.test.js",
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "            if (isSauropod && /^(brachiosaurus|diplodocus|apatosaurus|camarasaurus)$/.test(dn.id)) cervicalEnvelope = dinoSauropodBodyNeck(THREE,dn,shoulder,head,bodyHeight,neckBaseRadius,neckTipRadius);\n            if(/^(tyrannosaurus|allosaurus|coelophysis|dilophosaurus|velociraptor|deinonychus)$/.test(dn.id))cervicalEnvelope=dinoTheropodBodyNeck(THREE,dn,shoulder,head,bodyHeight,neckBaseRadius,neckTipRadius);\n            if(lambeosaurBody)cervicalEnvelope=dinoLambeosaurBodyNeck(THREE,lambeosaurBody,neckBaseRadius,neckTipRadius);\n",
+          "reviewed": ""
+        },
+        {
+          "id": "retained-lambeosaur-seat-and-sauropod-skull",
+          "anatomicalPurpose": "Lambeosaur crest/head seat retains its legacy junction; reviewed sauropod skull receives its cranial dimensions at that native junction.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_body.test.js",
+            "tests/dinolab_lambeosaur_body.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "            // Preserve the reviewed cranial skin and crest seat at their original junction.\n            if(lambeosaurBody){var legacyLambeosaurNeck=dinoCervicalEnvelope(THREE,lambeosaurBody.legacyShoulder,head,surfaceBodyHeight,neckBaseRadius,neckTipRadius,postcranialSurface,false,cladeName,false);neckJunction=dinoNeckJunction(THREE,legacyLambeosaurNeck.points,legacyLambeosaurNeck.radii,surfaceHeadLength*1.10);}\n            // Keep the established cervical axis and neck skin. The reviewed\n            // head rises smoothly from a buried root at that same junction.\n            if(sauropodCranium){surfaceHeadLength=sauropodCranium.length*surfaceHypothesis.headSoftTissueScale;surfaceHeadHeight=sauropodCranium.height*surfaceHypothesis.headSoftTissueScale;surfaceHeadDepth=sauropodCranium.depth*surfaceHypothesis.headSoftTissueScale;surfaceSnout.copy(snout);}\n",
+          "reviewed": ""
+        },
+        {
+          "id": "reviewed-head-envelope-builders",
+          "anatomicalPurpose": "Native reviewed cranial envelopes and flat-section options replace the generic head builder only for their selected frames.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_armored_cranium_armor.test.js",
+            "tests/dinolab_carnotaurus_form.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              compactRostrum: cranialSurface.id === 'slender-theropod', robustSection: cranialSurface.matureTyrannosaur === true || !!(theropodCranium && theropodCranium.profile.flatSection), sectionRootSpan:theropodCranium && theropodCranium.profile.flatSection ? .10 : undefined };\n            var ceratopsidHeadEnvelope = ceratopsidCranium ? dinoCeratopsidHeadEnvelope(THREE,ceratopsidCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth) : null;\n            var armoredHeadEnvelope=armoredCranium?dinoArmoredHeadEnvelope(THREE,armoredCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth):null;\n            var carnotaurusHeadEnvelope=carnotaurusCranium?dinoCarnotaurusHeadEnvelope(THREE,carnotaurusCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth):null;\n            var stegosaurHeadEnvelope=stegosaurCranium?dinoStegosaurBodyHeadEnvelope(THREE,stegosaurCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth):null;\n            var theropodHeadEnvelope=theropodCranium?dinoTheropodHeadEnvelope(THREE,theropodCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth):null;\n            var sauropodHeadEnvelope=sauropodCranium?dinoSauropodHeadEnvelope(THREE,sauropodCranium,neckJunction,surfaceHeadHeight,surfaceHeadDepth):null;\n            var headShell = sauropodHeadEnvelope ? addSoftTissueChain(sauropodHeadEnvelope.points,sauropodHeadEnvelope.radii,headMat,null,{smoothProfile:true,sectionPower:.74,sectionRootSpan:.10})[0] : theropodHeadEnvelope ? addSoftTissueChain(theropodHeadEnvelope.points,theropodHeadEnvelope.radii,headMat,cranialShape)[0] : stegosaurHeadEnvelope ? addSoftTissueChain(stegosaurHeadEnvelope.points,stegosaurHeadEnvelope.radii,headMat,cranialShape)[0] : carnotaurusHeadEnvelope ? addSoftTissueChain(carnotaurusHeadEnvelope.points,carnotaurusHeadEnvelope.radii,headMat,cranialShape)[0] : armoredHeadEnvelope ? addSoftTissueChain(armoredHeadEnvelope.points,armoredHeadEnvelope.radii,headMat,cranialShape)[0] : ceratopsidHeadEnvelope ? addSoftTissueChain(ceratopsidHeadEnvelope.points,ceratopsidHeadEnvelope.radii,headMat,cranialShape)[0] : isTheropod ? addSoftTissueChain([\n",
+          "reviewed": "              compactRostrum: cranialSurface.id === 'slender-theropod', robustSection: cranialSurface.matureTyrannosaur === true };\n            var headShell = isTheropod ? addSoftTissueChain([\n"
+        }
+      ]
+    },
+    {
+      "label": "skeletal frame and dentition",
+      "historicalSha256": "0a2228c8f6a6819233b962a84791108c5cb45f95ec79b98a2962a09f9fb4e8c8",
+      "reviewedSha256": "8df3a8e66dec20b407dca5122d8f1b95a7bcf789864513e62e76f15e4b2e96b9",
+      "sourceSeamSha256": "33290d357b92e6d869c498c9c599fecbbc493fa07e3005467658fb2015c8be52",
+      "afterExistingNasalRosetteNormalizationSha256": "2fe0f4f1684c6615aa6cd7d3fa8461316f8e667fa9b706dc10a238e60b40aeae",
+      "hunks": [
+        {
+          "id": "reviewed-skeletal-dimensions-and-axis",
+          "anatomicalPurpose": "Selected shared cranial frames supply skeletal dimensions; lambeosaurs retain their established cervical axis.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_armored_cranium_armor.test.js",
+            "tests/dinolab_carnotaurus_form.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js",
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js",
+            "tests/dinolab_lambeosaur_body.test.js"
+          ],
+          "current": "              if (ceratopsidCranium) { skullLength=ceratopsidCranium.boneLength; skullHeight=ceratopsidCranium.boneHeight; skullDepth=ceratopsidCranium.boneDepth; }\n              if (armoredCranium) { skullLength=armoredCranium.boneLength; skullHeight=armoredCranium.boneHeight; skullDepth=armoredCranium.boneDepth; }\n              if(carnotaurusCranium){skullLength=carnotaurusCranium.boneLength;skullHeight=carnotaurusCranium.boneHeight;skullDepth=carnotaurusCranium.boneDepth;}\n              if(stegosaurCranium){skullLength=stegosaurCranium.boneLength;skullHeight=stegosaurCranium.boneHeight;skullDepth=stegosaurCranium.boneDepth;}\n              if(theropodCranium){skullLength=theropodCranium.boneLength;skullHeight=theropodCranium.boneHeight;skullDepth=theropodCranium.boneDepth;}\n              var neckAxis = new THREE.Vector3().subVectors(lambeosaurBody?lambeosaurBody.legacyShoulder:shoulder, head).normalize();\n",
+          "reviewed": "              var neckAxis = new THREE.Vector3().subVectors(shoulder, head).normalize();\n"
+        },
+        {
+          "id": "reviewed-theropod-cervical-axis",
+          "anatomicalPurpose": "Theropod cranial frame seats the cervical endpoint and tangent on the actual shared neck envelope.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js"
+          ],
+          "current": "              if(theropodCranium){var cranialCervicalFrame=dinoTheropodCraniumCervicalFrame(THREE,theropodCranium,cervicalEnvelope);neckAxis=cranialCervicalFrame.axis;axisCenter=cranialCervicalFrame.axisCenter;}\n",
+          "reviewed": ""
+        },
+        {
+          "id": "suppress-replaced-vault-proxy",
+          "anatomicalPurpose": "Suppress the generic vault ellipsoid where reviewed theropod or sauropod cranial builders supply actual bone elements.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              var cranialVault = theropodCranium||sauropodCranium?null:addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);\n",
+          "reviewed": "              var cranialVault = addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);\n"
+        },
+        {
+          "id": "suppress-replaced-rostrum-proxy",
+          "anatomicalPurpose": "Suppress the generic rostrum ellipsoid for the same reviewed native cranial frames.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              var cranialRostrum = theropodCranium||sauropodCranium?null:addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);\n",
+          "reviewed": "              var cranialRostrum = addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);\n"
+        },
+        {
+          "id": "suppress-replaced-roof-rod",
+          "anatomicalPurpose": "Suppress the generic skull roof rod where the reviewed cranial elements provide that anatomy.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));\n",
+          "reviewed": "              addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));\n"
+        },
+        {
+          "id": "reviewed-sauropod-cervical-elements",
+          "anatomicalPurpose": "Reviewed sauropod cranial builder supplies its native cervical attachment instead of the generic craniocervical block.",
+          "nativeCoverage": [
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              if (skeletalProfile.craniocervicalDetail&&!sauropodCranium) {\n",
+          "reviewed": "              if (skeletalProfile.craniocervicalDetail) {\n"
+        },
+        {
+          "id": "reviewed-native-cranial-bones",
+          "anatomicalPurpose": "Dispatch actual theropod/sauropod closed cranial elements and representative teeth instead of the preceding generic bars and cavity overlays.",
+          "nativeCoverage": [
+            "tests/dinolab_theropod_cranium.test.js",
+            "tests/dinolab_dromaeosaur_cranium.test.js",
+            "tests/dinolab_sauropod_cranium.test.js"
+          ],
+          "current": "              if(theropodCranium)dinoAddTheropodCranium(THREE,dn,model,theropodCranium,{bone:boneMat,tooth:toothMat}).forEach(registerCranialMotion);\n              else if(sauropodCranium)dinoAddSauropodCranium(THREE,dn,model,sauropodCranium,{bone:boneMat,tooth:toothMat},{axis:neckAxis,axisCenter:axisCenter,envelope:cervicalEnvelope}).forEach(registerCranialMotion);\n              else [-1, 1].forEach(function (skullSide) {\n",
+          "reviewed": "              [-1, 1].forEach(function (skullSide) {\n"
+        },
+        {
+          "id": "reviewed-small-scale-cranial-bars",
+          "anatomicalPurpose": "Ceratopsid and stegosaur frame bars retain local scale at tiny specimen scale.",
+          "nativeCoverage": [
+            "tests/dinolab_ceratopsid_cranium.test.js",
+            "tests/dinolab_3d_stegosaur_body.test.js"
+          ],
+          "current": "                var cranialBarRadius = Math.max(0.007 * (ceratopsidCranium || stegosaurCranium ? Math.min(detailScale,ht / dn.heightM) : detailScale), ht * 0.0027);\n",
+          "reviewed": "                var cranialBarRadius = Math.max(0.007 * detailScale, ht * 0.0027);\n"
+        }
+      ]
+    }
+  ]
+}

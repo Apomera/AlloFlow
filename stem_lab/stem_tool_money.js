@@ -13,8 +13,65 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
+// STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
+(function () {
+  var MINUS = String.fromCharCode(0x2212);
+  // A typed answer as a number: "-3", "2.5", "1,000", "3/4", "1 1/2" and the typographic minus.
+  // Anything else (units, words, "1/0") is NaN, so a caller can tell "not a number" from "wrong".
+  function toNumber(value) {
+    if (typeof value === 'number') return isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
+    var s = value.split(MINUS).join('-').replace(/\s+/g, ' ').trim();
+    if (!s) return NaN;
+    if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    var m = s.match(/^([+-]?)(\d+) (\d+)\/(\d+)$/);
+    if (m) {
+      var den = +m[4];
+      if (!den) return NaN;
+      var mixed = +m[2] + (+m[3]) / den;
+      return m[1] === '-' ? -mixed : mixed;
+    }
+    m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)) ?\/ ?([+-]?(?:\d+\.?\d*|\.\d+))$/);
+    if (m) {
+      var d = parseFloat(m[2]);
+      return d ? parseFloat(m[1]) / d : NaN;
+    }
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+  }
+  // Equal within an absolute tolerance, a relative one, or float noise, whichever is largest.
+  function sameNumber(a, b, opts) {
+    var x = toNumber(a), y = toNumber(b);
+    if (!isFinite(x) || !isFinite(y)) return false;
+    var o = opts || {};
+    var tol = Math.max(+o.tolerance || 0, (+o.relative || 0) * Math.abs(y), 1e-9 * Math.max(1, Math.abs(y)));
+    return Math.abs(x - y) <= tol;
+  }
+  // Credit an item once: returns whether `key` is new and the next seen-map to store.
+  // The map is never mutated, so it can live in tool state.
+  function creditOnce(seen, key) {
+    var map = seen && typeof seen === 'object' && !Array.isArray(seen) ? seen : {};
+    var k = String(key);
+    if (Object.prototype.hasOwnProperty.call(map, k)) return { isNew: false, seen: map };
+    var next = {};
+    for (var p in map) if (Object.prototype.hasOwnProperty.call(map, p)) next[p] = map[p];
+    next[k] = true;
+    return { isNew: true, seen: next };
+  }
+  var api = { version: 1, toNumber: toNumber, sameNumber: sameNumber, creditOnce: creditOnce };
+  var current = window.StemLab.grading;
+  if (!current || !(current.version >= api.version)) window.StemLab.grading = api;
+})();
+// STEM_GRADING_CORE_END
+
 (function() {
   'use strict';
+  var moneyGrading = window.StemLab.grading;
+  // Short stable id for a credited item (a fingerprint can be a whole receipt).
+  function moneyAwardHash(text) {
+    var a = 0x811c9dc5, b = 5381;
+    for (var i = 0; i < text.length; i++) { var c = text.charCodeAt(i); a = Math.imul(a ^ c, 16777619); b = (Math.imul(b, 33) + c) | 0; }
+    return (a >>> 0).toString(36) + '.' + (b >>> 0).toString(36);
+  }
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -60,14 +117,15 @@ window.StemLab = window.StemLab || {
     if (['tip', 'discount'].indexOf(mode) < 0 || ![original, percent, extra, scale].every(Number.isFinite) || original < 0 || original > 1000000 || percent < 0 || percent > 100 || extra < 0 || extra > 1000000 || (scale !== 1 && scale !== 100)) return { ok: false };
     if (mode === 'tip' && (!Number.isInteger(extra) || extra < 1 || extra > 100)) return { ok: false };
     var units = Math.round((original + Number.EPSILON) * scale);
-    var part = Math.round((original * percent / 100 + Number.EPSILON) * scale);
+    // Whole units first, so half-units round up exactly as roundCurrency does (6.42 x 25% = 1.605 -> 1.61).
+    var part = Math.round(units * percent / 100);
     if (mode === 'tip') {
       var total = units + part, low = Math.floor(total / extra), higherCount = total % extra;
       return { ok: true, mode: mode, original: units, percent: percent, part: part, total: total,
         roundedShare: Math.round(total / extra), low: low, high: low + 1, lowerCount: extra - higherCount, higherCount: higherCount, diners: extra };
     }
     // Match the existing sale-price rounding: round the retained percentage first.
-    var afterPercent = Math.round((original * (1 - percent / 100) + Number.EPSILON) * scale);
+    var afterPercent = Math.round(units * (100 - percent) / 100);
     var coupon = Math.min(afterPercent, Math.round((extra + Number.EPSILON) * scale));
     return { ok: true, mode: mode, original: units, percent: percent, part: units - afterPercent,
       afterPercent: afterPercent, coupon: coupon, unusedCoupon: Math.max(0, Math.round((extra + Number.EPSILON) * scale) - coupon), total: afterPercent - coupon };
@@ -105,7 +163,7 @@ window.StemLab = window.StemLab || {
       if (!item) { valid = false; return; }
       var weighted = item.weight != null, quantity = weighted ? item.weight : (item.qty == null ? 1 : item.qty);
       if (!Number.isFinite(item.price) || item.price < 0 || item.price > 1000000 || !Number.isFinite(quantity) || quantity <= 0 || quantity > 100 || (!weighted && !Number.isInteger(quantity)) || Math.abs(item.price * scale - Math.round(item.price * scale)) > 1e-7) { valid = false; return; }
-      lines.push({ name: typeof item.name === 'string' ? item.name.slice(0, 100) : '', price: Math.round(item.price * scale), quantity: quantity, unit: weighted ? (item.pricePer || 'lb') : 'each', units: Math.round((item.price * quantity + Number.EPSILON) * scale) });
+      lines.push({ name: typeof item.name === 'string' ? item.name.slice(0, 100) : '', price: Math.round(item.price * scale), quantity: quantity, unit: weighted ? (item.pricePer || 'lb') : 'each', units: Math.round(Number((Math.round(item.price * scale) * quantity).toPrecision(12))) });
     });
     if (!valid) return { ok: false };
     var subtotal = lines.reduce(function(sum, line) { return sum + line.units; }, 0);
@@ -201,6 +259,8 @@ window.StemLab = window.StemLab || {
             const d = labToolData.moneyMath || {};
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, moneyMath: { ...prev.moneyMath, [key]: val } }));
             var moneyAwardKeys = Object.assign({}, d.moneyAwardKeys || {});
+            // Every credited item, not only the last one per activity: alternating two answers paid on every click.
+            var moneyAwardSeen = d.moneyAwardSeen;
             var moneyRoundIds = Object.assign({}, d.moneyRoundIds || {});
             var beginMoneyRound = function(activity) {
               var nextRound = (Number(moneyRoundIds[activity]) || 0) + 1;
@@ -214,10 +274,34 @@ window.StemLab = window.StemLab || {
               var roundId = Number(moneyRoundIds[activity]) || 0;
               var key = JSON.stringify([roundId, legacyKey]);
               if (moneyAwardKeys[activity] === key || (roundId === 0 && moneyAwardKeys[activity] === legacyKey) || typeof awardXP !== 'function') return false;
+              var credit = moneyGrading.creditOnce(moneyAwardSeen, activity + '|' + moneyAwardHash(key));
+              if (!credit.isNew) return false;
+              moneyAwardSeen = credit.seen;
               moneyAwardKeys[activity] = key;
+              upd('moneyAwardSeen', credit.seen);
               upd('moneyAwardKeys', Object.assign({}, moneyAwardKeys));
               awardXP('moneyMath', points, reason);
               return true;
+            };
+            // Lock after reveal: once a checker shows an item's answer, that item earns no more
+            // credit (XP, quests, Solved). Keyed by a stable item id and saved, so a reload keeps it.
+            var moneyAnswerShownSeen = d.moneyAnswerShown;
+            var moneyItemId = function(activity, fingerprint) {
+              var text;
+              try { text = JSON.stringify(fingerprint); } catch (e) { text = String(fingerprint); }
+              return activity + '|' + moneyAwardHash(String(text));
+            };
+            var isMoneyAnswerShown = function(itemId) {
+              return !!(moneyAnswerShownSeen && typeof moneyAnswerShownSeen === 'object' && Object.prototype.hasOwnProperty.call(moneyAnswerShownSeen, itemId));
+            };
+            var markMoneyAnswerShown = function(itemId) {
+              var shown = moneyGrading.creditOnce(moneyAnswerShownSeen, itemId);
+              if (!shown.isNew) return;
+              moneyAnswerShownSeen = shown.seen;
+              upd('moneyAnswerShown', shown.seen);
+            };
+            var moneyAnswerShownNotice = function(className) {
+              return React.createElement('p', { role: 'status', 'data-money-answer-shown': true, className: 'text-xs font-bold ' + (className || '') }, __alloT('stem.money.answer_shown_try_next', 'Answer shown. Try the next one.'));
             };
             var normalizeMoneyNumber = function(raw, options) {
               options = options || {};
@@ -407,7 +491,8 @@ window.StemLab = window.StemLab || {
 
             const cur = CURRENCIES[currency] || CURRENCIES.USD;
             const isJPY = currency === 'JPY';
-            const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + v.toFixed(2));
+            // Round with roundCurrency first: toFixed(2) on a raw product printed 2.5 lb x $1.79 (4.475) as $4.47.
+            const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + roundCurrency(v, currency).toFixed(2));
             const USD_BILL_VISUALS = {
               1:   { portrait: __alloT('stem.money.george_washington', 'Washington'), tint: '#dfe9d8', accent: '#2f6b4f' },
               5:   { portrait: __alloT('stem.money.abraham_lincoln', 'Lincoln'), tint: '#e8e0ec', accent: '#665071' },
@@ -479,10 +564,14 @@ window.StemLab = window.StemLab || {
             // ── Fixed classroom exchange-rate model (units per 1 USD; not live quotes) ──
             const RATES = { USD: 1, EUR: 0.92, GBP: 0.79, CAD: 1.36, JPY: 149.5, MXN: 17.1, AUD: 1.54, INR: 83.1 };
             const convert = (amount, from, to) => amount / RATES[from] * RATES[to];
+            // Yen has no cents: classroom prices written in dollars become whole yen at the fixed rate.
+            const yenFromUsd = (usd) => Math.round(usd * RATES.JPY);
             const currencyFractionDigits = (code) => code === 'JPY' ? 0 : 2;
             const roundCurrency = (amount, code) => {
               var factor = Math.pow(10, currencyFractionDigits(code));
-              return Math.round((amount + Number.EPSILON) * factor) / factor;
+              // Round half-cents UP. Number.EPSILON is far below the float error of a value
+              // above 1, so $4.015 (stored 4.01499...) rounded to $4.01; 12 significant digits do not.
+              return Math.round(Number((amount * factor).toPrecision(12))) / factor;
             };
             const currencyUnits = (amount, code) => {
               var numeric = Number(amount);
@@ -563,7 +652,82 @@ window.StemLab = window.StemLab || {
             });
 
             // ── Store state ──
-            var cart = d.cart || [];
+            // Store catalog. Each item has a stable id (not its translated label); recipes and carts
+            // match by id. The parameter keeps the literal __alloT calls the i18n gates scan for.
+            var buildStoreCatalog = function (__alloT) {
+              return [
+                // 🥬 Produce — per-pound
+                { id: 'apples', name: __alloT('stem.money.apples', '\uD83C\uDF4E Apples'), price: 1.49, cat: 'Produce', pricePer: 'lb' },
+                { id: 'bananas', name: __alloT('stem.money.bananas', '\uD83C\uDF4C Bananas'), price: 0.59, cat: 'Produce', pricePer: 'lb' },
+                { id: 'grapes', name: __alloT('stem.money.grapes', '\uD83C\uDF47 Grapes'), price: 2.49, cat: 'Produce', pricePer: 'lb' },
+                { id: 'lettuce', name: __alloT('stem.money.lettuce', '\uD83E\uDD6C Lettuce'), price: 1.99, cat: 'Produce', pricePer: 'each' },
+                { id: 'tomatoes', name: __alloT('stem.money.tomatoes', '\uD83C\uDF45 Tomatoes'), price: 1.79, cat: 'Produce', pricePer: 'lb' },
+                { id: 'onions', name: __alloT('stem.money.onions', '\uD83E\uDDC5 Onions'), price: 1.29, cat: 'Produce', pricePer: 'lb' },
+                { id: 'potatoes', name: __alloT('stem.money.potatoes', '\uD83E\uDD54 Potatoes'), price: 0.99, cat: 'Produce', pricePer: 'lb' },
+                { id: 'avocados', name: __alloT('stem.money.avocados', '\uD83E\uDD51 Avocados'), price: 1.25, cat: 'Produce', pricePer: 'each' },
+                { id: 'broccoli', name: __alloT('stem.money.broccoli', '\uD83E\uDD66 Broccoli'), price: 1.99, cat: 'Produce', pricePer: 'lb' },
+                { id: 'carrots', name: __alloT('stem.money.carrots', '\uD83E\uDD55 Carrots'), price: 1.29, cat: 'Produce', pricePer: 'lb' },
+                { id: 'lemons', name: __alloT('stem.money.lemons', '\uD83C\uDF4B Lemons'), price: 0.69, cat: 'Produce', pricePer: 'each' },
+                { id: 'garlic', name: __alloT('stem.money.garlic', '🧄 Garlic'), price: 0.75, cat: 'Produce', pricePer: 'each' },
+                // 🥩 Meat & Fish — per-pound
+                { id: 'chicken_breast', name: __alloT('stem.money.chicken_breast', '\uD83C\uDF57 Chicken Breast'), price: 3.99, cat: 'Meat', pricePer: 'lb' },
+                { id: 'ground_beef', name: __alloT('stem.money.ground_beef', '\uD83E\uDD69 Ground Beef'), price: 5.49, cat: 'Meat', pricePer: 'lb' },
+                { id: 'salmon_fillet', name: __alloT('stem.money.salmon_fillet', '\uD83D\uDC1F Salmon Fillet'), price: 9.99, cat: 'Meat', pricePer: 'lb' },
+                { id: 'bacon_1_lb', name: __alloT('stem.money.bacon_1_lb', '\uD83E\uDD53 Bacon (1 lb)'), price: 6.49, cat: 'Meat', pricePer: 'each' },
+                { id: 'pork_chops', name: __alloT('stem.money.pork_chops', '\uD83C\uDF56 Pork Chops'), price: 4.49, cat: 'Meat', pricePer: 'lb' },
+                // 🧀 Dairy
+                { id: 'milk_gal', name: __alloT('stem.money.milk_gal', '\uD83E\uDD5B Milk (gal)'), price: 3.49, cat: 'Dairy', pricePer: 'each' },
+                { id: 'cheddar_cheese', name: __alloT('stem.money.cheddar_cheese', '\uD83E\uDDC0 Cheddar Cheese'), price: 4.99, cat: 'Dairy', pricePer: 'each' },
+                { id: 'butter', name: __alloT('stem.money.butter', '\uD83E\uDDC8 Butter'), price: 3.99, cat: 'Dairy', pricePer: 'each' },
+                { id: 'yogurt', name: __alloT('stem.money.yogurt', '\uD83E\uDD5B Yogurt'), price: 1.25, cat: 'Dairy', pricePer: 'each' },
+                { id: 'eggs_dozen', name: __alloT('stem.money.eggs_dozen', '\uD83E\uDD5A Eggs (dozen)'), price: 3.29, cat: 'Dairy', pricePer: 'each' },
+                { id: 'heavy_cream', name: __alloT('stem.money.heavy_cream', '\uD83E\uDD5B Heavy Cream'), price: 4.29, cat: 'Dairy', pricePer: 'each' },
+                // 🍞 Bakery
+                { id: 'bread', name: __alloT('stem.money.bread', '\uD83C\uDF5E Bread'), price: 2.99, cat: 'Bakery', pricePer: 'each' },
+                { id: 'bagels_6pk', name: __alloT('stem.money.bagels_6pk', '\uD83E\uDD6F Bagels (6pk)'), price: 3.49, cat: 'Bakery', pricePer: 'each' },
+                { id: 'tortillas_10pk', name: __alloT('stem.money.tortillas_10pk', '\uD83C\uDF2F Tortillas (10pk)'), price: 2.79, cat: 'Bakery', pricePer: 'each' },
+                // 🥫 Pantry
+                { id: 'rice_2_lb', name: __alloT('stem.money.rice_2_lb', '\uD83C\uDF5A Rice (2 lb)'), price: 2.99, cat: 'Pantry', pricePer: 'each' },
+                { id: 'pasta_1_lb', name: __alloT('stem.money.pasta_1_lb', '\uD83C\uDF5D Pasta (1 lb)'), price: 1.49, cat: 'Pantry', pricePer: 'each' },
+                { id: 'canned_beans', name: __alloT('stem.money.canned_beans', '\uD83E\uDD6B Canned Beans'), price: 1.09, cat: 'Pantry', pricePer: 'each' },
+                { id: 'sugar_4_lb', name: __alloT('stem.money.sugar_4_lb', '\uD83C\uDF6F Sugar (4 lb)'), price: 3.49, cat: 'Pantry', pricePer: 'each' },
+                { id: 'flour_5_lb', name: __alloT('stem.money.flour_5_lb', '\uD83C\uDF3E Flour (5 lb)'), price: 3.99, cat: 'Pantry', pricePer: 'each' },
+                { id: 'olive_oil', name: __alloT('stem.money.olive_oil', '\uD83E\uDED2 Olive Oil'), price: 6.99, cat: 'Pantry', pricePer: 'each' },
+                { id: 'peanut_butter', name: __alloT('stem.money.peanut_butter', '\uD83E\uDD5C Peanut Butter'), price: 3.75, cat: 'Pantry', pricePer: 'each' },
+                { id: 'pasta_sauce', name: __alloT('stem.money.pasta_sauce', '\uD83C\uDF45 Pasta Sauce'), price: 2.49, cat: 'Pantry', pricePer: 'each' },
+                // 🧊 Frozen
+                { id: 'frozen_pizza', name: __alloT('stem.money.frozen_pizza', '\uD83C\uDF55 Frozen Pizza'), price: 5.49, cat: 'Frozen', pricePer: 'each' },
+                { id: 'ice_cream', name: __alloT('stem.money.ice_cream', '\uD83C\uDF66 Ice Cream'), price: 4.99, cat: 'Frozen', pricePer: 'each' },
+                { id: 'frozen_veggies', name: __alloT('stem.money.frozen_veggies', '\uD83E\uDD66 Frozen Veggies'), price: 2.49, cat: 'Frozen', pricePer: 'each' },
+                // 🥤 Drinks
+                { id: 'orange_juice', name: __alloT('stem.money.orange_juice', '\uD83E\uDDC3 Orange Juice'), price: 3.99, cat: 'Drinks', pricePer: 'each' },
+                { id: 'soda_2l', name: __alloT('stem.money.soda_2l', '\uD83E\uDD64 Soda (2L)'), price: 1.99, cat: 'Drinks', pricePer: 'each' },
+                { id: 'water_24pk', name: __alloT('stem.money.water_24pk', '\uD83D\uDCA7 Water (24pk)'), price: 4.99, cat: 'Drinks', pricePer: 'each' },
+                { id: 'coffee_12oz', name: __alloT('stem.money.coffee_12oz', '\u2615 Coffee (12oz)'), price: 7.99, cat: 'Drinks', pricePer: 'each' },
+                // 🍫 Snacks
+                { id: 'chocolate_bar', name: __alloT('stem.money.chocolate_bar', '\uD83C\uDF6B Chocolate Bar'), price: 1.25, cat: 'Snacks', pricePer: 'each' },
+                { id: 'chips', name: __alloT('stem.money.chips', '\uD83C\uDF5F Chips'), price: 3.49, cat: 'Snacks', pricePer: 'each' },
+                { id: 'granola_bars', name: __alloT('stem.money.granola_bars', '\uD83E\uDD5C Granola Bars'), price: 4.29, cat: 'Snacks', pricePer: 'each' },
+                { id: 'popcorn', name: __alloT('stem.money.popcorn', '\uD83C\uDF7F Popcorn'), price: 2.99, cat: 'Snacks', pricePer: 'each' }
+              ];
+            };
+            var storeCatalog = buildStoreCatalog(__alloT);
+            var storeCatalogEnglish = buildStoreCatalog(function (key, english) { return english; });
+            var storePlainName = function (name) { return String(name || '').replace(/^[^\s\p{L}\p{N}]+\s+/u, ''); };
+            var storeCatalogById = Object.create(null), storeIdByName = Object.create(null);
+            storeCatalog.forEach(function (item, index) { storeCatalogById[item.id] = { name: item.name, english: storeCatalogEnglish[index].name }; });
+            [storeCatalogEnglish, storeCatalog].forEach(function (list) {
+              list.forEach(function (item) {
+                [item.name, storePlainName(item.name)].forEach(function (name) { if (name && storeIdByName[name] === undefined) storeIdByName[name] = item.id; });
+              });
+            });
+            // Saved stores and carts from before ids: map each item by its English (or current) name.
+            var withStoreId = function (entry) {
+              if (!entry || typeof entry !== 'object' || entry.id) return entry;
+              var name = String(entry.name || ''), id = storeIdByName[name] || storeIdByName[storePlainName(name)];
+              return id ? Object.assign({}, entry, { id: id }) : entry;
+            };
+            var cart = Array.isArray(d.cart) ? d.cart.map(withStoreId) : (d.cart || []);
             var cartLineDetails = cart.map(function (item) {
               var weighted = item.pricePer && item.pricePer !== 'each';
               var quantity = weighted ? (item.weight || 1) : (item.qty || 1);
@@ -655,65 +819,15 @@ window.StemLab = window.StemLab || {
 
             // ── Generate store items based on grade ──
             var storeItems = d.storeItems;
-            if (!storeItems) {
-              var baseItems = [
-                // 🥬 Produce — per-pound
-                { name: __alloT('stem.money.apples', '\uD83C\uDF4E Apples'), price: 1.49, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.bananas', '\uD83C\uDF4C Bananas'), price: 0.59, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.grapes', '\uD83C\uDF47 Grapes'), price: 2.49, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.lettuce', '\uD83E\uDD6C Lettuce'), price: 1.99, cat: 'Produce', pricePer: 'each' },
-                { name: __alloT('stem.money.tomatoes', '\uD83C\uDF45 Tomatoes'), price: 1.79, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.onions', '\uD83E\uDDC5 Onions'), price: 1.29, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.potatoes', '\uD83E\uDD54 Potatoes'), price: 0.99, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.avocados', '\uD83E\uDD51 Avocados'), price: 1.25, cat: 'Produce', pricePer: 'each' },
-                { name: __alloT('stem.money.broccoli', '\uD83E\uDD66 Broccoli'), price: 1.99, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.carrots', '\uD83E\uDD55 Carrots'), price: 1.29, cat: 'Produce', pricePer: 'lb' },
-                { name: __alloT('stem.money.lemons', '\uD83C\uDF4B Lemons'), price: 0.69, cat: 'Produce', pricePer: 'each' },
-                { name: __alloT('stem.money.garlic', '🧄 Garlic'), price: 0.75, cat: 'Produce', pricePer: 'each' },
-                // 🥩 Meat & Fish — per-pound
-                { name: __alloT('stem.money.chicken_breast', '\uD83C\uDF57 Chicken Breast'), price: 3.99, cat: 'Meat', pricePer: 'lb' },
-                { name: __alloT('stem.money.ground_beef', '\uD83E\uDD69 Ground Beef'), price: 5.49, cat: 'Meat', pricePer: 'lb' },
-                { name: __alloT('stem.money.salmon_fillet', '\uD83D\uDC1F Salmon Fillet'), price: 9.99, cat: 'Meat', pricePer: 'lb' },
-                { name: __alloT('stem.money.bacon_1_lb', '\uD83E\uDD53 Bacon (1 lb)'), price: 6.49, cat: 'Meat', pricePer: 'each' },
-                { name: __alloT('stem.money.pork_chops', '\uD83C\uDF56 Pork Chops'), price: 4.49, cat: 'Meat', pricePer: 'lb' },
-                // 🧀 Dairy
-                { name: __alloT('stem.money.milk_gal', '\uD83E\uDD5B Milk (gal)'), price: 3.49, cat: 'Dairy', pricePer: 'each' },
-                { name: __alloT('stem.money.cheddar_cheese', '\uD83E\uDDC0 Cheddar Cheese'), price: 4.99, cat: 'Dairy', pricePer: 'each' },
-                { name: __alloT('stem.money.butter', '\uD83E\uDDC8 Butter'), price: 3.99, cat: 'Dairy', pricePer: 'each' },
-                { name: __alloT('stem.money.yogurt', '\uD83E\uDD5B Yogurt'), price: 1.25, cat: 'Dairy', pricePer: 'each' },
-                { name: __alloT('stem.money.eggs_dozen', '\uD83E\uDD5A Eggs (dozen)'), price: 3.29, cat: 'Dairy', pricePer: 'each' },
-                { name: __alloT('stem.money.heavy_cream', '\uD83E\uDD5B Heavy Cream'), price: 4.29, cat: 'Dairy', pricePer: 'each' },
-                // 🍞 Bakery
-                { name: __alloT('stem.money.bread', '\uD83C\uDF5E Bread'), price: 2.99, cat: 'Bakery', pricePer: 'each' },
-                { name: __alloT('stem.money.bagels_6pk', '\uD83E\uDD6F Bagels (6pk)'), price: 3.49, cat: 'Bakery', pricePer: 'each' },
-                { name: __alloT('stem.money.tortillas_10pk', '\uD83C\uDF2F Tortillas (10pk)'), price: 2.79, cat: 'Bakery', pricePer: 'each' },
-                // 🥫 Pantry
-                { name: __alloT('stem.money.rice_2_lb', '\uD83C\uDF5A Rice (2 lb)'), price: 2.99, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.pasta_1_lb', '\uD83C\uDF5D Pasta (1 lb)'), price: 1.49, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.canned_beans', '\uD83E\uDD6B Canned Beans'), price: 1.09, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.sugar_4_lb', '\uD83C\uDF6F Sugar (4 lb)'), price: 3.49, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.flour_5_lb', '\uD83C\uDF3E Flour (5 lb)'), price: 3.99, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.olive_oil', '\uD83E\uDED2 Olive Oil'), price: 6.99, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.peanut_butter', '\uD83E\uDD5C Peanut Butter'), price: 3.75, cat: 'Pantry', pricePer: 'each' },
-                { name: __alloT('stem.money.pasta_sauce', '\uD83C\uDF45 Pasta Sauce'), price: 2.49, cat: 'Pantry', pricePer: 'each' },
-                // 🧊 Frozen
-                { name: __alloT('stem.money.frozen_pizza', '\uD83C\uDF55 Frozen Pizza'), price: 5.49, cat: 'Frozen', pricePer: 'each' },
-                { name: __alloT('stem.money.ice_cream', '\uD83C\uDF66 Ice Cream'), price: 4.99, cat: 'Frozen', pricePer: 'each' },
-                { name: __alloT('stem.money.frozen_veggies', '\uD83E\uDD66 Frozen Veggies'), price: 2.49, cat: 'Frozen', pricePer: 'each' },
-                // 🥤 Drinks
-                { name: __alloT('stem.money.orange_juice', '\uD83E\uDDC3 Orange Juice'), price: 3.99, cat: 'Drinks', pricePer: 'each' },
-                { name: __alloT('stem.money.soda_2l', '\uD83E\uDD64 Soda (2L)'), price: 1.99, cat: 'Drinks', pricePer: 'each' },
-                { name: __alloT('stem.money.water_24pk', '\uD83D\uDCA7 Water (24pk)'), price: 4.99, cat: 'Drinks', pricePer: 'each' },
-                { name: __alloT('stem.money.coffee_12oz', '\u2615 Coffee (12oz)'), price: 7.99, cat: 'Drinks', pricePer: 'each' },
-                // 🍫 Snacks
-                { name: __alloT('stem.money.chocolate_bar', '\uD83C\uDF6B Chocolate Bar'), price: 1.25, cat: 'Snacks', pricePer: 'each' },
-                { name: __alloT('stem.money.chips', '\uD83C\uDF5F Chips'), price: 3.49, cat: 'Snacks', pricePer: 'each' },
-                { name: __alloT('stem.money.granola_bars', '\uD83E\uDD5C Granola Bars'), price: 4.29, cat: 'Snacks', pricePer: 'each' },
-                { name: __alloT('stem.money.popcorn', '\uD83C\uDF7F Popcorn'), price: 2.99, cat: 'Snacks', pricePer: 'each' }
-              ];
-              storeItems = baseItems.filter(function (item) { return item.price <= gc.maxPrice; });
+            // Cached per currency, so a yen store saved with dollar-sized prices is rebuilt.
+            if (!storeItems || (d.storeItemsCurrency || 'USD') !== currency) {
+              storeItems = storeCatalog.filter(function (item) { return item.price <= gc.maxPrice; }).map(function (item) {
+                return isJPY ? Object.assign({}, item, { price: yenFromUsd(item.price) }) : item;
+              });
               upd('storeItems', storeItems);
+              upd('storeItemsCurrency', currency);
             }
+            if (Array.isArray(storeItems)) storeItems = storeItems.map(withStoreId);
             var storeCats = ['All'];
             storeItems.forEach(function (it) { if (storeCats.indexOf(it.cat) === -1) storeCats.push(it.cat); });
             var filteredStoreItems = storeCat === 'All' ? storeItems : storeItems.filter(function (it) { return it.cat === storeCat; });
@@ -721,145 +835,149 @@ window.StemLab = window.StemLab || {
             // ── Recipe data (middle+ grades) ──
             var RECIPES = [
               { name: __alloT('stem.money.spaghetti_bolognese', '\uD83C\uDF5D Spaghetti Bolognese'), icon: '\uD83C\uDF5D', serves: 4, ingredients: [
-                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Ground Beef', qty: 1.5, unit: 'lb' },
-                { item: 'Pasta Sauce', qty: 1, unit: 'jar' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
-                { item: 'Garlic', qty: 2, unit: 'cloves' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }
+                { id: 'pasta_1_lb', qty: 1, unit: 'box' }, { id: 'ground_beef', qty: 1.5, unit: 'lb' },
+                { id: 'pasta_sauce', qty: 1, unit: 'jar' }, { id: 'onions', qty: 0.5, unit: 'lb' },
+                { id: 'garlic', qty: 2, unit: 'cloves' }, { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }
               ]},
               { name: __alloT('stem.money.tacos', '\uD83C\uDF2E Tacos'), icon: '\uD83C\uDF2E', serves: 4, ingredients: [
-                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' },
-                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Lettuce', qty: 1, unit: 'head' },
-                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.25, unit: 'lb' }
+                { id: 'ground_beef', qty: 1, unit: 'lb' }, { id: 'tortillas_10pk', qty: 1, unit: 'pkg' },
+                { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }, { id: 'lettuce', qty: 1, unit: 'head' },
+                { id: 'tomatoes', qty: 0.5, unit: 'lb' }, { id: 'onions', qty: 0.25, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.pancakes', '\uD83C\uDF73 Pancakes'), icon: '\uD83C\uDF73', serves: 4, ingredients: [
-                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
-                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }
+                { id: 'flour_5_lb', qty: 1, unit: 'bag' }, { id: 'eggs_dozen', qty: 1, unit: 'dozen' },
+                { id: 'milk_gal', qty: 1, unit: 'gal' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'sugar_4_lb', qty: 1, unit: 'bag' }
               ]},
               { name: __alloT('stem.money.caesar_salad', '\uD83E\uDD57 Caesar Salad'), icon: '\uD83E\uDD57', serves: 4, ingredients: [
-                { item: 'Lettuce', qty: 2, unit: 'heads' }, { item: 'Chicken Breast', qty: 1.5, unit: 'lb' },
-                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Bread', qty: 1, unit: 'loaf' },
-                { item: 'Lemons', qty: 2, unit: 'each' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' }
+                { id: 'lettuce', qty: 2, unit: 'heads' }, { id: 'chicken_breast', qty: 1.5, unit: 'lb' },
+                { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }, { id: 'bread', qty: 1, unit: 'loaf' },
+                { id: 'lemons', qty: 2, unit: 'each' }, { id: 'olive_oil', qty: 1, unit: 'bottle' }
               ]},
               { name: __alloT('stem.money.chicken_stir_fry', '\uD83C\uDF5C Chicken Stir-Fry'), icon: '\uD83C\uDF5C', serves: 4, ingredients: [
-                { item: 'Chicken Breast', qty: 2, unit: 'lb' }, { item: 'Broccoli', qty: 1, unit: 'lb' },
-                { item: 'Carrots', qty: 0.5, unit: 'lb' }, { item: 'Rice (2 lb)', qty: 1, unit: 'bag' },
-                { item: 'Onions', qty: 0.5, unit: 'lb' }, { item: 'Garlic', qty: 2, unit: 'cloves' },
-                { item: 'Olive Oil', qty: 1, unit: 'bottle' }
+                { id: 'chicken_breast', qty: 2, unit: 'lb' }, { id: 'broccoli', qty: 1, unit: 'lb' },
+                { id: 'carrots', qty: 0.5, unit: 'lb' }, { id: 'rice_2_lb', qty: 1, unit: 'bag' },
+                { id: 'onions', qty: 0.5, unit: 'lb' }, { id: 'garlic', qty: 2, unit: 'cloves' },
+                { id: 'olive_oil', qty: 1, unit: 'bottle' }
               ]},
               { name: __alloT('stem.money.grilled_cheese', '\uD83E\uDD6A Grilled Cheese'), icon: '\uD83E\uDD6A', serves: 4, ingredients: [
-                { item: 'Bread', qty: 1, unit: 'loaf' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
-                { item: 'Butter', qty: 1, unit: 'stick' }, { item: 'Tomatoes', qty: 0.5, unit: 'lb' }
+                { id: 'bread', qty: 1, unit: 'loaf' }, { id: 'cheddar_cheese', qty: 1, unit: 'pkg' },
+                { id: 'butter', qty: 1, unit: 'stick' }, { id: 'tomatoes', qty: 0.5, unit: 'lb' }
               ]},
               // \u2500\u2500 More recipes (v3 additions) \u2500\u2500
               { name: __alloT('stem.money.mac_cheese', '\uD83E\uDDC0 Mac & Cheese'), icon: '\uD83E\uDDC0', serves: 4, ingredients: [
-                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
-                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }
+                { id: 'pasta_1_lb', qty: 1, unit: 'box' }, { id: 'cheddar_cheese', qty: 1, unit: 'pkg' },
+                { id: 'milk_gal', qty: 1, unit: 'gal' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'flour_5_lb', qty: 1, unit: 'bag' }
               ]},
               { name: __alloT('stem.money.chocolate_chip_cookies', '\uD83C\uDF6A Chocolate Chip Cookies'), icon: '\uD83C\uDF6A', serves: 4, ingredients: [
-                { item: 'Flour (5 lb)', qty: 1, unit: 'bag' }, { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' },
-                { item: 'Butter', qty: 1, unit: 'stick' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
-                { item: 'Chocolate Bar', qty: 2, unit: 'bars' }
+                { id: 'flour_5_lb', qty: 1, unit: 'bag' }, { id: 'sugar_4_lb', qty: 1, unit: 'bag' },
+                { id: 'butter', qty: 1, unit: 'stick' }, { id: 'eggs_dozen', qty: 1, unit: 'dozen' },
+                { id: 'chocolate_bar', qty: 2, unit: 'bars' }
               ]},
               { name: __alloT('stem.money.banana_bread', '\uD83C\uDF4C Banana Bread'), icon: '\uD83C\uDF4C', serves: 4, ingredients: [
-                { item: 'Bananas', qty: 1, unit: 'lb' }, { item: 'Flour (5 lb)', qty: 1, unit: 'bag' },
-                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
-                { item: 'Butter', qty: 1, unit: 'stick' }
+                { id: 'bananas', qty: 1, unit: 'lb' }, { id: 'flour_5_lb', qty: 1, unit: 'bag' },
+                { id: 'sugar_4_lb', qty: 1, unit: 'bag' }, { id: 'eggs_dozen', qty: 1, unit: 'dozen' },
+                { id: 'butter', qty: 1, unit: 'stick' }
               ]},
               { name: __alloT('stem.money.veggie_soup', '\uD83C\uDF72 Veggie Soup'), icon: '\uD83C\uDF72', serves: 4, ingredients: [
-                { item: 'Carrots', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
-                { item: 'Potatoes', qty: 1, unit: 'lb' }, { item: 'Broccoli', qty: 0.5, unit: 'lb' },
-                { item: 'Canned Beans', qty: 1, unit: 'can' }
+                { id: 'carrots', qty: 0.5, unit: 'lb' }, { id: 'onions', qty: 0.5, unit: 'lb' },
+                { id: 'potatoes', qty: 1, unit: 'lb' }, { id: 'broccoli', qty: 0.5, unit: 'lb' },
+                { id: 'canned_beans', qty: 1, unit: 'can' }
               ]},
               { name: __alloT('stem.money.beef_stew', '\uD83C\uDF73 Beef Stew'), icon: '\uD83C\uDF73', serves: 4, ingredients: [
-                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Carrots', qty: 0.5, unit: 'lb' },
-                { item: 'Potatoes', qty: 1, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
-                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }
+                { id: 'ground_beef', qty: 1, unit: 'lb' }, { id: 'carrots', qty: 0.5, unit: 'lb' },
+                { id: 'potatoes', qty: 1, unit: 'lb' }, { id: 'onions', qty: 0.5, unit: 'lb' },
+                { id: 'tomatoes', qty: 0.5, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.burritos', '\uD83C\uDF2F Burritos'), icon: '\uD83C\uDF2F', serves: 4, ingredients: [
-                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' },
-                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Canned Beans', qty: 1, unit: 'can' },
-                { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+                { id: 'ground_beef', qty: 1, unit: 'lb' }, { id: 'tortillas_10pk', qty: 1, unit: 'pkg' },
+                { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }, { id: 'canned_beans', qty: 1, unit: 'can' },
+                { id: 'tomatoes', qty: 0.25, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.smoothie_bowl', '\uD83C\uDF53 Smoothie Bowl'), icon: '\uD83C\uDF53', serves: 4, ingredients: [
-                { item: 'Bananas', qty: 1, unit: 'lb' }, { item: 'Yogurt', qty: 1, unit: 'tub' },
-                { item: 'Apples', qty: 1, unit: 'lb' }, { item: 'Granola Bars', qty: 1, unit: 'box' }
+                { id: 'bananas', qty: 1, unit: 'lb' }, { id: 'yogurt', qty: 1, unit: 'tub' },
+                { id: 'apples', qty: 1, unit: 'lb' }, { id: 'granola_bars', qty: 1, unit: 'box' }
               ]},
               { name: __alloT('stem.money.french_toast', '\uD83C\uDF5E French Toast'), icon: '\uD83C\uDF5E', serves: 4, ingredients: [
-                { item: 'Bread', qty: 1, unit: 'loaf' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
-                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }
+                { id: 'bread', qty: 1, unit: 'loaf' }, { id: 'eggs_dozen', qty: 1, unit: 'dozen' },
+                { id: 'milk_gal', qty: 1, unit: 'gal' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'sugar_4_lb', qty: 1, unit: 'bag' }
               ]},
               { name: __alloT('stem.money.mashed_potatoes', '\uD83E\uDD54 Mashed Potatoes'), icon: '\uD83E\uDD54', serves: 4, ingredients: [
-                { item: 'Potatoes', qty: 2, unit: 'lb' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Milk (gal)', qty: 1, unit: 'gal' }, { item: 'Garlic', qty: 2, unit: 'cloves' }
+                { id: 'potatoes', qty: 2, unit: 'lb' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'milk_gal', qty: 1, unit: 'gal' }, { id: 'garlic', qty: 2, unit: 'cloves' }
               ]},
               { name: __alloT('stem.money.roast_chicken_dinner', '\uD83C\uDF57 Roast Chicken Dinner'), icon: '\uD83C\uDF57', serves: 4, ingredients: [
-                { item: 'Chicken Breast', qty: 2, unit: 'lb' }, { item: 'Potatoes', qty: 1.5, unit: 'lb' },
-                { item: 'Carrots', qty: 1, unit: 'lb' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' },
-                { item: 'Garlic', qty: 3, unit: 'cloves' }
+                { id: 'chicken_breast', qty: 2, unit: 'lb' }, { id: 'potatoes', qty: 1.5, unit: 'lb' },
+                { id: 'carrots', qty: 1, unit: 'lb' }, { id: 'olive_oil', qty: 1, unit: 'bottle' },
+                { id: 'garlic', qty: 3, unit: 'cloves' }
               ]},
               { name: __alloT('stem.money.quesadillas', '\uD83E\uDED3 Quesadillas'), icon: '\uD83E\uDED3', serves: 4, ingredients: [
-                { item: 'Tortillas (10pk)', qty: 1, unit: 'pkg' }, { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' },
-                { item: 'Chicken Breast', qty: 1, unit: 'lb' }, { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+                { id: 'tortillas_10pk', qty: 1, unit: 'pkg' }, { id: 'cheddar_cheese', qty: 1, unit: 'pkg' },
+                { id: 'chicken_breast', qty: 1, unit: 'lb' }, { id: 'tomatoes', qty: 0.25, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.pesto_pasta', '\uD83C\uDF5D Pesto Pasta'), icon: '\uD83C\uDF5D', serves: 4, ingredients: [
-                { item: 'Pasta (1 lb)', qty: 1, unit: 'box' }, { item: 'Olive Oil', qty: 1, unit: 'bottle' },
-                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Garlic', qty: 3, unit: 'cloves' },
-                { item: 'Lemons', qty: 1, unit: 'each' }
+                { id: 'pasta_1_lb', qty: 1, unit: 'box' }, { id: 'olive_oil', qty: 1, unit: 'bottle' },
+                { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }, { id: 'garlic', qty: 3, unit: 'cloves' },
+                { id: 'lemons', qty: 1, unit: 'each' }
               ]},
               { name: __alloT('stem.money.apple_pie', '\uD83E\uDD67 Apple Pie'), icon: '\uD83E\uDD67', serves: 4, ingredients: [
-                { item: 'Apples', qty: 2, unit: 'lb' }, { item: 'Flour (5 lb)', qty: 1, unit: 'bag' },
-                { item: 'Sugar (4 lb)', qty: 1, unit: 'bag' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Lemons', qty: 1, unit: 'each' }
+                { id: 'apples', qty: 2, unit: 'lb' }, { id: 'flour_5_lb', qty: 1, unit: 'bag' },
+                { id: 'sugar_4_lb', qty: 1, unit: 'bag' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'lemons', qty: 1, unit: 'each' }
               ]},
               { name: __alloT('stem.money.chili', '\uD83C\uDF36 Chili'), icon: '\uD83C\uDF36', serves: 4, ingredients: [
-                { item: 'Ground Beef', qty: 1, unit: 'lb' }, { item: 'Canned Beans', qty: 2, unit: 'cans' },
-                { item: 'Tomatoes', qty: 0.5, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
-                { item: 'Garlic', qty: 2, unit: 'cloves' }
+                { id: 'ground_beef', qty: 1, unit: 'lb' }, { id: 'canned_beans', qty: 2, unit: 'cans' },
+                { id: 'tomatoes', qty: 0.5, unit: 'lb' }, { id: 'onions', qty: 0.5, unit: 'lb' },
+                { id: 'garlic', qty: 2, unit: 'cloves' }
               ]},
               { name: __alloT('stem.money.salmon_dinner', '\uD83D\uDC1F Salmon Dinner'), icon: '\uD83D\uDC1F', serves: 4, ingredients: [
-                { item: 'Salmon Fillet', qty: 1.5, unit: 'lb' }, { item: 'Lemons', qty: 2, unit: 'each' },
-                { item: 'Olive Oil', qty: 1, unit: 'bottle' }, { item: 'Broccoli', qty: 1, unit: 'lb' },
-                { item: 'Potatoes', qty: 1, unit: 'lb' }
+                { id: 'salmon_fillet', qty: 1.5, unit: 'lb' }, { id: 'lemons', qty: 2, unit: 'each' },
+                { id: 'olive_oil', qty: 1, unit: 'bottle' }, { id: 'broccoli', qty: 1, unit: 'lb' },
+                { id: 'potatoes', qty: 1, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.egg_salad_sandwich', '\uD83E\uDD5A Egg Salad Sandwich'), icon: '\uD83E\uDD5A', serves: 4, ingredients: [
-                { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' }, { item: 'Bread', qty: 1, unit: 'loaf' },
-                { item: 'Lettuce', qty: 1, unit: 'head' }, { item: 'Tomatoes', qty: 0.25, unit: 'lb' }
+                { id: 'eggs_dozen', qty: 1, unit: 'dozen' }, { id: 'bread', qty: 1, unit: 'loaf' },
+                { id: 'lettuce', qty: 1, unit: 'head' }, { id: 'tomatoes', qty: 0.25, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.yogurt_parfait', '\uD83C\uDF6F Yogurt Parfait'), icon: '\uD83C\uDF6F', serves: 4, ingredients: [
-                { item: 'Yogurt', qty: 2, unit: 'tubs' }, { item: 'Bananas', qty: 0.5, unit: 'lb' },
-                { item: 'Granola Bars', qty: 1, unit: 'box' }, { item: 'Apples', qty: 0.5, unit: 'lb' }
+                { id: 'yogurt', qty: 2, unit: 'tubs' }, { id: 'bananas', qty: 0.5, unit: 'lb' },
+                { id: 'granola_bars', qty: 1, unit: 'box' }, { id: 'apples', qty: 0.5, unit: 'lb' }
               ]},
               { name: __alloT('stem.money.tomato_soup', '\uD83C\uDF45 Tomato Soup'), icon: '\uD83C\uDF45', serves: 4, ingredients: [
-                { item: 'Tomatoes', qty: 2, unit: 'lb' }, { item: 'Onions', qty: 0.5, unit: 'lb' },
-                { item: 'Garlic', qty: 2, unit: 'cloves' }, { item: 'Butter', qty: 1, unit: 'stick' },
-                { item: 'Bread', qty: 1, unit: 'loaf' }
+                { id: 'tomatoes', qty: 2, unit: 'lb' }, { id: 'onions', qty: 0.5, unit: 'lb' },
+                { id: 'garlic', qty: 2, unit: 'cloves' }, { id: 'butter', qty: 1, unit: 'stick' },
+                { id: 'bread', qty: 1, unit: 'loaf' }
               ]},
               { name: __alloT('stem.money.pizza_night', '\uD83C\uDF55 Pizza Night'), icon: '\uD83C\uDF55', serves: 4, ingredients: [
-                { item: 'Frozen Pizza', qty: 2, unit: 'pizzas' }, { item: 'Soda (2L)', qty: 1, unit: 'bottle' },
-                { item: 'Ice Cream', qty: 1, unit: 'tub' }
+                { id: 'frozen_pizza', qty: 2, unit: 'pizzas' }, { id: 'soda_2l', qty: 1, unit: 'bottle' },
+                { id: 'ice_cream', qty: 1, unit: 'tub' }
               ]},
               { name: __alloT('stem.money.breakfast_sandwich', '\uD83E\uDD6F Breakfast Sandwich'), icon: '\uD83E\uDD6F', serves: 4, ingredients: [
-                { item: 'Bagels (6pk)', qty: 1, unit: 'pkg' }, { item: 'Eggs (dozen)', qty: 1, unit: 'dozen' },
-                { item: 'Cheddar Cheese', qty: 1, unit: 'pkg' }, { item: 'Bacon (1 lb)', qty: 1, unit: 'lb' }
+                { id: 'bagels_6pk', qty: 1, unit: 'pkg' }, { id: 'eggs_dozen', qty: 1, unit: 'dozen' },
+                { id: 'cheddar_cheese', qty: 1, unit: 'pkg' }, { id: 'bacon_1_lb', qty: 1, unit: 'lb' }
               ]}
             ];
             var selectedRecipe = activeRecipe != null ? RECIPES[activeRecipe] : null;
             // Scale recipe ingredients by servings
             var recipeScale = selectedRecipe ? recipeServings / selectedRecipe.serves : 1;
             var scaledIngredients = selectedRecipe ? selectedRecipe.ingredients.map(function (ing) {
-              return { item: ing.item, qty: Math.round(ing.qty * recipeScale * 100) / 100, unit: ing.unit };
+              // item: English name (keeps the credited-recipe fingerprint); label: the shelf name in the current language.
+              var shelf = storeCatalogById[ing.id];
+              return { id: ing.id, item: shelf ? storePlainName(shelf.english) : ing.id, label: shelf ? storePlainName(shelf.name) : ing.id, qty: Math.round(ing.qty * recipeScale * 100) / 100, unit: ing.unit };
             }) : [];
+            // Whole items by stable id: "Peanut Butter" is not "Butter", and a translated cart still matches.
+            var recipeItemInCart = function (ing) {
+              return cart.find(function (c) { return !!c && c.id === ing.id; });
+            };
             // Check if cart satisfies recipe
             var checkRecipeCart = function () {
               if (!selectedRecipe) return null;
               var missing = []; var matched = 0;
               scaledIngredients.forEach(function (ing) {
-                var inCart = cart.find(function (c) {
-                  return c.name.indexOf(ing.item) >= 0 || ing.item.indexOf(c.name.replace(/^[^\s]+\s/, '')) >= 0;
-                });
-                if (inCart) { matched++; } else { missing.push(ing.item); }
+                var inCart = recipeItemInCart(ing);
+                if (inCart) { matched++; } else { missing.push(ing.label); }
               });
               return { matched: matched, total: scaledIngredients.length, missing: missing, complete: matched >= scaledIngredients.length };
             };
@@ -1509,7 +1627,7 @@ window.StemLab = window.StemLab || {
               if (couponChance > 0 && Math.random() < couponChance) {
                 var couponTypes = [
                   { type: 'pct', val: [10, 15, 20][Math.floor(Math.random() * 3)], label: '' },
-                  { type: 'flat', val: (crPracticeMode && isJPY ? [100, 200, 300, 500] : [1, 2, 3, 5])[Math.floor(Math.random() * 4)], label: '' }
+                  { type: 'flat', val: (isJPY ? [100, 200, 300, 500] : [1, 2, 3, 5])[Math.floor(Math.random() * 4)], label: '' }
                 ];
                 coupon = couponTypes[Math.floor(Math.random() * 2)];
                 coupon.label = coupon.type === 'pct' ? (coupon.val + '% off') : (fmt(coupon.val) + ' off');
@@ -1593,7 +1711,7 @@ window.StemLab = window.StemLab || {
                 var stepText = 'Step by step: ';
                 var running = 0;
                 crCustomer.items.forEach(function (it, ii) {
-                  var price = it.weight ? Math.round(it.price * it.weight * 100) / 100 : (it.price * it.qty);
+                  var price = it.weight ? roundCurrency(it.price * it.weight, currency) : (it.price * it.qty);
                   running += price;
                   stepText += (ii > 0 ? ' + ' : '') + fmt(price);
                 });
@@ -1867,6 +1985,7 @@ window.StemLab = window.StemLab || {
               var betterDeal = Math.random() > 0.5;
               var unitPriceA = priceA / qtyA;
               var priceB = betterDeal ? Math.round(unitPriceA * qtyB * (0.7 + Math.random() * 0.25) * 100) / 100 : Math.round(unitPriceA * qtyB * (1.05 + Math.random() * 0.3) * 100) / 100;
+              if (isJPY) { priceA = yenFromUsd(priceA); priceB = yenFromUsd(priceB); }
               upd('upItem', item); upd('upA', { qty: qtyA, price: priceA }); upd('upB', { qty: qtyB, price: priceB });
               upd('upAnswer', null); upd('upFeedback', null);
             };
@@ -1882,6 +2001,7 @@ window.StemLab = window.StemLab || {
                 var idx; do { idx = Math.floor(Math.random() * possibleNames.length); } while (used[idx]);
                 used[idx] = true;
                 var price = Math.round((Math.random() * gc.maxPrice * 0.3 + 0.5) * 100) / 100;
+                if (isJPY) price = yenFromUsd(price);
                 var qty = Math.floor(Math.random() * 3) + 1;
                 items.push({ name: possibleNames[idx], price: price, qty: qty });
               }
@@ -1938,19 +2058,23 @@ window.StemLab = window.StemLab || {
             // ── Structured word problem generator (offline) ──
             var STRUCT_PROBLEMS = [
               { template: 'You buy {q1} {item1} at {p1} each and {q2} {item2} at {p2} each. What is the total cost?', fields: ['total'], compute: function (v) { return [{ val: v.q1 * v.p1 + v.q2 * v.p2, label: __alloT('stem.money.total', 'Total') }]; }, gen: function () { var q1 = Math.floor(Math.random() * 5) + 1; var q2 = Math.floor(Math.random() * 4) + 1; var p1 = Math.round((Math.random() * 4 + 0.5) * 100) / 100; var p2 = Math.round((Math.random() * 3 + 0.25) * 100) / 100; return { q1: q1, q2: q2, p1: p1, p2: p2, item1: ['\uD83C\uDF4E apples', '\uD83C\uDF4C bananas', '\uD83E\uDD5A eggs'][Math.floor(Math.random() * 3)], item2: ['\uD83C\uDF5E loaves of bread', '\uD83E\uDD5B cartons of milk', '\uD83C\uDF6B candy bars'][Math.floor(Math.random() * 3)] }; } },
-              { template: 'A shirt costs {original}. It\'s on sale for {pct}% off. What do you pay?', fields: ['salePrice'], compute: function (v) { return [{ val: Math.round(v.original * (1 - v.pct / 100) * 100) / 100, label: __alloT('stem.money.sale_price', 'Sale Price') }]; }, gen: function () { return { original: Math.round((Math.random() * 40 + 10) * 100) / 100, pct: [10, 15, 20, 25, 30, 40, 50][Math.floor(Math.random() * 7)] }; } },
-              { template: 'You have {have}. You want to buy something that costs {want}. How much more do you need?', fields: ['need'], compute: function (v) { return [{ val: Math.round(Math.max(0, v.want - v.have) * 100) / 100, label: __alloT('stem.money.amount_needed', 'Amount Needed') }]; }, gen: function () { var want = Math.round((Math.random() * 20 + 5) * 100) / 100; return { have: Math.round((Math.random() * want * 0.8) * 100) / 100, want: want }; } },
-              { template: 'Dinner costs {bill}. You want to leave a {tipPct}% tip. What is the tip amount? What is the total with tip?', fields: ['tip', 'total'], compute: function (v) { var tip = Math.round(v.bill * v.tipPct / 100 * 100) / 100; return [{ val: tip, label: 'Tip' }, { val: Math.round((v.bill + tip) * 100) / 100, label: __alloT('stem.money.total_2', 'Total') }]; }, gen: function () { return { bill: Math.round((Math.random() * 60 + 10) * 100) / 100, tipPct: [10, 15, 18, 20, 25][Math.floor(Math.random() * 5)] }; } },
-              { template: 'You earn {hourly}/hour and work {hours} hours. After {taxPct}% tax, what is your take-home pay?', fields: ['gross', 'takeHome'], compute: function (v) { var gross = Math.round(v.hourly * v.hours * 100) / 100; return [{ val: gross, label: __alloT('stem.money.gross_pay', 'Gross Pay') }, { val: Math.round(gross * (1 - v.taxPct / 100) * 100) / 100, label: 'Take-Home' }]; }, gen: function () { return { hourly: [8, 10, 12, 15, 20][Math.floor(Math.random() * 5)], hours: Math.floor(Math.random() * 30) + 10, taxPct: [10, 15, 20, 22, 25][Math.floor(Math.random() * 5)] }; } },
-              { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: Math.round(v.bill / v.friends * 100) / 100, label: __alloT('stem.money.each_pays', 'Each Pays') }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
+              { template: 'A shirt costs {original}. It\'s on sale for {pct}% off. What do you pay?', fields: ['salePrice'], compute: function (v) { return [{ val: roundCurrency(v.original * (1 - v.pct / 100), currency), label: __alloT('stem.money.sale_price', 'Sale Price') }]; }, gen: function () { return { original: Math.round((Math.random() * 40 + 10) * 100) / 100, pct: [10, 15, 20, 25, 30, 40, 50][Math.floor(Math.random() * 7)] }; } },
+              { template: 'You have {have}. You want to buy something that costs {want}. How much more do you need?', fields: ['need'], compute: function (v) { return [{ val: roundCurrency(Math.max(0, v.want - v.have), currency), label: __alloT('stem.money.amount_needed', 'Amount Needed') }]; }, gen: function () { var want = Math.round((Math.random() * 20 + 5) * 100) / 100; return { have: Math.round((Math.random() * want * 0.8) * 100) / 100, want: want }; } },
+              { template: 'Dinner costs {bill}. You want to leave a {tipPct}% tip. What is the tip amount? What is the total with tip?', fields: ['tip', 'total'], compute: function (v) { var tip = roundCurrency(v.bill * v.tipPct / 100, currency); return [{ val: tip, label: 'Tip' }, { val: roundCurrency(v.bill + tip, currency), label: __alloT('stem.money.total_2', 'Total') }]; }, gen: function () { return { bill: Math.round((Math.random() * 60 + 10) * 100) / 100, tipPct: [10, 15, 18, 20, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: 'You earn {hourly}/hour and work {hours} hours. After {taxPct}% tax, what is your take-home pay?', fields: ['gross', 'takeHome'], compute: function (v) { var gross = Math.round(v.hourly * v.hours * 100) / 100; return [{ val: gross, label: __alloT('stem.money.gross_pay', 'Gross Pay') }, { val: roundCurrency(gross * (1 - v.taxPct / 100), currency), label: 'Take-Home' }]; }, gen: function () { return { hourly: [8, 10, 12, 15, 20][Math.floor(Math.random() * 5)], hours: Math.floor(Math.random() * 30) + 10, taxPct: [10, 15, 20, 22, 25][Math.floor(Math.random() * 5)] }; } },
+              { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: roundCurrency(v.bill / v.friends, currency), label: __alloT('stem.money.each_pays', 'Each Pays') }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
             ];
             var genStructuredProblem = function () {
               beginMoneyRound('structured-word-problem');
               var prob = STRUCT_PROBLEMS[Math.floor(Math.random() * STRUCT_PROBLEMS.length)];
               var vals = prob.gen();
               var text = prob.template;
+              // Only money fields get a currency symbol: fmt() on every number printed "$5.00 bananas" and "$10.00% off".
+              var STRUCT_MONEY_FIELDS = ['p1', 'p2', 'original', 'have', 'want', 'bill', 'hourly'];
+              // Yen: scale before printing AND keying ("¥3 each" was keyed from the hidden 2.57).
+              if (currency === 'JPY') STRUCT_MONEY_FIELDS.forEach(function (k) { if (typeof vals[k] === 'number') vals[k] = yenFromUsd(vals[k]); });
               Object.keys(vals).forEach(function (k) {
-                var display = typeof vals[k] === 'number' ? fmt(vals[k]) : vals[k];
+                var display = typeof vals[k] === 'number' ? (STRUCT_MONEY_FIELDS.indexOf(k) >= 0 ? fmt(vals[k]) : String(vals[k])) : vals[k];
                 text = text.replace('{' + k + '}', display);
               });
               var answers = prob.compute(vals).map(function (answer) {
@@ -1991,11 +2115,12 @@ window.StemLab = window.StemLab || {
             };
 
             // ── Personal Finance quiz generator ──
+            // Two explanations were re-keyed: ui_strings shipped their old, wrong English under the old keys.
             var FIN_QUIZZES = [
               { q: 'If you invest $1,000 at 7% annual compound interest for 10 years, approximately how much will you have?', choices: ['$1,700', '$1,967', '$2,500', '$3,000'], correct: 1, explanation: __alloT('stem.money.1_000_1_07_1_967_compound_interest_gro', '$1,000 \u00D7 (1.07)\u00B9\u2070 \u2248 $1,967. Compound interest grows exponentially over time.') },
               { q: 'Which costs more total: a $20,000 loan at 5% for 5 years, or at 3% for 10 years?', choices: ['5% for 5 years', '3% for 10 years', 'They cost the same', 'Can\'t determine'], correct: 1, explanation: __alloT('stem.money.at_5_5yr_2_645_interest_at_3_10yr_3_17', 'At 5%/5yr: ~$2,645 interest. At 3%/10yr: ~$3,174 interest. Lower rate but longer term costs more in total interest.') },
-              { q: 'Starting to invest $200/month at age 25 vs. age 35 (retire at 65, 7% return). How much more does the early starter have?', choices: ['About $50,000 more', 'About $130,000 more', 'About $260,000 more', 'More than $300,000 more'], correct: 2, explanation: __alloT('stem.money.age_25_262k_age_35_122k_that_s_140k_di', 'At 7% compounded annually, starting at 25 grows to about $479K by 65, while starting at 35 reaches about $227K — roughly $250K more for the early starter. Time is the most powerful factor in investing.') },
-              { q: 'You have $500 in credit card debt at 22% APR. Paying $25/month, roughly how long to pay off?', choices: ['About 1 year', 'About 2 years', 'About 5 years', 'Never (minimum too low)'], correct: 1, explanation: __alloT('stem.money.at_25_month_and_22_apr_it_takes_about_', 'At $25/month and 22% APR, it takes about 25 months and you pay roughly $125 in interest — a quarter of the original debt. High-interest debt is expensive!') },
+              { q: 'Starting to invest $200/month at age 25 vs. age 35 (retire at 65, 7% return). How much more does the early starter have?', choices: ['About $50,000 more', 'About $130,000 more', 'About $260,000 more', 'More than $300,000 more'], correct: 2, explanation: __alloT('stem.money.finquiz_early_start_gap_explanation', 'At 7% compounded annually, starting at 25 grows to about $479K by 65, while starting at 35 reaches about $227K — roughly $250K more for the early starter. Time is the most powerful factor in investing.') },
+              { q: 'You have $500 in credit card debt at 22% APR. Paying $25/month, roughly how long to pay off?', choices: ['About 1 year', 'About 2 years', 'About 5 years', 'Never (minimum too low)'], correct: 1, explanation: __alloT('stem.money.finquiz_card_debt_months_explanation', 'At $25/month and 22% APR, it takes about 25 months and you pay roughly $125 in interest — a quarter of the original debt. High-interest debt is expensive!') },
               { q: 'The "Rule of 72" estimates how long to double your money. At 6% interest, roughly how many years?', choices: ['6 years', '8 years', '10 years', '12 years'], correct: 3, explanation: __alloT('stem.money.72_6_12_years_the_rule_of_72_divide_72', '72 \u00F7 6 = 12 years. The Rule of 72: divide 72 by your interest rate to estimate doubling time.') },
               { q: 'An emergency fund should ideally cover how many months of expenses?', choices: ['1-2 months', '3-6 months', '12 months', '24 months'], correct: 1, explanation: __alloT('stem.money.financial_advisors_recommend_3_6_month', 'Financial advisors recommend 3-6 months of expenses. This covers most unexpected events like job loss or medical emergencies.') }
             ];
@@ -2173,6 +2298,30 @@ window.StemLab = window.StemLab || {
               if (tabButtons[next]) { tabButtons[next].focus(); tabButtons[next].click(); }
             };
 
+            // Lock-after-reveal item ids. Round ids keep generated items apart; boards and carts the
+            // student builds are identified by their contents.
+            var moneyRoundOf = function(activity) { return Number(moneyRoundIds[activity]) || 0; };
+            var coinCountItemId = moneyItemId('coin-counting', [currency, placed.map(function(piece) { return Number(piece && piece.value) || 0; }).sort(function(a, b) { return a - b; })]);
+            var groceryMathItemId = moneyItemId('grocery-mental-math', [currency, cartReceiptSnapshot]);
+            var wordProblemItemId = moneyItemId('ai-word-problem', [currency, moneyRoundOf('ai-word-problem'), d.wpProblem && d.wpProblem.problem]);
+            var tipItemId = moneyItemId('tip-calculation', percentLearningKey('tip'));
+            var discountItemId = moneyItemId('discount-calculation', percentLearningKey('discount'));
+            var unitPriceItemId = moneyItemId('unit-pricing', [currency, moneyRoundOf('unit-pricing'), d.upItem && d.upItem.name, d.upA, d.upB]);
+            var estimateItemId = moneyItemId('estimate-total', [currency, moneyRoundOf('estimate-total'), d.estItems, d.estTotal]);
+            var changeCheckItemId = moneyItemId('change-check', [currency, moneyRoundOf('change-check'), d.ccPrice, d.ccPaid, d.ccProposed]);
+            var couponStackItemId = moneyItemId('coupon-stack', [currency, moneyRoundOf('coupon-stack'), d.csOriginal, d.csDiscounts, d.csFinal]);
+            var structuredItemId = moneyItemId('structured-word-problem', [currency, moneyRoundOf('structured-word-problem'), d.spText, d.spAnswers]);
+            var coinLocked = isMoneyAnswerShown(coinCountItemId) && !(d.coinGuessFb && d.coinGuessFb.ok);
+            var groceryMathLocked = isMoneyAnswerShown(groceryMathItemId) && !(d.cartCheckoutFb && d.cartCheckoutFb.ok);
+            var wordProblemLocked = isMoneyAnswerShown(wordProblemItemId) && !(d.wpFeedback && d.wpFeedback.ok);
+            var tipLocked = !(d.tipFeedback && d.tipFeedback.ok) && (isMoneyAnswerShown(tipItemId) || d.percentLearningKey === percentLearningKey('tip'));
+            var discountLocked = !(d.discFeedback && d.discFeedback.ok) && (isMoneyAnswerShown(discountItemId) || d.percentLearningKey === percentLearningKey('discount'));
+            var unitPriceLocked = isMoneyAnswerShown(unitPriceItemId) && !(d.upFeedback && d.upFeedback.ok);
+            var estimateLocked = isMoneyAnswerShown(estimateItemId) && !(d.estFb && d.estFb.ok);
+            var changeCheckLocked = isMoneyAnswerShown(changeCheckItemId) && !(d.ccFb && d.ccFb.ok);
+            var couponStackLocked = isMoneyAnswerShown(couponStackItemId) && !(d.csFb && d.csFb.ok);
+            var structuredLocked = isMoneyAnswerShown(structuredItemId) && !(d.spFb && d.spFb.ok);
+
             var h = React.createElement;
             var moneyInk = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#e2e8f0' : '#172033';
             var moneySurface = ctx.isContrast ? '#000000' : ctx.isDark ? '#162033' : '#ffffff';
@@ -2187,6 +2336,9 @@ window.StemLab = window.StemLab || {
             var changeSession = d.changeLearning && d.changeLearning.key === changeKey ? d.changeLearning : { key: changeKey, pieces: [], step: null, assisted: false, reveal: false };
             var changeSolved = !!(changeFeedback && changeFeedback.ok && (!changeFeedback.key || changeFeedback.key === changeKey));
             var changeRevealed = changeSolved || changeSession.reveal;
+            // The worked solution and the guide's last jump both state the change due.
+            var changeItemId = moneyItemId('making-change', changeKey);
+            var changeLocked = !changeSolved && changeJourney.ok && (isMoneyAnswerShown(changeItemId) || !!changeSession.reveal || (changeSession.step != null && changeSession.step >= changeJourney.steps.length));
             var changeTray = (changeSession.pieces || []).filter(function(units) { return changeDenominations.some(function(item) { return item.units === units; }); }).slice(0, 100);
             var changeTrayTotal = changeTray.reduce(function(sum, units) { return sum + units; }, 0);
             function changeLearn(patch) { upd('changeLearning', Object.assign({}, changeSession, patch, { key: changeKey })); }
@@ -2196,7 +2348,7 @@ window.StemLab = window.StemLab || {
                 : value < changeJourney.due ? __alloT('stem.money.deep_too_little', 'Too little change. Count up farther from the price toward the amount paid.') : __alloT('stem.money.deep_too_much', 'Too much change. The price plus your change is greater than the amount paid.');
             }
             function checkLearningChange(tray) {
-              if (changeSolved || !changeJourney.ok) return;
+              if (changeSolved || changeLocked || !changeJourney.ok) return;
               var raw = tray ? changeTrayTotal / changeScale : d.changeAnswer;
               var valid = raw !== null && raw !== undefined && String(raw).trim() !== '' && Number(raw) >= 0 && hasCurrencyPrecision(raw, currency);
               var amount = valid ? currencyUnits(raw, currency) : null;
@@ -2217,15 +2369,16 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' }, [[__alloT('stem.money.price', 'Price'), fmt(changePrice)], [__alloT('stem.money.customer_pays', 'Customer pays'), fmt(changePaid)], [__alloT('stem.money.change_due', 'Change due'), changeRevealed ? fmt(changeJourney.due / changeScale) : '?']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg p-3', style: { background: moneySoft } }, h('p', { className: 'text-sm' }, item[0]), h('p', { className: 'text-2xl font-black', style: { color: moneyAccent } }, item[1])); })),
                   h('form', { noValidate: true, className: 'flex flex-wrap items-end gap-2', onSubmit: function(event) { event.preventDefault(); checkLearningChange(false); } },
                     h('label', { className: 'text-sm font-bold' }, __alloT('stem.money.your_answer', 'Your answer:'),
-                      h('input', { id: 'money-change-answer', type: 'number', min: 0, step: isJPY ? 1 : 0.01, inputMode: 'decimal', 'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'), value: d.changeAnswer == null ? '' : d.changeAnswer, disabled: changeSolved, onChange: function(event) { upd('changeAnswer', event.target.value); upd('changeFeedback', null); }, className: 'block mt-1 rounded-lg px-3 py-2 w-36', style: learningButton })),
-                    h('button', { type: 'submit', 'aria-label': __alloT('stem.money.check_3', 'Check'), disabled: changeSolved, className: 'rounded-lg px-4 py-2 font-bold', style: learningButton }, changeSolved ? __alloT('stem.money.solved', 'Solved') : __alloT('stem.money.check_3', 'Check'))
+                      h('input', { id: 'money-change-answer', type: 'number', min: 0, step: isJPY ? 1 : 0.01, inputMode: 'decimal', 'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'), value: d.changeAnswer == null ? '' : d.changeAnswer, disabled: changeSolved || changeLocked, onChange: function(event) { upd('changeAnswer', event.target.value); upd('changeFeedback', null); }, className: 'block mt-1 rounded-lg px-3 py-2 w-36', style: learningButton })),
+                    h('button', { type: 'submit', 'aria-label': __alloT('stem.money.check_3', 'Check'), disabled: changeSolved || changeLocked, className: 'rounded-lg px-4 py-2 font-bold', style: learningButton }, changeSolved ? __alloT('stem.money.solved', 'Solved') : __alloT('stem.money.check_3', 'Check'))
                   ),
                   feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-bold', style: { background: moneySoft }, 'data-money-change-feedback': true }, feedback.msg),
+                  changeLocked && moneyAnswerShownNotice('rounded-lg p-3'),
                   h('details', { className: 'rounded-lg p-3', style: learningCard, 'data-money-tray': true },
                     h('summary', { className: 'font-bold cursor-pointer', style: { minHeight: 32 } }, __alloT('stem.money.deep_build_change', 'Build the change')),
                     h('p', { className: 'my-3 text-sm' }, __alloT('stem.money.deep_tray_intro', 'Add money to your tray. Different combinations can make the same change. Check your tray when it is ready.')),
                     h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': __alloT('stem.money.deep_money_choices', 'Money to add to the change tray') }, changeDenominations.filter(function(item) { return item.units <= changeJourney.end; }).map(function(item) {
-                      return h('button', { key: item.units, type: 'button', disabled: changeSolved || changeTray.length >= 100, onClick: function() { changeLearn({ pieces: changeTray.concat([item.units]) }); upd('changeFeedback', null); }, className: 'rounded-lg p-2 flex items-center gap-2 text-sm font-bold', style: learningButton, 'aria-label': __alloT('stem.money.deep_add', 'Add ') + item.name + ' (' + fmt(item.value) + ')' },
+                      return h('button', { key: item.units, type: 'button', disabled: changeSolved || changeLocked || changeTray.length >= 100, onClick: function() { changeLearn({ pieces: changeTray.concat([item.units]) }); upd('changeFeedback', null); }, className: 'rounded-lg p-2 flex items-center gap-2 text-sm font-bold', style: learningButton, 'aria-label': __alloT('stem.money.deep_add', 'Add ') + item.name + ' (' + fmt(item.value) + ')' },
                         h('span', { 'aria-hidden': true }, item.isBill ? renderBillVisual(item.definition, true) : renderCoinVisual(item.definition, true)), h('span', null, fmt(item.value)));
                     })),
                     h('div', { className: 'rounded-lg p-3 my-3 space-y-2', style: { background: moneySoft } },
@@ -2235,21 +2388,21 @@ window.StemLab = window.StemLab || {
                       changeTray.length >= 100 && h('p', { role: 'status', className: 'text-sm' }, __alloT('stem.money.deep_tray_limit', 'The tray holds 100 pieces. Undo or clear pieces to try a different combination.'))
                     ),
                     h('div', { className: 'flex flex-wrap gap-2' },
-                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved, onClick: function() { changeLearn({ pieces: changeTray.slice(0, -1) }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_undo_piece', 'Undo last piece')),
-                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved, onClick: function() { changeLearn({ pieces: [] }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_clear_tray', 'Clear tray')),
-                      h('button', { type: 'button', disabled: changeSolved, onClick: function() { checkLearningChange(true); }, className: 'rounded-lg px-3 py-2 font-bold text-sm', style: learningButton }, __alloT('stem.money.deep_check_tray', 'Check tray'))
+                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved || changeLocked, onClick: function() { changeLearn({ pieces: changeTray.slice(0, -1) }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_undo_piece', 'Undo last piece')),
+                      h('button', { type: 'button', disabled: !changeTray.length || changeSolved || changeLocked, onClick: function() { changeLearn({ pieces: [] }); upd('changeFeedback', null); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_clear_tray', 'Clear tray')),
+                      h('button', { type: 'button', disabled: changeSolved || changeLocked, onClick: function() { checkLearningChange(true); }, className: 'rounded-lg px-3 py-2 font-bold text-sm', style: learningButton }, __alloT('stem.money.deep_check_tray', 'Check tray'))
                     )
                   ),
                   h('section', { className: 'rounded-lg p-3 space-y-3', style: learningCard, 'aria-label': __alloT('stem.money.count_up_change_aria', 'Count up from the price to the amount paid') },
                     h('h4', { className: 'font-bold' }, __alloT('stem.money.deep_count_guide', 'Count-up guide')),
                     h('p', { className: 'text-sm' }, __alloT('stem.money.deep_support_note', 'Use friendly amounts to find the missing difference. Opening the guide marks this problem as supported practice.')),
                     h('div', { className: 'flex flex-wrap gap-2' },
-                      h('button', { type: 'button', onClick: function() { changeLearn({ step: 0, assisted: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_start_guide', 'Start count-up guide')),
+                      h('button', { type: 'button', onClick: function() { if (changeLocked || !changeJourney.steps.length) markMoneyAnswerShown(changeItemId); changeLearn({ step: 0, assisted: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_start_guide', 'Start count-up guide')),
                       changeSession.step != null && h(React.Fragment, null,
-                        h('button', { type: 'button', disabled: changeSession.step === 0, onClick: function() { changeLearn({ step: Math.max(0, changeSession.step - 1) }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_previous_jump', 'Previous jump')),
-                        h('button', { type: 'button', disabled: changeSession.step >= changeJourney.steps.length, onClick: function() { changeLearn({ step: Math.min(changeJourney.steps.length, changeSession.step + 1) }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_next_jump', 'Next jump'))
+                        h('button', { type: 'button', disabled: changeSession.step === 0, onClick: function() { if (changeLocked) markMoneyAnswerShown(changeItemId); changeLearn({ step: Math.max(0, changeSession.step - 1) }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_previous_jump', 'Previous jump')),
+                        h('button', { type: 'button', disabled: changeSession.step >= changeJourney.steps.length, onClick: function() { var next = Math.min(changeJourney.steps.length, changeSession.step + 1); if (next >= changeJourney.steps.length) markMoneyAnswerShown(changeItemId); changeLearn({ step: next }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_next_jump', 'Next jump'))
                       ),
-                      h('button', { type: 'button', onClick: function() { changeLearn({ step: changeJourney.steps.length, assisted: true, reveal: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_show_solution', 'Show worked solution'))
+                      h('button', { type: 'button', onClick: function() { markMoneyAnswerShown(changeItemId); changeLearn({ step: changeJourney.steps.length, assisted: true, reveal: true }); }, className: 'rounded-lg px-3 py-2 text-sm', style: learningButton }, __alloT('stem.money.deep_show_solution', 'Show worked solution'))
                     ),
                     changeSession.step != null && h('div', { className: 'space-y-3', 'data-money-count-guide': true },
                       h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold' }, __alloT('stem.money.deep_reached', 'Reached: ') + fmt(reached / changeScale) + '. ' + __alloT('stem.money.deep_added', 'Added so far: ') + fmt((reached - changeJourney.start) / changeScale)),
@@ -2282,7 +2435,7 @@ window.StemLab = window.StemLab || {
               var amount = function(units) { return fmt(units / changeScale); };
               return h('section', { className: 'rounded-xl p-3 space-y-3', style: learningCard, 'data-money-percent': mode },
                 h('p', { className: 'text-sm' }, tip ? __alloT('stem.money.deep_tip_rounding', 'Round the tip to the currency’s smallest accounting unit first. Then add it to the bill and divide. Enter the rounded amount per person.') : __alloT('stem.money.deep_discount_order', 'Apply the percentage to the original price first, round the sale price, then subtract the coupon. The final price cannot fall below zero.')),
-                !show ? h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm font-bold', style: learningButton, onClick: function() { upd('percentLearningKey', key); } }, __alloT('stem.money.deep_show_percent', 'Show percentage model (supported practice)')) : h('div', { className: 'space-y-3', 'data-money-percent-worked': mode },
+                !show ? h('button', { type: 'button', className: 'rounded-lg px-3 py-2 text-sm font-bold', style: learningButton, onClick: function() { markMoneyAnswerShown(tip ? tipItemId : discountItemId); upd('percentLearningKey', key); } }, __alloT('stem.money.deep_show_percent', 'Show percentage model (supported practice)')) : h('div', { className: 'space-y-3', 'data-money-percent-worked': mode },
                   h('h4', { className: 'font-bold' }, __alloT('stem.money.deep_percent_of_whole', 'Start with the whole: 100%')),
                   h('p', { className: 'text-sm' }, tip ? amount(model.original) + ' × ' + percent + '/100 → ' + amount(model.part) : '100% = ' + amount(model.original)),
                   h('div', { 'aria-hidden': true, style: { display: 'flex', height: 28, border: '1px solid ' + moneyBorder, background: moneySoft } },
@@ -2395,6 +2548,9 @@ window.StemLab = window.StemLab || {
               session.assisted = !!session.assisted || Number(session.step) > 0;
               var feedback = d.exchFeedback && d.exchFeedback.key === key ? d.exchFeedback : null;
               var solved = !!(feedback && feedback.ok), step = solved ? 3 : Math.max(0, Math.min(3, Number(session.step) || 0));
+              // Step 3 shows the converted amount. Keyed by the conversion itself: a student can re-choose it.
+              var exchItemId = moneyItemId('currency-conversion', [d.exchFrom, d.exchTo, d.exchAmount]);
+              var exchLocked = !solved && model.ok && (isMoneyAnswerShown(exchItemId) || step >= 3);
               var button = function(label, action, disabled) { return h('button', { type: 'button', onClick: disabled ? undefined : action, 'aria-disabled': !!disabled || undefined, className: 'rounded-lg px-3 py-2 text-sm font-bold' + (disabled ? ' opacity-50' : ''), style: learningButton }, label); };
               var learn = function(patch) { upd('exchangeLearning', Object.assign({}, session, patch, { key: key })); };
               var money = function(value, code) { return CURRENCIES[code].symbol + formatCurrencyAmount(value, code) + ' ' + code; };
@@ -2402,7 +2558,7 @@ window.StemLab = window.StemLab || {
               var precise = function(value) { return value.toLocaleString('en-US', { maximumFractionDigits: 6 }); };
               var relation = function(value) { return Math.abs(value - Number(value.toFixed(6))) < 1e-12 ? ' = ' : ' ≈ '; };
               var check = function() {
-                if (!model.ok || solved) return;
+                if (!model.ok || solved || exchLocked) return;
                 var raw = d.exchAnswer, value = raw == null || String(raw).trim() === '' ? NaN : Number(raw);
                 var units = Math.round(value * model.toScale);
                 var valid = Number.isFinite(value) && value >= 0 && Number.isSafeInteger(units) && Math.abs(value * model.toScale - units) < 1e-7;
@@ -2451,12 +2607,13 @@ window.StemLab = window.StemLab || {
                   h('p', { id: 'money-exchange-model-note', className: 'text-sm' }, __alloT('stem.money.exchange_model_formula', 'Method: amount ÷ the from-currency rate × the to-currency rate. Round only the final result.')),
                   h('p', { id: 'money-exchange-rounding-note', className: 'text-sm font-bold' }, model.to === 'JPY' ? __alloT('stem.money.round_exchange_to_whole_yen', 'Round the final answer to the nearest whole yen.') : __alloT('stem.money.round_exchange_to_cents', 'Round the final answer to the nearest hundredth of the destination currency (2 decimal places).')),
                   h('label', { className: 'block text-sm font-bold' }, __alloT('stem.money.currency_exchange_answer', 'Currency exchange answer') + ' (' + model.to + ')',
-                    h('input', { id: 'money-exchange-answer', type: 'number', min: 0, step: model.toScale === 1 ? 1 : .01, inputMode: model.toScale === 1 ? 'numeric' : 'decimal', value: d.exchAnswer == null ? '' : d.exchAnswer, readOnly: solved, 'aria-label': __alloT('stem.money.currency_exchange_answer', 'Currency exchange answer'), 'aria-describedby': 'money-exchange-model-note money-exchange-rounding-note', 'aria-invalid': feedback && feedback.invalid || undefined, className: 'block w-full rounded-lg p-2 mt-1', style: Object.assign({ maxWidth: '18rem' }, learningButton), onChange: function(e) { if (!solved) { upd('exchAnswer', e.target.value); upd('exchFeedback', null); } }, onKeyDown: function(e) { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); check(); } } })),
-                  h('button', { type: 'button', 'aria-label': __alloT('stem.money.check_7', 'Check'), onClick: check, disabled: solved, className: 'rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50', style: learningButton }, solved ? __alloT('stem.money.solved', '✓ Solved') : __alloT('stem.money.check_8', '✔ Check')),
+                    h('input', { id: 'money-exchange-answer', type: 'number', min: 0, step: model.toScale === 1 ? 1 : .01, inputMode: model.toScale === 1 ? 'numeric' : 'decimal', value: d.exchAnswer == null ? '' : d.exchAnswer, readOnly: solved || exchLocked, 'aria-label': __alloT('stem.money.currency_exchange_answer', 'Currency exchange answer'), 'aria-describedby': 'money-exchange-model-note money-exchange-rounding-note', 'aria-invalid': feedback && feedback.invalid || undefined, className: 'block w-full rounded-lg p-2 mt-1', style: Object.assign({ maxWidth: '18rem' }, learningButton), onChange: function(e) { if (!solved && !exchLocked) { upd('exchAnswer', e.target.value); upd('exchFeedback', null); } }, onKeyDown: function(e) { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); check(); } } })),
+                  h('button', { type: 'button', 'aria-label': __alloT('stem.money.check_7', 'Check'), onClick: check, disabled: solved || exchLocked, className: 'rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50', style: learningButton }, solved ? __alloT('stem.money.solved', '✓ Solved') : __alloT('stem.money.check_8', '✔ Check')),
                   feedback && h('p', { role: 'status', className: 'text-sm font-bold', 'data-exchange-feedback': true }, feedback.msg),
+                  exchLocked && moneyAnswerShownNotice('text-sm'),
                   !solved && h('div', { className: 'flex flex-wrap gap-2' },
                     button(__alloT('stem.money.exchangelearn_start', 'Work through the conversion'), function() { learn({ step: Math.max(1, step), assisted: true }); }, step > 0),
-                    button(__alloT('stem.money.exchangelearn_show', 'Show complete conversion'), function() { learn({ step: 3, assisted: true }); }, step === 3)),
+                    button(__alloT('stem.money.exchangelearn_show', 'Show complete conversion'), function() { markMoneyAnswerShown(exchItemId); learn({ step: 3, assisted: true }); }, step === 3)),
                   session.assisted && !solved && h('p', { className: 'text-xs' }, __alloT('stem.money.exchangelearn_support_note', 'Supported practice: use the working to explain each operation. This conversion will not earn independent-completion XP.')),
                   step > 0 && h('section', { className: 'rounded-lg p-3 space-y-3', style: { background: moneySoft, color: moneyInk }, 'data-exchange-working': true, 'aria-label': __alloT('stem.money.exchangelearn_working', 'Conversion working') },
                     h('h4', { className: 'font-bold' }, __alloT('stem.money.exchangelearn_working', 'Conversion working')),
@@ -2466,7 +2623,7 @@ window.StemLab = window.StemLab || {
                       h('li', { className: 'rounded-lg p-3 space-y-2', style: learningCard }, h('p', { className: 'font-bold' }, '2. ' + __alloT('stem.money.exchangelearn_multiply', 'Convert USD to the destination')), step >= 2 ? h('div', { className: 'space-y-2', 'data-exchange-step-two': true }, h('p', { className: 'text-sm' }, '(' + model.amount + ' ÷ ' + model.fromRate + ') × ' + model.toRate + relation(model.rawTarget) + precise(model.rawTarget) + ' ' + model.to), h('p', { className: 'text-xs' }, __alloT('stem.money.exchangelearn_multiply_why', 'Each USD is worth this many destination-currency units. Multiply the unrounded USD amount.'))) : h('p', { className: 'text-sm' }, __alloT('stem.money.exchangelearn_next_hidden', 'Continue when you are ready for this step.'))),
                       h('li', { className: 'rounded-lg p-3 space-y-2', style: learningCard }, h('p', { className: 'font-bold' }, '3. ' + __alloT('stem.money.exchangelearn_round', 'Round once, at the end')), step >= 3 ? h('div', { className: 'space-y-2', 'data-exchange-result': true }, h('p', { className: 'font-bold' }, money(model.targetUnits / model.toScale, model.to)), h('p', { className: 'text-xs' }, model.rounded ? __alloT('stem.money.exchangelearn_rounded', 'The final amount has been rounded to the destination currency’s precision.') : __alloT('stem.money.exchangelearn_exact', 'The result already fits the destination currency’s precision.'))) : h('p', { className: 'text-sm' }, __alloT('stem.money.exchangelearn_next_hidden', 'Continue when you are ready for this step.')))),
                     h('p', { className: 'text-xs' }, __alloT('stem.money.exchangelearn_precision', 'USD is a calculation bridge, not a cash payout. Keep all digits until the last step. Long decimals here are shortened to six places; ≈ means approximately.')),
-                    !solved && h('div', { className: 'flex flex-wrap gap-2' }, button(__alloT('stem.money.exchangelearn_previous', 'Previous conversion step'), function() { learn({ step: step - 1 }); }, step <= 1), button(__alloT('stem.money.exchangelearn_next', 'Next conversion step'), function() { learn({ step: step + 1 }); }, step >= 3)),
+                    !solved && h('div', { className: 'flex flex-wrap gap-2' }, button(__alloT('stem.money.exchangelearn_previous', 'Previous conversion step'), function() { if (exchLocked) markMoneyAnswerShown(exchItemId); learn({ step: step - 1 }); }, step <= 1), button(__alloT('stem.money.exchangelearn_next', 'Next conversion step'), function() { if (step + 1 >= 3) markMoneyAnswerShown(exchItemId); learn({ step: step + 1 }); }, step >= 3)),
                     step === 3 && h('div', { className: 'rounded-lg p-3 space-y-2', style: learningCard, 'data-exchange-equivalence': true },
                       h('h4', { className: 'font-bold' }, __alloT('stem.money.exchangelearn_value_title', 'Different units, equivalent value')),
                       h('p', { className: 'font-bold text-sm' }, money(model.amount, model.from) + (model.rounded ? ' ≈ ' : ' = ') + money(model.targetUnits / model.toScale, model.to)),
@@ -2511,9 +2668,13 @@ window.StemLab = window.StemLab || {
               if (model.taxPercent > 0) steps.push({ title: __alloT('stem.money.cashlearn_compute_tax', 'Find tax on the amount after the coupon'), equation: amount(model.afterCoupon) + ' × ' + model.taxPercent + '/100' + (Math.abs(model.afterCoupon * model.taxPercent / 100 - model.tax) > 1e-7 ? ' ≈ ' : ' = ') + amount(model.tax) });
               steps.push({ title: __alloT('stem.money.cashlearn_final_step', 'Find the total to pay'), equation: amount(model.afterCoupon) + ' + ' + amount(model.tax) + ' = ' + amount(model.total) });
               var shown = completed ? steps.length : Math.max(0, Math.min(steps.length, Number.isInteger(practice.step) ? practice.step : 0));
-              function showStep(next) { changePractice({ assisted: true, step: next }); }
+              // The last working step states the receipt total.
+              var practiceItemId = moneyItemId('cashier-practice', key);
+              var practiceLocked = !completed && (isMoneyAnswerShown(practiceItemId) || (assisted && shown >= steps.length));
+              function showStep(next) { if (practiceLocked || next >= steps.length) markMoneyAnswerShown(practiceItemId); changePractice({ assisted: true, step: next }); }
               function check() {
                 if (completed) return;
+                if (practiceLocked) return;
                 var raw = String(crAnswer).trim(), value = Number(raw), units = Math.round((value + Number.EPSILON) * changeScale);
                 if (!raw || !Number.isFinite(value) || value < 0 || !Number.isSafeInteger(units) || Math.abs(value * changeScale - units) > 1e-7) { changePractice({ feedback: 'invalid' }); return; }
                 if (units !== model.total) { changePractice({ feedback: units < model.total ? 'low' : 'high' }); return; }
@@ -2555,8 +2716,9 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs' }, __alloT('stem.money.cashlearn_rounding', 'Round each item cost to cents or whole yen before adding. Round again after a percentage coupon and when finding tax. ≈ means rounded.'))
                 ),
                 h('div', { className: 'space-y-2' }, h('label', { htmlFor: 'cashier-practice-answer', className: 'block font-bold text-sm' }, __alloT('stem.money.cashlearn_your_total', 'Your receipt total') + ' (' + currency + ')'),
-                  h('div', { className: 'flex flex-wrap gap-2' }, h('input', { id: 'cashier-practice-answer', type: 'number', min: 0, step: isJPY ? 1 : 0.01, value: crAnswer, readOnly: completed, style: Object.assign({}, learningButton, { width: 180, maxWidth: '100%' }), className: 'rounded-lg px-3 py-2', 'aria-invalid': practice.feedback === 'invalid' || undefined, 'aria-describedby': feedback ? 'cashier-practice-feedback' : undefined, onChange: function(event) { if (completed) return; updateCashier({ crAnswer: event.target.value, crPractice: Object.assign({}, practice, { key: key, feedback: null }) }); }, onKeyDown: function(event) { if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); check(); } } }), button(__alloT('stem.money.cashlearn_check', 'Check receipt total'), check, completed)),
+                  h('div', { className: 'flex flex-wrap gap-2' }, h('input', { id: 'cashier-practice-answer', type: 'number', min: 0, step: isJPY ? 1 : 0.01, value: crAnswer, readOnly: completed || practiceLocked, style: Object.assign({}, learningButton, { width: 180, maxWidth: '100%' }), className: 'rounded-lg px-3 py-2', 'aria-invalid': practice.feedback === 'invalid' || undefined, 'aria-describedby': feedback ? 'cashier-practice-feedback' : undefined, onChange: function(event) { if (completed || practiceLocked) return; updateCashier({ crAnswer: event.target.value, crPractice: Object.assign({}, practice, { key: key, feedback: null }) }); }, onKeyDown: function(event) { if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); check(); } } }), button(__alloT('stem.money.cashlearn_check', 'Check receipt total'), check, completed || practiceLocked)),
                   feedback && h('p', { id: 'cashier-practice-feedback', role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold', 'data-cashier-feedback': true }, feedback),
+                  practiceLocked && moneyAnswerShownNotice('text-sm'),
                   completed && practice.awarded && h('p', { className: 'text-xs' }, __alloT('stem.money.cashlearn_award', '+10 XP for independent completion.'))
                 ),
                 !completed && h('div', { className: 'flex flex-wrap gap-2' }, button(__alloT('stem.money.cashlearn_start_steps', 'Work through the receipt'), function() { showStep(Math.max(1, shown)); }), button(__alloT('stem.money.cashlearn_all_steps', 'Show complete working'), function() { showStep(steps.length); })),
@@ -2582,7 +2744,7 @@ window.StemLab = window.StemLab || {
                 {
                   id: 'coins',
                   title: __alloT('stem.money.focus_count_cash', 'Count cash'),
-                  metric: fmt(boardTotal),
+                  metric: challengeMode ? '?' : fmt(boardTotal), // Challenge Mode asks for these totals
                   body: __alloT('stem.money.focus_count_cash_body', 'Build totals from coins and bills.'),
                   tone: 'border-amber-400 bg-amber-50 text-amber-900'
                 },
@@ -2640,7 +2802,7 @@ window.StemLab = window.StemLab || {
                         ),
                         React.createElement('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
                           React.createElement('p', { className: 'text-xs text-slate-500 font-bold' }, __alloT('stem.money.cart', 'Cart')),
-                          React.createElement('p', { className: 'text-sm font-black text-slate-900' }, fmt(cartGrand))
+                          React.createElement('p', { className: 'text-sm font-black text-slate-900' }, challengeMode ? '?' : fmt(cartGrand))
                         ),
                         React.createElement('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
                           React.createElement('p', { className: 'text-xs text-slate-500 font-bold' }, __alloT('stem.money.savings_2', 'Savings')),
@@ -2681,8 +2843,8 @@ window.StemLab = window.StemLab || {
                         React.createElement('rect', { x: 305, y: 30, width: 160, height: 110, rx: 12, fill: '#fefce8', stroke: '#facc15', strokeWidth: 2 }),
                         React.createElement('text', { x: 325, y: 56, fill: '#713f12', fontSize: 15, fontWeight: '900' }, __alloT('stem.money.receipt', 'Receipt')),
                         React.createElement('line', { x1: 325, y1: 70, x2: 445, y2: 70, stroke: '#ca8a04', strokeWidth: 1.5, strokeDasharray: '5 4' }),
-                        React.createElement('text', { x: 325, y: 94, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cash_total', 'Cash') + ': ' + fmt(boardTotal)),
-                        React.createElement('text', { x: 325, y: 116, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cart_total', 'Cart') + ': ' + fmt(cartGrand)),
+                        React.createElement('text', { x: 325, y: 94, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cash_total', 'Cash') + ': ' + (challengeMode ? '?' : fmt(boardTotal))),
+                        React.createElement('text', { x: 325, y: 116, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cart_total', 'Cart') + ': ' + (challengeMode ? '?' : fmt(cartGrand))),
                         React.createElement('rect', { x: 505, y: 30, width: 128, height: 110, rx: 14, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 2 }),
                         React.createElement('text', { x: 569, y: 58, textAnchor: 'middle', fill: '#bae6fd', fontSize: 14, fontWeight: '900' }, __alloT('stem.money.goal', 'Goal')),
                         React.createElement('rect', { x: 527, y: 78, width: 84, height: 14, rx: 7, fill: '#1e293b', stroke: '#64748b', strokeWidth: 1 }),
@@ -2732,7 +2894,11 @@ window.StemLab = window.StemLab || {
                   ),
                   React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
                     // Challenge Mode toggle
-                    React.createElement("button", { onClick: function () { upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
+                    React.createElement("button", { onClick: function () {
+                      // Practice mode prints the board and cart totals, so switching shows the answers.
+                      if (placed.length) markMoneyAnswerShown(coinCountItemId);
+                      if (cart.length) markMoneyAnswerShown(groceryMathItemId);
+                      upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
                       className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-white/20 text-white border border-white/30 hover:bg-white/30')
                     }, d.challengeMode ? '\uD83C\uDFAF Challenge ON' : '\uD83C\uDFAF Challenge Mode'),
                     // Grade selector
@@ -2833,6 +2999,7 @@ window.StemLab = window.StemLab || {
                     cur.coins.map(function (coin, ci) {
                       return React.createElement("button", { key: ci, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: coin.name, value: coin.value, id: Date.now() + '-' + ci }]));
+                          upd('coinGuess', null); upd('coinGuessFb', null); // a new total, as removing a piece already did
                         },
                         'aria-label': __alloT('stem.money.add_coin', 'Add coin') + ': ' + coin.name + ' (' + fmt(coin.value) + ')',
                         className: "flex flex-col items-center gap-1 group transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-full",
@@ -2851,6 +3018,7 @@ window.StemLab = window.StemLab || {
                     cur.bills.map(function (bill, bi) {
                       return React.createElement("button", { key: bi, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: bill.name, value: bill.value, id: Date.now() + '-b' + bi }]));
+                          upd('coinGuess', null); upd('coinGuessFb', null);
                         },
                         'aria-label': __alloT('stem.money.add_bill', 'Add bill') + ': ' + bill.name + ' (' + fmt(bill.value) + ')',
                         title: bill.name + ' = ' + fmt(bill.value),
@@ -2903,15 +3071,18 @@ window.StemLab = window.StemLab || {
                   challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 bg-amber-50 rounded-lg p-3" },
                     React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, __alloT('stem.money.what_s_the_total_add_up_all_the_coins_', '\uD83C\uDFAF What\'s the total? Add up all the coins and bills!')),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); upd('coinGuessFb', null); }, className: "px-3 py-2 border border-amber-600 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, disabled: coinLocked, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); upd('coinGuessFb', null); }, className: "px-3 py-2 border border-amber-600 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.check', "Check"), onClick: function () {
+                        if (coinLocked) return;
                         var guess = d.coinGuess; var actual = boardTotal;
                         var isRight = sameCurrencyAmount(guess, actual, currency);
                         upd('coinGuessFb', isRight ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(actual) + '!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(actual) + '. You guessed ' + fmt(guess || 0) + '.' });
+                        if (!isRight) markMoneyAnswerShown(coinCountItemId);
                         if (isRight) awardMoneyXPOnce('coin-counting', [currency, placed.map(function (piece) { return piece.value; })], 10, 'coin counting challenge');
-                      }, disabled: d.coinGuess == null || !!(d.coinGuessFb && d.coinGuessFb.ok), className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-800 transition-all text-xs disabled:opacity-40" }, d.coinGuessFb && d.coinGuessFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_2', '\u2714 Check'))
+                      }, disabled: d.coinGuess == null || !!(d.coinGuessFb && d.coinGuessFb.ok) || coinLocked, className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-800 transition-all text-xs disabled:opacity-40" }, d.coinGuessFb && d.coinGuessFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_2', '\u2714 Check'))
                     ),
-                    d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
+                    d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg),
+                    coinLocked && moneyAnswerShownNotice('mt-2 text-slate-700')
                   ),
                   !challengeMode && placed.length > 0 && React.createElement('details',{className:'mt-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3'},
                     React.createElement('summary',{className:'cursor-pointer text-sm font-bold text-emerald-900'},__alloT('stem.money.count_on_trail','Count on, one coin or bill at a time')),
@@ -3434,11 +3605,11 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-lg p-3 border border-purple-100 space-y-1.5" },
                       React.createElement("p", { className: "text-xs font-bold text-purple-700 mb-1" }, "\uD83D\uDCDD Shopping List for " + recipeServings + " servings:"),
                       scaledIngredients.map(function (ing, ii) {
-                        var inCart = cart.find(function (c) { return c.name.indexOf(ing.item) >= 0 || ing.item.indexOf(c.name.replace(/^[^\s]+\s/, '')) >= 0; });
+                        var inCart = recipeItemInCart(ing);
                         return React.createElement("div", { key: ii, className: "flex items-center gap-2 text-xs" },
                           React.createElement("span", { className: "text-base" }, inCart ? '\u2705' : '\u2B1C'),
                           React.createElement("span", { className: inCart ? 'text-green-700 font-bold line-through' : 'text-slate-700 font-medium' },
-                            ing.qty + ' ' + ing.unit + ' ' + ing.item
+                            ing.qty + ' ' + ing.unit + ' ' + ing.label
                           )
                         );
                       })
@@ -3449,6 +3620,7 @@ window.StemLab = window.StemLab || {
                         if (!result) return;
                         if (result.complete) {
                           upd('recipeFb', { ok: true, msg: '\u2705 All ' + result.total + ' ingredients found! Total: ' + fmt(cartGrand) + ' \u2014 +25 XP!' });
+                          markMoneyAnswerShown(groceryMathItemId); // this message prints the cart total
                           awardMoneyXPOnce('recipe-shopping', [currency, activeRecipe, recipeServings, scaledIngredients.map(function (ingredient) { return [ingredient.item, ingredient.qty, ingredient.unit]; })], 25, 'recipe shopping');
                         } else {
                           upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
@@ -3516,14 +3688,15 @@ window.StemLab = window.StemLab || {
                                 upd('weightInput', 1);
                                 upd('weightInputDraft', null);
                               } else {
-                                var existing = cart.findIndex(function (c) { return c.name === item.name; });
+                                var existing = cart.findIndex(function (c) { return item.id && c.id ? c.id === item.id : c.name === item.name; });
                                 if (existing >= 0) {
                                   var newCart = cart.map(function (c, idx) { return idx === existing ? Object.assign({}, c, { qty: (c.qty || 1) + 1 }) : c; });
                                   upd('cart', newCart);
                                 } else {
-                                  upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, qty: 1, pricePer: 'each' }]));
+                                  upd('cart', [].concat(cart, [{ id: item.id, name: item.name, price: displayPrice, qty: 1, pricePer: 'each' }]));
                                 }
                                 upd('lastReceipt', null);
+                                upd('cartCheckoutFb', null); upd('recipeFb', null); // a new cart, as removing an item already did
                                 if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
                               }
                             },
@@ -3544,14 +3717,15 @@ window.StemLab = window.StemLab || {
                             React.createElement("div", { className: "flex items-center gap-1.5" },
                               React.createElement("button", { "aria-label": __alloT('stem.money.decrease_item_weight', "Decrease item weight"), onClick: function () { upd('weightInput', Math.max(0.25, weightValue - 0.25)); upd('weightInputDraft', null); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
                               React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: moneyDraftValue('weightInputDraft', weightValue), 'aria-label': __alloT('stem.money.item_weight_in_pounds', 'Item weight in pounds'), onChange: function (e) { updateMoneyNumberDraft('weightInputDraft', 'weightInput', e.target.value, { min: 0.25 }); }, onBlur: function (e) { finishMoneyNumberDraft('weightInputDraft', 'weightInput', e.target.value, { min: 0.25 }, 1); }, className: "w-14 text-center px-1 py-1 border border-orange-600 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
-                              React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', weightValue + 0.25); upd('weightInputDraft', null); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
+                              React.createElement("button", { "aria-label": __alloT('stem.money.increase_item_weight', "Increase item weight"), onClick: function () { upd('weightInput', weightValue + 0.25); upd('weightInputDraft', null); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[0.6875rem] text-slate-600 font-bold" }, item.pricePer)
                             ),
                             React.createElement("p", { className: "text-xs font-bold text-center text-emerald-700" }, "= " + fmt(displayPrice * weightValue)),
                             React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart_2', "Add to Cart"), onClick: function () {
                               var w = weightValue;
-                              upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
+                              upd('cart', [].concat(cart, [{ id: item.id, name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
                               upd('lastReceipt', null);
+                              upd('cartCheckoutFb', null); upd('recipeFb', null);
                               upd('weightItemIdx', null);
                               upd('weightInputDraft', null);
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
@@ -3630,18 +3804,19 @@ window.StemLab = window.StemLab || {
                       React.createElement("div", { className: "space-y-1.5" },
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs text-slate-600 w-20" }, "Subtotal:"),
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': __alloT('stem.money.guess_subtotal', 'Guess subtotal'), value: d.cartGuessSubtotal != null ? d.cartGuessSubtotal : '', onChange: function (e) { upd('cartGuessSubtotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': __alloT('stem.money.guess_subtotal', 'Guess subtotal'), disabled: groceryMathLocked, value: d.cartGuessSubtotal != null ? d.cartGuessSubtotal : '', onChange: function (e) { upd('cartGuessSubtotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
                         ),
                         gc.includeTax && React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs text-slate-600 w-20" }, __alloT('stem.money.tax_8', "Tax (8%):")),
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': __alloT('stem.money.guess_tax_amount', 'Guess tax amount'), value: d.cartGuessTax != null ? d.cartGuessTax : '', onChange: function (e) { upd('cartGuessTax', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': __alloT('stem.money.guess_tax_amount', 'Guess tax amount'), disabled: groceryMathLocked, value: d.cartGuessTax != null ? d.cartGuessTax : '', onChange: function (e) { upd('cartGuessTax', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
                         ),
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-slate-700 w-20" }, __alloT('stem.money.grand_total', "Grand Total:")),
-                          React.createElement("input", { 'aria-label': __alloT('stem.money.grand_total', "Grand Total:"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                          React.createElement("input", { 'aria-label': __alloT('stem.money.grand_total', "Grand Total:"), disabled: groceryMathLocked, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
                         )
                       ),
                       React.createElement("button", { "aria-label": __alloT('stem.money.check_my_math', "Check My Math"), onClick: function () {
+                        if (groceryMathLocked) return;
                         var subGuess = d.cartGuessTotal;
                         if (subGuess == null) return;
                         var subOk = sameCurrencyAmount(d.cartGuessSubtotal, cartTotal, currency);
@@ -3652,11 +3827,13 @@ window.StemLab = window.StemLab || {
                           ? '\u2705 Perfect! Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Total: ' + fmt(cartGrand) + ' \u2014 +15 XP!'
                           : '\u274C Not quite. Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Grand Total: ' + fmt(cartGrand);
                         upd('cartCheckoutFb', { ok: allOk, msg: msg });
+                        if (!allOk) markMoneyAnswerShown(groceryMathItemId);
                         if (allOk) {
                           awardMoneyXPOnce('grocery-mental-math', [currency, cartReceiptSnapshot], 15, 'grocery mental math');
                         }
-                      }, disabled: d.cartGuessTotal == null || !!(d.cartCheckoutFb && d.cartCheckoutFb.ok), className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md disabled:opacity-40" }, d.cartCheckoutFb && d.cartCheckoutFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
+                      }, disabled: d.cartGuessTotal == null || !!(d.cartCheckoutFb && d.cartCheckoutFb.ok) || groceryMathLocked, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md disabled:opacity-40" }, d.cartCheckoutFb && d.cartCheckoutFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
                       d.cartCheckoutFb && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
+                      groceryMathLocked && moneyAnswerShownNotice('text-slate-700'),
                       d.cartCheckoutFb && d.cartCheckoutFb.ok && React.createElement("button", { type: 'button', onClick: function () {
                         upd('checkoutActive', true); upd('checkoutStep', 'payment'); upd('checkoutEstimate', d.cartGuessTotal); upd('weightItemIdx', null);
                         upd('checkoutEstimateFb', { ok: true, msg: __alloT('stem.money.mental_math_verified', 'Mental math verified. Choose how to pay.') });
@@ -3853,23 +4030,26 @@ window.StemLab = window.StemLab || {
                         d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-800 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: __alloT('stem.money.your_answer_2', "Your answer..."),
-                            'aria-label': __alloT('stem.money.word_problem_answer', 'Word problem answer'),
+                            'aria-label': __alloT('stem.money.word_problem_answer', 'Word problem answer'), disabled: wordProblemLocked,
                             value: d.wpAnswer !== null && d.wpAnswer !== undefined ? d.wpAnswer : '',
                             onChange: function (e) { upd('wpAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('wpFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-violet-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_5', "Check"), onClick: function () {
+                              if (wordProblemLocked) return;
                               var correct = typeof d.wpProblem.answer === 'number' ? roundCurrency(d.wpProblem.answer, currency) : d.wpProblem.answer;
                               var userAns = d.wpAnswer;
                               var isRight = typeof correct === 'number' && sameCurrencyAmount(userAns, correct, currency);
                               upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 ' + t('stem.dissection.correct') } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
+                              if (!isRight) markMoneyAnswerShown(wordProblemItemId);
                               if (isRight) awardMoneyXPOnce('ai-word-problem', [currency, d.wpProblem.problem, correct], 25, 'word problem solved');
                             },
-                            disabled: !!(d.wpFeedback && d.wpFeedback.ok),
+                            disabled: !!(d.wpFeedback && d.wpFeedback.ok) || wordProblemLocked,
                             className: "px-5 py-2 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm disabled:opacity-50"
                           }, d.wpFeedback && d.wpFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_6', "\u2714 Check"))
                         ),
                         d.wpFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.wpFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.wpFeedback.msg),
+                        wordProblemLocked && moneyAnswerShownNotice('text-slate-700'),
                         d.wpFeedback && !d.wpFeedback.ok && d.wpProblem.explanation && React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border border-slate-400" },
                           React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-1" }, __alloT('stem.money.solution', "Solution")),
                           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed whitespace-pre-line" }, d.wpProblem.explanation)
@@ -3909,11 +4089,12 @@ window.StemLab = window.StemLab || {
                         ),
                         React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
                           React.createElement("input", { type: "number", min: 0, style: { background: moneySurface, color: moneyInk, minHeight: 44, maxWidth: '100%' }, step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.per_person', 'Per person...'),
-                            'aria-label': __alloT('stem.money.tip_per_person_answer', 'Tip per person answer'),
+                            'aria-label': __alloT('stem.money.tip_per_person_answer', 'Tip per person answer'), disabled: tipLocked,
                             value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('tipFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_9', "Check"), onClick: function () {
+                              if (tipLocked) return;
                               var tipAmt = roundCurrency(d.tipBill * (d.tipPct / 100), currency);
                               var totalWithTip = roundCurrency(d.tipBill + tipAmt, currency);
                               var perPerson = roundCurrency(totalWithTip / d.tipDiners, currency);
@@ -3923,10 +4104,11 @@ window.StemLab = window.StemLab || {
                                 : { ok: false, msg: __alloT('stem.money.deep_tip_retry', 'Recheck the tip, add it to the bill, then divide by the number of diners. Use the percentage model if you want worked support.') }
                               );
                               if (isRight && d.percentLearningKey !== percentLearningKey('tip')) awardMoneyXPOnce('tip-calculation', [currency, d.tipBill, d.tipPct, d.tipDiners], 15, 'tip calculation');
-                            }, disabled: !!(d.tipFeedback && d.tipFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
+                            }, disabled: !!(d.tipFeedback && d.tipFeedback.ok) || tipLocked, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
                           }, d.tipFeedback && d.tipFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_10', "\u2714 Check"))
                         ),
                         d.tipFeedback && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-700' : 'text-red-700') }, d.tipFeedback.msg),
+                        tipLocked && moneyAnswerShownNotice('text-sm text-slate-700'),
                         renderPercentLearning('tip'),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_5', "Next Problem"), onClick: genTipProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_6', "\u21BB Next Problem"))
                       )
@@ -3951,11 +4133,12 @@ window.StemLab = window.StemLab || {
                         ),
                         React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
                           React.createElement("input", { type: "number", min: 0, style: { background: moneySurface, color: moneyInk, minHeight: 44, maxWidth: '100%' }, step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.sale_price_2', 'Sale price...'),
-                            'aria-label': __alloT('stem.money.sale_price_answer', 'Sale price answer'),
+                            'aria-label': __alloT('stem.money.sale_price_answer', 'Sale price answer'), disabled: discountLocked,
                             value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('discFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_11', "Check"), onClick: function () {
+                              if (discountLocked) return;
                               var discounted = roundCurrency(d.discOriginal * (1 - d.discPercent / 100), currency);
                               var final_ = roundCurrency(Math.max(0, discounted - (d.discCoupon || 0)), currency);
                               var isRight = sameCurrencyAmount(d.discAnswer, final_, currency);
@@ -3964,10 +4147,11 @@ window.StemLab = window.StemLab || {
                                 : { ok: false, msg: __alloT('stem.money.deep_discount_retry', 'Find the percentage of the original price that remains, then subtract the coupon. Use the percentage model if you want worked support.') }
                               );
                               if (isRight && d.percentLearningKey !== percentLearningKey('discount')) awardMoneyXPOnce('discount-calculation', [currency, d.discOriginal, d.discPercent, d.discCoupon || 0], 15, 'discount calculation');
-                            }, disabled: !!(d.discFeedback && d.discFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
+                            }, disabled: !!(d.discFeedback && d.discFeedback.ok) || discountLocked, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
                           }, d.discFeedback && d.discFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_12', "\u2714 Check"))
                         ),
                         d.discFeedback && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-700' : 'text-red-700') }, d.discFeedback.msg),
+                        discountLocked && moneyAnswerShownNotice('text-sm text-slate-700'),
                         renderPercentLearning('discount'),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_7', "Next Problem"), onClick: genDiscountProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_8', "\u21BB Next Problem"))
                       )
@@ -4196,7 +4380,7 @@ window.StemLab = window.StemLab || {
                   d.upItem && d.upA && d.upB && React.createElement("div", { className: "space-y-3" },
                     React.createElement("p", { className: "text-xs text-slate-600 text-center" }, "Which is the better deal for " + d.upItem.name + "?"),
                     React.createElement("div", { className: "grid grid-cols-2 gap-3" },
-                      React.createElement("button", { "aria-label": __alloT('stem.money.option_a', "Option A"), onClick: function () { upd('upAnswer', 'A'); upd('upFeedback', null); },
+                      React.createElement("button", { "aria-label": __alloT('stem.money.option_a', "Option A"), disabled: unitPriceLocked, onClick: function () { upd('upAnswer', 'A'); upd('upFeedback', null); },
                         className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'A' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-600')
                       },
                         React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
@@ -4204,7 +4388,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("p", { className: "text-xs text-slate-600" }, d.upA.qty + ' ' + d.upItem.unit + (d.upA.qty > 1 ? 's' : '')),
                         React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, __alloT('stem.money.option_a_2', 'Option A'))
                       ),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.option_b', "Option B"), onClick: function () { upd('upAnswer', 'B'); upd('upFeedback', null); },
+                      React.createElement("button", { "aria-label": __alloT('stem.money.option_b', "Option B"), disabled: unitPriceLocked, onClick: function () { upd('upAnswer', 'B'); upd('upFeedback', null); },
                         className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'B' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-600')
                       },
                         React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
@@ -4214,6 +4398,7 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     d.upAnswer && React.createElement("button", { "aria-label": __alloT('stem.money.check_my_answer', "Check My Answer"), onClick: function () {
+                      if (unitPriceLocked) return;
                       var unitA = d.upA.price / d.upA.qty;
                       var unitB = d.upB.price / d.upB.qty;
                       var correct = unitA <= unitB ? 'A' : 'B';
@@ -4222,9 +4407,11 @@ window.StemLab = window.StemLab || {
                         ? { ok: true, msg: '\u2705 Correct! Option A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs Option B: ' + fmt(unitB) + '/' + d.upItem.unit }
                         : { ok: false, msg: '\u274C Option ' + correct + ' is cheaper. A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs B: ' + fmt(unitB) + '/' + d.upItem.unit }
                       );
+                      if (!isRight) markMoneyAnswerShown(unitPriceItemId);
                       if (isRight) awardMoneyXPOnce('unit-pricing', [currency, d.upItem.name, d.upA, d.upB], 15, 'unit pricing');
-                    }, className: "w-full px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition-all text-sm" }, __alloT('stem.money.check_my_answer_2', "\u2714 Check My Answer")),
-                    d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg)
+                    }, disabled: unitPriceLocked, className: "w-full px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition-all text-sm disabled:opacity-50" }, __alloT('stem.money.check_my_answer_2', "\u2714 Check My Answer")),
+                    d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg),
+                    unitPriceLocked && moneyAnswerShownNotice('text-slate-700')
                   )
                 ),
 
@@ -4247,18 +4434,20 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { "aria-label": __alloT('stem.money.your_estimate', "Your estimate"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
+                      React.createElement("input", { "aria-label": __alloT('stem.money.your_estimate', "Your estimate"), disabled: estimateLocked, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.deep_check_estimate', 'Check estimated total'), onClick: function () {
-                        if (d.estAnswer == null) return;
+                        if (d.estAnswer == null || estimateLocked) return;
                         var tol = isJPY ? 0.5 : 0.015;
                         var ok = Math.abs(d.estAnswer - d.estTotal) < tol + d.estTotal * 0.005;
+                        if (!ok) markMoneyAnswerShown(estimateItemId);
                         upd('estFb', ok ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(d.estTotal) + ' \u2014 +10 XP!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(d.estTotal) });
                         if (ok) {
                           awardMoneyXPOnce('estimate-total', [currency, d.estItems, d.estTotal], 10, 'estimate total');
                         }
-                      }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm" }, "\u2714")
+                      }, disabled: estimateLocked, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm disabled:opacity-50" }, "\u2714")
                     ),
-                    d.estFb && React.createElement("p", { className: "text-xs font-bold " + (d.estFb.ok ? 'text-green-600' : 'text-red-500') }, d.estFb.msg)
+                    d.estFb && React.createElement("p", { className: "text-xs font-bold " + (d.estFb.ok ? 'text-green-600' : 'text-red-500') }, d.estFb.msg),
+                    estimateLocked && moneyAnswerShownNotice('text-slate-700')
                   )
                 ),
 
@@ -4280,13 +4469,15 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-xs font-bold text-rose-600 mt-2" }, __alloT('stem.money.is_this_the_right_change', "Is this the right change? \uD83E\uDD14"))
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                      React.createElement("button", { onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-700 text-white shadow-md' : 'bg-white border border-green-700 text-green-700 hover:bg-green-50') }, __alloT('stem.money.correct', "\u2705 Correct!")),
-                      React.createElement("button", { onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-700 text-white shadow-md' : 'bg-white border border-red-700 text-red-700 hover:bg-red-50') }, __alloT('stem.money.wrong', "\u274C Wrong!"))
+                      React.createElement("button", { disabled: changeCheckLocked, onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-700 text-white shadow-md' : 'bg-white border border-green-700 text-green-700 hover:bg-green-50') }, __alloT('stem.money.correct', "\u2705 Correct!")),
+                      React.createElement("button", { disabled: changeCheckLocked, onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-700 text-white shadow-md' : 'bg-white border border-red-700 text-red-700 hover:bg-red-50') }, __alloT('stem.money.wrong', "\u274C Wrong!"))
                     ),
                     d.ccAnswer != null && React.createElement("button", { "aria-label": __alloT('stem.money.submit', "Submit"), onClick: function () {
+                      if (changeCheckLocked) return;
                       var userSaysCorrect = d.ccAnswer;
                       var actuallyCorrect = !d.ccIsWrong;
                       var correct = userSaysCorrect === actuallyCorrect;
+                      if (!correct) markMoneyAnswerShown(changeCheckItemId);
                       upd('ccFb', correct
                         ? { ok: true, msg: '\u2705 Right! Change should be ' + fmt(d.ccCorrectAmt) + '. ' + (d.ccIsWrong ? 'The cashier was off!' : 'The cashier was correct.') + ' +12 XP!' }
                         : { ok: false, msg: '\u274C Nope. Correct change is ' + fmt(d.ccCorrectAmt) + '. The cashier gave ' + fmt(d.ccProposed) + '.' }
@@ -4294,8 +4485,9 @@ window.StemLab = window.StemLab || {
                       if (correct) {
                         awardMoneyXPOnce('change-check', [currency, d.ccPrice, d.ccPaid, d.ccProposed], 12, 'change check');
                       }
-                    }, className: "w-full px-4 py-2 bg-rose-700 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, __alloT('stem.money.submit_2', "\u2714 Submit")),
-                    d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg)
+                    }, disabled: changeCheckLocked, className: "w-full px-4 py-2 bg-rose-700 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm disabled:opacity-50" }, __alloT('stem.money.submit_2', "\u2714 Submit")),
+                    d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg),
+                    changeCheckLocked && moneyAnswerShownNotice('text-slate-700')
                   )
                 ),
 
@@ -4319,17 +4511,19 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("label", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.money.final_price', "Final price:")),
-                      React.createElement("input", { 'aria-label': __alloT('stem.money.final_price', "Final price:"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
+                      React.createElement("input", { 'aria-label': __alloT('stem.money.final_price', "Final price:"), disabled: couponStackLocked, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.gen_structured_problem', "Gen Structured Problem"), onClick: function () {
-                        if (d.csAnswer == null) return;
+                        if (d.csAnswer == null || couponStackLocked) return;
                         var ok = sameCurrencyAmount(d.csAnswer, d.csFinal, currency);
+                        if (!ok) markMoneyAnswerShown(couponStackItemId);
                         upd('csFb', ok ? { ok: true, msg: '\u2705 Perfect! Final price: ' + fmt(d.csFinal) + ' \u2014 +15 XP!' } : { ok: false, msg: '\u274C Not quite. Final price is ' + fmt(d.csFinal) + '. Discounts apply sequentially!' });
                         if (ok) {
                           awardMoneyXPOnce('coupon-stack', [currency, d.csOriginal, d.csDiscounts, d.csFinal], 15, 'coupon stack');
                         }
-                      }, className: "px-4 py-2 bg-fuchsia-700 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm" }, "\u2714")
+                      }, disabled: couponStackLocked, className: "px-4 py-2 bg-fuchsia-700 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm disabled:opacity-50" }, "\u2714")
                     ),
-                    d.csFb && React.createElement("p", { className: "text-xs font-bold " + (d.csFb.ok ? 'text-green-600' : 'text-red-500') }, d.csFb.msg)
+                    d.csFb && React.createElement("p", { className: "text-xs font-bold " + (d.csFb.ok ? 'text-green-600' : 'text-red-500') }, d.csFb.msg),
+                    couponStackLocked && moneyAnswerShownNotice('text-slate-700')
                   )
                 ),
 
@@ -4347,7 +4541,7 @@ window.StemLab = window.StemLab || {
                       d.spAnswers.map(function (ans, i) {
                         return React.createElement("div", { key: i, className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-cyan-700 w-24" }, ans.label + ':'),
-                          React.createElement("input", { 'aria-label': ans.label, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
+                          React.createElement("input", { 'aria-label': ans.label, disabled: structuredLocked, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
                             var arr = (d.spUserAnswers || []).slice();
                             arr[i] = e.target.value === '' ? null : parseFloat(e.target.value);
                             upd('spUserAnswers', arr); upd('spFb', null);
@@ -4356,12 +4550,14 @@ window.StemLab = window.StemLab || {
                       })
                     ),
                     React.createElement("button", { "aria-label": __alloT('stem.money.check_my_answers', "Check My Answers"), onClick: function () {
+                      if (structuredLocked) return;
                       var ua = d.spUserAnswers || [];
                       var allOk = true;
                       d.spAnswers.forEach(function (ans, i) {
                         if (!sameCurrencyAmount(ua[i], ans.val, currency)) allOk = false;
                       });
                       var detail = d.spAnswers.map(function (a) { return a.label + ': ' + fmt(a.val); }).join(', ');
+                      if (!allOk) markMoneyAnswerShown(structuredItemId);
                       upd('spFb', allOk
                         ? { ok: true, msg: '\u2705 Correct! ' + detail + ' \u2014 +15 XP!' }
                         : { ok: false, msg: '\u274C Not quite. ' + detail }
@@ -4369,8 +4565,9 @@ window.StemLab = window.StemLab || {
                       if (allOk) {
                         awardMoneyXPOnce('structured-word-problem', [currency, d.spText, d.spAnswers], 15, 'word problem');
                       }
-                    }, className: "w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800 transition-all text-sm" }, __alloT('stem.money.check_my_answers_2', "\u2714 Check My Answers")),
-                    d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
+                    }, disabled: structuredLocked, className: "w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800 transition-all text-sm disabled:opacity-50" }, __alloT('stem.money.check_my_answers_2', "\u2714 Check My Answers")),
+                    d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg),
+                    structuredLocked && moneyAnswerShownNotice('text-slate-700')
                   )
                 ),
 
@@ -4596,7 +4793,10 @@ window.StemLab = window.StemLab || {
                   retResult.total > retLateResult.total && React.createElement("div", { className: "bg-violet-100 rounded-xl p-3 text-center border border-violet-200" },
                     React.createElement("p", { className: "text-xs font-bold text-violet-700" },
                       "\uD83D\uDCA1 Starting 10 years earlier = " + cur.symbol + Math.round(retResult.total - retLateResult.total).toLocaleString() + " MORE at retirement!"),
-                    React.createElement("p", { className: "text-[0.6875rem] text-violet-700 mt-1" }, "That's " + Math.round((retResult.total / Math.max(1, retLateResult.total) - 1) * 100) + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra.")
+                    // A late start AT retirement age saves nothing: dividing by Math.max(1, 0) printed "5222734% more".
+                    React.createElement("p", { className: "text-[0.6875rem] text-violet-700 mt-1" }, retLateResult.total > 0
+                      ? "That's " + Math.round((retResult.total / retLateResult.total - 1) * 100).toLocaleString() + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra."
+                      : __alloT('stem.money.retire_late_start_no_years', 'A start 10 years later leaves no years to save before retirement, so all of this money comes from starting earlier.'))
                   ),
                   // Milestone table
                   React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden mt-4" },
@@ -4797,6 +4997,9 @@ window.StemLab = window.StemLab || {
                   ),
                   d.fqIdx != null && (function () {
                     var fq = FIN_QUIZZES[d.fqIdx];
+                    // A fixed question can come back in a later round; its shown answer stays shown.
+                    var fqItemId = moneyItemId('finance-quiz', [fq && fq.q]);
+                    var fqLocked = isMoneyAnswerShown(fqItemId) && !(d.fqFb && d.fqFb.ok);
                     return React.createElement("div", { className: "space-y-3" },
                       React.createElement("div", { className: "bg-white rounded-lg border border-amber-100 p-4" },
                         React.createElement("p", { className: "text-sm text-slate-700 font-medium leading-relaxed" }, fq.q)
@@ -4804,7 +5007,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
                         fq.choices.map(function (ch, ci) {
                           var selected = d.fqAnswer === ci;
-                          var revealed = d.fqFb != null;
+                          var revealed = d.fqFb != null || fqLocked;
                           var isCorrect = ci === fq.correct;
                           var btnClass = revealed
                             ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-600'))
@@ -4814,14 +5017,17 @@ window.StemLab = window.StemLab || {
                           }, String.fromCharCode(65 + ci) + '. ' + ch);
                         })
                       ),
-                      d.fqAnswer != null && !d.fqFb && React.createElement("button", { "aria-label": __alloT('stem.money.submit_answer', "Submit Answer"), onClick: function () {
+                      d.fqAnswer != null && !d.fqFb && !fqLocked && React.createElement("button", { "aria-label": __alloT('stem.money.submit_answer', "Submit Answer"), onClick: function () {
+                        if (fqLocked) return;
                         var ok = d.fqAnswer === fq.correct;
+                        if (!ok) markMoneyAnswerShown(fqItemId);
                         upd('fqFb', ok ? { ok: true, msg: '\u2705 Correct! ' + fq.explanation } : { ok: false, msg: '\u274C Not quite. ' + fq.explanation });
                         if (ok) {
                           awardMoneyXPOnce('finance-quiz', [d.fqIdx, fq.q], 20, 'finance quiz');
                         }
                       }, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm" }, __alloT('stem.money.submit_answer_2', "\u2714 Submit Answer")),
                       d.fqFb && React.createElement("div", { className: "rounded-lg p-3 text-xs font-medium leading-relaxed " + (d.fqFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, d.fqFb.msg),
+                      fqLocked && moneyAnswerShownNotice('text-slate-700'),
                       d.fqFb && React.createElement("button", { "aria-label": __alloT('stem.money.next_question', "Next Question"), onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm" }, __alloT('stem.money.next_question_2', "\u27A1\uFE0F Next Question"))
                     );
                   })()

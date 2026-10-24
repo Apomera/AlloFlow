@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {TacticalMoveDetails,TacticsReward} from './lesson_board_tactical_preview.jsx';
 import {travelRouteOptions} from './lesson_board_spatial.js';
 import {ResourceCounters} from './lesson_board_tokens.jsx';
@@ -6,7 +7,7 @@ import { tr } from './lesson_board_strings.js';
 const React = window.React;
 
 export function TabletopPlayStyles() {
-  return <style>{`
+  return addBoardStyle(`
     .lb-dialog[data-play-style=tabletop]{width:min(1360px,100%);position:relative}
     .lb-dialog[data-play-style=tabletop]>.lb-row:first-of-type{position:absolute;right:16px;top:12px}
     .lb-dialog[data-play-style=tabletop]>.lb-row:first-of-type h2{display:none}
@@ -42,7 +43,7 @@ export function TabletopPlayStyles() {
     @media(min-width:1100px){.lb [data-spatial-play=true][data-play-phase=answer] .lb-columns,.lb [data-spatial-play=true][data-play-phase=review] .lb-columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
     @media(max-width:960px){.lb [data-spatial-play=true] .lb-columns{grid-template-columns:minmax(0,1fr)}.lb [data-spatial-play=true] .lb-current{position:static;grid-row:auto}.lb [data-spatial-play=true] .lb-workshop .lb-projects{grid-template-columns:1fr}}
     @media(max-width:500px){.lb-dialog[data-play-style=tabletop]{padding:12px}.lb [data-spatial-play=true] .lb-eyebrow{display:none}.lb [data-spatial-play=true] .lb-expedition-header h2{font-size:1.2em}.lb [data-spatial-play=true] .lb-phase-strip li>span{display:none}.lb [data-spatial-play=true] .lb-phase-strip li{font-size:.8em;padding:6px}.lb [data-spatial-play=true] .lb-presentation{gap:6px}.lb [data-spatial-play=true] .lb-presentation button{padding:7px 9px;font-size:.85em}.lb .lb-tabletop-hud{gap:6px}.lb .lb-tabletop-objective{font-size:.82em}}
-  `}</style>;
+  `);
 }
 
 export function TabletopHud({board,run,t}) {

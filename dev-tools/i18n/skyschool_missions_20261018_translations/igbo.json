@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Ihe ndị a hụrụ n’ọrụ ahụ",
+  "stem.flightsim.mission_journal_targets": "Ebumnuche ndị e dekọrọ: {captured} n’ime {total}.",
+  "stem.flightsim.mission_journal_complete": "E dekọrọ ebumnuche ọrụ niile na ịlaghachi rute n’ala.",
+  "stem.flightsim.mission_journal_ended": "Ọrụ ahụ kwụsịrị tupu e dekọọ ihe akaebe niile nke mmecha.",
+  "stem.flightsim.mission_journal_recovery": "E dekọrọ nnapụta onye lanarịrị: {value}.",
+  "stem.flightsim.mission_journal_return": "E dekọrọ ịlaghachi rute n’ala n’ogige: {value}.",
+  "stem.flightsim.mission_guidance_title": "Nduzi ọrụ",
+  "stem.flightsim.mission_route": "{target} · ntụziaka {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Ebe e si efe elu",
+  "stem.flightsim.mission_read_status": "Gụọ ọnọdụ ọrụ n’olu",
+  "stem.flightsim.mission_return_criterion": "Rute n’ala n’ime {distance} nm site na {target}, na ọsọ e jiri ala tụnyere dị n’okpuru {speed} kt na ọsọ ịrịda dị n’okpuru {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "A naghị enweta data ebumnuche ọrụ ahụ. Kwụsị ụgbọ elu a ma malite ọrụ ọhụrụ.",
+  "stem.flightsim.mission_capture_criterion": "Nọ n’ime {distance} ft, n’elu {min} ma n’okpuru {max} ft site n’ala, jiri ọsọ n’ihe metụtara ala na-erughị {speed} kt ruo {hold} s."
+}

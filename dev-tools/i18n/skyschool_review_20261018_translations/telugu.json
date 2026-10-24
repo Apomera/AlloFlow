@@ -1,0 +1,10 @@
+{
+  "stem.flightsim.quiz_history_title": "మునుపటి క్విజ్ ప్రయత్నాలు",
+  "stem.flightsim.quiz_history_scope": "కొత్త ప్రయత్నాన్ని ప్రారంభిస్తే, మొదటి సమాధానాలు నమోదైన మునుపటి నాలుగు ప్రయత్నాల వరకు భద్రపరుస్తుంది. వాటిని సమీక్షించడం వల్ల మీ ప్రస్తుత క్విజ్ మారదు.",
+  "stem.flightsim.quiz_history_empty": "మునుపటి క్విజ్ ప్రయత్నాలు ఇంకా భద్రపరచబడలేదు.",
+  "stem.flightsim.quiz_history_attempt": "{date}న భద్రపరచబడింది · మొదటి సమాధానాల్లో {score}/{answered} సరైనవి",
+  "stem.flightsim.quiz_history_progress": "{total} ప్రశ్నల్లో {answered} నమోదయ్యాయి · {unanswered} సమాధానం ఇవ్వనివి",
+  "stem.flightsim.quiz_history_question": "ప్రశ్న {number}: {question}",
+  "stem.flightsim.quiz_history_correct_answer": "సరైన సమాధానం: {answer}",
+  "stem.flightsim.quiz_history_changed": "భద్రపరచిన {count} ప్రశ్నలు ఇప్పుడు ఈ క్విజ్‌తో సరిపోలడం లేదు. సరిపోలే ప్రశ్నల రికార్డులను మాత్రమే స్కోర్‌ల కోసం ఉపయోగిస్తారు."
+}

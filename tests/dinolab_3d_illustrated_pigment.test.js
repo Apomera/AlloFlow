@@ -63,7 +63,7 @@ describe('Dino Lab illustrated scale pigment',()=>{
     for(const configuration of [mosaic,feather]){
       const body=mappedMaterial(configuration.style),coat=body.clone();coat.vertexColors=true;coat.userData.dinoContourCoat=true;
       dinoSkinMapping(THREE,coat,1,.07,configuration.profile);dinoCoatShading(coat);
-      expect(coat.userData.dinoIllustratedPigment).toBe(false);expect(coat.customProgramCacheKey()).toBe('dinolab-contour-feathers-v1');
+      expect(coat.userData.dinoIllustratedPigment).toBe(false);expect(coat.customProgramCacheKey()).toBe('dinolab-contour-feathers-v2');
       const shader=compile(coat);expect(shader.fragmentShader.includes('dinoPigmentCloud')).toBe(false);expect(shader.fragmentShader).toContain('float coatBarbs');
       shaders.push(shader);materials.push(body,coat);
     }

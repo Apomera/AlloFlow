@@ -3795,7 +3795,7 @@
       var _creationCameraView=React.useState(selectedCreationCameraView(window[ENGINE_KEY])), setCreationCameraView=_creationCameraView[1];
       React.useEffect(function () {
         var previousEngine=null, signature='', selectedBlockKeys='', outline=null, outlineOwner=null, selectionPollCache={current:null}, selectionPollResult=null;
-        var previousStudentPresence = null;
+        var previousStudentPresence = null, previousCameraView = _creationCameraView[0];
         function measurementKeys(measurement){return measurement && Array.isArray(measurement.blocks)?measurement.blocks.map(keyFor).sort().join('|'):'';}
         function clearOutline(){
           if(!outline)return;
@@ -3824,7 +3824,7 @@
           }
           if(eng && !eng._showcase && (liveBuilderCtx.current.toolData.geometryWorld || {}).showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
           if(!!(eng && eng._creationFocus)!==!!((liveBuilderCtx.current.toolData.geometryWorld || {}).creationFocusAvailable))patchGeometryState(liveBuilderCtx.current,{creationFocusAvailable:!!(eng && eng._creationFocus)});
-          setCreationCameraView(selectedCreationCameraView(eng));
+          var cameraView=selectedCreationCameraView(eng);if(cameraView!==previousCameraView){previousCameraView=cameraView;setCreationCameraView(cameraView);}
           if(outline)outline.visible=!(eng && eng._showcase);
           syncGeometryPrintGuide(eng,liveBuilderCtx.current);
           if(eng!==previousEngine){disposeGeometryPrintGuide(previousEngine);if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();if(previousEngine && previousEngine.disposeCreationFocus)previousEngine.disposeCreationFocus();clearOutline();signature='';selectedBlockKeys='';previousEngine=eng;}

@@ -20,6 +20,56 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
+// STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
+(function () {
+  var MINUS = String.fromCharCode(0x2212);
+  // A typed answer as a number: "-3", "2.5", "1,000", "3/4", "1 1/2" and the typographic minus.
+  // Anything else (units, words, "1/0") is NaN, so a caller can tell "not a number" from "wrong".
+  function toNumber(value) {
+    if (typeof value === 'number') return isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
+    var s = value.split(MINUS).join('-').replace(/\s+/g, ' ').trim();
+    if (!s) return NaN;
+    if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    var m = s.match(/^([+-]?)(\d+) (\d+)\/(\d+)$/);
+    if (m) {
+      var den = +m[4];
+      if (!den) return NaN;
+      var mixed = +m[2] + (+m[3]) / den;
+      return m[1] === '-' ? -mixed : mixed;
+    }
+    m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)) ?\/ ?([+-]?(?:\d+\.?\d*|\.\d+))$/);
+    if (m) {
+      var d = parseFloat(m[2]);
+      return d ? parseFloat(m[1]) / d : NaN;
+    }
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+  }
+  // Equal within an absolute tolerance, a relative one, or float noise, whichever is largest.
+  function sameNumber(a, b, opts) {
+    var x = toNumber(a), y = toNumber(b);
+    if (!isFinite(x) || !isFinite(y)) return false;
+    var o = opts || {};
+    var tol = Math.max(+o.tolerance || 0, (+o.relative || 0) * Math.abs(y), 1e-9 * Math.max(1, Math.abs(y)));
+    return Math.abs(x - y) <= tol;
+  }
+  // Credit an item once: returns whether `key` is new and the next seen-map to store.
+  // The map is never mutated, so it can live in tool state.
+  function creditOnce(seen, key) {
+    var map = seen && typeof seen === 'object' && !Array.isArray(seen) ? seen : {};
+    var k = String(key);
+    if (Object.prototype.hasOwnProperty.call(map, k)) return { isNew: false, seen: map };
+    var next = {};
+    for (var p in map) if (Object.prototype.hasOwnProperty.call(map, p)) next[p] = map[p];
+    next[k] = true;
+    return { isNew: true, seen: next };
+  }
+  var api = { version: 1, toNumber: toNumber, sameNumber: sameNumber, creditOnce: creditOnce };
+  var current = window.StemLab.grading;
+  if (!current || !(current.version >= api.version)) window.StemLab.grading = api;
+})();
+// STEM_GRADING_CORE_END
+
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -132,7 +182,7 @@ window.StemLab = window.StemLab || {
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
     color: 'fuchsia', category: 'math',
     questHooks: [
-      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!d.expr; }, progress: function(d) { return d.expr ? 'Done' : 'Pick a preset or type one'; } },
+      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!(d.expr && d.studentGraphed); }, progress: function(d) { return d.expr && d.studentGraphed ? 'Done' : 'Pick a preset or type one'; } },
       { id: 'quiz_5_correct', label: 'Answer 5 challenges correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizCorrectTotal || 0) >= 5; }, progress: function(d) { return (d.quizCorrectTotal || 0) + '/5 correct'; } },
       { id: 'both_modes', label: 'Graph in both 1D and 2D modes', icon: '\uD83D\uDCCA', check: function(d) { var m = d.modesUsed || {}; return !!(m['1d'] && m['2d']); }, progress: function(d) { var m = d.modesUsed || {}; return ((m['1d'] ? 1 : 0) + (m['2d'] ? 1 : 0)) + '/2 modes'; } },
       { id: 'solver_3', label: 'Solve 3 inequalities step-by-step', icon: '\uD83E\uDDEA', check: function(d) { return (d.solverCount || 0) >= 3; }, progress: function(d) { return (d.solverCount || 0) + '/3 solved'; } }
@@ -319,10 +369,13 @@ window.StemLab = window.StemLab || {
             return { compound: false, v: av, op: leftOp, val: center - bound, absSource: expr, absRight: { v: av, op: rightOp, val: center + bound } };
           }
         }
-        var sm = expr.match(/^([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)$/);
+        // A fraction boundary ("x < 1/3", what the solver's Graph It sends) stays exact.
+        var sm = expr.match(/^([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)(?:\s*\/\s*(\d+))?$/);
         if (sm) {
           var opS = sm[2].replace('\u2264', '<=').replace('\u2265', '>=');
-          return { compound: false, v: sm[1], op: opS, val: parseFloat(sm[3]) };
+          if (sm[4] === undefined) return { compound: false, v: sm[1], op: opS, val: parseFloat(sm[3]) };
+          if (!+sm[4]) return null;
+          return { compound: false, v: sm[1], op: opS, val: parseFloat(sm[3]) / +sm[4], valText: sm[3] + '/' + sm[4] };
         }
         return null;
       };
@@ -332,8 +385,7 @@ window.StemLab = window.StemLab || {
 
       // Check expression-based badges
       if (ineq) {
-        if (ineq.absSource && !badges.absValue) checkBadges({ absValue: true });
-        if (ineq.compound && !badges.compound) checkBadges({ compound: true });
+        if ((ineq.absSource && !badges.absValue) || (ineq.compound && !badges.compound)) checkBadges({ absValue: !!ineq.absSource, compound: !!ineq.compound });
       }
 
       // ── NOTATION ──
@@ -348,13 +400,14 @@ window.StemLab = window.StemLab || {
           var rightCmp = ineq.op2.includes('=') ? '\u2264' : '<';
           setBuilderStr = '{ ' + ineq.v + ' | ' + ineq.lo + ' ' + leftCmp + ' ' + ineq.v + ' ' + rightCmp + ' ' + ineq.hi + ' }';
         } else {
+          var bText = ineq.valText || ineq.val;
           if (ineq.op.includes('>')) {
-            intervalStr = (ineq.op.includes('=') ? '[' : '(') + ineq.val + ', \u221E)';
+            intervalStr = (ineq.op.includes('=') ? '[' : '(') + bText + ', \u221E)';
           } else {
-            intervalStr = '(-\u221E, ' + ineq.val + (ineq.op.includes('=') ? ']' : ')');
+            intervalStr = '(-\u221E, ' + bText + (ineq.op.includes('=') ? ']' : ')');
           }
           var dispOp = ineq.op.replace('<=', '\u2264').replace('>=', '\u2265');
-          setBuilderStr = '{ ' + ineq.v + ' | ' + ineq.v + ' ' + dispOp + ' ' + ineq.val + ' }';
+          setBuilderStr = '{ ' + ineq.v + ' | ' + ineq.v + ' ' + dispOp + ' ' + bText + ' }';
           // |x - c| > b solutions are a UNION of two rays; without this the
           // notation showed only the left piece and silently dropped half the
           // solution set.
@@ -372,6 +425,15 @@ window.StemLab = window.StemLab || {
       // ── TEST-A-VALUE ──
       var testVal = d.testVal != null ? d.testVal : '';
       var testResult = null;
+      // Counted when entered (Enter or leaving the box), once per inequality and value:
+      // counting keystrokes made typing "12" two tests.
+      var commitTest = function() {
+        if (testResult === null) return;
+        var r = window.StemLab.grading.creditOnce(d.testsRun, String(d.expr).replace(/\s+/g, '') + '|' + parseFloat(testVal));
+        if (!r.isNew) return;
+        upd({ testsRun: r.seen, testCount: testCount + 1 });
+        if (testCount + 1 >= 10) checkBadges({ testMaster: true });
+      };
       if (ineq && testVal !== '' && !isNaN(parseFloat(testVal))) {
         var tv = parseFloat(testVal);
         if (ineq.compound) {
@@ -497,8 +559,10 @@ window.StemLab = window.StemLab || {
           var fj = Math.floor(Math.random() * (fy + 1));
           var ft = shuffled[fy]; shuffled[fy] = shuffled[fj]; shuffled[fj] = ft;
         }
+        // The question's own level, for All Levels (a question drawn in "All" still has one).
+        var qTier = QUIZ_EASY.indexOf(q) !== -1 ? 'easy' : QUIZ_MEDIUM.indexOf(q) !== -1 ? 'medium' : 'hard';
         upd({
-          quiz: { q: q.q, a: q.a, opts: shuffled, answered: false, score: (d.quiz && d.quiz.score) || 0, streak: (d.quiz && d.quiz.streak) || 0 },
+          quiz: { q: q.q, a: q.a, opts: shuffled, answered: false, score: (d.quiz && d.quiz.score) || 0, streak: (d.quiz && d.quiz.streak) || 0, tier: qTier },
           range: q.range || { min: -10, max: 10 }
         });
         // Track tier
@@ -531,18 +595,38 @@ window.StemLab = window.StemLab || {
       var solveInequality = function(raw) {
         if (!raw) return null;
         var steps = [];
-        var s = raw.replace(/\s+/g, '');
-        var m = s.match(/(-?\d*)([a-z])([+-]\d+\.?\d*)([<>]=?|[\u2264\u2265])(-?\d+\.?\d*)/);
+        var s = raw.replace(/\s+/g, '').replace(/\u2212/g, '-');
+        // Anchored. Without anchors "-0.5x+1<3" matched only "5x+1<3" and "x+1<2x+3" only
+        // "x+1<2", so the solver printed confident wrong answers (and wrong directions).
+        var m = s.match(/^([+-]?\d*\.?\d*)([a-z])([+-]\d+\.?\d*)([<>]=?|[\u2264\u2265])(-?\d+\.?\d*)$/);
         if (!m) return null;
         var aStr = m[1], v = m[2], bStr = m[3], opRaw = m[4], cStr = m[5];
         var a = aStr === '' || aStr === '+' ? 1 : aStr === '-' ? -1 : parseFloat(aStr);
+        if (!isFinite(a) || a === 0) return null;
+        var fmtStep = function(n) { return String(Number(n.toPrecision(12))); };
         var b = parseFloat(bStr);
         var c = parseFloat(cStr);
         var op = opRaw.replace('\u2264', '<=').replace('\u2265', '>=');
+        // Keep the boundary exact: rounding 1/3 to "0.33" made Graph It test 0.332 as
+        // outside x < 1/3. A boundary that does not terminate stays a fraction.
+        var exact = (function() {
+          var places = function(str) { var dm = /\.(\d+)/.exec(str); return dm ? dm[1].length : 0; };
+          var scale = Math.pow(10, Math.max(places(aStr), places(bStr), places(cStr)));
+          var num = Math.round((c - b) * scale), den = Math.round(a * scale);
+          if (!Number.isSafeInteger(num) || !Number.isSafeInteger(den) || !den) return { text: fmtStep((c - b) / a), fraction: false };
+          var p = Math.abs(num), q = Math.abs(den);
+          while (q) { var rem = p % q; p = q; q = rem; }
+          num /= p || 1; den /= p || 1;
+          if (den < 0) { num = -num; den = -den; }
+          var rest = den;
+          while (rest % 2 === 0) rest /= 2;
+          while (rest % 5 === 0) rest /= 5;
+          return rest === 1 ? { text: fmtStep(num / den), fraction: false } : { text: num + '/' + den, fraction: true, approx: (num / den).toFixed(2) };
+        })();
         steps.push({ text: 'Start: ' + raw, highlight: false });
         var rhs1 = c - b;
         steps.push({ text: (b < 0 ? 'Add ' + (-b) + ' to both sides:' : 'Subtract ' + b + ' from both sides:'), highlight: false });
-        steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + rhs1, highlight: true });
+        steps.push({ text: (a === 1 ? '' : a === -1 ? '-' : a) + v + ' ' + op + ' ' + fmtStep(rhs1), highlight: true });
         if (a !== 1) {
           var flipOp = op;
           if (a < 0) {
@@ -551,15 +635,11 @@ window.StemLab = window.StemLab || {
           } else {
             steps.push({ text: 'Divide both sides by ' + a + ':', highlight: false });
           }
-          var result = rhs1 / a;
-          var resultStr = Number.isInteger(result) ? String(result) : result.toFixed(2);
-          steps.push({ text: v + ' ' + flipOp + ' ' + resultStr, highlight: true });
+          steps.push({ text: v + ' ' + flipOp + ' ' + exact.text + (exact.fraction ? ' (\u2248 ' + exact.approx + ')' : ''), highlight: true });
         }
         steps.push({ text: '\u2705 Solution found!', highlight: false, final: true });
         var finalOp2 = a < 0 ? op.replace('<', 'TEMP').replace('>', '<').replace('TEMP', '>') : op;
-        var finalResult = rhs1 / a;
-        var finalResultStr = Number.isInteger(finalResult) ? String(finalResult) : finalResult.toFixed(2);
-        steps.solution = v + ' ' + finalOp2 + ' ' + finalResultStr;
+        steps.solution = v + ' ' + finalOp2 + ' ' + exact.text;
         return steps;
       };
 
@@ -786,7 +866,9 @@ window.StemLab = window.StemLab || {
           h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
             type: 'text', value: d.expr || '',
             placeholder: graphMode === '2d' ? 'y > 2x + 1' : 'x > 3 or -2 < x \u2264 5',
-            onChange: function(e) { upd('expr', e.target.value); },
+            // studentGraphed feeds graph_first: the host's starter state already holds
+            // expr 'x > 3', so a bare expr check completed the quest on first open.
+            onChange: function(e) { upd({ expr: e.target.value, studentGraphed: true }); },
             onKeyDown: function(e) { if (e.key === 'Enter') addToHistory(d.expr); },
             className: 'px-4 py-2 border-2 border-fuchsia-600 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none',
             'aria-label': __alloT('stem.inequality.aria_expression_input', 'Inequality expression input')
@@ -796,7 +878,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
           PRESETS.map(function(ex) {
             return h('button', { key: ex.label,
-              onClick: function() { upd('expr', ex.expr); },
+              onClick: function() { upd({ expr: ex.expr, studentGraphed: true }); },
               className: 'px-2 py-1 text-[0.6875rem] font-bold bg-fuchsia-50 text-fuchsia-700 rounded border border-fuchsia-700 hover:bg-fuchsia-100 transition-all'
             }, ex.label);
           })
@@ -838,11 +920,11 @@ window.StemLab = window.StemLab || {
             var sxVal = toSX(ineq.val);
             var endX = ineq.op.includes('>') ? W - pad : pad;
             var isClosed = ineq.op.includes('=');
-            var endpointLbl = (isClosed ? '● included' : '○ excluded') + ' (x = ' + ineq.val + ')';
+            var endpointLbl = (isClosed ? '● included' : '○ excluded') + ' (x = ' + (ineq.valText || ineq.val) + ')';
             return h('g', null,
               h('line', { x1: sxVal + (ineq.op.includes('>') ? 8 : -8), y1: 50, x2: endX, y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),
               h('circle', { cx: sxVal, cy: 50, r: 6, fill: isClosed ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
-              h('text', { x: sxVal, y: 18, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '10px', fontWeight: 'bold' } }, ineq.v + ' = ' + ineq.val),
+              h('text', { x: sxVal, y: 18, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '10px', fontWeight: 'bold' } }, ineq.v + ' = ' + (ineq.valText || ineq.val)),
               h('text', { x: sxVal, y: 26, textAnchor: 'middle', fill: '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } }, endpointLbl),
               ineq.op.includes('>') && h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }),
               ineq.op.includes('<') && h('polygon', { points: pad + ',50 ' + (pad + 10) + ',43 ' + (pad + 10) + ',57', fill: '#d946ef' }),
@@ -1018,14 +1100,9 @@ window.StemLab = window.StemLab || {
             h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
               type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
               'aria-label': __alloT('stem.inequality.aria_test_a_value', 'Test a value against the inequality'),
-              onChange: function(e) {
-                upd('testVal', e.target.value);
-                if (e.target.value !== '') {
-                  var newTC = testCount + 1;
-                  upd('testCount', newTC);
-                  if (newTC >= 10) checkBadges({ testMaster: true });
-                }
-              },
+              onChange: function(e) { upd('testVal', e.target.value); },
+              onKeyDown: function(e) { if (e.key === 'Enter') commitTest(); },
+              onBlur: commitTest,
               className: 'px-3 py-1.5 border-2 border-sky-600 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
             }),
             testResult !== null && h('span', { className: 'text-sm font-bold ' + (testResult ? 'text-emerald-600' : 'text-red-600') },
@@ -1065,7 +1142,6 @@ window.StemLab = window.StemLab || {
                   var nt = Object.assign({}, tiersUsed);
                   nt[tier] = true;
                   upd('tiersUsed', nt);
-                  if (nt.easy && nt.medium && nt.hard) checkBadges({ allTiers: true });
                 },
                 className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold transition-all ' +
                   (isActive ? 'bg-fuchsia-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
@@ -1099,10 +1175,13 @@ window.StemLab = window.StemLab || {
 
                     var fb = correct ? '' : diagnoseQuizError(opt, d.quiz.a);
 
+                    var solvedTiers = Object.assign({}, d.tiersSolved && typeof d.tiersSolved === 'object' ? d.tiersSolved : {});
+                    if (correct && d.quiz.tier) solvedTiers[d.quiz.tier] = true;
                     upd({
                       quiz: Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak, fb: fb }),
                       expr: d.quiz.a,
-                      quizCorrectTotal: newQTotal
+                      quizCorrectTotal: newQTotal,
+                      tiersSolved: solvedTiers
                     });
                     if (correct) {
                       addToast('\u2705 Correct!' + (newStreak >= 3 ? ' \uD83D\uDD25 ' + newStreak + ' streak!' : ''), 'success');
@@ -1111,7 +1190,8 @@ window.StemLab = window.StemLab || {
                         firstSolve: true,
                         streak5: newStreak >= 5,
                         streak10: newStreak >= 10,
-                        quizChamp: newQTotal >= 20
+                        quizChamp: newQTotal >= 20,
+                        allTiers: !!(solvedTiers.easy && solvedTiers.medium && solvedTiers.hard)
                       });
                       setTimeout(function() { iqStartQuiz(); }, 1500);
                     } else {
@@ -1161,8 +1241,11 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 var steps = solveInequality(solverExpr);
                 if (steps) {
-                  var newSC = solverCount + 1;
-                  upd({ solverSteps: steps, solverRevealIdx: 1, solverCount: newSC });
+                  // Count each inequality once: re-clicking Solve completed the solver_3 quest.
+                  var solvedKey = solverExpr.replace(/\s+/g, ''), solvedList = Array.isArray(d.solverSolved) ? d.solverSolved : [];
+                  var isNewSolve = solvedList.indexOf(solvedKey) === -1;
+                  var newSC = solverCount + (isNewSolve ? 1 : 0);
+                  upd({ solverSteps: steps, solverRevealIdx: 1, solverCount: newSC, solverSolved: isNewSolve ? solvedList.concat([solvedKey]).slice(-50) : solvedList });
                   if (newSC >= 5) checkBadges({ solverPro: true });
                 } else {
                   addToast('Could not parse. Try format: 3x - 7 \u2265 5', 'error');
@@ -1172,7 +1255,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83D\uDD0D ' + __alloT('stem.inequality.solve', 'Solve')),
             solverSteps && solverSteps.solution && h('button', { 'aria-label': __alloT('stem.inequality.graph_it', 'Graph It'),
               onClick: function() {
-                upd({ expr: solverSteps.solution, graphMode: '1d' });
+                upd({ expr: solverSteps.solution, graphMode: '1d', studentGraphed: true });
                 addToHistory(solverSteps.solution);
                 addToast('\uD83D\uDCC8 Graphed the solution!', 'success');
               },
@@ -1208,7 +1291,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-1.5' },
             exprHistory.map(function(ex, i) {
               return h('button', { key: i,
-                onClick: function() { upd('expr', ex); },
+                onClick: function() { upd({ expr: ex, studentGraphed: true }); },
                 className: 'px-2 py-1 text-[0.6875rem] font-mono font-bold bg-white text-slate-600 rounded border border-slate-400 hover:bg-fuchsia-50 hover:border-fuchsia-600 transition-all'
               }, ex);
             })

@@ -48,6 +48,8 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "overrides": {
-        "undici": "^6.28.0"
+        "undici": "^6.28.0",
+        "@grpc/grpc-js": "^1.13.6",
+        "underscore": "^1.13.8"
     }
 }

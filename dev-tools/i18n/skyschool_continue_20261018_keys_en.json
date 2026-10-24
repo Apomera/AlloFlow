@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_challenge_complete": "Challenge objectives were observed. Next, compare an idle descent with a powered climb in the energy-management exercise.",
+  "stem.flightsim.coaching_energy_complete": "The energy-management objectives were observed. Next, practice controlling energy during a short airport approach, then compare descent rate and touchdown.",
+  "stem.flightsim.drone_battery_low": "Low battery: {pct}% remaining. Return to launch and land soon.",
+  "stem.flightsim.drone_battery_depleted_title": "Drone battery depleted",
+  "stem.flightsim.drone_battery_depleted_body": "Flight paused at 0% battery. End the mission to review this attempt, then start a new mission with a full battery.",
+  "stem.flightsim.end_drone_mission": "End mission and review",
+  "stem.flightsim.geoq_nearest_place": "Which place is nearest to your current position?",
+  "stem.flightsim.geoq_paused": "Flight paused for this question. Close the quiz, then choose Resume when you are ready to fly.",
+  "stem.flightsim.geoq_close": "Close quiz",
+  "stem.flightsim.geoq_unavailable": "No geography question is available nearby. Continue exploring and try again.",
+  "stem.flightsim.geoq_answer_feedback": "Your answer: {answer}. Correct answer: {expected}."
+}

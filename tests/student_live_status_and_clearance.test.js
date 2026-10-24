@@ -128,7 +128,8 @@ describe('AI-only affordances stay hidden when student AI is off', () => {
   it('every quiz explainer affordance needs a callable AI function, not just the mode flag', () => {
     const quiz = read('view_quiz_source.jsx');
     expect(quiz.match(/var aiExplainerEnabled = !!\(modeStrat && modeStrat\.render && modeStrat\.render\.aiExplainerOnFail\) && typeof p\.callGemini === 'function';/g)?.length).toBe(4);
-    expect(quiz).toContain("var _aiExplainerEnabled = !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail) && typeof props.callGemini === 'function';");
+    // f5b045fc9 (2026-09-20) also suppresses the explainer while feedback is deferred.
+    expect(quiz).toContain("var _aiExplainerEnabled = !deferFeedback && !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail) && typeof props.callGemini === 'function';");
     expect(quiz).not.toContain("var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);\n");
     expect(read('view_quiz_module.js')).toBe(read('desktop/web-app/public/view_quiz_module.js'));
   });

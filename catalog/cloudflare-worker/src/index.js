@@ -1,3 +1,6 @@
+import { renderBugInbox } from './bug_inbox.js';
+import { BUG_RECEIPT_PATTERN, handleBugReview, readBugReview } from './bug_review.js';
+
 /**
  * AlloFlow Catalog Submission Worker
  *
@@ -21,6 +24,8 @@
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
+ *   GET  /bug-inbox         developer inbox shell (report data requires a bearer token)
+ *   GET, POST /bug-review  private append-only report status and notes
  *   GET  /pdSubmissions     token-gated PD-submission reader
  *   GET  /pluginSubmissions token-gated plugin-submission reader (?source=1 to include code)
  *   POST /issuePd           issue an Ed25519-signed PD completion attestation (opt-in)
@@ -408,7 +413,8 @@ async function handleItemCorrectionSubmit(request, env) {
 // student-identifiable data (FERPA). The AlloFlow repo is PUBLIC, so these must NOT go to GitHub.
 // They're stored in the private BUG_REPORTS KV namespace instead. Defense-in-depth PII scan still
 // runs so findings are flagged. Read them via GET /bugs (token-gated) or `wrangler kv key list`.
-// Requires a KV binding `BUG_REPORTS` in wrangler.toml. Read route requires the ADMIN_TOKEN secret.
+// Requires a KV binding `BUG_REPORTS` in wrangler.toml. The inbox reader uses
+// BUG_REPORTS_ADMIN_TOKEN, with ADMIN_TOKEN retained as a legacy fallback.
 
 function validateBug(p) {
   if (!p || typeof p !== 'object') return 'Body must be a JSON object.';
@@ -816,16 +822,40 @@ async function handlePdSubmit(request, env) {
   return jsonResponse({ ok: true, id, slug, module_content_digest: moduleContentDigest, pii_findings_count: piiFindings.length }, 201);
 }
 
+const BUG_RESPONSE_HEADERS = {
+  'Cache-Control': 'no-store, private',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+};
+const BUG_KEY_PATTERN = BUG_RECEIPT_PATTERN;
+
+function bugResponse(body, status = 200) {
+  return jsonResponse(body, status, BUG_RESPONSE_HEADERS);
+}
+
+function handleBugInbox() {
+  const nonce = crypto.randomUUID().replace(/-/g, '');
+  return new Response(renderBugInbox(nonce), {
+    headers: {
+      ...BUG_RESPONSE_HEADERS,
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`,
+    },
+  });
+}
+
 async function handleBugSubmit(request, env) {
-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Server misconfigured: missing BUG_REPORTS KV binding.' }, 500);
+  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   const contentType = request.headers.get('Content-Type') || '';
-  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
-  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  if (!contentType.toLowerCase().includes('application/json')) return bugResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  let rawBody;
+  try { rawBody = await request.text(); } catch (_) { return bugResponse({ ok: false, error: 'Could not read report.' }, 400); }
+  if (bodyTooLarge(rawBody)) return bugResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
   let p;
-  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  try { p = JSON.parse(rawBody); } catch (_) { return bugResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
   const err = validateBug(p);
-  if (err) return jsonResponse({ ok: false, error: err }, 400);
+  if (err) return bugResponse({ ok: false, error: err }, 400);
 
   const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
   const submittedAt = new Date().toISOString();
@@ -845,28 +875,72 @@ async function handleBugSubmit(request, env) {
     },
   };
   // Key sorts by time (13-digit epoch). No TTL — reports persist until manually purged.
-  const id = `bug:${Date.now()}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  const id = `bug:${Date.now()}:${crypto.randomUUID().slice(0, 8)}`;
   try {
     await env.BUG_REPORTS.put(id, JSON.stringify(record), {
       metadata: { submitted_at: submittedAt, pii: piiFindings.length > 0, country: record.submitter.ip_country },
     });
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not store report: ' + e.message }, 502);
+  } catch (_) {
+    return bugResponse({ ok: false, error: 'Could not store report. Please try again.' }, 502);
   }
-  return jsonResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
+  return bugResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
+}
+
+async function authorizeBugAdmin(request, env) {
+  // A dedicated bug token never enables the unrelated PD/plugin readers.
+  const expectedToken = env.BUG_REPORTS_ADMIN_TOKEN || env.ADMIN_TOKEN;
+  if (!expectedToken) return bugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
+  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  if (!authorization || !(await timingSafeTokenEq(authorization[1], expectedToken))) {
+    return bugResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  }
+  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
+  return null;
 }
 
 async function handleBugList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /bugs (or use `wrangler kv key list`).' }, 501);
-  if (!env.BUG_REPORTS) return jsonResponse({ ok: false, error: 'Missing BUG_REPORTS KV binding.' }, 500);
-  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
-  const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit });
-  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
-  const reports = [];
-  for (const k of keys) { const v = await env.BUG_REPORTS.get(k); if (v) { try { reports.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
-  return jsonResponse({ ok: true, count: reports.length, reports });
+  const refusal = await authorizeBugAdmin(request, env);
+  if (refusal) return refusal;
+
+  const before = url.searchParams.get('cursor') || '';
+  if (before && !BUG_KEY_PATTERN.test(before)) return bugResponse({ ok: false, error: 'Invalid report cursor.' }, 400);
+  const requestedLimit = Number(url.searchParams.get('limit') || 50);
+  const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(Math.floor(requestedLimit), 200)) : 50;
+
+  try {
+    // KV lists oldest keys first. Scan every page, retaining only the newest
+    // limit + 1 matching keys; the extra key tells the inbox whether more exist.
+    const selected = [];
+    const seenCursors = new Set();
+    let storageCursor;
+    while (true) {
+      const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit: 1000, ...(storageCursor ? { cursor: storageCursor } : {}) });
+      if (!listed || !Array.isArray(listed.keys) || typeof listed.list_complete !== 'boolean') throw new Error('Invalid storage page');
+      for (const key of listed.keys) {
+        const name = key && key.name;
+        if (typeof name !== 'string' || !BUG_KEY_PATTERN.test(name) || (before && name >= before) || selected.includes(name)) continue;
+        selected.push(name);
+        selected.sort();
+        if (selected.length > limit + 1) selected.shift();
+      }
+      if (listed.list_complete) break;
+      if (typeof listed.cursor !== 'string' || !listed.cursor || seenCursors.has(listed.cursor)) throw new Error('Invalid storage cursor');
+      seenCursors.add(listed.cursor);
+      storageCursor = listed.cursor;
+    }
+    selected.reverse();
+    const reports = [];
+    for (const key of selected.slice(0, limit)) {
+      const raw = await env.BUG_REPORTS.get(key);
+      const record = raw && JSON.parse(raw);
+      // A stale or unreadable record must not make the inbox silently omit data.
+      if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('Unavailable report');
+      reports.push({ ...record, id: key, review: await readBugReview(env.BUG_REPORTS, key, false) });
+    }
+    return bugResponse({ ok: true, count: reports.length, reports, cursor: selected.length > limit ? reports[reports.length - 1].id : null });
+  } catch (_) {
+    return bugResponse({ ok: false, error: 'Could not load reports. Please try again.' }, 502);
+  }
 }
 
 async function handlePdList(request, env, url) {
@@ -1976,63 +2050,41 @@ async function searchBudgetRefusal(request, env) {
 }
 
 // BEGIN PUBLIC SEARCH POLICY
-/* Automatic contextual search accepts only canonical public reference queries.
- * This is an allowlist, not a PII detector or a claim of FERPA compliance.
- * Never add arbitrary user text, model output, school names or identifiers here.
+/* One search-query rule for every transport: the browser, the Canvas Worker and the
+ * Firebase proxy. Any subject may be searched; there is no topic list. The rule only
+ * tidies the query and refuses one that looks like it carries a personal identifier
+ * (an email address, a phone number, a Social Security-style number or a student ID
+ * number), so a pasted student detail is not sent to Serper. Names are not detected.
  */
 function publicSearchQuery(value) {
-  if (typeof value !== 'string' || value.length > 200) return '';
-  const q = value.trim().replace(/\s+/g, ' ');
-  const udl = q.match(/^site:udlguidelines\.cast\.org UDL Guidelines (3\.0|2\.2)((?: (?:engagement|representation|action and expression|feedback|choice|identity|belonging|collaboration|reflection|language|perception|goals)){0,3})$/i);
-  if (udl) return 'site:udlguidelines.cast.org UDL Guidelines ' + udl[1] + udl[2].toLowerCase();
-  const standard = q.match(/^site:(thecorestandards\.org|nextgenscience\.org) (.+) official standard$/i);
-  if (standard) {
-    const codes = standard[2].toUpperCase().split(' ');
-    const ela = /^(?:CCSS\.ELA-LITERACY\.)?(?:RL|RI|RF|W|SL|L)\.(?:K|[1-9]|1[0-2]|9-10|11-12)\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const math = /^(?:CCSS\.MATH\.CONTENT\.)?(?:K|[1-9]|1[0-2])\.(?:CC|OA|NBT|NF|MD|G|RP|NS|EE|SP|F)\.[A-F]\.[1-9][0-9]?(?:\.[A-F])?$/;
-    const ngss = /^(?:K|[1-8]|MS|HS)-(?:PS|LS|ESS|ETS)[1-4]-[1-9][0-9]?$/;
-    const isNgss = standard[1].toLowerCase() === 'nextgenscience.org';
-    if (codes.length <= 3 && codes.every(code => isNgss ? ngss.test(code) : ela.test(code) || math.test(code)))
-      return 'site:' + standard[1].toLowerCase() + ' ' + codes.join(' ') + ' official standard';
-  }
-  // Closed jurisdiction names plus one fixed public rule query. Never append
-  // document text, student details, notes, or model output to this query.
-  const sld = q.match(/^(.+) department of education specific learning disability eligibility requirements official state rule$/i);
-  if (sld) {
-    const state = publicSearchQuery.sldStates.find(name => name.toLowerCase() === sld[1].toLowerCase());
-    if (state) return state + ' department of education specific learning disability eligibility requirements official state rule';
-  }
-  // Exact matches only: never extract vocabulary from a private narrative.
-
-  return publicSearchQuery.topics.includes(q.toLowerCase()) ? q.toLowerCase() : '';
+  return publicSearchQuery.reason(value) ? '' : value.trim().replace(/\s+/g, ' ');
 }
-publicSearchQuery.sldStates = Object.freeze([
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
-  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
-  "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming", "District of Columbia"
-]);
-publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather fronts', 'main idea', 'photosynthesis', 'water cycle', 'plate tectonics', 'fractions',
-    'formative assessment', 'retrieval practice', 'spaced practice', 'explicit instruction',
-    'universal design for learning', 'differentiated instruction', 'reading comprehension',
-    'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
-    'common core reading standards grade 3',
-    'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
-// Explicit research uses only the user's separate topic field. This normalizer
-// bounds transport input; it must never be used to extract a query from context.
-publicSearchQuery.userTopic = function (value) {
-  if (typeof value !== 'string' || value.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) return '';
-  const query = value.trim().replace(/\s+/g, ' ');
-  return query;
+publicSearchQuery.MAX_LENGTH = 500;
+// '' when the query may be sent; otherwise why it may not.
+publicSearchQuery.reason = function (value) {
+  if (typeof value !== 'string' || !value.trim()) return 'empty';
+  if (value.length > publicSearchQuery.MAX_LENGTH) return 'too-long';
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value)) return 'control-characters';
+  const q = value.trim().replace(/\s+/g, ' ');
+  if (/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.test(q)) return 'email';
+  if (/\b\d{3}-\d{2}-\d{4}\b/.test(q) || /\b(?:student|pupil|learner)\s*(?:id|#|number|no\.?)\s*[:#]?\s*\d{3,}/i.test(q)) return 'id-number';
+  // Grouped like a phone number (555-123-4567, (555) 123 4567); bare long numbers are allowed.
+  if (/(?:^|\D)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(?!\d)/.test(q)) return 'phone';
+  return '';
 };
-publicSearchQuery.forIntent = function (value, intent) {
-  return intent === 'user-topic' ? publicSearchQuery.userTopic(value) : publicSearchQuery(value);
+// A sentence a teacher can act on, or '' when the query is fine.
+publicSearchQuery.explain = function (value) {
+  const reason = publicSearchQuery.reason(value);
+  if (!reason) return '';
+  if (reason === 'email') return 'This search looks like it contains an email address, so it was not sent. Remove it and try again.';
+  if (reason === 'phone') return 'This search looks like it contains a phone number, so it was not sent. Remove it and try again.';
+  if (reason === 'id-number') return 'This search looks like it contains an ID number, so it was not sent. Remove it and try again.';
+  if (reason === 'too-long') return 'This search is longer than 500 characters. Shorten it and try again.';
+  return 'Enter a search of 1 to 500 characters.';
 };
+// Every intent follows the same rule; these names stay so callers need no change.
+publicSearchQuery.userTopic = function (value) { return publicSearchQuery(value); };
+publicSearchQuery.forIntent = function (value) { return publicSearchQuery(value); };
 // END PUBLIC SEARCH POLICY
 async function handleSearch(request, env, url) {
   if (env.DISABLE_SEARCH_PROXY === 'true' || env.DISABLE_SEARCH_PROXY === true) {
@@ -2042,10 +2094,10 @@ async function handleSearch(request, env, url) {
     return jsonResponse({ ok: false, error: 'search-not-configured' }, 503);
   }
 
-  const intent = url.searchParams.get('intent');
-  const query = publicSearchQuery.forIntent(url.searchParams.get('q'), intent);
+  const rawQuery = url.searchParams.get('q');
+  const query = publicSearchQuery(rawQuery);
   if (!query) {
-    return jsonResponse({ ok: false, error: intent === 'user-topic' ? 'user-topic-required' : 'public-query-required' }, 400);
+    return jsonResponse({ ok: false, error: 'query-refused', reason: publicSearchQuery.reason(rawQuery) }, 400);
   }
 
   const requested = Number.parseInt(url.searchParams.get('num') || url.searchParams.get('limit'), 10);
@@ -2122,7 +2174,7 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
+      return new Response(null, { status: 204, headers: { ...corsHeaders, ...(url.pathname === '/bug-review' ? BUG_RESPONSE_HEADERS : {}) } });
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
@@ -2158,6 +2210,14 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/bugs') {
       return handleBugList(request, env, url);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/bug-inbox') {
+      return handleBugInbox();
+    }
+
+    if (url.pathname === '/bug-review') {
+      return handleBugReview(request, env, { respond: bugResponse, authorize: authorizeBugAdmin });
     }
 
     if (request.method === 'GET' && url.pathname === '/pdSubmissions') {

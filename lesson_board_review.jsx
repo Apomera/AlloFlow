@@ -1,7 +1,7 @@
 import { practicePlan, learningReport } from './lesson_board_results.js';
 import { practiceReason, ConceptReview } from './lesson_board_followthrough.jsx';
 import { Amounts } from './lesson_board_play_extras.jsx';
-import { tr } from './lesson_board_strings.js';
+import { tr, arrow } from './lesson_board_strings.js';
 import { learningSummary, moveDetails, proposalSummary } from './lesson_board_insights.js';
 const React = window.React;
 
@@ -18,7 +18,7 @@ export function MovePreview({ board, run, target, t }) {
       <p>{tr(t, 'concept_label', 'Lesson concept: {concept}', { concept: detail.concept?.name })} <strong>{detail.newConcept ? tr(t, 'new_concept', 'Still to explore') : tr(t, 'concept_covered', 'Already explored together')}</strong></p>
       {!detail.complete && !detail.explored && <div><h4>{tr(t, 'exploration_reward', 'Reward for successful exploration')}</h4><Amounts board={board} values={detail.reward} prefix="+"/></div>}
       {!detail.complete && detail.opens.length > 0 && !detail.explored && <p>{tr(t, 'opens_locations', 'Successful exploration opens: {locations}', { locations: detail.opens.map(node => node.name).join(', ') })}</p>}
-      {detail.unlockPath?.length > 1 && !detail.explored && <p>{tr(t, 'unlock_route', 'Route to this location: {route}', { route: detail.unlockPath.map(node => node.name).join(' → ') })}</p>}
+      {detail.unlockPath?.length > 1 && !detail.explored && <p>{tr(t, 'unlock_route', 'Route to this location: {route}', { route: detail.unlockPath.map(node => node.name).join(' '+arrow()+' ') })}</p>}
       {detail.connections.length > 0 && <p className="lb-muted">{tr(t, 'connected_locations', 'Connected locations: {locations}', { locations: detail.connections.map(node => node.name).join(', ') })}</p>}
     </>}
   </div>;

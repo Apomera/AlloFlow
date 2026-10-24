@@ -37,12 +37,20 @@ for (const viewport of viewports) {
       await page.goto('./', { waitUntil: 'domcontentloaded', timeout: 120000 });
       const pathwayChooser = page.getByRole('region', { name: 'Choose how to use AlloFlow' });
       await expect(pathwayChooser).toBeVisible({ timeout: 120000 });
-      const learningTools = pathwayChooser.getByRole('button', { name: 'Learning Tools', exact: true });
-      await expect(learningTools).toBeVisible();
-      await learningTools.evaluate((element) => {
+      // Role-first Launch Pad (2026-10): Student -> Explore on my own -> codename -> Learning Tools.
+      // Structural selectors, because ui_strings relabels these buttons.
+      const studentDoor = pathwayChooser.locator('[data-pathway="student"]');
+      await expect(studentDoor).toBeVisible();
+      await studentDoor.click();
+      const exploreOnOwn = pathwayChooser.locator('#launch-pad-student-panel button.lp-download-button[type="button"]');
+      await expect(exploreOnOwn).toBeVisible();
+      await exploreOnOwn.evaluate((element) => {
         window.setTimeout(() => (element as HTMLElement).click(), 0);
       });
       await expect(pathwayChooser).toBeHidden({ timeout: 60000 });
+      const startNew = page.locator('[data-allo-ui-modal="student-entry"] [data-help-key="entry_start_new"]');
+      await expect(startNew).toBeEnabled({ timeout: 30000 });
+      await startNew.click();
       const learningHub = page.getByRole('dialog', { name: 'Learning Tools' });
       await expect(learningHub).toBeVisible({ timeout: 30000 });
       const stemTile = learningHub.locator('[data-hub-id="stem-lab"] [data-hub-launch="true"]');
@@ -72,7 +80,9 @@ for (const viewport of viewports) {
       await retry.click();
       const labRoot = page.locator(lab.marker);
       await expect(labRoot).toBeVisible({ timeout: 30000 });
-      await expect(labRoot.getByRole('heading').filter({ hasText: lab.label }).first()).toBeVisible();
+      // The STEAM shell titles the active tool (h3 in its toolbar); a lab may open
+      // on a studio step with no title heading of its own (Nuclear Lab, 2026-09-30).
+      await expect(stemDialog.locator('.stem-active-tool-title').getByRole('heading').filter({ hasText: lab.label }).first()).toBeVisible();
 
       const dialog = stemDialog;
       const shell = dialog.locator('.stem-lab-modal-shell');
@@ -206,8 +216,13 @@ for (const viewport of viewports) {
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(viewport.width + 1);
       expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height + 1);
 
+      // Nuclear Lab opens on its Experiment studio (2026-09-30), whose first step has no
+      // slider; its classic controls live under the second view, "All topics & routes".
+      if (lab.id === 'nuclearLab' && (await labRoot.getByRole('slider').count()) === 0) {
+        await stemDialog.locator('nav.ns-nav button').nth(1).click();
+      }
       const slider = labRoot.getByRole('slider').first();
-      await expect(slider).toBeVisible();
+      await expect(slider).toBeVisible({ timeout: 10000 });
       await expect(slider).toHaveAccessibleName(/.+/);
       const before = await slider.inputValue();
       const maximum = Number(await slider.getAttribute('max'));

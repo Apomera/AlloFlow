@@ -51,6 +51,17 @@ describe('Assess student preview isolation',()=>{
 
 async function voice(action,extra={}){let result;await act(async()=>window.dispatchEvent(new CustomEvent('alloflow:quiz-voice-control',{detail:{action,requestId:'experience-'+action,...extra,respond:r=>result=r}})));return result;}
 describe('Assess session and voice boundaries',()=>{
+ it('waits for the submitted result before narrating a scoped voice command',async()=>{
+  const prior=window.AlloModules.AlloCommands;let scope;
+  window.AlloModules.AlloCommands={registerCommandScope:value=>{scope=value;return()=>{};}};
+  try {
+   const p=props();await render(p);let result;
+   const ctx={getCurrentLearnerResource:()=>({id:p.generatedContent.id,type:'quiz',frontmost:true})};
+   await act(async()=>{const pending=scope.execute('quiz_submit',{},ctx,{confirmed:true});expect(typeof pending.then).toBe('function');result=await pending;});
+   expect(result).toMatchObject({ok:true,state:'submitted'});expect(result.narration).toContain('saved on this device');
+   expect(node('[data-assessment-submitted]')).toBeTruthy();
+  } finally {window.AlloModules.AlloCommands=prior;}
+ });
  it('keeps feedback release available while live quiz settings are hidden',async()=>{const p=props({isTeacherMode:true,activeSessionCode:'ROOM',sessionData:{quizState:{isActive:true,activityId:'active',questions:[]}},handleQuizQuestionAction:vi.fn().mockResolvedValue(true)});p.generatedContent.data.deliverySettings.feedbackTiming='teacher-release';await render(p);expect(node('[data-assessment-feedback-timing]')).toBeNull();await click(node('[data-assessment-live-feedback-release] [data-assessment-release-feedback]'));expect(p.handleQuizQuestionAction).toHaveBeenCalledWith(0,'release-feedback',{signature:expect.stringMatching(/^assessment-/)});});
  it('reveals completed responses only for the matching resource release',async()=>{const handler=vi.fn().mockResolvedValue(true),p=props({isTeacherMode:true,handleQuizQuestionAction:handler});p.generatedContent.data.deliverySettings.feedbackTiming='teacher-release';await render(p);await click(node('[data-assessment-release-feedback]'));const signature=handler.mock.calls[0][2].signature;const student={...p,isTeacherMode:false};await render(student);await submit();expect(node('[data-assessment-feedback-waiting]')).toBeTruthy();await render({...student,sessionData:{quizState:{assessmentFeedbackRelease:{resourceId:'different-resource',signature}}}});expect(node('[data-assessment-answer-guide]')).toBeNull();await render({...student,sessionData:{quizState:{assessmentFeedbackRelease:{resourceId:p.generatedContent.id,signature}}}});expect(host.querySelectorAll('[data-assessment-answer-guide]')).toHaveLength(9);});
  it('keeps completed attempts separate when another student uses this device',async()=>{const p=props({user:{uid:'learner-a'}});await render(p);await fill(node('textarea'),'Private response A');await submit();await render({...p,user:{uid:'learner-b'}});expect(node('[data-assessment-submitted]')).toBeNull();expect(node('textarea').value).toBe('');await render(p);expect(node('[data-assessment-attempt-feedback]').textContent).toContain('Private response A');});

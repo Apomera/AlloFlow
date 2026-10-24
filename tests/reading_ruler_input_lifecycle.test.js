@@ -17,7 +17,7 @@ beforeAll(()=>{
  if(!toggle||!persist)throw new Error('Production ruler toggle/persistence missing');
  const fixture=`function RulerHarness(props) {
  const {useState,useEffect}=React;
- ${state}\n${effect}\n${toggle}\n${persist}
+ ${state}\n${effect}\n${toggle}\n${persist}\n const readerLayerHost = props.layerHost || null;
  return <>
  {props.showTools ? <div id="alloflow-student-tools-panel" role="dialog" aria-label="Student tools"><button data-ruler-toggle onClick={handleToggleReadingRuler}>Toggle ruler</button></div> : <button data-ruler-toggle onClick={handleToggleReadingRuler}>Toggle ruler</button>}
  <main data-reading><p tabIndex="0" data-reading-text>First paragraph to read.</p><input aria-label="Reading response" /></main>
@@ -28,7 +28,8 @@ beforeAll(()=>{
  </>;
  }`;
  const {code}=require('@babel/core').transformSync(fixture,{plugins:['@babel/plugin-transform-react-jsx'],babelrc:false,configFile:false});
- RulerHarness=new Function('React','safeGetItem','safeSetItem',code+'\nreturn RulerHarness;')(React,key=>localStorage.getItem(key),(key,value)=>localStorage.setItem(key,value));
+ // The bands are a portal to <body>, or to the full-screen element (readerLayerHost, here props.layerHost) while one is open.
+ RulerHarness=new Function('React','ReactDOM','safeGetItem','safeSetItem',code+'\nreturn RulerHarness;')(React,require(resolve('desktop/web-app/node_modules/react-dom')),key=>localStorage.getItem(key),(key,value)=>localStorage.setItem(key,value));
 });
 beforeEach(()=>{
  localStorage.clear();frames=new Map();frameId=0;
@@ -45,17 +46,25 @@ async function mount(options={}){
 }
 async function render(update){props={...props,...update};await act(async()=>root.render(React.createElement(RulerHarness,props)));}
 function flushFrames(){act(()=>{for(let pass=0;frames.size&&pass<10;pass++){const current=[...frames.values()];frames.clear();current.forEach(callback=>callback(performance.now()));}});}
-const band=()=>host.querySelector('[data-allo-reading-ruler="band"]');
+const band=()=>document.querySelector('[data-allo-reading-ruler="band"]');
 const y=()=>Number(host.querySelector('[data-ruler-y]').textContent);
 function rect(element,top,height=24){element.getBoundingClientRect=()=>({top,height,bottom:top+height,left:0,right:200,width:200,x:0,y:top});}
 function move(target,clientY,type='pointermove'){const event=new MouseEvent(type,{bubbles:true,cancelable:true,clientY});act(()=>target.dispatchEvent(event));return event;}
 async function savedOn(options={}){localStorage.setItem('allo_reading_ruler','1');await mount(options);}
 
 describe('main Reading Ruler actual host lifecycle',()=>{
+ it('draws inside the full-screen element while one is open (nothing outside it is visible then)',async()=>{
+  const fullscreen=document.createElement('div');document.body.appendChild(fullscreen);
+  try{
+   await savedOn({layerHost:fullscreen});
+   expect(fullscreen.querySelector('[data-allo-reading-ruler="band"]'),'bands inside the full-screen element').not.toBeNull();
+   expect(Number(band().style.zIndex),'above activity overlays such as Word Practice (2147483000)').toBeGreaterThan(2147483000);
+  }finally{fullscreen.remove();}
+ });
  it('restores the enabled preference with a centered, accessible passive window',async()=>{
   await savedOn();expect(y()).toBe(400);expect(band().style.top).toBe('350px');expect(band().style.height).toBe('100px');
   expect(localStorage.getItem('allo_reading_ruler')).toBe('1');
-  for(const element of host.querySelectorAll('[data-allo-reading-ruler]')){expect(element.getAttribute('aria-hidden')).toBe('true');expect(element.className).toContain('pointer-events-none');}
+  for(const element of document.querySelectorAll('[data-allo-reading-ruler]')){expect(element.getAttribute('aria-hidden')).toBe('true');expect(element.className).toContain('pointer-events-none');}
  });
  it('retains centered reload and current position after modal close on a long page',async()=>{
   vi.spyOn(document.body,'getBoundingClientRect').mockReturnValue({top:0,height:12000});
@@ -113,8 +122,8 @@ describe('main Reading Ruler actual host lifecycle',()=>{
  });
  it('keeps the complete reading window inside tiny and resized viewports',async()=>{
   vi.stubGlobal('innerHeight',60);await savedOn();expect(y()).toBe(30);expect(band().style.top).toBe('0px');expect(band().style.height).toBe('60px');
-  expect(host.querySelector('[data-allo-reading-ruler="above"]').style.height).toBe('0px');
-  expect(host.querySelector('[data-allo-reading-ruler="below"]').style.top).toBe('60px');
+  expect(document.querySelector('[data-allo-reading-ruler="above"]').style.height).toBe('0px');
+  expect(document.querySelector('[data-allo-reading-ruler="below"]').style.top).toBe('60px');
   vi.stubGlobal('innerHeight',800);act(()=>window.dispatchEvent(new Event('resize')));move(host.querySelector('[data-reading]'),600);flushFrames();
   vi.stubGlobal('innerHeight',40);act(()=>window.dispatchEvent(new Event('resize')));expect(y()).toBe(20);expect(band().style.height).toBe('40px');
  });

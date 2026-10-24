@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "शोध परिणाम: {topics} विषयांमध्ये {cards} कार्डे.",
+  "stem.flightsim.learn_library_counts": "{cards} कार्डे · {topics} विषय",
+  "stem.flightsim.learn_search_clear": "शोध साफ करा",
+  "stem.flightsim.learn_search_empty": "“{query}” शी जुळणारी शिकण्याची कार्डे नाहीत. दुसरा शब्द वापरा किंवा शोध साफ करा.",
+  "stem.flightsim.learn_search_none": "जुळणारी शिकण्याची कार्डे नाहीत",
+  "stem.flightsim.learn_search_cards": "शिकण्याची {count} कार्डे",
+  "stem.flightsim.quiz_review_progress": "{total} पैकी {answered} प्रश्नांची उत्तरे दिली · {missed} चुकीची",
+  "stem.flightsim.quiz_review_missed": "चुकीच्या उत्तरांचा आढावा घ्या",
+  "stem.flightsim.quiz_next_unanswered": "पुढचा अनुत्तरित प्रश्न",
+  "stem.flightsim.quiz_review_all_answered": "प्रत्येक प्रश्नाचे पहिले उत्तर नोंदवले आहे. गुणांशिवाय सरावासाठी चुकीची उत्तरे दिलेल्या प्रश्नांचा आढावा घ्या किंवा नवीन प्रयत्न सुरू करा.",
+  "stem.flightsim.planner_drone_agl": "जमिनीपासून {ft} फूट वर",
+  "stem.flightsim.sprint_native_title": "भूगोलाचे जलद आव्हान",
+  "stem.flightsim.sprint_timed_hint": "तुम्ही उत्तर देताना मार्गावरील प्रवास चालू राहतो. वाचण्यासाठी थांबवा; उत्तर निवडण्यापूर्वी पुन्हा सुरू करा.",
+  "stem.flightsim.sprint_warp_reference": "या भूगोल उपक्रमासाठी प्रवास वेगवान केला आहे. वेगाचे वाचन निर्धारित क्रूझ वेग दाखवते; हा मार्ग विमानाची कामगिरी मोजत नाही.",
+  "stem.flightsim.sprint_save_menu": "आव्हान जतन करून मेनूवर परत या",
+  "stem.flightsim.sprint_next_stop": "पुढचा थांबा: {place}",
+  "stem.flightsim.geoq_approaching_city": "तुम्ही कोणत्या शहराजवळ येत आहात?",
+  "stem.flightsim.sprint_time_remaining": "उरलेला वेळ: {seconds} सेकंद"
+}

@@ -1,3 +1,4 @@
+import { arrow } from './lesson_board_strings.js';
 // Bounded, source-authored manipulative challenges. Values remain comma-separated
 // indices so solo saves and the classroom action transport use the same contract.
 export const SPATIAL_CHALLENGE_KINDS = ['classify', 'connect', 'place'];
@@ -27,7 +28,7 @@ export function challengeValidDraft(node, value) {
   return parts.length === node.items.length && parts.every(part => part === '' || /^[0-9]$/.test(part) && Number(part) < challengeTargets(node).length) && (node.kind === 'classify' || new Set(assigned).size === assigned.length);
 }
 export const challengeValidValue = (node, value) => challengeValidDraft(node, value) && value.split(',').every(part => part !== '');
-export function challengeResponseText(node, value) { return challengeValidValue(node, value) ? value.split(',').map((part, index) => node.items[index] + ' → ' + challengeTargets(node)[Number(part)]).join('; ') : ''; }
+export function challengeResponseText(node, value) { return challengeValidValue(node, value) ? value.split(',').map((part, index) => node.items[index] + ' ' + arrow() + ' ' + challengeTargets(node)[Number(part)]).join('; ') : ''; }
 
 // A destination has one occupant for connection/placement puzzles. Moving an
 // item onto an occupied destination returns that occupant to the tray.

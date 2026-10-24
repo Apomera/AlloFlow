@@ -91,6 +91,21 @@ describe('Cephalopod living coral branchlets from the current factory',()=>{
     });
   });
 
+  it('faces every triangle corner normal toward its own face, including each young tip pole',()=>{
+    // The summed-normal check above can hide single corners: one shared pole normal per young
+    // tip once faced away from 481 fan facets (worst -0.64). Current minimum is about 0.43.
+    let worst={dot:1};
+    fixtures((geometry,height,index)=>{
+      const p=geometry.attributes.position,n=geometry.attributes.normal,indices=geometry.index.array;
+      for(let triangle=0;triangle<indices.length;triangle+=3){
+        const a=point(p,indices[triangle]),face=point(p,indices[triangle+1]).sub(a).cross(point(p,indices[triangle+2]).sub(a));
+        if(face.lengthSq()===0)continue;face.normalize();
+        for(let corner=0;corner<3;corner++){const vertex=indices[triangle+corner],dot=face.dot(point(n,vertex));if(!(dot>=worst.dot))worst={dot,height,index,vertex};}
+      }
+    });
+    expect(worst.dot,'worst corner '+JSON.stringify(worst)).toBeGreaterThan(.25);
+  });
+
   it('grafts each curved young branch into an existing host and differentiates its growing tip',()=>{
     fixtures((geometry,height,index)=>{
       const form=index%3,base=baseVertices[form],p=geometry.attributes.position,c=geometry.attributes.color,s=geometry.attributes.clCoralSurface;

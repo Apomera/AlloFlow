@@ -27,6 +27,14 @@ it('source retention checks catch equal-length substitutions and repeated-word o
  expect(result).toMatchObject({status:'review_required',reviewRequired:true,missingTokens:2});expect(result.missingPassages[0].missingTokens).toBe(2);expect(JSON.stringify(result)).not.toMatch(/Alpha|dollars|gamma/);
  expect(P.assessSourceCoverage({sourceText:'Accessi-\nbility and 120 dollars.',outputHtml:'<p>Accessibility and <strong>120</strong> dollars.</p>'})).toMatchObject({status:'matched',missingTokens:0});
 });
+it('matches an Arabic word whose tanween the text layer stored as a separate glyph after a space (2026-10-19)',()=>{
+ // PPS Arabic family letter: "مذهلا ً" and "علنيا ً" in the PDF, "مذهلاً" and "علنياً" in the HTML. The miss withheld its tagged PDF.
+ const base='نحن نشكركم على الدعم ';
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا وأعلن علنيا ً',outputHtml:'<p>'+base+'كان مذهلاً جدا وأعلن علنياً</p>'})).toMatchObject({status:'matched',missingTokens:0});
+ // a real change is still caught: a missing word, and a different word that happens to share letters
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا',outputHtml:'<p>'+base+'كان جدا</p>'})).toMatchObject({status:'review_required',missingTokens:1});
+ expect(P.assessSourceCoverage({sourceText:base+'كان مذهلا ً جدا',outputHtml:'<p>'+base+'كان مذهل جدا</p>'})).toMatchObject({status:'review_required',missingTokens:1});
+});
 it('distinguishes missing source evidence, extraction problems and page-range scope from matching text',()=>{
  expect(P.assessSourceCoverage({sourceText:'Visible information',outputHtml:'<p style="display:none">Visible information</p>'})).toMatchObject({status:'review_required',missingTokens:2});
  expect(P.assessSourceCoverage({outputHtml:'<p>Unverified content.</p>'})).toMatchObject({status:'unavailable',reviewRequired:true,tokenRecall:null});
@@ -42,4 +50,14 @@ it('matches Chinese source text when HTML divides it at word boundaries',()=>{
 it('retains numeric punctuation so decimal, sign, percentage and fraction changes require review',()=>{
  expect(P.assessSourceCoverage({sourceText:'120.00',outputHtml:'<p>12000</p>'})).toMatchObject({status:'review_required',missingTokens:1});
  const result=P.assessSourceCoverage({sourceText:'The value is -1.5, with 15% and 1/2.',outputHtml:'<p>The value is 15, with 15 and 1 2.</p>'});expect(result.reviewRequired).toBe(true);expect(result.missingTokens).toBeGreaterThanOrEqual(4);
+});
+it('an OCR transcript\'s markdown table syntax is layout, not missing text; real cell words still count (1954 scan, 2026-10-20)',()=>{
+ const md='Schedule B\n\n| Name of payor | Amount |\n| --- | --- |\n| Acme Mills | 120 |\n| Smith Bank | 45 |';
+ const html='<h2>Schedule B</h2><table><tr><th>Name of payor</th><th>Amount</th></tr><tr><td>Acme Mills</td><td>120</td></tr><tr><td>Smith Bank</td><td>45</td></tr></table>';
+ expect(P.assessSourceCoverage({sourceText:md,outputHtml:html,method:'vision-ocr'})).toMatchObject({status:'matched',missingTokens:0});
+ expect(P.assessSourceCoverage({sourceText:md,outputHtml:html.replace('Smith Bank','Smith'),method:'vision-ocr'})).toMatchObject({status:'review_required',missingTokens:1});
+ // born-digital text keeps every symbol it printed
+ expect(P.assessSourceCoverage({sourceText:'Home | About',outputHtml:'<p>Home About</p>',method:'pdfjs'})).toMatchObject({missingTokens:1});
+ // a fill-in blank glued to a number ("195__" for the printed ", 195") is the same number
+ expect(P.assessSourceCoverage({sourceText:'ending 195',outputHtml:'<p>ending 195__</p>',method:'vision-ocr'})).toMatchObject({missingTokens:0});
 });

@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Kurangiza ubutumwa no kugaruka kugwa ku butaka byanditswe. Ongera ugerageze ubu butumwa uhindure ikintu kimwe wabitekerejeho mu kugenzura cyangwa mu nzira, hanyuma ugereranye ibyagaragaye byabitswe.",
+  "stem.flightsim.coaching_mission_depleted": "Batiri ya dorone yashizemo umuriro. Tangira ubutumwa bushya, ukoreshe inzira ngufi kandi utegure kugaruka mbere y’uko umuriro wa batiri uba muke.",
+  "stem.flightsim.coaching_mission_unknown": "Ubu butumwa bufite ibimenyetso bituzuye cyangwa bivuguruzanya. Suzuma ibyanditswe, hanyuma utangire igerageza rishya.",
+  "stem.flightsim.coaching_mission_capture": "Intego zimwe ntizirafatwa. Mu butumwa bushya, egereza intego imwe imwe kandi ugume mu mipaka y’ubuhagarike n’umuvuduko ugereranyije n’ubutaka yerekanwa kugeza ifatwa ryanditswe.",
+  "stem.flightsim.coaching_mission_recovery": "Uwarokotse ntiyatabawe. Mu butumwa bushya bwo gutabara, itoze kuguma hamwe mu kirere udahungabana mu mipaka y’ubuhagarike, kuyoba uva aho uri n’umuvuduko wo kuzamuka cyangwa kumanuka yerekanwa mbere yo gusubira ku birindiro.",
+  "stem.flightsim.coaching_mission_return": "Intego zo gutabara cyangwa gufata amashusho zanditswe; kugaruka kugwa ku butaka biracyasigaye. Tangira ubutumwa bushya, hanyuma usigaze igihe n’umuriro wa batiri byo gusubira ku birindiro.",
+  "stem.flightsim.mission_reflection_prompt": "Ni ikihe cyemezo kijyanye n’intego, kuguma hamwe mu kirere cyangwa kugaruka wahindura? Koresha ibyagaragaye mu butumwa usobanure amahitamo yawe kandi utegure impinduka imwe y’igerageza rishya. Ibisobanuro byawe bibikwa hamwe n’uru rugendo rw’indege.",
+  "stem.flightsim.journal_different_airport": "Ubu buryo bwo kwegera ikibuga bukoresheje ibibuga by’indege bitandukanye. Suzuma ibyagaragaye kuri buri bumwe ukwabyo; impinduka z’ibipimo ntizibarwa.",
+  "stem.flightsim.journal_approach_airport": "Ikibuga cy’indege cyegerewe: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "IBIMENYETSO BY’UBUTUMWA",
+  "stem.flightsim.challenge_brake_release": "Rekura X kandi uzimye feri z’amapine muri Deck mbere yo kongera imbaraga."
+}

@@ -17,6 +17,56 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var t = this._registry[id]; if (!t||!t.render) return null; try{return t.render(ctx);}catch(e){console.error('[StemLab] Error rendering '+id,e);return null;} }
 };
 
+// STEM_GRADING_CORE_BEGIN v1 (copied verbatim into each tool that grades; tests/stem_grading_core.test.js keeps the copies identical)
+(function () {
+  var MINUS = String.fromCharCode(0x2212);
+  // A typed answer as a number: "-3", "2.5", "1,000", "3/4", "1 1/2" and the typographic minus.
+  // Anything else (units, words, "1/0") is NaN, so a caller can tell "not a number" from "wrong".
+  function toNumber(value) {
+    if (typeof value === 'number') return isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
+    var s = value.split(MINUS).join('-').replace(/\s+/g, ' ').trim();
+    if (!s) return NaN;
+    if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    var m = s.match(/^([+-]?)(\d+) (\d+)\/(\d+)$/);
+    if (m) {
+      var den = +m[4];
+      if (!den) return NaN;
+      var mixed = +m[2] + (+m[3]) / den;
+      return m[1] === '-' ? -mixed : mixed;
+    }
+    m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)) ?\/ ?([+-]?(?:\d+\.?\d*|\.\d+))$/);
+    if (m) {
+      var d = parseFloat(m[2]);
+      return d ? parseFloat(m[1]) / d : NaN;
+    }
+    return /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+  }
+  // Equal within an absolute tolerance, a relative one, or float noise, whichever is largest.
+  function sameNumber(a, b, opts) {
+    var x = toNumber(a), y = toNumber(b);
+    if (!isFinite(x) || !isFinite(y)) return false;
+    var o = opts || {};
+    var tol = Math.max(+o.tolerance || 0, (+o.relative || 0) * Math.abs(y), 1e-9 * Math.max(1, Math.abs(y)));
+    return Math.abs(x - y) <= tol;
+  }
+  // Credit an item once: returns whether `key` is new and the next seen-map to store.
+  // The map is never mutated, so it can live in tool state.
+  function creditOnce(seen, key) {
+    var map = seen && typeof seen === 'object' && !Array.isArray(seen) ? seen : {};
+    var k = String(key);
+    if (Object.prototype.hasOwnProperty.call(map, k)) return { isNew: false, seen: map };
+    var next = {};
+    for (var p in map) if (Object.prototype.hasOwnProperty.call(map, p)) next[p] = map[p];
+    next[k] = true;
+    return { isNew: true, seen: next };
+  }
+  var api = { version: 1, toNumber: toNumber, sameNumber: sameNumber, creditOnce: creditOnce };
+  var current = window.StemLab.grading;
+  if (!current || !(current.version >= api.version)) window.StemLab.grading = api;
+})();
+// STEM_GRADING_CORE_END
+
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -50,6 +100,13 @@ window.StemLab = window.StemLab || {
 
   var _drag = { sym: null, proofKey: null };
 
+  // Proofs actually solved (written when a proof completes). The challenge quests used
+  // the SELECTED level index, so clicking the Level 4 tab completed them.
+  function _solvedProofCount(d) {
+    var m = d && d.solvedProofs;
+    return m && typeof m === 'object' && !Array.isArray(m) ? Object.keys(m).filter(function(k) { return m[k] === true; }).length : 0;
+  }
+
   window.StemLab.registerTool('logicLab', {
     icon: '\u2234',
     label: 'Logic Lab',
@@ -58,9 +115,9 @@ window.StemLab = window.StemLab || {
     category: 'math',
     questHooks: [
       { id: 'build_truth_table', label: 'Build a truth table for a logical expression', icon: '\uD83D\uDCCB', check: function(d) { return d.expression && d.expression !== 'P \u2192 Q'; }, progress: function(d) { return d.expression && d.expression !== 'P \u2192 Q' ? 'Built!' : 'Modify the expression'; } },
-      { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return (d.currentChallenge || 0) >= 1; }, progress: function(d) { return (d.currentChallenge || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return _solvedProofCount(d) >= 1; }, progress: function(d) { return _solvedProofCount(d) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'write_3_proof_steps', label: 'Write 3 proof steps', icon: '\u270D\uFE0F', check: function(d) { return (Array.isArray(d.proofSteps) ? d.proofSteps : []).length >= 3; }, progress: function(d) { return (Array.isArray(d.proofSteps) ? d.proofSteps : []).length + '/3 steps'; } },
-      { id: 'complete_3_challenges', label: 'Complete 3 logic challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.currentChallenge || 0) >= 3; }, progress: function(d) { return (d.currentChallenge || 0) + '/3'; } }
+      { id: 'complete_3_challenges', label: 'Complete 3 logic challenges', icon: '\uD83C\uDFC6', check: function(d) { return _solvedProofCount(d) >= 3; }, progress: function(d) { return Math.min(3, _solvedProofCount(d)) + '/3'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -117,7 +174,8 @@ window.StemLab = window.StemLab || {
 
           var expr = typeof d.expression === 'string' ? d.expression : 'P → Q';
 
-          var proofSteps = Array.isArray(d.proofSteps) ? d.proofSteps : [];
+          // Saved state is input: a null entry crashed the proof list on render.
+          var proofSteps = Array.isArray(d.proofSteps) ? d.proofSteps.filter(function(s) { return s && typeof s.result === 'string'; }) : [];
 
           var currentChallenge = (Number.isInteger(d.currentChallenge) && d.currentChallenge >= 0) ? d.currentChallenge : 0;
 
@@ -128,6 +186,9 @@ window.StemLab = window.StemLab || {
           var challengeIdx = (Number.isInteger(d.challengeIdx) && d.challengeIdx >= 0) ? d.challengeIdx : 0;
 
           var challengeAnswer = d.challengeAnswer || null;
+          // The AI cards answer separately: sharing challengeAnswer marked an unanswered AI
+          // argument "Correct!" and let "AI Generate" reopen the built-in card for more points.
+          var aiChallengeAnswer = d.aiChallengeAnswer || null;
 
           var showEnglish = d.showEnglish || false;
 
@@ -142,10 +203,13 @@ window.StemLab = window.StemLab || {
 
           var aiFallacy = d.aiFallacy || null;
 
-          // Stands in for a PROOF_CHALLENGES entry, so consumers read .rulesNeeded
-          // and .steps off it. A string or bare {} is not a usable challenge.
+          // Stands in for a PROOF_CHALLENGES entry: consumers read .premises and
+          // .conclusion (the AI prompt's schema). Requiring a .steps array, which the
+          // prompt never asks for, discarded every generated proof.
           var aiProof = (d.aiProof && typeof d.aiProof === 'object' && !Array.isArray(d.aiProof)
-            && Array.isArray(d.aiProof.steps)) ? d.aiProof : null;
+            && Array.isArray(d.aiProof.premises) && d.aiProof.premises.length > 0
+            && d.aiProof.premises.every(function(p) { return typeof p === 'string'; })
+            && typeof d.aiProof.conclusion === 'string') ? d.aiProof : null;
 
           var aiDetective = d.aiDetective || null;
 
@@ -167,6 +231,16 @@ window.StemLab = window.StemLab || {
 
             });
 
+          };
+
+          // Pay each XP item once (shared grading core). Claim XP, the Learn panel and the
+          // presets paid again on every click.
+          var payOnce = function(key, xp, reason) {
+            var r = window.StemLab.grading.creditOnce(d.xpCredited, key);
+            if (!r.isNew) return false;
+            upd({ xpCredited: r.seen });
+            if (typeof awardStemXP === 'function') awardStemXP('logicLab', xp, reason);
+            return true;
           };
 
 
@@ -347,11 +421,17 @@ window.StemLab = window.StemLab || {
 
               var closePos = inner2.pos; // skip ')'
 
+              if (tokens[closePos] !== ')') throw new Error('unclosed (');
+
               return { node: inner2.node, pos: closePos + 1 };
 
             }
 
-            return { node: { type: 'var', name: tokens[pos] || 'P' }, pos: pos + 1 };
+            // A missing operand used to become P, so "P →" (mid-typing) was a tautology
+            // with a Claim XP button. Only a variable letter is an operand.
+            if (!/^[A-Z]$/.test(tokens[pos] || '')) throw new Error('missing operand');
+
+            return { node: { type: 'var', name: tokens[pos] }, pos: pos + 1 };
 
           };
 
@@ -416,6 +496,9 @@ window.StemLab = window.StemLab || {
               if (tokens.length === 0) return null;
 
               var parsed = parseExpr(tokens, 0);
+
+              // Leftover tokens mean the text was not one formula ("P -> Q" tabled only P).
+              if (parsed.pos !== tokens.length) return null;
 
               var vars = uniqueVars(getVars(parsed.node));
 
@@ -558,23 +641,61 @@ window.StemLab = window.StemLab || {
             return s;
           };
 
+          // Rules act on the PARSED formula, not on regex splits of its text. Greedy splits
+          // read "P → Q → R" as (P → Q) → R, Conjunction dropped parentheses ("¬Q ∧ P → Q"
+          // then fed Modus Tollens), and Simplification of "(P ∧ Q) → R" gave "(P": invalid
+          // steps that could still end in "Proof complete".
+          // Same grammar and AST as parseExpr (¬ > ∧ > ∨/⊕ > → (right) > ↔), kept local so
+          // this block stands alone; any character outside the grammar rejects the formula.
+          var propNode = function(s) {
+            var tk = String(s == null ? '' : s).split('').filter(function(c) { return c !== ' '; });
+            var PREC = { '↔': 0, '→': 1, '∨': 2, '⊕': 2, '∧': 3 }, pos = 0;
+            var unary = function() {
+              var c = tk[pos];
+              if (c === '¬') { pos++; return { type: 'not', child: unary() }; }
+              if (c === '(') { pos++; var e = binary(0); if (tk[pos] !== ')') throw 0; pos++; return e; }
+              if (!/^[A-Z]$/.test(c || '')) throw 0;
+              pos++; return { type: 'var', name: c };
+            };
+            var binary = function(min) {
+              var left = unary();
+              while (pos < tk.length && PREC[tk[pos]] !== undefined && PREC[tk[pos]] >= min) {
+                var op = tk[pos++];
+                left = { type: 'bin', op: op, left: left, right: binary(op === '→' ? PREC[op] : PREC[op] + 1) };
+              }
+              return left;
+            };
+            try { if (!tk.length) return null; var node = binary(0); return pos === tk.length ? node : null; } catch (e) { return null; }
+          };
+          var propText = function(n, top) {
+            if (n.type === 'var') return n.name;
+            if (n.type === 'not') return '¬' + propText(n.child, false);
+            var s = propText(n.left, false) + ' ' + n.op + ' ' + propText(n.right, false);
+            return top ? s : '(' + s + ')';
+          };
+          var propCanon = function(s) { var n = propNode(s); return n ? propText(n, true) : null; };
+          var sameProp = function(a, b) { return propText(a, true) === propText(b, true); };
+          var isOp = function(n, op) { return !!n && n.type === 'bin' && n.op === op; };
+          var notNode = function(n) { return { type: 'not', child: n }; };
+          var binNode = function(op, l, r) { return { type: 'bin', op: op, left: l, right: r }; };
+          var pairRule = function(sel, fn) {
+            for (var i = 0; i < sel.length; i++) for (var j = 0; j < sel.length; j++) {
+              if (i === j) continue;
+              var a = propNode(sel[i]), b = propNode(sel[j]);
+              var out = a && b ? fn(a, b) : null;
+              if (out) return propText(out, true);
+            }
+            return null;
+          };
+          var oneRule = function(sel, fn) { var a = propNode(sel[0]); var out = a ? fn(a) : null; return out ? propText(out, true) : null; };
+
           var RULES = [
 
             { id: 'mp', name: t('stem.logiclab.modus_ponens', 'Modus Ponens'), form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
 
               check: function(premises, sel) {
 
-                for (var i = 0; i < sel.length; i++) for (var j = 0; j < sel.length; j++) {
-
-                  if (i === j) continue;
-
-                  var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
-
-                  if (m && stripOuterParens(m[1]) === stripOuterParens(sel[j])) return m[2].trim();
-
-                }
-
-                return null;
+                return pairRule(sel, function(a, b) { return isOp(a, '→') && sameProp(a.left, b) ? a.right : null; });
 
               }
 
@@ -584,19 +705,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                for (var i = 0; i < sel.length; i++) for (var j = 0; j < sel.length; j++) {
-
-                  if (i === j) continue;
-
-                  var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
-
-                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return '¬' + m[1].trim();
-
-                  if (m && stripOuterParens(sel[j]) === '¬(' + stripOuterParens(m[2]) + ')') return '¬' + m[1].trim();
-
-                }
-
-                return null;
+                return pairRule(sel, function(a, b) { return isOp(a, '→') && b.type === 'not' && sameProp(b.child, a.right) ? notNode(a.left) : null; });
 
               }
 
@@ -606,19 +715,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                for (var i = 0; i < sel.length; i++) for (var j = 0; j < sel.length; j++) {
-
-                  if (i === j) continue;
-
-                  var m1 = sel[i].match(/^(.+)\s*→\s*(.+)$/);
-
-                  var m2 = sel[j].match(/^(.+)\s*→\s*(.+)$/);
-
-                  if (m1 && m2 && stripOuterParens(m1[2]) === stripOuterParens(m2[1])) return m1[1].trim() + ' → ' + m2[2].trim();
-
-                }
-
-                return null;
+                return pairRule(sel, function(a, b) { return isOp(a, '→') && isOp(b, '→') && sameProp(a.right, b.left) ? binNode('→', a.left, b.right) : null; });
 
               }
 
@@ -628,19 +725,11 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                for (var i = 0; i < sel.length; i++) for (var j = 0; j < sel.length; j++) {
-
-                  if (i === j) continue;
-
-                  var m = sel[i].match(/^(.+)\s*∨\s*(.+)$/);
-
-                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[1])) return m[2].trim();
-
-                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return m[1].trim();
-
-                }
-
-                return null;
+                return pairRule(sel, function(a, b) {
+                  if (!isOp(a, '∨') || b.type !== 'not') return null;
+                  if (sameProp(b.child, a.left)) return a.right;
+                  return sameProp(b.child, a.right) ? a.left : null;
+                });
 
               }
 
@@ -650,9 +739,11 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                if (sel.length === 2) return sel[0].trim() + ' ∧ ' + sel[1].trim();
+                if (sel.length !== 2) return null;
 
-                return null;
+                var ca = propNode(sel[0]), cb = propNode(sel[1]);
+
+                return ca && cb ? propText(binNode('∧', ca, cb), true) : null;
 
               }
 
@@ -662,11 +753,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                var m = sel[0].match(/^(.+)\s*∧\s*(.+)$/);
-
-                if (m) return m[1].trim();
-
-                return null;
+                return oneRule(sel, function(a) { return isOp(a, '∧') ? a.left : null; });
 
               }
 
@@ -676,7 +763,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                return sel[0].trim() + ' ∨ Q';
+                return oneRule(sel, function(a) { return binNode('∨', a, { type: 'var', name: 'Q' }); });
 
               }
 
@@ -686,11 +773,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                var s = sel[0].trim();
-
-                if (s.indexOf('¬¬') === 0) return s.substring(2);
-
-                return '¬¬' + s;
+                return oneRule(sel, function(a) { return a.type === 'not' && a.child.type === 'not' ? a.child.child : notNode(notNode(a)); });
 
               }
 
@@ -700,11 +783,7 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                var m = sel[0].match(/^(.+)\s*→\s*(.+)$/);
-
-                if (m) return '¬' + m[2].trim() + ' → ¬' + m[1].trim();
-
-                return null;
+                return oneRule(sel, function(a) { return isOp(a, '→') ? binNode('→', notNode(a.right), notNode(a.left)) : null; });
 
               }
 
@@ -714,15 +793,11 @@ window.StemLab = window.StemLab || {
 
               check: function(premises, sel) {
 
-                var m = sel[0].match(/^¬\((.+)\s*∧\s*(.+)\)$/);
-
-                if (m) return '¬' + m[1].trim() + ' ∨ ¬' + m[2].trim();
-
-                var m2 = sel[0].match(/^¬\((.+)\s*∨\s*(.+)\)$/);
-
-                if (m2) return '¬' + m2[1].trim() + ' ∧ ¬' + m2[2].trim();
-
-                return null;
+                return oneRule(sel, function(a) {
+                  if (a.type !== 'not') return null;
+                  if (isOp(a.child, '∧')) return binNode('∨', notNode(a.child.left), notNode(a.child.right));
+                  return isOp(a.child, '∨') ? binNode('∧', notNode(a.child.left), notNode(a.child.right)) : null;
+                });
 
               }
 
@@ -1212,7 +1287,7 @@ window.StemLab = window.StemLab || {
 
                       key: p.label,
 
-                      onClick: function() { upd({ expression: p.expr }); if (typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Truth table explored'); },
+                      onClick: function() { upd({ expression: p.expr }); payOnce('preset:' + p.expr, 3, 'Truth table explored'); },
 
                       className: "px-2.5 py-1 bg-white border border-violet-200 hover:border-violet-400 text-violet-600 text-xs font-bold rounded-full transition-all hover:shadow-sm"
 
@@ -1230,15 +1305,18 @@ window.StemLab = window.StemLab || {
               (function() {
                 var _t2 = genTable(expr);
                 if (!_t2 || _t2.type === 'contingency') return null;
+                var claimKey = 'claim:' + _t2.type + ':' + expr.replace(/\s+/g, '');
+                var claimed = !window.StemLab.grading.creditOnce(d.xpCredited, claimKey).isNew;
                 return React.createElement("div", { className: "flex items-center gap-3 p-3 bg-amber-50 rounded-xl border border-amber-200" },
                   React.createElement("span", { className: "text-xl" }, _t2.type === 'tautology' ? '\uD83C\uDF89' : '\uD83D\uDCA5'),
                   React.createElement("span", { className: "font-black text-amber-800 text-sm flex-1" },
                     _t2.type === 'tautology' ? 'Always TRUE! You found a tautology!' : 'Always FALSE! You found a contradiction!'
                   ),
+                  claimed ? React.createElement("span", { className: "px-4 py-2 text-xs font-black text-amber-800" }, t('stem.logiclab.xp_claimed', '\u2713 XP claimed')) :
                   React.createElement("button", { "aria-label": t('stem.logiclab.claim_xp', "Claim XP"),
                     onClick: function() {
                       var xp = _t2.type === 'tautology' ? 10 : 5;
-                      if (typeof awardStemXP === 'function') awardStemXP('logicLab', xp, 'Found '+_t2.type);
+                      if (!payOnce(claimKey, xp, 'Found '+_t2.type)) return;
                       if (stemCelebrate) stemCelebrate();
                       if (addToast) addToast('\uD83C\uDF1F +'+xp+' XP for the '+_t2.type+'!', 'success');
                     },
@@ -1409,7 +1487,8 @@ window.StemLab = window.StemLab || {
 
                     var isActive = ci === currentChallenge;
 
-                    var isCompleted = ci < currentChallenge || (ci === currentChallenge && proofComplete);
+                    // Solved, not merely passed over: selecting Level 4 used to tick L1-L3.
+                    var isCompleted = !!(d.solvedProofs && d.solvedProofs['L' + ci]) || (ci === currentChallenge && proofComplete && !aiProof);
 
                     return React.createElement("button", { "aria-label": "Select proof challenge: Level " + (ci + 1),
 
@@ -1585,7 +1664,9 @@ window.StemLab = window.StemLab || {
 
                           var newSteps = proofSteps.slice(0, -1);
 
-                          upd({ proofSteps: newSteps, proofComplete: false });
+                          // Clear the selection too: a kept "S<n>" pointing at the removed
+                          // step crashed the next rule click (reading .result of undefined).
+                          upd({ proofSteps: newSteps, proofComplete: false, selectedSteps: [] });
 
                         },
 
@@ -1667,17 +1748,25 @@ window.StemLab = window.StemLab || {
 
                           var newSteps = proofSteps.concat([{ result: result, rule: rule.name, from: sel.slice() }]);
 
-                          var done = result === activeCh.conclusion;
+                          var goal = propCanon(activeCh.conclusion);
+
+                          var done = goal !== null && propCanon(result) === goal;
 
                           upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done, fallacyNote: null });
 
                           if (done) {
-                            var _xp = 5 + (activeCh.level || 1) * 3;
+                            // Record the solve (the quests read this) and pay once per challenge:
+                            // Undo + re-derive paid "Proof completed" again.
+                            var solvedKey = aiProof ? 'ai:' + activeCh.premises.join('|') + '=>' + goal : 'L' + currentChallenge;
+                            var solvedMap = d.solvedProofs && typeof d.solvedProofs === 'object' ? d.solvedProofs : {};
                             if (stemCelebrate) stemCelebrate();
                             if (stemBeep) stemBeep(880, 200);
-                            if (typeof awardStemXP === 'function') awardStemXP('logicLab', _xp, 'Proof completed');
-                            if (addToast) addToast('\uD83C\uDF89 Proof complete! +' + _xp + ' XP', 'success');
-                            upd({ score: score + _xp });
+                            if (!solvedMap[solvedKey]) {
+                              var _xp = 5 + (activeCh.level || 1) * 3;
+                              if (typeof awardStemXP === 'function') awardStemXP('logicLab', _xp, 'Proof completed');
+                              if (addToast) addToast('\uD83C\uDF89 Proof complete! +' + _xp + ' XP', 'success');
+                              upd({ score: score + _xp, solvedProofs: Object.assign({}, solvedMap, { [solvedKey]: true }) });
+                            }
                           }
 
                         } else {
@@ -1770,7 +1859,7 @@ window.StemLab = window.StemLab || {
 
                     key: ct[0],
 
-                    onClick: function() { upd({ challengeMode: ct[0], challengeIdx: 0, challengeAnswer: null }); },
+                    onClick: function() { upd({ challengeMode: ct[0], challengeIdx: 0, challengeAnswer: null, aiChallengeAnswer: null, qfAnswers: {} }); },
 
                     className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (active ? "bg-violet-600 text-white shadow-lg" : "bg-violet-50 text-violet-600 hover:bg-violet-100")
 
@@ -1851,7 +1940,7 @@ window.StemLab = window.StemLab || {
                         var correct = f.valid === true;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
                         upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 100); if (typeof awardStemXP==='function') awardStemXP('logicLab', 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        if (correct) { if (stemBeep) stemBeep(660, 100); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
@@ -1864,7 +1953,7 @@ window.StemLab = window.StemLab || {
                         var correct = f.valid === false;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
                         upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 100); if (typeof awardStemXP==='function') awardStemXP('logicLab', 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        if (correct) { if (stemBeep) stemBeep(660, 100); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
@@ -1905,7 +1994,7 @@ window.StemLab = window.StemLab || {
 
                           aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy');
 
-                          upd({ challengeAnswer: null });
+                          upd({ aiChallengeAnswer: null });
 
                         },
 
@@ -1951,11 +2040,11 @@ window.StemLab = window.StemLab || {
 
                   ),
 
-                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.valid_3', "Valid"),
 
-                      onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
+                      onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
 
@@ -1963,7 +2052,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.invalid_fallacy_3', "Invalid (Fallacy)"),
 
-                      onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
+                      onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
 
@@ -1971,11 +2060,11 @@ window.StemLab = window.StemLab || {
 
                   ),
 
-                  challengeAnswer && React.createElement("div", { className: "mt-4 p-4 rounded-xl border-2 " + (challengeAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-300") },
+                  aiChallengeAnswer && React.createElement("div", { className: "mt-4 p-4 rounded-xl border-2 " + (aiChallengeAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-300") },
 
-                    React.createElement("div", { className: "font-black text-sm mb-1 " + (challengeAnswer === 'correct' ? "text-emerald-700" : "text-red-700") },
+                    React.createElement("div", { className: "font-black text-sm mb-1 " + (aiChallengeAnswer === 'correct' ? "text-emerald-700" : "text-red-700") },
 
-                      challengeAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\u274C Not quite!"
+                      aiChallengeAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\u274C Not quite!"
 
                     ),
 
@@ -1989,7 +2078,7 @@ window.StemLab = window.StemLab || {
 
                         aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy');
 
-                        upd({ challengeAnswer: null });
+                        upd({ aiChallengeAnswer: null });
 
                       },
 
@@ -2026,6 +2115,16 @@ window.StemLab = window.StemLab || {
                 var allFilled = table.rows.every(function(r, ri) { return userAnswers[ri] !== undefined; });
 
                 var allCorrect = allFilled && table.rows.every(function(r, ri) { return userAnswers[ri] === r.result; });
+
+                // Pay on the answer that completes an all-correct table. Paying in the render
+                // tree paid again on every re-render; payOnce keys each card so Next cycling
+                // back to it does not pay again (the game score still counts repeats).
+                var answerQf = function(ri, value) {
+                  var a = Object.assign({}, userAnswers); a[ri] = value;
+                  upd({ qfAnswers: a });
+                  var full = table.rows.every(function(r, k) { return a[k] !== undefined; });
+                  if (!allFilled && full && table.rows.every(function(r, k) { return a[k] === r.result; })) payOnce('quickfire:' + (challengeIdx % TT_CHALLENGES.length), 3, 'Quick-fire completed');
+                };
 
 
 
@@ -2081,7 +2180,7 @@ window.StemLab = window.StemLab || {
 
                                   React.createElement("button", { "aria-label": "T",
 
-                                    onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = true; upd({ qfAnswers: a }); },
+                                    onClick: function() { answerQf(ri, true); },
 
                                     className: "px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded text-xs"
 
@@ -2089,7 +2188,7 @@ window.StemLab = window.StemLab || {
 
                                   React.createElement("button", { "aria-label": "F",
 
-                                    onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
+                                    onClick: function() { answerQf(ri, false); },
 
                                     className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded text-xs"
 
@@ -2115,7 +2214,6 @@ window.StemLab = window.StemLab || {
 
                     ),
 
-                    allCorrect && (function() { if (typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Quick-fire completed'); return null; })(),
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.next_challenge', "Next Challenge"),
 
@@ -2139,14 +2237,14 @@ window.StemLab = window.StemLab || {
 
                 var DETECTIVE = [
 
-                  { scenario: 'Detective Jones has three clues:\n1. If the butler did it, the window is broken.\n2. If the maid did it, there are footprints in the garden.\n3. The window is NOT broken.', question: t('stem.logiclab.can_we_conclude_the_butler_is_innocent', 'Can we conclude the butler is innocent?'), answer: true, rule: 'Modus Tollens', explain: 'Clue 1: Butler \u2192 Broken window. Clue 3: \u00ACBroken window. By Modus Tollens: \u00ACButler.' },
+                  { scenario: 'Detective Jones has three clues:\n1. If the butler did it, the window is broken.\n2. If the maid did it, there are footprints in the garden.\n3. The window is NOT broken.', question: t('stem.logiclab.detective_did_the_butler_do_it', 'Did the butler do it?'), answer: false, rule: 'Modus Tollens', explain: 'Clue 1: Butler \u2192 Broken window. Clue 3: \u00ACBroken window. By Modus Tollens: \u00ACButler.' },
 
-                  { scenario: 'At the science fair:\n1. If the volcano project wins, it gets a trophy.\n2. If it gets a trophy, it goes in the display case.\n3. The volcano project wins!', question: t('stem.logiclab.will_it_go_in_the_display_case', 'Will it go in the display case?'), answer: true, rule: 'Hypothetical Syllogism + MP', explain: 'Chain: Wins \u2192 Trophy \u2192 Display case. Wins is true. By HS: Wins \u2192 Display case. By MP: Display case.' },
+                  { scenario: t('stem.logiclab.detective_science_fair_scenario', 'At the science fair:\n1. If the volcano project wins, it gets a trophy.\n2. If it gets a trophy, it goes in the display case.\n3. The volcano project IS in the display case.'), question: t('stem.logiclab.detective_did_the_volcano_project_win', 'Did the volcano project win?'), answer: 'unknown', rule: t('stem.logiclab.detective_science_fair_rule', 'No rule applies. Concluding a win would be Affirming the Consequent (a fallacy).'), explain: t('stem.logiclab.detective_science_fair_explain', 'Wins \u2192 Trophy \u2192 Display case, and the project is in the display case. The clues never say that only winners go in the case, so both answers fit the clues.') },
 
                   { scenario: 'Lunch options:\n1. We are having pizza OR pasta.\n2. The pizza oven is broken (no pizza).', question: t('stem.logiclab.are_we_having_pasta', 'Are we having pasta?'), answer: true, rule: 'Disjunctive Syllogism', explain: 'Pizza\u2228Pasta, \u00ACPizza. By DS: Pasta. \u2714' },
-                  { scenario: 'Animal mystery:\n1. If the creature has wings, it can fly.\n2. If it can fly, we would see it in the sky.\n3. We did NOT see anything in the sky.', question: t('stem.logiclab.can_we_conclude_the_creature_has_no_wi', 'Can we conclude the creature has no wings?'), answer: true, rule: 'HS + Modus Tollens', explain: 'Wings\u2192Fly\u2192Sky. HS: Wings\u2192Sky. MT with \u00ACSky: \u00ACWings. \u2714' },
+                  { scenario: 'Animal mystery:\n1. If the creature has wings, it can fly.\n2. If it can fly, we would see it in the sky.\n3. We did NOT see anything in the sky.', question: t('stem.logiclab.detective_does_the_creature_have_wings', 'Does the creature have wings?'), answer: false, rule: 'HS + Modus Tollens', explain: 'Wings\u2192Fly\u2192Sky. HS: Wings\u2192Sky. MT with \u00ACSky: \u00ACWings. \u2714' },
                   { scenario: 'Treasure hunt:\n1. Gold is in Cave A or Cave B.\n2. Explorers searched Cave A \u2014 no gold there.', question: t('stem.logiclab.is_the_gold_in_cave_b', 'Is the gold in Cave B?'), answer: true, rule: 'Disjunctive Syllogism', explain: 'A\u2228B, \u00ACA. By DS: B. \u2714' },
-                  { scenario: 'Weather:\n1. If dark clouds, it will rain.\n2. If it rains, the picnic is cancelled.\n3. The picnic was NOT cancelled.', question: t('stem.logiclab.can_we_conclude_no_dark_clouds', 'Can we conclude no dark clouds?'), answer: true, rule: 'HS + Modus Tollens', explain: 'Clouds\u2192Rain\u2192Cancel. HS: Clouds\u2192Cancel. MT with \u00ACCancel: \u00ACClouds. \u2714' }
+                  { scenario: t('stem.logiclab.detective_weather_scenario', 'Weather:\n1. If there are dark clouds, it will rain.\n2. If it rains, the picnic is cancelled.\n3. There were NO dark clouds.'), question: t('stem.logiclab.detective_was_the_picnic_cancelled', 'Was the picnic cancelled?'), answer: 'unknown', rule: t('stem.logiclab.detective_weather_rule', 'No rule applies. Concluding the picnic went ahead would be Denying the Antecedent (a fallacy).'), explain: t('stem.logiclab.detective_weather_explain', 'Clouds \u2192 Rain \u2192 Cancel, and there were no dark clouds. The clues never say that rain needs dark clouds, and the picnic could be cancelled for another reason, so both answers fit the clues.') }
                 ];
 
                 var det = DETECTIVE[challengeIdx % DETECTIVE.length];
@@ -2167,11 +2265,11 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var c = det.answer === 'unknown' ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
 
                   ),
 
@@ -2193,7 +2291,7 @@ window.StemLab = window.StemLab || {
 
                           aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective');
 
-                          upd({ challengeAnswer: null });
+                          upd({ aiChallengeAnswer: null });
 
                         },
 
@@ -2237,19 +2335,19 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "p-3 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-sm font-bold text-amber-800" }, "\uD83E\uDD14 " + ad.question),
 
-                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { upd({ aiChallengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
 
                   ),
 
-                  challengeAnswer && React.createElement("div", { className: "mt-4 p-4 rounded-xl border-2 " + (challengeAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-300") },
+                  aiChallengeAnswer && React.createElement("div", { className: "mt-4 p-4 rounded-xl border-2 " + (aiChallengeAnswer === 'correct' ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-300") },
 
-                    React.createElement("div", { className: "font-black text-sm mb-1 " + (challengeAnswer === 'correct' ? "text-emerald-700" : "text-red-700") }, challengeAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\u274C Not quite."),
+                    React.createElement("div", { className: "font-black text-sm mb-1 " + (aiChallengeAnswer === 'correct' ? "text-emerald-700" : "text-red-700") }, aiChallengeAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\u274C Not quite."),
 
                     React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, "Rule: " + ad.rule),
 
@@ -2261,7 +2359,7 @@ window.StemLab = window.StemLab || {
 
                         aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective');
 
-                        upd({ challengeAnswer: null });
+                        upd({ aiChallengeAnswer: null });
 
                       },
 
@@ -2473,7 +2571,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("button", { "aria-label": t('stem.logiclab.toggle_educational_panel_what_is_propo', "Toggle educational panel: What is Propositional Logic"),
 
-                onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'First logic session'); },
+                onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu) payOnce('learn', 5, 'First logic session'); },
 
                 className: "w-full p-4 rounded-2xl border-2 border-violet-200 text-left transition-all hover:shadow-md flex items-center gap-3",
 

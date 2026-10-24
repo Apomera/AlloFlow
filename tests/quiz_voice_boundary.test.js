@@ -114,6 +114,32 @@ function evidenceReflectionRuntimeProps() {
 }
 
 describe('ordinary Quiz voice boundary', () => {
+  it('withholds spoken correctness for a disputed key and checks a subsequently corrected key', async () => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const props = quizRuntimeProps();
+    props.isIndependentMode = true;
+    props.handleToggleShowQuizAnswers = vi.fn();
+    const disputed = { type: 'mcq', question: 'Which material conducts?', options: ['Copper', 'Wood'], correctAnswer: 'Copper', keyCheck: { status: 'disputed', checkedKey: 'Copper' } };
+    props.generatedContent = { id: 'voice-disputed', data: { mode: 'formative', deliverySettings: { feedbackTiming: 'immediate' }, questions: [disputed] } };
+    runtimeHost = document.createElement('div'); document.body.appendChild(runtimeHost);
+    runtimeRoot = ReactDOMClient.createRoot(runtimeHost);
+    await React.act(async () => runtimeRoot.render(React.createElement(QuizView, props)));
+    const send = async (action, extra = {}) => {
+      let response;
+      await React.act(async () => window.dispatchEvent(new window.CustomEvent('alloflow:quiz-voice-control', { detail: { action, ...extra, respond: value => { response = value; } } })));
+      return response;
+    };
+    expect(await send('check')).toMatchObject({ ok: false, state: 'key-under-review', correct: null });
+    await send('choose', { choice: 'A' });
+    const result = await send('check');
+    expect(result).toMatchObject({ ok: false, state: 'key-under-review', correct: null });
+    expect(result.message).not.toContain('Copper');
+    expect(props.handleToggleShowQuizAnswers).not.toHaveBeenCalled();
+    props.generatedContent = { ...props.generatedContent, id: 'voice-corrected', data: { ...props.generatedContent.data, questions: [{ ...disputed, correctAnswer: 'Wood' }] } };
+    await React.act(async () => runtimeRoot.render(React.createElement(QuizView, props)));
+    await send('choose', { choice: 'B' });
+    expect(await send('check')).toMatchObject({ ok: true, state: 'checked', correct: true });
+  });
   it('exposes stable semantic events and does not simulate DOM clicks', () => {
     const source = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
     expect(QuizView.voiceBoundary).toMatchObject({
@@ -333,7 +359,14 @@ describe('ordinary Quiz voice boundary', () => {
 
   it('keeps evidence/reflection voice mutations state-driven and confirms destructive paths', () => {
     const source = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
-    const voiceSlice = source.slice(source.indexOf('// QUIZ VOICE SURFACE:'), source.indexOf('// QUIZ_VOICE_EFFECT'));
+    // '// QUIZ_VOICE_EFFECT' never existed, so the slice ran to the end of the file. End where
+    // the voice surface's effects end, as the sibling boundary test does.
+    const voiceStart = source.indexOf('// QUIZ VOICE SURFACE:');
+    const voiceEnd = source.indexOf('if (attemptReceipt &&', voiceStart);
+    expect(voiceStart).toBeGreaterThan(0);
+    expect(voiceEnd).toBeGreaterThan(voiceStart);
+    const voiceSlice = source.slice(voiceStart, voiceEnd);
+    expect(voiceSlice).toContain('window.addEventListener(QUIZ_VOICE_CONTROL_EVENT, handleQuizVoiceControl)');
     expect(voiceSlice).not.toMatch(/\.click\s*\(/);
     expect(voiceSlice).not.toContain('querySelector');
     expect(source).toContain("confirmationToken: 'reset-answer-evidence'");

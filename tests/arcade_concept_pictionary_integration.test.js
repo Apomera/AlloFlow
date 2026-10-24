@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 const read = file => readFileSync(file, 'utf8');
 const hosts = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'];
@@ -15,9 +16,25 @@ const publishedPlugin = {
   pin: 'a225e174ea',
   canonicalSha256: '1c79d80cc3c7d40875311c8cfbb811aed0e33627fe2fff55604108d6a0c05e3f',
 };
+// Every deploy re-pins the CDN refs to its own commit (deploy.sh step 6). Pins verified against the
+// committed module bytes, so a shallow CI checkout that lacks the commit can still check them.
+const verifiedHavenPins = [
+  { pin: publishedHaven.pin, sha256: publishedHaven.sha256 },
+  { pin: '4a23d7b91', sha256: '8961f5c6d47618d8ef09bd5b0e50de1b6a47168b35e8446e269db09737fc9293' }, // deploy 2026-10-16
+];
+function committedHavenHash(pin) {
+  if (!/^[0-9a-f]{7,40}$/.test(String(pin || ''))) return null;
+  try {
+    const bytes = execFileSync('git', ['show', pin + ':allohaven_module.js'], { maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
+    return createHash('sha256').update(bytes).digest('hex');
+  } catch (_) { return null; }
+}
 function matchesHavenPin(pin, bytes) {
   const hash = createHash('sha256').update(bytes).digest('hex');
-  return pin === hash.slice(0, 10) || (pin === publishedHaven.pin && hash === publishedHaven.sha256);
+  return pin === hash.slice(0, 10)
+    || verifiedHavenPins.some((entry) => entry.pin === pin && entry.sha256 === hash)
+    // A later deploy's commit pin: accept it only when that commit holds these exact bytes.
+    || committedHavenHash(pin) === hash;
 }
 function matchesPluginPin(pin, bytes) {
   const lf = bytes.toString('utf8').replace(/\r\n/g, '\n');
@@ -87,5 +104,10 @@ describe('Pictionary production integration', () => {
     expect(matchesHavenPin(publishedHaven.pin, bytes)).toBe(true);
     expect(matchesHavenPin('000000000', bytes)).toBe(false);
     expect(matchesHavenPin(publishedHaven.pin, Buffer.concat([bytes, Buffer.from('\n// changed')]))).toBe(false);
+    for (const entry of verifiedHavenPins) {
+      expect(matchesHavenPin(entry.pin, Buffer.concat([bytes, Buffer.from('\n// changed')]))).toBe(false);
+    }
+    // A real commit whose module bytes differ (the one that added the module) is refused.
+    expect(matchesHavenPin('d23cf5ff6', bytes)).toBe(false);
   });
 });

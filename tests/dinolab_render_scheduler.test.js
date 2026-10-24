@@ -268,15 +268,23 @@ describe('DinoLab native render invalidation integration', () => {
       bodyLabelMetricKey: 'old metrics', bodyLabelContext: 'old context', previousBodyLabels: ['old layout'],
       document: {visibilityState: 'visible'},
       assemblyTray: null, cameraStudy: 'full', cameraTargetIsEvidence: false,
+      partInspectionFrameRef: {current: null}, supportingRelationRef: {current: null}, selectedBodyPartRef: {current: ''},
+      inspectionFrameContext: 'scheduler-test', currentCameraFrame: null,
       measurementGuides: {}, surveyDecorations: {}, evidenceDisplayParts: [],
       overviewHalf: new Vector(4, 2, 1), modelHalf: new Vector(4, 2, 1),
       overviewCenter: new Vector(), cameraTarget: new Vector(),
       THREE: {Vector3: Vector}, yaw: 0, pitch: .2, zoom: 1, len: 8,
       camera: {fov: 50, aspect: 1, position: {set() {}}, updateProjectionMatrix() {}, lookAt() {}, updateMatrixWorld() {}},
-      yawRef: {current: {}}, dinoFrameDistance() { return 10; }, updateCameraReadout() {},
+      yawRef: {current: {}}, props: {shapeStudy: null}, model: {userData: {}}, dinoFrameDistance() { return 10; }, updateCameraReadout() {},
       canvas: {clientWidth: 800, clientHeight: 400}, renderer: {setSize() {}}
     };
-    const names = ['requestSceneRender', 'syncAnimation', 'updateCameraView', 'resize', 'fontMetricsChanged', 'contextWasLost', 'contextWasRestored', 'visibilityChanged'];
+    // Run the native isolation closures with their actual non-applicable-species
+    // factory results; camera invalidation must not need replacement callbacks.
+    for (const [field, helper] of [['sauropodDistalIsolation', 'dinoSauropodDistalIsolation'], ['hadrosaurDistalIsolation', 'dinoHadrosaurDistalIsolation']]) {
+      const factory = vm.runInNewContext('(' + extractFunction(helper) + ')', {});
+      state[field] = factory(state.model, 'allosaurus');
+    }
+    const names = ['requestSceneRender', 'syncAnimation', 'updateSauropodDistalIsolation', 'updateHadrosaurDistalIsolation', 'updateCameraView', 'resize', 'fontMetricsChanged', 'contextWasLost', 'contextWasRestored', 'visibilityChanged'];
     const build = new Function('context', 'with(context){' + names.map(name => extractFunction(name, true)).join('\n') + '\nreturn {' + names.join(',') + '};}');
     const api = build(state);
     api.requestSceneRender();
@@ -334,7 +342,7 @@ describe('DinoLab native render invalidation integration', () => {
       "document.removeEventListener('visibilitychange', visibilityChanged);",
       'inViewport = !entry || entry.isIntersecting;\n                syncAnimation();',
       'canRender: function () { return alive && !!renderer && !!scene && !!camera && !contextLost && inViewport && pageVisible; }',
-      'isAnimating: function () { return !motionPausedRef.current && !reducedMotionRef.current; }',
+      'isAnimating: function () { return !motionPausedRef.current && !reducedMotionRef.current && !props.shapeStudy; }',
       'resetClock: function () { motionClockRef.current.last = null; }',
       'renderRequestRef.current = activeRenderControl;\n            syncAnimation();',
       'alive = false;\n            if (renderScheduler) renderScheduler.dispose();',

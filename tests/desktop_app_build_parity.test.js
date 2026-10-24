@@ -175,7 +175,7 @@ describe('desktop app-build deployment guard', () => {
       readFileSync('desktop/web-app/public/alloflow_desktop_bridge.js', 'utf8')
     );
     const stampedWorker = readFileSync(join(buildRoot, 'sw.js'), 'utf8');
-    expect(stampedWorker).toMatch(/alloflow-v\d+/);
+    expect(stampedWorker).toMatch(/alloflow-v[0-9a-f]{64}-\d+/);   // release-tagged cache name (postbuild stamps both parts)
     expect(stampedWorker).toContain('./static/js/main.1234abcd.js');
     expect(stampedWorker).toContain('./static/css/main.5678cdef.css');
   });
@@ -210,6 +210,24 @@ describe('desktop app-build deployment guard', () => {
       repoRoot: fixture.root,
       appBuildDir: fixture.appBuild,
     })).toThrow(/doc_pipeline_module\.js desktop artifact differs/);
+  });
+
+  it('accepts the release-tagged cache name postbuild stamps, and rejects an unstamped release id', () => {
+    const fixture = makeValidFixture();
+    const worker = [
+      "const RELEASE_ID = '" + 'a'.repeat(64) + "';",
+      'const RELEASE_BUILT_AT = 1792174913907;',
+      "const CACHE_NAME = 'alloflow-v" + 'a'.repeat(64) + "-1792174913907';",
+      'const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.1234abcd.js","./static/css/main.5678cdef.css"];',
+      'const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();',
+      "const SHELL_URL = scopedUrl('./index.html');",
+    ];
+    write(fixture.root, 'desktop/app-build/sw.js', worker.join('\n'));
+    expect(() => validateDesktopAppBuild({ repoRoot: fixture.root, appBuildDir: fixture.appBuild })).not.toThrow();
+    worker[0] = "const RELEASE_ID = '__RELEASE_ID__';";
+    worker[2] = "const CACHE_NAME = 'alloflow-v__RELEASE_ID__-1792174913907';";
+    write(fixture.root, 'desktop/app-build/sw.js', worker.join('\n'));
+    expect(() => validateDesktopAppBuild({ repoRoot: fixture.root, appBuildDir: fixture.appBuild })).toThrow(/unstamped build placeholder/);
   });
 
   it('rejects a service worker that omits the hashed main bundle', () => {

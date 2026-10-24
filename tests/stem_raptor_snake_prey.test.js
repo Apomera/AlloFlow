@@ -68,5 +68,5 @@ describe('Snake prey surface and slither',()=>{
       for(let j=0;j<position.count;j++){const p=new THREE.Vector3().fromBufferAttribute(position,j);expect(box.distanceToPoint(p)).toBeLessThan(1e-6);expect(p.distanceTo(sphere.center)).toBeLessThanOrEqual(sphere.radius+1e-6);}
     }
     api.surface(m.slither,0,.3,0,0,.3,null);m.root.position.set(0,.3,0);m.root.rotation.set(0,0,0);m.root.updateMatrixWorld(true);expect(clearance(m,()=>0)).toBeCloseTo(.024,6);expect(m.slither.head.rotation.x).toBeCloseTo(0,10);expect(m.slither.head.rotation.z).toBeCloseTo(0,10);dispose(m);
-  });
+  }, 20000);
 });

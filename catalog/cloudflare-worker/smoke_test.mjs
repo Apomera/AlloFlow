@@ -105,13 +105,18 @@ const run = async () => {
   const KV = {
     put: async (k, v) => { kvStore.set(k, v); },
     get: async (k) => kvStore.get(k) || null,
-    list: async () => ({ keys: [...kvStore.keys()].map(name => ({ name })) }),
+    list: async ({ prefix = '', limit = 1000, cursor = '' } = {}) => {
+      const names = [...kvStore.keys()].filter(name => name.startsWith(prefix)).sort();
+      const start = cursor ? Number(cursor) : 0;
+      const end = Math.min(start + limit, names.length);
+      return { keys: names.slice(start, end).map(name => ({ name })), list_complete: end >= names.length, cursor: end < names.length ? String(end) : '' };
+    },
   };
   const ENVKV = { ...ENV, BUG_REPORTS: KV };
 
-  // 11. missing KV binding → 500
+  // 11. missing KV binding → 503
   r = await worker.fetch(jsonPost('/submitBug', { what: 'boom' }), ENV);
-  ok(r.status === 500, '/submitBug without KV binding → 500 (got ' + r.status + ')');
+  ok(r.status === 503, '/submitBug without KV binding → 503 (got ' + r.status + ')');
 
   // 12. validation: empty report → 400
   r = await worker.fetch(jsonPost('/submitBug', { type: 'Bug Report' }), ENVKV);
@@ -137,9 +142,9 @@ const run = async () => {
 
   // 16. GET /bugs wrong token → 401; right token → 200 list
   const ENVADMIN = { ...ENVKV, ADMIN_TOKEN: 'sekret' };
-  r = await worker.fetch(req('/bugs?token=nope'), ENVADMIN);
+  r = await worker.fetch(req('/bugs', { headers: { Authorization: 'Bearer nope' } }), ENVADMIN);
   ok(r.status === 401, 'GET /bugs wrong token → 401 (got ' + r.status + ')');
-  r = await worker.fetch(req('/bugs?token=sekret'), ENVADMIN);
+  r = await worker.fetch(req('/bugs', { headers: { Authorization: 'Bearer sekret' } }), ENVADMIN);
   const lb = await r.json();
   ok(r.status === 200 && lb.ok === true && lb.count === 2, 'GET /bugs valid token → 200 + lists 2 reports (got ' + r.status + '/' + (lb && lb.count) + ')');
 

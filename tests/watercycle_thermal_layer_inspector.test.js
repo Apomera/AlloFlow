@@ -7,8 +7,11 @@ import { parse } from 'acorn';
 const SOURCE_PATH = 'stem_lab/stem_tool_watercycle.js';
 const MIRROR_PATH = 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js';
 const TEST_PATH = 'tests/watercycle_thermal_layer_inspector.test.js';
-const BASELINE_PATH = 'reports/watercycle-thermal-layer-inspector/baseline-runtime.js';
-const BASELINE_SHA = 'd68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603';
+// Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): later
+// published passes (585a61ba2, 79e3e5eae) changed preserved declarations on purpose. The original
+// pass baseline remains at reports/watercycle-thermal-layer-inspector/baseline-runtime.js.
+const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const PRESERVED = [
   'wcPrecipClamp', 'advanceWcStormWeather', 'WC_PRECIP_DEFAULTS', 'WC_PRECIP_PRESETS',
   'normalizeWcPrecipConfig', 'wcPrecipTemperatureAt', 'buildWcPrecipThermalStructure',
@@ -172,6 +175,8 @@ function rendererHarness(runtime, initial = {}) {
       setIQ: () => { throw new Error('Inspector changed the live precipitation controls'); },
       setStormLifecycleTime: () => { throw new Error('Inspector moved the live timeline'); },
       awardStemXP: () => { throw new Error('Inspector changed rewards'); },
+      // The shipped renderer reads copy through the tool's __alloT(key, fallback) wrapper.
+      __alloT: (_key, fallback) => fallback,
     }, { filename: runtime.source.path + ':thermal-renderer', timeout: 1000 });
   }
   return {

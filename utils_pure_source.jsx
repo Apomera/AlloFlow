@@ -595,6 +595,158 @@ const writeVerifiedStorageSnapshot = async (storage, key, snapshot, isCurrent = 
   return { status: 'saved', verified: true, verifiedAt: new Date().toISOString(), snapshot: saved };
 };
 
+ // A baseline belongs to one tab. Merge only edits made since that baseline;
+// another tab's untouched fields (and independently edited rows) stay current.
+const _learnerWorkRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+const _learnerWorkEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const _learnerWorkCopy = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+const mergeLearnerWorkSnapshots = (baseline, local, saved, conflictChoice = 'local') => {
+  const conflicts = [];
+  const rows = value => Array.isArray(value) && value.every(row => _learnerWorkRecord(row) && typeof row.id === 'string' && row.id)
+    && new Set(value.map(row => row.id)).size === value.length;
+  const merge = (base, mine, theirs, path) => {
+    if (_learnerWorkEqual(mine, base) || _learnerWorkEqual(mine, theirs)) return { value: theirs, base: theirs };
+    if (_learnerWorkEqual(theirs, base)) return { value: mine, base: theirs };
+    if (_learnerWorkRecord(mine) && _learnerWorkRecord(theirs) && (base === undefined || _learnerWorkRecord(base))) {
+      const value = {}, nextBase = {};
+      for (const key of new Set([...Object.keys(base || {}), ...Object.keys(mine), ...Object.keys(theirs)])) {
+        if (['__proto__', 'constructor', 'prototype'].includes(key)) continue;
+        const child = merge(base?.[key], mine[key], theirs[key], path.concat(key));
+        if (child.value !== undefined) value[key] = child.value;
+        if (child.base !== undefined) nextBase[key] = child.base;
+      }
+      return { value, base: nextBase };
+    }
+    if (rows(mine) && rows(theirs) && (base === undefined || rows(base))) {
+      const byId = list => Object.fromEntries((list || []).map(row => [row.id, row]));
+      const child = merge(byId(base), byId(mine), byId(theirs), path.concat('$rows'));
+      const order = list => (list || []).map(row => row.id);
+      const desired = _learnerWorkEqual(order(mine), order(base)) ? order(theirs) : order(mine);
+      const arrange = map => [...new Set([...desired, ...order(theirs), ...Object.keys(map)])].filter(id => map[id] !== undefined).map(id => map[id]);
+      return { value: arrange(child.value), base: arrange(child.base) };
+    }
+    conflicts.push({ path, mine: _learnerWorkCopy(mine), saved: _learnerWorkCopy(theirs), deleted: theirs === undefined });
+    return conflictChoice === 'saved' ? { value: theirs, base: theirs } : { value: mine, base };
+  };
+  const result = merge(baseline || {}, local || {}, saved || {}, []);
+  return { snapshot: _learnerWorkCopy(result.value), baseline: _learnerWorkCopy(result.base), conflicts };
+};
+const withLearnerWorkLock = async (key, operation) => {
+  const locks = typeof navigator !== 'undefined' && navigator.locks;
+  if (!locks || typeof locks.request !== 'function') throw new Error('Coordinated device saving is unavailable. Keep this page open and download your work.');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    return await locks.request('alloflow:learner-work:' + key, { mode: 'exclusive', signal: controller.signal }, async () => {
+      clearTimeout(timeout);
+      return operation();
+    });
+  } finally { clearTimeout(timeout); }
+};
+const createLearnerWorkSession = ({ storage, key = 'allo_student_work', withLock = withLearnerWorkLock, onChange = () => {}, onSaved = () => {} }) => {
+  let baseline = {}, current = {}, initialized = false, conflicts = [], compared = null, queue = Promise.resolve();
+  const read = async () => {
+    const saved = await storage.get(key, { throwOnError: true, localOnly: true });
+    if (saved !== null && saved !== undefined && !_learnerWorkRecord(saved)) throw new Error('Saved student work is not a response map.');
+    return saved || {};
+  };
+  const publish = (previous, status, reason = '') => {
+    const state = { previous, snapshot: _learnerWorkCopy(current), status, conflicts: _learnerWorkCopy(conflicts), reason };
+    onChange(state); return state;
+  };
+  const advance = (saved, previous = current, choice = 'local') => {
+    const merged = mergeLearnerWorkSnapshots(baseline, current, saved, choice);
+    baseline = merged.baseline; current = merged.snapshot; conflicts = merged.conflicts;
+    compared = conflicts.length ? _learnerWorkCopy(saved) : null;
+    return { previous, merged };
+  };
+  const atPath = (value, path) => path.reduce((node, part) => part === '$rows' && Array.isArray(node)
+    ? Object.fromEntries(node.map(row => [row.id, row])) : node?.[part], value);
+  const replacePath = (value, path, replacement) => {
+    if (!path.length) return _learnerWorkCopy(replacement);
+    if (path[0] === '$rows') {
+      const list = Array.isArray(value) ? _learnerWorkCopy(value) : [], id = path[1];
+      const index = list.findIndex(row => row.id === id);
+      const row = replacePath(index < 0 ? { id } : list[index], path.slice(2), replacement);
+      if (row === undefined) return list.filter(item => item.id !== id);
+      if (index < 0) list.push(row); else list[index] = row;
+      return list;
+    }
+    const result = _learnerWorkRecord(value) ? _learnerWorkCopy(value) : {};
+    const child = replacePath(result[path[0]], path.slice(1), replacement);
+    if (child === undefined) delete result[path[0]]; else result[path[0]] = child;
+    return result;
+  };
+  const run = (write, isCurrent, resolution) => {
+    // A queued refresh may update the displayed comparison after the click.
+    // Only the comparison actually approved at invocation authorizes a choice.
+    const decisionComparison = resolution ? _learnerWorkCopy(compared) : null;
+    const decisionLocal = resolution ? _learnerWorkCopy(current) : null;
+    const decisionPaths = new Set(resolution ? conflicts.map(conflict => JSON.stringify(conflict.path)) : []);
+    const operation = async () => {
+      if (!initialized || !isCurrent()) return { status: 'superseded' };
+      try {
+        return await withLock(key, async () => {
+          if (!isCurrent()) return { status: 'superseded' };
+          const saved = await read();
+          if (!isCurrent()) return { status: 'superseded' };
+          const previous = _learnerWorkCopy(current);
+          const merged = mergeLearnerWorkSnapshots(baseline, current, saved, resolution === 'saved' ? 'saved' : 'local');
+          const changedAgain = !!resolution && merged.conflicts.some(conflict => !decisionComparison || !decisionPaths.has(JSON.stringify(conflict.path))
+            || !_learnerWorkEqual(atPath(decisionComparison, conflict.path), atPath(saved, conflict.path))
+            || !_learnerWorkEqual(atPath(decisionLocal, conflict.path), atPath(current, conflict.path)));
+          if (merged.conflicts.length && (!write || !resolution || changedAgain)) {
+            advance(saved, previous);
+            return publish(previous, 'conflict', changedAgain ? 'changed-again' : '');
+          }
+          if (!write) {
+            advance(saved, previous);
+            return publish(previous, _learnerWorkEqual(current, baseline) ? 'saved' : 'saving');
+          }
+          if (!isCurrent()) return { status: 'superseded' };
+          // A started write cannot be cancelled. Verify its receipt even if a
+          // workspace reset retires the UI owner while storage is awaiting.
+          const receipt = await writeVerifiedStorageSnapshot(storage, key, merged.snapshot);
+          if (receipt.status !== 'saved') return { status: 'superseded' };
+          // Typing while the write is pending is a new edit, never part of its receipt.
+          const afterWrite = mergeLearnerWorkSnapshots(previous, current, receipt.snapshot);
+          baseline = afterWrite.baseline; current = afterWrite.snapshot; conflicts = afterWrite.conflicts;
+          compared = conflicts.length ? _learnerWorkCopy(receipt.snapshot) : null;
+          onSaved();
+          if (!isCurrent()) return { status: 'superseded' };
+          return publish(previous, conflicts.length ? 'conflict' : _learnerWorkEqual(current, baseline) ? 'saved' : 'saving');
+        });
+      } catch (error) {
+        if (!isCurrent()) return { status: 'superseded' };
+        publish(_learnerWorkCopy(current), 'error');
+        throw error;
+      }
+    };
+    const pending = queue.catch(() => {}).then(operation); queue = pending; return pending;
+  };
+  return {
+    hydrate(saved, local = {}) {
+      baseline = {}; current = _learnerWorkCopy(local); initialized = true;
+      advance(saved || {});
+      return publish(local, conflicts.length ? 'conflict' : _learnerWorkEqual(current, baseline) ? 'saved' : 'saving');
+    },
+    stage(snapshot) {
+      const next = _learnerWorkCopy(snapshot || {});
+      // Once a conflict is visible, clearing back to the old baseline is an
+      // explicit new edit, not permission to replace it with the remote value.
+      for (const conflict of conflicts) {
+        const before = atPath(current, conflict.path), after = atPath(next, conflict.path);
+        if (!_learnerWorkEqual(before, after)) baseline = replacePath(baseline, conflict.path, before);
+      }
+      current = next;
+    },
+    state() { return { snapshot: _learnerWorkCopy(current), baseline: _learnerWorkCopy(baseline), conflicts: _learnerWorkCopy(conflicts), initialized }; },
+    refresh: (isCurrent = () => true) => run(false, isCurrent),
+    save: (isCurrent = () => true, resolution) => run(true, isCurrent, resolution),
+  };
+};
+
+
 // RFC 9110 Retry-After accepts either delta-seconds or an HTTP date. Keep the
 // raw header out of every return value: callers get numeric, bounded metadata.
 const parseProviderRetryAfter = (value, nowMs = Date.now(), maxDelayMs = PROVIDER_RETRY_AFTER_MAX_MS) => {
@@ -1689,6 +1841,9 @@ window.AlloModules.UtilsPure = {
   unflattenObject,
   storageDB,
   writeVerifiedStorageSnapshot,
+  mergeLearnerWorkSnapshots,
+  withLearnerWorkLock,
+  createLearnerWorkSession,
   parseProviderRetryAfter,
   classifyProviderError,
   getProviderErrorSafeFields,

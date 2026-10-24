@@ -4,6 +4,11 @@ import { readFileSync } from 'node:fs';
 const view = readFileSync('view_export_preview_source.jsx', 'utf8');
 const host = readFileSync('AlloFlowANTI.txt', 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(require('node:path').join(process.cwd(), f), 'utf8')).join('\n');
 const pipeline = readFileSync('doc_pipeline_source.jsx', 'utf8');
+// 585a61ba2 (2026-10-10) localized the builder's labels: aria-label={t("<key>") || "English"}.
+// Either form passes, but only with the same English text.
+const _escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const hasAriaLabel = (src, label, q = '"') => src.includes(q === '"' ? `aria-label="${label}"` : 'aria-label={' + q + label + q + '}')
+  || new RegExp('aria-label=\\{t\\("[\\w.]+"(?:, \\{[^}]*\\})?\\) \\|\\| ' + _escapeRe(q + label + q) + '\\}').test(src);
 const handlers = readFileSync('export_handlers_module.js', 'utf8');
 const gate = readFileSync('dev-tools/check_pipeline_tests.cjs', 'utf8');
 const viewModule = readFileSync('view_export_preview_module.js', 'utf8');
@@ -126,7 +131,7 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain("const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);");
     expect(view).toContain('data-allo-page-css');
     expect(view).toContain('background-image: linear-gradient');
-    expect(view).toContain('aria-label="Interactive paragraph ruler"');
+    expect(hasAriaLabel(view, 'Interactive paragraph ruler'), 'Interactive paragraph ruler').toBe(true);
     expect(view).toContain('nudgeParagraphIndent(0.25)');
     expect(view).toContain('applyParagraphLayout({ lineSpacing:');
     expect(view).toContain('#allo-builder-edit-css');
@@ -136,11 +141,11 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('_BUILDER_PARAGRAPH_DEFAULTS');
     expect(view).toContain('_builderSelectedParagraphBlocks');
     expect(view).toContain('const applyParagraphLayout');
-    expect(view).toContain('aria-label="First-line indent"');
-    expect(view).toContain('aria-label="Hanging indent"');
+    expect(hasAriaLabel(view, 'First-line indent'), 'First-line indent').toBe(true);
+    expect(hasAriaLabel(view, 'Hanging indent'), 'Hanging indent').toBe(true);
     expect(view).toContain('role="slider" aria-orientation="horizontal"');
     expect(view).toContain('key={tab.id || index}');
-    expect(view).toContain('aria-label={`Add ${rulerTabAlignment} tab stop`}');
+    expect(hasAriaLabel(view, 'Add ${rulerTabAlignment} tab stop', '`'), 'Add ${rulerTabAlignment} tab stop').toBe(true);
     expect(view).toContain('data-allo-tab-stops');
     expect(view).toContain('_builderInsertParagraphTab');
     expect(view).toContain('aria-keyshortcuts="Control+Tab"');
@@ -266,7 +271,7 @@ describe('Document Builder refinement pass', () => {
   it('provides live page thumbnails and export-safe explicit page breaks', () => {
     expect(view).toContain('builder-navigation-panel-pages');
     expect(view).toContain('Page thumbnails');
-    expect(view).toContain('aria-label="Insert page break"');
+    expect(hasAriaLabel(view, 'Insert page break'), 'Insert page break').toBe(true);
     expect(view).toContain('data-allo-page-break="1"');
     expect(view).toContain('break-before:page;page-break-before:always');
     expect(view).toContain('refreshPageMetrics');
@@ -315,7 +320,7 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('navigationPane: showNavigationPane');
   });
   it('uses a compact ribbon and one resizable tabbed navigation pane', () => {
-    expect(view).toContain('aria-label="Document Builder ribbon"');
+    expect(hasAriaLabel(view, 'Document Builder ribbon'), 'Document Builder ribbon').toBe(true);
     expect(view).toContain('builder-ribbon-panel-home');
     expect(view).toContain('builder-ribbon-panel-insert');
     expect(view).toContain('builder-ribbon-panel-layout');
@@ -323,10 +328,10 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('builder-ribbon-panel-view');
     expect(view).toContain('builder-ribbon-panel-expert');
     expect(view).toContain('Collapse ribbon');
-    expect(view).toContain('aria-label="Navigation view"');
+    expect(hasAriaLabel(view, 'Navigation view'), 'Navigation view').toBe(true);
     expect(view).toContain('builder-navigation-panel-headings');
     expect(view).toContain('builder-navigation-panel-pages');
-    expect(view).toContain('aria-label="Resize document navigation"');
+    expect(hasAriaLabel(view, 'Resize document navigation'), 'Resize document navigation').toBe(true);
     expect(view).toContain('alloflow-builder-open-find');
     expect(view).not.toContain('document-builder-thumbnails');
   });
@@ -364,7 +369,7 @@ describe('Document Builder refinement pass', () => {
   });
   it('provides semantic named styles and a selection-safe single-use Format Painter', () => {
     expect(view).toContain('_BUILDER_STYLE_GALLERY');
-    expect(view).toContain('aria-label="Document styles"');
+    expect(hasAriaLabel(view, 'Document styles'), 'Document styles').toBe(true);
     expect(view).toContain("id: 'title'");
     expect(view).toContain("id: 'callout'");
     expect(view).toContain("block.setAttribute('data-allo-style', definition.id)");
@@ -479,9 +484,9 @@ describe('Document Builder refinement pass', () => {
     expect(view).toContain('_BUILDER_PAGE_SIZES');
     expect(view).toContain('_builderPageDimensions(pageSetup).heightPx');
     expect(view).toContain('builder-ribbon-panel-layout');
-    expect(view).toContain('aria-label="Paper size"');
-    expect(view).toContain('aria-label="Page orientation"');
-    expect(view).toContain('aria-label="Page margins"');
+    expect(hasAriaLabel(view, 'Paper size'), 'Paper size').toBe(true);
+    expect(hasAriaLabel(view, 'Page orientation'), 'Page orientation').toBe(true);
+    expect(hasAriaLabel(view, 'Page margins'), 'Page margins').toBe(true);
     expect(view).toContain('allo-page-setup-style');
     expect(view).toContain('counter(page)');
     expect(view).toContain("header[data-allo-page-header]");

@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "บันทึกการสังเกตภารกิจ",
+  "stem.flightsim.mission_journal_targets": "เป้าหมายที่ถ่ายภาพแล้ว: {captured} จาก {total}",
+  "stem.flightsim.mission_journal_complete": "บันทึกวัตถุประสงค์ภารกิจทั้งหมดและการกลับมาลงจอดแล้ว",
+  "stem.flightsim.mission_journal_ended": "ภารกิจสิ้นสุดก่อนบันทึกหลักฐานการสำเร็จครบทั้งหมด",
+  "stem.flightsim.mission_journal_recovery": "บันทึกการช่วยเหลือผู้รอดชีวิต: {value}",
+  "stem.flightsim.mission_journal_return": "บันทึกการกลับมาลงจอดที่ฐาน: {value}",
+  "stem.flightsim.mission_guidance_title": "คำแนะนำภารกิจ",
+  "stem.flightsim.mission_route": "{target} · มุมทิศ {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "จุดขึ้นบิน",
+  "stem.flightsim.mission_read_status": "อ่านสถานะภารกิจ",
+  "stem.flightsim.mission_return_criterion": "ลงจอดภายในระยะ {distance} nm จาก {target} ด้วยความเร็วเทียบพื้นดินต่ำกว่า {speed} kt และอัตราร่อนลงต่ำกว่า {fpm} fpm",
+  "stem.flightsim.mission_unavailable": "ไม่มีข้อมูลเป้าหมายภารกิจ ให้จบเที่ยวบินนี้แล้วเริ่มภารกิจใหม่",
+  "stem.flightsim.mission_capture_criterion": "อยู่ภายในระยะ {distance} ft สูงกว่า {min} และต่ำกว่า {max} ft เหนือพื้นดิน โดยมีความเร็วเทียบพื้นดินต่ำกว่า {speed} kt เป็นเวลา {hold} s"
+}

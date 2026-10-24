@@ -13,7 +13,7 @@ const setupProps = extra => ({ inputText: source, language: 'English', history: 
 const card = { id: 'rain-card', title: 'Rain returns', text: 'Rain brings water back down.', sourceQuote: 'Precipitation returns water to the ground.', reward: [2, 0] };
 beforeAll(() => {
   window.React = React; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  const bundle = require('node:child_process').execFileSync(process.execPath, ['-e', "process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export {LessonBoardSetup,LessonBoardSolo} from './lesson_board_source.jsx';export {BoardView} from './lesson_board_ui.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'PreviewUI',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"], { encoding: 'utf8' });
+  const bundle = require('node:child_process').execFileSync(process.execPath, ['-e', "process.stdout.write(require('esbuild').buildSync({stdin:{contents:\"export {LessonBoardSetup,LessonBoardSolo} from './lesson_board_source.jsx';export {BoardView} from './lesson_board_ui.jsx';\",resolveDir:process.cwd()},bundle:true,write:false,format:'iife',globalName:'PreviewUI',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).outputFiles[0].text)"], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   UI = new Function(bundle + ';return PreviewUI;')();
 });
 afterEach(async () => { if (root) await act(async () => root.unmount()); element?.remove(); element = root = null; localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); delete window.AlloModules?.AltText; delete window.matchMedia; });
@@ -36,21 +36,25 @@ describe('Resilient generation, teacher preview and refinement', () => {
     expect($('[data-preview-answer-key]')).toBeNull();
     await click('[data-preview-key-toggle]');
     expect($('[data-preview-answer-key]').textContent).toContain('Evaporation');
-    await choose('[data-preview-stop] [data-board-choice]', '0');
+    // Generated boards spread answer positions, so choose options by text rather than slot.
+    const optionFor = text => [...element.querySelectorAll('[data-preview-stop] [data-board-choice] option')].find(option => option.textContent === text)?.value;
+    await choose('[data-preview-stop] [data-board-choice]', optionFor('Condensation'));
     await click('[data-preview-check]');
     expect($('.lb-preview-check').dataset.result).toBe('incorrect');
-    await choose('[data-preview-stop] [data-board-choice]', '1');
+    await choose('[data-preview-stop] [data-board-choice]', optionFor('Evaporation'));
     await click('[data-preview-check]');
     expect($('.lb-preview-check').dataset.result).toBe('correct');
     await click('[data-preview-next]');
     expect($('[data-preview-stop]').dataset.previewStop).toBe('cloud');
+    expect($('[data-quality="position"]')).toBeNull();
+    // A whole-board refinement can bring the pattern back; the teacher can still spread it and undo.
+    await click('[data-refine-board-preset="vivid"]');
     expect($('[data-quality="position"]')).toBeTruthy();
     await click('[data-balance-answers]');
     expect($('[data-quality="position"]')).toBeNull();
     expect($('[data-board-undo]').textContent).toContain('Before spreading answer positions');
     await click('[data-board-undo]');
     expect($('[data-quality="position"]')).toBeTruthy();
-    expect($('[data-board-versions]')).toBeNull();
   });
   it('refines one stop and then the whole board with AI, each undoable', async () => {
     const callGemini = vi.fn().mockResolvedValueOnce(JSON.stringify(makeBoard())).mockResolvedValueOnce(JSON.stringify({ ...makeBoard().locations[0], name: 'Steam vent' })).mockResolvedValueOnce(JSON.stringify({ ...makeBoard(), title: 'Rainy Waterworks' }));

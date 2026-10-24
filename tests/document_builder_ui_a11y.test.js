@@ -15,8 +15,9 @@ describe('Document Builder UI accessibility refinements', () => {
   });
 
   it('exposes format and style selection as keyboard-operable radio groups', () => {
-    expect(source).toContain('aria-label="Export format" onKeyDown={handleRadioGroupKeyDown}');
-    expect(source).toContain('aria-label="Document style" onKeyDown={handleRadioGroupKeyDown}');
+    // 585a61ba2 (2026-10-10) localized these names; the English fallback is unchanged.
+    expect(source).toContain('aria-label={t("export_preview.accessibility.export_format") || "Export format"} onKeyDown={handleRadioGroupKeyDown}');
+    expect(source).toContain('aria-label={t("export_preview.accessibility.document_style") || "Document style"} onKeyDown={handleRadioGroupKeyDown}');
     expect(source).toContain('aria-checked={exportPreviewMode === m}');
     expect(source).toContain('aria-checked={exportTheme === key}');
     expect(source).toMatch(/ArrowLeft[\s\S]*ArrowRight[\s\S]*Home[\s\S]*End/);
@@ -40,7 +41,8 @@ describe('Document Builder UI accessibility refinements', () => {
 
   it('uses a focus-contained in-app dialog for the image alt-text decision', () => {
     expect(source).toContain('aria-labelledby="image-description-title"');
-    expect(source).toContain('inert={pendingImageFile ? true : undefined}');
+    // f5b045fc9 (2026-09-20): the backup-import dialog inerts the builder the same way.
+    expect(source).toContain('inert={pendingImageFile || pendingBackup ? true : undefined}');
     expect(source).toContain("setImageAltError('Describe the image, or mark it as decorative.')");
     expect(source).toContain('checked={imageDecorative}');
     expect(source).toContain('img.alt = alt');
@@ -50,7 +52,7 @@ describe('Document Builder UI accessibility refinements', () => {
 
   it('uses input-neutral editing guidance and WCAG 2.2-sized compact toolbar controls', () => {
     expect(source).toContain('Focus the preview and edit text directly');
-    expect(source).toContain('title="Editable document preview"');
+    expect(source).toContain('title={t("export_preview.accessibility.editable_document_preview") || "Editable document preview"}');
     expect(source).not.toContain('w-7 h-7');
     expect(source).toContain('w-8 h-8');
     expect(source).toContain('button:not([disabled])');

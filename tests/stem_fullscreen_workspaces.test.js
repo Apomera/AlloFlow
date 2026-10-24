@@ -22,8 +22,10 @@ describe('STEM fullscreen workspaces', () => {
     expect(text).toContain("id: 'geoworld-fs-workspace'");
     expect(text).toContain("document.getElementById('geoworld-fs-workspace')");
     expect(text).toContain("id: 'geoworld-fs-wrap'");
-    expect(text).toContain("'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')");
-    expect(text.indexOf("id: 'geoworld-fs-workspace'")).toBeLessThan(text.indexOf("'aria-label': __alloT('stem.geometryworld.a11y_place_block', 'Place block')"));
+    // 09-25: the touch controls are built by touchActionButton(), which takes the label.
+    const placeBlock = "touchActionButton('place', 'place', 'Place', __alloT('stem.geometryworld.a11y_place_block', 'Place block'), placeMobileBlock)";
+    expect(text.includes(placeBlock), 'labelled Place block touch control').toBe(true);
+    expect(text.indexOf("id: 'geoworld-fs-workspace'")).toBeLessThan(text.indexOf(placeBlock));
   });
 
   it('offers fullscreen Particle Lab condition sliders with accessible state', () => {
@@ -31,22 +33,28 @@ describe('STEM fullscreen workspaces', () => {
     expect(text).toContain('showFullscreenConditions');
     expect(text).toContain("id: 'particle-fullscreen-conditions'");
     expect(text).toContain("'aria-controls': 'particle-fullscreen-conditions'");
-    expect(text).toContain("'aria-label': 'Fullscreen temperature in kelvin'");
-    expect(text).toContain("'aria-label': 'Fullscreen membrane permeability'");
+    // 09-21: the slider names now reach the translator.
+    expect(text.includes("'aria-label': __alloT('stem.particlelab3d.fullscreen_temperature_in_kelvin','Fullscreen temperature in kelvin')"), 'temperature slider name').toBe(true);
+    expect(text.includes("'aria-label': __alloT('stem.particlelab3d.fullscreen_membrane_permeability','Fullscreen membrane permeability')"), 'permeability slider name').toBe(true);
   });
 
   it('fullscreens Symmetry Studio with its drawing controls and canvas', () => {
     const text = source('stem_tool_artstudio.js');
     expect(text).toContain("id: 'symmetryFullscreenWorkspace'");
     expect(text).toContain("toggleFullscreen('symmetryFullscreenWorkspace')");
-    expect(text).toContain("id: 'symmetryCanvasContainer'");
+    // 10-01: the canvas container also carries the paper ref that sizes the drawing.
+    expect(text.includes("React.createElement(\"div\", {id:'symmetryCanvasContainer',ref:symmetryPaperRef}"), 'canvas container inside the workspace').toBe(true);
+    expect(text.indexOf("id: 'symmetryFullscreenWorkspace'")).toBeLessThan(text.indexOf("{id:'symmetryCanvasContainer',ref:symmetryPaperRef}"));
   });
 
   it('fullscreens the Galaxy Explorer canvas-and-controls grid', () => {
     const text = source('stem_tool_galaxy.js');
     expect(text).toContain('var canvasFrame = canvasEl.parentElement;');
     expect(text).toContain('canvasFrame.parentElement');
-    expect(text).toContain("canvasFrame.style.height = 'calc(100vh - 24px)'");
+    // 09-21 (ede07b89d): the frame takes the viewport and the stage fills its grid row
+    // from the stylesheet, instead of an inline calc(100vh - 24px) that left it inset.
+    expect(text.includes("frame.style.height = '100dvh';"), 'frame fills the viewport').toBe(true);
+    expect(text.includes('[data-galaxy-workspace][data-galaxy-fullscreen=true] > [data-galaxy-stage] { height: 100% !important;'), 'stage fills the fullscreen grid').toBe(true);
     expect(text).toContain('Observatory Filters');
   });
 

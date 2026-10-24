@@ -32,10 +32,11 @@ function expectSummaryAtOrBeyond(summary, reference) {
   expect(summary).toMatchObject({
     totalItems: reference.totalItems,
     forbiddenAggregateChoices: reference.forbiddenAggregateChoices,
-    asymmetricExtremeDistractorCandidates: reference.asymmetricExtremeDistractorCandidates,
-    advancedDirectRecallCandidates: reference.advancedDirectRecallCandidates,
   });
+  // Later waves (through the wave-49 cleanup) lowered every family, so all are floors.
   for (const metric of [
+    'asymmetricExtremeDistractorCandidates',
+    'advancedDirectRecallCandidates',
     'uniqueKeyStemLexicalLeakageCandidates',
     'semanticConceptDuplicatePairs',
     'semanticConceptDuplicateClusters',

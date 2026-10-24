@@ -1,0 +1,50 @@
+[
+  {
+    "resourceId": "crepair-anchor",
+    "path": "data.sections.1",
+    "from": {
+      "label": "REPAIR ASKS",
+      "bullets": [
+        "What happened?",
+        "Who was affected and what do they need?",
+        "What will you do to make it right?"
+      ],
+      "iconPrompt": "two hands holding a mended cup"
+    },
+    "to": {
+      "label": "REPAIR ASKS",
+      "bullets": [
+        "What happened?",
+        "Who was affected and what do they need?",
+        "What will you do to make it right?"
+      ],
+      "iconPrompt": "two hands holding a mended cup",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  },
+  {
+    "resourceId": "crepair-anchor",
+    "path": "data.sections.3",
+    "from": {
+      "label": "STEWARDSHIP",
+      "bullets": [
+        "Put it back",
+        "Plug it in",
+        "Check the cart before Crew ends"
+      ],
+      "iconPrompt": "a laptop cart with every slot filled"
+    },
+    "to": {
+      "label": "STEWARDSHIP",
+      "bullets": [
+        "Put it back",
+        "Plug it in",
+        "Check the cart before Crew ends"
+      ],
+      "iconPrompt": "a laptop cart with every slot filled",
+      "iconDecorative": false
+    },
+    "stripArtwork": true
+  }
+]

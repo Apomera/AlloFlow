@@ -19,11 +19,25 @@ export function boardQuality(board, source) {
   const seen = new Map(); for (const node of locations) { const key = String(node.instruction || '').trim().toLowerCase(); if (key) seen.set(key, [...(seen.get(key) || []), node.id]); }
   const repeated = [...seen.values()].filter(ids => ids.length > 1).flat();
   if (repeated.length) items.push({ level: 'warn', code: 'repeat', count: repeated.length, stops: repeated });
+  const giveaways = locations.filter(node => answerInInstruction(node)).map(node => node.id);
+  if (giveaways.length) items.push({ level: 'warn', code: 'giveaway', count: giveaways.length, stops: giveaways });
   return items;
 }
+// Six-letter stems let "collecting" match "Collection" without matching short common words.
+const stems = text => (String(text || '').toLowerCase().match(/[a-zÀ-ɏ]{4,}/g) || []).map(word => word.slice(0, 6));
+const named = (text, instruction) => { const words = stems(text); return words.length > 0 && words.every(word => instruction.includes(word)); };
+// An order task that names two of its items, or a choice whose key alone echoes the
+// instruction, can be answered from the wording instead of the lesson.
+export function answerInInstruction(node) {
+  const instruction = String(node?.instruction || '').toLowerCase();
+  if (node?.kind === 'order' && Array.isArray(node.items)) return node.items.filter(item => named(item, instruction)).length >= 2;
+  if (node?.kind === 'choice' && Array.isArray(node.options) && Number.isInteger(node.answer)) return named(node.options[node.answer], instruction) && node.options.every((option, index) => index === node.answer || !named(option, instruction));
+  return false;
+}
 // Spreads correct answers across positions in a fixed, board-specific order.
+// Numeric option sets (scales, measurements) keep their natural order.
 export function balanceAnswerPositions(board) {
-  const choices = choicesOf(board), slots = choices.map((_, index) => index);
+  const choices = choicesOf(board).filter(node => !node.options.every(option => /^\s*[-+]?\d/.test(String(option)))), slots = choices.map((_, index) => index);
   let seed = parseInt(supportHash(board.title + ':' + choices.map(node => node.id).join(',')), 36) || 1;
   for (let index = slots.length - 1; index > 0; index--) { seed = Math.imul(seed ^ (seed >>> 15), 2246822507) >>> 0; const other = seed % (index + 1); [slots[index], slots[other]] = [slots[other], slots[index]]; }
   const targets = new Map(choices.map((node, index) => [node.id, slots[index] % node.options.length]));

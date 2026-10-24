@@ -1,0 +1,13 @@
+{
+  "stem.flightsim.coaching_mission_complete": "Tau sau tseg tias ua tiav txoj haujlwm thiab tsaws thaum rov qab los lawm. Sim txoj haujlwm no dua nrog ib qho kev hloov uas koj txhob txwm xaiv hauv kev tswj lossis txoj kev ya, ces piv cov kev soj ntsuam uas khaws cia.",
+  "stem.flightsim.coaching_mission_depleted": "Lub dav hlau tsis muaj neeg tsav lub roj teeb tas lawm. Pib txoj haujlwm tshiab, siv txoj kev ya luv thiab npaj rov qab ua ntej roj teeb tshuav tsawg.",
+  "stem.flightsim.coaching_mission_unknown": "Txoj haujlwm no muaj pov thawj tsis txhij lossis sib tawm tsam. Rov saib yam uas tau sau tseg, ces pib sim tshiab.",
+  "stem.flightsim.coaching_mission_capture": "Qee lub chaw phiaj tseem tsis tau thaij. Thaum pib txoj haujlwm tshiab, mus ze ib lub chaw phiaj zuj zus thiab nyob hauv cov ciam qhov siab thiab kev ceev piv rau av uas qhia kom txog thaum sau tseg tias thaij tau lawm.",
+  "stem.flightsim.coaching_mission_recovery": "Tsis tau cawm tus neeg dim. Hauv txoj haujlwm cawm tshiab, xyaum ya nyob ruaj ib qho chaw hauv cov ciam qhov siab, kev txav tawm ntawm qhov chaw thiab kev ceev nce nqes uas qhia ua ntej rov mus rau lub hauv paus.",
+  "stem.flightsim.coaching_mission_return": "Tau sau tseg cov hom phiaj cawm lossis thaij lawm; tseem tshuav kev tsaws thaum rov qab. Pib txoj haujlwm tshiab, ces tseg sijhawm thiab roj teeb rau kev rov mus rau lub hauv paus.",
+  "stem.flightsim.mission_reflection_prompt": "Koj yuav hloov qhov kev txiav txim twg txog lub chaw phiaj, kev ya nyob ruaj ib qho chaw lossis kev rov qab? Siv cov kev soj ntsuam ntawm txoj haujlwm los piav koj qhov xaiv thiab npaj ib qho kev hloov rau kev sim tshiab. Koj qhov piav qhia yuav khaws nrog qhov kev ya no.",
+  "stem.flightsim.journal_different_airport": "Cov kev ya los ze kom tsaws no siv tshav dav hlau sib txawv. Rov saib lawv cov kev soj ntsuam nyias muaj nyias; tsis xam cov kev hloov ntawm cov lej ntsuas.",
+  "stem.flightsim.journal_approach_airport": "Tshav dav hlau uas ya los ze kom tsaws: {airport}.",
+  "stem.flightsim.mission_evidence_heading": "POV THAWJ NTAWM TXOJ HAUJLWM",
+  "stem.flightsim.challenge_brake_release": "Tso X thiab tua cov nres log hauv Deck ua ntej ntxiv zog."
+}

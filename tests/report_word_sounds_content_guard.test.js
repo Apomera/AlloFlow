@@ -49,8 +49,8 @@ function manipulationView(body = embeddedSource) {
 function preloadEffect(task, target = 'migrate', language = 'en') {
   const state = {}, lastWordForManipulation = {current: null};
   const body = between('      // Trigger generation whenever the word changes while in manipulation mode.', '      React.useEffect(() => {\n        console.log(');
-  new Function('React', 'WS_CORE', 'wordSoundsActivity', 'currentWordSoundsWord', 'wordSoundsPhonemes', 'wordSoundsLanguage', 'lastWordForManipulation', 'manipulationOptions', 'setManipulationState', 'manipulationStateRef', 'setManipulationOptions', 'manipulationOptionsRef', 'fisherYatesShuffle', 'padManipOpts', 'generateManipulationData', body)(
-    {useEffect: fn => fn()}, core, 'manipulation', target, {word: target, manipulationTask: task, activityItems: {manipulation: {task, options: ['vibrate', 'late']}}}, language, lastWordForManipulation, [], value => {state.task = value;}, {current: null}, value => {state.options = value;}, {current: []}, values => values, values => values, vi.fn());
+  new Function('React', 'WS_CORE', 'wordSoundsActivity', 'currentWordSoundsWord', 'wordSoundsPhonemes', 'wordSoundsLanguage', 'lastWordForManipulation', 'manipulationOptions', 'setManipulationState', 'manipulationStateRef', 'setManipulationOptions', 'manipulationOptionsRef', 'fisherYatesShuffle', 'padManipOpts', 'generateManipulationData', 'itemPresentation', body)(
+    {useEffect: fn => fn()}, core, 'manipulation', target, {word: target, manipulationTask: task, activityItems: {manipulation: {task, options: ['vibrate', 'late']}}}, language, lastWordForManipulation, [], value => {state.task = value;}, {current: null}, value => {state.options = value;}, {current: []}, values => values, values => values, vi.fn(), 0);
   return state;
 }
 
@@ -102,7 +102,14 @@ describe('Word Sounds content readiness uses provenance, not schema or spelling 
     expect(item.activityItems.manipulation.options).toEqual([]);
     expect(item.activityItems.manipulation.task.contentStatus).toBe('teacher_review_required');
     expect(item.activityItems.blending.options).toContain('migrate');
-    expect(item.activityItems.mapping.graphemes.length).toBeGreaterThan(0);
+    // This deliberately incomplete draft retains the cat sound data from
+    // makePackItem; its c/a/t spelling cannot be used as a mapping for migrate.
+    expect(item.phonemes).toEqual(['k', 'a', 't']);
+    expect(item.activityItems.mapping).toEqual({supported: false, contentStatus: 'teacher_review_required', graphemes: [], chipOrder: []});
+    expect(item.activityItems.counting.answer).toBe(3);
+    expect(item.activityItems.segmentation.slotCount).toBe(3);
+    expect(item.activityItems.segmentation.chips.filter(chip => !chip.isDistractor)).toHaveLength(3);
+    expect(item.activityItems.word_scramble.letters.slice().sort()).toEqual('migrate'.split('').sort());
   });
   it('does not manufacture noun-only sentences, stories or pairs for missing examples', () => {
     const items = compileWords([word('migrate', {sentence: '', story: []}), word('plants', {sentence: '', story: []})]);
@@ -173,10 +180,15 @@ describe('Actual play and teacher-review render paths', () => {
   it('does not prewarm an unsupported instruction or answer from the real task collection block', () => {
     const item = compileWords([word('migrate', {manipulationTask: invalid, sentence: '', story: []})])[0];
     const setup = readFileSync('word_sounds_setup_source.jsx', 'utf8');
-    const body = between('                 const tasks = new Set([word]);', '                 if (boards.read_sentence?.sentence)', setup);
+    // 2adff44c5 made the target conditional: a teacher-spoken count word gets no clip.
+    const body = between('                 const tasks = new Set(', '                 if (boards.read_sentence?.sentence)', setup);
+    const collect = (boards, teacherSpoken, added) => new Function('word', 'boards', 'WS_CORE', 'addInstructionParts', 'teacherSpoken', body + '\nreturn [...tasks];')('migrate', boards, core, (_tasks, text) => added.push(text), teacherSpoken);
     const added = [];
-    const tasks = new Function('word', 'boards', 'WS_CORE', 'addInstructionParts', body + '\nreturn [...tasks];')('migrate', item.activityItems, core, (_tasks, text) => added.push(text));
-    expect(tasks).not.toContain('vibrate'); expect(added).toEqual([]);
+    const tasks = collect(item.activityItems, false, added);
+    expect(tasks).toContain('migrate'); expect(tasks).not.toContain('vibrate'); expect(added).toEqual([]);
+    // Teacher-spoken applies to count-only packs, which carry no other boards.
+    expect(collect({}, false, [])).toEqual(['migrate']);
+    expect(collect({}, true, [])).toEqual([]);
   });
   it('central grading also guards microphone/direct responses before recording or scoring', () => {
     const body = between('      const checkAnswer = React.useCallback(', '          if (submissionLockRef.current) return;');
@@ -186,7 +198,7 @@ describe('Actual play and teacher-review render paths', () => {
       {useCallback: fn => fn}, 'manipulation', core, {current: {...invalid, contentStatus: 'curated', targetWord: 'migrate'}}, debugLog, {current: false});
     callback('correct', 'correct'); expect(debugLog).not.toHaveBeenCalled();
   });
-  it('full player exposes an unscored next route, then permits another activity', async () => {
+  it('full player keeps an unscored skip within its queued activity and permits switching to another activity', async () => {
     setupWordSounds();
     delete window.AlloModules.WordSoundsModal;
     new Function(embeddedSource)();
@@ -203,7 +215,10 @@ describe('Actual play and teacher-review render paths', () => {
     expect(m.host.textContent).toContain('This item will not be scored');
     const skip = [...m.host.querySelectorAll('button')].find(button => button.textContent === 'Skip unscored item and continue');
     expect(skip?.type).toBe('button'); act(() => skip.click());
-    expect(setActivity).toHaveBeenCalledWith('counting'); expect(history).not.toHaveBeenCalled();
+    // This externally controlled fixture has not consumed the queued draft.
+    // Skip tries that occurrence before moving to the next activity.
+    expect(setActivity).toHaveBeenCalledWith('manipulation');
+    expect(setActivity).not.toHaveBeenCalledWith('counting'); expect(history).not.toHaveBeenCalled();
     expect(score.mock.calls.flat().some(value => value?.correct > 0)).toBe(false);
     m.render({wordSoundsActivity: 'counting'});
     expect(m.host.querySelector('[aria-label="Number 1"]')).toBeTruthy();

@@ -70,7 +70,9 @@ describe('shared blue jay anatomy', () => {
       bird.wings[0].children[0].material.onBeforeCompile(shader);
       expect(shader.uniforms.awJay.value).toBe(1); expect(shader.uniforms.awGrouse.value).toBe(0);
       expect(shader.fragmentShader).toContain('awJayBars * awJayVane');
-      expect(shader.fragmentShader).toContain('(1.0 - awJay) * awCovert');
+      // Dove covert spots are keyed to their own flag, which is off for the jay.
+      expect(shader.uniforms.awDove.value).toBe(0);
+      expect(shader.fragmentShader).toContain('awDove * awCovert');
       expect(shader.fragmentShader).not.toContain('undefined');
     } finally { bird.dispose(); dove.dispose(); }
   });

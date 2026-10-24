@@ -4,15 +4,18 @@ import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { baselineCranialDisplayProfile, unchangedConstruction } from './fixtures/dinolab_before_slender_skull.js';
+const reviewedConstructionCallers=JSON.parse(readFileSync(resolve('tests/fixtures/dinolab_reviewed_construction_callers.json'),'utf8'));
 
 const T=createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source=readFileSync(process.env.DINO_SLENDER_SKULL_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8');
 const marker="window.StemLab.registerTool('dinoLab'";
 if(!source.includes(marker))throw Error('Missing Dino Lab registration');
 window.StemLab={registerTool(){}};
-new Function(source.replace(marker,'globalThis.__slenderSkull={DINOS,reconstructionProfileFor,postureProfileFor,cranialSurfaceProfileFor,postcranialSurfaceProfileFor,dinoCervicalEnvelope,dinoNeckJunction,dinoSurfaceGeometry,dinoCranialGeometry,dinoTheropodCranialRadii,dinoCranialDisplayProfile,dinoConnectedCranialPose};'+marker))();
+const nativeHelperNames=[...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]).join(',');
+new Function(source.replace(marker,'globalThis.__slenderSkull={DINOS,skeletalAnatomyProfileFor,'+nativeHelperNames+'};'+marker))();
 const api=globalThis.__slenderSkull;delete globalThis.__slenderSkull;
-const targets=['coelophysis','compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'];
+// Coelophysis now uses the reviewed native cranial frame, tested separately below.
+const targets=['compsognathus','eodromaeus','liliensternus','sarcosaurus','scipionyx','sinosauropteryx','tawa'];
 // Conservative minimum is a distinct selectable hypothesis between the lean
 // Historical classic envelope and the baseline reconstruction.
 const modes={lean:{head:.90,neck:.88,body:.91},conservativeMinimum:{head:.97,neck:.97,body:.98},balanced:{head:1,neck:1,body:1},robust:{head:1.04,neck:1.07,body:1.05}};
@@ -21,27 +24,25 @@ const assembly=seam('var detailScale = Math.min(1, ht / 2);','var evidenceAnchor
 const envelope=seam('var surfaceHeadFactor = reconstructionProfile.head','if (headShell) {');
 const chain=seam('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {','function addContourGroup(meshes)');
 const ellipsoid=seam('function addSkeletonEllipsoid(pos, scale, mat) {','function addSkeletonCone(base, tip, radius, mat)');
-const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,','addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))');
+const skullDimensions=seam('var skullLength = Math.max(0.20 * detailScale,','var neckAxis =');
+const bulk=seam('var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout,','if(!theropodCranium&&!sauropodCranium)addBone(head.clone().add(vec(0, skullHeight * 0.42, 0))');
 const createSkin=new Function('context','with(context){'+chain+'return addSoftTissueChain;}');
 const createBone=new Function('context','with(context){'+ellipsoid+'return addSkeletonEllipsoid;}');
-const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,headShell,detailScale,len,ht,reconstructionProfile};}');
-const createBulk=new Function('context','with(context){'+bulk+'return {vault:cranialVault,rostrum:cranialRostrum,rostrumCenter,profile:cranialDisplay};}');
+const createEnvelope=new Function('context','with(context){'+assembly+'var surfaceBodyHeight=bodyHeight*surfaceHypothesis.bodyHeightScale;'+envelope+'return {head,snout,headShell,detailScale,len,ht,reconstructionProfile,shoulder,hip,tail,bodyCenter,bodyLen,bodyHeight,bodyDepth,ceratopsidCranium,armoredCranium,carnotaurusCranium,stegosaurCranium,theropodCranium,sauropodCranium,lambeosaurBody,cervicalEnvelope,matureTyrannosaurPose};}');
+const createBulk=new Function('context','with(context){'+skullDimensions+bulk+'return {vault:cranialVault,rostrum:cranialRostrum,rostrumCenter,profile:cranialDisplay,skullLength,skullHeight,skullDepth};}');
 function build(id,scale=1,mode=modes.balanced,showSkeleton=true,helper=api.dinoCranialDisplayProfile){
   const dn=api.DINOS.find(d=>d.id===id),skinModel=new T.Group(),boneModel=new T.Group();
   const skinMaterial=new T.MeshBasicMaterial({side:T.DoubleSide}),boneMaterial=new T.MeshBasicMaterial();
-  const c={THREE:T,dn,len:dn.lengthM*scale,ht:dn.heightM*scale,isTheropod:dn.group==='theropod',isSauropod:dn.group==='sauropod',cladeName:dn.clade,
+  const c={...api,THREE:T,dn,len:dn.lengthM*scale,ht:dn.heightM*scale,isTheropod:dn.group==='theropod',isSauropod:dn.group==='sauropod',cladeName:dn.clade,
     reconstructionProfile:api.reconstructionProfileFor(dn),posture:api.postureProfileFor(dn),cranialSurface:api.cranialSurfaceProfileFor(dn),postcranialSurface:api.postcranialSurfaceProfileFor(dn),
     surfaceHypothesis:{headSoftTissueScale:mode.head,neckSoftTissueScale:mode.neck,bodyHeightScale:mode.body},vec:(x,y,z)=>new T.Vector3(x,y,z),headMat:skinMaterial,bodyMat:skinMaterial,model:skinModel,props:{species:dn,showBody:true,showSkeleton},
-    dinoCervicalEnvelope:api.dinoCervicalEnvelope,dinoNeckJunction:api.dinoNeckJunction,dinoTheropodCranialRadii:api.dinoTheropodCranialRadii,dinoCranialGeometry:api.dinoCranialGeometry,dinoSurfaceGeometry:api.dinoSurfaceGeometry};
+    dinoTyrannosaurPose:api.dinoTyrannosaurPose,dinoLongSnoutedTyrannosaurAnchors:api.dinoLongSnoutedTyrannosaurAnchors,dinoCervicalEnvelope:api.dinoCervicalEnvelope,dinoNeckJunction:api.dinoNeckJunction,dinoTheropodCranialRadii:api.dinoTheropodCranialRadii,dinoCranialGeometry:api.dinoCranialGeometry,dinoSurfaceGeometry:api.dinoSurfaceGeometry};
   c.addSoftTissueChain=createSkin(c);const b=createEnvelope(c);
-  const skullLength=Math.max(.20*b.detailScale,b.len*(c.isSauropod?.040:.066))*c.reconstructionProfile.head;
-  const skullHeight=Math.max(.045*b.detailScale,b.ht*(c.isTheropod?.080:.058))*c.reconstructionProfile.head;
-  const skullDepth=Math.max(.035*b.detailScale,b.ht*(c.isTheropod?.073:.058))*c.reconstructionProfile.head;
-  const boneContext={...c,...b,model:boneModel,boneMat:boneMaterial,skullLength,skullHeight,skullDepth,dinoCranialDisplayProfile:helper};
+  const boneContext={...c,...b,model:boneModel,boneMat:boneMaterial,dinoCranialDisplayProfile:helper};
   Object.defineProperty(boneContext,'surfaceHypothesis',{get(){throw Error('Skeleton proxy read the selectable tissue hypothesis');}});
   boneContext.addSkeletonEllipsoid=createBone(boneContext);const bones=createBulk(boneContext);
   b.headShell.geometry.computeBoundingSphere();b.headShell.updateMatrixWorld(true);boneModel.updateMatrixWorld(true);
-  return {...b,...bones,skullLength,skullHeight,skullDepth,scale,dn,skinModel,boneModel,skinMaterial,boneMaterial};
+  return {...b,...bones,scale,dn,skinModel,boneModel,skinMaterial,boneMaterial};
 }
 function dispose(b){b.headShell.geometry.dispose();b.skinMaterial.dispose();for(const mesh of [b.vault,b.rostrum])mesh?.geometry.dispose();b.boneMaterial.dispose();}
 const at=(a,i)=>new T.Vector3().fromBufferAttribute(a,i);
@@ -75,15 +76,44 @@ describe('Slender theropod skeletal display envelopes',()=>{
   for(const id of targets)it('keeps '+id+' skeletal transforms and geometry independent of all tissue hypotheses',()=>{
     const builds=Object.values(modes).map(mode=>build(id,1,mode));try{for(const b of builds.slice(1))for(const region of ['vault','rostrum'])exactMesh(b[region],builds[0][region]);}finally{builds.forEach(dispose);}
   });
-  it('selects exactly the eight existing slender profiles across the catalog',()=>{
+  it('uses the reviewed native Coelophysis frame without generic cranial display proxies',()=>{
+    const builds=Object.values(modes).map(mode=>build('coelophysis',1,mode));
+    try{for(const b of builds){
+      const frame=b.theropodCranium;
+      expect(frame.profile.id).toBe('coelophysis-bauri-cranial-frame');
+      expect(api.cranialSurfaceProfileFor(b.dn).id).toBe(frame.profile.id);
+      expect(frame.head.toArray()).toEqual(b.head.toArray());expect(frame.snout.toArray()).toEqual(b.snout.toArray());
+      expect(frame.metadata).toEqual(builds[0].theropodCranium.metadata);
+      expect(frame.metadata.tissueHypothesisIndependentAnchors).toBe(true);
+      expect([b.skullLength,b.skullHeight,b.skullDepth]).toEqual([frame.boneLength,frame.boneHeight,frame.boneDepth]);
+      expect(b.vault).toBeNull();expect(b.rostrum).toBeNull();expect(b.boneModel.children).toHaveLength(0);
+    }}finally{builds.forEach(dispose);}
+  });
+  it('selects exactly the seven remaining generic slender profiles across the catalog',()=>{
     expect(api.DINOS.filter(d=>api.cranialSurfaceProfileFor(d).id==='slender-theropod').map(d=>d.id).sort()).toEqual(targets);
     const head=new T.Vector3(.2,.3,.13),snout=new T.Vector3(-1,.25,.13);
+    const reviewedDisplayFamilies=[
+      {ids:['triceratops','styracosaurus','centrosaurus','chasmosaurus'],profileFor:api.dinoCeratopsidCraniumProfileFor},
+      {ids:['ankylosaurus','euoplocephalus','sauropelta','borealopelta'],profileFor:api.dinoArmoredCraniumProfileFor},
+      {ids:['stegosaurus','kentrosaurus','huayangosaurus','tuojiangosaurus'],profileFor:api.dinoStegosaurBodyProfileFor},
+      {ids:['carnotaurus'],profileFor:api.dinoCarnotaurusProfileFor}
+    ];
     for(const dn of api.DINOS){const args=[T,dn,head,snout,.8,.3,.24,.2,dn.group==='theropod'],actual=api.dinoCranialDisplayProfile(...args),old=baselineCranialDisplayProfile(...args);
+      const reviewedFamily=reviewedDisplayFamilies.find(family=>family.ids.includes(dn.id));
       if(targets.includes(dn.id)){expect(actual.refined,dn.id).toBe(true);for(const field of ['vaultScale','rostrumScale'])for(const axis of ['x','y','z']){expect(actual[field][axis],dn.id).toBeGreaterThan(0);expect(actual[field][axis],dn.id).toBeLessThan(old[field][axis]);}}
+      // Explicitly reviewed replacements have separate native cranial suites.
+      // Every catalog entry outside these species gates retains the frozen helper.
+      else if(['alioramus','qianzhousaurus'].includes(dn.id))expect(actual.refined,dn.id).toBe(true);
+      else if(['baryonyx','suchomimus'].includes(dn.id))expect(actual.refined,dn.id).toBe(true);
+      else if(reviewedFamily){
+        expect(reviewedFamily.profileFor(dn),dn.id+' native profile').not.toBeNull();
+        expect(actual.refined,dn.id).toBe(true);
+        for(const field of ['vaultScale','rostrumScale'])for(const axis of ['x','y','z']){expect(Number.isFinite(actual[field][axis]),dn.id).toBe(true);expect(actual[field][axis],dn.id).toBeGreaterThan(0);}
+      }
       else expect(actual,dn.id).toEqual(old);
     }
   });
-  for(const id of ['triceratops','tyrannosaurus','microraptor','spinosaurus'])it('preserves the complete native '+id+' control from the independent baseline',()=>{
+  for(const id of ['protoceratops','tyrannosaurus','microraptor','spinosaurus'])it('preserves the complete native '+id+' control from the independent baseline',()=>{
     const current=build(id),old=build(id,1,modes.balanced,true,baselineCranialDisplayProfile);try{for(const region of ['vault','rostrum'])exactMesh(current[region],old[region]);exactBuffers(current.headShell.geometry,old.headShell.geometry);}finally{dispose(current);dispose(old);}
   });
   it('preserves missing and unrelated identifiers and returns independent vectors',()=>{
@@ -104,7 +134,56 @@ describe('Slender theropod skeletal display envelopes',()=>{
       current.vault.geometry.attributes.position.setX(0,123);expect(current.rostrum.geometry.attributes.position.getX(0)).not.toBe(123);exactBuffers(current.headShell.geometry,old.headShell.geometry);
     }finally{dispose(current);dispose(old);}
   });
-  it('keeps the head landmarks, life surface, skeletal frame, dentition and rig construction byte-exact',()=>{for(const guard of unchangedConstruction)expect(createHash('sha256').update(seam(guard.start,guard.end)).digest('hex'),guard.label).toBe(guard.sha256);});
+  it('keeps construction pinned around the reviewed mature-tyrannosaur pose, neck radii and robust section',()=>{
+    // These construction seams intentionally add the mature pose, outer neck,
+    // robust skull section and a cervical axis following that neck in this task.
+    // Reversing those exact additions must still recover the frozen fixture;
+    // dentition and all numerical geometry checks stay intact.
+    const reviewedHashes={'head landmarks':'b6d9be9507611be25b7d09f92de9a955ce7cee188e81e2170e6dc6af81f1fc22','surface head':'37326154da8deaa9e3b1dee9aaaa06e1b9778352b011a7c8c5c13a518278cedc','skeletal frame and dentition':'8df3a8e66dec20b407dca5122d8f1b95a7bcf789864513e62e76f15e4b2e96b9'};
+    const reviewedBaryonychineAnchor = [
+      '            var baryonychineRostrum = /^(baryonyx|suchomimus)$/.test(dn.id) ? dinoBaryonychineSnoutAnchor(THREE, dn, head, snout) : { snout: snout, active: false };',
+      '            snout = baryonychineRostrum.snout;',
+      '            if (baryonychineRostrum.active) {',
+      '              var baryonychineProfile = dinoBaryonychineRostrumFor(dn);',
+      '              model.userData.dinoBaryonychineRostrum = { profile: baryonychineProfile.id, source: baryonychineProfile.source,',
+      '                head: head.toArray(), tip: snout.toArray(), waist: head.clone().lerp(snout, baryonychineProfile.waist).toArray(),',
+      '                rosette: head.clone().lerp(snout, baryonychineProfile.tip).toArray(), snoutScale: baryonychineProfile.snoutScale, interpretive: true };',
+      '            }', ''
+    ].join('\n');
+    const reviewedBaryonychineSkin = "            if (/^(baryonyx|suchomimus)$/.test(dn.id)) dinoShapeBaryonychineRostrum(THREE, dn, headShell, head, surfaceSnout, 'upper');\n";
+    const reviewedBaryonychineNaris = '(/^(baryonyx|suchomimus)$/.test(dn.id) ? head.clone().lerp(snout, 0.64) : rostrumCenter.clone().lerp(snout, 0.45))';
+    for(const addition of [reviewedBaryonychineAnchor,reviewedBaryonychineSkin,reviewedBaryonychineNaris])expect(source.split(addition).length-1).toBe(1);
+    for(const guard of unchangedConstruction){
+      // The 2026-10-18 nasal addition attaches a species-gated relief child;
+      // its native caller and bone independence are exercised numerically in
+      // dinolab_nasal_rugosity.test.js. Preserve the preceding frame byte-for-byte.
+      // Normalize exact later anatomical callers from the permanent reviewed
+      // fixture. Each hunk has provenance and native geometry coverage; its
+      // complete current text must occur once before reversal. All six original
+      // reviewed and historical digest expectations remain unchanged.
+      let current=seam(guard.start,guard.end)
+        .replace("              if (/^(alioramus|qianzhousaurus)$/.test(dn.id)) dinoAddNasalRugosities(THREE, dn, cranialRostrum, head, snout, skullHeight, boneMat, true);\n",'')
+        .replace(reviewedBaryonychineAnchor,'').replace(reviewedBaryonychineSkin,'')
+        .replace(reviewedBaryonychineNaris,'rostrumCenter.clone().lerp(snout, 0.45)');
+      const callerReview=reviewedConstructionCallers.seams.find(review=>review.label===guard.label);
+      expect(callerReview,guard.label+' reviewed caller fixture').toBeTruthy();
+      for(const hunk of callerReview.hunks){
+        expect(current.split(hunk.current).length-1,guard.label+' '+hunk.id+' occurs once before reversal').toBe(1);
+        current=current.replace(hunk.current,hunk.reviewed);
+      }
+      let historical=current;
+      if(guard.label==='head landmarks')historical=historical.replace(/            var matureTyrannosaurPose =[^\n]*\n            head =[^\n]*\n            if \(matureTyrannosaurPose.active\)[^\n]*\n/,'')
+        .replace(/            var longSnoutedTyrannosaur =[^\n]*\n            snout = longSnoutedTyrannosaur.snout;\n            if \(longSnoutedTyrannosaur.active\)[^\n]*\n/,'');
+      if(guard.label==='surface head')historical=historical.replace(/            if \(matureTyrannosaurPose.active\) neckBaseRadius \*= 1\.20;\n/,'')
+        .replace('* (matureTyrannosaurPose.active ? 0.90 : 0.66)','* 0.66')
+        .replace('isSauropod, cladeName, matureTyrannosaurPose.active)','isSauropod, cladeName)')
+        .replace(/            if \(matureTyrannosaurPose.active\) model.userData.dinoCervicalProfile =[^\n]*\n/,'')
+        .replace(', robustSection: cranialSurface.matureTyrannosaur === true','');
+      if(guard.label==='skeletal frame and dentition')historical=historical.replace(", 'cervical', matureTyrannosaurPose.active ? dinoCervicalAxisCurve(THREE, cervicalEnvelope, axisCenter) : null)",", 'cervical')");
+      expect(createHash('sha256').update(current).digest('hex'),guard.label).toBe(reviewedHashes[guard.label]||guard.sha256);
+      expect(createHash('sha256').update(historical).digest('hex'),guard.label+' preceding construction').toBe(guard.sha256);
+    }
+  });
   it('adds no skeletal display mesh when the skeleton layer is disabled',()=>{const b=build('sinosauropteryx',1,modes.balanced,false);try{expect(b.vault).toBeNull();expect(b.rostrum).toBeNull();expect(b.boneModel.children).toHaveLength(0);}finally{dispose(b);}});
   it('moves both refined volumes rigidly with the established skull pivot without changing their buffers',()=>{
     const b=build('sinosauropteryx'),rig=new T.Group(),neck=new T.Object3D(),shoulder=new T.Vector3(-.2,.14,0),rest=neck.quaternion.clone(),snapshots=[b.vault,b.rostrum].map(mesh=>{

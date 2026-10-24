@@ -48,7 +48,8 @@ const counts = view => [...summary(view).querySelectorAll('dd')].map(el => Numbe
 describe('glossary flashcard review rounds', () => {
   it('announces positions within a practice retry round', async () => {
     vi.useFakeTimers(); const v = mount();
-    await click(button(v, 'common.correct')); await advance(200);
+    // 2026-10-19: the self-rating buttons use the summary's words ("Known" / "Needs practice").
+    await click(button(v, 'Known')); await advance(200);
     await click(v.container.querySelector('[data-help-key="flashcard_next"]')); await advance(200);
     await click(v.container.querySelector('[data-help-key="flashcard_next"]'));
     await click(button(v, 'Review cards needing practice (2)'));
@@ -69,14 +70,14 @@ describe('glossary flashcard review rounds', () => {
   });
   it('summarizes rated and skipped cards, reviews only remaining cards, and restarts the full deck', async () => {
     vi.useFakeTimers(); const v = mount();
-    await click(button(v, 'common.correct')); await advance(200); expect(v.state().flashcardIndex).toBe(1);
-    await click(button(v, 'flashcards.try_again')); await advance(200); expect(v.state().flashcardIndex).toBe(2);
+    await click(button(v, 'Known')); await advance(200); expect(v.state().flashcardIndex).toBe(1);
+    await click(button(v, 'Needs practice')); await advance(200); expect(v.state().flashcardIndex).toBe(2);
     await click(v.container.querySelector('[data-help-key="flashcard_next"]'));
     expect(counts(v)).toEqual([1, 1, 1]); expect(document.activeElement).toBe(summary(v).querySelector('h2'));
     await click(button(v, 'Review cards needing practice (2)')); expect(v.state().flashcardIndex).toBe(1);
     expect(v.container.querySelector('[data-help-key="flashcard_prev"]').disabled).toBe(true);
-    await click(button(v, 'common.correct')); await advance(200); expect(v.state().flashcardIndex).toBe(2);
-    await click(button(v, 'common.correct')); expect(counts(v)).toEqual([3, 0, 0]);
+    await click(button(v, 'Known')); await advance(200); expect(v.state().flashcardIndex).toBe(2);
+    await click(button(v, 'Known')); expect(counts(v)).toEqual([3, 0, 0]);
     expect(button(v, 'Review cards needing practice (0)')).toBeUndefined();
     await click(button(v, 'Start again')); expect(summary(v)).toBeNull(); expect(v.state().flashcardIndex).toBe(0); expect(v.state().showFlashcardImages).toBe(true);
     await click(v.container.querySelector('[data-help-key="flashcard_next"]')); await advance(200);
@@ -85,7 +86,11 @@ describe('glossary flashcard review rounds', () => {
   });
   it('routes quiz completion into the summary and keeps a focused retry round inside its selected cards', async () => {
     vi.useFakeTimers(); const v = mount({ isFlashcardQuizMode: true, isFlashcardFlipped: true });
+    // 2026-10-19: a wrong pick no longer moves on by itself; it waits for Next
+    // so the student can read the right answer.
     await click(button(v, 'Definition 1')); await advance(1500); await advance(200);
+    expect(v.state().flashcardIndex).toBe(0); expect(v.state().flashcardFeedback).toBe('incorrect');
+    await click(v.container.querySelector('[data-help-key="flashcard_next"]')); await advance(200);
     expect(v.state().flashcardIndex).toBe(1); expect(v.state().quizSelectedOption).toBeNull();
     v.update({ isFlashcardFlipped: true }); await click(button(v, 'Definition 1')); await advance(1500); await advance(200);
     v.update({ isFlashcardFlipped: true }); await click(button(v, 'Definition 2')); await advance(1500);
@@ -125,7 +130,8 @@ describe('standalone flashcard pictures', () => {
     const html = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsText(captured); });
     const doc = new DOMParser().parseFromString(html, 'text/html');
     expect(doc.querySelectorAll('.card-container')).toHaveLength(4); expect(doc.querySelectorAll('img')).toHaveLength(2);
-    expect(doc.querySelector('img').alt).toBe(desc); expect(doc.querySelectorAll('img')[1].alt).toBe(''); expect(doc.querySelectorAll('img')[1].getAttribute('role')).toBe('presentation');
+    expect(doc.querySelector('img').alt).toBe(desc); // A description written for an earlier picture is not used; the picture is named by its term (batch 2, 10-19).
+    expect(doc.querySelectorAll('img')[1].alt).toBe(base.term); expect(doc.querySelectorAll('img')[1].getAttribute('role')).toBeNull();
     expect(doc.querySelector('figcaption').textContent).toContain('CC BY-SA 4.0'); expect(doc.querySelector('veins')).toBeNull(); expect(html).not.toContain('javascript:');
   });
 

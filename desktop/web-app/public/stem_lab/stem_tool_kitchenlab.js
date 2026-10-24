@@ -984,8 +984,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         else { score -= 30; notes.push({ neg: true, label: '🥶 No crust', detail: 'Pan was ' + Math.round(inPanF) + '°F when the chicken went in — it stuck and steamed instead of searing. Grey + grim. You need 400°F+ before the chicken touches the pan.' }); }
         // 1a) Surface water: a wet breast steams grey before it can sear
         if ((dn.steamSec || 0) > 30) { score -= 10; notes.push({ neg: true, label: '💧 Wet surface', detail: 'The chicken went in wet: ' + Math.round(dn.steamSec) + 's of hissing and spitting while the surface water boiled off, and the crust could only start after that. Pat it dry first.' }); }
-        // 1b) Patience: every poke breaks pan contact and resets part of the crust
-        if ((dn.stirCount || 0) >= 2) { score -= 10; notes.push({ neg: true, label: '⚠️ Moved during the sear', detail: 'Poked or moved the chicken ' + dn.stirCount + ' times. Each move broke pan contact and gave back crust that had formed — set it down and trust the process.' }); }
+        // 1b) Patience: moving interrupts new browning without undoing existing colour
+        if ((dn.stirCount || 0) >= 2) { score -= 10; notes.push({ neg: true, label: '⚠️ Moved during the sear', detail: 'Poked or moved the chicken ' + dn.stirCount + ' times. Each move briefly slowed new browning as pan contact recovered. The crust already formed stayed in place.' }); }
         else if (addPan.chicken != null) { notes.push({ neg: false, label: '✓ Left it alone', detail: 'You let the chicken sit. Maillard needs uninterrupted contact, and you gave it that.' }); }
         // 1c) Oil: a sear needs an oil that can take 400°F+
         if (dn.oil && (dn.smokeSec || 0) > 8) { score -= 10; notes.push({ neg: true, label: '🌫️ Oil past its smoke point', detail: dn.oil.oil + ' smokes at ' + dn.oil.smokeF + '°F; the pan sat above that for ' + Math.round(dn.smokeSec) + 's with it in. Acrid smoke and a bitter crust — sear in a higher-smoke-point oil.' }); }
@@ -1734,7 +1734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         // 1a) Surface water
         if ((dn.steamSec || 0) > 30) { score -= 10; notes.push({ neg: true, label: '💧 Wet surface', detail: 'The steak went in wet: ' + Math.round(dn.steamSec) + 's of spatter while the surface water boiled off before the crust could start. Pat it dry, then salt.' }); }
         // 1b) Patience
-        if ((dn.stirCount || 0) >= 2) { score -= 10; notes.push({ neg: true, label: '⚠️ Moved during the sear', detail: 'Poked or moved the steak ' + dn.stirCount + ' times. Each move broke pan contact and gave back crust that had formed.' }); }
+        if ((dn.stirCount || 0) >= 2) { score -= 10; notes.push({ neg: true, label: '⚠️ Moved during the sear', detail: 'Poked or moved the steak ' + dn.stirCount + ' times. Each move briefly slowed new browning as pan contact recovered. The crust already formed stayed in place.' }); }
         else if (addPan.steak != null) { notes.push({ neg: false, label: '✓ Left it alone', detail: 'Uninterrupted contact — the crust had what it needed.' }); }
         // 1c) Oil
         if (dn.oil && (dn.smokeSec || 0) > 8) { score -= 10; notes.push({ neg: true, label: '🌫️ Oil past its smoke point', detail: dn.oil.oil + ' smokes at ' + dn.oil.smokeF + '°F; the pan sat above that for ' + Math.round(dn.smokeSec) + 's with it in. Acrid smoke and a bitter crust.' }); }
@@ -2183,7 +2183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           notes.push({ neg: !!interiorBad, neutral: !interiorBad, label: '🌡️ Interior: ' + interior.split(' — ')[0].split(',')[0].split(';')[0],
             detail: 'Internal temperature ' + interior + '. Time in the pan ' + klClock(state.activeTimeSec || 0) + '.' + (food.safeF ? (peakF >= food.safeF ? ' Verified at or above the USDA ' + food.safeF + '°F minimum.' : ' Below the USDA ' + food.safeF + '°F minimum — not safe to serve.') : '') });
           if (fd.stir && fd.stir.disturbs) {
-            notes.push({ neutral: true, label: '👆 Attention: moved ' + (dn.stirCount || 0) + '×', detail: (dn.stirCount || 0) >= 2 ? 'Each move broke pan contact and gave back some crust.' : 'Left to sear — the crust had uninterrupted contact.' });
+            notes.push({ neutral: true, label: '👆 Attention: moved ' + (dn.stirCount || 0) + '×', detail: (dn.stirCount || 0) >= 2 ? 'Each move briefly slowed new browning as pan contact recovered. Existing colour remained.' : 'Left to sear — the crust had uninterrupted contact.' });
           } else if (fd.stir) {
             notes.push({ neg: (dn.unattendedSec || 0) > 30, neutral: (dn.unattendedSec || 0) <= 30, label: '🥄 Attention: ' + (dn.stirCount || 0) + ' stirs, ' + Math.round(dn.unattendedSec || 0) + 's unattended',
               detail: (dn.unattendedSec || 0) > 30 ? 'Unattended food browns 1.7× faster and catches on the bottom.' : 'The pan was kept moving; browning stayed even.' });
@@ -2619,7 +2619,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   }
   // What the replay can change about a finished cook. The pull point and the
   // pot's actions are the student's own moments in the log, so they stay.
-  function replayVariables(rec) {
+  // A detached setup snapshot keeps later picker changes out of a finished cook.
+  // This versions the saved setup shape, not the physics or the original grade.
+  function captureCookSetup(state) {
+    state = state || {};
+    var options = {}, source = state.recipeOptions;
+    if (source && typeof source === 'object' && !Array.isArray(source)) Object.keys(source).sort().forEach(function(key) {
+      if (key !== '__proto__' && key !== 'constructor' && key !== 'prototype' && typeof source[key] === 'string') options[key] = source[key];
+    });
+    return { version: 1, material: panMaterial(state.klPanMaterial).id, options: options,
+      oil: typeof state.recipeOil === 'string' ? state.recipeOil : null,
+      altitudeFt: typeof state.klAltitudeFt === 'number' && isFinite(state.klAltitudeFt) ? Math.max(0, Math.min(15000, state.klAltitudeFt)) : 0 };
+  }
+  function recordedCookSetup(state) {
+    var saved = state && state.recipeReplaySetup;
+    if (!saved || saved.version !== 1 || typeof saved.material !== 'string' || !saved.options || typeof saved.options !== 'object' || Array.isArray(saved.options)) return captureCookSetup(state);
+    return captureCookSetup({ klPanMaterial: saved.material, recipeOptions: saved.options, recipeOil: saved.oil, klAltitudeFt: saved.altitudeFt });
+  }
+  function replayVariables(rec, original) {
     var dn = recipeDoneness(rec, null);
     var vars = benchVariables(rec).filter(function(v) { return v.id !== 'pull' && v.id !== 'stir' && v.id.indexOf('x:') !== 0; });   // altitude stays: it is set-up
     var dial = vars.find(function(v) { return v.id === 'dial'; });
@@ -2628,10 +2645,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var every = Math.max(5, Math.round((dn.stir.grace || 15) / 2));
       vars.push({ id: 'stir', label: 'Attention', textbook: 'you', choices: [{ id: 'you', label: 'As you did' }, { id: 'never', label: 'Never ' + dn.stir.label.toLowerCase() }, { id: 'often', label: dn.stir.label + ' every ' + every + ' s' }] });
     }
+    vars.forEach(function(v) {
+      v.original = v.textbook;
+      if (!original) return;
+      if (v.id === 'pan') v.original = original.material || 'stainless';
+      else if (v.id === 'oil') v.original = original.oil || v.textbook;
+      else if (v.id === 'alt') v.original = String(original.altitudeFt || 0);
+      else if (v.id.indexOf('opt:') === 0) v.original = (original.options || {})[v.id.slice(4)] || v.textbook;
+      if (!v.choices.some(function(c) { return c.id === v.original; })) v.choices.push({ id: v.original, label: v.id === 'alt' ? v.original + ' ft (recorded)' : v.original + ' (recorded)' });
+    });
     return vars;
   }
-  function replaySetup(rec, varId, choiceId) {
-    var setup = benchSetup(rec, varId === 'stir' ? null : varId, choiceId);
+  function replaySetup(rec, varId, choiceId, original) {
+    var setup = Object.assign({}, original || {}, { material: original && original.material || 'stainless', options: Object.assign({}, original && original.options || {}), dialOffset: 0, noStir: false, pullOffsetF: 0 });
+    if (varId === 'pan') setup.material = choiceId;
+    else if (varId === 'dial') setup.dialOffset = parseInt(choiceId, 10) || 0;
+    else if (varId === 'oil') setup.oil = choiceId;
+    else if (varId === 'alt') setup.altitudeFt = parseInt(choiceId, 10) || 0;
+    else if (varId && varId.indexOf('opt:') === 0) setup.options[varId.slice(4)] = choiceId;
     if (varId === 'stir') {
       var dn = recipeDoneness(rec, null);
       if (choiceId === 'never') setup.noStir = true;
@@ -2640,11 +2671,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     return setup;
   }
   var _replayCache = {};
-  function runReplay(rec, log, endSec, cookKey, varId, choiceId) {
-    var key = rec.id + '|' + cookKey + '|' + varId + '|' + choiceId;
+  function runReplay(rec, log, endSec, cookKey, varId, choiceId, original) {
+    var setup = replaySetup(rec, varId, choiceId, original);
+    var key = JSON.stringify([rec.id, cookKey, varId, choiceId, endSec, setup, log]);
     if (_replayCache[key]) return _replayCache[key];
     var keys = Object.keys(_replayCache); if (keys.length > 80) keys.slice(0, 40).forEach(function(k) { delete _replayCache[k]; });
-    var setup = replaySetup(rec, varId, choiceId);
     var res = simulateCook(rec, applyBenchSetup(logToSchedule(log, endSec), setup, rec), { material: setup.material, oil: setup.oil, options: setup.options, altitudeFt: setup.altitudeFt });
     _replayCache[key] = { setup: setup, result: res };
     return _replayCache[key];
@@ -2723,33 +2754,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   }
 
   // ─── Evidence status ───
-  // The 3D Skills Studio grades a demonstration three ways, not two: coached,
-  // completed WITH SUPPORT (hints used or corrections made), or completed
-  // independently. The Recipe Sim recorded any demonstrate-mode cook as fully
-  // independent, which overstated it against the studio's own bar. A cook's
-  // supports are the aids it actually took: thermometer probes and water
-  // flicks in real-kitchen mode (the numbers it was meant to do without) and
-  // the AI critique, all of which the log already records.
+  // Observing the food is part of cooking independently. Keep instrument
+  // checks separate from coaching so checking again before taking food off
+  // the heat does not reduce the evidence of independence. Historical
+  // supported results remain supported; only newly judged cooks use this rule.
   function cookSupports(state, judgement) {
-    var log = (state && state.recipeLog) || [];
-    var probes = log.filter(function(e) { return e.k === 'probe'; }).length;
-    var flicks = log.filter(function(e) { return e.k === 'flick'; }).length;
+    var log = state && Array.isArray(state.recipeLog) ? state.recipeLog : [];
+    var probes = log.filter(function(e) { return e && e.k === 'probe'; }).length;
+    var flicks = log.filter(function(e) { return e && e.k === 'flick'; }).length;
     var parts = [];
-    // Probing is the habit the judge ASKS for, so the first one is free; it is
-    // leaning on the instrument past that which counts as support.
-    if (probes > 1) parts.push(probes + ' thermometer ' + (probes === 1 ? 'probe' : 'probes'));
+    if (probes) parts.push(probes + ' thermometer ' + (probes === 1 ? 'probe' : 'probes'));
     if (flicks) parts.push(flicks + ' water ' + (flicks === 1 ? 'flick' : 'flicks'));
-    // The AI critique is not counted: it is written after the judge scores
-    // the cook, so it cannot have helped this one (a leftover one from the
-    // last cook used to mark every later cook "supported").
-    return { count: (probes > 1 ? probes - 1 : 0) + flicks, parts: parts };
+    // The post-cook AI critique cannot have helped this cook. The simulator's
+    // coaching setting is recorded separately on the judgement.
+    return { count: 0, parts: [], observationCount: probes + flicks, observationParts: parts,
+      observations: { thermometerProbes: probes, waterFlicks: flicks } };
   }
   function evidenceStatus(state, judgement) {
     if (!judgement || judgement.score == null) return null;      // the sandbox has no grade to stand behind
-    if (!judgement.independent) return { status: 'coached', label: 'Cooked with coaching on' };
     var sup = cookSupports(state, judgement);
-    if (sup.count > 0) return { status: 'supported', label: 'Cooked without coaching, with support', detail: 'Used ' + sup.parts.join(' and ') + '.' };
-    return { status: 'independent', label: 'Cooked independently', detail: 'No coaching, and no instrument beyond the one check the recipe asks for.' };
+    var observations = sup.observationCount ? 'Observations recorded: ' + sup.observationParts.join(' and ') + '.' : 'No thermometer probes or water flicks were recorded.';
+    if (!judgement.independent) return { status: 'coached', label: 'Cooked with coaching on', detail: 'Coaching was enabled. ' + observations };
+    return { status: 'independent', label: 'Cooked independently', detail: 'No coaching was used. ' + observations };
   }
 
   // ─── Lessons behind the notes ───
@@ -3355,6 +3381,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // the ~280°F Maillard threshold (1.0 ≈ 75 s at 400°F, negligible at 250°F),
   // and only once rec.doneness.browningFrom is in the pan (oil alone does not
   // brown). Judges read the accumulated value against their own thresholds.
+  // A teaching-model recovery window, not a measured universal searing time.
+  // Moving food changes future contact; it cannot reverse cooked colour.
+  var SEAR_CONTACT_RECOVERY_SEC = 15;
+  function moveFood(prior, rec, count) {
+    var dn = recipeDoneness(rec, prior);
+    var stir = dn.stir;
+    var items = prior.recipeItemsInPan || [];
+    count = count == null ? 1 : Math.floor(count);
+    if (!stir || !items.length || !isFinite(count) || count <= 0) return {};
+    var patch = { recipeLastStirSimSec: prior.recipeSimElapsedSec || 0, recipeStirCount: (prior.recipeStirCount || 0) + count };
+    var mainItem = dn.browningFrom;
+    if (stir.disturbs && (!mainItem || items.indexOf(mainItem) !== -1)) patch.recipeContactRecoverySec = SEAR_CONTACT_RECOVERY_SEC;
+    return patch;
+  }
+
   function advanceDoneness(prior, rec, newTemp, dtSec, now) {
     var dn = recipeDoneness(rec, prior);
     var items = prior.recipeItemsInPan || [];
@@ -3382,8 +3423,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     // kept moving: time in a hot pan past the grace period since the last stir
     // (or the last ingredient added) is unattended, and unattended food browns
     // 1.7× faster — the Recipe Kitchen's constant. A dish with stir.disturbs
-    // (a searing chicken breast) is the inverse: moving it is the mistake, and
-    // stirPan() handles that by resetting part of the crust instead.
+    // (a searing chicken breast) is the inverse: moving it briefly reduces
+    // future browning while contact recovers; accumulated colour is preserved.
     var simNow = (prior.recipeSimElapsedSec || 0) + dtSec;
     var stir = dn.stir;
     var needsWatching = hasFood && (!dn.browningFrom || items.indexOf(dn.browningFrom) !== -1); // butter alone needs no stirring
@@ -3431,6 +3472,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     var moistureMult = !dn.moisture ? 1 : wet ? 0.15 : moisture > 3 ? 0.6 : 1;
     var browningActive = hasFood && newTemp > 280 && (!dn.browningFrom || items.indexOf(dn.browningFrom) !== -1);
     var browningRate = browningActive ? Math.pow(2, (newTemp - 280) / 40) / 600 * (unattended ? 1.7 : 1) * moistureMult : 0;
+    var contactRecovery = stir && stir.disturbs ? Math.max(0, Math.min(SEAR_CONTACT_RECOVERY_SEC, prior.recipeContactRecoverySec || 0)) : 0;
+    var recoveringSec = Math.min(Math.max(0, dtSec), contactRecovery);
+    // Integrate the linear recovery exactly, including a tick that runs past
+    // its end. Splitting the same time into smaller ticks preserves exposure.
+    var contactExposureSec = dtSec - (contactRecovery * recoveringSec - recoveringSec * recoveringSec / 2) / SEAR_CONTACT_RECOVERY_SEC;
     var setF = dn.setF || 145, overF = dn.overF || 175;
     // Oil past its smoke point: the fat is in the pan and the pan is hotter
     // than the chosen oil can take (SMOKE_POINTS). Counted in sim-seconds.
@@ -3439,7 +3485,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     return {
       recipeFoodInternalF: newFood,
       recipeFoodPeakF: Math.max(prior.recipeFoodPeakF || 40, newFood),
-      recipeBrowning: (prior.recipeBrowning || 0) + browningRate * dtSec,
+      recipeBrowning: (prior.recipeBrowning || 0) + browningRate * contactExposureSec,
+      recipeContactRecoverySec: Math.max(0, contactRecovery - Math.max(0, dtSec)),
       recipeSecAboveOverF: (prior.recipeSecAboveOverF || 0) + (hasFood && newFood >= overF ? dtSec : 0),
       recipeFoodSetAt: prior.recipeFoodSetAt || (hasFood && newFood >= setF ? now : null),
       recipeUnattendedSec: (prior.recipeUnattendedSec || 0) + (unattended ? dtSec : 0),
@@ -3762,8 +3809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var peekEvery = seg.peekEvery || Infinity, nextPeekAt = simSec + peekEvery;
       // `stirNow: n` is n stirs at the start of the segment (a logged cook's stirs, replayed where they happened)
       if (seg.stirNow) {
-        s.recipeLastStirSimSec = simSec; s.recipeStirCount = (s.recipeStirCount || 0) + seg.stirNow;
-        if (dnCfg.stir && dnCfg.stir.disturbs) s.recipeBrowning = (s.recipeBrowning || 0) * Math.pow(0.8, seg.stirNow);
+        Object.assign(s, moveFood(s, rec, seg.stirNow));
       }
       var level = seg.off ? 0 : (seg.level || 0);
       // setBurner: 0 with food in the pan stamps heat removal (a cold pot that was never lit does not); heat back on clears it
@@ -3788,8 +3834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         Object.assign(s, tickPot(s, rec, dt));
         if (simSec >= nextStirAt - 1e-9) {
           nextStirAt += stirEvery;
-          s.recipeLastStirSimSec = simSec; s.recipeStirCount = (s.recipeStirCount || 0) + 1;
-          if (dnCfg.stir && dnCfg.stir.disturbs) s.recipeBrowning *= 0.8;   // stirPan(): moving a searing piece gives back a fifth of the crust
+          Object.assign(s, moveFood(s, rec));
         }
         if (simSec >= nextPeekAt - 1e-9) { nextPeekAt += peekEvery; var pk2 = peekOven(Object.assign({}, s, { recipePanTempF: pan })); pan = pk2.recipePanTempF; s.recipePeeks = pk2.recipePeeks; }
         history.push({ t: Math.round(simSec * 10) / 10, pan: Math.round(pan), food: Math.round(s.recipeFoodInternalF || 40), b: Math.round((s.recipeBrowning || 0) * 100) / 100 });
@@ -3893,10 +3938,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipeHeatRemovedAt: null,           // when burner went to 0 with food in pan
       recipeLastTickAt: null,              // ms
       recipeJudgement: null,               // set when phase = 'done'
+      recipeReplaySetup: null,             // detached settings for this completed cook
       // Doneness state, integrated every tick while food is in the pan. The
       // judges read these instead of scoring peak temp and elapsed time as
       // independent rules, so the notes cannot contradict each other.
       recipeBrowning: 0,                   // surface browning, Σ 2^((pan−280)/40)/600 · dt
+      recipeContactRecoverySec: 0,         // sim-seconds until full searing contact returns
       recipeFoodPeakF: 40,                 // highest food internal temp this run
       recipeFoodSetAt: null,               // ms when food internal first reached rec.doneness.setF
       recipeSecAboveOverF: 0,              // sim-seconds food internal spent above rec.doneness.overF
@@ -3970,7 +4017,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeItemAddSimSec: {}, recipeHeatRemovedSimSec: null, recipeLastStirSimSec: null, recipeStirCount: 0, recipeUnattendedSec: 0, recipeTraceStepSec: 1, recipeOil: null, recipeSmokeSec: 0, recipeOptions: {}, recipeMarks: {}, recipeMoisture: 0, recipeSteamSec: 0, recipeAbsorbed: 0, recipeHardBoilSec: 0, recipeLog: [], recipePeeks: 0, klReportCopied: null,
       recipeActiveTimeSec: 0, recipeHeatRemovedAt: null, recipeTempHistory: [],
       recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
+      recipeContactRecoverySec: 0,
       recipeJudgement: null,
+      recipeReplaySetup: null,
       potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
       twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
       competitionBurnerChanges: 0, competitionBurnerLevelSum: 0, competitionBurnerLevelTicks: 0,
@@ -4036,7 +4085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     color: 'orange',
     category: 'applied',
     // Pure engine pieces for tests/kitchenlab_recipe_engine.test.js; the host never reads this.
-    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, safetyFloorF: safetyFloorF, isUnsafeCook: isUnsafeCook, oneFix: oneFix, xpForCook: xpForCook, WATER_METHODS: WATER_METHODS, waterCue: waterCue, MAILLARD_ZONES: MAILLARD_ZONES, freshCookState: freshCookState, klCleanState: klCleanState, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, cookSupports: cookSupports, evidenceStatus: evidenceStatus, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
+    engine: { captureCookSetup: captureCookSetup, recordedCookSetup: recordedCookSetup, moveFood: moveFood, burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, safetyFloorF: safetyFloorF, isUnsafeCook: isUnsafeCook, oneFix: oneFix, xpForCook: xpForCook, WATER_METHODS: WATER_METHODS, waterCue: waterCue, MAILLARD_ZONES: MAILLARD_ZONES, freshCookState: freshCookState, klCleanState: klCleanState, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, cookSupports: cookSupports, evidenceStatus: evidenceStatus, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
     questHooks: [
       { id: 'open_safety', label: 'Open Kitchen Safety School', icon: '🛡️',
         check: function(d) { return !!(d && d.klViewedSafety); },
@@ -5577,18 +5626,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
       // The technique step made concrete. For a dish that must be kept moving
       // it resets the unattended clock; for a searing chicken breast (stir.disturbs)
-      // every move breaks pan contact and gives back a fifth of the crust so far.
+      // every move briefly slows new browning while existing colour remains.
       function stirPan() {
         var rec = RECIPES[d.recipeActiveId];
         var stir = recipeDoneness(rec, d).stir;
         if (!stir) return;
         setKL(function(prior) {
           if (prior.recipePhase !== 'cooking' || !(prior.recipeItemsInPan || []).length) return {};
-          var patch = { recipeLastStirSimSec: prior.recipeSimElapsedSec || 0, recipeStirCount: (prior.recipeStirCount || 0) + 1, recipeLog: logEvent(prior, { k: 'stir' }) };
-          if (stir.disturbs) patch.recipeBrowning = (prior.recipeBrowning || 0) * 0.8;
-          return patch;
+          return Object.assign(moveFood(prior, rec), { recipeLog: logEvent(prior, { k: 'stir' }) });
         });
-        klAnnounce(stir.disturbs ? __alloT('stem.kitchenlab.sr_moved_the_chicken_crust_interrupted', 'Moved the chicken. Crust interrupted.') : stir.label + '.');
+        klAnnounce(stir.disturbs ? __alloT('stem.kitchenlab.sr_moved_food_contact_recovering', 'Food moved. New browning slows briefly; existing colour stays.') : stir.label + '.');
       }
       function toggleSizzle() {
         var next = !d.klSizzleOn;
@@ -5726,6 +5773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               // Persist new best
               return {
                 recipePhase: 'done',
+                recipeReplaySetup: captureCookSetup(prior),
                 recipeJudgement: judgement,
                 recipeCurrentStep: rec.steps.length - 1,
                 recipeHistory: foldRecipeHistory(prior.recipeHistory, rec.id, judgement, true),
@@ -5740,7 +5788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             }
             // Sandbox: a readout, not a completion — no unlocks, no achievements
             if (rec.sandbox) {
-              return { recipePhase: 'done', recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };
+              return { recipePhase: 'done', recipeReplaySetup: captureCookSetup(prior), recipeJudgement: judgement, recipeCurrentStep: rec.steps.length - 1, klNewAchievements: [] };
             }
             // Non-competition: persist completion as normal
             var completed = (prior.recipeCompletedIds || []).slice();
@@ -5757,6 +5805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             newAchievements.forEach(function(a) { if (allUnlocked.indexOf(a.id) === -1) allUnlocked.push(a.id); });
             return {
               recipePhase: 'done',
+              recipeReplaySetup: captureCookSetup(prior),
               recipeJudgement: judgement,
               recipeCompletedIds: completed,
               recipeCurrentStep: rec.steps.length - 1,
@@ -6174,15 +6223,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── Replay: the finished cook, one thing changed ───
       function renderReplayPanel(rec, j) {
         var log = d.recipeLog || [], endSec = d.recipeSimElapsedSec || 0, cookKey = String(d.recipeStartedAt || 0);
-        var vars = replayVariables(rec);
+        var original = recordedCookSetup(d);
+        var vars = replayVariables(rec, original);
         if (!vars.length) return null;
         var v = vars.find(function(x) { return x.id === d.klReplayVar; }) || vars[0];
-        var alt = v.choices.find(function(c) { return c.id !== v.textbook; });
-        var choice = v.choices.some(function(c) { return c.id === d.klReplayChoice; }) ? d.klReplayChoice : (alt ? alt.id : v.textbook);
+        var alt = v.choices.find(function(c) { return c.id !== v.original; });
+        var choice = v.choices.some(function(c) { return c.id === d.klReplayChoice; }) ? d.klReplayChoice : (alt ? alt.id : v.original);
         var labelOf = function(id) { var c = v.choices.find(function(x) { return x.id === id; }); return c ? c.label : id; };
-        var asWas = runReplay(rec, log, endSec, cookKey, 'dial', '0').result;          // the cook as it was, through the same engine
-        var changed = runReplay(rec, log, endSec, cookKey, v.id, choice).result;
-        var same = choice === v.textbook;
+        var asWas = runReplay(rec, log, endSec, cookKey, 'dial', '0', original).result;
+        var changed = runReplay(rec, log, endSec, cookKey, v.id, choice, original).result;
+        var same = choice === v.original;
         var diff = changed.judgement.score - asWas.judgement.score;
         var drift = Math.abs(asWas.judgement.score - j.score);
         var selStyle = { padding: '7px 10px', background: 'rgba(15,23,42,0.7)', color: '#fde68a', border: '1px solid rgba(125,211,252,0.4)', borderRadius: 6, fontSize: 12, fontWeight: 600, maxWidth: '100%', minWidth: 0 };
@@ -6197,46 +6247,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('td', { style: { padding: '4px 10px', color: '#fb923c' } }, a), h('td', { style: { padding: '4px 10px', color: '#38bdf8' } }, b));
         };
         var cookThatWay = function() {
-          var st = replaySetup(rec, v.id, choice);
+          var st = replaySetup(rec, v.id, choice, original);
           startRecipe(rec.id);
-          setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klBenchLiveHint: 'Replay: ' + v.label.toLowerCase() + ' set to ' + labelOf(choice).charAt(0).toLowerCase() + labelOf(choice).slice(1) + '. Cook the way you did and see if the replay was right.' });
+          setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klAltitudeFt: st.altitudeFt || 0, klBenchLiveHint: 'Replay: ' + v.label.toLowerCase() + ' set to ' + labelOf(choice).charAt(0).toLowerCase() + labelOf(choice).slice(1) + '. Cook the way you did and see if the replay was right.' });
         };
         return h('div', { 'data-kl-replay': same ? 'same' : (changed.judgement.score + ',' + asWas.judgement.score), style: cardStyle() },
           h('h3', { style: subheaderStyle() }, '🔁 Your cook, one thing changed'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 12px' } },
-            'The engine logged every move you made (' + log.length + ' of them, in ' + klClock(endSec) + '). Here it runs that exact cook again with one thing different: same timing, same hands, one change.'),
+            'Compare your recorded decisions (' + log.length + ' observations and actions over ' + klClock(endSec) + ') using the same saved settings and replay clock. Change one factor and observe its effect.'),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, alignItems: 'end' } },
             field('kl-replay-var', 'Change', v.id, function(e) { setKL({ klReplayVar: e.target.value, klReplayChoice: null }); }, vars),
             field('kl-replay-choice', 'To', choice, function(e) { setKL({ klReplayChoice: e.target.value }); }, v.choices)),
           same ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 12, fontStyle: 'italic' } }, 'That is what you did. Pick something different to see what would have changed.') :
           h('div', { style: { marginTop: 12 } },
             h('div', { 'data-kl-replay-outcome': diff, role: 'status', style: { fontSize: 14, fontWeight: 800, color: diff > 0 ? '#86efac' : diff < 0 ? '#fca5a5' : '#fde68a', lineHeight: 1.5 } },
-              'With ' + labelOf(choice).toLowerCase() + ': ' + changed.judgement.score + ' ' + changed.judgement.grade + ' (' + (diff > 0 ? '+' : '') + diff + ' against your ' + asWas.judgement.score + ')'),
+              'With ' + labelOf(choice).toLowerCase() + ': ' + changed.judgement.score + ' ' + changed.judgement.grade + ' (' + (diff > 0 ? '+' : '') + diff + ' against unchanged replay ' + asWas.judgement.score + ')'),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '6px 0 8px', lineHeight: 1.45 } }, changed.judgement.verdict),
             h('ul', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 } },
               changed.judgement.notes.map(function(n, i) {
                 return h('li', { key: i, style: { fontSize: 11, lineHeight: 1.45, color: n.neg ? '#fca5a5' : '#86efac' } },
                   h('span', { style: { fontWeight: 700 } }, n.label), h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' ' + n.detail));
               })),
-            renderCompareTrace(d.recipeTempHistory || [], changed.history),
+            renderCompareTrace(asWas.history, changed.history, asWas.snapshot.boilF, changed.snapshot.boilF),
             h('div', { style: { overflowX: 'auto', marginTop: 10 } },
               h('table', { style: { borderCollapse: 'collapse', fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 300 } },
                 h('thead', null, h('tr', null,
                   h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 10px 4px 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, borderBottom: '1px solid rgba(100,116,139,0.3)' } }, ''),
-                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 10px', color: '#fb923c', fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'A · you'),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 10px', color: '#fb923c', fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'A · unchanged replay'),
                   h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 10px', color: '#38bdf8', fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'B · changed'))),
                 h('tbody', null,
-                  num('Pan peak', Math.round(d.recipeMaxPanTempF || 70) + '°F', Math.round(changed.snapshot.maxPanTempF) + '°F'),
-                  num('Food peak', Math.round(d.recipeFoodPeakF || 40) + '°F', Math.round(changed.snapshot.doneness.foodPeakF) + '°F'),
-                  num('Browning', (d.recipeBrowning || 0).toFixed(2), changed.snapshot.doneness.browning.toFixed(2)),
-                  num('Score', j.score + ' ' + j.grade, changed.judgement.score + ' ' + changed.judgement.grade)))),
+                  num('Pan peak', Math.round(asWas.snapshot.maxPanTempF) + '°F', Math.round(changed.snapshot.maxPanTempF) + '°F'),
+                  num('Food peak', Math.round(asWas.snapshot.doneness.foodPeakF) + '°F', Math.round(changed.snapshot.doneness.foodPeakF) + '°F'),
+                  num('Browning', asWas.snapshot.doneness.browning.toFixed(2), changed.snapshot.doneness.browning.toFixed(2)),
+                  num('Score', asWas.judgement.score + ' ' + asWas.judgement.grade, changed.judgement.score + ' ' + changed.judgement.grade)))),
             h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 } },
               // Not mid-tournament: a practice cook would leave the bracket stranded
               d.tournamentActive ? null : h('button', { type: 'button', 'data-kl-replay-live': '1', onClick: cookThatWay,
                 style: { padding: '8px 14px', background: 'rgba(15,23,42,0.7)', color: '#fde68a', border: '1px solid rgba(251,146,60,0.45)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                 '▶ Cook it that way'),
               h('span', { 'data-kl-replay-drift': drift, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-                'Replayed as you cooked it, the engine gives ' + asWas.judgement.score + (drift > 5 ? ' (the live cook ran on wall-clock ticks; small differences are expected).' : '.')))));
+                'Your recorded score remains ' + j.score + '. The unchanged replay scores ' + asWas.judgement.score + (drift ? '; replay timing and recipe-only scoring can differ from the original live run.' : '.')))));
       }
 
       // ─── Experiment bench ───
@@ -6273,7 +6323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var cookLive = function(tag, choiceId, r) {
           startRecipe(rec.id);
           var st = r.setup;
-          setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klBenchLiveHint: benchLiveHint(v, labelOf(choiceId), tag) });
+          setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klAltitudeFt: st.altitudeFt || 0, klBenchLiveHint: benchLiveHint(v, labelOf(choiceId), tag) });
         };
         var side = function(tag, choiceId, r) {
           var j = r.result.judgement;
@@ -6325,7 +6375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { 'data-kl-bench-outcome': outcome, role: 'status', style: { fontSize: 13, fontWeight: 700, color: predRight === false ? '#fde68a' : '#86efac', marginBottom: 10, lineHeight: 1.5 } },
               (predWord ? 'You said ' + predWord + '. ' : '') + 'Result: ' + outcome + '.' + (predRight === true ? ' Called it.' : predRight === false ? ' Worth reading why.' : '')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 } }, side('A', choiceA, ra), side('B', choiceB, rb)),
-            renderCompareTrace(ra.result.history, rb.result.history),
+            renderCompareTrace(ra.result.history, rb.result.history, ra.result.snapshot.boilF, rb.result.snapshot.boilF),
             h('div', { style: { overflowX: 'auto', marginTop: 10 } },
               h('table', { style: { borderCollapse: 'collapse', fontSize: 11, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 320 } },
                 h('thead', null, h('tr', null,
@@ -6471,7 +6521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               '🕵️ Another case')) : null);
       }
       // Two cooks on one chart: pan and food for A (solid) and B (dashed).
-      function renderCompareTrace(histA, histB) {
+      function renderCompareTrace(histA, histB, boilA, boilB) {
         if (!histA || !histB || histA.length < 2 || histB.length < 2) return null;
         var all = histA.concat(histB);
         var maxT = Math.max(300, Math.max.apply(null, all.map(function(p) { return Math.max(p.pan, p.food); })) + 20), minT = 40;
@@ -6481,13 +6531,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var sy = function(t) { return pt + (1 - (t - minT) / (maxT - minT)) * (H - pt - pb); };
         var line = function(hist, key) { return hist.map(function(p) { return sx(p.t).toFixed(1) + ',' + sy(p[key]).toFixed(1); }).join(' '); };
         var peak = function(hist, key) { return Math.round(Math.max.apply(null, hist.map(function(p) { return p[key]; }))); };
-        var refs = [{ t: boilingPointF(d), label: __alloT('stem.kitchenlab.boil', 'Boil'), c: '#38bdf8' }, { t: 310, label: __alloT('stem.kitchenlab.maillard_4', 'Maillard'), c: '#f97316' }];
+        boilA = typeof boilA === 'number' ? boilA : boilingPointF(d);
+        boilB = typeof boilB === 'number' ? boilB : boilA;
+        var boilingLabel = __alloT('stem.kitchenlab.boil', 'Boil');
+        var refs = [{ t: boilA, label: boilingLabel + (boilA !== boilB ? ' A' : ''), c: '#38bdf8' }, { t: 310, label: __alloT('stem.kitchenlab.maillard_4', 'Maillard'), c: '#f97316' }];
+        if (boilA !== boilB) refs.push({ t: boilB, label: boilingLabel + ' B', c: '#38bdf8', left: true });
         return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-kl-bench-trace': '1', style: { marginTop: 12, display: 'block', maxWidth: 640 },
             'aria-label': 'Both cooks on one chart. A: pan peaked at ' + fmtT(peak(histA, 'pan')) + ', food at ' + fmtT(peak(histA, 'food')) + ' over ' + klClock(histA[histA.length - 1].t) + '. B: pan peaked at ' + fmtT(peak(histB, 'pan')) + ', food at ' + fmtT(peak(histB, 'food')) + ' over ' + klClock(histB[histB.length - 1].t) + '.' },
           refs.filter(function(r) { return r.t < maxT; }).map(function(r) {
             return h('g', { key: 'r' + r.t },
               h('line', { x1: pl, y1: sy(r.t), x2: W - pr, y2: sy(r.t), stroke: r.c, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.5 }),
-              h('text', { x: W - pr, y: sy(r.t) - 2, textAnchor: 'end', fontSize: 8, fill: r.c }, r.label + ' ' + fmtT(r.t)));
+              h('text', { x: r.left ? pl : W - pr, y: sy(r.t) - 2, textAnchor: r.left ? 'start' : 'end', fontSize: 8, fill: r.c }, r.label + ' ' + fmtT(r.t)));
           }),
           h('polyline', { points: line(histA, 'pan'), fill: 'none', stroke: '#fb923c', strokeWidth: 2 }),
           h('polyline', { points: line(histB, 'pan'), fill: 'none', stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '6 4' }),
@@ -6805,7 +6859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               var since = d.recipeLastStirSimSec != null ? Math.max(0, (d.recipeSimElapsedSec || 0) - d.recipeLastStirSimSec) : null;
               var over = !stir.disturbs && since != null && since > (stir.grace || 15) && panTemp > 250;
               var caption = stir.disturbs
-                ? ((d.recipeStirCount || 0) ? 'Moved ' + d.recipeStirCount + '× — every move interrupts the crust' : 'Not moved. Good — the crust needs uninterrupted contact.')
+                ? ((d.recipeContactRecoverySec || 0) > 0 ? 'Pan contact recovering — new browning slows; existing colour stays.' : (d.recipeStirCount || 0) ? 'Moved ' + d.recipeStirCount + '× — pan contact has recovered; existing colour stays.' : 'Not moved. Good — the crust needs uninterrupted contact.')
                 : since == null ? 'Not stirred yet'
                 : over ? 'Last stirred ' + Math.round(since) + 's ago — unattended, browning faster'
                 : 'Last stirred ' + Math.round(since) + 's ago';
@@ -7392,7 +7446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               (j.evidenceStatus === 'independent' ? '✓ ' : j.evidenceStatus === 'supported' ? '◐ ' : '○ ') +
               __alloT('stem.kitchenlab.evidence_' + j.evidenceStatus, j.evidenceLabel)),
             j.evidenceDetail ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, lineHeight: 1.5 } },
-              j.evidenceStatus === 'independent' ? __alloT('stem.kitchenlab.evidence_independent_detail', j.evidenceDetail) : j.evidenceDetail) : null) : null,
+              j.evidenceDetail) : null) : null,
 
           // ─── Your cook, one thing changed (the bench for the cook just done) ───
           !isSandbox && (d.recipeLog || []).length >= 2 ? renderReplayPanel(rec, j) : null,

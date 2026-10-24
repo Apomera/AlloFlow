@@ -1,7 +1,0 @@
-{
-  "sessionId": 18403,
-  "toolChunk": "d0889e",
-  "completed": true,
-  "exitCode": 0,
-  "observedOutput": "Passed 145/145 assertions across 10 isolated test files in 42.77s; source, mirror, tests and runner unchanged."
-}

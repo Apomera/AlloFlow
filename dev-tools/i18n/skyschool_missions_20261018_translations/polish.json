@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Obserwacje z misji",
+  "stem.flightsim.mission_journal_targets": "Zarejestrowane cele: {captured} z {total}.",
+  "stem.flightsim.mission_journal_complete": "Zarejestrowano wszystkie cele misji oraz lądowanie po powrocie.",
+  "stem.flightsim.mission_journal_ended": "Misja zakończyła się przed zarejestrowaniem wszystkich dowodów ukończenia.",
+  "stem.flightsim.mission_journal_recovery": "Zarejestrowane podjęcie rozbitka: {value}.",
+  "stem.flightsim.mission_journal_return": "Zarejestrowane lądowanie po powrocie do bazy: {value}.",
+  "stem.flightsim.mission_guidance_title": "Wskazówki misji",
+  "stem.flightsim.mission_route": "{target} · namiar {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Miejsce startu",
+  "stem.flightsim.mission_read_status": "Odczytaj stan misji",
+  "stem.flightsim.mission_return_criterion": "Wyląduj w odległości do {distance} nm od {target}, z prędkością względem ziemi poniżej {speed} kt i prędkością opadania poniżej {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Dane celu misji są niedostępne. Zakończ ten lot i rozpocznij nową misję.",
+  "stem.flightsim.mission_capture_criterion": "Pozostań w promieniu {distance} ft, powyżej {min} i poniżej {max} ft nad ziemią, z prędkością względem ziemi poniżej {speed} kt przez {hold} s."
+}

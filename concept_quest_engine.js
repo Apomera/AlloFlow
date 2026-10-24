@@ -94,6 +94,7 @@
     puzzle_locked: 'The reasoning lock needs two-thirds consensus; discuss the evidence and try another clue.',
     boss_bonus: 'The class broke the Mastery Barrier for 2 bonus damage.',
     boss_limited: 'The Mastery Barrier limited damage; regroup around the strongest evidence.',
+    boss_assessment_remaining: 'The final barrier stays open for review: {count} supported assessment item(s) remain.',
     round_log: '{correct}/{total} concept checks succeeded; the party dealt {damage} damage.',
     round_combo_log: 'A three-ability concept combo added 3 damage!',
     round_synergy_log: '{count} party role synergies activated.',
@@ -161,8 +162,20 @@
     return text.slice(0, maxLength || 500);
   }
 
+  function isAnswerKeyDisputed(question) {
+    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    var review = question.keyCheck;
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    if (review && typeof review === 'object') {
+      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
+    }
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+  }
+
   function questionAnswerIndex(question) {
     if (!question || typeof question !== 'object') return -1;
+    if (isAnswerKeyDisputed(question)) return -1;
     var type = String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) < 0) return -1;
     var options = question.options || question.choices;
@@ -239,27 +252,107 @@
   function sealQuest(quest) { return Object.assign({}, quest, { turnKey: getTurnKey(quest) }); }
   function sealResult(result) { return result.error ? result : Object.assign({}, result, { quest: sealQuest(result.quest) }); }
 
-  function normalizeQuestion(question, index, strings) {
+  // New class sessions keep the whole supported assessment independently of
+  // the map. Old sessions retain their room-local rotation; solo owns its own
+  // source bank and must never credit the structural MCQ adapters stored here.
+  function classAssessmentBank(quest) {
+    var bank = quest && !quest.solo && quest.assessmentBank;
+    return bank && bank.version === 1 && Array.isArray(bank.items) && bank.items.length ? bank : null;
+  }
+
+  function coverage(quest) {
+    var bank = classAssessmentBank(quest);
+    if (!bank) return null;
+    var attempted = bank.items.filter(function(item) { return !!(bank.attempts && bank.attempts[item.sourceIndex] && bank.attempts[item.sourceIndex].rounds > 0); }).length;
+    return { total: bank.items.length, attempted: attempted, remaining: bank.items.length - attempted, complete: attempted === bank.items.length, excluded: quest.excludedQuestions || 0 };
+  }
+
+  function nextAssessmentIndex(bank, start) {
+    for (var offset = 0; offset < bank.items.length; offset++) {
+      var index = (start + offset) % bank.items.length;
+      if (!bank.attempts[bank.items[index].sourceIndex]) return index;
+    }
+    return start % bank.items.length;
+  }
+
+  function emptyLearningTotals(completeHistory) {
+    return { version: 1, completeHistory: completeHistory !== false, rounds: 0, totalAnswers: 0, correctAnswers: 0, combos: 0, roleSynergies: 0, peerAssists: 0, puzzlesSolved: 0, concepts: {}, conceptsCleared: [] };
+  }
+
+  function addLearningRound(totals, round, quest) {
+    var concepts = Object.assign(Object.create(null), totals.concepts || {});
+    var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
+    var previous = concepts[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
+    concepts[concept] = { concept: concept, correct: previous.correct + (round.correct || 0), total: previous.total + (round.total || 0), rounds: previous.rounds + 1 };
+    var cleared = (totals.conceptsCleared || []).slice();
+    if (round.enemyDefeated && cleared.indexOf(concept) < 0) cleared.push(concept);
+    return Object.assign({}, totals, {
+      rounds: totals.rounds + 1, totalAnswers: totals.totalAnswers + (round.total || 0), correctAnswers: totals.correctAnswers + (round.correct || 0),
+      combos: totals.combos + (round.combo ? 1 : 0), roleSynergies: totals.roleSynergies + (round.synergyCount || 0), peerAssists: totals.peerAssists + (round.assistedCount || 0),
+      puzzlesSolved: totals.puzzlesSolved + (round.roomKind === 'puzzle' && round.enemyDefeated ? 1 : 0), concepts: concepts, conceptsCleared: cleared
+    });
+  }
+
+  function learningTotals(quest) {
+    if (quest && !quest.solo && quest.learningTotals && quest.learningTotals.version === 1) return quest.learningTotals;
+    var rounds = quest && Array.isArray(quest.roundHistory) ? quest.roundHistory : [];
+    // Older saves may already have discarded earlier rounds. Preserve available
+    // evidence and label that limit instead of claiming it covers the session.
+    return rounds.reduce(function(totals, round) { return addLearningRound(totals, round, quest); }, emptyLearningTotals(!!(quest && quest.solo) || rounds.length < 24));
+  }
+
+  // Assessment content is rendered as React text, not HTML. Keep authored
+  // comparators and full passages; the bounded cleaner remains for GM drafts.
+  function sourceQuestionText(value, fallback) {
+    var text = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+    return text || fallback || '';
+  }
+
+  // GM assessment text is also rendered as escaped React text. Keep mathematical
+  // operators while retaining the draft limits; metadata still uses cleanText.
+  function draftQuestionText(value, fallback, maxLength) {
+    return sourceQuestionText(value, fallback).slice(0, maxLength || 500);
+  }
+
+  function sourceChallengePreview(item) {
+    var preview = Object.assign({}, item);
+    // Keep potentially large image data once in the bank and once in the active
+    // encounter, rather than repeating it throughout the serialized map.
+    ['imageUrl', 'imageAltText', 'optionImageUrls', 'optionImageAltTexts'].forEach(function(field) { delete preview[field]; });
+    return preview;
+  }
+
+  function normalizeQuestion(question, index, strings, preserveSource) {
     question = question || {};
+    var questionText = preserveSource ? sourceQuestionText : draftQuestionText;
     var options = Array.isArray(question.options) ? question.options :
       (Array.isArray(question.choices) ? question.choices : []);
     options = options.slice(0, 6).map(function(option, optionIndex) {
-      if (option && typeof option === 'object') return cleanText(option.text || option.label, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
-      return cleanText(option, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
+      if (option && typeof option === 'object') return questionText(option.text || option.label, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
+      return questionText(option, textFromStrings(strings, 'choice_number', { number: optionIndex + 1 }), 180);
     });
     if (options.length < 2) {
       options = [textFromStrings(strings, 'option_evidence'), textFromStrings(strings, 'option_clue')];
     }
     var correctIndex = questionAnswerIndex(question);
     if (correctIndex < 0) throw new Error(textFromStrings(strings, 'challenge_key_required'));
-    return {
+    var normalized = {
       id: 'challenge-' + (index + 1),
       concept: conceptLabel(question, index, strings),
-      prompt: cleanText(question.question || question.prompt || question.text, textFromStrings(strings, 'question_default'), 500),
+      prompt: questionText(question.question || question.prompt || question.text, textFromStrings(strings, 'question_default'), 500),
       options: options,
       correctIndex: correctIndex,
-      explanation: cleanText(question.explanation || question.feedback || question.rationale, textFromStrings(strings, 'explanation_default'), 500)
+      explanation: questionText(question.explanation || question.feedback || question.rationale, textFromStrings(strings, 'explanation_default'), 500)
     };
+    if (preserveSource) {
+      normalized.question_en = sourceQuestionText(question.question_en);
+      normalized.imageUrl = sourceQuestionText(question.imageUrl);
+      normalized.imageAltText = sourceQuestionText(question.imageAltText);
+      ['options_en', 'optionImageUrls', 'optionImageAltTexts'].forEach(function(field) {
+        normalized[field] = options.map(function(_, optionIndex) { return sourceQuestionText(Array.isArray(question[field]) ? question[field][optionIndex] : ''); });
+      });
+    }
+    return normalized;
   }
 
   function conceptLabel(question, index, strings) {
@@ -274,9 +367,11 @@
   function createSession(options) {
     options = options || {};
     var strings = createLocalizedStrings(options.translate);
-    var suppliedQuestions = Array.isArray(options.questions) ? options.questions.filter(Boolean) : [];
-    var sourceQuestions = suppliedQuestions.filter(function(question) { return questionAnswerIndex(question) >= 0; });
+    var suppliedQuestions = Array.isArray(options.questions) ? options.questions : [];
+    var sourceEntries = suppliedQuestions.map(function(question, sourceIndex) { return { question: question, sourceIndex: sourceIndex }; }).filter(function(entry) { return questionAnswerIndex(entry.question) >= 0; });
+    var sourceQuestions = sourceEntries.map(function(entry) { return entry.question; });
     if (!sourceQuestions.length) throw new Error(textFromStrings(strings, 'source_questions_required'));
+    var assessmentItems = sourceEntries.map(function(entry) { return Object.assign({}, normalizeQuestion(entry.question, entry.sourceIndex, strings, true), { sourceIndex: entry.sourceIndex }); });
     var title = cleanText(options.title, textFromStrings(strings, 'session_default_title'), 100);
     var rooms = ROOM_LAYOUT.map(function(position, index) {
       var source = sourceQuestions[index % sourceQuestions.length];
@@ -290,7 +385,7 @@
       var challenges = [];
       var challengeCount = Math.min(3, sourceQuestions.length);
       for (var challengeOffset = 0; challengeOffset < challengeCount; challengeOffset++) {
-        challenges.push(normalizeQuestion(sourceQuestions[(index + challengeOffset) % sourceQuestions.length], index * 3 + challengeOffset, strings));
+        challenges.push(sourceChallengePreview(assessmentItems[(index + challengeOffset) % assessmentItems.length]));
       }
       return {
         id: 'room-' + (index + 1),
@@ -323,6 +418,8 @@
       actionSchema: 1,
       sessionId: 'quest-' + Date.now().toString(36) + '-' + (++logSequence).toString(36),
       excludedQuestions: suppliedQuestions.length - sourceQuestions.length,
+      assessmentBank: { version: 1, items: assessmentItems, cursor: 1 % assessmentItems.length, attempts: {} },
+      learningTotals: emptyLearningTotals(true),
       title: title,
       objective: cleanText(options.objective, textFromStrings(strings, 'objective_default'), 240),
       localizedStrings: strings,
@@ -375,8 +472,10 @@
     if (destination.reward && (quest.inventory || []).length >= 12 && !(quest.inventory || []).some(function(item) { return item.id === destination.reward.id; })) return questError(quest, 'inventory_full');
     var visited = (quest.visited || []).indexOf(destinationId) >= 0 ? (quest.visited || []).slice() : (quest.visited || []).concat([destinationId]);
     var rooms = quest.rooms.map(function(room) {
-      if (room.id !== destinationId || !room.reward) return room;
-      return Object.assign({}, room, { reward: null });
+      var bank = classAssessmentBank(quest);
+      if (room.id !== destinationId) return bank && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? Object.assign({}, room, { challenge: sourceChallengePreview(room.challenge) }) : room;
+      var scheduled = bank && room.enemy && room.enemy.hp > 0 && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? bank.items[bank.cursor] : null;
+      return Object.assign({}, room, room.reward ? { reward: null } : {}, scheduled ? { challenge: scheduled } : {});
     });
     var inventory = (quest.inventory || []).slice();
     if (destination.reward && !inventory.some(function(item) { return item.id === destination.reward.id; })) inventory.push(destination.reward);
@@ -473,9 +572,24 @@
     damage = clamp(damage, 0, 20);
     heal = clamp(heal, 0, 4);
     shield = clamp(shield, 0, 6);
+    var bank = classAssessmentBank(quest);
+    var sourceIndex = bank ? bank.items.findIndex(function(item) { return item.sourceIndex === challenge.sourceIndex; }) : -1;
+    if (sourceIndex >= 0) {
+      var attempts = Object.assign({}, bank.attempts);
+      var previous = attempts[challenge.sourceIndex] || { rounds: 0, correct: 0, total: 0 };
+      attempts[challenge.sourceIndex] = { rounds: previous.rounds + 1, correct: previous.correct + correct, total: previous.total + total };
+      bank = Object.assign({}, bank, { attempts: attempts });
+      bank.cursor = nextAssessmentIndex(bank, sourceIndex + 1);
+    }
+    var remaining = bank ? bank.items.filter(function(item) { return !bank.attempts[item.sourceIndex]; }).length : 0;
     var enemyHp = Math.max(0, room.enemy.hp - damage);
+    var barrierHeld = !!(bank && room.kind === 'boss' && remaining > 0 && enemyHp === 0);
+    if (barrierHeld) {
+      enemyHp = 1;
+      encounterRule += (encounterRule ? ' ' : '') + questText(quest, 'boss_assessment_remaining', { count: remaining });
+    }
     var enemyDefeated = enemyHp === 0;
-    var incoming = enemyDefeated ? 0 : room.enemy.attack;
+    var incoming = enemyDefeated || barrierHeld ? 0 : room.enemy.attack;
     var totalShield = clamp((quest.party.shield || 0) + shield, 0, 8);
     var absorbed = Math.min(incoming, totalShield);
     var partyHp = clamp(quest.party.hp + heal - Math.max(0, incoming - absorbed), 0, quest.party.maxHp);
@@ -487,7 +601,7 @@
       return Object.assign({}, entry, {
         enemy: Object.assign({}, entry.enemy, { hp: enemyHp }),
         challengeIndex: nextChallengeIndex,
-        challenge: Array.isArray(entry.challenges) && entry.challenges.length ? entry.challenges[nextChallengeIndex] : entry.challenge
+        challenge: bank && (sourceIndex >= 0 || barrierHeld) ? bank.items[bank.cursor] : Array.isArray(entry.challenges) && entry.challenges.length ? entry.challenges[nextChallengeIndex] : entry.challenge
       });
     });
     var won = enemyDefeated && room.kind === 'boss';
@@ -501,7 +615,13 @@
     if (encounterRule) text += ' ' + encounterRule;
     if (enemyDefeated) text += ' ' + questText(quest, 'round_enemy_defeated_log', { enemy: room.enemy.name });
     else text += ' ' + questText(quest, 'round_party_damage_log', { damage: Math.max(0, incoming - absorbed) });
-    return { quest: Object.assign({}, quest, {
+    var roundRecord = {
+      turn: quest.turn, roomId: room.id, concept: challenge.concept || room.concept, correct: correct, total: total,
+      accuracy: total ? Math.round((correct / total) * 100) : 0, damage: damage,
+      incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
+      assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule, enemyDefeated: enemyDefeated
+    };
+    return { quest: Object.assign({}, quest, bank ? { assessmentBank: bank } : {}, quest.solo ? {} : { learningTotals: addLearningRound(learningTotals(quest), roundRecord, quest) }, {
       rooms: rooms,
       phase: phase,
       gmUndo: null,
@@ -521,15 +641,9 @@
         synergyCount: synergyCount,
         assistedCount: assistedCount,
         encounterRule: encounterRule,
-        explanation: cleanText(challenge.explanation, questText(quest, 'explanation_discuss'), 500)
+        explanation: (Number.isInteger(challenge.sourceIndex) ? sourceQuestionText : draftQuestionText)(challenge.explanation, questText(quest, 'explanation_discuss'), 500)
       },
-      roundHistory: (quest.roundHistory || []).concat([{
-        turn: quest.turn, roomId: room.id, concept: challenge.concept || room.concept, correct: correct, total: total,
-        accuracy: total ? Math.round((correct / total) * 100) : 0, damage: damage,
-        incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
-        assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule,
-        enemyDefeated: enemyDefeated
-      }]).slice(-24),
+      roundHistory: (quest.roundHistory || []).concat([roundRecord]).slice(-24),
       log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn + 1, text: text + (enemyDefeated && room.kind !== 'boss' ? ' ' + questText(quest, 'round_sigil_log') : '') }]).slice(-30)
     }), summary: { correct: correct, total: total, damage: damage, incoming: Math.max(0, incoming - absorbed), enemyDefeated: enemyDefeated, combo: combo, synergyCount: synergyCount, assistedCount: assistedCount, encounterRule: encounterRule } };
   }
@@ -539,6 +653,7 @@
       rooms: quest.rooms,
       currentRoomId: quest.currentRoomId,
       roundCount: (quest.roundHistory || []).length,
+      learningRoundCount: learningTotals(quest).rounds,
       party: quest.party,
       inventory: quest.inventory,
       phase: quest.phase,
@@ -656,6 +771,7 @@
     var history = quest && Array.isArray(quest.gmHistory) ? quest.gmHistory.slice() : [];
     var snapshot = history.length ? history.pop() : (quest && quest.gmUndo);
     if (!snapshot || snapshot.currentRoomId !== quest.currentRoomId || snapshot.roundCount !== (quest.roundHistory || []).length) return questError(quest, 'gm_undo_unavailable');
+    if (snapshot.learningRoundCount != null && snapshot.learningRoundCount !== learningTotals(quest).rounds) return questError(quest, 'gm_undo_unavailable');
     var restoredLog = (quest.log || []).slice(0, Math.max(0, snapshot.logLength || 0));
     restoredLog.push({ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_gm_undo') });
     return { quest: Object.assign({}, quest, {
@@ -706,30 +822,28 @@
 
   function createDebrief(quest) {
     var rounds = quest && Array.isArray(quest.roundHistory) ? quest.roundHistory : [];
-    var totalAnswers = rounds.reduce(function(sum, round) { return sum + (round.total || 0); }, 0);
-    var correctAnswers = rounds.reduce(function(sum, round) { return sum + (round.correct || 0); }, 0);
-    var conceptTotals = Object.create(null);
-    rounds.forEach(function(round) {
-      var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
-      conceptTotals[concept] = conceptTotals[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
-      conceptTotals[concept].correct += round.correct || 0;
-      conceptTotals[concept].total += round.total || 0;
-      conceptTotals[concept].rounds += 1;
-    });
+    var totals = learningTotals(quest);
+    var totalAnswers = totals.totalAnswers, correctAnswers = totals.correctAnswers, conceptTotals = totals.concepts;
     var conceptBreakdown = Object.keys(conceptTotals).map(function(key) {
       var entry = conceptTotals[key];
       return Object.assign({}, entry, { accuracy: entry.total ? Math.round((entry.correct / entry.total) * 100) : 0 });
     }).sort(function(a, b) { return a.accuracy - b.accuracy || a.concept.localeCompare(b.concept); });
     return {
       outcome: quest && quest.phase === 'complete' ? 'victory' : (quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress'),
-      rounds: rounds.length,
+      coverage: coverage(quest),
+      rounds: totals.rounds,
+      recentRoundCount: rounds.length,
+      completeHistory: totals.completeHistory,
+      summaryScope: totals.completeHistory ? 'whole-session' : 'available-history',
+      totalAnswers: totalAnswers,
+      correctAnswers: correctAnswers,
       accuracy: totalAnswers ? Math.round((correctAnswers / totalAnswers) * 100) : 0,
-      combos: rounds.filter(function(round) { return round.combo; }).length,
-      roleSynergies: rounds.reduce(function(sum, round) { return sum + (round.synergyCount || 0); }, 0),
-      peerAssists: rounds.reduce(function(sum, round) { return sum + (round.assistedCount || 0); }, 0),
-      puzzlesSolved: rounds.filter(function(round) { return round.roomKind === 'puzzle' && round.enemyDefeated; }).length,
+      combos: totals.combos,
+      roleSynergies: totals.roleSynergies,
+      peerAssists: totals.peerAssists,
+      puzzlesSolved: totals.puzzlesSolved,
       sigils: (quest && quest.sigils || []).slice(),
-      conceptsCleared: Array.from(new Set(rounds.filter(function(round) { return round.enemyDefeated; }).map(function(round) { return round.concept; }))),
+      conceptsCleared: totals.conceptsCleared,
       conceptBreakdown: conceptBreakdown,
       needsReview: conceptBreakdown.length && conceptBreakdown[0].accuracy < 70 ? conceptBreakdown[0] : null,
       strongestConcept: conceptBreakdown.length ? conceptBreakdown[conceptBreakdown.length - 1] : null
@@ -747,6 +861,7 @@
     currentVotes: currentVotes,
     requiredSigils: requiredSigils,
     questionAnswerIndex: questionAnswerIndex,
+    isAnswerKeyDisputed: isAnswerKeyDisputed,
     getRoom: getRoom,
     tallyVotes: tallyVotes,
     resolveTravel: function() { return sealResult(resolveTravel.apply(null, arguments)); },
@@ -757,6 +872,7 @@
     undoLastGmChange: function() { return sealResult(undoLastGmChange.apply(null, arguments)); },
     adjustEncounter: function() { return sealResult(adjustEncounter.apply(null, arguments)); },
     dismissEvent: dismissEvent,
-    createDebrief: createDebrief
+    createDebrief: createDebrief,
+    coverage: coverage
   };
 });

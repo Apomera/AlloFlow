@@ -18,6 +18,10 @@
   if (!React) { console.error('[KokoroOfferModal] React not found on window'); return; }
 
 function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast }) {
+  const tr = (k, fb) => {
+    const v = typeof window.__alloT === "function" ? window.__alloT(k) : null;
+    return typeof v === "string" && v && v !== k ? v : fb;
+  };
   const dialogRef = React.useRef(null);
   React.useEffect(function() {
     const dialog = dialogRef.current;
@@ -82,24 +86,24 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
   }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors text-sm" }, "No Thanks"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setShowKokoroOfferModal(false);
     if (window.__kokoroTTSDownloading) {
-      addToast("Voice model preparation is already running. Check audio status for progress.", "info");
+      addToast(tr("voice_engine.kokoro_prep_running", "Voice model preparation is already running. Check audio status for progress."), "info");
       return;
     }
     if (typeof window.__loadKokoroTTS !== "function") {
-      addToast("Offline voice loader is unavailable. Please try again later.", "error");
+      addToast(tr("voice_engine.kokoro_loader_unavailable", "Offline voice loader is unavailable. Please try again later."), "error");
       return;
     }
     window.__kokoroTTSDownloading = true;
-    addToast("Preparing Kokoro voice model (~88MB download if not already stored)...", "info");
+    addToast(tr("voice_engine.kokoro_preparing", "Preparing Kokoro voice model (~88MB download if not already stored)..."), "info");
     Promise.resolve(window.__loadKokoroTTS()).then((ok) => {
       window.__kokoroTTSDownloading = false;
       if (ok && window._kokoroTTS?.ready) {
-        addToast("Kokoro voice model ready. Sentence clips are prepared and saved separately.", "success");
+        addToast(tr("voice_engine.kokoro_ready", "Kokoro voice model ready. Sentence clips are prepared and saved separately."), "success");
         setSelectedVoice("af_heart");
-      } else addToast("Voice model preparation did not finish. Check network access or browser storage, then try again.", "error");
+      } else addToast(tr("voice_engine.kokoro_prep_failed", "Voice model preparation did not finish. Check network access or browser storage, then try again."), "error");
     }).catch(() => {
       window.__kokoroTTSDownloading = false;
-      addToast("Voice model preparation did not finish. Check network access or browser storage, then try again.", "error");
+      addToast(tr("voice_engine.kokoro_prep_failed", "Voice model preparation did not finish. Check network access or browser storage, then try again."), "error");
     });
   }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors text-sm" }, "Download Voice"))));
 }

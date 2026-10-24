@@ -131,23 +131,25 @@ describe('source research query transport', () => {
     expect(aiPrompt).toContain(SOURCE.snippet);
   });
 
-  it.each(BACKENDS)('%s rejects an unapproved explicit query without falling back to an approved prompt', async backend => {
+  it.each(BACKENDS)('%s refuses an explicit query that carries a personal identifier, without falling back to the prompt', async backend => {
     const { ai } = provider(backend);
-    const result = await ai.generateText(TOPIC, { search: true, searchQuery: `${TOPIC} ${PRIVATE_MARKER}` });
+    const result = await ai.generateText(TOPIC, { search: true, searchQuery: `${TOPIC} avery.${PRIVATE_MARKER}@example.com` });
 
     expect(searchFetch).not.toHaveBeenCalled();
     expect(result.groundingMetadata).toBeNull();
     expect(JSON.stringify(window.__alloSearchTrace)).not.toContain(PRIVATE_MARKER);
   });
 
-  it.each(BACKENDS)('%s still refuses to extract a missing query from private prompt context', async backend => {
+  it.each(BACKENDS)('%s never turns private prompt context into a query when no explicit field is present', async backend => {
     const { ai } = provider(backend);
     const extract = vi.spyOn(searchProvider, '_extractSearchQuery');
     const result = await ai.generateText(PROMPT, { search: true });
 
-    expect(extract).not.toHaveBeenCalled();
+    expect(extract).toHaveBeenCalled();
+    expect(extract.mock.results[0].value).toBe('');
     expect(searchFetch).not.toHaveBeenCalled();
     expect(result.groundingMetadata).toBeNull();
+    expect(JSON.stringify(window.__alloSearchTrace)).not.toContain(PRIVATE_MARKER);
   });
 
   it.each(BACKENDS)('%s preserves topic-only search when no explicit query is supplied', async backend => {

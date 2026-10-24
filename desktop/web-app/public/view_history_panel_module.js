@@ -488,7 +488,6 @@ function HistoryPanel(props) {
     };
   };
   const getInstructionalTextBadge = (item) => {
-    const profile = getInstructionalTextProfile(item);
     const itemType = (() => {
       try {
         return item && typeof item === "object" ? item.type : "";
@@ -496,8 +495,8 @@ function HistoryPanel(props) {
         return "";
       }
     })();
-    const isTextArtifact = item && (itemType === "analysis" || itemType === "simplified" || profile.form === "same-text-supported");
-    if (!isTextArtifact && !profile.explicit) return null;
+    if (itemType !== "analysis" && itemType !== "simplified") return null;
+    const profile = getInstructionalTextProfile(item);
     const contract = typeof window !== "undefined" && window.AlloModules?.InstructionalContext;
     const formLabel = contract?.getReadingArtifactLabel?.(item) || (profile.form === "adapted" ? "Adapted text" : profile.form === "same-text-supported" ? "Original with supports" : "Source text");
     const roleLabel = contract?.getReadingRoleLabel?.(item) || (profile.role === "primary" ? "Main reading" : profile.role === "supplemental" ? "Supporting reading" : "Not designated");

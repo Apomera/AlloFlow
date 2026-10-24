@@ -632,7 +632,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     });
     return [header.join(',')].concat(rows).join('\r\n');
   }
-  window.StemLab.ecosystemFoodWeb = { species: ECO_WEB_SPECIES, links: ECO_WEB_LINKS, normalize: ecoWebConfig, run: ecoWebRun, compare: ecoWebCompare, csv: ecoWebCSV, format: ecoWebFormat, insights: ecoWebInsights, capture: ecoWebCapture, notebook: ecoWebNotebook, notebookText: ecoWebNotebookText, meadowPose: ecoMeadowPose, behavior:ecoMeadowBehavior, behaviorTimeline:ecoMeadowBehaviorTimeline, segmentPose:ecoMeadowSegmentPose, footPose:ecoMeadowFootPose, foxLegPose:ecoMeadowFoxLegPose, foxFooting:ecoMeadowFoxFooting, rabbitFooting:ecoMeadowRabbitFooting, rabbitLegPose:ecoMeadowRabbitLegPose, mammalPosture:ecoMeadowMammalPosture, attention:ecoMeadowAttention, groundStep:ecoMeadowGroundStep, groundObstacles:ecoMeadowGroundObstacles, groundRadius:ecoMeadowGroundRadius, groundHeight:ecoMeadowGroundHeight, behaviorMoments:ecoMeadowBehaviorMoments, explainBehavior:ecoMeadowExplainBehavior, trail:ecoMeadowTrail, interaction:ecoMeadowInteraction, blendPose:ecoMeadowBlendPose, blendFrame:ecoMeadowBlendFrame };
+  window.StemLab.ecosystemFoodWeb = { investigations: ['cascade', 'refuge', 'insects', 'soil'], investigation: ecoWebInvestigation, investigationEvidence: ecoWebInvestigationEvidence, species: ECO_WEB_SPECIES, links: ECO_WEB_LINKS, normalize: ecoWebConfig, run: ecoWebRun, compare: ecoWebCompare, csv: ecoWebCSV, format: ecoWebFormat, insights: ecoWebInsights, capture: ecoWebCapture, notebook: ecoWebNotebook, notebookText: ecoWebNotebookText, meadowPose: ecoMeadowPose, behavior:ecoMeadowBehavior, behaviorTimeline:ecoMeadowBehaviorTimeline, birdArticulation:ecoMeadowBirdArticulation, motionStudy:ecoMeadowMotionStudy, mammalMotionStudy:ecoMeadowMammalMotionStudy, motionSequence:ecoMeadowMotionSequence, movementEvidence:ecoMeadowMovementEvidence, movementRecord:ecoWebMovementRecord, foxListening:ecoMeadowFoxListening, refugeTarget:ecoMeadowRefugeTarget, refugeConceals:ecoMeadowRefugeConceals, pairMeasurement:ecoMeadowPairMeasurement, pairEvidence:ecoMeadowPairEvidence, pairRecord:ecoWebPairMeasurementRecord,pairMotionKey:ecoMeadowPairMotionKey,pairMotionCheck:ecoMeadowPairMotionCheck,pairMotionRecord:ecoMeadowPairMotionRecord,pairMotionEvidence:ecoMeadowPairMotionEvidence,pairMotionPending:ecoMeadowPairMotionPending,pairMeasurementState:ecoMeadowPairMeasurementState,pairMotionText:ecoWebPairMotionText, socialAlarm:ecoMeadowSocialAlarm, segmentPose:ecoMeadowSegmentPose, footPose:ecoMeadowFootPose, foxGait:ecoMeadowFoxGait, foxLegPose:ecoMeadowFoxLegPose, foxFooting:ecoMeadowFoxFooting, rabbitFooting:ecoMeadowRabbitFooting, rabbitLegPose:ecoMeadowRabbitLegPose, mammalPosture:ecoMeadowMammalPosture, mammalArticulation:ecoMeadowMammalArticulation, mammalSurface:ecoMeadowMammalSurface,mammalPawSurface:ecoMeadowMammalPawSurface, mammalTailPoint:ecoMeadowMammalTailPoint, attention:ecoMeadowAttention, groundStep:ecoMeadowGroundStep, groundObstacles:ecoMeadowGroundObstacles, groundRadius:ecoMeadowGroundRadius, groundHeight:ecoMeadowGroundHeight, behaviorMoments:ecoMeadowBehaviorMoments, explainBehavior:ecoMeadowExplainBehavior, trail:ecoMeadowTrail, interaction:ecoMeadowInteraction, encounters:ecoMeadowEncounters, blendPose:ecoMeadowBlendPose, blendFrame:ecoMeadowBlendFrame };
+
+  window.StemLab.ecosystemFoodWeb.foxSearch = ecoMeadowFoxSearch;
+  window.StemLab.ecosystemFoodWeb.rabbitSpacing = ecoMeadowRabbitSpacing;
+  Object.assign(window.StemLab.ecosystemFoodWeb,{spacingProbeCase:ecoMeadowSpacingProbeCase,spacingProbeRun:ecoMeadowSpacingProbeRun,spacingProbeRecord:ecoWebSpacingProbeRecord});
+  window.StemLab.ecosystemFoodWeb.mammalLimbFit = ecoMeadowMammalLimbFit;
+  window.StemLab.ecosystemFoodWeb.mammalLimbAttachment = ecoMeadowMammalLimbAttachment;
+  window.StemLab.ecosystemFoodWeb.mammalEyelids = ecoMeadowMammalEyelidSurface;
+  Object.assign(window.StemLab.ecosystemFoodWeb,{eyeMount:ecoMeadowMammalEyeMount,skullSite:ecoMeadowMammalSkullSite,orbitalSurface:ecoMeadowMammalOrbitalSurface});
+  window.StemLab.ecosystemFoodWeb.neckFit = ecoMeadowMammalNeckFit;
+  Object.assign(window.StemLab.ecosystemFoodWeb,{footfallPlan:ecoMeadowFootfallPlan,footfallCheck:ecoMeadowFootfallCheck,footfallRecord:ecoWebFootfallRecord});
+  window.StemLab.ecosystemFoodWeb.turnBalance=ecoMeadowMammalTurnBalance;
+  Object.assign(window.StemLab.ecosystemFoodWeb,{missionEvidence:ecoWebMissionEvidence,missionRoute:ecoWebMissionRoute,missionContinue:ecoWebMissionContinue,missionResume:ecoWebMissionResume,missionFocus:ecoWebMissionFocus});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{headlineTrial:ecoMeadowHeadlineTrial,headlineInterval:ecoMeadowHeadlineInterval,headlineCheck:ecoMeadowHeadlineCheck,headlineRecord:ecoWebHeadlineRecord,headlineMatches:ecoMeadowHeadlineMatches});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{inferenceTrial:ecoMeadowInferenceTrial,inferenceSnapshot:ecoMeadowInferenceSnapshot,inferenceClaims:ecoMeadowInferenceClaims,inferenceCheck:ecoMeadowInferenceCheck,inferenceRecord:ecoWebInferenceRecord,inferenceMatches:ecoMeadowInferenceMatches,inferenceEvidence:ecoMeadowInferenceEvidence,inferenceText:ecoWebInferenceText});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{evidenceLinkCheck:ecoMeadowEvidenceLinkCheck,evidenceLinkRecord:ecoWebEvidenceLinkRecord,evidenceLinkPending:ecoMeadowEvidenceLinkPending,evidenceLinkText:ecoWebEvidenceLinkText});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{controlSample:ecoWebControlSample,controlEvidence:ecoWebControlEvidence,controlCheck:ecoWebControlCheck,controlRecord:ecoWebControlRecord,controlMatches:ecoWebControlMatches});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{ethogramSnapshot:ecoMeadowEthogramSnapshot,samplingPlan:ecoMeadowSamplingPlan,samplingComparison:ecoMeadowSamplingComparison,samplingClaim:ecoMeadowSamplingClaim,samplingComparisonRecord:ecoWebSamplingComparisonRecord});
+  Object.assign(window.StemLab.ecosystemFoodWeb,{ethogramCategory:ecoMeadowEthogramCategory,ethogramPlan:ecoMeadowEthogramPlan,crossingEthogramPlan:ecoMeadowCrossingEthogramPlan,ethogramProgress:ecoMeadowEthogramProgress,ethogramCheck:ecoMeadowEthogramCheck,ethogramRecord:ecoWebEthogramRecord,ethogramCategories:function(){return JSON.parse(JSON.stringify(ECO_MEADOW_ETHOGRAM_CATEGORIES));}});
 
   // Optional presentation of the food-web samples; this renderer never evolves biomass.
   // Presentation-only poses. They never modify biomass, feeding, or habitat cover.
@@ -675,7 +693,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     if(id==='foxes') {
       if(phase>9.5)return {state:'Resting',speed:0,mode:'roam',forage:0};
       if(prey<1.7&&phase>=5.5&&phase<6.4)return {state:'Pouncing',speed:0.72,mode:'toward',forage:0};
-      if(prey<4.5&&phase<2.4)return {state:'Listening',speed:0,mode:'toward',forage:0};
       if(prey<3.4)return {state:'Stalking',speed:0.20,mode:'toward',forage:0.25};
       if(prey<6)return {state:'Tracking prey',speed:0.42,mode:'toward',forage:0};
       return {state:'Searching',speed:0.32,mode:'roam',forage:0};
@@ -724,32 +741,1214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       stretch:1+wave*0.035*motion};
   }
 
+  // A faster rabbit brings the fore/hind support windows together, leaving a
+  // short shared flight. Speed eases the timing continuously; no state switch
+  // changes a paw's phase. These are illustrative animation parameters.
+  function ecoMeadowRabbitBound(pose) {
+    var speed=ecoWebNumber(pose.moving,0,0,2),stride=ecoWebNumber(pose.stride,0,0,1);
+    var blend=Math.max(0,Math.min(1,(speed-0.35)/0.55));blend=blend*blend*(3-2*blend);
+    var phase=(((pose.distance||0)*28+(pose.phase||0))/(Math.PI*2)%1+1)%1;
+    var stance=0.58-0.16*blend,foreOffset=0.5+0.32*blend,airStart=1-foreOffset+stance;
+    var flight=airStart<1&&phase>airStart,progress=flight?(phase-airStart)/(1-airStart):0;
+    return {phase:phase,blend:blend,stance:stance,foreOffset:foreOffset,flight:flight,
+      lift:flight?Math.pow(Math.sin(progress*Math.PI),2)*0.11*blend*stride:0};
+  }
+
   // Illustrative stance and swing phases follow recorded distance, with paired
   // rabbit feet and alternating diagonal fox/vole feet. No locomotion feedback.
+  // Recorded stride already eases measured speed over several samples. Use it
+  // to change footfall timing gradually, including when navigation brakes.
+  // Thresholds and support durations are illustrative animation parameters.
+  function ecoMeadowFoxGait(pose,hind,side) {
+    pose=pose||{};
+    var stride=ecoWebNumber(pose.stride,0,0,1),pace=stride*0.35;
+    var blend=Math.max(0,Math.min(1,(stride-0.60)/0.40));blend=blend*blend*(3-2*blend);
+    var offset=hind?((side<0?0.25:0.75)+0.25*blend)%1:(side<0?0:0.5);
+    return {blend:blend,stance:0.78-0.14*blend,offset:offset,pace:pace,pattern:blend<=0?'walk':blend>=1?'trot':'transition'};
+  }
+
+  // Rabbit pairs, a four-beat fox walk easing into diagonal trotting, and
+  // alternating vole feet all follow recorded distance. No model feedback.
   function ecoMeadowFootPose(id,pose,hind,side) {
     var rabbit=id==='rabbits',fox=id==='foxes';
-    var offset=rabbit?(hind?0:0.5):((hind?1:-1)*side>0?0:0.5);
+    var bound=rabbit?ecoMeadowRabbitBound(pose):null,gait=fox?ecoMeadowFoxGait(pose,hind,side):null;
+    var offset=rabbit?(hind?0:bound.foreOffset):fox?gait.offset:((hind?1:-1)*side>0?0:0.5);
     var cycle=((pose.distance*28+pose.phase)/(Math.PI*2)+offset)%1;
     cycle=(cycle+1)%1;
-    var stance=rabbit?0.58:0.64,swing=cycle>=stance;
+    var stance=rabbit?bound.stance:fox?gait.stance:0.64,swing=cycle>=stance;
     var progress=swing?(cycle-stance)/(1-stance):cycle/stance;
     var eased=progress*progress*(3-2*progress);
     var reach=swing?-1+2*eased:1-2*eased;
     var pounce=fox?(pose.pounce||0):0,motion=(pose.stride||0)*(1-pounce);
-    var walkAngle=reach*(rabbit?0.26:0.20)*motion;
-    var lift=swing?Math.pow(Math.sin(Math.PI*progress),2)*(rabbit?0.075:fox?0.07:0.04)*motion:0;
+    var walkAngle=reach*(rabbit?0.26:fox?0.18+gait.blend*0.02:0.20)*motion;
+    var lift=swing?Math.pow(Math.sin(Math.PI*progress),2)*(rabbit?0.075:fox?0.045+gait.blend*0.025:0.04)*motion:0;
     // Cancel the foot centre's rotation arc during stance. Swing adds clearance;
     // the existing fox leap remains a separate whole-body pose.
     var height=lift-(fox?0.056:0)*Math.sin(walkAngle)+(fox?0.38:0.10)*(Math.cos(walkAngle)-1);
     return {angle:(walkAngle+pounce*(hind?-0.75:0.95))||0,height:height,lift:lift,swing:swing,swingProgress:swing?progress:0};
   }
 
+  // A short cushion follows each existing paired stance onset. This reads
+  // the same distance/phase and fore offset as the paws; it does not change
+  // contact flags, gait order, a route or the population model. The pulses
+  // and their first derivatives vanish at their window edges and wrap.
+  function ecoMeadowRabbitLanding(pose,reduced) {
+    pose=pose||{};
+    var out={fore:0,hind:0,dip:0};
+    if(reduced||pose.active===false)return out;
+    var stride=ecoWebNumber(pose.stride,0,0,1),rest=ecoWebNumber(pose.rest,0,0,1),pounce=ecoWebNumber(pose.pounce,0,0,1);
+    var onset=Math.max(0,Math.min(1,(stride-0.015)/0.10));onset=onset*onset*(3-2*onset);
+    var bound=ecoMeadowRabbitBound(pose),strength=bound.blend*stride*onset*(1-rest)*(1-rest)*(1-pounce)*(1-pounce);
+    if(strength<=0)return out;
+    function pulse(offset){
+      var cycle=((pose.distance*28+pose.phase)/(Math.PI*2)+offset)%1;cycle=(cycle+1)%1;
+      var window=bound.stance*0.28;
+      return cycle<window?Math.pow(Math.sin(Math.PI*cycle/window),2)*strength:0;
+    }
+    out.fore=pulse(bound.foreOffset);out.hind=pulse(0);
+    // World-space vertical displacement only. Existing terrain fitting
+    // compensates the body dip so every fitted paw keeps its same target.
+    out.dip=out.fore*0.018+out.hind*0.022;
+    return out;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{rabbitLanding:ecoMeadowRabbitLanding});
+
+  // The rabbit ribcage yields slightly during its existing paired landing
+  // cushion. Reciprocal scales keep its cross-sectional volume unchanged.
+  // This is illustrative soft tissue, not a new contact, gait or force model.
+  function ecoMeadowRabbitLandingTorso(pose,reduced){
+    var zero={scaleY:1,scaleZ:1,compression:0};
+    if(reduced||!pose||pose.active!==true||!['distance','phase','moving','stride','rest','pounce','altitude'].every(function(key){return Number.isFinite(pose[key]);})||pose.distance<0||pose.distance>1000||Math.abs(pose.phase)>1000||pose.moving<0||pose.moving>2||pose.stride<0||pose.stride>1||pose.rest<0||pose.rest>1||pose.pounce<0||pose.pounce>1||pose.altitude<0||pose.altitude>10)return zero;
+    if(ecoMeadowRabbitBound(pose).flight)return zero;
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    var landing=ecoMeadowRabbitLanding(pose,false),ground=1-smooth((pose.altitude-.025)/.015),grounded=1-smooth(pose.pounce/.01);
+    var compression=.018*Math.min(1,landing.fore+landing.hind)*ground*grounded,scaleY=1-compression;
+    return {scaleY:scaleY,scaleZ:1/scaleY,compression:compression||0};
+  }
+  window.StemLab.ecosystemFoodWeb.rabbitLandingTorso=ecoMeadowRabbitLandingTorso;
+
   // Visual posture and contacts use recorded poses, never wall-clock time.
   function ecoMeadowMammalPosture(id,pose) {
     var r=Math.max(0,Math.min(1,(pose.rest||0)*(1-(pose.pounce||0))*(1-Math.min(1,pose.stride||0))));
     var settle=r*r*(3-2*r),compression=Math.max(pose.crouch||0,(pose.rest||0)*0.65);
-    var bounce=id==='rabbits'?Math.abs(Math.sin(pose.distance*28+pose.phase))*(pose.stride||0)*(pose.state==='Retreating'?0.065:0.025):0;
-    return {settle:settle,compression:compression,drop:id==='foxes'?-0.045*compression*(1-settle)-0.18*settle:-0.065*settle+bounce*(1-settle)};
+    var bound=id==='rabbits'?ecoMeadowRabbitBound(pose):null;
+    // A behavior label can change while speed eases. Let speed, rather than
+    // the label, set the spring of the bound so that the torso cannot pop.
+    var bounce=bound?Math.abs(Math.sin(pose.distance*28+pose.phase))*(pose.stride||0)*(0.025+bound.blend*0.040):0;
+    var flight=bound?bound.lift*(1-settle):0;
+    var landing=id==='rabbits'?ecoMeadowRabbitLanding(pose):{dip:0};
+    return {settle:settle,compression:compression,flightLift:flight,drop:id==='foxes'?-0.045*compression*(1-settle)-0.18*settle:-0.065*settle+bounce*(1-settle)+flight-landing.dip};
+  }
+
+  // Local soft-tissue articulation leaves the leg roots and fitted paw targets
+  // untouched. Recorded distance drives the spine and tail, so a stopped animal
+  // holds its balance rather than wagging on a separate wall-clock animation.
+  // A single closed skin joins the rump, back, chest and belly. Smooth cubic
+  // profiles avoid the intersecting-ball outline of the older teaching models.
+  // These dimensions describe a stylized silhouette, not measured anatomy.
+  // Object-space pigment only. Ears, tails, anatomy and recorded movement keep
+  // their existing contracts; shared maps still supply the fine hair texture.
+  function ecoMeadowMammalCoatColor(id,part,x,y,z,normalY,tint){
+    if((id!=='foxes'&&id!=='rabbits')||['torso','head','neck','forelimb','hindlimb'].indexOf(part)<0||![x,y,z,normalY,tint].every(Number.isFinite)||Math.abs(x)>10||Math.abs(y)>10||Math.abs(z)>10||Math.abs(normalY)>1.000001||tint<0||tint>1)return null;
+    var fox=id==='foxes',limb=part==='forelimb'||part==='hindlimb';
+    var base=fox?[182,91,44]:[147,129,107],pale=limb?(fox?[40,34,31]:[185,173,149]):fox?[233,223,201]:[231,223,204],guard=fox?[128,82,55]:[101,93,76];
+    var paleWeight=!fox&&!limb?Math.min(1,tint/0.62):tint;
+    var patches=0.5+0.5*Math.sin(x*31+Math.sin(y*23)*1.4)*Math.sin(z*37+Math.sin(x*17)*0.9);
+    var guardWeight=limb?0:(fox?0.18:0.34)*Math.max(0,normalY)*(0.52+patches*0.48)*(1-paleWeight),rgb=[];
+    function linear(channel){var value=channel/255;return value<=0.04045?value/12.92:Math.pow((value+0.055)/1.055,2.4);}
+    for(var axis=0;axis<3;axis++){var coat=linear(base[axis])+(linear(pale[axis])-linear(base[axis]))*paleWeight;rgb.push(coat+(linear(guard[axis])-coat)*guardWeight);}
+    // The neck's underside mask and the skull's cheek mask have different
+    // orientations. Across their existing overlap, carry the actual painted
+    // skull triangle onto the neck instead of introducing a dark collar.
+    if(!fox&&part==='neck'&&x>0.15){
+      // Closed loft endpoints can differ only by sin(2*pi) roundoff. Keep
+      // those coincident vertices on the same skull side and colour sample.
+      var skull=ecoMeadowEyeSkull(id),site=ecoMeadowEyeSkullSite(skull,x,y,z<-1e-12?-1:1);
+      if(site){
+        var attach=Math.min(1,(x-0.15)/0.08),away=Math.max(0,Math.min(1,(Math.abs(z-site.position[2])-0.006)/0.030));
+        var weight=attach*attach*(3-2*attach)*(1-away*away*(3-2*away));
+        if(weight>0){
+          var sampled=[0,0,0],triangle=site.triangle*3;
+          for(var corner=0;corner<3;corner++){
+            var vertex=skull.indices[triangle+corner],pigment=ecoMeadowMammalCoatColor(id,'head',skull.positions[vertex*3],skull.positions[vertex*3+1],skull.positions[vertex*3+2],skull.normals[vertex*3+1],skull.tints[vertex]);
+            for(var axis=0;axis<3;axis++)sampled[axis]+=Math.fround(pigment[axis])*site.barycentric[corner];
+          }
+          for(var axis=0;axis<3;axis++)rgb[axis]+=(sampled[axis]-rgb[axis])*weight;
+        }
+      }
+    }
+    return rgb;
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{mammalCoatColor:ecoMeadowMammalCoatColor});
+
+  function ecoMeadowMammalSurface(id,part) {
+    var fox=id==='foxes',rabbit=id==='rabbits',tail=fox&&part==='tail',head=part==='head',neck=part==='neck';
+    if(rabbit&&part==='tail')return ecoMeadowRabbitTailSurface();
+    if(part==='ear'&&(fox||rabbit))return ecoMeadowMammalPinnaSurface(id);
+    if((part==='forelimb'||part==='hindlimb')&&(fox||rabbit))return ecoMeadowMammalLimbSurface(id,part==='hindlimb');
+    if((!fox&&!rabbit)||(part!=='torso'&&!tail&&!head&&!neck))return null;
+    // x, centre height, dorsal radius, ventral radius, half width.
+    var profile=neck?(fox?[
+      [0.11,0.49,0,0,0],[0.18,0.51,0.102,0.102,0.130],[0.24,0.55,0.137,0.119,0.137],[0.29,0.60,0.114,0.105,0.119],[0.34,0.632,0.080,0.070,0.092],[0.38,0.643,0,0,0]
+    ]:[
+      [0.06,0.326,0,0,0],[0.12,0.35,0.083,0.087,0.095],[0.18,0.39,0.090,0.085,0.093],[0.23,0.42,0.070,0.065,0.077],[0.27,0.43,0,0,0]
+    ]):tail?[
+      [0,0,0.065,0.065,0.068],[-0.10,-0.008,0.104,0.104,0.112],[-0.24,-0.029,0.139,0.132,0.146],[-0.40,-0.059,0.135,0.127,0.141],[-0.57,-0.090,0.109,0.103,0.117],[-0.73,-0.118,0.064,0.062,0.072],[-0.85,-0.130,0,0,0]
+    ].reverse():head?(fox?[
+      [0.225,0.635,0,0,0],[0.29,0.651,0.098,0.073,0.108],[0.35,0.658,0.114,0.082,0.126],[0.41,0.651,0.095,0.074,0.113],[0.46,0.631,0.071,0.055,0.085],[0.53,0.616,0.043,0.033,0.056],[0.61,0.609,0.025,0.021,0.034],[0.672,0.610,0,0,0]
+    ]:[
+      [0.15,0.425,0,0,0],[0.20,0.434,0.090,0.079,0.105],[0.27,0.437,0.115,0.101,0.127],[0.32,0.428,0.105,0.090,0.120],[0.38,0.414,0.079,0.055,0.083],[0.43,0.399,0.039,0.029,0.042],[0.455,0.395,0,0,0]
+    ]):fox?[
+      [-0.52,0.445,0,0,0],[-0.43,0.463,0.128,0.147,0.131],[-0.30,0.475,0.181,0.182,0.174],[-0.12,0.478,0.178,0.145,0.169],[0.06,0.475,0.174,0.166,0.171],[0.20,0.468,0.188,0.221,0.178],[0.30,0.481,0.154,0.205,0.144],[0.37,0.505,0.089,0.128,0.086],[0.41,0.518,0,0,0]
+    ]:[
+      [-0.43,0.290,0,0,0],[-0.36,0.313,0.155,0.153,0.137],[-0.25,0.330,0.225,0.228,0.226],[-0.13,0.328,0.232,0.225,0.219],[-0.01,0.310,0.210,0.182,0.184],[0.12,0.307,0.158,0.169,0.152],[0.22,0.331,0.110,0.132,0.109],[0.29,0.358,0,0,0]
+    ];
+    var rings=neck?32:head?40:tail?40:48,sides=24,positions=[],normals=[],uv=[],indices=[],tints=[];
+    function sample(x){
+      var k=0;while(k<profile.length-2&&x>profile[k+1][0])k++;
+      var a=profile[k],b=profile[k+1],span=b[0]-a[0],t=Math.max(0,Math.min(1,(x-a[0])/span)),out=[x],derivative=[1];
+      for(var c=1;c<5;c++){
+        var before=profile[Math.max(0,k-1)],after=profile[Math.min(profile.length-1,k+2)];
+        var m0=(b[c]-before[c])/(b[0]-before[0]),m1=(after[c]-a[c])/(after[0]-a[0]);
+        // Limit radius slopes at a local extremum to retain a smooth taper.
+        if(c>1){if(k&&((a[c]-before[c])*(b[c]-a[c])<=0))m0=0;if(k<profile.length-2&&((b[c]-a[c])*(after[c]-b[c])<=0))m1=0;}
+        var t2=t*t,t3=t2*t;
+        out.push((2*t3-3*t2+1)*a[c]+(t3-2*t2+t)*span*m0+(-2*t3+3*t2)*b[c]+(t3-t2)*span*m1);
+        derivative.push((6*t2-6*t)*a[c]/span+(3*t2-4*t+1)*m0+(-6*t2+6*t)*b[c]/span+(3*t2-2*t)*m1);
+      }
+      return {v:out,d:derivative};
+    }
+    var first=profile[0][0],last=profile[profile.length-1][0];
+    for(var ring=0;ring<=rings;ring++){
+      var longitudinal=ring/rings,p=sample(first+(last-first)*longitudinal),v=p.v,d=p.d;
+      for(var side=0;side<=sides;side++){
+        var angle=side/sides*Math.PI*2,co=Math.cos(angle),si=Math.sin(angle),r=co>=0?v[2]:v[3],dr=co>=0?d[2]:d[3];
+        positions.push(v[0],v[1]+co*r,si*v[4]);uv.push(longitudinal,side/sides);
+        var nx=-v[4]*co*(d[1]+co*dr)-r*si*si*d[4],ny=v[4]*co,nz=r*si,len=Math.hypot(nx,ny,nz);
+        if(len<1e-9){nx=ring===0?-1:1;ny=0;nz=0;len=1;}normals.push(nx/len,ny/len,nz/len);
+        var underside=Math.max(0,Math.min(1,(0.18-co)/0.85)),front=Math.max(0,Math.min(1,(v[0]-0.03)/0.24));
+        var cheek=head?Math.max(0,Math.min(1,(0.40-co)/0.70)):0;
+        tints.push(tail?Math.max(0,Math.min(1,(-v[0]-0.63)/0.16)):head?cheek*(fox?0.80:0.42):fox?underside*(0.25+front*0.65):underside*0.52);
+        if(ring<rings&&side<sides){var at=ring*(sides+1)+side,next=at+sides+1;indices.push(at,at+1,next,at+1,next+1,next);}
+      }
+    }
+    if(tail){
+      // The root cap is hidden inside the rump, but closes the brush for clean
+      // shadow and picking geometry. Its rim shares the loft's circumference.
+      var cap=positions.length/3;positions.push(last,profile[profile.length-1][1],0);normals.push(1,0,0);uv.push(1,0.5);tints.push(0);
+      for(var edge=0;edge<sides;edge++){var rim=rings*(sides+1)+edge;indices.push(cap,rim,rim+1);}
+    }
+    return {positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rings:rings,sides:sides,part:part};
+  }
+
+  // Eye mounts are fitted once to the same triangles used by the visible skull.
+  // Public accessors return detached values; only the private cache is reused
+  // during blinking. These are illustrative fur sockets, not measured anatomy.
+  var ECO_MEADOW_EYE_CACHE={};
+  function ecoMeadowEyeSkull(id){
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    var cache=ECO_MEADOW_EYE_CACHE[id]||(ECO_MEADOW_EYE_CACHE[id]={});
+    if(!cache.skull)cache.skull=ecoMeadowMammalSurface(id,'head');
+    return cache.skull;
+  }
+  function ecoMeadowEyeSkullSite(skin,x,y,side){
+    if(!skin||!Number.isFinite(x)||!Number.isFinite(y))return null;
+    side=side===-1?-1:1;
+    var p=skin.positions,best=null;
+    for(var offset=0;offset<skin.indices.length;offset+=3){
+      var a=skin.indices[offset],b=skin.indices[offset+1],c=skin.indices[offset+2],ax=p[a*3],ay=p[a*3+1],bx=p[b*3],by=p[b*3+1],cx=p[c*3],cy=p[c*3+1];
+      var denominator=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);if(Math.abs(denominator)<1e-14)continue;
+      var wa=((by-cy)*(x-cx)+(cx-bx)*(y-cy))/denominator,wb=((cy-ay)*(x-cx)+(ax-cx)*(y-cy))/denominator,wc=1-wa-wb;
+      if(Math.min(wa,wb,wc)<-1e-10)continue;
+      var z=wa*p[a*3+2]+wb*p[b*3+2]+wc*p[c*3+2];if(side*z<0||best&&side*z<side*best.position[2])continue;
+      var normal=[0,1,2].map(function(axis){return wa*skin.normals[a*3+axis]+wb*skin.normals[b*3+axis]+wc*skin.normals[c*3+axis];}),length=Math.hypot.apply(Math,normal)||1;
+      best={position:[x,y,z],normal:normal.map(function(value){return value/length;}),triangle:offset/3,barycentric:[wa,wb,wc],tint:wa*skin.tints[a]+wb*skin.tints[b]+wc*skin.tints[c]};
+    }
+    return best;
+  }
+  function ecoMeadowMammalSkullSite(id,x,y,side){return ecoMeadowEyeSkullSite(ecoMeadowEyeSkull(id),x,y,side);}
+  function ecoMeadowMammalEyeData(id){
+    var skull=ecoMeadowEyeSkull(id);if(!skull)return null;
+    var cache=ECO_MEADOW_EYE_CACHE[id];if(cache.mount)return cache.mount;
+    var fox=id==='foxes',home=fox?[.24,.58,0]:[.24,.4,0],center=fox?[.191,.095,.105]:[.085,.062,.114],angle=fox?.13:.15,co=Math.cos(angle),si=Math.sin(angle);
+    var mount={center:center,headHome:home,angle:angle,cx:fox?.004:.002,rx:fox?.034:.032,ry:fox?.024:.032,rz:fox?.025:.023,innerX:.024,innerY:fox?.015:.025,columns:40,rimSites:[],rimPositions:[],rimNormals:[],outerSites:[],visibility:[],sideRimSites:[[],[]],sideRimPositions:[[],[]],sideRimNormals:[[],[]],sideOuterSites:[[],[]],sideVisibility:[[],[]]};
+    var worldX=home[0]+center[0],worldY=home[1]+center[1],site=ecoMeadowEyeSkullSite(skull,worldX,worldY),oldDepth=center[2];
+    mount.skullCenter=site;center[2]=site.position[2]-(fox?.008:.003);
+    // The intact skull must not cover the central open aperture. Keep a small
+    // clearance over the unchanged dark-eye ellipsoid at six inspection rays.
+    var globe=fox?[.003,0,.008,.021,.013,.007]:[.002,.001,.006,.020,.021,.010];
+    [-1,1].forEach(function(side,eye){[-.010,0,.010].forEach(function(dx){[-.006,.006].forEach(function(dy){
+      var hit=ecoMeadowEyeSkullSite(skull,worldX+co*dx-si*dy,worldY+si*dx+co*dy,side),depth=globe[2]+globe[5]*Math.sqrt(Math.max(0,1-Math.pow((dx-globe[0])/globe[3],2)-Math.pow((dy-globe[1])/globe[4],2)));
+      center[2]=Math.max(center[2],side*hit.position[2]-depth+.002);mount.sideVisibility[eye].push({side:side,dx:dx,dy:dy,skullZ:side*hit.position[2],eyeDepth:depth});
+    });});});mount.visibility=mount.sideVisibility[1];
+    mount.inset=oldDepth-center[2];
+    function location(theta,scale){var x=mount.cx+mount.rx*Math.cos(theta)*scale,y=mount.ry*Math.sin(theta)*scale;return [worldX+co*x-si*y,worldY+si*x+co*y];}
+    for(var column=0;column<=40;column++){
+      var theta=column===40?0:column/40*Math.PI*2,xy=location(theta,1),rim=ecoMeadowEyeSkullSite(skull,xy[0],xy[1]),lift=.0015+.0025*Math.pow(Math.max(0,Math.sin(theta)),2);
+      mount.rimSites.push(rim);mount.rimPositions.push([xy[0]-home[0],xy[1]-home[1],rim.position[2]+lift]);mount.rimNormals.push(rim.normal.slice());
+      var scale=fox?1.65:1.55,outerXY=location(theta,scale),outer=ecoMeadowEyeSkullSite(skull,outerXY[0],outerXY[1]);
+      if(!outer){var low=1,high=scale;for(var iteration=0;iteration<24;iteration++){var middle=(low+high)/2,probe=location(theta,middle);if(ecoMeadowEyeSkullSite(skull,probe[0],probe[1]))low=middle;else high=middle;}scale=1+(low-1)*.88;outerXY=location(theta,scale);outer=ecoMeadowEyeSkullSite(skull,outerXY[0],outerXY[1]);}
+      mount.outerSites.push({scale:scale,site:outer});
+      var negativeRim=ecoMeadowEyeSkullSite(skull,xy[0],xy[1],-1),negativeOuter=ecoMeadowEyeSkullSite(skull,outerXY[0],outerXY[1],-1);
+      mount.sideRimSites[0].push(negativeRim);mount.sideRimPositions[0].push([xy[0]-home[0],xy[1]-home[1],negativeRim.position[2]-lift]);mount.sideRimNormals[0].push(negativeRim.normal.slice());mount.sideOuterSites[0].push({scale:scale,site:negativeOuter});
+    }
+    mount.sideRimSites[1]=mount.rimSites;mount.sideRimPositions[1]=mount.rimPositions;mount.sideRimNormals[1]=mount.rimNormals;mount.sideOuterSites[1]=mount.outerSites;
+    cache.mount=mount;return mount;
+  }
+  function ecoMeadowMammalEyeMount(id){var mount=ecoMeadowMammalEyeData(id);return mount?JSON.parse(JSON.stringify(mount)):null;}
+  function ecoMeadowEyeNormals(positions,indices,normals){
+    for(var index=0;index<positions.length;index++)normals[index]=0;
+    for(var offset=0;offset<indices.length;offset+=3){
+      var a=indices[offset]*3,b=indices[offset+1]*3,c=indices[offset+2]*3,ux=positions[b]-positions[a],uy=positions[b+1]-positions[a+1],uz=positions[b+2]-positions[a+2],vx=positions[c]-positions[a],vy=positions[c+1]-positions[a+1],vz=positions[c+2]-positions[a+2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+      normals[a]+=nx;normals[a+1]+=ny;normals[a+2]+=nz;normals[b]+=nx;normals[b+1]+=ny;normals[b+2]+=nz;normals[c]+=nx;normals[c+1]+=ny;normals[c+2]+=nz;
+    }
+    for(var vertex=0;vertex<positions.length;vertex+=3){var length=Math.hypot(normals[vertex],normals[vertex+1],normals[vertex+2]);if(length<1e-12){normals[vertex]=0;normals[vertex+1]=0;normals[vertex+2]=positions[vertex+2]<0?-1:1;length=1;}normals[vertex]/=length;normals[vertex+1]/=length;normals[vertex+2]/=length;}
+  }
+  function ecoMeadowMammalOrbitalSurface(id){
+    var mount=ecoMeadowMammalEyeData(id);if(!mount)return null;
+    var cache=ECO_MEADOW_EYE_CACHE[id];if(cache.orbit)return JSON.parse(JSON.stringify(cache.orbit));
+    var skull=cache.skull,rows=6,columns=40,positions=[],normals=[],uv=[],indices=[],tints=[],skullSamples=[],innerRims=[],outerRims=[],seams=[];
+    [-1,1].forEach(function(side,eye){var inner=[],outer=[];
+      for(var row=0;row<=rows;row++)for(var column=0;column<=columns;column++){
+        var t=row/rows,smooth=t*t*(3-2*t),rim=mount.sideRimPositions[eye][column],target=mount.sideOuterSites[eye][column].site,headHome=mount.headHome;
+        var x=rim[0]+headHome[0]+(target.position[0]-rim[0]-headHome[0])*t,y=rim[1]+headHome[1]+(target.position[1]-rim[1]-headHome[1])*t,site=ecoMeadowEyeSkullSite(skull,x,y,side);
+        var theta=column/columns*Math.PI*2,lift=side*(rim[2]-mount.sideRimSites[eye][column].position[2])*(1-smooth)+.0015*Math.pow(Math.max(0,Math.sin(theta)),2)*Math.sin(Math.PI*t),index=positions.length/3;
+        positions.push(x-headHome[0],y-headHome[1],site.position[2]+side*lift);uv.push((x-skull.positions[0])/(id==='foxes'?.447:.305),side<0?.75:.25);tints.push(site.tint);skullSamples.push({triangle:site.triangle,barycentric:site.barycentric.slice()});
+        if(row===0)inner.push(index);if(row===rows){outer.push(index);seams.push({side:side,column:column,triangle:site.triangle,barycentric:site.barycentric.slice(),position:positions.slice(index*3,index*3+3)});}
+        if(row<rows&&column<columns){var next=index+columns+1;if(side>0)indices.push(index,next,index+1,index+1,next,next+1);else indices.push(index,index+1,next,index+1,next+1,next);}
+      }
+      innerRims.push(inner);outerRims.push(outer);
+    });
+    ecoMeadowEyeNormals(positions,indices,normals);
+    for(var eye=0;eye<2;eye++){var side=eye===0?-1:1;
+      for(var row=0;row<=rows;row++){var first=eye*(rows+1)*(columns+1)+row*(columns+1),last=first+columns,nx=normals[first*3]+normals[last*3],ny=normals[first*3+1]+normals[last*3+1],nz=normals[first*3+2]+normals[last*3+2],length=Math.hypot(nx,ny,nz)||1;[first,last].forEach(function(vertex){normals[vertex*3]=nx/length;normals[vertex*3+1]=ny/length;normals[vertex*3+2]=nz/length;});}
+      for(var column=0;column<=columns;column++){
+        var inner=innerRims[eye][column],outer=outerRims[eye][column],a=mount.sideRimNormals[eye][column],b=mount.sideOuterSites[eye][column].site.normal;
+        normals[inner*3]=a[0];normals[inner*3+1]=a[1];normals[inner*3+2]=a[2];normals[outer*3]=b[0];normals[outer*3+1]=b[1];normals[outer*3+2]=b[2];
+      }
+    }
+    cache.orbit={positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rows:rows,columns:columns,innerRims:innerRims,outerRims:outerRims,seams:seams,skullSamples:skullSamples};
+    return JSON.parse(JSON.stringify(cache.orbit));
+  }
+
+  // Closing changes the aperture only; the fitted outer rim remains fixed on
+  // the skull and meets its shared orbital fur surface at every blink value.
+  // Closing retains globe support until the outer rows, covering the original
+  // iris and glint without changing the open profile or inflating the center.
+  function ecoMeadowMammalEyelidSurface(id,opening,target) {
+    var mount=ecoMeadowMammalEyeData(id);if(!mount)return null;
+    var open=ecoWebNumber(opening,1,0,1),rows=4,columns=20,positions=target||[],normals=[],uv=[],indices=[],tints=[],co=Math.cos(mount.angle),si=Math.sin(mount.angle);
+    [-1,1].forEach(function(side,eye){for(var half=0;half<2;half++)for(var row=0;row<=rows;row++)for(var column=0;column<=columns;column++){
+      var r=row/rows,full=half*columns+column,theta=full===40?0:full/40*Math.PI*2,x=(mount.innerX+(mount.rx-mount.innerX)*r)*Math.cos(theta),y=(mount.innerY*open+(mount.ry-mount.innerY*open)*r)*Math.sin(theta);
+      var dome=Math.sqrt(Math.max(0,1-x*x/(mount.rx*mount.rx)-y*y/(mount.ry*mount.ry))),closureRadius=r*r*r*r,blend=open*r*r*(3-2*r)+(1-open)*closureRadius*closureRadius*(3-2*closureRadius),rim=mount.sideRimPositions[eye][full],depth=mount.center[2]+.003+mount.rz*dome*(1-open*r*r-(1-open)*closureRadius)+blend*(side*rim[2]-mount.center[2]-.003);
+      var v=((side<0?0:1)*2+half)*(rows+1)*(columns+1)+row*(columns+1)+column;
+      positions[v*3]=row===rows?rim[0]:mount.center[0]+co*(x+mount.cx)-si*y;positions[v*3+1]=row===rows?rim[1]:mount.center[1]+si*(x+mount.cx)+co*y;positions[v*3+2]=row===rows?rim[2]:side*depth;
+      uv.push((x/mount.rx+1)/2,(y/mount.ry+1)/2);tints.push(Math.pow(1-r,3)*.42);
+      if(row<rows&&column<columns){var next=v+columns+1;if(side>0)indices.push(v,next,v+1,v+1,next,next+1);else indices.push(v,v+1,next,v+1,next+1,next);}
+    }});
+    ecoMeadowEyeNormals(positions.length>1260?Array.prototype.slice.call(positions,0,1260):positions,indices,normals);
+    for(var eye=0;eye<2;eye++)for(var half=0;half<2;half++)for(var column=0;column<=columns;column++){
+      var v=(eye*2+half)*105+rows*21+column,n=mount.sideRimNormals[eye][half*20+column];normals[v*3]=n[0];normals[v*3+1]=n[1];normals[v*3+2]=n[2];
+    }
+    return {positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rows:rows,columns:columns,opening:open};
+  }
+
+  // A closed chin replaces the old lower-muzzle ellipsoid. The joint and its
+  // recorded angles stay unchanged. Fox skin fits inside that old mesh; the
+  // rabbit chin uses the existing full-skull bounds to remain visibly exposed.
+  var ECO_MEADOW_JAW_CACHE={},ECO_MEADOW_MOUTH_CACHE={};
+  function ecoMeadowMammalJawSurface(id) {
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    if(ECO_MEADOW_JAW_CACHE[id])return JSON.parse(JSON.stringify(ECO_MEADOW_JAW_CACHE[id]));
+    var fox=id==='foxes',rows=20,columns=32,positions=[],normals=[],uv=[],indices=[],tints=[],seams=[];
+    var center=fox?[.145,-.020,0]:[.072,-.010,0],scale=fox?[.162,.023,.045]:[.079,.023,.061],hinge=fox?[.355,.603,0]:[.278,.388,0];
+    function point(t,angle){
+      var u=-Math.cos(t*Math.PI),x=.97*u,ring=Math.sin(t*Math.PI),radius=(.80-.28*x)*ring,co=Math.cos(angle),si=Math.sin(angle);
+      var lift=(fox?.14:-.025)*(1+u)*(1-u*u),vertical=fox?.75-.13*co:.83-.06*co,width=fox?.88-.04*x:.86-.03*x;
+      var bow=fox?0:Math.pow(Math.max(0,1-Math.pow((u-.66)/.34,2)),2)*.008;
+      var chin=fox?0:-.014*(1-u)-.004*(1-u*u)-bow;
+      return [center[0]+scale[0]*x,center[1]+chin+scale[1]*(lift+radius*co*vertical),scale[2]*radius*si*width];
+    }
+    function add(p,n,u,v,tint){positions.push(p[0],p[1],p[2]);normals.push(n[0],n[1],n[2]);uv.push(u,v);tints.push(tint);}
+    // True pointed caps avoid duplicate-pole triangles. The .97 longitudinal
+    // inset gives each cap a little clearance inside the old faceted sphere.
+    add([center[0]-.97*scale[0],center[1]-(fox?0:.028),0],[-1,0,0],0,.5,.28);
+    for(var row=1;row<rows;row++)for(var column=0;column<=columns;column++){
+      var t=row/rows,angle=(column===columns?0:column/columns*Math.PI*2),p=point(t,angle),epsilon=.00001;
+      var lo=point(t-epsilon,angle),hi=point(t+epsilon,angle),left=point(t,angle-epsilon),right=point(t,angle+epsilon),a=hi.map(function(value,k){return value-lo[k];}),b=right.map(function(value,k){return value-left[k];});
+      var n=[b[1]*a[2]-b[2]*a[1],b[2]*a[0]-b[0]*a[2],b[0]*a[1]-b[1]*a[0]],length=Math.hypot.apply(Math,n)||1;
+      add(p,n.map(function(value){return value/length;}),t,column/columns,.20+.32*Math.max(0,Math.cos(angle)));
+      if(column===columns)seams.push([positions.length/3-1-columns,positions.length/3-1]);
+    }
+    var front=positions.length/3;add([center[0]+.97*scale[0],center[1],0],[1,0,0],1,.5,.28);
+    for(var column=0;column<columns;column++)indices.push(0,1+column+1,1+column);
+    for(var row=0;row<rows-2;row++)for(var column=0;column<columns;column++){var at=1+row*(columns+1)+column,next=at+columns+1;indices.push(at,at+1,next,at+1,next+1,next);}
+    var last=1+(rows-2)*(columns+1);for(var column=0;column<columns;column++)indices.push(front,last+column,last+column+1);
+    var data={positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,seams:seams,rows:rows,columns:columns,hinge:hinge,original:{center:center,scale:scale},referenceEnvelope:fox?'old-jaw-volume':'full-skull-bounds',part:'jaw'};
+    ECO_MEADOW_JAW_CACHE[id]=data;return JSON.parse(JSON.stringify(data));
+  }
+
+  // Two narrow closed-mouth margins follow the actual upper-muzzle triangles.
+  // They stay with the skull while the small lower jaw chews beneath them.
+  function ecoMeadowMammalMouthSurface(id) {
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    if(ECO_MEADOW_MOUTH_CACHE[id])return JSON.parse(JSON.stringify(ECO_MEADOW_MOUTH_CACHE[id]));
+    var fox=id==='foxes',head=fox?[.24,.58,0]:[.24,.4,0],sections=64,lift=.00045,positions=[],normals=[],uv=[],indices=[],sites=[];
+    [-1,1].forEach(function(side,half){
+      for(var section=0;section<=sections;section++){
+        var t=section/sections,x=fox?.458+.184*t:.356+.084*t,y=fox?.595+.007*t+.0006*Math.sin(Math.PI*t):.380+.008*t;
+        var width=.00008+(fox?.00110:.00100)*Math.pow(Math.sin(Math.PI*t),.65);
+        [-1,1].forEach(function(edge){
+          var site=ecoMeadowMammalSkullSite(id,x,y+edge*width,side);if(!site)throw new Error('Mouth margin left the fixed muzzle surface');
+          var p=site.position.map(function(value,k){return value+site.normal[k]*lift-head[k];});
+          positions.push(p[0],p[1],p[2]);normals.push(site.normal[0],site.normal[1],site.normal[2]);uv.push(t,edge<0?0:1);sites.push({side:side,triangle:site.triangle,barycentric:site.barycentric.slice(),position:site.position.slice(),normal:site.normal.slice()});
+        });
+        if(section<sections){var at=half*(sections+1)*2+section*2,next=at+2;if(side>0)indices.push(at,next,at+1,at+1,next,next+1);else indices.push(at,at+1,next,at+1,next+1,next);}
+      }
+    });
+    var data={positions:positions,normals:normals,uv:uv,indices:indices,sites:sites,sections:sections,lift:lift,headHome:head,part:'mouth-margin'};
+    ECO_MEADOW_MOUTH_CACHE[id]=data;return JSON.parse(JSON.stringify(data));
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{mammalJawSurface:ecoMeadowMammalJawSurface,mammalMouthSurface:ecoMeadowMammalMouthSurface});
+
+  // Small closed nasal pads are stylized visual anatomy. Their surfaces remain
+  // inside the former nose envelopes; grooves are surface relief, not sensing.
+  var ECO_MEADOW_NOSE_CACHE={};
+  function ecoMeadowMammalNoseSurface(id){
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    if(ECO_MEADOW_NOSE_CACHE[id])return JSON.parse(JSON.stringify(ECO_MEADOW_NOSE_CACHE[id]));
+    var fox=id==='foxes',rows=16,columns=40,positions=[],normals=[],uv=[],indices=[],tints=[],seams=[];
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    function sample(theta,angle){
+      var axial=Math.cos(theta),radial=Math.sin(theta),x=axial*(fox?0.96:0.94),taper=fox?0.80-0.28*x:1;
+      var y=radial*Math.sin(angle)*taper*(fox?0.88:0.80);
+      var z=radial*Math.cos(angle)*taper*(fox?0.86+0.10*Math.sin(angle):0.92);
+      if(!fox&&y>0)y*=1-0.16*Math.exp(-z*z/0.030);
+      var face=smooth((axial-0.05)/0.75),nz=fox?0.36:0.44,ny=fox?0.12:0.13;
+      var nostril=Math.exp(-Math.pow((Math.abs(z)-nz)/(fox?0.13:0.14),2)-Math.pow((y-ny)/0.105,2));
+      var cleft=Math.exp(-z*z/(fox?0.0064:0.0081)-y*y/0.30);
+      x-=face*((fox?0.095:0.085)*nostril+(fox?0.027:0.065)*cleft);
+      return {p:[x,y,z],tint:Math.min(1,face*(0.94*nostril+(fox?0.18:0.35)*cleft))};
+    }
+    function add(theta,angle,u,v,pole){
+      var value=sample(theta,angle),p=value.p,n;
+      if(pole)n=[pole,0,0];
+      else{
+        var epsilon=0.00001,a=sample(theta+epsilon,angle).p,b=sample(theta-epsilon,angle).p,c=sample(theta,angle+epsilon).p,d=sample(theta,angle-epsilon).p;
+        var tx=a[0]-b[0],ty=a[1]-b[1],tz=a[2]-b[2],px=c[0]-d[0],py=c[1]-d[1],pz=c[2]-d[2];
+        n=[py*tz-pz*ty,pz*tx-px*tz,px*ty-py*tx];var length=Math.hypot(n[0],n[1],n[2])||1;n=n.map(function(x){return x/length;});
+      }
+      positions.push(p[0],p[1],p[2]);normals.push(n[0],n[1],n[2]);uv.push(u,v);tints.push(value.tint);
+    }
+    add(0,0,0.5,0,1);
+    for(var row=1;row<rows;row++){
+      var first=positions.length/3;
+      for(var column=0;column<=columns;column++)add(row/rows*Math.PI,column===columns?0:column/columns*Math.PI*2,column/columns,row/rows,0);
+      seams.push([first,first+columns]);
+    }
+    var back=positions.length/3;add(Math.PI,0,0.5,1,-1);
+    for(var column=0;column<columns;column++)indices.push(0,1+column+1,1+column);
+    for(var row=0;row<rows-2;row++)for(var column=0;column<columns;column++){
+      var at=1+row*(columns+1)+column,next=at+columns+1;indices.push(at,at+1,next,at+1,next+1,next);
+    }
+    var last=1+(rows-2)*(columns+1);for(var column=0;column<columns;column++)indices.push(back,last+column,last+column+1);
+    var data={positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rows:rows,columns:columns,seams:seams,front:0,back:back};
+    ECO_MEADOW_NOSE_CACHE[id]=data;return JSON.parse(JSON.stringify(data));
+  }
+
+  // Only the existing recorded rabbit grazing clock drives this detail. No
+  // elapsed render time, scent cue or new behavioral decision is introduced.
+  function ecoMeadowMammalNosePose(id,pose,reduced){
+    var out={lift:0,scaleX:1,scaleY:1,scaleZ:1,fan:0};
+    if(id!=='rabbits'||!pose||pose.active!==true||reduced||pose.state!=='Grazing'||!Number.isFinite(pose.activity)||pose.activity<0)return out;
+    var rest=ecoWebNumber(pose.rest,0,0,1),pounce=ecoWebNumber(pose.pounce,0,0,1),stride=ecoWebNumber(pose.stride,0,0,1);
+    var clean={distance:ecoWebNumber(pose.distance,0,0,1000),phase:ecoWebNumber(pose.phase,0,-1000,1000),moving:ecoWebNumber(pose.moving,0,0,2),stride:stride};
+    // Ground rabbits already carry the recorded 0.025 placement offset.
+    if(rest>=0.5||pounce>0||ecoWebNumber(pose.altitude,0,0,10)>0.0250001||ecoMeadowRabbitBound(clean).flight)return out;
+    var feed=Math.min(1,ecoWebNumber(pose.forage,0,0,1)/0.75),strength=feed*(1-rest)*(1-rest)*(1-stride)*(1-stride)*(1-ecoWebNumber(pose.headRaise,0,0,1))*(1-ecoWebNumber(pose.neighborLook,0,0,1));
+    var wave=Math.max(0,Math.sin(pose.activity*8+clean.phase*1.7)),pulse=wave*wave*wave*wave*strength;
+    out.lift=0.0018*pulse;out.scaleX=1-0.012*pulse;out.scaleY=1-0.025*pulse;out.scaleZ=1+0.026*pulse;out.fan=0.045*pulse;
+    return out;
+  }
+
+  // Varied lengths and unequal curvature break up the regular three-prong fan.
+  // Positive lateral profile coordinates are mirrored about the fixed muzzle.
+  function ecoMeadowMammalWhiskerProfile(id){
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    return id==='foxes'?{
+      control:[[-0.035,-0.028,0.067],[-0.052,-0.009,0.095],[-0.067,0.017,0.090]],
+      tips:[[-0.086,-0.047,0.142],[-0.128,-0.009,0.204],[-0.158,0.033,0.186]]
+    }:{
+      control:[[-0.033,-0.023,0.060],[-0.048,-0.003,0.082],[-0.063,0.023,0.091]],
+      tips:[[-0.084,-0.041,0.130],[-0.118,0.003,0.172],[-0.148,0.044,0.191]]
+    };
+  }
+
+  // This is a small visual response to the existing recorded chewing clock.
+  // It introduces no sensing cue, movement decision or elapsed render time.
+  function ecoMeadowMammalWhiskerPose(id,pose,reduced){
+    var out={left:0,right:0};
+    if(id!=='rabbits'||!pose||pose.active!==true||reduced||pose.state!=='Grazing'||!Number.isFinite(pose.activity)||pose.activity<0)return out;
+    var rest=ecoWebNumber(pose.rest,0,0,1),pounce=ecoWebNumber(pose.pounce,0,0,1),stride=ecoWebNumber(pose.stride,0,0,1);
+    var clean={distance:ecoWebNumber(pose.distance,0,0,1000),phase:ecoWebNumber(pose.phase,0,-1000,1000),moving:ecoWebNumber(pose.moving,0,0,2),stride:stride};
+    if(rest>=0.5||pounce>0||ecoWebNumber(pose.altitude,0,0,10)>0.0250001||ecoMeadowRabbitBound(clean).flight)return out;
+    var feed=Math.min(1,ecoWebNumber(pose.forage,0,0,1)/0.75),strength=feed*(1-rest)*(1-rest)*(1-stride)*(1-stride)*(1-ecoWebNumber(pose.headRaise,0,0,1))*(1-ecoWebNumber(pose.neighborLook,0,0,1));
+    var chew=Math.sin(pose.activity*12+clean.phase*1.7),left=Math.max(0,-chew),right=Math.max(0,chew);
+    // Squared half-waves meet with zero slope. Only distal curves sweep;
+    // every strand keeps its original root and initial surface direction.
+    out.left=0.028*left*left*strength;out.right=0.028*right*right*strength;
+    return out;
+  }
+
+  // Eight short segments follow each smooth quadratic whisker. The roots and
+  // support directions remain fixed while nasal and chewing sweeps taper in.
+  function ecoMeadowMammalWhiskers(id,pose,reduced,target){
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    var fox=id==='foxes',positions=target||[],segments=8,roots=[],rootPositions=[],art=ecoMeadowMammalNosePose(id,pose,reduced),chew=ecoMeadowMammalWhiskerPose(id,pose,reduced),profile=ecoMeadowMammalWhiskerProfile(id),at=0;
+    [-1,1].forEach(function(side){for(var whisker=0;whisker<3;whisker++){
+      var root=[(fox?0.602:0.426)-0.24,(fox?0.600:0.391)+(whisker-1)*0.013-(fox?0.58:0.4),side*(fox?0.051:0.043)];
+      var tip=profile.tips[whisker],control=profile.control[whisker],fan=art.fan+(side<0?chew.left:chew.right);
+      roots.push(at/3);rootPositions.push(root.slice());
+      function add(t){
+        var u=1-t,dx=2*u*t*control[0]+t*t*tip[0],dy=2*u*t*control[1]+t*t*tip[1],dz=side*(2*u*t*control[2]+t*t*tip[2]),angle=side*fan*t*t,co=Math.cos(angle),si=Math.sin(angle);
+        positions[at++]=root[0]+co*dx+si*dz;positions[at++]=root[1]+dy;positions[at++]=root[2]-si*dx+co*dz;
+      }
+      for(var segment=0;segment<segments;segment++){add(segment/segments);add((segment+1)/segments);}
+    }});
+    return {positions:positions,segments:segments,strands:6,roots:roots,rootPositions:rootPositions,fan:art.fan,chewing:chew};
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{mammalNoseSurface:ecoMeadowMammalNoseSurface,mammalNosePose:ecoMeadowMammalNosePose,mammalWhiskers:ecoMeadowMammalWhiskers,mammalWhiskerProfile:ecoMeadowMammalWhiskerProfile,mammalWhiskerPose:ecoMeadowMammalWhiskerPose});
+
+  // A single cotton-tail skin replaces the overlapping rabbit tail balls.
+  // It stays inside their original fur envelope and follows the existing tail
+  // joint; its grey back and cream underside are visual anatomy, not a signal.
+  var ECO_MEADOW_RABBIT_TAIL_CACHE=null;
+  function ecoMeadowRabbitTailSurface(){
+    if(ECO_MEADOW_RABBIT_TAIL_CACHE)return JSON.parse(JSON.stringify(ECO_MEADOW_RABBIT_TAIL_CACHE));
+    var rows=24,columns=32,positions=[],normals=[],uv=[],indices=[],tints=[],seams=[];
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    function sample(theta,angle){
+      var axial=Math.cos(theta),radial=Math.sin(theta),co=Math.cos(angle),si=Math.sin(angle),taper=.94-.06*axial;
+      var x=-.006+.080*axial,y=-.006-.010*(1-axial)/2+radial*co*(.062+.002*co)*taper,z=radial*si*.064*taper;
+      // A shallow lower contour and a rounded rear tip distinguish the tail
+      // from a sphere without making a spiky or detached silhouette.
+      var underside=smooth((-.001-y)/.032),rear=smooth((-.024-x)/.046);
+      return {p:[x,y,z],tint:Math.min(1,underside*.88+rear*.38)};
+    }
+    function add(theta,angle,u,v,pole){
+      var value=sample(theta,angle),p=value.p,n;
+      if(pole)n=[pole,0,0];
+      else {
+        var epsilon=.00001,a=sample(theta+epsilon,angle).p,b=sample(theta-epsilon,angle).p,c=sample(theta,angle+epsilon).p,d=sample(theta,angle-epsilon).p;
+        var tx=a[0]-b[0],ty=a[1]-b[1],tz=a[2]-b[2],px=c[0]-d[0],py=c[1]-d[1],pz=c[2]-d[2];
+        n=[ty*pz-tz*py,tz*px-tx*pz,tx*py-ty*px];var length=Math.hypot(n[0],n[1],n[2])||1;n=n.map(function(value){return value/length;});
+      }
+      positions.push(p[0],p[1],p[2]);normals.push(n[0],n[1],n[2]);uv.push(u,v);tints.push(value.tint);
+    }
+    add(0,0,1,.5,1);
+    for(var row=1;row<rows;row++){
+      var first=positions.length/3;
+      for(var column=0;column<=columns;column++)add(row/rows*Math.PI,column===columns?0:column/columns*Math.PI*2,1-row/rows,column/columns,0);
+      seams.push([first,first+columns]);
+    }
+    var rear=positions.length/3;add(Math.PI,0,0,.5,-1);
+    for(var column=0;column<columns;column++)indices.push(0,1+column,1+column+1);
+    for(var row=0;row<rows-2;row++)for(var column=0;column<columns;column++){
+      var at=1+row*(columns+1)+column,next=at+columns+1;indices.push(at,next,at+1,at+1,next,next+1);
+    }
+    var last=1+(rows-2)*(columns+1);for(var column=0;column<columns;column++)indices.push(rear,last+column+1,last+column);
+    var data={positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rows:rows,columns:columns,seams:seams,front:0,rear:rear,part:'tail'};
+    ECO_MEADOW_RABBIT_TAIL_CACHE=data;return JSON.parse(JSON.stringify(data));
+  }
+  window.StemLab.ecosystemFoodWeb.rabbitTailSurface=ecoMeadowRabbitTailSurface;
+
+  // Sculpted pinnae use a recessed inner cup, a curved outer backing and four
+  // rounded rim bands. Their shape is a stylized teaching illustration, not a
+  // measured species specimen. The renderer keeps every ear control unchanged.
+  function ecoMeadowMammalPinnaSurface(id) {
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    var fox=id==='foxes',rows=24,columns=20,bevelBands=4,positions=[],normals=[],uv=[],indices=[],tints=[],furRimTints=[],backingTints=[];
+    var layer=(rows+1)*(columns+1),height=fox?0.91:0.90;
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    for(var back=0;back<2;back++)for(var row=0;row<=rows;row++)for(var column=0;column<=columns;column++){
+      var t=row/rows,u=column/columns*2-1,arch=Math.sin(Math.PI*t),edge=Math.abs(u);
+      // A small finite tip closes cleanly without coincident rows or zero-area
+      // triangles. The base stays at local y=0 inside the existing head socket.
+      var width=fox?0.43*Math.pow(1-t,0.70)+0.035*arch+0.008:0.31*Math.pow(Math.max(0,arch),0.67)+0.12*(1-t)+0.010;
+      var sweep=(fox?-0.08:-0.10)*t+(fox?0.025:0.045)*arch;
+      var cup=arch*(0.035+(fox?0.33:0.37)*Math.pow(edge,4)),thickness=(0.035+0.07*arch)*(1-0.50*u*u);
+      positions.push(sweep+cup-back*thickness,t*height,u*width);normals.push(0,0,0);uv.push((u+1)/2,t);
+      var inner=(1-smooth((edge-0.56)/0.25))*smooth((t-0.055)/0.13)*(1-smooth((t-0.82)/0.15));
+      tints.push(back?0:inner);backingTints.push(back?1:0);
+      var furEdge=smooth((edge-0.71)/0.29)*smooth(t/0.09),furTip=smooth((t-0.88)/0.12);
+      furRimTints.push(back?furTip*0.20:Math.max(furEdge,furTip)*0.60);
+      if(row<rows&&column<columns){var at=back*layer+row*(columns+1)+column,next=at+columns+1;if(back)indices.push(at,at+1,next,at+1,next+1,next);else indices.push(at,next,at+1,at+1,next,next+1);}
+    }
+    var rim=[];
+    for(var col=0;col<=columns;col++)rim.push(col);
+    for(var r=1;r<=rows;r++)rim.push(r*(columns+1)+columns);
+    for(var col=columns-1;col>=0;col--)rim.push(rows*(columns+1)+col);
+    for(var r=rows-1;r>0;r--)rim.push(r*(columns+1));
+    var perimeter=rim.length,rimStarts=[rim];
+    for(var band=1;band<bevelBands;band++){
+      var theta=band/bevelBands*Math.PI,loop=[];
+      for(var edge=0;edge<perimeter;edge++){
+        var front=rim[edge],back=front+layer,previous=rim[(edge+perimeter-1)%perimeter],next=rim[(edge+1)%perimeter];
+        var tangentY=positions[next*3+1]-positions[previous*3+1],tangentZ=positions[next*3+2]-positions[previous*3+2],length=Math.hypot(tangentY,tangentZ)||1;
+        var outwardY=-tangentZ/length,outwardZ=tangentY/length,half=(positions[front*3]-positions[back*3])/2,rounding=0.011*Math.sin(theta)*smooth(uv[front*2+1]/0.10);
+        loop.push(positions.length/3);
+        positions.push((positions[front*3]+positions[back*3])/2+half*Math.cos(theta),positions[front*3+1]+outwardY*rounding,positions[front*3+2]+outwardZ*rounding);
+        normals.push(0,0,0);uv.push(uv[front*2],uv[front*2+1]);tints.push(0);furRimTints.push(0.60+0.12*Math.sin(theta));
+        // Coat crosses the existing rounded rim with a zero-slope cosine blend.
+        // This mask changes pigmentation only; every surface coordinate stays fixed.
+        backingTints.push((1-Math.cos(theta))/2);
+      }
+      rimStarts.push(loop);
+    }
+    rimStarts.push(rim.map(function(index){return index+layer;}));
+    for(var band=0;band<bevelBands;band++)for(var edge=0;edge<perimeter;edge++){
+      var next=(edge+1)%perimeter,a=rimStarts[band][edge],b=rimStarts[band][next],c=rimStarts[band+1][edge],d=rimStarts[band+1][next];indices.push(a,b,c,b,d,c);
+    }
+    for(var triangle=0;triangle<indices.length;triangle+=3){
+      var a=indices[triangle]*3,b=indices[triangle+1]*3,c=indices[triangle+2]*3,ux=positions[b]-positions[a],uy=positions[b+1]-positions[a+1],uz=positions[b+2]-positions[a+2],vx=positions[c]-positions[a],vy=positions[c+1]-positions[a+1],vz=positions[c+2]-positions[a+2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+      // Angle-weighted corner normals keep the tiny closed tip and the narrow
+      // bevel from inheriting a broad neighboring face's lighting direction.
+      var faceLength=Math.hypot(nx,ny,nz)||1;
+      [[a,b,c],[b,c,a],[c,a,b]].forEach(function(corner){
+        var vertex=corner[0],first=corner[1],second=corner[2],ax=positions[first]-positions[vertex],ay=positions[first+1]-positions[vertex+1],az=positions[first+2]-positions[vertex+2],bx=positions[second]-positions[vertex],by=positions[second+1]-positions[vertex+1],bz=positions[second+2]-positions[vertex+2];
+        var weight=Math.atan2(Math.hypot(ay*bz-az*by,az*bx-ax*bz,ax*by-ay*bx),ax*bx+ay*by+az*bz)/faceLength;
+        normals[vertex]+=nx*weight;normals[vertex+1]+=ny*weight;normals[vertex+2]+=nz*weight;
+      });
+    }
+    for(var vertex=0;vertex<normals.length;vertex+=3){var length=Math.hypot(normals[vertex],normals[vertex+1],normals[vertex+2])||1;normals[vertex]/=length;normals[vertex+1]/=length;normals[vertex+2]/=length;}
+    return {positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,furRimTints:furRimTints,backingTints:backingTints,rings:rows,sides:columns,part:'ear',height:height,bevelBands:bevelBands,faceLayer:layer,rimVertices:perimeter,rim:rim,rimLayers:rimStarts};
+  }
+
+  // The paw is a stylized fur envelope inside the original unit ellipsoid.
+  // Its lower hemisphere is unchanged: existing sole fitting, lift and recorded
+  // contact coordinates remain calibrated to the same analytic support radius.
+  function ecoMeadowMammalPawSurface(id,hind){
+    if(id!=='foxes'&&id!=='rabbits')return null;
+    var sides=48,rings=24,positions=[],normals=[],uv=[],indices=[],fox=id==='foxes';
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    function point(phi,theta){
+      var y=Math.cos(phi),radius=Math.sin(phi),x=radius*Math.cos(theta),z=radius*Math.sin(theta);
+      if(Math.abs(y)<1e-14)y=0;
+      if(Math.abs(x)<1e-14)x=0;
+      if(Math.abs(z)<1e-14)z=0;
+      if(y<=0)return [x,y,z];
+      var upper=smooth(y/0.40),front=smooth((x-0.12)/0.65),heel=smooth((-x-0.10)/0.65);
+      var grooves=0;
+      [-0.47,0,0.47].forEach(function(seam){grooves+=Math.exp(-Math.pow((z-seam)/(fox?0.075:0.085),2));});
+      // Toe fur forms broad lobes separated by shallow recessed grooves. The
+      // rear crown tapers toward the heel; no point grows outside the old sole.
+      var toe=front*grooves,heelNarrow=fox?(hind?0.25:0.22):(hind?0.34:0.28);
+      return [x*(1-upper*(0.13*toe+0.07*heel)),y*(1-upper*((fox?0.20:0.25)*front+0.10*heel+0.17*toe)),z*(1-upper*heelNarrow*heel)];
+    }
+    for(var ring=0;ring<=rings;ring++)for(var side=0;side<=sides;side++){
+      var phi=ring/rings*Math.PI,theta=(side===sides?0:side/sides*Math.PI*2),p=point(phi,theta),normal;
+      if(ring===0)normal=[0,1,0];
+      else if(ring>=rings/2)normal=p.slice();
+      else{
+        var epsilon=0.00001,a=point(phi+epsilon,theta),b=point(phi-epsilon,theta),c=point(phi,theta+epsilon),d=point(phi,theta-epsilon);
+        var down=a.map(function(v,index){return v-b[index];}),around=c.map(function(v,index){return v-d[index];});
+        normal=[around[1]*down[2]-around[2]*down[1],around[2]*down[0]-around[0]*down[2],around[0]*down[1]-around[1]*down[0]];
+      }
+      var length=Math.hypot.apply(Math,normal)||1;
+      Array.prototype.push.apply(positions,p);normal.forEach(function(v){normals.push(v/length);});uv.push(side/sides,ring/rings);
+      if(ring<rings&&side<sides){var at=ring*(sides+1)+side,next=at+sides+1;if(ring>0)indices.push(at,at+1,next);if(ring<rings-1)indices.push(at+1,next+1,next);}
+    }
+    return {positions:positions,normals:normals,uv:uv,indices:indices,rings:rings,sides:sides};
+  }
+
+  // Continuous skin follows the calibrated IK joints. Broad proximal muscles
+  // taper through the elbow/hock into the ankle; no joint or sole is moved.
+  function ecoMeadowMammalLimbFit(id,hind,joints,target,offset) {
+    var fox=id==='foxes',rings=16,sides=12;target=target||[];offset=offset||0;
+    var radii=fox?(hind?[0.082,0.074,0.045,0.036,0.030,0.032]:[0.065,0.055,0.038,0.029,0.025,0.029]):(hind?[0.112,0.125,0.075,0.043,0.029,0.028]:[0.052,0.047,0.033,0.027,0.024,0.026]);
+    var knots=[0,0.20,0.45,0.62,0.83,1],hip=joints.hip,knee=joints.knee,paw=joints.paw;
+    for(var ring=0;ring<=rings;ring++){
+      var t=ring/rings,upper=t<=0.5,u=upper?t*2:(t-0.5)*2,a=upper?hip:knee,b=upper?knee:paw,u2=u*u,u3=u2*u;
+      var cx=0,cy=0,cz=0,tx=0,ty=0,tz=0;
+      for(var axis=0;axis<3;axis++){
+        var middle=(paw[axis]-hip[axis])*0.25,m0=upper?knee[axis]-hip[axis]:middle,m1=upper?middle:paw[axis]-knee[axis];
+        var center=(2*u3-3*u2+1)*a[axis]+(u3-2*u2+u)*m0+(-2*u3+3*u2)*b[axis]+(u3-u2)*m1;
+        var tangent=(6*u2-6*u)*a[axis]+(3*u2-4*u+1)*m0+(-6*u2+6*u)*b[axis]+(3*u2-2*u)*m1;
+        if(axis===0){cx=center;tx=tangent;}else if(axis===1){cy=center;ty=tangent;}else{cz=center;tz=tangent;}
+      }
+      var length=Math.hypot(tx,ty,tz)||1;tx/=length;ty/=length;tz/=length;
+      var lx=-tz*tx,ly=-tz*ty,lz=1-tz*tz,ln=Math.hypot(lx,ly,lz);
+      if(ln<1e-8){lx=1;ly=0;lz=0;ln=1;}lx/=ln;ly/=ln;lz/=ln;
+      var nx=ty*lz-tz*ly,ny=tz*lx-tx*lz,nz=tx*ly-ty*lx;
+      var k=0;while(k<knots.length-2&&t>knots[k+1])k++;var blend=(t-knots[k])/(knots[k+1]-knots[k]);blend=blend*blend*(3-2*blend);
+      var radius=radii[k]+(radii[k+1]-radii[k])*blend;
+      for(var side=0;side<=sides;side++){
+        var angle=side/sides*Math.PI*2,across=Math.cos(angle)*radius*(fox?0.82:0.88),forward=Math.sin(angle)*radius,at=offset+(ring*(sides+1)+side)*3;
+        target[at]=cx+lx*across+nx*forward;target[at+1]=cy+ly*across+ny*forward;target[at+2]=cz+lz*across+nz*forward;
+      }
+    }
+    var cap=offset+(rings+1)*(sides+1)*3;for(var axis=0;axis<3;axis++){target[cap+axis]=hip[axis];target[cap+3+axis]=paw[axis];}
+    return target;
+  }
+
+  // A limb's visible skin continues into a concealed shoulder/hip socket.
+  // This changes only proximal skin: calibrated hip/knee/paw controls and the
+  // distal twelve rings remain untouched. It is overlap, not a welded torso.
+  // torsoMatrix maps the absolute resting torso anatomy into body-local space,
+  // including the current back articulation and breathing mesh scale.
+  function ecoMeadowMammalLimbAttachment(id,hind,joints,torsoMatrix,target,offset,side) {
+    var fox=id==='foxes',rabbit=id==='rabbits';offset=offset===undefined?0:offset;
+    function numericArray(value){return Array.isArray(value)||ArrayBuffer.isView(value)&&typeof value.every==='function';}
+    function bounded(value){return Number.isFinite(value)&&Math.abs(value)<=1000;}
+    var targetType=Object.prototype.toString.call(target);
+    if(!fox&&!rabbit||typeof hind!=='boolean'||side!==-1&&side!==1||!joints||!['hip','knee','paw'].every(function(name){return numericArray(joints[name])&&joints[name].length===3&&joints[name].every(bounded);})||!numericArray(torsoMatrix)||torsoMatrix.length!==16||!Array.isArray(target)&&targetType!=='[object Float32Array]'&&targetType!=='[object Float64Array]'||!Number.isInteger(offset)||offset<0||target.length<offset+669)return null;
+    for(var entry=0;entry<16;entry++)if(!bounded(torsoMatrix[entry]))return null;
+    if(Math.abs(torsoMatrix[3])+Math.abs(torsoMatrix[7])+Math.abs(torsoMatrix[11])>1e-9||Math.abs(torsoMatrix[15]-1)>1e-9)return null;
+    var m=torsoMatrix,det=m[0]*(m[5]*m[10]-m[9]*m[6])-m[4]*(m[1]*m[10]-m[9]*m[2])+m[8]*(m[1]*m[6]-m[5]*m[2]);
+    if(!Number.isFinite(det)||!(det>1e-8))return null;
+    for(var value=offset;value<offset+669;value++)if(!bounded(target[value]))return null;
+    // Bounded inputs keep each intermediate and result below 1e4, safely
+    // representable by the renderer's reused Float32 position buffer.
+    // Calibrated lateral footing can carry a hip across the midline. Its
+    // anatomical side belongs to the fixed rig slot, not its current z sign.
+    var x=fox?(hind?-0.300:0.255):(hind?-0.230:0.130),y=fox?(hind?0.490:0.505):(hind?0.350:0.355),z=side*(fox?0.085:hind?0.100:0.065);
+    var socketX=m[0]*x+m[4]*y+m[8]*z+m[12],socketY=m[1]*x+m[5]*y+m[9]*z+m[13],socketZ=m[2]*x+m[6]*y+m[10]*z+m[14];
+    var dx=socketX-joints.hip[0],dy=socketY-joints.hip[1],dz=socketZ-joints.hip[2];
+    for(var ring=0;ring<5;ring++){
+      var t=ring/5,weight=1-t*t*(3-2*t),radial=1-weight*0.55,start=offset+ring*39,cx=0,cy=0,cz=0;
+      for(var column=0;column<12;column++){var at=start+column*3;cx+=target[at]/12;cy+=target[at+1]/12;cz+=target[at+2]/12;}
+      for(var column=0;column<=12;column++){
+        var at=start+column*3;
+        target[at]=cx+dx*weight+(target[at]-cx)*radial;
+        target[at+1]=cy+dy*weight+(target[at+1]-cy)*radial;
+        target[at+2]=cz+dz*weight+(target[at+2]-cz)*radial;
+      }
+    }
+    var cap=offset+221*3;target[cap]=socketX;target[cap+1]=socketY;target[cap+2]=socketZ;
+    return target;
+  }
+
+  function ecoMeadowMammalLimbSurface(id,hind) {
+    var rings=16,sides=12,joints={hip:[0,0,0],knee:[hind?0.045:-0.035,-0.18,0],paw:[0,-0.36,0]},positions=ecoMeadowMammalLimbFit(id,hind,joints),normals=positions.map(function(){return 0;}),uv=[],indices=[],tints=[];
+    for(var ring=0;ring<=rings;ring++)for(var side=0;side<=sides;side++){
+      var t=ring/rings;uv.push(side/sides,t);var stocking=Math.max(0,Math.min(1,(t-0.30)/0.38));stocking=stocking*stocking*(3-2*stocking);tints.push(id==='foxes'?stocking:0.12+t*0.20);
+      if(ring<rings&&side<sides){var at=ring*(sides+1)+side,next=at+sides+1;indices.push(at,at+1,next,at+1,next+1,next);}
+    }
+    var firstCap=(rings+1)*(sides+1),lastCap=firstCap+1;uv.push(0.5,0,0.5,1);tints.push(0,id==='foxes'?1:0.32);
+    for(var side=0;side<sides;side++){indices.push(firstCap,side+1,side);var end=rings*(sides+1)+side;indices.push(lastCap,end,end+1);}
+    for(var triangle=0;triangle<indices.length;triangle+=3){
+      var a=indices[triangle]*3,b=indices[triangle+1]*3,c=indices[triangle+2]*3,ux=positions[b]-positions[a],uy=positions[b+1]-positions[a+1],uz=positions[b+2]-positions[a+2],vx=positions[c]-positions[a],vy=positions[c+1]-positions[a+1],vz=positions[c+2]-positions[a+2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+      [a,b,c].forEach(function(vertex){normals[vertex]+=nx;normals[vertex+1]+=ny;normals[vertex+2]+=nz;});
+    }
+    for(var vertex=0;vertex<normals.length;vertex+=3){var length=Math.hypot(normals[vertex],normals[vertex+1],normals[vertex+2])||1;normals[vertex]/=length;normals[vertex+1]/=length;normals[vertex+2]/=length;}
+    for(var ring=0;ring<=rings;ring++){var a=ring*(sides+1)*3,b=a+sides*3,nx=normals[a]+normals[b],ny=normals[a+1]+normals[b+1],nz=normals[a+2]+normals[b+2],length=Math.hypot(nx,ny,nz)||1;for(var axis=0;axis<3;axis++)normals[a+axis]=normals[b+axis]=[nx,ny,nz][axis]/length;}
+    return {positions:positions,normals:normals,uv:uv,indices:indices,tints:tints,rings:rings,sides:sides,part:hind?'hindlimb':'forelimb'};
+  }
+
+  // Bend one connected brush around its distal joint. A smooth distribution
+  // keeps the skin tangent continuous while the base remains attached.
+  function ecoMeadowMammalTailPoint(x,y,z,curl,pitch) {
+    var weight=Math.max(0,Math.min(1,(-x-0.18)/0.45));weight=weight*weight*(3-2*weight);
+    var bend=ecoWebNumber(curl,0,-1.5,1.5)*weight,trim=ecoWebNumber(pitch,0,-0.5,0.5)*weight;
+    var px=x+0.43,py=y+0.08,pz=z,co=Math.cos(bend),si=Math.sin(bend),tx=co*px+si*pz;
+    pz=-si*px+co*pz;px=tx;co=Math.cos(trim);si=Math.sin(trim);
+    return [co*px-si*py-0.43,si*px+co*py-0.08,pz];
+  }
+
+  // Blend the fixed shoulder attachment into the actual articulated skull.
+  // The input matrix is the head's local matrix, including every head offset;
+  // no independent neck clock or approximation of its Euler order is needed.
+  // Input source vertices are resting anatomy coordinates. Output vertices
+  // are local to the fixed neck control, ready for its existing geometry.
+  function ecoMeadowMammalNeckFit(id,headMatrix,source,target,headHome) {
+    var fox=id==='foxes',rabbit=id==='rabbits';
+    if(!fox&&!rabbit||!headMatrix||headMatrix.length!==16)return null;
+    for(var entry=0;entry<16;entry++)if(!Number.isFinite(headMatrix[entry]))return null;
+    source=source||ecoMeadowMammalSurface(id,'neck').positions;
+    if(!source||source.length%3)return null;
+    target=target||new Array(source.length);
+    if(ArrayBuffer.isView(target)&&target.length<source.length)return null;
+    headHome=headHome||[0.24,fox?0.58:0.4,0];
+    var neckX=fox?0.265:0.178,neckY=fox?0.51:0.365,anchor=fox?0.18:0.11,attach=fox?0.34:0.23,m=headMatrix;
+    for(var vertex=0;vertex<source.length;vertex+=3){
+      var x=source[vertex],y=source[vertex+1],z=source[vertex+2];
+      var weight=Math.max(0,Math.min(1,(x-anchor)/(attach-anchor)));weight=weight*weight*(3-2*weight);
+      var qx=x-headHome[0],qy=y-headHome[1],qz=z-headHome[2];
+      var hx=m[0]*qx+m[4]*qy+m[8]*qz+m[12],hy=m[1]*qx+m[5]*qy+m[9]*qz+m[13],hz=m[2]*qx+m[6]*qy+m[10]*qz+m[14];
+      target[vertex]=x+(hx-x)*weight-neckX;target[vertex+1]=y+(hy-y)*weight-neckY;target[vertex+2]=z+(hz-z)*weight;
+    }
+    return target;
+  }
+
+  // Restrained follow-through uses the actual recorded change in heading.
+  // It is visual balance, not a force, and never changes feet or navigation.
+  function ecoMeadowMammalTurnBalance(id,previous,current) {
+    if((id!=='foxes'&&id!=='rabbits')||!previous||!current||previous.active!==true||current.active!==true||!Number.isFinite(previous.yaw)||!Number.isFinite(current.yaw))return 0;
+    var prior=ecoWebNumber(previous.turnBalance,0,-1,1),angle=Math.atan2(Math.sin(current.yaw-previous.yaw),Math.cos(current.yaw-previous.yaw));
+    var pace=Math.min(1,ecoWebNumber(current.moving,0,0,2)/0.6),target=Math.max(-1,Math.min(1,angle/0.30))*pace;
+    return prior+Math.max(-0.18,Math.min(0.18,target-prior));
+  }
+
+  // Recorded skull posture illustrates an already selected interaction. It
+  // never creates a threat/prey cue, delays retreat or changes navigation.
+  // Rabbits lift promptly from feeding, then lower gradually after vigilance;
+  // foxes cock the skull toward the same recorded attention used to listen.
+  function ecoMeadowInteractionPosture(id,previous,current) {
+    var result={headRaise:0,listenTilt:0};current=current||{};
+    if(current.active!==true||['rabbits','foxes'].indexOf(id)<0)return result;
+    previous=previous&&previous.active===true?previous:{};
+    function approach(value,target,amount){return value+Math.max(-amount,Math.min(amount,target-value));}
+    if(id==='rabbits'){
+      var raised=['Alert','Retreating'].indexOf(current.state)>=0||current.state==='Checking after retreat'&&!!current.recoveryCue;
+      result.headRaise=approach(ecoWebNumber(previous.headRaise,0,0,1),raised?1:0,raised?0.75:0.12);
+      return result;
+    }
+    // Pounce preparation/flight/recovery have their own committed skull pose.
+    if(current.huntStage)return result;
+    var cue=current.listenCue,attention=current.attention,target=0;
+    if(current.state==='Listening'&&cue&&attention&&attention.kind==='prey'&&attention.id===cue.id&&attention.index===cue.index&&Number.isInteger(cue.index)&&cue.index>=0&&cue.index<16&&Number.isInteger(cue.age)&&cue.age>=0&&cue.age<8&&[cue.distance,cue.movement,cue.onsetMovement,attention.turn].every(Number.isFinite)&&cue.distance>=0&&cue.distance<=4.5&&cue.movement>=0&&cue.onsetMovement>=0.12&&ECO_WEB_LINKS.some(function(link){return link.consumer==='foxes'&&link.food===cue.id;})){
+      // Head roll is local X (nose axis). Its sign is opposite the yaw turn:
+      // positive yaw looks toward -Z, so negative roll tilts the crown there.
+      target=-Math.max(-1,Math.min(1,attention.turn/0.48))*0.14;
+    }
+    result.listenTilt=approach(ecoWebNumber(previous.listenTilt,0,-0.14,0.14),target,target?0.04:0.025);
+    return result;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{interactionPosture:ecoMeadowInteractionPosture});
+
+  // A little delayed pinna rotation follows the already recorded skull motion.
+  // The ear roots, shared skin, attention cues and head pose stay unchanged.
+  // This is a bounded visual follow-through, not a new hearing/alarm response.
+  function ecoMeadowRabbitEarFollow(previous,current) {
+    var zero={pitch:0,yaw:0},states=['Grazing','Exploring','Alert','Retreating','Checking after retreat','Giving space','Resting','Searching for food'];
+    function valid(pose){
+      if(!pose||pose.active!==true||states.indexOf(pose.state)<0)return false;
+      var keys=['headTurn','forage','rest','crouch','pounce','distance','phase','stride','moving','headRaise','neighborLook'];
+      if(!keys.every(function(key){return Number.isFinite(pose[key]);}))return false;
+      return Math.abs(pose.headTurn)<=0.6&&pose.forage>=0&&pose.forage<=1&&pose.rest>=0&&pose.rest<=0.55&&pose.crouch>=0&&pose.crouch<=1&&pose.pounce>=0&&pose.pounce<=0.01&&pose.distance>=0&&pose.distance<=1000&&Math.abs(pose.phase)<=1000&&pose.stride>=0&&pose.stride<=1&&pose.moving>=0&&pose.moving<=2&&pose.headRaise>=0&&pose.headRaise<=1&&pose.neighborLook>=0&&pose.neighborLook<=1;
+    }
+    if(!valid(previous)||!valid(current)||ecoMeadowRabbitBound(previous).flight||ecoMeadowRabbitBound(current).flight||previous.earFollowPitch!==undefined&&!Number.isFinite(previous.earFollowPitch)||previous.earFollowYaw!==undefined&&!Number.isFinite(previous.earFollowYaw))return zero;
+    var before=ecoMeadowMammalArticulation('rabbits',previous,false),after=ecoMeadowMammalArticulation('rabbits',current,false);
+    var pitch=ecoWebNumber(previous.earFollowPitch,0,-0.065,0.065)*0.62-(after.headPitch-before.headPitch)*0.26;
+    var yaw=ecoWebNumber(previous.earFollowYaw,0,-0.045,0.045)*0.62-(after.headYaw-before.headYaw)*0.22;
+    pitch=Math.max(-0.065,Math.min(0.065,pitch));yaw=Math.max(-0.045,Math.min(0.045,yaw));
+    return {pitch:Math.abs(pitch)<0.00005?0:pitch,yaw:Math.abs(yaw)<0.00005?0:yaw};
+  }
+  // This envelope is continuous at takeoff, landing and phase wrap. It
+  // begins preparing before the bound has any shared flight, so the displayed
+  // follow-through reaches zero before a committed airborne interval.
+  function ecoMeadowRabbitEarGround(pose) {
+    if(!pose||pose.active!==true||![pose.distance,pose.phase,pose.moving,pose.stride].every(Number.isFinite))return 0;
+    var bound=ecoMeadowRabbitBound(pose),airStart=1-bound.foreOffset+bound.stance;
+    var prepare=Math.max(0,Math.min(1,bound.blend*6)),groundWindow=Math.max(0,Math.min(1,Math.min(bound.phase,Math.min(1,airStart)-bound.phase)/0.10));
+    prepare=prepare*prepare*(3-2*prepare);groundWindow=groundWindow*groundWindow*(3-2*groundWindow);
+    return 1-prepare*(1-groundWindow);
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{rabbitEarFollow:ecoMeadowRabbitEarFollow,rabbitEarGround:ecoMeadowRabbitEarGround});
+
+  // The existing social-alert trace can give one pinna a quieter pose while
+  // the near ear keeps its original direction. This is recorded presentation,
+  // not a new hearing, alarm or communication rule. Private episode envelopes
+  // leave every raw pose and saved notebook schema unchanged.
+  var ECO_MEADOW_RABBIT_PINNA=new WeakMap();
+  function ecoMeadowRabbitPinnaSignature(p){
+    var a=p&&p.attention||{},s=p&&p.socialCue||{};
+    return p?[p.active,p.state,p.x,p.z,p.yaw,p.altitude,p.directAlarm,p.socialMemory,p.social,p.socialIndex,p.socialDistance,p.threat,p.threatIndex,p.threatDistance,p.headTurn,p.headRaise,p.earLeft,p.earRight,p.rest,p.pounce,p.moving,p.stride,p.distance,p.phase,s.id,s.index,s.distance,s.threatId,s.threatIndex,a.kind,a.id,a.index,a.x,a.z,a.bearing,a.turn]:[];
+  }
+  function ecoMeadowRabbitPinnaUnchanged(p,signature){var now=ecoMeadowRabbitPinnaSignature(p);return now.length===signature.length&&now.every(function(value,k){return Object.is(value,signature[k]);});}
+  function ecoMeadowRabbitPinnaRaw(p){
+    var e=p&&ECO_MEADOW_RABBIT_PINNA.get(p),frame=e&&!e.display&&e.frames&&e.frames[e.step];if(!e||e.display||!frame||!Array.isArray(frame.rabbits)||frame.rabbits[e.index]!==p||!ecoMeadowRabbitPinnaUnchanged(p,e.signature)||!ecoMeadowRabbitPinnaUnchanged(e.before,e.beforeSignature)||!ecoMeadowRabbitPinnaUnchanged(e.after,e.afterSignature))return null;
+    var trace=ecoMeadowVigilanceTrace(e.frames,e.step,e.index);return trace&&JSON.stringify(trace)===e.traceKey?e:null;
+  }
+  function ecoMeadowRabbitPinnaRecord(frames){
+    if(!Array.isArray(frames))return;
+    for(var index=0;index<16;index++){
+      var candidates=frames.map(function(frame,step){
+        var p=frame&&frame.rabbits&&frame.rabbits[index],a=p&&p.attention,trace=p&&p.socialCue&&ecoMeadowVigilanceTrace(frames,step,index);
+        if(!trace||!a||a.kind!=='social'||a.id!=='rabbits'||a.index!==trace.source.index||a.x!==trace.inputs.neighbor[0]||a.z!==trace.inputs.neighbor[1]||![a.bearing,a.turn,p.headTurn,p.headRaise,p.earLeft,p.earRight].every(Number.isFinite)||Math.abs(p.headTurn)>.6||p.headRaise<0||p.headRaise>1||Math.abs(p.earLeft)>.7||Math.abs(p.earRight)>.7)return null;
+        var bearing=Math.atan2(-(a.z-p.z),a.x-p.x)-p.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+        if(Math.abs(Math.atan2(Math.sin(bearing-a.bearing),Math.cos(bearing-a.bearing)))>1e-8||Math.abs(a.turn-Math.max(-.42,Math.min(.42,a.bearing)))>1e-8)return null;
+        return {p:p,trace:trace,key:trace.source.index+':'+trace.predator.id+':'+trace.predator.index};
+      });
+      for(var start=0;start<candidates.length;start++){
+        if(!candidates[start])continue;var end=start;while(end+1<candidates.length&&candidates[end+1]&&candidates[end+1].key===candidates[start].key)end++;
+        for(var step=start;step<=end;step++){
+          var item=candidates[step],p=item.p,a=p.attention,residual=Math.atan2(Math.sin(a.bearing-p.headTurn),Math.cos(a.bearing-p.headTurn)),mean=(p.earLeft+p.earRight)/2;
+          var fade=Math.max(0,Math.min(1,(step-start)/2,(end-step)/2));fade=fade*fade*(3-2*fade);
+          var far=residual>=0?p.earRight:p.earLeft,amount=mean*residual>0?Math.min(.07,Math.abs(far)*.25,Math.abs(mean)*.30)*Math.pow(Math.sin(residual),2)*p.headRaise*fade:0;
+          var before=frames[step-1]&&frames[step-1].rabbits[index],after=frames[step+1]&&frames[step+1].rabbits[index];
+          ECO_MEADOW_RABBIT_PINNA.set(p,{frames:frames,step:step,index:index,signature:ecoMeadowRabbitPinnaSignature(p),before:before,after:after,beforeSignature:ecoMeadowRabbitPinnaSignature(before),afterSignature:ecoMeadowRabbitPinnaSignature(after),traceKey:JSON.stringify(item.trace),episode:{start:start,end:end,index:index,sourceIndex:item.trace.source.index,predatorId:item.trace.predator.id,predatorIndex:item.trace.predator.index},left:residual<0?-Math.sign(mean)*amount:0,right:residual>=0?-Math.sign(mean)*amount:0});
+        }
+        start=end;
+      }
+    }
+  }
+  function ecoMeadowRabbitPinnaGate(p){
+    if(!p||p.active!==true||p.state!=='Alert'||!['distance','phase','moving','stride','rest','pounce','altitude'].every(function(key){return Number.isFinite(p[key]);})||p.rest<0||p.rest>1||p.pounce<0||p.pounce>1||p.altitude<0)return 0;
+    function smooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+    return ecoMeadowRabbitEarGround(p)*(1-smooth((p.rest-.05)/.40))*(1-smooth(p.pounce/.01))*(1-smooth((p.altitude-.025)/.015));
+  }
+  function ecoMeadowRabbitPinnaFocus(p,reduced){
+    var zero={left:0,right:0,cue:null,episode:null};if(reduced)return zero;
+    var e=p&&ECO_MEADOW_RABBIT_PINNA.get(p),raw=e&&!e.display?ecoMeadowRabbitPinnaRaw(p):null;
+    if(e&&e.display){if(!e.valid||!ecoMeadowRabbitPinnaUnchanged(p,e.signature)||ecoMeadowRabbitPinnaRaw(e.a)!==e.before||ecoMeadowRabbitPinnaRaw(e.b)!==e.after)return zero;raw=e;}
+    if(!raw)return zero;var weight=ecoMeadowRabbitPinnaGate(p),episode=raw.episode;
+    return {left:raw.left*weight||0,right:raw.right*weight||0,cue:{id:'rabbits',index:episode.sourceIndex,receiverIndex:episode.index,threatId:episode.predatorId,threatIndex:episode.predatorIndex},episode:Object.assign({},episode)};
+  }
+  function ecoMeadowRabbitPinnaBlend(a,b,alpha,out){
+    var entry={display:true,valid:false};ECO_MEADOW_RABBIT_PINNA.set(out,entry);
+    var before=ecoMeadowRabbitPinnaRaw(a),after=ecoMeadowRabbitPinnaRaw(b);
+    if(!before||!after||JSON.stringify(before.episode)!==JSON.stringify(after.episode)||after.step!==before.step+1||!Number.isFinite(alpha)||alpha<=0||alpha>=1)return;
+    Object.assign(entry,{valid:true,a:a,b:b,before:before,after:after,signature:ecoMeadowRabbitPinnaSignature(out),episode:before.episode,left:before.left+(after.left-before.left)*alpha,right:before.right+(after.right-before.right)*alpha});
+  }
+  window.StemLab.ecosystemFoodWeb.rabbitPinnaFocus=ecoMeadowRabbitPinnaFocus;
+
+  // The long fox brush settles behind actual recorded turns. This finite
+  // history is presentation only: it changes no roots, routes, contacts or cues.
+  // Private trace associations keep copied/edited poses from acquiring motion.
+  var ECO_MEADOW_FOX_BRUSH=new WeakMap();
+  function ecoMeadowFoxBrushSignature(p){try{return p?JSON.stringify(p):null;}catch(error){return null;}}
+  function ecoMeadowFoxBrushSmooth(value){value=Math.max(0,Math.min(1,value));return value*value*(3-2*value);}
+  function ecoMeadowFoxBrushGate(p){
+    if(!p||p.active!==true||!['x','z','yaw','altitude','moving','stride','distance','phase','activity','rest','pounce'].every(function(key){return Number.isFinite(p[key]);})||Math.abs(p.x)>=1000||Math.abs(p.z)>=1000||Math.abs(p.yaw)>1000||p.altitude<0||p.moving<0||p.moving>2||p.stride<0||p.stride>1||p.distance<0||p.distance>1000||Math.abs(p.phase)>1000||p.activity<0||p.activity>1000||p.rest<0||p.rest>1||p.pounce<0||p.pounce>1)return 0;
+    return (1-ecoMeadowFoxBrushSmooth((p.rest-.05)/.40))*(1-ecoMeadowFoxBrushSmooth(p.pounce/.01))*(1-ecoMeadowFoxBrushSmooth((p.altitude-.025)/.020));
+  }
+  function ecoMeadowFoxBrushEdge(a,b){
+    if(!ecoMeadowFoxBrushGate(a)||!ecoMeadowFoxBrushGate(b)||a.phase!==b.phase)return false;
+    var travel=Math.hypot(b.x-a.x,b.z-a.z),turn=Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw));
+    return travel<=.200000001&&Math.abs(b.distance-a.distance-travel)<=1e-8&&Math.abs(b.moving-travel/.1)<=1e-8&&b.activity-a.activity>=.079999999&&b.activity-a.activity<=.125000001&&Math.abs(turn)<=.310000001;
+  }
+  function ecoMeadowFoxBrushRaw(p){
+    var e=p&&ECO_MEADOW_FOX_BRUSH.get(p);if(!e||e.display||e.frames.length!==e.length)return null;
+    for(var k=0;k<e.inputs.length;k++){
+      var input=e.inputs[k],frame=e.frames[input.step],group=frame&&frame.foxes,pose=group&&group[e.index];
+      if(frame!==input.frame||group!==input.group||(group&&group.length)!==input.groupLength||pose!==input.pose||ecoMeadowFoxBrushSignature(pose)!==input.signature)return null;
+    }
+    return e;
+  }
+  function ecoMeadowFoxBrushRecord(frames){
+    if(!Array.isArray(frames))return;
+    for(var index=0;index<16;index++)for(var step=0;step<frames.length;step++){
+      var p=frames[step]&&frames[step].foxes&&frames[step].foxes[index];if(!ecoMeadowFoxBrushGate(p))continue;
+      var past=0,future=0,signal=0,weights=[.42,.28,.19,.11];
+      for(var back=0;back<4&&step-back>0;back++){
+        var a=frames[step-back-1]&&frames[step-back-1].foxes&&frames[step-back-1].foxes[index],b=frames[step-back]&&frames[step-back].foxes&&frames[step-back].foxes[index];
+        if(!ecoMeadowFoxBrushEdge(a,b))break;past++;
+        var turn=Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw)),pace=Math.min(1,(a.moving+b.moving)/.70);
+        signal-=turn*weights[back]*(.30+.70*pace)*.45;
+      }
+      for(var next=1;next<=2&&step+next<frames.length;next++){
+        var a=frames[step+next-1]&&frames[step+next-1].foxes&&frames[step+next-1].foxes[index],b=frames[step+next]&&frames[step+next].foxes&&frames[step+next].foxes[index];
+        if(!ecoMeadowFoxBrushEdge(a,b))break;future++;
+      }
+      var fade=ecoMeadowFoxBrushSmooth(Math.min(past/2,future/2)),curl=.06*Math.tanh(signal/.06)*fade*ecoMeadowFoxBrushGate(p),inputs=[];
+      for(var at=Math.max(0,step-4);at<=Math.min(frames.length-1,step+2);at++){
+        var frame=frames[at],group=frame&&frame.foxes,pose=group&&group[index];
+        inputs.push({step:at,frame:frame,group:group,groupLength:group&&group.length,pose:pose,signature:ecoMeadowFoxBrushSignature(pose)});
+      }
+      ECO_MEADOW_FOX_BRUSH.set(p,{frames:frames,length:frames.length,index:index,step:step,inputs:inputs,curl:curl||0,history:{index:index,step:step,from:step-past,to:step+future}});
+    }
+  }
+  function ecoMeadowFoxBrushFollow(p,reduced){
+    var zero={curl:0,history:null};if(reduced)return zero;
+    var e=p&&ECO_MEADOW_FOX_BRUSH.get(p),raw=e&&!e.display?ecoMeadowFoxBrushRaw(p):null;
+    if(e&&e.display){if(!e.valid||ecoMeadowFoxBrushSignature(p)!==e.signature||ecoMeadowFoxBrushRaw(e.a)!==e.before||ecoMeadowFoxBrushRaw(e.b)!==e.after)return zero;raw=e;}
+    return raw?{curl:raw.curl,history:Object.assign({},raw.history)}:zero;
+  }
+  function ecoMeadowFoxBrushBlend(a,b,alpha,out){
+    var e={display:true,valid:false};ECO_MEADOW_FOX_BRUSH.set(out,e);
+    var before=ecoMeadowFoxBrushRaw(a),after=ecoMeadowFoxBrushRaw(b);
+    if(!before||!after||before.frames!==after.frames||before.index!==after.index||after.step!==before.step+1||!ecoMeadowFoxBrushEdge(a,b)||!Number.isFinite(alpha)||alpha<=0||alpha>=1)return;
+    Object.assign(e,{valid:true,a:a,b:b,before:before,after:after,signature:ecoMeadowFoxBrushSignature(out),curl:before.curl+(after.curl-before.curl)*alpha,history:{index:before.index,step:before.step+alpha,from:Math.min(before.history.from,after.history.from),to:Math.max(before.history.to,after.history.to)}});
+  }
+  window.StemLab.ecosystemFoodWeb.foxBrushFollow=ecoMeadowFoxBrushFollow;
+
+  // The pinnae briefly lag changes in the already recorded skull orientation.
+  // Private, finite history adds presentation only: no hearing cue or decision.
+  var ECO_MEADOW_FOX_PINNA=new WeakMap();
+  function ecoMeadowFoxPinnaSignature(p){
+    var seen=[];
+    function encode(value){
+      if(value===null)return 'null';var type=typeof value;
+      if(type==='number')return 'n'+(Object.is(value,-0)?'-0':String(value));
+      if(type==='string')return 's'+JSON.stringify(value);if(type==='boolean')return value?'b1':'b0';if(type==='undefined')return 'u';
+      if(type!=='object'||seen.indexOf(value)>=0)throw Error('Unsupported pose');seen.push(value);
+      var keys=Object.keys(value),out=(Array.isArray(value)?'a'+value.length:'o')+'{'+keys.map(function(key){return JSON.stringify(key)+':'+encode(value[key]);}).join(',')+'}';seen.pop();return out;
+    }
+    try{return p?encode(p):null;}catch(error){return null;}
+  }
+  function ecoMeadowFoxPinnaSmooth(v){v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);}
+  function ecoMeadowFoxPinnaGate(p){
+    if(!p||p.active!==true||typeof p.state!=='string'||!p.state||p.state.length>80||!['x','z','yaw','altitude','moving','stride','distance','phase','activity','rest','pounce','forage','crouch','headTurn','turnBalance','earLeft','earRight','earTilt','listenTilt'].every(function(key){return Number.isFinite(p[key]);})||Math.abs(p.x)>=1000||Math.abs(p.z)>=1000||Math.abs(p.yaw)>1000||p.altitude<0||p.moving<0||p.moving>2||p.stride<0||p.stride>1||p.distance<0||p.distance>1000||Math.abs(p.phase)>1000||p.activity<0||p.activity>1000||p.rest<0||p.rest>1||p.pounce<0||p.pounce>1||p.forage<0||p.forage>1||p.crouch<0||p.crouch>1||Math.abs(p.headTurn)>.6||Math.abs(p.turnBalance)>1||Math.abs(p.earLeft)>.7||Math.abs(p.earRight)>.7||p.earTilt<-.1||p.earTilt>.5||Math.abs(p.listenTilt)>.14)return 0;
+    return (1-ecoMeadowFoxPinnaSmooth((p.rest-.05)/.40))*(1-ecoMeadowFoxPinnaSmooth(p.pounce/.01))*(1-ecoMeadowFoxPinnaSmooth((p.altitude-.025)/.020));
+  }
+  function ecoMeadowFoxPinnaEdge(a,b){
+    if(!ecoMeadowFoxPinnaGate(a)||!ecoMeadowFoxPinnaGate(b)||a.phase!==b.phase)return false;
+    var travel=Math.hypot(b.x-a.x,b.z-a.z),turn=Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw));
+    return travel<=.200000001&&Math.abs(b.distance-a.distance-travel)<=1e-8&&Math.abs(b.moving-travel/.1)<=1e-8&&b.activity-a.activity>=.079999999&&b.activity-a.activity<=.125000001&&Math.abs(turn)<=.310000001&&Math.abs(b.headTurn-a.headTurn)<=.090000001;
+  }
+  function ecoMeadowFoxPinnaRaw(p){
+    var e=p&&ECO_MEADOW_FOX_PINNA.get(p);if(!e||e.display||e.frames.length!==e.length)return null;
+    for(var k=0;k<e.inputs.length;k++){var v=e.inputs[k],frame=e.frames[v.step],group=frame&&frame.foxes,pose=group&&group[e.index];if(frame!==v.frame||group!==v.group||(group&&group.length)!==v.groupLength||pose!==v.pose||ecoMeadowFoxPinnaSignature(pose)!==v.signature)return null;}return e;
+  }
+  function ecoMeadowFoxPinnaRecord(frames){
+    if(!Array.isArray(frames))return;
+    for(var index=0;index<16;index++){
+      var angles=frames.map(function(frame){var p=frame&&frame.foxes&&frame.foxes[index];if(!ecoMeadowFoxPinnaGate(p))return null;var art=ecoMeadowMammalArticulation('foxes',p,false);return {yaw:p.yaw+art.headYaw,pitch:art.headPitch};});
+      for(var step=0;step<frames.length;step++){
+        var p=frames[step]&&frames[step].foxes&&frames[step].foxes[index];if(!angles[step])continue;
+        var past=0,future=0,yaw=0,pitch=0,weights=[.42,.28,.19,.11];
+        for(var back=0;back<4&&step-back>0;back++){
+          var at=step-back,a=frames[at-1]&&frames[at-1].foxes&&frames[at-1].foxes[index],b=frames[at]&&frames[at].foxes&&frames[at].foxes[index];if(!angles[at-1]||!ecoMeadowFoxPinnaEdge(a,b))break;past++;
+          var turn=angles[at].yaw-angles[at-1].yaw;yaw-=Math.atan2(Math.sin(turn),Math.cos(turn))*weights[back]*.60;pitch-=(angles[at].pitch-angles[at-1].pitch)*weights[back]*.55;
+        }
+        for(var next=1;next<=2&&step+next<frames.length;next++){var at=step+next,a=frames[at-1]&&frames[at-1].foxes&&frames[at-1].foxes[index],b=frames[at]&&frames[at].foxes&&frames[at].foxes[index];if(!angles[at]||!ecoMeadowFoxPinnaEdge(a,b))break;future++;}
+        var length=Math.hypot(yaw,pitch),weight=(length?.05*Math.tanh(length/.05)/length:0)*ecoMeadowFoxPinnaSmooth(Math.min(past/2,future/2)),inputs=[];
+        for(var at=Math.max(0,step-4);at<=Math.min(frames.length-1,step+2);at++){var frame=frames[at],group=frame&&frame.foxes,pose=group&&group[index];inputs.push({step:at,frame:frame,group:group,groupLength:group&&group.length,pose:pose,signature:ecoMeadowFoxPinnaSignature(pose)});}
+        ECO_MEADOW_FOX_PINNA.set(p,{frames:frames,length:frames.length,index:index,step:step,inputs:inputs,yaw:yaw*weight||0,pitch:pitch*weight||0,history:{index:index,step:step,from:step-past,to:step+future}});
+      }
+    }
+  }
+  function ecoMeadowFoxPinnaFollow(p,reduced){
+    var zero={pitch:0,yaw:0,history:null};if(reduced)return zero;var e=p&&ECO_MEADOW_FOX_PINNA.get(p),raw=e&&!e.display?ecoMeadowFoxPinnaRaw(p):null;
+    if(e&&e.display){if(!e.valid||ecoMeadowFoxPinnaSignature(p)!==e.signature||ecoMeadowFoxPinnaRaw(e.a)!==e.before||ecoMeadowFoxPinnaRaw(e.b)!==e.after)return zero;raw=e;}
+    var gate=ecoMeadowFoxPinnaGate(p);return raw&&gate?{pitch:raw.pitch*gate,yaw:raw.yaw*gate,history:Object.assign({},raw.history)}:zero;
+  }
+  function ecoMeadowFoxPinnaBlend(a,b,alpha,out){
+    var e={display:true,valid:false};ECO_MEADOW_FOX_PINNA.set(out,e);var before=ecoMeadowFoxPinnaRaw(a),after=ecoMeadowFoxPinnaRaw(b);
+    if(!before||!after||before.frames!==after.frames||before.index!==after.index||after.step!==before.step+1||!ecoMeadowFoxPinnaEdge(a,b)||!Number.isFinite(alpha)||alpha<=0||alpha>=1)return;
+    var t=ecoMeadowFoxPinnaSmooth(alpha);Object.assign(e,{valid:true,a:a,b:b,before:before,after:after,signature:ecoMeadowFoxPinnaSignature(out),pitch:before.pitch+(after.pitch-before.pitch)*t,yaw:before.yaw+(after.yaw-before.yaw)*t,history:{index:before.index,step:before.step+alpha,from:Math.min(before.history.from,after.history.from),to:Math.max(before.history.to,after.history.to)}});
+  }
+  window.StemLab.ecosystemFoodWeb.foxPinnaFollow=ecoMeadowFoxPinnaFollow;
+
+  function ecoMeadowMammalArticulation(id,pose,reduced) {
+    pose=pose||{};var fox=id==='foxes',rabbit=id==='rabbits';
+    var result={phase:0,mode:'rest',spineFlex:0,bodyStretch:1,shoulderLift:0,haunchLift:0,
+      headPitch:0,headYaw:0,headRoll:0,headDrop:0,headReach:0,tailYaw:0,tailPitch:0,tailCurl:0,turnBalance:0,headRaise:0,listenTilt:0,neighborLook:0,
+      earLeft:0,earRight:0,earTilt:0,earFollowPitch:0,earFollowYaw:0,eyeOpen:1,jawOpen:0,jawSide:0,ribScaleY:1,ribScaleZ:1,ribRoll:0,foreContact:true,hindContact:true,supportFeet:4,foreLift:0,hindLift:0,flightLift:0,landingFore:0,landingHind:0,landingDip:0};
+    if((!fox&&!rabbit)||reduced||pose.active===false)return result;
+    var stride=ecoWebNumber(pose.stride,0,0,1),pounce=ecoWebNumber(pose.pounce,0,0,1),rest=ecoWebNumber(pose.rest,0,0,1);
+    var forage=ecoWebNumber(pose.forage,0,0,1),crouch=ecoWebNumber(pose.crouch,0,0,1),turn=ecoWebNumber(pose.headTurn,0,-0.6,0.6);
+    var cycle=ecoWebNumber(pose.distance,0,0,1000)*28+ecoWebNumber(pose.phase,0,-1000,1000),wave=Math.sin(cycle);
+    var clean=Object.assign({},pose,{distance:ecoWebNumber(pose.distance,0,0,1000),phase:ecoWebNumber(pose.phase,0,-1000,1000),stride:stride,pounce:pounce,rest:rest,crouch:crouch,forage:forage,moving:ecoWebNumber(pose.moving,0,0,2)});
+    var fore=ecoMeadowFootPose(id,clean,false,-1),hind=ecoMeadowFootPose(id,clean,true,-1);
+    result.phase=((cycle/(Math.PI*2))%1+1)%1;
+    result.mode=pounce>0.01?'pounce':rest>0.5?'rest':stride>0.015?(rabbit?'bound':'stride'):forage>0.2?'feed':crouch>0.1?'crouch':'watch';
+    result.foreContact=pounce<0.01&&!(fore.swing&&stride>0.015);result.hindContact=pounce<0.01&&!(hind.swing&&stride>0.015);
+    result.supportFeet=0;[-1,1].forEach(function(side){[true,false].forEach(function(rear){var foot=ecoMeadowFootPose(id,clean,rear,side);if(pounce<0.01&&!(foot.swing&&stride>0.015))result.supportFeet++;});});
+    result.foreLift=fore.lift;result.hindLift=hind.lift;result.flightLift=rabbit?ecoMeadowMammalPosture(id,clean).flightLift:0;
+    var landing=rabbit?ecoMeadowRabbitLanding(clean):{fore:0,hind:0,dip:0};
+    result.landingFore=landing.fore;result.landingHind=landing.hind;result.landingDip=landing.dip;
+    result.spineFlex=wave*stride*(rabbit?0.080:0.025)*(1-pounce);
+    result.bodyStretch=1+Math.cos(cycle)*stride*(rabbit?0.045:0.012)*(1-pounce);
+    result.shoulderLift=fore.lift*(rabbit?0.25:0.12)+pounce*0.018-crouch*(fox?0.016:0.006);
+    result.haunchLift=hind.lift*(rabbit?0.32:0.10)-pounce*0.012;
+    var feed=rabbit?Math.min(1,forage/0.75):forage;
+    result.headRaise=rabbit?ecoWebNumber(pose.headRaise,0,0,1):0;
+    result.listenTilt=fox?ecoWebNumber(pose.listenTilt,0,-0.14,0.14)*(1-rest)*(1-pounce):0;
+    result.neighborLook=rabbit&&pose.state==='Grazing'?ecoWebNumber(pose.neighborLook,0,0,1)*(1-rest)*(1-pounce)*(1-result.headRaise):0;
+    var headFeed=feed*(1-result.headRaise)*(1-result.neighborLook*0.55);
+    result.headPitch=-(rabbit?0.93:0.19)*headFeed-pounce*0.24-rest*0.22-crouch*(fox?0.10:0.025)-result.spineFlex*0.28;
+    result.headYaw=turn;result.headRoll=fox?turn*0.075*(1-stride):turn*0.025;
+    result.headDrop=(rabbit?0.20:0.018)*headFeed+rest*(fox?0.045:0.025);
+    result.headReach=(rabbit?0.035:0.012)*headFeed;
+    result.tailYaw=(wave*stride*(fox?0.075:0.015)-turn*(fox?0.25:0.04))*(1-rest)+rest*(fox?0.80:0);
+    result.tailPitch=(fox?-0.02:0.025)+Math.sin(cycle-0.65)*stride*(fox?0.055:0.035)+pounce*(fox?0.10:0.02)-rest*0.08;
+    result.tailCurl=fox?rest*0.65+Math.sin(cycle-1.3)*stride*0.085:0;
+    result.turnBalance=ecoWebNumber(pose.turnBalance,0,-1,1)*(1-rest)*(1-pounce);
+    result.tailYaw-=result.turnBalance*(fox?0.19:0.018);
+    result.tailCurl-=result.turnBalance*(fox?0.12:0);
+    if(fox)result.tailCurl+=ecoMeadowFoxBrushFollow(pose,reduced).curl;
+    result.headRoll-=result.turnBalance*(fox?0.035:0.025);
+    result.headRoll+=result.listenTilt;
+    result.earLeft=ecoWebNumber(pose.earLeft,0,-0.7,0.7);result.earRight=ecoWebNumber(pose.earRight,0,-0.7,0.7);
+    result.earTilt=ecoWebNumber(pose.earTilt,0,-0.1,0.5)+(rabbit?Math.abs(wave)*stride*0.045+headFeed*0.52:0);
+    var followRest=Math.max(0,Math.min(1,(rest-0.10)/0.40)),followFeed=Math.max(0,Math.min(1,(headFeed-0.65)/0.20));
+    followRest=1-followRest*followRest*(3-2*followRest);followFeed=1-followFeed*followFeed*(3-2*followFeed);
+    var earFollowWeight=rabbit&&rest<=0.55&&pounce<=0.01?(1-rest)*(1-pounce)*followRest*followFeed*ecoMeadowRabbitEarGround(clean):0;
+    result.earFollowPitch=ecoWebNumber(pose.earFollowPitch,0,-0.065,0.065)*earFollowWeight;result.earFollowYaw=ecoWebNumber(pose.earFollowYaw,0,-0.045,0.045)*earFollowWeight;
+    result.earTilt+=result.earFollowPitch;result.earLeft+=result.earFollowYaw;result.earRight+=result.earFollowYaw;
+    if(rabbit){var pinnaFocus=ecoMeadowRabbitPinnaFocus(pose,reduced);result.earLeft+=pinnaFocus.left;result.earRight+=pinnaFocus.right;}
+    // Secondary motion follows recorded values, so seek, pause and reduced
+    // motion remain exact. Grazing drives a small chewing jaw, never the paws.
+    var recordedClock=Number.isFinite(pose.activity)?ecoWebNumber(pose.activity,0,0,1000):null;
+    var chew=Math.sin((recordedClock===null?forage*38:recordedClock*12)+clean.phase*1.7);
+    var blink=Math.pow(Math.max(0,Math.cos((recordedClock===null?cycle*0.17+forage*3:recordedClock*1.25)+clean.phase*0.42+2.17)),28);
+    var chewing=rabbit&&pose.state==='Grazing'?feed:0;
+    result.jawOpen=chewing*(0.022+0.025*(chew*0.5+0.5));
+    result.jawSide=chewing*chew*0.022;
+    result.eyeOpen=Math.max(0.08,1-blink*(0.92-0.20*rest)-rest*0.18);
+    var settle=ecoMeadowMammalPosture(id,clean).settle,breath=Math.sin((recordedClock===null?0:recordedClock)*(3.2-1.5*settle)+clean.phase*1.3)*(0.010+settle*0.004);
+    result.ribScaleY=1-settle*0.035+breath;result.ribScaleZ=1+settle*0.025+breath*0.65;
+    if(rabbit){var landingTorso=ecoMeadowRabbitLandingTorso(clean,reduced);result.ribScaleY*=landingTorso.scaleY;result.ribScaleZ*=landingTorso.scaleZ;}
+    var opposite=ecoMeadowFootPose(id,clean,false,1);result.ribRoll=fox?(fore.lift-opposite.lift)*0.28*(1-rest)*(1-pounce):0;
+    return result;
+  }
+
+  // Camera framing uses the current head pose rather than its last drawn matrix.
+  // The local point lies inside the skull; it changes the view, not the animal.
+  function ecoMeadowMammalHeadFocus(id,pose,index,reduced) {
+    if(['foxes','rabbits'].indexOf(id)<0||!pose||!Number.isInteger(index)||index<0||index>15||![pose.x,pose.z,pose.yaw,pose.altitude].every(Number.isFinite))return null;
+    pose=Object.assign({},pose,{distance:ecoWebNumber(pose.distance,0,0,1000),phase:ecoWebNumber(pose.phase,0,-1000,1000),stride:ecoWebNumber(pose.stride,0,0,1),moving:ecoWebNumber(pose.moving,0,0,2),rest:ecoWebNumber(pose.rest,0,0,1),crouch:ecoWebNumber(pose.crouch,0,0,1),pounce:ecoWebNumber(pose.pounce,0,0,1),forage:ecoWebNumber(pose.forage,0,0,1)});
+    var fox=id==='foxes',art=ecoMeadowMammalArticulation(id,pose,reduced),posture=ecoMeadowMammalPosture(id,pose),local=fox?[0.17,0.055,0]:[0.075,0.025,0];
+    // THREE's XYZ Euler applies local Z, then Y, then X to the point.
+    var cp=Math.cos(art.headPitch),sp=Math.sin(art.headPitch),cy=Math.cos(art.headYaw),sy=Math.sin(art.headYaw),cr=Math.cos(art.headRoll),sr=Math.sin(art.headRoll);
+    var x=cp*local[0]-sp*local[1],y=sp*local[0]+cp*local[1],z=-sy*x;
+    x=cy*x;var priorY=y;y=cr*y-sr*z;z=sr*priorY+cr*z;
+    x+=0.24+art.headReach;y+=(fox?0.58:0.4)-art.headDrop;
+    var size=(fox?1:0.86)*(0.94+(index%5)*0.028);x*=size;y*=size;z*=size;
+    if(fox){var pitch=-(pose.pounce||0)*0.12,c=Math.cos(pitch),s=Math.sin(pitch),beforeX=x;x=c*x-s*y;y=s*beforeX+c*y;}
+    y+=posture.drop;var bearing=Math.cos(pose.yaw),turn=Math.sin(pose.yaw);
+    return {point:[pose.x+bearing*x+turn*z,ecoMeadowGroundHeight(pose.x,pose.z)+pose.altitude+y,pose.z-turn*x+bearing*z],local:local};
+  }
+  window.StemLab.ecosystemFoodWeb.headFocus=ecoMeadowMammalHeadFocus;
+
+  // Restrained eye fixation illustrates existing prey or crossing attention. The
+  // small iris motion stays inside the fixed globe and aperture; it is not a
+  // sight, emotion, hearing or capture model and never changes an action.
+  // Display-only provenance is private to blendPose. Raw recordings retain
+  // their exact bearing checks; interpolated roots must not be mistaken for
+  // a fresh sampled decision. Weak keys also avoid keeping preview poses alive.
+  var ECO_MEADOW_FOX_EYE_DISPLAY=new WeakMap();
+  function ecoMeadowFoxEyeSignature(pose) {
+    if(!pose)return [];
+    var a=pose.attention||{},s=pose.preyCueSnapshot||{};
+    var values=[pose.active,pose.state,pose.x,pose.z,pose.yaw,pose.headTurn,pose.eyeAim,pose.rest,pose.pounce,pose.huntStage,pose.prey,pose.preyIndex,pose.preyDistance,!!pose.searchCue,!!pose.breakoffCue,a.kind,a.id,a.index,a.x,a.z,a.bearing,a.turn,s.id,s.index,s.x,s.z];
+    if(a.kind==='crossing'){
+      var c=ecoMeadowFoxCrossingCue(pose.crossingCue),p=pose.peerAvoidance||{};
+      values=values.concat([pose.crossing,pose.crossingIndex,pose.crossingDistance,pose.crossingLook,pose.moving,!!pose.listenCue,c?JSON.stringify(c):null,p.id,p.index,p.source,p.envelope,p.x,p.z,p.nextX,p.nextZ,p.fraction,p.requestedDistance,p.allowedDistance,p.radius]);
+    }
+    return values;
+  }
+  function ecoMeadowFoxEyeSignatureMatches(pose,saved) {
+    var values=ecoMeadowFoxEyeSignature(pose);return values.length===saved.length&&values.every(function(value,index){return Object.is(value,saved[index]);});
+  }
+  function ecoMeadowFoxEyeBlend(a,b,alpha,out) {
+    // Even rejected intervals need a neutral channel: otherwise a stationary
+    // prior sample could pass raw validation after the next cue disappeared.
+    var entry={valid:false};ECO_MEADOW_FOX_EYE_DISPLAY.set(out,entry);
+    var from=ecoMeadowFoxEyeTarget(a),to=ecoMeadowFoxEyeTarget(b);
+    if(from&&to&&(from.id==='foxes'||to.id==='foxes')){
+      var before=ecoMeadowFoxCrossingCue(a.crossingCue),after=ecoMeadowFoxCrossingCue(b.crossingCue);
+      if(!before||!after||before.index!==after.index||before.receiverIndex!==after.receiverIndex||before.startStep!==after.startStep||after.sourceStep!==before.sourceStep+1||after.age!==before.age+1)return;
+    }
+    if(!from||!to||from.id!==to.id||from.index!==to.index||!Number.isFinite(alpha)||alpha<=0||alpha>=1||![a.eyeAim,b.eyeAim,out.eyeAim,out.x,out.z,out.yaw,out.headTurn,out.rest,out.pounce].every(Number.isFinite)||Math.abs(a.eyeAim)>1||Math.abs(b.eyeAim)>1||Math.abs(out.eyeAim)>1)return;
+    var amount=a.eyeAim+(b.eyeAim-a.eyeAim)*alpha;if(Math.abs(out.eyeAim-amount)>1e-12)return;
+    Object.assign(entry,{valid:true,alpha:alpha,amount:amount,from:from,to:to,a:a,b:b,aSignature:ecoMeadowFoxEyeSignature(a),bSignature:ecoMeadowFoxEyeSignature(b),signature:ecoMeadowFoxEyeSignature(out)});
+  }
+  function ecoMeadowFoxEyeDisplay(pose) {
+    var entry=ECO_MEADOW_FOX_EYE_DISPLAY.get(pose);
+    if(!entry||!entry.valid||!ecoMeadowFoxEyeSignatureMatches(pose,entry.signature)||!ecoMeadowFoxEyeSignatureMatches(entry.a,entry.aSignature)||!ecoMeadowFoxEyeSignatureMatches(entry.b,entry.bSignature))return null;
+    return entry;
+  }
+  // A passing fox may already be the recorded head/ear attention target.
+  // Follow that same current clearance cue with the existing eye layers;
+  // no extra animal, sensory decision or movement is generated here.
+  function ecoMeadowFoxCrossingEyeTarget(pose) {
+    var a=pose&&pose.attention,c=pose&&ecoMeadowFoxCrossingCue(pose.crossingCue);
+    if(!pose||pose.active!==true||pose.state!=='Searching'||pose.huntStage||pose.searchCue||pose.breakoffCue||pose.listenCue||!c||!a||a.kind!=='crossing'||a.id!=='foxes'||a.index!==c.index||pose.crossing!=='foxes'||pose.crossingIndex!==c.index||pose.crossingDistance!==c.distance||a.x!==c.x||a.z!==c.z)return null;
+    if(![pose.x,pose.z,pose.yaw,pose.headTurn,pose.rest,pose.pounce,pose.moving,pose.crossingLook,a.bearing,a.turn].every(Number.isFinite)||Math.abs(pose.x)>=1000||Math.abs(pose.z)>=1000||Math.abs(pose.headTurn)>0.6||pose.rest<0||pose.rest>0.10||pose.pounce<0||pose.pounce>0.01||pose.moving<0||pose.moving>2||pose.crossingLook<=0||pose.crossingLook>1||Math.abs(a.bearing)>Math.PI+1e-10||Math.abs(a.turn)>0.42+1e-10||pose.preyDistance!=null&&(!Number.isFinite(pose.preyDistance)||pose.preyDistance<6))return null;
+    if(Math.abs(c.receiverMovement-pose.moving)>1e-8||Math.abs(Math.hypot(c.x-pose.x,c.z-pose.z)-c.distance)>1e-8)return null;
+    var peer=pose.peerAvoidance;
+    if(c.stepKind==='unmarked'){if(peer)return null;}
+    else if(!peer||peer.id!=='foxes'||peer.index!==c.index||peer.source!=='committed-step'||peer.envelope!=='head-torso'||peer.x!==c.previousX||peer.z!==c.previousZ||peer.nextX!==c.x||peer.nextZ!==c.z||peer.fraction!==c.fraction||peer.requestedDistance!==c.requestedDistance||peer.allowedDistance!==c.allowedDistance||peer.radius!==c.radius)return null;
+    var dx=c.x-pose.x,dz=c.z-pose.z;if(Math.hypot(dx,dz)<1e-6)return null;
+    var bearing=Math.atan2(-dz,dx)-pose.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+    if(Math.abs(Math.atan2(Math.sin(bearing-a.bearing),Math.cos(bearing-a.bearing)))>1e-8||Math.abs(a.turn-Math.max(-0.42,Math.min(0.42,a.bearing))*pose.crossingLook)>1e-8)return null;
+    var residual=Math.atan2(Math.sin(a.bearing-pose.headTurn),Math.cos(a.bearing-pose.headTurn)),front=Math.max(0,Math.cos(residual));
+    return {id:'foxes',index:c.index,x:c.x,z:c.z,residual:residual,amount:Math.sin(Math.max(-0.8,Math.min(0.8,residual)))/Math.sin(0.8)*front*pose.crossingLook};
+  }
+  function ecoMeadowFoxEyeTarget(pose) {
+    if(pose&&pose.attention&&pose.attention.kind==='crossing')return ecoMeadowFoxCrossingEyeTarget(pose);
+    if(!pose||pose.active!==true||['Listening','Tracking prey','Stalking','Preparing to pounce'].indexOf(pose.state)<0||pose.searchCue||pose.breakoffCue||pose.huntStage&&pose.huntStage!=='prepare'||ecoWebNumber(pose.rest,0,0,1)>0.1||ecoWebNumber(pose.pounce,0,0,1)>0.01)return null;
+    var a=pose.attention,s=pose.preyCueSnapshot;
+    if(!a||a.kind!=='prey'||!s||a.id!==pose.prey||s.id!==a.id||a.index!==pose.preyIndex||s.index!==a.index||!Number.isInteger(a.index)||a.index<0||a.index>=16||!ECO_WEB_LINKS.some(function(link){return link.consumer==='foxes'&&link.food===a.id;})||![pose.x,pose.z,pose.yaw,pose.headTurn,pose.rest,pose.pounce,a.x,a.z,a.bearing,a.turn,s.x,s.z,pose.preyDistance].every(Number.isFinite)||Math.abs(pose.x)>=1000||Math.abs(pose.z)>=1000||Math.abs(a.x)>=1000||Math.abs(a.z)>=1000||a.x!==s.x||a.z!==s.z||pose.rest<0||pose.rest>1||pose.pounce<0||pose.pounce>1||pose.preyDistance<0||pose.preyDistance>100||Math.abs(pose.headTurn)>0.6||Math.abs(a.bearing)>Math.PI+1e-10||Math.abs(a.turn)>0.48+1e-10)return null;
+    var dx=a.x-pose.x,dz=a.z-pose.z;if(Math.hypot(dx,dz)<1e-6)return null;
+    var bearing=Math.atan2(-dz,dx)-pose.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+    // The attention rule can keep its chosen shoulder at the rear seam. Eyes
+    // are neutral there: the bounded fixation cannot look behind the skull.
+    if(Math.abs(Math.atan2(Math.sin(bearing-a.bearing),Math.cos(bearing-a.bearing)))>1e-8)return null;
+    var residual=Math.atan2(Math.sin(a.bearing-pose.headTurn),Math.cos(a.bearing-pose.headTurn)),front=Math.max(0,Math.cos(residual));
+    var amount=Math.sin(Math.max(-0.8,Math.min(0.8,residual)))/Math.sin(0.8)*front;
+    return {id:a.id,index:a.index,x:a.x,z:a.z,residual:residual,amount:amount};
+  }
+  function ecoMeadowFoxEyeAim(previous,current) {
+    var target=ecoMeadowFoxEyeTarget(current);if(!target)return 0;
+    var prior=ecoWebNumber(previous&&previous.active===true?previous.eyeAim:0,0,-1,1),value=target.amount;
+    if(target.id==='foxes'){
+      var before=ecoMeadowFoxEyeTarget(previous);
+      if(!before||before.id!=='foxes'||before.index!==target.index||previous.crossingCue.startStep!==current.crossingCue.startStep)prior=0;
+    }else if(previous&&previous.attention&&previous.attention.kind==='crossing')prior=0;
+    return prior+Math.max(-0.22,Math.min(0.22,value-prior));
+  }
+  function ecoMeadowFoxEyeFixation(pose,side,reduced) {
+    if(side!==-1&&side!==1)return null;
+    var blended=!!pose&&ECO_MEADOW_FOX_EYE_DISPLAY.has(pose),display=!reduced&&blended?ecoMeadowFoxEyeDisplay(pose):null;
+    var cue=reduced?null:blended?(display?Object.assign({},display.from):null):ecoMeadowFoxEyeTarget(pose),amount=cue?(display?display.amount:ecoWebNumber(pose.eyeAim,0,-1,1)):0,offset=side*amount*0.0032;
+    var homes={iris:[0.005,0,side*0.013],pupil:[0.007,0.001,side*0.016],glint:[0.009,0.005,side*0.019]},positions={};
+    // Project each layer along the unchanged dark-eye ellipsoid. Retaining
+    // its original surface offset keeps iris, pupil and glint seated together.
+    function front(x,y){return Math.sqrt(Math.max(0,1-Math.pow((x-0.003)/0.021,2)-Math.pow(y/0.013,2)));}
+    Object.keys(homes).forEach(function(name){var home=homes[name],x=home[0]+offset,z=home[2]+side*0.007*(front(x,home[1])-front(home[0],home[1]));positions[name]=[x,home[1],z];});
+    return {amount:amount,offset:offset,cue:cue,positions:positions,source:cue?(display?'interpolated':'recorded'):'neutral',alpha:display?display.alpha:null,endpoints:display?[Object.assign({},display.from),Object.assign({},display.to)]:null};
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{foxEyeTarget:ecoMeadowFoxEyeTarget,foxEyeAim:ecoMeadowFoxEyeAim,foxEyeFixation:ecoMeadowFoxEyeFixation});
+
+  // Joint angles illustrate the recorded action; they never feed back into
+  // navigation or population values. Hops use distance, so pausing a bird also
+  // pauses its feet. Wingbeat timing uses the same replay clock as the scene.
+  function ecoMeadowBirdArticulation(id,pose,time,reduced) {
+    pose=pose||{};
+    var owl=id==='owls',bird=owl||id==='bluetits';
+    var result={bodyLift:0,bodyPitch:0,headPitch:0,headRoll:0,headDrop:0,headReach:0,shoulder:0,wrist:0,wingSpread:owl?1:0,tailPitch:0,tailFan:owl?0.08:0.025,footLift:0,footReach:0,contact:!owl,phase:0,mode:owl?'glide':'rest'};
+    if(!bird||reduced)return result;
+    var active=pose.active!==false,state=typeof pose.state==='string'?pose.state:'',moving=active?ecoWebNumber(pose.moving,0,0,1):0;
+    var distance=ecoWebNumber(pose.distance,0,0,1000),seed=ecoWebNumber(pose.phase,0,-1000,1000),forage=active?ecoWebNumber(pose.forage,0,0,1):0;
+    if(owl){
+      var flap=active?ecoWebNumber(pose.wingFlap,0.12,0,1):0,bank=ecoWebNumber(pose.bank,0,-0.25,0.25);
+      var cycle=ecoWebNumber(time,0,0,6000)*4.8+seed,stroke=Math.sin(cycle),up=Math.max(0,Math.sin(cycle-0.65));
+      result.phase=((cycle/(Math.PI*2))%1+1)%1;result.mode=flap>0.4?'flap':'glide';
+      result.shoulder=0.045+stroke*0.43*flap;
+      result.wrist=0.035-Math.sin(cycle-0.65)*0.23*flap;
+      result.wingSpread=1-up*0.10*flap;
+      result.bodyLift=Math.sin(cycle-0.5)*0.015*flap;
+      result.bodyPitch=-0.018+Math.sin(cycle-0.35)*0.024*flap;
+      result.headPitch=-result.bodyPitch;result.headRoll=-bank*0.85;
+      result.tailPitch=-result.bodyPitch*0.8;result.tailFan=0.08+Math.abs(bank)*0.7+up*0.025*flap;
+      result.footLift=0.03;result.footReach=-0.045;
+      return result;
+    }
+    var escape=state==='Moving away',hop=active&&moving>0.015;
+    result.phase=((distance/0.24)%1+1)%1;
+    if(hop){
+      var phase=result.phase,air=phase>0.16+1e-10&&phase<0.84-1e-10,t=Math.max(0,Math.min(1,(phase-0.16)/0.68));
+      var motion=Math.min(1,moving/0.3);motion=motion*motion*(3-2*motion);
+      var arc=air?Math.sin(Math.PI*t)*motion:0,landing=(phase>=0.84?Math.sin((phase-0.84)/0.16*Math.PI):phase<=0.16?Math.sin(phase/0.16*Math.PI):0)*motion;
+      var smooth=t*t*(3-2*t);
+      result.mode=escape?'escape':'hop';result.contact=!air;
+      result.bodyLift=arc*(escape?0.082:0.065)-landing*0.012;
+      result.bodyPitch=(air?Math.sin(Math.PI*t*2)*0.065*motion:-landing*0.045);
+      result.footLift=arc*0.021;
+      // The stance section offsets forward travel; both feet launch together.
+      result.footReach=air?(-0.048+smooth*0.096)*motion:phase<=0.16?-phase*0.3:(1-phase)*0.3;
+      result.shoulder=-(escape?0.22:0.045)*arc;result.wrist=arc*(escape?0.15:0.035);
+      result.wingSpread=arc*(escape?0.24:0.035);
+      result.tailPitch=-result.bodyPitch*0.8-arc*0.05;result.tailFan=0.025+arc*(escape?0.095:0.025);
+    }else{
+      result.mode=state==='Pecking'?'feed':'rest';
+      result.bodyLift=-forage*0.014;result.bodyPitch=-forage*0.07;
+      result.tailPitch=forage*0.07;
+    }
+    // Forage already eases between recorded actions. Keep that recovery when
+    // Pecking ends, without bowing the neck at the lower preening target.
+    var bowWeight=Math.max(0,Math.min(1,(forage-0.3)/0.25)),bow=forage*bowWeight*bowWeight*(3-2*bowWeight);
+    result.bodyPitch-=bow*0.15;
+    result.headPitch=-result.bodyPitch*0.75-bow*0.765;
+    result.headDrop=bow*0.15;result.headReach=bow*0.035;
+    return result;
   }
 
   function ecoMeadowFootSite(id,pose,index,hind,side) {
@@ -786,7 +1985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var slope=Math.max(-0.25,Math.min(0.25,Math.atan((surface(site.x+cy*span,site.z-sn*span)-surface(site.x-cy*span,site.z+sn*span))/(2*span))));
     var radius=size*Math.hypot((hind?0.175:0.12)*Math.sin(slope),(hind?0.05:0.045)*Math.cos(slope));
     var nominalY=(hind?0.16:0.155)+foot.height-0.1*Math.cos(foot.angle);
-    var targetY=(surface(site.x,site.z)-surface(pose.x,pose.z)+radius+foot.lift*size+0.002-(pose.altitude==null?0.025:pose.altitude)-posture.drop)/size;
+    var targetY=(surface(site.x,site.z)-surface(pose.x,pose.z)+radius+foot.lift*size+posture.flightLift+0.002-(pose.altitude==null?0.025:pose.altitude)-posture.drop)/size;
     return {x:cy*dx-sn*dz,y:targetY-nominalY,z:sn*dx+cy*dz,pawRotation:slope-foot.angle};
   }
 
@@ -911,20 +2110,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     return {x:pose.x+ux*allowed,z:pose.z+uz*allowed,yaw:yaw,distance:allowed,navigation:navigation};
   }
 
+  // Head/torso room for same-species visual path clearance. This separate
+  // circular envelope follows the rendered animal scale; static scenery
+  // navigation retains its existing smaller ground radius. Tail, whiskers
+  // and ears are not physical colliders, and flight is handled separately.
+  function ecoMeadowPeerRadius(id,index) {
+    if(!Number.isInteger(index)||index<0||index>=16)return 0;
+    return (id==='rabbits'?0.50*0.86:id==='foxes'?0.70:0)*(0.94+(index%5)*0.028);
+  }
+
+  // A deterministic visual clearance rule for grounded representatives of
+  // the same species. Earlier representatives reserve their recorded step;
+  // later ones can shorten their step while keeping the chosen turn. The
+  // order is bookkeeping, not dominance. It adds no sensing, action state,
+  // feeding change or biomass feedback, and never redirects an airborne fox.
+  function ecoMeadowPeerStep(id,index,old,proposal,previous,committed,count) {
+    var result=Object.assign({},proposal,{peerAvoidance:null});
+    if(['foxes','rabbits'].indexOf(id)<0||!Number.isInteger(index)||index<0||index>=16||!Number.isInteger(count)||count<1||count>16||index>=count||!old||!proposal||![old.x,old.z,proposal.x,proposal.z,proposal.yaw].every(Number.isFinite)||!Array.isArray(previous)||!Array.isArray(committed))return result;
+    var dx=proposal.x-old.x,dz=proposal.z-old.z,travel=Math.hypot(dx,dz);
+    if(travel<1e-12||proposal.huntStage==='airborne'||old.huntStage==='airborne'||id==='rabbits'&&ecoMeadowRabbitBound(old).flight&&(old.stride||0)>0.015)return result;
+    var fraction=1,blocker=null,constraints=[];
+    function safe(q,nx,nz,radius,f){
+      var rx=old.x-q.x,rz=old.z-q.z,vx=dx*f-nx,vz=dz*f-nz,d2=rx*rx+rz*rz,r2=radius*radius;
+      if(d2<r2-1e-10)return rx*vx+rz*vz>=-1e-12;
+      var v2=vx*vx+vz*vz,t=v2?Math.max(0,Math.min(1,-(rx*vx+rz*vz)/v2)):0;
+      return Math.hypot(rx+t*vx,rz+t*vz)>=radius-1e-10;
+    }
+    // A later peer can always stay at its old point: uncommitted peers are
+    // treated as stationary until their own step is selected. For committed
+    // peers, test relative motion through the entire recorded segment.
+    for(var j=0;j<count;j++){
+      if(j===index)continue;
+      var q=previous[j],next=j<index?committed[j]:null;
+      if(!q||![q.x,q.z].every(Number.isFinite)||q.huntStage==='airborne'||id==='rabbits'&&ecoMeadowRabbitBound(q).flight&&(q.stride||0)>0.015||next&&next.huntStage==='airborne'||next&&next.active!==true)continue;
+      var nx=next?next.x-q.x:0,nz=next?next.z-q.z:0;
+      if(![nx,nz].every(Number.isFinite))continue;
+      var selfRadius=ecoMeadowPeerRadius(id,index),peerRadius=ecoMeadowPeerRadius(id,j),radius=selfRadius+peerRadius+0.025;
+      constraints.push({q:q,nx:nx,nz:nz,radius:radius,peer:{id:id,index:j,x:q.x,z:q.z,nextX:next?next.x:q.x,nextZ:next?next.z:q.z,radius:radius,selfRadius:selfRadius,peerRadius:peerRadius,envelope:'head-torso',source:next?'committed-step':'previous-position'}});
+    }
+    // A crossing can be safe at full speed and unsafe at a shorter step.
+    // Restart after each reduction: another peer may have selected exactly
+    // that intermediate fraction. Bound the work, then verify every peer.
+    var reductions=0,cursor=0;
+    while(cursor<constraints.length&&reductions<32){
+      var constraint=constraints[cursor],q=constraint.q,nx=constraint.nx,nz=constraint.nz,radius=constraint.radius;
+      if(safe(q,nx,nz,radius,fraction)){cursor++;continue;}
+      // The stationary alternative is guaranteed only when the earlier peer
+      // was grounded. A pre-existing or newly grounded overlap may separate,
+      // but this rule cannot resolve it with a positional correction.
+      var low=0,high=fraction;
+      if(safe(q,nx,nz,radius,0))for(var k=0;k<26;k++){
+        var mid=(low+high)*0.5;
+        if(safe(q,nx,nz,radius,mid))low=mid;else high=mid;
+      }
+      fraction=low<fraction?low:0;blocker=constraint.peer;reductions++;cursor=0;
+    }
+    var unsafe=constraints.find(function(c){return !safe(c.q,c.nx,c.nz,c.radius,fraction);});
+    if(unsafe){
+      // Earlier grounded reservations leave the old point available. If the
+      // bounded solve cannot certify its fraction, prefer that zero step to
+      // an unchecked intermediate step. Existing/airborne overlaps still
+      // receive no positional correction or universal collision guarantee.
+      fraction=0;blocker=Object.assign({},unsafe.peer,{fallback:true});
+    }
+    if(blocker){
+      result.x=old.x+dx*fraction;result.z=old.z+dz*fraction;
+      result.distance=travel*fraction;
+      result.peerAvoidance=Object.assign(blocker,{fraction:fraction,requestedDistance:travel,allowedDistance:result.distance});
+    }
+    return result;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{peerStep:ecoMeadowPeerStep,peerRadius:ecoMeadowPeerRadius});
+
   // Orient the head toward the same prior-frame cue that drove this decision.
   // These restrained display angles add no sensing or feeding capability.
-  function ecoMeadowAttention(id,state,pose,prey,threat) {
+  function ecoMeadowAttention(id,state,pose,prey,threat,social,spacing,neighborLook,crossing) {
     var hunter=id==='foxes',mammal=hunter||id==='rabbits'||id==='voles';
     if(!mammal||!pose.active)return null;
     var watching=hunter?['Listening','Tracking prey','Stalking','Preparing to pounce'].indexOf(state)>=0:['Alert','Retreating'].indexOf(state)>=0;
-    var cue=watching?(hunter?prey:threat&&threat.distance<3.1?threat:null):null;
+    var socialWatching=id==='rabbits'&&state==='Alert'&&social;
+    var spacingWatching=id==='rabbits'&&state==='Giving space'&&spacing;
+    var neighborWatching=id==='rabbits'&&state==='Grazing'?ecoMeadowRabbitNeighborLookCue(neighborLook):null;
+    var crossingWatching=hunter&&state==='Searching'?ecoMeadowFoxCrossingCue(crossing):null;
+    var cue=spacingWatching?spacing:socialWatching?social:watching?(hunter?prey:threat&&threat.distance<3.1?threat:null):neighborWatching||crossingWatching;
     if(!cue||Math.hypot(cue.x-pose.x,cue.z-pose.z)<1e-6)return null;
     var bearing=Math.atan2(-(cue.z-pose.z),cue.x-pose.x)-pose.yaw;
     bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
     // Keep the same shoulder near the rear seam instead of alternating sides.
     if(Math.abs(bearing)>Math.PI-0.15&&Math.abs(pose.headTurn||0)>0.04)bearing=Math.abs(bearing)*(pose.headTurn>0?1:-1);
-    var limit=state==='Retreating'?0.28:hunter?0.48:id==='rabbits'?0.42:0.50;
-    return {kind:hunter?'prey':'threat',id:cue.id,index:cue.index,x:cue.x,z:cue.z,bearing:bearing,turn:Math.max(-limit,Math.min(limit,bearing))};
+    var limit=crossingWatching?0.42:neighborWatching?0.32:state==='Giving space'?0.24:state==='Retreating'?0.28:hunter?0.48:id==='rabbits'?0.42:0.50;
+    return {kind:spacingWatching?'spacing':socialWatching?'social':neighborWatching?'neighbor':crossingWatching?'crossing':hunter?'prey':'threat',id:cue.id,index:cue.index,x:cue.x,z:cue.z,bearing:bearing,turn:Math.max(-limit,Math.min(limit,bearing))*(crossingWatching?ecoWebNumber(pose.crossingLook,0,0,1):1)};
   }
 
   // Seeded per-individual choices keep every timeline exactly replayable.
@@ -941,6 +2217,319 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     return {x:x,z:z};
   });
   var ECO_MEADOW_ROAM={rabbits:{radius:2.2,arrive:0.3,space:0.8},voles:{radius:1.3,arrive:0.25,space:0.6},foxes:{radius:3.6,arrive:0.4,space:2.4},owls:{radius:4.5,arrive:0.8,space:2.8},bluetits:{radius:1.6,arrive:0.25,space:0.9},caterpillars:{radius:0.45,arrive:0.12,space:0.3}};
+
+  // A nearby rabbit can pause when another directly alarmed rabbit reacts.
+  // This local illustrative cue is not a calibrated model of sound propagation.
+  // Require a live predator and a direct source so alarm cannot self-propagate.
+// Vegetation can provide concealment near feeding ground (IUCN European
+  // rabbit assessment; Mammal Society). The distances below are presentation
+  // choices, not a measured sight line, shelter capacity or survival model.
+  // Keep the exact indexed destination so a recorded refuge decision can be
+  // inspected, replayed and cleared when that visible patch disappears.
+  function ecoMeadowRefugeTarget(id,index,origin,threat,previous,counts,cover) {
+    if(id!=='rabbits'||!Number.isInteger(index)||index<0||index>=16||!origin||origin.active!==true||![origin.x,origin.z].every(Number.isFinite)||!previous||!counts||!Number.isInteger(counts.rabbits)||index>=counts.rabbits||!Number.isFinite(cover)||cover<=0||cover>80)return null;
+    if(!threat||['foxes','owls'].indexOf(threat.id)<0||!Number.isInteger(threat.index)||threat.index<0||!Number.isInteger(counts[threat.id])||threat.index>=counts[threat.id]||!Array.isArray(previous[threat.id]))return null;
+    var predator=previous[threat.id][threat.index];
+    if(!predator||predator.active!==true||![predator.x,predator.z].every(Number.isFinite))return null;
+    var dx=origin.x-predator.x,dz=origin.z-predator.z,threatDistance=Math.hypot(dx,dz),awayLength=threatDistance||1;
+    dx/=awayLength;dz/=awayLength;
+    function candidate(k){
+      if(!Number.isInteger(k)||k<0||k>=ECO_MEADOW_REFUGE_SPOTS.length||cover<=k*10)return null;
+      var s=ECO_MEADOW_REFUGE_SPOTS[k],sx=s.x-origin.x,sz=s.z-origin.z,d=Math.hypot(sx,sz);
+      return d<5.5&&(d<0.5||(sx*dx+sz*dz)>-0.25*d)?{index:k,x:s.x,z:s.z,d:d}:null;
+    }
+    var prior=origin.refugeCue,shelter=prior&&prior.id==='refuge'?candidate(prior.index):null;
+    if(!shelter)ECO_MEADOW_REFUGE_SPOTS.forEach(function(_,k){var s=candidate(k);if(s&&(!shelter||s.d<shelter.d))shelter=s;});
+    if(!shelter)return null;
+    return {id:'refuge',index:shelter.index,x:shelter.x,z:shelter.z,decisionDistance:shelter.d,distance:shelter.d,
+      stage:shelter.d<0.45&&threatDistance>1.2?'at-cover':'approaching',threatId:threat.id,threatIndex:threat.index,threatDistance:threatDistance};
+  }
+
+  // A fox can release a rabbit target that was recorded waiting at an active
+  // thicket. A rabbit merely approaching cover is still visible. Recheck the
+  // exact patch and the animal's actual position every sample; a very close
+  // fox can still detect the rabbit. This never removes an animal or records
+  // a successful escape/capture, and does not affect food-web calculations.
+  function ecoMeadowRefugeConceals(id,index,candidate,hunter,cover) {
+    if(id!=='rabbits'||!Number.isInteger(index)||index<0||index>=16||!candidate||candidate.active!==true||candidate.state!=='Alert'||!hunter||hunter.active!==true||![candidate.x,candidate.z,hunter.x,hunter.z].every(Number.isFinite)||!Number.isFinite(cover)||cover<=0||cover>80)return false;
+    var cue=candidate.refugeCue;
+    if(!cue||cue.id!=='refuge'||cue.stage!=='at-cover'||!Number.isInteger(cue.index)||cue.index<0||cue.index>=ECO_MEADOW_REFUGE_SPOTS.length||cover<=cue.index*10)return false;
+    var spot=ECO_MEADOW_REFUGE_SPOTS[cue.index];
+    return cue.x===spot.x&&cue.z===spot.z&&Math.hypot(candidate.x-spot.x,candidate.z-spot.z)<0.45&&Math.hypot(candidate.x-hunter.x,candidate.z-hunter.z)>1.2;
+  }
+
+  function ecoMeadowSocialAlarm(id,index,origin,previous,counts) {
+    if(id!=='rabbits'||!Number.isInteger(index)||index<0||!origin||!Number.isFinite(origin.x)||!Number.isFinite(origin.z)||origin.active===false||!previous||!counts)return null;
+    var rabbits=previous.rabbits,count=counts.rabbits;
+    if(!Array.isArray(rabbits)||!Number.isInteger(count)||index>=count)return null;
+    var best=null;
+    for(var i=0;i<Math.min(rabbits.length,count);i++){
+      if(i===index)continue;
+      var source=rabbits[i];
+      if(!source||source.active!==true||!Number.isFinite(source.x)||!Number.isFinite(source.z)||source.directAlarm!==true||source.socialCue!=null||['Alert','Retreating'].indexOf(source.state)<0)continue;
+      var threatId=source.threat,threatIndex=source.threatIndex;
+      if(['foxes','owls'].indexOf(threatId)<0||!Number.isInteger(threatIndex)||threatIndex<0||!Number.isInteger(counts[threatId])||threatIndex>=counts[threatId]||!Array.isArray(previous[threatId]))continue;
+      var threat=previous[threatId][threatIndex];
+      if(!threat||threat.active!==true||!Number.isFinite(threat.x)||!Number.isFinite(threat.z))continue;
+      var distance=Math.hypot(source.x-origin.x,source.z-origin.z);
+      if(distance<=1.6&&(!best||distance<best.distance))best={id:'rabbits',index:i,distance:distance,threatId:threatId,threatIndex:threatIndex};
+    }
+    return best;
+  }
+
+// Foxes use movement and sound when finding prey (NPS, Species Spotlight:
+  // Red Fox). This is an illustrative movement-triggered presentation rule,
+  // not an acoustic simulation or a measured hearing range. A live nearby
+  // prey's recorded movement starts a short pause; bounded hold and cooldown
+  // keep it from replacing the hunt. Current counts invalidate removed prey.
+  function ecoMeadowFoxListening(index,old,prey,previous,counts,desired,active) {
+    var cooldown=Math.max(0,Math.min(24,Number.isInteger(old&&old.listenCooldown)?old.listenCooldown-1:0));
+    var result={action:desired,age:0,cooldown:cooldown,cue:null};
+    if(active!==true){result.cooldown=0;return result;}
+    var hadCue=old&&old.listenCue;
+    function cancel(){if(hadCue)result.cooldown=24;return result;}
+    if(!old||![old.x,old.z].every(Number.isFinite)||!Number.isInteger(index)||index<0||!previous||!counts||!Number.isInteger(counts.foxes)||index>=counts.foxes||!desired||['Stalking','Tracking prey'].indexOf(desired.state)<0)return cancel();
+    if(!prey||!Number.isInteger(prey.index)||prey.index<0||!ECO_WEB_LINKS.some(function(link){return link.consumer==='foxes'&&link.food===prey.id;})||!Number.isInteger(counts[prey.id])||prey.index>=counts[prey.id]||!Array.isArray(previous[prey.id]))return cancel();
+    var source=previous[prey.id][prey.index];
+    if(!source||source.active!==true||![source.x,source.z,source.moving].every(Number.isFinite)||source.moving<0)return cancel();
+    var distance=Math.hypot(source.x-old.x,source.z-old.z);
+    if(distance>4.5)return cancel();
+    var same=hadCue&&hadCue.id===prey.id&&hadCue.index===prey.index;
+    var age=Number.isInteger(old.listenAge)&&old.listenAge>=0?old.listenAge:0;
+    if(hadCue&&(!same||age>=7||!Number.isFinite(hadCue.onsetMovement)||hadCue.onsetMovement<0.12))return cancel();
+    if(!hadCue&&(cooldown>0||source.moving<0.12))return result;
+    age=same?age+1:0;
+    result.action={state:'Listening',speed:0,mode:'toward',forage:0};
+    result.age=age;
+    result.cue={id:prey.id,index:prey.index,distance:distance,movement:source.moving,onsetMovement:same?hadCue.onsetMovement:source.moving,age:age};
+    return result;
+  }
+
+  // A display sequence makes an existing recorded clearance event legible.
+  // It never changes an action, goal, requested step, allowed step or biomass.
+  // Lower-index committed motion is available without consulting future frames;
+  // index order is bookkeeping, not social rank or cooperation.
+  function ecoMeadowFoxCrossingCue(raw) {
+    if(!raw||raw.version!==1||raw.id!=='foxes'||!Number.isInteger(raw.index)||!Number.isInteger(raw.receiverIndex)||raw.index<0||raw.receiverIndex<=raw.index||raw.receiverIndex>=16||raw.duration!==16||!Number.isInteger(raw.age)||raw.age<0||raw.age>=16||!Number.isInteger(raw.startStep)||raw.startStep<1||!Number.isInteger(raw.sourceStep)||raw.sourceStep!==raw.startStep+raw.age||!Number.isInteger(raw.blockStep)||raw.blockStep<raw.startStep||raw.blockStep>raw.sourceStep||['orient','watch','release'].indexOf(raw.stage)<0||['shortened','held','unmarked'].indexOf(raw.stepKind)<0)return null;
+    var numeric=['x','z','previousX','previousZ','distance','movement','travel','receiverMovement','receiverTravel','onsetMovement','onsetTravel','fraction','requestedDistance','allowedDistance','radius'];
+    if(!numeric.every(function(key){return Number.isFinite(raw[key]);})||[raw.x,raw.z,raw.previousX,raw.previousZ].some(function(value){return Math.abs(value)>=1000;})||raw.distance<0||raw.distance>3||raw.movement<0||raw.movement>2||raw.travel<0||raw.travel>0.2+1e-8||Math.abs(raw.travel-raw.movement*0.1)>1e-8||raw.receiverMovement<0||raw.receiverMovement>2||raw.receiverTravel<0||Math.abs(raw.receiverTravel-raw.receiverMovement*0.1)>1e-8||raw.onsetMovement<=0.02||raw.onsetMovement>2||raw.onsetTravel<=0.002||Math.abs(raw.onsetTravel-raw.onsetMovement*0.1)>1e-8||raw.fraction<0||raw.fraction>=1||raw.requestedDistance<=0||raw.requestedDistance>0.2||raw.allowedDistance<0||raw.allowedDistance>raw.requestedDistance||Math.abs(raw.allowedDistance-raw.requestedDistance*raw.fraction)>1e-8||Math.abs(raw.radius-ecoMeadowPeerRadius('foxes',raw.index)-ecoMeadowPeerRadius('foxes',raw.receiverIndex)-0.025)>1e-10)return null;
+    if(raw.stepKind==='unmarked'){
+      if(raw.blockStep===raw.sourceStep||raw.stage==='release'&&raw.receiverTravel<=1e-9)return null;
+    }else if(raw.blockStep!==raw.sourceStep||Math.abs(raw.receiverTravel-raw.allowedDistance)>1e-8||raw.stepKind==='held'&&raw.allowedDistance>1e-9||raw.stepKind==='shortened'&&raw.allowedDistance<=1e-9||raw.stage==='release')return null;
+    var clean={version:1,id:'foxes',index:raw.index,receiverIndex:raw.receiverIndex,duration:16,age:raw.age,startStep:raw.startStep,sourceStep:raw.sourceStep,blockStep:raw.blockStep,stage:raw.stage,stepKind:raw.stepKind};numeric.forEach(function(key){clean[key]=raw[key];});return clean;
+  }
+  function ecoMeadowFoxCrossing(index,old,previous,committed,count,current) {
+    var cooldown=Math.max(0,Math.min(20,Number.isInteger(old&&old.crossingCooldown)?old.crossingCooldown-1:0)),result={cue:null,look:0,cooldown:cooldown};current=current||{};
+    function end(){if(old&&old.crossingCue)result.cooldown=20;return result;}
+    function searching(pose){return pose&&pose.active===true&&pose.state==='Searching'&&!pose.huntStage&&!pose.searchCue&&!pose.breakoffCue&&!pose.listenCue&&Number.isFinite(pose.rest)&&pose.rest>=0&&pose.rest<=0.10&&(pose.preyDistance==null||Number.isFinite(pose.preyDistance)&&pose.preyDistance>=6);}
+    if(!Number.isInteger(index)||index<1||index>=16||!Number.isInteger(count)||count<1||count>16||index>=count||!Array.isArray(previous)||!Array.isArray(committed)||!searching(old)||!searching(current)||!Number.isInteger(current.step)||current.step<1||![old.x,old.z,current.x,current.z,current.moving].every(Number.isFinite)||Math.abs(old.x)>=1000||Math.abs(old.z)>=1000||Math.abs(current.x)>=1000||Math.abs(current.z)>=1000||current.moving<0||current.moving>2)return end();
+    var receiverTravel=Math.hypot(current.x-old.x,current.z-old.z);if(Math.abs(receiverTravel-current.moving*0.1)>1e-8)return end();
+    var saved=old.crossingCue?ecoMeadowFoxCrossingCue(old.crossingCue):null,block=current.peerAvoidance,sourceIndex=saved?saved.index:block&&block.index;
+    if(old.crossingCue&&(!saved||saved.receiverIndex!==index||saved.sourceStep!==current.step-1||saved.age>=15))return end();
+    if(!Number.isInteger(sourceIndex)||sourceIndex<0||sourceIndex>=index||sourceIndex>=count)return end();
+    var prior=previous[sourceIndex],source=committed[sourceIndex];
+    if(!prior||prior.active!==true||!searching(source)||![prior.x,prior.z,source.x,source.z,source.moving].every(Number.isFinite)||[prior.x,prior.z,source.x,source.z].some(function(value){return Math.abs(value)>=1000;})||source.moving<0||source.moving>2)return end();
+    if(saved&&(saved.x!==prior.x||saved.z!==prior.z||saved.movement!==prior.moving||saved.receiverMovement!==old.moving||!Number.isFinite(old.crossingLook)||old.crossingLook<0||old.crossingLook>1||Math.abs(saved.distance-Math.hypot(prior.x-old.x,prior.z-old.z))>1e-8))return end();
+    var travel=Math.hypot(source.x-prior.x,source.z-prior.z),distance=Math.hypot(source.x-current.x,source.z-current.z);
+    if(Math.abs(travel-source.moving*0.1)>1e-8||distance>3)return end();
+    function validBlock(peer){return peer&&peer.id==='foxes'&&peer.index===sourceIndex&&peer.source==='committed-step'&&peer.envelope==='head-torso'&&[peer.x,peer.z,peer.nextX,peer.nextZ,peer.fraction,peer.requestedDistance,peer.allowedDistance,peer.radius].every(Number.isFinite)&&peer.x===prior.x&&peer.z===prior.z&&peer.nextX===source.x&&peer.nextZ===source.z&&peer.fraction>=0&&peer.fraction<1&&peer.requestedDistance>0&&peer.requestedDistance<=0.2&&peer.allowedDistance>=0&&Math.abs(peer.allowedDistance-peer.requestedDistance*peer.fraction)<1e-8&&Math.abs(peer.allowedDistance-receiverTravel)<1e-8&&Math.abs(peer.radius-ecoMeadowPeerRadius('foxes',index)-ecoMeadowPeerRadius('foxes',sourceIndex)-0.025)<1e-10;}
+    var blocked=validBlock(block);if(block&&!blocked)return end();
+    if(!saved&&(cooldown>0||!blocked||block.fraction>=0.8||source.moving<=0.02||travel<=0.002))return result;
+    var age=saved?saved.age+1:0,start=saved?saved.startStep:current.step,history=blocked?block:saved;
+    var stepKind=blocked?(block.allowedDistance<=1e-9?'held':'shortened'):'unmarked',stage=!blocked&&receiverTravel>1e-9?'release':age<2?'orient':'watch';
+    var look=ecoWebNumber(old.crossingLook,0,0,1);look=stage==='release'?Math.max(0,look-0.20):Math.min(1,look+0.40);if(look<1e-9)look=0;
+    var cue={version:1,id:'foxes',index:sourceIndex,receiverIndex:index,duration:16,age:age,startStep:start,sourceStep:current.step,blockStep:blocked?current.step:saved.blockStep,stage:stage,stepKind:stepKind,x:source.x,z:source.z,previousX:prior.x,previousZ:prior.z,distance:distance,movement:source.moving,travel:travel,receiverMovement:current.moving,receiverTravel:receiverTravel,onsetMovement:saved?saved.onsetMovement:source.moving,onsetTravel:saved?saved.onsetTravel:travel,fraction:history.fraction,requestedDistance:history.requestedDistance,allowedDistance:history.allowedDistance,radius:history.radius};
+    result.cue=ecoMeadowFoxCrossingCue(cue);result.look=result.cue?look:0;return result;
+  }
+  function ecoMeadowFoxCrossingEpisode(frames) {
+    if(!Array.isArray(frames))return null;
+    var fallback=null;
+    for(var step=1;step<frames.length;step++)for(var index=0;index<16;index++){
+      var frame=frames[step],prior=frames[step-1],pose=frame&&frame.foxes&&frame.foxes[index],cue=pose&&ecoMeadowFoxCrossingCue(pose.crossingCue),source=cue&&frame.foxes[cue.index],previous=cue&&prior&&prior.foxes&&prior.foxes[cue.index];
+      if(!pose||pose.active!==true||pose.state!=='Searching'||!cue||cue.receiverIndex!==index||cue.sourceStep!==step||!source||source.active!==true||source.state!=='Searching'||source.huntStage||!previous||previous.active!==true||cue.x!==source.x||cue.z!==source.z||cue.previousX!==previous.x||cue.previousZ!==previous.z||cue.movement!==source.moving||cue.receiverMovement!==pose.moving||!Number.isFinite(pose.crossingLook)||pose.crossingLook<0||pose.crossingLook>1||Math.abs(Math.hypot(source.x-pose.x,source.z-pose.z)-cue.distance)>1e-8)continue;
+      var hit={step:step,index:index,sourceIndex:cue.index,start:cue.startStep};if(!fallback)fallback=hit;
+      if(cue.stage==='watch'&&pose.crossingLook>=0.8)return hit;
+    }
+    return fallback;
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{foxCrossing:ecoMeadowFoxCrossing,foxCrossingCue:ecoMeadowFoxCrossingCue,foxCrossingEpisode:ecoMeadowFoxCrossingEpisode});
+
+  // A short reposition gives a nearby feeding rabbit room. The higher-index
+  // representative alone moves, solely to prevent simultaneous responses;
+  // the index is not social rank. Distances and timing are illustrative and
+  // never change food intake, biomass, habitat cover or population equations.
+  function ecoMeadowRabbitSpacing(index,old,previous,counts,food,desired,active) {
+    var cooldown=Math.max(0,Math.min(16,Number.isInteger(old&&old.spacingCooldown)?old.spacingCooldown-1:0));
+    var result={action:desired,cue:null,cooldown:cooldown},had=old&&old.spacingCue;
+    function end(){if(had)result.cooldown=16;return result;}
+    if(active!==true){result.cooldown=0;return result;}
+    if(!old||old.active!==true||![old.x,old.z].every(Number.isFinite)||!Number.isInteger(index)||index<1||index>=16||!counts||!Number.isInteger(counts.rabbits)||index>=counts.rabbits||!previous||!Array.isArray(previous.rabbits)||food!==true||!desired||desired.state!=='Grazing'||old.refugeCue||old.directAlarm===true||old.socialCue||['Alert','Retreating'].indexOf(old.state)>=0)return end();
+    function neighbor(j,maxDistance){
+      if(!Number.isInteger(j)||j<0||j>=index||j>=counts.rabbits)return null;
+      var p=previous.rabbits[j];
+      if(!p||p.active!==true||p.state!=='Grazing'||p.foodAvailable!==true||p.directAlarm===true||p.socialCue||p.refugeCue||![p.x,p.z].every(Number.isFinite))return null;
+      var distance=Math.hypot(p.x-old.x,p.z-old.z);
+      return distance<=maxDistance?{id:'rabbits',index:j,x:p.x,z:p.z,decisionDistance:distance}:null;
+    }
+    var source=null,age=0;
+    if(had){
+      if(had.id!=='rabbits'||had.duration!==10||!Number.isInteger(had.age)||had.age<0||had.age>=9)return end();
+      source=neighbor(had.index,1.25-1e-12);age=had.age+1;if(!source)return end();
+    }else{
+      if(cooldown>0||old.state!=='Grazing')return result;
+      for(var j=0;j<Math.min(index,counts.rabbits);j++){var candidate=neighbor(j,1);if(candidate&&(!source||candidate.decisionDistance<source.decisionDistance))source=candidate;}
+      if(!source)return result;
+    }
+    result.action={state:'Giving space',speed:0.22,mode:'neighbor-space',forage:0};
+    result.cue=Object.assign(source,{age:age,duration:10,side:index%2?1:-1});
+    return result;
+  }
+
+  // A feeding rabbit can briefly look toward the actual moving neighbor that
+  // was giving it space in the preceding frame. This is presentation only:
+  // no new alarm, signal propagation, food decision or route is created.
+  function ecoMeadowRabbitNeighborLookCue(raw) {
+    if(!raw||raw.id!=='rabbits'||!Number.isInteger(raw.index)||raw.index<1||raw.index>=16||!Number.isInteger(raw.receiverIndex)||raw.receiverIndex<0||raw.receiverIndex>=raw.index||raw.duration!==8||!Number.isInteger(raw.age)||raw.age<0||raw.age>=8||!Number.isInteger(raw.startStep)||raw.startStep<1||!Number.isInteger(raw.sourceStep)||raw.sourceStep!==raw.startStep+raw.age-1||!Number.isInteger(raw.givingSpaceAge)||raw.givingSpaceAge<0||raw.givingSpaceAge>=10||![raw.x,raw.z,raw.distance,raw.movement].every(Number.isFinite)||Math.abs(raw.x)>=1000||Math.abs(raw.z)>=1000||raw.distance<0||raw.distance>1.3||raw.movement<=0.04||raw.movement>0.22+1e-10)return null;
+    return {id:'rabbits',index:raw.index,receiverIndex:raw.receiverIndex,x:raw.x,z:raw.z,distance:raw.distance,movement:raw.movement,sourceStep:raw.sourceStep,startStep:raw.startStep,age:raw.age,duration:8,givingSpaceAge:raw.givingSpaceAge};
+  }
+
+  function ecoMeadowRabbitNeighborLook(index,old,previous,counts,current) {
+    var cooldown=Math.max(0,Math.min(18,Number.isInteger(old&&old.neighborLookCooldown)?old.neighborLookCooldown-1:0));
+    var result={cue:null,cooldown:cooldown,weight:0},had=old&&old.neighborLookCue,prior=ecoWebNumber(old&&old.neighborLook,0,0,1);
+    current=current||{};
+    function end(priority){if(had)result.cooldown=18;result.weight=priority?0:Math.max(0,prior-0.18);return result;}
+    if(current.active!==true){result.cooldown=0;return result;}
+    if(!old||old.active!==true||!Number.isInteger(index)||index<0||index>=16||!counts||!Number.isInteger(counts.rabbits)||counts.rabbits<1||counts.rabbits>16||index>=counts.rabbits||!previous||!Array.isArray(previous.rabbits)||!Number.isInteger(current.step)||current.step<1||![old.x,old.z,old.speed,current.speed,current.moving,current.rest].every(Number.isFinite)||Math.abs(old.x)>=1000||Math.abs(old.z)>=1000||old.state!=='Grazing'||current.state!=='Grazing'||old.speed>1e-12||old.speed<0||current.speed>1e-12||current.speed<0||current.moving>1e-12||current.moving<0||current.rest>0.1||current.rest<0||current.foodAvailable!==true||current.directAlarm===true||current.socialCue||current.socialMemory||current.refugeCue||current.recoveryCue||current.spacingCue||old.directAlarm===true||old.socialCue||old.socialMemory||old.refugeCue||old.recoveryCue||ecoWebNumber(old.headRaise,0,0,1)>0.01)return end(true);
+    function source(j){
+      if(!Number.isInteger(j)||j<=index||j>=counts.rabbits)return null;
+      var p=previous.rabbits[j],spacing=p&&p.spacingCue;
+      if(!p||p.active!==true||p.state!=='Giving space'||p.foodAvailable!==true||p.directAlarm===true||p.socialCue||p.socialMemory||p.refugeCue||p.recoveryCue||![p.x,p.z,p.moving].every(Number.isFinite)||Math.abs(p.x)>=1000||Math.abs(p.z)>=1000||p.moving<=0.04||p.moving>0.22+1e-10||!spacing||spacing.id!=='rabbits'||spacing.index!==index||spacing.duration!==10||!Number.isInteger(spacing.age)||spacing.age<0||spacing.age>=10||(spacing.side!==1&&spacing.side!==-1)||![spacing.x,spacing.z,spacing.decisionDistance].every(Number.isFinite)||spacing.decisionDistance<0||spacing.decisionDistance>1.25||Math.hypot(spacing.x-old.x,spacing.z-old.z)>1e-8)return null;
+      var distance=Math.hypot(p.x-old.x,p.z-old.z);
+      return distance<=1.3?{id:'rabbits',index:j,receiverIndex:index,x:p.x,z:p.z,distance:distance,movement:p.moving,givingSpaceAge:spacing.age}:null;
+    }
+    var point=null,age=0,start=current.step;
+    if(had){
+      var clean=ecoMeadowRabbitNeighborLookCue(had);
+      if(!clean||clean.receiverIndex!==index||clean.sourceStep!==current.step-2||clean.age>=7)return end(false);
+      point=source(clean.index);age=clean.age+1;start=clean.startStep;
+      if(!point)return end(false);
+    }else{
+      if(cooldown>0)return end(false);
+      for(var j=index+1;j<counts.rabbits;j++){var candidate=source(j);if(candidate&&(!point||candidate.distance<point.distance))point=candidate;}
+      if(!point)return end(false);
+    }
+    result.cue=Object.assign(point,{sourceStep:current.step-1,startStep:start,age:age,duration:8});
+    result.weight=Math.min(1,prior+0.35);return result;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{rabbitNeighborLook:ecoMeadowRabbitNeighborLook});
+
+  // A concealed rabbit can leave a fox checking a previously recorded prey
+  // location. Keep that point fixed: the check never follows hidden movement.
+  // Ten samples, the approach speed and scan are illustrative presentation
+  // choices. This is not a vision, scent, memory-capacity or capture model.
+  function ecoMeadowFoxSearch(index,old,prey,previous,counts,cover,desired,active) {
+    var result={action:desired,cue:null};
+    if(active!==true||!old||old.active!==true||![old.x,old.z].every(Number.isFinite)||!Number.isInteger(index)||index<0||index>=16||!counts||!Number.isInteger(counts.foxes)||index>=counts.foxes||!previous||!desired||old.huntStage||['Preparing to pounce','Pouncing','Recovering'].indexOf(desired.state)>=0)return result;
+    var had=old.searchCue,memory=null;
+    if(had){
+      if(had.id!=='rabbits'||!Number.isInteger(had.index)||had.index<0||had.index>=16||![had.x,had.z].every(Number.isFinite)||had.duration!==10||!Number.isInteger(had.age)||had.age<0||had.age>=9||!Number.isInteger(had.refugeIndex))return result;
+      memory={id:had.id,index:had.index,x:had.x,z:had.z,age:had.age+1,duration:10,refugeIndex:had.refugeIndex};
+    }else{
+      var seen=old.preyCueSnapshot;
+      if(!seen||seen.id!=='rabbits'||seen.id!==old.prey||seen.index!==old.preyIndex||!Number.isInteger(seen.index)||seen.index<0||seen.index>=16||![seen.x,seen.z].every(Number.isFinite))return result;
+      var rabbit=Array.isArray(previous.rabbits)&&previous.rabbits[seen.index];
+      if(!rabbit||!ecoMeadowRefugeConceals('rabbits',seen.index,rabbit,old,cover))return result;
+      memory={id:seen.id,index:seen.index,x:seen.x,z:seen.z,age:0,duration:10,refugeIndex:rabbit.refugeCue.index};
+    }
+    var source=Array.isArray(previous.rabbits)&&previous.rabbits[memory.index];
+    if(!Number.isInteger(counts.rabbits)||memory.index>=counts.rabbits||!source||!ecoMeadowRefugeConceals('rabbits',memory.index,source,old,cover)||source.refugeCue.index!==memory.refugeIndex)return result;
+    // Reacquisition and an immediately available close target take priority.
+    if(prey&&((prey.id===memory.id&&prey.index===memory.index)||(Number.isFinite(prey.distance)&&prey.distance<=1.2)))return result;
+    var distance=Math.hypot(memory.x-old.x,memory.z-old.z);
+    memory.stage=memory.age<2||distance<=0.65?'check':'approach';
+    result.action={state:'Checking last location',speed:memory.stage==='approach'?0.18:0,mode:'last-location',forage:0};
+    result.cue=memory;
+    return result;
+  }
+
+  // A selected rabbit moving beyond the existing pursuit-gap rule can prompt
+  // a short brake and turn back toward patrol. The target point is the rabbit's
+  // actual previous-frame position at release, not an inferred future position
+  // or the older available-target snapshot. That older snapshot only proves
+  // which rabbit was selected. Timing and distance are presentation choices.
+  function ecoMeadowFoxBreakoff(index,old,prey,previous,counts,desired,active) {
+    var cooldown=Math.max(0,Math.min(14,Number.isInteger(old&&old.breakoffCooldown)?old.breakoffCooldown-1:0));
+    var result={action:desired,cue:null,cooldown:cooldown},had=old&&old.breakoffCue;
+    function end(){if(had)result.cooldown=14;return result;}
+    if(active!==true){result.cooldown=0;return result;}
+    if(!old||old.active!==true||![old.x,old.z].every(Number.isFinite)||!Number.isInteger(index)||index<0||index>=16||!counts||!Number.isInteger(counts.foxes)||index>=counts.foxes||!previous||!Array.isArray(previous.rabbits)||!desired||old.huntStage||old.searchCue||['Resting','Preparing to pounce','Pouncing','Recovering'].indexOf(desired.state)>=0)return end();
+    var cue=null;
+    if(had){
+      if(had.id!=='rabbits'||!Number.isInteger(had.index)||had.index<0||had.index>=16||![had.x,had.z,had.decisionDistance].every(Number.isFinite)||had.decisionDistance<=2.2||had.duration!==10||had.reason!=='running-gap'||!Number.isInteger(had.age)||had.age<0||had.age>=9||(had.turnSide!==1&&had.turnSide!==-1))return end();
+      cue={id:had.id,index:had.index,x:had.x,z:had.z,decisionDistance:had.decisionDistance,age:had.age+1,duration:10,reason:'running-gap',turnSide:had.turnSide};
+    }else{
+      var seen=old.preyCueSnapshot;
+      if(cooldown>0||['Stalking','Tracking prey','Listening'].indexOf(old.state)<0||!seen||seen.id!=='rabbits'||old.prey!==seen.id||old.preyIndex!==seen.index||!Number.isInteger(seen.index)||seen.index<0||seen.index>=16||![seen.x,seen.z].every(Number.isFinite))return result;
+      var released=previous.rabbits[seen.index];
+      if(!released||![released.x,released.z].every(Number.isFinite))return result;
+      cue={id:'rabbits',index:seen.index,x:released.x,z:released.z,decisionDistance:Math.hypot(released.x-old.x,released.z-old.z),age:0,duration:10,reason:'running-gap',turnSide:index%2?1:-1};
+    }
+    var rabbit=previous.rabbits[cue.index];
+    if(!Number.isInteger(counts.rabbits)||cue.index>=counts.rabbits||!rabbit||rabbit.active!==true||rabbit.state!=='Retreating'||![rabbit.x,rabbit.z].every(Number.isFinite)||rabbit.refugeCue&&rabbit.refugeCue.stage==='at-cover'||!Number.isFinite(cue.decisionDistance)||Math.hypot(rabbit.x-old.x,rabbit.z-old.z)<=2.2)return end();
+    if(prey&&((prey.id===cue.id&&prey.index===cue.index)||(Number.isFinite(prey.distance)&&prey.distance<=2.2)))return end();
+    cue.stage=cue.age<2?'brake':'reorient';
+    result.action={state:'Breaking off pursuit',speed:cue.stage==='brake'?0:0.18,mode:'breakoff',forage:0};
+    result.cue=cue;return result;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{foxBreakoff:ecoMeadowFoxBreakoff});
+
+  // Alarm can fade while a rabbit is still retreating. If the next underlying
+  // action would immediately graze/explore, a single short recovery brakes and
+  // checks the last DIRECT threat point. An existing Alert pause clears that
+  // opportunity, so this never stacks another pause onto fading/social alarm.
+  // The point is a recorded location, not current hidden-predator sensing.
+  function ecoMeadowRabbitRecovery(index,old,threat,previous,counts,desired,active,options) {
+    var result={action:desired,cue:null,memory:null};options=options||{};
+    var step=options.step;
+    if(active!==true||!old||old.active!==true||!Number.isInteger(index)||index<0||index>=16||!Number.isInteger(step)||step<1||!counts||!Number.isInteger(counts.rabbits)||index>=counts.rabbits||!previous||!desired||![old.x,old.z,old.speed].every(Number.isFinite)||old.speed<0||old.speed>1.15+1e-12||options.refuge||options.social)return result;
+    function predator(id,n){
+      if(!ECO_WEB_LINKS.some(function(link){return link.food==='rabbits'&&link.consumer===id;})||!Number.isInteger(n)||n<0||n>=16||!Number.isInteger(counts[id])||n>=counts[id]||!Array.isArray(previous[id]))return null;
+      var p=previous[id][n];return p&&p.active===true&&[p.x,p.z].every(Number.isFinite)?p:null;
+    }
+    function snapshot(raw,maxAge){
+      return raw&&Number.isInteger(raw.step)&&raw.step>=1&&raw.step<=step&&step-raw.step<=maxAge&&[raw.x,raw.z].every(Number.isFinite)&&Math.abs(raw.x)<1000&&Math.abs(raw.z)<1000&&predator(raw.id,raw.index)?{id:raw.id,index:raw.index,x:raw.x,z:raw.z,step:raw.step}:null;
+    }
+    if(options.directAlarm===true&&desired.state==='Retreating'){
+      var direct=threat&&predator(threat.id,threat.index);
+      if(direct)result.memory={id:threat.id,index:threat.index,x:direct.x,z:direct.z,step:step};
+      return result;
+    }
+    if(old.refugeCue||old.socialCue||old.socialMemory)return result;
+    if(desired.state==='Retreating'){result.memory=snapshot(old.lastDirectThreat,24);return result;}
+    if(['Grazing','Exploring'].indexOf(desired.state)<0)return result;
+    var had=old.recoveryCue,point=null,age=0,start=step;
+    if(had){
+      if(had.duration!==12||had.stillDuration!==4||!Number.isInteger(had.age)||had.age<0||had.age>=11||!Number.isInteger(had.startStep)||had.startStep+had.age!==step-1||!Number.isInteger(had.sourceStep)||had.sourceStep>had.startStep||had.startStep-had.sourceStep>24)return result;
+      if(had.stage==='brake'){
+        if(!Number.isInteger(had.brakeAge)||had.brakeAge<0||had.brakeAge>=8||had.stillAge!==null)return result;
+      }else if(had.stage==='still'){
+        if(!Number.isInteger(had.stillAge)||had.stillAge<0||had.stillAge>=3||had.brakeAge!==null||old.speed>1e-12)return result;
+      }else return result;
+      point=snapshot({id:had.id,index:had.index,x:had.x,z:had.z,step:had.sourceStep},36);age=had.age+1;start=had.startStep;
+    }else{
+      if(old.state!=='Retreating')return result;
+      point=snapshot(old.lastDirectThreat,24);
+    }
+    if(!point)return result;
+    var still=old.speed<=0.15+1e-12,brakeAge=still?null:had&&had.stage==='brake'?had.brakeAge+1:0,stillAge=still?(had&&had.stage==='still'?had.stillAge+1:0):null;
+    if(brakeAge!==null&&brakeAge>=8||stillAge!==null&&stillAge>=4)return result;
+    result.cue={id:point.id,index:point.index,x:point.x,z:point.z,sourceStep:point.step,startStep:start,age:age,duration:12,stillDuration:4,stage:still?'still':'brake',brakeAge:brakeAge,stillAge:stillAge};
+    result.action={state:'Checking after retreat',speed:0,mode:'recovery',forage:0};return result;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{rabbitRecovery:ecoMeadowRabbitRecovery});
 
   function ecoMeadowBehaviorTimeline(rawConfig, rows) {
     var config=ecoWebConfig(rawConfig),animals=ECO_WEB_SPECIES.filter(function(sp){return sp.id!=='plants';});
@@ -992,7 +2581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }
           return best?{x:best.x,z:best.z,n:n,age:0}:{x:pose.x*0.5,z:pose.z*0.5,n:n,age:0};
         }
-        var claimed={};
+        var claimed={},committed=[];
         frame[sp.id]=previous[sp.id].map(function(old,i){
         var base=ecoMeadowPose(sp.id,i,time,false),active=i<counts[sp.id];
         // Each animal's activity clock runs at its own varying pace, so rest and
@@ -1002,7 +2591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // Predators keep a chosen target unless another is clearly closer and
         // leave prey already chosen by a lower-numbered group member this sample.
         // Hunters rely on surprise: prey already running and out of reach is dropped.
-        function unavailable(id,j,candidate,distance){return !!claimed[id+':'+j]||((candidate.state==='Retreating'||candidate.state==='Moving away')&&distance>2.2);}
+        function unavailable(id,j,candidate,distance){return !!claimed[id+':'+j]||(sp.id==='foxes'&&ecoMeadowRefugeConceals(id,j,candidate,old,cover))||((candidate.state==='Retreating'||candidate.state==='Moving away')&&distance>2.2);}
         var prey=nearest(old,preyIds,counts,unavailable),kept=null,keptDistance=0;
         if(old.prey&&preyIds.indexOf(old.prey)>=0&&old.preyIndex<(counts[old.prey]||0)){
           kept=previous[old.prey][old.preyIndex];keptDistance=Math.hypot(kept.x-old.x,kept.z-old.z);
@@ -1011,34 +2600,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if(kept){
           if(!prey||keptDistance<prey.distance*1.3+0.2)prey={id:old.prey,index:old.preyIndex,x:kept.x,z:kept.z,distance:keptDistance};
         }
-        if(prey&&active)claimed[prey.id+':'+prey.index]=true;
         var threat=nearest(old,threatIds,counts);
         // A slowly stalking, listening or resting predator is harder to notice.
         var threatState=threat?previous[threat.id][threat.index].state:'';
         // A silent owl overhead is noticed late; voles freeze rather than bolt.
         var perceived=threat?threat.distance*(threat.id==='owls'?1.8:['Stalking','Listening','Preparing to pounce'].indexOf(threatState)>=0?1.6:threatState==='Resting'?1.6:1):Infinity;
         var food=ECO_WEB_LINKS.some(function(link){return link.consumer===sp.id&&config.enabled[link.food]&&values[link.food]>0;});
-        var alarm=perceived<2.6?1:old.alarm*0.86;
+        var directAlarm=active&&perceived<2.6;
+        var social=step&&active&&sp.id==='rabbits'&&perceived>=3.4?ecoMeadowSocialAlarm(sp.id,i,old,previous,counts):null;
+        var alarm=directAlarm?1:old.alarm*0.86;
+        if(social)alarm=Math.max(alarm,0.62);
+        var socialMemory=active&&!directAlarm&&!!(social||old.socialMemory)&&alarm>0.4;
         var sense={threatDistance:perceived,preyDistance:prey?prey.distance:Infinity,food:food,alarm:alarm,fleeing:old.state==='Retreating'||old.state==='Moving away'};
-        var action=ecoMeadowBehavior(sp.id,phase,sense),x=old.x,z=old.z,yaw=old.yaw,moving=0,travel=old.distance,navigation=null,speed=0;
+        var action=ecoMeadowBehavior(sp.id,phase,sense),x=old.x,z=old.z,yaw=old.yaw,moving=0,travel=old.distance,navigation=null,peerAvoidance=null,speed=0,refugeCue=null;
+        if(step&&active&&sp.id==='rabbits'&&(action.mode==='away'||(action.state==='Alert'&&old.refugeCue)))refugeCue=ecoMeadowRefugeTarget(sp.id,i,old,threat,previous,counts,cover);
         if(!active){action={state:'Not present',speed:0,mode:'roam',forage:0};alarm=0;}
+        var recovering=sp.id==='rabbits'?ecoMeadowRabbitRecovery(i,old,threat,previous,counts,action,active,{step:step,directAlarm:directAlarm,refuge:!!refugeCue,social:!!social||socialMemory}):{action:action,cue:null,memory:null};
+        action=recovering.action;
+        var spacing=sp.id==='rabbits'?ecoMeadowRabbitSpacing(i,old,previous,counts,food,action,active):{action:action,cue:null,cooldown:0};
+        action=spacing.action;
+        var searching=sp.id==='foxes'?ecoMeadowFoxSearch(i,old,prey,previous,counts,cover,action,active):{action:action,cue:null};
+        action=searching.action;
+        var breaking=sp.id==='foxes'&&!searching.cue?ecoMeadowFoxBreakoff(i,old,prey,previous,counts,action,active):{action:action,cue:null,cooldown:0};
+        action=breaking.action;
+        if(searching.cue||breaking.cue)prey=null;
+        if(prey&&active)claimed[prey.id+':'+prey.index]=true;
         var hunt=sp.id==='foxes'?ecoMeadowHunt(old,action,sense.preyDistance,active):{action:action,stage:'',age:0,cooldown:0,pounce:0};
         action=hunt.action;
+        var listening=sp.id==='foxes'?ecoMeadowFoxListening(i,old,prey,previous,counts,action,active):{action:action,age:0,cooldown:0,cue:null};
+        action=listening.action;
         var goal=old.goalN!=null?{x:old.goalX,z:old.goalZ,n:old.goalN,age:(old.goalAge||0)+1}:null;
         if(step>0&&active){
           var dx=Math.cos(yaw),dz=-Math.sin(yaw);
-          if(action.mode==='away')goal=goal&&{x:x,z:z,n:goal.n,age:999};
+          if(action.mode==='away'||action.mode==='breakoff')goal=goal&&{x:x,z:z,n:goal.n,age:999};
           else if(action.mode==='roam'&&action.speed>0){
             if(!goal||goal.age>90||Math.hypot(goal.x-x,goal.z-z)<roam.arrive)goal=pickGoal(i,old,goal?goal.n+1:0);
             dx=goal.x-x;dz=goal.z-z;
           }
           if(action.mode==='toward'&&prey){dx=prey.x-x;dz=prey.z-z;}
+          if(action.mode==='last-location'&&searching.cue){dx=searching.cue.x-x;dz=searching.cue.z-z;}
+          if(action.mode==='breakoff'&&breaking.cue){
+            var releaseX=x-breaking.cue.x,releaseZ=z-breaking.cue.z,releaseLength=Math.hypot(releaseX,releaseZ)||1;releaseX/=releaseLength;releaseZ/=releaseLength;
+            dx=releaseX*0.52-releaseZ*breaking.cue.turnSide*0.85;dz=releaseZ*0.52+releaseX*breaking.cue.turnSide*0.85;
+          }
+          if(action.mode==='neighbor-space'&&spacing.cue){
+            var apartX=x-spacing.cue.x,apartZ=z-spacing.cue.z,apartLength=Math.hypot(apartX,apartZ);
+            if(apartLength<1e-9){var apartAngle=ecoMeadowHash(order,i,spacing.cue.index,63)*Math.PI*2;apartX=Math.cos(apartAngle);apartZ=Math.sin(apartAngle);apartLength=1;}
+            apartX/=apartLength;apartZ/=apartLength;
+            dx=apartX*0.8-apartZ*spacing.cue.side*0.6;dz=apartZ*0.8+apartX*spacing.cue.side*0.6;
+          }
           if((action.mode==='away'||action.mode==='watch')&&threat){dx=(action.mode==='away'?1:-1)*(x-threat.x);dz=(action.mode==='away'?1:-1)*(z-threat.z);}
           if(action.mode==='away'&&threat){
             var awayLength=Math.hypot(dx,dz)||1;dx/=awayLength;dz/=awayLength;
             // Head for the nearest thicket that does not lie toward the predator;
             // once inside it, wait and watch instead of running on.
-            var shelter=null;refuges.forEach(function(s){var sx=s.x-x,sz=s.z-z,sd=Math.hypot(sx,sz);if(sd<5.5&&(sd<0.5||(sx*dx+sz*dz)>-0.25*sd)&&(!shelter||sd<shelter.d))shelter={x:s.x,z:s.z,d:sd};});
+            var shelter=refugeCue?{x:refugeCue.x,z:refugeCue.z,d:refugeCue.decisionDistance}:null;
+            if(sp.id!=='rabbits')refuges.forEach(function(s){var sx=s.x-x,sz=s.z-z,sd=Math.hypot(sx,sz);if(sd<5.5&&(sd<0.5||(sx*dx+sz*dz)>-0.25*sd)&&(!shelter||sd<shelter.d))shelter={x:s.x,z:s.z,d:sd};});
             if(shelter&&shelter.d<0.45&&threat.distance>1.2&&sp.id!=='bluetits')action={state:'Alert',speed:0,mode:'watch',forage:0};
             else if(shelter){dx=dx*0.45+(shelter.x-x)/Math.max(shelter.d,1e-9)*0.55;dz=dz*0.45+(shelter.z-z)/Math.max(shelter.d,1e-9)*0.55;}
             // Rabbits zig-zag while escaping in the open.
@@ -1047,6 +2664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var desired=Math.atan2(-dz,dx),prior=old.speed||0;
           // Animals accelerate and brake over a few samples; hunt stages stop at once.
           speed=action.mode==='leap'||hunt.stage?action.speed:action.speed>prior?Math.min(action.speed,prior+(action.mode==='away'?0.4:0.1)):Math.max(action.speed,prior-0.15);
+          if(recovering.cue&&recovering.cue.stage==='still')speed=0;
           if(action.speed===0&&speed>0){dx=Math.cos(yaw);dz=-Math.sin(yaw);}
           if(action.mode==='leap'){
             // Preserve takeoff heading: an airborne fox cannot home in on prey.
@@ -1058,16 +2676,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var boundary=x*x/81+z*z/42.25;if(boundary>0.78){dx-=x/9*(boundary-0.78)*6;dz-=z/6.5*(boundary-0.78)*6;}
             var distance;
             if(sp.id!=='owls'){
-              var groundStep=ecoMeadowGroundStep(sp.id,i,old,dx,dz,speed,action.mode==='away'?0.30:0.17);
+              var groundStep=ecoMeadowGroundStep(sp.id,i,old,dx,dz,speed,action.mode==='away'||action.mode==='breakoff'?0.30:action.mode==='neighbor-space'?0.24:0.17);
               x=groundStep.x;z=groundStep.z;yaw=groundStep.yaw;distance=groundStep.distance;navigation=groundStep.navigation;
+              if(breaking.cue&&breaking.cue.stage==='reorient'&&Math.hypot(x-breaking.cue.x,z-breaking.cue.z)<Math.hypot(old.x-breaking.cue.x,old.z-breaking.cue.z)-1e-12){x=old.x;z=old.z;distance=0;}
+              // A gentle turn can precede the hop. Do not move closer to the
+              // recorded feeding-neighbor point while turning to give space.
+              if(spacing.cue&&Math.hypot(x-spacing.cue.x,z-spacing.cue.z)<spacing.cue.decisionDistance-1e-12){x=old.x;z=old.z;distance=0;}
+              if(sp.id==='foxes'||sp.id==='rabbits'){
+                var peerStep=ecoMeadowPeerStep(sp.id,i,old,{x:x,z:z,yaw:yaw,distance:distance,huntStage:hunt.stage},previous[sp.id],committed,counts[sp.id]);
+                x=peerStep.x;z=peerStep.z;distance=peerStep.distance;peerAvoidance=peerStep.peerAvoidance;
+                // Shortening can choose an inward prefix of an otherwise
+                // allowed step. Recheck the action's fixed-point gap rules.
+                if((breaking.cue&&breaking.cue.stage==='reorient'&&Math.hypot(x-breaking.cue.x,z-breaking.cue.z)<Math.hypot(old.x-breaking.cue.x,old.z-breaking.cue.z)-1e-12)||(spacing.cue&&Math.hypot(x-spacing.cue.x,z-spacing.cue.z)<spacing.cue.decisionDistance-1e-12)){
+                  x=old.x;z=old.z;distance=0;peerAvoidance=null;
+                }
+              }
             }else{
               desired=Math.atan2(-dz,dx);yaw=turn(yaw,desired,0.12);
               distance=speed*0.1*Math.max(0.15,Math.cos(desired-yaw));x+=Math.cos(yaw)*distance;z-=Math.sin(yaw)*distance;
             }
             travel+=distance;moving=distance/0.1;
-          }else if((action.mode==='toward'&&prey)||(action.mode==='watch'&&threat))yaw=turn(yaw,desired,0.16);
+          }else if((action.mode==='toward'&&prey)||(action.mode==='watch'&&threat)||(action.mode==='last-location'&&searching.cue)||(action.mode==='breakoff'&&breaking.cue))yaw=turn(yaw,desired,0.16);
         }
         if(!active)speed=0;
+        if(refugeCue){
+          var refugeDistance=Math.hypot(refugeCue.x-x,refugeCue.z-z);
+          refugeCue=Object.assign({},refugeCue,{distance:refugeDistance,stage:action.state==='Alert'&&refugeDistance<0.45&&refugeCue.threatDistance>1.2?'at-cover':'approaching'});
+          if(action.state!=='Retreating'&&!(action.state==='Alert'&&refugeCue.stage==='at-cover'))refugeCue=null;
+        }
         var pounce=hunt.pounce;
         var feeding=['Grazing','Foraging','Pecking','Feeding'].indexOf(action.state)>=0;
         // Grazing mammals lift their heads for short scans between bites.
@@ -1076,42 +2712,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var forage=blend(old.forage||0,active?forageTarget:0,0.18);
         var rest=blend(old.rest||0,active&&action.state==='Resting'?1:0,0.14);
         var crouch=blend(old.crouch||0,hunt.stage==='prepare'||hunt.stage==='recover'?1:0,0.25);
-        var attention=step?ecoMeadowAttention(sp.id,action.state,{x:x,z:z,yaw:yaw,headTurn:old.headTurn||0,active:active},prey,threat):null;
-        var headTarget=active?(attention?attention.turn:vigilant?Math.sin(time*1.6+base.phase)*0.38:action.state==='Alert'||action.state==='Listening'||sp.id==='owls'?Math.sin(time*0.75+base.phase)*0.20:action.state==='Preening'?0.6:0):0;
+        var neighborLook=sp.id==='rabbits'?ecoMeadowRabbitNeighborLook(i,old,previous,counts,{step:step,active:active,state:action.state,speed:speed,moving:moving,rest:rest,foodAvailable:food,directAlarm:directAlarm,socialCue:social,socialMemory:socialMemory,refugeCue:refugeCue,recoveryCue:recovering.cue,spacingCue:spacing.cue}):{cue:null,cooldown:0,weight:0};
+        var socialTarget=social?Object.assign({},social,{x:previous.rabbits[social.index].x,z:previous.rabbits[social.index].z}):null;
+        var crossing=step&&sp.id==='foxes'?ecoMeadowFoxCrossing(i,old,previous.foxes,committed,counts.foxes,{step:step,active:active,state:action.state,x:x,z:z,moving:moving,rest:rest,preyDistance:prey?prey.distance:null,huntStage:hunt.stage,searchCue:searching.cue,breakoffCue:breaking.cue,listenCue:listening.cue,peerAvoidance:peerAvoidance}):{cue:null,look:0,cooldown:0};
+        var attention=step?ecoMeadowAttention(sp.id,action.state,{x:x,z:z,yaw:yaw,headTurn:old.headTurn||0,active:active,crossingLook:crossing.look},prey,threat,socialTarget,spacing.cue,neighborLook.cue,crossing.cue):null;
+        var interactionPosture=ecoMeadowInteractionPosture(sp.id,old,{active:active,state:action.state,huntStage:hunt.stage,listenCue:listening.cue,attention:attention,recoveryCue:recovering.cue});
+        var recoveryBearing=recovering.cue?Math.atan2(-(recovering.cue.z-z),recovering.cue.x-x)-yaw:0;recoveryBearing=Math.atan2(Math.sin(recoveryBearing),Math.cos(recoveryBearing));
+        var breakoffBearing=breaking.cue?Math.atan2(-(breaking.cue.z-z),breaking.cue.x-x)-yaw:0;breakoffBearing=Math.atan2(Math.sin(breakoffBearing),Math.cos(breakoffBearing));
+        var searchBearing=searching.cue?Math.atan2(-(searching.cue.z-z),searching.cue.x-x)-yaw:0;
+        searchBearing=Math.atan2(Math.sin(searchBearing),Math.cos(searchBearing));
+        var headTarget=active?(recovering.cue?(recovering.cue.stage==='still'?Math.max(-0.36,Math.min(0.36,recoveryBearing+Math.sin(recovering.cue.stillAge*0.9+base.phase)*0.055)):0):breaking.cue?(breaking.cue.age<2?Math.max(-0.32,Math.min(0.32,breakoffBearing)):Math.sin(breaking.cue.age*0.8+base.phase)*0.06):searching.cue?Math.max(-0.48,Math.min(0.48,searchBearing+Math.sin(searching.cue.age*0.8+base.phase)*0.16)):attention?attention.turn:vigilant?Math.sin(time*1.6+base.phase)*0.38:action.state==='Alert'||action.state==='Listening'||sp.id==='owls'?Math.sin(time*0.75+base.phase)*0.20:action.state==='Preening'?0.6:0):0;
         var headTurn=blend(old.headTurn||0,headTarget,0.09);
         // Small, asymmetric ear movements illustrate existing attention cues.
         // They add no hearing range or feedback into movement and feeding.
         var earAnimal=['foxes','rabbits','voles'].indexOf(sp.id)>=0;
-        var attending=earAnimal&&active&&['Alert','Retreating','Listening','Tracking prey','Stalking','Preparing to pounce'].indexOf(action.state)>=0;
-        var earDirection=attention?attention.bearing-headTurn:0;
-        earDirection=Math.max(-0.55,Math.min(0.55,Math.atan2(Math.sin(earDirection),Math.cos(earDirection))));
-        var earScan=attending?Math.sin(time*1.4+base.phase)*0.09:0;
+        var attending=earAnimal&&active&&(['Alert','Retreating','Listening','Tracking prey','Stalking','Preparing to pounce','Checking last location','Giving space','Breaking off pursuit','Checking after retreat'].indexOf(action.state)>=0||!!neighborLook.cue||!!crossing.cue);
+        var earDirection=recovering.cue?(recovering.cue.stage==='still'?recoveryBearing-headTurn:0):breaking.cue?(breaking.cue.age<2?breakoffBearing-headTurn:0):searching.cue?searchBearing-headTurn:attention?attention.bearing-headTurn:0;
+        earDirection=Math.max(-0.55,Math.min(0.55,Math.atan2(Math.sin(earDirection),Math.cos(earDirection))))*(crossing.cue?crossing.look:1);
+        var earScan=attending?Math.sin(time*1.4+base.phase)*(action.state==='Checking after retreat'?(recovering.cue&&recovering.cue.stage==='still'?0.05:0.02):action.state==='Giving space'?0.045:crossing.cue?0.035*crossing.look:0.09):0;
         var earLeft=step&&earAnimal?blend(old.earLeft||0,active?earDirection+earScan:0,0.065):0;
         var earRight=step&&earAnimal?blend(old.earRight||0,active?earDirection-earScan*0.7:0,0.065):0;
         var earTilt=step&&earAnimal?blend(old.earTilt||0,active?rest*0.22+pounce*0.16-(attending?0.035:0):0,0.035):0;
         var crawl=sp.id==='caterpillars'?blend(old.crawl||0,active?Math.min(1,moving/0.055):0,0.18):0;
         var yawChange=Math.atan2(Math.sin(yaw-old.yaw),Math.cos(yaw-old.yaw));
+        var turnBalance=step?ecoMeadowMammalTurnBalance(sp.id,old,{yaw:yaw,moving:moving,active:active}):0;
         var bank=sp.id==='owls'?blend(old.bank||0,active?Math.max(-0.25,Math.min(0.25,-yawChange*1.8)):0,0.045):0;
         var wingFlap=sp.id==='owls'?blend(old.wingFlap==null?0.12:old.wingFlap,active&&phase<4?1:0.12,0.12):0;
         var stride=step&&earAnimal?blend(old.stride||0,active?Math.min(1,moving/(sp.id==='foxes'?0.35:0.25)):0,0.20):0;
         var gait=step===0?0:Math.sin(travel*(sp.id==='caterpillars'?70:28)+base.phase)*Math.min(1,moving/(sp.id==='foxes'?0.35:0.25));
         // Barn owls drop to low quartering height over nearby voles.
         var altitude=sp.id==='owls'?(step?blend(old.altitude,active&&prey&&prey.distance<3.2?1.3:2.1+0.22*Math.sin(time*0.45+base.phase),0.035):base.altitude):sp.id==='caterpillars'?0.004:0.025+0.32*Math.max(0,pounce);
-        return {x:x,z:z,yaw:yaw,altitude:altitude,phase:base.phase,activity:activity,speed:speed,
+        var nextPose={x:x,z:z,yaw:yaw,altitude:altitude,phase:base.phase,activity:activity,speed:speed,
           goalX:goal?goal.x:null,goalZ:goal?goal.z:null,goalN:goal?goal.n:null,goalAge:goal?goal.age:null,
-          gait:gait,stride:stride,moving:moving,navigation:navigation,forage:forage,rest:rest,crouch:crouch,headTurn:headTurn,attention:attention,earLeft:earLeft,earRight:earRight,earTilt:earTilt,active:active,state:action.state,alarm:alarm,distance:travel,
-          huntStage:hunt.stage,huntAge:hunt.age,huntCooldown:hunt.cooldown,
+          gait:gait,stride:stride,moving:moving,turnBalance:turnBalance,navigation:navigation,peerAvoidance:peerAvoidance,forage:forage,rest:rest,crouch:crouch,headTurn:headTurn,attention:attention,headRaise:interactionPosture.headRaise,listenTilt:interactionPosture.listenTilt,neighborLook:neighborLook.weight,neighborLookCue:neighborLook.cue,neighborLookCooldown:neighborLook.cooldown,neighbor:neighborLook.cue?'rabbits':null,neighborIndex:neighborLook.cue?neighborLook.cue.index:null,neighborDistance:neighborLook.cue?neighborLook.cue.distance:null,earLeft:earLeft,earRight:earRight,earTilt:earTilt,active:active,state:action.state,alarm:alarm,distance:travel,directAlarm:directAlarm,socialCue:social,socialMemory:socialMemory,social:social?social.id:null,socialIndex:social?social.index:null,socialDistance:social?social.distance:null,
+          spacingCue:spacing.cue,spacingCooldown:spacing.cooldown,spacing:spacing.cue?'rabbits':null,spacingIndex:spacing.cue?spacing.cue.index:null,spacingDistance:spacing.cue?spacing.cue.decisionDistance:null,
+          crossingCue:crossing.cue,crossingLook:crossing.look,crossingCooldown:crossing.cooldown,crossing:crossing.cue?'foxes':null,crossingIndex:crossing.cue?crossing.cue.index:null,crossingDistance:crossing.cue?crossing.cue.distance:null,
+          recoveryCue:recovering.cue,lastDirectThreat:recovering.memory,
+          breakoffCue:breaking.cue,breakoffCooldown:breaking.cooldown,
+          refugeCue:refugeCue,searchCue:searching.cue,preyCueSnapshot:sp.id==='foxes'&&active&&prey?{id:prey.id,index:prey.index,x:prey.x,z:prey.z}:null,huntStage:hunt.stage,huntAge:hunt.age,huntCooldown:hunt.cooldown,listenCue:listening.cue,listenAge:listening.age,listenCooldown:listening.cooldown,
           pounce:pounce,crawl:crawl,bank:bank,wingFlap:wingFlap,scan:Math.sin(time*0.75+base.phase)*0.20,
           // Record the inputs used for this decision, before movement. Reusing
           // them avoids explaining an action with a different, later neighbour.
           foodAvailable:food,threatDistance:threat?threat.distance:null,preyDistance:prey?prey.distance:null,
           threatIndex:threat?threat.index:null,preyIndex:prey?prey.index:null,
           threat:threat?threat.id:null,prey:prey?prey.id:null};
+        var earFollow=step&&sp.id==='rabbits'?ecoMeadowRabbitEarFollow(old,nextPose):{pitch:0,yaw:0};nextPose.earFollowPitch=earFollow.pitch;nextPose.earFollowYaw=earFollow.yaw;
+        nextPose.eyeAim=sp.id==='foxes'?ecoMeadowFoxEyeAim(old,nextPose):0;
+        committed[i]=nextPose;return nextPose;
         });
       });
       ['foxes','rabbits'].forEach(function(id){frame[id].forEach(function(pose,index){pose.footPlants=ecoMeadowPlantFeet(id,pose,previous[id][index],index);});});
       frames.push(frame);previous=frame;
     });
+    ecoMeadowRabbitPinnaRecord(frames);
+    ecoMeadowFoxBrushRecord(frames);
+    ecoMeadowFoxPinnaRecord(frames);
     return frames;
   }
 
@@ -1119,7 +2774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
   // Real-time playback draws between recorded samples. Continuous values are
   // interpolated (angles along the short arc); states, cues and absences come
   // from the earlier sample, so a paused frame is always an exact sample.
-  var ECO_MEADOW_BLEND_KEYS=['x','z','altitude','distance','moving','stride','forage','rest','crouch','headTurn','earLeft','earRight','earTilt','pounce','crawl','bank','wingFlap','scan','alarm'];
+  var ECO_MEADOW_BLEND_KEYS=['x','z','altitude','activity','distance','moving','turnBalance','stride','forage','rest','crouch','headTurn','headRaise','listenTilt','neighborLook','crossingLook','eyeAim','earLeft','earRight','earTilt','earFollowPitch','earFollowYaw','pounce','crawl','bank','wingFlap','scan','alarm'];
   // With neighbouring samples, paths use a monotone cubic so velocity has no
   // kink at each sample and never overshoots a stop.
   function ecoMeadowHermite(p0,p1,p2,p3,t){
@@ -1127,14 +2782,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     return (2*t3-3*t2+1)*p1+(t3-2*t2+t)*m1+(-2*t3+3*t2)*p2+(t3-t2)*m2;
   }
   function ecoMeadowBlendPose(a,b,alpha,id,before,after) {
-    if(!a||!b||!(alpha>0)||!a.active||!b.active)return a;
+    if(id==='foxes'&&a&&b&&Number.isFinite(alpha)&&alpha>=1)return b;
+    if(!a||!b||!(alpha>0)||!a.active||!b.active){
+      if(id==='foxes'&&a&&b&&Number.isFinite(alpha)&&alpha>0&&alpha<1){var held=Object.assign({},a);ecoMeadowFoxEyeBlend(a,b,alpha,held);if(a.crossingCue){held.crossingCue=null;held.crossing=null;held.crossingIndex=null;held.crossingDistance=null;}return held;}
+      return a;
+    }
     if(alpha>=1)return b;
     var out=Object.assign({},a),smooth=!!(before&&after&&before.active&&after.active);
     ECO_MEADOW_BLEND_KEYS.forEach(function(key){var u=a[key],w=b[key];if(typeof u==='number'&&typeof w==='number')out[key]=smooth&&(key==='x'||key==='z'||key==='altitude'||key==='distance')?ecoMeadowHermite(before[key],u,w,after[key],alpha):u+(w-u)*alpha;});
     out.yaw=a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*alpha;
+    if(id==='rabbits')ecoMeadowRabbitPinnaBlend(a,b,alpha,out);
     var pace=id==='foxes'?0.35:0.25;
     out.gait=Math.sin(out.distance*(id==='caterpillars'?70:28)+a.phase)*Math.min(1,out.moving/pace);
     if(a.footPlants&&b.footPlants)out.footPlants=a.footPlants.map(function(f,k){var g=b.footPlants[k];return g?Object.assign({},f,{x:f.x+(g.x-f.x)*alpha,z:f.z+(g.z-f.z)*alpha}):f;});
+    if(id==='foxes'){
+      ecoMeadowFoxEyeBlend(a,b,alpha,out);
+      // Continue only the same recorded crossing episode. The scalar head and
+      // ear pose still eases normally; a canceled live cue has no connector.
+      var crossingFrom=ecoMeadowFoxCrossingCue(a.crossingCue),crossingTo=ecoMeadowFoxCrossingCue(b.crossingCue);
+      if(crossingFrom&&(!crossingTo||crossingFrom.index!==crossingTo.index||crossingFrom.receiverIndex!==crossingTo.receiverIndex||crossingFrom.startStep!==crossingTo.startStep)){out.crossingCue=null;out.crossing=null;out.crossingIndex=null;out.crossingDistance=null;}
+      ecoMeadowFoxBrushBlend(a,b,alpha,out);
+      ecoMeadowFoxPinnaBlend(a,b,alpha,out);
+    }
     return out;
   }
   var ECO_MEADOW_PREVIEW_STEPS=600;
@@ -1179,20 +2848,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var text='',target=null;
     switch(pose.state){
       case 'Retreating': case 'Moving away':
-        text='A nearby predator representative triggered movement away.';target=cue('threat');break;
+        text=pose.refugeCue?'A nearby predator triggered retreat toward thicket '+(pose.refugeCue.index+1)+'. The recorded destination is a shelter cue; its dotted line is not a prediction of the route or proof of escape.':'A nearby predator representative triggered movement away.';target=cue('threat');break;
       case 'Alert':
-        if(pose.threatDistance!=null&&pose.threatDistance<3.1){text='A predator representative is within this representative’s alert range.';target=cue('threat');}
-        else text='The alarm response is fading after a recent threat, so feeding has not resumed yet.';break;
+        if(pose.refugeCue&&pose.refugeCue.stage==='at-cover'){text='This rabbit pauses at its recorded thicket target while watching a nearby predator. Vegetation can offer concealment in this illustrative rule; the pose does not establish survival or a successful escape.';target=cue('threat');}
+        else if(pose.socialCue){text='A nearby directly alarmed rabbit supplied this local vigilance cue. The selected rabbit pauses and watches its neighbor; the neighbor had a live predator cue.';target=cue('social');}
+        else if(pose.threatDistance!=null&&pose.threatDistance<3.1){text='A predator representative is within this representative’s alert range.';target=cue('threat');}
+        else text=pose.socialMemory?'The local response to a recently alarmed neighbor is fading, so feeding has not resumed yet.':'The alarm response is fading after a recent threat, so feeding has not resumed yet.';break;
       case 'Grazing': case 'Foraging':
-        text='Plant food is available, and no nearby threat is interrupting this feeding pause.';break;
+        var neighborPoint=id==='rabbits'&&pose.state==='Grazing'?ecoMeadowRabbitNeighborLookCue(pose.neighborLookCue):null;
+        if(neighborPoint){text='Plant food remains available. This rabbit briefly raises its head and turns its ears toward a nearby rabbit whose recorded previous-frame movement was giving it space. This illustrative glance adds no alarm and does not establish communication, cooperation or a change in food intake.';target={id:'rabbits',index:neighborPoint.index,name:ECO_WEB_SPECIES.find(function(sp){return sp.id==='rabbits';}).name};}
+        else text='Plant food is available, and no nearby threat is interrupting this feeding pause.';break;
+      case 'Giving space':
+        text=pose.spacingCue?'A nearby grazing rabbit supplied this short, slow repositioning cue. One representative gives space while its neighbor continues feeding. The cue uses the neighbor’s previous position. This illustrative spacing rule does not establish dominance or change either rabbit’s food intake or biomass.':'No valid nearby feeding-neighbor cue remains for this repositioning.';target=pose.spacingCue?cue('spacing'):null;break;
       case 'Searching for food': case 'Searching for insects':
         text='No enabled food group currently has positive biomass, so this movement represents a search for food.';break;
       case 'Exploring':text='This is a movement phase between pauses; no nearby threat is interrupting it.';break;
       case 'Resting':text=id==='caterpillars'&&pose.foodAvailable===false?'Plant food is unavailable, so the caterpillar pauses instead of feeding.':'This pause is part of the representative’s simulated activity cycle.';break;
-      case 'Listening':text='Nearby prey representatives supplied the cue for a listening pause.';target=cue('prey');break;
-      case 'Stalking':text='Nearby prey representatives supplied the cue for a slow approach.';target=cue('prey');break;
+      case 'Listening':
+        if(pose.listenCue){text=(pose.listenCue.age===0?'A nearby prey representative’s recorded movement began this listening pause.':'The fox continues a short listening pause after that prey representative moved.')+' The cue is still live and nearby. This movement rule does not simulate sound or a measured hearing range.';target=cue('prey');}
+        else text='No current recorded movement cue is available for this listening pose.';
+        break;
+      case 'Stalking':text=pose.listenCooldown===24?'The short listening pause ended, so the fox resumes a slow approach toward its current nearby prey cue.':'Nearby prey representatives supplied the cue for a slow approach.';target=cue('prey');break;
+      case 'Checking after retreat':text=pose.recoveryCue?(pose.recoveryCue.stage==='brake'?'The rabbit is slowing after a direct retreat.':'The rabbit pauses briefly after slowing from a direct retreat.')+' Its alarm had faded while it was moving away, so this short check fills the transition before grazing or exploration. Head and ears refer to a fixed, previously recorded direct-threat point; the cue does not track the predator or establish that the rabbit is safe.':'No valid direct-retreat recovery cue remains.';break;
+      case 'Breaking off pursuit':text=pose.breakoffCue?'The selected rabbit was retreating beyond this scene’s pursuit-gap rule. The fox brakes and turns away from the rabbit’s recorded position at that release. This point stays fixed during the short response; it does not track the rabbit, simulate scent, or establish escape or capture.':'No valid recorded pursuit-release cue remains.';break;
+      case 'Checking last location':text=pose.searchCue?'The previous rabbit target is at cover, so the fox briefly checks that prey representative’s previously recorded location. The marked point stays fixed rather than following the hidden rabbit. This bounded presentation rule does not simulate scent, prove what a fox can see, or establish a capture.':'No valid previously recorded prey location remains for this check.';break;
       case 'Tracking prey':text='A prey representative is within tracking range, so the fox turns toward it.';target=cue('prey');break;
-      case 'Searching':text='No prey representative is close enough to trigger tracking in this phase.';break;
+      case 'Searching':
+        var crossingPoint=id==='foxes'?ecoMeadowFoxCrossingCue(pose.crossingCue):null;
+        if(crossingPoint){
+          text=crossingPoint.stepKind==='held'?'The existing clearance rule held this recorded step while reserving the neighboring fox’s space.':crossingPoint.stepKind==='shortened'?'The existing clearance rule shortened this recorded step to '+crossingPoint.allowedDistance.toFixed(3)+' scene units.':'An earlier recorded fox-peer clearance step is still being inspected; the current step has no fox-peer shortening marker.';
+          text+=' '+(crossingPoint.stage==='release'?'The fox is moving again and its head-and-ear watch is fading.':'The fox briefly turns its head and ears toward that same live peer.');
+          text+=' The marked peer uses its actual current recorded position and may itself be still. Index order is navigation bookkeeping; this does not establish territory, rank, cooperation, food sharing or a population effect.';
+          target={id:'foxes',index:crossingPoint.index,name:ECO_WEB_SPECIES.find(function(sp){return sp.id==='foxes';}).name};
+        }else text='No prey representative is close enough to trigger tracking in this phase.';
+        break;
       case 'Preparing to pounce':text='Nearby prey prompted preparation. The fox can still abandon the attempt before takeoff.';target=cue('prey');break;
       case 'Pouncing':text='The fox is committed to its takeoff direction until landing, even if prey disappears. This does not confirm a capture.';break;
       case 'Recovering':text='A short landing recovery prevents an immediate repeated takeoff.';break;
@@ -1206,6 +2895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       case 'Feeding':text='Plant food is available, so the caterpillar is in a feeding pause.';break;
       default:text='This action belongs to the representative animation at the selected sample.';
     }
+    if(pose.peerAvoidance&&pose.peerAvoidance.id===id)text+=' This grounded step was shortened to leave room for another '+(id==='foxes'?'fox':'rabbit')+' (representative '+(pose.peerAvoidance.index+1)+'). The illustrative body-clearance rule does not establish social rank or change biomass.';
     return {text:text,cue:target};
   }
 
@@ -1216,6 +2906,434 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     if(!other||!other.active||![selected.x,selected.z,selected.altitude,other.x,other.z,other.altitude].every(Number.isFinite))return null;
     return {id:cue.id,index:cue.index,name:cue.name,selected:selected,other:other};
   }
+
+  // A trace indexes two already-recorded decisions. The receiving rabbit at S
+  // used its neighbor at S-1; that neighbor's direct alarm used inputs at S-2.
+  // Keep those input samples separate from the three current displayed poses.
+  // This helper never advances the model or adds an alarm/communication rule.
+  function ecoMeadowVigilanceTrace(frames,step,index) {
+    if(!Array.isArray(frames)||!Number.isInteger(step)||step<2||step>=frames.length||!Number.isInteger(index)||index<0||index>=16)return null;
+    var current=frames[step],previous=frames[step-1],directInput=frames[step-2];
+    function pose(frame,id,n){var p=frame&&Array.isArray(frame[id])&&frame[id][n];return p&&p.active===true&&[p.x,p.z,p.yaw,p.altitude].every(Number.isFinite)&&Math.abs(p.x)<1000&&Math.abs(p.z)<1000&&p.altitude>=0&&p.altitude<100&&typeof p.state==='string'&&p.state.length>0&&p.state.length<=80?p:null;}
+    function counts(frame){var out={};['rabbits','foxes','owls'].forEach(function(id){var a=frame&&frame[id];out[id]=Array.isArray(a)&&a.length<=16?a.filter(function(p){return p&&p.active===true;}).length:0;});return out;}
+    function nearestThreat(frame,origin,available){
+      var nearest=null;ECO_WEB_LINKS.filter(function(link){return link.food==='rabbits';}).forEach(function(link){
+        for(var n=0;n<available[link.consumer];n++){var candidate=pose(frame,link.consumer,n);if(!candidate)continue;var distance=Math.hypot(candidate.x-origin.x,candidate.z-origin.z);if(!nearest||distance<nearest.distance)nearest={id:link.consumer,index:n,distance:distance,state:candidate.state};}
+      });return nearest;
+    }
+    function noticed(threat){return threat.distance*(threat.id==='owls'?1.8:['Stalking','Listening','Preparing to pounce','Resting'].indexOf(threat.state)>=0?1.6:1);}
+    function snapshot(p){return {active:true,state:p.state,x:p.x,z:p.z,yaw:p.yaw,altitude:p.altitude};}
+    var receiver=pose(current,'rabbits',index),receiverInput=pose(previous,'rabbits',index),raw=receiver&&receiver.socialCue;
+    if(!receiver||!receiverInput||receiver.state!=='Alert'||receiver.directAlarm!==false||receiver.socialMemory!==true||!raw||raw.id!=='rabbits'||!Number.isInteger(raw.index)||raw.index<0||raw.index>=16||raw.index===index||['foxes','owls'].indexOf(raw.threatId)<0||!Number.isInteger(raw.threatIndex)||raw.threatIndex<0||raw.threatIndex>=16||!Number.isFinite(raw.distance)||raw.distance<0||raw.distance>1.6||receiver.social!=='rabbits'||receiver.socialIndex!==raw.index||receiver.socialDistance!==raw.distance)return null;
+    var source=pose(current,'rabbits',raw.index),sourceDecision=pose(previous,'rabbits',raw.index),sourceInput=pose(directInput,'rabbits',raw.index),predator=pose(current,raw.threatId,raw.threatIndex),predatorPrevious=pose(previous,raw.threatId,raw.threatIndex),predatorInput=pose(directInput,raw.threatId,raw.threatIndex);
+    if(!source||!sourceDecision||!sourceInput||!predator||!predatorPrevious||!predatorInput)return null;
+    // Re-evaluate only the detached cue selection, using the same current
+    // representative counts as the original S decision. Reject copied sources.
+    var selected=ecoMeadowSocialAlarm('rabbits',index,receiverInput,previous,counts(current));
+    if(!selected||selected.id!==raw.id||selected.index!==raw.index||selected.threatId!==raw.threatId||selected.threatIndex!==raw.threatIndex||Math.abs(selected.distance-raw.distance)>1e-9)return null;
+    var receiverThreat=nearestThreat(previous,receiverInput,counts(current));
+    if(!receiverThreat||receiver.threat!==receiverThreat.id||receiver.threatIndex!==receiverThreat.index||!Number.isFinite(receiver.threatDistance)||Math.abs(receiver.threatDistance-receiverThreat.distance)>1e-9||noticed(receiverThreat)<3.4)return null;
+    // The source's earlier direct alarm also needs its actual nearest threat,
+    // input distance and noticed-distance rule. Stable link order breaks ties.
+    var nearest=nearestThreat(directInput,sourceInput,counts(previous));
+    if(!nearest||nearest.id!==raw.threatId||nearest.index!==raw.threatIndex||sourceDecision.threat!==nearest.id||sourceDecision.threatIndex!==nearest.index||!Number.isFinite(sourceDecision.threatDistance)||Math.abs(sourceDecision.threatDistance-nearest.distance)>1e-9)return null;
+    if(noticed(nearest)>=2.6)return null;
+    return {version:1,step:step,neighborDecisionStep:step-1,directDecisionStep:step-2,decisionDistance:selected.distance,directDistance:nearest.distance,
+      receiver:{id:'rabbits',index:index,pose:snapshot(receiver)},source:{id:'rabbits',index:raw.index,pose:snapshot(source)},predator:{id:raw.threatId,index:raw.threatIndex,pose:snapshot(predator)},
+      inputs:{receiver:[receiverInput.x,receiverInput.z],neighbor:[sourceDecision.x,sourceDecision.z],directObserver:[sourceInput.x,sourceInput.z],predator:[predatorInput.x,predatorInput.z]}};
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{vigilanceTrace:ecoMeadowVigilanceTrace});
+
+  // Find fieldwork episodes in recorded representative actions. This only
+  // indexes existing frames; it never simulates a hunt or changes the food web.
+  function ecoMeadowEncounters(frames, rawConfig) {
+    if (!Array.isArray(frames) || frames.length < 3) return [];
+    var config = ecoWebConfig(rawConfig), names = {};
+    ECO_WEB_SPECIES.forEach(function(sp) { names[sp.id] = sp.name; });
+    var kinds = [
+      { id: 'fox', actors: ['foxes'], states: ['Stalking', 'Listening', 'Tracking prey'], title: 'Fox encounter', expected: 'approach',
+        explanation: 'The recorded fox listens, stalks, or tracks while a nearby prey representative supplies its behavior cue. Compare the sampled actions and positions to describe its approach.' },
+      {id:'listening',actors:['foxes'],states:['Listening'],title:'Fox listening encounter',expected:'approach',
+        explanation:'A nearby prey representative’s recorded movement starts a short fox listening pause. Inspect the prey’s movement before the pause, the fox’s stillness and directed ears, and its next action. This is an illustrative movement rule; sound is not simulated.'},
+      { id: 'escape', actors: ['rabbits', 'voles'], states: ['Retreating', 'Alert'], title: 'Herbivore encounter', expected: 'avoid',
+        explanation: 'The recorded herbivore becomes alert or retreats while a nearby predator supplies its behavior cue. Compare its pause or movement with the predator’s position.' },
+      { id: 'owl', actors: ['owls'], states: ['Quartering over prey'], title: 'Owl encounter', expected: 'approach',
+        explanation: 'A nearby prey representative steers this recorded owl search flight. Compare its sampled flight path and the position of its cue.' },
+      { id: 'insects', actors: ['bluetits'], states: ['Pecking'], title: 'Blue tit encounter', expected: 'feed',
+        explanation: 'A nearby caterpillar representative supplies this recorded blue tit pecking cue. Describe the feeding action visible in the samples.' }
+      ,{ id:'vigilance',actors:['rabbits'],states:['Alert'],title:'Neighbor encounter',expected:'avoid',
+        explanation:'This rabbit pauses after a nearby rabbit reacts to a predator. Compare the neighbor cue with direct predator detection. This is a local teaching rule, with no simulated sound propagation.' }
+      ,{id:'spacing',actors:['rabbits'],states:['Giving space'],title:'Feeding neighbors',expected:'avoid',
+        explanation:'The selected rabbit makes a short, slow reposition beside a grazing neighbor. Compare both animals before, during and after the response. One rabbit gives space while its neighbor continues feeding. This is an illustrative spacing response; it does not establish dominance or a change in feeding rate.'}
+    ];
+    var encounters = [];
+    kinds.forEach(function(kind) {
+      var best = null;
+      function consider(segment) {
+        if (!segment || segment.end - segment.start < 2) return;
+        // Prefer a fox episode containing stalking, then the longest episode.
+        // Traversal order resolves ties by actor, representative and start.
+        if (!best || (kind.id === 'fox' && segment.stalking && !best.stalking) ||
+          (!(kind.id === 'fox' && best.stalking && !segment.stalking) && segment.end - segment.start > best.end - best.start)) best = segment;
+      }
+      kind.actors.forEach(function(id) {
+        if (!config.enabled[id]) return;
+        for (var index = 0; index < 16; index++) {
+          var segment = null;
+          for (var step = 0; step < frames.length; step++) {
+            var frame = frames[step], pose = frame && Array.isArray(frame[id]) && frame[id][index];
+            var valid = pose && pose.active === true && kind.states.indexOf(pose.state) >= 0 &&
+              [pose.x, pose.z, pose.altitude].every(Number.isFinite);
+            var pair = valid ? ecoMeadowInteraction(frame, id, index) : null;
+            var linked = pair && config.enabled[pair.id] && pair.other.active === true && (kind.id==='vigilance'?pair.id===id&&pair.index!==index&&!!pose.socialCue:kind.id==='spacing'?pair.id===id&&pair.index<index&&pair.other.state==='Grazing'&&!!pose.spacingCue&&pose.spacingCue.id===id&&pose.spacingCue.index===pair.index&&pair.other.foodAvailable===true:ECO_WEB_LINKS.some(function(link) {
+              return kind.id === 'escape' ? link.food === id && link.consumer === pair.id : link.consumer === id && link.food === pair.id;
+            }));
+            if(kind.id==='listening')linked=linked&&pose.listenCue&&pose.listenCue.id===pair.id&&pose.listenCue.index===pair.index&&pose.listenCue.onsetMovement>=0.12;
+            if (!linked) { consider(segment); segment = null; continue; }
+            if (segment && segment.cueId === pair.id && segment.cueIndex === pair.index) {
+              segment.end = step; segment.stalking = segment.stalking || pose.state === 'Stalking';
+            } else {
+              consider(segment);
+              segment = { actorId: id, actorIndex: index, cueId: pair.id, cueIndex: pair.index, start: step, end: step, stalking: pose.state === 'Stalking' };
+            }
+          }
+          consider(segment);
+        }
+      });
+      if (!best) return;
+      encounters.push({
+        id: kind.id + ':' + best.actorId + ':' + best.actorIndex + ':' + best.start + ':' + best.end + ':' + best.cueId + ':' + best.cueIndex,
+        kind: kind.id, title: kind.title, question: 'What will this animal do next near the recorded cue?',
+        actor: { id: best.actorId, index: best.actorIndex, name: names[best.actorId] },
+        cue: { id: best.cueId, index: best.cueIndex, name: names[best.cueId] },
+        start: best.start, end: best.end, step: Math.floor((best.start + best.end) / 2), before: Math.max(0, best.start - 1), after: Math.min(frames.length - 1, best.end + 1),
+        expected: kind.expected, explanation: kind.explanation,
+        limitation: 'These are illustrative representative actions, not measured wildlife observations. The cue view does not show a capture or establish a change in biomass.'
+      });
+    });
+    return encounters;
+  }
+
+  // An ethogram is an explicit coding key for the representative's recorded
+  // action labels. Sample proportions are not elapsed-time budgets.
+  var ECO_MEADOW_ETHOGRAM_CATEGORIES = [
+    {id:'feeding',name:'Feeding',color:'#a3d977',description:'Grazing, foraging, pecking or feeding actions. A feeding pose does not establish food intake.',states:['Grazing','Foraging','Pecking','Feeding']},
+    {id:'moving',name:'Moving / searching',color:'#6dd3e8',description:'Travel, flight, retreat, pounce or search actions. A named search can include a brief pause.',states:['Retreating','Exploring','Searching for food','Stalking','Tracking prey','Searching','Pouncing','Quartering over prey','Slow wingbeats','Gliding','Moving away','Giving space','Breaking off pursuit','Hopping between feeding spots','Searching for insects','Crawling']},
+    {id:'attending',name:'Attending / preparing',color:'#f4cf78',description:'Alert, listening, pounce preparation, checking a last location or checking after retreat (including braking). These are coding rules for recorded actions, not claims about what an animal thinks.',states:['Alert','Listening','Preparing to pounce','Checking last location','Checking after retreat']},
+    {id:'resting',name:'Resting / recovering',color:'#b7b1eb',description:'Resting or landing-recovery actions; recovery is grouped here as a stationary pause.',states:['Resting','Recovering']},
+    {id:'grooming',name:'Grooming',color:'#e8a9cf',description:'Preening actions.',states:['Preening']}
+  ];
+
+  // The cue bench reruns one existing spacing decision on detached inputs.
+  // It never advances a modified trajectory or the population equations.
+  function ecoMeadowSpacingProbeInput(raw) {
+    if(!raw||!Array.isArray(raw.rabbits)||raw.rabbits.length<1||raw.rabbits.length>16||!Number.isInteger(raw.count)||raw.count<1||raw.count>raw.rabbits.length||typeof raw.food!=='boolean')return null;
+    var rabbits=[];
+    for(var k=0;k<raw.rabbits.length;k++){
+      var p=raw.rabbits[k];
+      if(!p||typeof p.active!=='boolean'||!Number.isFinite(p.x)||Math.abs(p.x)>=1000||!Number.isFinite(p.z)||Math.abs(p.z)>=1000||typeof p.state!=='string'||!p.state||p.state.length>80||typeof p.foodAvailable!=='boolean'||typeof p.directAlarm!=='boolean'||typeof p.social!=='boolean'||typeof p.refuge!=='boolean'||!Number.isInteger(p.cooldown)||p.cooldown<0||p.cooldown>16)return null;
+      rabbits.push({active:p.active,x:p.x,z:p.z,state:p.state,foodAvailable:p.foodAvailable,directAlarm:p.directAlarm,social:p.social,refuge:p.refuge,cooldown:p.cooldown});
+    }
+    return {rabbits:rabbits,count:raw.count,food:raw.food};
+  }
+
+  function ecoMeadowSpacingProbeDecision(input,index) {
+    var previous={rabbits:input.rabbits.map(function(p){return {active:p.active,x:p.x,z:p.z,state:p.state,foodAvailable:p.foodAvailable,directAlarm:p.directAlarm,socialCue:p.social?{}:null,refugeCue:p.refuge?{}:null,spacingCooldown:p.cooldown,spacingCue:null};})};
+    var result=ecoMeadowRabbitSpacing(index,previous.rabbits[index],previous,{rabbits:input.count},input.food,{state:'Grazing',speed:0,mode:'roam',forage:0.8},true);
+    return {state:result.action.state,sourceIndex:result.cue?result.cue.index:null,decisionDistance:result.cue?result.cue.decisionDistance:null};
+  }
+
+  function ecoMeadowSpacingProbeNormalizeCase(raw) {
+    if(!raw||raw.version!==1||!Number.isInteger(raw.step)||raw.step<1||raw.step>240||!Number.isInteger(raw.actorIndex)||raw.actorIndex<1||raw.actorIndex>15||!Number.isInteger(raw.cueIndex)||raw.cueIndex<0||raw.cueIndex>=raw.actorIndex)return null;
+    var input=ecoMeadowSpacingProbeInput(raw.input);
+    if(!input||raw.actorIndex>=input.count||raw.cueIndex>=input.count||input.rabbits[raw.actorIndex].state!=='Grazing')return null;
+    var output=ecoMeadowSpacingProbeDecision(input,raw.actorIndex),recorded=raw.recorded;
+    if(!recorded||recorded.state!=='Giving space'||recorded.sourceIndex!==raw.cueIndex||!Number.isFinite(recorded.decisionDistance)||recorded.decisionDistance<0||output.state!==recorded.state||output.sourceIndex!==recorded.sourceIndex||Math.abs(output.decisionDistance-recorded.decisionDistance)>1e-9)return null;
+    return {version:1,id:'spacing-probe:'+raw.actorIndex+':'+raw.cueIndex+':'+raw.step,step:raw.step,actorIndex:raw.actorIndex,cueIndex:raw.cueIndex,input:input,recorded:output};
+  }
+
+  function ecoMeadowSpacingProbeCase(frames,encounter) {
+    if(!Array.isArray(frames)||!encounter||encounter.kind!=='spacing'||!encounter.actor||encounter.actor.id!=='rabbits'||!encounter.cue||encounter.cue.id!=='rabbits'||!Number.isInteger(encounter.start)||!Number.isInteger(encounter.end)||encounter.start<0||encounter.end>=frames.length)return null;
+    for(var step=Math.max(1,encounter.start);step<=encounter.end;step++){
+      var frame=frames[step],previous=frames[step-1],actor=frame&&Array.isArray(frame.rabbits)&&frame.rabbits[encounter.actor.index],cue=actor&&actor.spacingCue;
+      if(!actor||actor.active!==true||actor.state!=='Giving space'||!cue||cue.age!==0||cue.id!=='rabbits'||cue.index!==encounter.cue.index||!previous||!Array.isArray(previous.rabbits)||previous.rabbits[encounter.actor.index]&&previous.rabbits[encounter.actor.index].spacingCue)continue;
+      var raw={version:1,step:step,actorIndex:encounter.actor.index,cueIndex:cue.index,input:{count:frame.rabbits.filter(function(p){return p&&p.active===true;}).length,food:actor.foodAvailable===true,rabbits:previous.rabbits.map(function(p){return p?{active:p.active,x:p.x,z:p.z,state:p.state,foodAvailable:p.foodAvailable===true,directAlarm:p.directAlarm===true,social:!!p.socialCue,refuge:!!p.refugeCue,cooldown:Number.isInteger(p.spacingCooldown)?p.spacingCooldown:0}:null;})},recorded:{state:actor.state,sourceIndex:cue.index,decisionDistance:cue.decisionDistance}};
+      var normalized=ecoMeadowSpacingProbeNormalizeCase(raw);if(normalized)return normalized;
+    }
+    return null;
+  }
+
+  function ecoMeadowSpacingProbeRun(raw,variable,value) {
+    var context=ecoMeadowSpacingProbeNormalizeCase(raw);
+    if(!context||['distance','feeding'].indexOf(variable)<0||(variable==='distance'?(!Number.isFinite(value)||value<0||value>2.5):typeof value!=='boolean'))return null;
+    var modified=ecoMeadowSpacingProbeInput(context.input),actor=modified.rabbits[context.actorIndex],source=modified.rabbits[context.cueIndex],control=variable==='feeding'?value===true:Math.abs(value-context.recorded.decisionDistance)<=1e-12;
+    if(variable==='distance'&&!control){
+      var dx=source.x-actor.x,dz=source.z-actor.z,length=Math.hypot(dx,dz);if(length<1e-12){dx=1;dz=0;length=1;}
+      source.x=actor.x+dx/length*value;source.z=actor.z+dz/length*value;
+    }else if(variable==='feeding')source.state=value?'Grazing':'Resting';
+    var output=ecoMeadowSpacingProbeDecision(modified,context.actorIndex),outcome=output.state!=='Giving space'?'stop':output.sourceIndex===context.cueIndex?'continue':'switch';
+    return {version:1,context:context,variable:variable,value:value,control:control,modifiedInput:modified,original:Object.assign({},context.recorded),modified:output,outcome:outcome};
+  }
+
+  // A collected control is an explicit learner action, separate from the
+  // original output recomputed for every single-decision cue test.
+  function ecoMeadowSpacingProbeContextKey(raw,branch) {
+    var context=ecoMeadowSpacingProbeNormalizeCase(raw);
+    return context&&['baseline','experiment'].indexOf(branch)>=0?JSON.stringify({branch:branch,context:context}):null;
+  }
+
+  function ecoMeadowSpacingProbeTrialSnapshot(raw) {
+    if(!raw||raw.version!==1||typeof raw.control!=='boolean')return null;
+    var trial=ecoMeadowSpacingProbeRun(raw.context,raw.variable,raw.value),input=ecoMeadowSpacingProbeInput(raw.modifiedInput);
+    if(!trial||!input||JSON.stringify(input)!==JSON.stringify(trial.modifiedInput)||raw.outcome!==trial.outcome||raw.control!==trial.control)return null;
+    for(var k=0;k<2;k++){var name=k?'modified':'original',a=raw[name],b=trial[name];if(!a||a.state!==b.state||a.sourceIndex!==b.sourceIndex||a.decisionDistance!==b.decisionDistance)return null;}
+    return trial;
+  }
+
+  function ecoMeadowSpacingProbePairRecord(raw,sighting,focus) {
+    var predictions=['continue','stop','switch','unsure'];
+    if(!raw||raw.version!==2||!sighting||sighting.kind!=='spacing'||focus!=='rabbits'||['baseline','experiment'].indexOf(raw.branch)<0||raw.branch!==sighting.branch||!sighting.before||!sighting.after||!Number.isInteger(sighting.before.step)||sighting.before.step<0||!Number.isInteger(sighting.after.step)||sighting.after.step>240||sighting.after.step<sighting.before.step||predictions.indexOf(raw.prediction)<0||predictions.indexOf(raw.firstPrediction)<0)return null;
+    var control=ecoMeadowSpacingProbeTrialSnapshot(raw.control),trial=ecoMeadowSpacingProbeTrialSnapshot(raw.trial);
+    if(!control||!trial||control.control!==true||trial.control!==false||control.variable!==trial.variable||control.value!==(control.variable==='distance'?control.context.recorded.decisionDistance:true)||JSON.stringify(control.context)!==JSON.stringify(trial.context)||JSON.stringify(control.modifiedInput)!==JSON.stringify(control.context.input)||JSON.stringify(control.modified)!==JSON.stringify(control.original))return null;
+    var context=trial.context,key=ecoMeadowSpacingProbeContextKey(context,raw.branch);
+    if(!key||raw.contextKey!==key||context.actorIndex!==sighting.actorIndex||context.cueIndex!==sighting.cueIndex||context.step<sighting.before.step||context.step>sighting.after.step)return null;
+    return {version:2,branch:raw.branch,contextKey:key,control:control,trial:trial,firstPrediction:raw.firstPrediction,prediction:raw.prediction,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+  }
+
+  function ecoMeadowSpacingProbePairEvidence(frames,encounter,branch,state) {
+    var s=state||{},context=ecoMeadowSpacingProbeCase(frames,encounter),key=context&&ecoMeadowSpacingProbeContextKey(context,branch);
+    if(!key||s.version!==2||s.checked!==true||s.contextKey!==key)return null;
+    var sighting={kind:encounter.kind,branch:branch,actorIndex:encounter.actor.index,cueIndex:encounter.cue.index,before:{step:encounter.before},after:{step:encounter.after}},record=ecoMeadowSpacingProbePairRecord(s,sighting,encounter.actor.id);
+    var value=s.variable==='distance'?s.distance:s.variable==='feeding'?s.feeding:null;
+    if(!record||s.variable!==record.trial.variable||value!==record.trial.value)return null;
+    return record;
+  }
+
+  function ecoMeadowSpacingProbePairPending(frames,encounter,branch,state) {
+    return !!state&&state.version===2&&!ecoMeadowSpacingProbePairEvidence(frames,encounter,branch,state);
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{spacingProbeContextKey:ecoMeadowSpacingProbeContextKey,spacingProbeTrialSnapshot:ecoMeadowSpacingProbeTrialSnapshot,spacingProbePairRecord:ecoMeadowSpacingProbePairRecord,spacingProbePairEvidence:ecoMeadowSpacingProbePairEvidence,spacingProbePairPending:ecoMeadowSpacingProbePairPending});
+
+  function ecoMeadowEthogramCategory(state) {
+    var category=ECO_MEADOW_ETHOGRAM_CATEGORIES.find(function(item){return item.states.indexOf(state)>=0;});
+    return category?category.id:null;
+  }
+
+  function ecoMeadowEthogramPlan(frames,id,index,start,interval) {
+    if(!Array.isArray(frames)||['rabbits','voles','foxes','owls','caterpillars','bluetits'].indexOf(id)<0||!Number.isInteger(index)||index<0||index>15||!Number.isInteger(start)||start<0||!Number.isInteger(interval)||interval<1||start+interval*4>=frames.length)return null;
+    var samples=[],end=start+interval*4;
+    // A fixed representative cannot bridge a disappearance or corrupt sample.
+    for(var step=start;step<=end;step++){
+      var pose=frames[step]&&Array.isArray(frames[step][id])&&frames[step][id][index],category=pose&&ecoMeadowEthogramCategory(pose.state);
+      if(!pose||pose.active!==true||![pose.x,pose.z].every(Number.isFinite)||Math.abs(pose.x)>=1000||Math.abs(pose.z)>=1000||!category)return null;
+      if((step-start)%interval===0)samples.push({step:step,state:pose.state,category:category,x:pose.x,z:pose.z});
+    }
+    return {id:id+':'+index+':'+start+':'+interval,species:id,index:index,start:start,interval:interval,end:end,samples:samples};
+  }
+
+  // A guided entry reuses the ordinary five-sample record. No crossing flag or
+  // eye-angle measurement is added to saved ethograms.
+  function ecoMeadowCrossingEthogramPlan(frames) {
+    var episode=ecoMeadowFoxCrossingEpisode(frames);if(!episode||episode.start<1)return null;
+    var start=episode.start-1,before=frames[start]&&frames[start].foxes&&frames[start].foxes[episode.index],fallback=null;
+    if(!before||before.active!==true||before.crossingCue)return null;
+    function bound(step,pose,cue){
+      var frame=frames[step],previous=frames[step-1],source=frame&&frame.foxes&&frame.foxes[cue.index],prior=previous&&previous.foxes&&previous.foxes[cue.index],receiverPrior=previous&&previous.foxes&&previous.foxes[episode.index];
+      return pose.active===true&&pose.state==='Searching'&&cue.receiverIndex===episode.index&&cue.index===episode.sourceIndex&&cue.startStep===episode.start&&cue.sourceStep===step&&source&&source.active===true&&source.state==='Searching'&&!source.huntStage&&prior&&prior.active===true&&receiverPrior&&receiverPrior.active===true&&cue.x===source.x&&cue.z===source.z&&cue.previousX===prior.x&&cue.previousZ===prior.z&&cue.movement===source.moving&&cue.receiverMovement===pose.moving&&Number.isFinite(pose.crossingLook)&&pose.crossingLook>=0&&pose.crossingLook<=1&&Math.abs(Math.hypot(source.x-pose.x,source.z-pose.z)-cue.distance)<1e-8&&Math.abs(Math.hypot(source.x-prior.x,source.z-prior.z)-cue.travel)<1e-8&&Math.abs(Math.hypot(pose.x-receiverPrior.x,pose.z-receiverPrior.z)-cue.receiverTravel)<1e-8;
+    }
+    for(var interval=1;interval<=8;interval++){
+      var plan=ecoMeadowEthogramPlan(frames,'foxes',episode.index,start,interval);if(!plan||plan.samples.some(function(sample){return sample.state!=='Searching';}))continue;
+      var during=false,released=false,valid=true;
+      // Bind every cue in this window, including unsampled moments, rather
+      // than trusting the single episode checkpoint that found the event.
+      for(var step=start;step<=plan.end;step++){
+        var pose=frames[step].foxes[episode.index],cue=pose.crossingCue&&ecoMeadowFoxCrossingCue(pose.crossingCue);
+        if(pose.crossingCue&&(!cue||!bound(step,pose,cue))){valid=false;break;}
+      }
+      if(!valid)continue;
+      for(var k=0;k<5;k++){
+        var samplePose=frames[plan.samples[k].step].foxes[episode.index],sampleCue=samplePose.crossingCue&&ecoMeadowFoxCrossingCue(samplePose.crossingCue);
+        if(sampleCue){if(sampleCue.stage==='orient'||sampleCue.stage==='watch')during=true;if(sampleCue.stage==='release')released=true;}
+        if(k===4&&sampleCue)valid=false;
+      }
+      if(!valid||!during)continue;
+      if(released)return plan;if(!fallback)fallback=plan;
+    }
+    return fallback;
+  }
+
+  function ecoMeadowEthogramProgress(plan,codes,visited) {
+    if(!plan||!Array.isArray(plan.samples)||plan.samples.length!==5||plan.samples.some(function(sample,k){return !sample||!Number.isInteger(sample.step)||sample.step<0||sample.step>240||(k&&sample.step<=plan.samples[k-1].step);}))return null;
+    var ids=ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(item){return item.id;}),seen=[];
+    if(Array.isArray(visited))visited.forEach(function(k){if(Number.isInteger(k)&&k>=0&&k<5&&seen.indexOf(k)<0)seen.push(k);});
+    seen.sort(function(a,b){return a-b;});
+    var chosen=Array.isArray(codes)?codes:[],coded=0,nextVisit=-1,nextCode=-1;
+    for(var k=0;k<5;k++){if(seen.indexOf(k)<0&&nextVisit<0)nextVisit=k;if(ids.indexOf(chosen[k])>=0)coded++;else if(nextCode<0)nextCode=k;}
+    return {inspected:seen.length,coded:coded,visited:seen,nextVisit:nextVisit,nextCode:nextCode};
+  }
+
+  function ecoMeadowEthogramCheck(plan,codes,firstCodes) {
+    var ids=ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(item){return item.id;});
+    if(!plan||!Array.isArray(plan.samples)||plan.samples.length!==5||!Array.isArray(codes)||codes.length!==5||codes.some(function(code){return ids.indexOf(code)<0;}))return null;
+    if(plan.samples.some(function(sample,k){return !sample||!Number.isInteger(sample.step)||sample.step<0||(k&&sample.step<=plan.samples[k-1].step)||(k>1&&sample.step-plan.samples[k-1].step!==plan.samples[1].step-plan.samples[0].step)||ids.indexOf(sample.category)<0||ecoMeadowEthogramCategory(sample.state)!==sample.category;}))return null;
+    if(firstCodes!=null&&(!Array.isArray(firstCodes)||firstCodes.length!==5||firstCodes.some(function(code){return ids.indexOf(code)<0;})))return null;
+    var expected={},observed={},matches=0;
+    ids.forEach(function(id){expected[id]=0;observed[id]=0;});
+    var comparisons=plan.samples.map(function(sample,k){expected[sample.category]++;observed[codes[k]]++;var correct=codes[k]===sample.category;if(correct)matches++;return {step:sample.step,state:sample.state,code:codes[k],expected:sample.category,correct:correct};});
+    return {total:5,matches:matches,firstMatches:firstCodes?plan.samples.filter(function(sample,k){return sample.category===firstCodes[k];}).length:null,comparisons:comparisons,tally:ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(category){return {id:category.id,name:category.name,color:category.color,recorded:expected[category.id],coded:observed[category.id],recordedProportion:expected[category.id]/5,codedProportion:observed[category.id]/5};})};
+  }
+
+// A ruler measures both representatives at the selected sample. Behavioral
+  // cue distances refer to previous positions and must not be reused here.
+  // A flat, detached sheet can be retained without generating another timeline.
+  // References never retain another reference or a recursively nested activity.
+  function ecoMeadowEthogramSnapshot(raw) {
+    var ids=ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(item){return item.id;});
+    if(!raw||raw.version!==1||['baseline','experiment'].indexOf(raw.branch)<0||['rabbits','voles','foxes','owls','caterpillars','bluetits'].indexOf(raw.species)<0||!Number.isInteger(raw.index)||raw.index<0||raw.index>15||!Number.isInteger(raw.start)||raw.start<0||!Number.isInteger(raw.interval)||raw.interval<1||raw.start+raw.interval*4>240||!Array.isArray(raw.samples)||raw.samples.length!==5)return null;
+    var validCodes=function(codes){return Array.isArray(codes)&&codes.length===5&&codes.every(function(code){return ids.indexOf(code)>=0;});};
+    if(!validCodes(raw.codes)||!validCodes(raw.firstCodes))return null;
+    var samples=[];
+    for(var k=0;k<5;k++){
+      var point=raw.samples[k];
+      if(!point||point.step!==raw.start+raw.interval*k||typeof point.state!=='string'||point.state.length>80||ids.indexOf(point.category)<0||ecoMeadowEthogramCategory(point.state)!==point.category||!Number.isFinite(point.x)||Math.abs(point.x)>=1000||!Number.isFinite(point.z)||Math.abs(point.z)>=1000)return null;
+      samples.push({step:point.step,state:point.state,category:point.category,x:point.x,z:point.z});
+    }
+    var sheet={version:1,branch:raw.branch,species:raw.species,index:raw.index,start:raw.start,interval:raw.interval,samples:samples,firstCodes:raw.firstCodes.slice(),codes:raw.codes.slice(),reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+    if(typeof raw.runPrediction==='string')sheet.runPrediction=raw.runPrediction.slice(0,1200);
+    return sheet;
+  }
+
+  // A fair sampling comparison changes exactly one sampling variable while
+  // holding the recorded branch, representative and five-point count fixed.
+  function ecoMeadowSamplingComparison(reference,current) {
+    var a=ecoMeadowEthogramSnapshot(reference),b=ecoMeadowEthogramSnapshot(current);
+    if(!a||!b||a.species!==b.species||a.index!==b.index||a.branch!==b.branch||(a.start===b.start)===(a.interval===b.interval))return null;
+    var overlap=[];
+    for(var k=0;k<a.samples.length;k++){
+      var point=a.samples[k],same=b.samples.find(function(other){return other.step===point.step;});
+      if(same){if(same.state!==point.state||same.category!==point.category||same.x!==point.x||same.z!==point.z)return null;overlap.push(point.step);}
+    }
+    var at=ecoMeadowEthogramCheck({samples:a.samples},a.codes,a.firstCodes),bt=ecoMeadowEthogramCheck({samples:b.samples},b.codes,b.firstCodes);
+    if(!at||!bt)return null;
+    return {reference:a,current:b,variable:a.start===b.start?'interval':'start',overlapSteps:overlap,
+      rows:at.tally.map(function(row,k){var second=bt.tally[k];return {id:row.id,name:row.name,color:row.color,reference:row.recorded,current:second.recorded,delta:second.recorded-row.recorded,referenceProportion:row.recordedProportion,currentProportion:second.recordedProportion,referenceCoded:row.coded,currentCoded:second.coded};})};
+  }
+
+  function ecoMeadowSamplingClaim(comparison,category,prediction) {
+    if(!comparison||!Array.isArray(comparison.rows)||['higher','lower','same','unsure'].indexOf(prediction)<0)return null;
+    var row=comparison.rows.find(function(item){return item.id===category;});
+    if(!row||![row.reference,row.current,row.delta].every(Number.isInteger)||row.reference<0||row.reference>5||row.current<0||row.current>5||row.delta!==row.current-row.reference)return null;
+    var expected=row.delta>0?'higher':row.delta<0?'lower':'same';
+    return {category:category,prediction:prediction,expected:expected,correct:prediction==='unsure'?null:prediction===expected,reference:row.reference,current:row.current,delta:row.delta};
+  }
+
+  // Preview the second plan without revealing its recorded category tally.
+  function ecoMeadowSamplingPlan(reference,frames,start,interval,branch) {
+    var sheet=ecoMeadowEthogramSnapshot(reference);
+    if(!sheet||branch!==sheet.branch||(sheet.start===start)===(sheet.interval===interval))return null;
+    return ecoMeadowEthogramPlan(frames,sheet.species,sheet.index,start,interval);
+  }
+
+  function ecoMeadowPairMeasurement(frames,encounter,step) {
+    if(!Array.isArray(frames)||!encounter||!Number.isInteger(step)||!Number.isInteger(encounter.before)||!Number.isInteger(encounter.after)||encounter.before<0||encounter.after>=frames.length||encounter.before>encounter.after||step<encounter.before||step>encounter.after)return null;
+    var actor=encounter.actor,cue=encounter.cue,ids=['rabbits','voles','foxes','owls','caterpillars','bluetits'];
+    if(!actor||!cue||ids.indexOf(actor.id)<0||ids.indexOf(cue.id)<0||!Number.isInteger(actor.index)||actor.index<0||actor.index>15||!Number.isInteger(cue.index)||cue.index<0||cue.index>15||(actor.id===cue.id&&actor.index===cue.index))return null;
+    var frame=frames[step],a=frame&&Array.isArray(frame[actor.id])&&frame[actor.id][actor.index],b=frame&&Array.isArray(frame[cue.id])&&frame[cue.id][cue.index];
+    if(!a||!b||a.active!==true||b.active!==true||![a.x,a.z,b.x,b.z].every(Number.isFinite))return null;
+    var gap=Math.hypot(b.x-a.x,b.z-a.z);if(!Number.isFinite(gap))return null;
+    return {step:step,actor:{id:actor.id,index:actor.index,x:a.x,z:a.z,state:typeof a.state==='string'?a.state:'Unrecorded action'},cue:{id:cue.id,index:cue.index,x:b.x,z:b.z,state:typeof b.state==='string'?b.state:'Unrecorded action'},gap:gap};
+  }
+
+  function ecoMeadowPairEvidence(frames,encounter,steps) {
+    if(!Array.isArray(steps)||steps.length!==3||!steps.every(Number.isInteger)||steps[0]>=steps[1]||steps[1]>=steps[2])return null;
+    var samples=steps.map(function(step){return ecoMeadowPairMeasurement(frames,encounter,step);});
+    if(samples.some(function(point){return !point;}))return null;
+    var tolerance=0.005;
+    function trend(delta){return delta < -tolerance-1e-12?'closer':delta > tolerance+1e-12?'farther':'steady';}
+    var continuous=true;
+    var intervals=[0,1].map(function(k){var a=samples[k],b=samples[k+1],delta=b.gap-a.gap,actorTravel=0,cueTravel=0,previous=a;for(var step=a.step+1;step<=b.step;step++){var point=ecoMeadowPairMeasurement(frames,encounter,step);if(!point){continuous=false;break;}actorTravel+=Math.hypot(point.actor.x-previous.actor.x,point.actor.z-previous.actor.z);cueTravel+=Math.hypot(point.cue.x-previous.cue.x,point.cue.z-previous.cue.z);previous=point;}return {from:a.step,to:b.step,delta:delta,actorTravel:actorTravel,cueTravel:cueTravel,trend:trend(delta)};});
+    if(!continuous)return null;
+    if(intervals.some(function(interval){return ![interval.delta,interval.actorTravel,interval.cueTravel].every(Number.isFinite);}))return null;
+    var changed=intervals.map(function(interval){return interval.trend;}).filter(function(value){return value!=='steady';}),overall=!changed.length?'steady':changed.every(function(value){return value===changed[0];})?changed[0]:'mixed',largest=Math.max.apply(Math,intervals.map(function(interval){return Math.abs(interval.delta);}));
+    return {samples:samples,intervals:intervals,trend:overall,netChange:samples[2].gap-samples[0].gap,largestChange:intervals.map(function(interval,k){return Math.abs(interval.delta)===largest?k:-1;}).filter(function(k){return k>=0;}),tolerance:tolerance};
+  }
+
+// The straight, ticked ruler measures x/z separation and is not a decision arrow.
+function createFieldAnnotations(T,scene,geometry,materials,groundHeight) {
+  var group=new T.Group();group.name='eco-field-ruler';scene.add(group);
+  var points=new Float32Array(33*3),ticks=new Float32Array(64*6);
+  var lineGeometry=geometry(new T.BufferGeometry()),tickGeometry=geometry(new T.BufferGeometry());
+  lineGeometry.setAttribute('position',new T.BufferAttribute(points,3));tickGeometry.setAttribute('position',new T.BufferAttribute(ticks,3));
+  var material=new T.LineBasicMaterial({color:0xf1c7ff,depthTest:false,depthWrite:false,toneMapped:false});materials.push(material);
+  var line=new T.Line(lineGeometry,material),marks=new T.LineSegments(tickGeometry,material);
+  line.name='eco-field-ruler-line';marks.name='eco-field-ruler-ticks';line.frustumCulled=marks.frustumCulled=false;line.renderOrder=marks.renderOrder=15;group.add(line,marks);
+  function write(buffer,at,x,z){buffer[at]=x;buffer[at+1]=groundHeight(x,z)+0.055;buffer[at+2]=z;}
+  return {group:group,update:function(sample){
+    group.visible=!!sample;
+    if(!sample)return {ticks:0,endpoints:null};
+    var a=sample.actor,b=sample.cue,dx=b.x-a.x,dz=b.z-a.z,gap=sample.gap,nx=gap>1e-9?-dz/gap:0,nz=gap>1e-9?dx/gap:1;
+    for(var k=0;k<33;k++)write(points,k*3,a.x+dx*k/32,a.z+dz*k/32);
+    var n=0;
+    function tick(distance,long){if(n>=64)return;var t=gap>1e-9?distance/gap:0,x=a.x+dx*t,z=a.z+dz*t,width=long?0.14:0.075;write(ticks,n*6,x-nx*width,z-nz*width);write(ticks,n*6+3,x+nx*width,z+nz*width);n++;}
+    tick(0,true);for(var distance=0.5;distance<gap-1e-7&&n<63;distance+=0.5)tick(distance,Math.abs(distance-Math.round(distance))<1e-7);if(gap>1e-7)tick(gap,true);
+    lineGeometry.attributes.position.needsUpdate=true;tickGeometry.attributes.position.needsUpdate=true;tickGeometry.setDrawRange(0,n*2);
+    return {ticks:n,endpoints:[[a.x,groundHeight(a.x,a.z)+0.055,a.z],[b.x,groundHeight(b.x,b.z)+0.055,b.z]]};
+  }};
+}
+
+function createRefugeAnnotation(T,scene,geometry,materials,groundHeight,options) {
+  options=options||{};var name=options.name||'eco-refuge-target',color=options.color||0x86efac;
+  var group=new T.Group();group.name=name;scene.add(group);
+  var buffer=new Float32Array(17*3),distances=new Float32Array(17),pathGeometry=geometry(new T.BufferGeometry());pathGeometry.setAttribute('position',new T.BufferAttribute(buffer,3));pathGeometry.setAttribute('lineDistance',new T.BufferAttribute(distances,1));
+  var material=new T.LineDashedMaterial({color:color,dashSize:0.14,gapSize:0.1,depthTest:false,depthWrite:false,toneMapped:false});materials.push(material);
+  var line=new T.Line(pathGeometry,material);line.name=name+'-path';line.frustumCulled=false;line.renderOrder=13;group.add(line);
+  var ringMaterial=new T.MeshBasicMaterial({color:color,side:T.DoubleSide,transparent:true,opacity:0.8,depthTest:false,depthWrite:false,toneMapped:false});materials.push(ringMaterial);
+  var ring=new T.Mesh(geometry(new T.RingGeometry(options.innerRadius||0.44,options.outerRadius||0.49,options.sides||48)),ringMaterial);ring.name=name+'-ring';ring.rotation.x=-Math.PI/2;ring.renderOrder=13;group.add(ring);
+  return {group:group,update:function(pose,refuge){
+    group.visible=!!(pose&&refuge);if(!group.visible)return;
+    ring.position.set(refuge.x,groundHeight(refuge.x,refuge.z)+0.055,refuge.z);
+    for(var k=0;k<17;k++){var t=k/16,x=pose.x+(refuge.x-pose.x)*t,z=pose.z+(refuge.z-pose.z)*t;buffer[k*3]=x;buffer[k*3+1]=groundHeight(x,z)+0.06;buffer[k*3+2]=z;distances[k]=t*Math.hypot(refuge.x-pose.x,refuge.z-pose.z);}
+    pathGeometry.attributes.position.needsUpdate=true;pathGeometry.attributes.lineDistance.needsUpdate=true;
+  }};
+}
+
+// Two distinct current-position links explain the recorded cue identities.
+// Their geometry is cached, and invalid samples clear both visible draw ranges.
+function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight) {
+  var group=new T.Group();group.name='eco-vigilance-trace';scene.add(group);
+  var up=new T.Vector3(0,1,0),a=new T.Vector3(),b=new T.Vector3(),point=new T.Vector3(),previous=new T.Vector3(),direction=new T.Vector3();
+  var colors=[0xff9d86,0x77edee],names=['direct','neighbor'];
+  var links=names.map(function(name,k){
+    var positions=new Float32Array(25*3),distances=new Float32Array(25),g=geometry(new T.BufferGeometry());g.setAttribute('position',new T.BufferAttribute(positions,3));g.setAttribute('lineDistance',new T.BufferAttribute(distances,1));
+    var options={color:new T.Color(colors[k]).convertSRGBToLinear(),depthTest:false,depthWrite:false,toneMapped:false,transparent:true,opacity:0.90};
+    var material=k?new T.LineDashedMaterial(Object.assign(options,{dashSize:0.16,gapSize:0.11})):new T.LineBasicMaterial(options);materials.push(material);
+    var line=new T.Line(g,material);line.name='eco-vigilance-'+name+'-link';line.frustumCulled=false;line.renderOrder=12;group.add(line);
+    var arrowMaterial=new T.MeshBasicMaterial({color:new T.Color(colors[k]).convertSRGBToLinear(),depthTest:false,depthWrite:false,toneMapped:false});materials.push(arrowMaterial);
+    var arrow=new T.Mesh(geometry(new T.ConeGeometry(1,1,10)),arrowMaterial);arrow.name='eco-vigilance-'+name+'-arrow';arrow.renderOrder=13;group.add(arrow);
+    return {line:line,arrow:arrow,geometry:g,positions:positions,distances:distances};
+  });
+  var endpoints=['receiver','source','predator'].map(function(role,k){
+    var material=new T.MeshBasicMaterial({color:new T.Color(k===0?0xffe790:k===1?0x77edee:0xff9d86).convertSRGBToLinear(),side:T.DoubleSide,depthTest:false,depthWrite:false,toneMapped:false});materials.push(material);
+    var mesh=new T.Mesh(geometry(new T.RingGeometry(k===0?0.35:0.70,1,k===2?4:24)),material);mesh.name='eco-vigilance-'+role+'-endpoint';mesh.renderOrder=14;mesh.scale.setScalar(0.12);group.add(mesh);return mesh;
+  });
+  function center(actor,target){var p=actor.pose;return target.set(p.x,groundHeight(p.x,p.z)+p.altitude+0.42,p.z);}
+  return {group:group,update:function(trace,camera){
+    group.visible=!!trace;
+    if(!trace){links.forEach(function(link){link.geometry.setDrawRange(0,0);link.line.visible=link.arrow.visible=false;});return null;}
+    var actors=[trace.receiver,trace.source,trace.predator];
+    endpoints.forEach(function(mesh,k){center(actors[k],mesh.position);mesh.quaternion.copy(camera.quaternion);});
+    var pairs=[[trace.predator,trace.source],[trace.source,trace.receiver]],out=[];
+    links.forEach(function(link,k){
+      center(pairs[k][0],a);center(pairs[k][1],b);var gap=a.distanceTo(b),length=0,rise=Math.min(0.65,0.12+gap*0.06);
+      for(var i=0;i<25;i++){var t=i/24;point.lerpVectors(a,b,t);point.y+=Math.sin(Math.PI*t)*rise;point.toArray(link.positions,i*3);if(i)length+=point.distanceTo(previous);link.distances[i]=length;previous.copy(point);}
+      link.geometry.attributes.position.needsUpdate=true;link.geometry.attributes.lineDistance.needsUpdate=true;link.geometry.setDrawRange(0,25);link.line.visible=gap>0.025;link.arrow.visible=gap>0.16;
+      point.fromArray(link.positions,23*3);direction.subVectors(b,point).normalize();var arrowLength=Math.max(0.08,Math.min(0.22,gap*0.08));link.arrow.position.copy(b).addScaledVector(direction,-arrowLength*0.5-0.10);link.arrow.quaternion.setFromUnitVectors(up,direction);link.arrow.scale.set(0.045,arrowLength,0.045);
+      out.push([a.toArray(),b.toArray()]);
+    });return out;
+  }};
+}
 
   function EcoMeadow3D(props) {
     var React = props.React, h = React.createElement;
@@ -1234,6 +3352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     latest.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
     var trackingState=React.useState('steady'),cameraTracking=trackingState[0],setCameraTracking=trackingState[1];
+    var faceDetailState=React.useState(false),faceDetail=faceDetailState[0],setFaceDetail=faceDetailState[1];
     var orbitState = React.useState(0.65), orbit = orbitState[0], setOrbit = orbitState[1];
     var elevationState=React.useState(0.42),observationElevation=elevationState[0],setObservationElevation=elevationState[1];
     var zoomState = React.useState(19), zoom = zoomState[0], setZoom = zoomState[1];
@@ -1246,7 +3365,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var markersState = React.useState(false), markers = markersState[0], setMarkers = markersState[1];
     var cameraModeState = React.useState('habitat'), cameraMode = cameraModeState[0], setCameraMode = cameraModeState[1];
     var interactionState=React.useState(false),showInteraction=interactionState[0],setShowInteraction=interactionState[1];
+    var vigilanceState=React.useState(null),vigilanceRequest=vigilanceState[0],setVigilanceRequest=vigilanceState[1];
     var trailState=React.useState(false),showTrail=trailState[0],setShowTrail=trailState[1];
+    var refugeState=React.useState(false),showRefuge=refugeState[0],setShowRefuge=refugeState[1];
+    var memoryState=React.useState(false),showMemory=memoryState[0],setShowMemory=memoryState[1];
+    var measurePlanState=React.useState(false),measurePlan=measurePlanState[0],setMeasurePlan=measurePlanState[1];
     var isolateState=React.useState(false),isolate=isolateState[0],setIsolate=isolateState[1];
     var representativeState=React.useState({id:props.focus,index:0}),representative=representativeState[0],setRepresentative=representativeState[1];
     var branchState = React.useState('experiment'), branch = branchState[0], setBranch = branchState[1];
@@ -1260,6 +3383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var info=loopInfo.current,p=latest.current;
       if(!value&&playingNow.current&&playhead.current!=null&&info&&p.result===info.result){var held=Math.floor(playhead.current+1e-9);if(held!==info.committed){info.committed=held;if(replaySession.current)replaySession.current.cursor=held;p.onCursor(held);}}
       if(!value)playhead.current=null;
+      if(value)setVigilanceRequest(null);
       playingNow.current=value;playbackEpoch.current++;
       if(!value){replaySession.current=null;setReplay(null);}
       setPlayingState(value);
@@ -1267,7 +3391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var reducedState = React.useState(function() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
     var reduced = reducedState[0], setReduced = reducedState[1];
     var view = React.useRef({});
-    view.current = { orbit: orbit, observationElevation:observationElevation, lift:lift, zoom: zoom, timelineSpeed:timelineSpeed, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting, breeze:breeze, isolate:isolate, showTrail:showTrail, showInteraction:showInteraction, cameraTracking:cameraTracking };
+    view.current = { orbit: orbit, observationElevation:observationElevation, lift:lift, zoom: zoom, timelineSpeed:timelineSpeed, branch: branch, reduced: reduced, cameraMode: cameraMode, markers: markers, lighting: lighting, breeze:breeze, isolate:isolate, showTrail:showTrail, showInteraction:showInteraction, cameraTracking:cameraTracking,faceDetail:faceDetail,showRefuge:showRefuge,showMemory:showMemory,measurePlan:measurePlan };
     // Pointer gestures share the same camera state as the buttons and slider.
     cameraControls.current={
       orbitBy:function(delta){setOrbit(function(value){return value+delta;});},
@@ -1275,7 +3399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if(view.current.cameraMode==='detail'&&latest.current.focus!=='plants'&&!view.current.showInteraction)setObservationElevation(function(value){return Math.max(0.1,Math.min(1.5,value+delta));});
         else setLift(function(value){return Math.max(-0.2,Math.min(0.6,value+delta));});
       },
-      zoomBy:function(factor){setZoom(function(value){return Math.max(15,Math.min(30,Math.round(value*factor*10)/10));});}
+      zoomBy:function(factor){setZoom(function(value){return Math.max(8,Math.min(30,Math.round(value*factor*10)/10));});}
     };
     var sample = props.result ? props.result[branch][props.cursor].values : props.config.initial;
     var focusedSpecies=ECO_WEB_SPECIES.find(function(sp){return sp.id===props.focus;});
@@ -1308,6 +3432,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var sampledBehavior=sampledFrame[props.focus]&&sampledFrame[props.focus][representativeIndex];
     var behaviorExplanation=ecoMeadowExplainBehavior(props.focus,sampledBehavior);
     var interaction=ecoMeadowInteraction(sampledFrame,props.focus,representativeIndex);
+    var vigilanceTrace=props.result&&props.focus==='rabbits'?ecoMeadowVigilanceTrace(behaviorRuns[branch],props.cursor,representativeIndex):null;
+    var vigilanceRequested=!!(vigilanceRequest&&vigilanceRequest.result===props.result&&vigilanceRequest.branch===branch&&vigilanceRequest.index===representativeIndex&&props.focus==='rabbits');
+    var vigilanceActive=!!(vigilanceRequested&&vigilanceTrace&&cameraMode==='detail'&&showInteraction&&!reduced&&!playing&&status==='ready');
+    view.current.showVigilance=vigilanceActive;
+    React.useEffect(function(){setVigilanceRequest(null);},[branch,props.focus,representativeIndex,props.result,reduced]);
+    function toggleVigilanceTrace(){
+      if(vigilanceRequested){setVigilanceRequest(null);return;}
+      if(!vigilanceTrace||reduced||status!=='ready')return;
+      setPlaying(false);setCameraMode('detail');setShowInteraction(true);setIsolate(true);setShowTrail(false);setFaceDetail(false);setShowRefuge(false);setShowMemory(false);setMeasurePlan(false);
+      setVigilanceRequest({result:props.result,branch:branch,index:representativeIndex});
+    }
+    var fieldworkEncounters=React.useMemo(function(){return props.result?ecoMeadowEncounters(behaviorRuns[branch],props.config):[];},[behaviorRuns,branch,JSON.stringify(props.config)]);
+    var fieldworkKey=JSON.stringify(props.config)+'|'+branch;
+    var ethogramState=props.ethogram&&props.ethogram.key===fieldworkKey?props.ethogram:{};
+    var ethogramPending=React.useRef({received:props.ethogram,key:fieldworkKey,value:ethogramState});
+    if(ethogramPending.current.received!==props.ethogram||ethogramPending.current.key!==fieldworkKey)ethogramPending.current={received:props.ethogram,key:fieldworkKey,value:ethogramState};
+    var observationReturn=React.useRef(null),observationPending=React.useRef(false),observationSequenceState=React.useState(0),observationSequence=observationSequenceState[0],setObservationSequence=observationSequenceState[1];
+    function observeScene(){if(reduced)return;observationPending.current=true;setObservationSequence(function(value){return value+1;});}
+    function changeEthogram(patch,inspection,replace){var current=ethogramPending.current.value||{},next=Object.assign({},replace?{}:current,typeof patch==='function'?patch(current):patch,{key:fieldworkKey});ethogramPending.current.value=next;if(props.onEthogramChange)props.onEthogramChange(next,inspection);}
+    function inspectEthogram(step,id,index,focusCode){setPlaying(false);setCameraMode('detail');setShowInteraction(false);setIsolate(true);setShowTrail(false);setRepresentative({id:id,index:index});changeEthogram({},{cursor:step,focus:id});if(focusCode)observationPending.current=false;else observeScene();}
+    var foxCrossingEpisode=React.useMemo(function(){return props.result?ecoMeadowFoxCrossingEpisode(behaviorRuns[branch]):null;},[behaviorRuns,branch,!!props.result]);
+    var crossingEthogramPlan=React.useMemo(function(){return props.result?ecoMeadowCrossingEthogramPlan(behaviorRuns[branch]):null;},[behaviorRuns,branch,!!props.result]);
+    var crossingSheetSequenceState=React.useState(0),crossingSheetSequence=crossingSheetSequenceState[0],setCrossingSheetSequence=crossingSheetSequenceState[1];
+    function launchCrossingEthogram(){
+      var plan=crossingEthogramPlan;if(!plan)return;observationPending.current=false;
+      setPlaying(false);setCameraMode('detail');setShowInteraction(true);setIsolate(true);setShowTrail(false);setShowMemory(false);setShowRefuge(false);setFaceDetail(false);setRepresentative({id:'foxes',index:plan.index});
+      changeEthogram({open:true,draftStart:plan.start,draftInterval:plan.interval,plan:{id:plan.id,species:plan.species,index:plan.index,start:plan.start,interval:plan.interval,branch:branch},codes:['','','','',''],firstCodes:null,visited:[0],checked:false,reflection:'',reference:null,comparison:null,saved:false},{cursor:plan.samples[0].step,focus:'foxes'},true);
+      setCrossingSheetSequence(function(value){return value+1;});
+    }
+    var foxSearchEpisode=React.useMemo(function(){if(!props.result)return null;var frames=behaviorRuns[branch];for(var step=1;step<frames.length;step++)for(var index=0;index<16;index++){var pose=frames[step].foxes&&frames[step].foxes[index];if(pose&&pose.active&&pose.searchCue&&pose.searchCue.age===0)return {step:step,index:index};}return null;},[behaviorRuns,branch,!!props.result]);
+    var fieldwork=props.fieldwork&&props.fieldwork.key===fieldworkKey?props.fieldwork:{};
+    // Keep edits made before the parent commits a render. A local camera render
+    // must not reset this draft to the last received props.
+    var fieldworkDraft=React.useRef({received:props.fieldwork,key:fieldworkKey,value:fieldwork});
+    if(fieldworkDraft.current.received!==props.fieldwork||fieldworkDraft.current.key!==fieldworkKey)fieldworkDraft.current={received:props.fieldwork,key:fieldworkKey,value:fieldwork};
+    function writeFieldwork(patch,inspection,replace){
+      var current=fieldworkDraft.current.value||{},next=typeof patch==='function'?patch(current):replace?patch:Object.assign({},current,patch);
+      fieldworkDraft.current.value=next||{};
+      if(props.onFieldworkChange)props.onFieldworkChange(next,inspection);
+    }
+    var fieldworkEncounter=fieldworkEncounters.find(function(item){return item.id===fieldwork.id;});
+    var rulerRequest=props.sightingRequest&&props.sightingRequest.mode==='ruler'?props.sightingRequest:null;
+    var rulerEncounter=fieldworkEncounter&&fieldwork.revealed&&((fieldwork.measurement&&fieldwork.measurement.open)||(fieldwork.headline&&fieldwork.headline.open&&fieldwork.headline.started))?fieldworkEncounter:rulerRequest?rulerRequest.encounter:null;
+    if(rulerEncounter&&(props.focus!==rulerEncounter.actor.id||representativeIndex!==rulerEncounter.actor.index))rulerEncounter=null;
+    view.current.rulerEncounter=rulerEncounter;
+    var rulerSample=rulerEncounter?ecoMeadowPairMeasurement(behaviorRuns[branch],rulerEncounter,props.cursor):null;
+    var rulerVisible=!!(rulerSample&&!reduced&&!playing&&!vigilanceActive);
+    var ethogramPlan=ethogramState.open&&ethogramState.plan,ethogramCheckpoint=ethogramPlan&&ethogramPlan.branch===branch&&ethogramPlan.species===props.focus&&ethogramPlan.index===representativeIndex?(props.cursor-ethogramPlan.start)/ethogramPlan.interval:-1;
+    var inferenceActive=fieldwork.inference&&fieldwork.inference.open&&ecoMeadowInferenceSnapshot(fieldwork.inference.trial),inferenceCheckpoint=inferenceActive&&fieldworkEncounter&&inferenceActive.branch===branch&&props.focus===fieldworkEncounter.actor.id&&representativeIndex===fieldworkEncounter.actor.index&&ecoMeadowInferenceMatches({trial:inferenceActive},behaviorRuns[branch],fieldworkEncounter)?inferenceActive.samples.findIndex(function(point){return point.step===props.cursor;}):-1;
+    var observationTask=!reduced&&Number.isInteger(ethogramCheckpoint)&&ethogramCheckpoint>=0&&ethogramCheckpoint<5?{kind:'ethogram',index:ethogramCheckpoint}:!reduced&&inferenceCheckpoint>=0?{kind:'inference',index:inferenceCheckpoint}:!reduced&&rulerVisible&&fieldworkEncounter&&fieldwork.headline&&fieldwork.headline.open&&fieldwork.headline.started?{kind:'headline'}:!reduced&&rulerVisible&&fieldworkEncounter?{kind:'ruler'}:null;
+    var pathSheet=fieldwork.measurement,pathMotion=pathSheet&&pathSheet.motion,pathEvidence=fieldworkEncounter&&pathSheet&&pathSheet.checked&&ecoMeadowPairEvidence(behaviorRuns[branch],fieldworkEncounter,pathSheet.steps),observedPath=pathMotion&&pathMotion.open&&pathEvidence&&ecoMeadowPairMotionEvidence(pathEvidence,pathMotion)&&ecoMeadowPairPath(behaviorRuns[branch],fieldworkEncounter,pathEvidence,pathMotion.interval,props.cursor);
+    if(observationTask&&observationTask.kind==='ruler'&&observedPath&&observedPath.active!==null)observationTask={kind:'pairpath'};
+    function returnToActivity(){var region=host.current&&host.current.closest('[data-efw-meadow]'),control=region&&region.querySelector(observationTask&&observationTask.kind==='ethogram'?'[aria-label="Ethogram sample '+(observationTask.index+1)+' code"]':observationTask&&observationTask.kind==='inference'?'[aria-label="Evidence statement 1 source"]':observationTask&&observationTask.kind==='stance'?'[aria-label="Planted-paw comparison choice"]':observationTask&&observationTask.kind==='footfall'?'[aria-label="Checkpoint '+(observationTask.index+1)+' Left hind contact"]':observationTask&&observationTask.kind==='headline'?'[aria-label="Headline evidence interval"]':observationTask&&observationTask.kind==='pairpath'?'[aria-label="Recorded pair path time"]':'[aria-label="Pair measurement time"]');if(control){control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});}}
+    React.useEffect(function(){if(!observationPending.current||status!=='ready')return;observationPending.current=false;if(reduced||!host.current||!observationReturn.current)return;host.current.scrollIntoView({block:'center',behavior:'instant'});observationReturn.current.focus({preventScroll:true});},[observationSequence,status,reduced,props.cursor,props.focus,props.ethogram]);
+    function fieldworkSamples(encounter){
+      if(!encounter)return [];
+      return [['before','Before'],['step','Encounter'],['after','After']].map(function(item){
+        var step=encounter[item[0]],frame=behaviorRuns[branch][step],actor=frame&&frame[encounter.actor.id]&&frame[encounter.actor.id][encounter.actor.index],cue=frame&&frame[encounter.cue.id]&&frame[encounter.cue.id][encounter.cue.index];
+        var key=encounter.expected==='avoid'?'threat':'prey';
+        var localCue=actor&&(encounter.kind==='spacing'?actor.spacingCue:actor.socialCue);
+        var distance=encounter.kind==='vigilance'||encounter.kind==='spacing'?localCue&&localCue.id===encounter.cue.id&&localCue.index===encounter.cue.index?(encounter.kind==='spacing'?localCue.decisionDistance:localCue.distance):null:actor&&actor.active&&actor[key]===encounter.cue.id&&actor[key+'Index']===encounter.cue.index&&Number.isFinite(actor[key+'Distance'])?actor[key+'Distance']:null;
+        return {label:item[1],step:step,state:actor&&actor.active?actor.state:'Not present',cueState:cue&&cue.active?cue.state:'Not present',distance:Number.isFinite(distance)?distance:null};
+      });
+    }
+    var movementStudies=React.useMemo(function(){return {bluetits:props.result?ecoMeadowMotionStudy(behaviorRuns[branch],'bluetits',0):null,owls:props.result?ecoMeadowMotionStudy(behaviorRuns[branch],'owls',0):null,foxes:props.result?ecoMeadowMotionStudy(behaviorRuns[branch],'foxes',0):null,rabbits:props.result?ecoMeadowMotionStudy(behaviorRuns[branch],'rabbits',0):null};},[behaviorRuns,branch,!!props.result]);
+    var movementState=props.motionStudy&&props.motionStudy.key===fieldworkKey?props.motionStudy:{};
+    var movementStudy=movementStudies[movementState.species];
+    if(movementStudy&&movementState.id!==movementStudy.id)movementStudy=null;
+    var footfallPlan=movementStudy&&movementStudy.sequence?ecoMeadowFootfallPlan(behaviorRuns[branch],movementStudy):null;
+    if(footfallPlan&&movementState.footfall&&movementState.footfall.samples){footfallPlan=JSON.stringify(footfallPlan.samples)===JSON.stringify(movementState.footfall.samples)?Object.assign({},footfallPlan,{samples:JSON.parse(JSON.stringify(movementState.footfall.samples))}):null;}
+    var stancePlan=React.useMemo(function(){return movementStudy?ecoMeadowStancePlan(behaviorRuns[branch],movementStudy,branch):null;},[behaviorRuns,branch,movementStudy]);
+    var movementDraftRef=React.useRef(null);movementDraftRef.current=movementState;
+    function changeMovement(patch){var current=movementDraftRef.current||{};if(!movementStudy||current.key!==fieldworkKey||current.id!==movementStudy.id||current.species!==movementStudy.species)return;var fields=typeof patch==='function'?patch(current):patch;var next=Object.assign({},current,fields);movementDraftRef.current=next;if(props.onMotionStudyChange)props.onMotionStudyChange(next);}
+    var footfallCheckpoint=footfallPlan?footfallPlan.samples.findIndex(function(sample){return sample.step===props.cursor;}):-1;
+    if(!reduced&&footfallCheckpoint>=0&&movementState.checked&&movementState.footfall&&movementState.footfall.open&&props.focus===movementStudy.species&&representativeIndex===movementStudy.index)observationTask={kind:'footfall',index:footfallCheckpoint};
+    function inspectFootfall(index,angle){
+      var current=movementDraftRef.current||{};if(!movementStudy||current.key!==fieldworkKey||current.id!==movementStudy.id||current.species!==movementStudy.species)return;
+      if(!movementStudy||!footfallPlan||!Number.isInteger(index)||index<0||index>=3)return;
+      var step=movementStudy.samples[index].step;inspectMovement(movementStudy,step,movementDraftRef.current);
+      if(['left','right','above'].indexOf(angle)>=0&&!reduced&&status==='ready'){
+        var pose=behaviorRuns[branch][step][movementStudy.species][movementStudy.index],start=behaviorRuns[branch][0][movementStudy.species][movementStudy.index],reference=cameraTracking==='steady'?start:pose;
+        setFaceDetail(false);setShowRefuge(false);setShowMemory(false);setMeasurePlan(false);setZoom(19);
+        var observation=ecoMeadowFootfallView(footfallPlan,branch,index,angle,reference.yaw);if(observation){setOrbit(observation.orbit);setObservationElevation(observation.elevation);}
+      }
+      observeScene();
+    }
+    var stanceMeasurement=ecoMeadowStanceMeasure(stancePlan);
+    if(!reduced&&stanceMeasurement&&movementState.checked&&movementState.stance&&movementState.stance.open&&movementState.stance.key===stanceMeasurement.key&&props.focus===movementStudy.species&&representativeIndex===movementStudy.index&&stancePlan.samples.some(function(point){return point.step===props.cursor;}))observationTask={kind:'stance'};
+    function inspectStance(step){
+      var current=movementDraftRef.current||{};
+      if(!movementStudy||!stancePlan||current.key!==fieldworkKey||current.id!==movementStudy.id||current.species!==movementStudy.species||!current.checked||!stancePlan.samples.some(function(point){return point.step===step;}))return;
+      inspectMovement(movementStudy,step,movementDraftRef.current);
+      if(!reduced&&status==='ready'){
+        var pose=behaviorRuns[branch][step][movementStudy.species][movementStudy.index],reference=cameraTracking==='steady'?behaviorRuns[branch][0][movementStudy.species][movementStudy.index]:pose;
+        setFaceDetail(false);setShowRefuge(false);setShowMemory(false);setMeasurePlan(false);setZoom(15);setOrbit(pose.yaw-reference.yaw-Math.PI/2);setObservationElevation(1.45);observeScene();
+      }
+    }
+    var movementBlind=!!(movementStudy&&movementStudy.sequence&&props.focus===movementStudy.species&&representativeIndex===movementStudy.index&&!movementState.checked&&!reduced);
+    if(movementBlind){var snapshotIndex=movementStudy.samples.findIndex(function(point){return point.step===props.cursor;});behaviorLabel=snapshotIndex<0?'Movement snapshot':'Snapshot '+String.fromCharCode(65+movementStudy.layout.indexOf(snapshotIndex));}
+    function inspectMovement(study,step,state){if(!study||!state||state.key!==fieldworkKey||state.id!==study.id||state.species!==study.species||!Number.isInteger(step)||step<0||step>=behaviorRuns[branch].length)return;movementDraftRef.current=state;setPlaying(false);setCameraMode('detail');setShowInteraction(false);setIsolate(true);setShowTrail(false);setRepresentative({id:study.species,index:study.index});if(props.onMotionStudyChange)props.onMotionStudyChange(state,{cursor:step,focus:study.species});}
+    function selectMovement(id){var study=movementStudies[id];if(study)inspectMovement(study,study.samples[0].step,{key:fieldworkKey,id:study.id,species:id,answer:'',checked:false,order:['','',''],firstOrder:null,reflection:'',saved:false,sequenceAttempted:false});}
+    function replayMovement(){
+      if(!movementStudy||reduced||status!=='ready'||(movementStudy.sequence&&!movementState.checked))return;
+      var start=movementStudy.samples[0].step,end=movementStudy.samples[2].step;
+      var current=movementDraftRef.current||{};if(current.key!==fieldworkKey||current.id!==movementStudy.id||current.species!==movementStudy.species||(movementStudy.sequence&&!current.checked))return;
+      inspectMovement(movementStudy,start,current);
+      var info={start:start,end:end,state:movementStudy.title,status:'playing'};setReplay(info);
+      replaySession.current={start:start,end:end,state:info.state,cursor:start,result:props.result,branch:branch,id:movementStudy.species,index:0,inspectionVersion:props.inspectionVersion};setPlaying(true);
+    }
+    function saveMovement(){
+      if(!movementStudy||!props.onSaveMovement)return;
+      var current=movementDraftRef.current||{};
+      if(current.saved||current.key!==fieldworkKey||current.id!==movementStudy.id||current.species!==movementStudy.species)return;
+      var evidence=ecoMeadowMovementEvidence(movementStudy,branch,current,footfallPlan);
+      if(evidence)props.onSaveMovement(Object.assign({},evidence,{motionStudy:Object.assign({},current,{saved:true})}));
+    }
+    function inspectFieldwork(encounter,step,patch,replace){
+      setPlaying(false);setCameraMode('detail');setShowInteraction(true);setIsolate(true);setShowTrail(false);setRepresentative({id:encounter.actor.id,index:encounter.actor.index});
+      writeFieldwork(patch,{cursor:step,focus:encounter.actor.id},replace);
+    }
+    function selectFieldwork(encounter){
+      setMeasurePlan(false);
+      inspectFieldwork(encounter,encounter.before,{key:fieldworkKey,id:encounter.id,forecast:'',revealed:false,reflection:'',limit:'',saved:false},true);
+    }
+    function saveFieldwork(){
+      var activity=fieldworkDraft.current.value||{};
+      if(!fieldworkEncounter||activity.key!==fieldworkKey||activity.id!==fieldworkEncounter.id||!activity.revealed||activity.saved||!props.onSaveSighting)return;
+      var samples=fieldworkSamples(fieldworkEncounter),at=samples[1],choice={approach:'Approach or watch prey',avoid:'Watch or move away from a predator',feed:'Feed or peck',rest:'Rest',unsure:'Not sure yet'};
+      if(fieldworkEncounter.kind==='vigilance')choice.avoid='Pause and watch the nearby rabbit';
+      if(fieldworkEncounter.kind==='spacing')choice.avoid='Give a feeding neighbor space';
+      if(fieldworkEncounter.kind==='listening')choice.approach='Pause and listen near moving prey';
+      var ready=ecoMeadowFieldworkSaveReadiness(behaviorRuns[branch],fieldworkEncounter,branch,activity);if(!ready.ok)return;
+      var measurement=ready.measurement,headline=ready.headline,inference=ready.inference;
+      props.onSaveSighting({step:fieldworkEncounter.step,focus:fieldworkEncounter.actor.id,prediction:'Wildlife action prediction: '+choice[activity.forecast],explanation:activity.reflection||'',sighting:{version:1,kind:fieldworkEncounter.kind,branch:branch,actorIndex:fieldworkEncounter.actor.index,cueId:fieldworkEncounter.cue.id,cueIndex:fieldworkEncounter.cue.index,state:at.state,decisionDistance:at.distance,before:{step:samples[0].step,state:samples[0].state},after:{step:samples[2].step,state:samples[2].state},forecast:activity.forecast,limitation:activity.limit||'',measurement:measurement,headline:headline,inference:inference,probe:activity.probe&&activity.probe.version===2?ready.probe:activity.probe&&activity.probe.trial?{version:1,trial:activity.probe.trial,prediction:activity.probe.prediction,firstPrediction:activity.probe.firstPrediction,reflection:activity.probe.reflection||''}:null},fieldwork:Object.assign({},activity,{saved:true})});
+    }
+    React.useEffect(function(){
+      var request=props.sightingRequest;if(!request)return;
+      setPlaying(false);setBranch(request.branch);setRepresentative({id:request.focus,index:request.index});setCameraMode('detail');setShowInteraction(request.mode!=='movement'&&request.mode!=='ethogram');setIsolate(true);setShowTrail(false);
+    },[props.sightingRequest]);
     var trailPoints=showTrail&&cameraMode==='detail'&&props.result&&!reduced?ecoMeadowTrail(behaviorRuns[branch],props.focus,representativeIndex,props.cursor):[];
     function inspectBehaviorCue(){var cue=behaviorExplanation.cue;if(!cue)return;setShowInteraction(false);setPlaying(false);setRepresentative({id:cue.id,index:cue.index});props.onFocus(cue.id);}
     function goToBehaviorMoment(index){var moment=behaviorMoments[index];if(!moment)return;setRepresentative({id:props.focus,index:representativeIndex});setPlaying(false);props.onCursor(moment.start);}
@@ -1333,7 +3596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // Align with the pose that is visible now; steady tracking then retains
       // this world bearing while heading tracking retains the relative angle.
       if(playing)pauseBehaviorReplay();
-      setOrbit(inspectedBehavior.yaw-reference.yaw+(angle==='face'?0:-Math.PI/2));
+      setOrbit(inspectedBehavior.yaw-reference.yaw+(angle==='face'?0:angle==='rear'?-Math.PI:-Math.PI/2));
       setObservationElevation(angle==='above'?1.5:angle==='side'?0.18:0.32);
     }
     var soilSample=props.config.soil.enabled?(props.result?props.result[branch][props.cursor].soil:props.config.soil):null;
@@ -1467,6 +3730,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var foxEarGeometry=geometry(new T.BufferGeometry());
           foxEarGeometry.setAttribute('position',new T.Float32BufferAttribute([-0.85,0,-0.1,0.82,0,-0.1,0.57,0.45,-0.02,0.15,1,0,-0.45,0.55,-0.02,0.02,0.36,0.28],3));
           foxEarGeometry.setIndex([5,0,1,5,1,2,5,2,3,5,3,4,5,4,0,0,4,3,0,3,2,0,2,1]);foxEarGeometry.computeVertexNormals();
+          // A tapered, gently swept ear shell gives rabbits thin pinnae rather
+          // than cylindrical ears. Inner shells share this closed geometry.
+          var rabbitEarGeometry=geometry(new T.BufferGeometry());
+          rabbitEarGeometry.setAttribute('position',new T.Float32BufferAttribute([0,0,-0.4,0.12,0.25,-0.85,0.08,0.65,-0.70,-0.18,1,0,0.08,0.65,0.70,0.12,0.25,0.85,0,0,0.4,0.25,0.42,0,-0.16,0.42,0],3));
+          rabbitEarGeometry.setIndex([7,0,1,7,1,2,7,2,3,7,3,4,7,4,5,7,5,6,7,6,0,8,1,0,8,2,1,8,3,2,8,4,3,8,5,4,8,6,5,8,0,6]);rabbitEarGeometry.computeVertexNormals();
           var muzzleGeometry=geometry(new T.SphereGeometry(1,20,12)),muzzlePositions=muzzleGeometry.getAttribute('position');
           for(var mv=0;mv<muzzlePositions.count;mv++){var mx=muzzlePositions.getX(mv),taper=0.80-0.28*mx;muzzlePositions.setXYZ(mv,mx,muzzlePositions.getY(mv)*taper,muzzlePositions.getZ(mv)*taper);}muzzleGeometry.computeVertexNormals();
           var whiskerMaterial=new T.LineBasicMaterial({color:0xc4bda9,transparent:true,opacity:0.62});materials.push(whiskerMaterial);
@@ -1494,6 +3762,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(texture);return texture;
           }
           var furTexture=coatTexture(false),featherTexture=coatTexture(true);
+          // Short, overlapping guard hairs follow each skin's UV direction.
+          // Four shared maps cover both mammals; there are no per-animal maps.
+          function mammalCoatMaps(id,upright){
+            var canvas=document.createElement('canvas'),relief=document.createElement('canvas');canvas.width=relief.width=512;canvas.height=relief.height=256;
+            var ctx=canvas.getContext('2d'),bump=relief.getContext('2d'),seed=id==='foxes'?2371:5479;
+            function random(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+            ctx.fillStyle=id==='foxes'?'#f4f0e8':'#e9e5da';ctx.fillRect(0,0,512,256);bump.fillStyle='#808080';bump.fillRect(0,0,512,256);
+            for(var hair=0;hair<8200;hair++){
+              var x=random()*512,y=random()*256,length=2+random()*8,lean=(random()-0.5)*3,value=Math.floor((id==='foxes'?144:100)+random()*100);
+              var dx=upright?lean:length,dy=upright?length:lean;
+              ctx.strokeStyle='rgba('+value+','+value+','+value+','+(id==='foxes'?0.20:0.28)+')';ctx.lineWidth=0.45+random()*0.5;
+              bump.strokeStyle=hair%2?'rgba(178,178,178,0.25)':'rgba(76,76,76,0.20)';bump.lineWidth=0.65;
+              // Repeated boundary strokes make the map seamless in both axes.
+              var copiesX=[0],copiesY=[0];if(x+dx>511)copiesX.push(-512);if(x+dx<1)copiesX.push(512);if(y+dy>255)copiesY.push(-256);if(y+dy<1)copiesY.push(256);
+              [ctx,bump].forEach(function(context){copiesX.forEach(function(sx){copiesY.forEach(function(sy){context.beginPath();context.moveTo(x+sx,y+sy);context.quadraticCurveTo(x+dx*0.55+sx,y+dy*0.55+sy,x+dx+sx,y+dy+sy);context.stroke();});});});
+            }
+            var color=new T.CanvasTexture(canvas),height=new T.CanvasTexture(relief);color.encoding=T.sRGBEncoding;
+            [color,height].forEach(function(texture){texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(texture);});
+            return {color:color,height:height};
+          }
+          var mammalCoats={foxes:{along:mammalCoatMaps('foxes',false),upright:mammalCoatMaps('foxes',true)},rabbits:{along:mammalCoatMaps('rabbits',false),upright:mammalCoatMaps('rabbits',true)}};
+          // Small overlapping contour feathers avoid long fur-like streaks on
+          // bird bodies. The stronger shaft/bar map remains on flight feathers.
+          var birdCanvas=document.createElement('canvas');birdCanvas.width=256;birdCanvas.height=128;
+          var birdContext=birdCanvas.getContext('2d');birdContext.fillStyle='#eeece5';birdContext.fillRect(0,0,256,128);
+          for(var row=0;row<13;row++)for(var col=0;col<27;col++){
+            var bx=col*10+(row%2)*5,by=row*10;
+            birdContext.strokeStyle='rgba(118,109,91,0.16)';birdContext.lineWidth=0.6;birdContext.beginPath();birdContext.moveTo(bx-4,by);birdContext.quadraticCurveTo(bx,by+8,bx+4,by);birdContext.stroke();
+            if((row*13+col*7)%11===0){birdContext.fillStyle='rgba(88,78,62,0.18)';birdContext.fillRect(bx,by+2,0.8,1.2);}
+          }
+          var birdBodyTexture=new T.CanvasTexture(birdCanvas);birdBodyTexture.encoding=T.sRGBEncoding;birdBodyTexture.wrapS=birdBodyTexture.wrapT=T.RepeatWrapping;textures.push(birdBodyTexture);
+          var birdBillGeometry=geometry(new T.ConeGeometry(1,1,10));birdBillGeometry.rotateZ(-Math.PI/2);
           var featherPositions=[],featherUV=[],featherIndices=[];
           for(var section=0;section<=8;section++){
             var t=section/8,halfWidth=0.12*Math.pow(Math.sin(Math.PI*t),0.6)+0.004;
@@ -1509,17 +3809,175 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           for(var fi=0;fi<faceOutline.length;fi++)faceIndices.push(0,fi+1,(fi+1)%faceOutline.length+1);
           owlFaceGeometry.setAttribute('position',new T.Float32BufferAttribute(faceVertices,3));owlFaceGeometry.setIndex(faceIndices);owlFaceGeometry.computeVertexNormals();
           function mesh(parent, geo, color, x, y, z, sx, sy, sz, id) {
-            var key = color + ':' + (id || 'habitat') + (geo===featherGeometry?':feather':geo===bladeGeometry?':leaf':':solid');
+            var surface=geo.userData.ecoCoatSurface,upright=surface==='limbs'||surface==='ear'||surface==='forelimb'||surface==='hindlimb',mammalMap=surface&&mammalCoats[id]?mammalCoats[id][upright?'upright':'along']:null;
+            var ocular=geo===sphere&&/^eco-(foxes|rabbits)-eye-/.test(parent.name||'')&&color!=='#faf9ed';
+            var key = color + ':' + (id || 'habitat') + (geo===featherGeometry?':feather':geo===bladeGeometry?':leaf':surface?':skin-'+(upright?'upright':'along'):ocular?':ocular':':solid');
             if (!materialMap[key]) {
-              var coat=id && id!=='plants' && ['#25272d','#faf9ed','#292b27','#242d29','#252b2b','#735447','#c89389','#b7954f','#fff3d9'].indexOf(color)<0;
-              var map=geo===bladeGeometry?plantTexture:coat?(geo===featherGeometry?featherTexture:id==='caterpillars'?insectTexture:furTexture):null;
-              materialMap[key] = new T.MeshStandardMaterial({color:new T.Color(color).convertSRGBToLinear(),map:map,roughness:coat?1:0.8,flatShading:false,side:geo===featherGeometry?T.DoubleSide:T.FrontSide});
+              var coat=!ocular && id && id!=='plants' && ['#25272d','#faf9ed','#292b27','#242d29','#252b2b','#735447','#c89389','#b7954f','#fff3d9'].indexOf(color)<0;
+              var map=mammalMap?mammalMap.color:geo===bladeGeometry?plantTexture:coat?(geo===featherGeometry?featherTexture:id==='caterpillars'?insectTexture:id==='owls'||id==='bluetits'?birdBodyTexture:furTexture):null;
+              materialMap[key] = new T.MeshStandardMaterial({color:new T.Color(surface?'#ffffff':color).convertSRGBToLinear(),vertexColors:!!surface,map:map,bumpMap:mammalMap?mammalMap.height:null,bumpScale:mammalMap?0.002:1,roughness:ocular?0.22:coat?1:0.8,flatShading:false,side:geo===featherGeometry?T.DoubleSide:T.FrontSide});
+              if(ocular)materialMap[key].userData.ecoOcularSurface=true;
               materials.push(materialMap[key]);
             }
             var m = new T.Mesh(geo, materialMap[key]); m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m);
             m.castShadow = !!id && id !== 'plants'; m.receiveShadow = !!id;
             if (id) { m.userData.species = id; meshes.push(m); }
             return m;
+          }
+          var mammalNoseGeometries={},mammalNoseMaterials={};
+          function mammalNoseMesh(parent,id,x,y,z,sx,sy,sz){
+            if(!mammalNoseGeometries[id]){
+              var raw=ecoMeadowMammalNoseSurface(id),shape=geometry(new T.BufferGeometry()),colors=[];
+              var base=new T.Color(id==='foxes'?'#252b2b':'#9a786f').convertSRGBToLinear(),nostril=new T.Color(id==='foxes'?'#080e0e':'#352c2a').convertSRGBToLinear();
+              for(var vertex=0;vertex<raw.tints.length;vertex++){var tint=raw.tints[vertex];colors.push(base.r+(nostril.r-base.r)*tint,base.g+(nostril.g-base.g)*tint,base.b+(nostril.b-base.b)*tint);}
+              shape.setAttribute('position',new T.Float32BufferAttribute(raw.positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(raw.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(raw.uv,2));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setIndex(raw.indices);shape.userData.ecoNoseSurface=id;
+              mammalNoseGeometries[id]=shape;mammalNoseMaterials[id]=new T.MeshStandardMaterial({vertexColors:true,roughness:0.62,metalness:0,flatShading:false});materials.push(mammalNoseMaterials[id]);
+            }
+            var nose=new T.Mesh(mammalNoseGeometries[id],mammalNoseMaterials[id]);nose.position.set(x,y,z);nose.scale.set(sx,sy,sz);nose.castShadow=true;nose.receiveShadow=true;nose.userData.species=id;nose.userData.ecoNoseMount={center:[x,y,z],scale:[sx,sy,sz]};parent.add(nose);meshes.push(nose);parent.userData.nose=nose;return nose;
+          }
+          var mammalJawGeometries={},mammalJawMaterials={},mammalMouthGeometries={},mammalMouthMaterials={};
+          function mammalJawMesh(parent,id){
+            if(!mammalJawGeometries[id]){
+              var raw=ecoMeadowMammalJawSurface(id),shape=geometry(new T.BufferGeometry()),colors=[],cream=new T.Color(id==='foxes'?'#e0d4bc':'#d6cbb5').convertSRGBToLinear(),guard=new T.Color(id==='foxes'?'#b1a18a':'#a99c84').convertSRGBToLinear();
+              raw.tints.forEach(function(tint){[0,1,2].forEach(function(k){var a=[cream.r,cream.g,cream.b][k],b=[guard.r,guard.g,guard.b][k];colors.push(a+(b-a)*tint);});});
+              shape.setAttribute('position',new T.Float32BufferAttribute(raw.positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(raw.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(raw.uv,2));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setIndex(raw.indices);shape.userData.ecoJawSurface={rows:raw.rows,columns:raw.columns};shape.computeBoundingSphere();
+              mammalJawGeometries[id]=shape;mammalJawMaterials[id]=new T.MeshStandardMaterial({vertexColors:true,map:mammalCoats[id].along.color,bumpMap:mammalCoats[id].along.height,bumpScale:.002,roughness:.90,metalness:0});materials.push(mammalJawMaterials[id]);
+            }
+            var part=new T.Mesh(mammalJawGeometries[id],mammalJawMaterials[id]);part.name='eco-'+id+'-jaw-surface';part.castShadow=true;part.receiveShadow=true;part.userData.species=id;parent.add(part);meshes.push(part);return part;
+          }
+          function mammalMouthMesh(parent,id){
+            if(!mammalMouthGeometries[id]){
+              var raw=ecoMeadowMammalMouthSurface(id),shape=geometry(new T.BufferGeometry());shape.setAttribute('position',new T.Float32BufferAttribute(raw.positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(raw.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(raw.uv,2));shape.setIndex(raw.indices);shape.userData.ecoMouthMargin={sections:raw.sections,lift:raw.lift};shape.computeBoundingSphere();
+              mammalMouthGeometries[id]=shape;mammalMouthMaterials[id]=new T.MeshStandardMaterial({color:id==='foxes'?'#514637':'#625447',roughness:.92,metalness:0});materials.push(mammalMouthMaterials[id]);
+            }
+            var part=new T.Mesh(mammalMouthGeometries[id],mammalMouthMaterials[id]);part.name='eco-'+id+'-mouth-margin';part.castShadow=false;part.receiveShadow=true;part.userData.species=id;parent.add(part);meshes.push(part);return part;
+          }
+
+          function mammalSurfaceGeometry(id,part,origin){
+            var skin=ecoMeadowMammalSurface(id,part),shape=geometry(new T.BufferGeometry()),colors=[],positions=skin.positions.slice();var pinnaRim=part==='ear'?new T.Color(id==='foxes'?'#d2c2a9':'#cec1a7').convertSRGBToLinear():null,pinnaBack=part==='ear'?new T.Color(id==='foxes'?'#302923':'#8f816e').convertSRGBToLinear():null;
+            var limb=part==='forelimb'||part==='hindlimb',baseCoat=new T.Color(id==='foxes'?(part==='ear'?'#806348':part==='tail'?'#b56b39':'#bd7543'):'#9c8d74').convertSRGBToLinear(),paleCoat=new T.Color(limb?(id==='foxes'?'#453a2f':'#b3a68e'):part==='ear'?(id==='foxes'?'#c69a84':'#c09389'):id==='foxes'?'#e9dfc9':part==='tail'?'#eee8d5':'#ded6c1').convertSRGBToLinear(),guardCoat=new T.Color(id==='foxes'?'#6d5943':'#625f50').convertSRGBToLinear();
+            for(var vertex=0;vertex<positions.length/3;vertex++){
+              positions[vertex*3]-=origin[0];positions[vertex*3+1]-=origin[1];positions[vertex*3+2]-=origin[2];
+              if(part!=='ear'&&part!=='tail'){
+                var pigment=ecoMeadowMammalCoatColor(id,part,skin.positions[vertex*3],skin.positions[vertex*3+1],skin.positions[vertex*3+2],skin.normals[vertex*3+1],skin.tints[vertex]);
+                colors.push(pigment[0],pigment[1],pigment[2]);continue;
+              }
+              var tint=skin.tints[vertex],dorsal=Math.max(0,skin.normals[vertex*3+1]),sx=skin.positions[vertex*3],sz=skin.positions[vertex*3+2];
+              var patches=0.5+0.5*Math.sin(sx*29+Math.sin(sz*17)*1.8)*Math.sin(sz*31+Math.sin(sx*13));
+              var guard=part==='ear'||limb?0:(id==='foxes'?0.14:0.25)*dorsal*(0.60+patches*0.40)*(1-tint);
+              // Guard-hair colour varies in object space, so the UV seam and
+              // the underside stay continuous under either texture direction.
+              [baseCoat.r,baseCoat.g,baseCoat.b].forEach(function(channel,axis){var pale=[paleCoat.r,paleCoat.g,paleCoat.b][axis],dark=[guardCoat.r,guardCoat.g,guardCoat.b][axis],coat=channel+(pale-channel)*tint;coat=coat+(dark-coat)*guard;if(part==='ear'&&skin.furRimTints){var rim=[pinnaRim.r,pinnaRim.g,pinnaRim.b][axis];coat+=(rim-coat)*skin.furRimTints[vertex];}if(part==='ear'&&skin.backingTints){var back=[pinnaBack.r,pinnaBack.g,pinnaBack.b][axis];coat+=(back-coat)*skin.backingTints[vertex];}colors.push(coat);});
+            }
+            shape.setAttribute('position',new T.Float32BufferAttribute(positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(skin.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(skin.uv,2));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setIndex(skin.indices);shape.userData.ecoCoatSurface=part;shape.userData.ecoSurfaceDimensions={rings:skin.rings,sides:skin.sides};if(part==='ear')shape.userData.ecoPinnaSurface={height:skin.height,bevelBands:skin.bevelBands,faceLayer:skin.faceLayer,rimVertices:skin.rimVertices};shape.computeBoundingSphere();return shape;
+          }
+          var mammalTorsoGeometry={foxes:mammalSurfaceGeometry('foxes','torso',[-0.10,0.49,0]),rabbits:mammalSurfaceGeometry('rabbits','torso',[-0.12,0.335,0])};
+          var mammalHeadGeometry={foxes:mammalSurfaceGeometry('foxes','head',[0.24,0.58,0]),rabbits:mammalSurfaceGeometry('rabbits','head',[0.24,0.4,0])};
+          function mammalOrbitalGeometry(id){
+            var skin=ecoMeadowMammalOrbitalSurface(id),shape=geometry(new T.BufferGeometry()),head=mammalHeadGeometry[id],headColors=head.getAttribute('color'),headUV=head.getAttribute('uv'),colors=[],uv=[];
+            skin.skullSamples.forEach(function(site){
+              var at=site.triangle*3,vertices=[head.index.array[at],head.index.array[at+1],head.index.array[at+2]];
+              for(var axis=0;axis<3;axis++)colors.push(vertices.reduce(function(sum,vertex,k){return sum+headColors.array[vertex*3+axis]*site.barycentric[k];},0));
+              for(var axis=0;axis<2;axis++)uv.push(vertices.reduce(function(sum,vertex,k){return sum+headUV.array[vertex*2+axis]*site.barycentric[k];},0));
+            });
+            shape.setAttribute('position',new T.Float32BufferAttribute(skin.positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(skin.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(uv,2));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setIndex(skin.indices);shape.userData.ecoCoatSurface='head';shape.userData.ecoOrbitalSurface={rows:skin.rows,columns:skin.columns,innerRims:skin.innerRims,outerRims:skin.outerRims};shape.computeBoundingSphere();return shape;
+          }
+          var mammalOrbitalGeometries={foxes:mammalOrbitalGeometry('foxes'),rabbits:mammalOrbitalGeometry('rabbits')};
+          var mammalNeckGeometry={foxes:mammalSurfaceGeometry('foxes','neck',[0.265,0.51,0]),rabbits:mammalSurfaceGeometry('rabbits','neck',[0.178,0.365,0])};
+          // Resting anatomy is shared; only each animal's fitted vertex buffer
+          // is private. The unchanged coat material still batches normally.
+          var mammalNeckRestPositions={foxes:ecoMeadowMammalSurface('foxes','neck').positions,rabbits:ecoMeadowMammalSurface('rabbits','neck').positions};
+          function fitMammalNeck(surface,id,head){
+            head.updateMatrix();
+            var matrix=head.matrix.elements,home=[head.userData.homeX,head.userData.homeY,0],key=home.join(',')+'|'+matrix.join(',');
+            if(surface.userData.neckFollowKey===key)return;
+            var shape=surface.geometry,positions=shape.getAttribute('position'),normals=shape.getAttribute('normal'),rest=mammalNeckGeometry[id],dimensions=shape.userData.ecoSurfaceDimensions;
+            ecoMeadowMammalNeckFit(id,matrix,mammalNeckRestPositions[id],positions.array,home);positions.needsUpdate=true;
+            var neutral=matrix[0]===1&&matrix[1]===0&&matrix[2]===0&&matrix[4]===0&&matrix[5]===1&&matrix[6]===0&&matrix[8]===0&&matrix[9]===0&&matrix[10]===1&&matrix[12]===home[0]&&matrix[13]===home[1]&&matrix[14]===home[2];
+            if(neutral)normals.array.set(rest.getAttribute('normal').array);
+            else{
+              shape.computeVertexNormals();
+              // Duplicate UV endpoints and pole vertices share the same skin
+              // position; share their lighting normal as well.
+              for(var ring=0;ring<=dimensions.rings;ring++){
+                var first=ring*(dimensions.sides+1),last=first+dimensions.sides,nx=normals.getX(first)+normals.getX(last),ny=normals.getY(first)+normals.getY(last),nz=normals.getZ(first)+normals.getZ(last),length=Math.hypot(nx,ny,nz)||1;
+                normals.setXYZ(first,nx/length,ny/length,nz/length);normals.setXYZ(last,nx/length,ny/length,nz/length);
+              }
+              [0,dimensions.rings].forEach(function(ring){
+                var first=ring*(dimensions.sides+1),nx=0,ny=0,nz=0;
+                for(var side=0;side<dimensions.sides;side++){nx+=normals.getX(first+side);ny+=normals.getY(first+side);nz+=normals.getZ(first+side);}
+                var length=Math.hypot(nx,ny,nz);if(length<1e-9){nx=ring===0?-1:matrix[0];ny=ring===0?0:matrix[1];nz=ring===0?0:matrix[2];length=Math.hypot(nx,ny,nz)||1;}
+                for(var side=0;side<=dimensions.sides;side++)normals.setXYZ(first+side,nx/length,ny/length,nz/length);
+              });
+            }
+            normals.needsUpdate=true;shape.computeBoundingSphere();surface.userData.neckFollowKey=key;surface.userData.neckHeadMatrix=matrix.slice();surface.userData.neckFitCount=(surface.userData.neckFitCount||0)+1;
+          }
+          var mammalEarGeometry={foxes:mammalSurfaceGeometry('foxes','ear',[0,0,0]),rabbits:mammalSurfaceGeometry('rabbits','ear',[0,0,0])};
+          var mammalLimbTemplates={foxes:{fore:mammalSurfaceGeometry('foxes','forelimb',[0,0,0]),hind:mammalSurfaceGeometry('foxes','hindlimb',[0,0,0])},rabbits:{fore:mammalSurfaceGeometry('rabbits','forelimb',[0,0,0]),hind:mammalSurfaceGeometry('rabbits','hindlimb',[0,0,0])}};
+          function mammalEyelidGeometry(id){
+            var skin=ecoMeadowMammalEyelidSurface(id,0),shape=geometry(new T.BufferGeometry()),base=new T.Color(id==='foxes'?'#bd7543':'#9c8d74').convertSRGBToLinear(),rim=new T.Color(id==='foxes'?'#785031':'#806f58').convertSRGBToLinear(),colors=[];
+            var orbital=mammalOrbitalGeometries[id],orbitalColor=orbital.getAttribute('color'),orbitalColumns=orbital.userData.ecoOrbitalSurface.columns,orbitalRows=orbital.userData.ecoOrbitalSurface.rows;
+            skin.tints.forEach(function(t,vertex){
+              var patchSize=(skin.rows+1)*(skin.columns+1),eye=Math.floor(vertex/(patchSize*2)),half=Math.floor(vertex/patchSize)%2,column=vertex%(skin.columns+1),site=eye*(orbitalRows+1)*(orbitalColumns+1)+half*skin.columns+column;
+              [rim.r,rim.g,rim.b].forEach(function(shade,axis){var coat=orbitalColor.array[site*3+axis];colors.push(coat+(shade-coat)*t);});
+            });
+            shape.setAttribute('position',new T.Float32BufferAttribute(skin.positions,3).setUsage(T.DynamicDrawUsage));shape.setAttribute('normal',new T.Float32BufferAttribute(skin.normals,3).setUsage(T.DynamicDrawUsage));shape.setAttribute('uv',new T.Float32BufferAttribute(skin.uv,2));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setIndex(skin.indices);shape.userData.ecoCoatSurface='eyelids';shape.computeBoundingSphere();return shape;
+          }
+          function fitMammalEyelids(surface,id,eyeOpen){
+            var opening=Math.max(0,Math.min(1,(eyeOpen-0.12)/0.88));if(surface.userData.opening===opening)return;
+            var positions=surface.geometry.getAttribute('position'),normal=surface.geometry.getAttribute('normal'),skin=ecoMeadowMammalEyelidSurface(id,opening,positions.array);
+            normal.array.set(skin.normals);positions.needsUpdate=true;normal.needsUpdate=true;surface.userData.opening=opening;surface.userData.fitCount=(surface.userData.fitCount||0)+1;
+          }
+          function mammalLimbSkinGeometry(id){
+            var shape=geometry(new T.BufferGeometry()),positions=[],normals=[],colors=[],uv=[],indices=[],layout=[];
+            for(var slot=0;slot<4;slot++){
+              var hind=slot%2===0,template=mammalLimbTemplates[id][hind?'hind':'fore'],start=positions.length/3,count=template.attributes.position.count;
+              ['position','normal','color','uv'].forEach(function(name){var target=name==='position'?positions:name==='normal'?normals:name==='color'?colors:uv;Array.prototype.push.apply(target,template.attributes[name].array);});
+              for(var index=0;index<template.index.count;index++)indices.push(start+template.index.array[index]);
+              layout.push({hind:hind,side:slot<2?-1:1,start:start,count:count,hipVertex:start+221,pawVertex:start+222});
+            }
+            shape.setAttribute('position',new T.Float32BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));shape.setAttribute('normal',new T.Float32BufferAttribute(normals,3).setUsage(T.DynamicDrawUsage));shape.setAttribute('color',new T.Float32BufferAttribute(colors,3));shape.setAttribute('uv',new T.Float32BufferAttribute(uv,2));shape.setIndex(indices);shape.userData.ecoCoatSurface='limbs';shape.userData.limbLayout=layout;shape.userData.ecoLimbAttachment={version:1,form:'concealed-overlap',firstUnchangedRing:5};shape.computeBoundingSphere();return shape;
+          }
+          var mammalShoulderMatrix=new T.Matrix4(),mammalShoulderOrigin=new T.Matrix4();
+          function fitMammalLimbSkin(surface,id,joints,torso){
+            // Both factors are local to the existing body. The raw torso skin
+            // is rebased at its mesh origin, hence the final inverse origin.
+            torso.parent.updateMatrix();torso.updateMatrix();
+            mammalShoulderOrigin.makeTranslation(id==='foxes'?0.10:0.12,id==='foxes'?-0.49:-0.335,0);
+            var matrix=mammalShoulderMatrix.multiplyMatrices(torso.parent.matrix,torso.matrix).multiply(mammalShoulderOrigin).elements;
+            var key=JSON.stringify(joints),previous=surface.userData.shoulderMatrix,same=!!previous;
+            if(same)for(var entry=0;entry<16;entry++)if(previous[entry]!==matrix[entry]){same=false;break;}
+            if(surface.userData.lastFit===key&&same)return;
+            var positions=surface.geometry.getAttribute('position'),layout=surface.geometry.userData.limbLayout;
+            layout.forEach(function(limb,slot){
+              ecoMeadowMammalLimbFit(id,limb.hind,joints[slot],positions.array,limb.start*3);
+              ecoMeadowMammalLimbAttachment(id,limb.hind,joints[slot],matrix,positions.array,limb.start*3,limb.side);
+            });
+            positions.needsUpdate=true;surface.geometry.computeVertexNormals();var normals=surface.geometry.getAttribute('normal');
+            layout.forEach(function(limb){for(var ring=0;ring<=16;ring++){var a=limb.start+ring*13,b=a+12,nx=normals.getX(a)+normals.getX(b),ny=normals.getY(a)+normals.getY(b),nz=normals.getZ(a)+normals.getZ(b),length=Math.hypot(nx,ny,nz)||1;normals.setXYZ(a,nx/length,ny/length,nz/length);normals.setXYZ(b,nx/length,ny/length,nz/length);}});
+            normals.needsUpdate=true;surface.geometry.computeBoundingSphere();surface.userData.lastFit=key;surface.userData.fitCount=(surface.userData.fitCount||0)+1;
+            if(!previous)previous=surface.userData.shoulderMatrix=new Float64Array(16);previous.set(matrix);
+          }
+          function mammalPawGeometry(id,hind){
+            var skin=ecoMeadowMammalPawSurface(id,hind),shape=geometry(new T.BufferGeometry());
+            shape.setAttribute('position',new T.Float32BufferAttribute(skin.positions,3));shape.setAttribute('normal',new T.Float32BufferAttribute(skin.normals,3));shape.setAttribute('uv',new T.Float32BufferAttribute(skin.uv,2));shape.setIndex(skin.indices);shape.userData.ecoPawSurface={species:id,hind:!!hind,lowerEnvelope:'unit-sphere',rings:skin.rings,sides:skin.sides};shape.computeBoundingSphere();return shape;
+          }
+          var mammalPawGeometries={foxes:{fore:mammalPawGeometry('foxes',false),hind:mammalPawGeometry('foxes',true)},rabbits:{fore:mammalPawGeometry('rabbits',false),hind:mammalPawGeometry('rabbits',true)}};
+          var foxBrushGeometry=mammalSurfaceGeometry('foxes','tail',[0,0,0]),rabbitTailGeometry=mammalSurfaceGeometry('rabbits','tail',[0,0,0]);
+          rabbitTailGeometry.userData.ecoCottonTail={rows:24,columns:32};
+          function fitFoxBrush(surface,curl,trim){
+            if(surface.userData.lastCurl===curl&&surface.userData.lastTrim===trim)return;
+            var positions=surface.geometry.getAttribute('position'),base=foxBrushGeometry.getAttribute('position'),dimensions=surface.geometry.userData.ecoSurfaceDimensions;
+            for(var vertex=0;vertex<positions.count;vertex++){var point=ecoMeadowMammalTailPoint(base.getX(vertex),base.getY(vertex),base.getZ(vertex),curl,trim);positions.setXYZ(vertex,point[0],point[1],point[2]);}
+            positions.needsUpdate=true;surface.geometry.computeVertexNormals();
+            // The UV seam duplicates each circumference endpoint. Share its
+            // normal as well, so the continuous coat has no lighting stripe.
+            var normal=surface.geometry.getAttribute('normal');
+            for(var ring=0;ring<=dimensions.rings;ring++){
+              var a=ring*(dimensions.sides+1),b=a+dimensions.sides,nx=normal.getX(a)+normal.getX(b),ny=normal.getY(a)+normal.getY(b),nz=normal.getZ(a)+normal.getZ(b),length=Math.hypot(nx,ny,nz)||1;
+              normal.setXYZ(a,nx/length,ny/length,nz/length);normal.setXYZ(b,nx/length,ny/length,nz/length);
+            }
+            normal.needsUpdate=true;surface.geometry.computeBoundingSphere();surface.userData.lastCurl=curl;surface.userData.lastTrim=trim;
           }
           // The landscape is a visual setting; only the configured cover index
           // changes the model. Terrain, flowers, logs and lighting add no biomass.
@@ -1907,8 +4365,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var endMaterial=new T.MeshStandardMaterial({map:endTexture,roughness:1});materials.push(endMaterial);
           [-1,1].forEach(function(side){var end=new T.Mesh(disc,endMaterial);end.position.y=side*0.833;end.rotation.x=-side*Math.PI/2;end.scale.setScalar(0.205);end.receiveShadow=true;log.add(end);});
           var refugePatches = [];
-          [[-6,2.5],[-4,4],[0,4.6],[4,3.8],[6,1.5],[4,-3.8],[0,-4.5],[-4,-3.6]].forEach(function(p) {
-            var patch = new T.Group(); patch.position.set(p[0], groundHeight(p[0],p[1]), p[1]); scene.add(patch);
+          ECO_MEADOW_REFUGE_SPOTS.forEach(function(p,index) {
+            var patch = new T.Group();patch.name='eco-refuge-patch-'+index; patch.position.set(p.x, groundHeight(p.x,p.z), p.z); scene.add(patch);
             shadow(patch,0,0.03,0,1.05,0.8);
             var shrubLeaves=new T.InstancedMesh(foliageGeometry,leafMaterial,28);patch.add(shrubLeaves);
             for(var sprig=0;sprig<28;sprig++){
@@ -1924,9 +4382,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           });
           var selectionGeometry = geometry(new T.RingGeometry(0.83,1,40));
           var selectionMaterial = new T.MeshBasicMaterial({ color: new T.Color('#ffe790').convertSRGBToLinear(), side: T.DoubleSide, transparent: true, depthWrite: false, toneMapped: false }); materials.push(selectionMaterial);
+          var cueMarkerMaterial = new T.MeshBasicMaterial({color:new T.Color('#77edee').convertSRGBToLinear(),side:T.DoubleSide,transparent:true,depthWrite:false,toneMapped:false});materials.push(cueMarkerMaterial);
+          var vigilanceMarkerMaterial=new T.MeshBasicMaterial({color:new T.Color('#ff9d86').convertSRGBToLinear(),side:T.DoubleSide,transparent:true,depthWrite:false,toneMapped:false});materials.push(vigilanceMarkerMaterial);
           var selectionEdgeGeometry = geometry(new T.RingGeometry(0.76,1.07,40));
           var selectionEdgeMaterial = new T.MeshBasicMaterial({ color: new T.Color('#233b3d').convertSRGBToLinear(), side:T.DoubleSide, transparent:true, depthWrite:false, toneMapped:false });materials.push(selectionEdgeMaterial);
           var rabbitBoneDummy=new T.Object3D(),rabbitBoneStart=new T.Vector3(),rabbitBoneEnd=new T.Vector3(),rabbitBoneDirection=new T.Vector3(),rabbitBoneUp=new T.Vector3(0,1,0);
+          function fitBirdBone(part,from,to,width){
+            rabbitBoneStart.fromArray(from);rabbitBoneEnd.fromArray(to);rabbitBoneDirection.subVectors(rabbitBoneEnd,rabbitBoneStart);
+            part.position.copy(rabbitBoneStart).add(rabbitBoneEnd).multiplyScalar(0.5);var length=rabbitBoneDirection.length();part.quaternion.setFromUnitVectors(rabbitBoneUp,rabbitBoneDirection.normalize());part.scale.set(width,length/2+width*0.35,width);
+          }
           var centers = { plants: [0, 0], rabbits: [-3.2, 1.7], voles: [3.1, 2.2], foxes: [-3, -1.6], owls: [2.7, -1.9] };
           ECO_WEB_SPECIES.forEach(function(sp) {
             var list = [], max = sp.id === 'plants' ? 56 : 16;
@@ -1969,129 +4433,194 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if(segment===13)[-1,1].forEach(function(side){mesh(segmentRoot,sphere,'#252b2b',0.026,0.012,side*0.035,0.005,0.006,0.004,sp.id);});
                 }
               } else if(sp.id==='bluetits') {
-                mesh(animal,sphere,'#81925a',-0.03,0.25,0,0.24,0.17,0.145,sp.id);
-                mesh(animal,sphere,'#dac96c',0.085,0.215,0,0.16,0.145,0.13,sp.id);
-                mesh(animal,sphere,'#3c728f',0.17,0.395,0,0.145,0.13,0.125,sp.id);
+                mesh(animal,sphere,'#7c8b53',-0.035,0.245,0,0.225,0.15,0.132,sp.id);
+                mesh(animal,sphere,'#ded06c',0.075,0.215,0,0.155,0.133,0.12,sp.id);
+                mesh(animal,sphere,'#e9e7d8',0.16,0.375,0,0.126,0.113,0.112,sp.id);
+                mesh(animal,sphere,'#3e789a',0.144,0.458,0,0.108,0.047,0.101,sp.id);
+                mesh(animal,sphere,'#263c42',0.245,0.332,0,0.047,0.028,0.065,sp.id);
+                animal.userData.wings=[];animal.userData.birdLegs=[];
                 [-1,1].forEach(function(side){
-                  mesh(animal,sphere,'#e5e3cd',0.205,0.365,side*0.078,0.11,0.077,0.06,sp.id);
-                  var eyeStripe=mesh(animal,sphere,'#293e43',0.22,0.397,side*0.118,0.091,0.014,0.012,sp.id);eyeStripe.rotation.z=0.09;
-                  mesh(animal,sphere,'#252b2b',0.267,0.4,side*0.124,0.013,0.014,0.01,sp.id);
-                  mesh(animal,sphere,'#faf9ed',0.272,0.406,side*0.13,0.0035,0.0035,0.003,sp.id);
-                  var wing=mesh(animal,sphere,'#507e96',-0.075,0.265,side*0.127,0.21,0.092,0.038,sp.id);wing.rotation.z=0.18;
+                  mesh(animal,sphere,'#f0eee1',0.193,0.365,side*0.083,0.092,0.063,0.041,sp.id);
+                  var eyeStripe=mesh(animal,sphere,'#293e43',0.211,0.402,side*0.109,0.093,0.014,0.011,sp.id);eyeStripe.rotation.z=0.06;
+                  mesh(animal,sphere,'#252b2b',0.246,0.402,side*0.116,0.014,0.015,0.01,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.251,0.408,side*0.123,0.0035,0.0035,0.003,sp.id);
+                  var shoulder=new T.Group();shoulder.name='eco-bluetit-shoulder-'+side;shoulder.position.set(0.005,0.276,side*0.108);shoulder.userData.side=side;animal.add(shoulder);animal.userData.wings.push(shoulder);
+                  var wing=mesh(shoulder,sphere,'#4c7c96',-0.08,-0.01,side*0.022,0.19,0.086,0.036,sp.id);wing.rotation.z=0.18;
+                  var wrist=new T.Group();wrist.name='eco-bluetit-wrist-'+side;wrist.position.set(-0.045,-0.015,side*0.037);shoulder.add(wrist);shoulder.userData.wrist=wrist;
                   var featherBasis=new T.Matrix4().makeBasis(new T.Vector3(0.215*side,-0.977*side,0),new T.Vector3(0,0,side),new T.Vector3(-0.977,-0.215,0));
                   for(var flight=0;flight<6;flight++){
-                    var folded=mesh(animal,featherGeometry,flight%2?'#47768f':'#648ba0',0.035-flight*0.012,0.307-flight*0.018,side*(0.169+Math.sin(flight/5*Math.PI)*0.017),0.24,1,0.22+flight*0.011,sp.id);folded.quaternion.setFromRotationMatrix(featherBasis);
+                    var folded=mesh(wrist,featherGeometry,flight%2?'#47768f':'#648ba0',0.06-flight*0.012,0.037-flight*0.017,side*(0.024+Math.sin(flight/5*Math.PI)*0.012),0.25,1,0.21+flight*0.011,sp.id);folded.quaternion.setFromRotationMatrix(featherBasis);
                   }
-                  var wingBar=mesh(animal,sphere,'#d7ded0',-0.075,0.282,side*0.203,0.012,0.063,0.006,sp.id);wingBar.rotation.z=-0.23;
-                  mesh(animal,cylinder,'#6b6050',0.035,0.072,side*0.066,0.012,0.115,0.012,sp.id);
-                  for(var toe=0;toe<3;toe++){var digit=mesh(animal,sphere,'#6b6050',0.071,0.016,side*0.066+(toe-1)*0.017,0.045,0.009,0.006,sp.id);digit.rotation.y=(toe-1)*0.19;}
+                  var wingBar=mesh(shoulder,sphere,'#d7ded0',-0.073,0.008,side*0.079,0.013,0.057,0.005,sp.id);wingBar.rotation.z=-0.23;
+                  var birdLeg=new T.Group();birdLeg.name='eco-bluetit-leg-'+side;animal.add(birdLeg);
+                  var upper=mesh(birdLeg,sphere,'#697064',0,0,0,1,1,1,sp.id),lower=mesh(birdLeg,sphere,'#6b6558',0,0,0,1,1,1,sp.id),foot=new T.Group();foot.name='eco-bluetit-foot-'+side;birdLeg.add(foot);
+                  var digits=[];
+                  for(var toe=0;toe<4;toe++){
+                    var digitRoot=new T.Group();digitRoot.rotation.y=toe===3?Math.PI:(toe-1)*0.32;foot.add(digitRoot);digits.push(digitRoot);
+                    mesh(digitRoot,sphere,'#6b6558',toe===3?0.014:0.021,0,0,toe===3?0.023:0.033,0.006,0.005,sp.id);
+                  }
+                  birdLeg.userData={side:side,upper:upper,lower:lower,foot:foot,digits:digits,hip:[0.012,0.14,side*0.061]};animal.userData.birdLegs.push(birdLeg);
                 });
-                mesh(animal,sphere,'#414f51',0.32,0.361,0,0.067,0.025,0.026,sp.id);
+                var blueBill=mesh(animal,birdBillGeometry,'#252b2b',0.294,0.365,0,0.064,0.017,0.018,sp.id);blueBill.name='eco-bluetit-bill';
+                var tailJoint=new T.Group();tailJoint.name='eco-bluetit-tail';tailJoint.position.set(-0.205,0.222,0);animal.add(tailJoint);animal.userData.birdTail=tailJoint;tailJoint.userData.feathers=[];
                 for(var tailFeather=0;tailFeather<5;tailFeather++){
-                  var tail=mesh(animal,featherGeometry,tailFeather%2?'#46768b':'#608399',-0.21,0.22,(tailFeather-2)*0.019,0.22,1,0.27-Math.abs(tailFeather-2)*0.009,sp.id);tail.rotation.y=-Math.PI/2+(tailFeather-2)*0.035;tail.rotation.z=0.12;
+                  var tail=mesh(tailJoint,featherGeometry,tailFeather%2?'#46768b':'#608399',0,0,(tailFeather-2)*0.015,0.27,1,0.27-Math.abs(tailFeather-2)*0.009,sp.id);tail.rotation.y=-Math.PI/2+(tailFeather-2)*0.035;tail.userData.slot=tailFeather-2;tailJoint.userData.feathers.push(tail);
                 }
               } else if (sp.id === 'owls') {
-                // A horizontal flight silhouette with broad, swept wings.
-                mesh(animal,sphere,'#b39365',-0.07,0.4,0,0.36,0.2,0.2,sp.id);
-                mesh(animal,sphere,'#eee3c6',0.08,0.34,0,0.25,0.14,0.185,sp.id);
-                mesh(animal,sphere,'#a17e53',0.26,0.5,0,0.21,0.205,0.2,sp.id);
-                mesh(animal,owlFaceGeometry,'#997b59',0.425,0.515,0,0.95,1.07,1.07,sp.id);
-                mesh(animal,owlFaceGeometry,'#fff3d9',0.437,0.515,0,1,0.96,0.96,sp.id);
-                animal.userData.wings=[];
+                // Broad inner wings carry secondaries; flexible wrists carry
+                // the rounded outer primaries instead of one rigid wing plate.
+                mesh(animal,sphere,'#b39365',-0.075,0.39,0,0.38,0.173,0.184,sp.id);
+                mesh(animal,sphere,'#eee3c6',0.07,0.332,0,0.27,0.12,0.171,sp.id);
+                mesh(animal,sphere,'#a88b65',0.245,0.475,0,0.186,0.182,0.18,sp.id);
+                mesh(animal,owlFaceGeometry,'#997b59',0.397,0.491,0,0.90,0.98,0.98,sp.id);
+                mesh(animal,owlFaceGeometry,'#fff3d9',0.408,0.491,0,0.94,0.89,0.89,sp.id);
+                animal.userData.wings=[];animal.userData.birdLegs=[];
                 [-1,1].forEach(function(side){
-                  mesh(animal,sphere,'#25272d',0.477,0.55,side*0.077,0.015,0.028,0.02,sp.id);
-                  mesh(animal,sphere,'#faf9ed',0.49,0.56,side*0.078,0.004,0.005,0.005,sp.id);
-                  var joint=new T.Group();joint.position.set(-0.02,0.42,side*0.14);joint.userData.side=side;animal.add(joint);animal.userData.wings.push(joint);
-                  mesh(joint,sphere,'#a38b69',-0.08,0,side*0.27,0.31,0.045,0.43,sp.id);
-                  for(var feather=0;feather<8;feather++){
-                    var plume=mesh(joint,featherGeometry,feather%2?'#baa280':'#d3bd96',-0.23+feather*0.052,0.012,side*(0.2+feather*0.04),0.95,1,side*(0.66-feather*0.025),sp.id);
-                    plume.rotation.y=-side*(0.48+feather*0.045);
+                  mesh(animal,sphere,'#25272d',0.445,0.523,side*0.071,0.015,0.026,0.019,sp.id);
+                  mesh(animal,sphere,'#faf9ed',0.457,0.532,side*0.072,0.004,0.005,0.004,sp.id);
+                  var joint=new T.Group();joint.name='eco-owl-shoulder-'+side;joint.position.set(-0.04,0.408,side*0.15);joint.userData.side=side;animal.add(joint);animal.userData.wings.push(joint);
+                  mesh(joint,sphere,'#a48b68',-0.075,0,side*0.225,0.25,0.038,0.285,sp.id);
+                  for(var secondary=0;secondary<7;secondary++){
+                    var plume=mesh(joint,featherGeometry,secondary%2?'#c8b18b':'#d5c29e',-0.10,0.008,side*(0.07+secondary*0.052),0.56,1,side*(0.34+secondary*0.009),sp.id);plume.rotation.y=-side*1.10;
                   }
-                  mesh(animal,sphere,'#b7954f',-0.31,0.245,side*0.07,0.095,0.025,0.025,sp.id);
+                  var wrist=new T.Group();wrist.name='eco-owl-wrist-'+side;wrist.position.set(-0.035,0.003,side*0.445);joint.add(wrist);joint.userData.wrist=wrist;
+                  mesh(wrist,sphere,'#b39b78',-0.02,0,side*0.115,0.21,0.028,0.17,sp.id);
+                  for(var primary=0;primary<8;primary++){
+                    var plume=mesh(wrist,featherGeometry,primary%2?'#bfa681':'#d8c39c',-0.17+primary*0.044,0.010-primary*0.001,side*(0.04+primary*0.008),0.60,1,side*(0.47+Math.sin(primary/7*Math.PI)*0.13),sp.id);plume.rotation.y=-side*(0.82-primary*0.10);
+                  }
+                  var birdLeg=new T.Group();birdLeg.name='eco-owl-leg-'+side;animal.add(birdLeg);
+                  var upper=mesh(birdLeg,sphere,'#d5c6a4',0,0,0,1,1,1,sp.id),lower=mesh(birdLeg,sphere,'#c4b28d',0,0,0,1,1,1,sp.id),foot=new T.Group();foot.name='eco-owl-foot-'+side;birdLeg.add(foot);
+                  var digits=[];
+                  for(var toe=0;toe<4;toe++){
+                    var digitRoot=new T.Group();digitRoot.rotation.y=(toe<2?0:Math.PI)+(toe%2?0.32:-0.32);foot.add(digitRoot);digits.push(digitRoot);
+                    mesh(digitRoot,sphere,'#ad9267',0.032,0,0,0.042,0.010,0.009,sp.id);
+                    var claw=mesh(digitRoot,birdBillGeometry,'#514a3b',0.068,-0.007,0,0.025,0.008,0.007,sp.id);claw.rotation.z=-0.6;
+                  }
+                  birdLeg.userData={side:side,upper:upper,lower:lower,foot:foot,digits:digits,hip:[-0.16,0.29,side*0.078]};animal.userData.birdLegs.push(birdLeg);
                 });
-                mesh(animal,sphere,'#b7954f',0.471,0.43,0,0.035,0.06,0.03,sp.id);
+                var bill=mesh(animal,birdBillGeometry,'#b7954f',0.441,0.423,0,0.052,0.022,0.023,sp.id);bill.rotation.z=-0.6;
+                var tailJoint=new T.Group();tailJoint.name='eco-owl-tail';tailJoint.position.set(-0.335,0.342,0);animal.add(tailJoint);animal.userData.birdTail=tailJoint;tailJoint.userData.feathers=[];
                 for(var tail=0;tail<5;tail++){
-                  var plume=mesh(animal,featherGeometry,'#c8b187',-0.27,0.34,(tail-2)*0.044,0.55,1,0.33,sp.id);plume.rotation.y=-Math.PI/2+(tail-2)*0.09;
+                  var plume=mesh(tailJoint,featherGeometry,tail%2?'#c3aa82':'#d6c19b',0,0,(tail-2)*0.028,0.6,1,0.27-Math.abs(tail-2)*0.012,sp.id);plume.rotation.y=-Math.PI/2+(tail-2)*0.09;plume.userData.slot=tail-2;tailJoint.userData.feathers.push(plume);
                 }
               } else if(sp.id === 'foxes') {
-                mesh(animal,sphere,'#c66d35',-0.03,0.49,0,0.5,0.225,0.205,sp.id);
-                mesh(animal,sphere,'#efe0bd',0.29,0.48,0,0.145,0.215,0.17,sp.id);
-                mesh(animal,muzzleGeometry,'#c47d45',0.40,0.685,0,0.215,0.15,0.16,sp.id);
-                mesh(animal,muzzleGeometry,'#c99e73',0.60,0.635,0,0.20,0.060,0.078,sp.id);
-                mesh(animal,sphere,'#efe0bd',0.59,0.594,0,0.15,0.030,0.066,sp.id);
-                mesh(animal,sphere,'#252b2b',0.795,0.647,0,0.035,0.028,0.038,sp.id);
+                // One smooth skin joins the rump, tucked belly and deep chest;
+                // named controls and terrain-fitted limb roots stay independent.
+                animal.userData.mammalParts={};
+                function foxPart(name,x,y,z){var part=new T.Group();part.name='eco-foxes-'+name;part.position.set(x,y,z);part.userData.home=part.position.clone();animal.add(part);animal.userData.mammalParts[name]=part;return part;}
+                var back=foxPart('back',-0.10,0.49,0),torsoSurface=mesh(back,mammalTorsoGeometry.foxes,'#bd7543',0,0,0,1,1,1,sp.id);torsoSurface.name='eco-foxes-torso-surface';animal.userData.torsoSurface=torsoSurface;
+                var haunch=foxPart('haunch',-0.32,0.445,0),chest=foxPart('chest',0.21,0.46,0),belly=foxPart('belly',0.005,0.395,0);
+                var neck=foxPart('neck',0.265,0.51,0),neckSurface=mesh(neck,geometry(mammalNeckGeometry.foxes.clone()),'#bd7543',0,0,0,1,1,1,sp.id);neckSurface.name='eco-foxes-neck-surface';animal.userData.neckSurface=neckSurface;neckSurface.geometry.getAttribute('position').setUsage(T.DynamicDrawUsage);neckSurface.geometry.getAttribute('normal').setUsage(T.DynamicDrawUsage);
+                var headSurface=mesh(animal,mammalHeadGeometry.foxes,'#bd7543',0.24,0.58,0,1,1,1,sp.id);headSurface.name='eco-foxes-head-surface';animal.userData.headSurface=headSurface;
+                var nose=mammalNoseMesh(animal,sp.id,0.676,0.610,0,0.027,0.022,0.028);nose.name='eco-foxes-nose';
+                var jaw=new T.Group();jaw.name='eco-foxes-jaw';jaw.position.set(0.355,0.603,0);animal.add(jaw);animal.userData.jaw=jaw;
+                animal.userData.jawSurface=mammalJawMesh(jaw,sp.id);
                 [-1,1].forEach(function(side){
-                  var ear=mesh(animal,foxEarGeometry,'#784b36',0.31,0.79,side*0.12,0.105,0.25,0.16,sp.id);ear.rotation.y=Math.PI/2;ear.rotation.x=side*0.12;
-                  var innerEar=mesh(animal,foxEarGeometry,'#bc9279',0.326,0.814,side*0.12,0.066,0.185,0.07,sp.id);innerEar.rotation.copy(ear.rotation);
-                  animal.userData.earPairs=animal.userData.earPairs||[];animal.userData.earPairs.push({side:side,parts:[ear,innerEar],base:[0.31,0.79,side*0.12]});
-                  mesh(animal,sphere,'#8f633e',0.49,0.731,side*0.123,0.033,0.027,0.019,sp.id);
-                  mesh(animal,sphere,'#292b27',0.499,0.732,side*0.135,0.013,0.018,0.010,sp.id);
-                  mesh(animal,sphere,'#faf9ed',0.505,0.742,side*0.141,0.0035,0.0035,0.003,sp.id);
+                  var ear=mesh(animal,mammalEarGeometry.foxes,'#49382c',0.300,0.738,side*0.096,0.12,0.215,0.215,sp.id);ear.name='eco-foxes-pinna-'+side;ear.rotation.x=side*0.12;
+                  animal.userData.earPairs=animal.userData.earPairs||[];animal.userData.earPairs.push({side:side,parts:[ear],base:[0.300,0.738,side*0.096]});
+                  var eyeMount=ecoMeadowMammalEyeData(sp.id),eye=new T.Group();eye.name='eco-foxes-eye-'+side;eye.position.set(0.431,0.675,side*eyeMount.center[2]);eye.rotation.z=0.13;animal.add(eye);animal.userData.eyeGroups=animal.userData.eyeGroups||[];animal.userData.eyeGroups.push(eye);
+                  mesh(eye,muzzleGeometry,'#785031',0,0,0,0.029,0.019,0.012,sp.id);
+                  mesh(eye,sphere,'#292b27',0.003,0.000,side*0.008,0.021,0.013,0.007,sp.id);
+                  var iris=mesh(eye,sphere,'#b99542',0.005,0.000,side*0.013,0.010,0.011,0.004,sp.id),pupil=mesh(eye,sphere,'#292b27',0.007,0.001,side*0.016,0.0035,0.010,0.003,sp.id),glint=mesh(eye,sphere,'#faf9ed',0.009,0.005,side*0.019,0.0025,0.0025,0.002,sp.id);
+                  iris.name='eco-foxes-iris-'+side;pupil.name='eco-foxes-pupil-'+side;glint.name='eco-foxes-glint-'+side;eye.userData.side=side;eye.userData.fixationLayers={iris:iris,pupil:pupil,glint:glint};
                   [-0.33,0.29].forEach(function(lx){
-                    var leg=new T.Group();leg.position.set(lx,0.4,side*0.16);leg.userData.hind=lx<0;leg.userData.side=side;leg.userData.homeY=leg.position.y;animal.add(leg);
+                    var leg=new T.Group();leg.name='eco-foxes-leg-'+(lx<0?'hind':'fore')+'-'+side;leg.position.set(lx,0.4,side*0.16);leg.userData.hind=lx<0;leg.userData.side=side;leg.userData.homeY=leg.position.y;animal.add(leg);
                     var upper=new T.Group(),lower=new T.Group(),paw=new T.Group();leg.add(upper);upper.add(lower);lower.add(paw);
                     lower.position.y=-0.21;paw.position.y=-0.20;
-                    mesh(upper,sphere,'#a85e35',0,-0.105,0,lx<0?0.075:0.050,0.125,lx<0?0.060:0.047,sp.id);
-                    mesh(lower,sphere,'#493c30',0,-0.10,0,0.032,0.116,0.037,sp.id);
-                    mesh(paw,sphere,'#3e382d',0,0,0,0.078,0.042,0.052,sp.id);
+                    upper.name='eco-foxes-upper-'+(lx<0?'hind':'fore')+'-'+side;lower.name='eco-foxes-lower-'+(lx<0?'hind':'fore')+'-'+side;
+                    var sole=mesh(paw,mammalPawGeometries.foxes[lx<0?'hind':'fore'],'#28221f',0,0,0,0.078,0.042,0.052,sp.id);sole.name='eco-foxes-sole-'+(lx<0?'hind':'fore')+'-'+side;
                     leg.userData.rig={upper:upper,lower:lower,paw:paw};animal.userData.legs=animal.userData.legs||[];animal.userData.legs.push(leg);
                   });
                 });
-                var foxTail=mesh(animal,sphere,'#bd622f',-0.67,0.38,0.02,0.50,0.145,0.16,sp.id);foxTail.rotation.z=0.32;
-                var foxTip=mesh(animal,sphere,'#f4e6c9',-1.01,0.27,0.02,0.19,0.115,0.125,sp.id);foxTip.rotation.z=0.32;
+                var tailJoint=new T.Group();tailJoint.name='eco-foxes-tail-base';tailJoint.position.set(-0.40,0.43,0);animal.add(tailJoint);animal.userData.tail=tailJoint;
+                var brushSkin=geometry(foxBrushGeometry.clone()),tailSurface=mesh(tailJoint,brushSkin,'#b56b39',0,0,0,1,1,1,sp.id);tailSurface.name='eco-foxes-tail-surface';animal.userData.tailSurface=tailSurface;
+                var tailEnd=new T.Group();tailEnd.name='eco-foxes-tail-tip';tailEnd.position.set(-0.43,-0.08,0);tailJoint.add(tailEnd);tailJoint.userData.distal=tailEnd;
               } else {
                 var rabbit=sp.id==='rabbits', fur=rabbit?'#9d8c70':'#796751';
-                mesh(animal,sphere,fur,rabbit?-0.06:-0.03,rabbit?0.32:0.28,0,rabbit?0.33:0.29,rabbit?0.235:0.26,rabbit?0.215:0.23,sp.id);
-                mesh(animal,sphere,rabbit?'#e6ddc9':'#ac9680',0.16,rabbit?0.29:0.24,0,rabbit?0.155:0.19,rabbit?0.16:0.18,rabbit?0.165:0.2,sp.id);
-                mesh(animal,sphere,fur,rabbit?0.29:0.27,0.43,0,rabbit?0.17:0.215,rabbit?0.14:0.17,rabbit?0.15:0.17,sp.id);
+                if(rabbit){
+                  animal.userData.mammalParts={};
+                  var rabbitPart=function(name,x,y,z){var part=new T.Group();part.name='eco-rabbits-'+name;part.position.set(x,y,z);part.userData.home=part.position.clone();animal.add(part);animal.userData.mammalParts[name]=part;return part;};
+                  var back=rabbitPart('back',-0.12,0.335,0),torsoSurface=mesh(back,mammalTorsoGeometry.rabbits,fur,0,0,0,1,1,1,sp.id);torsoSurface.name='eco-rabbits-torso-surface';animal.userData.torsoSurface=torsoSurface;
+                  var chest=rabbitPart('chest',0.115,0.30,0),belly=rabbitPart('belly',0.025,0.215,0);
+                  var neck=rabbitPart('neck',0.178,0.365,0),neckSurface=mesh(neck,geometry(mammalNeckGeometry.rabbits.clone()),fur,0,0,0,1,1,1,sp.id);neckSurface.name='eco-rabbits-neck-surface';animal.userData.neckSurface=neckSurface;neckSurface.geometry.getAttribute('position').setUsage(T.DynamicDrawUsage);neckSurface.geometry.getAttribute('normal').setUsage(T.DynamicDrawUsage);
+                }else{
+                  mesh(animal,sphere,fur,-0.03,0.28,0,0.29,0.26,0.23,sp.id);
+                  mesh(animal,sphere,'#ac9680',0.16,0.24,0,0.19,0.18,0.2,sp.id);
+                }
+                if(rabbit){
+                  var headSurface=mesh(animal,mammalHeadGeometry.rabbits,fur,0.24,0.4,0,1,1,1,sp.id);headSurface.name='eco-rabbits-head-surface';animal.userData.headSurface=headSurface;
+                  var jaw=new T.Group();jaw.name='eco-rabbits-jaw';jaw.position.set(0.278,0.388,0);animal.add(jaw);animal.userData.jaw=jaw;
+                  animal.userData.jawSurface=mammalJawMesh(jaw,sp.id);
+                }else mesh(animal,sphere,fur,0.27,0.43,0,0.215,0.17,0.17,sp.id);
                 [-1,1].forEach(function(side){
-                  var ear=mesh(animal,sphere,fur,0.23,rabbit?0.75:0.62,side*0.13,rabbit?0.065:0.09,rabbit?0.24:0.09,0.065,sp.id);ear.rotation.z=rabbit?-0.15:0;
-                  var inner=mesh(animal,sphere,'#c89389',0.267,rabbit?0.76:0.62,side*0.13,rabbit?0.038:0.045,rabbit?0.16:0.045,0.045,sp.id);inner.rotation.z=rabbit?-0.15:0;
-                  animal.userData.earPairs=animal.userData.earPairs||[];animal.userData.earPairs.push({side:side,parts:[ear,inner],base:[0.23,rabbit?0.55:0.56,side*0.13]});
-                  mesh(animal,sphere,'#242d29',0.377,0.47,side*0.139,rabbit?0.018:0.023,rabbit?0.022:0.027,0.02,sp.id);
-                  mesh(animal,sphere,'#faf9ed',0.385,0.481,side*0.153,0.006,0.006,0.004,sp.id);
-                  mesh(animal,muzzleGeometry,rabbit?'#d3c8b2':'#a4937c',0.393,0.386,side*0.046,0.073,0.056,0.068,sp.id);
-                  if(rabbit)mesh(animal,sphere,fur,-0.19,0.23,side*0.14,0.19,0.18,0.13,sp.id);
-                  var hind=mesh(animal,sphere,fur,-0.17,rabbit?0.06:0.11,side*0.18,rabbit?0.175:0.12,rabbit?0.05:0.12,rabbit?0.075:0.1,sp.id);
-                  var fore=mesh(animal,sphere,fur,0.22,rabbit?0.055:0.065,side*0.12,rabbit?0.12:0.14,rabbit?0.045:0.055,0.07,sp.id);
+                  if(rabbit){
+                    var ear=mesh(animal,mammalEarGeometry.rabbits,fur,0.232,0.530,side*0.092,0.13,0.355,0.18,sp.id);ear.name='eco-rabbits-pinna-'+side;ear.rotation.z=0.10;ear.rotation.x=side*0.11;
+                    animal.userData.earPairs=animal.userData.earPairs||[];animal.userData.earPairs.push({side:side,parts:[ear],base:[0.232,0.530,side*0.092]});
+                    var eyeMount=ecoMeadowMammalEyeData(sp.id),eye=new T.Group();eye.name='eco-rabbits-eye-'+side;eye.position.set(0.325,0.462,side*eyeMount.center[2]);eye.rotation.z=0.15;animal.add(eye);animal.userData.eyeGroups=animal.userData.eyeGroups||[];animal.userData.eyeGroups.push(eye);
+                    mesh(eye,muzzleGeometry,'#806f58',0,0,0,0.028,0.026,0.009,sp.id);
+                    mesh(eye,sphere,'#242d29',0.002,0.001,side*0.006,0.020,0.021,0.010,sp.id);
+                    mesh(eye,sphere,'#faf9ed',0.007,0.009,side*0.015,0.0035,0.0035,0.002,sp.id);
+                  }else{
+                    var ear=mesh(animal,sphere,fur,0.23,0.62,side*0.13,0.09,0.09,0.065,sp.id),inner=mesh(animal,sphere,'#c89389',0.267,0.62,side*0.13,0.045,0.045,0.045,sp.id);
+                    animal.userData.earPairs=animal.userData.earPairs||[];animal.userData.earPairs.push({side:side,parts:[ear,inner],base:[0.23,0.56,side*0.13]});
+                    mesh(animal,sphere,'#242d29',0.377,0.47,side*0.139,0.023,0.027,0.02,sp.id);mesh(animal,sphere,'#faf9ed',0.385,0.481,side*0.153,0.006,0.006,0.003,sp.id);
+                    mesh(animal,muzzleGeometry,'#a4937c',0.393,0.386,side*0.046,0.073,0.056,0.068,sp.id);
+                  }
+                  if(rabbit)var haunch=rabbitPart('haunch-'+side,-0.19,0.23,side*0.14);
+                  var hind=mesh(animal,rabbit?mammalPawGeometries.rabbits.hind:sphere,fur,-0.17,rabbit?0.06:0.11,side*0.18,rabbit?0.175:0.12,rabbit?0.05:0.12,rabbit?0.075:0.1,sp.id);
+                  var fore=mesh(animal,rabbit?mammalPawGeometries.rabbits.fore:sphere,fur,0.22,rabbit?0.055:0.065,side*0.12,rabbit?0.12:0.14,rabbit?0.045:0.055,0.07,sp.id);
                   [hind,fore].forEach(function(paw,index){
-                    var joint=new T.Group();joint.position.copy(paw.position);joint.position.y+=0.10;
+                    var joint=new T.Group();joint.name='eco-'+sp.id+'-paw-'+(index===0?'hind':'fore')+'-'+side;paw.name='eco-'+sp.id+'-sole-'+(index===0?'hind':'fore')+'-'+side;joint.position.copy(paw.position);joint.position.y+=0.10;
                     joint.userData.hind=index===0;joint.userData.side=side;joint.userData.homeY=joint.position.y;joint.userData.homeX=joint.position.x;joint.userData.homeZ=joint.position.z;joint.userData.paw=paw;paw.position.sub(joint.position);joint.add(paw);animal.add(joint);
                     animal.userData.paws=animal.userData.paws||[];animal.userData.paws.push(joint);
                   });
                 });
                 if(rabbit){
                   // All eight limb segments share one draw call per rabbit.
-                  var rabbitLimbs=new T.InstancedMesh(sphere,animal.userData.paws[0].userData.paw.material,8);rabbitLimbs.castShadow=true;rabbitLimbs.receiveShadow=true;rabbitLimbs.frustumCulled=false;rabbitLimbs.userData.species=sp.id;meshes.push(rabbitLimbs);animal.add(rabbitLimbs);animal.userData.rabbitLimbs=rabbitLimbs;
+                  var rabbitLimbs=new T.InstancedMesh(sphere,animal.userData.paws[0].userData.paw.material,8);rabbitLimbs.visible=false;rabbitLimbs.userData.species=sp.id;animal.add(rabbitLimbs);animal.userData.rabbitLimbs=rabbitLimbs;
                 }
-                mesh(animal,sphere,'#735447',0.46,0.39,0,0.029,0.025,0.033,sp.id);
-                mesh(animal,sphere,rabbit?'#eee8d5':fur,rabbit?-0.36:-0.39,rabbit?0.26:0.24,0,rabbit?0.08:0.19,rabbit?0.08:0.045,0.07,sp.id);
+                var nose=rabbit?mammalNoseMesh(animal,sp.id,0.455,0.395,0,0.020,0.015,0.023):mesh(animal,sphere,'#735447',0.46,0.39,0,0.029,0.025,0.033,sp.id);nose.name='eco-'+sp.id+'-nose';
+                if(rabbit){
+                  var tailJoint=new T.Group();tailJoint.name='eco-rabbits-tail';tailJoint.position.set(-0.365,0.29,0);animal.add(tailJoint);animal.userData.tail=tailJoint;
+                  var cottonTail=mesh(tailJoint,rabbitTailGeometry,'#9c8d74',0,0,0,1,1,1,sp.id);cottonTail.name='eco-rabbits-cotton-tail';animal.userData.tailSurface=cottonTail;
+                }else mesh(animal,sphere,fur,-0.39,0.24,0,0.19,0.045,0.07,sp.id);
+              }
+              if(sp.id==='foxes'||sp.id==='rabbits'){
+                var limbSkin=mesh(animal,mammalLimbSkinGeometry(sp.id),sp.id==='foxes'?'#bd7543':'#9c8d74',0,0,0,1,1,1,sp.id);limbSkin.name='eco-'+sp.id+'-limb-skin';animal.userData.limbSkin=limbSkin;
               }
               if(sp.id==='bluetits'||sp.id==='owls'){
-                var birdHead=new T.Group();birdHead.position.set(sp.id==='owls'?0.25:0.15,sp.id==='owls'?0.48:0.35,0);
+                var birdHead=new T.Group();birdHead.position.set(sp.id==='owls'?0.25:0.15,sp.id==='owls'?0.48:0.35,0);birdHead.userData.homeX=birdHead.position.x;birdHead.userData.homeY=birdHead.position.y;
                 animal.children.slice().forEach(function(part){if(part.isMesh&&part.userData.species===sp.id&&part.position.x>(sp.id==='owls'?0.20:0.10)&&part.position.y>0.32){part.position.sub(birdHead.position);birdHead.add(part);}});animal.add(birdHead);animal.userData.head=birdHead;
               }
-              if(sp.id==='foxes') {
-                var tailJoint=new T.Group();tailJoint.position.set(-0.38,0.4,0);animal.add(tailJoint);
-                [foxTail,foxTip].forEach(function(part){part.position.sub(tailJoint.position);tailJoint.add(part);});animal.userData.tail=tailJoint;
-              }
               if(sp.id !== 'plants' && sp.id !== 'owls' && sp.id !== 'bluetits' && sp.id !== 'caterpillars') {
-                var head=new T.Group();head.position.set(0.24,sp.id==='foxes'?0.58:0.4,0);head.userData.homeY=head.position.y;
+                var head=new T.Group();head.name='eco-'+sp.id+'-head';head.position.set(0.24,sp.id==='foxes'?0.58:0.4,0);head.userData.homeX=head.position.x;head.userData.homeY=head.position.y;
                 animal.children.slice().forEach(function(part){if(part.isMesh && part.userData.species===sp.id && part.position.x>0.18 && part.position.y>0.34){part.position.sub(head.position);head.add(part);}});animal.add(head);animal.userData.head=head;
+                if(animal.userData.jaw){animal.userData.jaw.position.sub(head.position);head.add(animal.userData.jaw);animal.userData.mouthMargin=mammalMouthMesh(head,sp.id);}
+                if(animal.userData.eyeGroups)animal.userData.eyeGroups.forEach(function(eye){eye.position.sub(head.position);head.add(eye);});
+                if(animal.userData.eyeGroups){var orbits=mesh(head,mammalOrbitalGeometries[sp.id],sp.id==='foxes'?'#bd7543':'#9d8c70',0,0,0,1,1,1,sp.id);orbits.name='eco-'+sp.id+'-orbital-surface';animal.userData.orbitSurface=orbits;}
+                if(animal.userData.eyeGroups){var lids=mesh(head,mammalEyelidGeometry(sp.id),sp.id==='foxes'?'#bd7543':'#9c8d74',0,0,0,1,1,1,sp.id);lids.name='eco-'+sp.id+'-eyelid-skin';animal.userData.eyelidSkin=lids;}
                 // Whiskers belong to the articulated head, so they follow each
                 // forage pose. They are visual detail, not extra pick targets.
-                var whiskerPoints=[],isFox=sp.id==='foxes',noseX=isFox?0.69:0.426,noseY=isFox?0.616:0.391;
-                [-1,1].forEach(function(side){for(var whisker=0;whisker<3;whisker++){
-                  var root=new T.Vector3(noseX,noseY+(whisker-1)*0.013,side*(isFox?0.051:0.043)).sub(head.position);
-                  var middle=root.clone().add(new T.Vector3(-0.055,(whisker-1)*0.016,side*0.085));
-                  var tip=middle.clone().add(new T.Vector3(-0.067,(whisker-1)*0.015,side*(isFox?0.085:0.065)));
-                  [root,middle,middle,tip].forEach(function(point){whiskerPoints.push(point.x,point.y,point.z);});
-                }});
-                var whiskerGeometry=geometry(new T.BufferGeometry());whiskerGeometry.setAttribute('position',new T.Float32BufferAttribute(whiskerPoints,3));head.add(new T.LineSegments(whiskerGeometry,whiskerMaterial));
+                var whiskerGeometry=geometry(new T.BufferGeometry()),whiskers;
+                if(sp.id==='foxes'||sp.id==='rabbits'){
+                  var rawWhiskers=ecoMeadowMammalWhiskers(sp.id,null,true);
+                  whiskerGeometry.setAttribute('position',new T.Float32BufferAttribute(rawWhiskers.positions,3));whiskerGeometry.getAttribute('position').setUsage(T.DynamicDrawUsage);
+                  whiskers=new T.LineSegments(whiskerGeometry,whiskerMaterial);animal.userData.whiskers=whiskers;whiskers.userData.ecoWhiskerSurface={segments:rawWhiskers.segments,strands:rawWhiskers.strands,roots:rawWhiskers.roots,rootPositions:rawWhiskers.rootPositions};
+                  var nose=animal.userData.nose;if(nose){nose.userData.ecoNoseHome=nose.position.clone();nose.userData.ecoNoseScale=nose.scale.clone();}
+                }else{
+                  var whiskerPoints=[],noseX=0.426,noseY=0.391;
+                  [-1,1].forEach(function(side){for(var whisker=0;whisker<3;whisker++){
+                    var root=new T.Vector3(noseX,noseY+(whisker-1)*0.013,side*0.043).sub(head.position),middle=root.clone().add(new T.Vector3(-0.055,(whisker-1)*0.016,side*0.085)),tip=middle.clone().add(new T.Vector3(-0.067,(whisker-1)*0.015,side*0.065));
+                    [root,middle,middle,tip].forEach(function(point){whiskerPoints.push(point.x,point.y,point.z);});
+                  }});
+                  whiskerGeometry.setAttribute('position',new T.Float32BufferAttribute(whiskerPoints,3));whiskers=new T.LineSegments(whiskerGeometry,whiskerMaterial);
+                }
+                whiskers.name='eco-'+sp.id+'-whiskers';head.add(whiskers);
+
               }
               if(animal.userData.earPairs&&animal.userData.head){
                 animal.userData.ears=animal.userData.earPairs.map(function(pair){
-                  var joint=new T.Group();joint.position.set(pair.base[0],pair.base[1],pair.base[2]).sub(animal.userData.head.position);joint.userData.side=pair.side;
+                  var joint=new T.Group();joint.name='eco-'+sp.id+'-ear-'+pair.side;joint.position.set(pair.base[0],pair.base[1],pair.base[2]).sub(animal.userData.head.position);joint.userData.side=pair.side;
                   pair.parts.forEach(function(part){part.position.sub(joint.position);joint.add(part);});animal.userData.head.add(joint);return joint;
                 });delete animal.userData.earPairs;
               }
@@ -2101,6 +4630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 animal.add(body);body.scale.setScalar(size);animal.userData.body=body;
                 // Breathing moves only the largest torso part, so feet stay planted.
                 var torso=body.children.filter(function(part){return part.isMesh;}).sort(function(a,b){return b.scale.x*b.scale.y*b.scale.z-a.scale.x*a.scale.y*a.scale.z;})[0];
+                if(animal.userData.mammalParts)torso=animal.userData.mammalParts.back.children[0];
                 if(torso){animal.userData.torso=torso;torso.userData.baseScale=torso.scale.clone();}
                 animal.userData.shadow.scale.multiplyScalar(size);
               }
@@ -2241,6 +4771,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var dynamicScenery=new Set(refugePatches);
           scene.children.forEach(function(child){if(child.userData.ecoRepresentative||child.isLight||dynamicScenery.has(child))return;child.traverse(function(o){o.updateMatrix();o.matrixAutoUpdate=false;});});
           var trailDummy=new T.Object3D(),trailUp=new T.Vector3(0,1,0),trailA=new T.Vector3(),trailB=new T.Vector3(),trailDirection=new T.Vector3(),trailColor=new T.Color();
+          // Study annotations are added after scenery is frozen. Their bounded
+          // buffers are reused on every frame, including rewind and branch changes.
+          // The arrow runs from a recorded sensory cue to the selected observer;
+          // its direction does not represent food-web energy or a capture.
+          var interactionStudy=new T.Group();interactionStudy.name='eco-interaction-cues';scene.add(interactionStudy);
+          var connectorPoints=25,connectorPositions=new Float32Array(connectorPoints*3),connectorDistances=new Float32Array(connectorPoints);
+          var connectorGeometry=geometry(new T.BufferGeometry());connectorGeometry.setAttribute('position',new T.BufferAttribute(connectorPositions,3));connectorGeometry.setAttribute('lineDistance',new T.BufferAttribute(connectorDistances,1));
+          var connectorMaterial=new T.LineDashedMaterial({color:new T.Color('#77edee').convertSRGBToLinear(),dashSize:0.16,gapSize:0.12,transparent:true,opacity:0.78,depthWrite:false,depthTest:false,toneMapped:false});materials.push(connectorMaterial);
+          var interactionConnector=new T.Line(connectorGeometry,connectorMaterial);interactionConnector.name='eco-interaction-connector';interactionConnector.frustumCulled=false;interactionConnector.renderOrder=12;interactionStudy.add(interactionConnector);
+          var endpointGoldMaterial=new T.MeshBasicMaterial({color:new T.Color('#ffe790').convertSRGBToLinear(),depthTest:false,depthWrite:false,toneMapped:false});materials.push(endpointGoldMaterial);
+          var endpointCyanMaterial=new T.MeshBasicMaterial({color:new T.Color('#77edee').convertSRGBToLinear(),side:T.DoubleSide,depthTest:false,depthWrite:false,toneMapped:false});materials.push(endpointCyanMaterial);
+          var selectedEndpoint=new T.Mesh(geometry(new T.SphereGeometry(1,10,8)),endpointGoldMaterial),cueEndpoint=new T.Mesh(geometry(new T.RingGeometry(0.72,1,32)),endpointCyanMaterial);
+          var connectorArrow=new T.Mesh(geometry(new T.ConeGeometry(1,1,10)),endpointCyanMaterial);selectedEndpoint.name='eco-interaction-endpoint-selected';cueEndpoint.name='eco-interaction-endpoint-cue';connectorArrow.name='eco-interaction-arrow';selectedEndpoint.renderOrder=cueEndpoint.renderOrder=14;connectorArrow.renderOrder=13;interactionStudy.add(selectedEndpoint,cueEndpoint,connectorArrow);
+          var pairedTrailCapacity=12,selectedTrackPositions=new Float32Array(pairedTrailCapacity*3),cueTrackPositions=new Float32Array(pairedTrailCapacity*3),cueTrackDistances=new Float32Array(pairedTrailCapacity);
+          var selectedTrackGeometry=geometry(new T.BufferGeometry()),cueTrackGeometry=geometry(new T.BufferGeometry());selectedTrackGeometry.setAttribute('position',new T.BufferAttribute(selectedTrackPositions,3));cueTrackGeometry.setAttribute('position',new T.BufferAttribute(cueTrackPositions,3));cueTrackGeometry.setAttribute('lineDistance',new T.BufferAttribute(cueTrackDistances,1));
+          var selectedTrackMaterial=new T.LineBasicMaterial({color:new T.Color('#ffe790').convertSRGBToLinear(),transparent:true,opacity:0.72,depthTest:false,depthWrite:false,toneMapped:false});materials.push(selectedTrackMaterial);
+          var cueTrackMaterial=new T.LineDashedMaterial({color:new T.Color('#77edee').convertSRGBToLinear(),dashSize:0.10,gapSize:0.09,transparent:true,opacity:0.72,depthTest:false,depthWrite:false,toneMapped:false});materials.push(cueTrackMaterial);
+          var selectedTrack=new T.Line(selectedTrackGeometry,selectedTrackMaterial),cueTrack=new T.Line(cueTrackGeometry,cueTrackMaterial);selectedTrack.name='eco-interaction-trail-selected';cueTrack.name='eco-interaction-trail-cue';selectedTrack.frustumCulled=cueTrack.frustumCulled=false;selectedTrack.renderOrder=cueTrack.renderOrder=11;interactionStudy.add(selectedTrack,cueTrack);
+          var connectorStart=new T.Vector3(),connectorEnd=new T.Vector3(),connectorDirection=new T.Vector3(),connectorPrevious=new T.Vector3(),connectorPoint=new T.Vector3(),connectorUp=new T.Vector3(0,1,0);
+          // Cache sampled cue identities only when the inspected timeline changes.
+          // Playback reads existing poses; it does not accumulate a render history.
+          var pairHistory={runs:null,id:null,index:-1,keys:new Int16Array(241)};
+          var fieldRuler=createFieldAnnotations(T,scene,geometry,materials,groundHeight),shelterAnnotation=createRefugeAnnotation(T,scene,geometry,materials,groundHeight);
+          var memoryAnnotation=createRefugeAnnotation(T,scene,geometry,materials,groundHeight,{name:'eco-fox-memory-target',color:0xc4b5fd,innerRadius:0.18,outerRadius:0.23,sides:4});
+          var vigilanceAnnotation=createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight);
+          var vigilanceBounds=new T.Box3(),vigilancePartBounds=new T.Box3(),vigilanceCenter=new T.Vector3(),vigilanceCorner=new T.Vector3(),vigilanceGeometrySeen=new Set();
+          // Fit the current articulated geometry after this draw's transforms.
+          // Shared batches still retain their source parts in each animal root.
+          // Exclude annotation rings/shadows, hidden parts and invisible proxies.
+          function fitVigilanceTrace(trace,aspect,orbit,zoom) {
+            vigilanceBounds.makeEmpty();vigilanceGeometrySeen.clear();
+            [trace.receiver,trace.source,trace.predator].forEach(function(actor){
+              var root=groups[actor.id][actor.index];if(!root||!root.visible||root.scale.lengthSq()<1e-12)return;
+              root.traverse(function(part){
+                if(!(part.isMesh||part.isLine)||!part.geometry)return;
+                for(var node=part;node;node=node.parent){if(!node.visible||node===root.userData.marker||node===root.userData.shadow)return;if(node===root)break;}
+                var material=part.material;if(material&&!Array.isArray(material)&&(material.visible===false||material.transparent&&material.opacity<=0.01))return;
+                if(!vigilanceGeometrySeen.has(part.geometry)){part.geometry.computeBoundingBox();vigilanceGeometrySeen.add(part.geometry);}
+                if(part.geometry.boundingBox&&!part.geometry.boundingBox.isEmpty()){vigilancePartBounds.copy(part.geometry.boundingBox).applyMatrix4(part.matrixWorld);vigilanceBounds.union(vigilancePartBounds);}
+              });
+            });
+            if(vigilanceBounds.isEmpty())return null;
+            vigilanceBounds.getCenter(vigilanceCenter);var radius=vigilanceBounds.min.distanceTo(vigilanceBounds.max)*0.5;
+            // A little room above the actors keeps the scene label legible.
+            vigilanceCenter.y+=radius*0.16;var enclosing=0;
+            for(var corner=0;corner<8;corner++){vigilanceCorner.set(corner&1?vigilanceBounds.max.x:vigilanceBounds.min.x,corner&2?vigilanceBounds.max.y:vigilanceBounds.min.y,corner&4?vigilanceBounds.max.z:vigilanceBounds.min.z);enclosing=Math.max(enclosing,vigilanceCorner.distanceTo(vigilanceCenter));}
+            var halfVertical=camera.fov*Math.PI/360,halfHorizontal=Math.atan(Math.tan(halfVertical)*aspect),distance=Math.max(0.5,enclosing/Math.sin(Math.min(halfVertical,halfHorizontal))*1.22*Math.max(1,zoom/19));
+            camera.position.set(vigilanceCenter.x+Math.sin(orbit)*distance,vigilanceCenter.y+distance*0.42,vigilanceCenter.z+Math.cos(orbit)*distance);camera.lookAt(vigilanceCenter);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+            return {min:vigilanceBounds.min.toArray(),max:vigilanceBounds.max.toArray(),target:vigilanceCenter.toArray()};
+          }
+
+          function interactionKey(id,index){for(var speciesIndex=0;speciesIndex<ECO_WEB_SPECIES.length;speciesIndex++)if(ECO_WEB_SPECIES[speciesIndex].id===id)return speciesIndex*16+index;return -1;}
+          function bodyCenter(id,pose){return groundHeight(pose.x,pose.z)+pose.altitude+(id==='caterpillars'?0.08:id==='bluetits'||id==='voles'?0.2:0.42);}
+          function writeTrackPoint(positions,index,id,pose){var at=index*3;positions[at]=pose.x;positions[at+1]=bodyCenter(id,pose);positions[at+2]=pose.z;}
+          function updateInteractionTracks(pair,runs,focusId,focusIndex,head,sampleStep,blendAmount){
+            var count=0;
+            if(pair){
+              if(pairHistory.runs!==runs||pairHistory.id!==focusId||pairHistory.index!==focusIndex){
+                pairHistory.runs=runs;pairHistory.id=focusId;pairHistory.index=focusIndex;pairHistory.keys.fill(-1);
+                for(var historyStep=0;historyStep<Math.min(runs.length,pairHistory.keys.length);historyStep++){var recorded=ecoMeadowInteraction(runs[historyStep],focusId,focusIndex);if(recorded)pairHistory.keys[historyStep]=interactionKey(recorded.id,recorded.index);}
+              }
+              writeTrackPoint(selectedTrackPositions,count,focusId,pair.selected);writeTrackPoint(cueTrackPositions,count++,pair.id,pair.other);
+              var key=interactionKey(pair.id,pair.index),firstStep=Math.max(0,Math.ceil(head-10-1e-8));
+              // Do not connect different cue representatives, missing samples,
+              // absences or moments that no longer have this recorded cue.
+              for(var trackStep=blendAmount>1e-6?sampleStep:sampleStep-1;trackStep>=firstStep&&count<pairedTrailCapacity;trackStep--){
+                if(pairHistory.keys[trackStep]!==key)break;
+                var trackFrame=runs[trackStep],selectedPose=trackFrame[focusId][focusIndex],cuePose=trackFrame[pair.id][pair.index];
+                writeTrackPoint(selectedTrackPositions,count,focusId,selectedPose);writeTrackPoint(cueTrackPositions,count++,pair.id,cuePose);
+              }
+            }
+            cueTrackDistances[0]=0;
+            for(var trackIndex=1;trackIndex<count;trackIndex++){var at=trackIndex*3;cueTrackDistances[trackIndex]=cueTrackDistances[trackIndex-1]+Math.hypot(cueTrackPositions[at]-cueTrackPositions[at-3],cueTrackPositions[at+1]-cueTrackPositions[at-2],cueTrackPositions[at+2]-cueTrackPositions[at-1]);}
+            selectedTrack.visible=cueTrack.visible=count>1;selectedTrackGeometry.setDrawRange(0,count);cueTrackGeometry.setDrawRange(0,count);
+            selectedTrackGeometry.attributes.position.needsUpdate=true;cueTrackGeometry.attributes.position.needsUpdate=true;cueTrackGeometry.attributes.lineDistance.needsUpdate=true;
+            return count;
+          }
           // A live frame (playback) draws between samples and skips the data-*
           // test/assistive mirror, which is refreshed on every committed sample.
           var speciesMaterials=null;
@@ -2285,7 +4892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             refugePatches.forEach(function(patch, i) { patch.visible = currentCover > i * 10; patch.scale.setScalar(Math.min(1, Math.max(0.3, (currentCover - i * 10) / 10))); });
             attr('data-refuge-cover', String(currentCover));
             var ratio=playingNow.current||previewHead.current!=null?quality.ratio:basePixelRatio;if(Math.abs(renderer.getPixelRatio()-ratio)>1e-3)renderer.setPixelRatio(ratio);
-            attr('data-render-scale',String(ratio));attr('data-playback-step-ms',String(engineState.stepMs));
+            attr('data-render-scale',String(ratio));attr('data-playback-step-ms',String(engineState.stepMs));attr('data-playback-fraction',String(blendAmount));
             var width = Math.max(1, container.clientWidth), height = Math.max(1, container.clientHeight);
             if (renderer.domElement.width !== Math.floor(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(height * renderer.getPixelRatio())) renderer.setSize(width, height, false);
             camera.aspect = width / height;
@@ -2293,7 +4900,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var soilView=v.cameraMode==='soil'&&!!currentSoil;
             var detail = v.cameraMode === 'detail' && p.focus !== 'plants';
             var focusPose=behaviorFrame[p.focus]?behaviorFrame[p.focus][v.representativeIndex]:ecoMeadowPose(p.focus,0,time,v.reduced);
-            var pair=detail&&v.showInteraction&&!v.reduced?ecoMeadowInteraction(behaviorFrame,p.focus,v.representativeIndex):null;
+            var vigilance=detail&&v.showVigilance&&p.focus==='rabbits'&&!v.reduced&&!playingNow.current&&!preview&&blendAmount<=1e-6?ecoMeadowVigilanceTrace(runs,sampleStep,v.representativeIndex):null;
+            var measurement=detail&&v.rulerEncounter&&!vigilance&&!v.reduced&&!playingNow.current&&!preview?ecoMeadowPairMeasurement(runs,v.rulerEncounter,sampleStep):null;
+            var measuredPair=measurement?{id:measurement.cue.id,index:measurement.cue.index,name:ECO_WEB_SPECIES.find(function(sp){return sp.id===measurement.cue.id;}).name,selected:behaviorFrame[p.focus][v.representativeIndex],other:behaviorFrame[measurement.cue.id][measurement.cue.index]}:null;
+            var pair=measuredPair||(detail&&v.showInteraction&&!vigilance&&!v.reduced?ecoMeadowInteraction(behaviorFrame,p.focus,v.representativeIndex):null);
+            var selectedRefuge=detail&&p.focus==='rabbits'&&v.showRefuge&&!v.reduced&&!measurement&&focusPose.refugeCue&&currentCover>focusPose.refugeCue.index*10?focusPose.refugeCue:null;
+            var selectedMemory=detail&&p.focus==='foxes'&&v.showMemory&&!v.reduced&&!measurement&&focusPose.state==='Checking last location'?focusPose.searchCue:null;
+            var pairedTrailCount=updateInteractionTracks(measuredPair?null:pair,runs,p.focus,v.representativeIndex,head,sampleStep,blendAmount);
             var startingFrame=behaviorRef.current[v.branch][0];
             var startingPose=startingFrame[p.focus]&&startingFrame[p.focus][v.representativeIndex];
             // A stable world bearing reveals turns rather than orbiting with them.
@@ -2305,17 +4918,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var wide = v.cameraMode === 'forest';
             var targetY = soilView?groundHeight(soilX,soilZ)+0.15:detail ? groundHeight(focusPose.x,focusPose.z)+cameraAltitude+(p.focus==='caterpillars'?0.08:p.focus==='bluetits'?0.22:p.focus==='voles'?0.2:0.42) : 0.8;
             var distance = v.zoom * (soilView?0.20:detail ? (p.focus==='caterpillars'?0.09:p.focus==='bluetits'?0.13:p.focus==='voles'?0.13:0.20) : wide ? 1.6 : 1) * Math.max(1, (detail ? 0.9 : 1.2) / camera.aspect);
+            var faceFocus=detail&&v.faceDetail&&!v.showInteraction&&!measurement&&!selectedRefuge&&!selectedMemory?ecoMeadowMammalHeadFocus(p.focus,focusPose,v.representativeIndex,v.reduced):null;
+            if(faceFocus){target=[faceFocus.point[0],faceFocus.point[2]];targetY=faceFocus.point[1];distance*=0.66;}
+            attr('data-specimen-framing',faceFocus?'face':'whole');attr('data-head-focus',faceFocus?JSON.stringify(faceFocus.point):'');
             var cameraAngle=detail?(v.showInteraction?v.orbit:v.orbit+Math.PI/2+(steady&&startingPose?startingPose.yaw:focusPose.yaw)):v.orbit;
-            function bodyCenter(id,pose){return groundHeight(pose.x,pose.z)+pose.altitude+(id==='caterpillars'?0.08:id==='bluetits'||id==='voles'?0.2:0.42);}
             if(pair){
               var selectedY=bodyCenter(p.focus,focusPose),otherY=bodyCenter(pair.id,pair.other);
               target=[(focusPose.x+pair.other.x)/2,(focusPose.z+pair.other.z)/2];targetY=(selectedY+otherY)/2;
               var radius=Math.hypot(focusPose.x-pair.other.x,selectedY-otherY,focusPose.z-pair.other.z)/2+0.95;
+              for(var trackFit=0;trackFit<pairedTrailCount*3;trackFit+=3){radius=Math.max(radius,Math.hypot(selectedTrackPositions[trackFit]-target[0],selectedTrackPositions[trackFit+1]-targetY,selectedTrackPositions[trackFit+2]-target[1])+0.65,Math.hypot(cueTrackPositions[trackFit]-target[0],cueTrackPositions[trackFit+1]-targetY,cueTrackPositions[trackFit+2]-target[1])+0.65);}
               var verticalHalf=camera.fov*Math.PI/360,horizontalHalf=Math.atan(Math.tan(verticalHalf)*camera.aspect);
               distance=Math.max(distance,radius/Math.sin(Math.min(verticalHalf,horizontalHalf))*1.2*Math.max(1,v.zoom/19));
               cameraAngle=v.orbit;
             }
-            var elevation=soilView?0.75:detail?(v.showInteraction?0.42:v.observationElevation):(wide?0.78:0.40)+(v.lift||0);
+            var selectedLocation=selectedRefuge||selectedMemory;
+            if(selectedLocation&&!pair){
+              var refugeY=groundHeight(selectedLocation.x,selectedLocation.z)+0.35;
+              target=[(focusPose.x+selectedLocation.x)/2,(focusPose.z+selectedLocation.z)/2];targetY=(bodyCenter(p.focus,focusPose)+refugeY)/2;
+              var shelterRadius=Math.hypot(focusPose.x-selectedLocation.x,bodyCenter(p.focus,focusPose)-refugeY,focusPose.z-selectedLocation.z)/2+1;
+              distance=Math.max(distance,shelterRadius/Math.sin(Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect)))*1.15);cameraAngle=v.orbit;
+            }
+            var elevation=soilView?0.75:detail?(measurement?(v.measurePlan?1.5:0.55):v.showInteraction?0.42:v.observationElevation):(wide?0.78:0.40)+(v.lift||0);
             // Keep the camera-to-subject distance consistent across inspection
             // heights, so looking down does not make the animal shrink away.
             var horizontalDistance=detail?distance*Math.sqrt(1+0.42*0.42)/Math.sqrt(1+elevation*elevation):distance;
@@ -2325,6 +4948,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             attr('data-interaction-view',String(!!pair));
             attr('data-interaction-cue',pair?pair.id+':'+pair.index:'');
             camera.updateMatrixWorld(true);
+            interactionStudy.visible=!!pair&&!measurement;
+            var connectorVisible=false;
+            if(pair&&!measurement){
+              connectorStart.set(pair.other.x,bodyCenter(pair.id,pair.other),pair.other.z);connectorEnd.set(focusPose.x,bodyCenter(p.focus,focusPose),focusPose.z);
+              var cueDistance=connectorStart.distanceTo(connectorEnd),curveRise=Math.min(0.65,0.12+cueDistance*0.06),curveLength=0;
+              for(var curveIndex=0;curveIndex<connectorPoints;curveIndex++){
+                var curveT=curveIndex/(connectorPoints-1),curveAt=curveIndex*3;connectorPoint.lerpVectors(connectorStart,connectorEnd,curveT);connectorPoint.y+=Math.sin(Math.PI*curveT)*curveRise;
+                connectorPositions[curveAt]=connectorPoint.x;connectorPositions[curveAt+1]=connectorPoint.y;connectorPositions[curveAt+2]=connectorPoint.z;
+                if(curveIndex)curveLength+=connectorPoint.distanceTo(connectorPrevious);connectorDistances[curveIndex]=curveLength;connectorPrevious.copy(connectorPoint);
+              }
+              connectorGeometry.attributes.position.needsUpdate=true;connectorGeometry.attributes.lineDistance.needsUpdate=true;
+              connectorMaterial.dashSize=Math.max(0.055,Math.min(0.30,cueDistance/22));connectorMaterial.gapSize=connectorMaterial.dashSize*0.75;
+              connectorVisible=cueDistance>0.025;interactionConnector.visible=connectorArrow.visible=connectorVisible;
+              var selectedRadius=p.focus==='caterpillars'?0.016:p.focus==='bluetits'||p.focus==='voles'?0.035:0.065,cueRadius=pair.id==='caterpillars'?0.016:pair.id==='bluetits'||pair.id==='voles'?0.035:0.065;
+              selectedEndpoint.position.copy(connectorEnd);selectedEndpoint.scale.setScalar(selectedRadius);cueEndpoint.position.copy(connectorStart);cueEndpoint.scale.setScalar(cueRadius*1.8);cueEndpoint.quaternion.copy(camera.quaternion);
+              connectorPoint.fromArray(connectorPositions,(connectorPoints-2)*3);connectorDirection.subVectors(connectorEnd,connectorPoint).normalize();
+              var arrowLength=Math.max(0.08,Math.min(0.24,cueDistance*0.08));connectorArrow.position.copy(connectorEnd).addScaledVector(connectorDirection,-arrowLength*0.5-selectedRadius*1.4);connectorArrow.quaternion.setFromUnitVectors(connectorUp,connectorDirection);connectorArrow.scale.set(selectedRadius*0.8,arrowLength,selectedRadius*0.8);
+            }
+            var rulerGeometry=fieldRuler.update(measurement);shelterAnnotation.update(focusPose,selectedRefuge);memoryAnnotation.update(focusPose,selectedMemory);
+            attr('data-field-ruler',String(!!measurement));attr('data-field-ruler-gap',measurement?String(measurement.gap):'');attr('data-field-ruler-endpoints',rulerGeometry.endpoints?JSON.stringify(rulerGeometry.endpoints):'');attr('data-field-ruler-ticks',String(rulerGeometry.ticks));
+            attr('data-refuge-target',focusPose.refugeCue?JSON.stringify(focusPose.refugeCue):'');attr('data-refuge-target-visible',String(!!selectedRefuge));
+            attr('data-peer-avoidance',!v.reduced&&focusPose.peerAvoidance?JSON.stringify(focusPose.peerAvoidance):'');
+            attr('data-interaction-posture',JSON.stringify({headRaise:v.reduced?0:focusPose.headRaise||0,listenTilt:v.reduced?0:focusPose.listenTilt||0}));
+            attr('data-spacing-cue',focusPose.spacingCue?JSON.stringify(focusPose.spacingCue):'');
+            attr('data-recovery-cue',focusPose.recoveryCue?JSON.stringify(focusPose.recoveryCue):'');attr('data-last-direct-threat',focusPose.lastDirectThreat?JSON.stringify(focusPose.lastDirectThreat):'');
+            attr('data-breakoff-cue',focusPose.breakoffCue?JSON.stringify(focusPose.breakoffCue):'');
+            attr('data-crossing-cue',focusPose.crossingCue?JSON.stringify(focusPose.crossingCue):'');attr('data-crossing-look',String(focusPose.crossingLook||0));
+            attr('data-search-cue',focusPose.searchCue?JSON.stringify(focusPose.searchCue):'');attr('data-search-location-visible',String(!!selectedMemory));
+            attr('data-interaction-connector',String(connectorVisible));
+            attr('data-interaction-line-points',function(){return pair&&!measurement?JSON.stringify([connectorStart.toArray(),connectorEnd.toArray()]):'';});
+            attr('data-interaction-trail-selected',String(!!pair&&pairedTrailCount>1));attr('data-interaction-trail-selected-count',String(pairedTrailCount));
+            attr('data-interaction-trail-cue',String(!!pair&&pairedTrailCount>1));attr('data-interaction-trail-cue-count',String(pairedTrailCount));
+            attr('data-selected-marker',pair||v.markers?'gold':'none');attr('data-cue-marker',pair?'cyan':'none');
             attr('data-interaction-projection',function(){return pair?JSON.stringify([new T.Vector3(focusPose.x,bodyCenter(p.focus,focusPose),focusPose.z).project(camera).toArray(),new T.Vector3(pair.other.x,bodyCenter(pair.id,pair.other),pair.other.z).project(camera).toArray()]):'';});
             attr('data-camera-tracking',detail?(steady?'steady':'heading'):'overview');
             attr('data-camera-bearing',String(cameraAngle));
@@ -2337,15 +4993,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             attr('data-behavior',!p.config.enabled[p.focus]||values[p.focus]===0?'Not present':v.reduced&&p.focus!=='plants'?'Starting pose':focusPose.state||'Growing');
             attr('data-isolated-specimen',String(isolating));
             attr('data-hunt-stage',focusPose.huntStage||'none');
+            attr('data-listen-cue',focusPose.listenCue?JSON.stringify(focusPose.listenCue):'');
             attr('data-ground-navigation',!v.reduced&&focusPose.navigation?focusPose.navigation.id:'');
             attr('data-representative-index',String(v.representativeIndex));
             attr('data-ear-articulation',JSON.stringify([focusPose.earLeft||0,focusPose.earRight||0,focusPose.earTilt||0]));
             attr('data-articulated-ears',String(['foxes','rabbits','voles'].indexOf(p.focus)>=0?2:0));
             attr('data-owl-bank',p.focus==='owls'?focusPose.bank.toFixed(5):'0');
             attr('data-wing-amplitude',p.focus==='owls'?focusPose.wingFlap.toFixed(5):'0');
+            var selectedBird=p.focus==='owls'||p.focus==='bluetits'?ecoMeadowBirdArticulation(p.focus,focusPose,time,v.reduced):null;
+            var selectedMammal=p.focus==='foxes'||p.focus==='rabbits'?ecoMeadowMammalArticulation(p.focus,focusPose,v.reduced):null;
+            attr('data-mammal-articulation',selectedMammal?JSON.stringify(selectedMammal):'');
+            attr('data-mammal-rig',selectedMammal?'back,chest,neck,haunches,tail,paired-ears':'');
+            attr('data-mammal-surface',selectedMammal?(p.focus==='foxes'?'continuous-torso,continuous-brush':'continuous-torso'):'');
+            attr('data-mammal-support-feet',selectedMammal?String(selectedMammal.supportFeet):'');
+            attr('data-bird-articulation',selectedBird?JSON.stringify(selectedBird):'');
+            attr('data-bird-wing-joints',selectedBird?'4':'0');
+            attr('data-bird-rig',selectedBird?'shoulders,wrists,tail,paired-feet':'');
+            attr('data-bird-foot-contact',selectedBird?String(selectedBird.contact):'');
             attr('data-caterpillar-segments',p.focus==='caterpillars'?'14':'0');
             attr('data-caterpillar-articulation',function(){return p.focus==='caterpillars'?JSON.stringify(Array.from({length:14},function(_,index){return ecoMeadowSegmentPose(focusPose,index);})):'';});
             if(isolating)inspectionScenery.forEach(function(object){object.visible=false;});
+            if(selectedRefuge)refugePatches[selectedRefuge.index].visible=true;
+            if(selectedMemory&&refugePatches[selectedMemory.refugeIndex])refugePatches[selectedMemory.refugeIndex].visible=true;
             var path=v.showTrail&&detail&&!v.reduced&&p.result?ecoMeadowTrail(runs,p.focus,v.representativeIndex,sampleStep):[];
             trailGroup.visible=path.length>1;trailSegments.count=0;trailBeads.count=0;
             var trailRadius=p.focus==='caterpillars'?0.004:p.focus==='bluetits'||p.focus==='voles'?0.009:0.018;
@@ -2371,7 +5040,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               var value = values[sp.id], max = groups[sp.id].length;
               var count = p.config.enabled[sp.id] && value > 0 ? Math.min(max, Math.max(1, Math.ceil(value / sp.initial * (sp.id === 'plants' ? 40 : 7)))) : 0;
               groups[sp.id].forEach(function(g, i) {
-                var shown = i < count && !!(!isolating||(sp.id===p.focus&&i===v.representativeIndex)||(pair&&sp.id===pair.id&&i===pair.index));
+                var vigilanceRole=vigilance?(sp.id===vigilance.receiver.id&&i===vigilance.receiver.index?'receiver':sp.id===vigilance.source.id&&i===vigilance.source.index?'source':sp.id===vigilance.predator.id&&i===vigilance.predator.index?'predator':null):null;
+                var shown = i < count && !!(!isolating||(sp.id===p.focus&&i===v.representativeIndex)||(pair&&sp.id===pair.id&&i===pair.index)||vigilanceRole);
                 // During playback arrivals grow in and departures shrink away; a
                 // still frame always shows exactly the sampled set.
                 var presence=live&&g.userData.presence!=null?Math.max(0,Math.min(1,g.userData.presence+(shown?1:-1)*engineState.lastDt/450)):shown?1:0;
@@ -2379,20 +5049,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var home=g.userData.home, pose=sp.id==='plants'?ecoMeadowPose(sp.id,i,time,v.reduced):behaviorFrame[sp.id][i];
                 var px=sp.id==='plants'?home[0]:pose.x,pz=sp.id==='plants'?home[1]:pose.z,altitude=sp.id==='plants'?0.025:pose.altitude;
                 g.position.set(px,groundHeight(px,pz)+altitude,pz);
-                g.userData.marker.visible=(v.markers&&sp.id===p.focus)||!!(pair&&((sp.id===p.focus&&i===v.representativeIndex)||(sp.id===pair.id&&i===pair.index)));
+                g.userData.marker.visible=(v.markers&&sp.id===p.focus)||!!vigilanceRole||!!(pair&&((sp.id===p.focus&&i===v.representativeIndex)||(sp.id===pair.id&&i===pair.index)));
+                g.userData.marker.material=vigilanceRole==='predator'?vigilanceMarkerMaterial:vigilanceRole==='source'||pair&&sp.id===pair.id&&i===pair.index?cueMarkerMaterial:selectionMaterial;
                 g.userData.marker.position.y=-altitude+0.035;g.userData.shadow.position.y=-altitude+(sp.id==='caterpillars'?0.004:0.02);
                 var mammal=sp.id==='foxes'||sp.id==='rabbits',posture=mammal?ecoMeadowMammalPosture(sp.id,pose):null;g.userData.posture=posture;
+                var articulation=mammal?ecoMeadowMammalArticulation(sp.id,pose,v.reduced):null;g.userData.mammalArticulation=articulation;
+                var bird=sp.id==='owls'||sp.id==='bluetits'?ecoMeadowBirdArticulation(sp.id,pose,time,v.reduced):null;g.userData.birdArticulation=bird;
                 if(g.userData.head){
                   g.userData.head.rotation.z=-(sp.id==='foxes'?0.15:sp.id==='bluetits'?0.45:0.3)*pose.forage-(pose.pounce||0)*0.24-(pose.rest||0)*0.12-(posture?posture.settle*0.18:0);
-                  if(posture)g.userData.head.position.y=g.userData.head.userData.homeY-(sp.id==='foxes'?0.045:0.025)*posture.settle;
-                  g.userData.head.rotation.y=pose.headTurn||0;
+                  if(bird){g.userData.head.rotation.z+=bird.headPitch;g.userData.head.rotation.x=bird.headRoll;g.userData.head.position.x=g.userData.head.userData.homeX+bird.headReach;g.userData.head.position.y=g.userData.head.userData.homeY-bird.headDrop;}
+                  if(articulation){g.userData.head.rotation.z=articulation.headPitch;g.userData.head.rotation.x=articulation.headRoll;g.userData.head.position.set(g.userData.head.userData.homeX+articulation.headReach,g.userData.head.userData.homeY-articulation.headDrop,0);}
+                  g.userData.head.rotation.y=articulation?articulation.headYaw:pose.headTurn||0;
                 }
-                if(g.userData.ears)g.userData.ears.forEach(function(ear){ear.rotation.y=ear.userData.side<0?(pose.earLeft||0):(pose.earRight||0);ear.rotation.z=pose.earTilt||0;});
+                var foxPinnaFollow=sp.id==='foxes'?ecoMeadowFoxPinnaFollow(pose,v.reduced):null;
+                if(g.userData.ears)g.userData.ears.forEach(function(ear){ear.rotation.y=ear.userData.side<0?(articulation?articulation.earLeft:pose.earLeft||0):(articulation?articulation.earRight:pose.earRight||0);ear.rotation.z=articulation?articulation.earTilt:pose.earTilt||0;if(foxPinnaFollow){ear.rotation.y+=foxPinnaFollow.yaw;ear.rotation.z+=foxPinnaFollow.pitch;}});
+                if(g.userData.jaw&&articulation){g.userData.jaw.rotation.z=-articulation.jawOpen;g.userData.jaw.rotation.y=articulation.jawSide;}
+                if(g.userData.eyeGroups&&articulation){g.userData.eyeGroups.forEach(function(eye){eye.scale.set(1,1,1);if(sp.id==='foxes'&&eye.userData.fixationLayers){var fixation=ecoMeadowFoxEyeFixation(pose,eye.userData.side,v.reduced);Object.keys(eye.userData.fixationLayers).forEach(function(name){eye.userData.fixationLayers[name].position.fromArray(fixation.positions[name]);});eye.userData.eyeFixation=fixation;}});if(g.visible&&g.userData.eyelidSkin)fitMammalEyelids(g.userData.eyelidSkin,sp.id,articulation.eyeOpen);}
+                if(g.userData.nose&&articulation){
+                  var nasal=ecoMeadowMammalNosePose(sp.id,pose,v.reduced),nose=g.userData.nose,noseHome=nose.userData.ecoNoseHome,noseScale=nose.userData.ecoNoseScale;
+                  nose.position.copy(noseHome);nose.position.y+=nasal.lift;nose.scale.set(noseScale.x*nasal.scaleX,noseScale.y*nasal.scaleY,noseScale.z*nasal.scaleZ);nose.userData.ecoNosePose=nasal;
+                  if(g.visible&&g.userData.whiskers){var whiskers=g.userData.whiskers,whiskerPositions=whiskers.geometry.getAttribute('position');ecoMeadowMammalWhiskers(sp.id,pose,v.reduced,whiskerPositions.array);whiskerPositions.needsUpdate=true;whiskers.geometry.computeBoundingSphere();whiskers.userData.fan=nasal.fan;}
+                }
                 if(g.userData.legs)g.userData.legs.forEach(function(leg){var foot=ecoMeadowFootPose(sp.id,pose,leg.userData.hind,leg.userData.side);leg.rotation.z=foot.angle;leg.position.y=leg.userData.homeY+foot.height;leg.scale.y=1-0.12*Math.max(pose.crouch||0,(pose.rest||0)*0.65);
                   var contact=ecoMeadowFoxFooting(pose,i,leg.userData.hind,leg.userData.side,groundHeight);
                   leg.userData.footing=contact;leg.position.z=leg.userData.side*0.16+contact.z;
                   var joints=ecoMeadowFoxLegPose(pose,leg.userData.hind,leg.userData.side,contact),rig=leg.userData.rig;
                   rig.upper.position.set(joints.hipX,joints.hipY,0);rig.upper.rotation.z=joints.upper;rig.lower.rotation.z=joints.lower-joints.upper;rig.paw.rotation.z=joints.pawPitch;
+                  var ca=Math.cos(foot.angle),sa=Math.sin(foot.angle),sy=leg.scale.y;
+                  function limbPoint(x,y){return [leg.position.x+ca*x-sa*sy*y,leg.position.y+sa*x+ca*sy*y,leg.position.z];}
+                  var kx=joints.hipX+0.21*Math.sin(joints.upper),ky=joints.hipY-0.21*Math.cos(joints.upper);
+                  leg.userData.skinJoints={hip:limbPoint(joints.hipX,joints.hipY),knee:limbPoint(kx,ky),paw:limbPoint(kx+0.20*Math.sin(joints.lower),ky-0.20*Math.cos(joints.lower))};
                 });
                 if(g.userData.paws)g.userData.paws.forEach(function(paw,pawIndex){var foot=ecoMeadowFootPose(sp.id,pose,paw.userData.hind,paw.userData.side);paw.rotation.z=foot.angle;paw.position.y=paw.userData.homeY+foot.height;if(sp.id==='rabbits'){var contact=ecoMeadowRabbitFooting(pose,i,paw.userData.hind,paw.userData.side,groundHeight);paw.userData.footing=contact;paw.position.set(paw.userData.homeX+contact.x,paw.userData.homeY+foot.height+contact.y,paw.userData.homeZ+contact.z);paw.userData.paw.rotation.z=contact.pawRotation;
                     var joints=ecoMeadowRabbitLegPose(pose,i,paw.userData.hind,paw.userData.side,contact);paw.userData.joints=joints;
@@ -2401,15 +5087,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       rabbitBoneDummy.position.copy(rabbitBoneStart).add(rabbitBoneEnd).multiplyScalar(0.5);rabbitBoneDummy.quaternion.setFromUnitVectors(rabbitBoneUp,rabbitBoneDirection.normalize());rabbitBoneDummy.scale.set(width,length/2+0.012,width*0.9);rabbitBoneDummy.updateMatrix();g.userData.rabbitLimbs.setMatrixAt(pawIndex*2+bone,rabbitBoneDummy.matrix);
                     });
                   }});if(g.userData.rabbitLimbs)g.userData.rabbitLimbs.instanceMatrix.needsUpdate=true;
-                if(g.userData.body && sp.id==='bluetits')g.userData.body.position.y=Math.abs(pose.gait)*0.06;
+                if(bird&&g.userData.body){g.userData.body.position.y=bird.bodyLift;g.userData.body.rotation.set(sp.id==='owls'?(pose.bank||0):0,0,bird.bodyPitch);}
                 if(g.userData.body && sp.id==='rabbits')g.userData.body.position.y=posture.drop;
                 if(g.userData.body&&sp.id==='foxes'){g.userData.body.rotation.z=-(pose.pounce||0)*0.12;g.userData.body.position.y=posture.drop;}
-                if(g.userData.tail){g.userData.tail.rotation.y=v.reduced?0:Math.sin(time*1.1+pose.phase)*0.12*(1-posture.settle)+posture.settle*0.9;g.userData.tail.rotation.z=-posture.settle*0.12;}
-                if(g.userData.body && sp.id==='owls')g.userData.body.rotation.x=pose.bank||0;
-                // Breathing follows timeline time: quicker when active, slow at rest.
-                if(g.userData.torso&&sp.id!=='caterpillars'){var breath=v.reduced?0:Math.sin(time*((pose.rest||0)>0.5?1.7:3.2)+pose.phase*1.3)*((pose.rest||0)>0.5?0.03:0.018),torsoBase=g.userData.torso.userData.baseScale;g.userData.torso.scale.set(torsoBase.x,torsoBase.y*(1+breath),torsoBase.z*(1+breath*0.6));}
+                if(g.userData.mammalParts){
+                  Object.keys(g.userData.mammalParts).forEach(function(name){var part=g.userData.mammalParts[name],home=part.userData.home;part.position.copy(home);part.rotation.set(0,0,0);part.scale.set(1,1,1);
+                    if(name==='back'){part.rotation.z=articulation.spineFlex;part.rotation.x=articulation.ribRoll;part.scale.x=articulation.bodyStretch;}
+                    else if(name==='chest'){part.position.y+=articulation.shoulderLift;part.rotation.z=-articulation.spineFlex*0.7;}
+                    else if(name.indexOf('haunch')===0){part.position.y+=articulation.haunchLift;part.rotation.z=articulation.spineFlex*0.8;part.scale.x=2-articulation.bodyStretch;}
+                    else if(name==='neck'){if(g.visible&&g.userData.neckSurface)fitMammalNeck(g.userData.neckSurface,sp.id,g.userData.head);}
+                    else if(name==='belly'){part.scale.x=articulation.bodyStretch;part.rotation.z=articulation.spineFlex*0.5;}
+                  });
+                }
+                if(g.userData.tail&&articulation){g.userData.tail.rotation.y=articulation.tailYaw;g.userData.tail.rotation.z=articulation.tailPitch;if(g.userData.tail.userData.distal){g.userData.tail.userData.distal.rotation.y=articulation.tailCurl;g.userData.tail.userData.distal.rotation.z=-articulation.tailCurl*0.12+articulation.tailPitch*0.35;if(g.visible&&g.userData.tailSurface)fitFoxBrush(g.userData.tailSurface,articulation.tailCurl,g.userData.tail.userData.distal.rotation.z);}}
+                if(g.userData.birdTail){var birdTail=g.userData.birdTail;birdTail.rotation.z=bird.tailPitch;birdTail.rotation.y=sp.id==='owls'?-(pose.bank||0)*0.22:0;birdTail.userData.feathers.forEach(function(feather){feather.rotation.y=-Math.PI/2+feather.userData.slot*bird.tailFan;});}
+                if(g.userData.birdLegs)g.userData.birdLegs.forEach(function(leg){
+                  var rig=leg.userData,side=rig.side,owl=sp.id==='owls',size=g.userData.body.scale.x,hip=rig.hip;
+                  var targetX=owl?-0.19+bird.footReach:0.055+bird.footReach*0.8/size,targetY=owl?0.17+bird.footLift:0.008+bird.footLift;
+                  if(!owl){
+                    // Fit each sole to its own point on the terrain. Counter the
+                    // body hop/crouch and pitch so contacts do not float or sink.
+                    var cy=Math.cos(pose.yaw),sn=Math.sin(pose.yaw),footX=targetX*size,footZ=side*0.064*size;
+                    var surface=groundHeight(px+cy*footX+sn*footZ,pz-sn*footX+cy*footZ);
+                    targetY+=(surface-groundHeight(px,pz)-altitude-(bird.contact?bird.bodyLift:0))/size;
+                    var cp=Math.cos(bird.bodyPitch),spitch=Math.sin(bird.bodyPitch),tx=targetX;targetX=cp*tx+spitch*targetY;targetY=-spitch*tx+cp*targetY;
+                  }
+                  var dx=targetX-hip[0],dy=targetY-hip[1],length=Math.hypot(dx,dy),upperLength=owl?0.09:0.088,lowerLength=owl?0.10:0.094;
+                  var reach=Math.max(0.005,Math.min(upperLength+lowerLength-0.001,length)),nx=dx/Math.max(length,1e-9),ny=dy/Math.max(length,1e-9);
+                  var along=(upperLength*upperLength-lowerLength*lowerLength+reach*reach)/(2*reach),bend=Math.sqrt(Math.max(0,upperLength*upperLength-along*along));
+                  var adjustedHip=[targetX-nx*reach,targetY-ny*reach,hip[2]],knee=[adjustedHip[0]+nx*along+ny*bend,adjustedHip[1]+ny*along-nx*bend,side*(owl?0.078:0.064)],sole=[targetX,targetY,knee[2]];
+                  fitBirdBone(rig.upper,adjustedHip,knee,owl?0.024:0.009);fitBirdBone(rig.lower,knee,sole,owl?0.015:0.008);
+                  rig.foot.position.fromArray(sole);rig.foot.rotation.z=owl?-0.25:-bird.bodyPitch;
+                  rig.digits.forEach(function(digit,index){digit.rotation.z=owl?(index<2?-0.7:0.55):bird.contact?0:index===3?0.35:-0.35;});
+                  rig.contact=bird.contact;rig.sole=sole;
+                });
+                // Mammal ribcages follow the recorded activity clock and settle
+                // slightly wider at rest. Only the torso skin changes size.
+                if(g.userData.torso&&sp.id!=='caterpillars'){var breath=v.reduced?0:Math.sin(time*((pose.rest||0)>0.5?1.7:3.2)+pose.phase*1.3)*((pose.rest||0)>0.5?0.03:0.018),torsoBase=g.userData.torso.userData.baseScale;g.userData.torso.scale.set(torsoBase.x,torsoBase.y*(articulation?articulation.ribScaleY:1+breath),torsoBase.z*(articulation?articulation.ribScaleZ:1+breath*0.6));}
+                if(g.visible&&g.userData.limbSkin)fitMammalLimbSkin(g.userData.limbSkin,sp.id,(sp.id==='foxes'?g.userData.legs:g.userData.paws).map(function(limb){return sp.id==='foxes'?limb.userData.skinJoints:limb.userData.joints;}),g.userData.torso);
                 if(g.userData.segments)g.userData.segments.forEach(function(joint,index){var local=ecoMeadowSegmentPose(pose,index),size=g.userData.body.scale.x,localX=joint.userData.homeX+local.x;var surface=groundHeight(px+Math.cos(pose.yaw)*localX*size,pz-Math.sin(pose.yaw)*localX*size);joint.position.set(localX,0.102+local.y+(surface-(g.position.y-altitude))/size,0);joint.rotation.z=local.pitch;joint.scale.x=local.stretch;});
-                if(g.userData.wings)g.userData.wings.forEach(function(wing){wing.rotation.x=wing.userData.side*(v.reduced?0.08:Math.sin(time*3.8+pose.phase)*0.3*(pose.wingFlap==null?1:pose.wingFlap));});
+                if(g.userData.wings)g.userData.wings.forEach(function(wing){var side=wing.userData.side,wrist=wing.userData.wrist;wing.rotation.x=side*bird.shoulder;wing.rotation.y=sp.id==='bluetits'?side*bird.wingSpread:0;wrist.rotation.x=side*bird.wrist;wrist.rotation.y=side*(sp.id==='bluetits'?bird.wrist:(1-bird.wingSpread)*0.18);});
                 g.rotation.y=sp.id==='plants'?g.userData.phase:pose.yaw;
               });
               if(!speciesMaterials){speciesMaterials={};Object.keys(materialMap).forEach(function(key){var id=key.split(':')[1];(speciesMaterials[id]=speciesMaterials[id]||[]).push(materialMap[key]);});}
@@ -2421,7 +5138,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             attr('data-wildlife-detail','textured-coats,layered-feathers,relative-sizes');
             attr('data-step', String(dataStep));
             attr('data-branch', v.branch);
-            scene.updateMatrixWorld();fillBatches();
+            scene.updateMatrixWorld();
+            var vigilanceFit=vigilance?fitVigilanceTrace(vigilance,camera.aspect,v.orbit,v.zoom):null;
+            var vigilanceLinks=vigilanceAnnotation.update(vigilanceFit?vigilance:null,camera);
+            attr('data-vigilance-trace',String(!!vigilanceLinks));
+            attr('data-vigilance-actors',vigilanceLinks?JSON.stringify([vigilance.receiver,vigilance.source,vigilance.predator].map(function(actor){return {id:actor.id,index:actor.index};})): '');
+            attr('data-vigilance-decision-steps',vigilanceLinks?JSON.stringify([vigilance.directDecisionStep,vigilance.neighborDecisionStep,vigilance.step]):'');
+            attr('data-vigilance-links',vigilanceLinks?JSON.stringify(vigilanceLinks):'');attr('data-vigilance-bounds',vigilanceFit?JSON.stringify(vigilanceFit):'');
+            if(vigilanceFit)attr('data-camera-target',JSON.stringify(vigilanceFit.target));
+            fillBatches();
             attr('data-draw-batches',String(batches.length));
             renderer.render(scene, camera);
           }
@@ -2506,11 +5231,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); }
       };
     }, []);
-    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting, isolate, representativeIndex, showTrail, showInteraction, cameraTracking, observationElevation, breeze, playing, lift, previewing, previewStep]);
+    React.useEffect(function() { if (engine.current && status === 'ready') engine.current.draw(); }, [props.result, props.cursor, props.focus, JSON.stringify(props.config), orbit, zoom, branch, reduced, status, cameraMode, markers, lighting, isolate, representativeIndex, showTrail, showInteraction, vigilanceRequest, showRefuge, showMemory, measurePlan, rulerEncounter, cameraTracking, faceDetail, observationElevation, breeze, playing, lift, previewing, previewStep]);
     return h('section', { className: 'efw-card efw-stack', 'data-efw-meadow': 'true', 'aria-label': __alloT('stem.ecosystem.3d_meadow_habitat','3D meadow habitat') },
       h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : previewing ? 'Live preview · starting community' : 'Starting community')),
       h('p', null, 'Explore a meadow clearing within a larger woodland. Select an organism for a close-up, or use Forest overview to see the surrounding landscape.'),
       h('p', { 'data-efw-scene-cover': 'true' }, h('strong', null, 'Refuge cover: ' + (props.result ? props.result[branch][props.cursor].cover : props.config.cover) + '%'), ' · Leafy thickets represent shelter; upright flowering tufts represent food plants.'),
+      h(EcoWildlifeFieldwork,{ translateStudy: __alloT,React:React,hasRun:!!props.result,encounters:fieldworkEncounters,activity:fieldwork,encounter:fieldworkEncounter,cursor:props.cursor,branch:branch,reduced:reduced,slots:props.notebookSlots==null?0:props.notebookSlots,samples:fieldworkSamples(fieldworkEncounter),action:fieldworkEncounter?behaviorRuns[branch][fieldworkEncounter.step][fieldworkEncounter.actor.id][fieldworkEncounter.actor.index].state:'',
+        onSelect:selectFieldwork,onClear:function(){writeFieldwork(null,undefined,true);},
+        onChange:function(patch){writeFieldwork(patch);},
+        onReveal:function(){if(fieldworkEncounter)inspectFieldwork(fieldworkEncounter,fieldworkEncounter.step,{revealed:true});},
+        frames:behaviorRuns[branch],onInferenceInspect:function(step,next){if(fieldworkEncounter)inspectFieldwork(fieldworkEncounter,step,function(current){return Object.assign({},current,{inference:typeof next==='function'?next(current.inference||{}):next,saved:false});});observeScene();},
+        onHeadlineInspect:function(step,next){if(fieldworkEncounter)inspectFieldwork(fieldworkEncounter,step,function(current){return Object.assign({},current,{headline:typeof next==='function'?next(current.headline||{}):next,saved:false});});observeScene();},
+        onMeasureInspect:function(step,observe,pathRequest){if(pathRequest){var current=fieldworkDraft.current.value||{},sheet=current.measurement||{},evidence=fieldworkEncounter&&ecoMeadowPairEvidence(behaviorRuns[branch],fieldworkEncounter,sheet.steps),path=evidence&&ecoMeadowPairPath(behaviorRuns[branch],fieldworkEncounter,evidence,pathRequest.interval,step);if(current.key!==fieldworkKey||!fieldworkEncounter||current.id!==fieldworkEncounter.id||!current.revealed||!sheet.checked||!ecoMeadowPairMotionEvidence(evidence,sheet.motion)||!path||path.active===null||path.key!==pathRequest.sourceKey||sheet.motion.interval!==pathRequest.interval)return;}if(fieldworkEncounter)inspectFieldwork(fieldworkEncounter,step);if(observe)observeScene();},onPlanView:function(){setPlaying(false);setMeasurePlan(true);setCameraMode('detail');setShowInteraction(true);observeScene();},
+        onInspect:function(phase){if(fieldworkEncounter)inspectFieldwork(fieldworkEncounter,fieldworkEncounter[phase]);},onSave:saveFieldwork,
+        crossingSheet:crossingEthogramPlan,hasWorkingEthogram:!!ethogramState.plan,onCrossingSheet:launchCrossingEthogram,foxCrossing:foxCrossingEpisode,onFoxCrossing:function(){if(!foxCrossingEpisode)return;setPlaying(false);setRepresentative({id:'foxes',index:foxCrossingEpisode.index});setCameraMode('detail');setShowInteraction(true);setShowMemory(false);setShowRefuge(false);setIsolate(true);setShowTrail(false);setFaceDetail(false);if(props.onInspect)props.onInspect(foxCrossingEpisode.step,'foxes');},
+        foxSearch:foxSearchEpisode,onFoxSearch:function(){if(!foxSearchEpisode)return;setPlaying(false);setRepresentative({id:'foxes',index:foxSearchEpisode.index});setCameraMode('detail');setShowInteraction(false);setShowMemory(true);setIsolate(true);setShowTrail(false);writeFieldwork(null,{cursor:foxSearchEpisode.step,focus:'foxes'},true);},
+        ethogram:h(EcoEthogram,{ translateStudy: __alloT,React:React,hasRun:!!props.result,frames:behaviorRuns[branch],branch:branch,identity:{id:props.focus,index:representativeIndex,name:focusedSpecies.name},state:ethogramState,crossingPlan:crossingEthogramPlan,launchSequence:crossingSheetSequence,cursor:props.cursor,reduced:reduced,slots:props.notebookSlots==null?0:props.notebookSlots,onChange:changeEthogram,onInspect:inspectEthogram,onSave:props.onSaveEthogram})}),
       h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
         h('button', {
           type: 'button',
@@ -2522,20 +5258,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           style: { position: 'absolute', top: 8, right: 8, zIndex: 25, width: 44, height: 44, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
         }, h('span', { 'aria-hidden': 'true' }, '⛶')),
       h('div', { ref: host, className: 'efw-meadow-stage', style: { display: status === 'unavailable' ? 'none' : 'block' } },
-        h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? (showInteraction&&interaction&&!reduced?'INTERACTION STUDY':'GROUP INSPECTION') : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'),cameraMode==='detail'&&showInteraction&&interaction&&!reduced&&h('span',{'data-efw-interaction-overlay':'true'},'With '+interaction.name+' · representative '+(interaction.index+1)),cameraMode==='detail'&&props.focus!=='plants'&&h('span',{'data-efw-action-overlay':'true'},behaviorLabel+(behaviorLabel==='Not present'?'':' · representative '+(representativeIndex+1)+' of '+representativeCount)))),
+        h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? (vigilanceActive?'VIGILANCE CUE TRACE':rulerVisible?'PAIR MEASUREMENT':showInteraction&&interaction&&!reduced?'INTERACTION STUDY':'GROUP INSPECTION') : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'),cameraMode==='detail'&&!vigilanceActive&&(rulerVisible||showInteraction&&interaction&&!reduced)&&h('span',{'data-efw-interaction-overlay':'true'},'With '+(rulerVisible?ECO_WEB_SPECIES.find(function(sp){return sp.id===rulerSample.cue.id;}).name:interaction.name)+' · representative '+((rulerVisible?rulerSample.cue.index:interaction.index)+1)),vigilanceActive&&h('span',{'data-efw-vigilance-overlay':'true'},'Three current animals · rabbit '+(vigilanceTrace.receiver.index+1)+' · rabbit '+(vigilanceTrace.source.index+1)+' · '+(vigilanceTrace.predator.id==='foxes'?'fox ':'owl ')+(vigilanceTrace.predator.index+1)),cameraMode==='detail'&&props.focus!=='plants'&&h('span',{'data-efw-action-overlay':'true'},behaviorLabel+(behaviorLabel==='Not present'?'':' · representative '+(representativeIndex+1)+' of '+representativeCount)))),
       ),
+      observationTask&&status==='ready'&&h('div',{className:'efw-row','data-efw-observation-dock':'true',style:{padding:'10px 12px',border:'1px solid var(--fw-line)',borderRadius:8,background:'var(--fw-tint)',justifyContent:'space-between'}},h('span',null,observationTask.kind==='ethogram'?'Observe sample '+(observationTask.index+1)+' at time '+(props.cursor/10).toFixed(1)+', then record your code.':observationTask.kind==='inference'?'Inspect this original checkpoint, then classify the evidence sources.':observationTask.kind==='stance'?'Inspect the planted paw and moving body, then return to the contact comparison.':observationTask.kind==='footfall'?'Inspect the paw support at checkpoint '+(observationTask.index+1)+', then record your contact marks.':'Inspect both animals, then return to your measurement sheet.'),h('button',{type:'button',ref:observationReturn,onClick:returnToActivity},observationTask.kind==='ethogram'?'Code ethogram sample '+(observationTask.index+1):observationTask.kind==='inference'?'Return to evidence sources':observationTask.kind==='stance'?'Return to planted-paw comparison':observationTask.kind==='footfall'?'Code footfall checkpoint '+(observationTask.index+1):observationTask.kind==='headline'?'Return to headline evidence':observationTask.kind==='pairpath'?'Return to recorded pair paths':'Return to pair measurements')),
+      props.result&&h(EcoMovementStudy,{ translateStudy: __alloT,React:React,studies:movementStudies,study:movementStudy,state:movementState,cursor:props.cursor,focus:props.focus,representativeIndex:representativeIndex,branch:branch,reduced:reduced,ready:status==='ready',footfallPlan:footfallPlan,stancePlan:stancePlan,onStanceInspect:inspectStance,onFootfallInspect:inspectFootfall,onSelect:selectMovement,onInspect:function(index){var current=movementDraftRef.current||{};if(movementStudy&&current.key===fieldworkKey&&current.id===movementStudy.id&&current.species===movementStudy.species&&Number.isInteger(index)&&index>=0&&index<movementStudy.samples.length)inspectMovement(movementStudy,movementStudy.samples[index].step,current);},onChange:changeMovement,onReplay:replayMovement,onSave:saveMovement,slots:props.notebookSlots}),
+      showInteraction&&cameraMode==='detail'&&!reduced&&!rulerVisible&&interaction&&h('div',{className:'efw-interaction-legend','data-efw-interaction-legend':'true','aria-label':__alloT("stem.ecosystem.a11y_interaction_visual_key", "Interaction visual key")},h('span',null,'Gold · selected animal / solid path'),h('span',null,'Cyan · cue animal / dashed path'),h('span',null,'Dashed arrow · recorded cue toward selected animal')),
       status==='ready'&&cameraMode==='detail'&&props.focus!=='plants'&&h('div',{'data-efw-observation-angles':'true',role:'group','aria-label':__alloT('stem.ecosystem.animal_viewing_angles','Animal viewing angles'),className:'efw-stack'},
         h('div',{className:'efw-row'},
           h('button',{type:'button',disabled:showInteraction||!representativeCount,onClick:function(){chooseObservationAngle('side');}},'Side view'),
+          h('button',{type:'button',disabled:showInteraction||!representativeCount,onClick:function(){setShowRefuge(false);setShowMemory(false);setFaceDetail(false);setZoom(19);chooseObservationAngle('rear');}},'Rear view'),
           h('button',{type:'button',disabled:showInteraction||!representativeCount,onClick:function(){chooseObservationAngle('face');}},'Face view'),
           h('button',{type:'button',disabled:showInteraction||!representativeCount,onClick:function(){chooseObservationAngle('above');}},'View from above')),
+        ['foxes','rabbits'].indexOf(props.focus)>=0&&h('div',{className:'efw-row',role:'group','aria-label':__alloT("stem.ecosystem.a11y_specimen_framing", "Specimen framing")},h('button',{type:'button','aria-pressed':!faceDetail,disabled:showInteraction||rulerVisible||!representativeCount,onClick:function(){setFaceDetail(false);setZoom(19);}},'Whole animal'),h('button',{type:'button','aria-pressed':faceDetail,disabled:showInteraction||rulerVisible||!representativeCount,onClick:function(){setPlaying(false);setShowRefuge(false);setShowMemory(false);setFaceDetail(true);setZoom(8);chooseObservationAngle('face');}},'Face detail')),
+        faceDetail&&['foxes','rabbits'].indexOf(props.focus)>=0&&h('small',{'data-efw-face-detail-help':'true'},rulerVisible||showInteraction||!reduced&&(showRefuge&&sampledBehavior&&sampledBehavior.refugeCue||showMemory&&props.focus==='foxes'&&sampledBehavior&&sampledBehavior.state==='Checking last location'&&sampledBehavior.searchCue)?'Pair or location framing takes priority over face detail.':'Face detail follows the current head pose. Rotate for a side view of the eyes, nose and whiskers.'),
         h('small',null,showInteraction?'Turn off Show behavior interaction to choose an animal viewing angle.':!representativeCount?'No animal is present at this time.':cameraTracking==='steady'?'Choose an angle to pause at this pose. The viewing direction then stays steady as the animal turns.':'Choose an angle to pause at this pose. Follow animal heading keeps that angle as the animal turns.')),
+      rulerVisible&&h('p',{'data-efw-field-ruler-caption':'true'},'Field ruler · '+rulerSample.gap.toFixed(3)+' scene units between this fixed pair’s simultaneous ground positions. Half-unit ticks are short; whole-unit ticks are long. The decision arrow is hidden while measuring.'),
+      cameraMode==='detail'&&props.focus==='rabbits'&&sampledBehavior&&sampledBehavior.refugeCue&&h('div',{className:'efw-row'},h('button',{type:'button','aria-pressed':showRefuge,disabled:reduced,onClick:function(){setPlaying(false);setShowInteraction(false);setShowRefuge(!showRefuge);}},'Show shelter target'),h('small',{'data-efw-refuge-caption':'true'},'Thicket '+(sampledBehavior.refugeCue.index+1)+' · '+(sampledBehavior.refugeCue.stage==='at-cover'?'at cover':'approaching')+' · '+sampledBehavior.refugeCue.distance.toFixed(2)+' scene units. The green line connects to a recorded destination; navigation can curve around obstacles.')),
+      cameraMode==='detail'&&props.focus==='foxes'&&sampledBehavior&&sampledBehavior.searchCue&&h('div',{className:'efw-row'},h('button',{type:'button','aria-pressed':showMemory,disabled:reduced,onClick:function(){setPlaying(false);setShowInteraction(false);setShowMemory(!showMemory);}},'Show remembered location'),h('small',{'data-efw-search-caption':'true'},'The violet diamond marks a previously recorded prey position, held fixed during this short check. It does not reveal the rabbit’s current position or simulate a scent trail.')),
       cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-behavior':'true'} ,h('strong',null,behaviorLabel), ' · '+(behaviorLabel==='Not present'?'No representative is present at this time. ':isolate?(showInteraction&&interaction&&!reduced?'Selected animal and its behavior cue shown; surroundings simplified. ':'Representative '+(representativeIndex+1)+' of '+representativeCount+' shown; surroundings simplified. '):'Following representative '+(representativeIndex+1)+' of '+representativeCount+' at the selected time. ')+(reduced?'Motion is frozen at the starting pose.':'')),
       cameraMode==='detail'&&props.focus!=='plants'&&h('small',{'data-efw-camera-tracking-help':'true'},showInteraction?'Interaction framing keeps a steady viewing direction, including moments without a current cue.':cameraTracking==='steady'?'Steady observation follows position without orbiting as the animal turns. Ground-animal leaps rise within the view; owl flight stays centered.':'Follow heading turns the camera with the animal and follows its height. Use Steady observation to judge changes in direction and ground-animal leaps.'),
-      showInteraction&&cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-interaction-caption':'true'},reduced?'Interaction framing is hidden while reduced motion freezes the starting poses.':!interaction?'No current predator or prey cue to frame. Following the selected representative.':h(React.Fragment,null,h('strong',null,focusedSpecies.name+' · representative '+(representativeIndex+1)), ' and '+interaction.name+' · representative '+(interaction.index+1)+'. Rings identify the pair. '+(isolate?'Isolation keeps these two animals visible. ':'')+'Positions show the selected sample; the behavior decision used the preceding positions. This view does not indicate a capture.')),
+      showInteraction&&!vigilanceActive&&cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-interaction-caption':'true'},reduced?'Interaction framing is hidden while reduced motion freezes the starting poses.':!interaction?'No current predator or prey cue to frame. Following the selected representative.':h(React.Fragment,null,h('strong',null,focusedSpecies.name+' · representative '+(representativeIndex+1)), ' and '+interaction.name+' · representative '+(interaction.index+1)+'. Rings identify the pair. '+(isolate?'Isolation keeps these two animals visible. ':'')+'Positions show the selected sample; the behavior decision used the preceding positions. This view does not indicate a capture.')),
+      vigilanceRequested&&cameraMode==='detail'&&h('div',{className:'efw-result efw-stack','data-efw-vigilance-trace':'true',role:'status'},
+        h('strong',null,'Vigilance cue trace'),
+        !vigilanceActive?h('p',null,reduced?'Trace links are hidden while starting poses are frozen.':!vigilanceTrace?'No verified three-animal vigilance cue remains at this sample.':'Trace is paused; return to interaction inspection to see the three animals.'):
+          h(React.Fragment,null,
+            h('p',null,'Selected rabbit '+(vigilanceTrace.receiver.index+1)+' watches rabbit '+(vigilanceTrace.source.index+1)+'. That neighbor was directly alarmed at time '+((vigilanceTrace.step-1)/10).toFixed(1)+' by its recorded '+(vigilanceTrace.predator.id==='foxes'?'fox':'owl')+' identity (representative '+(vigilanceTrace.predator.index+1)+').'),
+            h('p',null,h('strong',{style:{color:'var(--fw-text)'}},'Solid coral: predator → neighbor. '),h('strong',null,'Dashed cyan: neighbor → selected rabbit. '),'Gold marks the selected rabbit, cyan its neighbor and coral the predator. '+(isolate?'Isolation keeps all three animals visible.':'')),
+            h('p',null,'The links join current positions at time '+(vigilanceTrace.step/10).toFixed(1)+'. The neighbor decision used time '+(vigilanceTrace.neighborDecisionStep/10).toFixed(1)+'; the earlier direct alarm used time '+(vigilanceTrace.directDecisionStep/10).toFixed(1)+'. These links identify recorded cue roles, not simultaneous decisions, measured sound paths or distances.'),
+            h('p',null,'Compare the direct and neighbor cues in your evidence explanation. This trace does not establish communication success, a capture or a population effect.'))),
       showTrail&&cameraMode==='detail'&&props.focus!=='plants'&&h('small',{'data-efw-trail-caption':'true'},reduced?'Recent path is hidden while reduced motion freezes the animal at its starting pose.':!props.result?'Run a comparison to trace this representative’s recent movement.':trailPoints.length<2?'Recent path needs two consecutive samples with this representative present.':'Recent path · time '+(trailPoints[0].step/10).toFixed(1)+' to '+(props.cursor/10).toFixed(1)+'. Gold beads follow the past 3 time units at most; the pale endpoint marks the selected position. Height follows the animal’s sampled flight or leap. This is an illustrative path, not measured field tracking.'),
       cameraMode==='detail'&&!reduced&&inspectedBehavior&&inspectedBehavior.active&&inspectedBehavior.navigation&&h('small',{'data-efw-navigation':'true'},(inspectedBehavior.navigation.blocked?'Turning to clear ':'Adjusting its path around ')+inspectedBehavior.navigation.name+'.'),
-      cameraMode==='detail'&&props.focus!=='plants'&&h('div',{className:'efw-result efw-stack','data-efw-behavior-moments':'true',role:'group','aria-label':__alloT('stem.ecosystem.behavior_moments','Behavior moments')},
+      movementBlind&&h('p',{'data-efw-sequence-observation-help':'true'},'Use the body and paws to arrange the snapshots first. Action names and local sample times appear after you check your sequence.'),
+      cameraMode==='detail'&&props.focus!=='plants'&&!movementBlind&&h('div',{className:'efw-result efw-stack','data-efw-behavior-moments':'true',role:'group','aria-label':__alloT('stem.ecosystem.behavior_moments','Behavior moments')},
         h('strong',null,'Behavior moments'),
         !props.result?h('p',null,'Run a food-web comparison to jump between this representative’s actions.'):currentMoment&&h(React.Fragment,null,
           h('small',null,focusedSpecies.name+' · representative '+(representativeIndex+1)+' · '+(branch==='baseline'?'Baseline':'Experiment')),
@@ -2551,6 +5305,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('p',{'data-efw-action-explanation':'true'},behaviorExplanation.text),
             (behaviorExplanation.cue||showInteraction)&&h('button',{type:'button','aria-pressed':showInteraction,onClick:function(){setShowInteraction(!showInteraction);}},'Show behavior interaction'),
             behaviorExplanation.cue&&h('button',{type:'button',onClick:inspectBehaviorCue},'Inspect cue: '+behaviorExplanation.cue.name),
+            (vigilanceTrace||vigilanceRequested)&&h('button',{type:'button','aria-pressed':vigilanceRequested,disabled:reduced||status!=='ready',onClick:toggleVigilanceTrace},'Trace this vigilance cue'),
+            (vigilanceTrace||vigilanceRequested)&&h('small',{'data-efw-vigilance-help':'true',style:{display:'block',marginTop:8}},reduced?'Vigilance tracing is hidden while reduced motion freezes starting poses. Recorded cue text remains available.':status!=='ready'?'Vigilance tracing needs a working 3D view. The recorded explanation remains available.':'Trace pauses at this recorded sample. Playing or changing the animal ends the trace; timeline inspection can reveal when the verified cue begins and ends.'),
             h('small',{style:{display:'block',marginTop:8}},'Decision cues explain the representative animation at the selected time.')),
           h('div',{className:'efw-row'},
             h('button',{type:'button',className:'efw-moment-nav',disabled:momentIndex<=0,onClick:function(){goToBehaviorMoment(momentIndex-1);}},'Previous behavior'),
@@ -2568,7 +5324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       status === 'ready' && h('div', { className: 'efw-row' },
         h('label',null,'Foliage motion',h('select',{'aria-label':__alloT('stem.ecosystem.foliage_motion','Foliage motion'),value:breeze?'breeze':'still',disabled:reduced,onChange:function(e){setBreeze(e.target.value==='breeze');}},h('option',{value:'breeze'},'Gentle breeze'),h('option',{value:'still'},'Still'))),
         h('label', null, 'Lighting', h('select', { 'aria-label':__alloT('stem.ecosystem.woodland_lighting','Woodland lighting'), value:lighting, onChange:function(e){setLighting(e.target.value);} }, h('option',{value:'daylight'},'Daylight'),h('option',{value:'golden'},'Golden hour'),h('option',{value:'overcast'},'Overcast'))),
-        cameraMode==='detail'&&props.focus!=='plants'&&h('label',null,'Representative animal',h('select',{'aria-label':__alloT('stem.ecosystem.representative_animal','Representative animal'),value:representativeIndex,disabled:representativeCount<2,onChange:function(e){setRepresentative({id:props.focus,index:Number(e.target.value)});}},Array.from({length:Math.max(1,representativeCount)},function(_,index){return h('option',{key:index,value:index},representativeCount?'Representative '+(index+1)+' of '+representativeCount:'None present');}))),
+        cameraMode==='detail'&&props.focus!=='plants'&&h('label',null,'Representative animal',h('select',{'aria-label':__alloT('stem.ecosystem.representative_animal','Representative animal'),value:representativeIndex,disabled:representativeCount<2,onChange:function(e){setPlaying(false);setRepresentative({id:props.focus,index:Number(e.target.value)});if(props.onFieldworkChange)writeFieldwork(null,{},true);else if(props.onMotionStudyChange)props.onMotionStudyChange(null);}},Array.from({length:Math.max(1,representativeCount)},function(_,index){return h('option',{key:index,value:index},representativeCount?'Representative '+(index+1)+' of '+representativeCount:'None present');}))),
         cameraMode==='detail'&&props.focus!=='plants'&&h('label',null,'Camera tracking',h('select',{'aria-label':__alloT('stem.ecosystem.animal_camera_tracking','Animal camera tracking'),value:cameraTracking,disabled:showInteraction,onChange:function(e){setCameraTracking(e.target.value);}},h('option',{value:'steady'},'Steady observation'),h('option',{value:'heading'},'Follow animal heading'))),
         h('button', { type: 'button', 'aria-pressed': cameraMode === 'habitat', onClick: function() { setCameraMode('habitat'); } }, 'Habitat view'),
         soilSample&&h('button',{type:'button','aria-pressed':cameraMode==='soil',onClick:function(){setCameraMode('soil');}},'Inspect forest floor'),
@@ -2582,21 +5338,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(0.12); } }, 'Raise view'),
         h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(-0.12); } }, 'Lower view'),
         h('button', { type: 'button', onClick: function() { setOrbit(0.65); setObservationElevation(0.42); setZoom(19); setLift(0); setCameraMode('habitat');setIsolate(false);setShowTrail(false);setShowInteraction(false);setCameraTracking('steady');setRepresentative({id:props.focus,index:0}); } }, 'Reset camera'),
-        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 15, max: 30, value: zoom, step: 'any', 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), onChange: function(e) { setZoom(Number(e.target.value)); } }))),
+        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 8, max: 30, value: zoom, step: 'any', 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), onChange: function(e) { setZoom(Number(e.target.value)); } }))),
       h('div', { className: 'efw-meadow-species', role: 'group', 'aria-label': __alloT('stem.ecosystem.meadow_species_selection','Meadow species selection') }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) { return h('button', { type: 'button', key: sp.id, 'aria-pressed': props.focus === sp.id, onClick: function() { props.onFocus(sp.id); } }, sp.icon + ' ' + sp.name, h('strong', { style: { display: 'block' } }, props.config.enabled[sp.id] ? ecoWebFormat(sample[sp.id]) + ' biomass' : 'Not included')); })),
       !props.result && !reduced && status === 'ready' && h('div', { className: 'efw-row', 'data-efw-live-preview': 'true' },
         h('button', { type: 'button', 'aria-pressed': previewing, onClick: function() { setPreviewing(!previewing); } }, previewing ? 'Stop live behavior' : 'Watch live behavior'),
         h('label', null, 'Playback speed', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_playback_speed','Meadow playback speed'), value: timelineSpeed, onChange: function(e) { setTimelineSpeed(Number(e.target.value)); } }, [0.5,1,2,4].map(function(speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
         h('small', null, previewing ? 'Animals act out their behavior while every population stays at its starting value. Run a comparison to see populations change.' : 'Watch the starting community move in real time. Populations stay fixed until you run a comparison.')),
       props.result && h('div', { className: 'efw-row' },
-        h('label', null, 'Scene data', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_scene_data','Meadow scene data'), value: branch, onChange: function(e) { setBranch(e.target.value); } }, h('option', { value: 'experiment' }, 'Experiment'), h('option', { value: 'baseline' }, 'Baseline'))),
+        h('label', null, 'Scene data', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_scene_data','Meadow scene data'), value: branch, onChange: function(e) { setPlaying(false);setBranch(e.target.value);if(props.onFieldworkChange)writeFieldwork(null,{motionStudy:null},true); } }, h('option', { value: 'experiment' }, 'Experiment'), h('option', { value: 'baseline' }, 'Baseline'))),
         !reduced && status === 'ready' && h('button', { type: 'button', onClick: function() { replaySession.current=null;setReplay(null);if (!playing && props.cursor === 240) props.onCursor(0); setPlaying(!playing); } }, playing ? 'Pause meadow timeline' : 'Play meadow timeline'),
         !reduced && status === 'ready' && h('label', null, 'Playback speed', h('select', { 'aria-label': __alloT('stem.ecosystem.meadow_playback_speed','Meadow playback speed'), value: timelineSpeed, onChange: function(e) { setTimelineSpeed(Number(e.target.value)); } }, [0.5,1,2,4].map(function(speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
         !reduced && status === 'ready' && h('label', null, h('input', { type: 'checkbox', checked: loopTimeline, onChange: function(e) { setLoopTimeline(e.target.checked); } }), ' Loop timeline'),
-        h('label', { style: { flex: '1 1 240px' } }, 'Inspect time: ' + (props.cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: props.cursor, 'aria-label': __alloT('stem.ecosystem.meadow_timeline','Meadow timeline'), onChange: function(e) { setPlaying(false); props.onCursor(Number(e.target.value)); } }))),
+        h('label', { style: { flex: '1 1 240px' } }, movementBlind?'Inspect time: revealed after sequence check':'Inspect time: ' + (props.cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: props.cursor, 'aria-valuetext':movementBlind?behaviorLabel:undefined,'aria-label': __alloT('stem.ecosystem.meadow_timeline','Meadow timeline'), onChange: function(e) { setPlaying(false); props.onCursor(Number(e.target.value)); } }))),
       status==='ready'&&h('small',{'data-efw-camera-gesture-help':'true',style:{display:'block'}},'Drag the scene to orbit and tilt. Pinch, or hold Ctrl (⌘ on Mac) and scroll, to zoom. The buttons above do the same.'),
       status==='ready'&&h('small',{'data-efw-foliage-help':'true'},reduced?'Reduced motion keeps foliage still.':!breeze?'Foliage is still for observation.':!props.result?'Run a comparison and play the meadow timeline to see the gentle breeze.':'Playback moves smoothly between samples. Pause to hold an exact sample; rewind to restore the same leaf positions.'),
       h('details',{'data-efw-behavior-guide':'true'},h('summary',null,'About animal behavior'),
+        h('p',null,'Rabbits can steer toward an active indexed thicket and pause at cover. A fox can release a rabbit target actually waiting at that patch; a very close fox still detects it. Vegetation can provide concealment, but the local distances and target-release rule are illustrative. There is no measured visibility or survival calculation. ',h('a',{href:'https://mammal.org.uk/british-mammals/european-rabbit',target:'_blank',rel:'noopener noreferrer'},'Rabbit natural history · Mammal Society')),
+        h('p',null,'Foxes use sound and movement while hunting. In this scene, a nearby prey representative’s recorded movement starts a brief listening pause, followed by a return to tracking or stalking. Distance, duration and cooldown are illustrative animation choices. Sound propagation and captures are not simulated. ',h('a',{href:'https://www.nps.gov/articles/species-spotlight-red-fox.htm',target:'_blank',rel:'noopener noreferrer'},'Fox natural history · National Park Service')),
+        h('p',null,'Owls have separate shoulder and wrist movement, changing primary-feather outlines, head stabilization and tail trim. Blue tits use paired hop contacts, a crouch and landing pose, folded-wing balancing movements and a pecking posture. Movement detective compares the same articulated poses shown by the scene.'),
+        h('p',null,'A rabbit can pause and watch a nearby directly alarmed rabbit. This local cue requires a live predator and cannot spread from a socially alerted rabbit alone. The distances and alarm duration are teaching choices; no acoustic propagation, thump biomechanics or communication success are modeled.'),
+        h('p',null,'Bird and vigilance references: ',h('a',{href:'https://www.barnowltrust.org.uk/barn-owl-facts/barn-owl-adaptations/',target:'_blank',rel:'noopener noreferrer'},'Barn Owl Trust: wing adaptations'),'; ',h('a',{href:'https://www.rspb.org.uk/birds-and-wildlife/blue-tit',target:'_blank',rel:'noopener noreferrer'},'RSPB: blue tits'),'; ',h('a',{href:'https://www.sciencedirect.com/science/article/pii/S0003347288801738',target:'_blank',rel:'noopener noreferrer'},'Rabbit group vigilance research'),'.'),
         h('p',null,'Foxes alternate searching, listening, stalking, resting and short pounce attempts. A pounce includes preparation, a committed leap and recovery. A fox can abandon preparation if nearby prey disappears; once airborne it completes the landing. Each animal walks to its own chosen destinations: foxes spread out and patrol the woodland margin, and each fox follows a different prey animal. Rabbits and voles graze with short head-up scans, notice a slowly stalking fox later than a trotting one, and keep running until they have opened a safe gap; when refuge cover is present, rabbits run for the nearest thicket and wait there. Voles freeze under an owl rather than bolt. Blue tits hop, peck and preen; caterpillars alternate crawling and feeding with articulated body segments; owls bank into their turns, ease between slow wingbeats and gliding, and drop to a low quartering height over nearby voles.'),
         h('p',null,'These are deterministic representative animations driven by nearby displayed organisms and food availability. Feeding dips and head turns ease between poses. Fox, rabbit and vole ears swivel independently toward existing attention cues and ease into resting or leap poses. Ear motion is illustrative; it does not change sensory range or the population model. Rewinding restores the same behavior. Use Representative animal to follow different displayed animals. Behavior moments jumps between that representative’s sampled actions in the selected comparison branch; it pauses playback and keeps the population charts at the same selected time. Replay this behavior plays only the selected action and stops at its last sample; a single-sample action is shown as a still. Replay pace slows this inspection without changing model time or the full timeline speed. Inspect individual samples steps or scrubs within the current action, pausing playback at each selected sample. Scrubbing, changing the selected animal or branch, leaving inspection, and reduced motion stop an active replay. Why this action? explains the recorded inputs behind the sampled action. Inspect cue follows the displayed predator or prey used in that decision without changing time. Decisions use positions from the preceding pose sample and the current sample’s available groups. These capped symbols are not individual population counts. Show behavior interaction frames the selected animal together with the predator or prey behind its current cue, at their selected-time positions. In this view, isolation retains both animals. Otherwise, Isolate specimen hides other representatives and nearby scenery only for inspection; it does not remove predators from the behavior calculation.'),
         h('p',null,'A pounce does not show a confirmed capture. The biomass model controls feeding and population changes separately. The motion layer uses illustrative distances and time units, local spacing and approximate obstacle avoidance. It does not model individual hunger, learning, reproduction, day/night activity, burrows or full habitat navigation. Reduced motion freezes poses at the starting scene while the numeric samples still change.'),
@@ -2604,7 +5365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('p',null,'Behavior references: ',h('a',{href:'https://www.nps.gov/bith/learn/nature/red-fox.htm',target:'_blank',rel:'noopener noreferrer'},'NPS: fox hearing and hunting'),'; ',h('a',{href:'https://www.allaboutbirds.org/guide/American_Barn_Owl/lifehistory',target:'_blank',rel:'noopener noreferrer'},'Cornell Lab: barn owl flight and hunting'),'.')),
       soilSample&&h('p',{'data-efw-soil-scene-caption':'true'},'Forest-floor study: leaf litter represents organic matter; mushrooms and pale fungal threads symbolize the combined fungi-and-bacteria biomass. These are capped visual indicators, not mushroom counts or a map of real soil microbes. Use Inspect forest floor to find the patch.'),
       reduced && h('small', null, 'Reduced motion is on. Use the timeline to inspect still scenes.'),
-      h('small', null, 'Organism symbols show approximate, capped abundance—not individual animal counts. A tiny positive biomass keeps one symbol; zero has none. Read the values for exact comparisons. Lighting and foliage motion change appearance only; they do not simulate weather or affect population calculations. The cover percentage reduces predator access to herbivores in the model. Ground cover, ferns, saplings, shrubs, surrounding trees and fungi outside the soil study patch are scenery for this meadow food-web model. Close-up mode follows one representative animal. Steady observation holds its viewing direction and reveals ground-animal leaps; Follow animal heading rotates with the animal. Side view, Face view and View from above pause at the current pose and change the inspection angle. Use Isolate specimen for an unobstructed view; full community values remain available. Behavior states are illustrative; see About animal behavior. Animal sizes are adjusted for visibility and are not a measurement scale. Thicket positions, trees and rocks are illustrative. Motion uses local steering around a few props; animals do not occupy burrows or specific refuge patches.'));
+      h('small', null, 'Organism symbols show approximate, capped abundance—not individual animal counts. A tiny positive biomass keeps one symbol; zero has none. Read the values for exact comparisons. Lighting and foliage motion change appearance only; they do not simulate weather or affect population calculations. The cover percentage reduces predator access to herbivores in the model. Ground cover, ferns, saplings, shrubs, surrounding trees and fungi outside the soil study patch are scenery for this meadow food-web model. Close-up mode follows one representative animal. Steady observation holds its viewing direction and reveals ground-animal leaps; Follow animal heading rotates with the animal. Side view, Rear view, Face view and View from above pause at the current pose and change the inspection angle. Whole animal and Rear view restore the overview camera distance for observing the complete body, tail and hindlimbs. Use Isolate specimen for an unobstructed view; full community values remain available. Behavior states are illustrative; see About animal behavior. Animal sizes are adjusted for visibility and are not a measurement scale. Thicket positions, trees and rocks are illustrative. Rabbits may steer toward an indexed thicket and pause at cover. Motion uses local steering around a few props; burrow entry, measured concealment and escape success are not simulated.'));
   }
 
 
@@ -2620,6 +5381,1366 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       });
       return { id: sp.id, peak: peak, firstVisible: firstVisible };
     });
+  }
+
+  // Index three actual articulated samples; this never advances a model.
+// Integration: add mammalMotionStudy:ecoMeadowMammalMotionStudy and
+// motionSequence:ecoMeadowMotionSequence to ecosystemFoodWeb. At the start of
+// ecoMeadowMotionStudy, dispatch foxes/rabbits to ecoMeadowMammalMotionStudy.
+// These helpers use only recorded samples and the same pure rig helpers as 3D.
+function ecoMeadowMammalMotionStudy(frames,id,index) {
+  if(['foxes','rabbits'].indexOf(id)<0||!Array.isArray(frames)||frames.length<3||!Number.isInteger(index)||index<0||index>15)return null;
+  var poses=frames.map(function(frame){return frame&&frame[id]&&frame[id][index];});
+  var arts=poses.map(function(pose){return pose&&pose.active&&[pose.x,pose.z,pose.altitude,pose.distance,pose.phase,pose.stride].every(Number.isFinite)&&(!('pounce' in pose)||Number.isFinite(pose.pounce))?ecoMeadowMammalArticulation(id,pose,false):null;});
+  var best=null,kind='',metric='';
+  // Prefer a whole recorded fox attempt, including the preparation and landing.
+  if(id==='foxes')for(var i=1;i<arts.length-1;i++){
+    if(!arts[i]||poses[i].huntStage!=='airborne'||(poses[i].pounce||0)<0.5)continue;
+    var before=-1,after=-1;
+    for(var b=i-1;b>=Math.max(0,i-18);b--){if(!arts[b])break;if(poses[b].huntStage==='prepare'){before=b;break;}if(poses[b].huntStage!=='airborne')break;}
+    for(var a=i+1;a<=Math.min(arts.length-1,i+18);a++){if(!arts[a])break;if(poses[a].huntStage==='recover'){after=a;break;}if(poses[a].huntStage!=='airborne')break;}
+    if(before>=0&&after>=0&&(!best||poses[i].pounce>poses[best[1]].pounce)){best=[before,i,after];kind='pounce';metric='Recorded body altitude (scene units)';}
+  }
+  // Fast rabbit bounds are selected only when the rig records shared flight.
+  if(id==='rabbits')for(var i=1;i<arts.length-1;i++){
+    if(!arts[i]||arts[i].supportFeet!==0||!Number.isFinite(arts[i].flightLift)||arts[i].flightLift<0.003)continue;
+    var before=-1,after=-1;
+    for(var b=i-1;b>=Math.max(0,i-22);b--){if(!arts[b])break;if(arts[b].supportFeet>0){before=b;break;}}
+    for(var a=i+1;a<=Math.min(arts.length-1,i+22);a++){if(!arts[a])break;if(arts[a].supportFeet>0){after=a;break;}}
+    if(before>=0&&after>=0&&(!best||arts[i].flightLift>arts[best[1]].flightLift)){best=[before,i,after];kind='bound';metric='Body flight lift (scene units)';}
+  }
+  // A raised paw is not automatically a whole-body airborne phase. This also
+  // works for a slow rabbit cycle with other paws still supporting the body.
+  if(!best)for(var i=1;i<arts.length-1;i++){
+    if(!arts[i]||poses[i].stride<0.12||(poses[i].pounce||0)>0.01)continue;
+    var lift=id==='rabbits'?arts[i].hindLift:arts[i].foreLift;
+    if(!Number.isFinite(lift)||lift<0.006)continue;
+    var before=-1,after=-1;
+    for(var b=i-1;b>=Math.max(0,i-22);b--){if(!arts[b]||(poses[b].pounce||0)>0.01||poses[b].stride<0.12)break;if(id==='rabbits'?arts[b].hindContact:arts[b].foreContact){before=b;break;}}
+    for(var a=i+1;a<=Math.min(arts.length-1,i+22);a++){if(!arts[a]||(poses[a].pounce||0)>0.01||poses[a].stride<0.12)break;if(id==='rabbits'?arts[a].hindContact:arts[a].foreContact){after=a;break;}}
+    var previous=best&&(id==='rabbits'?arts[best[1]].hindLift:arts[best[1]].foreLift);
+    if(before>=0&&after>=0&&(!best||lift>previous)){best=[before,i,after];kind=id==='rabbits'?'hind-paw':'fore-paw';metric=(id==='rabbits'?'Left hind-paw':'Left forepaw')+' lift (local scene units)';}
+  }
+  if(!best)return null;
+  var labels=kind==='pounce'?['Preparing to pounce','Pounce in progress','Recovery after landing']:kind==='bound'?['Supported before bound','Shared flight','Ground contact after bound']:kind==='hind-paw'?['Hind paw on ground','Hind paw raised','Hind paw on ground again']:['Forepaw on ground','Forepaw raised','Forepaw on ground again'];
+  var samples=best.map(function(step,k){var art=arts[step];return {step:step,label:labels[k],value:kind==='pounce'?poses[step].altitude:kind==='bound'?art.flightLift:id==='rabbits'?art.hindLift:art.foreLift,supportFeet:art.supportFeet,foreContact:art.foreContact,hindContact:art.hindContact,pawAngle:ecoMeadowFootPose(id,poses[step],id==='rabbits',-1).angle*180/Math.PI,state:poses[step].state};});
+  var max=Math.max.apply(Math,samples.map(function(sample){return sample.value;}));
+  return {id:id+':'+index+':'+kind+':'+best.join(':'),species:id,index:index,sequence:true,kind:kind,layout:[1,2,0],title:kind==='pounce'?'Reconstruct a fox pounce':kind==='bound'?'Reconstruct a rabbit bound':id==='rabbits'?'Reconstruct a rabbit paw cycle':'Reconstruct one fox stride',question:'Inspect snapshots A, B and C. Arrange them from first to last using the paws, body and head as evidence.',metricName:metric,samples:samples,target:samples.map(function(sample,k){return sample.value===max?k:-1;}).filter(function(k){return k>=0;})};
+}
+
+function ecoMeadowMotionSequence(study,order) {
+  var samples=study&&study.samples;
+  if(!study||study.sequence!==true||!Array.isArray(samples)||samples.length!==3||samples.some(function(sample){return !sample||!Number.isInteger(sample.step)||sample.step<0||!Number.isFinite(sample.value);})||!(samples[0].step<samples[1].step&&samples[1].step<samples[2].step))return {valid:false,correct:false,reason:'This study needs three recorded checkpoints.'};
+  if(!Array.isArray(order)||order.length!==3||order.some(function(value){return [0,1,2,'0','1','2'].indexOf(value)<0;}))return {valid:false,correct:false,reason:'Choose a snapshot for each position.'};
+  var values=order.map(Number);
+  if(new Set(values).size!==3)return {valid:false,correct:false,reason:'Use each snapshot once. Two positions currently contain the same snapshot.'};
+  var positions=values.map(function(value,k){return value===k;});
+  return {valid:true,correct:positions.every(Boolean),positions:positions,orderedSteps:values.map(function(value){return samples[value].step;}),expectedOrder:[0,1,2]};
+}
+
+// Optional save callback payload. Notebook normalization must retain/check the
+// movement metadata before claiming branch/representative restoration.
+  // FootPlants are recorded in this order by ecoMeadowPlantFeet. Left/right
+  // refer to the animal, independent of the viewer or direction of travel.
+  var ECO_FOOTFALL_PAWS=[{id:'left-hind',name:'Left hind'},{id:'left-fore',name:'Left fore'},{id:'right-hind',name:'Right hind'},{id:'right-fore',name:'Right fore'}];
+
+  function ecoMeadowFootfallSample(raw) {
+    if(!raw||!Number.isInteger(raw.step)||raw.step<0||raw.step>240||typeof raw.state!=='string'||!raw.state||raw.state.length>80||!raw.body||![raw.body.x,raw.body.z,raw.body.yaw].every(Number.isFinite)||Math.abs(raw.body.x)>=1000||Math.abs(raw.body.z)>=1000||!Array.isArray(raw.feet)||raw.feet.length!==4)return null;
+    var feet=[];
+    for(var k=0;k<4;k++){
+      var foot=raw.feet[k];
+      if(!foot||foot.id!==ECO_FOOTFALL_PAWS[k].id||!Number.isFinite(foot.x)||Math.abs(foot.x)>=1000||!Number.isFinite(foot.z)||Math.abs(foot.z)>=1000||typeof foot.planted!=='boolean'||typeof foot.held!=='boolean'||(foot.held&&!foot.planted))return null;
+      feet.push({id:foot.id,x:foot.x,z:foot.z,planted:foot.planted,held:foot.held});
+    }
+    return {step:raw.step,state:raw.state,body:{x:raw.body.x,z:raw.body.z,yaw:raw.body.yaw},feet:feet,supportCount:feet.filter(function(foot){return foot.planted;}).length};
+  }
+
+  function ecoMeadowFootfallPlan(frames,study) {
+    if(!Array.isArray(frames)||!study||study.sequence!==true||['foxes','rabbits'].indexOf(study.species)<0||!Number.isInteger(study.index)||study.index<0||study.index>15||typeof study.id!=='string'||!Array.isArray(study.samples)||study.samples.length!==3)return null;
+    var steps=study.samples.map(function(sample){return sample&&sample.step;});
+    if(!steps.every(Number.isInteger)||steps[0]<0||steps[2]>=frames.length||steps[0]>=steps[1]||steps[1]>=steps[2])return null;
+    var samples=[];
+    for(var step=steps[0];step<=steps[2];step++){
+      var pose=frames[step]&&Array.isArray(frames[step][study.species])&&frames[step][study.species][study.index];
+      if(!pose||pose.active!==true||!Array.isArray(pose.footPlants)||pose.footPlants.length!==4)return null;
+      var point=ecoMeadowFootfallSample({step:step,state:pose.state,body:{x:pose.x,z:pose.z,yaw:pose.yaw},feet:pose.footPlants.map(function(foot,k){return foot?{id:ECO_FOOTFALL_PAWS[k].id,x:foot.x,z:foot.z,planted:foot.planted,held:foot.held}:null;})});
+      if(!point)return null;
+      if(steps.indexOf(step)>=0)samples.push(point);
+    }
+    return {version:1,id:study.id+':footfall',studyId:study.id,species:study.species,index:study.index,samples:samples,elapsed:(steps[2]-steps[0])/10};
+  }
+
+  // Explicit uncertainty is a completed observation choice, never a clear paw.
+  // Null/holes remain unanswered and cannot produce a checked or saved strip.
+  // Inspect a short continuous contact interval separately from the sparse
+  // movement snapshots. Coordinates describe the illustrated recorded rig.
+  function ecoMeadowStanceIdentity(plan){
+    if(!plan||plan.version!==1||['baseline','experiment'].indexOf(plan.branch)<0||['foxes','rabbits'].indexOf(plan.species)<0||!Number.isInteger(plan.index)||plan.index<0||plan.index>15||typeof plan.studyId!=='string'||plan.studyId.indexOf(plan.species+':'+plan.index+':')!==0||!Number.isInteger(plan.paw)||plan.paw<0||plan.paw>3||!Array.isArray(plan.samples)||plan.samples.length<2||plan.samples.length>7)return null;
+    var samples=[];
+    for(var k=0;k<plan.samples.length;k++){
+      var p=plan.samples[k];
+      if(!p||!Number.isInteger(p.step)||p.step<0||p.step>240||(k&&p.step!==samples[k-1].step+1)||typeof p.state!=='string'||!p.state||p.state.length>80||!p.body||!p.foot||![p.body.x,p.body.z,p.body.yaw,p.foot.x,p.foot.z].every(function(v){return Number.isFinite(v)&&Math.abs(v)<1000;})||p.foot.id!==ECO_FOOTFALL_PAWS[plan.paw].id||p.foot.planted!==true||typeof p.foot.held!=='boolean'||(k&&p.foot.held!==true))return null;
+      samples.push({step:p.step,state:p.state,body:{x:p.body.x,z:p.body.z,yaw:p.body.yaw},foot:{id:p.foot.id,x:p.foot.x,z:p.foot.z,planted:true,held:p.foot.held}});
+    }
+    return {version:1,branch:plan.branch,species:plan.species,index:plan.index,studyId:plan.studyId,paw:plan.paw,samples:samples};
+  }
+  function ecoMeadowStanceMeasure(plan){
+    var identity=ecoMeadowStanceIdentity(plan);if(!identity)return null;
+    var samples=identity.samples,bodyTravel=0,pawTravel=0,maxPawDrift=0,first=samples[0],last=samples[samples.length-1];
+    for(var k=0;k<samples.length;k++){
+      var p=samples[k];maxPawDrift=Math.max(maxPawDrift,Math.hypot(p.foot.x-first.foot.x,p.foot.z-first.foot.z));
+      if(k){var old=samples[k-1];bodyTravel+=Math.hypot(p.body.x-old.body.x,p.body.z-old.body.z);pawTravel+=Math.hypot(p.foot.x-old.foot.x,p.foot.z-old.foot.z);}
+    }
+    if(bodyTravel<0.008||pawTravel>1e-7||maxPawDrift>1e-7)return null;
+    return {key:JSON.stringify(identity),identity:identity,first:first.step,last:last.step,bodyTravel:bodyTravel,pawTravel:pawTravel,bodyDisplacement:Math.hypot(last.body.x-first.body.x,last.body.z-first.body.z),pawDisplacement:Math.hypot(last.foot.x-first.foot.x,last.foot.z-first.foot.z),maxPawDrift:maxPawDrift,elapsed:(last.step-first.step)/10,expected:'body'};
+  }
+  function ecoMeadowStancePlan(frames,study,branch){
+    var footfall=ecoMeadowFootfallPlan(frames,study),identity=ecoMeadowFootfallIdentity(footfall,branch);if(!identity)return null;
+    var start=Math.max(0,identity.samples[0].step-8),end=Math.min(frames.length-1,identity.samples[2].step+8),best=null,bestScore=-Infinity;
+    for(var paw=0;paw<4;paw++)for(var step=start;step<end;step++){
+      var samples=[];
+      for(var at=step;at<=Math.min(end,step+6);at++){
+        var p=frames[at]&&frames[at][study.species]&&frames[at][study.species][study.index],point=p&&p.active===true&&ecoMeadowFootfallSample({step:at,state:p.state,body:{x:p.x,z:p.z,yaw:p.yaw},feet:Array.isArray(p.footPlants)&&p.footPlants.map(function(f,j){return f?{id:ECO_FOOTFALL_PAWS[j]&&ECO_FOOTFALL_PAWS[j].id,x:f.x,z:f.z,planted:f.planted,held:f.held}:null;})});
+        if(!point||!point.feet[paw].planted||(samples.length&&!point.feet[paw].held))break;
+        samples.push({step:at,state:point.state,body:point.body,foot:point.feet[paw]});
+        if(samples.length<2)continue;
+        var plan={version:1,branch:branch,species:study.species,index:study.index,studyId:study.id,paw:paw,samples:samples.slice()},measured=ecoMeadowStanceMeasure(plan);
+        if(!measured)continue;
+        var score=measured.bodyTravel/(1+Math.abs((step+at)/2-identity.samples[1].step)*0.02);
+        if(score>bestScore){bestScore=score;best=plan;}
+      }
+    }
+    return best;
+  }
+  function ecoMeadowStanceCheck(plan,state){
+    var measured=ecoMeadowStanceMeasure(plan),s=state||{},choices=['body','paw','both','unsure'];
+    if(!measured||s.key!==measured.key||choices.indexOf(s.choice)<0||(s.firstChoice!=null&&choices.indexOf(s.firstChoice)<0)||!Array.isArray(s.visited)||s.visited.indexOf(measured.first)<0||s.visited.indexOf(measured.last)<0)return null;
+    return {measurement:measured,choice:s.choice,firstChoice:s.firstChoice==null?null:s.firstChoice,correct:s.choice==='unsure'?null:s.choice===measured.expected};
+  }
+  function ecoMeadowStanceText(plan,state){
+    var check=ecoMeadowStanceCheck(plan,state);if(!check||state.checked!==true||check.firstChoice==null)return null;
+    var m=check.measurement,id=m.identity,names={body:'the body moved farther',paw:'the paw moved farther',both:'both moved similar distances',unsure:'not sure yet'};
+    return 'Planted-paw comparison: '+id.species+' representative '+(id.index+1)+', '+id.branch+', '+ECO_FOOTFALL_PAWS[id.paw].name+', time '+(m.first/10).toFixed(1)+' to '+(m.last/10).toFixed(1)+' ('+id.samples.length+' consecutive recorded samples). Body path '+m.bodyTravel.toFixed(6)+'; paw path '+m.pawTravel.toFixed(6)+' scene units. First choice: '+names[check.firstChoice]+'. Latest: '+names[check.choice]+'. The recorded paw stayed within '+m.maxPawDrift.toFixed(6)+' scene units of its first position while the body moved. This is an illustrated held-contact interval, not a measured wildlife gait or the complete stance duration.';
+  }
+  function ecoMeadowStanceAppend(reflection,plan,state){
+    var text=ecoMeadowStanceText(plan,state);if(text===null||typeof reflection!=='string'||reflection.length>1200||reflection.indexOf(text)>=0)return null;
+    var next=reflection+(reflection?'\n\n':'')+text;return next.length<=1200?next:null;
+  }
+  Object.assign(window.StemLab.ecosystemFoodWeb,{stancePlan:ecoMeadowStancePlan,stanceIdentity:ecoMeadowStanceIdentity,stanceMeasure:ecoMeadowStanceMeasure,stanceCheck:ecoMeadowStanceCheck,stanceText:ecoMeadowStanceText,stanceAppend:ecoMeadowStanceAppend});
+
+  function ecoMeadowFootfallGrid(raw,allowUncertain) {
+    if(!Array.isArray(raw)||raw.length!==3)return null;
+    var copy=[];
+    for(var k=0;k<3;k++){
+      var column=raw[k];if(!Array.isArray(column)||column.length!==4)return null;
+      var cells=[];for(var j=0;j<4;j++){var value=column[j];if(typeof value!=='boolean'&&!(allowUncertain&&value==='uncertain'))return null;cells.push(value);}copy.push(cells);
+    }
+    return copy;
+  }
+
+  function ecoMeadowFootfallSupportBounds(raw) {
+    var grid=ecoMeadowFootfallGrid(raw,true);if(!grid)return null;
+    var unresolved=0,samples=grid.map(function(column){var min=column.filter(function(value){return value===true;}).length,unknown=column.filter(function(value){return value==='uncertain';}).length;unresolved+=unknown;return {min:min,max:min+unknown,unresolved:unknown};});
+    var claim=samples.some(function(sample){return sample.max===0;})?'clear':samples.every(function(sample){return sample.min>0;})?'supported':'insufficient';
+    return {samples:samples,unresolved:unresolved,claim:claim};
+  }
+
+  function ecoMeadowFootfallIdentity(plan,branch) {
+    if(!plan||['baseline','experiment'].indexOf(branch)<0||['foxes','rabbits'].indexOf(plan.species)<0||!Number.isInteger(plan.index)||plan.index<0||plan.index>15||typeof plan.studyId!=='string'||!Array.isArray(plan.samples)||plan.samples.length!==3)return null;
+    var samples=[0,1,2].map(function(k){return ecoMeadowFootfallSample(plan.samples[k]);});if(samples.some(function(sample){return !sample;})||samples[0].step>=samples[1].step||samples[1].step>=samples[2].step)return null;
+    var kinds=plan.species==='foxes'?['pounce','fore-paw']:['bound','hind-paw'];
+    if(!kinds.some(function(kind){return plan.studyId===plan.species+':'+plan.index+':'+kind+':'+samples.map(function(point){return point.step;}).join(':');}))return null;
+    return {branch:branch,species:plan.species,index:plan.index,studyId:plan.studyId,samples:samples};
+  }
+
+  function ecoMeadowFootfallCheck(plan,grid,firstGrid) {
+    if(!plan||!Array.isArray(plan.samples)||plan.samples.length!==3)return null;
+    var samples=[0,1,2].map(function(k){return ecoMeadowFootfallSample(plan.samples[k]);}),codes=ecoMeadowFootfallGrid(grid,true),first=firstGrid==null?null:ecoMeadowFootfallGrid(firstGrid,true);
+    if(!codes||(firstGrid!=null&&!first)||samples.some(function(sample){return !sample;})||samples[0].step>=samples[1].step||samples[1].step>=samples[2].step)return null;
+    var matches=0,firstMatches=0,bounds=ecoMeadowFootfallSupportBounds(codes),firstBounds=first?ecoMeadowFootfallSupportBounds(first):null;
+    var comparisons=samples.map(function(sample,k){var correct=sample.feet.map(function(foot,j){if(first&&first[k][j]!=='uncertain'&&first[k][j]===foot.planted)firstMatches++;if(codes[k][j]==='uncertain')return null;var same=codes[k][j]===foot.planted;if(same)matches++;return same;});return {step:sample.step,supportCount:sample.supportCount,learnerCount:bounds.samples[k].min,learnerMax:bounds.samples[k].max,unresolved:bounds.samples[k].unresolved,correct:correct};});
+    var allClear=samples.map(function(sample,k){return sample.supportCount===0?k:-1;}).filter(function(k){return k>=0;}),resolved=12-bounds.unresolved,firstResolved=firstBounds?12-firstBounds.unresolved:null;
+    return {total:12,matches:matches,mismatches:resolved-matches,resolved:resolved,unresolved:bounds.unresolved,firstMatches:first?firstMatches:null,firstResolved:firstResolved,firstMismatches:first?firstResolved-firstMatches:null,firstUnresolved:firstBounds?firstBounds.unresolved:null,bounds:bounds,firstBounds:firstBounds,samples:comparisons,allClear:allClear,prediction:allClear.length?'clear':'supported',elapsed:(samples[2].step-samples[0].step)/10};
+  }
+
+  function ecoMeadowFootfallEvidence(plan,study,branch,state) {
+    var s=state||{},identity=ecoMeadowFootfallIdentity(plan,branch);if(!identity||!study||study.id!==identity.studyId||study.species!==identity.species||study.index!==identity.index||!s.checked)return null;
+    var version=s.version===2?2:1;if(version===2&&(s.sampleKey!==JSON.stringify(identity)||!Array.isArray(s.visited)||s.visited.length!==3||[0,1,2].some(function(k){return s.visited.indexOf(k)<0;})))return null;
+    if(version===1&&!ecoMeadowFootfallLegacyMatches(plan,s))return null;
+    var movement={branch:branch,studyId:study.id,index:study.index,samples:study.samples};
+    return ecoWebFootfallRecord({version:version,branch:branch,species:study.species,index:study.index,sampleKey:JSON.stringify(identity),studyId:study.id,samples:identity.samples,grid:s.grid,firstGrid:s.firstGrid,prediction:s.prediction,firstPrediction:s.firstPrediction,reflection:s.reflection||''},movement,study.species);
+  }
+
+  function ecoMeadowFootfallLegacyMatches(plan,state) {
+    if(!plan||!state||!ecoMeadowFootfallGrid(state.firstGrid,false)||!Array.isArray(state.samples)||state.samples.length!==3)return false;
+    var saved=[0,1,2].map(function(k){return ecoMeadowFootfallSample(state.samples[k]);}),current=plan.samples&&[0,1,2].map(function(k){return ecoMeadowFootfallSample(plan.samples[k]);});
+    return !!current&&!saved.some(function(sample){return !sample;})&&!current.some(function(sample){return !sample;})&&JSON.stringify(saved)===JSON.stringify(current);
+  }
+
+  function ecoMeadowFootfallPending(plan,study,branch,state) {
+    return !!state&&state.firstGrid!=null&&!ecoMeadowFootfallEvidence(plan,study,branch,state);
+  }
+
+  function ecoMeadowFootfallView(plan,branch,index,angle,referenceYaw) {
+    var identity=ecoMeadowFootfallIdentity(plan,branch);
+    if(!identity||!Number.isInteger(index)||index<0||index>=3||['left','right','above'].indexOf(angle)<0||!Number.isFinite(referenceYaw))return null;
+    var sample=identity.samples[index];
+    return {branch:branch,species:identity.species,index:identity.index,step:sample.step,sample:sample,angle:angle,orbit:sample.body.yaw-referenceYaw+(angle==='right'?Math.PI/2:-Math.PI/2),elevation:angle==='above'?1.5:0.18};
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{footfallBounds:ecoMeadowFootfallSupportBounds,footfallIdentity:ecoMeadowFootfallIdentity,footfallEvidence:ecoMeadowFootfallEvidence,footfallPending:ecoMeadowFootfallPending,footfallView:ecoMeadowFootfallView});
+
+function ecoMeadowMovementEvidence(study,branch,state,footfallPlan) {
+  state=state||{};
+  if(['experiment','baseline'].indexOf(branch)<0||!state.checked||!ecoMeadowMotionSequence(study,state.order).valid)return null;
+  var first=state.firstOrder||state.order;
+  if(!ecoMeadowMotionSequence(study,first).valid||ecoMeadowFootfallPending(footfallPlan,study,branch,state.footfall))return null;
+  var layout=study.layout;
+  function letter(k){return String.fromCharCode(65+layout.indexOf(Number(k)));}
+  var prediction='Movement sequence prediction: '+first.map(function(k){return 'Snapshot '+letter(k);}).join(' → ')+'.';
+  var lines=[study.title+'; '+branch+' branch; representative '+(study.index+1)+'.', 'Recorded order: '+[0,1,2].map(function(k){return 'Snapshot '+letter(k);}).join(' → ')+'.'];
+  study.samples.forEach(function(sample,k){lines.push('Snapshot '+letter(k)+' at time '+(sample.step/10).toFixed(1)+': '+sample.label+'; '+study.metricName+' '+sample.value.toFixed(3)+'; '+sample.supportFeet+' supporting paws; left forepaw '+(sample.foreContact?'on ground':'raised')+'; left hind paw '+(sample.hindContact?'on ground':'raised')+'; observed paw angle '+sample.pawAngle.toFixed(2)+' degrees (+ forward).');});
+  lines.push('Values describe the illustrated pose; they are not measurements from wildlife.');
+  if(state.reflection)lines.push(String(state.reflection).slice(0,1200));
+  var evidence={step:study.samples[1].step,focus:study.species,prediction:prediction,explanation:lines.join('\n'),movement:{version:1,branch:branch,index:study.index,studyId:study.id,kind:study.kind,samples:study.samples.map(function(sample){return {step:sample.step,value:sample.value,supportFeet:sample.supportFeet,foreContact:sample.foreContact,hindContact:sample.hindContact,pawAngle:sample.pawAngle};}),order:first.map(Number),latestOrder:state.order.map(Number),reflection:String(state.reflection||'').slice(0,1200)}};
+  var strip=ecoMeadowFootfallEvidence(footfallPlan,study,branch,state.footfall);if(strip)evidence.movement.footfall=strip;
+  return evidence;
+}
+
+  // One fixed, equally scaled ground reference for the entire recorded interval.
+  // A missing inspected time has no highlighted point; never invent a sample.
+  function ecoMeadowStancePlot(plan,step){
+    var measured=ecoMeadowStanceMeasure(plan);if(!measured)return null;
+    var points=measured.identity.samples,all=[];points.forEach(function(p){all.push(p.body,p.foot);});
+    var minX=Math.min.apply(Math,all.map(function(p){return p.x;})),maxX=Math.max.apply(Math,all.map(function(p){return p.x;})),minZ=Math.min.apply(Math,all.map(function(p){return p.z;})),maxZ=Math.max.apply(Math,all.map(function(p){return p.z;}));
+    var span=Math.max(.12,maxX-minX,maxZ-minZ)*1.3,cx=(minX+maxX)/2,cz=(minZ+maxZ)/2,scale=220/span;
+    function project(p,time){return {step:time,x:p.x,z:p.z,px:200+(p.x-cx)*scale,py:130+(p.z-cz)*scale};}
+    var selected=Number.isInteger(step)?points.findIndex(function(p){return p.step===step;}):-1;
+    return {key:measured.key,span:span,scale:scale,center:{x:cx,z:cz},body:points.map(function(p){return project(p.body,p.step);}),paw:points.map(function(p){return project(p.foot,p.step);}),active:selected<0?null:selected,step:selected<0?null:points[selected].step,xTicks:[cx-span/2,cx,cx+span/2],zTicks:[cz-span/2,cz,cz+span/2]};
+  }
+  window.StemLab.ecosystemFoodWeb.stancePlot=ecoMeadowStancePlot;
+
+  function EcoStanceLens(props){
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,plan=props.plan,measured=ecoMeadowStanceMeasure(plan),s=props.state||{},draft=props.React.useRef({received:props.state,value:s}),choiceRef=props.React.useRef(null);
+    if(draft.current.received!==props.state)draft.current={received:props.state,value:s};
+    var labels={body:'The body traveled farther',paw:'The paw traveled farther',both:'Their path lengths were similar',unsure:'Not sure yet'},matches=!!measured&&s.key===measured.key,check=matches&&ecoMeadowStanceCheck(plan,s),shown=!!(check&&s.checked&&s.firstChoice!=null),visited=matches&&Array.isArray(s.visited)?s.visited:[],first=measured&&measured.first,last=measured&&measured.last;
+    function change(patch){var current=draft.current.value||{},base=measured&&current.key===measured.key?current:{key:measured&&measured.key,visited:[],choice:'',firstChoice:null,checked:false};var next=Object.assign({},base,typeof patch==='function'?patch(base):patch);draft.current.value=next;props.onChange(function(parent){return plan&&parent.checked===true&&parent.id===plan.studyId&&parent.species===plan.species?{stance:next}:{};});}
+    function inspect(step){if(!measured||!plan.samples.some(function(p){return p.step===step;}))return;change(function(current){var visits=Array.isArray(current.visited)?current.visited:[];return {visited:visits.indexOf(step)<0?visits.concat([step]):visits.slice()};});props.onInspect(step);if(props.reduced||!props.ready){var node=choiceRef.current;if(node)node.focus({preventScroll:true});}}
+    function submit(){var current=draft.current.value,verified=ecoMeadowStanceCheck(plan,current);if(verified)change({checked:true,firstChoice:current.firstChoice==null?current.choice:current.firstChoice});}
+    var appendable=shown?ecoMeadowStanceAppend(props.reflection||'',plan,s):null,alreadyAdded=shown&&typeof props.reflection==='string'&&props.reflection.indexOf(ecoMeadowStanceText(plan,s))>=0;
+    function append(){var current=draft.current.value;props.onChange(function(parent){if(!plan||parent.checked!==true||parent.id!==plan.studyId||parent.species!==plan.species||parent.stance!==current)return {};var reflection=ecoMeadowStanceAppend(parent.reflection||'',plan,current);return reflection===null?{}:{reflection:reflection,saved:false};});}
+    var plot=ecoMeadowStancePlot(plan,props.cursor);
+    if(!measured)return h('div',{'data-efw-stance-lens':'true',className:'efw-result'},h('strong',null,'Track one planted paw'),h('p',null,'No complete held-contact interval is available near these movement snapshots. Choose another fox or rabbit movement.'));
+    return h('details',{'data-efw-stance-lens':'true',className:'efw-stance-lens',open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'Track one planted paw'),h('style',null,'.efw-stance-lens{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0}.efw-stance-lens summary{font-weight:750;cursor:pointer}.efw-stance-lens>div{margin-top:12px}.efw-stance-lens p,.efw-stance-lens small,.efw-stance-lens strong{overflow-wrap:anywhere}.efw-stance-lens select{width:100%;min-width:0}.efw-stance-lens table{border-collapse:collapse;width:100%;font-size:13px}.efw-stance-lens th,.efw-stance-lens td{padding:6px;text-align:left;border-bottom:1px solid var(--fw-line)}.efw-stance-lens .efw-stance-table{overflow-x:auto}.efw-stance-plot{margin:0;min-width:0;max-width:560px}.efw-stance-plot svg{display:block;width:100%;height:auto;max-width:440px}.efw-stance-plot p{margin:8px 0}.efw-stance-plot button{flex:0 1 auto;min-width:64px}.efw-stance-lens tr[aria-current=true]{background:var(--fw-tint)}'),
+      !measured?h('p',null,'No complete held-contact interval is available near these movement snapshots. Choose another fox or rabbit movement.'):h('div',{className:'efw-stack'},
+        h('p',null,'Can a paw stay planted while the body moves? Compare '+ECO_FOOTFALL_PAWS[plan.paw].name.toLowerCase()+' on this '+(plan.species==='foxes'?'fox':'rabbit')+' across '+plan.samples.length+' consecutive recorded samples.'),
+        h('small',null,'Time '+(first/10).toFixed(1)+' to '+(last/10).toFixed(1)+' · '+plan.branch+' branch · representative '+(plan.index+1)+'. A held-contact flag and the coordinates are separate recorded evidence. This interval need not include the start or end of a full stance.'),
+        h('label',null,'My planted-paw comparison',h('select',{ref:choiceRef,'aria-label':__alloT("stem.ecosystem.a11y_planted_paw_comparison_choice", "Planted-paw comparison choice"),value:matches&&Object.prototype.hasOwnProperty.call(labels,s.choice)?s.choice:'',onChange:function(e){change({choice:e.target.value,checked:false});}},h('option',{value:''},'Choose which traveled farther'),Object.keys(labels).map(function(key){return h('option',{key:key,value:key},labels[key]);}))),
+        h('div',{className:'efw-row'},h('button',{type:'button',onClick:function(){inspect(first);}},'Inspect stance start'),h('button',{type:'button',onClick:function(){inspect(last);}},'Inspect stance end')),
+        h('p',{'data-efw-stance-progress':'true',role:'status'},[first,last].filter(function(step){return visited.indexOf(step)>=0;}).length+' of 2 interval endpoints inspected.'),
+        h('label',null,'Inspect each recorded stance sample',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_planted_paw_inspection_time", "Planted-paw inspection time"),min:first,max:last,step:1,value:Math.max(first,Math.min(last,props.cursor)),onChange:function(e){inspect(Number(e.target.value));}})),
+        h('button',{type:'button',className:'efw-primary',disabled:!check,onClick:submit},s.firstChoice!=null?'Recheck planted-paw comparison':'Check planted-paw comparison'),
+        shown&&h('figure',{className:'efw-stance-plot','data-efw-stance-plot':'true'},
+          h('figcaption',null,h('strong',null,'Trace the body beside a held paw'),h('p',null,'Blue circles trace the body. The gold diamond marks '+ECO_FOOTFALL_PAWS[plan.paw].name.toLowerCase()+'. Both use the same fixed ground coordinates and scale; the map does not follow the camera.')),
+          h('svg',{viewBox:'0 0 360 310',role:'img','aria-label':__alloT("stem.ecosystem.a11y_recorded_body_path_and_planted_paw_position_on_a_fixed_ground_map", "Recorded body path and planted-paw position on a fixed ground map")},
+            h('title',null,'One fixed ground map for every recorded stance sample'),h('desc',null,plot.active===null?'No mapped sample is currently inspected. Choose a recorded time below.':'Recorded time '+(plot.step/10).toFixed(1)+': body x '+plot.body[plot.active].x.toFixed(4)+', z '+plot.body[plot.active].z.toFixed(4)+'; paw x '+plot.paw[plot.active].x.toFixed(4)+', z '+plot.paw[plot.active].z.toFixed(4)+'.'),
+            h('rect',{x:90,y:20,width:220,height:220,rx:4,fill:'#102a30',stroke:'#7895a1'}),
+            [0,1,2].map(function(k){return h('g',{key:k},h('line',{x1:90+k*110,x2:90+k*110,y1:20,y2:240,stroke:'#46616d',strokeWidth:.7}),h('line',{x1:90,x2:310,y1:20+k*110,y2:20+k*110,stroke:'#46616d',strokeWidth:.7}),h('text',{x:90+k*110,y:267,textAnchor:'middle',fill:'currentColor',fontSize:16},plot.xTicks[k].toFixed(3)),h('text',{x:78,y:24+k*110,textAnchor:'end',fill:'currentColor',fontSize:16},plot.zTicks[k].toFixed(3)));}),
+            h('text',{x:200,y:298,textAnchor:'middle',fill:'currentColor',fontSize:16},'x (scene units) →'),h('text',{transform:'translate(22 130) rotate(-90)',textAnchor:'middle',fill:'currentColor',fontSize:16},'z (scene units) ↓'),
+            h('polyline',{'data-efw-stance-body-path':'true',points:plot.body.map(function(p){return p.px+','+p.py;}).join(' '),fill:'none',stroke:'#52b9ff',strokeWidth:3,strokeLinejoin:'round'}),
+            h('polyline',{'data-efw-stance-paw-path':'true',points:plot.paw.map(function(p){return p.px+','+p.py;}).join(' '),fill:'none',stroke:'#ffd25b',strokeWidth:3}),
+            plot.body.map(function(p,k){return h('circle',{key:p.step,'data-efw-stance-body-step':String(p.step),cx:p.px,cy:p.py,r:3,fill:'#52b9ff',stroke:'#102a30',strokeWidth:1});}),
+            h('path',{'data-efw-stance-paw-marker':'true',d:'M '+plot.paw[0].px+' '+(plot.paw[0].py-6)+' l 6 6 l -6 6 l -6 -6 Z',fill:'#ffd25b',stroke:'#102a30',strokeWidth:1.2}),
+            plot.active!==null&&h('g',{'data-efw-stance-map-active':String(plot.step)},h('circle',{cx:plot.body[plot.active].px,cy:plot.body[plot.active].py,r:7,fill:'none',stroke:'#fff',strokeWidth:2}),h('circle',{cx:plot.paw[plot.active].px,cy:plot.paw[plot.active].py,r:10,fill:'none',stroke:'#fff',strokeWidth:1.5}))),
+          h('p',{'data-efw-stance-map-time':'true'},plot.active===null?'Choose a recorded time to highlight both positions.':'Highlighted recorded time '+(plot.step/10).toFixed(1)+'. White rings identify this sample.'),
+          h('div',{className:'efw-row',role:'group','aria-label':__alloT("stem.ecosystem.a11y_inspect_mapped_stance_samples", "Inspect mapped stance samples")},plan.samples.map(function(point,k){return h('button',{key:point.step,type:'button','aria-label':'Inspect mapped stance time '+(point.step/10).toFixed(1),'aria-pressed':plot.step===point.step,onClick:function(){inspect(point.step);}},(k+1)+': '+(point.step/10).toFixed(1));})),
+          h('small',null,'Compare successive positions, then revise your choice if the evidence changes your explanation. Map lines connect only the recorded samples; they do not measure an animal’s real path between samples.')),
+        shown&&h('div',{className:'efw-result efw-stack','data-efw-stance-feedback':'true',role:'status'},
+          h('strong',null,check.correct===null?'The recorded paths can help resolve your comparison.':check.correct?'Your comparison matches this recorded interval.':'Compare how far the body and paw traveled.'),
+          h('p',null,'Body path: '+measured.bodyTravel.toFixed(6)+' scene units. Paw path: '+measured.pawTravel.toFixed(6)+' scene units. Maximum paw drift from its first position: '+measured.maxPawDrift.toFixed(6)+' scene units.'),
+          h('p',null,'First choice: '+labels[s.firstChoice]+'. The body moved farther while this paw remained at the same ground position within 0.0000001 scene units. Path totals include every sample below; they are different from straight-line endpoint displacement.'),
+          h('div',{className:'efw-stance-table'},h('table',null,h('caption',null,'Original recorded coordinates (scene units)'),h('thead',null,h('tr',null,['Time','Body x / z','Paw x / z'].map(function(label){return h('th',{key:label,scope:'col'},label);}))),h('tbody',null,plan.samples.map(function(point){return h('tr',{key:point.step,'aria-current':plot.step===point.step?'true':undefined},h('td',null,(point.step/10).toFixed(1)),h('td',null,point.body.x.toFixed(4)+' / '+point.body.z.toFixed(4)),h('td',null,point.foot.x.toFixed(4)+' / '+point.foot.z.toFixed(4)));})))),
+          h('p',null,'A held paw in this illustrated rig is not a measurement of wildlife, a complete stance duration, or evidence of an animal’s intention.'),
+          h('button',{type:'button',disabled:appendable===null,onClick:append},'Add comparison to my movement reflection'),h('small',{'data-efw-stance-save-status':'true'},alreadyAdded?'This comparison is in your movement reflection. Save the movement observation to keep it.':appendable===null?'Shorten the movement reflection to make room for this comparison. Your existing writing is kept.':'Adds these measurements and your first/latest choices to the existing reflection. You can edit that text before saving.')),
+        h('small',null,'This optional lens does not change the movement sequence or footfall strip. Lens choices are working notes; the text you add to your movement reflection is saved and exported with the observation.'),
+        props.reduced&&h('p',{'data-efw-stance-reduced':'true'},'Reduced motion freezes the 3D starting pose. The exact recorded coordinates and labels remain available for every inspected sample; use those data rather than inferring motion from the frozen animal.')));
+  }
+
+  function EcoFootfallLab(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},plan=props.plan,grid=Array.isArray(s.grid)&&s.grid.length===3?s.grid.map(function(column){return Array.isArray(column)&&column.length===4?column:[null,null,null,null];}):[[null,null,null,null],[null,null,null,null],[null,null,null,null]],first=ecoMeadowFootfallGrid(s.firstGrid,true),visited=Array.isArray(s.visited)?s.visited:[],predictions={clear:'At least one checkpoint has all four paws clear',supported:'Every checkpoint has a supporting paw',unsure:'Not sure yet'},hasPrediction=Object.prototype.hasOwnProperty.call(predictions,s.prediction),check=plan?ecoMeadowFootfallCheck(plan,grid,s.firstGrid):null,identity=ecoMeadowFootfallIdentity(plan,props.branch),sampleKey=identity&&JSON.stringify(identity),legacyUnavailable=!!(s.firstGrid!=null&&s.version!==2&&!ecoMeadowFootfallLegacyMatches(plan,s)),mismatch=!!(legacyUnavailable||s.firstGrid!=null&&!first||s.version===2&&s.firstGrid!=null&&s.sampleKey!==sampleKey),shown=!!(s.checked&&first&&check&&!mismatch);
+    function change(patch){props.onChange(Object.assign({saved:false},s.firstGrid==null||s.version!==2&&!legacyUnavailable?{version:2,sampleKey:sampleKey}:{},patch));}
+    function reset(){change({version:2,sampleKey:sampleKey,samples:null,grid:[[null,null,null,null],[null,null,null,null],[null,null,null,null]],firstGrid:null,prediction:'',firstPrediction:'',checked:false,visited:[],reflection:''});}
+    function preservedDraft(){if(!legacyUnavailable)return null;function describe(raw){var marks=ecoMeadowFootfallGrid(raw,true);return marks?marks.map(function(column,k){return 'Checkpoint '+(k+1)+': '+column.map(function(value,j){return ECO_FOOTFALL_PAWS[j].name+' '+(value==='uncertain'?'uncertain':value?'contact':'clear');}).join(', ');}).join(' | '):'Incomplete marks retained unchanged.';}return h('div',{'data-efw-footfall-legacy-draft':'true'},h('p',null,'This older submitted draft has no available validated original checkpoints. Its answers have not been applied to this recording. Start a new strip to observe the current samples.'),h('p',null,'Preserved first marks: '+describe(s.firstGrid)),h('p',null,'Preserved latest marks: '+describe(s.grid)));}
+    function inspect(k,angle){change({visited:visited.indexOf(k)>=0?visited.slice():visited.concat([k])});props.onInspect(k,angle);}
+    function mark(k,j,value){var next=grid.map(function(column){return column.slice();});next[k][j]=value;change({grid:next,checked:false});}
+    var allVisited=[0,1,2].every(function(k){return visited.indexOf(k)>=0;}),selected=plan?plan.samples.findIndex(function(sample){return sample.step===props.cursor;}):-1,map=null;
+    if(shown){
+      var sample=plan.samples[selected<0?0:selected],contacts=sample.feet.filter(function(foot){return foot.planted;}),points=[sample.body].concat(contacts),minX=Math.min.apply(Math,points.map(function(p){return p.x;})),maxX=Math.max.apply(Math,points.map(function(p){return p.x;})),minZ=Math.min.apply(Math,points.map(function(p){return p.z;})),maxZ=Math.max.apply(Math,points.map(function(p){return p.z;})),span=Math.max(0.6,maxX-minX,maxZ-minZ),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;
+      function x(p){return 160+(p.x-cx)/span*140;}function y(p){return 110+(p.z-cz)/span*140;}
+      var forward={x:sample.body.x+Math.cos(sample.body.yaw)*span*0.22,z:sample.body.z-Math.sin(sample.body.yaw)*span*0.22};
+      map=h('svg',{viewBox:'0 0 320 220',role:'img','aria-label':__alloT("stem.ecosystem.a11y_recorded_planted_paw_positions_at_the_inspected_checkpoint", "Recorded planted-paw positions at the inspected checkpoint"),'data-efw-footfall-map':'true'},h('title',null,'Actual rig contact positions at time '+(sample.step/10).toFixed(1)),h('desc',null,contacts.length?contacts.map(function(foot){return ECO_FOOTFALL_PAWS.find(function(p){return p.id===foot.id;}).name+' contact at x '+foot.x.toFixed(3)+', z '+foot.z.toFixed(3)+'.';}).join(' '):'No paw is marked as planted at this sampled checkpoint.'),h('rect',{x:1,y:1,width:318,height:218,rx:8,fill:'#102a30',stroke:'#7895a1'}),h('circle',{cx:x(sample.body),cy:y(sample.body),r:4,fill:'#f8fafc'}),h('line',{x1:x(sample.body),y1:y(sample.body),x2:x(forward),y2:y(forward),stroke:'#f8fafc',strokeWidth:2}),h('text',{x:10,y:18,fill:'#f8fafc',fontSize:13},'White line: body heading'),contacts.map(function(foot){return h('g',{key:foot.id},h('circle',{cx:x(foot),cy:y(foot),r:5,fill:'#facc15'}),h('text',{x:x(foot)+7,y:y(foot)-7,fill:'#f8fafc',fontSize:14},foot.id.split('-').map(function(word){return word[0].toUpperCase();}).join('')));}),h('text',{x:10,y:202,fill:'#c8dce0',fontSize:14},'Top view · recorded contacts only'));
+    }
+    return h('details',{className:'efw-footfall-lab','data-efw-footfall-lab':'true',open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'Build the four-paw footfall strip'),
+      h('style',null,`.efw-footfall-lab{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0}.efw-footfall-lab summary{font-weight:750;cursor:pointer}.efw-footfall-lab>div{margin-top:12px}.efw-footfall-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw-footfall-column{display:grid;gap:8px;align-content:start;border:1px solid var(--fw-line);border-radius:8px;padding:10px;min-width:0}.efw-footfall-column[aria-current=true]{border:2px solid var(--fw-accent);background:var(--fw-tint)}.efw-footfall-column select{width:100%;min-width:0}.efw-footfall-lab svg{width:100%;max-width:360px;height:auto;display:block}.efw-footfall-lab p,.efw-footfall-lab small,.efw-footfall-lab strong{overflow-wrap:anywhere}.efw-footfall-results{display:grid;grid-template-columns:minmax(150px,0.8fr) minmax(0,1.2fr);gap:12px}@media(max-width:600px){.efw-footfall-columns,.efw-footfall-results{grid-template-columns:1fr}}`),
+      h('div',{className:'efw-stack'},!plan?h(props.React.Fragment,null,h('p',null,'A footfall strip needs three complete recorded checkpoints with all four paw contacts. Choose another fox or rabbit movement.'),preservedDraft(),s.firstGrid!=null&&h('button',{type:'button',onClick:reset},'Start a new footfall strip')):h(props.React.Fragment,null,
+        h('p',null,'Which paws support this illustrated animal? Inspect the three original movement checkpoints and mark each paw as contact, clear or uncertain. Choose “Cannot tell from this view” when evidence is hidden; do not guess that an unseen paw is clear. Left and right belong to the animal, regardless of your camera view.'),
+        mismatch&&!legacyUnavailable&&h('p',{role:'status'},'This submitted strip belongs to different original samples. Start a new footfall strip to observe this recording; saved notebook evidence stays unchanged.'),preservedDraft(),
+        h('label',null,'My support prediction',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_footfall_support_prediction", "Footfall support prediction"),value:hasPrediction?s.prediction:'',onChange:function(e){change({prediction:e.target.value,checked:false});}},h('option',{value:''},'Choose before checking'),Object.keys(predictions).map(function(value){return h('option',{key:value,value:value},predictions[value]);}))),
+        h('div',{className:'efw-footfall-columns'},plan.samples.map(function(sample,k){return h('div',{key:sample.step,className:'efw-footfall-column','data-efw-footfall-checkpoint':String(k),'aria-current':props.cursor===sample.step?'true':'false'},h('strong',null,'Checkpoint '+(k+1)+' · time '+(sample.step/10).toFixed(1)),h('button',{type:'button',onClick:function(){inspect(k);}},'Inspect footfall checkpoint '+(k+1)),h('small',null,visited.indexOf(k)>=0?'Inspected':'Not yet inspected'),h('div',{className:'efw-row','aria-label':'Checkpoint '+(k+1)+' alternate views'},['left','right','above'].map(function(angle){return h('button',{type:'button',key:angle,disabled:!!props.reduced||!props.ready||mismatch,onClick:function(){inspect(k,angle);}},'Observe checkpoint '+(k+1)+' from '+angle);})),props.reduced&&h('small',{'data-efw-footfall-description':'true'},sample.feet.map(function(foot,j){return ECO_FOOTFALL_PAWS[j].name+': '+(foot.planted?'contact':'clear');}).join('; ')),ECO_FOOTFALL_PAWS.map(function(paw,j){return h('label',{key:paw.id},paw.name,h('select',{'aria-label':'Checkpoint '+(k+1)+' '+paw.name+' contact',disabled:mismatch,value:grid[k][j]==='uncertain'?'uncertain':typeof grid[k][j]==='boolean'?(grid[k][j]?'contact':'clear'):'',onChange:function(e){mark(k,j,e.target.value==='contact'?true:e.target.value==='clear'?false:e.target.value==='uncertain'?'uncertain':null);}},h('option',{value:''},'Not recorded yet'),h('option',{value:'contact'},'Contact / supporting'),h('option',{value:'clear'},'Clear / raised'),h('option',{value:'uncertain'},'Cannot tell from this view')));}),shown&&h('small',null,'Your marks allow '+check.samples[k].learnerCount+(check.samples[k].learnerMax===check.samples[k].learnerCount?'':'–'+check.samples[k].learnerMax)+' supporting paws; '+check.samples[k].unresolved+' uncertain. The rig records '+check.samples[k].supportCount+'.'));})),
+        h('button',{type:'button',className:'efw-primary',disabled:!check||!hasPrediction||!allVisited||mismatch,onClick:function(){change({checked:true,firstGrid:first||grid.map(function(column){return column.slice();}),firstPrediction:s.firstPrediction||s.prediction});}},first?'Check revised footfall strip':'Check my footfall strip'),
+        (!check||!hasPrediction||!allVisited)&&h('small',{role:'status'},'Inspect all three checkpoints, make a support prediction and explicitly mark all twelve paws. Unanswered marks cannot be checked; uncertain marks never count as clear paws.'),
+        shown&&h('div',{className:'efw-result efw-stack','data-efw-footfall-feedback':'true',role:'status'},
+          h('strong',null,check.resolved?check.matches+' matching and '+check.mismatches+' differing definite marks; '+check.unresolved+' uncertain.':'All 12 marks are uncertain; there are no definite marks to compare.'),h('p',null,check.firstResolved?'First submission: '+check.firstMatches+' matching and '+check.firstMismatches+' differing definite marks; '+check.firstUnresolved+' uncertain.':'First submission: all 12 marks were uncertain. Your first uncertainty is preserved.'),
+          h('div',{'data-efw-footfall-observation-bounds':'true'},h('strong',null,'What your observations support'),h('ul',null,check.bounds.samples.map(function(bounds,k){return h('li',{key:k},'Checkpoint '+(k+1)+': '+bounds.min+(bounds.max===bounds.min?'':'–'+bounds.max)+' supporting paws from your marks.');})),h('p',null,check.bounds.claim==='clear'?'Your marks describe at least one checkpoint with all four paws clear.':check.bounds.claim==='supported'?'Your marks identify at least one supporting paw at every checkpoint.':'Your marks leave the support claim unresolved. Another viewing angle may help; an uncertain paw is not evidence that it is clear.')),
+          h('strong',null,'Compare separately with the recorded rig'),
+          h('p',null,'First support prediction: '+(predictions[s.firstPrediction]||'not recorded')+'. '+(s.prediction==='unsure'?'The contacts give you evidence for a support claim.':s.prediction===check.prediction?'Your current support prediction matches these checkpoints.':'Review which checkpoints have any supporting paws.')),
+          h('div',{className:'efw-footfall-results'},map,h('div',{className:'efw-stack'},h('strong',null,check.allClear.length?'All four paws clear at checkpoint'+(check.allClear.length===1?' ':'s ')+check.allClear.map(function(k){return k+1;}).join(', ')+'.':'Every sampled checkpoint has at least one supporting paw.'),h('p',null,'The first and last checkpoints are '+check.elapsed.toFixed(1)+' model time units apart. Three sparse checkpoints do not measure the duration of contact or prove continuous flight between samples.'),h('ul',null,plan.samples.map(function(sample,k){return h('li',{key:k},'Checkpoint '+(k+1)+': '+sample.feet.map(function(foot,j){return ECO_FOOTFALL_PAWS[j].name+' '+(foot.planted?'contact':'clear');}).join('; ')+'.');})))),
+          h('label',null,'My footfall evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_footfall_evidence_reflection", "Footfall evidence reflection"),value:s.reflection||'',maxLength:1200,placeholder:'At checkpoint… these paws supported the body… My first marks changed because… Between checkpoints I cannot conclude…',onChange:function(e){change({reflection:e.target.value});}})),
+          h('small',null,'Save the movement observation to keep your first and revised footfall strip, support predictions and this reflection.')),
+        s.firstGrid!=null&&h('div',{className:'efw-stack'},h('button',{type:'button',onClick:reset},'Start a new footfall strip'),h('small',null,'Starting a new strip clears this working first submission. Saved notebook evidence stays unchanged.')),
+        s.firstGrid==null&&h('small',null,'This optional strip is not yet checked and will not be included when you save the movement.'),
+        !props.ready&&!props.reduced&&h('small',null,'Alternate camera views require the 3D renderer. You can keep an honest uncertain observation; no visibility is inferred by the tool.'),
+        h('small',null,'Contact flags and map coordinates come from the recorded illustrated rig. They are not measured wildlife tracks, gait identification evidence or population data.'),
+        props.reduced&&h('p',{'data-efw-footfall-reduced':'true'},'Reduced motion keeps the 3D starting pose still. Alternate camera views are off. Exact recorded paw descriptions remain on each checkpoint as a separate data source; uncertain is still a valid observation choice.'))));
+  }
+
+function EcoMammalSequence(props) {
+  var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+  var h=props.React.createElement,study=props.study,state=props.state||{},order=Array.isArray(state.order)?state.order:['','',''],result=ecoMeadowMotionSequence(study,order),firstOrder=ecoMeadowMotionSequence(study,state.firstOrder).valid?state.firstOrder:null,shown=!!state.checked&&result.valid&&(!state.firstOrder||!!firstOrder);
+  function letter(k){return String.fromCharCode(65+study.layout.indexOf(k));}
+  return h('div',{className:'efw-stack','data-efw-motion-sequence':'true'},
+    h('strong',null,study.title+' · representative '+(study.index+1)+' · '+props.branch+' branch'),h('p',null,study.question),h('small',null,study.kind==='pounce'?'Look for preparation, the raised body and recovery.':study.kind==='bound'?'Look for ground support, all four paws raised, and landing. Compare whether the hind paws are behind or reaching forward.':'Follow the left '+(study.species==='rabbits'?'hind paw':'forepaw')+': it leaves rear support, swings forward and returns to ground ahead of the body.'),
+    h('div',{className:'efw-motion-samples'},study.layout.map(function(k){var sample=study.samples[k];return h('button',{type:'button',className:'efw-motion-sample',key:k,'data-efw-motion-sample':String(k),'aria-pressed':props.cursor===sample.step&&props.focus===study.species&&props.representativeIndex===study.index,onClick:function(){props.onInspect(k);}},h('strong',null,'Snapshot '+letter(k)),shown?h(props.React.Fragment,null,h('span',null,sample.label+' · time '+(sample.step/10).toFixed(1)),h('small',null,study.metricName+': '+sample.value.toFixed(3)),h('small',null,'Supporting paws: '+sample.supportFeet+' of 4'),h('small',null,'Left forepaw '+(sample.foreContact?'on ground':'raised')+' · left hind paw '+(sample.hindContact?'on ground':'raised'))):h('span',null,'Inspect this pose in the scene.'));})),
+    h('div',{className:'efw-motion-samples','aria-label':__alloT("stem.ecosystem.a11y_arrange_movement_snapshots", "Arrange movement snapshots")},['First','Middle','Last'].map(function(label,k){return h('label',{key:label},label,h('select',{'aria-label':label+' movement snapshot',value:[0,1,2,'0','1','2'].indexOf(order[k])>=0?String(order[k]):'',onChange:function(e){var next=order.slice();next[k]=e.target.value;props.onChange({order:next,checked:false,sequenceAttempted:false,saved:false});}},h('option',{value:''},'Choose snapshot'),study.layout.map(function(sample){return h('option',{key:sample,value:String(sample)},'Snapshot '+letter(sample));})));})),
+    h('button',{type:'button',className:'efw-primary',onClick:function(){props.onChange(result.valid?{checked:true,sequenceAttempted:true,firstOrder:firstOrder||order.slice(),saved:false}:{checked:false,sequenceAttempted:true});}},'Check my sequence'),
+    state.sequenceAttempted&&!result.valid&&h('p',{className:'efw-result',role:'status','data-efw-motion-sequence-error':'true'},result.reason),
+    shown&&h('div',{className:'efw-result','data-efw-motion-feedback':'true',role:'status'},h('strong',null,result.correct?'Your sequence matches the recorded movement.':'Compare your order with the recorded movement.'),h('p',null,'Recorded order: '+[0,1,2].map(function(k){return 'Snapshot '+letter(k);}).join(' → ')+'.'),h('p',null,study.kind==='pounce'?'The preparation precedes the airborne pose; recovery follows landing. The raised body and tucked paws support that order. A pounce does not establish a capture.':study.kind==='bound'?'The rabbit moves from ground support to a brief shared flight and back to ground contact. The middle sample has no supporting paws and a positive flight lift.':study.species==='rabbits'?'The hind paw lifts and returns to the ground. Check the support count: a raised hind paw does not by itself establish that the whole animal is airborne.':'A forepaw leaves the ground and returns while the other paws provide support. Compare the opposite diagonal pair in the scene.'),h('p',null,'Your first submitted order: '+(state.firstOrder||order).map(function(k){return 'Snapshot '+letter(Number(k));}).join(' → ')+'.')),
+    h('button',{type:'button',disabled:!shown||props.reduced||!props.ready,onClick:props.onReplay},'Replay ordered movement'),
+    shown&&h('label',null,'My movement evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_movement_evidence_reflection", "Movement evidence reflection"),value:state.reflection||'',maxLength:1200,placeholder:'I placed… first because… The paws and body show…',onChange:function(e){props.onChange({reflection:e.target.value,saved:false});}})),
+    shown&&h(EcoStanceLens,{ translateStudy: __alloT,React:props.React,plan:props.stancePlan,state:state.stance,cursor:props.cursor,reduced:props.reduced,ready:props.ready,reflection:state.reflection||'',onChange:props.onChange,onInspect:props.onStanceInspect}),
+    shown&&h(EcoFootfallLab,{ translateStudy: __alloT,React:props.React,plan:props.footfallPlan,branch:props.branch,ready:props.ready,state:state.footfall,cursor:props.cursor,reduced:props.reduced,onInspect:props.onFootfallInspect||props.onInspect,onChange:function(patch){props.onChange({footfall:Object.assign({},state.footfall,patch),saved:false});}}),
+    shown&&props.onSave&&h('div',{className:'efw-row'},h('button',{type:'button',disabled:props.slots<1||!!state.saved||ecoMeadowFootfallPending(props.footfallPlan,study,props.branch,state.footfall),onClick:props.onSave},'Save movement observation'),h('small',{role:'status'},state.saved?'Movement evidence saved to the field notebook.':props.slots<1?'Notebook full. Export notes, then remove an observation to make room.':ecoMeadowFootfallPending(props.footfallPlan,study,props.branch,state.footfall)?'Recheck the revised footfall strip before saving this movement observation.':'Saves your first sequence, exact checkpoint evidence and optional reflection.')),
+    h('small',null,'Checkpoints are original samples from this branch. Paw contacts and values describe the illustrated animal, not measurements from wildlife.'),
+    props.reduced&&h('div',{'data-efw-motion-reduced':'true'},h('p',null,'Reduced motion freezes the 3D starting pose. Use these recorded descriptions to arrange the snapshots; replay is off. A negative paw angle points behind the body, and a positive angle points forward.'),h('ul',null,study.layout.map(function(k){var sample=study.samples[k];return h('li',{key:k},'Snapshot '+letter(k)+': '+(study.kind==='pounce'?sample.state+'; ':'')+sample.supportFeet+' supporting paws; '+study.metricName.toLowerCase()+' '+sample.value.toFixed(3)+'; observed paw angle '+sample.pawAngle.toFixed(2)+' degrees.');}))));
+}
+
+  function ecoMeadowMotionStudy(frames,id,index) {
+    if(id==='foxes'||id==='rabbits')return ecoMeadowMammalMotionStudy(frames,id,index);
+    if(['bluetits','owls'].indexOf(id)<0||!Array.isArray(frames)||frames.length<3||!Number.isInteger(index)||index<0||index>15)return null;
+    var poses=frames.map(function(frame){return frame&&frame[id]&&frame[id][index];});
+    var arts=poses.map(function(pose,step){return pose&&pose.active&&[pose.x,pose.z,pose.altitude,pose.distance,pose.phase].every(Number.isFinite)?ecoMeadowBirdArticulation(id,pose,step/10,false):null;});
+    function value(step){return arts[step]?(id==='bluetits'?arts[step].bodyLift:Math.abs(arts[step].wrist)*180/Math.PI):null;}
+    var best=null;
+    for(var i=1;i<arts.length-1;i++){
+      var art=arts[i],before=-1,after=-1;
+      if(!art)continue;
+      if(id==='bluetits'){
+        if(art.contact||art.bodyLift<0.025)continue;
+        for(var b=i-1;b>=Math.max(0,i-18);b--){if(!arts[b])break;if(arts[b].contact){before=b;break;}}
+        for(var a=i+1;a<=Math.min(arts.length-1,i+18);a++){if(!arts[a])break;if(arts[a].contact){after=a;break;}}
+      }else{
+        if(art.mode!=='flap')continue;
+        for(var b=i-1;b>=Math.max(0,i-7);b--){if(!arts[b])break;if(before<0||value(b)<value(before))before=b;}
+        for(var a=i+1;a<=Math.min(arts.length-1,i+7);a++){if(!arts[a])break;if(after<0||value(a)<value(after))after=a;}
+      }
+      if(before<0||after<0||value(i)<=value(before)+0.001||value(i)<=value(after)+0.001)continue;
+      if(!best||value(i)>value(best[1]))best=[before,i,after];
+    }
+    if(!best)return null;
+    var labels=id==='bluetits'?['Ground contact','Hop in progress','Ground contact again']:['Earlier wing pose','Outer wing flexed','Later wing pose'];
+    var samples=best.map(function(step,k){return {step:step,label:labels[k],value:value(step)};});
+    var max=Math.max.apply(Math,samples.map(function(sample){return sample.value;}));
+    return {id:id+':'+index+':'+best.join(':'),species:id,index:index,title:id==='bluetits'?'Follow one small-bird hop':'Follow a flexible wingbeat',question:id==='bluetits'?'Which sample lifts the body highest above its resting pose?':'Which sample bends the outer wing most?',metricName:id==='bluetits'?'Body lift (scene units)':'Outer-wing bend (degrees)',samples:samples,target:samples.map(function(sample,k){return sample.value===max?k:-1;}).filter(function(k){return k>=0;})};
+  }
+
+  function EcoMovementStudy(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,study=props.study,state=props.state||{};
+    return h('section',{className:'efw-motion-study efw-stack','data-efw-movement-study':'true','aria-label':__alloT("stem.ecosystem.a11y_movement_detective", "Movement detective")},
+      h('style',null,`.efw-motion-study{border:1px solid var(--fw-line);border-radius:12px;padding:16px;background:var(--fw-panel);min-width:0}.efw-motion-study h4{margin:0}.efw-motion-samples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw .efw-motion-sample{display:grid;gap:5px;text-align:left;min-width:0;padding:12px}.efw .efw-motion-sample[aria-pressed=true]{border:2px solid var(--fw-accent);background:var(--fw-tint)}.efw-motion-study p,.efw-motion-study strong{overflow-wrap:anywhere}@media(max-width:600px){.efw-motion-samples{grid-template-columns:1fr}.efw-motion-study{padding:12px}}`),
+      h('h4',null,'Movement detective'),h('p',null,'Inspect a fox movement, rabbit bound, hop or wingbeat. Reconstruct the action or compare body parts and contact with the ground, then check your evidence.'),
+      h('div',{className:'efw-row'},h('button',{type:'button',disabled:!props.studies.bluetits,onClick:function(){props.onSelect('bluetits');}},'Study a blue-tit hop'),h('button',{type:'button',disabled:!props.studies.owls,onClick:function(){props.onSelect('owls');}},'Study an owl wingbeat')),
+      h('div',{className:'efw-row'},h('button',{type:'button',disabled:!props.studies.rabbits,onClick:function(){props.onSelect('rabbits');}},'Study a rabbit movement'),h('button',{type:'button',disabled:!props.studies.foxes,onClick:function(){props.onSelect('foxes');}},'Study a fox movement')),
+      (!props.studies.rabbits||!props.studies.foxes)&&h('small',null,'A mammal study needs a complete recorded movement with that animal present. Try Rabbit neighbors or Shared-prey web.'),
+      !props.studies.bluetits&&h('small',null,'A hop study needs blue tits and a complete recorded hop. Try the Insect food shortage community.'),
+      !props.studies.owls&&h('small',null,'A wingbeat study needs an owl present through a recorded flapping cycle.'),
+      study&&study.sequence?h(EcoMammalSequence,props):study&&h('div',{className:'efw-stack'},h('strong',null,study.title+' · representative '+(study.index+1)+' · '+props.branch+' branch'),h('p',null,study.question),
+        h('div',{className:'efw-motion-samples'},study.samples.map(function(sample,k){return h('button',{type:'button',className:'efw-motion-sample',key:k,'data-efw-motion-sample':String(k),'aria-pressed':props.cursor===sample.step&&props.focus===study.species&&props.representativeIndex===study.index,onClick:function(){props.onInspect(k);}},h('strong',null,sample.label),h('span',null,'Time '+(sample.step/10).toFixed(1)),h('small',null,study.metricName+': '+sample.value.toFixed(3)));})),
+        h('button',{type:'button',disabled:props.reduced||!props.ready,onClick:props.onReplay},'Replay movement'),
+        h('label',null,'My evidence choice',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_movement_evidence_choice", "Movement evidence choice"),value:['0','1','2'].indexOf(state.answer)>=0?state.answer:'',onChange:function(e){props.onChange({answer:e.target.value,checked:false});}},h('option',{value:''},'Choose a sample'),study.samples.map(function(sample,k){return h('option',{key:k,value:String(k)},sample.label+' · time '+(sample.step/10).toFixed(1));}))),
+        h('button',{type:'button',className:'efw-primary',disabled:['0','1','2'].indexOf(state.answer)<0,onClick:function(){props.onChange({checked:true});}},'Check movement evidence'),
+        state.checked&&h('div',{className:'efw-result','data-efw-motion-feedback':'true',role:'status'},h('strong',null,study.target.indexOf(Number(state.answer))>=0?'Your choice matches the recorded movement.':'Compare again with the recorded movement.'),h('p',null,'Greatest '+study.metricName.toLowerCase()+': '+study.samples[study.target[0]].value.toFixed(3)+' at time '+(study.samples[study.target[0]].step/10).toFixed(1)+'.'),h('p',null,study.species==='bluetits'?'Both feet leave the ground during a hop, then return to contact. Compare the leg tuck and tail balance between samples.':'The shoulder and outer wing change angle at different times. Compare the changing feather outline with a rigid wing shape.')),
+        h('small',null,'These values describe the illustrated pose, not measurements from a real bird. Use the observations in your fieldwork explanation.'),
+        props.reduced&&h('p',{'data-efw-motion-reduced':'true'},'Reduced motion freezes the 3D starting pose. The three recorded values remain available; replay is off.')));
+  }
+
+  // A short, fixed-pair recording tests a claim about *every recorded step*.
+  // Endpoint differences alone never establish that stronger claim.
+  function ecoMeadowHeadlinePoint(raw,actor,cue,step) {
+    if(!raw||raw.step!==step||!Number.isFinite(raw.gap)||raw.gap<0)return null;
+    var identities=[actor,cue],points=[raw.actor,raw.cue],copy=[];
+    for(var k=0;k<2;k++){
+      var p=points[k],identity=identities[k];
+      if(!p||p.id!==identity.id||p.index!==identity.index||![p.x,p.z].every(Number.isFinite)||Math.abs(p.x)>=1000||Math.abs(p.z)>=1000||typeof p.state!=='string'||!p.state||p.state.length>80)return null;
+      copy.push({id:p.id,index:p.index,x:p.x,z:p.z,state:p.state});
+    }
+    if(Math.abs(raw.gap-Math.hypot(copy[1].x-copy[0].x,copy[1].z-copy[0].z))>1e-9)return null;
+    return {step:step,actor:copy[0],cue:copy[1],gap:raw.gap};
+  }
+
+  function ecoMeadowHeadlineSnapshot(raw) {
+    var ids=['rabbits','voles','foxes','owls','caterpillars','bluetits'];
+    if(!raw||raw.version!==1||!Number.isInteger(raw.before)||!Number.isInteger(raw.after)||raw.before<0||raw.after>240||raw.after-raw.before<3||raw.after-raw.before>60||!Array.isArray(raw.series)||raw.series.length!==raw.after-raw.before+1)return null;
+    var actor=raw.actor,cue=raw.cue;
+    if(!actor||!cue||![actor,cue].every(function(identity){return ids.indexOf(identity.id)>=0&&Number.isInteger(identity.index)&&identity.index>=0&&identity.index<16;})||(actor.id===cue.id&&actor.index===cue.index))return null;
+    var series=raw.series.map(function(point,k){return ecoMeadowHeadlinePoint(point,actor,cue,raw.before+k);});
+    if(series.some(function(point){return !point;}))return null;
+    var net=series[series.length-1].gap-series[0].gap;
+    if(Math.abs(net)<=1e-9)return null;
+    var direction=net>0?'increased':'decreased';
+    if(raw.direction!=null&&raw.direction!==direction)return null;
+    return {version:1,id:'headline:'+actor.id+':'+actor.index+':'+cue.id+':'+cue.index+':'+raw.before+':'+raw.after,before:raw.before,after:raw.after,actor:{id:actor.id,index:actor.index},cue:{id:cue.id,index:cue.index},direction:direction,series:series};
+  }
+
+  function ecoMeadowHeadlineTrial(frames,encounter) {
+    if(!Array.isArray(frames)||!encounter||!Number.isInteger(encounter.before)||!Number.isInteger(encounter.after)||encounter.after-encounter.before<3||encounter.after-encounter.before>60)return null;
+    var series=[];
+    for(var step=encounter.before;step<=encounter.after;step++){
+      var point=ecoMeadowPairMeasurement(frames,encounter,step);if(!point)return null;series.push(point);
+    }
+    return ecoMeadowHeadlineSnapshot({version:1,before:encounter.before,after:encounter.after,actor:encounter.actor,cue:encounter.cue,series:series});
+  }
+
+  function ecoMeadowHeadlineInterval(raw,endStep) {
+    var trial=ecoMeadowHeadlineSnapshot(raw);
+    if(!trial||!Number.isInteger(endStep)||endStep<=trial.before||endStep>trial.after)return null;
+    var offset=endStep-trial.before,start=trial.series[offset-1],end=trial.series[offset],delta=end.gap-start.gap;
+    return {id:'interval:'+endStep,start:start,end:end,delta:delta,classification:delta*(trial.direction==='increased'?1:-1)>1e-9?'supports':'challenges'};
+  }
+
+  function ecoMeadowHeadlineSorts(raw) {
+    return Array.isArray(raw)&&raw.length===3&&raw.every(function(value){return value==='supports'||value==='challenges';})?raw.slice():null;
+  }
+
+  function ecoMeadowHeadlineCheck(raw,pins,sorts,firstSorts,verdict) {
+    var trial=ecoMeadowHeadlineSnapshot(raw),choices=ecoMeadowHeadlineSorts(sorts),first=firstSorts==null?null:ecoMeadowHeadlineSorts(firstSorts);
+    if(!trial||!Array.isArray(pins)||pins.length!==3||new Set(pins).size!==3||!choices||(firstSorts!=null&&!first)||['supported','challenged','unsure'].indexOf(verdict)<0)return null;
+    var cards=pins.map(function(endStep){return ecoMeadowHeadlineInterval(trial,endStep);});if(cards.some(function(card){return !card;}))return null;
+    var challenges=[];
+    for(var step=trial.before+1;step<=trial.after;step++)if(ecoMeadowHeadlineInterval(trial,step).classification==='challenges')challenges.push(step);
+    var matches=0,firstMatches=0;cards.forEach(function(card,k){if(choices[k]===card.classification)matches++;if(first&&first[k]===card.classification)firstMatches++;});
+    var expected=challenges.length?'challenged':'supported';
+    return {matches:matches,firstMatches:first?firstMatches:null,total:3,cards:cards,intervalCount:trial.after-trial.before,challengeSteps:challenges,supportCount:trial.after-trial.before-challenges.length,expected:expected,verdictCorrect:verdict==='unsure'?null:verdict===expected};
+  }
+
+  function ecoWebHeadlineRecord(raw,sighting,focus,noteStep) {
+    if(!raw||raw.version!==1||!sighting||raw.branch!==sighting.branch||['baseline','experiment'].indexOf(raw.branch)<0||['supported','challenged','unsure'].indexOf(raw.firstVerdict)<0)return null;
+    var trial=ecoMeadowHeadlineSnapshot(raw.trial);
+    if(!trial||trial.actor.id!==focus||trial.actor.index!==sighting.actorIndex||trial.cue.id!==sighting.cueId||trial.cue.index!==sighting.cueIndex||!sighting.before||!sighting.after||trial.before!==sighting.before.step||trial.after!==sighting.after.step||trial.series[0].actor.state!==sighting.before.state||trial.series[trial.series.length-1].actor.state!==sighting.after.state)return null;
+    if(noteStep!=null&&(!Number.isInteger(noteStep)||noteStep<trial.before||noteStep>trial.after||trial.series[noteStep-trial.before].actor.state!==sighting.state))return null;
+    if(!ecoMeadowHeadlineCheck(trial,raw.pins,raw.sorts,raw.firstSorts,raw.verdict)||!ecoMeadowHeadlineSorts(raw.firstSorts))return null;
+    return {version:1,branch:raw.branch,trial:trial,pins:raw.pins.slice(),sorts:raw.sorts.slice(),firstSorts:raw.firstSorts.slice(),verdict:raw.verdict,firstVerdict:raw.firstVerdict,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+  }
+
+  function ecoMeadowHeadlineMatches(raw,frames,encounter) {
+    var frozen=raw&&ecoMeadowHeadlineSnapshot(raw.trial),current=ecoMeadowHeadlineTrial(frames,encounter);
+    return !!frozen&&!!current&&JSON.stringify(frozen)===JSON.stringify(current);
+  }
+
+
+  function EcoHeadlineTrial(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},trial=ecoMeadowHeadlineTrial(props.frames,props.encounter),verdicts={supported:'I expect the headline to hold',challenged:'I expect a counterexample',unsure:'I need more evidence'};
+    var started=!!(s.started&&Object.prototype.hasOwnProperty.call(verdicts,s.firstVerdict)),pins=Array.isArray(s.pins)?s.pins:[],sorts=Array.isArray(s.sorts)?s.sorts:[],visited=Array.isArray(s.visited)?s.visited:[];
+    var draft=trial?Math.max(trial.before+1,Math.min(trial.after,Number.isInteger(s.draftStep)?s.draftStep:trial.before+1)):0,card=trial?ecoMeadowHeadlineInterval(trial,draft):null;
+    var check=trial?ecoMeadowHeadlineCheck(trial,pins,sorts,s.firstSorts,s.verdict):null,shown=!!(s.checked&&s.firstSorts&&check),canPin=started&&card&&pins.length<3&&pins.indexOf(draft)<0&&[draft-1,draft].every(function(step){return visited.indexOf(step)>=0;});
+    function change(patch){props.onChange(function(previous){var current=previous||{};return Object.assign({},current,{saved:false},typeof patch==='function'?patch(current):patch);});}
+    function number(value){return (value>0?'+':'')+(value===0?'0':Number(value.toPrecision(7)).toString());}
+    function inspect(step){
+      if(!started||!trial)return;
+      var next=function(previous){var current=previous||{},seen=Array.isArray(current.visited)?current.visited:[];return Object.assign({},current,{saved:false,visited:seen.indexOf(step)>=0?seen.slice():seen.concat([step])});};
+      // Parent combines the inspection and this state in one update. Separate
+      // callbacks here would let a batched stale fieldwork state erase visits.
+      if(props.onInspect)props.onInspect(step,next);else props.onChange(next);
+    }
+    function classify(k,value){change(function(current){var next=Array.isArray(current.sorts)?current.sorts.slice():[];next[k]=value;return {sorts:next,checked:false};});}
+    function reset(){change({started:false,verdict:'',firstVerdict:'',pins:[],sorts:[],firstSorts:null,visited:[],checked:false,reflection:'',draftStep:trial?trial.before+1:0});}
+    function verdictButtons(){return h('div',{className:'efw-headline-choices',role:'group','aria-label':__alloT("stem.ecosystem.a11y_headline_verdict", "Headline verdict")},Object.keys(verdicts).map(function(value){return h('button',{type:'button',key:value,'aria-pressed':s.verdict===value,onClick:function(){change({verdict:value,checked:false});}},verdicts[value]);}));}
+    var graph=null;
+    if(shown){
+      var minimum=Math.min.apply(Math,trial.series.map(function(p){return p.gap;})),maximum=Math.max.apply(Math,trial.series.map(function(p){return p.gap;})),span=maximum-minimum;
+      function x(step){return 60+(step-trial.before)/(trial.after-trial.before)*236;}function y(gap){return 142-(gap-minimum)/span*110;}
+      graph=h('svg',{viewBox:'0 0 320 190',role:'img','aria-label':__alloT("stem.ecosystem.a11y_complete_recorded_gap_series_for_the_fixed_pair", "Complete recorded gap series for the fixed pair"),'data-efw-headline-chart':'true'},h('title',null,'Every recorded gap from time '+(trial.before/10)+' to '+(trial.after/10)),h('desc',null,check.supportCount+' intervals support the headline and '+check.challengeSteps.length+' challenge it. The vertical axis is zoomed to the recorded gap range, rather than starting at zero. This is a connected display of recorded checkpoints, not a measurement of continuous motion.'),h('rect',{x:1,y:1,width:318,height:188,rx:8,fill:'#102a30',stroke:'#7895a1'}),h('polyline',{points:trial.series.map(function(point){return x(point.step)+','+y(point.gap);}).join(' '),fill:'none',stroke:'#67e8f9',strokeWidth:2}),check.challengeSteps.map(function(step){var point=trial.series[step-trial.before];return h('circle',{key:step,cx:x(step),cy:y(point.gap),r:4,fill:'#fbbf24'});}),h('line',{x1:60,x2:60,y1:32,y2:142,stroke:'#7895a1'}),h('line',{x1:60,x2:296,y1:142,y2:142,stroke:'#7895a1'}),h('text',{x:52,y:36,textAnchor:'end',fill:'#c8dce0',fontSize:12},Number(maximum.toPrecision(3)).toString()),h('text',{x:52,y:146,textAnchor:'end',fill:'#c8dce0',fontSize:12},Number(minimum.toPrecision(3)).toString()),h('text',{x:12,y:19,fill:'#f8fafc',fontSize:14},'Gap · zoomed recorded range'),h('text',{x:12,y:162,fill:'#c8dce0',fontSize:14},'Time '+(trial.before/10)+' → '+(trial.after/10)),h('text',{x:12,y:180,fill:'#fbbf24',fontSize:13},'Gold marks a challenging interval’s end'));
+    }
+    return h('details',{className:'efw-headline-trial','data-efw-headline-trial':'true',open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'Put the headline on trial'),
+      h('style',null,`.efw-headline-trial{border:1px solid var(--fw-line);border-radius:10px;padding:12px;min-width:0}.efw-headline-trial summary{font-weight:750;cursor:pointer}.efw-headline-trial>div{margin-top:12px}.efw-headline-trial p,.efw-headline-trial small,.efw-headline-trial strong{overflow-wrap:anywhere}.efw-headline-hero{padding:14px;border-left:4px solid var(--fw-accent);background:var(--fw-tint);border-radius:6px}.efw-headline-hero strong{display:block;font-size:18px}.efw-headline-choices{display:flex;gap:8px;flex-wrap:wrap}.efw-headline-trial button[aria-pressed=true]{outline:2px solid var(--fw-accent);outline-offset:-2px;background:var(--fw-tint)}.efw-headline-workbench{border:1px dashed var(--fw-line);padding:12px;border-radius:8px;display:grid;gap:10px}.efw-headline-trial input[type=range]{width:100%}.efw-headline-pins{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw-headline-pin{padding:12px;border:1px solid var(--fw-line);border-radius:8px;display:grid;gap:8px;align-content:start;min-width:0}.efw-headline-pin[data-bin=supports]{border-top:4px solid #0e7490}.efw-headline-pin[data-bin=challenges]{border-top:4px solid #a16207}.efw-headline-pin .efw-headline-choices{display:grid;grid-template-columns:1fr}.efw-headline-audit{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px}.efw-headline-trial svg{width:100%;height:auto;display:block}.efw-headline-trial table{width:100%;font-size:12px;border-collapse:collapse}.efw-headline-trial td,.efw-headline-trial th{padding:6px;border-bottom:1px solid var(--fw-line);text-align:left}.efw-headline-trial textarea{display:block;width:100%;max-width:100%}@media(max-width:700px){.efw-headline-pins,.efw-headline-audit{grid-template-columns:1fr}.efw-headline-choices>button{flex:1 1 130px}}`),
+      h('div',{className:'efw-stack'},!trial?h('p',{'data-efw-headline-unavailable':'true'},'This trial needs a complete fixed pair across 3–60 recorded intervals and a nonzero endpoint gap change. Choose another encounter, such as a short listening or feeding-neighbor encounter. No missing positions are invented.'):h(props.React.Fragment,null,
+        h('div',{className:'efw-headline-hero'},h('small',null,'A headline suggested by two endpoints'),h('strong',null,'“The gap '+trial.direction+' at every recorded step.”'),h('p',null,'At time '+(trial.before/10).toFixed(1)+', the gap was '+number(trial.series[0].gap)+'. At time '+(trial.after/10).toFixed(1)+', it was '+number(trial.series[trial.series.length-1].gap)+' illustrative scene units. Does the whole recording fit that headline?')),
+        h('small',null,'This is the same selected animal and partner throughout the encounter. These are same-time horizontal gaps, not the previous-position distances used by behavior rules.'),
+        verdictButtons(),
+        !started?h(props.React.Fragment,null,h('button',{type:'button',className:'efw-primary',disabled:!Object.prototype.hasOwnProperty.call(verdicts,s.verdict),onClick:function(){change({started:true,firstVerdict:s.verdict,visited:[],pins:[],sorts:[],firstSorts:null,checked:false});}},'Commit verdict and investigate'),h('small',null,'Commit an initial expectation before inspecting evidence. It stays beside your later verdict.')):h(props.React.Fragment,null,
+          h('p',null,'First verdict: '+verdicts[s.firstVerdict]+'. Pin three distinct adjacent intervals. For each one, inspect both endpoints, then decide whether it supports or challenges the every-step headline.'),
+          h('div',{className:'efw-headline-workbench','data-efw-headline-workbench':'true'},h('label',null,'Choose an interval · time '+((draft-1)/10).toFixed(1)+' → '+(draft/10).toFixed(1),h('input',{type:'range',min:trial.before+1,max:trial.after,step:1,value:draft,'aria-label':__alloT("stem.ecosystem.a11y_headline_evidence_interval", "Headline evidence interval"),onChange:function(e){change({draftStep:Number(e.target.value)});}})),
+            h('div',{className:'efw-row'},h('button',{type:'button',onClick:function(){inspect(draft-1);}},'Inspect interval start'),h('button',{type:'button',onClick:function(){inspect(draft);}},'Inspect interval end')),
+            h('p',null,'Gap '+number(card.start.gap)+' → '+number(card.end.gap)+'; change '+number(card.delta)+' scene units.'),
+            h('small',null,'Selected animal: '+card.start.actor.state+' → '+card.end.actor.state+'. Partner: '+card.start.cue.state+' → '+card.end.cue.state+'.'),
+            h('small',{'data-efw-headline-inspected':'true'},[draft-1,draft].map(function(step){return 'Time '+(step/10).toFixed(1)+': '+(visited.indexOf(step)>=0?'inspected':'not inspected');}).join(' · ')),
+            h('button',{type:'button',disabled:!canPin,onClick:function(){change({pins:pins.concat([draft]),sorts:sorts.concat(['']),checked:false});}},pins.indexOf(draft)>=0?'This interval is already pinned':pins.length===3?'Three intervals pinned':'Pin this interval')),
+          h('div',{className:'efw-headline-pins','data-efw-headline-pins':'true'},pins.map(function(step,k){var pinned=ecoMeadowHeadlineInterval(trial,step);if(!pinned)return null;return h('article',{key:step,className:'efw-headline-pin','data-efw-headline-card':String(k),'data-bin':sorts[k]||'unclassified'},h('strong',null,'Evidence '+(k+1)+' · '+(pinned.start.step/10).toFixed(1)+' → '+(pinned.end.step/10).toFixed(1)),h('p',null,'Gap '+number(pinned.start.gap)+' → '+number(pinned.end.gap)),h('strong',null,'Change '+number(pinned.delta)),h('div',{className:'efw-headline-choices',role:'group','aria-label':'Classify headline evidence '+(k+1)},['supports','challenges'].map(function(value){return h('button',{type:'button',key:value,'aria-pressed':sorts[k]===value,onClick:function(){classify(k,value);}},value==='supports'?'Supports headline':'Challenges headline');})),shown&&h('small',null,'Recorded comparison: '+pinned.classification+'. First sorting: '+s.firstSorts[k]+'.'),h('button',{type:'button',onClick:function(){inspect(step);}},'Reinspect evidence '+(k+1)),!s.firstSorts&&h('button',{type:'button',onClick:function(){change({pins:pins.filter(function(_,j){return j!==k;}),sorts:sorts.filter(function(_,j){return j!==k;}),checked:false});}},'Remove evidence '+(k+1)));})),
+          h('button',{type:'button',className:'efw-primary',disabled:!check||!pins.every(function(step){return visited.indexOf(step-1)>=0&&visited.indexOf(step)>=0;}),onClick:function(){change({checked:true,firstSorts:s.firstSorts||sorts.slice()});}},s.firstSorts?'Check revised evidence case':'Check evidence and audit full recording'),
+          !check&&h('small',{role:'status'},'Pin three distinct intervals and classify every card. An unanswered card is not a neutral result.'),
+          shown&&h('div',{className:'efw-result efw-stack','data-efw-headline-feedback':'true',role:'status'},h('strong',null,check.matches+' of 3 evidence cards classified correctly. First case: '+check.firstMatches+' of 3.'),
+            h('div',{className:'efw-headline-audit'},graph,h('div',{className:'efw-stack'},h('strong',null,'Full recording audit: '+check.supportCount+' supporting and '+check.challengeSteps.length+' challenging intervals out of '+check.intervalCount+'.'),h('p',null,check.challengeSteps.length?'One counterexample is enough to challenge “at every recorded step.” The first challenging interval is time '+((check.challengeSteps[0]-1)/10).toFixed(1)+' → '+(check.challengeSteps[0]/10).toFixed(1)+'.':'Every interval in this complete recording fits the headline. Your three cards alone could not establish that result; the full audit checked all '+check.intervalCount+' intervals.'),h('p',null,check.verdictCorrect===null?'The complete recording now gives you evidence for a verdict.':check.verdictCorrect?'Your current verdict fits the complete recorded window.':'Revise your verdict using the full recording audit.'),check.challengeSteps.length>0&&h('button',{type:'button',onClick:function(){inspect(check.challengeSteps[0]);}},'Inspect first counterexample end'))),
+            h('details',null,h('summary',null,'Exact gap evidence for the full recorded window'),h('table',null,h('caption',null,'Recorded horizontal separation · values displayed to 7 significant digits'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Time'),h('th',{scope:'col'},'Gap'),h('th',{scope:'col'},'Interval change'))),h('tbody',null,trial.series.map(function(point,k){return h('tr',{key:point.step},h('th',{scope:'row'},(point.step/10).toFixed(1)),h('td',null,number(point.gap)),h('td',null,k?number(point.gap-trial.series[k-1].gap):'Start'));})))),
+            h('label',null,'My evidence-based headline',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_headline_evidence_reflection", "Headline evidence reflection"),maxLength:1600,value:s.reflection||'',placeholder:'The endpoints suggested… My pinned interval at… supports/challenges that because… The full recorded audit shows… This does not establish…',onChange:function(e){change({reflection:e.target.value});}})),h('small',null,'Save this wildlife observation to keep the exact pair series, pinned intervals, first and latest classifications, verdicts and reflection.')),
+          h('small',null,'A supporting interval fits this headline; an opposite or unchanged gap challenges its strict “increased/decreased at every step” wording. Changes within 0.000000001 scene units are treated as unchanged to ignore numerical noise.'),
+          h('button',{type:'button',onClick:reset},'Start a new headline evidence set'),h('small',null,'Starting a new set clears this trial’s first answers and draft. Saved observations stay unchanged.')),
+        h('small',null,'Three supporting intervals do not establish an every-step claim. The graph’s vertical axis is zoomed to the recorded gap range. The full audit covers recorded samples only, not continuous movement between them. Gap changes do not establish a capture, a cause or a population effect.'),
+        props.reduced&&h('p',{'data-efw-headline-reduced':'true'},'Reduced motion keeps 3D starting poses still. Exact recorded gaps and action descriptions remain available for both endpoints of every evidence card.'))));
+  }
+
+
+  function ecoWebHeadlineText(record,includeOriginal) {
+    var trial=record&&ecoMeadowHeadlineSnapshot(record.trial),check=trial&&ecoMeadowHeadlineCheck(trial,record.pins,record.sorts,record.firstSorts,record.verdict);
+    if(!check)return [];
+    var verdicts={supported:'Supported by this complete recording',challenged:'Challenged by a recorded counterexample',unsure:'Not sure yet'},lines=[
+      'Headline on trial: The gap '+trial.direction+' at every recorded step.',
+      'Fixed pair: '+trial.actor.id+' '+(trial.actor.index+1)+' with '+trial.cue.id+' '+(trial.cue.index+1)+'; '+record.branch+' branch; time '+(trial.before/10)+' to '+(trial.after/10),
+      'First headline verdict: '+verdicts[record.firstVerdict]+'; latest verdict: '+verdicts[record.verdict],
+      'Complete recording audit: '+check.supportCount+' supporting intervals; '+check.challengeSteps.length+' challenging intervals out of '+check.intervalCount+'.'
+    ];
+    check.cards.forEach(function(card,k){lines.push('Pinned evidence '+(k+1)+': time '+(card.start.step/10)+' gap '+card.start.gap+' to time '+(card.end.step/10)+' gap '+card.end.gap+'; change '+card.delta+'; first sorting '+record.firstSorts[k]+'; latest sorting '+record.sorts[k]+'; recorded test '+card.classification);});
+    lines.push('Headline evidence reflection: '+(record.reflection||'(not recorded)'));
+    lines.push('A counterexample can challenge an every-step claim. Three supporting intervals alone do not establish it; the full audit covers only recorded steps, not continuous motion, captures or causes.');
+    if(includeOriginal)lines.push('Frozen headline-trial evidence (JSON): '+JSON.stringify(record));
+    return lines;
+  }
+
+  function EcoHeadlineNotebook(props) {
+    var h=props.React.createElement,lines=ecoWebHeadlineText(props.record,false);if(!lines.length)return null;
+    return h('details',{'data-efw-note-headline':'true'},h('summary',null,'Saved headline evidence trial'),lines.map(function(line,k){return h('p',{key:k},line);}),h('small',null,'Original pair positions and judgments stay fixed. The working trial can reopen only when the current recording matches every saved sample.'));
+  }
+
+
+  // Reuse the current recording, including every intermediate sample. The fixed
+  // projection never changes when the inspected time or camera changes.
+  function ecoMeadowPairPath(frames,encounter,measurement,interval,step){
+    var key=ecoMeadowPairMotionKey(measurement,interval);if(!key||!Number.isInteger(interval))return null;
+    var current=ecoMeadowPairEvidence(frames,encounter,measurement.samples.map(function(p){return p.step;}));
+    if(!current||ecoMeadowPairMotionKey(current,interval)!==key)return null;
+    var bounds=current.intervals[interval],samples=[];
+    for(var time=bounds.from;time<=bounds.to;time++){var sample=ecoMeadowPairMeasurement(frames,encounter,time);if(!sample)return null;samples.push(sample);}
+    var all=[];samples.forEach(function(p){all.push(p.actor,p.cue);});
+    var minX=Math.min.apply(Math,all.map(function(p){return p.x;})),maxX=Math.max.apply(Math,all.map(function(p){return p.x;})),minZ=Math.min.apply(Math,all.map(function(p){return p.z;})),maxZ=Math.max.apply(Math,all.map(function(p){return p.z;}));
+    var span=Math.max(.12,maxX-minX,maxZ-minZ)*1.3,cx=(minX+maxX)/2,cz=(minZ+maxZ)/2,scale=220/span;
+    function project(p,time){return {step:time,x:p.x,z:p.z,state:p.state,px:200+(p.x-cx)*scale,py:130+(p.z-cz)*scale};}
+    var active=Number.isInteger(step)&&step>=bounds.from&&step<=bounds.to?step-bounds.from:null;
+    return {key:key,interval:interval,from:bounds.from,to:bounds.to,span:span,scale:scale,center:{x:cx,z:cz},actor:samples.map(function(p){return project(p.actor,p.step);}),cue:samples.map(function(p){return project(p.cue,p.step);}),gaps:samples.map(function(p){return p.gap;}),actorIdentity:{id:samples[0].actor.id,index:samples[0].actor.index},cueIdentity:{id:samples[0].cue.id,index:samples[0].cue.index},active:active,step:active===null?null:step,xTicks:[cx-span/2,cx,cx+span/2],zTicks:[cz-span/2,cz,cz+span/2]};
+  }
+  window.StemLab.ecosystemFoodWeb.pairPath=ecoMeadowPairPath;
+
+  function EcoPairMotionInquiry(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var React=props.React,h=React.createElement,s=props.state||{},measurement=props.measurement,key=null,root=React.useRef(null),focusState=React.useState(null),focusRequest=focusState[0],setFocusRequest=focusState[1];
+    var labels={actor:'Selected animal traveled farther',cue:'Partner traveled farther',similar:'Similar recorded path lengths',unsure:'Not sure yet'},started=!!(s.started===true||s.firstChoice!=null),interval=Number.isInteger(s.interval)&&s.interval>=0&&s.interval<2?s.interval:0,key=ecoMeadowPairMotionKey(measurement,interval),matches=!!key&&s.sourceKey===key,point=measurement&&measurement.intervals[interval],check=key&&ecoMeadowPairMotionCheck(measurement,interval,s.choice,s.firstChoice),visited=Array.isArray(s.visited)?s.visited:[],seen=point?[point.from,point.to].filter(function(step){return visited.indexOf(step)>=0;}):[],shown=!!(started&&matches&&s.checked&&ecoMeadowPairMotionEvidence(measurement,s));
+    function change(patch){props.onChange(function(previous){var current=previous||{};return Object.assign({},current,typeof patch==='function'?patch(current):patch);});}
+    React.useEffect(function(){if(!focusRequest)return;if(focusRequest===key&&root.current){var control=root.current.querySelector('[aria-label="Motion comparison choice"]');if(control){if(control.scrollIntoView)control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});}}setFocusRequest(null);},[focusRequest,key]);
+    function commit(){change(function(current){if(current.started===true||current.firstChoice!=null)return {};var k=Number.isInteger(current.interval)&&current.interval>=0&&current.interval<2?current.interval:0,now=ecoMeadowPairMotionCheck(measurement,k,current.choice);if(!now)return {};return {version:1,sourceKey:now.sourceKey,interval:k,firstChoice:current.choice,choice:current.choice,started:true,visited:[],checked:false,open:true};});}
+    function inspect(step){if(!started||!matches||!point||[point.from,point.to].indexOf(step)<0)return;change(function(current){if(current.sourceKey!==key)return {};var allowed=[point.from,point.to],next=Array.isArray(current.visited)?current.visited.filter(function(value,k,array){return allowed.indexOf(value)>=0&&array.indexOf(value)===k;}):[];if(next.indexOf(step)<0)next.push(step);return {visited:next};});props.onInspect(step);setFocusRequest(key);}
+    var path=shown?ecoMeadowPairPath(props.frames,props.encounter,measurement,interval,props.cursor):null;
+    function inspectPath(step){if(!path||!Number.isInteger(step)||step<path.from||step>path.to)return;props.onInspect(step,true,{sourceKey:key,interval:interval});if(props.reduced){var control=root.current&&root.current.querySelector('[aria-label="Recorded pair path time"]');if(control)control.focus({preventScroll:true});}}
+    function compare(){change(function(current){return ecoMeadowPairMotionEvidence(measurement,Object.assign({},current,{checked:true}))?{checked:true}:{};});}
+    function reset(){props.onChange({open:true,started:false,interval:0,choice:'',firstChoice:null,visited:[],checked:false});}
+    if(!key)return null;
+    return h('details',{'data-efw-pair-motion':'true',ref:root,open:!!s.open,onToggle:function(event){if(event.currentTarget.open!==!!s.open)change({open:event.currentTarget.open});}},
+      h('summary',null,'Test another explanation'),
+      h('div',{className:'efw-stack',style:{marginTop:12}},
+        h('p',null,'A changing gap can reflect movement by either animal. Choose one measured interval and compare how far each traveled. Path totals may already be visible above; your first submitted choice is kept without claiming an unseen-evidence prediction.'),
+        !started?h(React.Fragment,null,
+          h('label',null,'Measured interval',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_motion_comparison_interval", "Motion comparison interval"),value:String(interval),onChange:function(event){var value=Number(event.target.value);change(function(current){return current.started===true||current.firstChoice!=null?{}:{interval:value,checked:false};});}},measurement.intervals.map(function(row,k){return h('option',{key:k,value:String(k)},['A → B','B → C'][k]+' · time '+(row.from/10).toFixed(1)+' to '+(row.to/10).toFixed(1));})))):h('p',null,'Fixed comparison: '+['A → B','B → C'][interval]+' · time '+(point.from/10).toFixed(1)+' to '+(point.to/10).toFixed(1)+'. First submitted choice: '+(labels[s.firstChoice]||'Invalid saved choice')+'.'),
+        started&&!matches?h('p',{role:'status'},'These current measurements differ from the comparison’s original inputs. Start a new motion comparison to use this evidence. Your saved notebook measurements stay unchanged.'):h(React.Fragment,null,
+          h('label',null,'My motion comparison choice',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_motion_comparison_choice", "Motion comparison choice"),value:Object.prototype.hasOwnProperty.call(labels,s.choice)?s.choice:'',onChange:function(event){var value=event.target.value;change({choice:value,checked:false});}},h('option',{value:''},'Choose a comparison'),Object.keys(labels).map(function(id){return h('option',{value:id,key:id},labels[id]);}))),
+          !started?h('button',{type:'button',disabled:!check,onClick:commit},'Commit choice and inspect'):h(React.Fragment,null,
+            h('div',{className:'efw-row'},h('button',{type:'button',onClick:function(){inspect(point.from);}},'Inspect motion interval start'),h('button',{type:'button',onClick:function(){inspect(point.to);}},'Inspect motion interval end')),
+            h('p',{'data-efw-pair-motion-progress':'true',role:'status','aria-live':'polite','aria-atomic':'true'},seen.length+' of 2 interval endpoints inspected.'),
+            h('button',{type:'button',disabled:!check||seen.length!==2,onClick:compare},'Compare recorded paths'))),
+        shown&&h('div',{'data-efw-pair-motion-feedback':'true',className:'efw-result',role:'status'},h('strong',null,check.correct===null?'You kept uncertainty in your current comparison.':check.correct?'This choice matches the recorded path totals.':'Compare your choice with the recorded path totals.'),h('p',null,'Selected animal: '+check.actorTravel.toFixed(3)+'; partner: '+check.cueTravel.toFixed(3)+' scene units traveled through every recorded step in this interval. Differences of '+check.tolerance.toFixed(3)+' or less count as similar.'),h('p',null,'Net gap change: '+(check.gapChange>=0?'+':'')+check.gapChange.toFixed(3)+' scene units. Traveled path length and the change in gap answer different questions; similar lengths can include different directions.'),h('p',null,'Find another explanation for the changing gap. What evidence would distinguish movement by the partner from the selected animal’s response? Use “My pair evidence” below to explain what the measurements show and what they leave unresolved.'),h('small',null,'Path totals do not establish direction, motive, a cause of the gap change, escape or shelter benefit.')),
+        path&&h('figure',{className:'efw-pair-path','data-efw-pair-path':'true'},
+          h('figcaption',null,h('strong',null,'Trace both animals through the interval'),h('p',null,'Gold circles trace the selected '+(path.actorIdentity.id==='foxes'?'fox':'rabbit')+'; cyan diamonds trace its '+(path.cueIdentity.id==='foxes'?'fox':'rabbit')+' partner. Both use one fixed ground map with equal x and z scales. The map does not follow the camera.')),
+          h('svg',{viewBox:'0 0 360 310',role:'img','aria-label':__alloT("stem.ecosystem.a11y_recorded_two_animal_paths_on_a_fixed_ground_map", "Recorded two-animal paths on a fixed ground map")},
+            h('title',null,'Every recorded position in the selected motion interval'),h('desc',null,'Lines join consecutive original model samples, every 0.1 model time unit. The white dashed connector shows the gap at the highlighted time.'),
+            h('rect',{x:90,y:20,width:220,height:220,rx:4,fill:'#102a30',stroke:'#7895a1'}),
+            [0,1,2].map(function(k){return h('g',{key:k},h('line',{x1:90+k*110,x2:90+k*110,y1:20,y2:240,stroke:'#46616d',strokeWidth:.7}),h('line',{x1:90,x2:310,y1:20+k*110,y2:20+k*110,stroke:'#46616d',strokeWidth:.7}),h('text',{x:90+k*110,y:267,textAnchor:'middle',fill:'currentColor',fontSize:16},path.xTicks[k].toFixed(3)),h('text',{x:78,y:24+k*110,textAnchor:'end',fill:'currentColor',fontSize:16},path.zTicks[k].toFixed(3)));}),
+            h('text',{x:200,y:298,textAnchor:'middle',fill:'currentColor',fontSize:16},'x (scene units) →'),h('text',{transform:'translate(22 130) rotate(-90)',textAnchor:'middle',fill:'currentColor',fontSize:16},'z (scene units) ↓'),
+            ['actor','cue'].map(function(kind){return h('polyline',{key:kind,'data-efw-pair-path-line':kind,points:path[kind].map(function(p){return p.px+','+p.py;}).join(' '),fill:'none',stroke:kind==='actor'?'#facc15':'#67e8f9',strokeWidth:2.5,strokeLinejoin:'round'});}),
+            [0,path.actor.length-1].map(function(k){var a=path.actor[k],b=path.cue[k];return h('g',{key:k},h('circle',{cx:a.px,cy:a.py,r:3.5,fill:'#facc15',stroke:'#102a30',strokeWidth:1}),h('path',{d:'M '+b.px+' '+(b.py-5)+' l 5 5 l -5 5 l -5 -5 Z',fill:'#67e8f9',stroke:'#102a30',strokeWidth:1}));}),
+            path.active!==null&&h('g',{'data-efw-pair-path-active':String(path.step)},h('line',{'data-efw-pair-path-gap':'true',x1:path.actor[path.active].px,y1:path.actor[path.active].py,x2:path.cue[path.active].px,y2:path.cue[path.active].py,stroke:'#fff',strokeWidth:1.5,strokeDasharray:'4 4'}),h('circle',{cx:path.actor[path.active].px,cy:path.actor[path.active].py,r:6,fill:'#facc15',stroke:'#fff',strokeWidth:2}),h('path',{d:'M '+path.cue[path.active].px+' '+(path.cue[path.active].py-8)+' l 8 8 l -8 8 l -8 -8 Z',fill:'#67e8f9',stroke:'#fff',strokeWidth:2}))),
+          h('p',{'data-efw-pair-path-time':'true',role:'status'},path.active===null?'Choose a recorded time to highlight both animals and their gap.':'Highlighted time '+(path.step/10).toFixed(1)+' · gap '+path.gaps[path.active].toFixed(4)+' scene units.'),
+          h('label',null,'Inspect every recorded pair position',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_recorded_pair_path_time", "Recorded pair path time"),min:path.from,max:path.to,step:1,value:path.active===null?path.from:path.step,onChange:function(event){inspectPath(Number(event.target.value));}})),
+          h('div',{className:'efw-row',role:'group','aria-label':__alloT("stem.ecosystem.a11y_inspect_mapped_pair_checkpoints", "Inspect mapped pair checkpoints")},[path.from,Math.floor((path.from+path.to)/2),path.to].filter(function(time,k,times){return times.indexOf(time)===k;}).map(function(time){return h('button',{key:time,type:'button','aria-pressed':path.step===time,onClick:function(){inspectPath(time);}},'Inspect pair path time '+(time/10).toFixed(1));})),
+          path.active!==null&&h('div',{className:'efw-pair-path-coordinates'},h('table',{'data-efw-pair-path-coordinates':'true'},h('caption',null,'Original coordinates at highlighted time (scene units)'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Animal'),h('th',{scope:'col'},'x'),h('th',{scope:'col'},'z'))),h('tbody',null,['actor','cue'].map(function(kind){var p=path[kind][path.active];return h('tr',{key:kind,'data-efw-pair-path-animal':kind},h('th',{scope:'row'},kind==='actor'?'Selected · circle':'Partner · diamond'),h('td',null,p.x.toFixed(4)),h('td',null,p.z.toFixed(4)));})))),
+          h('p',null,'Move forward one recorded sample at a time. Do the animals move in similar directions, turn, or separate? Compare those positions with the net gap change above; traveled path length alone cannot tell you the direction.'),
+          h('small',null,'These are model trajectories, not measurements from wildlife. Lines join recorded positions every 0.1 model time unit; they do not establish the path between samples, intention, capture or a cause. Use “My pair evidence” to develop your explanation.'),
+          props.reduced&&h('p',{'data-efw-pair-path-reduced':'true'},'Reduced motion freezes the 3D starting poses. This map and its highlighted coordinates continue to show the original recorded positions at each inspected time.')),
+        started&&h('button',{type:'button',onClick:reset},'Start a new motion comparison'),
+        props.reduced&&h('p',{'data-efw-pair-motion-reduced':'true'},'Reduced motion freezes the 3D starting poses. Both interval inspections still show the original recorded labels and numeric measurements; the path comparison remains available.')));
+  }
+
+function EcoPairMeasurement(props) {
+  var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,m=props.measurement||{},steps=Array.isArray(m.steps)&&m.steps.length===3?m.steps:[null,null,null],encounter=props.encounter;
+    var current=ecoMeadowPairMeasurement(props.frames,encounter,props.cursor),samples=steps.map(function(step){return ecoMeadowPairMeasurement(props.frames,encounter,step);}),evidence=ecoMeadowPairEvidence(props.frames,encounter,steps);
+    var labels={closer:'The gap became smaller with no meaningful increase',farther:'The gap became larger with no meaningful decrease',mixed:'The gap changed direction',steady:'The gap stayed similar in both intervals'},letters=['A','B','C'],hasClaim=Object.prototype.hasOwnProperty.call(labels,m.claim);
+    var draft=props.React.useRef({received:props.measurement,value:m});if(draft.current.received!==props.measurement)draft.current={received:props.measurement,value:m};
+    function change(patch){props.onChange(function(previous){var current=previous||{},next=Object.assign({},current,{saved:false},typeof patch==='function'?patch(current):patch);draft.current.value=next;return next;});}
+    function record(k){if(!current)return;change(function(previous){var next=Array.isArray(previous.steps)&&previous.steps.length===3?previous.steps.slice():[null,null,null];next[k]=props.cursor;return {steps:next,claim:'',checked:false,firstClaim:'',revisionPending:!!previous.firstClaim||previous.revisionPending===true,reflection:previous.reflection||'',motion:null};});}
+    function clear(k){change(function(previous){var next=Array.isArray(previous.steps)&&previous.steps.length===3?previous.steps.slice():[null,null,null];next[k]=null;return {steps:next,claim:'',checked:false,firstClaim:'',revisionPending:!!previous.firstClaim||previous.revisionPending===true,motion:null};});}
+    var plan=null,plot=null;
+    if(evidence){
+      var points=evidence.samples.reduce(function(all,s){return all.concat([s.actor,s.cue]);},[]),xs=points.map(function(p){return p.x;}),zs=points.map(function(p){return p.z;}),minX=Math.min.apply(Math,xs),maxX=Math.max.apply(Math,xs),minZ=Math.min.apply(Math,zs),maxZ=Math.max.apply(Math,zs),span=Math.max(0.5,maxX-minX,maxZ-minZ),midX=(minX+maxX)/2,midZ=(minZ+maxZ)/2;
+      function x(p){return 160+(p.x-midX)/span*150;}function y(p){return 105+(p.z-midZ)/span*150;}
+      var planLabels=[];
+      evidence.samples.forEach(function(s){
+        var px=x(s.actor),py=y(s.actor),offsets=[[9,-9],[9,9],[26,-9],[26,9],[-20,-9],[-20,9],[9,27]],label;
+        offsets.some(function(offset){var candidate={x:Math.max(8,Math.min(301,px+offset[0])),y:Math.max(16,Math.min(181,py+offset[1]))};if(planLabels.some(function(prior){return Math.abs(prior.x-candidate.x)<14&&Math.abs(prior.y-candidate.y)<16;}))return false;label=candidate;return true;});
+        planLabels.push(label||{x:px+9,y:Math.min(181,py+43)});
+      });
+      plan=h('svg',{viewBox:'0 0 320 210',role:'img','aria-label':__alloT("stem.ecosystem.a11y_top_down_recorded_pair_positions", "Top-down recorded pair positions"),'data-efw-pair-plan':'true'},h('title',null,'Three measured positions of the same two representatives'),h('desc',null,'Gold is the selected animal, cyan is its encounter partner. Dashed lines join their simultaneous ground positions at samples A, B and C. This is a top-down projection.'),h('rect',{x:1,y:1,width:318,height:208,rx:8,fill:'#102a30',stroke:'#7895a1'}),['actor','cue'].map(function(key){return h('polyline',{key:key,points:evidence.samples.map(function(s){return x(s[key])+','+y(s[key]);}).join(' '),fill:'none',stroke:key==='actor'?'#facc15':'#67e8f9',strokeWidth:2});}),evidence.samples.map(function(s,k){return h('g',{key:k},h('line',{x1:x(s.actor),y1:y(s.actor),x2:x(s.cue),y2:y(s.cue),stroke:'#d4e8eb',strokeDasharray:'3 4',strokeWidth:1}),h('circle',{cx:x(s.actor),cy:y(s.actor),r:4,fill:'#facc15'}),h('circle',{cx:x(s.cue),cy:y(s.cue),r:4,fill:'#67e8f9'}),h('line',{x1:x(s.actor),y1:y(s.actor),x2:planLabels[k].x-2,y2:planLabels[k].y-4,stroke:'#9cb8bf',strokeWidth:0.7}),h('text',{'data-efw-pair-plan-label':letters[k],x:planLabels[k].x,y:planLabels[k].y,fill:'#f8fafc',fontSize:12},letters[k]));}),h('text',{x:12,y:196,fill:'#c8dce0',fontSize:11},'Top view · dashed lines measure each pair gap'));
+      var gaps=evidence.samples.map(function(s){return s.gap;}),minGap=Math.max(0,Math.min.apply(Math,gaps)-0.05),maxGap=Math.max.apply(Math,gaps)+0.05,gapSpan=Math.max(0.1,maxGap-minGap),start=evidence.samples[0].step,end=evidence.samples[2].step;
+      function gx(s){return 45+(s.step-start)/(end-start)*245;}function gy(s){return 155-(s.gap-minGap)/gapSpan*125;}
+      plot=h('svg',{viewBox:'0 0 320 210',role:'img','aria-label':__alloT("stem.ecosystem.a11y_measured_gap_against_time", "Measured gap against time"),'data-efw-pair-gap-plot':'true'},h('title',null,'The measured gap at three learner-chosen samples'),h('desc',null,evidence.samples.map(function(s,k){return 'Sample '+letters[k]+': time '+(s.step/10).toFixed(1)+', gap '+s.gap.toFixed(3)+' scene units.';}).join(' ')),h('rect',{x:1,y:1,width:318,height:208,rx:8,fill:'#102a30',stroke:'#7895a1'}),h('line',{x1:45,y1:25,x2:45,y2:160,stroke:'#c8dce0'}),h('line',{x1:45,y1:160,x2:295,y2:160,stroke:'#c8dce0'}),h('text',{x:8,y:20,fill:'#f8fafc',fontSize:11},'Gap (scene units)'),h('text',{x:7,y:35,fill:'#c8dce0',fontSize:10},maxGap.toFixed(2)),h('text',{x:7,y:158,fill:'#c8dce0',fontSize:10},minGap.toFixed(2)),h('polyline',{points:evidence.samples.map(function(s){return gx(s)+','+gy(s);}).join(' '),fill:'none',stroke:'#facc15',strokeWidth:2}),evidence.samples.map(function(s,k){return h('g',{key:k},h('circle',{cx:gx(s),cy:gy(s),r:4,fill:'#facc15'}),h('text',{x:gx(s),y:gy(s)-9,textAnchor:'middle',fill:'#f8fafc',fontSize:12},letters[k]),h('text',{x:gx(s),y:178,textAnchor:'middle',fill:'#c8dce0',fontSize:11},(s.step/10).toFixed(1)));}),h('text',{x:160,y:198,textAnchor:'middle',fill:'#c8dce0',fontSize:11},'Recorded time (model units)'));
+    }
+    return h('details',{className:'efw-pair-lab','data-efw-pair-lab':'true',open:!!m.open,onToggle:function(e){if(e.currentTarget.open!==!!m.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'Track this pair with a field ruler'),
+      h('style',null,`.efw-pair-lab{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0}.efw-pair-lab summary{font-weight:750;cursor:pointer}.efw-pair-lab>div{margin-top:12px}.efw-pair-samples,.efw-pair-charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw-pair-charts{grid-template-columns:repeat(2,minmax(0,1fr))}.efw-pair-samples>div{display:grid;gap:6px;align-content:start;border:1px solid var(--fw-line);border-radius:8px;padding:10px;min-width:0}.efw-pair-lab svg{display:block;width:100%;height:auto}.efw-pair-lab p,.efw-pair-lab small,.efw-pair-lab strong{overflow-wrap:anywhere}.efw-pair-lab input[type=range]{width:100%}.efw [data-efw-pair-motion]{border-top:1px solid var(--fw-line);padding-top:12px;min-width:0}.efw [data-efw-pair-motion] select{width:100%;min-width:0;box-sizing:border-box}.efw-pair-path{margin:0;min-width:0;max-width:560px}.efw-pair-path svg{max-width:440px}.efw-pair-path p{margin:8px 0}.efw-pair-path label{display:flex;flex-direction:column;gap:10px;margin:8px 0 12px}.efw-pair-path input[type=range]{margin:0}.efw-pair-path button{flex:0 1 auto;min-height:44px}.efw-pair-path-coordinates{overflow-x:auto}.efw-pair-path table{width:100%;border-collapse:collapse;font-size:13px}.efw-pair-path th,.efw-pair-path td{text-align:left;padding:6px;border-bottom:1px solid var(--fw-line)}@media(max-width:600px){.efw-pair-samples,.efw-pair-charts{grid-template-columns:1fr}}`),
+      h('div',{className:'efw-stack'},
+        h('p',null,'Collect three moments of the same pair. Move the time slider, inspect both animals, then record samples A, B and C in time order. The ruler measures their simultaneous ground positions.'),
+        props.onPlanView&&h('button',{type:'button',onClick:props.onPlanView},'View measured pair from above'),
+        h('label',null,'Pair measurement time · '+(props.cursor/10).toFixed(1),h('input',{type:'range',min:encounter.before,max:encounter.after,step:1,value:Math.max(encounter.before,Math.min(encounter.after,props.cursor)),'aria-label':__alloT("stem.ecosystem.a11y_pair_measurement_time", "Pair measurement time"),onChange:function(e){props.onInspect(Number(e.target.value));}})),
+        h('p',{'data-efw-pair-current':'true',role:'status'},current?'Current pair gap: '+current.gap.toFixed(3)+' scene units. Selected animal: '+current.actor.state+'; partner: '+current.cue.state+'.':'Both representatives must be present to measure this sample.'),
+        h('div',{className:'efw-pair-samples'},letters.map(function(letter,k){var sample=samples[k];return h('div',{key:letter,'data-efw-pair-sample':letter},h('strong',null,'Sample '+letter),h('button',{type:'button',disabled:!current||steps.some(function(step,i){return i!==k&&step===props.cursor;}),onClick:function(){record(k);}},'Record current sample as '+letter),sample?h(props.React.Fragment,null,h('button',{type:'button',onClick:function(){props.onInspect(sample.step,true);}},'Inspect '+letter+' · time '+(sample.step/10).toFixed(1)),h('b',null,sample.gap.toFixed(3)+' scene units'),h('small',null,'Selected: '+sample.actor.state+' · partner: '+sample.cue.state),h('button',{type:'button',onClick:function(){clear(k);}},'Clear sample '+letter)):h('small',null,'No valid sample recorded.'));})),
+        samples.every(Boolean)&&!evidence&&h('p',{className:'efw-result',role:'status','data-efw-pair-order-error':'true'},steps[0]<steps[1]&&steps[1]<steps[2]?'Both representatives must remain present throughout your interval. Choose checkpoints without a missing or invalid animal between them.':'Keep A before B and B before C. Clear or replace a sample to put your evidence in time order.'),
+        evidence&&h(props.React.Fragment,null,
+          h('div',{className:'efw-pair-charts'},plan,plot),
+          h('small',null,'For this activity, a gap change of '+evidence.tolerance.toFixed(3)+' scene units or less counts as similar.'),
+          h('label',null,'My gap claim',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_pair_gap_claim", "Pair gap claim"),value:hasClaim?m.claim:'',onChange:function(e){var value=e.target.value;change({claim:value,checked:false});}},h('option',{value:''},'Choose the pattern supported by your samples'),Object.keys(labels).map(function(value){return h('option',{value:value,key:value},labels[value]);}))),
+          h('button',{type:'button',className:'efw-primary',disabled:!hasClaim,onClick:function(){change(function(previous){if(!ecoMeadowPairEvidence(props.frames,encounter,previous.steps)||!Object.prototype.hasOwnProperty.call(labels,previous.claim))return {};return {checked:true,firstClaim:previous.firstClaim||previous.claim,revisionPending:false};});}},'Check my gap evidence'),
+          m.checked&&hasClaim&&h('div',{className:'efw-result','data-efw-pair-feedback':'true',role:'status'},h('strong',null,m.claim===evidence.trend?'Your claim matches these measured samples.':'Revisit the pattern in your measured gaps.'),h('p',null,'Recorded pattern: '+labels[evidence.trend]+'. Differences within '+evidence.tolerance.toFixed(3)+' scene units count as similar.'),h('ul',null,evidence.intervals.map(function(interval,k){return h('li',{key:k},letters[k]+' → '+letters[k+1]+': gap '+(interval.delta>=0?'+':'')+interval.delta.toFixed(3)+'; sampled path lengths: selected animal '+interval.actorTravel.toFixed(3)+', partner '+interval.cueTravel.toFixed(3)+' scene units.');})),h('p',null,'A changing gap can result from either animal moving. These checkpoints support a description of this pair; they do not establish a capture, a survival advantage or a population change.')),
+          m.checked&&h(EcoPairMotionInquiry,{ translateStudy: __alloT,React:props.React,frames:props.frames,encounter:encounter,cursor:props.cursor,measurement:evidence,state:m.motion,reduced:props.reduced,onInspect:props.onInspect,onChange:function(next){change(function(previous){return {motion:typeof next==='function'?next(previous.motion||{}):next};});}}),
+          m.checked&&h('label',null,'My pair evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_pair_measurement_reflection", "Pair measurement reflection"),value:m.reflection||'',maxLength:1200,placeholder:m.motion&&(m.motion.started===true||m.motion.firstChoice!=null)?'An alternative explanation for the changing gap is… The recorded path lengths show… To distinguish the explanations, I would also need…':'Between samples… the gap changed by… The selected animal and its partner moved… To explain why, I would also need…',onChange:function(e){change({reflection:e.target.value});}})),
+          m.checked&&h('small',null,'Save this wildlife observation to include your measured samples, first claim and reflection in the field notebook.')),
+        (!!m.firstClaim||m.revisionPending===true)&&h('div',{className:'efw-stack'},h('button',{type:'button',onClick:function(){change({steps:[null,null,null],claim:'',firstClaim:'',revisionPending:false,checked:false,reflection:'',motion:null});}},'Start a new ruler sheet'),h('small',null,'Starting a new sheet clears these working samples and first claim. Saved notebook measurements stay unchanged.')),
+        h('small',null,'Replacing a sample starts a new evidence set and clears its first claim. A previously submitted sheet must be checked again before saving.'),
+        h('small',null,'This ruler measures horizontal separation in the illustrated scene, not distance in metres. It may differ from the decision cue, which uses previous positions. Chart lines join your three checkpoints; the path totals include every recorded position between them.'),
+        props.reduced&&h('p',{'data-efw-pair-reduced':'true'},'Reduced motion keeps the 3D starting poses still. The slider, measurements and charts use the original recorded samples, so all ruler work remains available.')));
+  }
+
+  function EcoEthogram(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},identity=props.identity||{},frames=props.frames||[],ids=ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(item){return item.id;}),names={};
+    ECO_MEADOW_ETHOGRAM_CATEGORIES.forEach(function(category){names[category.id]=category.name;});
+    var fallbackStart=Math.max(0,Math.min(props.cursor||0,frames.length-41)),draftStart=Number.isInteger(s.draftStart)?s.draftStart:fallbackStart,draftInterval=Number.isInteger(s.draftInterval)?s.draftInterval:10;
+    var proposed=props.hasRun?ecoMeadowEthogramPlan(frames,identity.id,identity.index,draftStart,draftInterval):null;
+    var plan=s.plan&&s.plan.branch===props.branch?ecoMeadowEthogramPlan(frames,s.plan.species,s.plan.index,s.plan.start,s.plan.interval):null;
+    if(plan&&plan.id!==s.plan.id)plan=null;
+    var codes=Array.isArray(s.codes)&&s.codes.length===5?s.codes:['','','','',''],visited=Array.isArray(s.visited)?s.visited:[],firstCodes=Array.isArray(s.firstCodes)&&s.firstCodes.length===5?s.firstCodes:null,check=plan?ecoMeadowEthogramCheck(plan,codes,firstCodes):null;
+    var ethogramRoot=props.React.useRef(null),draft=props.React.useRef({received:props.state,value:s}),focusState=props.React.useState(null),focusRequest=focusState[0],setFocusRequest=focusState[1],handledLaunch=props.React.useRef(0);
+    if(draft.current.received!==props.state)draft.current={received:props.state,value:s};
+    var crossingPlan=props.crossingPlan,isCrossingPlan=!!(plan&&crossingPlan&&plan.id===crossingPlan.id&&JSON.stringify(plan.samples)===JSON.stringify(crossingPlan.samples)),progress=ecoMeadowEthogramProgress(plan,codes,visited);
+    function focusCode(k){var control=ethogramRoot.current&&ethogramRoot.current.querySelector('[aria-label="Ethogram sample '+(k+1)+' code"]');if(control){control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});}}
+    props.React.useEffect(function(){if(!focusRequest)return;if(plan&&focusRequest.id===plan.id)focusCode(focusRequest.index);setFocusRequest(null);},[focusRequest,plan&&plan.id]);
+    props.React.useEffect(function(){if(!props.launchSequence||handledLaunch.current===props.launchSequence||!isCrossingPlan)return;handledLaunch.current=props.launchSequence;focusCode(0);},[props.launchSequence,plan&&plan.id,isCrossingPlan]);
+    function change(patch){props.onChange(function(previous){var current=previous||{},next=Object.assign({},current,{saved:false},typeof patch==='function'?patch(current):patch);draft.current.value=next;return next;});}
+    function inspect(k,returnToCode){if(!plan||!Number.isInteger(k)||k<0||k>=5)return;change(function(current){var seen=ecoMeadowEthogramProgress(plan,current.codes,current.visited).visited;if(seen.indexOf(k)<0)seen.push(k);return {visited:seen};});props.onInspect(plan.samples[k].step,plan.species,plan.index,!!returnToCode);if(returnToCode)setFocusRequest({id:plan.id,index:k});}
+    function checkCodes(){change(function(current){var now=ecoMeadowEthogramProgress(plan,current.codes,current.visited),first=Array.isArray(current.firstCodes)&&current.firstCodes.length===5?current.firstCodes:null;if(!now||now.inspected!==5||!ecoMeadowEthogramCheck(plan,current.codes,first))return {};return {checked:true,firstCodes:first||current.codes.slice()};});}
+    function setPlan(){if(!proposed)return;change({draftStart:draftStart,draftInterval:draftInterval,plan:{id:proposed.id,species:proposed.species,index:proposed.index,start:proposed.start,interval:proposed.interval,branch:props.branch},codes:['','','','',''],firstCodes:null,visited:[0],checked:false,reflection:'',reference:null,comparison:null,saved:false});props.onInspect(proposed.samples[0].step,proposed.species,proposed.index);}
+    function save(){
+      var current=draft.current.value||{},metadata=current.plan,now=ecoMeadowEthogramProgress(plan,current.codes,current.visited),first=Array.isArray(current.firstCodes)&&current.firstCodes.length===5?current.firstCodes:null;
+      if(!plan||!metadata||metadata.id!==plan.id||metadata.branch!==props.branch||!current.checked||!first||!now||now.inspected!==5||!ecoMeadowEthogramCheck(plan,current.codes,first)||current.saved||props.slots<1||!props.onSave)return;
+      var record={version:1,branch:props.branch,species:plan.species,index:plan.index,start:plan.start,interval:plan.interval,samples:plan.samples.map(function(sample){return Object.assign({},sample);}),firstCodes:first.slice(),codes:current.codes.slice(),reflection:current.reflection||''};
+      var compared=current.comparison&&current.comparison.committed?ecoWebSamplingComparisonRecord(Object.assign({},current.comparison,{reference:current.reference}),record):null;
+      if(compared){record.reference=compared.reference;record.comparison=compared.comparison;}
+      var saved=Object.assign({},current,{saved:true});draft.current.value=saved;props.onSave({step:plan.samples[2].step,focus:plan.species,ethogram:record,state:saved});
+    }
+    function samplingControls(){return h(EcoEthogramSampling,{ translateStudy: __alloT,React:props.React,state:s,plan:plan,shown:shown,frames:frames,branch:props.branch,draftStart:draftStart,draftInterval:draftInterval,reduced:props.reduced,onChange:change,onCollect:function(candidate,meta){change({draftStart:candidate.start,draftInterval:candidate.interval,plan:{id:candidate.id,species:candidate.species,index:candidate.index,start:candidate.start,interval:candidate.interval,branch:props.branch},comparison:meta,codes:['','','','',''],firstCodes:null,visited:[0],checked:false,reflection:'',saved:false});props.onInspect(candidate.samples[0].step,candidate.species,candidate.index);}});}
+    var allVisited=!!progress&&progress.inspected===5,shown=!!(s.checked&&check&&firstCodes&&allVisited),chart=null;
+    if(shown){
+      chart=h('svg',{viewBox:'0 0 550 230',role:'img','aria-label':__alloT("stem.ecosystem.a11y_ethogram_coded_and_recorded_sample_tally", "Ethogram coded and recorded sample tally"),'data-efw-ethogram-chart':'true'},h('title',null,'Behavior counts in five equally spaced samples'),h('desc',null,check.tally.map(function(row){return row.name+': your current codes '+row.coded+' of 5; recorded labels '+row.recorded+' of 5.';}).join(' ')),h('rect',{x:1,y:1,width:548,height:228,rx:8,fill:'#102a30',stroke:'#7895a1'}),h('text',{x:12,y:20,fill:'#f8fafc',fontSize:12},'Five checkpoints · sample count, not time spent'),check.tally.map(function(row,k){var y=43+k*35;return h('g',{key:row.id},h('text',{x:12,y:y+9,fill:'#f8fafc',fontSize:11},row.name),h('rect',{x:172,y:y,width:row.coded*55,height:8,rx:2,fill:row.color}),h('rect',{x:172,y:y+11,width:row.recorded*55,height:8,rx:2,fill:'none',stroke:row.color,strokeWidth:2}),h('text',{x:460,y:y+8,fill:'#f8fafc',fontSize:11},row.coded+' coded'),h('text',{x:460,y:y+20,fill:'#c8dce0',fontSize:11},row.recorded+' recorded'));}),h('text',{x:172,y:222,fill:'#c8dce0',fontSize:10},'Solid = current learner codes · outline = recorded action labels'));
+    }
+    if(shown){
+      var mobileChart=h('div',{className:'efw-ethogram-mobile-chart','data-efw-ethogram-mobile-chart':'true',role:'img','aria-label':__alloT("stem.ecosystem.a11y_ethogram_coded_and_recorded_sample_tally", "Ethogram coded and recorded sample tally"),'aria-description':check.tally.map(function(row){return row.name+': '+row.coded+' coded and '+row.recorded+' recorded out of five.';}).join(' ')},
+        h('strong',null,'Five checkpoints · sample count'),h('p',null,'Solid bars: your codes. Outlined bars: recorded actions.'),
+        check.tally.map(function(row){return h('div',{key:row.id,className:'efw-ethogram-mobile-row'},h('strong',null,row.name),['coded','recorded'].map(function(key){return h('div',{key:key,className:'efw-ethogram-bar-row'},h('span',{className:'efw-ethogram-bar-track'},h('span',{style:{display:'block',height:'100%',boxSizing:'border-box',width:(row[key]/5*100)+'%',background:key==='coded'?row.color:'transparent',border:key==='recorded'&&row[key]?'2px solid '+row.color:'none'}})),h('span',{className:'efw-ethogram-bar-label'},row[key]+'/5 '+key));}));}));
+      chart=h('div',null,chart,mobileChart);
+    }
+    return h('details',{className:'efw-ethogram','data-efw-ethogram':'true',ref:ethogramRoot,open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'Build a five-sample ethogram'),
+      h('style',null,`.efw-ethogram{border:1px solid var(--fw-line);border-radius:10px;padding:12px;min-width:0}.efw-ethogram summary{font-weight:750;cursor:pointer}.efw-ethogram>div{margin-top:12px}.efw-ethogram-plan{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.efw-ethogram-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px}.efw-ethogram-card{display:grid;gap:8px;align-content:start;padding:12px;border:1px solid var(--fw-line);border-radius:8px;min-width:0}.efw-ethogram-card[aria-current=true]{border:2px solid var(--fw-accent);background:var(--fw-tint)}.efw-ethogram-card select{width:100%;min-width:0}.efw-ethogram svg{width:100%;height:auto;display:block}.efw-ethogram p,.efw-ethogram small,.efw-ethogram strong,.efw-ethogram li{overflow-wrap:anywhere}.efw-ethogram input[type=range]{width:100%}.efw-ethogram table{width:100%;border-collapse:collapse}.efw-ethogram th,.efw-ethogram td{padding:7px;text-align:left;border-bottom:1px solid var(--fw-line)}@media(max-width:600px){.efw-ethogram-plan{grid-template-columns:1fr}.efw-ethogram th,.efw-ethogram td{font-size:12px;padding:6px}}`),
+      h('div',{className:'efw-stack'},
+        h('style',null,`.efw-ethogram-mobile-chart{display:none;padding:12px;border:1px solid #7895a1;border-radius:8px;background:#102a30;color:#f8fafc;font-size:12px}.efw-ethogram-mobile-chart p{margin:8px 0 14px}.efw-ethogram-mobile-row{display:grid;gap:6px;margin-top:14px}.efw-ethogram-bar-row{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:8px;align-items:center}.efw-ethogram-bar-track{display:block;height:12px;background:#29434a;border-radius:2px;overflow:hidden}.efw-ethogram-bar-label{font-size:12px;white-space:nowrap}@media(max-width:600px){.efw-ethogram [data-efw-ethogram-chart]{display:none}.efw-ethogram-mobile-chart{display:block}}`),
+        h('p',null,'An ethogram is a behavior coding key. Observe one representative at five equally spaced checkpoints, record your codes, then build a sample tally.'),
+        !props.hasRun?h('p',null,'Run a food-web comparison, then select an animal in the meadow to make a sampling plan.'):h(props.React.Fragment,null,
+          h('p',null,'Plan for '+(identity.name||identity.id||'the selected animal')+' · representative '+((identity.index||0)+1)+' · '+props.branch+' branch.'),
+          h('div',{className:'efw-ethogram-plan'},
+            h('label',null,'Start time · '+(draftStart/10).toFixed(1),h('input',{type:'range',min:0,max:Math.max(0,frames.length-5),step:1,value:draftStart,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_start_time", "Ethogram start time"),disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='interval'||s.comparison.committed)),onChange:function(e){change({draftStart:Number(e.target.value)});}})),
+            h('label',null,'Sampling interval · '+(draftInterval/10).toFixed(1)+' model time units',h('input',{type:'range',min:1,max:Math.max(1,Math.min(60,Math.floor((frames.length-1)/4))),step:1,value:draftInterval,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_sampling_interval", "Ethogram sampling interval"),disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='start'||s.comparison.committed)),onChange:function(e){change({draftInterval:Number(e.target.value)});}}))),
+          proposed?h('p',{'data-efw-ethogram-preview':'true'},'Planned times: '+proposed.samples.map(function(sample){return (sample.step/10).toFixed(1);}).join(' · ')+'.'):h('p',{role:'status','data-efw-ethogram-plan-error':'true'},'Choose an animal and a window in which that representative stays present. Reduce the interval or move the start earlier if the plan runs beyond the recording.'),
+          !s.reference&&h('button',{type:'button',disabled:!proposed,onClick:setPlan},plan?'Replace with this sampling plan':'Set sampling plan'),
+          h('details',null,h('summary',null,'Behavior coding key'),h('ul',null,ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(category){return h('li',{key:category.id},h('strong',null,category.name+': '),category.description,h('small',{style:{display:'block'}},'Recorded labels: '+category.states.join(', ')+'.'));}))),
+          s.reference&&!(s.comparison&&s.comparison.committed&&shown)&&samplingControls(),
+          plan&&h('div',{className:'efw-stack','data-efw-ethogram-active':'true'},
+            h('strong',null,'Fixed plan: '+plan.species+' '+(plan.index+1)+' · '+(plan.start/10).toFixed(1)+' to '+(plan.end/10).toFixed(1)+' · every '+(plan.interval/10).toFixed(1)+' model time units'),
+            isCrossingPlan&&h('div',{className:'efw-result efw-stack','data-efw-crossing-observation-goal':'true'},h('strong',null,'Observe details inside a behavior category'),h('p',null,'Do changes in body movement and gaze always need a different behavior code? Inspect these five checkpoints around the recorded fox crossing, use the declared coding key, and compare what the category includes with what you can actually observe.'),h('p',null,'Describe any body or eye changes in your own explanation. A visible orientation does not establish the fox’s intention or what it sensed. The notebook saves the five action labels, positions, first and latest codes and your reflection; it does not save eye angles.'),props.reduced&&h('small',null,'Reduced motion freezes the 3D starting pose. Use each original recorded action and numeric position below; do not infer eye movement from the frozen scene.')),
+            progress&&h('div',{className:'efw-stack','data-efw-ethogram-next':'true'},h('p',{'data-efw-ethogram-progress':'true',role:'status','aria-live':'polite','aria-atomic':'true'},progress.inspected+' of 5 checkpoints inspected · '+progress.coded+' of 5 behavior codes chosen.'),progress.nextVisit>=0?h('button',{type:'button',onClick:function(){inspect(progress.nextVisit,true);}},'Inspect next checkpoint'):progress.nextCode>=0?h('button',{type:'button',onClick:function(){setFocusRequest({id:plan.id,index:progress.nextCode});}},'Complete next behavior code'):h('small',null,s.checked?'All five checkpoints and codes are available for review.':firstCodes?'Ready to recheck your revision. Your first codes are kept.':'Ready to check your sheet. Your first checked codes will be kept.')),
+
+            h('p',null,'Inspect each checkpoint before submitting the sheet. Use the same coding key for every sample; revising a code keeps your first submission.'),
+            h('div',{className:'efw-ethogram-cards'},plan.samples.map(function(sample,k){return h('div',{key:sample.step,className:'efw-ethogram-card','aria-current':props.cursor===sample.step?'true':'false','data-efw-ethogram-sample':String(k)},h('strong',null,'Sample '+(k+1)+' · time '+(sample.step/10).toFixed(1)),h('button',{type:'button',onClick:function(){inspect(k);}},'Inspect ethogram sample '+(k+1)),h('small',null,progress&&progress.visited.indexOf(k)>=0?'Inspected':'Not yet inspected'),props.reduced&&h('p',{'data-efw-ethogram-recorded-description':'true'},'Recorded action: '+sample.state+'.'),isCrossingPlan&&progress.visited.indexOf(k)>=0&&h('small',{'data-efw-crossing-sample-position':String(k)},'Recorded position: ('+sample.x.toFixed(3)+', '+sample.z.toFixed(3)+') scene units.'),h('label',null,'My behavior code',h('select',{'aria-label':'Ethogram sample '+(k+1)+' code',value:ids.indexOf(codes[k])>=0?codes[k]:'',onChange:function(e){var value=e.target.value;change(function(current){var next=Array.isArray(current.codes)&&current.codes.length===5?current.codes.slice():['','','','',''];next[k]=value;return {codes:next,checked:false};});}},h('option',{value:''},'Choose a code'),ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(category){return h('option',{key:category.id,value:category.id},category.name);}))),shown&&h('small',null,'Recorded: '+sample.state+' → '+names[sample.category]+'. '+(check.comparisons[k].correct?'Same code.':'Review this code.'))); })),
+            h('button',{type:'button',className:'efw-primary',disabled:!check||!allVisited,onClick:checkCodes},firstCodes?'Check revised ethogram':'Check my ethogram'),
+            (!check||!allVisited)&&h('small',{role:'status'},'Inspect all five checkpoints and choose five codes to compare your observations.'),
+            shown&&h('div',{className:'efw-stack','data-efw-ethogram-feedback':'true',role:'status'},
+              h('strong',null,check.matches+' of 5 current codes match the declared coding key.'),
+              firstCodes&&h('p',null,'First submission: '+check.firstMatches+' of 5 codes matched. Your first codes are preserved.'),
+              chart,
+              h('table',null,h('caption',null,'Category tally from these five samples'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Category'),h('th',{scope:'col'},'Your codes'),h('th',{scope:'col'},'Recorded samples'))),h('tbody',null,check.tally.map(function(row){return h('tr',{key:row.id},h('th',{scope:'row'},row.name),h('td',null,row.coded+'/5 · '+(row.codedProportion*100).toFixed(0)+'%'),h('td',null,row.recorded+'/5 · '+(row.recordedProportion*100).toFixed(0)+'%'));}))),
+              h('p',null,'These percentages describe five sampled checkpoints, not the fraction of elapsed time spent in each behavior. A different start or interval may produce a different tally. The samples describe one illustrative representative and do not establish a population pattern or explain its cause.'),
+              h('label',null,'My ethogram evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_ethogram_reflection", "Ethogram reflection"),maxLength:1600,value:s.reflection||'',placeholder:isCrossingPlan?'At sample… I observed… My behavior code was… The coding key includes… The visible body or gaze detail cannot establish…':'I coded… in… of five samples. My first codes changed because… A different window might… I would need more observations to conclude…',onChange:function(e){change({reflection:e.target.value});}})),
+              (!s.reference||s.comparison&&s.comparison.committed)&&samplingControls(),
+              props.onSave&&h('div',{className:'efw-row'},h('button',{type:'button',className:'efw-primary',disabled:props.slots<1||!!s.saved,onClick:save},'Save ethogram observation'),h('small',{role:'status'},s.saved?'Ethogram saved with its exact samples and first codes.':props.slots<1?'Notebook full. Export notes, then remove an observation to make room.':'Saves this plan, exact recorded states, first codes, revisions and optional reflection.')))),
+          props.reduced&&h('p',{'data-efw-ethogram-reduced':'true'},'Reduced motion freezes the 3D starting pose. Recorded action descriptions appear on each card, so you can still inspect, code and tally all five samples.'))));
+  }
+
+  // Child of the existing ethogram: reuse its two plan sliders and five coding
+  // cards. Parent hides its ordinary Replace-plan button while reference exists.
+  function EcoEthogramSampling(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},reference=ecoMeadowEthogramSnapshot(s.reference),meta=s.comparison||{},plan=props.plan,labels={},predictionLabels={higher:'More checkpoints',lower:'Fewer checkpoints',same:'The same number',unsure:'Not sure yet'};
+    ECO_MEADOW_ETHOGRAM_CATEGORIES.forEach(function(category){labels[category.id]=category.name;});
+    var hasCategory=ECO_MEADOW_ETHOGRAM_CATEGORIES.some(function(category){return category.id===meta.category;}),hasPrediction=['higher','lower','same','unsure'].indexOf(meta.prediction)>=0;
+    function change(patch){props.onChange(Object.assign({saved:false},patch));}
+    function changeMeta(patch){change({comparison:Object.assign({},meta,patch)});}
+    function currentSheet(){return plan?ecoMeadowEthogramSnapshot({version:1,branch:props.branch,species:plan.species,index:plan.index,start:plan.start,interval:plan.interval,samples:plan.samples,firstCodes:s.firstCodes,codes:s.codes,reflection:s.reflection||''}):null;}
+    function keepReference(event){var sheet=currentSheet();if(!props.shown||!sheet)return;change({reference:sheet,draftStart:sheet.start,draftInterval:sheet.interval,comparison:{version:1,variable:'start',category:'feeding',prediction:'',firstCategory:'',firstPrediction:'',reflection:'',committed:false}});var region=event&&event.currentTarget&&event.currentTarget.closest('[data-efw-ethogram]');if(region&&window.requestAnimationFrame)window.requestAnimationFrame(function(){if(!region.isConnected)return;var control=region.querySelector('[aria-label="Sampling comparison variable"]');if(control){control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});}});}
+    var candidate=reference?ecoMeadowSamplingPlan(reference,props.frames,props.draftStart,props.draftInterval,props.branch):null;
+    if(candidate&&((meta.variable==='start'&&candidate.interval!==reference.interval)||(meta.variable==='interval'&&candidate.start!==reference.start)))candidate=null;
+    var sheet=reference&&props.shown&&meta.committed?currentSheet():null,compared=sheet?ecoMeadowSamplingComparison(reference,sheet):null,claim=compared&&hasCategory&&hasPrediction?ecoMeadowSamplingClaim(compared,meta.category,meta.prediction):null;
+    function collect(){if(!candidate||!hasCategory||!hasPrediction||!props.onCollect)return;props.onCollect(candidate,Object.assign({},meta,{version:1,variable:candidate.start===reference.start?'interval':'start',firstCategory:meta.category,firstPrediction:meta.prediction,committed:true}));}
+    return !reference?(props.shown?h('div',{'data-efw-sampling-start':'true'},h('button',{type:'button',onClick:keepReference},'Keep this sheet as a sampling reference'),h('small',{style:{display:'block'}},'Compare a second five-checkpoint sheet of this same representative. These sheets are not independent animals or elapsed-time budgets.')):null):h('div',{className:'efw-stack efw-sampling-comparison','data-efw-sampling-comparison':'true'},
+      h('style',null,`.efw-sampling-comparison{border-left:3px solid var(--fw-accent);padding-left:12px;min-width:0}.efw-sampling-comparison table{width:100%;border-collapse:collapse}.efw-sampling-comparison th,.efw-sampling-comparison td{padding:7px;text-align:left;border-bottom:1px solid var(--fw-line)}.efw-sampling-comparison p,.efw-sampling-comparison small{overflow-wrap:anywhere}@media(max-width:600px){.efw-sampling-comparison th,.efw-sampling-comparison td{font-size:12px;padding:5px}}`),
+      h('strong',null,'Compare two sampling plans'),
+      h('p',null,'Reference: '+reference.species+' '+(reference.index+1)+' · '+reference.branch+' branch · times '+reference.samples.map(function(sample){return (sample.step/10).toFixed(1);}).join(', ')+' · interval '+(reference.interval/10).toFixed(1)+'. Its exact recorded actions and your first codes are preserved.'),
+      h('label',null,'Change one sampling variable',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_sampling_comparison_variable", "Sampling comparison variable"),value:['start','interval'].indexOf(meta.variable)>=0?meta.variable:'start',disabled:!!meta.committed,onChange:function(e){var variable=e.target.value;change({draftStart:reference.start,draftInterval:reference.interval,comparison:Object.assign({},meta,{variable:variable})});}},h('option',{value:'start'},'Start time only'),h('option',{value:'interval'},'Sampling interval only'))),
+      h('p',null,meta.variable==='interval'?'Keep the start fixed. Use the existing interval slider to change the spacing between five checkpoints. With five points fixed, changing the interval also changes the window span.':'Keep the interval fixed. Use the existing start slider to shift the five-checkpoint window.'),
+      h('label',null,'Behavior to compare',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_sampling_comparison_behavior", "Sampling comparison behavior"),value:hasCategory?meta.category:'',onChange:function(e){changeMeta({category:e.target.value});}},h('option',{value:''},'Choose a behavior category'),ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(category){return h('option',{key:category.id,value:category.id},category.name);}))),
+      h('label',null,'My prediction for the second sheet',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_sampling_comparison_prediction", "Sampling comparison prediction"),value:hasPrediction?meta.prediction:'',onChange:function(e){changeMeta({prediction:e.target.value});}},h('option',{value:''},'Choose a prediction'),Object.keys(predictionLabels).map(function(value){return h('option',{key:value,value:value},predictionLabels[value]);}))),
+      !meta.committed&&h(props.React.Fragment,null,candidate?h('p',{'data-efw-sampling-plan-preview':'true'},'Second-sheet times: '+candidate.samples.map(function(sample){return (sample.step/10).toFixed(1);}).join(', ')+'.'):h('p',{role:'status','data-efw-sampling-plan-error':'true'},'Change exactly one variable and keep the same animal present throughout the second window. The other slider stays fixed to your reference.'),h('button',{type:'button',className:'efw-primary',disabled:!candidate||!hasCategory||!hasPrediction,onClick:collect},'Collect comparison sheet')),
+      meta.committed&&!compared&&h('p',{role:'status'},'Inspect, code and check all five checkpoints of your second sheet to compare its tally with the reference.'),
+      compared&&h('div',{className:'efw-stack','data-efw-sampling-results':'true'},
+        h('strong',null,'Changed variable: '+(compared.variable==='start'?'start time':'sampling interval')+' only'),
+        h('p',null,'Reference window '+(reference.start/10).toFixed(1)+'–'+((reference.start+reference.interval*4)/10).toFixed(1)+', interval '+(reference.interval/10).toFixed(1)+'; second window '+(sheet.start/10).toFixed(1)+'–'+((sheet.start+sheet.interval*4)/10).toFixed(1)+', interval '+(sheet.interval/10).toFixed(1)+'.'),
+        h('table',null,h('caption',null,'Recorded checkpoints in each five-sample sheet'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Behavior'),h('th',{scope:'col'},'Reference'),h('th',{scope:'col'},'Second sheet'),h('th',{scope:'col'},'Change'))),h('tbody',null,compared.rows.map(function(row){return h('tr',{key:row.id},h('th',{scope:'row'},row.name),h('td',null,row.reference+'/5 · '+(row.referenceProportion*100).toFixed(0)+'%'),h('td',null,row.current+'/5 · '+(row.currentProportion*100).toFixed(0)+'%'),h('td',null,(row.delta>=0?'+':'')+row.delta));}))),
+        claim&&h('div',{className:'efw-result',role:'status','data-efw-sampling-prediction-feedback':'true'},h('strong',null,claim.correct===null?'Your samples give you evidence to build a prediction.':claim.correct?'Your current prediction matches these two recorded sheets.':'Use the two recorded tallies to revise your prediction.'),h('p',null,labels[meta.category]+': reference '+claim.reference+'/5, second sheet '+claim.current+'/5. The recorded count is '+claim.expected+'.'),h('p',null,'Before collecting: '+(labels[meta.firstCategory]||'unrecorded category')+' · '+(predictionLabels[meta.firstPrediction]||'unrecorded prediction')+'. This first prediction stays attached to its original category.')),
+        h('p',null,compared.overlapSteps.length?'The sheets share '+compared.overlapSteps.length+' checkpoint'+(compared.overlapSteps.length===1?'':'s')+' at times '+compared.overlapSteps.map(function(step){return (step/10).toFixed(1);}).join(', ')+'. These are reused observations of the same recording.':'The sheets sample different times from the same representative recording; they are not independent animals.'),
+        h('p',null,'A behavior can be missed between checkpoints or outside a short window. Equal counts do not prove identical sequences; different counts do not establish a population change or explain its cause. These are sample proportions, not an elapsed-time budget.'),
+        h('label',null,'My sampling comparison evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_sampling_comparison_reflection", "Sampling comparison reflection"),maxLength:1600,value:meta.reflection||'',placeholder:'Changing only… changed the recorded count of… from… to… of five. The samples may miss… To investigate further I would…',onChange:function(e){changeMeta({reflection:e.target.value});}})),
+        h('small',null,'Save the ethogram observation to keep both exact sheets, initial and revised predictions, and this reflection.')),
+      h('div',{className:'efw-row'},meta.committed&&h('button',{type:'button',onClick:function(){change({comparison:Object.assign({},meta,{committed:false}),draftStart:reference.start,draftInterval:reference.interval});}},'Plan another comparison sheet'),h('button',{type:'button',onClick:function(){change({reference:null,comparison:null});}},'Return to a single ethogram')),
+      props.reduced&&h('small',null,'Reduced motion uses the same recorded descriptions and checkpoints for both sampling sheets.'));
+  }
+
+  // Distinguish what a recorded scene shows from rule information and claims
+  // the encounter cannot establish. Saved trials keep their original evidence.
+  var ECO_MEADOW_INFERENCE_CATEGORIES=[
+    {id:'scene',name:'Recorded scene evidence',description:'An action label or position explicitly recorded at these checkpoints.'},
+    {id:'rule',name:'Model-rule information',description:'Information about the animation rule; appearance alone does not establish it.'},
+    {id:'unsupported',name:'Not established',description:'A conclusion these scene samples and rule information cannot support.'}
+  ];
+
+  function ecoMeadowInferenceSnapshot(raw) {
+    var animals=['foxes','rabbits','voles','owls','caterpillars','bluetits'],kinds=['fox','escape','owl','insects','vigilance','listening','spacing'];
+    if(!raw||raw.version!==1||kinds.indexOf(raw.kind)<0||['baseline','experiment'].indexOf(raw.branch)<0||!Number.isInteger(raw.before)||!Number.isInteger(raw.step)||!Number.isInteger(raw.after)||raw.before<0||raw.after>240||raw.before>=raw.step||raw.step>=raw.after||!Array.isArray(raw.samples)||raw.samples.length!==3)return null;
+    var actor=raw.actor,cue=raw.cue;
+    if(![actor,cue].every(function(item){return item&&animals.indexOf(item.id)>=0&&Number.isInteger(item.index)&&item.index>=0&&item.index<16;})||(actor.id===cue.id&&actor.index===cue.index))return null;
+    var allowed={fox:['foxes'],escape:['rabbits','voles'],owl:['owls'],insects:['bluetits'],vigilance:['rabbits'],listening:['foxes'],spacing:['rabbits']};
+    var linked=raw.kind==='spacing'?cue.id==='rabbits'&&cue.index<actor.index:raw.kind==='vigilance'?cue.id==='rabbits':ECO_WEB_LINKS.some(function(link){return raw.kind==='escape'?link.food===actor.id&&link.consumer===cue.id:link.food===cue.id&&link.consumer===actor.id;});
+    if(allowed[raw.kind].indexOf(actor.id)<0||!linked)return null;
+    var steps=[raw.before,raw.step,raw.after],samples=[];
+    for(var k=0;k<3;k++){
+      var sample=raw.samples[k],points=[];
+      if(!sample||sample.step!==steps[k])return null;
+      for(var a=0;a<2;a++){
+        var p=sample[a?'cue':'actor'],identity=a?cue:actor;
+        if(!p||p.id!==identity.id||p.index!==identity.index||typeof p.active!=='boolean'||typeof p.state!=='string'||!p.state||p.state.length>80||![p.x,p.z].every(Number.isFinite)||Math.abs(p.x)>=1000||Math.abs(p.z)>=1000||(p.active?!ecoMeadowEthogramCategory(p.state):p.state!=='Not present'))return null;
+        points.push({id:p.id,index:p.index,active:p.active,x:p.x,z:p.z,state:p.state});
+      }
+      var gap=points[0].active&&points[1].active?Math.hypot(points[1].x-points[0].x,points[1].z-points[0].z):null;
+      if(gap===null?sample.gap!==null:!Number.isFinite(sample.gap)||Math.abs(sample.gap-gap)>1e-9)return null;
+      samples.push({step:steps[k],actor:points[0],cue:points[1],gap:gap});
+    }
+    var states={fox:['Stalking','Listening','Tracking prey'],escape:['Retreating','Alert'],owl:['Quartering over prey'],insects:['Pecking'],vigilance:['Alert'],listening:['Listening'],spacing:['Giving space']};
+    if(!samples[1].actor.active||!samples[1].cue.active||states[raw.kind].indexOf(samples[1].actor.state)<0)return null;
+    if(raw.kind==='spacing'&&samples[1].cue.state!=='Grazing')return null;
+    var decision=raw.decision;
+    if(!decision||decision.id!==cue.id||decision.index!==cue.index||(decision.distance!==null&&(!Number.isFinite(decision.distance)||decision.distance<0)))return null;
+    return {version:1,id:'inference:'+raw.kind+':'+actor.id+':'+actor.index+':'+cue.id+':'+cue.index+':'+raw.before+':'+raw.step+':'+raw.after,kind:raw.kind,branch:raw.branch,before:raw.before,step:raw.step,after:raw.after,actor:{id:actor.id,index:actor.index},cue:{id:cue.id,index:cue.index},samples:samples,decision:{id:cue.id,index:cue.index,distance:decision.distance}};
+  }
+
+  function ecoMeadowInferenceTrial(frames,encounter,branch) {
+    if(!Array.isArray(frames)||!encounter)return null;
+    var actor=encounter.actor,cue=encounter.cue;
+    if(!actor||!cue)return null;
+    var samples=[];
+    for(var k=0;k<3;k++){
+      var step=[encounter.before,encounter.step,encounter.after][k],frame=frames[step],points=[];
+      for(var a=0;a<2;a++){
+        var identity=a?cue:actor,p=frame&&Array.isArray(frame[identity.id])&&frame[identity.id][identity.index];
+        if(!p||typeof p.active!=='boolean')return null;
+        points.push({id:identity.id,index:identity.index,active:p.active,x:p.x,z:p.z,state:p.active?p.state:'Not present'});
+      }
+      samples.push({step:step,actor:points[0],cue:points[1],gap:points[0].active&&points[1].active?Math.hypot(points[1].x-points[0].x,points[1].z-points[0].z):null});
+    }
+    var at=frames[encounter.step],pose=at&&at[actor.id]&&at[actor.id][actor.index],actual=ecoMeadowInteraction(at,actor.id,actor.index);
+    if(!actual||actual.id!==cue.id||actual.index!==cue.index)return null;
+    var local=encounter.kind==='spacing'?pose.spacingCue:encounter.kind==='vigilance'?pose.socialCue:null,key=encounter.kind==='escape'?'threat':'prey';
+    var distance=local?(encounter.kind==='spacing'?local.decisionDistance:local.distance):pose[key]===cue.id&&pose[key+'Index']===cue.index?pose[key+'Distance']:null;
+    return ecoMeadowInferenceSnapshot({version:1,kind:encounter.kind,branch:branch,before:encounter.before,step:encounter.step,after:encounter.after,actor:actor,cue:cue,samples:samples,decision:{id:cue.id,index:cue.index,distance:Number.isFinite(distance)?distance:null}});
+  }
+
+  function ecoMeadowInferenceClaims(raw) {
+    var trial=ecoMeadowInferenceSnapshot(raw);if(!trial)return null;
+    function name(identity){var species=ECO_WEB_SPECIES.find(function(item){return item.id===identity.id;});return species.name+' representative '+(identity.index+1);}
+    var actor=name(trial.actor),cue=name(trial.cue),before=trial.samples[0],at=trial.samples[1],after=trial.samples[2];
+    var rule=trial.kind==='spacing'?'a feeding-neighbor spacing cue':trial.kind==='vigilance'?'a neighboring rabbit’s alert cue':trial.kind==='listening'?'a moving-prey listening cue':trial.kind==='escape'?'a nearby-predator cue':'a nearby-prey cue';
+    var unsupported=trial.kind==='spacing'?'These two rabbits have a lasting dominance hierarchy.':trial.kind==='vigilance'?'A measured sound wave travelled between these rabbits.':trial.kind==='listening'?'The fox heard a simulated sound wave from this prey.':trial.kind==='escape'?'This specific prey animal avoided a real capture.':'This predator caught this specific prey animal.';
+    var cards=[
+      {id:'action',text:'At time '+(trial.step/10).toFixed(1)+', '+actor+' had the recorded action “'+at.actor.state+'”.',category:'scene',explanation:'The middle checkpoint explicitly records this action label. It is a sample from the teaching animation.'},
+      {id:'checkpoints',text:before.actor.state===after.actor.state?actor+' had the same recorded action, “'+before.actor.state+'”, at the first and last checkpoints.':actor+' changed its recorded action from “'+before.actor.state+'” at the first checkpoint to “'+after.actor.state+'” at the last.',category:'scene',explanation:'Compare the first and last recorded labels. Matching endpoints do not describe every moment between them.'},
+      {id:'rule',text:'The animation used '+cue+' as '+rule+' for this encounter.',category:'rule',explanation:'The model’s recorded cue metadata supplies this link. A visible nearby animal alone would not prove that it caused another animal’s behavior outdoors.'},
+      {id:'limit',text:unsupported,category:'unsupported',explanation:trial.kind==='listening'||trial.kind==='vigilance'?'The model uses recorded movement and local rules; it does not simulate sound waves.':trial.kind==='spacing'?'A brief spacing response does not establish a stable social hierarchy, dominance, or a changed feeding rate.':'The representative animation does not simulate an individual capture outcome or establish a real animal’s survival.'}
+    ];
+    var shift=(trial.step+trial.actor.index)%cards.length;
+    return cards.slice(shift).concat(cards.slice(0,shift));
+  }
+
+  function ecoMeadowInferenceCheck(trial,codes,firstCodes) {
+    var cards=ecoMeadowInferenceClaims(trial),ids=ECO_MEADOW_INFERENCE_CATEGORIES.map(function(item){return item.id;});
+    function valid(values){return Array.isArray(values)&&values.length===4&&values.every(function(value){return ids.indexOf(value)>=0;});}
+    if(!cards||!valid(codes)||(firstCodes!=null&&!valid(firstCodes)))return null;
+    return {total:4,matches:cards.filter(function(card,k){return card.category===codes[k];}).length,firstMatches:firstCodes?cards.filter(function(card,k){return card.category===firstCodes[k];}).length:null,cards:cards.map(function(card,k){return Object.assign({},card,{code:codes[k],firstCode:firstCodes?firstCodes[k]:null,correct:card.category===codes[k]});})};
+  }
+
+  // A short evidence-link task reuses the original three-checkpoint statement.
+  // Pinning endpoints supports that bounded statement, not every intervening pose.
+  function ecoMeadowEvidenceLinkPins(trial,raw) {
+    if(!trial||!Array.isArray(raw)||raw.length<1||raw.length>3)return null;
+    var available=[trial.before,trial.step,trial.after],copy=[];
+    for(var k=0;k<raw.length;k++){
+      if(!Number.isInteger(raw[k])||available.indexOf(raw[k])<0||copy.indexOf(raw[k])>=0)return null;
+      copy.push(raw[k]);
+    }
+    return copy.sort(function(a,b){return a-b;});
+  }
+
+  function ecoMeadowEvidenceLinkCheck(rawTrial,pins,firstPins) {
+    var trial=ecoMeadowInferenceSnapshot(rawTrial),current=ecoMeadowEvidenceLinkPins(trial,pins),first=firstPins==null?null:ecoMeadowEvidenceLinkPins(trial,firstPins);
+    if(!trial||!current||(firstPins!=null&&!first))return null;
+    var required=[trial.before,trial.after],claim=ecoMeadowInferenceClaims(trial).find(function(card){return card.id==='checkpoints';});
+    function status(values){return required.some(function(step){return values.indexOf(step)<0;})?'insufficient':values.length===2?'minimal':'extra';}
+    return {status:status(current),firstStatus:first?status(first):null,pins:current,firstPins:first,required:required,missing:required.filter(function(step){return current.indexOf(step)<0;}),extra:current.filter(function(step){return required.indexOf(step)<0;}),claim:{id:claim.id,text:claim.text}};
+  }
+
+  function ecoWebEvidenceLinkRecord(raw,rawTrial) {
+    var trial=ecoMeadowInferenceSnapshot(rawTrial);
+    if(!raw||raw.version!==1||!trial||raw.trialId!==trial.id||raw.trialKey!==JSON.stringify(trial)||raw.claimId!=='checkpoints'||raw.firstPins==null)return null;
+    var check=ecoMeadowEvidenceLinkCheck(trial,raw.pins,raw.firstPins);if(!check)return null;
+    return {version:1,trialId:trial.id,trialKey:JSON.stringify(trial),claimId:'checkpoints',pins:check.pins,firstPins:check.firstPins,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1200):''};
+  }
+
+  function ecoMeadowEvidenceLinkPending(state,trial) {
+    return !!state&&state.firstPins!=null&&(!state.checked||!ecoWebEvidenceLinkRecord(state,trial));
+  }
+
+  function ecoWebEvidenceLinkText(raw,trial) {
+    var record=ecoWebEvidenceLinkRecord(raw,trial),check=record&&ecoMeadowEvidenceLinkCheck(trial,record.pins,record.firstPins);if(!check)return [];
+    var labels={insufficient:'insufficient evidence',extra:'supported with extra checkpoints',minimal:'smallest supporting set'};
+    function times(pins){return pins.map(function(step){return (step===trial.before?'Before':step===trial.after?'After':'Encounter')+' at time '+(step/10).toFixed(1);}).join(', ');}
+    return ['Checkpoint evidence link: '+check.claim.text,'First checkpoint pins: '+times(record.firstPins)+'; '+labels[check.firstStatus]+'.','Latest checkpoint pins: '+times(record.pins)+'; '+labels[check.status]+'.','Checkpoint link reflection: '+(record.reflection||'(not recorded)'),'The two endpoint samples support this exact first/last statement. They do not establish the action at every intervening moment or an individual capture outcome.'];
+  }
+
+  function EcoEvidenceLink(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,trial=ecoMeadowInferenceSnapshot(props.trial);if(!trial)return null;
+    var s=props.state||{},pins=ecoMeadowEvidenceLinkPins(trial,s.pins)||[],first=s.firstPins==null?null:s.firstPins,check=ecoMeadowEvidenceLinkCheck(trial,pins,first),mismatch=first!=null&&(s.version!==1||s.trialId!==trial.id||s.trialKey!==JSON.stringify(trial)||s.claimId!=='checkpoints'),shown=!!(s.checked&&check&&first&&!mismatch),pending=ecoMeadowEvidenceLinkPending(s,trial);
+    var claim=ecoMeadowInferenceClaims(trial).find(function(card){return card.id==='checkpoints';}),names=['Before','Encounter','After'];
+    function change(patch){props.onChange(function(previous){var current=previous||{};return Object.assign({},current,current.firstPins==null?{version:1,trialId:trial.id,trialKey:JSON.stringify(trial),claimId:'checkpoints'}:{},typeof patch==='function'?patch(current):patch);});}
+    function reset(){props.onChange({version:1,trialId:trial.id,trialKey:JSON.stringify(trial),claimId:'checkpoints',open:true,pins:[],firstPins:null,checked:false,reflection:''});}
+    return h('details',{'data-efw-evidence-link':'true',open:!!s.open,onToggle:function(event){if(event.currentTarget.open!==!!s.open)change({open:event.currentTarget.open});}},
+      h('summary',null,'Pin evidence to this statement'),
+      h('div',{className:'efw-stack',style:{marginTop:12}},
+        h('p',null,'Optional: choose the smallest set of original checkpoints that supports this exact statement. A useful evidence set can be sufficient without being the smallest.'),
+        h('p',{'data-efw-link-claim':'true'},h('strong',null,claim.text)),
+        mismatch&&h('p',{role:'status'},'This submitted link belongs to a different original trial. Start a new checkpoint link to choose new evidence; saved notebook records stay unchanged.'),
+        h('fieldset',{style:{border:0,padding:0,margin:0,minWidth:0}},h('legend',null,'My supporting checkpoints'),
+          h('div',{className:'efw-inference-grid'},trial.samples.map(function(sample,k){return h('label',{key:sample.step,className:'efw-inference-card',style:{display:'flex',alignItems:'flex-start',gap:8}},
+            h('input',{type:'checkbox','aria-label':'Pin '+names[k]+' checkpoint',checked:pins.indexOf(sample.step)>=0,disabled:mismatch,onChange:function(event){var checked=event.target.checked;change(function(current){var selected=ecoMeadowEvidenceLinkPins(trial,current.pins)||[],next=selected.filter(function(step){return step!==sample.step;});if(checked)next.push(sample.step);return {pins:next.sort(function(a,b){return a-b;}),checked:false};});}}),
+            h('span',null,h('strong',null,names[k]+' · time '+(sample.step/10).toFixed(1)),h('small',{style:{display:'block'}},'Recorded selected action: '+sample.actor.state+'.')));}))),
+        h('small',null,'Use the original checkpoint inspection buttons above to revisit the evidence. These pins refer to the same frozen samples.'),
+        h('button',{type:'button',disabled:!check||mismatch,className:'efw-primary',onClick:function(){change({checked:true,firstPins:first||pins.slice()});}},first?'Check revised checkpoint pins':'Check checkpoint pins'),
+        pending&&h('small',{role:'status','data-efw-link-pending':'true'},'Check the revised checkpoint pins before saving this observation.'),
+        shown&&h('div',{className:'efw-result efw-stack',role:'status','data-efw-link-feedback':'true','data-efw-link-status':check.status},
+          h('strong',null,check.status==='insufficient'?'The selected evidence does not support the whole statement.':check.status==='extra'?'This set supports the statement, with an extra checkpoint.':'This is the smallest supporting checkpoint set.'),
+          h('p',null,'The statement names the first and last recorded actions, so both endpoint checkpoints are required. The middle sample can add context, but it is not needed to establish those two endpoints.'),
+          h('p',null,'First selection: '+({insufficient:'insufficient evidence',extra:'supported with extra checkpoints',minimal:'smallest supporting set'})[check.firstStatus]+'. Your first pins are preserved.'),
+          h('p',null,'Matching endpoints do not establish what happened at every intervening moment. These samples do not prove an individual capture or a change in biomass.'),
+          h('label',null,'Why these checkpoints?',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_checkpoint_evidence_reflection", "Checkpoint evidence reflection"),maxLength:1200,value:s.reflection||'',placeholder:'The statement names… so I need… The extra sample would… I still cannot conclude…',onChange:function(event){change({reflection:event.target.value});}}))),
+        first&&h('div',{className:'efw-row'},h('button',{type:'button',onClick:reset},'Start a new checkpoint link'),h('small',null,'Starting a new link clears this draft’s first pins. Saved notebook evidence stays fixed.')),
+        !first&&h('small',null,'An unchecked optional link is not included when you save. Your source classifications can still be saved.'),
+        props.reduced&&h('small',{'data-efw-link-reduced':'true'},'Reduced motion keeps the 3D pose still. The original recorded action and time on each checkbox remain available for choosing evidence.')));
+  }
+
+  // The optional detective sheet reads an already verified three-animal trace.
+  // Its earlier rule inputs are separate from the current display poses.
+  function ecoMeadowCueChainSnapshot(raw,rawTrial) {
+    var trial=ecoMeadowInferenceSnapshot(rawTrial),trace=raw&&raw.trace;
+    if(!trial||trial.kind!=='vigilance'||!raw||raw.version!==1||raw.branch!==trial.branch||raw.trialKey!==JSON.stringify(trial)||!trace||trace.version!==1||!Number.isInteger(trace.step)||trace.step<2||[trial.before,trial.step,trial.after].indexOf(trace.step)<0||trace.neighborDecisionStep!==trace.step-1||trace.directDecisionStep!==trace.step-2)return null;
+    var actors=[];
+    for(var k=0;k<3;k++){
+      var actor=trace[['receiver','source','predator'][k]],pose=actor&&actor.pose;
+      if(!actor||!Number.isInteger(actor.index)||actor.index<0||actor.index>=16||!pose||pose.active!==true||typeof pose.state!=='string'||!pose.state||pose.state.length>80||![pose.x,pose.z,pose.yaw,pose.altitude].every(Number.isFinite)||Math.abs(pose.x)>=1000||Math.abs(pose.z)>=1000||Math.abs(pose.yaw)>=1000||pose.altitude<0||pose.altitude>=100)return null;
+      actors.push({id:actor.id,index:actor.index,pose:{active:true,state:pose.state,x:pose.x,z:pose.z,yaw:pose.yaw,altitude:pose.altitude}});
+    }
+    if(actors[0].id!=='rabbits'||actors[0].index!==trial.actor.index||actors[0].pose.state!=='Alert'||actors[1].id!=='rabbits'||actors[1].index!==trial.cue.index||actors[0].index===actors[1].index||!ECO_WEB_LINKS.some(function(link){return link.food==='rabbits'&&link.consumer===actors[2].id;}))return null;
+    var sample=trial.samples.find(function(point){return point.step===trace.step;});
+    if(!sample||[0,1].some(function(k){var recorded=sample[k?'cue':'actor'],pose=actors[k].pose;return ['active','state','x','z'].some(function(name){return pose[name]!==recorded[name];});}))return null;
+    var inputs={},names=['receiver','neighbor','directObserver','predator'];
+    for(var n=0;n<names.length;n++){
+      var point=trace.inputs&&trace.inputs[names[n]];
+      if(!Array.isArray(point)||point.length!==2||!point.every(function(value){return Number.isFinite(value)&&Math.abs(value)<1000;}))return null;
+      inputs[names[n]]=point.slice();
+    }
+    var decisionDistance=Math.hypot(inputs.receiver[0]-inputs.neighbor[0],inputs.receiver[1]-inputs.neighbor[1]),directDistance=Math.hypot(inputs.directObserver[0]-inputs.predator[0],inputs.directObserver[1]-inputs.predator[1]);
+    if(!Number.isFinite(trace.decisionDistance)||!Number.isFinite(trace.directDistance)||decisionDistance>1.6||directDistance>=2.6||Math.abs(trace.decisionDistance-decisionDistance)>1e-9||Math.abs(trace.directDistance-directDistance)>1e-9)return null;
+    return {version:1,branch:trial.branch,trialKey:JSON.stringify(trial),trace:{version:1,step:trace.step,neighborDecisionStep:trace.step-1,directDecisionStep:trace.step-2,decisionDistance:decisionDistance,directDistance:directDistance,receiver:actors[0],source:actors[1],predator:actors[2],inputs:inputs}};
+  }
+
+  function ecoMeadowCueChainCase(frames,rawTrial) {
+    var trial=ecoMeadowInferenceSnapshot(rawTrial);if(!trial||trial.kind!=='vigilance')return null;
+    var steps=[trial.step,trial.before,trial.after];
+    for(var k=0;k<steps.length;k++){
+      var trace=ecoMeadowVigilanceTrace(frames,steps[k],trial.actor.index);
+      if(!trace||trace.source.index!==trial.cue.index)continue;
+      var candidate=ecoMeadowCueChainSnapshot({version:1,branch:trial.branch,trialKey:JSON.stringify(trial),trace:trace},trial);
+      if(candidate)return candidate;
+    }
+    return null;
+  }
+
+  function ecoMeadowCueChainAnswers(raw,plan) {
+    if(!raw||!plan||!plan.trace||!Number.isInteger(plan.trace.step)||plan.trace.step<2||plan.trace.step>240||['neighbor','predator','unsure'].indexOf(raw.cue)<0)return null;
+    var times=[plan.trace.step-2,plan.trace.step-1,plan.trace.step,'unsure'];
+    if(times.indexOf(raw.directInputStep)<0||times.indexOf(raw.neighborInputStep)<0)return null;
+    return {cue:raw.cue,directInputStep:raw.directInputStep,neighborInputStep:raw.neighborInputStep};
+  }
+
+  function ecoMeadowCueChainCheck(rawCase,rawTrial,answers,firstAnswers) {
+    var plan=ecoMeadowCueChainSnapshot(rawCase,rawTrial),current=ecoMeadowCueChainAnswers(answers,plan),first=firstAnswers==null?null:ecoMeadowCueChainAnswers(firstAnswers,plan);
+    if(!plan||!current||(firstAnswers!=null&&!first))return null;
+    var expected={cue:'neighbor',directInputStep:plan.trace.step-2,neighborInputStep:plan.trace.step-1};
+    var rows=[
+      {id:'cue',label:'Selected rabbit’s recorded cue',explanation:'The receiving rabbit uses the neighboring rabbit’s alert cue in this chain; it does not have a direct alarm at this sample.'},
+      {id:'directInputStep',label:'Predator-input time used by the neighbor',explanation:'The neighbor’s direct alarm at time '+((plan.trace.step-1)/10).toFixed(1)+' used the preceding predator and observer positions.'},
+      {id:'neighborInputStep',label:'Neighbor-input time used by the selected rabbit',explanation:'The receiving rabbit at time '+(plan.trace.step/10).toFixed(1)+' used the neighbor and receiver positions from the previous sample.'}
+    ].map(function(row){return Object.assign({},row,{answer:current[row.id],firstAnswer:first?first[row.id]:null,expected:expected[row.id],correct:current[row.id]==='unsure'?null:current[row.id]===expected[row.id]});});
+    return {case:plan,answers:current,firstAnswers:first,rows:rows,matches:rows.filter(function(row){return row.correct===true;}).length,uncertain:rows.filter(function(row){return row.correct===null;}).length};
+  }
+
+  function ecoWebCueChainRecord(raw,rawTrial) {
+    if(!raw||raw.version!==1||raw.firstAnswers==null)return null;
+    var check=ecoMeadowCueChainCheck(raw.case,rawTrial,raw.answers,raw.firstAnswers);
+    if(!check||raw.caseKey!==JSON.stringify(check.case))return null;
+    return {version:1,case:check.case,caseKey:JSON.stringify(check.case),answers:check.answers,firstAnswers:check.firstAnswers,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1200):''};
+  }
+
+  function ecoMeadowCueChainMatches(raw,frames,rawTrial) {
+    var record=ecoWebCueChainRecord(raw,rawTrial),current=record&&ecoMeadowCueChainCase(frames,rawTrial);
+    return !!current&&JSON.stringify(current)===JSON.stringify(record.case);
+  }
+
+  function ecoMeadowCueChainEvidence(frames,trial,state) {
+    return state&&state.checked===true&&ecoMeadowCueChainMatches(state,frames,trial)?ecoWebCueChainRecord(state,trial):null;
+  }
+
+  function ecoMeadowCueChainPending(state,frames,trial) {
+    return !!state&&state.firstAnswers!=null&&!ecoMeadowCueChainEvidence(frames,trial,state);
+  }
+
+  function ecoWebCueChainText(raw,trial) {
+    var record=ecoWebCueChainRecord(raw,trial),check=record&&ecoMeadowCueChainCheck(record.case,trial,record.answers,record.firstAnswers);if(!check)return [];
+    function value(id,answer){return answer==='unsure'?'not sure yet':id==='cue'?(answer==='neighbor'?'neighbor rabbit’s alert cue':'predator directly'):'time '+(answer/10).toFixed(1);}
+    var trace=record.case.trace,lines=['Cue-chain detective: selected rabbit '+(trace.receiver.index+1)+', directly alarmed neighbor rabbit '+(trace.source.index+1)+', predator '+trace.predator.id+' '+(trace.predator.index+1)+'.','First submitted cue prediction: '+value('cue',record.firstAnswers.cue)+'. This is a first submission, not a claim that the learner had not inspected the trace.'];
+    check.rows.forEach(function(row){lines.push(row.label+': first '+value(row.id,row.firstAnswer)+'; latest '+value(row.id,row.answer)+'; recorded chain '+value(row.id,row.expected)+'. '+row.explanation);});
+    lines.push('Earlier predator/observer inputs: time '+(trace.directDecisionStep/10).toFixed(1)+'. Earlier neighbor/receiver inputs: time '+(trace.neighborDecisionStep/10).toFixed(1)+'. Current displayed poses: time '+(trace.step/10).toFixed(1)+'.','Cue-chain explanation: '+(record.reflection||'(not recorded)'),'This is recorded model-rule evidence. It does not measure a sound wave, a real animal’s sensing or a change in population.','Frozen cue-chain case (JSON): '+JSON.stringify(record));
+    return lines;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{cueChainSnapshot:ecoMeadowCueChainSnapshot,cueChainCase:ecoMeadowCueChainCase,cueChainAnswers:ecoMeadowCueChainAnswers,cueChainCheck:ecoMeadowCueChainCheck,cueChainRecord:ecoWebCueChainRecord,cueChainMatches:ecoMeadowCueChainMatches,cueChainEvidence:ecoMeadowCueChainEvidence,cueChainPending:ecoMeadowCueChainPending,cueChainText:ecoWebCueChainText});
+
+  function ecoWebInferenceRecord(raw,sighting,focus,step) {
+    if(!raw||raw.version!==1||!sighting)return null;
+    var trial=ecoMeadowInferenceSnapshot(raw.trial),check=trial&&ecoMeadowInferenceCheck(trial,raw.codes,raw.firstCodes);
+    if(!trial||!check||!Array.isArray(raw.firstCodes)||trial.kind!==sighting.kind||trial.branch!==sighting.branch||trial.actor.id!==focus||trial.actor.index!==sighting.actorIndex||trial.cue.id!==sighting.cueId||trial.cue.index!==sighting.cueIndex||trial.step!==step||!sighting.before||!sighting.after||trial.before!==sighting.before.step||trial.after!==sighting.after.step||trial.samples[0].actor.state!==sighting.before.state||trial.samples[1].actor.state!==sighting.state||trial.samples[2].actor.state!==sighting.after.state||trial.decision.distance!==sighting.decisionDistance)return null;
+    var required=[trial.before,trial.step,trial.after];
+    if(!Array.isArray(raw.visited)||raw.visited.length!==3||required.some(function(time){return raw.visited.indexOf(time)<0;})||raw.visited.some(function(time){return required.indexOf(time)<0;}))return null;
+    var saved={version:1,trial:trial,visited:required,codes:raw.codes.slice(),firstCodes:raw.firstCodes.slice(),reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+    var link=ecoWebEvidenceLinkRecord(raw.link,trial);if(link)saved.link=link;
+    var chain=ecoWebCueChainRecord(raw.chain,trial);if(chain)saved.chain=chain;return saved;
+  }
+
+  function ecoMeadowInferenceMatches(record,frames,encounter) {
+    var saved=record&&ecoMeadowInferenceSnapshot(record.trial),current=saved&&ecoMeadowInferenceTrial(frames,encounter,saved.branch);
+    return !!current&&JSON.stringify(current)===JSON.stringify(saved)&&(!record.chain||ecoMeadowCueChainMatches(record.chain,frames,saved));
+  }
+
+  function ecoMeadowInferenceEvidence(frames,encounter,branch,state) {
+    var trial=ecoMeadowInferenceTrial(frames,encounter,branch),saved=state&&ecoMeadowInferenceSnapshot(state.trial);
+    if(!state||!state.checked||!trial||!saved||JSON.stringify(trial)!==JSON.stringify(saved)||ecoMeadowEvidenceLinkPending(state.link,trial)||ecoMeadowCueChainPending(state.chain,frames,trial))return null;
+    return ecoWebInferenceRecord({version:1,trial:trial,visited:state.visited,codes:state.codes,firstCodes:state.firstCodes,reflection:state.reflection||'',link:state.link&&state.link.checked?state.link:null,chain:ecoMeadowCueChainEvidence(frames,trial,state.chain)},{kind:trial.kind,branch:trial.branch,actorIndex:trial.actor.index,cueId:trial.cue.id,cueIndex:trial.cue.index,state:trial.samples[1].actor.state,decisionDistance:trial.decision.distance,before:{step:trial.before,state:trial.samples[0].actor.state},after:{step:trial.after,state:trial.samples[2].actor.state}},trial.actor.id,trial.step);
+  }
+
+  function ecoMeadowInferenceState(record) {
+    var state={open:true,trial:JSON.parse(JSON.stringify(record.trial)),visited:record.visited.slice(),codes:record.codes.slice(),firstCodes:record.firstCodes.slice(),reflection:record.reflection,checked:true};
+    var link=ecoWebEvidenceLinkRecord(record.link,record.trial);if(link)state.link=Object.assign({},link,{open:true,checked:true});
+    var chain=ecoWebCueChainRecord(record.chain,record.trial);if(chain)state.chain=Object.assign({},chain,{open:true,checked:true});return state;
+  }
+
+  function ecoWebInferenceText(record,includeOriginal) {
+    var trial=record&&ecoMeadowInferenceSnapshot(record.trial),check=trial&&ecoMeadowInferenceCheck(trial,record.codes,record.firstCodes);if(!check)return [];
+    var labels={};ECO_MEADOW_INFERENCE_CATEGORIES.forEach(function(item){labels[item.id]=item.name;});
+    var lines=['Evidence or inference challenge: '+trial.branch+' branch; times '+[trial.before,trial.step,trial.after].map(function(time){return (time/10).toFixed(1);}).join(', '), 'First classification: '+check.firstMatches+' of 4 matched; latest classification: '+check.matches+' of 4 matched. These are judgments about this teaching model, not mastery scores.'];
+    check.cards.forEach(function(card,k){lines.push('Statement '+(k+1)+': '+card.text+' First source: '+labels[card.firstCode]+'. Latest source: '+labels[card.code]+'. Evidence source: '+labels[card.category]+'. '+card.explanation);});
+    trial.samples.forEach(function(sample,k){lines.push(['Before','Encounter','After'][k]+' at time '+(sample.step/10).toFixed(1)+': selected '+sample.actor.state+' at '+sample.actor.x+', '+sample.actor.z+'; cue '+sample.cue.state+' at '+sample.cue.x+', '+sample.cue.z+'; simultaneous gap '+(sample.gap===null?'not present':sample.gap+' scene units'));});
+    Array.prototype.push.apply(lines,ecoWebEvidenceLinkText(record.link,trial));
+    Array.prototype.push.apply(lines,ecoWebCueChainText(record.chain,trial));
+    lines.push('Evidence / inference reflection: '+(record.reflection||'(not recorded)'),'Action labels and rule cues do not establish individual capture outcomes, real-world sensing, or a change in biomass.');
+    if(includeOriginal)lines.push('Frozen evidence / inference trial (JSON): '+JSON.stringify(record));
+    return lines;
+  }
+
+  function EcoCueChain(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},trial=ecoMeadowInferenceSnapshot(props.trial),trialKey=trial&&JSON.stringify(trial),candidate=props.React.useMemo(function(){return ecoMeadowCueChainCase(props.frames,trial);},[props.frames,trialKey]);
+    var first=s.firstAnswers!=null,stored=first&&ecoMeadowCueChainSnapshot(s.case,trial),plan=first?stored:candidate,matches=!!candidate&&(!first||!!stored&&JSON.stringify(stored)===JSON.stringify(candidate)),answers=s.answers||{cue:'',directInputStep:'',neighborInputStep:''},check=plan&&ecoMeadowCueChainCheck(plan,trial,answers,s.firstAnswers),record=ecoMeadowCueChainEvidence(props.frames,trial,s),pending=ecoMeadowCueChainPending(s,props.frames,trial),shown=!!record;
+    function change(patch){props.onChange(function(current){var base=current||{},next=typeof patch==='function'?patch(base):patch;return Object.assign({},base,base.firstAnswers==null&&candidate?{version:1,case:candidate,caseKey:JSON.stringify(candidate)}:{},next);});}
+    function answer(name,value){change(function(current){var next=Object.assign({},current.answers||{});next[name]=value;return {answers:next,checked:false};});}
+    function submit(){change(function(current){var currentCase=current.firstAnswers!=null?ecoMeadowCueChainSnapshot(current.case,trial):candidate,valid=currentCase&&candidate&&JSON.stringify(currentCase)===JSON.stringify(candidate),result=valid&&ecoMeadowCueChainCheck(currentCase,trial,current.answers,current.firstAnswers);return result?{checked:true,firstAnswers:result.firstAnswers||Object.assign({},result.answers)}:{};});}
+    function reset(){props.onChange({version:1,open:true,case:candidate,caseKey:candidate?JSON.stringify(candidate):null,answers:{cue:'',directInputStep:'',neighborInputStep:''},firstAnswers:null,checked:false,reflection:''});}
+    function label(id,value){if(value==='unsure')return 'Not sure yet';if(id==='cue')return value==='neighbor'?'Neighbor rabbit’s alert cue':value==='predator'?'Predator directly':'Not recorded';return Number.isInteger(value)?'Time '+(value/10).toFixed(1):'Not recorded';}
+    var trace=plan&&plan.trace,times=trace?[trace.step-2,trace.step-1,trace.step]:[],roleNames=trace?'Selected rabbit '+(trace.receiver.index+1)+' · directly alarmed neighbor rabbit '+(trace.source.index+1)+' · predator '+trace.predator.id+' '+(trace.predator.index+1):'';
+    function timeChoice(id,title){return h('label',null,title,h('select',{'aria-label':title,value:answers[id]==null?'':String(answers[id]),disabled:!matches,onChange:function(event){answer(id,event.target.value==='unsure'?'unsure':event.target.value===''?'':Number(event.target.value));}},h('option',{value:''},'Choose a time'),times.map(function(step){return h('option',{key:step,value:String(step)},'Time '+(step/10).toFixed(1));}),h('option',{value:'unsure'},'Not sure yet')));}
+    return h('details',{'data-efw-cue-chain':'true',className:'efw-cue-chain',open:!!s.open,onToggle:function(event){if(event.currentTarget.open!==!!s.open)change({open:event.currentTarget.open});}},
+      h('summary',null,'Cue-chain detective'),
+      h('style',null,`.efw-cue-chain{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0}.efw-cue-chain>div{margin-top:12px}.efw-cue-chain select,.efw-cue-chain textarea{width:100%;min-width:0;box-sizing:border-box}.efw-cue-chain table{width:100%;border-collapse:collapse;table-layout:fixed}.efw-cue-chain th,.efw-cue-chain td{text-align:left;vertical-align:top;border:1px solid var(--fw-line);padding:8px;overflow-wrap:anywhere}.efw-cue-chain caption{text-align:left;font-weight:700;margin-bottom:6px}.efw-cue-chain :is(p,small,strong,label,button){overflow-wrap:anywhere}@media(max-width:600px){.efw-cue-chain th,.efw-cue-chain td{padding:5px}.efw-cue-chain th:first-child{width:47%}}`),
+      h('div',{className:'efw-stack'},
+        h('p',null,'Optional: reconstruct which recorded cue and input times produced this alert. You may inspect the trace before answering. Your first submitted prediction and time choices stay available when you revise; this is not a blind-prediction test.'),
+        !candidate&&h('p',{role:'status','data-efw-cue-chain-unavailable':'true'},'No verified three-animal vigilance chain is available at this challenge’s original checkpoints. This optional sheet is unavailable; the existing evidence-source activity remains usable.'),
+        first&&!matches&&h('p',{role:'status'},'These submitted choices belong to different original chain evidence. They have not been applied to this recording. Start a new cue-chain sheet to use the current evidence; saved notebook records stay unchanged.'),
+        trace&&h(props.React.Fragment,null,
+          h('strong',null,roleNames),
+          h('table',{'data-efw-cue-chain-times':'true'},h('caption',null,'Original chain: earlier inputs and its current-display sample'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Recorded information'),h('th',{scope:'col'},'Time and role'))),h('tbody',null,
+            h('tr',null,h('th',{scope:'row'},'Predator and direct observer positions'),h('td',null,'Time '+(trace.directDecisionStep/10).toFixed(1)+' · earlier input used by the neighbor’s next direct alarm.')),
+            h('tr',null,h('th',{scope:'row'},'Neighbor and receiving rabbit positions'),h('td',null,'Time '+(trace.neighborDecisionStep/10).toFixed(1)+' · earlier input used by the selected rabbit’s next alert.')),
+            h('tr',null,h('th',{scope:'row'},'All three current animal poses'),h('td',null,'Time '+(trace.step/10).toFixed(1)+' · current display, after both earlier input samples.')))),
+          h('p',null,'The neighbor’s direct alarm is recorded at time '+(trace.neighborDecisionStep/10).toFixed(1)+'. The selected rabbit’s alert is recorded at time '+(trace.step/10).toFixed(1)+'. These are two decision generations, not simultaneous decisions or a measured sound wave.'),
+          h('small',null,'This table describes the original chain at time '+(trace.step/10).toFixed(1)+'. Inspecting another checkpoint makes the 3D view follow that checkpoint instead.'),
+          props.onInspect&&h('button',{type:'button',disabled:!matches,onClick:function(){props.onInspect(trace.step);}},'Inspect chain’s current-display checkpoint'),
+          h('label',null,'Selected rabbit’s recorded cue',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_chain_cue_role", "Cue-chain cue role"),value:answers.cue||'',disabled:!matches,onChange:function(event){answer('cue',event.target.value);}},h('option',{value:''},'Choose a cue role'),h('option',{value:'neighbor'},'Neighbor rabbit’s alert cue'),h('option',{value:'predator'},'Predator directly'),h('option',{value:'unsure'},'Not sure yet'))),
+          timeChoice('directInputStep','Predator-input time used by neighbor'),
+          timeChoice('neighborInputStep','Neighbor-input time used by selected rabbit'),
+          h('button',{type:'button',className:'efw-primary',disabled:!check||!matches,onClick:submit},first?'Check revised cue chain':'Check cue chain'),
+          first&&h('p',{'data-efw-cue-chain-first':'true'},'First submitted cue prediction: '+label('cue',s.firstAnswers.cue)+'. First input times: '+label('directInputStep',s.firstAnswers.directInputStep)+'; '+label('neighborInputStep',s.firstAnswers.neighborInputStep)+'.'),
+          pending&&h('small',{role:'status','data-efw-cue-chain-pending':'true'},'Recheck the revised cue-chain choices before saving this observation.'),
+          shown&&h('div',{className:'efw-result efw-stack',role:'status','data-efw-cue-chain-feedback':'true'},
+            h('strong',null,check.matches===3?'Your choices match this recorded cue chain.':check.uncertain&&check.matches+check.uncertain===3?'Some choices remain uncertain; the recorded input times can help you explain them.':'Compare your role and time choices with the recorded chain.'),
+            check.rows.map(function(row){return h('p',{key:row.id},row.label+': your current answer “'+label(row.id,row.answer)+'”; recorded chain “'+label(row.id,row.expected)+'”. '+row.explanation);}),
+            h('label',null,'My cue-chain evidence explanation',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_cue_chain_evidence_explanation", "Cue-chain evidence explanation"),maxLength:1200,value:s.reflection||'',placeholder:'The neighbor used input at… The selected rabbit used… The displayed poses are later, so… This model does not establish…',onChange:function(event){change({reflection:event.target.value});}})),
+            h('small',null,'Save the wildlife observation to preserve the original chain, first and latest choices, and explanation. This optional rule-evidence sheet does not add mission credit.'))),
+        first&&h('button',{type:'button',onClick:reset},'Start a new cue-chain sheet'),
+        !first&&h('small',null,'An unsubmitted cue-chain sheet is not included when saving and does not block other activities.'),
+        props.reduced&&h('p',{'data-efw-cue-chain-reduced':'true'},'Reduced motion freezes the 3D starting poses. This table and the role/time choices still use the original recorded samples; the still 3D scene is not a display of these later input times.')));
+  }
+
+  function EcoEncounterInference(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},candidate=props.React.useMemo(function(){return ecoMeadowInferenceTrial(props.frames,props.encounter,props.branch);},[props.frames,props.encounter,props.branch]);
+    var trial=ecoMeadowInferenceSnapshot(s.trial),matches=!!trial&&!!candidate&&JSON.stringify(trial)===JSON.stringify(candidate),cards=trial&&ecoMeadowInferenceClaims(trial);
+    var codes=Array.isArray(s.codes)&&s.codes.length===4?s.codes:['','','',''],first=Array.isArray(s.firstCodes)&&s.firstCodes.length===4?s.firstCodes:null,visited=Array.isArray(s.visited)?s.visited:[],check=trial&&ecoMeadowInferenceCheck(trial,codes,first),allVisited=!!trial&&[trial.before,trial.step,trial.after].every(function(step){return visited.indexOf(step)>=0;});
+    function change(patch){props.onChange(function(previous){var current=previous||{};return Object.assign({},current,typeof patch==='function'?patch(current):patch);});}
+    function start(){if(candidate)props.onChange({open:true,trial:candidate,codes:['','','',''],firstCodes:null,visited:[],checked:false,reflection:''});}
+    function inspect(k){if(!matches)return;var step=trial.samples[k].step;props.onInspect(step,function(previous){var current=previous||{},seen=Array.isArray(current.visited)?current.visited:[];return Object.assign({},current,{visited:seen.indexOf(step)>=0?seen.slice():seen.concat(step)});});}
+    var shown=!!(s.checked&&check&&first&&allVisited&&matches);
+    return h('details',{'data-efw-inference':'true',open:!!s.open,onToggle:function(event){if(event.currentTarget.open!==!!s.open){if(event.currentTarget.open&&!trial)start();else change({open:event.currentTarget.open});}}},
+      h('summary',null,'Evidence or inference?'),
+      h('style',null,`.efw [data-efw-inference]{border:1px solid var(--fw-line);border-radius:10px;padding:12px;min-width:0}.efw [data-efw-inference]>summary{font-weight:750;cursor:pointer}.efw-inference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.efw-inference-card{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0;display:grid;gap:8px}.efw-inference-card select{width:100%;min-width:0}.efw-inference-key{padding-left:20px;font-size:13px}.efw [data-efw-inference] :is(p,small,strong,button,label,li){overflow-wrap:anywhere}.efw [data-efw-inference] textarea{width:100%;box-sizing:border-box}@media(max-width:650px){.efw-inference-grid{grid-template-columns:1fr}}`),
+      h('div',{className:'efw-stack',style:{marginTop:12}},
+        h('p',null,'Which evidence source supports each statement? Make a first judgment, inspect the original three checkpoints, then compare and revise. Your first judgments stay attached to this encounter.'),
+        h('ul',{className:'efw-inference-key'},ECO_MEADOW_INFERENCE_CATEGORIES.map(function(item){return h('li',{key:item.id},h('strong',null,item.name+': '),item.description);})),
+        !candidate&&h('p',{role:'status'},'This encounter does not have a complete three-checkpoint record for this challenge.'),
+        candidate&&!trial&&h('button',{type:'button',onClick:start},'Start evidence challenge'),
+        trial&&!matches&&h('div',{className:'efw-result',role:'status'},h('p',null,'The current recording does not match this challenge’s original checkpoints. Its frozen evidence remains in the notebook; these answers have not been applied to a different encounter.'),candidate&&h('button',{type:'button',onClick:start},'Start a new evidence challenge')),
+        matches&&h('div',{className:'efw-stack'},
+          h('div',{className:'efw-inference-grid'},cards.map(function(card,k){return h('div',{className:'efw-inference-card',key:card.id,'data-efw-inference-card':String(k)},
+            h('strong',null,'Statement '+(k+1)),h('p',null,card.text),
+            h('label',null,'My evidence source',h('select',{'aria-label':'Evidence statement '+(k+1)+' source',value:codes[k],onChange:function(event){var value=event.target.value;change(function(current){var next=Array.isArray(current.codes)&&current.codes.length===4?current.codes.slice():['','','',''];next[k]=value;return {codes:next,checked:false};});}},h('option',{value:''},'Choose a source'),ECO_MEADOW_INFERENCE_CATEGORIES.map(function(item){return h('option',{value:item.id,key:item.id},item.name);}))),
+            shown&&h('small',null,(check.cards[k].correct?'This source fits. ':'Review this source. ')+card.explanation));})),
+          h('p',null,'Inspect all three original checkpoints before checking. The cards show recorded samples, not observations of wild animals.'),
+          h('div',{className:'efw-encounter-evidence','data-efw-inference-evidence':'true'},trial.samples.map(function(sample,k){var seen=visited.indexOf(sample.step)>=0;return h('div',{key:sample.step},h('strong',null,['Before','Encounter','After'][k]+' · time '+(sample.step/10).toFixed(1)),h('button',{type:'button','aria-pressed':props.cursor===sample.step,onClick:function(){inspect(k);}},'Inspect evidence checkpoint '+(k+1)),h('small',null,seen?'Inspected':'Not yet inspected'),seen&&h('p',null,'Selected action: '+sample.actor.state+'. Cue action: '+sample.cue.state+'. '+(sample.gap===null?'One representative is not present.':'Simultaneous gap: '+sample.gap.toFixed(3)+' scene units.')));})),
+          h('button',{type:'button',className:'efw-primary',disabled:!check||!allVisited,onClick:function(){change({checked:true,firstCodes:first||codes.slice()});}},first?'Check revised evidence sources':'Check evidence sources'),
+          shown&&h('div',{className:'efw-result efw-stack',role:'status','data-efw-inference-feedback':'true'},h('strong',null,check.matches+' of 4 current sources match these statements.'),h('p',null,'First submission: '+check.firstMatches+' of 4 matched. Your first judgments remain available when you revise.'),h('p',null,'A convincing animation can suggest more than it establishes. Rule cues do not prove a real animal’s thoughts or sensing; these encounters do not establish capture or biomass outcomes.'),h('label',null,'My evidence and inference reflection',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_evidence_and_inference_reflection", "Evidence and inference reflection"),maxLength:1600,value:s.reflection||'',placeholder:'The checkpoint explicitly shows… The rule supplies… I cannot conclude… I revised… because…',onChange:function(event){change({reflection:event.target.value});}})),h('small',null,'Save the wildlife observation to preserve the frozen checkpoints and your first and latest classifications. Checking this challenge alone does not add mission progress.')),
+          shown&&h(EcoEvidenceLink,{ translateStudy: __alloT,React:props.React,trial:trial,state:s.link,reduced:props.reduced,onChange:function(next){change(function(current){return {link:typeof next==='function'?next(current.link||{}):next};});}}),
+          shown&&trial.kind==='vigilance'&&h(EcoCueChain,{ translateStudy: __alloT,React:props.React,frames:props.frames,trial:trial,state:s.chain,reduced:props.reduced,onChange:function(next){change(function(current){return {chain:typeof next==='function'?next(current.chain||{}):next};});},onInspect:function(step){var k=trial.samples.findIndex(function(sample){return sample.step===step;});if(k>=0)inspect(k);}}),
+          props.reduced&&h('p',{'data-efw-inference-reduced':'true'},'Reduced motion keeps the 3D starting poses still. Inspecting each checkpoint reveals its original action descriptions and measured gap here, so all four statements remain answerable.'))));
+  }
+
+  function EcoSpacingProbe(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,s=props.state||{},context=ecoMeadowSpacingProbeCase(props.frames,props.encounter);
+    if(!props.encounter||props.encounter.kind!=='spacing')return null;
+    var paired=s.version===2;
+    var variable=s.variable==='feeding'?'feeding':'distance',value=variable==='distance'?(Number.isFinite(s.distance)?s.distance:context?context.recorded.decisionDistance:0):typeof s.feeding==='boolean'?s.feeding:false;
+    var predictions={continue:'Give space with the same neighbor',stop:'Do not give space in this decision',switch:'Give space with another neighbor',unsure:'Not sure yet'},hasPrediction=Object.prototype.hasOwnProperty.call(predictions,s.prediction);
+    var candidate=context?ecoMeadowSpacingProbeRun(context,variable,value):null,trial=s.trial&&context&&s.trial.context&&s.trial.context.id===context.id&&s.trial.variable===variable&&s.trial.value===value?s.trial:null;
+    function change(patch){props.onChange(function(previous){var current=previous||{};return Object.assign({},current,{saved:false},typeof patch==='function'?patch(current):patch);});}
+    function configure(patch){change(function(current){return Object.assign(current.version===2?{checked:false}:{trial:null,firstPrediction:'',reflection:current.reflection||''},patch);});}
+    function run(){if(candidate&&hasPrediction)change({trial:candidate,firstPrediction:s.firstPrediction||s.prediction});}
+    function collectControl(){
+      if(!context||paired)return;
+      var control=ecoMeadowSpacingProbeRun(context,variable,variable==='distance'?context.recorded.decisionDistance:true),key=ecoMeadowSpacingProbeContextKey(context,props.branch);
+      if(control&&control.control&&key)change({version:2,branch:props.branch,contextKey:key,control:control,trial:null,firstPrediction:'',prediction:'',checked:false});
+    }
+    function resetPair(){change({version:1,branch:null,contextKey:null,control:null,trial:null,firstPrediction:'',prediction:'',checked:false});}
+    function inputLabel(result){return result.variable==='distance'?'Neighbor distance '+result.value.toFixed(3)+' scene units':'Neighbor action '+(result.value?'Grazing':'Resting');}
+    var collected=paired?ecoMeadowSpacingProbeTrialSnapshot(s.control):null,contextKey=context&&ecoMeadowSpacingProbeContextKey(context,props.branch);
+    var controlValid=!!(collected&&collected.control&&collected.variable===variable&&contextKey&&s.contextKey===contextKey&&s.branch===props.branch&&JSON.stringify(collected.context)===JSON.stringify(context));
+    var frozenPair=paired&&s.trial&&context?ecoMeadowSpacingProbePairRecord(Object.assign({},s,{prediction:s.firstPrediction}),{kind:'spacing',branch:props.branch,actorIndex:context.actorIndex,cueIndex:context.cueIndex,before:{step:props.encounter.before},after:{step:props.encounter.after}},'rabbits'):null;
+    var samePairInput=!!(frozenPair&&controlValid&&candidate&&candidate.variable===frozenPair.trial.variable&&candidate.value===frozenPair.trial.value),pairReady=paired&&ecoMeadowSpacingProbePairEvidence(props.frames,props.encounter,props.branch,s);
+    var pairCanRun=!!(controlValid&&candidate&&!candidate.control&&hasPrediction&&(!s.trial||samePairInput));
+    function runPair(){
+      if(!pairCanRun)return;
+      change(s.trial?{checked:true}:{trial:candidate,firstPrediction:s.prediction,checked:true});
+    }
+    var pairedSummary=paired&&h('div',{'data-efw-cue-pair':'true',className:'efw-stack'},
+      h('strong',null,'A fair comparison of one frozen decision'),
+      h('p',null,'Only '+(variable==='distance'?'the selected neighbor’s distance':'the selected neighbor’s feeding action')+' may change. The actor, all other rabbits, food availability and original decision time stay fixed. A different neighbor may still trigger spacing.'),
+      h('table',{className:'efw-cue-pair-table'},h('caption',null,'Collected control and submitted intervention'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Run'),h('th',{scope:'col'},'Neighbor input'),h('th',{scope:'col'},'Rule output'))),h('tbody',null,
+        h('tr',{'data-efw-cue-pair-control':'true'},h('th',{scope:'row'},'Collected control'),h('td',null,controlValid?inputLabel(collected):'Original inputs unavailable'),h('td',null,controlValid?describe(collected.modified):'Start a new cue test; this control does not match the current recording.')),
+        h('tr',{'data-efw-cue-pair-intervention':'true'},h('th',{scope:'row'},'Submitted intervention'),h('td',null,frozenPair?inputLabel(frozenPair.trial):'Not collected yet'),h('td',null,frozenPair?describe(frozenPair.trial.modified):'Choose a changed input, predict, then run the paired test.')))),
+      frozenPair&&h('p',null,'First paired prediction: '+predictions[frozenPair.firstPrediction]+'.'),
+      s.trial&&(!frozenPair||!controlValid)&&h('p',{role:'status'},'The submitted pair is unavailable for this recording. Start a new cue test; saved notebook evidence stays unchanged.'),
+      frozenPair&&!samePairInput&&h('p',{role:'status','data-efw-cue-pair-pending':'true'},'The controls differ from the submitted intervention. Its frozen result remains above. Start a new cue test for a different intervention, or restore the submitted input and recheck before saving.'),
+      paired&&!s.trial&&candidate&&candidate.control&&h('p',{role:'status'},'The control is collected. Change the locked input before running an intervention; an unchanged run is not a treatment.'),
+      frozenPair&&samePairInput&&h('p',{role:'status'},pairReady?(s.prediction==='unsure'?'Your latest paired prediction remains uncertain. Compare the two rule outputs to explain what this one decision supports.':s.prediction===frozenPair.trial.outcome?'Your latest paired prediction matches this intervention. The first prediction and both collected runs stay unchanged.':'Your latest paired prediction differs from this intervention. The first prediction and both collected runs stay unchanged.'):'Recheck the revised paired prediction before saving.'),
+      frozenPair&&h('label',null,'My paired-test evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_paired_cue_test_reflection", "Paired cue test reflection"),maxLength:1600,value:s.reflection||'',placeholder:'The collected control returned… I changed only… Compared with that control… My prediction changed because… This does not establish…',onChange:function(e){change({reflection:e.target.value});}})),
+      h('small',null,'Both runs are detached one-decision rule tests. They do not move the recorded animals, show a changed trajectory or establish a biomass effect.'));
+
+    var actor=context&&context.input.rabbits[context.actorIndex],source=context&&context.input.rabbits[context.cueIndex],modified=candidate&&candidate.modifiedInput.rabbits[context.cueIndex],plan=null;
+    if(actor&&source&&modified){
+      var neighbors=context.input.rabbits.map(function(p,k){return Object.assign({index:k},p);}).filter(function(p){return p.active&&p.index<context.actorIndex&&p.index!==context.cueIndex&&Math.hypot(p.x-actor.x,p.z-actor.z)<=2.5;}),points=[actor,source,modified].concat(neighbors),minX=Math.min.apply(Math,points.map(function(p){return p.x;})),maxX=Math.max.apply(Math,points.map(function(p){return p.x;})),minZ=Math.min.apply(Math,points.map(function(p){return p.z;})),maxZ=Math.max.apply(Math,points.map(function(p){return p.z;})),span=Math.max(0.5,maxX-minX,maxZ-minZ),cx=(minX+maxX)/2,cz=(minZ+maxZ)/2;
+      function x(p){return 160+(p.x-cx)/span*150;}function y(p){return 108+(p.z-cz)/span*150;}
+      plan=h('svg',{viewBox:'0 0 320 225',role:'img','aria-label':__alloT("stem.ecosystem.a11y_recorded_and_hypothetical_neighbor_input_positions", "Recorded and hypothetical neighbor input positions"),'data-efw-cue-probe-plan':'true'},h('title',null,'One-decision cue test inputs'),h('desc',null,'Gold is the actor rabbit, cyan marks its recorded cue position and magenta marks the hypothetical input. Gray points are other nearby recorded rabbits. No modified trajectory is drawn.'),h('rect',{x:1,y:1,width:318,height:223,rx:8,fill:'#102a30',stroke:'#7895a1'}),neighbors.map(function(p){return h('g',{key:p.index},h('circle',{cx:x(p),cy:y(p),r:4,fill:'#b9c7c9'}),h('text',{x:x(p)+6,y:y(p)+12,fill:'#b9c7c9',fontSize:10},String(p.index+1)));}),h('line',{x1:x(actor),y1:y(actor),x2:x(source),y2:y(source),stroke:'#67e8f9',strokeWidth:1}),h('line',{x1:x(actor),y1:y(actor),x2:x(modified),y2:y(modified),stroke:'#f0abfc',strokeWidth:2,strokeDasharray:'4 5'}),h('circle',{cx:x(actor),cy:y(actor),r:6,fill:'#facc15'}),h('circle',{cx:x(source),cy:y(source),r:6,fill:'none',stroke:'#67e8f9',strokeWidth:2}),h('path',{d:'M '+x(modified)+' '+(y(modified)-7)+' l 7 7 -7 7 -7 -7 Z',fill:'none',stroke:'#f0abfc',strokeWidth:2}),h('text',{x:10,y:201,fill:'#c8dce0',fontSize:14},'○ Recorded neighbor · ◇ Hypothetical input'),h('text',{x:10,y:216,fill:'#c8dce0',fontSize:14},'Inputs only · no modified animal route'));
+    }
+    function describe(output){return output.state+(output.sourceIndex==null?'':' with rabbit '+(output.sourceIndex+1));}
+    return h('details',{className:'efw-cue-probe','data-efw-cue-probe':'true',open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open});}},
+      h('summary',null,'What if this neighbor…? Test one cue'),
+      h('style',null,`.efw-cue-probe{border:1px solid var(--fw-line);border-radius:8px;padding:12px;min-width:0}.efw-cue-probe summary{cursor:pointer;font-weight:750}.efw-cue-pair-table{width:100%;table-layout:fixed;border-collapse:collapse}.efw-cue-pair-table th,.efw-cue-pair-table td{padding:8px;border:1px solid var(--fw-line);text-align:left;overflow-wrap:anywhere}.efw-cue-pair-table caption{text-align:left;font-weight:700;margin-bottom:6px}.efw-cue-probe>div{margin-top:12px}.efw-cue-probe-layout{display:grid;grid-template-columns:minmax(170px,0.8fr) minmax(0,1.2fr);gap:14px;align-items:start}.efw-cue-probe svg{width:100%;height:auto;display:block}.efw-cue-probe input[type=range]{width:100%}.efw-cue-probe p,.efw-cue-probe small,.efw-cue-probe strong{overflow-wrap:anywhere}@media(max-width:600px){.efw-cue-probe-layout{grid-template-columns:1fr}.efw-cue-probe svg{max-width:330px}}`),
+      h('div',{className:'efw-stack'},!context?h('p',null,'This recorded encounter has no complete starting cue to test. Choose another Feeding neighbors encounter after a comparison.'):h(props.React.Fragment,null,
+        h('p',null,'Start with the recorded decision at time '+(context.step/10).toFixed(1)+': rabbit '+(context.actorIndex+1)+' gives space to grazing rabbit '+(context.cueIndex+1)+', '+context.recorded.decisionDistance.toFixed(3)+' scene units away. Change one input, or keep it unchanged as a baseline control, then test the same local rule.'),
+        props.onInspect&&h('button',{type:'button',onClick:function(){props.onInspect(context.step);}},'Inspect the original cue decision'),
+        h('div',{className:'efw-cue-probe-layout'},plan,h('div',{className:'efw-stack'},
+          h('label',null,'One input to test',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_variable", "Cue test variable"),value:variable,disabled:paired,onChange:function(e){configure({variable:e.target.value});}},h('option',{value:'distance'},'Neighbor distance'),h('option',{value:'feeding'},'Neighbor feeding action'))),
+          variable==='distance'?h('label',null,'Hypothetical neighbor distance · '+value.toFixed(3)+' scene units',h('input',{type:'range',min:0,max:2.5,step:'any',value:value,'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_distance", "Cue test neighbor distance"),onChange:function(e){configure({distance:Number(e.target.value)});}})):h('label',null,'Hypothetical neighbor action',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_action", "Cue test neighbor action"),value:value?'feeding':'resting',onChange:function(e){configure({feeding:e.target.value==='feeding'});}},h('option',{value:'feeding'},'Grazing as recorded'),h('option',{value:'resting'},'Resting instead'))),
+          h('button',{type:'button',onClick:function(){configure({distance:context.recorded.decisionDistance,feeding:true});}},'Use original neighbor input'),
+          !paired&&h('button',{type:'button',disabled:!ecoMeadowSpacingProbeContextKey(context,props.branch),onClick:collectControl},'Collect control for a paired test'),
+          !paired&&h('small',null,'Collecting keeps an actual unchanged-input run and starts a new working pair. Saved observations stay as recorded.'),
+          paired&&h('button',{type:'button',onClick:resetPair},'Start a new cue test'),
+          h('small',null,'All other recorded rabbits and inputs stay fixed. Changing distance moves only this cue input along its original direction; changing action keeps food availability fixed. Another neighbor may still trigger the rule.'),
+          h('label',null,'My cue-test prediction',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_prediction", "Cue test prediction"),value:hasPrediction?s.prediction:'',onChange:function(e){change(Object.assign({prediction:e.target.value},paired?{checked:false}:{}));}},h('option',{value:''},'Choose before testing'),Object.keys(predictions).map(function(key){return h('option',{key:key,value:key},predictions[key]);}))),
+          !paired&&candidate&&candidate.control&&h('small',{'data-efw-cue-probe-control':'true'},'Unchanged-input baseline control: this keeps the original neighbor input. Test whether the same frozen decision is reproduced.'),
+          h('button',{type:'button',className:'efw-primary',disabled:paired?!pairCanRun:!candidate||!hasPrediction,onClick:paired?runPair:run},paired?(s.trial?'Check revised paired prediction':'Run paired cue test'):candidate&&candidate.control?'Run unchanged-input control':trial?'Test this cue again':'Test this cue'))),
+        pairedSummary,
+        h('small',null,'The magenta input is hypothetical. This bench reruns one spacing decision; it does not move the recorded 3D animals, generate a modified route or change any population values.'),
+        !paired&&trial&&h('div',{className:'efw-result efw-stack','data-efw-cue-probe-output':'true',role:'status'},h('strong',null,'Original rule: '+describe(trial.original)+'; '+(trial.control?'control':'modified')+' rule: '+describe(trial.modified)),h('p',null,trial.control?'The unchanged-input control reproduces the same spacing decision. This checks the local rule without claiming a response to a changed neighbor.':trial.outcome==='switch'?'A different recorded feeding neighbor now triggers spacing. Moving or resting one neighbor does not necessarily remove every spacing cue.':trial.outcome==='continue'?'The same recorded neighbor still triggers spacing under this tested input.':'No feeding neighbor triggers spacing in this single tested decision, so its underlying grazing action remains.'),h('p',null,'First cue-test prediction: '+(predictions[s.firstPrediction]||'not recorded')+'. '+(s.prediction==='unsure'?'Use the result to build an explanation.':s.prediction===trial.outcome?'Your current prediction matches this rule result.':'Compare your current prediction with the rule result.')),h('label',null,'My cue-test evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_reflection", "Cue test reflection"),maxLength:1600,value:s.reflection||'',placeholder:'I changed only… The local rule returned… This supports… It does not show what an animal would do over time because…',onChange:function(e){change({reflection:e.target.value});}})),h('small',null,'Save this wildlife observation to preserve the original and tested inputs, validated rule outputs, first prediction and reflection.')),
+        props.reduced&&h('p',{'data-efw-cue-probe-reduced':'true'},'Reduced motion leaves the 3D starting poses still. The input diagram, exact original cue and single-decision rule test remain available.'))));
+  }
+
+  // A submitted sheet may be revised, but its new answers must be checked
+  // before saving. Merely opening an optional activity never makes it required.
+  function ecoMeadowFieldworkSaveReadiness(frames,encounter,branch,activity) {
+    var s=activity||{},m=s.measurement||{},hs=s.headline||{},draft=s.inference||{},rows=[];
+    if(!encounter||!encounter.actor||!encounter.cue||['baseline','experiment'].indexOf(branch)<0)return {ok:false,measurement:null,headline:null,inference:null,rows:rows,pending:[]};
+    var evidence=m.checked&&m.revisionPending!==true?ecoMeadowPairEvidence(frames,encounter,m.steps):null;
+    function action(step){var frame=frames&&frames[step],pose=frame&&frame[encounter.actor.id]&&frame[encounter.actor.id][encounter.actor.index];return pose&&pose.active?pose.state:'Not present';}
+    var sighting={branch:branch,actorIndex:encounter.actor.index,cueId:encounter.cue.id,cueIndex:encounter.cue.index,state:action(encounter.step),before:{step:encounter.before,state:action(encounter.before)},after:{step:encounter.after,state:action(encounter.after)}};
+    var measurement=evidence?ecoWebPairMeasurementRecord({version:1,samples:evidence.samples,intervals:evidence.intervals,claim:m.claim,firstClaim:m.firstClaim||m.claim,reflection:m.reflection||''},sighting,encounter.actor.id):null;
+    var rulerReady=!!measurement,motionSubmitted=!!(m.motion&&(m.motion.started===true||m.motion.firstChoice!=null)),motionPending=motionSubmitted&&(!measurement||ecoMeadowPairMotionPending(measurement,m.motion));
+    if(measurement&&motionSubmitted){var motion=ecoMeadowPairMotionEvidence(measurement,m.motion);if(motion)measurement.motion=motion;else measurement=null;}
+    var trial=hs.checked?ecoMeadowHeadlineTrial(frames,encounter):null;
+    var visited=Array.isArray(hs.visited)&&Array.isArray(hs.pins)&&hs.pins.every(function(step){return hs.visited.indexOf(step-1)>=0&&hs.visited.indexOf(step)>=0;});
+    var headline=trial&&visited?ecoWebHeadlineRecord({version:1,branch:branch,trial:trial,pins:hs.pins,sorts:hs.sorts,firstSorts:hs.firstSorts,verdict:hs.verdict,firstVerdict:hs.firstVerdict,reflection:hs.reflection||''},sighting,encounter.actor.id,encounter.step):null;
+    var inference=ecoMeadowInferenceEvidence(frames,encounter,branch,draft),linkPending=ecoMeadowEvidenceLinkPending(draft.link,draft.trial),chainSubmitted=!!draft.chain&&draft.chain.firstAnswers!=null,chainPending=ecoMeadowCueChainPending(draft.chain,frames,draft.trial);
+    var sourcesReady=!!inference||!!ecoMeadowInferenceEvidence(frames,encounter,branch,Object.assign({},draft,{link:null,chain:null})),inferenceTarget=!sourcesReady?'inference':chainPending?'chain':linkPending?'link':'inference';
+    var pairedProbe=s.probe&&s.probe.version===2?ecoMeadowSpacingProbePairEvidence(frames,encounter,branch,s.probe):null;
+    function row(id,label,record,submitted,target,message){rows.push({id:id,label:label,status:record?'included':submitted?'pending':'optional',target:target,message:record?'Included with its checked first and latest answers.':submitted?message:'Not submitted; not included. This activity is optional.'});}
+    row('ruler',motionSubmitted?'Pair measurements and motion comparison':'Pair measurements',measurement,!!m.firstClaim||m.revisionPending===true||motionSubmitted,rulerReady&&motionPending?'motion':'ruler',rulerReady&&motionPending?'Complete or recheck the motion comparison before saving this observation.':'Recheck the revised pair measurements before saving this observation.');
+    row('headline','Headline evidence',headline,hs.firstSorts!=null,'headline','Recheck the revised headline evidence before saving this observation.');
+    row('inference',chainSubmitted?'Evidence sources and cue-chain choices':draft.link&&draft.link.firstPins!=null?'Evidence sources and checkpoint pins':'Evidence sources',inference,!!draft.firstCodes||linkPending||chainSubmitted,inferenceTarget,inferenceTarget==='chain'?'Recheck the revised cue-chain choices before saving this observation.':inferenceTarget==='link'?'Check the revised checkpoint pins before saving this observation.':'Recheck the revised evidence sources before saving this observation.');
+    if(s.probe&&s.probe.version===2)row('probe','Paired cue experiment',pairedProbe,true,'probe','Complete or recheck the paired cue experiment before saving this observation.');
+    var pending=rows.filter(function(item){return item.status==='pending';});
+    return {ok:!pending.length,measurement:measurement,headline:headline,inference:inference,probe:pairedProbe,rows:rows,pending:pending};
+  }
+
+  function ecoMeadowFieldworkFocus(root,target) {
+    var selectors={probe:'[data-efw-cue-probe]',ruler:'[data-efw-pair-lab]',motion:'[data-efw-pair-motion]',headline:'[data-efw-headline-trial]',inference:'[data-efw-inference]',link:'[data-efw-evidence-link]',chain:'[data-efw-cue-chain]'},selector=selectors[target];
+    var region=root&&selector&&root.querySelector(selector);if(!region)return false;
+    var node=region;while(node&&node!==root){if(node.tagName==='DETAILS')node.open=true;node=node.parentElement;}
+    var controls={probe:'[aria-label="Cue test prediction"]',ruler:'[aria-label="Pair gap claim"], [aria-label="Pair measurement time"]',motion:'[aria-label="Motion comparison choice"]',headline:'[aria-label="Headline verdict"] button, [aria-label="Headline evidence interval"]',inference:'[aria-label="Evidence statement 1 source"]',link:'input[type="checkbox"]',chain:'[aria-label="Cue-chain cue role"]'};
+    var control=null;controls[target].split(',').some(function(selector){control=Array.prototype.find.call(region.querySelectorAll(selector),function(item){return !item.disabled;});return !!control;});
+    if(!control)control=region.querySelector('button:not(:disabled),summary');
+    if(!control){region.tabIndex=-1;control=region;}
+    if(control.scrollIntoView)control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});return true;
+  }
+
+  Object.assign(window.StemLab.ecosystemFoodWeb,{fieldworkSaveReadiness:ecoMeadowFieldworkSaveReadiness,fieldworkFocus:ecoMeadowFieldworkFocus});
+
+  function EcoWildlifeFieldwork(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,activity=props.activity,encounter=props.encounter;
+    function changeSheet(name,next){props.onChange(function(previous){var current=previous||{},patch={saved:false};patch[name]=typeof next==='function'?next(current[name]||{}):next;return Object.assign({},current,patch);});}
+    var choices={approach:'Approach or watch prey',avoid:'Watch or move away from a predator',feed:'Feed or peck',rest:'Rest',unsure:'Not sure yet'};
+    var fieldworkRoot=props.React.useRef(null),focusState=props.React.useState(null),focusRequest=focusState[0],setFocusRequest=focusState[1],ready=ecoMeadowFieldworkSaveReadiness(props.frames,encounter,props.branch,activity);
+    var inferenceDraft=activity&&activity.inference||{},inferenceStarted=!!inferenceDraft.trial,inferenceSubmitted=!!inferenceDraft.firstCodes,inferenceLink=inferenceDraft.link||{};
+    function returnToSheet(target){
+      props.onChange(function(previous){
+        var current=previous||{},patch={saved:false};
+        if(target==='probe')patch.probe=Object.assign({},current.probe,{open:true});
+        else if(target==='ruler'||target==='motion'){patch.measurement=Object.assign({},current.measurement,{open:true});if(target==='motion')patch.measurement.motion=Object.assign({},patch.measurement.motion,{open:true});}
+        else if(target==='headline')patch.headline=Object.assign({},current.headline,{open:true});
+        else {patch.inference=Object.assign({},current.inference,{open:true});if(target==='link'||target==='chain'){var nested=target==='chain'?'chain':'link';patch.inference[nested]=Object.assign({},patch.inference[nested],{open:true});}}
+        return Object.assign({},current,patch);
+      });setFocusRequest({target:target});
+    }
+    props.React.useEffect(function(){if(!focusRequest)return;ecoMeadowFieldworkFocus(fieldworkRoot.current,focusRequest.target);setFocusRequest(null);},[focusRequest,activity]);
+    if(encounter&&encounter.kind==='vigilance')choices.avoid='Pause and watch the nearby rabbit';
+    if(encounter&&encounter.kind==='spacing')choices.avoid='Give a feeding neighbor space';
+    if(encounter&&encounter.kind==='listening')choices.approach='Pause and listen near moving prey';
+    return h('section',{className:'efw-fieldwork efw-stack','data-efw-fieldwork':'true','aria-label':__alloT("stem.ecosystem.a11y_wildlife_fieldwork", "Wildlife fieldwork"),ref:fieldworkRoot},
+      h('style',null,`
+        .efw-fieldwork{background:var(--fw-panel);border:1px solid var(--fw-line);border-radius:12px;padding:16px;min-width:0}.efw-fieldwork-head{border-left:4px solid var(--fw-accent);padding-left:12px}.efw-fieldwork-head>span{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--fw-accent)}
+        .efw-encounter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px}.efw .efw-encounter-card{text-align:left;display:grid;gap:5px;padding:12px}.efw .efw-encounter-card[aria-pressed=true]{border:2px solid var(--fw-accent);background:var(--fw-tint)}
+        .efw-encounter-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw-encounter-evidence>div{border:1px solid var(--fw-line);border-radius:8px;padding:12px;display:grid;gap:5px}.efw-encounter-evidence b{font-size:15px}.efw-encounter-evidence small{display:block}.efw-fieldwork textarea{margin-top:5px;display:block}.efw-fieldwork p,.efw-fieldwork strong,.efw-fieldwork small{overflow-wrap:anywhere}.efw-fieldwork-feedback{border-left:4px solid var(--fw-accent);padding:12px;background:var(--fw-tint);border-radius:4px}
+        .efw-interaction-legend{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:12px;padding:10px 12px;background:#112938;color:#f8fafc;border:1px solid #7895a1;border-radius:8px}.efw-interaction-legend span:before{content:'';display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:#facc15}.efw-interaction-legend span:nth-child(2):before{background:transparent;border:2px solid #67e8f9}.efw-interaction-legend span:last-child:before{width:22px;height:0;border-radius:0;background:transparent;border-top:2px dashed #67e8f9}
+        @media(max-width:600px){.efw-fieldwork{padding:12px}.efw-encounter-evidence{grid-template-columns:1fr}}
+      `),
+      h('div',{className:'efw-fieldwork-head'},h('span',null,'WILDLIFE FIELDWORK'),h('h4',null,'Read an encounter, one moment at a time'),h('p',null,'Choose a recorded encounter. Predict an action, inspect both animals, then explain the evidence.')),
+      !props.hasRun?h('p',null,'Run a food-web comparison to discover encounters in your community.'):!props.encounters.length?h('p',null,'No sustained animal encounter is recorded in this run. Try the Shared-prey web or Insect food shortage community.'):h('div',{className:'efw-encounter-grid'},props.encounters.map(function(item){return h('button',{type:'button',key:item.id,className:'efw-encounter-card','data-efw-encounter':item.kind,'aria-pressed':!!encounter&&encounter.id===item.id,onClick:function(){props.onSelect(item);}},h('strong',null,item.title),h('small',null,item.actor.name+' · representative '+(item.actor.index+1)),h('small',null,'With '+item.cue.name));})),
+      props.hasRun&&h('small',null,'Available encounters come from this branch’s recorded animation. Species and events vary with the setup. They are observations of representative animals.'),
+      props.foxCrossing&&h('div',{className:'efw-row'},h('button',{type:'button',onClick:props.onFoxCrossing},'Inspect a fox crossing'),h('small',null,'Watch a recorded step shortened or held by the existing navigation margin, then follow the same live fox as the selected animal resumes. The connector marks current positions and the tracks show recorded paths; index order is bookkeeping.')),
+      props.crossingSheet&&h('div',{className:'efw-stack','data-efw-crossing-sheet-entry':'true'},h('button',{type:'button',onClick:props.onCrossingSheet},props.hasWorkingEthogram?'Replace ethogram with crossing sheet':'Start fox-crossing observation sheet'),h('small',null,'Use five real checkpoints before, during and after this fox crossing. Starting the sheet replaces the current ethogram and, like any ethogram inspection, clears working encounter and movement drafts. Saved notebook observations stay available.')),
+      props.foxSearch&&h('div',{className:'efw-row'},h('button',{type:'button',onClick:props.onFoxSearch},'Inspect a fox search near shelter'),h('small',null,'Follow a fox’s brief check of a previously recorded prey location after its rabbit cue becomes unavailable at cover.')),
+      props.ethogram,
+      encounter&&h('div',{className:'efw-stack'},
+        h('div',{className:'efw-row',style:{justifyContent:'space-between'}},h('strong',null,encounter.question),h('button',{type:'button',onClick:props.onClear},'Leave fieldwork')),
+        h('p',null,'Selected: '+encounter.actor.name+' '+(encounter.actor.index+1)+' · cue: '+encounter.cue.name+' '+(encounter.cue.index+1)+' · '+props.branch+' branch.'),
+        !activity.revealed?h('div',{className:'efw-stack'},
+          h('p',null,'The scene is paused just before this encounter. What action do you expect during it?'),
+          h('label',null,'My action prediction',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_wildlife_prediction", "Wildlife prediction"),value:choices[activity.forecast]?activity.forecast:'',onChange:function(e){props.onChange({forecast:e.target.value});}},h('option',{value:''},'Choose a prediction'),Object.keys(choices).map(function(value){return h('option',{key:value,value:value},choices[value]);}))),
+          h('button',{type:'button',className:'efw-primary',disabled:!choices[activity.forecast],onClick:props.onReveal},'Reveal encounter')):h('div',{className:'efw-stack'},
+          h('div',{className:'efw-row','aria-label':__alloT("stem.ecosystem.a11y_encounter_checkpoints", "Encounter checkpoints")},[['before','Before encounter'],['step','Encounter moment'],['after','After encounter']].map(function(point){return h('button',{type:'button',key:point[0],'aria-pressed':props.cursor===encounter[point[0]],onClick:function(){props.onInspect(point[0]);}},point[1]);})),
+          h('div',{className:'efw-encounter-evidence','data-efw-encounter-evidence':'true'},props.samples.map(function(row){return h('div',{key:row.label},h('strong',null,row.label+' · time '+(row.step/10).toFixed(1)),h('b',null,row.state),h('small',null,'Cue animal: '+row.cueState),h('small',null,row.distance==null?'No current cue distance recorded.':'Decision distance: '+row.distance.toFixed(2)+' scene units'));})),
+          h('div',{className:'efw-fieldwork-feedback',role:'status'},h('strong',null,'Recorded action: '+props.action),h('p',null,activity.forecast==='unsure'?'You started with uncertainty. Compare the three moments to build an explanation.':'Your prediction was “'+choices[activity.forecast]+'”. '+(activity.forecast===encounter.expected?'The recorded action fits that description.':'The recorded action differs; use the observation to revise your idea.')),h('p',null,encounter.explanation)),
+          h('small',null,'Cards follow the encounter’s recorded cue. The scene connector follows the action at the selected sample and may change before or after. Distances describe previous positions used by the decision, in illustrative scene units. A pounce or feeding pose does not establish a capture.'),
+          h(EcoEncounterInference,{ translateStudy: __alloT,React:props.React,frames:props.frames,encounter:encounter,branch:props.branch,cursor:props.cursor,state:activity.inference,reduced:props.reduced,onChange:function(next){changeSheet('inference',next);},onInspect:props.onInferenceInspect}),
+          h(EcoSpacingProbe,{ translateStudy: __alloT,React:props.React,frames:props.frames,encounter:encounter,branch:props.branch,state:activity.probe,reduced:props.reduced,onChange:function(next){changeSheet('probe',next);},onInspect:function(step){props.onMeasureInspect(step);}}),
+          h(EcoPairMeasurement,{ translateStudy: __alloT,React:props.React,frames:props.frames,encounter:encounter,cursor:props.cursor,measurement:activity.measurement,reduced:props.reduced,onChange:function(next){changeSheet('measurement',next);},onInspect:props.onMeasureInspect,onPlanView:props.onPlanView}),
+          h(EcoHeadlineTrial,{ translateStudy: __alloT,React:props.React,frames:props.frames,encounter:encounter,state:activity.headline,reduced:props.reduced,onChange:function(next){changeSheet('headline',next);},onInspect:props.onHeadlineInspect}),
+          h('label',null,'What did you notice?',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_wildlife_explanation", "Wildlife explanation"),value:activity.reflection||'',maxLength:1600,placeholder:'At first… During the encounter… I think the animal responded to…',onChange:function(e){props.onChange({reflection:e.target.value,saved:false});}})),
+          h('label',null,'What would you investigate outdoors?',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_wildlife_model_limit", "Wildlife model limit"),value:activity.limit||'',maxLength:1000,placeholder:encounter.limitation,onChange:function(e){props.onChange({limit:e.target.value,saved:false});}})),
+          h('div',{'data-efw-save-readiness':'true',className:'efw-stack'},h('strong',null,'What this observation will save'),h('small',null,'The encounter sample and population values are always included. Completed cue tests are also saved. The sheets below are optional until submitted; a submitted revision must be rechecked.'),h('ul',null,ready.rows.map(function(row){return h('li',{key:row.id,'data-efw-save-sheet':row.id,'data-status':row.status},h('strong',null,row.label+': '),row.message,row.status==='pending'&&h('button',{type:'button',onClick:function(){returnToSheet(row.target);}},row.target==='probe'?'Return to cue test':row.target==='ruler'?'Return to pair measurements':row.target==='motion'?'Return to motion comparison':row.target==='headline'?'Return to headline evidence':row.target==='link'?'Return to checkpoint pins':row.target==='chain'?'Return to cue-chain choices':'Return to evidence sources'));}))),
+          h('div',{className:'efw-row'},h('button',{type:'button',className:'efw-primary',disabled:props.slots<1||!!activity.saved||!ready.ok,onClick:props.onSave},'Save wildlife observation'),h('small',{role:'status'},activity.saved?'Encounter saved with its original prediction and explanation.':props.slots<1?'Notebook full. Export your notes, then remove an observation to make room.':!ready.ok&&ready.pending.length?ready.pending[0].message:inferenceStarted&&!inferenceSubmitted?'The optional evidence challenge has not been submitted and will not be included in this observation.':inferenceLink.open&&inferenceLink.firstPins==null?'The optional checkpoint link has not been submitted and will not be included. Your source classifications can still be saved.':'Saves the encounter sample and all population values to the field notebook. Writing is optional.')))),
+      props.reduced&&encounter&&h('p',{className:'efw-result','data-efw-fieldwork-reduced':'true'},'Reduced motion keeps the 3D animals in their starting poses. The checkpoint text and population evidence still follow the selected samples.'));
+  }
+
+  function EcoInvestigationStudio(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h = props.React.createElement, state = props.state, guide = props.guide;
+    var cases = ['cascade','refuge','insects','soil'].map(ecoWebInvestigation);
+    var icons = ['🦊','🌿','🐛','🍄'];
+    var evidence = guide && props.result ? ecoWebInvestigationEvidence(guide.id, props.result, props.config) : null;
+    var committed = evidence && ecoWebInvestigationRecord(state.run.investigation, props.config);
+    var visited = ['before','event','after'].filter(function(id) { return Array.isArray(state.investigationVisited) && state.investigationVisited.indexOf(id) >= 0; });
+    var target = guide && ECO_WEB_SPECIES.find(function(sp) { return sp.id === guide.focus; });
+    var matches = guide && JSON.stringify(guide.config) === JSON.stringify(props.config);
+    var labels = { higher: 'Higher', lower: 'Lower', same: 'The same', unsure: 'Not sure yet' };
+    var latest = evidence && evidence[evidence.length - 1];
+    var scale = evidence && Math.max(1, ...evidence.map(function(row) { return Math.max(row.baseline, row.experiment); }));
+    return h('section', { className: 'efw-studio efw-stack', 'data-efw-investigations': 'true', 'aria-label': __alloT("stem.ecosystem.a11y_guided_food_web_investigations", "Guided food-web investigations") },
+      h('style', null, `
+        .efw-studio{border:1px solid var(--fw-line);border-radius:14px;overflow:hidden;background:var(--fw-panel);gap:0}
+        .efw-studio-hero{background:linear-gradient(120deg,#123b35,#183347);color:#f1fff9;padding:22px;position:relative;overflow:hidden}
+        .efw-studio-hero>span{color:#a7f3d0;font-size:11px;font-weight:800;letter-spacing:2px}.efw-studio-hero h4{font-size:24px;margin:5px 0}.efw-studio-hero p{max-width:65ch;color:#e2efe9}
+        .efw-studio-body{padding:18px;display:grid;gap:18px;min-width:0}.efw-case-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+        .efw .efw-case{display:grid;gap:6px;text-align:left;align-content:start;padding:14px;font-weight:400}.efw-case>span:first-child{font-size:24px}.efw-case strong{font-size:15px}.efw .efw-case[aria-pressed=true]{border:2px solid var(--fw-accent);background:var(--fw-tint)}
+        .efw-investigation-progress{display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0;margin:0}.efw-investigation-progress li{background:var(--fw-tint);padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700}
+        .efw-evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.efw .efw-checkpoint{display:grid;gap:9px;text-align:left;font-weight:400;padding:14px;align-content:start;min-width:0}.efw .efw-checkpoint[aria-pressed=true]{outline:2px solid var(--fw-accent);outline-offset:2px}
+        .efw-checkpoint strong{font-size:16px}.efw-checkpoint .efw-time{font-size:12px;color:var(--fw-muted)}.efw-evidence-meter{display:grid;gap:5px;font-size:12px}.efw-evidence-meter>span{display:flex;justify-content:space-between;gap:6px}.efw-evidence-meter i{height:8px;display:block;background:var(--fw-accent);border-radius:2px;max-width:100%}.efw-evidence-meter[data-branch=baseline] i{background:transparent;border:2px dashed var(--fw-muted)}
+        .efw-checkpoint .efw-checkpoint-prompt{font-size:12px;line-height:1.5}.efw-studio textarea{display:block;margin-top:6px}.efw-studio fieldset{border:0;padding:0;margin:0;min-width:0}.efw-studio legend{font-weight:700;margin-bottom:8px}.efw-studio .efw-feedback{padding:14px;border:1px solid var(--fw-line);background:var(--fw-tint);border-radius:10px}
+        .efw-pathway{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;counter-reset:eco-path;padding:0;margin:12px 0}.efw-pathway li{counter-increment:eco-path;border-top:3px solid var(--fw-accent);padding:10px;background:var(--fw-tint);border-radius:4px}.efw-pathway li:before{content:counter(eco-path);display:inline-grid;place-items:center;width:24px;height:24px;border:1px solid var(--fw-line);border-radius:50%;margin-right:7px;font-weight:800}.efw-pathway p{font-size:13px}
+        .efw-studio :is(p,small,strong,span){overflow-wrap:anywhere}.theme-contrast .efw-studio-hero{background:#000;border-bottom:1px solid #fff}.theme-contrast .efw-studio-hero>span{color:#ff0}
+        @media(max-width:900px){.efw-case-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:600px){.efw-studio-body{padding:12px}.efw-studio-hero{padding:16px}.efw-studio-hero h4{font-size:21px}.efw-evidence-grid,.efw-pathway{grid-template-columns:1fr}.efw .efw-case{padding:10px}.efw-case strong{font-size:14px}}
+      `),
+      h('div', { className: 'efw-studio-hero' }, h('span', null, 'FIELD INVESTIGATIONS'), h('h4', null, 'Follow a change through the living web'),
+        h('p', null, 'Predict a response. Follow the evidence. Explain what connects the two. Choose a guided question or keep exploring your own.')),
+      h('div', { className: 'efw-studio-body' },
+        h('div', { className: 'efw-case-grid' }, cases.map(function(item, i) { return h('button', { type: 'button', className: 'efw-case', key: item.id, 'data-efw-start': item.id, 'aria-pressed': !!guide && guide.id === item.id, 'aria-label': 'Start ' + item.title, onClick: function() { props.onStart(item.id); } }, h('span', { 'aria-hidden': 'true' }, icons[i]), h('strong', null, item.title), h('small', null, item.tag)); })),
+        h('small', null, 'Choosing a case replaces the working setup and draft. Your saved notebook observations stay available.'),
+        guide && h('div', { className: 'efw-stack' },
+          h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, guide.question), h('button', { type: 'button', onClick: props.onLeave }, 'Explore freely')),
+          !matches ? h('div', { className: 'efw-feedback', role: 'status' }, h('p', null, 'The setup has changed. Reload this case to use its prediction and evidence guide, or explore your own question.'), h('button', { type: 'button', onClick: function() { props.onStart(guide.id); } }, 'Reload investigation setup')) : h('div', { className: 'efw-stack' },
+            h('ol', { className: 'efw-investigation-progress', 'aria-label': __alloT("stem.ecosystem.a11y_investigation_progress", "Investigation progress") },
+              h('li', null, committed ? '1 · Prediction recorded' : '1 · Make a prediction'),
+              h('li', null, '2 · ' + (evidence ? visited.filter(function(id) { return ['before','event','after'].indexOf(id) >= 0; }).length : 0) + '/3 moments inspected'),
+              h('li', null, state.investigationSaved ? '3 · Evidence saved' : '3 · Explain and save')),
+            !evidence ? h('fieldset', { className: 'efw-stack' }, h('legend', null, '1. Predict before you run'),
+              h('label', null, 'At time 24, ' + target.name + ' biomass in the experiment will be…', h('select', { 'aria-label': __alloT("stem.ecosystem.a11y_investigation_prediction", "Investigation prediction"), value: labels[state.forecast] ? state.forecast : '', onChange: function(e) { props.onUpdate({ forecast: e.target.value }); } }, h('option', { value: '' }, 'Choose a prediction'), Object.keys(labels).map(function(value) { return h('option', { key: value, value: value }, labels[value]); }))),
+              h('small', null, 'Compare with the undisturbed baseline at the same time, not with the starting population. “Not sure yet” is a useful starting point.'),
+              h('label', null, 'Why do you predict this? (optional)', h('textarea', { 'aria-label': __alloT("stem.ecosystem.a11y_investigation_prediction_reason", "Investigation prediction reason"), value: state.prediction || '', maxLength: 1200, onChange: function(e) { props.onUpdate({ prediction: e.target.value }); }, placeholder: 'I think this because…' })),
+              h('button', { type: 'button', className: 'efw-primary', disabled: !labels[state.forecast], onClick: props.onRun }, 'Run investigation')) : h('div', { className: 'efw-stack' },
+              h('div', { className: 'efw-row' }, h('strong', null, committed ? 'Your recorded prediction: ' + (committed.forecast === 'unsure' ? 'Not sure yet.' : labels[committed.forecast] + (committed.forecast === 'same' ? ' as' : ' than') + ' baseline at time 24.') : 'This run has no recorded investigation prediction.'), h('button', { type: 'button', onClick: props.onPlan }, 'Plan a new prediction')),
+              state.run.prediction && h('p', { className: 'efw-note-prose' }, 'Your reason: ' + state.run.prediction),
+              h('h4', null, '2. Inspect the evidence · ' + target.name),
+              h('p', null, 'Select each moment to move the charts and meadow to the same sample. Dashed baseline bars and solid experiment bars share one scale across all three cards.'),
+              h('div', { className: 'efw-evidence-grid', 'data-efw-investigation-evidence': 'true' }, evidence.map(function(row) {
+                return h('button', { type: 'button', key: row.id, className: 'efw-checkpoint', 'data-efw-checkpoint': row.id, 'aria-label': 'Inspect ' + row.label + ', time ' + row.time.toFixed(1) + '. Baseline ' + ecoWebFormat(row.baseline) + ', experiment ' + ecoWebFormat(row.experiment) + ', difference ' + ecoWebDelta(row.delta) + ' biomass index. ' + row.prompt, 'aria-pressed': props.cursor === row.step && props.focus === guide.focus, onClick: function() { props.onInspect(row); } },
+                  h('strong', null, row.label), h('span', { className: 'efw-time' }, 'Time ' + row.time.toFixed(1) + ' · ' + (visited.indexOf(row.id) >= 0 ? 'Inspected' : 'Select to inspect')),
+                  ['baseline','experiment'].map(function(branch) { return h('span', { key: branch, className: 'efw-evidence-meter', 'data-branch': branch }, h('span', null, branch === 'baseline' ? 'Baseline' : 'Experiment', h('b', null, ecoWebFormat(row[branch]))), h('i', { 'aria-hidden': 'true', style: { width: (row[branch] / scale * 100) + '%', minWidth: row[branch] > 0 ? 2 : 0, borderWidth: row[branch] === 0 ? 0 : undefined } })); }),
+                  h('span', { className: 'efw-overview-delta' }, 'Difference ' + ecoWebDelta(row.delta) + ' biomass index'), h('span', { className: 'efw-checkpoint-prompt' }, row.prompt));
+              })),
+              h('small', null, 'Difference means experiment minus baseline. The event sample is immediately after the disturbance; an indirect response can take time. Bar lengths describe biomass indices, not counts of animals.'),
+              committed && h('button', { type: 'button', onClick: function() { props.onUpdate({ investigationChecked: true }); } }, 'Compare my prediction'),
+              committed && state.investigationChecked && h('div', { className: 'efw-feedback', role: 'status', 'data-efw-prediction-feedback': 'true' },
+                h('strong', null, latest.direction === 'same' ? 'The final paired values match.' : 'The experiment ends ' + latest.direction + ' than the baseline.'),
+                h('p', null, 'At time 24: baseline ' + ecoWebFormat(latest.baseline) + ', experiment ' + ecoWebFormat(latest.experiment) + ', difference ' + ecoWebDelta(latest.delta) + ' biomass index.'),
+                h('p', null, committed.forecast === 'unsure' ? 'You started with uncertainty. Use these observations to build an explanation.' : committed.forecast === latest.direction ? 'The direction agrees with your prediction. Now explain the mechanism and consider what this model leaves out.' : 'The direction differs from your prediction. Revising an explanation when evidence changes is part of science.'),
+                h('small', null, 'This compares numerical direction only. It does not grade your explanation or show that a real ecosystem must respond this way.')),
+              h('details', null, h('summary', null, 'Trace a possible mechanism'), h('ol', { className: 'efw-pathway' }, guide.pathway.map(function(step, index) { return h('li', { key: index }, h('strong', null, step.label), h('p', null, step.detail)); })), h('p', null, 'These links suggest a mechanism. Use the paired observations to test your explanation; arrows alone do not establish the size or timing of an effect.')),
+              h('h4', null, '3. Explain with evidence'), h('p', null, guide.explanation),
+              h('label', null, 'My explanation', h('textarea', { 'aria-label': __alloT("stem.ecosystem.a11y_investigation_explanation", "Investigation explanation"), value: state.reflection || '', maxLength: 2000, placeholder: 'My claim is… At time… baseline was… and experiment was… This may happen because…', onChange: function(e) { props.onUpdate({ reflection: e.target.value, investigationSaved: false }); } })),
+              h('label', null, 'What would you need to check in a real ecosystem?', h('textarea', { 'aria-label': __alloT("stem.ecosystem.a11y_investigation_model_limit", "Investigation model limit"), value: state.investigationLimit || '', maxLength: 1200, placeholder: guide.limitation, onChange: function(e) { props.onUpdate({ investigationLimit: e.target.value, investigationSaved: false }); } })),
+              h('div', { className: 'efw-row' }, h('button', { type: 'button', className: 'efw-primary', disabled: props.slots < 3 || !committed || !!state.investigationSaved, onClick: props.onSave }, 'Save investigation evidence'), h('small', { role: 'status' }, state.investigationSaved ? 'Three paired observations saved with your prediction, explanation, and model limit.' : props.slots < 3 ? 'This needs three notebook spaces. Export your notebook and remove observations to make room.' : 'Save all three moments to your field notebook. Writing is optional and is not automatically graded.')))))));
   }
 
   function EcoCommunityOverview(props) {
@@ -2686,15 +6807,324 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     if (config.event === 'none') return 'No disturbance (control)';
     return (config.event === 'reduce' ? 'Reduce by 80%: ' : 'Remove ') + target.name;
   }
-  function ecoWebCapture(config, pair, step, focus, prediction, explanation, id) {
+  function ecoWebInvestigationRecord(raw, config) {
+    var guide = raw && ecoWebInvestigation(raw.id);
+    if (!guide || JSON.stringify(guide.config) !== JSON.stringify(ecoWebConfig(config)) || ['higher','lower','same','unsure'].indexOf(raw.forecast) < 0) return null;
+    return { id: guide.id, forecast: raw.forecast, limitation: typeof raw.limitation === 'string' ? raw.limitation.slice(0, 1200) : '' };
+  }
+// A saved movement keeps its original branch, representative and three pose
+  // samples. Normalization validates metadata without recalculating a timeline.
+// Saved ruler evidence is independent of the animal's earlier decision cue.
+  // Retain the original current-position measurements, never a recomputed run.
+  // Preserve the submitted observations. Normalize their internal consistency
+  // without replacing them with a newly generated representative timeline.
+  function ecoWebEthogramRecord(raw,config,step,focus) {
+    var c=ecoWebConfig(config),ids=ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(item){return item.id;});
+    if(!raw||raw.version!==1||['baseline','experiment'].indexOf(raw.branch)<0||raw.species!==focus||['rabbits','voles','foxes','owls','caterpillars','bluetits'].indexOf(focus)<0||!c.enabled[focus]||!Number.isInteger(raw.index)||raw.index<0||raw.index>15||!Number.isInteger(raw.start)||raw.start<0||!Number.isInteger(raw.interval)||raw.interval<1||raw.start+raw.interval*4>240||step!==raw.start+raw.interval*2||!Array.isArray(raw.samples)||raw.samples.length!==5)return null;
+    var validCodes=function(codes){return Array.isArray(codes)&&codes.length===5&&codes.every(function(code){return ids.indexOf(code)>=0;});};
+    if(!validCodes(raw.firstCodes)||!validCodes(raw.codes))return null;
+    var samples=[];
+    for(var k=0;k<5;k++){
+      var sample=raw.samples[k];
+      if(!sample||sample.step!==raw.start+raw.interval*k||typeof sample.state!=='string'||sample.state.length>80||ids.indexOf(sample.category)<0||ecoMeadowEthogramCategory(sample.state)!==sample.category||!Number.isFinite(sample.x)||Math.abs(sample.x)>=1000||!Number.isFinite(sample.z)||Math.abs(sample.z)>=1000)return null;
+      samples.push({step:sample.step,state:sample.state,category:sample.category,x:sample.x,z:sample.z});
+    }
+    var record={version:1,branch:raw.branch,species:focus,index:raw.index,start:raw.start,interval:raw.interval,samples:samples,firstCodes:raw.firstCodes.slice(),codes:raw.codes.slice(),reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+    if(typeof raw.runPrediction==='string')record.runPrediction=raw.runPrediction.slice(0,1200);
+    var compared=ecoWebSamplingComparisonRecord(raw.comparison&&Object.assign({},raw.comparison,{reference:raw.reference}),record);if(compared){record.reference=compared.reference;record.comparison=compared.comparison;}
+    return record;
+  }
+
+  function ecoWebEthogramText(record) {
+    if(!record)return [];
+    var check=ecoMeadowEthogramCheck({samples:record.samples},record.codes),labels={};
+    ECO_MEADOW_ETHOGRAM_CATEGORIES.forEach(function(category){labels[category.id]=category.name;});
+    if(!check)return [];
+    return ['Ethogram: '+record.species+' representative '+(record.index+1)+'; '+record.branch+' branch; five checkpoints every '+(record.interval/10).toFixed(1)+' model time units',
+      'First submitted codes: '+record.firstCodes.map(function(code){return labels[code];}).join(' | '),
+      'Latest codes: '+record.codes.map(function(code){return labels[code];}).join(' | ')].concat(record.samples.map(function(sample,k){return 'Sample '+(k+1)+' at time '+(sample.step/10).toFixed(1)+': '+sample.state+' → '+labels[sample.category]+'; position x '+sample.x.toPrecision(8)+', z '+sample.z.toPrecision(8);}),
+      ['Recorded sample tally: '+check.tally.map(function(row){return row.name+' '+row.recorded+'/5 ('+(row.recordedProportion*100).toFixed(0)+'%)';}).join('; '),
+      'Sample proportions describe these five checkpoints, not elapsed time, a population or a cause.',
+      'Ethogram reflection: '+(record.reflection||'(not recorded)')]);
+  }
+
+  function ecoWebSamplingComparisonRecord(raw,current) {
+    if(!raw||raw.version!==1||['start','interval'].indexOf(raw.variable)<0||['higher','lower','same','unsure'].indexOf(raw.prediction)<0||['higher','lower','same','unsure'].indexOf(raw.firstPrediction)<0||!ECO_MEADOW_ETHOGRAM_CATEGORIES.some(function(category){return category.id===raw.category;})||!ECO_MEADOW_ETHOGRAM_CATEGORIES.some(function(category){return category.id===raw.firstCategory;}))return null;
+    var compared=ecoMeadowSamplingComparison(raw.reference,current);
+    if(!compared||compared.variable!==raw.variable)return null;
+    return {reference:compared.reference,comparison:{version:1,variable:compared.variable,category:raw.category,prediction:raw.prediction,firstCategory:raw.firstCategory,firstPrediction:raw.firstPrediction,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''}};
+  }
+
+  function ecoWebSamplingComparisonText(record) {
+    if(!record||!record.reference||!record.comparison)return [];
+    var compared=ecoMeadowSamplingComparison(record.reference,record),meta=record.comparison;
+    if(!compared)return [];
+    var label=ECO_MEADOW_ETHOGRAM_CATEGORIES.find(function(category){return category.id===meta.category;}),firstLabel=ECO_MEADOW_ETHOGRAM_CATEGORIES.find(function(category){return category.id===meta.firstCategory;});
+    if(!label||!firstLabel)return [];
+    return ['Sampling comparison: changed '+compared.variable+' only; same '+record.species+' representative '+(record.index+1)+' and '+record.branch+' branch',
+      'Reference window: '+(compared.reference.start/10).toFixed(1)+' to '+((compared.reference.start+compared.reference.interval*4)/10).toFixed(1)+'; interval '+(compared.reference.interval/10).toFixed(1),
+      'Second window: '+(record.start/10).toFixed(1)+' to '+((record.start+record.interval*4)/10).toFixed(1)+'; interval '+(record.interval/10).toFixed(1),
+      'First behavior predicted: '+firstLabel.name+'; first prediction: '+meta.firstPrediction+'; latest behavior: '+label.name+'; latest prediction: '+meta.prediction,
+      'Shared checkpoint times: '+(compared.overlapSteps.length?compared.overlapSteps.map(function(step){return (step/10).toFixed(1);}).join(', '):'none')].concat(
+      ecoWebEthogramText(compared.reference).map(function(line){return 'Reference sheet · '+line;}),
+      compared.rows.map(function(row){return row.name+': reference '+row.reference+'/5 ('+(row.referenceProportion*100).toFixed(0)+'%); second '+row.current+'/5 ('+(row.currentProportion*100).toFixed(0)+'%); difference '+(row.delta>=0?'+':'')+row.delta+' sampled checkpoints';}),
+      ['Sampling comparison reflection: '+(meta.reflection||'(not recorded)'),
+      'Both sheets sample the same representative recording. Overlapping checkpoints are reused observations; these are not independent animals or an elapsed-time budget.']);
+  }
+
+  // This optional ruler step binds its choices to the existing frozen pair
+  // evidence. It compares recorded path lengths, never behavioral causes.
+  function ecoMeadowPairMotionKey(raw,selectedInterval) {
+    if(selectedInterval!=null&&(!Number.isInteger(selectedInterval)||selectedInterval<0||selectedInterval>1))return null;
+    if(!raw||!Array.isArray(raw.samples)||raw.samples.length!==3||!Array.isArray(raw.intervals)||raw.intervals.length!==2)return null;
+    var first=raw.samples[0],actor=first&&first.actor,cue=first&&first.cue;
+    if(!actor||!cue||!((actor.id==='rabbits'&&cue.id==='foxes')||(actor.id==='foxes'&&cue.id==='rabbits')))return null;
+    var samples=[];
+    for(var k=0;k<3;k++){
+      var p=raw.samples[k];if(!p||!Number.isInteger(p.step)||p.step<0||p.step>240||(k&&p.step<=samples[k-1].step)||!Number.isFinite(p.gap)||p.gap<0)return null;
+      var points=[];
+      for(var a=0;a<2;a++){
+        var animal=p[a?'cue':'actor'],identity=a?cue:actor;
+        if(!animal||animal.id!==identity.id||animal.index!==identity.index||!Number.isInteger(animal.index)||animal.index<0||animal.index>=16||![animal.x,animal.z].every(Number.isFinite)||Math.abs(animal.x)>=1000||Math.abs(animal.z)>=1000||typeof animal.state!=='string'||!animal.state||animal.state.length>80)return null;
+        points.push({id:animal.id,index:animal.index,x:animal.x,z:animal.z,state:animal.state});
+      }
+      if(Math.abs(Math.hypot(points[0].x-points[1].x,points[0].z-points[1].z)-p.gap)>1e-8)return null;
+      samples.push({step:p.step,actor:points[0],cue:points[1],gap:p.gap});
+    }
+    var intervals=[];
+    for(var k=0;k<2;k++){
+      var interval=raw.intervals[k],a=samples[k],b=samples[k+1],delta=b.gap-a.gap;
+      if(!interval||interval.from!==a.step||interval.to!==b.step||!Number.isFinite(interval.delta)||Math.abs(interval.delta-delta)>1e-8||![interval.actorTravel,interval.cueTravel].every(Number.isFinite)||interval.actorTravel<0||interval.cueTravel<0||interval.actorTravel<Math.hypot(b.actor.x-a.actor.x,b.actor.z-a.actor.z)-1e-8||interval.cueTravel<Math.hypot(b.cue.x-a.cue.x,b.cue.z-a.cue.z)-1e-8)return null;
+      intervals.push({from:a.step,to:b.step,delta:delta,actorTravel:interval.actorTravel,cueTravel:interval.cueTravel});
+    }
+    var source={samples:samples,intervals:intervals};if(selectedInterval!=null)source.interval=selectedInterval;return JSON.stringify(source);
+  }
+
+  function ecoMeadowPairMotionCheck(measurement,interval,choice,firstChoice) {
+    var key=ecoMeadowPairMotionKey(measurement,interval),choices=['actor','cue','similar','unsure'];
+    if(!key||!Number.isInteger(interval)||interval<0||interval>1||choices.indexOf(choice)<0||(firstChoice!=null&&choices.indexOf(firstChoice)<0))return null;
+    var point=measurement.intervals[interval],delta=point.actorTravel-point.cueTravel,expected=Math.abs(delta)<=0.005+1e-12?'similar':delta>0?'actor':'cue';
+    return {sourceKey:key,interval:interval,from:point.from,to:point.to,actorTravel:point.actorTravel,cueTravel:point.cueTravel,gapChange:point.delta,tolerance:0.005,expected:expected,choice:choice,firstChoice:firstChoice==null?null:firstChoice,correct:choice==='unsure'?null:choice===expected,firstCorrect:firstChoice==null||firstChoice==='unsure'?null:firstChoice===expected};
+  }
+
+  function ecoMeadowPairMotionRecord(raw,measurement) {
+    if(!raw||raw.version!==1||typeof raw.sourceKey!=='string')return null;
+    var check=ecoMeadowPairMotionCheck(measurement,raw.interval,raw.choice,raw.firstChoice);
+    if(raw.firstChoice==null||!check||raw.sourceKey!==check.sourceKey)return null;
+    return {version:1,sourceKey:check.sourceKey,interval:raw.interval,firstChoice:raw.firstChoice,choice:raw.choice};
+  }
+
+  function ecoMeadowPairMotionEvidence(measurement,state) {
+    var s=state||{},record=ecoMeadowPairMotionRecord(s,measurement);
+    if(!record||s.checked!==true||!Array.isArray(s.visited))return null;
+    var interval=measurement.intervals[record.interval];
+    return s.visited.indexOf(interval.from)>=0&&s.visited.indexOf(interval.to)>=0?record:null;
+  }
+
+  function ecoMeadowPairMotionPending(measurement,state) {
+    return !!(state&&(state.started===true||state.firstChoice!=null)&&!ecoMeadowPairMotionEvidence(measurement,state));
+  }
+
+  function ecoMeadowPairMeasurementState(record) {
+    var state={open:true,steps:record.samples.map(function(point){return point.step;}),claim:record.claim,firstClaim:record.firstClaim,checked:true,reflection:record.reflection};
+    if(record.motion){var motion=ecoMeadowPairMotionRecord(record.motion,record);if(motion){var point=record.intervals[motion.interval];state.motion=Object.assign({},motion,{open:true,started:true,checked:true,visited:[point.from,point.to]});}}
+    return state;
+  }
+
+  function ecoWebPairMotionText(measurement) {
+    var motion=measurement&&ecoMeadowPairMotionRecord(measurement.motion,measurement);if(!motion)return [];
+    var check=ecoMeadowPairMotionCheck(measurement,motion.interval,motion.choice,motion.firstChoice),labels={actor:'Selected animal traveled farther',cue:'Partner traveled farther',similar:'Similar recorded path lengths',unsure:'Not sure yet'};
+    return ['Ruler motion comparison: time '+(check.from/10).toFixed(1)+' to '+(check.to/10).toFixed(1)+'.',
+      'First submitted motion choice: '+labels[motion.firstChoice]+'. Evidence may already have been inspected; this is not an unseen-evidence check.',
+      'Latest motion choice: '+labels[motion.choice]+'. Recorded comparison: '+labels[check.expected]+'.',
+      'Recorded paths: selected animal '+check.actorTravel.toPrecision(8)+'; partner '+check.cueTravel.toPrecision(8)+' scene units. Net gap change '+check.gapChange.toPrecision(8)+'.',
+      'Path length does not establish direction, motive, a cause of the gap change, escape or shelter benefit. See the learner’s pair reflection for an alternative explanation and evidence still needed.',
+      'Frozen ruler motion comparison (JSON): '+JSON.stringify(motion)];
+  }
+
+  function ecoWebPairMeasurementRecord(raw,sighting,focus) {
+    var claims=['closer','farther','mixed','steady'];
+    if(!raw||raw.version!==1||!sighting||claims.indexOf(raw.claim)<0||claims.indexOf(raw.firstClaim)<0||!Array.isArray(raw.samples)||raw.samples.length!==3||!Array.isArray(raw.intervals)||raw.intervals.length!==2)return null;
+    var samples=[];
+    for(var k=0;k<3;k++){
+      var p=raw.samples[k];
+      if(!p||!Number.isInteger(p.step)||p.step<sighting.before.step||p.step>sighting.after.step||(k&&p.step<=samples[k-1].step)||!Number.isFinite(p.gap)||p.gap<0)return null;
+      var valid=['actor','cue'].every(function(key){var animal=p[key],id=key==='actor'?focus:sighting.cueId,index=key==='actor'?sighting.actorIndex:sighting.cueIndex;return animal&&animal.id===id&&animal.index===index&&Number.isFinite(animal.x)&&Math.abs(animal.x)<1000&&Number.isFinite(animal.z)&&Math.abs(animal.z)<1000&&typeof animal.state==='string'&&animal.state.length>0&&animal.state.length<=80;});
+      if(!valid||Math.abs(Math.hypot(p.actor.x-p.cue.x,p.actor.z-p.cue.z)-p.gap)>1e-8)return null;
+      samples.push({step:p.step,actor:{id:p.actor.id,index:p.actor.index,x:p.actor.x,z:p.actor.z,state:p.actor.state},cue:{id:p.cue.id,index:p.cue.index,x:p.cue.x,z:p.cue.z,state:p.cue.state},gap:p.gap});
+    }
+    var intervals=[];
+    for(var k=0;k<2;k++){
+      var interval=raw.intervals[k],a=samples[k],b=samples[k+1],delta=b.gap-a.gap;
+      if(!interval||interval.from!==a.step||interval.to!==b.step||!Number.isFinite(interval.delta)||Math.abs(interval.delta-delta)>1e-8||!Number.isFinite(interval.actorTravel)||!Number.isFinite(interval.cueTravel)||interval.actorTravel<Math.hypot(b.actor.x-a.actor.x,b.actor.z-a.actor.z)-1e-8||interval.cueTravel<Math.hypot(b.cue.x-a.cue.x,b.cue.z-a.cue.z)-1e-8)return null;
+      intervals.push({from:a.step,to:b.step,delta:delta,actorTravel:interval.actorTravel,cueTravel:interval.cueTravel,trend:Math.abs(delta)<=0.005+1e-12?'steady':delta<0?'closer':'farther'});
+    }
+    var changes=intervals.map(function(p){return p.trend;}).filter(function(p){return p!=='steady';});
+    var trend=!changes.length?'steady':changes.every(function(p){return p===changes[0];})?changes[0]:'mixed';
+    var record={version:1,claim:raw.claim,firstClaim:raw.firstClaim,samples:samples,intervals:intervals,trend:trend,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1200):''};
+    if(raw.motion!=null){var motion=ecoMeadowPairMotionRecord(raw.motion,record);if(!motion)return null;record.motion=motion;}
+    return record;
+  }
+
+  function ecoWebFootfallRecord(raw,movement,focus) {
+    var predictions=['clear','supported','unsure'];
+    if(!raw||[1,2].indexOf(raw.version)<0||!movement||['foxes','rabbits'].indexOf(focus)<0||typeof movement.studyId!=='string'||!movement.studyId||raw.studyId!==movement.studyId||!Number.isInteger(movement.index)||movement.index<0||movement.index>15||predictions.indexOf(raw.prediction)<0||predictions.indexOf(raw.firstPrediction)<0||!Array.isArray(raw.samples)||raw.samples.length!==3||!Array.isArray(movement.samples)||movement.samples.length!==3)return null;
+    var samples=[0,1,2].map(function(k){return ecoMeadowFootfallSample(raw.samples[k]);}),grid=ecoMeadowFootfallGrid(raw.grid,raw.version===2),first=ecoMeadowFootfallGrid(raw.firstGrid,raw.version===2);
+    if(!grid||!first||samples.some(function(sample,k){var original=movement.samples[k];return !sample||!original||sample.step!==original.step||sample.supportCount!==original.supportFeet||sample.feet[0].planted!==original.hindContact||sample.feet[1].planted!==original.foreContact;}))return null;
+    var check=ecoMeadowFootfallCheck({samples:samples},grid,first);if(!check)return null;
+    var saved={version:raw.version,studyId:movement.studyId,samples:samples,grid:grid,firstGrid:first,prediction:raw.prediction,firstPrediction:raw.firstPrediction,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1200):''};
+    if(raw.version===2){
+      var identity=ecoMeadowFootfallIdentity({studyId:raw.studyId,species:raw.species,index:raw.index,samples:samples},raw.branch);
+      if(!identity||raw.branch!==movement.branch||raw.species!==focus||raw.index!==movement.index||raw.sampleKey!==JSON.stringify(identity))return null;
+      Object.assign(saved,{branch:identity.branch,species:identity.species,index:identity.index,sampleKey:JSON.stringify(identity)});
+    }
+    return saved;
+  }
+
+  function ecoWebFootfallText(record,includeOriginal) {
+    if(!record)return [];
+    var check=ecoMeadowFootfallCheck({samples:record.samples},record.grid,record.firstGrid),labels={clear:'At least one sampled checkpoint has all four paws clear',supported:'Every sampled checkpoint has a supporting paw',unsure:'Not sure yet'};
+    if(!check)return [];
+    var lines=['Footfall strip: three actual movement checkpoints across '+check.elapsed.toFixed(1)+' model time units',
+      'First footfall prediction: '+labels[record.firstPrediction]+'; latest prediction: '+labels[record.prediction],
+      'First contact grid: '+record.firstGrid.map(function(column,k){return 'checkpoint '+(k+1)+' '+column.map(function(value,j){return ECO_FOOTFALL_PAWS[j].name+' '+(value==='uncertain'?'uncertain':value?'contact':'clear');}).join(', ');}).join(' | '),
+      'Latest contact grid: '+record.grid.map(function(column,k){return 'checkpoint '+(k+1)+' '+column.map(function(value,j){return ECO_FOOTFALL_PAWS[j].name+' '+(value==='uncertain'?'uncertain':value?'contact':'clear');}).join(', ');}).join(' | ')].concat(record.samples.map(function(sample,k){return 'Footfall checkpoint '+(k+1)+' at time '+(sample.step/10).toFixed(1)+': '+sample.state+'; '+sample.supportCount+' supporting paws; '+sample.feet.map(function(foot,j){return ECO_FOOTFALL_PAWS[j].name+' '+(foot.planted?'contact at x '+foot.x.toPrecision(8)+', z '+foot.z.toPrecision(8):'clear');}).join('; ');}),
+      ['Footfall evidence: '+(record.reflection||'(not recorded)'),
+      'Contacts and positions belong to the illustrated rig. Three sparse checkpoints do not establish continuous flight, gait duration, physical wildlife tracks or population change.']);
+    if(record.version===2){lines.push('Latest observational support bounds: '+check.bounds.samples.map(function(bounds,k){return 'checkpoint '+(k+1)+' '+bounds.min+'–'+bounds.max+' supporting paws';}).join('; ')+'. Unknown marks are not clear paws.');lines.push('First uncertain marks: '+check.firstUnresolved+'; latest uncertain marks: '+check.unresolved+'. These counts are separate from matches and mismatches of definite observations.');}
+    if(includeOriginal)lines.push('Frozen footfall evidence (JSON): '+JSON.stringify(record));
+    return lines;
+  }
+
+  // Compare the same two model times in both branches. The four original values
+  // are evidence; calculated changes are never substituted for those values.
+  function ecoWebControlPoint(raw) {
+    if(!raw||!Number.isInteger(raw.step)||raw.step<0||raw.step>240||raw.time!==raw.step/10||![raw.baseline,raw.experiment].every(function(value){return Number.isFinite(value)&&value>=0;}))return null;
+    return {step:raw.step,time:raw.time,baseline:raw.baseline,experiment:raw.experiment};
+  }
+
+  function ecoWebControlSample(result,config,focus,step) {
+    var c=ecoWebConfig(config);
+    if(c.event==='none'||!c.enabled[focus]||!ECO_WEB_SPECIES.some(function(sp){return sp.id===focus;})||!Number.isInteger(step)||step<0||step>240||!result||!Array.isArray(result.baseline)||!Array.isArray(result.experiment))return null;
+    var b=result.baseline[step],e=result.experiment[step];
+    if(!b||!e||b.step!==step||e.step!==step||b.time!==step/10||e.time!==step/10||!b.values||!e.values)return null;
+    return ecoWebControlPoint({step:step,time:step/10,baseline:b.values[focus],experiment:e.values[focus]});
+  }
+
+  function ecoWebControlEvidence(config,focus,before,after) {
+    var c=ecoWebConfig(config),a=ecoWebControlPoint(before),b=ecoWebControlPoint(after);
+    if(c.event==='none'||!c.enabled[focus]||!ECO_WEB_SPECIES.some(function(sp){return sp.id===focus;})||!a||!b||a.step>=c.eventStep||b.step<c.eventStep||a.step>=b.step||a.baseline!==a.experiment)return null;
+    var baseline=b.baseline-a.baseline,experiment=b.experiment-a.experiment,extra=experiment-baseline;
+    if(![baseline,experiment,extra].every(Number.isFinite))return null;
+    var extent=Math.max(1,Math.ceil(Math.max(Math.abs(baseline),Math.abs(experiment),Math.abs(extra))*1.15*10)/10);
+    if(!Number.isFinite(extent))return null;
+    return {version:1,configKey:JSON.stringify(c),focus:focus,event:c.event,eventStep:c.eventStep,before:a,after:b,changes:{baseline:baseline,experiment:experiment,extra:extra},extent:extent};
+  }
+
+  function ecoWebControlEstimates(raw,extent) {
+    if(!raw||!['baseline','experiment','extra'].every(function(key){return Number.isFinite(raw[key])&&Math.abs(raw[key])<=extent;}))return null;
+    return {baseline:raw.baseline,experiment:raw.experiment,extra:raw.extra};
+  }
+
+  function ecoWebControlCheck(evidence,estimates,firstEstimates) {
+    if(!evidence||!evidence.changes||![evidence.changes.baseline,evidence.changes.experiment,evidence.changes.extra,evidence.extent].every(Number.isFinite)||evidence.extent<1)return null;
+    var current=ecoWebControlEstimates(estimates,evidence.extent),first=firstEstimates==null?null:ecoWebControlEstimates(firstEstimates,evidence.extent);
+    if(!current||(firstEstimates!=null&&!first))return null;
+    function rounded(value){return Math.round((value+Number.EPSILON)*10)/10;}
+    var matches=0,firstMatches=0,rows=['baseline','experiment','extra'].map(function(key){var expected=rounded(evidence.changes[key]),same=rounded(current[key])===expected;if(same)matches++;if(first&&rounded(first[key])===expected)firstMatches++;return {key:key,value:evidence.changes[key],rounded:expected,estimate:current[key],firstEstimate:first?first[key]:null,correct:same};});
+    return {matches:matches,firstMatches:first?firstMatches:null,total:3,rows:rows};
+  }
+
+  function ecoWebControlRecord(raw,config,step,focus,savedAfter) {
+    if(!raw||raw.version!==1||raw.focus!==focus||raw.configKey!==JSON.stringify(ecoWebConfig(config)))return null;
+    var evidence=ecoWebControlEvidence(config,focus,raw.before,raw.after);
+    if(!evidence||step!==evidence.after.step||!ecoWebControlCheck(evidence,raw.estimates,raw.firstEstimates)||!raw.firstEstimates)return null;
+    if(savedAfter!=null&&(!Number.isFinite(savedAfter.baseline)||!Number.isFinite(savedAfter.experiment)||evidence.after.baseline!==savedAfter.baseline||evidence.after.experiment!==savedAfter.experiment))return null;
+    return {version:1,configKey:evidence.configKey,focus:focus,before:evidence.before,after:evidence.after,estimates:ecoWebControlEstimates(raw.estimates,evidence.extent),firstEstimates:ecoWebControlEstimates(raw.firstEstimates,evidence.extent),reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):'',runPrediction:typeof raw.runPrediction==='string'?raw.runPrediction.slice(0,1200):''};
+  }
+
+  function ecoWebControlMatches(raw,config,result,focus) {
+    var record=raw&&ecoWebControlRecord(raw,config,raw.after&&raw.after.step,focus);
+    if(!record)return false;
+    var before=ecoWebControlSample(result,config,focus,record.before.step),after=ecoWebControlSample(result,config,focus,record.after.step);
+    return !!before&&!!after&&JSON.stringify(before)===JSON.stringify(record.before)&&JSON.stringify(after)===JSON.stringify(record.after);
+  }
+
+  function ecoWebMovementRecord(raw,config,step,focus) {
+    var c=ecoWebConfig(config),kinds=focus==='foxes'?['pounce','fore-paw']:focus==='rabbits'?['bound','hind-paw']:[];
+    if(!raw||raw.version!==1||['baseline','experiment'].indexOf(raw.branch)<0||!c.enabled[focus]||kinds.indexOf(raw.kind)<0||!Number.isInteger(raw.index)||raw.index<0||raw.index>15||!Array.isArray(raw.samples)||raw.samples.length!==3)return null;
+    var valid=raw.samples.every(function(sample){return sample&&Number.isInteger(sample.step)&&sample.step>=0&&sample.step<=240&&Number.isFinite(sample.value)&&sample.value>=0&&Number.isInteger(sample.supportFeet)&&sample.supportFeet>=0&&sample.supportFeet<=4&&typeof sample.foreContact==='boolean'&&typeof sample.hindContact==='boolean'&&(!('pawAngle' in sample)||Number.isFinite(sample.pawAngle));});
+    if(!valid||!(raw.samples[0].step<raw.samples[1].step&&raw.samples[1].step<raw.samples[2].step)||step!==raw.samples[1].step||raw.studyId!==focus+':'+raw.index+':'+raw.kind+':'+raw.samples.map(function(sample){return sample.step;}).join(':')||!Array.isArray(raw.order)||raw.order.length!==3||raw.order.some(function(value){return !Number.isInteger(value)||value<0||value>2;})||new Set(raw.order).size!==3)return null;
+    var saved={version:1,branch:raw.branch,index:raw.index,studyId:raw.studyId,kind:raw.kind,samples:raw.samples.map(function(sample){var point={step:sample.step,value:sample.value,supportFeet:sample.supportFeet,foreContact:sample.foreContact,hindContact:sample.hindContact};if(Number.isFinite(sample.pawAngle))point.pawAngle=sample.pawAngle;return point;}),order:raw.order.slice()};
+    if(typeof raw.runPrediction==='string')saved.runPrediction=raw.runPrediction.slice(0,1200);
+    if(Array.isArray(raw.latestOrder)&&raw.latestOrder.length===3&&raw.latestOrder.every(function(value){return Number.isInteger(value)&&value>=0&&value<=2;})&&new Set(raw.latestOrder).size===3)saved.latestOrder=raw.latestOrder.slice();
+    if(typeof raw.reflection==='string')saved.reflection=raw.reflection.slice(0,1200);
+    var strip=ecoWebFootfallRecord(raw.footfall,saved,focus);if(strip)saved.footfall=strip;
+    return saved;
+  }
+
+  function ecoWebSpacingProbeRecord(raw,sighting,focus) {
+    if(raw&&raw.version===2)return ecoMeadowSpacingProbePairRecord(raw,sighting,focus);
+    var predictions=['continue','stop','switch','unsure'];
+    if(!raw||raw.version!==1||!sighting||sighting.kind!=='spacing'||focus!=='rabbits'||!sighting.before||!sighting.after||!Number.isInteger(sighting.before.step)||sighting.before.step<0||!Number.isInteger(sighting.after.step)||sighting.after.step>240||sighting.after.step<sighting.before.step||predictions.indexOf(raw.prediction)<0||predictions.indexOf(raw.firstPrediction)<0||!raw.trial)return null;
+    var saved=raw.trial,trial=ecoMeadowSpacingProbeRun(saved.context,saved.variable,saved.value);
+    if(!trial||trial.context.actorIndex!==sighting.actorIndex||trial.context.cueIndex!==sighting.cueIndex||trial.context.step<sighting.before.step||trial.context.step>sighting.after.step)return null;
+    var modified=ecoMeadowSpacingProbeInput(saved.modifiedInput);
+    if(!modified||JSON.stringify(modified)!==JSON.stringify(trial.modifiedInput)||saved.outcome!==trial.outcome||saved.control!==trial.control)return null;
+    for(var k=0;k<2;k++){var key=k?'modified':'original',a=saved[key],b=trial[key];if(!a||a.state!==b.state||a.sourceIndex!==b.sourceIndex||a.decisionDistance!==b.decisionDistance)return null;}
+    return {version:1,trial:trial,prediction:raw.prediction,firstPrediction:raw.firstPrediction,reflection:typeof raw.reflection==='string'?raw.reflection.slice(0,1600):''};
+  }
+
+  function ecoWebSpacingProbeText(probe,includeInputs) {
+    if(!probe)return [];
+    var t=probe.trial,c=t.context,labels={continue:'Giving space with the same neighbor',stop:'No spacing response in this decision',switch:'Giving space with a different neighbor',unsure:'Not sure yet'};
+    function action(p){return p.state+(p.sourceIndex==null?'':' with rabbit '+(p.sourceIndex+1)+' at '+p.decisionDistance.toPrecision(8)+' scene units');}
+    var lines=['Cue test bench: one detached spacing decision at time '+(c.step/10).toFixed(1)+'; actor rabbit '+(c.actorIndex+1)+'; recorded cue rabbit '+(c.cueIndex+1),
+      (t.control?'Unchanged-input baseline control: ':'Changed input: ')+(t.variable==='distance'?'cue distance set to '+t.value.toPrecision(8)+' scene units':'cue rabbit action set to '+(t.value?'Grazing':'Resting')),
+      'Original rule output: '+action(t.original)+'; modified rule output: '+action(t.modified),
+      'First bench prediction: '+labels[probe.firstPrediction]+'; latest bench prediction: '+labels[probe.prediction],
+      'Bench reflection: '+(probe.reflection||'(not recorded)'),
+      'The modified inputs are a one-decision rule test, not recorded animal positions, a simulated modified trajectory or evidence of changed biomass.'];
+    if(probe.version===2){lines.push('Paired cue experiment: deliberately collected unchanged-input control and one changed-input intervention; '+probe.branch+' branch.');lines.push('Collected control output: '+action(probe.control.modified)+'. Its frozen inputs match the original decision.');lines.push('Held fixed: actor, all other rabbits, food availability and decision time. Changed only: '+(t.variable==='distance'?'selected neighbor distance':'selected neighbor feeding action')+'.');}
+    if(includeInputs){lines.push('Frozen original rule inputs (JSON): '+JSON.stringify(c.input));lines.push('Frozen tested rule inputs (JSON): '+JSON.stringify(t.modifiedInput));if(probe.version===2)lines.push('Frozen paired cue experiment (JSON): '+JSON.stringify(probe));}
+    return lines;
+  }
+
+  function ecoWebSightingRecord(raw, config, step, focus) {
+    var c=ecoWebConfig(config),animalIds=['rabbits','voles','foxes','owls','caterpillars','bluetits'];
+    if(!raw||raw.version!==1||['fox','escape','owl','insects','vigilance','listening','spacing'].indexOf(raw.kind)<0||['baseline','experiment'].indexOf(raw.branch)<0||animalIds.indexOf(focus)<0||animalIds.indexOf(raw.cueId)<0||!c.enabled[focus]||!c.enabled[raw.cueId]||!Number.isInteger(raw.actorIndex)||raw.actorIndex<0||raw.actorIndex>15||!Number.isInteger(raw.cueIndex)||raw.cueIndex<0||raw.cueIndex>15||['approach','avoid','feed','rest','unsure'].indexOf(raw.forecast)<0||typeof raw.state!=='string'||!raw.state||raw.state.length>80)return null;
+    if(raw.decisionDistance!==null&&(!Number.isFinite(raw.decisionDistance)||raw.decisionDistance<0))return null;
+    var actors={fox:['foxes'],escape:['rabbits','voles'],owl:['owls'],insects:['bluetits'],vigilance:['rabbits'],listening:['foxes'],spacing:['rabbits']};
+    var linked=raw.kind==='spacing'?raw.cueId==='rabbits'&&raw.cueIndex<raw.actorIndex&&raw.state==='Giving space':raw.kind==='vigilance'?raw.cueId==='rabbits'&&raw.cueIndex!==raw.actorIndex&&raw.state==='Alert':ECO_WEB_LINKS.some(function(link){return raw.kind==='escape'?link.food===focus&&link.consumer===raw.cueId:link.food===raw.cueId&&link.consumer===focus;});
+    if(actors[raw.kind].indexOf(focus)<0||!linked||(raw.kind==='listening'&&raw.state!=='Listening'))return null;
+    var valid=['before','after'].every(function(key){var point=raw[key];return point&&Number.isInteger(point.step)&&point.step>=0&&point.step<=240&&typeof point.state==='string'&&point.state.length>0&&point.state.length<=80;});
+    if(!valid||raw.before.step>step||raw.after.step<step)return null;
+    var saved={version:1,kind:raw.kind,branch:raw.branch,actorIndex:raw.actorIndex,cueId:raw.cueId,cueIndex:raw.cueIndex,state:raw.state,decisionDistance:raw.decisionDistance,before:{step:raw.before.step,state:raw.before.state},after:{step:raw.after.step,state:raw.after.state},forecast:raw.forecast,limitation:typeof raw.limitation==='string'?raw.limitation.slice(0,1000):''};
+    if(typeof raw.runPrediction==='string')saved.runPrediction=raw.runPrediction.slice(0,1200);
+    var measured=ecoWebPairMeasurementRecord(raw.measurement,saved,focus);if(measured)saved.measurement=measured;
+    var probe=ecoWebSpacingProbeRecord(raw.probe,saved,focus);if(probe)saved.probe=probe;
+    var inference=ecoWebInferenceRecord(raw.inference,saved,focus,step);if(inference)saved.inference=inference;
+    var headline=ecoWebHeadlineRecord(raw.headline,saved,focus,step);if(headline)saved.headline=headline;
+    return saved;
+  }
+  function ecoWebCapture(config, pair, step, focus, prediction, explanation, id, investigation, sighting, movement, ethogram, controlStudy) {
     step = Math.round(ecoWebNumber(step, 0, 0, 240));
-    return {
+    var note = {
       version: 1, id: id, config: ecoWebConfig(config), step: step,
       focus: ECO_WEB_SPECIES.some(function(sp) { return sp.id === focus; }) ? focus : 'plants',
       prediction: String(prediction || '').slice(0, 1200), explanation: String(explanation || '').slice(0, 2000),
       baseline: JSON.parse(JSON.stringify(pair.baseline[step])),
       experiment: JSON.parse(JSON.stringify(pair.experiment[step]))
     };
+    var context = ecoWebInvestigationRecord(investigation, config);
+    if (context) note.investigation = context;
+    var behavior = ecoWebSightingRecord(sighting, config, step, note.focus);
+    if (behavior) note.sighting = behavior;
+    var motion=ecoWebMovementRecord(movement,config,step,note.focus);
+    if(motion){note.movement=motion;note.explanation=String(explanation||'').slice(0,3600);}
+    var sampled=ecoWebEthogramRecord(ethogram,config,step,note.focus);if(sampled)note.ethogram=sampled;
+    var controlled=ecoWebControlRecord(controlStudy,config,step,note.focus,{baseline:note.baseline.values[note.focus],experiment:note.experiment.values[note.focus]});if(controlled)note.controlStudy=controlled;
+    return note;
   }
   function ecoWebNotebook(raw) {
     if (!Array.isArray(raw)) return [];
@@ -2712,7 +7142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       ['baseline','experiment'].forEach(function(branch){
         var row=JSON.parse(JSON.stringify(note[branch]));ECO_WEB_SPECIES.forEach(function(sp){if(sp.optional && row.values[sp.id]===undefined)row.values[sp.id]=0;});pair[branch][note.step]=row;
       });
-      return ecoWebCapture(note.config, pair, note.step, note.focus, note.prediction, note.explanation, note.id);
+      return ecoWebCapture(note.config, pair, note.step, note.focus, note.prediction, note.explanation, note.id, note.investigation, note.sighting, note.movement, note.ethogram, note.controlStudy);
     });
   }
   function ecoWebNotebookText(raw) {
@@ -2725,7 +7155,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       lines.push('Starting capacity: ' + c.capacity + '; starting cover: ' + c.cover + '%');
       if(c.soil.enabled){lines.push('Soil starts: organic matter '+c.soil.detritus+'; nutrients '+c.soil.nutrients+'; decomposers '+c.soil.decomposers);['detritus','decomposers','nutrients','exported'].forEach(function(key){lines.push('Soil '+key+' | '+note.baseline.soil[key].toPrecision(8)+' | '+note.experiment.soil[key].toPrecision(8));});}
       lines.push('Starting community: ' + ECO_WEB_SPECIES.map(function(sp) { return sp.name + '=' + c.initial[sp.id] + (c.enabled[sp.id] ? '' : ' (excluded)'); }).join('; '));
-      lines.push('Prediction before run: ' + (note.prediction || '(not recorded)'));
+      if(note.movement||note.sighting||note.ethogram||note.controlStudy)lines.push('Ecological prediction before run: '+((note.movement||note.sighting||note.ethogram||note.controlStudy).runPrediction||'(not recorded)'));
+      lines.push((note.movement?'Prediction before sequence check: ':note.sighting?'Prediction before encounter reveal: ':note.ethogram?'Activity: ':'Prediction before run: ') + (note.prediction || '(not recorded)'));
+      if(note.ethogram)lines=lines.concat(ecoWebEthogramText(note.ethogram),ecoWebSamplingComparisonText(note.ethogram));
+      if(note.sighting){var sight=note.sighting;lines.push('Wildlife observation: '+sight.branch+' branch; '+selected.name+' representative '+(sight.actorIndex+1)+'; recorded action: '+sight.state);lines.push('Cue animal: '+ECO_WEB_SPECIES.find(function(sp){return sp.id===sight.cueId;}).name+' representative '+(sight.cueIndex+1));lines.push('Before time '+(sight.before.step/10).toFixed(1)+': '+sight.before.state+'; after time '+(sight.after.step/10).toFixed(1)+': '+sight.after.state);lines.push('Decision distance: '+(sight.decisionDistance==null?'not recorded':sight.decisionDistance.toPrecision(8)+' illustrative scene units'));lines.push('Outdoor investigation / model limit: '+(sight.limitation||'(not recorded)'));}
+      if(note.movement){var motion=note.movement;lines.push('Movement observation: '+motion.branch+' branch; '+selected.name+' representative '+(motion.index+1)+'; '+motion.kind);lines.push('Snapshot times: '+motion.samples.map(function(point){return (point.step/10).toFixed(1);}).join(' → '));lines.push('Your original snapshot order: '+motion.order.map(function(k){return 'Snapshot '+String.fromCharCode(65+[1,2,0].indexOf(k));}).join(' → '));motion.samples.forEach(function(point){lines.push('Pose time '+(point.step/10).toFixed(1)+': value '+point.value.toPrecision(8)+'; supporting paws '+point.supportFeet+'; left forepaw '+(point.foreContact?'ground':'raised')+'; left hind paw '+(point.hindContact?'ground':'raised')+(Number.isFinite(point.pawAngle)?'; paw angle '+point.pawAngle.toFixed(2)+' degrees':''));});}
+      if(note.movement&&note.movement.footfall)Array.prototype.push.apply(lines,ecoWebFootfallText(note.movement.footfall,true));
+      if(note.controlStudy)Array.prototype.push.apply(lines,ecoWebControlText(note.controlStudy,note.config,true));
+      if(note.sighting&&note.sighting.probe)Array.prototype.push.apply(lines,ecoWebSpacingProbeText(note.sighting.probe,true));
+      if(note.sighting&&note.sighting.inference)Array.prototype.push.apply(lines,ecoWebInferenceText(note.sighting.inference,true));
+      if(note.sighting&&note.sighting.headline)Array.prototype.push.apply(lines,ecoWebHeadlineText(note.sighting.headline,true));
+      if(note.sighting&&note.sighting.measurement){var ruler=note.sighting.measurement;lines.push('Field ruler: horizontal scene separation; first claim '+ruler.firstClaim+'; current claim '+ruler.claim+'; measured pattern '+ruler.trend);ruler.samples.forEach(function(point,k){lines.push('Ruler '+String.fromCharCode(65+k)+' at time '+(point.step/10).toFixed(1)+': gap '+point.gap.toPrecision(8)+'; selected position '+point.actor.x.toPrecision(8)+', '+point.actor.z.toPrecision(8)+'; partner position '+point.cue.x.toPrecision(8)+', '+point.cue.z.toPrecision(8));});ruler.intervals.forEach(function(interval){lines.push('Ruler interval '+(interval.from/10).toFixed(1)+' → '+(interval.to/10).toFixed(1)+': gap change '+interval.delta.toPrecision(8)+'; sampled selected path '+interval.actorTravel.toPrecision(8)+'; partner path '+interval.cueTravel.toPrecision(8));});lines=lines.concat(ecoWebPairMotionText(ruler));lines.push('Pair reflection: '+(ruler.reflection||'(not recorded)'));}
+      if (note.investigation) {
+        var guide = ecoWebInvestigation(note.investigation.id);
+        lines.push('Investigation: ' + guide.title, 'Question: ' + guide.question);
+        lines.push('Prediction for ' + ECO_WEB_SPECIES.find(function(sp) { return sp.id === guide.focus; }).name + ' at time 24 compared with baseline: ' + note.investigation.forecast);
+        lines.push('Model limit: ' + (note.investigation.limitation || '(not recorded)'));
+      }
       lines.push('Group | Baseline | Experiment | Difference (experiment minus baseline)');
       ECO_WEB_SPECIES.forEach(function(sp) {
         var b = note.baseline.values[sp.id], e = note.experiment.values[sp.id];
@@ -2737,6 +7183,256 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     });
     return lines.join('\r\n');
   }
+  function EcoSamplingNotebook(props){
+    var h=props.React.createElement,record=props.record,compared=record&&record.reference&&ecoMeadowSamplingComparison(record.reference,record),meta=record&&record.comparison;
+    if(!compared||!meta)return null;
+    var names={};ECO_MEADOW_ETHOGRAM_CATEGORIES.forEach(function(category){names[category.id]=category.name;});
+    return h('details',{'data-efw-note-sampling':'true'},h('summary',null,'Saved sampling comparison'),h('p',null,'Changed '+(compared.variable==='start'?'start time':'sampling interval')+' only. Both sheets follow the same representative and branch.'),h('p',null,'Reference times: '+compared.reference.samples.map(function(point){return (point.step/10).toFixed(1);}).join(', ')+'. Second times: '+record.samples.map(function(point){return (point.step/10).toFixed(1);}).join(', ')+'.'),h('p',null,'First prediction: '+names[meta.firstCategory]+' · '+meta.firstPrediction+'. Current prediction: '+names[meta.category]+' · '+meta.prediction+'.'),h('div',{className:'efw-scroll'},h('table',null,h('caption',null,'Saved sampling counts · five checkpoints per sheet'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Behavior'),h('th',{scope:'col'},'Reference'),h('th',{scope:'col'},'Second'))),h('tbody',null,compared.rows.map(function(row){return h('tr',{key:row.id},h('th',{scope:'row'},row.name),h('td',null,row.reference+'/5'),h('td',null,row.current+'/5'));})))),h('p',null,meta.reflection||'No sampling comparison reflection recorded.'),h('small',null,'Reopening restores both exact sheets and their predictions. Shared times reuse observations; these are sample proportions of one recording, not independent animals or elapsed-time budgets.'));
+  }
+
+  function EcoControlStudy(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,c=ecoWebConfig(props.config),key=JSON.stringify(c)+'|'+props.focus;
+    var s=props.state&&props.state.key===key?props.state:{key:key,open:false,before:null,after:null,estimates:{baseline:null,experiment:null,extra:null},firstEstimates:null,checked:false,reflection:'',saved:false};
+    var species=ECO_WEB_SPECIES.find(function(sp){return sp.id===props.focus;}),enabled=c.event!=='none'&&species&&c.enabled[props.focus];
+    var current=enabled?ecoWebControlSample(props.result,c,props.focus,props.cursor):null,evidence=enabled?ecoWebControlEvidence(c,props.focus,s.before,s.after):null;
+    var estimates=s.estimates||{},check=evidence?ecoWebControlCheck(evidence,estimates,s.firstEstimates):null,shown=!!(s.checked&&check&&s.firstEstimates);
+    var labels={baseline:'Baseline change',experiment:'Experiment change',extra:'Extra modeled change'},colors={baseline:'#64748b',experiment:'#0e7490',extra:'#a16207'};
+    function change(patch){props.onChange(Object.assign({},s,{saved:false},patch));}
+    function signed(value){return (value>0?'+':'')+(value===0?'0':Number(value.toPrecision(7)).toString());}
+    function capture(which){if(!current||(which==='before'?current.step>=c.eventStep:current.step<c.eventStep))return;var patch={estimates:{baseline:null,experiment:null,extra:null},firstEstimates:null,checked:false,reflection:''};patch[which]=current;change(patch);}
+    function estimate(name,value){var next=Object.assign({},estimates);next[name]=Number.isFinite(value)?value:null;change({estimates:next,checked:false});}
+    function save(){
+      if(!shown||!props.onSave)return;
+      var raw={version:1,configKey:evidence.configKey,focus:props.focus,before:evidence.before,after:evidence.after,estimates:estimates,firstEstimates:s.firstEstimates,reflection:s.reflection||'',runPrediction:props.runPrediction||''};
+      var after=ecoWebControlSample(props.result,c,props.focus,evidence.after.step),record=ecoWebControlRecord(raw,c,evidence.after.step,props.focus,after);
+      if(record&&ecoWebControlMatches(record,c,props.result,props.focus))props.onSave({controlStudy:record,state:Object.assign({},s,{saved:true})});
+    }
+    function pointCard(which,label){var point=which==='before'?s.before:s.after,canCapture=!!current&&(which==='before'?current.step<c.eventStep:current.step>=c.eventStep);return h('div',{className:'efw-control-capture','data-efw-control-capture':which},h('strong',null,label),point?h('p',null,'Time '+point.time.toFixed(1)+' · baseline '+signed(point.baseline)+' · experiment '+signed(point.experiment)):h('p',null,'No sample captured.'),h('button',{type:'button',disabled:!canCapture,onClick:function(){capture(which);}},which==='before'?'Capture before-event sample':'Capture after-event sample'),h('button',{type:'button',onClick:function(){props.onCursor(point?point.step:which==='before'?Math.max(0,c.eventStep-1):240);}},point?'Inspect captured '+which+' time':which==='before'?'Inspect just before disturbance':'Inspect final comparison time'));}
+    function bar(name){
+      var value=Number.isFinite(estimates[name])?estimates[name]:null,extent=evidence.extent,position=value===null?50:50+Math.max(-extent,Math.min(extent,value))/extent*50,actual=50+evidence.changes[name]/extent*50;
+      return h('div',{key:name,className:'efw-control-bar','data-efw-control-estimate':name},h('div',{className:'efw-control-bar-heading'},h('label',{htmlFor:'efw-control-'+name},labels[name]),h('label',{className:'efw-control-number-label'},'Type a value',h('input',{type:'number',step:0.1,min:-extent,max:extent,'aria-label':labels[name]+' number',value:value===null?'':value,placeholder:__alloT("stem.ecosystem.a11y_unmarked", "Unmarked"),onChange:function(e){estimate(name,e.target.value===''?null:Number(e.target.value));}}))),
+        h('div',{className:'efw-control-numberline'+(value===null?' is-unmarked':''),style:{'--control-color':colors[name]}},h('span',{className:'efw-control-zero','aria-hidden':'true'}),h('span',{className:'efw-control-value-bar','aria-hidden':'true',style:{left:Math.min(50,position)+'%',width:Math.abs(position-50)+'%',background:colors[name]}}),shown&&h('span',{className:'efw-control-recorded-bar','aria-hidden':'true',style:{left:Math.min(50,actual)+'%',width:Math.abs(actual-50)+'%',borderColor:colors[name]}}),h('input',{id:'efw-control-'+name,className:'efw-control-range',type:'range',min:-extent,max:extent,step:0.1,value:value===null?0:Math.max(-extent,Math.min(extent,value)),'aria-label':labels[name]+' estimate','aria-valuetext':value===null?'Not estimated yet. Use arrows or press Enter to mark zero.':signed(value)+' biomass index',onPointerDown:function(){if(value===null)estimate(name,0);},onKeyDown:function(e){if((e.key==='Enter'||e.key===' ')&&value===null){e.preventDefault();estimate(name,0);}},onChange:function(e){estimate(name,Number(e.target.value));}})),
+        h('div',{className:'efw-control-scale','aria-hidden':'true'},h('span',null,signed(-extent)),h('span',null,'0'),h('span',null,signed(extent))),h('small',null,value===null?'Not estimated yet. Zero is a valid answer.':'Your estimate: '+signed(value)+' biomass index.'));
+    }
+    return h('details',{className:'efw-control-study','data-efw-control-study':'true',open:!!s.open,onToggle:function(e){if(e.currentTarget.open!==!!s.open)change({open:e.currentTarget.open,saved:!!s.saved});}},h('summary',null,'Would it have changed anyway?'),
+      h('style',null,`.efw-control-study{border:1px solid var(--fw-line);border-radius:10px;padding:14px;min-width:0}.efw-control-study summary{font-weight:750;cursor:pointer}.efw-control-study>div{margin-top:12px}.efw-control-study p,.efw-control-study small{overflow-wrap:anywhere}.efw-control-captures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.efw-control-capture{padding:12px;border:1px solid var(--fw-line);border-radius:8px;display:grid;gap:8px;align-content:start;min-width:0}.efw-control-capture p{margin:0;font-size:13px}.efw-control-bars{display:grid;gap:20px}.efw-control-bar{min-width:0}.efw-control-bar-heading{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px}.efw-control-bar-heading>label{font-weight:700}.efw-control-number-label{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:400!important}.efw-control-number-label input{max-width:118px;min-width:0;padding:6px}.efw-control-numberline{position:relative;min-height:42px;border-radius:8px;background:#dce7eb;border:1px solid #9aafb8;overflow:hidden}.efw-control-numberline:focus-within{outline:3px solid var(--fw-accent);outline-offset:2px}.efw-control-zero{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#596f79}.efw-control-value-bar{position:absolute;top:23px;height:10px}.efw-control-recorded-bar{position:absolute;top:9px;height:7px;border:2px dashed;box-sizing:border-box}.efw-control-range{appearance:none;-webkit-appearance:none;position:relative;background:transparent!important;border:0!important;padding:0!important;margin:0!important;width:100%;height:42px;cursor:ew-resize;z-index:1}.efw-control-range::-webkit-slider-runnable-track{height:42px;background:transparent}.efw-control-range::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:28px;background:var(--control-color);border:2px solid white;border-radius:5px;margin-top:7px;box-shadow:0 0 0 1px #253d47}.efw-control-range::-moz-range-track{height:42px;background:transparent}.efw-control-range::-moz-range-thumb{width:15px;height:25px;background:var(--control-color);border:2px solid white;border-radius:5px}.efw-control-range:focus-visible{outline:3px solid var(--fw-accent);outline-offset:2px}.efw-control-numberline.is-unmarked .efw-control-range{opacity:.4}.efw-control-scale{display:flex;justify-content:space-between;font-size:12px;margin-top:3px}.efw-control-study table{width:100%;font-size:13px}.efw-control-study td,.efw-control-study th{overflow-wrap:anywhere}.efw-control-result-table{table-layout:fixed}@media(max-width:600px){.efw-control-captures{grid-template-columns:1fr}.efw-control-study{padding:10px}.efw-control-study table{font-size:12px}.efw-control-bar-heading{align-items:flex-start}}`),
+      h('div',{className:'efw-stack'},!enabled?h('p',{'data-efw-control-help':'true'},c.event==='none'?'This investigation needs a disturbance. The current no-disturbance control keeps both branches identical; choose a disturbance and run a comparison first.':'Select a species included in this modeled community first.'):h(props.React.Fragment,null,
+        h('p',null,'For '+species.name+', how much change appears beyond the baseline’s background change? Capture the same two times from both branches, then move the three markers. Values are biomass indices, not animal counts.'),
+        h('p',null,'Disturbance at time '+(c.eventStep/10).toFixed(1)+'. Current comparison time: '+(props.cursor/10).toFixed(1)+'. Before must be strictly earlier; after can be at or after the event.'),
+        h('small',null,'Recapturing starts a new comparison and clears its estimates, first answers and reflection. Saved observations stay unchanged. Inspecting a captured time does not clear your work.'),
+        h('div',{className:'efw-control-captures'},pointCard('before','1. Before the disturbance'),pointCard('after','2. At or after the disturbance')),
+        evidence?h(props.React.Fragment,null,
+          h('table',{'data-efw-control-values':'true'},h('caption',null,'Frozen paired biomass values · display rounded to 7 significant digits'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Model time'),h('th',{scope:'col'},'Baseline'),h('th',{scope:'col'},'Experiment'))),h('tbody',null,[evidence.before,evidence.after].map(function(point){return h('tr',{key:point.step},h('th',{scope:'row'},point.time.toFixed(1)),h('td',null,signed(point.baseline)),h('td',null,signed(point.experiment)));}))),
+          h('p',null,'Change = after − before. Extra modeled change = experiment change − baseline change. A negative extra change means less than the baseline change, even if the experiment itself rose.'),
+          h('div',{className:'efw-control-bars','data-efw-control-bars':'true'},['baseline','experiment','extra'].map(bar)),
+          h('small',null,'Move a marker with the pointer or arrow keys, or type a value. Enter marks an untouched marker as zero. All three answers are required and compared to the nearest 0.1 index. Raw saved evidence keeps full precision.'),
+          h('button',{type:'button',className:'efw-primary',disabled:!check,onClick:function(){change({checked:true,firstEstimates:s.firstEstimates||Object.assign({},estimates)});}},s.firstEstimates?'Compare revised estimates':'Compare my estimates'),
+          !check&&h('p',{role:'status'},'Mark all three changes within the displayed number lines. An unmarked answer does not count as zero.'),
+          shown&&h('div',{className:'efw-result efw-stack','data-efw-control-feedback':'true',role:'status'},h('strong',null,check.matches+' of 3 estimates agree to the nearest 0.1 index. First comparison: '+check.firstMatches+' of 3.'),h('p',null,'Solid bars are your estimates; dashed bars show the differences calculated from the frozen values. Positive and negative values share the same zero line.'),h('table',{className:'efw-control-result-table'},h('caption',null,'First estimates, latest estimates and model differences'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Change'),h('th',{scope:'col'},'First'),h('th',{scope:'col'},'Latest'),h('th',{scope:'col'},'Model'))),h('tbody',null,check.rows.map(function(row){return h('tr',{key:row.key},h('th',{scope:'row'},labels[row.key]),h('td',null,signed(row.firstEstimate)),h('td',null,signed(row.estimate)),h('td',null,signed(row.rounded)));}))),h('label',null,'My controlled-comparison evidence',h('textarea',{'aria-label':__alloT("stem.ecosystem.a11y_controlled_comparison_reflection", "Controlled comparison reflection"),value:s.reflection||'',maxLength:1600,placeholder:'The experiment changed by… The baseline also changed by… The extra modeled change is… This comparison cannot show…',onChange:function(e){change({reflection:e.target.value});}}))),
+          shown&&h('div',{className:'efw-row'},h('button',{type:'button',disabled:props.slots<1||!!s.saved,onClick:save},'Save controlled comparison'),h('small',{role:'status'},s.saved?'Controlled comparison saved with its original values and first estimates.':props.slots<1?'Notebook full. Export notes, then remove an observation.':'Save the frozen before/after values, first and latest estimates, original run prediction and reflection.')),
+          h('small',null,'This compares one deterministic model run with its matching baseline. It does not measure a wildlife effect, establish statistical uncertainty or connect an individual animal’s illustrated action to population change.')):
+          h('p',{role:'status'},'Use the comparison timeline or the inspection buttons above, then capture one time on each side of the disturbance.'))));
+  }
+
+  function ecoWebControlText(record,config,includeOriginal) {
+    var evidence=record&&ecoWebControlEvidence(config,record.focus,record.before,record.after),check=evidence&&ecoWebControlCheck(evidence,record.estimates,record.firstEstimates);
+    if(!check)return [];
+    var labels={baseline:'Baseline change',experiment:'Experiment change',extra:'Extra modeled change'},lines=[
+      'Controlled comparison: '+record.focus+'; time '+record.before.time+' before the disturbance to '+record.after.time+' after it',
+      'Frozen before values: baseline '+record.before.baseline+'; experiment '+record.before.experiment,
+      'Frozen after values: baseline '+record.after.baseline+'; experiment '+record.after.experiment
+    ];
+    check.rows.forEach(function(row){lines.push(labels[row.key]+': first estimate '+row.firstEstimate+'; latest estimate '+row.estimate+'; exact model difference '+row.value);});
+    lines.push('Extra modeled change = experiment change minus baseline change. Biomass indices are not animal counts. This controlled model comparison does not establish a measured effect in wildlife.');
+    lines.push('Controlled-comparison reflection: '+(record.reflection||'(not recorded)'));
+    if(includeOriginal)lines.push('Frozen controlled-comparison evidence (JSON): '+JSON.stringify(record));
+    return lines;
+  }
+
+  function EcoControlNotebook(props) {
+    var h=props.React.createElement,record=props.record,evidence=record&&ecoWebControlEvidence(props.config,record.focus,record.before,record.after);
+    if(!evidence)return null;
+    return h('details',{'data-efw-note-control-study':'true'},h('summary',null,'Saved controlled comparison'),ecoWebControlText(record,props.config,false).map(function(line,k){return h('p',{key:k},line);}),h('small',null,'These original values stay fixed. Reopening restores the working activity only if its setup and all four values still match the current model.'));
+  }
+
+  // Missions summarize original notebook evidence. No click/check/saved flag
+  // can award progress, and historical records are not regenerated for counts.
+  var ECO_FIELD_MISSIONS=[
+    {id:'observe',title:'Observe an animal',description:'Reconstruct a movement or code five recorded behavior samples.',entry:'Open movement detective'},
+    {id:'interaction',title:'Measure an interaction',description:'Measure one fixed pair or put an every-step gap headline on trial.',entry:'Choose an interaction'},
+    {id:'population',title:'Test a population claim',description:'Separate background change from extra modeled change.',entry:'Open controlled comparison'}
+  ];
+
+  function ecoWebMissionNote(note,missionId) {
+    if(!note||!Number.isInteger(note.id)||note.id<1||!note.config||typeof note.config!=='object'||Array.isArray(note.config)||!Number.isInteger(note.step)||typeof note.focus!=='string')return null;
+    var record;
+    if(missionId==='observe'){
+      record=ecoWebEthogramRecord(note.ethogram,note.config,note.step,note.focus);
+      if(record)return {kind:'ethogram',record:record};
+      record=ecoWebMovementRecord(note.movement,note.config,note.step,note.focus);
+      if(record)return {kind:record.footfall?'footfall':'movement',record:record};
+    }
+    if(missionId==='interaction'){
+      record=ecoWebSightingRecord(note.sighting,note.config,note.step,note.focus);
+      if(record&&(record.headline||record.measurement))return {kind:record.headline?'headline':'ruler',record:record};
+    }
+    if(missionId==='population'&&note.baseline&&note.baseline.values&&note.experiment&&note.experiment.values){
+      record=ecoWebControlRecord(note.controlStudy,note.config,note.step,note.focus,{baseline:note.baseline.values[note.focus],experiment:note.experiment.values[note.focus]});
+      if(record)return {kind:'control',record:record};
+    }
+    return null;
+  }
+
+  function ecoWebMissionEvidence(notes) {
+    notes=Array.isArray(notes)?notes.slice(0,12):[];
+    return ECO_FIELD_MISSIONS.map(function(mission){
+      var ids=[],latest=null;
+      notes.forEach(function(note){var eligible=ecoWebMissionNote(note,mission.id);if(!eligible||ids.indexOf(note.id)>=0)return;ids.push(note.id);if(!latest||note.id>latest.noteId)latest={noteId:note.id,kind:eligible.kind};});
+      return {id:mission.id,count:ids.length,noteIds:ids.sort(function(a,b){return a-b;}),latest:latest};
+    });
+  }
+
+  function ecoWebMissionRoute(notes,context,cachedEvidence) {
+    var c=context||{},evidence=cachedEvidence||ecoWebMissionEvidence(notes),configKey=c.configKey||'',drafts={};
+    function branchOf(value){if(!c.hasRun||!value||typeof value.key!=='string'||value.key.indexOf(configKey+'|')!==0)return null;var branch=value.key.slice(configKey.length+1);return ['baseline','experiment'].indexOf(branch)>=0?branch:null;}
+    function animalDraft(value,kind,target,label,focus,index){var branch=branchOf(value);return branch?{kind:kind,target:target,label:label,branch:branch,focus:focus,index:Number.isInteger(index)?index:null}:null;}
+    var m=c.motionStudy,e=c.ethogram,f=c.fieldwork,p=c.controlStudy;
+    if(m&&typeof m.id==='string'&&m.id&&['foxes','rabbits','bluetits','owls'].indexOf(m.species)>=0)drafts.observe=animalDraft(m,m.checked&&m.footfall&&m.footfall.open?'footfall':'movement',m.checked&&m.footfall&&m.footfall.open?'footfall':'movement','movement detective',m.species,0);
+    if(e&&e.plan&&e.plan.species&&Number.isInteger(e.plan.start)&&Number.isInteger(e.plan.interval)&&e.plan.interval>0)drafts.observe=animalDraft(e,'ethogram','ethogram','five-sample ethogram',e.plan.species,e.plan.index)||drafts.observe;
+    if(f&&typeof f.id==='string'&&f.id){var kind=f.headline&&f.headline.started?'headline':f.measurement&&Array.isArray(f.measurement.steps)&&f.measurement.steps.some(Number.isInteger)?'ruler':'encounter';drafts.interaction=animalDraft(f,kind,kind==='encounter'?'interaction':kind,kind==='headline'?'headline trial':kind==='ruler'?'pair measurements':'wildlife encounter',null,null);}
+    var controlFocus=p&&ECO_WEB_SPECIES.find(function(species){return p.key===configKey+'|'+species.id;});
+    if(c.hasRun&&controlFocus&&(p.before||p.after))drafts.population={kind:'control',target:'control',label:'controlled comparison',focus:controlFocus.id};
+    var anyDraft=Object.keys(drafts).some(function(id){return !!drafts[id];});
+    var missions=ECO_FIELD_MISSIONS.map(function(mission){
+      var saved=evidence.find(function(item){return item.id===mission.id;})||{count:0,noteIds:[],latest:null},draft=drafts[mission.id]||null,action,label,target;
+      var name=mission.id==='observe'?'observation':mission.id==='interaction'?'measurement':'population';
+      if(draft){action='continue';label='Continue '+name+' mission';target=draft.target;}
+      else if(saved.latest&&!anyDraft){action='resume';label='Resume saved '+name+' mission';target=null;}
+      else if(!c.hasRun){action='setup';label='Set up '+name+' mission';target='setup';}
+      else if(mission.id==='population'&&c.config&&c.config.event==='none'){action='disturbance';label='Choose disturbance for population mission';target='disturbance';}
+      else {action='open';label='Open '+name+' mission';target=mission.id==='observe'?'movement':mission.id==='interaction'?'interaction':'control';}
+      return {id:mission.id,title:mission.title,description:mission.description,count:saved.count,noteIds:saved.noteIds.slice(),latest:saved.latest?Object.assign({},saved.latest):null,draft:draft,action:action,label:label,target:target,otherDraft:!!(anyDraft&&!draft&&mission.id!=='population')};
+    });
+    var covered=missions.filter(function(mission){return mission.count>0;}).length;
+    return {missions:missions,covered:covered,total:3,hasRun:!!c.hasRun,summary:'Evidence saved for '+covered+' of 3 missions.'};
+  }
+
+  function ecoWebMissionContinue(context,missionId) {
+    var c=context||{},route=ecoWebMissionRoute(null,c),mission=route.missions.find(function(item){return item.id===missionId;}),draft=mission&&mission.draft;
+    var failure={ok:false,missionId:missionId,reason:'The current model cannot find that working activity. Its answers were kept. Review saved evidence or explicitly choose a new activity.'};
+    if(!draft||!c.hasRun||!c.config)return failure;
+    var config=ecoWebConfig(c.config),pair=ecoWebCompare(config),out={ok:true,missionId:missionId,target:draft.target,focus:draft.focus,branch:draft.branch,index:draft.index,cursor:c.cursor};
+    if(missionId==='population'){
+      var state=c.controlStudy;
+      if(!['before','after'].every(function(key){var point=state[key];return !point||JSON.stringify(ecoWebControlSample(pair,config,draft.focus,point.step))===JSON.stringify(point);}))return failure;
+      out.cursor=state.after?state.after.step:state.before.step;return out;
+    }
+    var frames=ecoMeadowBehaviorTimeline(config,pair[draft.branch]);
+    if(missionId==='interaction'){
+      var encounter=ecoMeadowEncounters(frames,config).find(function(item){return item.id===c.fieldwork.id;});
+      if(!encounter)return failure;
+      out.focus=encounter.actor.id;out.index=encounter.actor.index;
+      if(!Number.isInteger(out.cursor)||out.cursor<encounter.before||out.cursor>encounter.after)out.cursor=encounter.step;
+      return out;
+    }
+    if(draft.kind==='ethogram'){
+      var plan=c.ethogram.plan,current=ecoMeadowEthogramPlan(frames,plan.species,plan.index,plan.start,plan.interval);
+      if(!current||current.id!==plan.id)return failure;
+      if(current.samples.every(function(point){return point.step!==out.cursor;}))out.cursor=current.samples[0].step;
+      return out;
+    }
+    var study=ecoMeadowMotionStudy(frames,c.motionStudy.species,0);
+    if(!study||study.id!==c.motionStudy.id)return failure;
+    var strip=c.motionStudy.footfall,actual=strip&&strip.samples&&ecoMeadowFootfallPlan(frames,study);
+    if(strip&&strip.samples&&(!actual||JSON.stringify(actual.samples)!==JSON.stringify(strip.samples)))return failure;
+    if(study.samples.every(function(point){return point.step!==out.cursor;}))out.cursor=study.samples[0].step;
+    return out;
+  }
+
+  // Called only when explicitly reopening or resuming saved work, never while deriving counts.
+  // It reuses the original record validators and compares complete saved evidence.
+  function ecoWebMissionResume(note,missionId) {
+    var item=ecoWebMissionNote(note,missionId),failure={ok:false,missionId:missionId,noteId:note&&note.id,reason:'The saved evidence remains available for review. The current model does not reproduce all original samples, so no working activity was replaced.'};
+    if(!item)return Object.assign({},failure,{reason:'This observation has no valid saved evidence for that mission. No working activity was replaced.'});
+    var record=item.record,config=ecoWebConfig(note.config),configKey=JSON.stringify(config),pair=ecoWebCompare(config),branch=record.branch;
+    var result={ok:true,missionId:missionId,noteId:note.id,kind:item.kind,target:item.kind==='control'?'control':item.kind,focus:note.focus,branch:branch,index:record.index==null?record.actorIndex:record.index,fieldwork:null,motionStudy:null,ethogram:null,controlStudy:null};
+    if(missionId==='population'){
+      if(!ecoWebControlMatches(record,config,pair,note.focus))return failure;
+      result.controlStudy={key:configKey+'|'+note.focus,open:true,before:record.before,after:record.after,estimates:record.estimates,firstEstimates:record.firstEstimates,checked:true,reflection:record.reflection,saved:true};
+      return result;
+    }
+    var frames=ecoMeadowBehaviorTimeline(config,pair[branch]),key=configKey+'|'+branch;
+    if(missionId==='observe'&&item.kind==='ethogram'){
+      function sameSheet(sheet){var current=ecoMeadowEthogramPlan(frames,sheet.species,sheet.index,sheet.start,sheet.interval);return !!current&&JSON.stringify(current.samples)===JSON.stringify(sheet.samples);}
+      if(!sameSheet(record)||(record.reference&&!sameSheet(record.reference)))return failure;
+      result.ethogram={key:key,open:true,draftStart:record.start,draftInterval:record.interval,plan:{id:note.focus+':'+record.index+':'+record.start+':'+record.interval,species:note.focus,index:record.index,start:record.start,interval:record.interval,branch:branch},codes:record.codes.slice(),firstCodes:record.firstCodes.slice(),visited:[0,1,2,3,4],checked:true,reflection:record.reflection,reference:record.reference?ecoMeadowEthogramSnapshot(record.reference):null,comparison:record.comparison?Object.assign({},record.comparison,{committed:true}):null,saved:true};
+      return result;
+    }
+    if(missionId==='observe'){
+      var study=record.index===0&&ecoMeadowMammalMotionStudy(frames,note.focus,record.index);
+      var samples=study&&study.samples.map(function(point){var sample={step:point.step,value:point.value,supportFeet:point.supportFeet,foreContact:point.foreContact,hindContact:point.hindContact};if(Number.isFinite(point.pawAngle))sample.pawAngle=point.pawAngle;return sample;});
+      if(!study||study.id!==record.studyId||JSON.stringify(samples)!==JSON.stringify(record.samples))return failure;
+      var footfall=record.footfall,plan=footfall&&ecoMeadowFootfallPlan(frames,study);
+      if(footfall&&(!plan||JSON.stringify(plan.samples)!==JSON.stringify(footfall.samples)))return failure;
+      result.motionStudy={key:key,id:study.id,species:note.focus,order:(record.latestOrder||record.order).map(String),firstOrder:record.order.slice(),checked:!!record.latestOrder,sequenceAttempted:!!record.latestOrder,reflection:record.reflection||'',saved:true};
+      if(footfall)result.motionStudy.footfall=Object.assign({},footfall,{open:true,visited:[0,1,2],checked:true,saved:true});
+      if(!record.latestOrder)result.target='movement';
+      return result;
+    }
+    var encounter=ecoMeadowEncounters(frames,config).find(function(e){return e.kind===record.kind&&e.actor.id===note.focus&&e.actor.index===record.actorIndex&&e.cue.id===record.cueId&&e.cue.index===record.cueIndex&&e.step===note.step&&e.before===record.before.step&&e.after===record.after.step;});
+    if(!encounter)return failure;
+    var measured=record.measurement,current=measured&&ecoMeadowPairEvidence(frames,encounter,measured.samples.map(function(point){return point.step;}));
+    if(measured&&(!current||JSON.stringify(current.samples)!==JSON.stringify(measured.samples)||JSON.stringify(current.intervals)!==JSON.stringify(measured.intervals)))return failure;
+    if(record.inference&&!ecoMeadowInferenceMatches(record.inference,frames,encounter))return failure;
+    if(record.headline&&!ecoMeadowHeadlineMatches(record.headline,frames,encounter))return failure;
+    var originalCase=record.probe&&ecoMeadowSpacingProbeCase(frames,encounter);
+    if(record.probe&&(!originalCase||JSON.stringify(originalCase)!==JSON.stringify(record.probe.trial.context)))return failure;
+    var fieldwork={key:key,id:encounter.id,forecast:record.forecast,revealed:true,reflection:note.explanation||'',limit:record.limitation,saved:true};
+    if(measured)fieldwork.measurement=ecoMeadowPairMeasurementState(measured);
+    if(record.headline){var headline=record.headline,visited=[];headline.pins.forEach(function(step){[step-1,step].forEach(function(time){if(visited.indexOf(time)<0)visited.push(time);});});fieldwork.headline={open:true,started:true,draftStep:headline.pins[0],visited:visited,pins:headline.pins.slice(),sorts:headline.sorts.slice(),firstSorts:headline.firstSorts.slice(),verdict:headline.verdict,firstVerdict:headline.firstVerdict,reflection:headline.reflection,checked:true,saved:true};}
+    if(record.probe){var probe=JSON.parse(JSON.stringify(record.probe));probe.open=true;if(probe.version===2)probe.checked=true;probe.variable=probe.trial.variable;if(probe.variable==='distance')probe.distance=probe.trial.value;else probe.feeding=probe.trial.value;fieldwork.probe=probe;}
+    if(record.inference)fieldwork.inference=ecoMeadowInferenceState(record.inference);
+    result.fieldwork=fieldwork;
+    return result;
+  }
+
+  function ecoWebMissionFocus(root,request) {
+    if(!root||!request)return false;
+    var selectors={setup:'[data-efw-mission-setup]',disturbance:'[data-efw-mission-disturbance]',movement:'[data-efw-movement-study]',footfall:'[data-efw-footfall-lab]',ethogram:'[data-efw-ethogram]',interaction:'[data-efw-fieldwork]',ruler:'[data-efw-pair-lab]',headline:'[data-efw-headline-trial]',control:'[data-efw-control-study]'};
+    var region=request.target==='note'&&Number.isInteger(request.noteId)?root.querySelector('[data-efw-note="'+request.noteId+'"]'):root.querySelector(selectors[request.target]||'[data-efw-mission-setup]');
+    if(!region)return false;
+    var node=region;while(node&&node!==root){if(node.tagName==='DETAILS')node.open=true;node=node.parentElement;}
+    if(request.target==='note')region.querySelectorAll('details').forEach(function(details){details.open=true;});
+    var controls={ruler:'[aria-label="Pair measurement time"]',headline:'[aria-label="Headline evidence interval"]',ethogram:'[aria-label="Ethogram sample 1 code"], [aria-label="Ethogram start time"]',footfall:'[aria-label="Checkpoint 1 Left hind contact"]',control:'[aria-label="Baseline change number"]',interaction:'[aria-label="Wildlife prediction"]'};
+    var control=controls[request.target]&&region.querySelector(controls[request.target]);
+    if(!control&&request.target==='interaction')control=region.querySelector('[data-efw-encounter]');
+    if(!control||control.disabled)control=region.matches('button,select,input,textarea,summary')?region:region.querySelector('summary,button:not(:disabled),select:not(:disabled),input:not(:disabled),textarea:not(:disabled)');
+    if(!control){region.tabIndex=-1;control=region;}
+    control.scrollIntoView({block:'center',behavior:'instant'});control.focus({preventScroll:true});return true;
+  }
+
+
+  function EcoFieldMissions(props) {
+    var __alloT = typeof props.translateStudy === "function" ? props.translateStudy : function (key, fallback) { return fallback == null ? key : fallback; };
+    var h=props.React.createElement,route=props.route;
+    return h('nav',{'data-efw-field-missions':'true','aria-label':__alloT("stem.ecosystem.a11y_field_missions", "Field missions"),className:'efw-missions'},
+      h('style',null,`.efw-missions{border:1px solid var(--fw-line);border-radius:12px;padding:14px;background:var(--fw-panel);min-width:0}.efw-missions>p{margin:6px 0}.efw-missions ol{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.efw-missions li{padding:12px;border:1px solid var(--fw-line);border-radius:8px;display:grid;gap:8px;align-content:start;min-width:0}.efw-missions li[data-evidence-saved=true]{border-top:4px solid var(--fw-accent)}.efw-missions :is(strong,p,small,button){overflow-wrap:anywhere}.efw-missions button{text-align:left;width:100%}.efw-missions p{font-size:13px}.efw-missions small{font-size:12px}.efw-mission-count{font-weight:700}@media(max-width:700px){.efw-missions ol{grid-template-columns:1fr}.efw-missions{padding:12px}}`),
+      h('h4',null,'Field missions'),
+      h('p',{'data-efw-mission-progress':'true',role:'status','aria-live':'polite','aria-atomic':'true'},route.summary),
+      h('small',null,'Choose a route. Saved evidence records your work, not a score or proof that an answer is correct. Clicking or checking alone does not add progress.'),
+      h('ol',null,route.missions.map(function(mission,k){return h('li',{key:mission.id,'data-efw-mission':mission.id,'data-evidence-saved':String(mission.count>0)},
+        h('strong',null,(k+1)+'. '+mission.title),h('p',null,mission.description),
+        h('span',{className:'efw-mission-count','data-efw-mission-count':'true'},mission.count?'Evidence saved · '+mission.count+' observation'+(mission.count===1?'':'s'):'No saved evidence yet'),
+        mission.draft&&h('small',{'data-efw-mission-draft':'true'},'Working activity: '+mission.draft.label+'. Continue keeps its current answers.'),
+        h('button',{type:'button','data-efw-mission-entry':mission.action,onClick:function(){props.onEntry(mission);}},mission.label),
+        mission.count>0&&h('button',{type:'button',onClick:function(){props.onReview(mission);}},'Review '+(mission.id==='observe'?'observation':mission.id==='interaction'?'measurement':'population')+' evidence'),
+        mission.otherDraft&&h('small',null,'Opening the chooser keeps your current animal draft. Selecting a new activity there replaces it; save useful evidence first.'),
+        mission.action==='disturbance'&&h('small',null,'The current run has no disturbance. Choose one and run a new comparison before testing extra modeled change.'))})),
+      props.message&&h('p',{'data-efw-mission-message':'true',role:'status','aria-live':'polite'},props.message));
+  }
+
+
   function EcoFieldNotebook(props) {
     var h = props.React.createElement, notes = props.notes;
     var t = (props && typeof props.t === 'function') ? props.t : function(k, fb){ return fb != null ? fb : k; };
@@ -2747,7 +7443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     }
     return h('section', { className: 'efw-card efw-stack', 'data-efw-notebook': 'true', 'aria-label': t('stem.ecosystem.food_web_field_notebook','Food-web field notebook') },
       h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, 'Field notebook'), h('span', { role: 'status' }, notes.length + ' of 12 observations saved')),
-      h('p', null, 'Save a comparison sample with its prediction, explanation, and setup. Saved observations stay here when you change the experiment. Export a copy to keep outside this tool.'),
+      h('p', null, 'Save a comparison sample, controlled comparison, wildlife encounter, movement study or behavior-sampling sheet with its evidence and setup. Saved observations stay here when you change the experiment. Export a copy to keep outside this tool.'),
       !notes.length && h('p', { className: 'efw-result' }, 'Run a comparison, inspect a time, write an explanation, then choose “Save observation” in the results.'),
       notes.length > 0 && h('button', { type: 'button', onClick: download }, 'Export field notebook'),
       h('div', { className: 'efw-notebook-grid' }, notes.map(function(note) {
@@ -2755,15 +7451,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var b = note.baseline.values[sp.id], e = note.experiment.values[sp.id];
         return h('article', { key: note.id, className: 'efw-note efw-stack', 'data-efw-note': note.id },
           h('h4', null, 'Observation ' + note.id + ' · ' + sp.name),
+          note.sighting && h('p',{'data-efw-note-sighting':'true'},h('strong',null,'Wildlife encounter · '+note.sighting.state),' · '+note.sighting.branch+' branch · representative '+(note.sighting.actorIndex+1)+' with '+ECO_WEB_SPECIES.find(function(group){return group.id===note.sighting.cueId;}).name+' '+(note.sighting.cueIndex+1)),
+          note.controlStudy&&h(EcoControlNotebook,{React:props.React,record:note.controlStudy,config:note.config}),
+          note.movement&&note.movement.footfall&&h('details',{'data-efw-note-footfall':'true'},h('summary',null,'Saved paw contact strip'),ecoWebFootfallText(note.movement.footfall).map(function(line,index){return h('p',{key:index},line);})),
+          note.sighting&&note.sighting.probe&&h('details',{'data-efw-note-probe':'true'},h('summary',null,'Saved cue test bench'),ecoWebSpacingProbeText(note.sighting.probe).map(function(line,index){return h('p',{key:index},line);})),
+          note.sighting&&note.sighting.inference&&h('details',{'data-efw-note-inference':'true'},h('summary',null,'Saved evidence and inference challenge'),ecoWebInferenceText(note.sighting.inference,false).map(function(line,k){return h('p',{key:k},line);})),
+          note.sighting&&note.sighting.headline&&h(EcoHeadlineNotebook,{React:React,record:note.sighting.headline}),
+          note.sighting&&note.sighting.measurement&&h('details',{'data-efw-note-measurement':'true'},h('summary',null,'Saved pair measurements'),h('p',null,'First claim: '+note.sighting.measurement.firstClaim+' · current claim: '+note.sighting.measurement.claim+' · measured pattern: '+note.sighting.measurement.trend),note.sighting.measurement.samples.map(function(point,k){return h('p',{key:k},String.fromCharCode(65+k)+' · time '+(point.step/10).toFixed(1)+' · gap '+point.gap.toFixed(3)+' scene units');}),ecoWebPairMotionText(note.sighting.measurement).filter(function(line){return line.indexOf('Frozen ruler motion comparison (JSON): ')!==0;}).map(function(line,k){return h('p',{key:'motion-'+k},line);}),h('p',null,note.sighting.measurement.reflection||'No pair reflection recorded.'),h('small',null,'Reopening frames this pair at the last measured sample. Saved values stay unchanged.')),
+          note.movement&&h('p',{'data-efw-note-movement':'true'},h('strong',null,'Movement study · '+note.movement.kind),' · '+note.movement.branch+' branch · representative '+(note.movement.index+1)),
+          note.ethogram&&note.ethogram.reference&&h(EcoSamplingNotebook,{React:props.React,record:note.ethogram}),
+          note.ethogram&&h('details',{'data-efw-note-ethogram':'true'},h('summary',null,'Saved five-sample ethogram'),h('p',null,note.ethogram.branch+' branch · representative '+(note.ethogram.index+1)+' · interval '+(note.ethogram.interval/10).toFixed(1)+' model time units'),note.ethogram.samples.map(function(point,k){return h('p',{key:k},'Sample '+(k+1)+' · time '+(point.step/10).toFixed(1)+' · '+point.state+' · first code: '+note.ethogram.firstCodes[k]+' · current code: '+note.ethogram.codes[k]);}),h('p',null,note.ethogram.reflection||'No sampling reflection recorded.'),h('small',null,'These five checkpoints describe this representative. Sample proportions are not a measure of elapsed time. Reopen to revisit the original sampling sheet.')),
+          note.investigation && h('p', { className: 'efw-note-prose' }, h('strong', null, ecoWebInvestigation(note.investigation.id).title + ' · '), 'Prediction: ' + note.investigation.forecast + ' at time 24 compared with baseline.'),
           h('strong', null, 'Time ' + (note.step / 10).toFixed(1) + ' · difference ' + ecoWebDelta(e - b)),
           h('p', null, 'Baseline ' + ecoWebFormat(b) + ' · experiment ' + ecoWebFormat(e) + ' biomass index'),
           h('p', null, 'Refuge cover: ' + note.baseline.cover + '% baseline · ' + note.experiment.cover + '% experiment'),
           note.config.soil.enabled && h('p',{'data-efw-note-soil':'true'},'Soil sample · organic matter '+ecoWebFormat(note.experiment.soil.detritus)+' · decomposers '+ecoWebFormat(note.experiment.soil.decomposers)+' · available nutrients '+ecoWebFormat(note.experiment.soil.nutrients)),
           h('p', { className: 'efw-note-prose' }, h('strong', null, 'Explanation: '), note.explanation || 'Not recorded'),
+          note.investigation && h('p', { className: 'efw-note-prose' }, h('strong', null, 'Model limit: '), note.investigation.limitation || 'Not recorded'),
           h('details', null, h('summary', null, 'Saved setup and all species'),
             h('p', null, 'Disturbance: ' + ecoWebEventLabel(note.config) + (note.config.event === 'none' ? '' : ' at time ' + (note.config.eventStep / 10).toFixed(1))),
             h('p', null, 'Starting capacity ' + note.config.capacity + ' · starting cover ' + note.config.cover + '%'),
-            h('p', { className: 'efw-note-prose' }, 'Prediction: ' + (note.prediction || 'Not recorded')),
+            (note.movement||note.sighting||note.ethogram||note.controlStudy)&&h('p',{className:'efw-note-prose'},'Ecosystem prediction: '+((note.movement||note.sighting||note.ethogram||note.controlStudy).runPrediction||'Not recorded')),
+            h('p', { className: 'efw-note-prose' }, (note.ethogram?'Activity: ':note.movement||note.sighting||note.controlStudy?'Activity prediction: ':'Prediction: ') + (note.prediction || 'Not recorded')),
             h('p', null, 'Starting community: ' + ECO_WEB_SPECIES.map(function(group) { return group.name + ' ' + note.config.initial[group.id] + (note.config.enabled[group.id] ? '' : ' (excluded)'); }).join('; ')),
             h('div', { className: 'efw-scroll' }, h('table', null,
               h('caption', null, 'Saved biomass indices · observation ' + note.id),
@@ -2807,6 +7516,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       h('details',null,h('summary',null,'How the soil cycle is modeled'),h('p',null,'One biomass unit contains 0.1 nutrient units. Plant growth draws from available nutrients; mortality and unassimilated food return nutrients to organic matter. Decomposers process that matter, retaining 18% of its nutrients and releasing 82%. The tracked nutrient total is conserved, including any material removed from the ecosystem.'),h('p',null,'These are illustrative rates and a fixed nutrient quota, not measurements of a particular forest. The combined fungi-and-bacteria pool has no species diversity, carbon budget, weather, nutrient leaching or fungal fruiting season. Plant capacity still limits growth.')));
   }
 
+  // Guided questions use the existing paired model; their expected observations
+  // are calculated from saved run samples, never inferred from a learner's prose.
+  // Ecological framing: NPS, The Big Scientific Debate: Trophic Cascades;
+  // USDA NRCS, Soil Biology Primer. Numerical pathways below are model assumptions.
+  function ecoWebInvestigation(id) {
+    var cases = {
+      cascade: {
+        id: 'cascade', title: 'The missing predator', tag: 'Indirect effects',
+        question: 'How can removing foxes change plants that foxes do not eat?', focus: 'plants',
+        config: { event: 'remove', target: 'foxes', eventStep: 80, capacity: 160, cover: 0 },
+        pathway: [
+          { label: 'Foxes are removed', detail: 'The disturbance sets fox biomass to zero. It does not directly remove plants or herbivores.' },
+          { label: 'Feeding pressure can change', detail: 'Rabbits and voles share plants, while foxes consume both herbivores. Barn owls still consume voles.' },
+          { label: 'Plants respond over time', detail: 'Compare grazing and plant growth in the two runs. Check the evidence before deciding the direction of the plant response.' }
+        ],
+        prompts: { before: 'Do the plant values match before fox removal?', event: 'At the instant foxes are removed, does plant biomass jump too?', after: 'By time 24, is plant biomass higher, lower, or the same as the baseline?' },
+        explanation: 'Use the plant values before and after the event. Trace foxes → herbivores → plants, and explain why the plant response takes time.',
+        limitation: 'This model tests selected feeding links. It cannot show that removing a predator has the same effect in every real ecosystem.'
+      },
+      refuge: {
+        id: 'refuge', title: 'Shelter with tradeoffs', tag: 'Habitat decisions',
+        question: 'Does adding refuge cover change rabbits immediately or through later feeding interactions?', focus: 'rabbits',
+        config: { event: 'restoreCover', target: 'foxes', eventStep: 80, capacity: 160, cover: 10 },
+        pathway: [
+          { label: 'Refuge cover increases', detail: 'Cover rises from 10% to 50%. The event changes access to prey without instantly creating or removing biomass.' },
+          { label: 'Predator access changes', detail: 'In this model, cover reduces accessible rabbit and vole biomass for foxes and owls; it does not add plant food.' },
+          { label: 'Compare more than one group', detail: 'Inspect rabbits first, then plants and predators. A higher value for one group does not mean every group benefits.' }
+        ],
+        prompts: { before: 'Do the rabbit values match before cover is restored?', event: 'Cover changes at this sample. Does rabbit biomass change at that instant?', after: 'By time 24, how does rabbit biomass compare with the baseline?' },
+        explanation: 'Use the rabbit values and cover values to distinguish a habitat change from a biomass change. Describe one possible tradeoff for another group.',
+        limitation: 'Cover is a habitat-wide accessibility factor. The model does not measure real shelter quality, breeding success, or spatial patch use.'
+      },
+      insects: {
+        id: 'insects', title: 'When insect food falls', tag: 'Food supply',
+        question: 'How does an 80% caterpillar reduction affect blue tits later?', focus: 'bluetits',
+        config: { enabled: { caterpillars: true, bluetits: true }, event: 'reduce', target: 'caterpillars', eventStep: 80, capacity: 180, cover: 10 },
+        pathway: [
+          { label: 'Caterpillar biomass is reduced', detail: 'The event leaves 20% of the caterpillar biomass present at that time. Blue-tit biomass is not directly reduced.' },
+          { label: 'The feeding pathway changes', detail: 'Caterpillars eat plants; blue tits eat caterpillars in this model. The surviving caterpillars can continue to respond.' },
+          { label: 'Inspect the delayed response', detail: 'Compare blue-tit biomass with its baseline, then inspect caterpillars and plants to explain the connected changes.' }
+        ],
+        prompts: { before: 'Do the blue-tit values match before the caterpillar reduction?', event: 'Caterpillars are reduced at this sample. Do blue tits lose biomass at the same instant?', after: 'By time 24, is blue-tit biomass higher, lower, or the same as its baseline?' },
+        explanation: 'Compare blue tits at the event and at time 24. Use the plant → caterpillar → blue-tit feeding pathway to explain the difference.',
+        limitation: 'Blue tits have only one food source here. Alternative foods, caterpillar metamorphosis, and bird breeding stages are not modeled.'
+      },
+      soil: {
+        id: 'soil', title: 'Life beneath the leaves', tag: 'Nutrient cycling',
+        question: 'How can a loss of decomposers affect plants through nutrient recycling?', focus: 'plants',
+        config: { soil: { enabled: true, detritus: 30, nutrients: 4, decomposers: 8 }, enabled: { caterpillars: true, bluetits: true }, event: 'decomposerDecline', target: 'foxes', eventStep: 80, capacity: 180, cover: 10 },
+        pathway: [
+          { label: 'Decomposer biomass falls', detail: 'The mortality event transfers nutrients in dead decomposers into organic matter. It does not immediately change plant biomass or available nutrients.' },
+          { label: 'Nutrient recycling continues', detail: 'Surviving decomposers process organic matter and release plant-available nutrients. Their biomass also changes over time.' },
+          { label: 'Inspect plants and soil together', detail: 'Plant growth draws from available nutrients. Compare plants, organic matter, and available nutrients before explaining the later outcome.' }
+        ],
+        prompts: { before: 'Do the plant values match before decomposer mortality?', event: 'At the mortality event, does plant biomass change immediately?', after: 'By time 24, how does plant biomass compare with the baseline?' },
+        explanation: 'Use the plant comparison and the soil pools to trace decomposers → available nutrients → plants. Distinguish an immediate transfer to organic matter from a later growth response.',
+        limitation: 'Fungi and bacteria form one combined pool with fixed nutrient content. Weather, nutrient leaching, and microbial diversity are not included.'
+      }
+    };
+    if (!Object.prototype.hasOwnProperty.call(cases, id)) return null;
+    var investigation = cases[id];
+    investigation.config = ecoWebConfig(investigation.config);
+    return investigation;
+  }
+
+  function ecoWebInvestigationEvidence(caseId, pair, config) {
+    var investigation = ecoWebInvestigation(caseId);
+    if (!investigation || !config || typeof config !== 'object' || Array.isArray(config) || JSON.stringify(ecoWebConfig(config)) !== JSON.stringify(investigation.config) || !pair) return null;
+    var valid = ['baseline', 'experiment'].every(function(branch) {
+      var rows = pair[branch];
+      if (!Array.isArray(rows) || rows.length !== 241) return false;
+      for (var i = 0; i <= 240; i++) {
+        var row = rows[i];
+        if (!row || row.step !== i || row.time !== i / 10 || !Number.isFinite(row.capacity) || row.capacity <= 0 || !Number.isFinite(row.cover) || row.cover < 0 || row.cover > 80 || !row.values) return false;
+        if (!ECO_WEB_SPECIES.every(function(sp) { return Number.isFinite(row.values[sp.id]) && row.values[sp.id] >= 0; })) return false;
+        if (investigation.config.soil.enabled && (!row.soil || !['detritus', 'nutrients', 'decomposers', 'exported'].every(function(key) { return Number.isFinite(row.soil[key]) && row.soil[key] >= 0; }))) return false;
+      }
+      return true;
+    });
+    if (!valid) return null;
+    return [
+      { id: 'before', label: 'Before the disturbance', step: investigation.config.eventStep - 1 },
+      { id: 'event', label: 'At the disturbance', step: investigation.config.eventStep },
+      { id: 'after', label: 'Later response', step: 240 }
+    ].map(function(checkpoint) {
+      var baseline = pair.baseline[checkpoint.step].values[investigation.focus];
+      var experiment = pair.experiment[checkpoint.step].values[investigation.focus];
+      var delta = experiment - baseline;
+      return { id: checkpoint.id, label: checkpoint.label, step: checkpoint.step, time: checkpoint.step / 10, baseline: baseline, experiment: experiment, delta: delta, direction: delta === 0 ? 'same' : delta > 0 ? 'higher' : 'lower', prompt: investigation.prompts[checkpoint.id] };
+    });
+  }
+
   function EcoFoodWebPanel(props) {
     var React = props.React, h = React.createElement, state = props.state || {}, config = ecoWebConfig(state);
     var t = props.t, resultConfig = state.run ? ecoWebConfig(state.run.config) : null;
@@ -2816,15 +7617,177 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     var shownConfig = resultConfig || config;
     var shown = result ? result.experiment[cursor].values : config.initial;
     var notes = React.useMemo(function() { return ecoWebNotebook(state.notebook); }, [state.notebook]);
-    function update(patch) { props.onChange(Object.assign({}, state, patch)); }
+    var missionRoot=React.useRef(null),missionNavigationState=React.useState(null),missionNavigation=missionNavigationState[0],setMissionNavigation=missionNavigationState[1];
+    var missionMessageState=React.useState(''),missionMessage=missionMessageState[0],setMissionMessage=missionMessageState[1];
+    var missionEvidence=React.useMemo(function(){return ecoWebMissionEvidence(notes);},[notes]);
+    function missionContext(){return {hasRun:!!result,config:resultConfig,configKey:resultConfig?JSON.stringify(resultConfig):'',focus:focus.id,cursor:cursor,fieldwork:state.fieldwork,motionStudy:state.motionStudy,ethogram:state.ethogram,controlStudy:state.controlStudy};}
+    var missionRoute=ecoWebMissionRoute(null,missionContext(),missionEvidence);
+    function queueMissionNavigation(target,noteId){setMissionNavigation(function(previous){return {target:target,noteId:noteId,sequence:previous?previous.sequence+1:1};});}
+    React.useEffect(function(){
+      if(!missionNavigation||!missionRoot.current)return;
+      if(ecoWebMissionFocus(missionRoot.current,missionNavigation))return;
+      // A saved branch is selected inside the existing meadow's own effect.
+      // Wait for its real controls to mount, not for an arbitrary delay.
+      var observer=typeof window.MutationObserver==='function'?new window.MutationObserver(function(){if(ecoWebMissionFocus(missionRoot.current,missionNavigation))observer.disconnect();}):null;
+      if(observer)observer.observe(missionRoot.current,{childList:true,subtree:true});
+      else setMissionMessage('Use the existing activity controls below. Your drafts and saved evidence were kept.');
+      return function(){if(observer)observer.disconnect();};
+    },[missionNavigation,state.showMeadow,!!result]);
+    React.useEffect(function(){setMissionMessage('');},[state.notebook]);
+    function reviewMission(mission){
+      var latest=mission.latest&&notes.find(function(note){return note.id===mission.latest.noteId;});
+      if(!latest){setMissionMessage('That saved observation is no longer in the notebook. Mission progress now uses the observations that remain.');return;}
+      setMissionMessage('Reviewing original observation '+latest.id+'. This does not change your working activities.');queueMissionNavigation('note',latest.id);
+    }
+    function enterMission(chosen){
+      var current=ecoWebMissionRoute(null,missionContext(),missionEvidence).missions.find(function(mission){return mission.id===chosen.id;});
+      if(!current)return;setMissionMessage('');
+      if(current.action==='resume'){
+        var note=current.latest&&notes.find(function(item){return item.id===current.latest.noteId;}),restored=ecoWebMissionResume(note,current.id);
+        if(!restored.ok){setMissionMessage(restored.reason);if(note)queueMissionNavigation('note',note.id);return;}
+        reopenObservation(note,restored);return;
+      }
+      if(current.action==='continue'){
+        var next=ecoWebMissionContinue(missionContext(),current.id);
+        if(!next.ok){setMissionMessage(next.reason);if(current.id!=='population')update({showMeadow:true});queueMissionNavigation(current.id==='observe'?'movement':current.id==='interaction'?'interaction':'control');return;}
+        var patch={focus:next.focus,cursor:next.cursor,sightingRequest:null,inspectionVersion:(state.inspectionVersion||0)+1};
+        if(current.id!=='population'){patch.showMeadow=true;patch.sightingRequest={branch:next.branch,focus:next.focus,index:next.index,mode:current.id==='observe'?(current.draft.kind==='ethogram'?'ethogram':'movement'):'encounter',nonce:patch.inspectionVersion};}
+        update(patch);queueMissionNavigation(next.target);return;
+      }
+      if(current.target==='movement'||current.target==='interaction')update({showMeadow:true});
+      queueMissionNavigation(current.target);
+    }
+
+    var investigation = ecoWebInvestigation(state.investigationId);
+    var pendingState=React.useRef({received:state,value:state});
+    if(pendingState.current.received!==state)pendingState.current={received:state,value:state};
+    function update(patch) { var current=pendingState.current.value||{},next=Object.assign({},current,typeof patch==='function'?patch(current):patch);pendingState.current.value=next;props.onChange(next); }
+    function runComparison() {
+      var context = ecoWebInvestigationRecord({ id: state.investigationId, forecast: state.forecast, limitation: '' }, config);
+      update({ run: { config: config, prediction: state.prediction || '', investigation: context }, cursor: 240, reflection: '', investigationLimit: '', investigationVisited: [], investigationChecked: false, investigationSaved: false, fieldwork: null, motionStudy: null, ethogram: null, controlStudy: null, sightingRequest: null, inspectionVersion: (state.inspectionVersion || 0) + 1 });
+      if (props.announce) props.announce('Food-web comparison complete. Inspect the diagram, chart, and table.');
+    }
+    function startInvestigation(id) {
+      var guide = ecoWebInvestigation(id);
+      if (!guide) return;
+      update(Object.assign({}, guide.config, { investigationId: id, forecast: '', prediction: '', reflection: '', investigationLimit: '', investigationVisited: [], investigationChecked: false, investigationSaved: false, fieldwork: null, motionStudy: null, ethogram: null, controlStudy: null, sightingRequest: null, run: null, cursor: 0, focus: guide.focus, inspectionVersion: (state.inspectionVersion || 0) + 1 }));
+      if (props.announce) props.announce(guide.title + ' loaded. Choose a prediction before running.');
+    }
+    function currentInvestigationRecord() {
+      return state.run && ecoWebInvestigationRecord(Object.assign({}, state.run.investigation, { limitation: state.investigationLimit || '' }), resultConfig);
+    }
+    function saveInvestigation() {
+      var context = currentInvestigationRecord();
+      var evidence = context && ecoWebInvestigationEvidence(context.id, result, resultConfig);
+      if (!evidence || notes.length > 9 || state.investigationSaved) return;
+      var sequence = Math.max(0, Math.floor(ecoWebNumber(state.notebookSequence, 0, 0, 1000000)), ...notes.map(function(note) { return note.id; }));
+      var guide = ecoWebInvestigation(context.id);
+      var captured = evidence.map(function(row, index) { return ecoWebCapture(resultConfig, result, row.step, guide.focus, state.run.prediction, state.reflection, sequence + index + 1, context); });
+      update({ notebook: notes.concat(captured), notebookSequence: sequence + 3, investigationSaved: true });
+      if (props.announce) props.announce('Three investigation observations saved to your field notebook.');
+    }
     function saveObservation() {
       if (!result || notes.length >= 12) return;
       var id = Math.max(0, Math.floor(ecoWebNumber(state.notebookSequence, 0, 0, 1000000)), ...notes.map(function(note) { return note.id; })) + 1;
-      var note = ecoWebCapture(resultConfig, result, cursor, focus.id, state.run.prediction, state.reflection, id);
+      var note = ecoWebCapture(resultConfig, result, cursor, focus.id, state.run.prediction, state.reflection, id, currentInvestigationRecord());
       update({ notebook: notes.concat([note]), notebookSequence: id });
       if (props.announce) props.announce('Observation ' + id + ' saved to the field notebook.');
     }
-    function draft(patch) { update(Object.assign({ run: null, cursor: 0, reflection: '' }, patch)); }
+    function saveWildlifeObservation(data) {
+      if(!result||notes.length>=12||!data||!ecoWebSightingRecord(data.sighting,resultConfig,data.step,data.focus))return;
+      var id=Math.max(0,Math.floor(ecoWebNumber(state.notebookSequence,0,0,1000000)),...notes.map(function(note){return note.id;}))+1;
+      var context=Object.assign({},data.sighting,{runPrediction:state.run.prediction||''});
+      var note=ecoWebCapture(resultConfig,result,data.step,data.focus,data.prediction,data.explanation,id,state.run.investigation||null,context);
+      update({notebook:notes.concat([note]),notebookSequence:id,fieldwork:data.fieldwork});
+      if(props.announce)props.announce('Wildlife observation '+id+' saved to the field notebook.');
+    }
+    function saveMovementObservation(data){
+      if(!result||notes.length>=12||!data||!ecoWebMovementRecord(data.movement,resultConfig,data.step,data.focus))return;
+      var id=Math.max(0,Math.floor(ecoWebNumber(state.notebookSequence,0,0,1000000)),...notes.map(function(note){return note.id;}))+1;
+      var context=Object.assign({},data.movement,{runPrediction:state.run.prediction||''});
+      var note=ecoWebCapture(resultConfig,result,data.step,data.focus,data.prediction,data.explanation,id,state.run.investigation||null,null,context);
+      update({notebook:notes.concat([note]),notebookSequence:id,motionStudy:data.motionStudy});
+      if(props.announce)props.announce('Movement observation '+id+' saved to the field notebook.');
+    }
+    function saveControlObservation(data){
+      if(!result||notes.length>=12||!data||!data.controlStudy)return;
+      var raw=Object.assign({},data.controlStudy,{runPrediction:state.run.prediction||''}),step=raw.after&&raw.after.step;
+      var after=ecoWebControlSample(result,resultConfig,raw.focus,step),record=ecoWebControlRecord(raw,resultConfig,step,raw.focus,after);
+      if(!record||!after||!ecoWebControlMatches(record,resultConfig,result,record.focus))return;
+      var id=Math.max(0,Math.floor(ecoWebNumber(state.notebookSequence,0,0,1000000)),...notes.map(function(note){return note.id;}))+1;
+      var first=record.firstEstimates,prediction='First controlled-comparison estimates: baseline '+first.baseline+'; experiment '+first.experiment+'; extra '+first.extra+'.';
+      var note=ecoWebCapture(resultConfig,result,record.after.step,record.focus,prediction,record.reflection,id,state.run.investigation||null,null,null,null,record);
+      update({notebook:notes.concat([note]),notebookSequence:id,controlStudy:data.state});
+      if(props.announce)props.announce('Controlled comparison '+id+' saved to the field notebook.');
+    }
+    function saveEthogramObservation(data){
+      if(!result||notes.length>=12||!data||!ecoWebEthogramRecord(data.ethogram,resultConfig,data.step,data.focus))return;
+      var id=Math.max(0,Math.floor(ecoWebNumber(state.notebookSequence,0,0,1000000)),...notes.map(function(note){return note.id;}))+1;
+      var context=Object.assign({},data.ethogram,{runPrediction:state.run.prediction||''});
+      var labels={};ECO_MEADOW_ETHOGRAM_CATEGORIES.forEach(function(category){labels[category.id]=category.name;});
+      var note=ecoWebCapture(resultConfig,result,data.step,data.focus,'Five-sample behavior coding: '+context.firstCodes.map(function(code){return labels[code];}).join(', '),context.reflection,id,state.run.investigation||null,null,null,context);
+      update({notebook:notes.concat([note]),notebookSequence:id,ethogram:data.state});
+      if(props.announce)props.announce('Ethogram observation '+id+' saved to the field notebook.');
+    }
+    function reopenObservation(note,missionResume) {
+        var request=note.ethogram?{branch:note.ethogram.branch,focus:note.focus,index:note.ethogram.index,mode:'ethogram',nonce:(state.inspectionVersion||0)+1}:note.sighting?{branch:note.sighting.branch,focus:note.focus,index:note.sighting.actorIndex,mode:note.sighting.measurement?'ruler':'encounter',encounter:note.sighting.measurement?{before:note.sighting.before.step,after:note.sighting.after.step,actor:{id:note.focus,index:note.sighting.actorIndex},cue:{id:note.sighting.cueId,index:note.sighting.cueIndex}}:null,nonce:(state.inspectionVersion||0)+1}:note.movement?{branch:note.movement.branch,focus:note.focus,index:note.movement.index,mode:'movement',nonce:(state.inspectionVersion||0)+1}:null;
+        var activityContext=note.movement||note.sighting||note.ethogram||note.controlStudy,runPrediction=activityContext?(activityContext.runPrediction||''):note.prediction;
+        var reopenedFieldwork=null,reopenedMovement=null,reopenedControl=null,controlMismatch=false,inferenceMismatch=false,wildlifeMismatch=false,movementMismatch=false;
+        if(!missionResume&&note.sighting&&note.sighting.probe){
+          var sight=note.sighting,recordedPair=ecoWebCompare(note.config),recordedFrames=ecoMeadowBehaviorTimeline(note.config,recordedPair[sight.branch]);
+          var originalEncounter=ecoMeadowEncounters(recordedFrames,note.config).find(function(item){return item.kind===sight.kind&&item.actor.id===note.focus&&item.actor.index===sight.actorIndex&&item.cue.id===sight.cueId&&item.cue.index===sight.cueIndex&&item.step===note.step&&item.before===sight.before.step&&item.after===sight.after.step;});
+          var originalCase=originalEncounter&&ecoMeadowSpacingProbeCase(recordedFrames,originalEncounter),savedProbe=sight.probe;
+          // Restore the activity only if today's recording still matches its
+          // frozen starting inputs. The saved notebook evidence always stays.
+          if(originalCase&&JSON.stringify(originalCase)===JSON.stringify(savedProbe.trial.context)){
+            var restoredProbe=JSON.parse(JSON.stringify(savedProbe)),trial=restoredProbe.trial;
+            restoredProbe.open=true;if(restoredProbe.version===2)restoredProbe.checked=true;restoredProbe.variable=trial.variable;if(trial.variable==='distance')restoredProbe.distance=trial.value;else restoredProbe.feeding=trial.value;
+            reopenedFieldwork={key:JSON.stringify(note.config)+'|'+sight.branch,id:originalEncounter.id,forecast:sight.forecast,revealed:true,reflection:note.explanation,limit:sight.limitation,saved:true,probe:restoredProbe};
+            if(sight.measurement)reopenedFieldwork.measurement=ecoMeadowPairMeasurementState(sight.measurement);
+          }
+        }
+        if(!missionResume&&note.sighting&&note.sighting.headline){
+          var headlineSight=note.sighting,headlinePair=ecoWebCompare(note.config),headlineFrames=ecoMeadowBehaviorTimeline(note.config,headlinePair[headlineSight.branch]);
+          var headlineEncounter=ecoMeadowEncounters(headlineFrames,note.config).find(function(item){return item.kind===headlineSight.kind&&item.actor.id===note.focus&&item.actor.index===headlineSight.actorIndex&&item.cue.id===headlineSight.cueId&&item.cue.index===headlineSight.cueIndex&&item.step===note.step&&item.before===headlineSight.before.step&&item.after===headlineSight.after.step;});
+          if(headlineEncounter&&ecoMeadowHeadlineMatches(headlineSight.headline,headlineFrames,headlineEncounter)){
+            var restoredHeadline=JSON.parse(JSON.stringify(headlineSight.headline)),headlineVisits=[];
+            restoredHeadline.pins.forEach(function(step){if(headlineVisits.indexOf(step-1)<0)headlineVisits.push(step-1);if(headlineVisits.indexOf(step)<0)headlineVisits.push(step);});
+            reopenedFieldwork=Object.assign({},reopenedFieldwork||{key:JSON.stringify(note.config)+'|'+headlineSight.branch,id:headlineEncounter.id,forecast:headlineSight.forecast,revealed:true,reflection:note.explanation,limit:headlineSight.limitation,saved:true},{headline:{open:true,started:true,draftStep:restoredHeadline.pins[0],visited:headlineVisits,pins:restoredHeadline.pins,sorts:restoredHeadline.sorts,firstSorts:restoredHeadline.firstSorts,verdict:restoredHeadline.verdict,firstVerdict:restoredHeadline.firstVerdict,reflection:restoredHeadline.reflection,checked:true,saved:true}});
+            if(headlineSight.measurement&&!reopenedFieldwork.measurement)reopenedFieldwork.measurement=ecoMeadowPairMeasurementState(headlineSight.measurement);
+          }
+        }
+        if(!missionResume&&note.sighting&&note.sighting.inference){
+          var inferenceSight=note.sighting,inferencePair=ecoWebCompare(note.config),inferenceFrames=ecoMeadowBehaviorTimeline(note.config,inferencePair[inferenceSight.branch]);
+          var inferenceEncounter=ecoMeadowEncounters(inferenceFrames,note.config).find(function(item){return item.kind===inferenceSight.kind&&item.actor.id===note.focus&&item.actor.index===inferenceSight.actorIndex&&item.cue.id===inferenceSight.cueId&&item.cue.index===inferenceSight.cueIndex&&item.step===note.step&&item.before===inferenceSight.before.step&&item.after===inferenceSight.after.step;});
+          if(inferenceEncounter&&ecoMeadowInferenceMatches(inferenceSight.inference,inferenceFrames,inferenceEncounter)){
+            reopenedFieldwork=Object.assign({},reopenedFieldwork||{key:JSON.stringify(note.config)+'|'+inferenceSight.branch,id:inferenceEncounter.id,forecast:inferenceSight.forecast,revealed:true,reflection:note.explanation,limit:inferenceSight.limitation,saved:true},{inference:ecoMeadowInferenceState(inferenceSight.inference)});
+            if(inferenceSight.measurement&&!reopenedFieldwork.measurement)reopenedFieldwork.measurement=ecoMeadowPairMeasurementState(inferenceSight.measurement);
+          }else {inferenceMismatch=true;reopenedFieldwork=null;}
+        }
+        if(!missionResume&&note.sighting&&note.sighting.measurement){
+          var checkedWildlife=ecoWebMissionResume(note,'interaction');
+          if(checkedWildlife.ok)reopenedFieldwork=checkedWildlife.fieldwork;
+          else {wildlifeMismatch=true;reopenedFieldwork=null;}
+        }
+        if(!missionResume&&note.controlStudy){
+          var controlPair=ecoWebCompare(note.config);
+          if(ecoWebControlMatches(note.controlStudy,note.config,controlPair,note.focus)){
+            var restoredControl=JSON.parse(JSON.stringify(note.controlStudy));
+            reopenedControl={key:restoredControl.configKey+'|'+restoredControl.focus,open:true,before:restoredControl.before,after:restoredControl.after,estimates:restoredControl.estimates,firstEstimates:restoredControl.firstEstimates,checked:true,reflection:restoredControl.reflection,saved:true};
+          }else controlMismatch=true;
+        }
+        if(!missionResume&&note.movement){
+          var checkedMovement=ecoWebMissionResume(note,'observe');
+          if(checkedMovement.ok)reopenedMovement=checkedMovement.motionStudy;
+          else movementMismatch=true;
+        }
+        var wildlifeNotice=movementMismatch?'Saved movement evidence remains unchanged, but the current recording does not reproduce all original samples; no checked movement activity was restored.':wildlifeMismatch?'Saved wildlife measurements remain unchanged, but the current recording does not reproduce all original samples; no checked wildlife activity was restored.':inferenceMismatch?'Saved evidence classifications remain unchanged, but the current recording does not match their original checkpoints; the working challenge was not restored.':'';
+        if(!missionResume)setMissionMessage(wildlifeNotice);
+        update(Object.assign({},note.config,{run:{config:note.config,prediction:runPrediction,investigation:note.investigation||null},investigationId:note.investigation?note.investigation.id:null,forecast:note.investigation?note.investigation.forecast:'',investigationLimit:note.investigation?note.investigation.limitation:'',investigationVisited:[],investigationChecked:false,investigationSaved:false,fieldwork:missionResume?missionResume.fieldwork:reopenedFieldwork,motionStudy:missionResume?missionResume.motionStudy:reopenedMovement,controlStudy:missionResume?missionResume.controlStudy:reopenedControl,ethogram:missionResume?missionResume.ethogram:note.ethogram?{key:JSON.stringify(note.config)+'|'+note.ethogram.branch,open:true,draftStart:note.ethogram.start,draftInterval:note.ethogram.interval,plan:{id:note.focus+':'+note.ethogram.index+':'+note.ethogram.start+':'+note.ethogram.interval,species:note.focus,index:note.ethogram.index,start:note.ethogram.start,interval:note.ethogram.interval,branch:note.ethogram.branch},codes:note.ethogram.codes.slice(),firstCodes:note.ethogram.firstCodes.slice(),visited:[0,1,2,3,4],checked:true,reflection:note.ethogram.reflection,reference:note.ethogram.reference?ecoMeadowEthogramSnapshot(note.ethogram.reference):null,comparison:note.ethogram.comparison?Object.assign({},note.ethogram.comparison,{committed:true}):null,saved:true}:null,sightingRequest:request,showMeadow:request?true:state.showMeadow,prediction:runPrediction,reflection:note.explanation,cursor:note.sighting&&note.sighting.measurement?note.sighting.measurement.samples[2].step:note.step,focus:note.focus,inspectionVersion:(state.inspectionVersion||0)+1}));
+        if(props.announce)props.announce('Observation '+note.id+' reopened at time '+(note.step/10).toFixed(1)+'.'+(controlMismatch?' Saved controlled-comparison values remain unchanged, but the current model does not reproduce all four original values.':'')+(wildlifeNotice?' '+wildlifeNotice:''));
+        if(missionResume)queueMissionNavigation(missionResume.target);
+    }
+    function draft(patch) { update(Object.assign({ run: null, cursor: 0, reflection: '', investigationVisited: [], investigationChecked: false, investigationSaved: false, investigationLimit: '', fieldwork: null, motionStudy: null, ethogram: null, controlStudy: null, sightingRequest: null, inspectionVersion: (state.inspectionVersion || 0) + 1 }, patch)); }
     function preset(full) { draft({ soil:{enabled:false}, focus:'plants', enabled: { rabbits: true, voles: full, foxes: true, owls: full }, initial: {}, event: 'remove', target: 'foxes', capacity: 160, cover: 0, eventStep: 80 }); }
     function linkLabel(link) {
       function name(id) { return ECO_WEB_SPECIES.find(function(sp) { return sp.id === id; }).name; }
@@ -2862,7 +7825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('circle', { cx: sx(cursor), cy: sy(result.experiment[cursor].values[focus.id]), r: 5, fill: '#67e8f9', stroke: '#0f172a' }),
         [0, 8, 16, 24].map(function(time) { return h('text', { key: time, x: sx(time * 10), y: 232, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16 }, time); }));
     }
-    return h('section', { className: 'efw', 'data-eco-foodweb': 'true', 'aria-label': t('stem.ecosystem.foodweb_lab', 'Multi-species food-web lab') },
+    return h('section', { className: 'efw', ref:missionRoot, 'data-eco-foodweb': 'true', 'aria-label': t('stem.ecosystem.foodweb_lab', 'Multi-species food-web lab') },
       h('style', null, `
         .efw{--fw-bg:#f8fafc;--fw-panel:#fff;--fw-ink:#172b3a;--fw-muted:#475569;--fw-line:#64748b;--fw-tint:#e2e8f0;--fw-accent:#155e75;background:var(--fw-bg);color:var(--fw-ink);border:1px solid var(--fw-line);border-radius:16px;padding:20px;display:grid;gap:20px;font-size:14px;line-height:1.5}
         .theme-dark .efw,.dark .efw{--fw-bg:#0f172a;--fw-panel:#1e293b;--fw-ink:#f8fafc;--fw-muted:#cbd5e1;--fw-line:#94a3b8;--fw-tint:#334155;--fw-accent:#a5f3fc}
@@ -2879,8 +7842,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       h('div', null, h('h3', null, t('stem.ecosystem.foodweb_title', 'One meadow. More connections.')),
         h('p', null, 'Add another herbivore and predator, then investigate how a change travels through the food web. Plants now respond to grazing too.'),
         h('small', null, 'All values are illustrative biomass indices, not animal counts. This lab uses its own configurable food-web model.')),
+      h(EcoInvestigationStudio, { translateStudy: t, React: React, state: state, guide: investigation, result: result, config: shownConfig, cursor: cursor, focus: focus.id, slots: 12 - notes.length,
+        onUpdate: update, onStart: startInvestigation, onRun: runComparison, onSave: saveInvestigation,
+        onLeave: function() { update({ investigationId: null, investigationVisited: [], investigationChecked: false, investigationSaved: false }); },
+        onPlan: function() { draft({ forecast: '', prediction: '' }); },
+        onInspect: function(row) { var visited = Array.isArray(state.investigationVisited) ? state.investigationVisited.slice() : []; if (visited.indexOf(row.id) < 0) visited.push(row.id); update({ cursor: row.step, focus: investigation.focus, investigationVisited: visited, inspectionVersion: (state.inspectionVersion || 0) + 1 }); }
+      }),
       h('div', { className: 'efw-row' }, h('button', { type: 'button', 'aria-pressed': !!state.showMeadow, onClick: function() { update({ showMeadow: !state.showMeadow }); } }, state.showMeadow ? 'Hide 3D meadow' : 'Show 3D meadow'), h('small', null, 'Optional habitat view · linked to the same comparison')),
-      state.showMeadow && h(EcoMeadow3D, { React: React, config: shownConfig, result: result, cursor: cursor, focus: focus.id, inspectionVersion: state.inspectionVersion, onCursor: function(value) { update({ cursor: value }); }, onFocus: function(id) { update({ focus: id }); } }),
+      h(EcoFieldMissions,{ translateStudy: t,React:React,route:missionRoute,message:missionMessage,onEntry:enterMission,onReview:reviewMission}),
+      state.showMeadow && h(EcoMeadow3D, { React: React, config: shownConfig, result: result, cursor: cursor, focus: focus.id, inspectionVersion: state.inspectionVersion, fieldwork:state.fieldwork,ethogram:state.ethogram,onEthogramChange:function(value,inspection){update(Object.assign({ethogram:value,sightingRequest:null},inspection?{fieldwork:null,motionStudy:null}:{},inspection||{}));},motionStudy:state.motionStudy,onMotionStudyChange:function(value,inspection){update(Object.assign({motionStudy:value,sightingRequest:null},inspection?{fieldwork:null,ethogram:null}:{},inspection||{}));},sightingRequest:state.sightingRequest,notebookSlots:12-notes.length,onSaveSighting:saveWildlifeObservation,onSaveMovement:saveMovementObservation,onSaveEthogram:saveEthogramObservation,onFieldworkChange:function(value,inspection){update(Object.assign({fieldwork:value,sightingRequest:null},inspection?{motionStudy:null,ethogram:null}:{},inspection||{}));},onInspect:function(step,id){update({cursor:step,focus:id,sightingRequest:null,inspectionVersion:(state.inspectionVersion||0)+1});},onCursor: function(value) { update({ cursor: value, sightingRequest:null }); }, onFocus: function(id) { update({ focus: id, sightingRequest:null,motionStudy:null,fieldwork:null,ethogram:null }); } }),
       shownConfig.soil.enabled && h(EcoSoilCyclePanel,{React:React, t: t,config:shownConfig,result:result,cursor:cursor,onCursor:function(step){update({cursor:step,inspectionVersion:(state.inspectionVersion||0)+1});}}),
       result && h(EcoCommunityOverview, { React: React, t: t, result: result, config: shownConfig, cursor: cursor, focus: focus.id, onInspect: function(step, id) { update({ cursor: step, focus: id, inspectionVersion: (state.inspectionVersion || 0) + 1 }); } }),
       h('div', { className: 'efw-grid' },
@@ -2888,7 +7858,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'efw-card efw-stack' },
             h('h4', null, '1. Build your community'),
             h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { preset(false); } }, 'Simple chain'), h('button', { type: 'button', onClick: function() { preset(true); } }, 'Shared-prey web'), h('button', { type: 'button', onClick: function() { draft({ soil:{enabled:false}, enabled: {}, initial: {}, capacity: 160, cover: 10, event: 'restoreCover', eventStep: 80, showMeadow: true, focus: 'rabbits' }); } }, 'Habitat restoration'), h('button',{type:'button',onClick:function(){draft({soil:{enabled:false},enabled:{caterpillars:true,bluetits:true},initial:{},capacity:180,cover:10,event:'reduce',target:'caterpillars',eventStep:80,showMeadow:true,focus:'bluetits'});}},'Insect food shortage'),h('button',{type:'button',onClick:function(){draft({soil:{enabled:true,detritus:30,nutrients:4,decomposers:8},enabled:{caterpillars:true,bluetits:true},initial:{},capacity:180,cover:10,event:'decomposerDecline',eventStep:80,showMeadow:true,focus:'plants'});}},'Decomposer decline')),
-            h('p',{className:'efw-network-caption'},'Add Caterpillars and Blue tits for a plant–insect–bird pathway. These optional groups start off in the original presets.'),
+            h('button',{type:'button',onClick:function(){draft({soil:{enabled:false},enabled:{voles:false,owls:false,caterpillars:false,bluetits:false},initial:{rabbits:90,foxes:6},capacity:160,cover:10,event:'none',target:'foxes',eventStep:80,showMeadow:true,focus:'rabbits'});}},'Rabbit neighbors'),
+            h('button',{type:'button',onClick:function(){draft({soil:{enabled:false},enabled:{rabbits:false,voles:false,foxes:true,owls:false,caterpillars:false,bluetits:false},initial:{foxes:20},capacity:160,cover:0,event:'none',target:'foxes',eventStep:80,showMeadow:true,focus:'foxes'});}},'Fox crossings'),
+            h('p',{className:'efw-network-caption'},'Add Caterpillars and Blue tits for a plant–insect–bird pathway. Rabbit neighbors provides a denser rabbit community for investigating nearby vigilance cues. Fox crossings lets you watch representative foxes share a navigation margin, then compare their motion with falling fox biomass when prey is absent. Navigation spacing does not change the population equations.'),
             ECO_WEB_SPECIES.map(function(sp) { return h('div', { key: sp.id, className: 'efw-species' },
               h('label', null, h('input', { type: 'checkbox', checked: config.enabled[sp.id], disabled: sp.id === 'plants', 'aria-label': 'Include ' + sp.name, onChange: function(e) { var enabled = Object.assign({}, config.enabled); enabled[sp.id] = e.target.checked; var initial=Object.assign({},state.initial||{});if(e.target.checked && !config.enabled[sp.id] && initial[sp.id]==null)initial[sp.id]=sp.initial;draft({ enabled: enabled,initial:initial }); } }), sp.icon + ' ' + sp.name, h('small', { style: { display: 'block', marginLeft: 26 } }, sp.role)),
               h('input', { type: 'number', min: 0, max: 160, step: 1, value: config.initial[sp.id], disabled: !config.enabled[sp.id], 'aria-label': sp.name + ' starting biomass index', onChange: function(e) { var initial = Object.assign({}, state.initial || {}); initial[sp.id] = ecoWebNumber(e.target.value, 0, 0, 160); draft({ initial: initial }); } })); }),
@@ -2901,13 +7873,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('small', null, 'Cover limits how much herbivore biomass predators can access. It is separate from food plants and their capacity; more cover does not guarantee that every group benefits.')),
           h('div', { className: 'efw-card efw-stack' },
             h('h4', null, '2. Change one thing'),
-            h('label', null, 'Disturbance', h('select', { 'aria-label': t('stem.ecosystem.disturbance','Disturbance'), value: config.event, onChange: function(e) { draft({ event: e.target.value }); } },
+            h('label', null, 'Disturbance', h('select', { 'data-efw-mission-disturbance':'true', 'aria-label': t('stem.ecosystem.disturbance','Disturbance'), value: config.event, onChange: function(e) { draft({ event: e.target.value }); } },
               [['remove', 'Remove one group'], ['reduce', 'Reduce one group by 80%'], ['drought', 'Drought: halve plant capacity'], ['restoreCover', 'Restore cover: add 40 percentage points'], ['clearCover', 'Clear all refuge cover'], ['none', 'No disturbance (control)']].concat(config.soil.enabled?[['decomposerDecline','Decomposer mortality: lose 80%'],['clearLitter','Remove organic matter']]:[]).map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
             (config.event === 'remove' || config.event === 'reduce') && h('label', null, 'Affected group', h('select', { 'aria-label': t('stem.ecosystem.affected_group','Affected group'), value: config.target, onChange: function(e) { draft({ target: e.target.value }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
             config.event !== 'none' && h('label', null, 'Event at modeled time ' + (config.eventStep / 10).toFixed(1), h('input', { type: 'range', min: 10, max: 200, step: 10, value: config.eventStep, 'aria-label': t('stem.ecosystem.food_web_event_time','Food-web event time'), onChange: function(e) { draft({ eventStep: Number(e.target.value) }); } })),
             ((config.event === 'clearCover' && config.cover === 0) || (config.event === 'restoreCover' && config.cover === 80)) && h('p', { role: 'status' }, 'This setup leaves cover unchanged. Adjust starting cover to test a habitat change.'),
-            h('label', null, 'Your prediction (optional)', h('textarea', { 'aria-label': t('stem.ecosystem.your_prediction_optional','Your prediction (optional)'), value: state.prediction || '', maxLength: 1200, placeholder: t('stem.ecosystem.which_group_will_change_indirectly_and_why','Which group will change indirectly, and why?'), onChange: function(e) { update({ prediction: e.target.value }); } })),
-            h('button', { type: 'button', className: 'efw-primary', onClick: function() { update({ run: { config: config, prediction: state.prediction || '' }, cursor: 240, reflection: '' }); if (props.announce) props.announce('Food-web comparison complete. Inspect the diagram, chart, and table.'); } }, t('stem.ecosystem.foodweb_run', 'Run food-web comparison')),
+            h('label', null, result ? 'Prediction recorded for this run' : 'Your prediction (optional)', h('textarea', { 'aria-label': t('stem.ecosystem.your_prediction_optional','Your prediction (optional)'), value: result ? state.run.prediction || '' : state.prediction || '', disabled: !!result, maxLength: 1200, placeholder: t('stem.ecosystem.which_group_will_change_indirectly_and_why','Which group will change indirectly, and why?'), onChange: function(e) { update({ prediction: e.target.value }); } })),
+            result && h('button', { type: 'button', onClick: function() { draft({ prediction: '', forecast: '' }); } }, 'Plan another comparison'),
+            h('button', { type: 'button', 'data-efw-mission-setup':'true', className: 'efw-primary', onClick: runComparison }, t('stem.ecosystem.foodweb_run', 'Run food-web comparison')),
             h('small', null, 'Both runs start with the same community. Only the experiment receives the disturbance. Editing the setup clears the previous comparison.'))),
         h('div', { className: 'efw-stack' },
           h('div', { className: 'efw-card' }, h('h4', null, result ? 'Experiment at time ' + (cursor / 10).toFixed(1) : 'Your food web'),
@@ -2916,7 +7889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('svg', { viewBox: '0 0 600 382', preserveAspectRatio: 'none', 'aria-hidden': 'true' },
                 h('defs', null, h('marker', { id: 'efw-arrow', markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto' }, h('path', { d: 'M0 0L8 4L0 8Z', fill: '#cbd5e1' }))),
                 activeLinks.map(function(link) { var food = diagramSpecies.find(function(sp) { return sp.id === link.food; }), consumer = diagramSpecies.find(function(sp) { return sp.id === link.consumer; }); return h('path', { key: link.food + link.consumer, d: 'M' + food.x * 6 + ' ' + (food.y * 3.82 - 44) + ' L' + consumer.x * 6 + ' ' + (consumer.y * 3.82 + 46), stroke: '#cbd5e1', strokeWidth: 2, fill: 'none', markerEnd: 'url(#efw-arrow)' }); })),
-              diagramSpecies.map(function(sp) { return h('button', { type: 'button', key: sp.id, className: 'efw-node', 'aria-pressed': focus.id === sp.id, 'aria-label': 'Inspect ' + sp.name + ': ' + (shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) + ' biomass index' : 'not included'), style: { width:expanded?'28%':undefined,left: sp.x + '%', top: sp.y + '%', borderStyle: shownConfig.enabled[sp.id] ? 'solid' : 'dashed' }, onClick: function() { update({ focus: sp.id }); } }, h('span', { style: { color: sp.color } }, sp.icon + ' ' + sp.name), h('strong', null, shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) : '—'), h('small', null, shownConfig.enabled[sp.id] ? sp.role : 'Not included')); })),
+              diagramSpecies.map(function(sp) { return h('button', { type: 'button', key: sp.id, className: 'efw-node', 'aria-pressed': focus.id === sp.id, 'aria-label': 'Inspect ' + sp.name + ': ' + (shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) + ' biomass index' : 'not included'), style: { width:expanded?'28%':undefined,left: sp.x + '%', top: sp.y + '%', borderStyle: shownConfig.enabled[sp.id] ? 'solid' : 'dashed' }, onClick: function() { update({ focus: sp.id,fieldwork:null,motionStudy:null,ethogram:null,controlStudy:null,sightingRequest:null }); } }, h('span', { style: { color: sp.color } }, sp.icon + ' ' + sp.name), h('strong', null, shownConfig.enabled[sp.id] ? ecoWebFormat(shown[sp.id]) : '—'), h('small', null, shownConfig.enabled[sp.id] ? sp.role : 'Not included')); })),
             h('div', { className: 'efw-result', 'data-efw-relationships': 'true' }, h('h4', null, focus.name),
               h('p', null, incoming.length ? 'Food links: ' + incoming.join('; ') + '.' : focus.id === 'plants' ? 'Plants grow using the model’s resource capacity.' : 'No food link is included for this group.'),
               outgoing.length > 0 && h('p', null, 'Supports: ' + outgoing.join('; ') + '.'),
@@ -2926,7 +7899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('p', { role: 'status' }, eventName + (resultConfig.event !== 'none' ? ' at time ' + (resultConfig.eventStep / 10).toFixed(1) + '.' : '. The two runs should match.')),
             h('p', { 'data-efw-cover-comparison': 'true' }, 'Refuge cover at this time: baseline ' + result.baseline[cursor].cover + '% · experiment ' + result.experiment[cursor].cover + '%.'),
             state.run.prediction && h('p', null, h('strong', null, 'Prediction before this run: '), state.run.prediction),
-            h('label', null, 'Chart group', h('select', { 'aria-label': t('stem.ecosystem.chart_group','Chart group'), value: focus.id, onChange: function(e) { update({ focus: e.target.value }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
+            h('label', null, 'Chart group', h('select', { 'aria-label': t('stem.ecosystem.chart_group','Chart group'), value: focus.id, onChange: function(e) { update({ focus: e.target.value,fieldwork:null,motionStudy:null,ethogram:null,controlStudy:null,sightingRequest:null }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
             chart(), h('div', { className: 'efw-legend' }, h('span', null, 'Baseline · dashed'), h('span', null, 'Experiment · solid')),
             h('small', null, 'Values below 0.1 are shown as <0.1, not zero. Horizontal axis: modeled time. Vertical axis: ' + focus.name + ' biomass index. Both runs share the same scale.'),
             h('label', null, 'Inspect time: ' + (cursor / 10).toFixed(1), h('input', { type: 'range', min: 0, max: 240, value: cursor, 'aria-label': t('stem.ecosystem.food_web_comparison_time','Food-web comparison time'), 'aria-valuetext': (cursor / 10).toFixed(1) + ' modeled time units', onChange: function(e) { update({ cursor: Number(e.target.value) }); } })),
@@ -2934,11 +7907,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('caption', { style: { textAlign: 'left', fontWeight: 700 } }, 'Biomass indices at time ' + (cursor / 10).toFixed(1)),
               h('thead', null, h('tr', null, ['Group', 'Baseline', 'Experiment', 'Change'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
               h('tbody', null, diagramSpecies.map(function(sp) { var before = result.baseline[cursor].values[sp.id], after = shown[sp.id], delta = after - before; return h('tr', { key: sp.id }, h('th', { scope: 'row' }, sp.name), h('td', null, ecoWebFormat(before)), h('td', null, ecoWebFormat(after)), h('td', null, ecoWebDelta(delta))); })))),
-            h('label', null, 'Explain an indirect change', h('textarea', { 'aria-label': t('stem.ecosystem.explain_an_indirect_change','Explain an indirect change'), value: state.reflection || '', maxLength: 2000, placeholder: t('stem.ecosystem.trace_two_arrows_use_values_from_the_table_t','Trace two arrows. Use values from the table to support your explanation.'), onChange: function(e) { update({ reflection: e.target.value }); } })),
+            h(EcoControlStudy,{ translateStudy: t,React:React,result:result,config:resultConfig,focus:focus.id,cursor:cursor,state:state.controlStudy,onChange:function(next){update({controlStudy:next});},onCursor:function(step){update({cursor:step});},onSave:saveControlObservation,slots:12-notes.length,runPrediction:state.run.prediction||''}),
+            h('label', null, 'Explain an indirect change', h('textarea', { 'aria-label': t('stem.ecosystem.explain_an_indirect_change','Explain an indirect change'), value: state.reflection || '', maxLength: 2000, placeholder: t('stem.ecosystem.trace_two_arrows_use_values_from_the_table_t','Trace two arrows. Use values from the table to support your explanation.'), onChange: function(e) { update({ reflection: e.target.value, investigationSaved: false }); } })),
             h('div', { className: 'efw-row' }, h('button', { type: 'button', className: 'efw-primary', disabled: notes.length >= 12, onClick: saveObservation }, 'Save observation'), h('small', { role: 'status' }, notes.length >= 12 ? 'Notebook full. Export your notes, then remove an observation to make room.' : 'Save time ' + (cursor / 10).toFixed(1) + ', all groups, and the explanation above.')),
             h('button', { type: 'button', onClick: exportCsv }, 'Export comparison CSV')) : h('div', { className: 'efw-card' }, h('h4', null, 'Try a question'), h('p', null, 'If foxes disappear, do owls benefit from more voles, or do the remaining consumers put more pressure on plants?'), h('small', null, 'Run the comparison, inspect different groups, and check whether the direction changes over time.')))),
-      h(EcoFieldNotebook, { React: React, t: t, notes: notes, onRemove: function(id) { update({ notebook: notes.filter(function(note) { return note.id !== id; }) }); if (props.announce) props.announce('Observation ' + id + ' removed.'); }, onReopen: function(note) { update(Object.assign({}, note.config, { run: { config: note.config, prediction: note.prediction }, prediction: note.prediction, reflection: note.explanation, cursor: note.step, focus: note.focus, inspectionVersion: (state.inspectionVersion || 0) + 1 })); if (props.announce) props.announce('Observation ' + note.id + ' reopened at time ' + (note.step / 10).toFixed(1) + '.'); } }),
+      h(EcoFieldNotebook, { React: React, t: t, notes: notes, onRemove: function(id) { update({ notebook: notes.filter(function(note) { return note.id !== id; }), investigationSaved: false }); if (props.announce) props.announce('Observation ' + id + ' removed.'); }, onReopen:reopenObservation }),
       h('details', { className: 'efw-card' }, h('summary', null, 'Model assumptions and ecology sources'),
+        h('p',null,'The cue test bench starts with a recorded feeding-neighbor decision and reruns that same local rule after one input changes. Other neighbors stay fixed. It tests how the rule responds; it does not predict a modified animal route or a population change. An unchanged-input baseline is available as a control.'),
+        h('p',null,'Slow animated foxes use a four-beat walk that eases toward diagonal trotting. Rabbit bounding changes with interpolated movement rather than a sudden behavior-label switch. These movements and coat shapes are simplified teaching forms, not measured biomechanics.'),
+        h('p',null,'The five-sample ethogram practices coding one representative at equally spaced checkpoints using an explicit behavior key. The tally describes those checkpoints, not exact time spent in each behavior, a population pattern or a cause. Try a different sampling window and explain why its tally may differ. ',h('a',{href:'https://doi.org/10.1163/156853974X00534',target:'_blank',rel:'noopener noreferrer'},'Behavior sampling methods · Altmann (1974)')),
+        h('p',null,'A fox may briefly check a fixed, previously recorded prey position when its rabbit cue becomes unavailable at a thicket. The violet diamond marks that earlier position. It is not the hidden rabbit’s current location or a scent trail. The pause, search duration and target-release rules are illustrative and do not affect the food-web calculations.'),
+        h('p',null,'Grounded foxes and rabbits can shorten a step to leave room for the heads and bodies of same-species neighbors. The check uses recorded positions and reserved paths; representative order is bookkeeping, not dominance. Airborne motion and existing overlaps are not corrected by snapping. This visual clearance rule does not affect the food-web calculations.'),
         h('p', null, 'Plant biomass grows logistically. Consumers lose biomass through mortality and crowding, and gain a fraction of what they eat. Feeding saturates across available foods; consumers sharing a food source compete for the same biomass. All groups have separate state variables.'),
         h('p', null, 'The rates, feeding weights, conversion fractions, and time units are illustrative. Results depend on the selected links and starting values. Refuge cover is a single habitat-wide accessibility factor, not an individual movement or patch-occupancy simulation. No immigration, seasons, or age structure are included. Nutrient recycling is available only when the soil cycle is enabled. Removing a group sets it to zero without spontaneous recolonization. This is not a population forecast.'),
         h('p', null, 'Cover ranges from 0% to 80%. Foxes and owls use herbivore biomass multiplied by (1 − cover / 100) in both the feeding numerator and saturation denominator; grazing is unchanged. Blue-tit access to caterpillars is unchanged by this mammal-refuge index. These teaching assumptions are not fitted to field data. Restoration adds 40 percentage points, capped at 80%; clearing sets cover to zero. Neither event instantly creates or removes organisms. The baseline retains its starting cover. Thicket placement in 3D does not affect the calculations.'),

@@ -68,7 +68,8 @@ describe('SEL Hub control accessibility', () => {
 
   it('names both hub textareas at their definitions', () => {
     const text = source();
-    expect(text).toContain("h('textarea', { 'aria-label': 'Reflection for ' + q.label,");
+    // Hub chrome is localized (a9ae02cb5): the reflection name goes through its key with an English fallback.
+    expect(text).toContain("h('textarea', { 'aria-label': _selFill(__alloT('sel.hub.ui.reflection_for', 'Reflection for {name}'), { name: q.label }),");
     expect(text).toContain("h('textarea', { 'aria-label': 'Teacher note',");
   });
 
@@ -88,8 +89,8 @@ describe('SEL Hub control accessibility', () => {
     // not be skimmed. The boundary flag stays in the name because it changes
     // whether you should open the tool at all. See tests/sel_hub_navigation.
     expect(text).toContain("'aria-label': tool.label");
-    expect(text).toContain("', grades ' + tool.recommendedRange");
-    expect(text).toContain("guidance.boundary ? '. Use with care' : ''");
+    expect(text).toContain("', ' + _selFill(__alloT('sel.hub.ui.grades_range', 'grades {range}'), { range: tool.recommendedRange })");
+    expect(text).toContain("guidance.boundary ? '. ' + __alloT('sel.hub.ui.use_with_care', 'Use with care') : ''");
     expect(text).toContain("'aria-describedby': _selCardDescId(tool.id)");
     expect(text).toContain("traumaPsychoed: { time: '8-15 min'");
     expect(text).toContain("{ key: 'crisis', icon:");

@@ -143,7 +143,9 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => cache.match(event.request).then((cached) => {
                 if (cached) return cached;
-                return fetch(event.request).then((response) => {
+                // A new release cache must not inherit a still-fresh HTTP
+                // cache entry for an unchanged local module URL.
+                return fetch(event.request, { cache: 'no-cache' }).then((response) => {
                     if (response.ok) cache.put(event.request, response.clone());
                     return response;
                 });

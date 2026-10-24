@@ -10,23 +10,20 @@ const CELL_RENDER_PATHS = [
 describe('Cell simulator tooltip contrast and process diagrams', () => {
   beforeEach(() => resetStemLab());
 
-  it('uses an explicit opaque canvas tooltip surface and readable body text', () => {
+  it('explains a structure in a readable DOM panel instead of canvas tooltip text', () => {
+    // 09-19 (f40399f7b): the canvas-drawn organelle tooltip became the accessible
+    // structure explorer, a DOM panel fed from world._tooltip. Pin that hand-off and
+    // the panel's own ink on its surface.
     const source = readFileSync('stem_lab/stem_tool_cell.js', 'utf8');
-    const fontExpression = source.match(/var ttFontSize = ([^;]+);/)?.[1];
-    const widthExpression = source.match(/var ttMaxW = ([^;]+);/)?.[1];
-    expect(fontExpression).toBeTruthy();
-    expect(widthExpression).toBeTruthy();
-    for (const dpr of [1, 2]) {
-      const fontSize = new Function('dpr', 'return ' + fontExpression)(dpr);
-      expect(fontSize / dpr).toBeGreaterThanOrEqual(10.5);
-      for (const cssWidth of [280, 320, 760]) {
-        const width = new Function('dpr', 'W', 'return ' + widthExpression)(dpr, cssWidth * dpr);
-        expect(width / dpr).toBeGreaterThanOrEqual(200);
-        expect(width / dpr).toBeLessThanOrEqual(cssWidth - 24);
-      }
-    }
-    expect(source).toContain("cctx.fillStyle = 'rgba(15,23,42,0.98)';");
-    expect(source).toContain("cctx.fillStyle = '#f8fafc';");
+    expect(source.includes('var ttFontSize'), 'canvas tooltip text is gone').toBe(false);
+    expect(source.includes('setCellExplanation(tt ? { organismId: tt.def.id'), 'tooltip state reaches the panel').toBe(true);
+    const panel = source.match(/\[data-cell-explanation-panel\]\{[^}]*background:(#[0-9a-f]{6});color:(#[0-9a-f]{6})/);
+    expect(panel, 'explanation panel colours').toBeTruthy();
+    const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+      .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+    const [hi, lo] = [lum(panel[1]), lum(panel[2])].sort((a, b) => b - a);
+    expect((hi + 0.05) / (lo + 0.05)).toBeGreaterThanOrEqual(4.5);
     expect(source).not.toContain("cctx.fillStyle = 'var(--allo-stem-deeper");
   });
 
@@ -49,7 +46,7 @@ describe('Cell simulator tooltip contrast and process diagrams', () => {
       expect(html).toContain('How the pathway unfolds');
       expect(html).not.toContain('data-cell-mission="true"');
       const source = readFileSync(filePath, 'utf8');
-      expect(source).toContain("modes: ['observe', 'interior', 'microdissection', 'processes', 'osmoHunt', 'play', 'quiz']");
+      expect(source).toContain("modes: ['observe', 'interior', 'microdissection', 'processes', 'osmoHunt', 'play', 'quiz', 'stemcells']");
       expect(source).toContain("var allModes = ['observe','interior','microdissection','processes','osmoHunt','play','quiz'");
     });
   });

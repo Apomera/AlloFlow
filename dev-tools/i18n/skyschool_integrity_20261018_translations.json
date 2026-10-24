@@ -1,0 +1,231 @@
+{
+  "key": "stem.flightsim.mission_return_criterion",
+  "previousEnglish": "Land within {distance} nm of {target}.",
+  "english": "Land within {distance} nm of {target}, below {speed} kt ground speed and {fpm} fpm descent.",
+  "translations": {
+    "amharic": {
+      "previous": "ከ{target} በ{distance} nm ርቀት ውስጥ ያርፉ።",
+      "value": "ከ{target} በ{distance} nm ርቀት ውስጥ፣ ከመሬት አንጻር ፍጥነት ከ{speed} kt እና የመውረድ ፍጥነት ከ{fpm} fpm በታች ሆኖ ያርፉ።"
+    },
+    "arabic": {
+      "previous": "اهبط ضمن مسافة {distance} nm من {target}.",
+      "value": "اهبط ضمن مسافة {distance} nm من {target}، بسرعة أرضية أقل من {speed} kt ومعدل هبوط أقل من {fpm} fpm."
+    },
+    "bengali": {
+      "previous": "{target} থেকে {distance} nm-এর মধ্যে অবতরণ করুন।",
+      "value": "{target} থেকে {distance} nm-এর মধ্যে অবতরণ করুন, ভূমির তুলনায় গতি {speed} kt-এর নিচে এবং নামার হার {fpm} fpm-এর নিচে রেখে।"
+    },
+    "burmese": {
+      "previous": "{target} မှ {distance} nm အကွာအဝေးအတွင်း ဆင်းသက်ပါ။",
+      "value": "{target} မှ {distance} nm အတွင်း ဆင်းသက်ပါ။ မြေပြင်နှိုင်းယှဉ်အမြန်နှုန်းကို {speed} kt အောက်နှင့် အနိမ့်သို့ဆင်းနှုန်းကို {fpm} fpm အောက်ထားပါ။"
+    },
+    "chinese_simplified": {
+      "previous": "在距{target} {distance} nm以内着陆。",
+      "value": "在距{target} {distance} nm以内着陆，地速低于{speed} kt，下降率低于{fpm} fpm。"
+    },
+    "chinese_traditional": {
+      "previous": "在距離{target} {distance} nm以內降落。",
+      "value": "在距離{target} {distance} nm以內降落，地速低於{speed} kt，下降率低於{fpm} fpm。"
+    },
+    "dari": {
+      "previous": "در فاصلۀ کمتر از {distance} nm از {target} فرود بیایید.",
+      "value": "در فاصلۀ کمتر از {distance} nm از {target} فرود بیایید؛ سرعت نسبت به زمین کمتر از {speed} kt و سرعت نزول کمتر از {fpm} fpm باشد."
+    },
+    "dutch": {
+      "previous": "Land binnen {distance} nm van {target}.",
+      "value": "Land binnen {distance} nm van {target}, met een grondsnelheid onder {speed} kt en een daalsnelheid onder {fpm} fpm."
+    },
+    "esperanto": {
+      "previous": "Surteriĝu ene de {distance} nm de {target}.",
+      "value": "Surteriĝu ene de {distance} nm de {target}, kun grundrapido sub {speed} kt kaj malsuprenira rapido sub {fpm} fpm."
+    },
+    "farsi": {
+      "previous": "در فاصلهٔ کمتر از {distance} nm از {target} فرود بیایید.",
+      "value": "در فاصلهٔ کمتر از {distance} nm از {target} فرود بیایید؛ سرعت نسبت به زمین کمتر از {speed} kt و نرخ نزول کمتر از {fpm} fpm باشد."
+    },
+    "french_canadian": {
+      "previous": "Atterrissez à moins de {distance} nm de {target}.",
+      "value": "Atterrissez à moins de {distance} nm de {target}, avec une vitesse sol inférieure à {speed} kt et un taux de descente inférieur à {fpm} fpm."
+    },
+    "french": {
+      "previous": "Atterrissez à moins de {distance} nm de {target}.",
+      "value": "Atterrissez à moins de {distance} nm de {target}, avec une vitesse sol inférieure à {speed} kt et un taux de descente inférieur à {fpm} fpm."
+    },
+    "german": {
+      "previous": "Lande im Umkreis von {distance} nm um {target}.",
+      "value": "Lande im Umkreis von {distance} nm um {target}, mit einer Geschwindigkeit über Grund unter {speed} kt und einer Sinkrate unter {fpm} fpm."
+    },
+    "greek": {
+      "previous": "Προσγειωθείτε σε απόσταση μικρότερη από {distance} nm από {target}.",
+      "value": "Προσγειωθείτε εντός {distance} nm από το {target}, με ταχύτητα εδάφους κάτω από {speed} kt και ρυθμό καθόδου κάτω από {fpm} fpm."
+    },
+    "gujarati": {
+      "previous": "{target}થી {distance} nmની અંદર ઉતરાણ કરો.",
+      "value": "{target}થી {distance} nmની અંદર ઉતરાણ કરો; જમીનની સરખામણીમાં ગતિ {speed} ktથી ઓછી અને નીચે ઊતરવાનો દર {fpm} fpmથી ઓછો રાખો."
+    },
+    "haitian_creole": {
+      "previous": "Ateri a mwens pase {distance} nm de {target}.",
+      "value": "Ateri a mwens pase {distance} nm de {target}, ak vitès parapò ak tè a anba {speed} kt epi yon vitès desant anba {fpm} fpm."
+    },
+    "hausa": {
+      "previous": "Sauka cikin nisan {distance} nm daga {target}.",
+      "value": "Sauka cikin nisan {distance} nm daga {target}, da saurin tafiya dangane da ƙasa ƙasa da {speed} kt da saurin gangarowa ƙasa da {fpm} fpm."
+    },
+    "hebrew": {
+      "previous": "יש לנחות בטווח של {distance} nm מ־{target}.",
+      "value": "יש לנחות בטווח של {distance} nm מ־{target}, במהירות קרקעית הנמוכה מ־{speed} kt ובקצב הנמכה הנמוך מ־{fpm} fpm."
+    },
+    "hindi": {
+      "previous": "{target} से {distance} nm के भीतर उतरें।",
+      "value": "{target} से {distance} nm के भीतर उतरें; ज़मीन के सापेक्ष गति {speed} kt से कम और नीचे उतरने की दर {fpm} fpm से कम रखें।"
+    },
+    "hmong": {
+      "previous": "Tsaws tsis pub deb tshaj {distance} nm ntawm {target}.",
+      "value": "Tsaws tsis pub deb tshaj {distance} nm ntawm {target}, nrog ceev piv rau hauv av qis dua {speed} kt thiab ceev nqis qis dua {fpm} fpm."
+    },
+    "igbo": {
+      "previous": "Rute n’ala n’ime {distance} nm site na {target}.",
+      "value": "Rute n’ala n’ime {distance} nm site na {target}, na ọsọ e jiri ala tụnyere dị n’okpuru {speed} kt na ọsọ ịrịda dị n’okpuru {fpm} fpm."
+    },
+    "indonesian": {
+      "previous": "Mendaratlah dalam jarak {distance} nm dari {target}.",
+      "value": "Mendaratlah dalam jarak {distance} nm dari {target}, dengan kecepatan terhadap tanah di bawah {speed} kt dan laju turun di bawah {fpm} fpm."
+    },
+    "italian": {
+      "previous": "Atterra entro {distance} nm da {target}.",
+      "value": "Atterra entro {distance} nm da {target}, con velocità al suolo inferiore a {speed} kt e rateo di discesa inferiore a {fpm} fpm."
+    },
+    "japanese": {
+      "previous": "{target}から{distance} nm以内に着陸してください。",
+      "value": "{target}から{distance} nm以内に、対地速度{speed} kt未満、降下率{fpm} fpm未満で着陸してください。"
+    },
+    "kannada": {
+      "previous": "{target}ನಿಂದ {distance} nm ವ್ಯಾಪ್ತಿಯೊಳಗೆ ಇಳಿಯಿರಿ.",
+      "value": "{target}ನಿಂದ {distance} nm ವ್ಯಾಪ್ತಿಯೊಳಗೆ ಇಳಿಯಿರಿ; ನೆಲಕ್ಕೆ ಹೋಲಿಸಿದ ವೇಗವನ್ನು {speed} ktಗಿಂತ ಕಡಿಮೆ ಮತ್ತು ಇಳಿಯುವ ದರವನ್ನು {fpm} fpmಗಿಂತ ಕಡಿಮೆ ಇರಿಸಿ."
+    },
+    "khmer": {
+      "previous": "ចុះចតក្នុងចម្ងាយ {distance} nm ពី {target}។",
+      "value": "ចុះចតក្នុងចម្ងាយ {distance} nm ពី {target} ដោយមានល្បឿនធៀបនឹងដីក្រោម {speed} kt និងអត្រាចុះក្រោម {fpm} fpm។"
+    },
+    "kinyarwanda": {
+      "previous": "Gwa ku butaka mu ntera itarenze {distance} nm uvuye kuri {target}.",
+      "value": "Gwa ku butaka mu ntera itarenze {distance} nm uvuye kuri {target}, ugenda ku muvuduko ugereranyije n’ubutaka uri munsi ya {speed} kt kandi umuvuduko wo kumanuka uri munsi ya {fpm} fpm."
+    },
+    "kirundi": {
+      "previous": "Ururukira mu ntera itarenga {distance} nm uvuye kuri {target}.",
+      "value": "Ururukira mu ntera itarenga {distance} nm uvuye kuri {target}, ufise umuvuduko ugereranije n’ubutaka uri munsi ya {speed} kt n’umuvuduko wo kumanuka uri munsi ya {fpm} fpm."
+    },
+    "korean": {
+      "previous": "{target}에서 {distance} nm 이내에 착륙하세요.",
+      "value": "{target}에서 {distance} nm 이내에 대지 속도 {speed} kt 미만, 하강률 {fpm} fpm 미만으로 착륙하세요."
+    },
+    "lao": {
+      "previous": "ລົງຈອດພາຍໃນ {distance} nm ຈາກ {target}.",
+      "value": "ລົງຈອດພາຍໃນ {distance} nm ຈາກ {target}, ດ້ວຍຄວາມໄວທຽບພື້ນດິນຕ່ຳກວ່າ {speed} kt ແລະ ອັດຕາການລົງຕ່ຳກວ່າ {fpm} fpm."
+    },
+    "latin": {
+      "previous": "Ad terram descende intra {distance} nm a {target}.",
+      "value": "Ad terram descende intra {distance} nm a {target}, celeritate respectu soli minore quam {speed} kt et celeritate descendendi minore quam {fpm} fpm."
+    },
+    "malayalam": {
+      "previous": "{target}-ൽ നിന്ന് {distance} nm പരിധിക്കുള്ളിൽ ഇറങ്ങുക.",
+      "value": "{target}-ൽ നിന്ന് {distance} nm പരിധിക്കുള്ളിൽ ഇറങ്ങുക; നിലത്തെ അപേക്ഷിച്ചുള്ള വേഗം {speed} kt-ൽ താഴെയും താഴേക്കിറങ്ങുന്ന നിരക്ക് {fpm} fpm-ൽ താഴെയും നിലനിർത്തുക."
+    },
+    "marathi": {
+      "previous": "{target} पासून {distance} nm च्या आत उतरा.",
+      "value": "{target} पासून {distance} nm च्या आत उतरा; जमिनीच्या तुलनेतील वेग {speed} kt पेक्षा कमी आणि खाली उतरण्याचा दर {fpm} fpm पेक्षा कमी ठेवा."
+    },
+    "nepali": {
+      "previous": "{target} बाट {distance} nm भित्र अवतरण गर्नुहोस्।",
+      "value": "{target} बाट {distance} nm भित्र अवतरण गर्नुहोस्; जमिनको सापेक्ष गति {speed} kt भन्दा कम र तल झर्ने दर {fpm} fpm भन्दा कम राख्नुहोस्।"
+    },
+    "pashto": {
+      "previous": "له {target} څخه د {distance} nm په واټن کې کښینئ.",
+      "value": "له {target} څخه د {distance} nm په واټن کې کښینئ؛ د ځمکې په نسبت سرعت له {speed} kt او د ښکته کېدو کچه له {fpm} fpm څخه کمه وساتئ."
+    },
+    "polish": {
+      "previous": "Wyląduj w odległości do {distance} nm od {target}.",
+      "value": "Wyląduj w odległości do {distance} nm od {target}, z prędkością względem ziemi poniżej {speed} kt i prędkością opadania poniżej {fpm} fpm."
+    },
+    "portuguese_angola": {
+      "previous": "Aterre a menos de {distance} nm de {target}.",
+      "value": "Aterre a menos de {distance} nm de {target}, com velocidade em relação ao solo inferior a {speed} kt e razão de descida inferior a {fpm} fpm."
+    },
+    "portuguese_brazil": {
+      "previous": "Pouse a até {distance} nm de {target}.",
+      "value": "Pouse a até {distance} nm de {target}, com velocidade em relação ao solo abaixo de {speed} kt e razão de descida abaixo de {fpm} fpm."
+    },
+    "portuguese_portugal": {
+      "previous": "Aterre a menos de {distance} nm de {target}.",
+      "value": "Aterre a menos de {distance} nm de {target}, com velocidade em relação ao solo inferior a {speed} kt e razão de descida inferior a {fpm} fpm."
+    },
+    "punjabi": {
+      "previous": "{target} ਤੋਂ {distance} nm ਦੇ ਅੰਦਰ ਉਤਰੋ।",
+      "value": "{target} ਤੋਂ {distance} nm ਦੇ ਅੰਦਰ ਉਤਰੋ; ਜ਼ਮੀਨ ਦੇ ਮੁਕਾਬਲੇ ਰਫ਼ਤਾਰ {speed} kt ਤੋਂ ਘੱਟ ਅਤੇ ਹੇਠਾਂ ਉਤਰਨ ਦੀ ਦਰ {fpm} fpm ਤੋਂ ਘੱਟ ਰੱਖੋ।"
+    },
+    "romanian": {
+      "previous": "Aterizează la cel mult {distance} nm de {target}.",
+      "value": "Aterizează la cel mult {distance} nm de {target}, cu viteza față de sol sub {speed} kt și rata de coborâre sub {fpm} fpm."
+    },
+    "russian": {
+      "previous": "Приземлитесь в пределах {distance} nm от {target}.",
+      "value": "Приземлитесь в пределах {distance} nm от {target}, с путевой скоростью ниже {speed} kt и скоростью снижения ниже {fpm} fpm."
+    },
+    "somali": {
+      "previous": "Ku deg masaafo aan ka badnayn {distance} nm oo u jirta {target}.",
+      "value": "Ku deg masaafo aan ka badnayn {distance} nm oo u jirta {target}, adigoo xawaaraha marka dhulka loo eego ka dhigaya wax ka yar {speed} kt, xawaaraha hoos u degistana wax ka yar {fpm} fpm."
+    },
+    "spanish_castilian": {
+      "previous": "Aterriza a una distancia máxima de {distance} nm de {target}.",
+      "value": "Aterriza a una distancia máxima de {distance} nm de {target}, con una velocidad respecto al suelo inferior a {speed} kt y una tasa de descenso inferior a {fpm} fpm."
+    },
+    "spanish_latin_america": {
+      "previous": "Aterriza a no más de {distance} nm de {target}.",
+      "value": "Aterriza a no más de {distance} nm de {target}, con una velocidad respecto al suelo inferior a {speed} kt y una tasa de descenso inferior a {fpm} fpm."
+    },
+    "swahili": {
+      "previous": "Tua ndani ya umbali wa {distance} nm kutoka {target}.",
+      "value": "Tua ndani ya umbali wa {distance} nm kutoka {target}, kwa kasi ikilinganishwa na ardhi chini ya {speed} kt na kasi ya kushuka chini ya {fpm} fpm."
+    },
+    "tagalog": {
+      "previous": "Lumapag sa loob ng {distance} nm mula sa {target}.",
+      "value": "Lumapag sa loob ng {distance} nm mula sa {target}, na may bilis kaugnay ng lupa na mas mababa sa {speed} kt at bilis ng pagbaba na mas mababa sa {fpm} fpm."
+    },
+    "tamil": {
+      "previous": "{target}-இலிருந்து {distance} nm தொலைவுக்குள் தரையிறங்கவும்.",
+      "value": "{target}-இலிருந்து {distance} nm தொலைவுக்குள் தரையிறங்கவும்; நிலத்துடன் ஒப்பிடும் வேகம் {speed} kt-க்கும் இறங்கும் வீதம் {fpm} fpm-க்கும் குறைவாக இருக்க வேண்டும்."
+    },
+    "telugu": {
+      "previous": "{target} నుండి {distance} nm లోపు దిగండి.",
+      "value": "{target} నుండి {distance} nm లోపు దిగండి; నేలతో పోల్చిన వేగాన్ని {speed} kt కంటే తక్కువగా, కిందికి దిగే రేటును {fpm} fpm కంటే తక్కువగా ఉంచండి."
+    },
+    "thai": {
+      "previous": "ลงจอดภายในระยะ {distance} nm จาก {target}",
+      "value": "ลงจอดภายในระยะ {distance} nm จาก {target} ด้วยความเร็วเทียบพื้นดินต่ำกว่า {speed} kt และอัตราร่อนลงต่ำกว่า {fpm} fpm"
+    },
+    "tigrinya": {
+      "previous": "ካብ {target} ኣብ ውሽጢ {distance} nm ዕለብ።",
+      "value": "ካብ {target} ኣብ ውሽጢ {distance} nm ዕለብ፤ ፍጥነት ብመንጽር መሬት ካብ {speed} kt፣ ፍጥነት ምውራድ ድማ ካብ {fpm} fpm ንታሕቲ ይኹን።"
+    },
+    "turkish": {
+      "previous": "{target} noktasının {distance} nm yakınında iniş yapın.",
+      "value": "{target} noktasının {distance} nm yakınında, yer hızı {speed} kt ve alçalma hızı {fpm} fpm değerinin altında olacak şekilde iniş yapın."
+    },
+    "ukrainian": {
+      "previous": "Приземліться в межах {distance} nm від {target}.",
+      "value": "Приземліться в межах {distance} nm від {target}, зі шляховою швидкістю нижче {speed} kt та швидкістю зниження нижче {fpm} fpm."
+    },
+    "urdu": {
+      "previous": "{target} سے {distance} nm کے اندر اتریں۔",
+      "value": "{target} سے {distance} nm کے اندر اتریں؛ زمین کے لحاظ سے رفتار {speed} kt سے کم اور نیچے اترنے کی شرح {fpm} fpm سے کم رکھیں۔"
+    },
+    "vietnamese": {
+      "previous": "Hạ cánh trong phạm vi {distance} nm tính từ {target}.",
+      "value": "Hạ cánh trong phạm vi {distance} nm tính từ {target}, với tốc độ so với mặt đất dưới {speed} kt và tốc độ hạ xuống dưới {fpm} fpm."
+    },
+    "yoruba": {
+      "previous": "Bàlẹ̀ láàárín {distance} nm sí {target}.",
+      "value": "Bàlẹ̀ láàárín {distance} nm sí {target}, pẹ̀lú ìyára ní ìbámu pẹ̀lú ilẹ̀ tí ó kéré ju {speed} kt àti ìyára ìsọ̀kalẹ̀ tí ó kéré ju {fpm} fpm."
+    }
+  }
+}

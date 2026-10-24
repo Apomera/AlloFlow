@@ -1,5 +1,5 @@
 import {EXPEDITION_KIT_IDS,expeditionKitMeta,kitReward} from './lesson_board_tactics.js';
-import { fundingOptions } from './lesson_board_funding.js';
+import { fundingOptions, fundableTogether } from './lesson_board_funding.js';
 import { encounterFor, leadOptionsFor, isLeadChoice, isTradeChoice, isDeliveryChoice, isCommissionChoice, isRelayChoice, isVentureChoice, isFieldChoice } from './lesson_board_encounters.js';
 import { commissionOptionsFor, isCommissionEncounter } from './lesson_board_commissions.js';
 import { tradeOptionsFor, isTradeEncounter } from './lesson_board_barter.js';
@@ -130,7 +130,7 @@ SOURCE BEGIN\n${source}\nSOURCE END${vocabularyPrompt(options.vocabulary)}
 ${options.playStyle === 'tabletop' ? 'Set playStyle to "tabletop". The party has a persistent position, moves along real board edges, and can cross already explored spaces in one travel turn. ' + (options.travelLimit === 3 ? 'Set travelLimit to 3: one move crosses at most three edges, stopping at an unexplored destination. A built shortcut counts as one edge. Longer journeys need cleared waypoints across multiple turns. ' : 'Leave travelLimit out: one move may cross any number of cleared spaces. ') + 'Both starts are physical construction sites; the first is home camp. Projects must be built at their assigned starting site. A shortcut creates an edge from the farther starting site to its target: choose a target not adjacent to either start. After the exploration/construction goal, the party must actually use at least one construction (cross its bridge or earn its yield), then travel back to home camp to deliver its discoveries. If already home when ready, the party can deliver there without leaving. Describe this return in the mission. Routes and building effects should make this journey useful. Do not invent movement dice or turn penalties.' : ''}
 ${options.playStyle === 'tabletop' ? CONTRACT_SCHEMA_PROMPT : ''}
 Players explore a connected territory, complete learning activities, collect two kinds of resource tokens, and spend them to construct projects. The goal is ${goal}: ${goal === 'expedition' ? 'successfully explore EVERY location and construct at least two projects' : goal === 'architect' ? 'construct ALL THREE projects and demonstrate every concept at least once' : 'construct any two projects and demonstrate every concept at least once'}. Set the board goal field to ${goal} and write its mission to match${options.playStyle === 'tabletop' ? ', including the final construction use and return journey' : ''}. Every location rewards only once. ${options.playStyle === 'tabletop' ? 'The party begins at the first starting location. It can move along edges through cleared spaces, stopping when it reaches an unexplored space. Returning to a cleared space is a travel turn without another activity or reward.' : 'Completing a location opens its neighbors. Two starting locations are available immediately.'} No timers, elimination, or penalties for incorrect responses. The app adds its own fortune dice, so do not write dice rules. The same board works solo or as a shared class party. Make the projects change the imagined world and the route/resource strategy. Token amounts are game rules, not invented lesson facts.
-Create 8-12 locations, 2-4 concepts with at least two locations each, two distinct starting IDs and a connected undirected graph. Vary routes, branching and meaningful project choices. Use at least two formats from choice, order, settings, classify, connect, place, allocate, repair; prefer at least four when the lesson supports them. Ground every activity and its explanation in an exact sourceQuote. Use plausible options, an unambiguous solution and two hints. All required facts must be in the lesson or visible activity. Do not require an image to answer. An order activity needs an explicit starting point and ordering criterion. Settings need a clear purpose. Avoid forcing chronology or arithmetic into an unsuitable lesson.
+Create 8-12 locations, 2-4 concepts with at least two locations each, two distinct starting IDs and a connected undirected graph. Vary routes, branching and meaningful project choices. Use at least two formats from choice, order, settings, classify, connect, place, allocate, repair; prefer at least four when the lesson supports them. Ground every activity and its explanation in an exact sourceQuote. Use plausible options, an unambiguous solution and two hints. All required facts must be in the lesson or visible activity. Do not require an image to answer. An order activity needs a clear ordering criterion (for example, earliest to latest); its instruction must not name the items or which comes first or last. Never let an instruction or scene give the answer away: do not name the correct option or say which item belongs where. Options must stand alone (no "all of the above" or references to other options), because the app may reorder them. Settings need a clear purpose. Avoid forcing chronology or arithmetic into an unsuitable lesson.
 Vary the reasoning as well as the interaction format. Begin with an accessible observation or classification, then revisit concepts through application, comparing evidence, diagnosing a faulty explanation, or tracing a process backward when the source supports a unique answer. Two tasks about the same concept should ask different questions rather than paraphrase the same recall item. Use a mix of short decisions and multi-step challenges; do not make every stop a long puzzle. For backward reasoning, state the allowed changes and ensure only one earlier state or cause fits; never assume an effect identifies a unique cause unless the given evidence establishes it. Use visible constraints for resource puzzles and explain why each faulty claim needs repair. Keep difficulty aligned with the learner level and source; fictional game settings may change presentation but must not introduce unstated subject facts.
 ${CHALLENGE_SCHEMA_PROMPT}
 ${PUZZLE_SCHEMA_PROMPT}
@@ -303,16 +303,32 @@ export function stepOf(run) {
   return { ...step, answers: object(current?.answers) ? current.answers : {}, seen: object(current?.seen) ? current.seen : {} };
 }
 export function requestId(run, prefix = 'action') { const round = stepOf(run).retryRound || 0; return (round ? 'r' + round + '_' : '') + identity(prefix); }
-export function attemptRecords(step) {
+export function attemptRecords(step, members = []) {
   if (object(step?.result?.attempts)) return step.result.attempts;
+  const list = Array.isArray(members) ? members : [];
+  if (typeof step?.result?.ak === 'string') return Object.fromEntries(step.result.ak.split(',').map((code, index) => [list[index], /^(\d{1,6})\.(\d{1,6})\.([01])\.([01])$/.exec(code)]).filter(([uid, m]) => token(uid) && m).map(([uid, m]) => [uid, { answered: Number(m[1]), correct: Number(m[2]), firstCorrect: m[3] === '1', lastCorrect: m[4] === '1' }]));
   if (object(step?.retryStats) && !step.result) return step.retryStats;
-  return Object.fromEntries(Object.entries(step?.result?.marks || {}).filter(([uid, correct]) => token(uid) && typeof correct === 'boolean').map(([uid, correct]) => [uid, { answered: 1, correct: Number(correct), firstCorrect: correct, lastCorrect: correct }]));
+  const marks = typeof step?.result?.mk === 'string' ? Object.fromEntries([...step.result.mk].map((code, index) => [list[index], code === '1' ? true : code === '0' ? false : null])) : step?.result?.marks || {};
+  return Object.fromEntries(Object.entries(marks).filter(([uid, correct]) => token(uid) && typeof correct === 'boolean').map(([uid, correct]) => [uid, { answered: 1, correct: Number(correct), firstCorrect: correct, lastCorrect: correct }]));
+}
+// Live sessions store a finished move's marks as one character per run member
+// (attempts as answered.correct.first.last), keeping a full class game under the size cap.
+export function compactAdvance(board, run) {
+  const patch = advance(board, run), key = 'steps.t' + run.turn, done = patch[key], result = done?.result;
+  if (!object(result) || !object(result.marks) && !object(result.attempts)) return patch;
+  const known = Array.isArray(run.members) ? run.members.filter(token) : [], members = known.slice();
+  for (const uid of [...Object.keys(result.marks || {}), ...Object.keys(result.attempts || {})]) if (token(uid) && !members.includes(uid)) members.push(uid);
+  const compact = { ...result }; delete compact.marks; delete compact.attempts;
+  compact.mk = members.map(uid => typeof result.marks?.[uid] === 'boolean' ? (result.marks[uid] ? '1' : '0') : '-').join('').replace(/-+$/, '');
+  if (object(result.attempts)) compact.ak = members.map(uid => { const a = result.attempts[uid]; return object(a) ? [a.answered, a.correct, a.firstCorrect ? 1 : 0, a.lastCorrect ? 1 : 0].join('.') : ''; }).join(',').replace(/,+$/, '');
+  return { ...patch, [key]: { ...done, result: compact }, ...(members.length !== known.length ? { members } : {}) };
 }
 const objectiveMet = (board, visited, built, concepts) => built.length >= (goalOf(board) === 'architect' ? 3 : 2) && board.concepts.every(c => concepts.includes(c.id)) && (goalOf(board) !== 'expedition' || visited.length === board.locations.length);
 function fundingForProgress(board, progress, project) {
   return fundingOptions(board, project, progress.balance).map(option => {
     let safe = true;
-    if (option.id !== 'standard') {
+    // Tabletop builds must leave a usable construction, so even printed-cost payments are checked.
+    if (option.id !== 'standard' || board.playStyle === 'tabletop') {
       const remainingLocations = board.locations.filter(node => !progress.visited.includes(node.id));
       const built = [...progress.built, project.id], remainingProjects = board.projects.filter(item => !built.includes(item.id));
       const required = Math.max(0, (goalOf(board) === 'architect' ? 3 : 2) - built.length);
@@ -331,7 +347,7 @@ function fundingForProgress(board, progress, project) {
         if (selected.length < required) continue;
         const eventual = board.projects.filter(item => built.includes(item.id)).concat(selected);
         const canUse = (progress.usedProjects || []).length > 0 || eventual.some(item => item.effect.kind === 'path') || remainingLocations.length > 0 && eventual.some(item => item.effect.kind === 'yield');
-        if (canUse && potential.every((value, i) => value >= selected.reduce((sum, item) => sum + item.cost[i], 0))) { safe = true; break; }
+        if (canUse && fundableTogether(board, selected, potential)) { safe = true; break; }
       }
     }
     return { ...option, safe, legal: option.affordable && safe, reason: !option.affordable ? 'insufficient' : !safe ? 'completion-reserve' : null };
@@ -341,7 +357,23 @@ export function constructionFunding(board, run, projectId) {
   const project = board.projects.find(item => item.id === projectId);
   return project ? fundingForProgress(board, derive(board, run), project) : [];
 }
+// Replays are pure: the same board, steps and turn always derive the same state. Views replay
+// history many times per render, so results are cached per steps object, checked against a
+// serialized copy (some callers edit steps in place), and frozen with the arrays and records
+// derive creates so a caller can never alter a shared result.
+const deriveCache = new WeakMap();
+const sealProgress = progress => { for (const value of Object.values(progress)) if (Array.isArray(value) || value === progress.performance) { Object.values(value).forEach(item => { if (item && typeof item === 'object' && !Object.isFrozen(item) && Object.getPrototypeOf(item) === Object.prototype) Object.freeze(item); }); Object.freeze(value); } return Object.freeze(progress); };
 export function derive(board, run) {
+  const steps = run?.steps;
+  if (!board || typeof board !== 'object' || !steps || typeof steps !== 'object') return replay(board, run);
+  let byBoard = deriveCache.get(board); if (!byBoard) deriveCache.set(board, byBoard = new WeakMap());
+  const print = JSON.stringify(steps); let entry = byBoard.get(steps);
+  if (!entry || entry.print !== print) byBoard.set(steps, entry = { print, results: new Map() });
+  const key = run.turn + '|' + (Array.isArray(run.members) ? run.members.join(',') : '');
+  if (!entry.results.has(key)) entry.results.set(key, sealProgress(replay(board, run)));
+  return entry.results.get(key);
+}
+function replay(board, run) {
   const visited = [], built = [], concepts = [], balance = [0, 0], bonus = [0, 0], opened = [], performance = {}, fortune = [0, 0], discovered = [], luck = [];
   const tabletop = isTabletop(board), usedProjects = [], contracts = tabletop ? board.contracts || [] : [], completedContracts = [], contractGains = [0, 0];
   const fieldEnabled = tabletop && board.chance === true, fieldEvents = [], fieldDeliveries = [], fieldGains = [0, 0], fieldSpent = [0, 0];
@@ -371,7 +403,7 @@ export function derive(board, run) {
       }
     }
     if (!result) continue;
-    if (node) { for (const [uid, stats] of Object.entries(attemptRecords(step))) if (token(uid)) { const record = performance[uid] || (performance[uid] = { answered: 0, correct: 0 }); record.answered += stats.answered; record.correct += stats.correct; }
+    if (node) { for (const [uid, stats] of Object.entries(attemptRecords(step, run.members))) if (token(uid)) { const record = performance[uid] || (performance[uid] = { answered: 0, correct: 0 }); record.answered += stats.answered; record.correct += stats.correct; }
       const freshLocation = !visited.includes(node.id);
       if (result.success && freshLocation) {
         visited.push(node.id);

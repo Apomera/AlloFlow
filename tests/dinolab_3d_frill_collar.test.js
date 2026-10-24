@@ -6,6 +6,12 @@ import {createHash} from 'node:crypto';
 
 const THREE=createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source=readFileSync(process.env.DINO_FRILL_SOURCE||resolve('stem_lab/stem_tool_dinolab.js'),'utf8');
+const registration="window.StemLab.registerTool('dinoLab'";
+window.StemLab={registerTool(){}};
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__frillCollarNative={DINOS,skeletalAnatomyProfileFor,'+nativeTopLevelNames.join(',')+'};'+registration))();
+const art=globalThis.__frillCollarNative;delete globalThis.__frillCollarNative;
+
 const start=source.indexOf('// DINO_DISPLAY_SHELL_START'),end=source.indexOf('// DINO_DISPLAY_SHELL_END',start);
 if(start<0||end<start)throw Error('Display shell helper markers missing.');
 const {dinoFrillGeometry,dinoPlateGeometry,dinoProtoceratopsFrillGeometry}=new Function(source.slice(start,end)+'\nreturn {dinoFrillGeometry,dinoPlateGeometry,dinoProtoceratopsFrillGeometry};')();
@@ -32,8 +38,13 @@ function closedSurface(g,scale){
 function nativeFrill(species,present=true){
  const a=source.indexOf('            function addFrillSurface('),b=source.indexOf('            var hasHighSail',a);if(a<0||b<a)throw Error('Native frill caller missing.');
  const model=new THREE.Group(),material=new THREE.MeshStandardMaterial(),bone=new THREE.MeshStandardMaterial(),marks=[];
- const add=new Function('THREE','hasAnatomyPart','cranialSurface','head','vec','len','ht','surfaceBodyDepth','boneMat','model','dinoMarkSpecialPart','dinoFrillGeometry','dinoProtoceratopsFrillGeometry','props',source.slice(a,b)+'\nreturn addFrillSurface;')
-  (THREE,part=>present&&part==='frill',{frillScale:1},new THREE.Vector3(-2,1.8,0),(x,y,z)=>new THREE.Vector3(x,y,z),8,3,.8,bone,model,(mesh,part)=>marks.push([mesh,part]),dinoFrillGeometry,dinoProtoceratopsFrillGeometry,{species:{id:species}});
+ const dn=art.DINOS.find(d=>d.id===species),head=new THREE.Vector3(-2,1.8,0);
+ if(!dn)throw Error('Missing catalog frill species '+species);
+ const context={...art,THREE,model,head,len:8,ht:3,bodyDepth:.8,surfaceBodyDepth:.8,boneMat:bone,
+  props:{species:dn},cranialSurface:{frillScale:1},vec:(x,y,z)=>new THREE.Vector3(x,y,z),
+  hasAnatomyPart:part=>present&&part==='frill',dinoMarkSpecialPart:(mesh,part)=>marks.push([mesh,part]),
+  ceratopsidCranium:art.dinoCeratopsidCraniumFrame(THREE,dn,head,8,3)};
+ const add=new Function('context','with(context){'+source.slice(a,b)+'\nreturn addFrillSurface;}')(context);
  const mesh=add(material,1);return {model,material,mesh,marks,dispose(){mesh?.geometry.dispose();material.dispose();bone.dispose();}};
 }
 

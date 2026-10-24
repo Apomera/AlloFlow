@@ -1,3 +1,4 @@
+import { addBoardStyle } from './lesson_board_style.js';
 import {encounterDecision} from './lesson_board_encounter_preview.js';
 import {Amounts} from './lesson_board_play_extras.jsx';
 import {ResourceStack,ResourceStyles} from './lesson_board_tokens.jsx';
@@ -7,7 +8,7 @@ import {DeliveryOffer} from './lesson_board_delivery_ui.jsx';
 import {VentureOffer} from './lesson_board_ventures_ui.jsx';
 import {RelayOffer} from './lesson_board_relays_ui.jsx';
 import {DestinationOffer} from './lesson_board_destination_ui.jsx';
-import {tr} from './lesson_board_strings.js';
+import { tr, arrow } from './lesson_board_strings.js';
 const React=window.React;
 
 function approaches(card,t){return [
@@ -53,7 +54,7 @@ function DecisionPreview({board,preview,onInspect,t}){
   return <section className="lb-decision-preview" data-field-decision-preview data-choice={preview.choice} aria-label={tr(t,'decision_preview','If you choose this')}>
     <div className="lb-decision-preview-title"><h5>{tr(t,'decision_preview','If you choose this')}</h5><span>{tr(t,'decision_no_move','No move used')}</span></div>
     <p>{tr(t,'decision_balance','Your supplies after accepting')}</p>
-    <dl className="lb-decision-balances">{board.resources.map((resource,index)=><div key={index}><dt><ResourceStack value={preview.after[index]} index={index}/><span>{resource}</span></dt><dd><span data-decision-before={index}>{preview.before[index]}</span><span aria-hidden="true"> → </span><span className="lb-decision-sr">{' '+tr(t,'decision_becomes','becomes')+' '}</span><strong data-decision-after={index}>{preview.after[index]}</strong></dd></div>)}</dl>
+    <dl className="lb-decision-balances">{board.resources.map((resource,index)=><div key={index}><dt><ResourceStack value={preview.after[index]} index={index}/><span>{resource}</span></dt><dd><span data-decision-before={index}>{preview.before[index]}</span><span aria-hidden="true"> {arrow()} </span><span className="lb-decision-sr">{' '+tr(t,'decision_becomes','becomes')+' '}</span><strong data-decision-after={index}>{preview.after[index]}</strong></dd></div>)}</dl>
     {preview.spent.some(Boolean)&&<div className="lb-decision-flow" data-decision-spent><strong>{tr(t,'decision_spend','Spend now')}</strong><Amounts board={board} values={preview.spent} prefix="−"/></div>}
     {preview.gain.some(Boolean)&&<div className="lb-decision-flow" data-decision-gain><strong>{tr(t,'decision_gain','Receive now')}</strong><Amounts board={board} values={preview.gain} prefix="+"/></div>}
     {preview.reserved&&<div className="lb-decision-reserved" data-decision-reserved data-decision-uncertain={preview.reserved.uncertain||undefined}><strong>{preview.reserved.uncertain?tr(t,'decision_possible_bonus','Possible bonus · not guaranteed'):tr(t,'decision_reserved','Reserved · not in your balance')}</strong><Amounts board={board} values={preview.reserved.reward} prefix="+"/></div>}
@@ -99,7 +100,7 @@ export function EncounterDecision({board,run,progress,card,disabled,onChoose,onI
   </div>;
 }
 
-function DecisionStyles(){return <style>{`
+function DecisionStyles(){return addBoardStyle(`
 .lb .lb-decision-intro{line-height:1.5}.lb .lb-approaches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(205px,100%),1fr));gap:10px;margin:14px 0 18px;align-items:stretch}.lb button.lb-approach{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;min-height:44px;padding:12px;text-align:start;white-space:normal;background:var(--panel);border:1px solid var(--line);border-bottom-width:4px;border-radius:12px;box-shadow:0 3px 7px #14293610;transition:transform .15s,box-shadow .15s,border-color .15s}.lb button.lb-approach[aria-pressed=true]{border-color:var(--route);background:var(--route-soft);box-shadow:0 4px 0 var(--line);transform:translateY(-2px)}.lb button.lb-approach:not(:disabled):hover{border-color:var(--route)}.lb button.lb-approach:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.lb .lb-approach-heading{display:flex;align-items:center;gap:8px;min-width:0}.lb .lb-approach-heading>strong{flex:1;min-width:0;line-height:1.3}.lb .lb-approach-selected{flex:none;font-size:1.1em;font-weight:800}.lb .lb-approach>small{font-size:.82em;line-height:1.4}.lb .lb-approach .lb-tokens{margin-top:auto;display:flex;flex-wrap:wrap;gap:5px;font-size:.75em}.lb .lb-encounter-decision .lb-token{white-space:nowrap}.lb .lb-encounter-decision .lb-token>span:last-child{white-space:normal;min-width:0}.lb .lb-approach-count{margin-top:auto;color:var(--route);font-weight:650}
 .lb .lb-approach-token{width:44px;height:39px;flex:0 0 44px;overflow:visible}.lb .lb-approach-shadow{fill:var(--accent);opacity:.1}.lb .lb-approach-edge{fill:var(--gold);opacity:.8}.lb .lb-approach-face{fill:var(--gold-soft);stroke:var(--gold);stroke-width:1}.lb .lb-approach-mark{fill:none;stroke:var(--gold);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lb .lb-decision-focus{min-width:0;border-top:1px solid var(--line);padding-top:14px}.lb .lb-decision-preview{min-width:0;border:1px solid var(--route);border-radius:12px;background:var(--panel);padding:12px}.lb .lb-decision-preview-title{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between}.lb .lb-decision-preview h5{font-size:1em;margin:0}.lb .lb-decision-preview-title>span{font-size:.78em;border:1px solid var(--line);border-radius:30px;padding:3px 8px}.lb .lb-decision-preview>p{font-size:.9em}.lb .lb-decision-balances{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:8px;margin:10px 0}.lb .lb-decision-balances>div{padding:8px;border:1px solid var(--line);border-radius:9px;min-width:0}.lb .lb-decision-balances dt{display:flex;align-items:center;gap:7px;min-width:0;font-size:.85em}.lb .lb-decision-balances dt>span{min-width:0}.lb .lb-decision-balances dd{margin:5px 0 0;text-align:end;white-space:nowrap;font-variant-numeric:tabular-nums}.lb .lb-decision-balances dd>strong{font-size:1.25em}.lb .lb-decision-flow,.lb .lb-decision-reserved{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 0;font-size:.85em}.lb .lb-decision-reserved{border-top:1px dashed var(--gold);border-bottom:1px dashed var(--gold);margin:10px 0}.lb .lb-decision-funded{border-top:1px solid var(--line);padding-top:10px;font-size:.9em}.lb .lb-decision-funded button{min-height:44px;white-space:normal;text-align:start;max-width:100%;margin:4px 6px 0 0}.lb .lb-decision-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.lb .lb-decision-focus>section.lb-barter-offer,.lb .lb-decision-focus>section.lb-commission-offer,.lb .lb-decision-focus>section.lb-delivery-offer{font-size:1em}.lb .lb-decision-focus>section>h5{font-size:1em;margin:0 0 10px}
@@ -107,4 +108,4 @@ function DecisionStyles(){return <style>{`
 @media(max-width:480px){.lb .lb-approaches{gap:8px}.lb button.lb-approach{padding:10px}.lb .lb-decision-preview{padding:10px}}
 @media(prefers-reduced-motion:reduce){.lb button.lb-approach{transition:none;transform:none!important}}
 @media(forced-colors:active){.lb button.lb-approach,.lb .lb-decision-preview,.lb .lb-decision-balances>div,.lb .lb-decision-reserved{border-color:CanvasText;box-shadow:none}.lb button.lb-approach[aria-pressed=true]{border-color:Highlight;outline:2px solid Highlight;outline-offset:1px}.lb .lb-approach-face{fill:Canvas;stroke:CanvasText}.lb .lb-approach-edge{fill:CanvasText}.lb .lb-approach-mark{stroke:CanvasText}.lb .lb-approach-count{color:CanvasText}}
-`}</style>;}
+`);}

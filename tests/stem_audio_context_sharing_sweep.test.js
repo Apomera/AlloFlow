@@ -12,25 +12,50 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const ROOT = process.cwd();
 const DIRS = ['stem_lab', 'desktop/web-app/public/stem_lab'];
 const HELPER_CALL = 'window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()';
+// The same host-first choice with a stricter typeof guard (Geology Explorer, 09-30).
+const HELPER_CALL_TYPEOF = "typeof window.StemLab.audioContext === 'function') ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()";
 const CREATE = /new\s*\(?\s*(?:window\.)?(?:webkit)?AudioContext/g;
 const ASSIGN = /([A-Za-z_$][\w$.]*)\s*=\s*new\s*\(?\s*(?:window\.)?(?:webkit)?AudioContext[A-Za-z]*(?:\s*\|\|\s*window\.webkitAudioContext\s*\))?\s*\(\)/g;
 const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // A tool "closes its own" when some reference it assigned the context to is closed, or a close() lands on an
 // audio-named receiver (refs and runtime bags carry the context under another name).
+// Linear scans: ASSIGN's leading identifier group, and a leading [\w$.]+ before
+// .close(), are retried at every offset of the long data runs some tools embed,
+// which made this sweep quadratic (over 100 s on a loaded machine). Anchor on the
+// fixed text instead and read the identifier backwards; ASSIGN is applied only to
+// a bounded window ending at each `new AudioContext(...)()`.
+function identBefore(source, at, chars) {
+  let from = at;
+  while (from > 0 && chars.test(source[from - 1])) from -= 1;
+  return source.slice(from, at);
+}
 function closesItsOwn(source) {
   const idents = new Set(); let m;
-  const assign = new RegExp(ASSIGN.source, 'g');
-  while ((m = assign.exec(source))) idents.add(m[1]);
+  const create = new RegExp(CREATE.source, 'g');
+  // ASSIGN, split at `new`: the right-hand side must complete a call, and the
+  // left-hand identifier is read from a bounded window just before it.
+  const rhs = new RegExp('^' + sliceBetween(ASSIGN.source, 'new', null, { label: 'ASSIGN right-hand side' }));
+  while ((m = create.exec(source))) {
+    if (!rhs.test(source.slice(m.index, m.index + 120))) continue;
+    const lhs = source.slice(Math.max(0, m.index - 200), m.index).match(/([A-Za-z_$][\w$.]*)\s*=\s*$/);
+    if (lhs) idents.add(lhs[1]);
+  }
   for (const id of idents) {
     const base = id.replace(/\.current$/, '');
     if (new RegExp(esc(id) + '(\\.current)?\\.close\\(').test(source) || new RegExp(esc(base) + '(\\.current)?\\.close\\(').test(source)) return true;
   }
-  return (source.match(/[\w$.]+\.close\(\)/g) || []).some((x) => /ctx|Ctx|AC\b|audio|Audio|Context/.test(x));
+  const closers = [];
+  for (let at = source.indexOf('.close()'); at !== -1; at = source.indexOf('.close()', at + 1)) {
+    const receiver = identBefore(source, at, /[\w$.]/);
+    if (receiver) closers.push(receiver + '.close()');
+  }
+  return closers.some((x) => /ctx|Ctx|AC\b|audio|Audio|Context/.test(x));
 }
 
 describe('STEM Lab AudioContext sharing (sweep)', () => {
@@ -44,7 +69,7 @@ describe('STEM Lab AudioContext sharing (sweep)', () => {
         const source = readFileSync(resolve(ROOT, dir, name), 'utf8');
         const creates = (source.match(CREATE) || []).length;
         if (!creates) continue;
-        const viaHelper = source.split(HELPER_CALL).length - 1;
+        const viaHelper = source.split(HELPER_CALL).length - 1 + source.split(HELPER_CALL_TYPEOF).length - 1;
         if (viaHelper === creates) { if (dir === 'stem_lab') shared += 1; continue; }
         if (closesItsOwn(source)) { if (dir === 'stem_lab') own += 1; continue; }
         leaking.push(dir + '/' + name + ' (' + (creates - viaHelper) + ' private, never closed)');

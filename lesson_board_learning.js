@@ -48,7 +48,9 @@ export function conceptPriorities(report) {
     const group = predicate => records.filter(item => item.locations.some(predicate)).map(({learner,locations}) => ({uid:learner.uid,name:learner.name,locations:locations.filter(predicate).map(item=>({id:item.id,name:item.name}))}));
     return { ...concept, reviewed: reviewed.size, attempted: pairs.filter(item => item.answered > 0).length,
       firstCorrect: pairs.filter(item => item.firstCorrect === true).length, latestCorrect: pairs.filter(item => item.lastCorrect === true).length,
-      revisit: group(item => item.answered > 0 && item.lastCorrect === false),
+      // A correct retry made after the answer was shown still needs another look.
+      revisit: group(item => item.answered > 0 && (item.lastCorrect === false || item.assisted === true)),
+      thin: report.learners.filter(learner => learner.locations.filter(item => item.conceptId === concept.id && item.answered > 0).length === 1).length,
       missing: group(item => !item.answered),
       strengthen: group(item => item.improved === true)
     };

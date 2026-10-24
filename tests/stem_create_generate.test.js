@@ -34,7 +34,8 @@ function generateOnClick() {
 describe('the Generate button generates', () => {
   it('resolves the mode once and hands it to handleGenerateMath as modeOverride', () => {
     const click = generateOnClick();
-    expect(click).toContain('handleGenerateMath(mathInput, true, resolvedMode);');
+    // 09-07: solve mode asks for exactly one problem; the mode still rides as modeOverride.
+    expect(click.includes("handleGenerateMath(stemLabCreateMode === 'solve' ? 'Solve 1 problem: ' + mathInput : mathInput, true, resolvedMode);"), 'resolvedMode handed over').toBe(true);
     // and still writes the resolved mode to state so the sidebar reflects it
     expect(click).toContain('setMathMode(resolvedMode);');
   });

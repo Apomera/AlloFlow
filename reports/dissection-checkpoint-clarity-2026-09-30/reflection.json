@@ -4,17 +4,17 @@
   "clientWidth": 388,
   "choices": [
     {
-      "height": 73.1875,
+      "height": 99.59375,
       "scrollWidth": 364,
       "clientWidth": 364
     },
     {
-      "height": 95.984375,
+      "height": 99.59375,
       "scrollWidth": 364,
       "clientWidth": 364
     },
     {
-      "height": 95.984375,
+      "height": 99.59375,
       "scrollWidth": 364,
       "clientWidth": 364
     }
@@ -67,17 +67,17 @@
     },
     {
       "text": "The largest possible surface area is visible, even if the access route is off-center.",
-      "size": 15.2,
+      "size": 16,
       "clipped": false
     },
     {
       "text": "The recommended view and access route are centered, with protected landmarks accounted for.",
-      "size": 15.2,
+      "size": 16,
       "clipped": false
     },
     {
       "text": "A cutting instrument is selected and staged above the tray, ready for first contact.",
-      "size": 15.2,
+      "size": 16,
       "clipped": false
     },
     {

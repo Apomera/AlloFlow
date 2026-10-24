@@ -5,6 +5,12 @@ import { createRequire } from 'node:module';
 
 const T = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
 const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const registration="window.StemLab.registerTool('dinoLab'";
+window.StemLab={registerTool(){}};
+const nativeTopLevelNames=[...new Set([...source.matchAll(/^  function (\w+)\(/gm)].map(match=>match[1]))];
+new Function(source.replace(registration,'globalThis.__sauropodShadowNative={DINOS,skeletalAnatomyProfileFor,'+nativeTopLevelNames.join(',')+'};'+registration))();
+const art=globalThis.__sauropodShadowNative;delete globalThis.__sauropodShadowNative;
+
 function block(start, end) {
   const from = source.indexOf(start), to = source.indexOf(end, from);
   if (from < 0 || to < 0) throw new Error('Material fixture source boundary missing');
@@ -19,7 +25,7 @@ function materialRig(isSauropod, phong, opacity = 100) {
   const maps = [new T.Texture(), new T.Texture(), new T.Texture()];
   const visualMaterialsRef = { current: null }, bodyOpacityRef = { current: opacity };
   const context = {
-    THREE, isSauropod, bodyColor: '#819564', fieldPalette: { accent: '#8c8465', dark: '#343e30' },
+    ...art, THREE, isSauropod, bodyColor: '#819564', fieldPalette: { accent: '#8c8465', dark: '#343e30' },
     skinTexture: maps[0], skinBumpTexture: maps[1], skinRoughnessTexture: maps[2],
     lifeSurface: opacity >= 98, inferenceOpacity: opacity / 100, ht: 5, len: 18,
     integument: { pattern: 'subtle' }, props: { showBody: true },

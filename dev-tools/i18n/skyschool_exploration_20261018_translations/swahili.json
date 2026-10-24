@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Matokeo ya utafutaji: kadi {cards} katika mada {topics}.",
+  "stem.flightsim.learn_library_counts": "Kadi {cards} · mada {topics}",
+  "stem.flightsim.learn_search_clear": "Futa utafutaji",
+  "stem.flightsim.learn_search_empty": "Hakuna kadi za kujifunza zinazolingana na “{query}”. Jaribu neno jingine au ufute utafutaji.",
+  "stem.flightsim.learn_search_none": "Hakuna kadi za kujifunza zinazolingana",
+  "stem.flightsim.learn_search_cards": "Kadi {count} za kujifunza",
+  "stem.flightsim.quiz_review_progress": "Maswali {answered} kati ya {total} yamejibiwa · {missed} yamekosewa",
+  "stem.flightsim.quiz_review_missed": "Rudia maswali yaliyokosewa",
+  "stem.flightsim.quiz_next_unanswered": "Swali linalofuata lisilojibiwa",
+  "stem.flightsim.quiz_review_all_answered": "Kila swali lina jibu la kwanza. Rudia maswali uliyokosea kwa mazoezi yasiyo na alama, au anza jaribio jipya.",
+  "stem.flightsim.planner_drone_agl": "Futi {ft} juu ya ardhi",
+  "stem.flightsim.sprint_native_title": "Mashindano ya haraka ya jiografia",
+  "stem.flightsim.sprint_timed_hint": "Njia inaendelea wakati unajibu. Sitisha ili usome; endelea kabla ya kuchagua jibu.",
+  "stem.flightsim.sprint_warp_reference": "Safari imeharakishwa kwa shughuli hii ya jiografia. Vipimo vya kasi vinaonyesha kasi ya safari iliyotangazwa; njia hii haipimi utendaji wa ndege.",
+  "stem.flightsim.sprint_save_menu": "Hifadhi mashindano na urudi kwenye menyu",
+  "stem.flightsim.sprint_next_stop": "Kituo kinachofuata: {place}",
+  "stem.flightsim.geoq_approaching_city": "Unakaribia jiji gani?",
+  "stem.flightsim.sprint_time_remaining": "Muda uliobaki: sekunde {seconds}"
+}

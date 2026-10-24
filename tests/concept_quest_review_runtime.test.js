@@ -96,6 +96,11 @@ async function change(el,value){expect(el).toBeTruthy();await act(async()=>{cons
 const field=label=>[...host.querySelectorAll('label')].find(l=>l.textContent.startsWith(label))?.querySelector('input,textarea,select');
 
 describe('Concept Quest teacher/student interaction',()=>{
+ it('shows durable source coverage separately from skipped unsupported questions',async()=>{
+  let q=engine.resolveTravel(engine.createSession({questions:[question,{...question,question:'Which evidence supports the claim?'},{type:'short-answer',question:'Explain your thinking.'}]}),{},'room-2').quest;
+  await mount(q,true);expect(host.querySelector('[data-concept-quest-coverage]').textContent).toContain('0 of 2 supported assessment items explored');expect(host.textContent).toContain('1 source question(s) were skipped');
+  q=engine.resolveBattle(q,{u:action(q)}).quest;await mount(q,true);expect(host.querySelector('[data-concept-quest-coverage]').textContent).toContain('1 of 2 supported assessment items explored');
+ });
  it('restores a committed answer and ability after remount and includes roster peers without uid fields',async()=>{
   const q=encounter(),data=session(q);data.escapeRoomState.teamProgress.All.questActions.u=action(q,{abilityId:'explain',answerIndex:1});await mount(q,false,{sessionData:data});expect(host.querySelectorAll('input[type="radio"]')[1].checked).toBe(true);expect(button('Commit turn').closest('fieldset').disabled).toBe(true);expect(host.textContent).toContain('Teammate');expect(button('💡 Explain').getAttribute('aria-pressed')).toBe('true');
  });

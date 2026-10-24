@@ -50,8 +50,8 @@ describe('Studio count preview uses selected or identified audio', () => {
     const oldClip = clip(1, gb), latestClip = clip(2, gb), approvedClip = clip(3, gb);
     const processed = [{ word: 'apple', _ttsAssets: { apple: approvedClip } }, { word: 'football', _ttsAssets: { apple: latestClip, football: oldClip } }];
     const pack = slice(setup, '             const packedTtsAssets =', '             // ── Bank-first packing');
-    const packed = new Function('WS_CORE', 'processed', 'reviewedCountAudio', 'syllableCountReviewKey', pack + ';return packedTtsAssets;')(
-      core, processed, { 'en-gb:apple': approvedClip }, word => 'en-gb:' + core.packAudioKey(word));
+    const packed = new Function('WS_CORE', 'processed', 'reviewedCountAudio', 'syllableCountReviewKey', 'preloadedWords', pack + ';return packedTtsAssets;')(
+      core, processed, { 'en-gb:apple': approvedClip }, word => 'en-gb:' + core.packAudioKey(word), processed);
     expect(packed.apple).toBe(approvedClip);
     expect(packed.football).toBe(oldClip);
     expect(processed.every(item => !item._ttsAssets)).toBe(true);
@@ -160,9 +160,10 @@ describe('runtime count audio selection', () => {
   });
 
   it.each([true, false])('blocks generic audio fallback after a count profile was rejected (play=%s)', async playImmediately => {
-    const guard = slice(runtime, "          const countingTarget = wordSoundsActivity === 'syllable_counting'", '          if (!text) return Promise.resolve();');
+    const guard = slice(runtime, "          const countingTarget = wordSoundsActivity === 'syllable_counting'", '          if (!text) return ');
     const env = {
       WS_CORE: core, wordSoundsActivity: 'syllable_counting', wordSoundsLanguage: 'en-GB',
+      englishPhonemeAudio: true,
       text: 'air', currentWordSoundsWord: 'air', wordSoundsPhonemes: { word: 'air' }, playImmediately,
       syllableCountWordKey: value => String(value || '').trim().toLowerCase(),
       syllableCountAudioRef: { current: { source: null, context: core.createSyllableCountAudioContext({ language: 'en-GB', voice: 'bf_emma' }) } },

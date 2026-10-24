@@ -113,10 +113,11 @@ describe('the capability chain: Leadership Hub door (2026-08-17 leadership pass)
     expect(body).toContain('window.__alloLazyAdminHub');
     expect(body).toContain('setIsAdminHubOpen(true)');
   });
-  it('the hub it opens really lists the ten tools and the guide link', () => {
+  it('the hub it opens really lists its tools and the guide link', () => {
     const hub = read('admin_hub_source.jsx');
-    const ids = (hub.match(/^\s*id: '([a-zA-Z]+)'/gm) || []).length;
-    expect(ids).toBe(10);
+    const ids = Array.from(hub.matchAll(/^\s*id: '([a-zA-Z]+)'/gm), m => m[1]).sort();
+    // The ten 2026-08-17 tools plus the Maine SLD Case Lab (added 2026-10-05, 6a0c48749).
+    expect(ids).toEqual(['announcements', 'diagnosisEligibility', 'dispro', 'evaluation', 'maineSldPractice', 'meetings', 'mtss', 'rewards', 'timelines', 'walkthrough', 'walkthroughCopilot']);
     expect(hub).toContain('data-help-key="adminhub_guide_link"');
     expect(hub).toContain('guide/for-school-leaders.html');
     // built module + mirror carry both

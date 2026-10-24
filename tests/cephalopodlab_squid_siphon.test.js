@@ -12,7 +12,10 @@ const build=new Function('T','species','Math',source.slice(start,end)+';return c
 // Pass30 reverses only the exact accepted Humboldt fin roll and skin finish for this older protected fingerprint.
 // All live geometry/material/motion assertions still use the actual production build.
 const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
-const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)),true)+';return createCLHuntAnimal(T,species);');
+// Restore the full tool first, as octopus_eyes does: slicing early skips the later-pass (55-74) inverse chain.
+const priorSource=require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source),priorStart=priorSource.indexOf('function createCLHuntAnimal('),priorEnd=priorSource.indexOf('// Compact, individually owned prey rig.',priorStart);
+assert.ok(priorStart>=0&&priorEnd>priorStart,'Historical animal factory must be present');
+const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(priorSource.slice(priorStart,priorEnd)),true)+';return createCLHuntAnimal(T,species);');
 
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Animal construction/animation consumed dive RNG');}}),allocated=[];
 const state=(extra={})=>({moving:false,jet:false,strike:0,strikeAim:null,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});

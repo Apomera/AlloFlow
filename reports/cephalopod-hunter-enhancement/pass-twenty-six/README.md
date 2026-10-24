@@ -18,10 +18,10 @@ All four runtimes match SHA256 `4f69e86395eb9eaa940e6aeffe84f9fa52fe7af8b51a91e5
 
 | View | Baseline | Enhanced |
 |---|---|---|
-| squid-follow | [Before](squid-surface-comparison/baseline-squid-follow.png) | [After](squid-surface-comparison/current-squid-follow.png) |
-| squid-phone | [Before](squid-surface-comparison/baseline-squid-phone.png) | [After](squid-surface-comparison/current-squid-phone.png) |
-| squid-inspection | [Before](squid-surface-comparison/baseline-squid-inspection.png) | [After](squid-surface-comparison/current-squid-inspection.png) |
-| squid-phone-inspection | [Before](squid-surface-comparison/baseline-squid-phone-inspection.png) | [After](squid-surface-comparison/current-squid-phone-inspection.png) |
+| squid-follow | [Before](squid-surface-comparison/baseline-squid-follow.png) | [After](../pass-twenty-seven/squid-surface-comparison/baseline-squid-follow.png) |
+| squid-phone | [Before](squid-surface-comparison/baseline-squid-phone.png) | [After](../pass-twenty-seven/squid-surface-comparison/baseline-squid-phone.png) |
+| squid-inspection | [Before](squid-surface-comparison/baseline-squid-inspection.png) | [After](../pass-twenty-seven/squid-surface-comparison/baseline-squid-inspection.png) |
+| squid-phone-inspection | [Before](squid-surface-comparison/baseline-squid-phone-inspection.png) | [After](../pass-twenty-seven/squid-surface-comparison/baseline-squid-phone-inspection.png) |
 
 Both DOM and overlay-free native GL PNGs are included. Native inspection may temporarily hide intervening rocks; the capture helper never changes actor placement or visibility itself. The ordinary pause veil is hidden for the captures. A whole-stage entry scroll is supported; individual actions are never scrolled.
 

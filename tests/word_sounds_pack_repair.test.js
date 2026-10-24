@@ -18,6 +18,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const SOURCE = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx'), 'utf8');
 
@@ -81,7 +82,7 @@ describe('rhyme answers are derived at generation, not left for the device', () 
     // Pack boards ride verbatim to student devices, so an English rhyme on a
     // Spanish pack would be shipped to the child as-is.
     const out = H.derivePackRhyme('gato', ['gato', 'pato'], false);
-    expect(out).toBe('pato');
+    expect(out, 'matching letters alone do not verify a pronunciation').toBe('');
     expect(H.PACK_COMMON_WORDS).not.toContain('pato');
     expect(H.derivePackRhyme('gato', ['gato'], false)).toBe('');
   });
@@ -100,7 +101,7 @@ describe('eSpeak sits between the AI and the spelling heuristic', () => {
     };
   };
 
-  it('returns grapheme clusters, because the audio bank is keyed by grapheme', async () => {
+  it('retains IPA alongside its grapheme spelling', async () => {
     withPhonics({
       toPhonemes: async () => ({ ipa: ['ʃ', 'ɪ', 'p'], count: 3 }),
       buildPhonemes: () => ({
@@ -111,7 +112,9 @@ describe('eSpeak sits between the AI and the spelling heuristic', () => {
         ],
       }),
     });
-    expect(await H.espeakPackPhonemes('ship', 'English')).toEqual(['sh', 'i', 'p']);
+    expect(await H.espeakPackPhonemes('ship', 'English')).toEqual([
+      {ipa:'ʃ',grapheme:'sh'}, {ipa:'ɪ',grapheme:'i'}, {ipa:'p',grapheme:'p'},
+    ]);
   });
 
   it('falls through when the language has no eSpeak voice', async () => {
@@ -121,9 +124,8 @@ describe('eSpeak sits between the AI and the spelling heuristic', () => {
     expect(await H.espeakPackPhonemes('sanaa', 'Somali')).toBeNull();
   });
 
-  it('rejects an alignment with a hole in it', async () => {
-    // A blank grapheme has no audio clip and no letters to show, so half a
-    // board is worse than falling through to the heuristic.
+  it('rejects entries that omit the verified sounds', async () => {
+    // Missing graphemes alone are allowed, but these entries also omit IPA.
     withPhonics({
       toPhonemes: async () => ({ ipa: ['k', 'æ', 't'], count: 3 }),
       buildPhonemes: () => ({ phonemes: [{ grapheme: 'c' }, { grapheme: '' }, { grapheme: 't' }] }),
@@ -151,10 +153,56 @@ describe('eSpeak sits between the AI and the spelling heuristic', () => {
   });
 });
 
+// The two ladders sit inside the generation loop, so they are run as sliced
+// from the real source with the steps around them stubbed. Each eSpeak await
+// goes through awaitGeneration, which is what lets Cancel interrupt it.
+const AsyncFunction = (async () => {}).constructor;
+const LADDER_ARGS = ['wordSoundsLanguage', 'espeakPackPhonemes', 'estimatePackPhonemes', 'awaitGeneration', 'isGenerationActive', 'WS_CORE', 'packIsEnglish'];
+const runMainLadder = new AsyncFunction('data', ...LADDER_ARGS,
+  `${sliceBetween(SOURCE, 'const _phonemesMissing = !(data.phonemes', 'const preparedRhyme', { label: 'phoneme ladder' })}
+  return { phonemes: validatedPhonemes, source: _phonemeSource };`);
+const runRescueLadder = new AsyncFunction('rawWord', 'processed', ...LADDER_ARGS,
+  `${sliceBetween(SOURCE, 'const _espeakRescue = ', "_phonemeSource: _espeakRescue ? 'espeak' : 'estimated'\n                     });", { label: 'rescue ladder', includeEnd: true })}
+  return processed[0];`);
+
+function ladderSteps({ espeak = null, active = () => true, cancelAwait = false } = {}) {
+  const calls = { espeak: [], espeakPromises: [], awaited: [], estimate: [] };
+  return {
+    calls,
+    args: ['English',
+      (word, language) => { calls.espeak.push([word, language]); const p = Promise.resolve(espeak); calls.espeakPromises.push(p); return p; },
+      (word) => { calls.estimate.push(word); return word.split(''); },
+      (p) => { calls.awaited.push(p); return cancelAwait ? Promise.reject(new Error('generation cancelled')) : p; },
+      active, new Function(readFileSync('word_sounds_core.js','utf8')+';return createWordSoundsCore();')(), true],
+  };
+}
+
 describe('only a guess is flagged as a guess', () => {
-  it('the ladder runs Gemini, then eSpeak, then the heuristic', () => {
-    expect(SOURCE).toMatch(/_espeakPhonemes = await espeakPackPhonemes\(data\.word, wordSoundsLanguage\)/);
-    expect(SOURCE).toMatch(/\(_espeakPhonemes \|\| estimatePackPhonemes\(data\.word\)\)/);
+  it('the ladder runs Gemini, then eSpeak, then the heuristic', async () => {
+    let s = ladderSteps({ espeak: ['x'] });
+    expect(await runMainLadder({ word: 'ship', phonemes: ['sh', 'i', 'p'] }, ...s.args))
+      .toEqual({ phonemes: ['sh', 'i', 'p'], source: 'gemini' });
+    expect(s.calls.espeak, 'a Gemini answer must not wait on eSpeak').toEqual([]);
+
+    s = ladderSteps({ espeak: ['sh', 'i', 'p'] });
+    expect(await runMainLadder({ word: 'ship', phonemes: [] }, ...s.args)).toEqual({ phonemes: ['sh', 'i', 'p'], source: 'espeak' });
+    expect(s.calls.espeak).toEqual([['ship', 'English']]);
+    expect(s.calls.awaited[0], 'the eSpeak step must be cancellable').toBe(s.calls.espeakPromises[0]);
+    expect(s.calls.estimate).toEqual([]);
+
+    s = ladderSteps({ espeak: null });
+    expect(await runMainLadder({ word: 'ship' }, ...s.args)).toEqual({ phonemes: ['s', 'h', 'i', 'p'], source: 'estimated' });
+    expect(s.calls.estimate).toEqual(['ship']);
+  });
+
+  it('a cancel during the eSpeak step ships nothing', async () => {
+    const s = ladderSteps({ espeak: ['sh', 'i', 'p'], active: () => false });
+    expect(await runMainLadder({ word: 'ship' }, ...s.args)).toBeUndefined();
+    expect(s.calls.estimate).toEqual([]);
+    const processed = [];
+    await expect(runRescueLadder('ship', processed, ...ladderSteps({ cancelAwait: true }).args)).rejects.toThrow('generation cancelled');
+    expect(await runRescueLadder('ship', processed, ...ladderSteps({ espeak: ['sh', 'i', 'p'], active: () => false }).args)).toBeUndefined();
+    expect(processed).toEqual([]);
   });
 
   it('an eSpeak result does NOT raise the estimated-sounds warning', () => {
@@ -164,8 +212,20 @@ describe('only a guess is flagged as a guess', () => {
     expect(SOURCE).toMatch(/_fallbackUsed: !_espeakRescue/);
   });
 
-  it('the word that threw gets the same rescue', () => {
-    expect(SOURCE).toMatch(/_espeakRescue = await espeakPackPhonemes\(rawWord, wordSoundsLanguage\)/);
+  it('the word that threw gets the same rescue', async () => {
+    let s = ladderSteps({ espeak: ['sh', 'i', 'p'] });
+    expect(await runRescueLadder('ship', [], ...s.args)).toMatchObject({
+      word: 'ship', phonemes: ['sh', 'i', 'p'], phonemeCount: 3, firstSound: 'sh', lastSound: 'p',
+      _fallbackUsed: false, _phonemeSource: 'espeak',
+    });
+    expect(s.calls.espeak).toEqual([['ship', 'English']]);
+    expect(s.calls.awaited[0], 'the eSpeak step must be cancellable').toBe(s.calls.espeakPromises[0]);
+    expect(s.calls.estimate).toEqual([]);
+
+    s = ladderSteps({ espeak: null });
+    expect(await runRescueLadder('ship', [], ...s.args)).toMatchObject({
+      phonemes: ['s', 'h', 'i', 'p'], _fallbackUsed: true, _phonemeSource: 'estimated',
+    });
   });
 
   it('provenance is recorded on every path', () => {

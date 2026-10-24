@@ -285,18 +285,32 @@ describe('5. shipped strings and cached translations carry no claim', () => {
   let translator;
   beforeAll(() => {
     keys = new Set(); displays = new Map();
+    const literal = '(?:"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')';
     for (const file of liveFiles) {
       const source = read(file);
-      for (const match of source.matchAll(/\bt\(\s*['"]([a-zA-Z0-9_.]+)['"]/g)) keys.add(match[1]);
+      // t('key') and the keyed-fallback helper __t('key', 'English') (2026-10-16, toast ratchet).
+      for (const match of source.matchAll(/(?<![\w$])(?:__)?t\(\s*['"]([a-zA-Z0-9_.]+)['"]/g)) keys.add(match[1]);
+      // The file's OWN __t definition, compiled with each display, so a helper that stops
+      // falling back to its English fails the stale-bank checks below.
+      const helpers = [...source.matchAll(/\b(?:const|var|let)\s+__t\s*=\s*([^;\n]+);/g)].map((m) => m[1]);
       // Compile the actual display expressions, without walking six multi-megabyte ASTs.
       for (const newKey of Object.values(retired)) {
         const escaped = newKey.replace(/\./g, '\\.');
-        const expression = new RegExp('t\\([\'\"]' + escaped + '[\'\"]\\)\\s*\\|\\|\\s*(?:"(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')', 'g');
+        const expression = new RegExp('(?<![\\w$])t\\([\'\"]' + escaped + '[\'\"]\\)\\s*\\|\\|\\s*' + literal, 'g');
         for (const match of source.matchAll(expression)) {
           const parsed = babelParser.parseExpression(match[0]);
           expect(parsed.type).toBe('LogicalExpression');
           expect(parsed.right.type).toBe('StringLiteral');
           displays.set(file + ':' + newKey, new Function('t', 'return ' + match[0]));
+        }
+        const helperCall = new RegExp('(?<![\\w$])__t\\(\\s*[\'\"]' + escaped + '[\'\"]\\s*,\\s*' + literal + '\\s*\\)', 'g');
+        for (const match of source.matchAll(helperCall)) {
+          const parsed = babelParser.parseExpression(match[0]);
+          expect(parsed.type).toBe('CallExpression');
+          expect(parsed.arguments[1].type).toBe('StringLiteral');
+          expect(helpers, file + ' calls __t, so it must define exactly one').toHaveLength(1);
+          expect(displays.has(file + ':' + newKey), newKey + ' displayed twice in ' + file).toBe(false);
+          displays.set(file + ':' + newKey, new Function('t', 'const __t = ' + helpers[0] + ';\nreturn ' + match[0]));
         }
       }
     }

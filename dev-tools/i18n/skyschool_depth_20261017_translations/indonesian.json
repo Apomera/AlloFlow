@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Pertahankan kondisi terbang saat ini",
+  "stem.flightsim.flight_assistance_targets": "Arah {hdg}° · Ketinggian {alt} ft MSL · Kecepatan {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Arah {hdg}° · Ketinggian {alt} ft MSL · Kecepatan maju {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Belok kiri {degrees}° menuju {airport}.",
+  "stem.flightsim.challenge_turn_right": "Belok kanan {degrees}° menuju {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Mengarah ke {airport}. Ikuti penanda jalur.",
+  "stem.flightsim.challenge_runway_reference": "Landasan latihan {runway}: arah {heading}°. Sejajarkan pesawat dengan landasan sebelum menurunkan ketinggian untuk mendarat."
+}

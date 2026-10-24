@@ -231,7 +231,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       if (!mountedRef.current || searchRef.current !== controller) return;
       setResults(found); setStatus(found.length ? text('glossary.images.symbols_found', '{count} symbols found. Choose an image that fits the definition.').replace('{count}', found.length) : text('glossary.images.no_symbols', 'No symbols found. Try a simpler word.'));
     } catch (_) {
-      if (mountedRef.current && searchRef.current === controller) setError('Mulberry search is unavailable. Check your connection and try again.');
+      if (mountedRef.current && searchRef.current === controller) setError(text('glossary.images.mulberry_unavailable', 'Mulberry search is unavailable. Check your connection and try again.'));
     } finally {
       clearTimeout(timeout);
       if (mountedRef.current && searchRef.current === controller) { searchRef.current = null; setSearching(false); }
@@ -253,13 +253,13 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     const timeout = setTimeout(() => { timedOut = true; task.cancel(); }, 20000);
     try {
       const image = await load(task.signal);
-      if (!task.isCurrent()) { if (mountedRef.current && task.isOwner()) setError('The term changed while the image loaded. Please try again.'); return; }
+      if (!task.isCurrent()) { if (mountedRef.current && task.isOwner()) setError(text('glossary.images.term_changed_loading', 'The term changed while the image loaded. Please try again.')); return; }
       const creditBand = glossaryCreditBands.get(image) || 0;
       glossaryCreditBands.delete(image);
       const saved = task.commit(() => glossaryImageReplacement(image, attribution, Object.assign({ imageCreditBand: creditBand }, typeof extraFor === 'function' ? extraFor(image) : null)));
       if (mountedRef.current) {
         if (saved) recordReplacement(before, image);
-        else setError('The term changed while the image loaded. Please try again.');
+        else setError(text('glossary.images.term_changed_loading', 'The term changed while the image loaded. Please try again.'));
       }
     } catch (err) {
       if (mountedRef.current && pendingRef.current === task && (task.isOwner() || timedOut)) setError(timedOut ? text('glossary.images.load_timeout', 'The image took too long to load. Please try again.') : err.message || text('glossary.images.load_failed', 'The image could not be loaded.'));
@@ -276,9 +276,9 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       const image = await onGenerate(index, item.term);
       if (!mountedRef.current || generationRef.current !== token) return;
       if (typeof image === 'string' && image) recordReplacement(before, image);
-      else setError('The image was not changed. You can try again or choose another source.');
+      else setError(text('glossary.images.not_changed', 'The image was not changed. You can try again or choose another source.'));
     } catch (_) {
-      if (mountedRef.current && generationRef.current === token) setError('The image could not be generated. Please try again.');
+      if (mountedRef.current && generationRef.current === token) setError(text('glossary.images.generate_failed', 'The image could not be generated. Please try again.'));
     } finally {
       if (generationRef.current === token) { generationRef.current = null; if (mountedRef.current) setBusy(false); }
     }
@@ -288,8 +288,8 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     const task = beginTask(index);
     if (!task) return;
     const saved = task.commit(() => undo.before); task.finish();
-    if (saved) { setUndo(null); setError(''); setStatus('Previous image restored.'); setDescription(glossaryCurrentDescription(undo.before)); }
-    else setError('The term changed. Reopen the image picker to try again.');
+    if (saved) { setUndo(null); setError(''); setStatus(text('glossary.images.previous_restored', 'Previous image restored.')); setDescription(glossaryCurrentDescription(undo.before)); }
+    else setError(text('glossary.images.term_changed_reopen', 'The term changed. Reopen the image picker to try again.'));
   }
   function saveDescription() {
     if (!item.image || working || !beginTask) return;
@@ -297,13 +297,13 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     if (!task) return;
     const saved = task.commit(() => ({ imageAlt: description.trim(), imageAltHash: glossaryImageDescriptionHash(item.image), imageAltSource: 'author', imageDecorative: false })); task.finish();
     if (saved) { setError(''); setStatus(text('glossary.images.description_saved', 'Image description saved.')); }
-    else setError('The image changed. Reopen the image picker before describing it.');
+    else setError(text('glossary.images.image_changed_reopen', 'The image changed. Reopen the image picker before describing it.'));
   }
   function upload(event) {
     const file = event.target.files?.[0]; event.target.value = '';
     if (!file) return;
-    if (!GLOSSARY_IMAGE_TYPES.test(file.type)) { setError('Choose a PNG, JPEG, GIF, WebP, or AVIF image.'); return; }
-    if (!file.size || file.size > 10 * 1024 * 1024) { setError('Choose an image smaller than 10 MB.'); return; }
+    if (!GLOSSARY_IMAGE_TYPES.test(file.type)) { setError(text('glossary.images.type_invalid', 'Choose a PNG, JPEG, GIF, WebP, or AVIF image.')); return; }
+    if (!file.size || file.size > 10 * 1024 * 1024) { setError(text('glossary.images.too_large', 'Choose an image smaller than 10 MB.')); return; }
     replace(signal => readGlossaryImageFile(file, signal), null);
   }
   if (!canEdit) return null;
@@ -339,7 +339,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
         <div className="my-3 grid grid-cols-2 sm:grid-cols-3 gap-2" aria-busy={searching || working}>
           {results.map(result => <GlossaryMulberryResult key={result.url} result={result} term={item.term} working={working} buttonClass={buttonClass} text={text} onChoose={previewUrl => replace(signal => prepareGlossaryMulberry({ ...result, url: previewUrl }, signal), { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Global Symbols', url: result.url, label: result.label })} />)}
         </div>
-        <p className="my-3 text-xs text-slate-700"><a className="underline" href="https://globalsymbols.com/symbolsets/mulberry" target="_blank" rel="noopener noreferrer">Mulberry Symbols by Steve Lee</a> · <a className="underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>. Credit is included in saved images.</p>
+        <p className="my-3 text-xs text-slate-700"><a className="underline" href="https://globalsymbols.com/symbolsets/mulberry" target="_blank" rel="noopener noreferrer">Mulberry Symbols by Steve Lee</a> · <a className="underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>. {text('glossary.images.credit_included', 'Credit is included in saved images.')}</p>
         <button type="button" className={buttonClass} onClick={() => { stopSearch(); setMode('choices'); setStatus(''); setError(''); }}>{text('glossary.images.back', 'Back to current image')}</button>
       </section> : mode === 'photos' ? <section aria-label={text('glossary.images.photos_section_aria', 'Photos for {term}').replace('{term}', item.term)}>
         {window.AlloModules && window.AlloModules.ClassroomImagePicker

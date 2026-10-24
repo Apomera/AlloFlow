@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -585,15 +586,21 @@ describe('thermoregulation diagram reports the student trial', () => {
   it('reads d.thermHunt through the live ref and redraws a paused diagram when it changes', () => {
     expect(SRC_TEXT).toContain('var trial = (_liveState.current || {}).thermHunt;');
     expect(SRC_TEXT.includes("thermHunt: beeView === 'thermo' ? Object.assign({}, d.thermHunt || {}, bhThermoReading(d.thermHunt))")).toBe(true);
-    expect(SRC_TEXT).toContain('d.activeEvent, d.waggleLab, d.calmScene, d.thermHunt, d.supersAdded, d.winterized]);');
+    // 79e3e5eae appended d.pollinationLab and isDark to the same effect deps; d.thermHunt must stay in them.
+    expect(SRC_TEXT.includes('d.activeEvent, d.waggleLab, d.calmScene, d.thermHunt, d.supersAdded, d.winterized, d.pollinationLab, isDark]);'), 'diagram effect redraws on d.thermHunt').toBe(true);
   });
 });
 
 describe('drone HUD: developer telemetry only in the detailed HUD', () => {
   beforeAll(() => { resetStemLab(); loadTool(TOOL, 'beehive'); });
   it('keeps renderer and frame-rate badges as screen-reader status in the clear HUD', () => {
-    expect(SRC_TEXT).toContain("style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', right: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN,");
-    expect(SRC_TEXT).toContain("style: droneData.detailedHud === true ? { position: 'absolute', top: '58px', left: '8px', zIndex: 20 } : BH_VISUALLY_HIDDEN,");
+    // f7b4d993f grouped both badges in one diagnostics container (was two absolutely placed badges).
+    const anchor = "h('div', { className: 'bee-flight-command-diagnostics', style: droneData.detailedHud === true ? undefined : BH_VISUALLY_HIDDEN },";
+    const at = SRC_TEXT.indexOf(anchor);
+    expect(at > -1 && SRC_TEXT.indexOf(anchor, at + 1) === -1, 'one diagnostics container, hidden unless detailed HUD').toBe(true);
+    const block = sliceBetween(SRC_TEXT, anchor, '\n        }', { file: TOOL, label: 'flight diagnostics container' });
+    expect(block.includes("h('span', { 'data-flight-renderer-badge': 'true',") && block.includes("role: 'status', 'aria-live': 'polite' }, 'Preparing 3D')"), 'renderer badge stays a status').toBe(true);
+    expect(block.includes("h('span', { 'data-flight-quality-badge': 'true', role: 'status',"), 'quality badge stays a status').toBe(true);
   });
 });
 

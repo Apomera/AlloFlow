@@ -73,6 +73,15 @@ const genericFeedbackPattern = /\b(?:is not best because|does not meet the defin
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|regardless|automatically|guaranteed|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const wordCount = (value) => String(value || '').trim().split(/\s+/).filter(Boolean).length;
+// Question-quality waves 34-41 (2026-08-20) re-authored most of these items with the same keys
+// and retiered them; each records the wave-09 difficulty as its preimage and sets itself as the
+// wording and option-feedback refinement wave. Its data file holds the revision the item must match.
+const laterRevisionFor = (item) => {
+  const match = /^eppp-native-quality-wave-(\d+)$/.exec(item?.wordingReviewWave || '');
+  if (!match || item.optionFeedbackRefinementWave !== item.wordingReviewWave) return null;
+  const data = require(`../dev-tools/eppp_native_quality_wave_${match[1]}_data.cjs`);
+  return data.revisions.find((revision) => revision.id === item.id) || null;
+};
 
 describe('EPPP incorrect-option explanation repair wave 09', () => {
   it('replays quality and feedback waves in the canonical expansion build', () => {
@@ -105,7 +114,9 @@ describe('EPPP incorrect-option explanation repair wave 09', () => {
     ids.forEach((id, index) => {
       const revision = revisions[id];
       const item = byId.get(id);
-      const deepReview = item?.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
+      const later = laterRevisionFor(item);
+      const deepReview = !later && item?.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
+      const ownWave = !later && !deepReview;
       const authoredChoices = [0, 1, 2, 3].map((optionIndex) => revision.choices[optionIndex]);
       const incorrectIndexes = [0, 1, 2, 3].filter((optionIndex) => optionIndex !== expectedKeys[index]);
       const [promptAnchor, choiceAnchor] = challengeAnchors[id];
@@ -114,21 +125,31 @@ describe('EPPP incorrect-option explanation repair wave 09', () => {
       expect(revision.expectedAnswerIndex).toBe(expectedKeys[index]);
       expect(item.answerIndex).toBe(expectedKeys[index]);
       expect(revision.difficulty).toBe('intermediate');
-      expect(item.difficulty).toBe('intermediate');
       expect(item.optionFeedbackReviewWave).toBe('eppp-option-feedback-wave-01');
-      expect(item.optionFeedbackRefinementWave).toBe('eppp-option-feedback-wave-09');
-      expect(item.optionFeedbackRefinedAt).toBe('2026-07-18');
+      if (later) {
+        expect(later.expectedAnswerIndex, id).toBe(expectedKeys[index]);
+        expect(later.expectedDifficulty, id).toBe('intermediate');
+        expect(item.difficulty, id).toBe(later.targetDifficulty);
+        expect(item.optionFeedbackRefinedAt > '2026-07-18', id).toBe(true);
+        expect(item.prompt, id).toBe(later.prompt);
+        expect(item.choices, id).toEqual(later.choices);
+        expect(item.rationale, id).toBe(later.rationale);
+      } else {
+        expect(item.difficulty, id).toBe('intermediate');
+        expect(item.optionFeedbackRefinementWave, id).toBe('eppp-option-feedback-wave-09');
+        expect(item.optionFeedbackRefinedAt, id).toBe('2026-07-18');
+      }
       expect(revision.sourceCheck.length).toBeGreaterThanOrEqual(100);
       expect(revision.feedbackDesign).toHaveLength(3);
       expect(new Set(revision.feedbackDesign).size).toBe(3);
       expect(revision.qualityFlags.length).toBeGreaterThan(0);
 
-      if (!deepReview) expect(item.prompt).toBe(revision.prompt);
-      else expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
+      if (ownWave) expect(item.prompt).toBe(revision.prompt);
+      else if (deepReview) expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
       expect(item.prompt.length).toBeGreaterThanOrEqual(120);
-      if (!deepReview) expect(item.prompt).toContain(promptAnchor);
-      if (!deepReview) expect(item.choices).toEqual(authoredChoices);
-      if (!deepReview) expect(item.choices.join(' ')).toContain(choiceAnchor);
+      if (ownWave) expect(item.prompt).toContain(promptAnchor);
+      if (ownWave) expect(item.choices).toEqual(authoredChoices);
+      if (ownWave) expect(item.choices.join(' ')).toContain(choiceAnchor);
       expect(item.choices.every((choice) => choice.length >= 40)).toBe(true);
       expect(new Set(item.choices.map(normalize)).size).toBe(4);
       expect(item.choices.some((choice) => extremeCuePattern.test(choice))).toBe(false);
@@ -136,7 +157,7 @@ describe('EPPP incorrect-option explanation repair wave 09', () => {
       expect(item.choices.some((choice) => /\b(?:all|none) of the above\b/i.test(choice))).toBe(false);
       const distractorLengths = incorrectIndexes.map((optionIndex) => item.choices[optionIndex].length);
       keyLengthAdvantages.push(item.choices[item.answerIndex].length - Math.max(...distractorLengths));
-      if (!deepReview) expect(item.rationale).toBe(revision.rationale);
+      if (ownWave) expect(item.rationale).toBe(revision.rationale);
       else expect(item.rationale.length).toBeGreaterThanOrEqual(120);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales[item.answerIndex]).toBe(item.rationale);
@@ -146,7 +167,8 @@ describe('EPPP incorrect-option explanation repair wave 09', () => {
       incorrectIndexes.forEach((optionIndex) => {
         const feedback = item.choiceRationales[optionIndex];
         explanations.push(normalize(feedback));
-        if (!deepReview) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        if (later) expect(feedback, id).toBe(later.feedback[optionIndex]);
+        else if (ownWave) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
         else expect(item.qualityCampaignReview.feedbackModes[optionIndex]).toBeTruthy();
         expect(feedback.length).toBeGreaterThanOrEqual(100);
         expect(wordCount(feedback)).toBeGreaterThanOrEqual(16);

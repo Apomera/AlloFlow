@@ -568,5 +568,429 @@
     ],
     "credit": "AlloFlow flagship; AI-assisted illustrations and authored diagrams, educator review pending",
     "submitted_at": "2026-09-13T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/academic_discourse_reading_space_grade6.allopack.json",
+    "slug": "academic-discourse-reading-space-grade6",
+    "title": "A Reading Space We Can Share: Discourse and Collaboration Learning Lab",
+    "subject": "English Language Arts",
+    "grade_level": "6",
+    "tags": [
+      "academic-discourse",
+      "collaboration",
+      "udl",
+      "evidence-and-reasoning",
+      "teacher-review-draft",
+      "illustrated"
+    ],
+    "credit": "Original AI-authored lesson and illustrations inspired by Katie Novak's article; educator review pending; not reviewed or endorsed by Katie Novak.",
+    "license": "Teacher review required",
+    "submitted_at": "2026-10-21T18:24:44.058Z",
+    "share_slug": "reading-space"
+  },
+  {
+    "path": "allopacks/american_revolution_causes_grade5.allopack.json",
+    "slug": "american_revolution_causes_grade5",
+    "submitted_at": "2026-07-21T11:00:00.000Z"
+  },
+  {
+    "path": "allopacks/ancient_egypt_grade6.allopack.json",
+    "slug": "ancient_egypt_grade6",
+    "submitted_at": "2026-09-05T22:50:00.000Z"
+  },
+  {
+    "path": "allopacks/area_perimeter_grade4.allopack.json",
+    "slug": "area_perimeter_grade4",
+    "submitted_at": "2026-07-21T12:00:00.000Z"
+  },
+  {
+    "path": "allopacks/argument_evidence_grade6.allopack.json",
+    "slug": "argument_evidence_grade6",
+    "submitted_at": "2026-09-06T00:30:00.000Z"
+  },
+  {
+    "path": "allopacks/body_systems_grade6.allopack.json",
+    "slug": "body_systems_grade6",
+    "submitted_at": "2026-07-21T17:00:00.000Z"
+  },
+  {
+    "path": "allopacks/cell_structure_grade7.allopack.json",
+    "slug": "cell_structure_grade7",
+    "submitted_at": "2026-07-21T01:00:00.000Z"
+  },
+  {
+    "path": "allopacks/central_idea_grade7.allopack.json",
+    "slug": "central_idea_grade7",
+    "submitted_at": "2026-07-21T14:00:00.000Z"
+  },
+  {
+    "path": "allopacks/chemical_reactions_grade8.allopack.json",
+    "slug": "chemical_reactions_grade8",
+    "submitted_at": "2026-09-06T00:10:00.000Z"
+  },
+  {
+    "path": "allopacks/constitution_grade8.allopack.json",
+    "slug": "constitution_grade8",
+    "submitted_at": "2026-07-21T04:00:00.000Z"
+  },
+  {
+    "path": "allopacks/context_clues_grade3.allopack.json",
+    "slug": "context_clues_grade3",
+    "submitted_at": "2026-09-05T23:10:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_ask_grade6_8.allopack.json",
+    "slug": "crew_ask_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_attention_grade6_8.allopack.json",
+    "slug": "crew_attention_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_feedback_grade6_8.allopack.json",
+    "slug": "crew_feedback_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_halfway_grade6_8.allopack.json",
+    "slug": "crew_halfway_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_norms_grade6_8.allopack.json",
+    "slug": "crew_norms_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_perspective_grade6_8.allopack.json",
+    "slug": "crew_perspective_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_repair_grade6_8.allopack.json",
+    "slug": "crew_repair_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_story_grade6_8.allopack.json",
+    "slug": "crew_story_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_system_grade6_8.allopack.json",
+    "slug": "crew_system_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_teamwork_grade6_8.allopack.json",
+    "slug": "crew_teamwork_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_upstander_grade6_8.allopack.json",
+    "slug": "crew_upstander_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/crew_zones_grade6_8.allopack.json",
+    "slug": "crew_zones_grade6_8",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/data_and_typical_grade6.allopack.json",
+    "slug": "data_and_typical_grade6",
+    "submitted_at": "2026-09-06T04:10:00.000Z"
+  },
+  {
+    "path": "allopacks/day_night_sky_grade1.allopack.json",
+    "slug": "day_night_sky_grade1",
+    "submitted_at": "2026-09-05T21:10:00.000Z"
+  },
+  {
+    "path": "allopacks/decimal_place_value_grade5.allopack.json",
+    "slug": "decimal_place_value_grade5",
+    "submitted_at": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/ecosystems_food_webs_grade5.allopack.json",
+    "slug": "ecosystems_food_webs_grade5",
+    "submitted_at": "2026-07-21T08:00:00.000Z"
+  },
+  {
+    "path": "allopacks/energy_transfer_grade4.allopack.json",
+    "slug": "energy_transfer_grade4",
+    "submitted_at": "2026-09-06T04:20:00.000Z"
+  },
+  {
+    "path": "allopacks/equal_groups_grade3.allopack.json",
+    "slug": "equal_groups_grade3",
+    "submitted_at": "2026-09-06T03:30:00.000Z"
+  },
+  {
+    "path": "allopacks/figurative_language_grade5.allopack.json",
+    "slug": "figurative_language_grade5",
+    "submitted_at": "2026-07-20T03:00:00.000Z"
+  },
+  {
+    "path": "allopacks/forces_motion_grade3.allopack.json",
+    "slug": "forces_motion_grade3",
+    "submitted_at": "2026-09-05T13:20:00.000Z"
+  },
+  {
+    "path": "allopacks/fractions_number_line_grade4.allopack.json",
+    "slug": "fractions_number_line_grade4",
+    "submitted_at": "2026-07-21T02:00:00.000Z"
+  },
+  {
+    "path": "allopacks/habitats_diversity_grade2.allopack.json",
+    "slug": "habitats_diversity_grade2",
+    "submitted_at": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/american_revolution_causes_grade5.allopack.json",
+    "slug": "american_revolution_causes_grade5_illustrated",
+    "submitted_at": "2026-07-21T11:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/ancient_egypt_grade6.allopack.json",
+    "slug": "ancient_egypt_grade6_illustrated",
+    "submitted_at": "2026-09-05T22:50:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/constitution_grade8.allopack.json",
+    "slug": "constitution_grade8_illustrated",
+    "submitted_at": "2026-07-21T04:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_ask_grade6_8.allopack.json",
+    "slug": "crew_ask_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_attention_grade6_8.allopack.json",
+    "slug": "crew_attention_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_feedback_grade6_8.allopack.json",
+    "slug": "crew_feedback_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_halfway_grade6_8.allopack.json",
+    "slug": "crew_halfway_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_norms_grade6_8.allopack.json",
+    "slug": "crew_norms_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_perspective_grade6_8.allopack.json",
+    "slug": "crew_perspective_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_repair_grade6_8.allopack.json",
+    "slug": "crew_repair_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_story_grade6_8.allopack.json",
+    "slug": "crew_story_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_system_grade6_8.allopack.json",
+    "slug": "crew_system_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_teamwork_grade6_8.allopack.json",
+    "slug": "crew_teamwork_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_upstander_grade6_8.allopack.json",
+    "slug": "crew_upstander_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/crew_zones_grade6_8.allopack.json",
+    "slug": "crew_zones_grade6_8_illustrated",
+    "submitted_at": "2026-09-13T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/local_government_grade4.allopack.json",
+    "slug": "local_government_grade4_illustrated",
+    "submitted_at": "2026-09-06T01:30:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/map_skills_grade3.allopack.json",
+    "slug": "map_skills_grade3_illustrated",
+    "submitted_at": "2026-09-05T22:30:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/rules_and_fairness_grade1.allopack.json",
+    "slug": "rules_and_fairness_grade1_illustrated",
+    "submitted_at": "2026-09-06T03:10:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/then_and_now_grade2.allopack.json",
+    "slug": "then_and_now_grade2_illustrated",
+    "submitted_at": "2026-09-06T03:20:00.000Z"
+  },
+  {
+    "path": "allopacks/linear_equations_grade8.allopack.json",
+    "slug": "linear_equations_grade8",
+    "submitted_at": "2026-07-21T16:00:00.000Z"
+  },
+  {
+    "path": "allopacks/local_government_grade4.allopack.json",
+    "slug": "local_government_grade4",
+    "submitted_at": "2026-09-06T01:30:00.000Z"
+  },
+  {
+    "path": "allopacks/magnetism_grade6.allopack.json",
+    "slug": "magnetism_grade6",
+    "submitted_at": "2026-07-21T07:00:00.000Z"
+  },
+  {
+    "path": "allopacks/main_idea_grade4.allopack.json",
+    "slug": "main_idea_grade4",
+    "submitted_at": "2026-07-21T10:00:00.000Z"
+  },
+  {
+    "path": "allopacks/making_ten_grade1.allopack.json",
+    "slug": "making_ten_grade1",
+    "submitted_at": "2026-09-06T00:50:00.000Z"
+  },
+  {
+    "path": "allopacks/map_skills_grade3.allopack.json",
+    "slug": "map_skills_grade3",
+    "submitted_at": "2026-09-05T22:30:00.000Z"
+  },
+  {
+    "path": "allopacks/materials_grade2.allopack.json",
+    "slug": "materials_grade2",
+    "submitted_at": "2026-09-05T23:50:00.000Z"
+  },
+  {
+    "path": "allopacks/moon_phases_grade6.allopack.json",
+    "slug": "moon_phases_grade6",
+    "submitted_at": "2026-09-05T13:00:00.000Z"
+  },
+  {
+    "path": "allopacks/natural_selection_grade8.allopack.json",
+    "slug": "natural_selection_grade8",
+    "submitted_at": "2026-09-06T04:30:00.000Z"
+  },
+  {
+    "path": "allopacks/photosynthesis_grade7.allopack.json",
+    "slug": "photosynthesis_grade7",
+    "submitted_at": "2026-07-20T01:00:00.000Z"
+  },
+  {
+    "path": "allopacks/place_value_grade2.allopack.json",
+    "slug": "place_value_grade2",
+    "submitted_at": "2026-09-05T22:10:00.000Z"
+  },
+  {
+    "path": "allopacks/plant_needs_grade3.allopack.json",
+    "slug": "plant_needs_grade3",
+    "submitted_at": "2026-07-21T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/plate_tectonics_grade6.allopack.json",
+    "slug": "plate_tectonics_grade6",
+    "submitted_at": "2026-07-21T05:00:00.000Z"
+  },
+  {
+    "path": "allopacks/point_of_view_grade4.allopack.json",
+    "slug": "point_of_view_grade4",
+    "submitted_at": "2026-09-05T13:40:00.000Z"
+  },
+  {
+    "path": "allopacks/probability_models_grade7.allopack.json",
+    "slug": "probability_models_grade7",
+    "submitted_at": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/proportional_relationships_grade7.allopack.json",
+    "slug": "proportional_relationships_grade7",
+    "submitted_at": "2026-07-21T15:00:00.000Z"
+  },
+  {
+    "path": "allopacks/ratios_real_life_grade6.allopack.json",
+    "slug": "ratios_real_life_grade6",
+    "submitted_at": "2026-07-21T06:00:00.000Z"
+  },
+  {
+    "path": "allopacks/rules_and_fairness_grade1.allopack.json",
+    "slug": "rules_and_fairness_grade1",
+    "submitted_at": "2026-09-06T03:10:00.000Z"
+  },
+  {
+    "path": "allopacks/scarcity_choice_grade7.allopack.json",
+    "slug": "scarcity_choice_grade7",
+    "submitted_at": "2026-09-06T01:50:00.000Z"
+  },
+  {
+    "path": "allopacks/simple_machines_grade5.allopack.json",
+    "slug": "simple_machines_grade5",
+    "submitted_at": "2026-07-21T13:00:00.000Z"
+  },
+  {
+    "path": "allopacks/sound_vibration_grade1.allopack.json",
+    "slug": "sound_vibration_grade1",
+    "submitted_at": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/states_of_matter_grade4.allopack.json",
+    "slug": "states_of_matter_grade4",
+    "submitted_at": "2026-07-21T09:00:00.000Z"
+  },
+  {
+    "path": "allopacks/story_retell_grade2.allopack.json",
+    "slug": "story_retell_grade2",
+    "submitted_at": "2026-09-05T21:20:00.000Z"
+  },
+  {
+    "path": "allopacks/theme_development_grade8.allopack.json",
+    "slug": "theme_development_grade8",
+    "submitted_at": "2026-09-06T03:40:00.000Z"
+  },
+  {
+    "path": "allopacks/then_and_now_grade2.allopack.json",
+    "slug": "then_and_now_grade2",
+    "submitted_at": "2026-09-06T03:20:00.000Z"
+  },
+  {
+    "path": "allopacks/volume_grade5.allopack.json",
+    "slug": "volume_grade5",
+    "submitted_at": "2026-09-05T23:30:00.000Z"
+  },
+  {
+    "path": "allopacks/water_cycle_grade6.allopack.json",
+    "slug": "water_cycle_grade6",
+    "submitted_at": "2026-07-20T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/weather_vs_climate_grade5.allopack.json",
+    "slug": "weather_vs_climate_grade5",
+    "submitted_at": "2026-07-20T02:00:00.000Z"
+  },
+  {
+    "path": "allopacks/weathering_erosion_grade4.allopack.json",
+    "slug": "weathering_erosion_grade4",
+    "submitted_at": "2026-09-08T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/word_families_grade1.allopack.json",
+    "slug": "word_families_grade1",
+    "submitted_at": "2026-09-06T01:10:00.000Z"
   }
 ]

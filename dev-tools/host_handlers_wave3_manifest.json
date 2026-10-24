@@ -1,6 +1,6 @@
 {
   "generated": "2026-09-13",
-  "compatibilityHandlers": ["onUpdateResource"],
+  "compatibilityHandlers": ["onUpdateResource", "applyAppUpdate"],
   "handlers": [
     "focusGuidedTarget",
     "handleGenerateGuide",
@@ -127,7 +127,6 @@
     "_alloRunActivityGeneration",
     "_alloNoteStudentText",
     "_alloCheckpointArtifact",
-    "applyAppUpdate",
     "handleStemArtworkUse",
     "saveStemArtworkAsVisualSupport",
     "handleGameCompletion",
@@ -1390,7 +1389,6 @@
   ],
   "bytesMoved": 613915,
   "useCallbackHandlers": [
-    "applyAppUpdate",
     "handleStemArtworkUse",
     "saveStemArtworkAsVisualSupport",
     "handleGameCompletion",

@@ -372,7 +372,8 @@ describe('Probability Lab factual claims', () => {
     // Without replacement a full pass returns the bag exactly, so chi-squared is
     // 0.000 forever — the tool used to read that as a confident "Fair".
     const bagState = (extra) => ({ probability: Object.assign({
-      mode: 'marbleBag', trials: 100, results: ['Red', 'Blue'],
+      // 100 recorded draws: the verdict is computed from results, so a bare trial count no longer stands in for them.
+      mode: 'marbleBag', trials: 100, results: Array.from({ length: 100 }, (_, i) => (i % 2 ? 'Blue' : 'Red')),
       customOutcomes: [{ label: 'Red', count: 5, color: '#ef4444' }, { label: 'Blue', count: 5, color: '#3b82f6' }]
     }, extra) });
     resetStemLab();

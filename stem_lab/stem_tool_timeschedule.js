@@ -103,11 +103,14 @@
     if (answerFormat === '12') return /^(?:0?[1-9]|1[0-2])(?::[0-5]\d)?\s*(?:am|pm)$/.test(s);
     return true;
   }
-  function checkAnswer(value, type, answer, answerFormat) {
+  // anyHalfDay: an analog face cannot show AM or PM, so 7:35 PM reads the same clock as 7:35 AM.
+  function checkAnswer(value, type, answer, answerFormat, anyHalfDay) {
     var parsed = type === 'time' ? parseTime(value) : parseDuration(value);
     var formatOk = type !== 'time' || matchesTimeFormat(value, answerFormat);
+    var sameTime = type === 'time' && parsed != null &&
+      (anyHalfDay ? norm(parsed) % 720 === norm(answer) % 720 : norm(parsed) === norm(answer));
     return { valid: parsed != null && formatOk, formatOk: formatOk, ok: parsed != null && formatOk &&
-      (type === 'time' ? norm(parsed) === norm(answer) : parsed === answer) };
+      (type === 'time' ? sameTime : parsed === answer) };
   }
   function indexFor(value, length) {
     value = Number(value);
@@ -414,7 +417,7 @@
       if (!TABS.some(function (item) { return item[0] === tab; })) tab = 'clock';
       var clock = d.clockMinutes == null ? 505 : norm(d.clockMinutes);
       var start = d.elapsedStart == null ? 495 : norm(d.elapsedStart);
-      var amount = clamp(d.elapsedDuration == null ? 95 : d.elapsedDuration, 0, 720);
+      var amount = Math.round(clamp(d.elapsedDuration == null ? 95 : d.elapsedDuration, 0, 720));
       var direction = d.elapsedDirection === -1 ? -1 : 1;
       var rawEnd = start + direction * amount, end = norm(rawEnd);
       var jumps = makeJumps(start, amount, direction);
@@ -488,7 +491,7 @@
           var currentAmount = clamp(current.elapsedDuration == null ? 95 : current.elapsedDuration, 0, 720);
           var currentDirection = current.elapsedDirection === -1 ? -1 : 1;
           var nextStart = changes.elapsedStart == null ? currentStart : norm(changes.elapsedStart);
-          var nextAmount = changes.elapsedDuration == null ? currentAmount : clamp(changes.elapsedDuration, 0, 720);
+          var nextAmount = changes.elapsedDuration == null ? currentAmount : Math.round(clamp(changes.elapsedDuration, 0, 720));
           var nextDirection = changes.elapsedDirection == null ? currentDirection : (changes.elapsedDirection === -1 ? -1 : 1);
           var changed = nextStart !== currentStart || nextAmount !== currentAmount || nextDirection !== currentDirection;
           var signatures = Object.assign({}, current.elapsedModelSignatures || {});
@@ -498,7 +501,8 @@
             elapsedPrediction: changed ? '' : current.elapsedPrediction,
             elapsedStepKey: changed ? null : current.elapsedStepKey,
             elapsedModelSignatures: signatures,
-            elapsedModels: Object.keys(signatures).length
+            elapsedModels: Object.keys(signatures).length,
+            elapsedDuration: nextAmount
           });
         });
       }
@@ -513,7 +517,7 @@
               (use24 ? 'bg-white text-sky-800 shadow-sm' : 'text-slate-600') }, '24-hour')
         );
       }
-      function analog(value, id, compact) {
+      function analog(value, id, compact, hideTime) {
         value = norm(value);
         var minute = value % 60, hour = Math.floor(value / 60) % 12;
         var ma = minute * 6 * Math.PI / 180;
@@ -534,14 +538,24 @@
             y: 166 - 111 * Math.cos(a), textAnchor: 'middle', fontSize: 17,
             fontWeight: '800', fill: '#0f172a' }, i));
         }
-        var readable = t('stem.timeschedule.analog_clock_showing', "Analog clock showing ") + time12(value) +
+        // hideTime: a read-the-clock challenge must describe the hands, not state the time.
+        var readable = hideTime ?
+          t('stem.timeschedule.analog_clock_hands', "Analog clock. Minute hand: ") +
+          (minute % 5 ? (minute % 5) + (minute % 5 === 1 ? t('stem.timeschedule.small_mark_past_the', " small mark past the ") :
+            t('stem.timeschedule.small_marks_past_the', " small marks past the ")) + (Math.floor(minute / 5) || 12) :
+            t('stem.timeschedule.pointing_at_the', "pointing at the ") + (minute / 5 || 12)) +
+          t('stem.timeschedule.hour_hand_label', ". Hour hand: ") +
+          (minute ? t('stem.timeschedule.between_the', "between the ") + (hour || 12) + t('stem.timeschedule.and_the', " and the ") + (hour + 1) :
+            t('stem.timeschedule.pointing_at_the', "pointing at the ") + (hour || 12)) + '.' :
+          t('stem.timeschedule.analog_clock_showing', "Analog clock showing ") + time12(value) +
           t('stem.timeschedule.minute_hand', ". Minute hand: ") + minute + t('stem.timeschedule.minutes_hour_hand', " minutes. Hour hand: ") +
           (minute ? t('stem.timeschedule.past', "past ") : t('stem.timeschedule.at', "at ")) + (hour || 12) + '.';
         return h('figure', { className: 'm-0 flex flex-col items-center' },
           h('svg', { viewBox: '0 0 320 320', role: 'img',
             'aria-labelledby': id + '-title ' + id + '-desc',
             className: compact ? 'w-full max-w-[230px] h-auto' : 'w-full max-w-[330px] h-auto' },
-            h('title', { id: id + '-title' }, t('stem.timeschedule.analog_clock', "Analog clock: ") + time12(value)),
+            h('title', { id: id + '-title' }, hideTime ? t('stem.timeschedule.analog_clock_read_it', "Analog clock: what time does it show?") :
+              t('stem.timeschedule.analog_clock', "Analog clock: ") + time12(value)),
             h('desc', { id: id + '-desc' }, readable),
             h('defs', null,
               h('radialGradient', { id: id + '-face', cx: '42%', cy: '35%', r: '70%' },
@@ -962,7 +976,7 @@
         function check() {
           if (locked || submissionPending) return;
           submissionPending = true;
-          var result = checkAnswer(challengeAnswer, challenge.type, challenge.answer, challenge.answerFormat);
+          var result = checkAnswer(challengeAnswer, challenge.type, challenge.answer, challenge.answerFormat, challenge.kind === 'read');
           if (!result.valid) {
             var formatMessage = challenge.answerFormat === '24' ? t('stem.timeschedule.use_24_hour_form_such_as_18_40', "Use 24-hour form such as 18:40.") :
               challenge.answerFormat === '12' ? t('stem.timeschedule.use_12_hour_form_with_am_or_pm', "Use 12-hour form with AM or PM.") :
@@ -1088,7 +1102,7 @@
               style: { width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
           h('div', { className: "grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-4 flex items-center justify-center min-h-[280px]' },
-              challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + challengeId, true) :
+              challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + challengeId, true, !locked) :
                 h('div', { className: 'text-center max-w-xs' },
                   h('div', { className: 'text-7xl', 'aria-hidden': 'true' },
                     challenge.kind === 'convert' ? '\uD83D\uDD04' : challenge.kind === 'schedule' ? '\uD83D\uDE8C' :

@@ -9,11 +9,15 @@ const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_to
 const baseline=process.env.CEPHALOPOD_PASS72_BASELINE?readFileSync(process.env.CEPHALOPOD_PASS72_BASELINE,'utf8'):require('./helpers/cephalopod_pass72_reference.cjs').restorePass72Source(source);
 function factory(s){const a=s.indexOf('function createCLHuntAnimal('),b=s.indexOf('// Compact, individually owned prey rig.',a);assert.ok(a>=0&&b>a);return new Function('T','species','Math',s.slice(a,b)+';return createCLHuntAnimal(T,species);');}
 const build=factory(source),prior=factory(baseline),math=Object.assign(Object.create(Math),{random(){throw Error('Refuge pose consumed dive RNG');}});
+// Pass74 reef head, eye and arm tip/curl anatomy is gated on reefMantle (arm_tip_form, living_arm_motion).
+// Byte-for-byte comparisons with the Pass72 baseline turn only those gates off; wall-contact checks stay live.
+const gatedBuild=factory(require('./helpers/cephalopod_pass74_reference.cjs').withoutPass74ReefAnatomy(source));
 const geometry=source.slice(source.indexOf('function createCLHuntRockCollisionFootprint('),source.indexOf('// Small rock-rooted fragments'));
 const collision=new Function(geometry+';return{footprint:createCLHuntRockCollisionFootprint,find:findCLHuntCrevice};')();
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:true,squeezeBlend:1,...extra});
 const ids=['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'];
-function rig(id='commonOcto',old=false){const animal=(old?prior:build)(T,{id,bodyColor:0x99775d},math);animal.root.position.y=.55*animal.scale;return animal;}
+function rig(id='commonOcto',old=false,gated=false){const animal=(old?prior:gated?gatedBuild:build)(T,{id,bodyColor:0x99775d},math);animal.root.position.y=.55*animal.scale;return animal;}
+const gatedRig=(id='commonOcto')=>rig(id,false,true);
 function release(a){const gs=new Set(),ms=new Set();a.root.traverse(o=>{if(o.geometry)gs.add(o.geometry);if(o.material)ms.add(o.material);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());}
 function corridor(width=.30){const rocks=[-1,1].map(sign=>{const r=new T.Mesh(new T.BoxGeometry(2,2,3),new T.MeshBasicMaterial());r.position.set(sign*(1+width/2),1,0);r.updateMatrixWorld(true);return r;});const gap=collision.find({x:0,z:0},.55,rocks,rocks.map(r=>collision.footprint(T,r)),1,'commonOcto',0,.55);for(const r of rocks){r.geometry.dispose();r.material.dispose();}assert.ok(gap&&gap.walls?.length===2,'Actual movement detector must deliver finite wall segments');return gap;}
 function pose(a,s=state()){a.arms.forEach(l=>l.compressCurrent=.55);a.update(7,0,s);}
@@ -32,7 +36,7 @@ describe('Pass72 passage-aware octopus arm folding',()=>{
   for(const id of ids)for(const yaw of [0,.73,Math.PI/2]){const a=rig(id),b=rig(id,true),width=id==='giantPacific'?.42:.30,s=state({crevice:corridor(width)});a.root.rotation.y=b.root.rotation.y=yaw;pose(a,s);pose(b,s);const before=contactStats(b,width),after=contactStats(a,width);assert.ok(before.penetrating>500,id+' baseline must expose the defect');assert.equal(after.penetrating,0,id+' yaw '+yaw+' depth '+after.maxDepth);assert.ok(after.minSegment>.005*a.scale,id+' flattened a tube segment');assert.ok(after.vertices>1500);release(a);release(b);}
  });
  it('preserves all twelve ordinary rigs byte for byte when no wall data is available',()=>{
-  for(const id of [...ids,'humboldtSquid','cuttlefish','bobtailSquid','vampireSquid','dumboOcto','nautilus']){const a=rig(id),b=rig(id,true);for(const s of [state({squeezeBlend:0}),state({moving:true,reducedMotion:false}),state({jet:true,moving:true,reducedMotion:false}),state({strike:.65,strikeAim:{x:.3,y:.1,z:1},strikeBrace:.5,reducedMotion:false})]){a.update(7,.05,s);b.update(7,.05,s);assert.equal(hash(a),hash(b),id);}release(a);release(b);}
+  for(const id of [...ids,'humboldtSquid','cuttlefish','bobtailSquid','vampireSquid','dumboOcto','nautilus']){const a=gatedRig(id),b=rig(id,true);for(const s of [state({squeezeBlend:0}),state({moving:true,reducedMotion:false}),state({jet:true,moving:true,reducedMotion:false}),state({strike:.65,strikeAim:{x:.3,y:.1,z:1},strikeBrace:.5,reducedMotion:false})]){a.update(7,.05,s);b.update(7,.05,s);assert.equal(hash(a),hash(b),id);}release(a);release(b);}
  });
  it('does not change any swimmer when refuge state is supplied accidentally',()=>{
   for(const id of ['humboldtSquid','cuttlefish','bobtailSquid','vampireSquid','dumboOcto','nautilus']){const a=rig(id),b=rig(id,true),s=state({crevice:corridor()});pose(a,s);pose(b,s);assert.equal(hash(a),hash(b),id);release(a);release(b);}
@@ -42,16 +46,18 @@ describe('Pass72 passage-aware octopus arm folding',()=>{
   for(let i=0;i<4;i++){a.update(7,0,s);assert.equal(hash(a),before);}for(const [o,g,m,arrays]of resources){assert.equal(o.geometry,g);assert.equal(o.material,m);Object.values(g.attributes).forEach((v,i)=>assert.equal(v.array,arrays[i]));}assert.equal(contactStats(a,.42).penetrating,0);release(a);
  });
  it('retains safe finite wall contact through input easing and restores ordinary animation after the complete animal clears',()=>{
-  const a=rig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));
+  const live=rig();pose(live,state({crevice:corridor()}));
+  for(const blend of [1,.8,.5,.2,0]){pose(live,state({crevice:null,squeezeBlend:blend}));assert.equal(contactStats(live,.30).penetrating,0,'Live curled arms must not unfold through rock');}release(live);
+  const a=gatedRig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));
   for(const blend of [1,.8,.5,.2,0]){pose(a,state({crevice:null,squeezeBlend:blend}));pose(b,state({squeezeBlend:blend}));assert.equal(contactStats(a,.30).penetrating,0,'The input clock must not unfold attached surfaces through rock');assert.ok(delta(points(a),points(b))>.01,'Contact must remain folded while the animal is still inside');}
   a.root.position.z=b.root.position.z=6;pose(a,state({crevice:null,squeezeBlend:0}));pose(b,state({squeezeBlend:0}));assert.equal(hash(a),hash(b));release(a);release(b);
  });
  it('releases every arm beyond finite mouths while retaining the cached exit frame',()=>{
-  const a=rig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));a.root.position.z=b.root.position.z=4;pose(a,state({crevice:null}));pose(b);assert.equal(hash(a),hash(b));release(a);release(b);
+  const a=gatedRig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));a.root.position.z=b.root.position.z=4;pose(a,state({crevice:null}));pose(b);assert.equal(hash(a),hash(b));release(a);release(b);
  });
  it('rejects malformed planes instead of producing invalid geometry or a stale fold',()=>{
   const first=corridor().walls[0],second=corridor().walls[1];const malformed=[{width:.3,walls:[{...first,nx:NaN},second]},{width:.3,walls:[{...first,bx:first.ax,bz:first.az},second]},{width:.3,walls:[first,{...second,nx:first.nx,nz:first.nz}]},{width:Infinity,walls:corridor().walls}];
-  for(const crevice of malformed){const a=rig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));pose(a,state({crevice}));pose(b);assert.equal(hash(a),hash(b));release(a);release(b);}
+  for(const crevice of malformed){const a=gatedRig(),b=rig('commonOcto',true);pose(a,state({crevice:corridor()}));pose(a,state({crevice}));pose(b);assert.equal(hash(a),hash(b));release(a);release(b);}
  });
  it('transforms actual wall segments to local rig coordinates after translation and rotation',()=>{
   const a=rig(),b=rig(),plain=corridor(),turned=corridor(),angle=.91,rotation=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),angle),p=new T.Vector3();

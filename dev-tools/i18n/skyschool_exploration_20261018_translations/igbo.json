@@ -1,0 +1,20 @@
+{
+  "stem.flightsim.learn_search_results": "Nsonaazụ ọchụchọ: kaadị {cards} n’isiokwu {topics}.",
+  "stem.flightsim.learn_library_counts": "Kaadị {cards} · isiokwu {topics}",
+  "stem.flightsim.learn_search_clear": "Hichapụ ọchụchọ",
+  "stem.flightsim.learn_search_empty": "Enweghị kaadị mmụta dabara na “{query}”. Gbalịa okwu ọzọ ma ọ bụ hichapụ ọchụchọ ahụ.",
+  "stem.flightsim.learn_search_none": "Enweghị kaadị mmụta dabara",
+  "stem.flightsim.learn_search_cards": "Kaadị mmụta {count}",
+  "stem.flightsim.quiz_review_progress": "A zala ajụjụ {answered} n’ime {total} · e mejọrọ {missed}",
+  "stem.flightsim.quiz_review_missed": "Leghachi anya n’azịza ezighi ezi",
+  "stem.flightsim.quiz_next_unanswered": "Ajụjụ ọzọ a na-azabeghị",
+  "stem.flightsim.quiz_review_all_answered": "Ajụjụ ọ bụla nwere azịza mbụ. Leghachi anya n’ajụjụ ndị i mejọrọ maka omume na-enweghị akara, ma ọ bụ malite mbọ ọhụrụ.",
+  "stem.flightsim.planner_drone_agl": "Fut {ft} n’elu ala",
+  "stem.flightsim.sprint_native_title": "Asọmpi jiografi ngwa ngwa",
+  "stem.flightsim.sprint_timed_hint": "Ụzọ ahụ na-aga n’ihu mgbe ị na-aza. Kwụsịtụ ka ị gụọ; gaa n’ihu tupu ịhọrọ azịza.",
+  "stem.flightsim.sprint_warp_reference": "A na-eme ka njem dị ngwa n’ihe omume jiografi a. Ntụ ọsọ na-egosi ọsọ njem ekwupụtara; ụzọ a anaghị atụ arụmọrụ ụgbọelu.",
+  "stem.flightsim.sprint_save_menu": "Chekwaa asọmpi ma laghachi na menu",
+  "stem.flightsim.sprint_next_stop": "Ebe nkwụsị ọzọ: {place}",
+  "stem.flightsim.geoq_approaching_city": "Kedu obodo ị na-eru nso?",
+  "stem.flightsim.sprint_time_remaining": "Oge fọdụrụ: sekọnd {seconds}"
+}

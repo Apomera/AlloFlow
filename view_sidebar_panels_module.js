@@ -373,11 +373,11 @@ function AiSetupNotice({ t }) {
 }
 const UNIVERSAL_SETTING_COVERAGE = {
   measuredTypes: 21,
-  grade: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
+  grade: ["simplified", "glossary", "outline", "image", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
   language: ["simplified", "glossary", "outline", "image", "quiz", "analysis", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
   standards: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
   interests: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "lesson-plan", "adventure", "applied-challenge"],
-  dok: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
+  dok: ["simplified", "glossary", "outline", "quiz", "analysis", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart", "memory-aid", "applied-challenge"],
   emoji: ["simplified", "glossary", "outline", "image", "quiz", "faq", "sentence-frames", "timeline", "math", "concept-sort", "adventure", "note-taking", "anchor-chart", "memory-aid"],
   // N6 (2026-08-16): every measured type, so a control can name what it does NOT
   // reach and not only what it does. Same source as the lists above
@@ -465,18 +465,6 @@ function universalDiffLevelCount(range, customGrades) {
   if (range === "1" || range === "2") return 3;
   if (range === "Both") return 5;
   return 1;
-}
-function UniversalApplicability({ settingKey, t }) {
-  const list = UNIVERSAL_SETTING_COVERAGE[settingKey] || [];
-  const total = UNIVERSAL_SETTING_COVERAGE.measuredTypes;
-  const catalog = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ToolCatalog || null;
-  const label = (id) => {
-    const entry = catalog && typeof catalog.getToolEntry === "function" ? catalog.getToolEntry(id) : null;
-    const key = entry && entry.sidebarKey;
-    return key && t(key) || id;
-  };
-  const excluded = (UNIVERSAL_SETTING_COVERAGE.allTypes || []).filter((id) => !list.includes(id));
-  return /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 9, className: "text-emerald-600 shrink-0" }), (t("universal.applies") || "Applies to {n} of {m} resource types").replace("{n}", String(list.length)).replace("{m}", String(total))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200" }, list.map(label).join(", ")), excluded.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 leading-snug mt-1 pl-3 border-l-2 border-amber-200" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("universal.not_used_by") || "Not used by", ":"), " ", excluded.map(label).join(", ")));
 }
 function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = "", premium = false }) {
   const label = t(labelKey || "input.custom_instructions");
@@ -882,7 +870,7 @@ function UniversalSettingsPanel(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
-  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-900" }, t("universal.scope_note") || "These steer what AlloFlow writes for you. Analyze Source Material is not affected: it reads your text exactly as written and reports the level it actually finds. Each setting below lists the resources it reaches."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -906,7 +894,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "grade", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -918,7 +906,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
     selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
     selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t }), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -966,7 +954,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
     /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
     /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " ", t("standards.target_standard_label") || "Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " ", t("standards.target_standard_label") || "Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1089,7 +1077,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, candidate.code),
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry."))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry.")))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1120,7 +1108,7 @@ function UniversalSettingsPanel(props) {
       className: SIDEBAR_PANEL_UI.iconButton
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "interests", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests")))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_emojis"),
@@ -1130,7 +1118,7 @@ function UniversalSettingsPanel(props) {
       onChange: (e) => setUseEmojis(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "emoji", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("simplified.diff_label"),
@@ -1564,9 +1552,11 @@ function MathPanel(props) {
           const rawDcpm = r.dcpm;
           const dcpm = Number(rawDcpm);
           const hasScore = rawDcpm !== null && rawDcpm !== void 0 && rawDcpm !== "" && Number.isFinite(dcpm);
+          const secs = Math.round(Number(r.elapsedSeconds) || 0);
+          const minSecs = r.prorationMinimumSeconds || 20;
           if (r.validForComparison === false || !hasScore) {
             if (typeof addToast === "function") addToast(
-              t("math_fluency.probe_not_recorded") || "Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.",
+              r.completionStatus === "complete" ? t("math_fluency.probe_not_recorded_too_fast", { seconds: secs, minimum: minSecs }) || `Probe not recorded: every item was finished in ${secs} seconds, under the ${minSecs} seconds needed to prorate the rate to a full minute. Re-administer for a comparable score.` : t("math_fluency.probe_not_recorded") || "Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.",
               "warning"
             );
             return;
@@ -1575,6 +1565,11 @@ function MathPanel(props) {
             activity: "math_dcpm",
             grade: r.grade,
             form: r.form,
+            // Rebuilt forms carry a version; records made before are 1.
+            formVersion: r.formVersion || 1,
+            scoringVersion: r.scoringVersion || null,
+            prorated: r.prorated === true,
+            elapsedSeconds: r.elapsedSeconds,
             // Assessment Center reads itemsPerMin through
             // _probeTypeAndScore and dcpm through the AlloSheet score
             // walker. Both must see the same number, or two surfaces
@@ -1589,7 +1584,7 @@ function MathPanel(props) {
             source: "math_fluency_probe"
           });
           if (typeof addToast === "function") addToast(
-            t("math_fluency.probe_recorded_for", { student: r.student }) || `Probe recorded for ${r.student}.`,
+            (t("math_fluency.probe_recorded_for", { student: r.student }) || `Probe recorded for ${r.student}.`) + (r.prorated === true ? " " + (t("math_fluency.probe_recorded_prorated") || "All items were finished early, so the rate was prorated to a full minute.") : ""),
             "success"
           );
         }

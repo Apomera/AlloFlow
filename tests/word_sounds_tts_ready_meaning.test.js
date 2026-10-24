@@ -16,13 +16,49 @@
 // opening the player rewrote the honest false to true, and that is what got
 // saved. One name, two meanings, and a pack that claimed audio it never had.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { transformSync } from '@babel/core';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const MODULE = read('word_sounds_module.js');
 const MISC = read('misc_components_source.jsx');
+
+const require = createRequire(import.meta.url);
+const React = require(resolve('desktop/web-app/node_modules/react'));
+const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
+const act = React.act || require(resolve('desktop/web-app/node_modules/react-dom/test-utils')).act;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+let Panel, root, container;
+
+beforeAll(() => {
+  // The canonical JSX, so the rendered button is the one that ships.
+  const source = transformSync(MISC, { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false }).code;
+  Panel = new Function('React', `
+    const Ban = () => null, CheckCircle2 = Ban, ChevronDown = Ban, ChevronLeft = Ban,
+      ImageIcon = Ban, Play = Ban, RefreshCw = Ban, Send = Ban, Sparkles = Ban, Volume2 = Ban;
+    ${source}
+    return WordSoundsReviewPanel;
+  `)(React);
+});
+
+afterEach(() => {
+  if (root) act(() => root.unmount());
+  root = null;
+  container?.remove();
+});
+
+async function renderPanel(props) {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => root.render(React.createElement(Panel, {
+    t: () => '', onClose: () => {}, onStartActivity: () => {}, activitySequence: ['blending'], ...props,
+  })));
+  return [...container.querySelectorAll('[data-help-key="word_sounds_review_play_word"]')];
+}
 // The restore branch lived in AlloFlowANTI.txt until the 2026-08-22 modularization
 // moved the resource-open handlers into misc_handlers; the recompute went with it.
 const HANDLERS = read('misc_handlers_source.jsx');
@@ -52,10 +88,24 @@ describe('the pack owns ttsReady; the player does not', () => {
 });
 
 describe('what the teacher sees stays accurate', () => {
-  it('the play button accepts either kind of audio', () => {
+  it('the play button accepts either kind of audio', async () => {
     // Otherwise splitting the flag would grey out a button for audio that
-    // plays perfectly well on this device.
-    expect(MISC).toMatch(/disabled=\{playingWordIndex !== null \|\| !\(word\.ttsReady \|\| word\._runtimeAudioReady\)\}/);
+    // plays perfectly well on this device. A word the teacher says aloud has
+    // no clip to play, so its button stays off even when a flag is set.
+    const onPlayAudio = vi.fn(async () => {});
+    const buttons = await renderPanel({
+      onPlayAudio,
+      teacherSpokenWords: ['fire'],
+      preloadedWords: [
+        { id: 'packed', word: 'cat', ttsReady: true },
+        { id: 'runtime', word: 'dog', ttsReady: false, _runtimeAudioReady: true },
+        { id: 'none', word: 'fish', ttsReady: false },
+        { id: 'spoken', word: 'fire', ttsReady: true, _runtimeAudioReady: true },
+      ],
+    });
+    expect(buttons.map((b) => b.disabled)).toEqual([false, false, true, true]);
+    await act(async () => buttons[1].click());
+    expect(onPlayAudio).toHaveBeenCalledWith('dog');
   });
 
   it('the portable-audio gap offers no fix, because none exists in the player', () => {

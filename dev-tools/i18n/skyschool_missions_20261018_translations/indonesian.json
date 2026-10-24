@@ -1,0 +1,15 @@
+{
+  "stem.flightsim.mission_journal_title": "Pengamatan misi",
+  "stem.flightsim.mission_journal_targets": "Target yang direkam: {captured} dari {total}.",
+  "stem.flightsim.mission_journal_complete": "Semua tujuan misi dan pendaratan setelah kembali telah dicatat.",
+  "stem.flightsim.mission_journal_ended": "Misi berakhir sebelum semua bukti penyelesaian dicatat.",
+  "stem.flightsim.mission_journal_recovery": "Penyelamatan penyintas tercatat: {value}.",
+  "stem.flightsim.mission_journal_return": "Pendaratan kembali di pangkalan tercatat: {value}.",
+  "stem.flightsim.mission_guidance_title": "Panduan misi",
+  "stem.flightsim.mission_route": "{target} · arah {bearing}° · {distance} nm",
+  "stem.flightsim.mission_launch_point": "Titik lepas landas",
+  "stem.flightsim.mission_read_status": "Bacakan status misi",
+  "stem.flightsim.mission_return_criterion": "Mendaratlah dalam jarak {distance} nm dari {target}, dengan kecepatan terhadap tanah di bawah {speed} kt dan laju turun di bawah {fpm} fpm.",
+  "stem.flightsim.mission_unavailable": "Data target misi tidak tersedia. Akhiri penerbangan ini dan mulai misi baru.",
+  "stem.flightsim.mission_capture_criterion": "Tetaplah dalam jarak {distance} ft, di atas {min} dan di bawah {max} ft dari permukaan tanah, dengan kecepatan terhadap tanah di bawah {speed} kt selama {hold} s."
+}

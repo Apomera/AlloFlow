@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "پرواز کی موجودہ حالت برقرار رکھیں",
+  "stem.flightsim.flight_assistance_targets": "سمت {hdg}° · بلندی {alt} ft MSL · رفتار {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "سمت {hdg}° · بلندی {alt} ft MSL · آگے بڑھنے کی رفتار {spd} kt",
+  "stem.flightsim.challenge_turn_left": "{airport} کی طرف بائیں جانب {degrees}° مڑیں۔",
+  "stem.flightsim.challenge_turn_right": "{airport} کی طرف دائیں جانب {degrees}° مڑیں۔",
+  "stem.flightsim.challenge_course_aligned": "آپ {airport} کی طرف جا رہے ہیں۔ پرواز کے راستے کے نشان کی پیروی کریں۔",
+  "stem.flightsim.challenge_runway_reference": "تربیتی رن وے {runway}: سمت {heading}°۔ اترنے کے لیے بلندی کم کرنے سے پہلے طیارے کو رن وے کی سیدھ میں لائیں۔"
+}

@@ -123,7 +123,7 @@ describe('Butterfly mowing and timing',()=>{
    const s=examined(BF.freshState(),'milkweed');
    BF.runSeason(s,'milkweed','never','complete');
    const saved=BF.save(s);
-   expect(saved.version).toBe(5);
+   expect(saved.version).toBe(6);
    expect(BF.freshState(saved).season).toEqual(s.season);
    // Mutating the save must not reach back into live state.
    saved.season.runs[0].result='stop';

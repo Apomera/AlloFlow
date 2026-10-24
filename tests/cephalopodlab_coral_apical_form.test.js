@@ -11,7 +11,8 @@ const require = createRequire(import.meta.url);
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const THREE = require(resolve(repo, 'vendor/three-r128/three.min.js'));
 const { restorePass64CoralSource } = require('./helpers/cephalopod_pass64_reference.cjs');
-const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || resolve(repo, 'stem_lab/stem_tool_cephalopodlab.js'), 'utf8').replace(/\r\n/g, '\n');
+// Pass74 young branchlets are appended after this pass64 geometry; living_coral_branches covers them.
+const source = require('./helpers/cephalopod_pass74_reference.cjs').restorePass74CoralSource(readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || resolve(repo, 'stem_lab/stem_tool_cephalopodlab.js'), 'utf8').replace(/\r\n/g, '\n'));
 const restored = restorePass64CoralSource(source);
 function region(value, start, end) {
   const a = value.indexOf(start), b = value.indexOf(end, a);

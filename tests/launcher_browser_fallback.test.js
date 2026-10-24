@@ -45,9 +45,17 @@ describe('launcher browser-app fallback', () => {
     expect(details.querySelector('summary')?.textContent).toContain('optional AI access for contributors');
 
     const browserLink = document.querySelector('#browser-app-btn');
-    expect(browserLink?.getAttribute('href')).toBe('https://alloflow-cdn.pages.dev/app/');
+    expect(browserLink?.getAttribute('href')).toBe('https://alloflow.dev/app/');
     expect(browserLink?.getAttribute('target')).toBe('_blank');
     expect(new Set((browserLink?.getAttribute('rel') || '').split(/\s+/))).toEqual(new Set(['noopener', 'noreferrer']));
+    const projectNote = section.querySelector('.browser-project-note');
+    expect(projectNote?.textContent).toContain('Projects saved at the previous web address stay there.');
+    expect(projectNote?.textContent).toContain('to export them, then import them here.');
+    expect(projectNote?.closest('details, [hidden]')).toBeNull();
+    const previousLink = projectNote.querySelector('a');
+    expect(previousLink?.href).toBe('https://alloflow-cdn.pages.dev/app/');
+    expect(previousLink?.getAttribute('target')).toBe('_blank');
+    expect(new Set((previousLink?.getAttribute('rel') || '').split(/\s+/))).toEqual(new Set(['noopener', 'noreferrer']));
     expect(details.querySelector('a[href="https://aistudio.google.com/apikey"]')).toBeTruthy();
     expect(details.querySelector('a[href="https://ai.google.dev/gemini-api/docs/pricing"]')).toBeTruthy();
     dom.window.close();
@@ -59,7 +67,7 @@ describe('launcher browser-app fallback', () => {
     );
     const target = new URL(dom.window.document.querySelector('#browser-app-btn').href);
 
-    expect(target.origin).toBe('https://alloflow-cdn.pages.dev');
+    expect(target.origin).toBe('https://alloflow.dev');
     expect(target.pathname).toBe('/app/');
     expect(target.searchParams.get('tool')).toBe('waterCycle');
     expect(target.searchParams.get('allo_join')).toBe('ABC123');

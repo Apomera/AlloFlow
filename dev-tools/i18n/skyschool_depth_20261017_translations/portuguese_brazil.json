@@ -1,0 +1,9 @@
+{
+  "stem.flightsim.hold_current_flight": "Manter o estado atual do voo",
+  "stem.flightsim.flight_assistance_targets": "Proa {hdg}° · Altitude {alt} ft MSL · Velocidade {spd} kt IAS",
+  "stem.flightsim.flight_assistance_targets_rotor": "Proa {hdg}° · Altitude {alt} ft MSL · Velocidade de avanço {spd} kt",
+  "stem.flightsim.challenge_turn_left": "Vire {degrees}° à esquerda em direção a {airport}.",
+  "stem.flightsim.challenge_turn_right": "Vire {degrees}° à direita em direção a {airport}.",
+  "stem.flightsim.challenge_course_aligned": "Voando em direção a {airport}. Siga o marcador de curso.",
+  "stem.flightsim.challenge_runway_reference": "Pista de treinamento {runway}: proa {heading}°. Alinhe-se com a pista antes de descer para pousar."
+}

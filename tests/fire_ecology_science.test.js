@@ -139,8 +139,12 @@ describe('Fire Ecology cross-screen number agreement', () => {
   });
 
   it('explains the 3D toggle when no WebGL viewer is available', () => {
-    // The harness provides no window.StemLab.makeOrbitViewer, which is the same situation as
-    // a device without WebGL: the toggle is disabled, so the reason has to be in the page.
+    // No window.StemLab.makeOrbitViewer is the same situation as a device without WebGL:
+    // the toggle is disabled, so the reason has to be in the page. The shared harness now
+    // stubs the viewer (09-21), and the tool reads it at load, so reload without it.
+    resetStemLab();
+    delete window.StemLab.makeOrbitViewer;
+    loadTool('stem_lab/stem_tool_fireecology.js', 'fireEcology');
     const html = renderFireEcology({ tab: 'simulator' });
     expect(html).toContain('data-fe-no3d');
     expect(html).toContain('needs WebGL');

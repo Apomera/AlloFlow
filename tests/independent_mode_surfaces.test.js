@@ -35,12 +35,13 @@ describe('header', () => {
   });
 
   it('hides Educator Tools from independent learners on both header layouts, and the built module agrees', () => {
-    const gates = header.match(/isTeacherMode && !isIndependentMode && \(\s*<button type="button"[\s\S]{0,900}?data-help-key="header_educator_hub"/g) || [];
+    // a9ae02cb5 (2026-09-30): family mode is excluded too (it gets the home behavior tools).
+    const gates = header.match(/isTeacherMode && !isIndependentMode && (?:!isParentMode && )?\(\s*<button type="button"[\s\S]{0,900}?data-help-key="header_educator_hub"/g) || [];
     expect(gates.length, 'desktop + mobile educator hub buttons').toBe(2);
     // No educator-hub button is left gated on isTeacherMode alone.
     const loose = header.match(/\{isTeacherMode && \(\s*<button type="button"[\s\S]{0,900}?data-help-key="header_educator_hub"/g) || [];
     expect(loose).toEqual([]);
-    const built = headerModule.match(/isTeacherMode && !isIndependentMode &&[\s\S]{0,700}?"header_educator_hub"/g) || [];
+    const built = headerModule.match(/isTeacherMode && !isIndependentMode && (?:!isParentMode && )?[\s\S]{0,700}?"header_educator_hub"/g) || [];
     expect(built.length).toBe(2);
   });
 
@@ -51,8 +52,9 @@ describe('header', () => {
 
 describe('orchestrator', () => {
   it('routes the independent learner to the learner progress view, never the grading dashboard', () => {
-    expect(anti).toContain("activeView === 'dashboard' && isTeacherMode && !isIndependentMode && (");
-    expect(anti).toContain("activeView === 'dashboard' && (!isTeacherMode || isIndependentMode) && (");
+    // a9ae02cb5 (2026-09-30): family mode also gets the learner progress view, not the grader.
+    expect(anti).toContain("activeView === 'dashboard' && isTeacherMode && !isIndependentMode && !isParentMode && (");
+    expect(anti).toContain("activeView === 'dashboard' && (!isTeacherMode || isIndependentMode || isParentMode) && (");
     expect(anti).not.toContain("activeView === 'dashboard' && !isTeacherMode && (");
   });
 
