@@ -58,6 +58,7 @@ From the repository root, run:
 node --test dev-tools/security/test-dev-server.cjs
 node --test dev-tools/security/test-build-tooling.cjs
 node --test dev-tools/security/test-web-dependencies.cjs
+node --test dev-tools/security/test-web-trailer-security.cjs
 npm audit --prefix desktop/web-app --package-lock-only --ignore-scripts --audit-level=low
 ```
 
@@ -79,6 +80,18 @@ once 2.0.1 only where the caller awaits connection completion and ignores the
 event result. SockJS 0.3.24 uses UUID 11.1.1 through its existing CommonJS v4 API.
 Keep these compatibility tests when revisiting or removing the overrides; avoid
 forcing an older React Scripts release to satisfy npm's suggested audit fix.
+
+Serialize JavaScript 7.1.3 closes the trailing script-tag escaping gap while
+preserving the function and regular-expression serialization used by build
+workers. Undici stays on major version 6, with a minimum of 6.29.1, for its
+response decoding and EventSource memory bounds. The shared web/trailer test
+also requires the locked trailer dependencies to be installed. It exercises
+normal gzip/JSON requests, multi-line events, malformed encoding chains and
+bounded stream parsing alongside trailer schema compatibility.
+
+Related advisories: [serializer escaping](https://github.com/advisories/GHSA-m5mm-p8h7-m29v),
+[response decoding](https://github.com/advisories/GHSA-xjj6-f33q-929c), and
+[EventSource memory bounds](https://github.com/advisories/GHSA-4qv8-2p9j-2685).
 
 Upstream advisories: [selector parsing](https://github.com/advisories/GHSA-rj75-hqrm-r3gf),
 [YAML error handling](https://github.com/advisories/GHSA-48c2-rrv3-qjmp),

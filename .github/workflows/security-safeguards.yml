@@ -94,6 +94,8 @@ jobs:
           npm ci --prefix trailer --ignore-scripts --no-audit --no-fund
           npm ci --prefix desktop/web-app --ignore-scripts --no-audit --no-fund
           npm ci --prefix a11y-audit --ignore-scripts --no-audit --no-fund
+      - name: Apply the reviewed trailer validator backport
+        run: npm run security:prepare --prefix trailer
       - name: Test accessibility tooling boundaries and download compatibility
         run: node --test dev-tools/security/test-a11y-tooling.cjs
       - name: Test accessibility scans in the runner browser
@@ -107,6 +109,8 @@ jobs:
           node --test dev-tools/security/test-a11y-browser.cjs
       - name: Test production loader and minifier compatibility
         run: node --test --test-concurrency=1 dev-tools/security/test-build-tooling.cjs dev-tools/security/test-web-dependencies.cjs
+      - name: Test web and trailer dependency security and compatibility
+        run: node --test dev-tools/security/test-web-trailer-security.cjs
       - name: Test development server boundaries and compatibility
         run: node --test dev-tools/security/test-dev-server.cjs
       - name: Build and type-check the trailer

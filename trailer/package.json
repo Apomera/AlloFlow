@@ -22,12 +22,19 @@
     "typescript": "5.9.3"
   },
   "scripts": {
+    "security:prepare": "node scripts/patch-studio-protocol.cjs",
+    "postinstall": "npm run security:prepare",
+    "predev": "npm run security:prepare",
     "dev": "remotion studio",
+    "prebuild": "npm run security:prepare",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"
   },
   "sideEffects": [
     "*.css"
-  ]
+  ],
+  "overrides": {
+    "zod@4.5.4": "4.6.7"
+  }
 }
