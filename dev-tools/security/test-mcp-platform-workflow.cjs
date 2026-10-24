@@ -11,7 +11,7 @@ const commands = job => steps(job).filter(step => typeof step.run === 'string').
 
 test('platform validation has read-only permissions and no publishing path', () => {
   assert.deepEqual(workflow.permissions, { contents: 'read' });
-  assert.deepEqual(Object.keys(workflow.jobs).sort(), ['candidate', 'validate']);
+  assert.deepEqual(Object.keys(workflow.jobs).sort(), ['candidate', 'native', 'validate']);
   assert.deepEqual(workflow.on.push.branches, ['codex/mcp-platform-validation-*']);
   assert.ok(Object.hasOwn(workflow.on, 'workflow_dispatch'));
   for (const job of Object.values(workflow.jobs)) {
@@ -43,23 +43,41 @@ test('Linux and both Mac architectures validate the same Windows-built artifact'
   assert.doesNotMatch(commands('validate'), /build_mcpb\.cjs/);
 });
 
-test('runtime and browser setup preserves locked dependencies and Chromium sandboxing', () => {
-  for (const job of ['candidate', 'validate']) {
-    const node = steps(job).find(step => step.uses === 'actions/setup-node@v4');
-    const java = steps(job).find(step => step.uses === 'actions/setup-java@v4');
-    assert.equal(node.with['node-version'], '24');
-    assert.equal(java.with.distribution, 'temurin');
-    assert.equal(java.with['java-version'], '17');
-    assert.match(commands(job), /npm ci --ignore-scripts --no-audit --no-fund/);
-    assert.match(commands(job), /npm ci --prefix desktop\/mcp\/runtime --ignore-scripts --install-links/);
-    assert.match(commands(job), /desktop\/mcp\/runtime\/node_modules\/playwright\/cli\.js install/);
-    assert.match(commands(job), /fetch_epubcheck\.cjs/);
-    assert.doesNotMatch(commands(job), /--no-sandbox|--disable-setuid-sandbox|--allow-source-drift|--allow-unvalidated/);
-  }
-  assert.match(commands('validate'), /install --with-deps chromium/);
+test('native security starts independently of Windows packaging on every validated platform', () => {
+  assert.equal(workflow.jobs.candidate.needs, undefined);
+  assert.equal(workflow.jobs.native.needs, undefined);
+  assert.equal(workflow.jobs.native.strategy['fail-fast'], false);
+  assert.deepEqual(workflow.jobs.native.strategy.matrix, workflow.jobs.validate.strategy.matrix);
+  assert.equal(workflow.jobs.native['runs-on'], '${{ matrix.os }}');
+  assert.equal(steps('native').some(step => step.uses === 'actions/download-artifact@v4'), false);
+  assert.equal(steps('native').some(step => step.uses === 'actions/setup-java@v4'), false);
+  assert.doesNotMatch(commands('native'), /fetch_epubcheck\.cjs|build_mcpb\.cjs|verify_mcpb_artifact\.cjs/);
+  assert.doesNotMatch(commands('native'), /npm ci --ignore-scripts|npm ci --prefix dev-tools/);
+  assert.match(commands('native'), /evidence\/platform\.json/);
+  const nativeUpload = steps('native').find(step => step.uses === 'actions/upload-artifact@v4');
+  const artifactUpload = steps('validate').find(step => step.uses === 'actions/upload-artifact@v4');
+  assert.notEqual(nativeUpload.with.name, artifactUpload.with.name);
 });
 
-test('both jobs shallow-check out only the validation source closure', () => {
+test('runtime and browser setup preserves locked dependencies and Chromium sandboxing', () => {
+  for (const job of ['candidate', 'native', 'validate']) {
+    const node = steps(job).find(step => step.uses === 'actions/setup-node@v4');
+    assert.equal(node.with['node-version'], '24');
+    assert.match(commands(job), /npm ci --prefix desktop\/mcp\/runtime --ignore-scripts --install-links/);
+    assert.match(commands(job), /desktop\/mcp\/runtime\/node_modules\/playwright\/cli\.js install/);
+    assert.doesNotMatch(commands(job), /--no-sandbox|--disable-setuid-sandbox|--allow-source-drift|--allow-unvalidated/);
+    if (job !== 'native') {
+      const java = steps(job).find(step => step.uses === 'actions/setup-java@v4');
+      assert.equal(java.with.distribution, 'temurin');
+      assert.equal(java.with['java-version'], '17');
+      assert.match(commands(job), /npm ci --ignore-scripts --no-audit --no-fund/);
+      assert.match(commands(job), /fetch_epubcheck\.cjs/);
+    }
+  }
+  for (const job of ['native', 'validate']) assert.match(commands(job), /install --with-deps chromium/);
+});
+
+test('all jobs shallow-check out only the validation source closure', () => {
   const required = [
     '/*.js', '/*.json', '/.npmrc', '/.gitattributes', '/LICENSE', '/.github/',
     '/desktop/mcp/', '/verapdf/', '/agent_skills/alloflow-pdf-remediation/',
@@ -67,7 +85,7 @@ test('both jobs shallow-check out only the validation source closure', () => {
     '/services/alloflow-remote-mcp/scripts/staging-paths.cjs',
     '/services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs',
   ].sort();
-  for (const job of ['candidate', 'validate']) {
+  for (const job of ['candidate', 'native', 'validate']) {
     const checkout = steps(job).find(step => step.uses === 'actions/checkout@v4');
     assert.equal(checkout.with['fetch-depth'], 1);
     assert.equal(checkout.with['persist-credentials'], false);
@@ -82,16 +100,19 @@ test('both jobs shallow-check out only the validation source closure', () => {
 });
 
 test('required symlink cases and real browser probes cannot silently skip', () => {
-  assert.equal(workflow.jobs.validate.env.ALLOFLOW_REQUIRE_SYMLINK_TESTS, '1');
-  assert.equal(workflow.jobs.validate.env.ALLOFLOW_TEST_ACE_BROWSER, '1');
+  for (const job of ['native', 'validate']) {
+    assert.equal(workflow.jobs[job].env.ALLOFLOW_REQUIRE_SYMLINK_TESTS, '1');
+    assert.equal(workflow.jobs[job].env.ALLOFLOW_TEST_ACE_BROWSER, '1');
+  }
   for (const file of ['tests/mcp_bundle_audit_security.test.cjs', 'tests/mcp_artifact_source_bytes.test.cjs',
     'tests/mcp_ace_browser_security.test.cjs', 'services/alloflow-remote-mcp/scripts/test/staging-paths.test.cjs']) {
-    assert.ok(commands('validate').includes(file));
+    assert.ok(commands('native').includes(file));
   }
-  assert.match(commands('validate'), /--test-reporter=tap/);
-  assert.match(commands('validate'), /Number\(match\[1\]\) !== 0/);
-  assert.match(commands('validate'), /set -euo pipefail/);
-  for (const job of ['candidate', 'validate']) {
+  assert.match(commands('native'), /--test-reporter=tap/);
+  assert.match(commands('native'), /!counts\.length \|\| counts\.some/);
+  assert.match(commands('native'), /Number\(match\[1\]\) !== 0/);
+  for (const job of ['native', 'validate']) assert.match(commands(job), /set -euo pipefail/);
+  for (const job of ['candidate', 'native', 'validate']) {
     assert.ok(steps(job).some(step => step.uses === 'actions/upload-artifact@v4' && step.if === 'always()'));
   }
 });
