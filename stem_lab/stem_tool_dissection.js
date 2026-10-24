@@ -2729,6 +2729,12 @@
     clearDissectionCanvasTimer(canvas, 'layerPeel');
     clearDissectionCanvasTimer(canvas, 'layerTransition');
   }
+  function dissectionEvidenceImageFormat(image) {
+    if (typeof image !== 'string') return null;
+    var match = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.exec(image);
+    return match && match[0] === image ? match[1].toLowerCase() : null;
+  }
+
   function isPlainDissectionRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
@@ -3008,7 +3014,7 @@
     if (Array.isArray(data.annotations) && data.annotations.some(function (annotation) { return !isPlainDissectionRecord(annotation); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'annotations', raw: raw };
     }
-    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry); })) {
+    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry) || (entry.image && !dissectionEvidenceImageFormat(entry.image)); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'visualEvidence', raw: raw };
     }
     var procedureLayers = data.procedureByLayer || {};
@@ -3174,7 +3180,7 @@
     // Image data is the largest part of a lab record. If the origin is near its
     // storage limit, preserve all text/procedure evidence before giving up on
     // the entire record, and tell the learner exactly what was retained.
-    var evidence = data && Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && entry.image; }) : [];
+    var evidence = data && Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : [];
     if (evidence.length > 1) {
       var newestEvidence = evidence[evidence.length - 1];
       var reducedData = Object.assign({}, data, {
@@ -5448,7 +5454,7 @@ var d = labToolData.dissection || {};
           var parallaxDepth = workspaceSettings.parallaxDepth;
           var evidenceFrameLimit = 6;
           var evidenceCaptureContents = d.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen';
-          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
+          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
           var splitComparison = workspaceSettings.splitComparison;
           var lightDirection = workspaceSettings.lightDirection;
           var variationSeed = Number(d.variationSeed) || 1;
@@ -12732,7 +12738,7 @@ var d = labToolData.dissection || {};
               livingFunctionEnabled = !!d.livingFunctionEnabled;
               livingFunctionPaused = !!d.livingFunctionPaused;
               livingFunctionSpeed = ['slow', 'normal', 'fast'].indexOf(d.livingFunctionSpeed) >= 0 ? d.livingFunctionSpeed : 'normal';
-              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
+              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
               splitComparison = !!d.splitComparison;
               procedureByLayer = d.procedureByLayer || {};
               var liveProcedureState = ((d.procedureByLayer || {})[activeLayer]) || {};
@@ -23413,7 +23419,7 @@ var d = labToolData.dissection || {};
                 focusMode: data.focusMode !== false,
                 parallaxDepth: data.parallaxDepth !== false,
                 evidenceCaptureContents: data.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen',
-                visualEvidence: Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-6) : [],
+                visualEvidence: Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-6) : [],
                 splitComparison: !!data.splitComparison,
                 referenceEvidenceId: data.referenceEvidenceId || null,
                 evidenceNotebookOpen: !!data.splitComparison,
@@ -25431,13 +25437,17 @@ var d = labToolData.dissection || {};
           }
 
           function downloadEvidence(evidence) {
-            if (!evidence || !evidence.image) return;
+            var image = evidence && evidence.image;
+            var imageFormat = dissectionEvidenceImageFormat(image);
+            if (!imageFormat) {
+              setProcedureFeedback('Evidence download blocked: this frame is not an inline PNG, JPEG, or WebP image.', 'caution');
+              return false;
+            }
             try {
               var link = document.createElement('a');
-              var imageFormat = /^data:image\/(png|jpeg|webp);/i.exec(String(evidence.image));
-              var imageExtension = imageFormat && imageFormat[1].toLowerCase() !== 'jpeg' ? imageFormat[1].toLowerCase() : 'jpg';
+              var imageExtension = imageFormat === 'jpeg' ? 'jpg' : imageFormat;
               link.download = evidenceFileToken(specimen, 'specimen') + '_' + evidenceFileToken(evidence.layer, 'evidence') + '_' + evidenceFileToken(evidence.id, 'frame') + '.' + imageExtension;
-              link.href = evidence.image; link.click();
+              link.href = image; link.click();
               setProcedureFeedback('Evidence frame downloaded as ' + link.download + '.');
               if (addToast) addToast('Evidence frame downloaded.', 'success');
             } catch (error) {
@@ -25501,10 +25511,11 @@ var d = labToolData.dissection || {};
 
           function selectSpecimen(sk) {
             var sp = SPECIMENS[sk];
-            if (!sp || sk === specimen) return;
+            if (!sp) return false;
+            if (sk === specimen) return true;
             if (d.quizMode) {
               setProcedureFeedback('Specimen selection is locked during an assessment. Return to the lab before changing specimens.', 'caution');
-              return;
+              return false;
             }
             // Persist the departing specimen synchronously so the incoming
             // specimen's debounced save cannot supersede its latest evidence.
@@ -25513,13 +25524,13 @@ var d = labToolData.dissection || {};
             if (departureSaveAccess.state !== 'writable') {
               setProcedureFeedback('The current ' + spec.name + ' save is protected or unavailable, so the specimen was not changed. Reload the protected record, restore browser storage, or confirm a reset before switching specimens.', 'caution');
               focusResetControl('diss-protected-save-retry');
-              return;
+              return false;
             }
             var departureHadPendingSave = !!_disSaveQueue[dissectionSaveSlot(departureSaveKey, dissectionSaveOwner)];
             var departureSaved = flushDissectionSave(departureSaveKey, true, dissectionSaveOwner);
             if (departureHadPendingSave && !departureSaved) {
               setProcedureFeedback('Could not save the latest ' + spec.name + ' work, so the specimen was not changed. Restore browser storage or copy your report, then try again.', 'caution');
-              return;
+              return false;
             }
             clearAllDissectionCanvasTimers(canvasRefNode);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
@@ -25530,6 +25541,7 @@ var d = labToolData.dissection || {};
             updMany({ specimen: sk, _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
+            return true;
           }
           function focusResetControl(controlId) {
             var focusRoot = currentDissectionRootNode();
@@ -25845,9 +25857,14 @@ var d = labToolData.dissection || {};
           }
 
           function onCompositeToolbarKeyDown(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             var keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
             if (keys.indexOf(e.key) < 0) return;
-            var controls = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button:not([disabled])'));
+            var controls = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button:not([disabled])')).filter(function (control) {
+              if (control.closest('[hidden], [inert], [aria-hidden="true"]') || !control.getClientRects().length) return false;
+              var visibility = window.getComputedStyle(control).visibility;
+              return visibility !== 'hidden' && visibility !== 'collapse';
+            });
             if (!controls.length) return;
             var currentIndex = controls.indexOf(e.target);
             if (currentIndex < 0) return;
@@ -25857,6 +25874,7 @@ var d = labToolData.dissection || {};
           }
 
           function onSpecimenKeyDown(e, sk) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             var specimenRoot = e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('[data-dissection-root]') : null;
             var idx = SPEC_KEYS.indexOf(sk);
             var nextIdx = idx;
@@ -25867,7 +25885,7 @@ var d = labToolData.dissection || {};
             else return;
             e.preventDefault();
             var nextKey = SPEC_KEYS[nextIdx];
-            selectSpecimen(nextKey);
+            if (!selectSpecimen(nextKey)) return;
             setTimeout(function () {
               var target = scopedDissectionQuery(specimenRoot, '#diss-specimen-tab-' + nextKey);
               if (target) target.focus();
