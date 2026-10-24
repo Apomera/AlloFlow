@@ -7212,7 +7212,6 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [activitySequence, setActivitySequence] = React.useState(
         initialActivitySequence || [],
       );
-      const [sequenceIndex, setSequenceIndex] = React.useState(0);
       React.useEffect(() => {
         if (initialActivitySequence && initialActivitySequence.length > 0) {
           debugLog(
@@ -8119,7 +8118,6 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const sequenceIndexRef = React.useRef(0);
       const updateSequenceIndex = React.useCallback((index) => {
         sequenceIndexRef.current = index;
-        setSequenceIndex(index);
       }, []);
       // AAC symbol overlay
       // Teachers can preset the symbol overlay from setup ("_aacDefaultOn"

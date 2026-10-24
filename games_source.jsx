@@ -5791,7 +5791,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 </select>
              )}
              <GameThemeToggle />
-             <GameReadingSettingsButton className="text-white hover:bg-indigo-500 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
+             <GameReadingSettingsButton className="text-white hover:bg-indigo-600 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
              <button ref={crosswordCloseRef} type="button" data-help-key="crossword_close_btn" onClick={onClose} className="min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24} aria-hidden="true" /></button>
          </div>
       </div>
@@ -7015,7 +7015,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                    {gameMessage(t, 'games.bingo.new_card', 'New card')}
                  </button>
                  <GameThemeToggle />
-                 <GameReadingSettingsButton className="text-white hover:bg-indigo-500 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
+                 <GameReadingSettingsButton className="text-white hover:bg-indigo-600 focus-visible:ring-white focus-visible:ring-offset-indigo-700" />
                  <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700" aria-label={t('bingo.close_game_aria')}>
                      <X size={24} aria-hidden="true" />
                  </button>

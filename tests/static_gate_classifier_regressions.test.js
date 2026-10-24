@@ -51,6 +51,26 @@ describe('guarded canvas ref classification', () => {
 });
 
 describe('live announcer classification', () => {
+  it('follows a local function expression that updates a live ref on its timer', () => {
+    expect(scan('scan_silent_announcer.cjs', `function render(ref) {
+      var skyAnnounce = function(message) { ref.current.textContent = ''; setTimeout(function() { ref.current.textContent = message; }, 50); };
+      function announceFinishedFlight() { skyAnnounce('Flight saved.'); }
+      announceFinishedFlight();
+    }`).status).toBe(0);
+  });
+  it.each([
+    "function announceFinishedFlight(skyAnnounce) { skyAnnounce('ready'); } announceFinishedFlight(discard);",
+    "skyAnnounce = discard; function announceFinishedFlight() { skyAnnounce('ready'); } announceFinishedFlight();",
+  ])('does not borrow a DOM helper across a shadowed or reassigned binding', call => {
+    expect(scan('scan_silent_announcer.cjs', `var skyAnnounce = function(message) { ref.current.textContent = message; }; ${call}`).status).toBe(1);
+  });
+  it.each([
+    "function neverCalled() { ref.current.textContent = message; }",
+    "ref.current.textContent = '';",
+  ])('does not accept an unused DOM writer or an empty-only clear', body => {
+    expect(scan('scan_silent_announcer.cjs', `var writeStatus = function(message) { ${body} };
+      function announceFinishedFlight() { writeStatus('ready'); } announceFinishedFlight();`).status).toBe(1);
+  });
   it('proves delegation through a ordinary DOM-writing helper', () => {
     expect(scan('scan_silent_announcer.cjs', `function setText(message) { var live = document.getElementById('live'); if (live) live.textContent = message; }
       function announce(message) { setText(message); } announce('ready');`).status).toBe(0);

@@ -23,6 +23,7 @@ import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
+const { parseExpressionAt } = require('acorn');
 const React = require('../desktop/web-app/node_modules/react');
 const { createRoot } = require('../desktop/web-app/node_modules/react-dom/client');
 const { act } = React;
@@ -120,13 +121,27 @@ describe('1. non-live quiz answers ride Submit Work', () => {
     const anti = readFileSync(ANTI, 'utf8');
     const mount = anti.indexOf('React.createElement(window.AlloModules.QuizView, {');
     expect(mount).toBeGreaterThan(0);
-    const block = anti.slice(mount, anti.indexOf('})}', mount));
-    const match = block.match(/onRecordQuizResponses: (\([^)]*\) => setStudentResponses\([^\n]*\)),\n/);
-    expect(match).toBeTruthy();
+    const property = anti.indexOf('onRecordQuizResponses:', mount);
+    expect(property).toBeGreaterThan(mount);
+    const parsed = parseExpressionAt(anti, property + 'onRecordQuizResponses:'.length, { ecmaVersion: 'latest', preserveParens: true });
+    const expression = parsed.type === 'SequenceExpression' ? parsed.expressions[0] : parsed;
+    const canvasRecoveryCurrentIdRef = { current: 'learner-a' };
     let state = { other: { keep: 1 }, 'quiz-1': { earlier: true } };
-    const setStudentResponses = updater => { state = updater(state); };
-    new Function('setStudentResponses', 'return ' + match[1])(setStudentResponses)('quiz-1', 'assessmentDraft', { answered: 2 });
+    let pending;
+    const setStudentResponses = vi.fn(updater => { pending = updater; });
+    const record = new Function('setStudentResponses', 'canvasRecoveryCurrentIdRef', 'return ' + anti.slice(expression.start, expression.end))(setStudentResponses, canvasRecoveryCurrentIdRef);
+    record('quiz-1', 'assessmentDraft', { answered: 2 });
+    state = pending(state);
     expect(state).toEqual({ other: { keep: 1 }, 'quiz-1': { earlier: true, assessmentDraft: { answered: 2 } } });
+
+    // A draft queued before a switch must be rejected when React applies it.
+    record('quiz-1', 'assessmentDraft', { answered: 3 });
+    canvasRecoveryCurrentIdRef.current = 'learner-b';
+    expect(pending(state)).toBe(state);
+    // A retiring quiz must not even enqueue a write into the new workspace.
+    const calls = setStudentResponses.mock.calls.length;
+    record('quiz-1', 'assessmentDraft', { answered: 4 });
+    expect(setStudentResponses).toHaveBeenCalledTimes(calls);
   });
 
   it('keeps the submitted attempt and tells a local learner Submit Work will include it', async () => {
