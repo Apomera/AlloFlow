@@ -4433,7 +4433,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
           var commitList = TOOLKIT_STRATEGIES.filter(function(s) { return tkCommitted[s.id]; });
           var trusted = trustedAdults || [];
           var html =
-            '<!doctype html><html><head><meta charset="utf-8"><title>' + safeName + '</title>' +
+            '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + safeName + '</title>' +
             '<style>' +
               'body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; max-width: 720px; margin: 32px auto; padding: 24px; line-height: 1.55; }' +
               'h1 { color: #0e7490; margin: 0 0 4px; font-size: 22px; }' +

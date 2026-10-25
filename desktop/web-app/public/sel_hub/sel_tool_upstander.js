@@ -9256,7 +9256,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   var esc = function(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
                   var reflectKeys = Object.keys(roleReflect || {}).filter(function(k) { return (roleReflect[k] || '').trim().length > 0; });
                   var html =
-                    '<!doctype html><html><head><meta charset="utf-8"><title>' + safeName + '</title>' +
+                    '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + safeName + '</title>' +
                     '<style>' +
                       'body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; max-width: 720px; margin: 32px auto; padding: 24px; line-height: 1.55; }' +
                       'h1 { color: #1e3a8a; margin: 0 0 4px; font-size: 22px; }' +

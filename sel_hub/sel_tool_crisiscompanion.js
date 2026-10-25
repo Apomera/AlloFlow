@@ -851,7 +851,7 @@ window.SelHub = window.SelHub || {
         var win = window.open('', '_blank', 'width=720,height=900');
         if (!win) { announce(__alloT('sel.crisiscompanion.ui.could_not_open_print_window_your', 'Could not open print window — your browser may have blocked it.')); return; }
         var safeText = function(t) { return String(t || '').replace(/[<>&]/g, function(c) { return { '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]; }); };
-        var html = '<!doctype html><html><head><title>' + safeText(__alloT('sel.crisiscompanion.print.title', 'My Safety Plan')) + '</title>' +
+        var html = '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>' + safeText(__alloT('sel.crisiscompanion.print.title', 'My Safety Plan')) + '</title>' +
           '<style>body{font-family:Georgia,serif;max-width:720px;margin:24px auto;padding:0 20px;color:#1e293b;line-height:1.6}' +
           'h1{color:#0d9488;border-bottom:2px solid #0d9488;padding-bottom:6px}' +
           'h2{color:#115e59;font-size:15px;margin-top:24px}' +
