@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Prior evaluations and IEPs as case documents.
 //
 // WHY (2026-09-23): a reevaluation report leans on the student's records, but
@@ -15,6 +19,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let U, PC;
@@ -88,7 +93,7 @@ async function mount(callGemini) {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = createRoot(host);
-  const act = (fn) => React.act(async () => { await fn(); });
+  const act = (fn) => actWithSensitivePromptReview(React, fn);
   const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   const typeInto = (el, value) => act(() => {
     const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;

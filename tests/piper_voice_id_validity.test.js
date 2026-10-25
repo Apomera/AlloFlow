@@ -26,12 +26,12 @@ const REAL_PATH_MAP_KEYS = JSON.parse(
 
 function loadPiper(lib) {
     delete window._piperTTS;
-    window.__piperTestLib = lib;
-    const importStatement = 'const lib = await import(/* webpackIgnore: true */ PIPER_CDN);';
-    const testSource = piperSource.replace(importStatement, 'const lib = window.__piperTestLib;');
-    if (testSource === piperSource) throw new Error('Piper dynamic import test seam did not match');
+    window.__alloLoadVerifiedRuntime = vi.fn(async (graph) => {
+        if (graph !== 'piper') throw new Error('Unexpected runtime graph');
+        return lib;
+    });
     // eslint-disable-next-line no-new-func
-    new Function(testSource)();
+    new Function(piperSource)();
     return window._piperTTS;
 }
 
@@ -74,6 +74,7 @@ afterEach(() => {
     URL.revokeObjectURL = originalRevoke;
     delete window._piperTTS;
     delete window.__piperTestLib;
+    delete window.__alloLoadVerifiedRuntime;
 });
 
 describe('Piper voice IDs', () => {

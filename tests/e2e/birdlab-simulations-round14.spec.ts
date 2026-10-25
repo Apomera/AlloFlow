@@ -80,8 +80,8 @@ async function checkPaint(page: Page, model: Model, selected = 0, truth = false)
       bars: [...element.querySelectorAll('[data-detect-bar]')].map(node => { const rect = node as SVGRectElement;
         return { name: rect.getAttribute('data-detect-bar'), x: rect.x.baseVal.value, y: rect.y.baseVal.value, width: rect.width.baseVal.value, height: rect.height.baseVal.value }; }),
       histories: [...element.querySelectorAll('[data-detect-history="all"] tbody tr')].map(node => ({ index: Number(node.getAttribute('data-detect-row')),
-        cells: [...node.querySelectorAll('td')].map(cell => ({ text: cell.textContent, event: cell.getAttribute('data-detect-event'), label: cell.getAttribute('aria-label') })) })),
-      selected: [...element.querySelectorAll('[data-detect-history="selected"] td')].map(node => node.textContent),
+        cells: [...node.querySelectorAll('td')].map(cell => ({ text: cell.querySelector('[aria-hidden]')?.textContent, spoken: cell.querySelector('.birdlab-detect-sr')?.textContent, event: cell.getAttribute('data-detect-event'), label: cell.getAttribute('aria-label') })) })),
+      selected: [...element.querySelectorAll('[data-detect-history="selected"] td')].map(node => node.querySelector('[aria-hidden]')?.textContent),
       count: Number(element.getAttribute('data-detect-count')), expected: Number(element.getAttribute('data-detect-expected'))
     };
   });
@@ -94,7 +94,7 @@ async function checkPaint(page: Page, model: Model, selected = 0, truth = false)
     expect(site.fill).toBe(expected.rows[index].seen ? 'rgb(114, 213, 188)' : 'rgb(97, 120, 108)');
     expect(actual.histories[index].index).toBe(index); expect(actual.histories[index].cells).toHaveLength(6);
     for (let visit = 0; visit < 6; visit++) {
-      const cell = actual.histories[index].cells[visit]; expect(cell.event).toBe(history[visit]); expect(cell.text).toBe(symbol(history[visit]));
+      const cell = actual.histories[index].cells[visit]; expect(cell.event).toBe(history[visit]); expect(cell.text).toBe(symbol(history[visit])); expect(cell.spoken).toBe(eventName(history[visit]));
       expect(cell.label).toBe(siteName(index) + ', visit ' + (visit + 1) + ': ' + eventName(history[visit]));
     }
   }

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "piper.ort.simd": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/piper-ort-simd.7d168b18f233bc5da98465b8.wasm",
+      "bytes": 10595041,
+      "sha384": "7d168b18f233bc5da98465b888eb689d36acfe1ffe822e699ee45b6081431cc018eb097c3e306239de369555290da35d",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm-simd.wasm"
+      ]
+    },
+    "piper.ort.plain": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/piper-ort.927679b038ae4e2b05831065.wasm",
+      "bytes": 9758086,
+      "sha384": "927679b038ae4e2b05831065c18dedc10107f10960b21ba94c8158d92b31d9fcf8d73a62bfc67868a16b77ddd6a2c030",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm.wasm"
+      ]
+    },
+    "piper.phonemizer.wasm": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/piper-phonemizer.a7ba79de91cc749fc2ceae6b.wasm",
+      "bytes": 635212,
+      "sha384": "a7ba79de91cc749fc2ceae6bf22d1c5d65602c0f8279711e922d4d1b234dd0129f3452c87717a0d11d3ee52ccd4a8a77",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm"
+      ]
+    },
+    "piper.phonemizer.data": {
+      "kind": "data",
+      "path": "runtime_assets/engine/piper-phonemizer.e9787705f887f97edee0ccb5.data",
+      "bytes": 18077249,
+      "sha384": "e9787705f887f97edee0ccb5d64ebabc3a7b5945909a7e487e6b31e19075c20f2f03dfa598e52e72e9ea26936c354b9f",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.data"
+      ]
+    },
+    "piper.module": {
+      "kind": "module",
+      "path": "runtime_assets/engine/piper.closed.f1884b1c5218340ee886929c.mjs",
+      "bytes": 788566,
+      "sha384": "f1884b1c5218340ee886929c37f341b013f4bd3837bf232020b090c92dfbb36dd2877237f0a29361708e5f7e59559f0d",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm"
+      ],
+      "dependencies": [
+        "piper.ort.simd",
+        "piper.ort.plain",
+        "piper.phonemizer.wasm",
+        "piper.phonemizer.data"
+      ],
+      "closed": true
+    },
+    "kokoro.ort.wasm": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/kokoro-transformers-3.5.1.bbf6c3b31dfd73ec2dd0b6c7.wasm",
+      "bytes": 21596019,
+      "sha384": "bbf6c3b31dfd73ec2dd0b6c798e0b2771b787f28a2837d75f214203937cebeb7e481270ce21468d88c13b65c72a08d36",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ]
+    },
+    "kokoro.module": {
+      "kind": "module",
+      "path": "runtime_assets/engine/kokoro.closed.8c3835d7a2e9eadf077cd154.mjs",
+      "bytes": 2267244,
+      "sha384": "8c3835d7a2e9eadf077cd1543dbc91047aadf6ee5a3488271ec9dc4ff9ca0e12e6b514ef6a35248bc79903f2ddf330b5",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm"
+      ],
+      "dependencies": [
+        "kokoro.ort.wasm"
+      ],
+      "closed": true
+    },
+    "transformers331.ort.wasm": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/transformers-3.3.1.98f95211528ba8b53becd02b.wasm",
+      "bytes": 22792576,
+      "sha384": "98f95211528ba8b53becd02bbd4fac7064b0d9905d81f2ad1b98bc420ac9d4e4997c43bb9950d13f022c25fc96dd4282",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ]
+    },
+    "transformers331.module": {
+      "kind": "module",
+      "path": "runtime_assets/engine/transformers.closed.9c5887e102e3838a3aeaf0b0.mjs",
+      "bytes": 925973,
+      "sha384": "9c5887e102e3838a3aeaf0b0550cbf2bb75cd7d922e5f9adbabed81e73f406c953c79c9e0ce3038c0a240a8ac96f7526",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+        "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1"
+      ],
+      "dependencies": [
+        "transformers331.ort.wasm"
+      ],
+      "closed": true
+    },
+    "ort121.wasm": {
+      "kind": "wasm",
+      "path": "runtime_assets/engine/ort-1.21.0.65bfb71e22a47917da2a906e.wasm",
+      "bytes": 23914392,
+      "sha384": "65bfb71e22a47917da2a906e8d625b82800541d24fd2ef3aedfd08fc21b609ef76b987c6689edcfd98b494a51856b3c7",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.wasm"
+      ]
+    },
+    "ort121.module": {
+      "kind": "module",
+      "path": "runtime_assets/engine/ort.closed.8986603e90c3ccac4973ca1b.mjs",
+      "bytes": 402386,
+      "sha384": "8986603e90c3ccac4973ca1bfaa0aca78a4ba73b4329f65be23fea82571e8d6e92317ae14449dde9a09654403307e3ea",
+      "mirrors": [],
+      "aliases": [
+        "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs"
+      ],
+      "dependencies": [
+        "ort121.wasm"
+      ],
+      "closed": true
+    }
+  },
+  "graphs": {
+    "piper": {
+      "assets": [
+        "piper.ort.simd",
+        "piper.ort.plain",
+        "piper.phonemizer.wasm",
+        "piper.phonemizer.data",
+        "piper.module"
+      ],
+      "entry": "piper.module",
+      "configureExport": "__alloflowConfigureRuntime",
+      "bindings": {
+        "piper.ort.simd": "piper.ort.simd",
+        "piper.ort.plain": "piper.ort.plain",
+        "piper.phonemizer.wasm": "piper.phonemizer.wasm",
+        "piper.phonemizer.data": "piper.phonemizer.data"
+      }
+    },
+    "kokoro": {
+      "assets": [
+        "kokoro.ort.wasm",
+        "kokoro.module"
+      ],
+      "entry": "kokoro.module",
+      "configureExport": "__alloflowConfigureRuntime",
+      "bindings": {
+        "kokoro.ort.wasm": "kokoro.ort.wasm"
+      }
+    },
+    "transformers331": {
+      "assets": [
+        "transformers331.ort.wasm",
+        "transformers331.module"
+      ],
+      "entry": "transformers331.module",
+      "configureExport": "__alloflowConfigureRuntime",
+      "bindings": {
+        "transformers331.ort.wasm": "transformers331.ort.wasm"
+      }
+    },
+    "ort121": {
+      "assets": [
+        "ort121.wasm",
+        "ort121.module"
+      ],
+      "entry": "ort121.module",
+      "configureExport": "__alloflowConfigureRuntime",
+      "bindings": {
+        "ort121.wasm": "ort121.wasm"
+      }
+    }
+  }
+}

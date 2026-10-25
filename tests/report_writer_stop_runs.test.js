@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Generation, the accuracy audit and translation can be stopped.
 //
 // WHY (2026-09-23): these runs make one AI request per section (per pass, per
@@ -10,6 +14,7 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let React, createRoot;
@@ -24,7 +29,7 @@ beforeAll(() => {
 
 let mounted = null;
 afterEach(async () => { if (mounted) { await React.act(async () => mounted.root.unmount()); mounted.host.remove(); mounted = null; } });
-const act = (fn) => React.act(async () => { await fn(); });
+const act = (fn) => actWithSensitivePromptReview(React, fn);
 const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 const wait = () => act(() => new Promise(r => setTimeout(r, 10)));
 const until = async (fn) => { for (let i = 0; i < 300 && !fn(); i++) await wait(); expect(fn()).toBeTruthy(); };

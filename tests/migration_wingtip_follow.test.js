@@ -159,7 +159,9 @@ describe('Follow one anatomical wingtip without recording a learner response', (
     for (const side of [0, 1]) {
       expect(ui.followButton(side)).toMatchObject({ type: 'button', props: { type: 'button', disabled: false,
         className: 'migration-wingtip-follow-button', 'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-wingtip-follow-help' } });
-      expect(ui.followButton(side).props['aria-label']).toBe(side === 0 ? 'Follow individual’s left wingtip' : 'Follow individual’s right wingtip');
+      expect(ui.followButton(side).props['aria-label']).toBeUndefined();
+      expect(ui.host.querySelector('[data-wingtip-follow-side="' + side + '"]').textContent)
+        .toBe(side === 0 ? 'Individual’s left: solid path' : 'Individual’s right: dashed path');
     }
     expect(ui.host.querySelector('[data-wingtip-follow-controls]').textContent).toContain('Individual’s left: solid path');
     expect(ui.host.querySelector('[data-wingtip-follow-controls]').textContent).toContain('Individual’s right: dashed path');
@@ -170,7 +172,7 @@ describe('Follow one anatomical wingtip without recording a learner response', (
     const ui = fixture({}, { beforeReadyRender: true }), initial = ui.followButton(0);
     expect(initial.props.disabled).toBe(false); ui.stage.removeAttribute('data-flight-ready');
     const count = ui.writes.length; ui.click(initial); expect(ui.live.flightWingtipFollowSide).toBeUndefined(); expect(ui.writes).toHaveLength(count);
-    expect(ui.announce.mock.lastCall[0]).toContain('Wait for a ready Study view');
+    expect(ui.host.querySelector('[data-scene-feedback]').textContent).toContain('Wait for a ready Study view');
     ui.stage.setAttribute('data-flight-ready', 'true'); ui.click(initial); expectFollow(ui, 0);
     ui.engine.flyers[0].uuid = 'replacement'; ui.click(initial); expect(ui.live.flightWingtipFollowSide).toBe(0);
     expect(ui.live.flightWingtipFollowSourceUuid).not.toBe('replacement'); ui.dispose();

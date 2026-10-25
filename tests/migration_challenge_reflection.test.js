@@ -33,11 +33,12 @@ function enterText(element, value) {
 }
 function fixture(seed = {}, options = {}) {
   let state = { tab: 'flight3d', flightCamera: 'study', flightPaused: true, flightChallenges: challenges(), ...seed }, tree, refresh;
-  let readRefs = [], readStates = [];
+  let readRefs = [], readStates = [], readIds = [];
   const writes = [], announce = vi.fn(), awardXP = vi.fn();
   const tracedReact = { ...React,
     useRef(value) { const ref = React.useRef(value); readRefs.push(ref); return ref; },
-    useState(value) { const pair = React.useState(value); readStates.push(pair); return pair; }
+    useState(value) { const pair = React.useState(value); readStates.push(pair); return pair; },
+    useId() { const id = React.useId(); readIds.push(id); return id; }
   };
   const ctx = makeCtx({ ...options, React: tracedReact, announceToSR: announce, awardXP,
     update: (_, key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; refresh(n => n + 1); },
@@ -46,7 +47,7 @@ function fixture(seed = {}, options = {}) {
   const host = document.createElement('div'); document.body.append(host);
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() {
-    refresh = React.useState(0)[1]; readRefs = []; readStates = [];
+    refresh = React.useState(0)[1]; readRefs = []; readStates = []; readIds = [];
     ctx.toolData = { migration: state }; tree = tool.render(ctx); return tree;
   }
   act(() => { root.render(React.createElement(Component)); });
@@ -64,7 +65,7 @@ function fixture(seed = {}, options = {}) {
     open(number = 1) { ui.panel().open = true; host.querySelector('[data-flight-challenge-history]').open = true; ui.details(number).open = true; ui.click('edit', number); },
     type(value) { act(() => { enterText(ui.input(), value); }); },
     invoke(node, element) { act(() => { node.props.onClick({ currentTarget: element }); }); },
-    control(label, value) { const element = [...host.querySelectorAll('textarea')].find(node => node.getAttribute('aria-label') === label); act(() => { enterText(element, value); }); },
+    control(label, value) { const element = [...host.querySelectorAll('textarea')].find(node => (node.id === label || node.getAttribute('aria-label') === label)); act(() => { enterText(element, value); }); },
     set(patch) { act(() => { state = { ...state, ...patch }; refresh(n => n + 1); }); },
     select(goal) { act(() => { host.querySelector('[data-flight-challenge="' + goal + '"]').click(); }); },
     remove(number) { act(() => { ui.row(number).querySelector('.migration-mission-remove').click(); }); },
@@ -72,7 +73,8 @@ function fixture(seed = {}, options = {}) {
     owner() { return readRefs.find(ref => ref.current?.panel && ref.current?.goalId && ref.current?.challenges)?.current; },
     abandon(patch) {
       const refs = readRefs.slice(), states = readStates.slice(); let r = 0, s = 0;
-      const replay = { ...React, useRef: () => refs[r++], useState: () => states[s++], useEffect: () => {}, useCallback: fn => fn };
+      const savedIds = readIds.slice(); let idIndex = 0;
+      const replay = { ...React, useId: () => savedIds[idIndex++], useRef: () => refs[r++], useState: () => states[s++], useEffect: () => {}, useCallback: fn => fn };
       return tool.render({ ...ctx, React: replay, toolData: { migration: { ...state, ...patch } } });
     }
   };
@@ -116,7 +118,7 @@ describe('Later reflections for saved flight challenge attempts', () => {
 
   it('preserves the legacy attempt shape when an unrelated draft is saved', () => {
     const ui = fixture(); const before = clone(ui.state.flightChallenges.work.wind.attempts[0]);
-    ui.control('Flight challenge prediction', 'Updated current prediction');
+    ui.control('migration-mission-prediction', 'Updated current prediction');
     expect(ui.state.flightChallenges.work.wind.attempts[0]).toEqual(before);
     expect(ui.state.flightChallenges.work.wind.attempts[0]).not.toHaveProperty('reflection');
   });
@@ -155,7 +157,7 @@ describe('Later reflections for saved flight challenge attempts', () => {
     const ui = fixture({ flightChallenges: challenges([attempt(-10), attempt(0), attempt(2), attempt(4)], { formation: { prediction: 'Other goal', notes: 'Other notes', setup: null, attempts: [] } }),
       flightInvestigation: { prediction: 'Investigation prediction', trials: [], evidence: 'Other evidence', explanation: 'Other explanation' }, flightStudyNotes: { prediction: 'Study work' }, flightWind: 9, flightSeason: 'spring' });
     // Normalize other empty goals before measuring the exact additive write.
-    ui.control('Flight challenge prediction', 'Current prediction retained after reflection'); ui.writes.length = 0;
+    ui.control('migration-mission-prediction', 'Current prediction retained after reflection'); ui.writes.length = 0;
     const before = clone(ui.state); ui.open(4); ui.type('Wind alone raised this saved model speed from 0 to 21 mph.'); ui.click('save', 4);
     assertOnlyReflection(ui, before, 3, 'Wind alone raised this saved model speed from 0 to 21 mph.');
     expect(ui.state.flightChallenges.work.wind.attempts).toHaveLength(4);
@@ -165,14 +167,15 @@ describe('Later reflections for saved flight challenge attempts', () => {
     expect(ui.row(4).querySelector('.migration-mission-explanation').textContent).toContain('No explanation was recorded when checked');
     expect(ui.saved(4).textContent).toBe('Wind alone raised this saved model speed from 0 to 21 mph.');
     expect(ui.panel().textContent).toContain('You can still add a later reflection');
-    expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('Your reflection is ungraded'));
+    expect(ui.panel().querySelector('[data-learning-feedback="challenge"]').textContent).toContain('Your reflection is ungraded');
+    expect(ui.announce).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(ui.button('edit', 4));
   });
 
   it('merges into the latest current drafts and other goal work while keeping the editor DOM and caret', () => {
     const ui = fixture(); ui.open(); ui.type('A reflection with an unchanged caret.');
     const field = ui.input(); field.setSelectionRange(3, 13, 'backward'); field.scrollTop = 12;
-    ui.control('Flight challenge prediction', 'Newer prediction'); ui.control('Flight challenge explanation', 'Newer explanation');
+    ui.control('migration-mission-prediction', 'Newer prediction'); ui.control('migration-mission-notes', 'Newer explanation');
     const next = clone(ui.state.flightChallenges); next.work.season = { prediction: 'Newer season prediction', notes: 'Newer season notes', setup: null, attempts: [] };
     ui.set({ flightChallenges: next, flightWind: 11 });
     expect(ui.input()).toBe(field); expect(field.value).toBe('A reflection with an unchanged caret.');
@@ -183,7 +186,7 @@ describe('Later reflections for saved flight challenge attempts', () => {
 
   it('edits only the retained later reflection and returns keyboard focus to its own action', () => {
     const ui = fixture({ flightChallenges: challenges([attempt(4, { reflection: 'Earlier reflection', notes: 'Original explanation' })]) });
-    ui.control('Flight challenge prediction', 'Current prediction retained after reflection'); ui.writes.length = 0; const before = clone(ui.state);
+    ui.control('migration-mission-prediction', 'Current prediction retained after reflection'); ui.writes.length = 0; const before = clone(ui.state);
     ui.open(); expect(ui.input().value).toBe('Earlier reflection'); expect(ui.button('save').disabled).toBe(true);
     ui.type('A revised later reflection'); ui.click('save');
     assertOnlyReflection(ui, before, 0, 'A revised later reflection');
@@ -193,11 +196,12 @@ describe('Later reflections for saved flight challenge attempts', () => {
 
   it.each(['', '  \n  '])('explicitly clears an existing reflection with %j and recomputes evidence', value => {
     const ui = fixture({ flightChallenges: challenges([attempt(4, { reflection: 'Only saved evidence' })]) });
-    ui.control('Flight challenge prediction', 'Current prediction retained after reflection'); ui.writes.length = 0; const before = clone(ui.state);
+    ui.control('migration-mission-prediction', 'Current prediction retained after reflection'); ui.writes.length = 0; const before = clone(ui.state);
     expect(ui.step('evidence')).toBe('true'); ui.open(); ui.type(value); expect(ui.button('save').disabled).toBe(false); ui.click('save');
     assertOnlyReflection(ui, before, 0, null); expect(ui.step('evidence')).toBe('false'); expect(ui.step('model')).toBe('true');
     expect(ui.button('edit').textContent).toBe('Add reflection'); expect(ui.saved().textContent).toBe('No later reflection is saved yet.');
-    expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('Later reflection cleared'));
+    expect(ui.panel().querySelector('[data-learning-feedback="challenge"]').textContent).toContain('Later reflection cleared');
+    expect(ui.announce).not.toHaveBeenCalled();
   });
 
   it('retains evidence from the original explanation after a later reflection is cleared', () => {
@@ -292,6 +296,7 @@ describe('Later reflections for saved flight challenge attempts', () => {
     first.invoke(first.handler('save'), second.button('save'));
     const detached = document.createElement('button'); first.invoke(first.handler('save'), detached);
     expect(first.writes).toEqual([]); expect(second.writes).toEqual([]);
+    first.button('save').focus();
     first.click('save'); expect(first.state.flightChallenges.work.wind.attempts[0].reflection).toBe('First tool reflection');
     expect(second.input().value).toBe('Second tool reflection'); expect(document.activeElement).toBe(first.button('edit'));
   });

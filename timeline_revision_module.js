@@ -286,6 +286,11 @@ var createTimelineRevision = function(deps) {
       var currentItems = Array.isArray(currentData) ? currentData : (currentData.items || []);
       var currentProgressionLabel = currentData.progressionLabel || (t && t('timeline.progression_label_default')) || 'Sequential order';
       var currentProgressionLabelEn = (!Array.isArray(currentData) && currentData.progressionLabel_en) || null;
+      var savedTarget = [generatedContent.config?.translationPolicy?.target, generatedContent.translationPolicy?.target,
+          generatedContent.translationTarget, generatedContent.config?.translationTarget, generatedContent.config?.attachedTranslationTarget]
+          .find(function (value) { return typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()); });
+      var companionLanguage = window.AlloModules?.TextPipelineHelpers?.getArtifactTranslationTarget?.(generatedContent)
+          || (savedTarget && savedTarget.trim()) || 'English';
       var currentMode = (!Array.isArray(currentData) && currentData.mode) || null;
       var currentAutoDetected = (!Array.isArray(currentData) && currentData.autoDetected) || false;
       var currentModeDef = currentMode ? TIMELINE_MODE_DEFINITIONS[currentMode] : null;
@@ -307,12 +312,12 @@ var createTimelineRevision = function(deps) {
         '3. Keep the same JSON structure with progressionLabel and items array\n' +
         '4. Each item must have "date" (position on axis) and "event" (description) fields\n' +
         '5. ' + (currentProgressionLabelEn ? 'The original has progressionLabel_en — you MUST include an updated progressionLabel_en that matches the new progressionLabel.' : 'No progressionLabel_en needed.') + '\n' +
-        '6. ' + (currentItems[0] && currentItems[0].event_en ? 'The original items have _en translations (date_en, event_en) — preserve or translate them for every item.' : '') + '\n' +
+        '6. ' + (currentItems[0] && currentItems[0].event_en ? 'The original items have _en translations (date_en, event_en) in ' + JSON.stringify(companionLanguage) + ' — preserve or translate them in that language for every item.' : '') + '\n' +
         'Return ONLY a valid JSON object:\n' +
         '{\n' +
         '    ' + (currentMode ? '"detectedMode": "<mode key if changed, else omit>",' : '') + '\n' +
         '    "progressionLabel": "Y-axis ordering principle",\n' +
-        '    ' + (currentProgressionLabelEn ? '"progressionLabel_en": "English translation",' : '') + '\n' +
+        '    ' + (currentProgressionLabelEn ? '"progressionLabel_en": ' + JSON.stringify(companionLanguage + ' translation') + ',' : '') + '\n' +
         '    "items": [\n' +
         '        {\n' +
         '            "date": "Position/Value",\n' +

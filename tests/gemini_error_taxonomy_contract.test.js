@@ -76,9 +76,18 @@ const TABLE = [
   // drain pause, which is harmless and predates H2. Documented, not accidental.
   { name: 'non-Canvas 401 (real key problem)', raw: 'HTTP 401: API key not valid', canvas: false, kind: 'auth', throttle: true, permanent: true, retryPath: false },
   { name: '404 model config', raw: 'HTTP 404: models/gemini-nope is not found for API version', kind: 'config', throttle: false, permanent: true, retryPath: false },
+  { name: 'missing connection setup', raw: 'No AI API key is configured. Open AI Backend Settings.', kind: 'config', throttle: false, permanent: true, retryPath: false },
 ];
 
 describe('gemini_api ↔ doc_pipeline error-taxonomy contract (the H2 gap, executable)', () => {
+  it('describes absent setup without claiming credentials were rejected or a model is missing', () => {
+    const err = thrown('No AI API key is configured. Open AI Backend Settings.');
+    expect(err.message).toBe('API_CONNECTION_NOT_CONFIGURED');
+    expect(err.isAuth).toBe(false);
+    expect(err.classification).toMatchObject({ kind: 'config', reason: 'missing-api-key' });
+    expect(err.classification.userMessage).toContain('Prepared lesson resources remain available');
+    expect(err.classification.userMessage).not.toMatch(/rejected|model/i);
+  });
   for (const row of TABLE) {
     it(row.name + ' → kind=' + row.kind + ', throttle=' + row.throttle + ', permanent=' + row.permanent, () => {
       const cls = _classifyGeminiError(new Error(row.raw));

@@ -82,6 +82,7 @@ test('toe identities persist across arrangements and the native side arc preserv
 
 test('the optional curl clock starts paused, supports inspection and stops at the endpoint, on hiding, and on unmount',async({page})=>{
   await mount(page);
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(()=>{
     let now=1000,id=0;const frames=new Map<number,FrameRequestCallback>();
     requestAnimationFrame=callback=>{frames.set(++id,callback);return id;};cancelAnimationFrame=handle=>{frames.delete(handle);};
@@ -105,7 +106,7 @@ test('the optional curl clock starts paused, supports inspection and stops at th
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});await expect(root).toHaveAttribute('data-playing','false');
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await expect(root).toHaveAttribute('data-playing','false');
   await page.emulateMedia({reducedMotion:'no-preference'});await page.locator('[data-toe-play]').click();await page.emulateMedia({reducedMotion:'reduce'});await expect(root).toHaveAttribute('data-playing','false');
-  await page.locator('[data-toe-play]').click();await page.getByRole('button',{name:'← Menu',exact:true}).click();await expect(root).toHaveCount(0);await step(10000);
+  await expect(page.locator('[data-toe-play]')).toBeDisabled();await page.emulateMedia({reducedMotion:'no-preference'});await page.locator('[data-toe-play]').click();await page.getByRole('button',{name:'← Menu',exact:true}).click();await expect(root).toHaveCount(0);await step(10000);
   expect(await page.evaluate(()=>(window as any).toePending())).toBe(0);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
 

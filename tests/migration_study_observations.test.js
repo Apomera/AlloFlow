@@ -15,11 +15,11 @@ function view(seed = {}) {
     get state() { return state; },
     render() { ctx.toolData = { migration: state }; function Component() { tree = tool.render(ctx); return tree; } return ReactDOMServer.renderToStaticMarkup(React.createElement(Component)); },
     node(predicate) { return find(tree, predicate); },
-    label(label) { return find(tree, node => node.props?.['aria-label'] === label); },
+    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['aria-label'] === label)); },
     button(text) { return find(tree, node => node.type === 'button' && node.props.children === text); },
     region(region) { return find(tree, node => node.props?.['data-study-region'] === region); },
     select(region) { ui.region(region).props.onClick(); ui.render(); },
-    draft(text) { ui.label('Shape and motion observation').props.onChange({ target: { value: text } }); ui.render(); },
+    draft(text) { ui.label('migration-study-observation-note').props.onChange({ target: { value: text } }); ui.render(); },
     record() { ui.button('Record observation').props.onClick(); ui.render(); },
     species(id) { ui.label('3D migration focus species').props.onChange({ target: { value: id } }); ui.render(); },
     count() { return ui.node(node => node.props?.['data-study-evidence-count'] != null).props['data-study-evidence-count']; }
@@ -93,15 +93,15 @@ describe('Migration shape and motion observations', () => {
     expect(ui.count()).toBe(0);
     expect(ui.render()).toContain('Whole-insect wing motion');
     expect(ui.render()).toContain('These are butterfly wings');
-    expect(ui.label('Shape and motion observation').props.value).toBe('');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('');
     ui.draft('Both butterfly wing pairs move.'); ui.record();
     expect(ui.state.flightStudyObservations.records['monarch:whole-wing']).toMatchObject({ speciesId: 'monarch', region: 'whole-wing', note: 'Both butterfly wing pairs move.' });
     expect(ui.count()).toBe(1);
     ui.species('canada_goose'); ui.select('head');
-    expect(ui.label('Shape and motion observation').props.value).toBe('Goose bill observation.');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('Goose bill observation.');
     expect(ui.count()).toBe(2);
     ui.species('arctic_tern');
-    expect(ui.label('Shape and motion observation').props.value).toBe('');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('');
     expect(ui.count()).toBe(0);
     expect(Object.keys(ui.state.flightStudyObservations.records)).toHaveLength(3);
   });
@@ -114,29 +114,18 @@ describe('Migration shape and motion observations', () => {
     expect(ui.count()).toBe(1);
     expect(ui.state.flightStudyObservations.records['canada_goose:tail']).toBeUndefined();
     expect(ui.state.flightStudyObservations.records['canada_goose:head'].note).toBe('Head note.');
-    expect(ui.label('Shape and motion observation').props.value).toBe('Tail note.');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('Tail note.');
     expect(ui.render()).toContain('Your draft is still here');
     ui.record();
     expect(ui.count()).toBe(2);
   });
 
-  it('restores focus to the remaining draft input after removing the focused record button', () => {
-    vi.useFakeTimers();
-    const ui = view();
-    ui.draft('Keep this editable note.'); ui.record();
-    const details = document.createElement('details'); details.setAttribute('data-study-observation', ''); details.open = true;
-    const input = document.createElement('textarea'), button = document.createElement('button');
-    details.append(input, button); document.body.append(details); button.focus();
-    ui.button('Remove recorded observation').props.onClick();
-    button.remove(); ui.render(); vi.runAllTimers();
-    expect(document.activeElement).toBe(input);
-    expect(ui.label('Shape and motion observation').props.value).toBe('Keep this editable note.');
-  });
+  // Removal focus and ownership are exercised with real React DOM in migration_removal_focus.test.js.
 
   it('caps both drafts and saved notes at 1000 characters', () => {
     const ui = view();
     ui.draft('x'.repeat(1500)); ui.record();
-    expect(ui.label('Shape and motion observation').props.maxLength).toBe(1000);
+    expect(ui.label('migration-study-observation-note').props.maxLength).toBe(1000);
     expect(ui.state.flightStudyObservations.drafts['canada_goose:head']).toHaveLength(1000);
     expect(ui.state.flightStudyObservations.records['canada_goose:head'].note).toHaveLength(1000);
   });
@@ -160,9 +149,9 @@ describe('Migration shape and motion observations', () => {
     const html = ui.render();
     expect(html).toContain('&lt;script&gt;author text&lt;/script&gt;');
     expect(html).toContain('Individual 32');
-    expect(html).toContain('35° / -10°');
+    expect(html).toContain('35° / -60°');
     expect(html).toContain('Wing steps 1000000');
-    expect(ui.label('Shape and motion observation').props.value).toBe('<script>author text</script>');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('<script>author text</script>');
     ui.record();
     expect(Object.keys(ui.state.flightStudyObservations.records)).toEqual(['canada_goose:head']);
   });
@@ -172,7 +161,7 @@ describe('Migration shape and motion observations', () => {
       'canada_goose:head': { speciesId: 'canada_goose', region: 'head', note: ' '.repeat(1000) + 'Outside the retained note' }
     } } });
     expect(ui.count()).toBe(0);
-    expect(ui.label('Shape and motion observation').props.value).toBe('');
+    expect(ui.label('migration-study-observation-note').props.value).toBe('');
     expect(ui.button('Record observation').props.disabled).toBe(true);
   });
 

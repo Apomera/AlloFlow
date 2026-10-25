@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadAvianFeatherArt } from './helpers/avian_feather_art_fixture.js';
 
@@ -11,6 +12,19 @@ const art = () => loadAvianFeatherArt();
 const raptorScripts = () => [...document.querySelectorAll('script[data-raptor-feather-art]')];
 const birdScripts = () => [...document.querySelectorAll('script[data-birdlab-3d-script]')];
 let previousArt, previousThree, previousBird, previousWoodland, previousMammals;
+let previousDispatcher;
+const createDeliveryPolicy = new Function('URL', readFileSync('browser_delivery_policy.js', 'utf8') + '\nreturn _alloCreateBrowserDeliveryPolicy;')(URL);
+const companionNames = ['avian_feather_art.js', 'avian_woodland_birds.js', 'birdlab_3d_bird.js', 'birdlab_3d_habitat.js',
+  'birdlab_3d_wildlife.js', 'birdlab_3d_mammals.js', 'birdlab_3d_engine.js'];
+function fixtureDispatcher() {
+  const assets = Object.fromEntries(companionNames.map(name => {
+    const bytes = readFileSync('stem_lab/' + name);
+    return ['stem_lab/' + name, { integrity: 'sha384-' + createHash('sha384').update(bytes).digest('base64'), bytes: bytes.length }];
+  }));
+  const policy = createDeliveryPolicy({ schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null,
+    allowDesktopRemoteFallback: false, assets }, { baseUrl: 'https://local.invalid/offline/' });
+  return (script, url) => policy.configureScript(script, url);
+}
 const woodland = () => { const local = {}; new Function('window', readFileSync('stem_lab/avian_woodland_birds.js', 'utf8'))(local); return local.AvianWoodlandBirds; };
 
 function raptorLoader() {
@@ -37,6 +51,8 @@ beforeEach(() => {
   previousBird = window.BirdLab3D;
   previousWoodland = window.AvianWoodlandBirds;
   previousMammals = window.BirdLab3DMammals;
+  previousDispatcher = Object.getOwnPropertyDescriptor(window, '__alloConfigureTrustedScript');
+  Object.defineProperty(window, '__alloConfigureTrustedScript', { value: fixtureDispatcher(), writable: false, configurable: true });
   delete window.AvianFeatherArt;
   delete window.THREE;
   delete window.BirdLab3D;
@@ -48,6 +64,8 @@ afterEach(() => {
   for (const [key, value] of [['AvianFeatherArt', previousArt], ['THREE', previousThree], ['BirdLab3D', previousBird], ['AvianWoodlandBirds', previousWoodland], ['BirdLab3DMammals', previousMammals]]) {
     if (value === undefined) delete window[key]; else window[key] = value;
   }
+  if (previousDispatcher) Object.defineProperty(window, '__alloConfigureTrustedScript', previousDispatcher);
+  else delete window.__alloConfigureTrustedScript;
   vi.useRealTimers();
 });
 

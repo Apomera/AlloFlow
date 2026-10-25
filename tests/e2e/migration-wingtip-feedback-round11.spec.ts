@@ -371,8 +371,8 @@ test('Migration historical pair feedback distinguishes controlled, confounded an
   }
   const tray = page.locator('[data-experiment-pair-review]');
   await keyboardClick(page, tray.getByRole('button', { name: 'Add evidence', exact: true }));
-  await expect(page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true })).toBeFocused();
-  await expect(page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true })).toHaveValue(seed.flightInvestigation.evidence);
+  await expect(page.getByRole('textbox', { name: 'Evidence I noticed', exact: true })).toBeFocused();
+  await expect(page.getByRole('textbox', { name: 'Evidence I noticed', exact: true })).toHaveValue(seed.flightInvestigation.evidence);
   expect(retainedLearning(await saved(page))).toEqual(retainedLearning(before));
   const after = await saved(page);
   await keyboardClick(page, tray.getByRole('button', { name: 'Close saved trial review', exact: true }));
@@ -408,7 +408,7 @@ for (const dark of [false, true]) test.describe('phone ' + (dark ? 'dark' : 'lig
     const trial = await saved(page); expect(trial).toMatchObject({ flightSpecies: 'snow_goose', flightSeason: 'spring', flightFormation: 'v', flightWind: -10 });
     expect(learnerRecords(trial)).toEqual(learnerRecords(before)); await tray.screenshot({ path: join(report, stem + '-saved-pair.png') });
     await tray.getByRole('button', { name: 'Add evidence', exact: true }).tap();
-    await expect(page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true })).toBeFocused();
+    await expect(page.getByRole('textbox', { name: 'Evidence I noticed', exact: true })).toBeFocused();
     await page.addScriptTag({ content: axeSource });
     const review = await page.evaluate(async () => {
       const result = await (window as any).axe.run(document.querySelector('#wrap'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } });

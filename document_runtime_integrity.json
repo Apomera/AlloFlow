@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "pdf-lib": {
+      "kind": "script",
+      "path": "runtime_assets/document/pdf-lib-1.17.1/pdf-lib.min.js",
+      "bytes": 525099,
+      "sha384": "c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js",
+          "bytes": 525099,
+          "sha384": "c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008"
+        },
+        {
+          "url": "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js",
+          "bytes": 525099,
+          "sha384": "c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008"
+        },
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
+          "bytes": 525099,
+          "sha384": "c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/pdf-lib/1.17.1/pdf-lib.min.js"
+      ],
+      "closed": true
+    },
+    "pdfjs.main": {
+      "kind": "script",
+      "path": "runtime_assets/document/pdfjs-3.11.174/pdf.min.js",
+      "bytes": 320004,
+      "sha384": "ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e",
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+          "bytes": 320004,
+          "sha384": "ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js",
+          "bytes": 320004,
+          "sha384": "ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e"
+        },
+        {
+          "url": "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js",
+          "bytes": 320004,
+          "sha384": "ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js"
+      ],
+      "dependencies": [
+        "pdfjs.worker"
+      ],
+      "closed": true
+    },
+    "pdfjs.worker": {
+      "kind": "worker",
+      "path": "runtime_assets/document/pdfjs-3.11.174/pdf.worker.min.js",
+      "bytes": 1087212,
+      "sha384": "4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76",
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+          "bytes": 1087212,
+          "sha384": "4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js",
+          "bytes": 1087212,
+          "sha384": "4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76"
+        },
+        {
+          "url": "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js",
+          "bytes": 1087212,
+          "sha384": "4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.worker.min.js"
+      ],
+      "closed": true
+    },
+    "pako": {
+      "kind": "script",
+      "path": "runtime_assets/document/pako-2.1.0/pako.min.js",
+      "bytes": 46859,
+      "sha384": "acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js",
+          "bytes": 46859,
+          "sha384": "acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23"
+        },
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js",
+          "bytes": 46859,
+          "sha384": "acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23"
+        },
+        {
+          "url": "https://unpkg.com/pako@2.1.0/dist/pako.min.js",
+          "bytes": 46859,
+          "sha384": "acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23"
+        }
+      ],
+      "closed": true
+    },
+    "tesseract.main": {
+      "kind": "script",
+      "path": "runtime_assets/document/tesseract-5.1.1/tesseract.min.js",
+      "bytes": 66695,
+      "sha384": "189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js",
+          "bytes": 66695,
+          "sha384": "189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45"
+        },
+        {
+          "url": "https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js",
+          "bytes": 66695,
+          "sha384": "189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45"
+        }
+      ],
+      "dependencies": [
+        "tess.bootstrap"
+      ],
+      "closed": true
+    },
+    "mammoth": {
+      "kind": "script",
+      "path": "runtime_assets/document/mammoth-1.6.0/mammoth.browser.min.js",
+      "bytes": 642759,
+      "sha384": "9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3",
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js",
+          "bytes": 642759,
+          "sha384": "9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js",
+          "bytes": 642759,
+          "sha384": "9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/mammoth/1.6.0/mammoth.browser.min.js"
+      ],
+      "closed": true
+    },
+    "jszip": {
+      "kind": "script",
+      "path": "runtime_assets/document/jszip-3.10.1/jszip.min.js",
+      "bytes": 97630,
+      "sha384": "fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6",
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+          "bytes": 97630,
+          "sha384": "fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
+          "bytes": 97630,
+          "sha384": "fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/jszip/3.10.1/jszip.min.js"
+      ],
+      "closed": true
+    },
+    "fontkit": {
+      "kind": "script",
+      "path": "runtime_assets/document/fontkit-1.1.1/fontkit.umd.min.js",
+      "bytes": 758440,
+      "sha384": "da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js",
+          "bytes": 758440,
+          "sha384": "da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7"
+        },
+        {
+          "url": "https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js",
+          "bytes": 758440,
+          "sha384": "da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7"
+        }
+      ],
+      "closed": true
+    },
+    "sheetjs.0.20.1": {
+      "kind": "script",
+      "path": "runtime_assets/document/sheetjs-0.20.1/xlsx.full.min.js",
+      "bytes": 944491,
+      "sha384": "40221dab650c544a12461477656670773dbfa62bcba30afe7a890531d632ba4abba88dba55847115ae0d97a14a7ad98b",
+      "mirrors": [
+        {
+          "url": "https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js",
+          "bytes": 944491,
+          "sha384": "40221dab650c544a12461477656670773dbfa62bcba30afe7a890531d632ba4abba88dba55847115ae0d97a14a7ad98b"
+        }
+      ],
+      "closed": true
+    },
+    "sheetjs.0.18.5": {
+      "kind": "script",
+      "path": "runtime_assets/document/sheetjs-0.18.5/xlsx.full.min.js",
+      "bytes": 881727,
+      "sha384": "bed8dab3289d528d245bde0ae4c5c35e7b73389a50801297984eded866b82c6d2c9134cb7818bdede1405eca9ec098f0",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+          "bytes": 881727,
+          "sha384": "bed8dab3289d528d245bde0ae4c5c35e7b73389a50801297984eded866b82c6d2c9134cb7818bdede1405eca9ec098f0"
+        }
+      ],
+      "closed": true
+    },
+    "axe-core": {
+      "kind": "script",
+      "path": "runtime_assets/document/axe-core-4.12.1/axe.min.js",
+      "bytes": 572599,
+      "sha384": "2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js",
+          "bytes": 572599,
+          "sha384": "2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179"
+        },
+        {
+          "url": "https://unpkg.com/axe-core@4.12.1/axe.min.js",
+          "bytes": 572599,
+          "sha384": "2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/axe-core/4.12.1/axe.min.js"
+      ],
+      "closed": true
+    },
+    "dompurify": {
+      "kind": "script",
+      "path": "runtime_assets/document/dompurify-3.1.7/purify.min.js",
+      "bytes": 21531,
+      "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js",
+          "bytes": 21531,
+          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+        },
+        {
+          "url": "https://unpkg.com/dompurify@3.1.7/dist/purify.min.js",
+          "bytes": 21531,
+          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+        },
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.7/purify.min.js",
+          "bytes": 21531,
+          "sha384": "5d0a97ff8ca2506bbea32afcee3bd6cd1baa0542bf69dad8d03ba784bfad203f66ffd7704a957c87d164fd283a89f550"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/dompurify/3.1.7/purify.min.js"
+      ],
+      "closed": true
+    },
+    "temml": {
+      "kind": "script",
+      "path": "runtime_assets/document/temml-0.10.34/temml.min.js",
+      "bytes": 158417,
+      "sha384": "69cb9e20399c836df9f2012744197313cd41fbfef3726dd6051a32d64ef63d65e8c2ec7bde888cf4e055421da143e895",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js",
+          "bytes": 158208,
+          "sha384": "21254a17061824038a3dc7e46210551e351560b222bb0084a3ffb27ee0ec7adbb728d6af4a6c392447a569a20422d2e3"
+        },
+        {
+          "url": "https://unpkg.com/temml@0.10.34/dist/temml.min.js",
+          "bytes": 158208,
+          "sha384": "21254a17061824038a3dc7e46210551e351560b222bb0084a3ffb27ee0ec7adbb728d6af4a6c392447a569a20422d2e3"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/temml/temml.min.js"
+      ],
+      "closed": true
+    },
+    "ibm-ace": {
+      "kind": "script",
+      "path": "runtime_assets/document/ibm-ace-3.1.83/ace.js",
+      "bytes": 583961,
+      "sha384": "7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js",
+          "bytes": 583961,
+          "sha384": "7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13"
+        },
+        {
+          "url": "https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js",
+          "bytes": 583961,
+          "sha384": "7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13"
+        }
+      ],
+      "aliases": [
+        "https://alloflow-cdn.pages.dev/accessibility-checker-engine/3.1.83/ace.js"
+      ],
+      "closed": true
+    },
+    "tess.worker": {
+      "kind": "worker",
+      "path": "runtime_assets/document/tesseract-5.1.1/worker.min.js",
+      "bytes": 123724,
+      "sha384": "cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js@v5.1.1/dist/worker.min.js",
+          "bytes": 123724,
+          "sha384": "cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b"
+        },
+        {
+          "url": "https://unpkg.com/tesseract.js@5.1.1/dist/worker.min.js",
+          "bytes": 123724,
+          "sha384": "cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b"
+        }
+      ],
+      "dependencies": [
+        "tess.core-lstm",
+        "tess.core-simd-lstm"
+      ],
+      "closed": true
+    },
+    "tess.core-lstm": {
+      "kind": "script",
+      "path": "runtime_assets/document/tesseract-core-5.1.1/tesseract-core-lstm.wasm.js",
+      "bytes": 3938277,
+      "sha384": "10a598e490f0a61428cb186f614ede68273243411d57a7d92b72f6bf37d972fda272145d35dea94a7c963cdbfa7ccb91",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-lstm.wasm.js",
+          "bytes": 3938277,
+          "sha384": "10a598e490f0a61428cb186f614ede68273243411d57a7d92b72f6bf37d972fda272145d35dea94a7c963cdbfa7ccb91"
+        }
+      ],
+      "dependencies": [
+        "tess.wasm-lstm"
+      ],
+      "closed": true
+    },
+    "tess.core-simd-lstm": {
+      "kind": "script",
+      "path": "runtime_assets/document/tesseract-core-5.1.1/tesseract-core-simd-lstm.wasm.js",
+      "bytes": 3938657,
+      "sha384": "60cd46fb3696632f554913f60b5d352c283387b9f71ea6fa3849bda83a196200800ec9e2de79c40ac902dd689a95007b",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-simd-lstm.wasm.js",
+          "bytes": 3938657,
+          "sha384": "60cd46fb3696632f554913f60b5d352c283387b9f71ea6fa3849bda83a196200800ec9e2de79c40ac902dd689a95007b"
+        }
+      ],
+      "dependencies": [
+        "tess.wasm-simd-lstm"
+      ],
+      "closed": true
+    },
+    "tess.wasm-lstm": {
+      "kind": "wasm",
+      "path": "runtime_assets/document/tesseract-core-5.1.1/tesseract-core-lstm.wasm",
+      "bytes": 2859424,
+      "sha384": "df7a35a910bc1c52d19df7b7aadbeef5c232465e76b64b27cfcf13c96f6617e497b990c685c5faa479c42257990c1f12",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-lstm.wasm",
+          "bytes": 2859424,
+          "sha384": "df7a35a910bc1c52d19df7b7aadbeef5c232465e76b64b27cfcf13c96f6617e497b990c685c5faa479c42257990c1f12"
+        }
+      ],
+      "closed": true
+    },
+    "tess.wasm-simd-lstm": {
+      "kind": "wasm",
+      "path": "runtime_assets/document/tesseract-core-5.1.1/tesseract-core-simd-lstm.wasm",
+      "bytes": 2859709,
+      "sha384": "bd16ffe830758737202a5e52c1753073184f237a437155acf30d395ea45e69c898d9397686f9a5aad467fd13be916eb1",
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-simd-lstm.wasm",
+          "bytes": 2859709,
+          "sha384": "bd16ffe830758737202a5e52c1753073184f237a437155acf30d395ea45e69c898d9397686f9a5aad467fd13be916eb1"
+        }
+      ],
+      "closed": true
+    },
+    "tess.bootstrap": {
+      "kind": "worker",
+      "path": "runtime_assets/document/tesseract-5.1.1/bootstrap.js",
+      "bytes": 1788,
+      "sha384": "568f4a7fbdf70f8a6484d278a0729de79242ab569f9cfab6b9e696b072f79a4234c426ef0671ff573541a18bdd2da6aa",
+      "mirrors": [],
+      "dependencies": [
+        "tess.worker",
+        "tess.core-lstm",
+        "tess.core-simd-lstm",
+        "tess.wasm-lstm",
+        "tess.wasm-simd-lstm"
+      ],
+      "closed": true
+    }
+  },
+  "graphs": {
+    "pdfjs": {
+      "assets": [
+        "pdfjs.main",
+        "pdfjs.worker"
+      ],
+      "bindings": {
+        "worker": "pdfjs.worker"
+      }
+    },
+    "pdfjs-raster": {
+      "assets": [
+        "pdfjs.main",
+        "pdfjs.worker"
+      ],
+      "scripts": [
+        "pdfjs.main",
+        "pdfjs.worker"
+      ],
+      "bindings": {
+        "worker": "pdfjs.worker"
+      }
+    },
+    "tesseract": {
+      "assets": [
+        "tesseract.main",
+        "tess.worker",
+        "tess.core-lstm",
+        "tess.core-simd-lstm",
+        "tess.wasm-lstm",
+        "tess.wasm-simd-lstm",
+        "tess.bootstrap"
+      ],
+      "bindings": {
+        "worker": "tess.bootstrap",
+        "lstmWasm": "tess.wasm-lstm",
+        "simdLstmWasm": "tess.wasm-simd-lstm"
+      }
+    }
+  }
+}

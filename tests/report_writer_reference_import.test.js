@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Adding a Report Writer reference from a file, through Lumen's document
 // reader (window.LumenDocuments.extractLocalDocument). References used to be
 // paste-only, and a regulation usually arrives as a PDF. The reader is replaced

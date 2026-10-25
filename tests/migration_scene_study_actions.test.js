@@ -127,7 +127,7 @@ describe('Scene-adjacent migration comparison actions', () => {
     expect(ui.host.querySelector('[data-study-stage-cycle-position]').getAttribute('data-study-stage-cycle-position')).toBe(String(target));
     expect(document.activeElement).toBe(button); expect(JSON.stringify(ui.state)).toBe(before); expect(fixedExperiment(ui)).toEqual(fixed);
     expect(ui.writes).toEqual([{ flightPaused: true }]);
-    expect(ui.announce).toHaveBeenLastCalledWith('Selected opposite cycle position ' + (target + 1) + '. Flight paused. Keep the view fixed and describe what you see.');
+    expect(ui.host.querySelector('[data-scene-feedback]').textContent).toBe('Selected opposite cycle position ' + (target + 1) + '. Flight paused. Keep the view fixed and describe what you see.');
     ui.click(ui.oldOpposite());
     expect(ui.cycle().getAttribute('data-scene-study-cycle')).toBe(String(index));
     expect(JSON.stringify(ui.state)).toBe(before); expect(fixedExperiment(ui)).toEqual(fixed);
@@ -172,7 +172,7 @@ describe('Scene-adjacent migration comparison actions', () => {
     ui.set({ flightShowWingtipPath: false, flightStudyObservationOpen: false }); expect(ui.strip()).not.toBeNull();
     expect(ui.stage.closest('[data-migration-3d-flight]').getAttribute('data-study-strip')).toBe('true');
     expect(ui.strip().querySelector('[data-scene-study-species]').textContent).toContain('Canada Goose');
-    expect(ui.strip().querySelector('.migration-study-scene-buttons')).toBeNull();
+    expect([...ui.strip().querySelectorAll('.migration-study-scene-buttons button')].map(button => button.textContent)).toEqual(['Fit whole model', 'Turn view 180°']);
     ui.set({ flightStudyObservationOpen: true }); expect(ui.strip()).not.toBeNull(); expect(ui.opposite()).toBeNull();
     expect(ui.strip().querySelector('[data-study-scene-action="continue-note"]')).not.toBeNull();
     ui.set({ flightCamera: 'chase' }); expect(ui.strip()).toBeNull();
@@ -209,6 +209,6 @@ describe('Scene-adjacent migration comparison actions', () => {
     const before = JSON.stringify({ state: ui.state, live: ui.live, time: ui.engine.time, phase: ui.engine.wingStepPhase });
     act(() => { retained(); });
     expect(JSON.stringify({ state: ui.state, live: ui.live, time: ui.engine.time, phase: ui.engine.wingStepPhase })).toBe(before);
-    expect(ui.writes).toEqual([]); expect(ui.announce).toHaveBeenCalledExactlyOnceWith('Choose a numbered cycle position in a ready Study view first.');
+    expect(ui.writes).toEqual([]); expect(ui.host.querySelector('[data-scene-feedback]').textContent).toBe('Choose a numbered cycle position in a ready Study view first.'); expect(ui.announce).not.toHaveBeenCalled();
   });
 });

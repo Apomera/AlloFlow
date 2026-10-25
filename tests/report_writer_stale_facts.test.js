@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Score facts that no longer match Step 4.
 //
 // WHY (2026-09-23): the report is written from fact chunks, which copy each
@@ -14,6 +18,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import axe from 'axe-core';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let U, React, createRoot;
@@ -57,7 +62,7 @@ describe('which score facts are stale', () => {
 describe('in the workflow', () => {
   let mounted = null;
   afterEach(async () => { if (mounted) { await React.act(async () => mounted.root.unmount()); mounted.host.remove(); mounted = null; } });
-  const act = (fn) => React.act(async () => { await fn(); });
+  const act = (fn) => actWithSensitivePromptReview(React, fn);
   const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
   it('a percentile corrected after extraction is flagged, and updating refreshes only that fact', async () => {

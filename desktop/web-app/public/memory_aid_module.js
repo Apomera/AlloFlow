@@ -3353,7 +3353,7 @@ function MemoryAidView(props) {
       return;
     }
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Memory Aid</title></head><body>' + renderMemoryAidPreset(printable.data, preset, tr) + "</body></html>");
+    popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || "en").replace(/[^\w-]/g, "") + '"' + (document.documentElement.dir === "rtl" ? ' dir="rtl"' : "") + '><head><meta charset="utf-8"><title>Memory Aid</title></head><body>' + renderMemoryAidPreset(printable.data, preset, tr) + "</body></html>");
     popup.document.close();
   };
   const addCard = () => {

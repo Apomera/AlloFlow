@@ -136,7 +136,8 @@ describe('Migration scene-adjacent saved flight pair review', () => {
 
   it('focuses existing evidence without inserting prose or writing any stored work', () => {
     const work = notebook(); const ui = fixture({ flightInvestigation: work }); ui.click(ui.revisit()); ui.writes.length = 0;
-    ui.click(ui.pair('evidence'));
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
+    evidenceAction.focus(); act(() => evidenceAction.click());
     expect(document.activeElement?.id).toBe('migration-experiment-evidence'); expect(ui.writes).toEqual([]);
     expect(ui.state.flightInvestigation).toBe(work); expect(work.evidence).toBe('Recorded evidence.'); expect(work.explanation).toBe('My explanation.');
   });
@@ -173,8 +174,8 @@ describe('Migration scene-adjacent saved flight pair review', () => {
 
   it('retains its source while current notes and prediction are revised without rewriting the captured prediction', () => {
     const ui = fixture(); ui.click(ui.revisit());
-    act(() => { ui.node(node => node.props?.['aria-label'] === 'Flight investigation evidence notes').props.onChange({ target: { value: 'My new evidence.' } }); });
-    act(() => { ui.node(node => node.props?.['aria-label'] === 'Flight investigation prediction').props.onChange({ target: { value: 'My revised current prediction.' } }); });
+    act(() => { ui.node(node => node.props?.id === 'migration-experiment-evidence').props.onChange({ target: { value: 'My new evidence.' } }); });
+    act(() => { ui.node(node => node.props?.id === 'migration-experiment-prediction').props.onChange({ target: { value: 'My revised current prediction.' } }); });
     expect(ui.review()).not.toBeNull(); expect(ui.state.flightInvestigation.evidence).toBe('My new evidence.');
     expect(ui.host.querySelector('[data-experiment-pair-review]').textContent).toContain('The wind will change modeled ground speed.');
     expect(ui.host.querySelector('[data-experiment-pair-review]').textContent).not.toContain('My revised current prediction.');
@@ -214,9 +215,12 @@ describe('Migration scene-adjacent saved flight pair review', () => {
   });
 
   it('keeps removal focus on the remaining Remove action rather than a new pair-review switch', () => {
-    vi.useFakeTimers(); const ui = fixture({ flightInvestigation: notebook([trial(), trial({ snapshot: snapshot({ wind: 20 }) })]) });
-    ui.click(ui.revisit(2)); ui.click(ui.node(node => node.props?.['aria-label'] === 'Remove trial 1'));
-    act(() => { vi.runOnlyPendingTimers(); });
+    const ui = fixture({ flightInvestigation: notebook([trial(), trial({ snapshot: snapshot({ wind: 20 }) })]) });
+    ui.click(ui.revisit(2));
+    const remove = ui.host.querySelector('[data-trial-remove="1"]');
+    remove.focus();
+    act(() => remove.click());
+    expect(document.activeElement).toBe(remove);
     expect(document.activeElement?.getAttribute('aria-label')).toBe('Remove trial 1'); expect(ui.review()).toBeNull();
   });
 
@@ -224,7 +228,9 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     const ui = fixture(); ui.click(ui.revisit()); ui.writes.length = 0;
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: ui.host.querySelector('#migration-flight-deck') });
     document.exitFullscreen = vi.fn(() => { delete document.fullscreenElement; return Promise.resolve(); });
-    await act(async () => { ui.pair('evidence').props.onClick(); await Promise.resolve(); });
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
+    evidenceAction.focus();
+    await act(async () => { evidenceAction.click(); await Promise.resolve(); });
     expect(document.exitFullscreen).toHaveBeenCalledOnce(); expect(document.activeElement?.id).toBe('migration-experiment-evidence'); expect(ui.writes).toEqual([]);
   });
 
@@ -233,7 +239,8 @@ describe('Migration scene-adjacent saved flight pair review', () => {
     const ui = fixture({ deviceReduceMotion: true }); ui.click(ui.revisit()); ui.writes.length = 0;
     const deck = ui.host.querySelector('#migration-flight-deck'); deck.setAttribute('data-allo-fullscreen-active', 'true');
     vi.stubGlobal('__alloStemFS', vi.fn(node => node.removeAttribute('data-allo-fullscreen-active')));
-    ui.click(ui.pair('evidence'));
+    const evidenceAction = ui.host.querySelector('[data-trial-evidence-return]');
+    evidenceAction.focus(); act(() => evidenceAction.click());
     expect(window.__alloStemFS).toHaveBeenCalledWith(deck); expect(document.activeElement?.id).toBe('migration-experiment-evidence');
     expect(ui.writes).toEqual([]); expect(ui.state.deviceReduceMotion).toBe(true); expect(ui.state.flightPaused).toBe(true);
   });

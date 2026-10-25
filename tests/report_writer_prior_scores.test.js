@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Prior scores for a reevaluation.
 //
 // WHY (2026-09-23): most evaluations are reevaluations, and the report compares
@@ -15,6 +19,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import axe from 'axe-core';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let U, PC, React, createRoot;
@@ -77,7 +82,7 @@ describe('what the AI and the reader are given', () => {
 describe('in the workflow', () => {
   let mounted = null;
   afterEach(async () => { if (mounted) { await React.act(async () => mounted.root.unmount()); mounted.host.remove(); mounted = null; } });
-  const act = (fn) => React.act(async () => { await fn(); });
+  const act = (fn) => actWithSensitivePromptReview(React, fn);
   const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   const setValue = (el, value) => {
     const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;

@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
-import { createHash } from 'node:crypto';
+import { createHash, webcrypto } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
 const { postbuild } = require('../desktop/web-app/postbuild.js');
@@ -41,13 +41,13 @@ function fixture() {
     };
 }
 
-function workerHarness(source, fetchShell) {
+function workerHarness(source, fetchShell, readAsset) {
     const events = new Map(), put = vi.fn(() => Promise.resolve()), skipWaiting = vi.fn();
     const self = { registration: { scope: 'https://example.test/app/' }, addEventListener: (name, handler) => events.set(name, handler), skipWaiting };
     vm.runInNewContext(source, {
-        self, URL, Response, console: { log() {} },
+        self, URL, Response, TextDecoder, crypto: webcrypto, console: { log() {} },
         caches: { open: async () => ({ put }) },
-        fetch: async url => new Response(url.endsWith('/index.html') ? fetchShell : '/* asset */')
+        fetch: async url => new Response(url.endsWith('/index.html') ? fetchShell : readAsset(new URL(url).pathname.replace('/app/', '')))
     });
     return { events, put, skipWaiting };
 }
@@ -153,7 +153,7 @@ describe('app release identity', () => {
         expect(app.run(3000)).toEqual(initial);
         expect(app.read('index.html')).toBe(initialHtml);
         expect(app.read('sw.js')).toBe(initialWorker);
-        expect(initialHtml.indexOf('window.__alloReleaseId')).toBeLessThan(initialHtml.indexOf('src="/alloflow_update.js"'));
+        expect(initialHtml.indexOf('window.__alloReleaseId')).toBeLessThan(initialHtml.indexOf('src="./alloflow_update.js"'));
         expect(initialWorker).toContain("'" + initial.releaseId + "'");
         expect(initialWorker).toContain('const RELEASE_BUILT_AT = 1000;');
         expect(initialWorker).toContain('"./alloflow_update.js"');
@@ -194,10 +194,10 @@ describe('app release identity', () => {
     it('reports worker release metadata through the request MessagePort without activating', () => {
         vi.spyOn(console, 'log').mockImplementation(() => {});
         const app = fixture(), release = app.run();
-        const { events, skipWaiting } = workerHarness(app.read('sw.js'), app.read('index.html'));
+        const { events, skipWaiting } = workerHarness(app.read('sw.js'), app.read('index.html'), app.read);
         const postMessage = vi.fn();
         events.get('message')({ data: { type: 'ALLOFLOW_GET_RELEASE' }, ports: [{ postMessage }] });
-        expect(postMessage).toHaveBeenCalledWith({ type: 'ALLOFLOW_RELEASE', ...release });
+        expect(postMessage).toHaveBeenCalledWith({ type: 'ALLOFLOW_RELEASE', releaseId: release.releaseId, releaseBuiltAt: release.releaseBuiltAt });
         expect(skipWaiting).not.toHaveBeenCalled();
     });
 
@@ -206,15 +206,15 @@ describe('app release identity', () => {
         const app = fixture(); app.run();
         for (const [html, accepted] of [[app.read('index.html'), true], [shell, false],
             [app.read('index.html').replace(/window\.__alloReleaseId="[^"]+"/, 'window.__alloReleaseId="ffff"'), false]]) {
-            const { events, put } = workerHarness(app.read('sw.js'), html);
+            const { events, put } = workerHarness(app.read('sw.js'), html, app.read);
             let install;
             events.get('install')({ waitUntil: promise => { install = promise; } });
             if (accepted) {
-                await expect(install).resolves.toBeDefined();
+                await expect(install).resolves.toBeUndefined();
                 expect(put).toHaveBeenCalledWith('https://example.test/app/index.html', expect.any(Response));
             } else {
-                await expect(install).rejects.toThrow('shell release does not match worker');
-                expect(put.mock.calls.some(([url]) => url.endsWith('/index.html'))).toBe(false);
+                await expect(install).rejects.toThrow(/release asset (?:digest|length) mismatch/);
+                expect(put).not.toHaveBeenCalled();
             }
         }
     });

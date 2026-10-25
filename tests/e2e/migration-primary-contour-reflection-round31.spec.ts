@@ -54,14 +54,14 @@ async function reflectionFlow(page: Page, touch: boolean, name: string) {
   await expect(root(page).locator('[data-flight-challenge-action="check"]')).toBeDisabled();
   await expect(root(page)).toContainText('You can still add a later reflection to any saved attempt.');
   await expect(evidence(page)).toHaveAttribute('data-recorded', 'false');
-  const currentNotes = root(page).getByRole('textbox', { name: 'Flight challenge explanation', exact: true });
+  const currentNotes = root(page).getByRole('textbox', { name: 'My explanation: what numbers or route changes support my claim?', exact: true });
   await currentNotes.focus(); await currentNotes.evaluate(node => { const field = node as HTMLTextAreaElement; field.setSelectionRange(3, 14, 'backward'); (window as any).__round31CurrentNotes = field; });
   const beforeDraft = await writes(page); await openDetails(page, reflection(page), touch); await activate(page, action(page, 'edit'), touch);
   await expect(input(page)).toBeFocused(); await expect(action(page, 'save')).toBeDisabled(); await input(page).fill(laterWords);
   expect(await writes(page)).toEqual(beforeDraft); expect(await data(page)).toEqual(original);
   await input(page).evaluate(node => { const field = node as HTMLTextAreaElement; field.setSelectionRange(5, 23, 'backward'); (window as any).__round31Reflection = field; });
   const revisedPrediction = 'My revised current wind prediction stays separate from this old flight.';
-  await root(page).getByRole('textbox', { name: 'Flight challenge prediction', exact: true }).fill(revisedPrediction);
+  await root(page).getByRole('textbox', { name: 'My prediction: which control will I change, and why?', exact: true }).fill(revisedPrediction);
   expect(await input(page).evaluate(node => ({ same: node === (window as any).__round31Reflection, start: (node as HTMLTextAreaElement).selectionStart, end: (node as HTMLTextAreaElement).selectionEnd, direction: (node as HTMLTextAreaElement).selectionDirection }))).toEqual({ same: true, start: 5, end: 23, direction: 'backward' });
   expect(await currentNotes.evaluate(node => ({ same: node === (window as any).__round31CurrentNotes, start: (node as HTMLTextAreaElement).selectionStart, end: (node as HTMLTextAreaElement).selectionEnd, direction: (node as HTMLTextAreaElement).selectionDirection }))).toEqual({ same: true, start: 3, end: 14, direction: 'backward' });
   const sizeDiagnostics = async () => reflection(page).locator('button:visible').evaluateAll(nodes => nodes.map(node => {
@@ -97,7 +97,7 @@ async function reflectionFlow(page: Page, touch: boolean, name: string) {
   }
   expectStable(await scene(page), originalScene);
   const beforeTab = await data(page);
-  for (const id of ['#migration-tab-inquiry', '#migration-tab-flight3d']) {
+  for (const id of ['[data-migration-tab="inquiry"]', '[data-migration-tab="flight3d"]']) {
     const tab = page.locator(id); if (touch) await tab.tap(); else { await tab.focus(); await page.keyboard.press('Enter'); }
   }
   await expect(stage(page)).toHaveAttribute('data-flight-ready', 'true');

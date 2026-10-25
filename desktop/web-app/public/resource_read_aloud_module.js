@@ -62,7 +62,11 @@
   }
   function enumerate(resource, options = {}) {
     if (!resource || !adapters.has(resource.type)) return [];
-    const language = text(options.defaultLanguage || resource.language || resource.data?.language || resource.data?.lessonRef?.language) || 'English';
+    const savedLanguage = modules().TextPipelineHelpers?.getArtifactPrimaryLanguage;
+    const language = typeof savedLanguage === 'function'
+      ? savedLanguage(resource, options.defaultLanguage || 'English')
+      : text(resource.config?.language || resource.language || resource.instructionalText?.complexity?.language
+        || resource.data?.language || resource.data?.lessonRef?.language || options.defaultLanguage) || 'English';
     const segments = [];
     const add = (id, value, extra = {}) => {
       const valueText = spoken(value);

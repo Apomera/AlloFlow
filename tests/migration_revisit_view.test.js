@@ -102,7 +102,7 @@ describe('Migration recorded view revisit actions', () => {
   it('normalizes imported camera and step settings before restoring them', () => {
     const ui = fixture({ flightStudyObservations: { records: { 'canada_goose:head': recorded('canada_goose', 'head', { bird: 999, yaw: 999, pitch: -999, zoom: 999, wingStep: 9999999 }) } } });
     ui.revisit('observation');
-    expect(ui.state).toMatchObject({ flightStudyYaw: 180, flightStudyPitch: -10, flightStudyZoom: 1.6, flightWingStep: 1000000, flightPaused: true });
+    expect(ui.state).toMatchObject({ flightStudyYaw: 180, flightStudyPitch: -60, flightStudyZoom: 1.6, flightWingStep: 1000000, flightPaused: true });
     expect(ui.state.flightStudyBird).toBeGreaterThanOrEqual(0); expect(ui.state.flightStudyBird).toBeLessThan(32);
     const malformed = fixture({ flightStudyObservations: { records: { 'canada_goose:head': recorded('constructor', 'head') }, comparison: { saved: { firstKey: 'constructor:head', secondKey: 'toString:tail', claim: 'Malformed sources.', first: {}, second: {} } } } });
     expect(malformed.action('observation')).toBeNull(); expect(malformed.action('comparison-first')).toBeNull(); expect(malformed.action('comparison-second')).toBeNull();

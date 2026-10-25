@@ -20,6 +20,26 @@ function render(url = 'https://alloflow.dev/library') {
   return dom;
 }
 
+describe('separate review and reuse presentation', () => {
+  it('shows review placeholders as review status, never a license', () => {
+    const result = links.renderReviewAndReuse({license:'Teacher review required'});
+    expect(result.review).toContain('Educator review pending');
+    expect(result.reuse).toContain('Reuse terms not specified');
+    expect(result.reuse).not.toContain('pack-license');
+  });
+  it('keeps an explicit license distinct from a pending educator review', () => {
+    const result = links.renderReviewAndReuse({license:'CC-BY-4.0',review_status:'AI content and structural checks; educator review pending'});
+    expect(result.review).toContain('Educator review pending');
+    expect(result.reuse).toContain('Reuse terms: <span class="pack-license">CC-BY-4.0</span>');
+  });
+  it('escapes unknown statuses and terms without inferring approval or permission', () => {
+    const result = links.renderReviewAndReuse({license:'<custom terms>',review_status:'Awaiting <author>'});
+    expect(result.review).toContain('Review status: Awaiting &lt;author&gt;');
+    expect(result.reuse).toContain('&lt;custom terms&gt;');
+    expect(links.renderReviewAndReuse({license:'Not specified'}).review).toBe('');
+  });
+});
+
 describe('complete, generated AlloPack library', () => {
   it('covers every repository pack and every version imports through the native boundary', () => {
     const files = ['', 'illustrated/'].flatMap(dir => fs.readdirSync('allopacks/' + dir).filter(f => f.endsWith('.allopack.json')).map(f => 'allopacks/' + dir + f));
@@ -63,6 +83,38 @@ describe('complete, generated AlloPack library', () => {
     expect(d.querySelectorAll('#cards-container .lesson-card').length).toBe(3);
     expect(d.querySelector('link[rel="canonical"]').href).toBe('https://alloflow.dev/packs');
     dom.window.close();
+  });
+  it('serves bounded lazy previews as separate files and labels each exact version', () => {
+    const dom = new JSDOM(html), d = dom.window.document;
+    const previews = [...d.querySelectorAll('.pack-preview img')];
+    expect(previews.length).toBeGreaterThan(0);
+    for (const image of previews) {
+      const rel = image.getAttribute('src').replace(/^\.\//, '');
+      expect(rel).toMatch(/^assets\/allopack-previews\/[a-f0-9]+\.(webp|png|jpg)$/);
+      expect(fs.statSync(rel).size).toBeLessThanOrEqual(160000);
+      expect(image.loading || image.getAttribute('loading')).toBe('lazy');
+      expect(image.alt).toBeTruthy();
+    }
+    for (const e of entries) {
+      const card = [...d.querySelectorAll('[data-pack-id]')].find(card => card.dataset.packId === e.slug);
+      expect(card.querySelector('.pack-resource-count').textContent).toContain(e.resource_count + ' resources');
+    }
+    const katie = d.querySelector('[data-pack-id="academic-discourse-reading-space-grade6"]');
+    expect(katie.querySelector('.pack-core-route').textContent).toBe('Start with 4 core resources; supports and later practice included.');
+    expect(katie.querySelector('.pack-sources a').href).toBe('https://www.novakeducation.com/blog/how-to-teach-academic-discourse-and-collaboration');
+    expect(katie.querySelector('.pack-date').textContent).toContain('Pack updated');
+    expect(html).not.toContain('data:image/');
+    dom.window.close();
+  });
+  it('omits unsafe and oversized preview data and escapes source labels', () => {
+    for (const imageUrl of ['https://example.test/image.webp','data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=','data:image/webp;base64,AAAA', 'data:image/webp;base64,'+'A'.repeat(230000)]) {
+      expect(links.previewForPack({history:[{type:'image',data:{imageUrl}}]})).toBeNull();
+    }
+    expect(links.renderProvenance({submitted_at:'2026-01-01',source_links:[{url:'javascript:alert(1)',title:'Bad'},{url:'https://example.test/',title:'<script>bad</script>'}]})).toContain('&lt;script&gt;');
+    expect(links.renderProvenance({submitted_at:'2026-01-01'})).toBe('');
+    for (const core_resource_count of [undefined, 0, -1, 3, '1']) {
+      expect(links.renderResourceDetails({resource_count:2,resource_types:[{type:'quiz',count:2}],core_resource_count})).not.toContain('pack-core-route');
+    }
   });
   it('filters by words, subject, and overlapping grade; reset restores all versions', () => {
     const dom = render(), d = dom.window.document, event = () => d.getElementById('pack-search').dispatchEvent(new dom.window.Event('input', {bubbles:true}));

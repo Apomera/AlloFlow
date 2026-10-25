@@ -347,7 +347,8 @@
                 // ── INIT ──
                 if (data.type === 'init') {
                     self.postMessage({ type: 'progress', stage: 'Loading Kokoro TTS library', pct: 0.05 });
-                    const mod = await import(data.cdn);
+                    const mod = await __alloRuntimeImport('kokoro.module');
+                    mod.__alloflowConfigureRuntime(__alloRuntimeAssets);
                     const KokoroTTS = mod.KokoroTTS;
                     const sizeLabel = data.sizeLabel || '~88MB';
                     self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + sizeLabel + ', cached after first load)', pct: 0.1 });
@@ -465,6 +466,7 @@
 
     // ─── State ──────────────────────────────────────────────────────────
     let _worker = null;
+    let _workerGeneration = 0;
     let _ready = false;
     let _initPromise = null;
     let _loadProgress = 0;
@@ -729,6 +731,8 @@
     }
 
     function _terminateWorker(reason) {
+        _workerGeneration += 1;
+        _disarmStallWatchdog();
         const error = reason instanceof Error ? reason : _abortError(reason || 'Kokoro TTS worker terminated');
         const worker = _worker;
         _worker = null;
@@ -753,17 +757,9 @@
     }
 
     // ─── Worker Setup ───────────────────────────────────────────────────
-    function _createWorker() {
-        const blob = new Blob([WORKER_SOURCE], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        let w;
-        try {
-            w = new Worker(url, { type: 'module' });
-        } finally {
-            // Worker() captures the script URL synchronously; retaining it leaks
-            // one Blob URL on every quality switch/retry.
-            _safeRevoke(url);
-        }
+    async function _createWorker() {
+        if (typeof window.__alloCreateVerifiedWorker !== 'function') throw new Error('Verified Kokoro runtime delivery is unavailable');
+        const w = await window.__alloCreateVerifiedWorker('kokoro', WORKER_SOURCE, { type: 'module' });
 
         w.onmessage = ({ data }) => {
             // Durable model cache relay (see the worker-side comment). Kept
@@ -998,9 +994,15 @@
         if (_ready && _worker) return true;
         if (_initPromise) return _initPromise;
 
+        const generation = _workerGeneration;
         _initPromise = (async () => {
             try {
-                _worker = _createWorker();
+                const worker = await _createWorker();
+                if (generation !== _workerGeneration) {
+                    try { worker.terminate(); } catch (_) {}
+                    throw _abortError('Kokoro TTS was disposed while preparing its verified runtime');
+                }
+                _worker = worker;
 
                 let rejectInit = null;
                 const initDone = new Promise((resolve, reject) => {
@@ -1013,7 +1015,6 @@
                     type: 'init',
                     modelId: MODEL_ID,
                     dtype: _currentDtype,
-                    cdn: CDN_BASE,
                     sizeLabel: DTYPE_SIZES[_currentDtype] || '~88MB',
                 });
 
@@ -1041,6 +1042,9 @@
 
                 return true;
             } catch (e) {
+                // A cancelled graph preparation may finish after a new init;
+                // it must not terminate that newer worker or clear its timer.
+                if (generation !== _workerGeneration) throw e;
                 _disarmStallWatchdog();
                 if (e && e.code === 'kokoro-init-stalled' && _stallAttempt < STALL_RETRIES) {
                     _stallAttempt += 1;

@@ -1016,7 +1016,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const printChart = (blank) => {
     if (!layout) return;
     const svg = buildPrintableSvg(layout, displayNameOf, (rosterKey && rosterKey.className ? rosterKey.className + ' — ' : '') + layout.name, { blank: !!blank });
-    const html = '<!DOCTYPE html><html><head><title>' + escapeXml(tr('Seating Chart')) + '</title><style>body{margin:0;padding:16px}svg{width:100%;height:auto}</style></head><body>' + svg + '</body></html>';
+    const html = '<!DOCTYPE html><html lang="' + escapeXml(document.documentElement.lang || 'en') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>' + escapeXml(tr('Seating Chart')) + '</title><style>body{margin:0;padding:16px}svg{width:100%;height:auto}</style></head><body>' + svg + '</body></html>';
     const frame = document.createElement('iframe');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
     document.body.appendChild(frame);

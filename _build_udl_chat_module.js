@@ -8,7 +8,7 @@ const SOURCE = path.join(ROOT, 'udl_chat_source.jsx');
 const OUTPUT = path.join(ROOT, 'udl_chat_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'udl_chat_module.js');
 
-const source = fs.readFileSync(path.join(ROOT, 'allobot_privacy.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'allobot_evidence.js'), 'utf8') + '\n' + fs.readFileSync(SOURCE, 'utf-8');
+const source = ['agent_core_pack_native_module.js', 'agent_core_resource_pack_module.js', 'lesson_revision_service.js', 'allobot_privacy.js', 'allobot_evidence.js'].map(file => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n') + '\n' + fs.readFileSync(SOURCE, 'utf-8');
 const recognitionTools = fs.readFileSync(path.join(ROOT, 'school_store_recognition.js'), 'utf8');
 const setupGuide = fs.readFileSync(path.join(ROOT, 'school_store_setup_guide.js'), 'utf8');
 

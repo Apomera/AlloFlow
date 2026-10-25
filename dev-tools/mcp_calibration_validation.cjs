@@ -49,8 +49,10 @@ function executeCalibration({ reportDir, selection = manifest, run = runCli, cap
       entry.status = 'failed'; entry.error = error.message; throw error;
     } finally { entry.finishedAt = new Date().toISOString(); save(); }
   };
-  save();
   try {
+    // Initial publication is setup too: if it fails, retain the failure and
+    // final identity evidence rather than leaving a previous passing summary.
+    save();
     // A runner that emits no report must never inherit an earlier success.
     for (const name of ['unit.json', 'browser.json', 'unit.log', 'browser.log']) {
       const file = path.join(reportDir, name); if (fs.existsSync(file)) fs.unlinkSync(file);

@@ -257,7 +257,7 @@ test('Migration native cycle activity compares positions one and five with a fro
   }
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-cycle-one-five-marked-pose.png') });
   await keyboardClick(page, page.getByRole('button', { name: 'Describe wing motion', exact: true }));
-  const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
   await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
   await expect(positionButton(page, 4)).toHaveAttribute('aria-pressed', 'true');
@@ -367,7 +367,7 @@ for (const dark of [false, true]) test.describe('Migration phone ' + (dark ? 'da
     await expect(positionButton(page, 4)).toHaveAttribute('aria-pressed', 'true'); expectPosition(await cycleState(page), 4);
     await page.locator('.migration-flight-stage').screenshot({ path: join(report, stem + '-stage.png') });
     await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap();
-    const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const input = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
     await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path-and-pose');
     expect(work(await saved(page))).toEqual(work(before)); expect((await saved(page)).flightWingStep).toBe(13);
@@ -399,7 +399,7 @@ test('Migration remount clears temporary cycle selection while preserving serial
   const initialFreshView = await cycleState(page);
   const inputDraft = 'Keep this unrecorded motion draft across a complete saved-data remount.';
   await keyboardClick(page, page.getByRole('button', { name: 'Describe wing motion', exact: true }));
-  await page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }).fill(inputDraft);
+  await page.getByRole('textbox', { name: 'My observation', exact: true }).fill(inputDraft);
   await choosePosition(page, 3);
   const selected = await cycleState(page); expectPosition(selected, 3);
   const serialized = JSON.parse(JSON.stringify(await saved(page)));
@@ -427,7 +427,7 @@ test('Migration remount clears temporary cycle selection while preserving serial
   }
   expect(await saved(page)).toEqual(serialized);
   await expect(page.getByRole('checkbox', { name: 'Show wingtip path', exact: true })).toBeChecked();
-  await expect(page.getByRole('textbox', { name: 'Shape and motion observation', exact: true })).toHaveValue(inputDraft);
+  await expect(page.getByRole('textbox', { name: 'My observation', exact: true })).toHaveValue(inputDraft);
   await choosePosition(page, 0);
   await keyboardClick(page, page.getByRole('button', { name: 'Mark wing pose', exact: true }));
   await choosePosition(page, 4);

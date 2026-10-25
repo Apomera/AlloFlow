@@ -14,7 +14,7 @@ async function mount(page:any,fallback:boolean){
  await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-renderer',fallback?'map':'three');
 }
 async function directVisit(page:any,name:string){
- const button=page.getByRole('button',{name:'Visit '+name+' without flying',exact:true});
+ const button=page.getByRole('button',{name:'Visit without flying · '+name,exact:true});
  await button.focus();await page.keyboard.press('Enter');
  await expect(page.locator('.bf-stage')).toBeFocused();
  await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-paused','true');
@@ -31,7 +31,7 @@ for(const fallback of [false,true])test('keyboard fieldwork without flight prese
  if(fallback)await page.setViewportSize({width:375,height:900});
  await mount(page,fallback);
  const stage=page.locator('.bf-stage'),clock=await stage.getAttribute('data-clock');
- await expect(page.locator('[data-direction="right"]')).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Turn right',exact:true})).toBeDisabled();
  await directVisit(page,'Common milkweed');
  await expect(page.getByRole('heading',{name:'0 of 3 patches investigated'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Examine patch',exact:true})).toBeDisabled();
@@ -67,8 +67,10 @@ for(const fallback of [false,true])test('keyboard fieldwork without flight prese
 
 test('direction input releases reliably and direct arrival cancels flight input',async({page})=>{
  await mount(page,true);
+ // This regression exercises map-direction translation; butterfly steering turns in place.
+ await page.getByRole('button',{name:'Map directions',exact:true}).click();
  await page.getByRole('button',{name:'Take flight',exact:true}).click();
- const stage=page.locator('.bf-stage'),right=page.locator('[data-direction="right"]');
+ const stage=page.locator('.bf-stage'),right=page.getByRole('button',{name:'Fly right',exact:true});
  await expect(right).toBeEnabled();await right.scrollIntoViewIfNeeded();
  let position=await stage.getAttribute('data-position');
  const box=(await right.boundingBox())!;

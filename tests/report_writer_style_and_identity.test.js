@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // The writing-style sample, and the student's age and grade in the draft.
 //
 // WHY (2026-09-23):
@@ -14,6 +18,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let U;
@@ -55,7 +60,7 @@ describe('the style sample sent to the AI', () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const root = createRoot(host);
-    const act = (fn) => React.act(async () => { await fn(); });
+    const act = (fn) => actWithSensitivePromptReview(React, fn);
     const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     try {
       localStorage.clear();
@@ -127,7 +132,7 @@ describe('age and grade in the draft', () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     const root = createRoot(host);
-    const act = (fn) => React.act(async () => { await fn(); });
+    const act = (fn) => actWithSensitivePromptReview(React, fn);
     const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     try {
       localStorage.clear();

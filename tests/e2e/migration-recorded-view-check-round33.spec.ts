@@ -114,7 +114,7 @@ async function journey(page: Page, touch: boolean) {
   expect(learnerWork(afterMatched)).toEqual(learnerWork(initial)); expect(await draftIdentity(page)).toEqual(initialDraft);
   expect(await readout(page, 'selected')).toEqual(selectedCheck.readout); expect(await readout(page, 'saved')).toEqual(savedCheck.readout);
 
-  const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const note = page.getByRole('textbox', { name: 'My observation', exact: true });
   const replacement = 'I can see a dark curved bill below the pale cheek in the matched profile view.';
   await note.fill(replacement); await frames(page);
   expect(await readout(page, 'selected')).toEqual(selectedCheck.readout); expect(await readout(page, 'saved')).toEqual(savedCheck.readout);

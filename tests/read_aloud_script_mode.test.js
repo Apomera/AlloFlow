@@ -51,6 +51,19 @@ const adapted = format => ({ id: 'a', type: 'simplified', data: TEXT, config: fo
 const original = { id: 'o', type: 'simplified', data: TEXT, config: {}, instructionalText: { form: 'same-text-supported' } };
 
 describe('read-aloud script mode', () => {
+  it.each(['persona-translation-0', 'persona-panel-translation-0'])('reads %s in the saved Arabic companion language', async contentId => {
+    const d = deps({ currentUiLanguage: 'French', leveledTextLanguage: 'Spanish',
+      personaState: { chatHistory: [{ role: 'model', text: 'Respuesta.', translation: 'مرحبا', translationTarget: 'Arabic' }] },
+    });
+    await PhaseK.handleSpeak('مرحبا هذا نص مترجم محفوظ للاستماع إليه مرة أخرى بعد تغيير لغة التطبيق.', contentId, 0, d, true);
+    expect(d.playSequence).not.toHaveBeenCalled();
+    expect(d.callTTS).toHaveBeenCalledWith(expect.any(String), 'Kore', 1, expect.objectContaining({ language: 'Arabic' }));
+  });
+  it('keeps English fallback for legacy persona companions with no language metadata', async () => {
+    const d = deps({ currentUiLanguage: 'Arabic', leveledTextLanguage: 'Spanish', personaState: { chatHistory: [{ translation: 'Legacy companion.' }] } });
+    await PhaseK.handleSpeak(TEXT, 'persona-translation-0', 0, d, true);
+    expect(d.callTTS).toHaveBeenCalledWith(expect.any(String), 'Kore', 1, expect.objectContaining({ language: 'English' }));
+  });
   it('reads a Podcast Script adaptation with script voices even when the sidebar says otherwise', async () => {
     expect((await play('simplified-main', { generatedContent: adapted('Podcast Script'), textFormat: 'Standard Text' })).mode).toBe('script');
   });

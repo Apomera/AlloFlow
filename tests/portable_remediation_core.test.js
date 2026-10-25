@@ -24,15 +24,15 @@ const activeProcesses = new Set();
 
 // These are local subprocess integration tests. Never block Vitest's event
 // loop with spawnSync: its timeout cannot interrupt a synchronous child wait.
-function runPortable(args, extraEnv = {}) {
-  const timeoutMs = args[0] === 'capabilities' ? 45_000
+function runPortable(args, extraEnv = {}, enginePath = ENGINE) {
+  const timeoutMs = args[0] === 'capabilities' ? 90_000
     : args[0] === 'validate-pdf' ? 90_000
       : args.includes('required') ? 180_000 : 30_000;
   const entry = {};
   entry.settled = new Promise(resolveResult => {
-    const child = spawn(PYTHON, [ENGINE, ...args], {
+    const child = spawn(PYTHON, [enginePath, ...args], {
       cwd: ROOT, windowsHide: true,
-      env: { ...process.env, PYTHONIOENCODING: 'utf-8', ...extraEnv },
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', ...extraEnv, PYTHONDONTWRITEBYTECODE: '1' },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stdout = '', stderr = '', error;
@@ -91,6 +91,17 @@ function getCapabilities() {
   return capabilityPromise ||= runPortable(['capabilities', '--json']);
 }
 
+function optionalCapabilities(capability, names, context) {
+  const missing = names.filter(name => capability.json?.[name] !== true);
+  // Release verification can require installed optional runtimes explicitly;
+  // a failed capability probe must then retain its diagnostic rather than skip.
+  if (process.env.ALLOFLOW_TEST_REQUIRE_PORTABLE_CAPABILITIES === '1') {
+    expect(missing, capability.stdout || capability.stderr).toEqual([]);
+  }
+  if (missing.length) { context.skip(); return false; }
+  return true;
+}
+
 beforeEach(() => {
   scratch = mkdtempSync(join(tmpdir(), 'alloflow-portable-test-'));
 });
@@ -103,6 +114,90 @@ afterEach(async () => {
 }, 10_000);
 
 describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
+  it('allows bounded renderer startup and cleanup beyond twenty seconds while retaining timeout failures', async () => {
+    const entry = join(scratch, 'capability-budget.py');
+    writeFileSync(entry, [
+      'import importlib.util, subprocess, sys, types',
+      'sys.dont_write_bytecode = True',
+      'spec = importlib.util.spec_from_file_location("portable_under_test", ' + JSON.stringify(ENGINE) + ')',
+      'engine = importlib.util.module_from_spec(spec)',
+      'spec.loader.exec_module(engine)',
+      'budgets = []',
+      'def delayed_success(command, **options):',
+      '    budgets.append(options["timeout"])',
+      '    if options["timeout"] < 40:',
+      '        raise subprocess.TimeoutExpired(command, options["timeout"])',
+      '    return types.SimpleNamespace(returncode=0, stdout=\'{"available":true}\', stderr="")',
+      'engine.subprocess.run = delayed_success',
+      'available = engine.renderer_capability()',
+      'def timed_out(command, **options):',
+      '    budgets.append(options["timeout"])',
+      '    raise subprocess.TimeoutExpired(command, options["timeout"])',
+      'engine.subprocess.run = timed_out',
+      'unavailable = engine.renderer_capability()',
+      'engine.emit_json({"available": available, "unavailable": unavailable, "budgets": budgets})',
+    ].join('\n'));
+    const result = await runPortable(['capabilities'], {}, entry);
+    expect(result.status, result.stdout || result.stderr).toBe(0);
+    expect(result.json.available).toMatchObject({ available: true });
+    expect(result.json.unavailable).toMatchObject({ available: false });
+    expect(result.json.unavailable.reason).toContain('timed out');
+    expect(result.json.budgets).toEqual([40, 40]);
+  });
+  it.each(['required', 'auto'])('attempts the real render boundary despite unavailable preflight and reports its %s-mode failure honestly', async mode => {
+    const entry = join(scratch, 'render-entry.py'), marker = join(scratch, 'render-attempt.json');
+    writeFileSync(entry, [
+      'import importlib.util, json, sys',
+      'sys.dont_write_bytecode = True',
+      'from pathlib import Path',
+      'spec = importlib.util.spec_from_file_location("portable_under_test", ' + JSON.stringify(ENGINE) + ')',
+      'engine = importlib.util.module_from_spec(spec)',
+      'spec.loader.exec_module(engine)',
+      'engine.renderer_capability = lambda: {"available": False, "reason": "stale capability probe"}',
+      'def render_failure(html_path, pdf_path, pdfua_id="none"):',
+      '    Path(__file__).with_name("render-attempt.json").write_text(json.dumps({"sourceHtmlExists": html_path.is_file(), "sourceHasHeading": "<h1" in html_path.read_text(encoding="utf-8"), "pdfuaId": pdfua_id}), encoding="utf-8")',
+      '    return {"status": "failed", "reason": "native renderer attempted and failed"}',
+      'engine.render_pdf = render_failure',
+      'raise SystemExit(engine.main())',
+    ].join('\n'));
+    const output = join(scratch, 'output');
+    const result = await runPortable([
+      'remediate', '--source', SOURCE, '--plan', PLAN, '--out-dir', output,
+      '--pdf', mode, '--verapdf', 'never',
+    ], {}, entry);
+    expect(existsSync(marker), result.stdout || result.stderr).toBe(true);
+    expect(JSON.parse(readFileSync(marker, 'utf8'))).toEqual({ sourceHtmlExists: true, sourceHasHeading: true, pdfuaId: 'none' });
+    expect(existsSync(join(output, 'multi-column-scrambled-alloflow-accessible.pdf'))).toBe(false);
+    if (mode === 'required') {
+      expect(result.status).not.toBe(0);
+      expect(result.json).toMatchObject({ ok: false, code: 4 });
+      expect(result.json.error).toContain('native renderer attempted and failed');
+      expect(readdirSync(output)).toEqual([]);
+    } else {
+      expect(result.status, result.stdout || result.stderr).toBe(0);
+      expect(result.json).toMatchObject({ taggedPdfGeneration: 'failed', humanReviewRequired: true, verdict: 'html_only_review_required' });
+      const report = JSON.parse(readFileSync(join(output, 'multi-column-scrambled-accessibility-report.json'), 'utf8'));
+      expect(report.artifacts.taggedPdf).toBeNull();
+      expect(report.checks.taggedPdfGeneration).toMatchObject({ status: 'failed', reason: 'native renderer attempted and failed' });
+    }
+  });
+  it('publishes full document filenames when a private staging path would exceed the Windows path limit', async () => {
+    const reportName = 'multi-column-scrambled-accessibility-report.json';
+    // Public artifact paths remain below 260 characters; repeating the source
+    // stem beneath a random staging directory would put the private path over it.
+    const outputLength = 245 - reportName.length - 1;
+    const output = join(scratch, 'n'.repeat(Math.max(1, outputLength - scratch.length - 1)));
+    const result = await runPortable([
+      'remediate', '--source', SOURCE, '--plan', PLAN, '--out-dir', output,
+      '--pdf', 'never', '--verapdf', 'never',
+    ]);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(existsSync(join(output, reportName))).toBe(true);
+    expect(existsSync(join(output, 'multi-column-scrambled-accessible.html'))).toBe(true);
+    const report = JSON.parse(readFileSync(join(output, reportName), 'utf8'));
+    expect(report.artifacts.accessibilityReport).toBe(reportName);
+    expect(readdirSync(output).some(name => name.startsWith('.alloflow-portable-'))).toBe(false);
+  });
   it('reports a no-service, deny-network capability contract', async (context) => {
     const result = await getCapabilities();
     expect(result.error).toBeUndefined();
@@ -286,7 +381,7 @@ describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
   it('uses local Chromium for a tagged PDF when that optional capability exists', async (context) => {
     const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration) { context.skip(); return; }
+    if (!optionalCapabilities(capability, ['taggedPdfGeneration'], context)) return;
 
     const output = join(scratch, 'output');
     const result = await runPortable([
@@ -306,12 +401,16 @@ describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
     expect(bytes).toContain('/StructTreeRoot');
     expect(bytes).toContain('/MarkInfo');
     expect(bytes).toMatch(/\/Marked\s+true\b/);
+    expect(bytes).not.toContain('<pdfuaid:part>');
+    const report = JSON.parse(readFileSync(join(output, 'multi-column-scrambled-accessibility-report.json'), 'utf8'));
+    expect(report.checks.pdfUaValidation).toMatchObject({ status: 'not_run', identifierWithheld: true });
+    expect(report.checks.taggedPdfGeneration.pdfUaIdentifierClaimed).toBe(false);
   }, 190_000);
 
   it('fails known PDF/UA violations with a nonzero automation result', async (context) => {
     const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.pdfUaValidation) { context.skip(); return; }
+    if (!optionalCapabilities(capability, ['pdfUaValidation'], context)) return;
 
     const result = await runPortable([
       'validate-pdf',
@@ -330,7 +429,7 @@ describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
   it('keeps the artifacts and report when strict PDF/UA mode fails', async (context) => {
     const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) { context.skip(); return; }
+    if (!optionalCapabilities(capability, ['taggedPdfGeneration', 'pdfUaValidation'], context)) return;
 
     // The finalizer now repairs Chromium's UA-1 defects, so a normal run
     // passes validation. Disable it to exercise the strict-mode contract
@@ -364,7 +463,7 @@ describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
   it('passes strict PDF/UA mode when the finalizer runs', async (context) => {
     const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) { context.skip(); return; }
+    if (!optionalCapabilities(capability, ['taggedPdfGeneration', 'pdfUaValidation'], context)) return;
 
     const output = join(scratch, 'strict-pass-output');
     const result = await runPortable([

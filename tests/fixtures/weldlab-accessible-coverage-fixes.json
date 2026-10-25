@@ -1,0 +1,297 @@
+[
+  {
+    "owner": "root",
+    "old": "function radioGroupKeys(e) {\n    var k = e.key;",
+    "new": "function radioGroupKeys(e) {\n    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n    var k = e.key;"
+  },
+  {
+    "owner": "root",
+    "old": "function proc2TabKeys(e) {\n        var k = e.key;",
+    "new": "function proc2TabKeys(e) {\n        if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n        var k = e.key;"
+  },
+  {
+    "owner": "root",
+    "old": "function onSurfaceKey(e) {\n          ",
+    "new": "function onSurfaceKey(e) {\n          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n          "
+  },
+  {
+    "owner": "root",
+    "old": "function onZoneKey(e) {\n          ",
+    "new": "function onZoneKey(e) {\n          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n          "
+  },
+  {
+    "owner": "root",
+    "old": "function robGridKeys(e) {\n          ",
+    "new": "function robGridKeys(e) {\n          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n          "
+  },
+  {
+    "owner": "root",
+    "old": "function onKey(e) {\n              var step = 0.08;",
+    "new": "function onKey(e) {\n              if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n              var step = 0.08;"
+  },
+  {
+    "owner": "root",
+    "old": "function onWheel(e) {\n              e.preventDefault();",
+    "new": "function onWheel(e) {\n              if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n              e.preventDefault();"
+  },
+  {
+    "owner": "root",
+    "old": "onKeyDown: function (e) {\n                  if (!useRun) return;",
+    "new": "onKeyDown: function (e) {\n                  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n                  if (!useRun) return;"
+  },
+  {
+    "owner": "root",
+    "old": "onKeyDown: function (e) {\n              var k = e.key, step = e.shiftKey ? 1 : 0.25, nx = null;",
+    "new": "onKeyDown: function (e) {\n              if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;\n              var k = e.key, step = e.shiftKey ? 1 : 0.25, nx = null;"
+  },
+  {
+    "owner": "root",
+    "old": "'aria-label': __alloFill(__alloT('stem.weldlab.tech2_rob_toggle_move', 'Point {value1}: switch move type'), { value1: i + 1 }),",
+    "new": "'aria-label': (p.m === 'L' ? __alloT('stem.weldlab.tech2_rob_linear_short', 'Linear') : __alloT('stem.weldlab.tech2_rob_joint_short', 'Joint')) + ': ' + __alloFill(__alloT('stem.weldlab.tech2_rob_toggle_move', 'Point {value1}: switch move type'), { value1: i + 1 }),"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'px-3 py-2 text-xs flex flex-wrap gap-x-4 gap-y-1', style: { color: '#f8fafc' }, 'aria-label': __alloT('stem.weldlab.insp_vt_legend', 'Diagram legend') },",
+    "new": "h('div', { role: 'group', className: 'px-3 py-2 text-xs flex flex-wrap gap-x-4 gap-y-1', style: { color: '#f8fafc' }, 'aria-label': __alloT('stem.weldlab.insp_vt_legend', 'Diagram legend') },"
+  },
+  {
+    "old": "        var ceResultRefPrev = useRef(null);\n\n        // ── Shared formatting",
+    "new": "        var ceResultRefPrev = useRef(null);\n        var metalFocusRequestRef = useRef(null);\n        var hazChoicesRef = useRef(null);\n        var ceChoicesRef = useRef(null);\n        var crackCaseRef = useRef(null);\n        // Explicit reset/navigation actions restore context after their control\n        // disappears or the question above it changes. Saved mounts stay put.\n        useEffect(function () {\n          var request = metalFocusRequestRef.current;\n          if (!request) return;\n          metalFocusRequestRef.current = null;\n          var group = request === 'haz' ? hazChoicesRef.current : request === 'ce' ? ceChoicesRef.current : null;\n          var target = group ? group.querySelector('[role=\"radio\"]') : request === 'case' ? crackCaseRef.current : request === 'ce' ? ceResultRef.current : null;\n          if (target) { try { target.focus(); } catch (_) {} }\n        });\n\n        // ── Shared formatting",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('div', { role: 'radiogroup', 'data-arrow-select': 'false', 'aria-label': __alloT('stem.weldlab.met2_pred_group', 'Your heat-input prediction')",
+    "new": "h('div', { ref: hazChoicesRef, role: 'radiogroup', 'data-arrow-select': 'false', 'aria-label': __alloT('stem.weldlab.met2_pred_group', 'Your heat-input prediction')",
+    "owner": "pipe"
+  },
+  {
+    "old": "onClick: function () { setHazPred(-1); },",
+    "new": "onClick: function () { metalFocusRequestRef.current = 'haz'; setHazPred(-1); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.met2_ce_pred_group', 'Your CE band prediction')",
+    "new": "h('div', { ref: ceChoicesRef, role: 'radiogroup', 'data-arrow-select': 'false', 'aria-label': __alloT('stem.weldlab.met2_ce_pred_group', 'Your CE band prediction')",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('button', { type: 'button', onClick: function () { setCeFree(false); },",
+    "new": "h('button', { type: 'button', onClick: function () { metalFocusRequestRef.current = 'ce'; setCeFree(false); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('h4', { className: 'text-base font-black text-slate-900' }, __alloT('stem.weldlab.met2_cd_title', '🕵️ Crack Detective — name the mechanism'))",
+    "new": "h('h4', { ref: crackCaseRef, tabIndex: -1, 'data-met-crack-case': cdIdx, 'aria-describedby': 'met2-cd-progress met2-cd-story', className: 'text-base font-black text-slate-900' }, __alloT('stem.weldlab.met2_cd_title', '🕵️ Crack Detective — name the mechanism'))",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('span', { className: 'text-xs text-slate-700' }, __alloFill(__alloT('stem.weldlab.met2_cd_progress'",
+    "new": "h('span', { id: 'met2-cd-progress', className: 'text-xs text-slate-700' }, __alloFill(__alloT('stem.weldlab.met2_cd_progress'",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('p', { className: 'text-sm text-slate-900 leading-relaxed' }, cdCase.story)",
+    "new": "h('p', { id: 'met2-cd-story', className: 'text-sm text-slate-900 leading-relaxed' }, cdCase.story)",
+    "owner": "pipe"
+  },
+  {
+    "old": "onClick: function () { setCdIdx(Math.max(0, cdIdx - 1)); },",
+    "new": "onClick: function () { metalFocusRequestRef.current = 'case'; setCdIdx(Math.max(0, cdIdx - 1)); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "onClick: function () { setCdIdx(Math.min(CD_CASES.length - 1, cdIdx + 1)); },",
+    "new": "onClick: function () { metalFocusRequestRef.current = 'case'; setCdIdx(Math.min(CD_CASES.length - 1, cdIdx + 1)); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "onClick: function () { setCdPicks({}); setCdIdx(0); },",
+    "new": "onClick: function () { metalFocusRequestRef.current = 'case'; setCdPicks({}); setCdIdx(0); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "        // ⟦/pipe13 local material-point motion⟧\n\n        var sects = [",
+    "new": "        // ⟦/pipe13 local material-point motion⟧\n        var pipeFocusRequestRef = useRef(null);\n        var pipeClockRef = useRef(null);\n        var pipeCheckStartRef = useRef(null);\n        var pipePassControlsRef = useRef(null);\n        var pipeStackDoneRef = useRef(null);\n        useEffect(function () {\n          var request = pipeFocusRequestRef.current;\n          if (!request) return;\n          pipeFocusRequestRef.current = null;\n          var target = request === 'clock' && pipeClockRef.current\n            ? pipeClockRef.current.querySelector('[aria-checked=\"true\"]')\n            : request === 'start' ? pipeCheckStartRef.current\n            : request === 'stackDone' ? pipeStackDoneRef.current\n            : request === 'pass' && pipePassControlsRef.current ? pipePassControlsRef.current.querySelector('button') : null;\n          if (target) { try { target.focus(); } catch (_) {} }\n        });\n\n        var sects = [",
+    "owner": "pipe"
+  },
+  {
+    "old": "        function pickHour(hh) {\n          setHour(hh);\n          if (!chalOn) return;\n          var c = CHALLENGES[chal];\n          var ok = c.hours.indexOf(hh) !== -1;\n          setChalFb({ ok: ok, hr: hh, zone: pipe2ClockZone('5G', hh) });\n          if (ok) setChal(chal + 1);\n          announce(ok ? __alloT('stem.weldlab.pipe2_sr_correct', 'Correct') : __alloT('stem.weldlab.pipe2_sr_try_again', 'Not there. Try another o\\'clock.'));\n        }\n\n        function radioRow(label, items, cur, onPick, extraCls) {\n          return h('div', { role: 'radiogroup', onKeyDown: radioGroupKeys, 'aria-label': label, className: 'flex flex-wrap gap-1.5 ' + (extraCls || '') },",
+    "new": "        function pipeCheckFeedback(fb) {\n          return fb.ok ? __alloFill(__alloT('stem.weldlab.pipe2_ch_ok', '✓ Yes: {value1} o\\'clock is {value2}. {value3}'), { value1: fb.hr, value2: ZONE_INFO[fb.zone].label, value3: ZONE_INFO[fb.zone].puddle })\n            : __alloFill(__alloT('stem.weldlab.pipe2_ch_bad', '✗ Not there: {value1} o\\'clock is {value2}. {value3}'), { value1: fb.hr, value2: ZONE_INFO[fb.zone].label, value3: ZONE_INFO[fb.zone].puddle });\n        }\n        function pickHour(hh) {\n          setHour(hh);\n          if (!chalOn) return;\n          var c = CHALLENGES[chal];\n          var ok = c.hours.indexOf(hh) !== -1;\n          var feedback = { ok: ok, hr: hh, zone: pipe2ClockZone('5G', hh) };\n          setChalFb(feedback);\n          if (ok) setChal(chal + 1);\n          var next = ok && CHALLENGES[chal + 1];\n          announce(pipeCheckFeedback(feedback) + (next ? ' ' + __alloFill(__alloT('stem.weldlab.pipe2_ch_n', 'Check {value1} of {value2}: '), { value1: chal + 2, value2: CHALLENGES.length }) + next.prompt\n            : ok ? ' ' + __alloT('stem.weldlab.pipe2_ch_done', '✓ All three found. Now compare 6G: same clock, plus a slope.') : ''));\n        }\n\n        function radioRow(label, items, cur, onPick, options) {\n          options = options || {};\n          return h('div', { ref: options.ref, role: 'radiogroup', onKeyDown: radioGroupKeys, 'aria-label': label,\n            'data-pipe-clock': options.clock ? '' : undefined, 'data-arrow-select': options.clock && chalOn ? 'false' : undefined,\n            'aria-describedby': options.clock && chalOn ? 'pipe2-check-prompt' : undefined, className: 'flex flex-wrap gap-1.5 ' + (options.className || '') },",
+    "owner": "pipe"
+  },
+  {
+    "old": "hours, hour, pickHour)",
+    "new": "hours, hour, pickHour, { clock: true, ref: pipeClockRef })",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('button', { onClick: function () { setChal(0); setChalFb(null); setHour(1); announce(CHALLENGES[0].prompt); },",
+    "new": "h('button', { ref: pipeCheckStartRef, 'data-pipe-check-start': '', onClick: function () { pipeFocusRequestRef.current = 'clock'; setChal(0); setChalFb(null); setHour(1); announce(CHALLENGES[0].prompt); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "c && h('p', { className: 'text-sm font-bold text-slate-900' }, __alloFill(__alloT('stem.weldlab.pipe2_ch_n'",
+    "new": "c && h('p', { id: 'pipe2-check-prompt', className: 'text-sm font-bold text-slate-900' }, __alloFill(__alloT('stem.weldlab.pipe2_ch_n'",
+    "owner": "pipe"
+  },
+  {
+    "old": "                chalFb.ok ? __alloFill(__alloT('stem.weldlab.pipe2_ch_ok', '✓ Yes: {value1} o\\'clock is {value2}. {value3}'), { value1: chalFb.hr, value2: ZONE_INFO[chalFb.zone].label, value3: ZONE_INFO[chalFb.zone].puddle })\n                  : __alloFill(__alloT('stem.weldlab.pipe2_ch_bad', '✗ Not there: {value1} o\\'clock is {value2}. {value3}'), { value1: chalFb.hr, value2: ZONE_INFO[chalFb.zone].label, value3: ZONE_INFO[chalFb.zone].puddle }))",
+    "new": "                pipeCheckFeedback(chalFb))",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('button', { onClick: function () { setChal(-1); setChalFb(null); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-white border-2 border-slate-300 hover:border-indigo-500 text-slate-800 text-xs font-bold' }, __alloT('stem.weldlab.pipe2_reset', '↺ Reset')",
+    "new": "h('button', { onClick: function () { pipeFocusRequestRef.current = 'start'; setChal(-1); setChalFb(null); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-white border-2 border-slate-300 hover:border-indigo-500 text-slate-800 text-xs font-bold' }, __alloT('stem.weldlab.pipe2_reset', '↺ Reset')",
+    "owner": "pipe"
+  },
+  {
+    "old": "h('button', { onClick: function () { setChal(-1); setChalFb(null); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-white border-2 border-slate-300 hover:border-indigo-500 text-slate-800 text-xs font-bold' }, __alloT('stem.weldlab.pipe2_ch_stop', 'Stop the check')",
+    "new": "h('button', { onClick: function () { pipeFocusRequestRef.current = 'start'; setChal(-1); setChalFb(null); }, className: 'transition-colors px-3 py-1.5 rounded-lg bg-white border-2 border-slate-300 hover:border-indigo-500 text-slate-800 text-xs font-bold' }, __alloT('stem.weldlab.pipe2_ch_stop', 'Stop the check')",
+    "owner": "pipe"
+  },
+  {
+    "old": "            setStackFb({ ok: true, type: type });\n            announce(n.length >= seq.length",
+    "new": "            setStackFb({ ok: true, type: type });\n            if (n.length >= seq.length) pipeFocusRequestRef.current = 'stackDone';\n            announce(n.length >= seq.length",
+    "owner": "pipe"
+  },
+  {
+    "old": "announce(__alloT('stem.weldlab.pipe2_sr_wrong_order', 'Not that pass yet.'));",
+    "new": "announce(__alloFill(__alloT('stem.weldlab.pipe2_o_head', '✗ Not the {value1} yet. '), { value1: PASS_INFO[type].name }) + orderMsg(type, nextPass));",
+    "owner": "pipe"
+  },
+  {
+    "old": "            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },\n              BTN.map(function (b)",
+    "new": "            h('div', { ref: pipePassControlsRef, 'data-pipe-pass-controls': '', className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },\n              BTN.map(function (b)",
+    "owner": "pipe"
+  },
+  {
+    "old": "onClick: function () { setStack(stack.slice(0, -1)); setStackFb(null); },",
+    "new": "onClick: function () { if (stack.length === 1) pipeFocusRequestRef.current = 'pass'; setStack(stack.slice(0, -1)); setStackFb(null); },",
+    "owner": "pipe"
+  },
+  {
+    "old": "done && h('div', { className: 'p-3 rounded-lg bg-emerald-50 border-2 border-emerald-600 text-sm text-emerald-900 font-bold' },",
+    "new": "done && h('div', { ref: pipeStackDoneRef, tabIndex: -1, 'data-pipe-stack-complete': '', className: 'p-3 rounded-lg bg-emerald-50 border-2 border-emerald-600 text-sm text-emerald-900 font-bold' },",
+    "owner": "pipe"
+  },
+  {
+    "old": "        var resultShownRef = useRef(false);",
+    "new": "        var resultFocusWantedRef = useRef(false);\n        var handCompleteFocusRef = useRef(false), holdActionRef = useRef(null), newPlateActionRef = useRef(null);",
+    "owner": "run"
+  },
+  {
+    "old": "            if (finished) { commitRun(speeds, true); announceRunResult(speeds); }",
+    "new": "            if (finished) {\n              handCompleteFocusRef.current = !!(holdActionRef.current && document.activeElement === holdActionRef.current);\n              commitRun(speeds, true); announceRunResult(speeds);\n            }",
+    "owner": "run"
+  },
+  {
+    "old": "        // Move focus to a mission result when it first appears (the false->true\n        // edge), so a keyboard user lands on the feedback, not the top of the page.\n        useEffect(function () {\n          var shown = !!result;\n          if (shown && !resultShownRef.current && resultRef.current) {\n            try { resultRef.current.focus(); } catch (_) {}\n          }\n          resultShownRef.current = shown;\n        }, [result]);",
+    "new": "        // Each explicit check requests focus, including a recheck of an\n        // existing result. Opening the module never requests it.\n        useEffect(function () {\n          if (resultFocusWantedRef.current && result && resultRef.current) {\n            resultFocusWantedRef.current = false;\n            try { resultRef.current.focus(); } catch (_) {}\n          }\n        }, [result]);\n        useEffect(function () {\n          if (handCompleteFocusRef.current && newPlateActionRef.current) {\n            handCompleteFocusRef.current = false;\n            try { newPlateActionRef.current.focus(); } catch (_) {}\n          }\n        }, [run]);",
+    "owner": "run"
+  },
+  {
+    "old": "        function checkMission() {\n          if (mState.pred < 0) return;",
+    "new": "        function checkMission() {\n          if (mState.pred < 0) return;\n          resultFocusWantedRef.current = true;",
+    "owner": "run"
+  },
+  {
+    "old": "                    type: 'button',\n                    disabled: hand.done,\n                    'aria-label': __alloT('stem.weldlab.arc_hold_aria', 'Hold to weld at the hand speed'),",
+    "new": "                    type: 'button', ref: holdActionRef,\n                    disabled: hand.done,\n                    'aria-label': __alloT('stem.weldlab.arc_hold_aria', 'Hold to weld at the hand speed'),",
+    "owner": "run"
+  },
+  {
+    "old": "h('button', { type: 'button', onClick: newPlate, className: btnCls",
+    "new": "h('button', { type: 'button', ref: newPlateActionRef, onClick: newPlate, className: btnCls",
+    "owner": "run"
+  },
+  {
+    "old": "                  hintsShown < mText.hints.length && h('button', { type: 'button', onClick: function () { setHintsShown(hintsShown + 1); }, className: btnCls + 'bg-white text-slate-800 border-2 border-slate-300 hover:border-orange-400' },\n                    hintsShown === 0 ? __alloT('stem.weldlab.arc_hint_show', '💡 Show a hint') : __alloT('stem.weldlab.arc_hint_more', '💡 Another hint'))",
+    "new": "                  h('button', { type: 'button', 'data-arc-hint': '', 'aria-disabled': hintsShown >= mText.hints.length ? 'true' : 'false', onClick: function () {\n                    if (hintsShown >= mText.hints.length) return;\n                    setHintsShown(hintsShown + 1);\n                    announce(mText.hints[hintsShown]);\n                  }, className: btnCls + 'bg-white text-slate-800 border-2 border-slate-300 hover:border-orange-400' },\n                    hintsShown >= mText.hints.length ? __alloT('stem.weldlab.arc_hint_all_shown', '💡 All hints shown')\n                      : hintsShown === 0 ? __alloT('stem.weldlab.arc_hint_show', '💡 Show a hint') : __alloT('stem.weldlab.arc_hint_more', '💡 Another hint'))",
+    "owner": "run"
+  },
+  {
+    "old": "        var canvasRef = useRef(null), zoneRef = useRef(null), reviewRef = useRef(null), briefRef = useRef(null);",
+    "new": "        var canvasRef = useRef(null), zoneRef = useRef(null), reviewRef = useRef(null), briefRef = useRef(null);\n        var slicePinActionRef = useRef(null), sliceClearActionRef = useRef(null), inspectorBoxRef = useRef(null);",
+    "owner": "run"
+  },
+  {
+    "old": "          } else if (focusWantRef.current === 'brief' && !running && !result && briefRef.current) {\n            focusWantRef.current = null;\n            try { briefRef.current.focus(); } catch (e) {}\n          }\n        });\n\n        function startRun()",
+    "new": "          } else if (focusWantRef.current === 'brief' && !running && !result && briefRef.current) {\n            focusWantRef.current = null;\n            try { briefRef.current.focus(); } catch (e) {}\n          } else if (focusWantRef.current === 'slice-clear' && sliceClearActionRef.current) {\n            focusWantRef.current = null;\n            try { sliceClearActionRef.current.focus(); } catch (e) {}\n          } else if (focusWantRef.current === 'slice-pin' && slicePinActionRef.current && !slicePinActionRef.current.disabled) {\n            focusWantRef.current = null;\n            try { slicePinActionRef.current.focus(); } catch (e) {}\n          } else if (focusWantRef.current === 'inspect' && inspectorBoxRef.current) {\n            var input = inspectorBoxRef.current.querySelector('input[type=\"range\"]');\n            if (input) {\n              focusWantRef.current = null;\n              try { input.focus(); } catch (e) {}\n            }\n          }\n        });\n\n        function startRun()",
+    "owner": "run"
+  },
+  {
+    "old": "        // Weld-zone keys: ←/→ travel speed, ↑/↓ amps (Shift = bigger steps).\n        // In the review, ←/→ walk through the bead slice by slice instead.",
+    "new": "        function sliceValueText(slice) {\n          return __alloFill(slice.ok\n            ? __alloT('stem.weldlab.run_insp_ok', '{value1} in.: in spec')\n            : __alloT('stem.weldlab.run_insp_bad', '{value1} in.: out of spec'), { value1: f1(slice.x) });\n        }\n        function selectReviewSlice(i, moveFocus, speak) {\n          if (!result || !result.slices.length) return;\n          var next = clamp(i, 0, result.slices.length - 1);\n          if (moveFocus) focusWantRef.current = 'inspect';\n          setSel(next);\n          if (speak) announce(sliceValueText(result.slices[next]));\n        }\n        // Weld-zone keys: ←/→ travel speed, ↑/↓ amps (Shift = bigger steps).\n        // In the review, ←/→ walk through the bead slice by slice instead.",
+    "owner": "run"
+  },
+  {
+    "old": "            setSel(clamp(sel + dTS * (big ? 10 : 1), 0, result.slices.length - 1));",
+    "new": "            selectReviewSlice(sel + dTS * (big ? 10 : 1), false, true);",
+    "owner": "run"
+  },
+  {
+    "old": "          setSel(clamp(Math.round(xIn / RUN_SLICE_IN - 0.5), 0, result.slices.length - 1));",
+    "new": "          selectReviewSlice(Math.round(xIn / RUN_SLICE_IN - 0.5), false, true);",
+    "owner": "run"
+  },
+  {
+    "old": "              h('button', { type: 'button', 'data-run-pin': '', onClick: function () { setPinnedSlice(currentIndex); }, disabled: pin === currentIndex, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' },\n                pin < 0 ? __alloT('stem.weldlab.run_pair_pin', 'Pin selected slice') : __alloT('stem.weldlab.run_pair_replace', 'Replace pin with selected slice')),\n              pin >= 0 && h('button', { type: 'button', 'data-run-clear-pin': '', onClick: function () { setPinnedSlice(-1); }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50' }, __alloT('stem.weldlab.run_pair_clear', 'Clear pin'))),",
+    "new": "              h('button', { type: 'button', ref: slicePinActionRef, 'data-run-pin': '', onClick: function () {\n                focusWantRef.current = 'slice-clear';\n                setPinnedSlice(currentIndex);\n                announce(__alloFill(__alloT('stem.weldlab.run_pair_pinned_sr', 'Slice at {value1} in. pinned. Move the bead inspector or choose an event to compare.'), { value1: selected.x.toFixed(2) }));\n              }, disabled: pin === currentIndex, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50 disabled:opacity-50' },\n                pin < 0 ? __alloT('stem.weldlab.run_pair_pin', 'Pin selected slice') : __alloT('stem.weldlab.run_pair_replace', 'Replace pin with selected slice')),\n              pin >= 0 && h('button', { type: 'button', ref: sliceClearActionRef, 'data-run-clear-pin': '', onClick: function () {\n                focusWantRef.current = 'slice-pin';\n                setPinnedSlice(-1);\n                announce(__alloT('stem.weldlab.run_pair_cleared_sr', 'Pinned slice cleared.'));\n              }, style: buttonStyle, className: 'text-sm focus:outline-none focus:ring-4 ring-cyan-500/50' }, __alloT('stem.weldlab.run_pair_clear', 'Clear pin'))),",
+    "owner": "run"
+  },
+  {
+    "old": "          function jumpTo(i) { setSel(clamp(i, 0, Math.max(0, n - 1))); }",
+    "new": "          function jumpTo(i, moveFocus, speak) { selectReviewSlice(i, moveFocus, speak); }",
+    "owner": "run"
+  },
+  {
+    "old": "          var valueText = dg ? __alloFill(dg.ok\n            ? __alloT('stem.weldlab.run_insp_ok', '{value1} in.: in spec')\n            : __alloT('stem.weldlab.run_insp_bad', '{value1} in.: out of spec'), { value1: f1(dg.x) }) : '';",
+    "new": "          var valueText = dg ? sliceValueText(dg) : '';",
+    "owner": "run"
+  },
+  {
+    "old": "jumpTo(Math.floor(clamp((e.clientX - r.left) / r.width, 0, 0.9999) * (L / RUN_SLICE_IN)));",
+    "new": "jumpTo(Math.floor(clamp((e.clientX - r.left) / r.width, 0, 0.9999) * (L / RUN_SLICE_IN)), false, true);",
+    "owner": "run"
+  },
+  {
+    "old": "onClick: function () { jumpTo(sliceAtX(e.x0)); },",
+    "new": "onClick: function () { jumpTo(sliceAtX(e.x0), false, true); },",
+    "owner": "run"
+  },
+  {
+    "old": "            dg && h('div', { className: 'flex flex-col md:flex-row gap-3 items-start' },\n              h('div', { className: 'space-y-2 min-w-0 flex-1 w-full' },",
+    "new": "            dg && h('div', { className: 'flex flex-col md:flex-row gap-3 items-start' },\n              h('div', { ref: inspectorBoxRef, 'data-run-inspector': '', className: 'space-y-2 min-w-0 flex-1 w-full' },",
+    "owner": "run"
+  },
+  {
+    "old": "onClick: function () { if (prevP) jumpTo(prevP.i0); }, disabled: !prevP,",
+    "new": "onClick: function () { if (prevP) jumpTo(prevP.i0, true); }, disabled: !prevP,",
+    "owner": "run"
+  },
+  {
+    "old": "onClick: function () { if (nextP) jumpTo(nextP.i0); }, disabled: !nextP,",
+    "new": "onClick: function () { if (nextP) jumpTo(nextP.i0, true); }, disabled: !nextP,",
+    "owner": "run"
+  },
+  {
+    "old": "                  else if (e.key === 'ArrowUp') { e.preventDefault(); setHandSpeed(clamp(handSpeed + 1, 3, 30)); }\n                  else if (e.key === 'ArrowDown') { e.preventDefault(); setHandSpeed(clamp(handSpeed - 1, 3, 30)); }",
+    "new": "                  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {\n                    e.preventDefault();\n                    var nextSpeed = clamp(handSpeed + (e.key === 'ArrowUp' ? 1 : -1), 3, 30);\n                    if (nextSpeed !== handSpeed) {\n                      setHandSpeed(nextSpeed);\n                      announce(__alloFill(__alloT('stem.weldlab.arc_hand_speed_sr', 'Hand speed {value1} in/min.'), { value1: nextSpeed.toFixed(1) }));\n                    }\n                  }",
+    "owner": "run"
+  },
+  {
+    "old": "          if (dTS) setTS(function (v0) { return clamp(v0 + dTS * (big ? 3 : 1), RUN_LIMITS.TS[0], RUN_LIMITS.TS[1]); });\n          if (dA) setA(function (v0) { return clamp(v0 + dA * (big ? 15 : 5), RUN_LIMITS.A[0], RUN_LIMITS.A[1]); });",
+    "new": "          if (dTS) {\n            setTS(function (v0) { return clamp(v0 + dTS * (big ? 3 : 1), RUN_LIMITS.TS[0], RUN_LIMITS.TS[1]); });\n            announce(__alloFill(__alloT('stem.weldlab.run_key_travel_sr', 'Travel speed {value1} in/min.'), { value1: f1(clamp(TS + dTS * (big ? 3 : 1), RUN_LIMITS.TS[0], RUN_LIMITS.TS[1])) }));\n          }\n          if (dA) {\n            setA(function (v0) { return clamp(v0 + dA * (big ? 15 : 5), RUN_LIMITS.A[0], RUN_LIMITS.A[1]); });\n            announce(__alloFill(__alloT('stem.weldlab.run_key_amps_sr', 'Amperage {value1} A.'), { value1: clamp(A + dA * (big ? 15 : 5), RUN_LIMITS.A[0], RUN_LIMITS.A[1]) }));\n          }",
+    "owner": "run"
+  },
+  {
+    "old": "onKeyDown: function (e) { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); strike('key'); } },",
+    "new": "onKeyDown: function (e) { if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return; if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); strike('key'); } },",
+    "owner": "run"
+  },
+  {
+    "owner": "haz-table-scroll",
+    "old": "          return h('div', { className: 'overflow-x-auto' },\n            h('table', { className: 'w-full text-xs text-slate-800 border-collapse' },\n              h('caption', { className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.met2_tbl_cap', 'Zone widths at these settings (distance past the fusion line)')),",
+    "new": "          return h('div', { 'data-weld-reference-scroll': 'haz-zones', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'met2-haz-zone-table-caption' },\n            h('table', { className: 'w-full text-xs text-slate-800 border-collapse' },\n              h('caption', { id: 'met2-haz-zone-table-caption', className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.met2_tbl_cap', 'Zone widths at these settings (distance past the fusion line)')),"
+  }
+]

@@ -92,12 +92,16 @@ const PROBE = function () {
     const m = String(c).match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
     return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
   };
-  const over = (fg, bg) => ({
-    r: fg.r * fg.a + bg.r * (1 - fg.a),
-    g: fg.g * fg.a + bg.g * (1 - fg.a),
-    b: fg.b * fg.a + bg.b * (1 - fg.a),
-    a: 1,
-  });
+  const over = (fg, bg) => {
+    const alpha = fg.a + bg.a * (1 - fg.a);
+    if (!alpha) return { r: 0, g: 0, b: 0, a: 0 };
+    return {
+      r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / alpha,
+      g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / alpha,
+      b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / alpha,
+      a: alpha,
+    };
+  };
   // Returns the composited backdrop AND how it was arrived at. Two outcomes must
   // never be scored:
   //   * an ancestor paints a GRADIENT - no single colour describes it;

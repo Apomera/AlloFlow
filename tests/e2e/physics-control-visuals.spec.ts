@@ -13,6 +13,7 @@ test.afterEach(async ({ page }) => harness.destroy(page));
 const views = [
   ['vectors', 'showVectors'], ['energy', 'showEnergy'], ['guide', 'showLearn'],
   ['data', 'showFlightData'], ['formulas', 'showFormulas'], ['overlay', 'showOverlay'], ['graphs', 'showGraphs'],
+  ['range', 'showRangeExplorer'],
 ] as const;
 const parameters = [
   ['angle', '°', 35, 1], ['velocity', 'm/s', 25, 1], ['gravity', 'm/s²', 9.8, .1],
@@ -110,7 +111,7 @@ test('view cards support keyboard display toggles and analysis navigation withou
       return cv === w.__controlCanvas && cv._ball === w.__controlBody;
     })).toBe(true);
   };
-  await expect(page.locator('[data-physics-view]')).toHaveCount(7);
+  await expect(page.locator('[data-physics-view]')).toHaveCount(8);
   for (const [view, field] of views) {
     const button = page.locator(`[data-physics-view="${view}"]`);
     const analysisEntry = view === 'data' || view === 'graphs';
@@ -336,6 +337,9 @@ test('the workbench and controls preserve readable grids, focus, and touch targe
     showVectors: true, showEnergy: false, showLearn: true, showFlightData: false,
     showFormulas: false, showOverlay: true, showGraphs: false,
   });
+  // `transition-all` buttons pass through mid-colours after a theme switch, so a
+  // fixed wait sampled a transition frame (4.3:1, 2.8:1). Measure settled colours.
+  await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important}' });
   for (const width of [1100, 375, 320]) for (const theme of ['default', 'dark', 'contrast']) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(t => (window as any).__setControlTheme(t), theme);

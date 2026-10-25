@@ -312,11 +312,22 @@ publicSearchQuery.explain = function (value) {
 publicSearchQuery.userTopic = function (value) { return publicSearchQuery(value); };
 publicSearchQuery.forIntent = function (value) { return publicSearchQuery(value); };
 // END PUBLIC SEARCH POLICY
+function managedSearchRequestGuard() {
+    const snapshot = managedAISnapshot();
+    if (snapshot.policy && !snapshot.policy.allowExternalSearch) throw managedAIError();
+    return managedAIDispatchGuard(snapshot);
+}
+
 const WebSearchProvider = {
     publicSearchQuery,
     userTopicQuery: publicSearchQuery.userTopic,
 
     _trace: _searchTrace,
+
+    _requestSearchFetch(guard, url, options) {
+        guard();
+        return fetch(url, options);
+    },
 
     // Configuration
     searxngUrl: 'http://localhost:8888',
@@ -403,7 +414,7 @@ const WebSearchProvider = {
     },
 
     async _fetchSerperDirect(query, maxResults, intent = 'public-reference') {
-        if (!managedExternalSearchAllowed()) throw managedAIError();
+        const requestGuard = managedSearchRequestGuard();
         const checkedQuery = publicSearchQuery(query);
         if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
         query = checkedQuery;
@@ -413,7 +424,7 @@ const WebSearchProvider = {
         const num = Math.max(1, Math.min(Number(maxResults) || 5, 10));
         if (!safeQuery) throw new Error('A research topic is required.');
         const timeoutMs = (typeof window !== 'undefined' && window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000;
-        const response = await fetch('https://google.serper.dev/search', {
+        const response = await this._requestSearchFetch(requestGuard, 'https://google.serper.dev/search', {
             method: 'POST',
             mode: 'cors',
             referrerPolicy: 'no-referrer',
@@ -488,6 +499,7 @@ const WebSearchProvider = {
 
     async _search(query, maxResults, searchQueryOverride, intent) {
         if (!managedExternalSearchAllowed()) return { results: [], contextPrompt: 'External search is disabled by the managed deployment.', groundingMetadata: null, privacyBlocked: true, policyBlocked: true };
+        const requestGuard = managedSearchRequestGuard();
         if (typeof query !== 'string' || !query.trim()) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
@@ -541,10 +553,14 @@ const WebSearchProvider = {
             //    server that holds the API key). A personal key overrides this path.
             if (!this._serperDirectKey() && this._serperProxyUrl && this._serperAvailable) {
                 try {
+                    requestGuard();
                     results = await this._fetchSerper(searchQuery, maxResults, intent);
+                    requestGuard();
                     source = 'Serper';
                     _searchTrace('serper-proxy-ok', `${results.length} result(s)`);
                 } catch (err) {
+                    requestGuard();
+                    if (err && err.code === 'managed-ai-blocked') throw err;
                     console.log('[WebSearch] Serper proxy failed:', 'provider-request-failed');
                     _searchTrace('serper-proxy-fail', 'provider-request-failed');
                 }
@@ -556,10 +572,14 @@ const WebSearchProvider = {
             //     that works in Canvas, where there is no server to proxy through.
             if (results.length === 0 && this._serperDirectKey()) {
                 try {
+                    requestGuard();
                     results = await this._fetchSerperDirect(searchQuery, maxResults, intent);
+                    requestGuard();
                     source = 'Serper (direct)';
                     _searchTrace('serper-direct-ok', `${results.length} result(s)`);
                 } catch (err) {
+                    requestGuard();
+                    if (err && err.code === 'managed-ai-blocked') throw err;
                     console.log('[WebSearch] Direct Serper failed:', 'provider-request-failed');
                     _searchTrace('serper-direct-fail', 'provider-request-failed');
                 }
@@ -569,12 +589,17 @@ const WebSearchProvider = {
             // SearXNG (localhost) is unreachable, and DDG Instant Answers API
             // is too inconsistent — it returns results unpredictably.
             if (!this._isCanvas) {
+                requestGuard();
                 // 2️⃣ SearXNG (self-hosted, full SERP) — non-Canvas only
                 if (results.length === 0 && await this._isSearXNGAvailable()) {
                     try {
+                        requestGuard();
                         results = await this._fetchSearXNG(searchQuery, maxResults, intent);
+                        requestGuard();
                         source = 'SearXNG';
                     } catch (err) {
+                        requestGuard();
+                        if (err && err.code === 'managed-ai-blocked') throw err;
                         console.warn('[WebSearch] SearXNG failed, trying DuckDuckGo fallback:', 'provider-request-failed');
                     }
                 }
@@ -582,15 +607,20 @@ const WebSearchProvider = {
                 // 3️⃣ DuckDuckGo (free, no key) — non-Canvas only
                 if (results.length === 0) {
                     try {
+                        requestGuard();
                         results = await this._fetchDuckDuckGo(searchQuery, maxResults, intent);
+                        requestGuard();
                         source = 'DuckDuckGo';
                     } catch (err) {
+                        requestGuard();
+                        if (err && err.code === 'managed-ai-blocked') throw err;
                         console.warn('[WebSearch] DuckDuckGo also failed:', 'provider-request-failed');
                     }
                 }
             }
 
             if (results.length === 0) {
+                requestGuard();
                 console.log(`[WebSearch] No results from ${this._isCanvas ? 'Serper (Canvas mode — DDG/SearXNG skipped)' : 'any source'}`);
                 // "No transport at all" and "transports ran and found nothing"
                 // are the same empty result to every caller, but they need
@@ -607,10 +637,12 @@ const WebSearchProvider = {
 
             const contextPrompt = this._buildContextPrompt(results);
             const groundingMetadata = this._buildGroundingMetadata(results);
-
+            requestGuard();
             return { results, contextPrompt, groundingMetadata, source };
 
         } catch (err) {
+            requestGuard();
+            if (err && err.code === 'managed-ai-blocked') throw err;
             console.warn('[WebSearch] Search failed:', 'provider-request-failed');
             _searchTrace('search-error', 'provider-request-failed');
             return { results: [], contextPrompt: '', groundingMetadata: null };
@@ -621,6 +653,7 @@ const WebSearchProvider = {
      * Check if SearXNG is available (cached for 60 seconds).
      */
     async _isSearXNGAvailable() {
+        const requestGuard = managedSearchRequestGuard();
         const now = Date.now();
         if (this._searxngAvailable !== null && (now - this._lastCheckTime) < 60000) {
             return this._searxngAvailable;
@@ -629,12 +662,14 @@ const WebSearchProvider = {
         try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 2000);
-            const resp = await fetch(`${this.searxngUrl}/search?q=test&format=json`, {
+            const resp = await this._requestSearchFetch(requestGuard, `${this.searxngUrl}/search?q=test&format=json`, {
                 signal: controller.signal,
             });
             clearTimeout(timeout);
             this._searxngAvailable = resp.ok;
-        } catch {
+        } catch (error) {
+            requestGuard();
+            if (error && error.code === 'managed-ai-blocked') throw error;
             this._searxngAvailable = false;
         }
         this._lastCheckTime = now;
@@ -687,13 +722,13 @@ const WebSearchProvider = {
      * Returns full SERP results — titles, URLs, snippets, engines used.
      */
     async _fetchSearXNG(query, maxResults, intent = 'public-reference') {
-        if (!managedExternalSearchAllowed()) throw managedAIError();
+        const requestGuard = managedSearchRequestGuard();
         const checkedQuery = publicSearchQuery(query);
         if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
         query = checkedQuery;
         const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
 
-        const response = await fetch(url, {
+        const response = await this._requestSearchFetch(requestGuard, url, {
             headers: { 'Accept': 'application/json' },
             referrerPolicy: 'no-referrer',
             credentials: 'omit',
@@ -731,13 +766,13 @@ const WebSearchProvider = {
      * Free, no API key required. Returns topic summaries.
      */
     async _fetchDuckDuckGo(query, maxResults, intent = 'public-reference') {
-        if (!managedExternalSearchAllowed()) throw managedAIError();
+        const requestGuard = managedSearchRequestGuard();
         const checkedQuery = publicSearchQuery(query);
         if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
         query = checkedQuery;
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
-        const response = await fetch(url, {
+        const response = await this._requestSearchFetch(requestGuard, url, {
             headers: { 'Accept': 'application/json' },
             referrerPolicy: 'no-referrer',
             credentials: 'omit',
@@ -820,7 +855,7 @@ const WebSearchProvider = {
      * Returns real Google SERP results.
      */
     async _fetchSerper(query, maxResults, intent = 'public-reference') {
-        if (!managedExternalSearchAllowed()) throw managedAIError();
+        const requestGuard = managedSearchRequestGuard();
         const checkedQuery = publicSearchQuery(query);
         if (!checkedQuery) throw new Error(publicSearchQuery.explain(query) || 'Enter a search of 1 to 500 characters.');
         query = checkedQuery;
@@ -846,7 +881,7 @@ const WebSearchProvider = {
         let response;
         try {
             console.log(`[WebSearch] Calling ${isCanvasCompatibility ? 'Canvas compatibility' : 'authenticated'} Serper proxy.`);
-            response = await fetch(requestUrl, {
+            response = await this._requestSearchFetch(requestGuard, requestUrl, {
                 method: isCanvasCompatibility ? 'GET' : 'POST',
                 mode: 'cors',
                 referrerPolicy: 'no-referrer',
@@ -860,6 +895,8 @@ const WebSearchProvider = {
                 signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
         } catch (fetchErr) {
+            requestGuard();
+            if (fetchErr && fetchErr.code === 'managed-ai-blocked') throw fetchErr;
             // Network/CORS/timeout error
             console.log(`[WebSearch] ❌ Serper NETWORK ERROR:`, 'provider-request-failed');
             if (typeof window !== 'undefined') {
@@ -1419,38 +1456,111 @@ function managedAIError() {
   error.code = 'managed-ai-blocked';
   return error;
 }
+function managedAIRecord(value, allowed, required) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw managedAIError();
+  const keys = Reflect.ownKeys(value);
+  if (keys.some(key => typeof key !== 'string' || !allowed.includes(key)) || required.some(key => !Object.prototype.hasOwnProperty.call(value, key))) throw managedAIError();
+  const result = {};
+  for (const key of keys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result[key] = descriptor.value;
+  }
+  return result;
+}
+function managedAIArray(value, maximum) {
+  if (!Array.isArray(value) || value.length > maximum) throw managedAIError();
+  if (Reflect.ownKeys(value).some(key => key !== 'length' && (typeof key !== 'string' || !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length))) throw managedAIError();
+  const result = [];
+  for (let index = 0; index < value.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result.push(descriptor.value);
+  }
+  return result;
+}
+function managedAIEndpoint(value) {
+  if (typeof value !== 'string' || value.length < 1 || value.length > 2048) return '';
+  try {
+    const u = new URL(value);
+    if (u.username || u.password || u.search || u.hash) return '';
+    if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
+    return u.href.replace(/\/+$/, '');
+  } catch (_) { return ''; }
+}
+function managedAISnapshot() {
+  try {
+    const raw = managedAIProfile();
+    if (raw == null) return { raw, policy: null, signature: 'unmanaged' };
+    const p = managedAIRecord(raw, ['version', 'connections', 'allowExternalSearch'], ['version', 'connections']);
+    if (p.version !== 1 || (Object.prototype.hasOwnProperty.call(p, 'allowExternalSearch') && typeof p.allowExternalSearch !== 'boolean')) throw managedAIError();
+    const connections = managedAIArray(p.connections, 64).map(value => {
+      const row = managedAIRecord(value, ['backend', 'baseUrl', 'keyless', 'canvasHost', 'apiKeySha256'], ['backend', 'baseUrl']);
+      if (typeof row.backend !== 'string' || !/^[a-z][a-z0-9_-]{0,63}$/i.test(row.backend)) throw managedAIError();
+      const baseUrl = managedAIEndpoint(row.baseUrl);
+      if (!baseUrl || ['keyless', 'canvasHost'].some(key => Object.prototype.hasOwnProperty.call(row, key) && typeof row[key] !== 'boolean')) throw managedAIError();
+      const fingerprints = Object.prototype.hasOwnProperty.call(row, 'apiKeySha256') ? managedAIArray(row.apiKeySha256, 64) : [];
+      if (fingerprints.some(value => typeof value !== 'string' || !/^[a-f0-9]{64}$/i.test(value))) throw managedAIError();
+      return Object.freeze({ backend: row.backend, baseUrl, keyless: row.keyless === true, canvasHost: row.canvasHost === true,
+        apiKeySha256: Object.freeze(fingerprints.map(value => value.toLowerCase())) });
+    });
+    const policy = Object.freeze({ version: 1, connections: Object.freeze(connections), allowExternalSearch: p.allowExternalSearch === true });
+    return { raw, policy, signature: JSON.stringify(policy) };
+  } catch (_) { throw managedAIError(); }
+}
+function managedAIDispatchGuard(snapshot) {
+  return function () {
+    const current = managedAISnapshot();
+    if (current.raw !== snapshot.raw || current.signature !== snapshot.signature) throw managedAIError();
+    return true;
+  };
+}
 function managedExternalSearchAllowed() {
-  const policy = managedAIProfile();
-  return policy == null || (policy.version === 1 && policy.allowExternalSearch === true);
+  try { const snapshot = managedAISnapshot(); return !snapshot.policy || snapshot.policy.allowExternalSearch; }
+  catch (_) { return false; }
 }
 async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
-  const policy = managedAIProfile();
-  if (policy == null) return;
+  const snapshot = managedAISnapshot(), guard = managedAIDispatchGuard(snapshot), policy = snapshot.policy;
+  if (!policy) return guard;
   // Version 1 deliberately covers text inference. Media routes can use separate
   // providers/fallbacks; keep them blocked until their destinations are approved.
-  if (policy.version !== 1 || operation !== 'text' || !Array.isArray(policy.connections) || (search && !managedExternalSearchAllowed())) throw managedAIError();
-  const normalize = value => {
-    try {
-      const u = new URL(value);
-      if (u.username || u.password || u.search || u.hash) return '';
-      if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
-      return u.href.replace(/\/+$/, '');
-    } catch (_) { return ''; }
-  };
-  const endpoint = normalize(baseUrl);
-  const entries = policy.connections.filter(row => row && row.backend === backend && endpoint && normalize(row.baseUrl) === endpoint);
-  for (const entry of entries) {
-    if (canvasHost && entry.canvasHost === true) return;
-    if (!apiKey && entry.keyless === true) return;
-    if (apiKey && Array.isArray(entry.apiKeySha256) && globalThis.crypto?.subtle) {
-      const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
-      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-      if (entry.apiKeySha256.some(value => typeof value === 'string' && value.toLowerCase() === fingerprint)) return;
-    }
+  if (operation !== 'text' || (search && !policy.allowExternalSearch) || typeof apiKey !== 'string') throw managedAIError();
+  const endpoint = managedAIEndpoint(baseUrl);
+  const entries = policy.connections.filter(row => row.backend === backend && endpoint && row.baseUrl === endpoint);
+  if (entries.some(entry => (canvasHost && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
+  if (apiKey && entries.some(entry => entry.apiKeySha256.length) && globalThis.crypto?.subtle) {
+    let digest;
+    try { digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(apiKey)); }
+    catch (_) { throw managedAIError(); }
+    guard();
+    const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    if (entries.some(entry => entry.apiKeySha256.includes(fingerprint))) return guard;
   }
   throw managedAIError();
 }
 // END MANAGED AI POLICY
+function geminiProviderModelId(model) {
+    const id = String(model == null ? '' : model).replace(/^models\//, '');
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(id) || id === '.' || id === '..') {
+        const error = new Error('Choose a valid Gemini model identifier before retrying.');
+        error.code = 'allo/invalid-model'; error.isFatal = true; throw error;
+    }
+    return id;
+}
+
+function runProviderBeforeRequest(guard) {
+    if (guard === undefined) return;
+    if (typeof guard !== 'function') throw managedAIError();
+    let result;
+    try { result = guard(); }
+    catch (error) {
+        if (error && (error.name === 'AbortError' || error.code === 'managed-ai-blocked')) throw error;
+        throw managedAIError();
+    }
+    if (result && typeof result.then === 'function') Promise.resolve(result).catch(() => {});
+    if (result !== undefined && result !== true) throw managedAIError();
+}
+
 class AIProvider {
 
     /**
@@ -1499,7 +1609,7 @@ class AIProvider {
 
         // Helper functions injected from the app context
         this._fetchWithRetry = config.fetchWithRetry || (async (url, opts) => {
-            const resp = await fetch(url, opts);
+            const resp = await this._requestFetch(url, opts);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
             return resp;
         });
@@ -1538,6 +1648,17 @@ class AIProvider {
         this._localRuntimeProfileAt = 0;
 
         this._debugLog(`[AIProvider] Initialized: backend=${this.backend}, isCanvas=${this.isCanvasEnv}`);
+    }
+
+    // A synchronous final guard runs immediately before native dispatch. The
+    // same capability is passed to cooperating retry helpers for every attempt.
+    _requestFetch(url, options = {}) {
+        const context = managedProviderRequests.get(this);
+        if (context) context.guard();
+        const { beforeRequest, ...nativeOptions } = options || {};
+        runProviderBeforeRequest(beforeRequest);
+        if (context) context.guard();
+        return fetch(url, nativeOptions);
     }
 
     _defaultBaseUrl() {
@@ -1597,7 +1718,7 @@ class AIProvider {
         }
         this._localRuntimeProfileAt = now;
         try {
-            const response = await fetch('/api/engine/status', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            const response = await this._requestFetch('/api/engine/status', { headers: { Accept: 'application/json' }, cache: 'no-store' });
             if (!response || !response.ok) return this.localModelProfile;
             const status = await response.json();
             const cap = status.capability || {};
@@ -1638,7 +1759,6 @@ class AIProvider {
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
     async generateText(prompt, { json = false, search = false, searchQuery = null, searchIntent = 'public-reference', temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'text', search });
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
             error.name = 'AbortError';
@@ -1681,7 +1801,7 @@ class AIProvider {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
         const keyParam = '';
-            return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
+            return `${this.baseUrl}/models/${geminiProviderModelId(model)}:generateContent${keyParam}`;
         };
 
         const payload = {
@@ -2173,6 +2293,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (err) {
+            if (err && err.code === 'managed-ai-blocked') throw err;
             this._debugLog('[AIProvider] Web search augment failed:', 'provider-request-failed');
         }
         return { prompt, groundingMetadata: null };
@@ -2237,7 +2358,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
     }
 
+    _imagesAllowed() {
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) return window.AlloImageGeneration.isEnabled();
+        try { return localStorage.getItem('alloflow_ai_image_generation_enabled') !== 'false'; } catch (_) { return true; }
+    }
+
     async _trySdTurboImage(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
@@ -2246,6 +2373,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         try {
             if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
                 const localUrl = await win._sdTurbo.generate(prompt);
+                if (!this._imagesAllowed()) return null;
                 if (localUrl) {
                     this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
                     const optimized = await this._optimizeImage(localUrl, width, quality);
@@ -2254,6 +2382,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (err) {
+            if (!this._imagesAllowed()) return null;
             if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
             this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: provider-request-failed`);
         }
@@ -2261,6 +2390,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     _kickoffSdTurboLoad() {
+        if (!this._imagesAllowed()) return false;
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
@@ -2280,6 +2410,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _generateImageByBackend(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality, signal);
@@ -2297,7 +2428,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async generateImage(prompt, { width = 300, quality = 0.7, signal = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        if (!this._imagesAllowed()) return null;
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) signal = window.AlloImageGeneration.signalFor(signal);
+        if (!this._imagesAllowed()) return null;
         this._debugLog('[AIProvider] generateImage requested');
         if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
 
@@ -2317,14 +2450,17 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         const runPrimary = () => {
+            if (!this._imagesAllowed()) return null;
             if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality, signal);
             if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality, signal);
             return this._generateImageByBackend(prompt, width, quality, signal);
         };
 
         try {
-            return await runPrimary();
+            const result = await runPrimary();
+            return this._imagesAllowed() ? result : null;
         } catch (err) {
+            if (!this._imagesAllowed()) return null;
             if (this._isSdTurboEligibleImageError(err)) {
                 const local = await this._trySdTurboImage(prompt, width, quality, signal);
                 if (local) return local;
@@ -2335,13 +2471,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality, signal = null) {
+        if (!this._imagesAllowed()) return null;
         const keyParam = '';
         const throwIfAborted = () => {
             if (!signal || !signal.aborted) return;
             const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
         };
         throwIfAborted();
-        const url = `${this.baseUrl}/models/${this.models.image || this.models.imagen}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${geminiProviderModelId(this.models.image || this.models.imagen)}:generateContent${keyParam}`;
         const payload = {
             contents: [{ parts: [{ text: String(prompt || '') }] }],
             generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
@@ -2349,7 +2486,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         const executeRequest = async () => {
             throwIfAborted();
-            const response = await fetch(url, {
+            const response = await this._requestFetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
                 body: JSON.stringify(payload),
@@ -2444,7 +2581,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         throwIfAborted();
         const fluxUrl = 'http://localhost:7860/v1/images/generations';
         try {
-            const fluxResp = await fetch(fluxUrl, {
+            const fluxResp = await this._requestFetch(fluxUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2519,22 +2656,17 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Edited image as data:image URL
      */
     async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null, signal = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        if (!this._imagesAllowed()) return null;
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) signal = window.AlloImageGeneration.signalFor(signal);
+        if (!this._imagesAllowed()) return null;
         this._debugLog('[AIProvider] editImage requested');
 
-        switch (this.backend) {
-            case 'gemini':
-                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
-            case 'openai':
-            case 'localai':
-            case 'lmstudio':
-            case 'ollama':
-            case 'claude':
-            case 'alloflow-local':
-            case 'custom':
-            default:
-                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
-        }
+        try {
+            const result = await (this.backend === 'gemini'
+                ? this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal)
+                : this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal));
+            return this._imagesAllowed() ? result : null;
+        } catch (error) { if (!this._imagesAllowed()) return null; throw error; }
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal = null) {
@@ -2544,7 +2676,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
         };
         throwIfAborted();
-        const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${geminiProviderModelId(this.models.image)}:generateContent${keyParam}`;
 
         const parts = [
             { text: prompt },
@@ -2562,7 +2694,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         try {
             throwIfAborted();
-            const response = await fetch(url, {
+            const response = await this._requestFetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
                 body: JSON.stringify(payload),
@@ -2591,7 +2723,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         throwIfAborted();
         const fluxEditUrl = 'http://localhost:7860/v1/images/edits';
         try {
-            const fluxResp = await fetch(fluxEditUrl, {
+            const fluxResp = await this._requestFetch(fluxEditUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2663,7 +2795,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Analysis text
      */
     async analyzeImage(prompt, base64Data, { mimeType = 'image/png', signal = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (signal && signal.aborted) {
             const error = new Error('Image analysis cancelled.');
             error.name = 'AbortError';
@@ -2688,7 +2819,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
     async _geminiAnalyzeImage(prompt, base64Data, mimeType, signal) {
         const keyParam = '';
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${geminiProviderModelId(this.models.vision)}:generateContent${keyParam}`;
 
         const payload = {
             contents: [{
@@ -2699,7 +2830,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }],
         };
 
-        const response = await fetch(url, {
+        const response = await this._requestFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
             body: JSON.stringify(payload),
@@ -2771,7 +2902,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Analysis text
      */
     async analyzeImages(prompt, images, { signal = null, maxTokens = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (signal && signal.aborted) {
             const error = new Error('Image analysis cancelled.');
             error.name = 'AbortError';
@@ -2802,7 +2932,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     async _geminiAnalyzeImages(prompt, images, { signal, maxTokens }) {
         // Header auth, like the app's gemini_api_module: AI Studio's newer keys are refused
         // on the legacy ?key= query path, and a header keeps the credential out of URL logs.
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent`;
+        const url = `${this.baseUrl}/models/${geminiProviderModelId(this.models.vision)}:generateContent`;
         const headers = { 'Content-Type': 'application/json' };
         if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
         const payload = {
@@ -2901,7 +3031,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Model response text
      */
     async analyzeAudio(prompt, base64Data, { mimeType = 'audio/webm' } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         this._debugLog('[AIProvider] analyzeAudio requested');
         switch (this.backend) {
             case 'gemini':
@@ -2929,7 +3058,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const keyParam = '';
         // Use the vision/multimodal model — Gemini's flash/pro vision
         // models accept audio in the same payload shape.
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${geminiProviderModelId(this.models.vision)}:generateContent${keyParam}`;
 
         // Strip any data:audio/...;base64, prefix the caller may have left
         // on the string (recordAudioBlob returns a full data URI).
@@ -2949,7 +3078,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }],
         };
 
-        const response = await fetch(url, {
+        const response = await this._requestFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
             body: JSON.stringify(payload),
@@ -2979,7 +3108,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string|null>} Audio URL or null
      */
     async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, locale = null, dialect = null, signal = null, force = false } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         const speechProfile = this._normalizeTtsSpeechProfile(language, locale, dialect);
         const forceRefresh = force === true;
         if (!text) return null;
@@ -3188,7 +3316,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return null;
         }
 
-        const synthesisModel = this.models.tts;
+        const synthesisModel = geminiProviderModelId(this.models.tts);
         const synthesisBaseUrl = this.baseUrl;
         const synthesisApiKey = this.apiKey;
         // Queue for serialization
@@ -3212,7 +3340,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 this._throwIfTtsAborted(signal);
                 const request = this._createTtsRequestSignal(signal, 12000);
                 try {
-                    const response = await request.wait(fetch(url, {
+                    const response = await request.wait(this._requestFetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', ...(synthesisApiKey ? { 'x-goog-api-key': synthesisApiKey } : {}) },
                         body: JSON.stringify(payload),
@@ -3249,6 +3377,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 } catch (e) {
                     request.cleanup();
                     this._throwIfTtsAborted(signal);
+                    if (e && (e.code === 'managed-ai-blocked' || e.isFatal === true)) throw e;
                     if (request.timedOut()) e = new Error('Gemini TTS request timed out');
 
                     if (attempt < 2) {
@@ -3316,7 +3445,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 if (url === 'http://localhost:5500/v1/audio/speech') {
                     payload.language = speechProfile.locale || speechProfile.baseLanguage;
                 }
-                const response = await request.wait(fetch(url, {
+                const response = await request.wait(this._requestFetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -3334,6 +3463,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             } catch (err) {
                 request.cleanup();
                 this._throwIfTtsAborted(signal);
+                if (err && (err.code === 'managed-ai-blocked' || err.isFatal === true)) throw err;
                 this._ttsEndpointCooldown.set(url, Date.now() + 30000);
                 if (request.timedOut()) err = new Error('Local TTS endpoint timed out');
                 this._debugLog(`[AIProvider TTS] ${url} failed: provider-request-failed, trying next...`);
@@ -3352,7 +3482,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Replaces: GEMINI_MODELS.safety based checks
      */
     async checkSafety(content) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (!content || content.length < 5) return null;
 
         try {
@@ -3374,7 +3503,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Used by Settings UI for smart model detection.
      */
     async listAvailableModels({ signal = null } = {}) {
-        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey });
         try {
             let url;
             const headers = { 'Content-Type': 'application/json' };
@@ -3402,7 +3530,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     break;
             }
 
-            const response = await fetch(url, { headers, signal, ...(managedAIProfile() != null ? { redirect: 'error' } : {}) });
+            const response = await this._requestFetch(url, { headers, signal, ...(managedAIProfile() != null ? { redirect: 'error' } : {}) });
             if (!response || !response.ok) {
                 const status = response && response.status ? response.status : 'network';
                 const statusText = response && response.statusText ? ': ' + response.statusText : '';
@@ -3420,6 +3548,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return (data.data || []).map(m => ({ id: m.id, type: 'text' }));
             }
         } catch (e) {
+            if (e && e.code === 'managed-ai-blocked') throw e;
             this._warnLog('[AIProvider] Model discovery failed:', 'provider-request-failed');
             return [];
         }
@@ -3522,6 +3651,72 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         return buffer;
     }
+}
+
+// Logical requests own immutable routing state. Settings edits affect the next
+// request; already approved retries/repairs never read a new endpoint or key.
+const managedProviderRequests = new WeakMap();
+function copyProviderRequestData(value, seen = new WeakMap()) {
+    if (!value || typeof value !== 'object') return value;
+    const prototype = Object.getPrototypeOf(value);
+    // Plain option bags may originate in another window. Keep opaque platform
+    // objects (signals, blobs) live while copying ordinary data across realms.
+    if (!Array.isArray(value) && prototype !== null && Object.getPrototypeOf(prototype) !== null) return value;
+    if (seen.has(value)) return seen.get(value);
+    const out = Array.isArray(value) ? [] : {};
+    seen.set(value, out);
+    for (const key of Object.keys(value)) Object.defineProperty(out, key, { value: copyProviderRequestData(value[key], seen), enumerable: true, configurable: true, writable: true });
+    return out;
+}
+function snapshotProviderRequest(owner) {
+    const scoped = Object.create(owner);
+    const route = { backend: String(owner.backend || 'gemini'), baseUrl: String(owner.baseUrl || ''), apiKey: String(owner.apiKey || ''), isCanvasEnv: owner.isCanvasEnv === true };
+    const models = Object.freeze(Object.fromEntries(Object.entries(owner.models || {}).map(([key, value]) => [key, String(value || '')])));
+    for (const [key, value] of Object.entries({ ...route, models, _ttsProvider: owner._ttsProvider, _imageProvider: owner._imageProvider,
+        _optimizeImage: owner._optimizeImage, _debugLog: owner._debugLog, _warnLog: owner._warnLog, _ttsCache: owner._ttsCache, _ttsEndpointCooldown: owner._ttsEndpointCooldown })) {
+        Object.defineProperty(scoped, key, { value, enumerable: true });
+    }
+    // Queue ordering, cooldowns and caches remain shared across operations.
+    for (const key of ['_ttsQueue', '_ttsRateLimitedUntil', '_imagenQueue', '_imagenRateLimited']) Object.defineProperty(scoped, key, {
+        get: () => owner[key], set: value => { owner[key] = value; }
+    });
+    const sameRoute = () => owner.backend === route.backend && owner.baseUrl === route.baseUrl && String(owner.apiKey || '') === route.apiKey
+        && owner.isCanvasEnv === route.isCanvasEnv && Object.keys(models).every(key => owner.models && owner.models[key] === models[key]);
+    for (const key of ['localModelProfile', '_localRuntimeProfileAt']) {
+        let value = copyProviderRequestData(owner[key]);
+        Object.defineProperty(scoped, key, { get: () => value, set: next => { value = next; if (sameRoute()) owner[key] = next; } });
+    }
+    const context = { guard: null };
+    managedProviderRequests.set(scoped, context);
+    const transport = owner._fetchWithRetry;
+    Object.defineProperty(scoped, '_fetchWithRetry', { value: (url, options = {}, ...rest) => {
+        context.guard();
+        const previousGuard = options.beforeRequest;
+        const beforeRequest = () => { context.guard(); runProviderBeforeRequest(previousGuard); context.guard(); };
+        return transport.call(scoped, url, { ...options, beforeRequest }, ...rest);
+    } });
+    return { scoped, context, route };
+}
+async function invokeProviderRequest(method, scoped, context, args) {
+    context.guard();
+    try { const result = await method.apply(scoped, args); context.guard(); return result; }
+    catch (error) { context.guard(); throw error; }
+}
+for (const [name, operation] of Object.entries({ generateText: 'text', listAvailableModels: 'text', generateImage: 'media', editImage: 'media',
+    analyzeImage: 'media', analyzeImages: 'media', analyzeAudio: 'media', textToSpeech: 'media', checkSafety: 'media' })) {
+    const method = AIProvider.prototype[name];
+    AIProvider.prototype[name] = async function (...supplied) {
+        const existing = managedProviderRequests.get(this);
+        if (existing) return invokeProviderRequest(method, this, existing, supplied.map(value => copyProviderRequestData(value)));
+        if ((name === 'generateImage' || name === 'editImage') && !this._imagesAllowed()) return null;
+        const { scoped, context, route } = snapshotProviderRequest(this);
+        const args = supplied.map(value => copyProviderRequestData(value));
+        const guard = await assertManagedAIConnection({ backend: route.backend, baseUrl: route.baseUrl, apiKey: route.apiKey,
+            canvasHost: route.isCanvasEnv && !route.apiKey, operation, search: name === 'generateText' && args[1] && args[1].search === true });
+        if (typeof guard !== 'function') throw managedAIError();
+        context.guard = guard;
+        return invokeProviderRequest(method, scoped, context, args);
+    };
 }
 
 // Make available globally (for inline usage in AlloFlowANTI.txt)

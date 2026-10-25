@@ -1,0 +1,2 @@
+'use strict';
+const defaults={suite:'rain-body-readability',sections:'rain-body-readability',captures:'rain-body-readability-shower-water,rain-body-readability-surface-water,rain-body-readability-landing-water,rain-body-readability-comparison-water'};for(const[key,value]of Object.entries(defaults))if(!process.argv.some(arg=>arg.startsWith('--'+key+'=')))process.argv.push('--'+key+'='+value);require('./watercycle_pilot_rain_cloud_depth_qa.cjs');

@@ -72,28 +72,28 @@ describe('first-party accessibility engines', () => {
     }
   });
 
-  it('takes the pdf.js worker from the mirror that actually loaded, and has no lone pdf.js loader left', () => {
+  it('takes the pdf.js worker only from the verified graph, and has no lone pdf.js loader left', () => {
     for (const src of [pipeline, pipelineSource]) {
-      expect(src).toContain('const _pdfJsWorkerBesideLoadedScript = () => {');
-      expect(src).toContain('workerSrc = _vendorWorker || _pdfJsWorkerBesideLoadedScript() ||');
+      expect(src.includes('const workerAsset = await _getVerifiedPdfWorkerAsset();'), 'source and generated module require the verified worker adapter').toBe(true);
+      expect(src.includes('workerSrc = workerAsset.url;')).toBe(true);
+      expect(src.includes('_pdfJsWorkerBesideLoadedScript')).toBe(false);
+      expect(src.includes('__alloflowRuntimeAssets.pdfjsWorker')).toBe(false);
       // The image-extraction path used to inject its own cdnjs tag with its own worker URL.
       expect(src).not.toContain("script.setAttribute('data-pdfjs', 'true')");
       expect(src).toContain('await _awaitImageWork(ensurePdfJsLoaded())');
     }
   });
 
-  it('derives the worker URL beside the LAST pdf.js tag (the one that loaded), for any origin', () => {
-    const start = pipeline.indexOf('const _pdfJsWorkerBesideLoadedScript = () => {');
-    const end = pipeline.indexOf('const ensurePdfJsLoaded = async () => {', start);
-    const fn = new Function('document', pipeline.slice(start, end) + '\nreturn _pdfJsWorkerBesideLoadedScript();');
-    const doc = (srcs) => ({ querySelectorAll: () => srcs.map((src) => ({ src })) });
-    expect(fn(doc([]))).toBe('');
-    expect(fn(doc(['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'])))
-      .toBe('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js');
-    // A refused first mirror leaves its tag behind; the worker must follow the one that loaded.
-    expect(fn(doc(['https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'])))
-      .toBe('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');
-    expect(fn(doc(['https://example.com/not-pdfjs.js']))).toBe('');
+  it('shares one verified PDF worker lease across concurrent callers', async () => {
+    const block = between(pipelineSource, 'function _configureTrustedDocumentScript(', 'const _waitForGlobal =');
+    let calls = 0;
+    const asset = { url: 'blob:synthetic-reviewed-pdf-worker', revoke() {} };
+    const window = { __alloGetVerifiedRuntimeAsset: async (graph, binding) => {
+      expect([graph, binding]).toEqual(['pdfjs', 'worker']); calls++; return asset;
+    } };
+    const get = new Function('window', 'var _docPipelinePdfWorkerAsset=null,_docPipelinePdfWorkerPending=null;\n' + block + '\nreturn _getVerifiedPdfWorkerAsset;')(window);
+    expect(await Promise.all([get(), get()])).toEqual([asset, asset]);
+    expect(calls).toBe(1);
   });
 
   it('refuses a mirror that answers a missing path with an HTML page instead of the engine', () => {
@@ -102,11 +102,14 @@ describe('first-party accessibility engines', () => {
     // check; the axe source-text fetch was not, and cached the HTML as "axe-core" for the session.
     for (const src of [pipeline, pipelineSource]) {
       const fetchLoop = between(src, 'for (const u of _AXE_CDN_URLS) {', 'inline injection disabled, falling back to script tag per iframe');
-      expect(fetchLoop).toContain("r.headers.get('content-type')");
+      expect(fetchLoop.includes('window.__alloFetchTrustedScriptText'), 'source and generated module must verify fetched axe bytes').toBe(true);
+      expect(fetchLoop.includes("fetchTrusted(u, 'axe-core')")).toBe(true);
+      expect(fetchLoop).not.toContain('fetch(u)');
+      expect(fetchLoop).not.toContain('r.text()');
       expect(fetchLoop).toMatch(/\/\^\\s\*</);
-      expect(fetchLoop).toContain('answered with something that is not axe-core');
+      expect(fetchLoop).toContain('did not provide verified axe-core source');
       // The valid-source assignment happens only after the check.
-      expect(fetchLoop.indexOf('answered with something that is not axe-core')).toBeLessThan(fetchLoop.indexOf('_axeSourceCache = txt; return txt;'));
+      expect(fetchLoop.indexOf('did not provide verified axe-core source')).toBeLessThan(fetchLoop.indexOf('_axeSourceCache = txt; return txt;'));
     }
   });
 

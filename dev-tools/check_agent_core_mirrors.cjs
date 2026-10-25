@@ -32,6 +32,7 @@ const PAIRS = [
   'agent_core_ui_adapter_module.js',
   'agent_core_resource_pack_module.js',
   'agent_core_pack_media_module.js',
+  'agent_core_pack_native_module.js',
 ];
 const MIRROR_DIR = path.join('desktop', 'web-app', 'public');
 

@@ -29,6 +29,59 @@ function _alloCommandScopeToken(deps) {
   return token;
 }
 
+const _alloCommandWorkspaceOwners = new WeakMap();
+let _alloCommandWorkspaceSequence = 0;
+function _alloCommandWorkspaceToken(deps) {
+  const owner = deps && deps._alloCmdCtxRef;
+  if (!owner || typeof owner !== 'object') return '';
+  const current = [deps.canvasRecoveryCurrentIdRef && deps.canvasRecoveryCurrentIdRef.current, deps.inputText,
+    deps.isTeacherMode, deps.isStudentLinkMode, deps.isParentMode, deps.isIndependentMode];
+  const previous = _alloCommandWorkspaceOwners.get(owner);
+  if (previous && current.every((value, index) => value === previous.values[index])) return previous.token;
+  const token = 'cmd-workspace-' + (++_alloCommandWorkspaceSequence).toString(36);
+  _alloCommandWorkspaceOwners.set(owner, { values: current, token });
+  return token;
+}
+
+function _alloCurrentAssignmentPreviewReady(share, resources, now = Date.now()) {
+  if (!share || typeof share !== 'object' || !['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(share.type)
+      || typeof share.url !== 'string' || !/^https?:\/\//i.test(share.url)
+      || share.revoked === true || share.isRevoked === true || share.revokedAt
+      || ['revoked', 'expired', 'failed', 'disabled', 'unavailable'].includes(String(share.status || '').toLowerCase())) return false;
+  const summary = share.deliverySummary;
+  if (!summary || summary.contentsStatus !== 'ready') return false;
+  const parseTime = value => typeof value === 'number' && Number.isFinite(value) ? value
+    : typeof value === 'string' && value ? Date.parse(value) : NaN;
+  const expires = parseTime(share.expiresAt), created = parseTime(share.createdAt);
+  if (!Number.isFinite(expires) || expires <= now || !Number.isFinite(created) || created > now) return false;
+  const ids = Array.isArray(share.resourceIds) ? share.resourceIds : summary.resourceIds;
+  if (!Array.isArray(ids) || !ids.length || ids.length > 200 || !Array.isArray(resources) || !resources.length || resources.length > 200) return false;
+  const normalizeId = value => (typeof value === 'string' || typeof value === 'number') && String(value).length > 0 && String(value).length <= 200 ? String(value) : null;
+  const sharedIds = ids.map(normalizeId);
+  if (sharedIds.some(id => !id) || new Set(sharedIds).size !== sharedIds.length || summary.resourceCount !== sharedIds.length) return false;
+  const currentIds = new Set();
+  for (const resource of resources) {
+    if (!resource || typeof resource !== 'object' || typeof resource.type !== 'string' || !resource.type) return false;
+    const id = normalizeId(resource.id);
+    if (!id) return false;
+    currentIds.add(id);
+    for (const field of ['updatedAt', 'modifiedAt', 'lastModifiedAt', 'lastEditedAt', 'savedAt', 'createdAt']) {
+      if (resource[field] == null || resource[field] === '') continue;
+      const changed = parseTime(resource[field]);
+      if (!Number.isFinite(changed) || changed > created) return false;
+    }
+  }
+  return currentIds.size === sharedIds.length && sharedIds.every(id => currentIds.has(id));
+}
+
+function _alloLessonRevisionResources(getter) {
+  if (typeof getter !== 'function' || typeof window.AlloModules?.HostHandlers !== 'function') return [];
+  try {
+    const resources = getter();
+    return Array.isArray(resources) ? resources : [];
+  } catch (_) { return []; }
+}
+
 function buildAlloCommandContext(deps) {
   const {
     GUIDED_TOUR_MAP, LIVE_SIGNAL_OPTIONS, READING_THEME_IDS, ReactDOM, _alloCmdCtx, _alloCmdCtxRef,
@@ -42,7 +95,7 @@ function buildAlloCommandContext(deps) {
     focusGuidedTarget, focusMode, fullPackRun, generatedContent, getDefaultTitle, getFilteredHistory,
     gradeLevel, guidedActiveSteps, guidedCompletedIds, guidedCreatedHistoryIds, guidedMode, guidedStep,
     handleApplyLessonTemplate, handleApproveFullPack, handleAutoFillToggle, handleClearHistory, handleCloseStudentEntry, handleCloseSubmitModal,
-    handleCloudToggleClick, handleExecuteBlueprint, handleExitGuidedMode, handleExport, handleGenerate, handleGenerateBrainstormRubric,
+    handleCloudToggleClick, handleCopyBlueprintActionDiagnostics, handleExecuteBlueprint, handleExitGuidedMode, handleExport, handleGenerate, handleGenerateBrainstormRubric,
     handleGenerateSource, handleGuidedSkip, handleNextTourStep, handleOpenSchoolRewards, handleOpenSchoolRewardsPortal, handlePlanFullPack,
     handlePrevTourStep, handleRebuildBlueprintStep, handleResetScaffolds, handleRestoreView, handleReturnToStart, handleSendUDLMessage,
     handleSetActiveViewToDashboard, handleSetActiveViewToPersona, handleSetGlossaryFilterToAcademic, handleSetGlossaryFilterToAll, handleSetGlossaryFilterToDomain, handleSetIsBingoGameToTrue,
@@ -52,7 +105,8 @@ function buildAlloCommandContext(deps) {
     handleToggleIsEditingAnalysis, handleToggleIsEditingBrainstorm, handleToggleIsEditingFaq, handleToggleIsEditingGlossary, handleToggleIsEditingLeveledText, handleToggleIsEditingOutline,
     handleToggleIsEditingQuiz, handleToggleIsEditingScaffolds, handleToggleIsHelpMode, handleToggleIsPresentationMode, handleToggleIsReviewGame, handleToggleReadingRuler,
     handleToggleShowQuizAnswers, handleToggleShowSocraticChat, handleToggleVisualSupports, hasSelectedMode, hasSelectedRole, hasSourceOrAnalysis,
-    history, homeworkExpiryDays, initiateSaveStudentProject, inputText, isAccessibilityLabOpen, isAlloHavenOpen, isAlloStudioOpen,
+    history, homeworkExpiryDays, initiateSaveStudentProject, initiateSaveTeacherProject, inputText, isAccessibilityLabOpen, isAlloHavenOpen, isAlloStudioOpen,
+    getLessonRevisionResources, prepareLessonRevision, applyLessonRevision, undoLessonRevision, discardLessonRevision, openLessonRevisionPreview,
     isCloudSyncEnabled, isCommunityCatalogOpen, isDynamicAssessmentOpen, isExtracting, isGateOpen, isGeneratingPersona,
     isGeneratingSource, isGlobalMuted, isIndependentMode, isLinguaPracticeOpen, isOpenGrooveOpen, isParentMode,
     isProcessing, isProjectSettingsOpen, isReadingLibraryOpen, isResearchSuiteOpen, isStudentLinkMode, isSymbolStudioOpen,
@@ -908,6 +962,7 @@ function buildAlloCommandContext(deps) {
     const ctx = {
       t, addToast, callGemini: __live.callGemini, commandAudience,
       commandScopeToken: _alloCommandScopeToken(deps),
+      commandWorkspaceToken: _alloCommandWorkspaceToken(deps),
       openSchoolStoreRecognition: () => {
         if (!isTeacherMode || isStudentLinkMode || isParentMode || isIndependentMode) return false;
         if (!normalizeAlloEvaluationPortalUrl(schoolRewardsPortalUrl)) { handleOpenSchoolRewards(); return false; }
@@ -1147,6 +1202,10 @@ function buildAlloCommandContext(deps) {
       contentLoaded: !!generatedContent,
       // Safe routing metadata only: never include the source text in the intent brief.
       hasSourceText: !!String(inputText || '').trim(),
+      commandGradeLevel: gradeLevel,
+      commandResourceCount: Math.min(999, new Set([...(Array.isArray(history) ? history : []), generatedContent]
+        .filter(item => item && typeof item === 'object' && typeof item.type === 'string' && item.type)
+        .map(item => item.id || item)).size),
       generationBusy: !!(isProcessing || isGeneratingSource || isGeneratingPersona || isExtracting),
       zenActive: isZenMode,
       focusActive: focusMode,
@@ -1172,6 +1231,12 @@ function buildAlloCommandContext(deps) {
       getAssignmentProgress,
       canSaveStudentWork: Array.isArray(history) && history.length > 0,
       saveStudentWork: initiateSaveStudentProject,
+      canSaveTeacherProject: Array.isArray(history) && history.length > 0 && typeof initiateSaveTeacherProject === 'function',
+      openProjectSave: () => {
+        if (!Array.isArray(history) || !history.length || typeof initiateSaveTeacherProject !== 'function') return false;
+        initiateSaveTeacherProject();
+        return true;
+      },
       getNextAssignmentStep,
       openNextAssignmentStep: () => { const step = getNextAssignmentStep(); if (step && step.item) handleRestoreView(step.item); return step; },
       readAssignmentDirections: () => { if (!assignmentDirections) return false; handleRestoreView(assignmentDirections); setTimeout(() => startReadThisPage(), 80); return true; },
@@ -1188,10 +1253,25 @@ function buildAlloCommandContext(deps) {
       editAssignmentDirections: () => setShowDirectionsComposer(true),
       openAssessmentBuilder: () => setShowAssessmentBuilder(true),
       openUdlGuide: () => setShowUDLGuide(true),
+      canReviseLesson: !!isTeacherMode && !isStudentLinkMode && typeof getLessonRevisionResources === 'function' &&
+        _alloLessonRevisionResources(getLessonRevisionResources).some(resource => resource.supported),
+      getLessonRevisionResources: () => _alloLessonRevisionResources(getLessonRevisionResources),
+      prepareLessonRevision: options => typeof prepareLessonRevision === 'function' ? prepareLessonRevision(options) : Promise.resolve({ ok: false, error: 'Lesson revision is unavailable. Reload the app.' }),
+      applyLessonRevision: id => typeof applyLessonRevision === 'function' ? applyLessonRevision(id) : { ok: false, error: 'Lesson revision is unavailable.' },
+      undoLessonRevision: id => typeof undoLessonRevision === 'function' ? undoLessonRevision(id) : { ok: false, error: 'Undo is unavailable.' },
+      discardLessonRevision: (id, options) => typeof discardLessonRevision === 'function' && discardLessonRevision(id, options),
+      openLessonRevisionPreview: id => typeof openLessonRevisionPreview === 'function' && openLessonRevisionPreview(id),
+      startLessonRevision: () => {
+        if (!isTeacherMode || isStudentLinkMode) return false;
+        setShowUDLGuide(true);
+        setTimeout(() => handleSendUDLMessage({ action: 'lesson-revision-start' }), 0);
+        return true;
+      },
       // ── Blueprint capabilities (2026-07-28) ──
       // Gates for the palette: a command whose `when` is false never appears,
       // so these double as the availability contract.
       hasActiveBlueprint: !!(activeBlueprint && Array.isArray(activeBlueprint.resourcePlan) && activeBlueprint.resourcePlan.length),
+      isCurrentBlueprint: (blueprint) => blueprint === activeBlueprint && !!activeBlueprint,
       lessonTemplateNames: () => (Array.isArray(lessonTemplates) ? lessonTemplates : []).map(tpl => ({ id: tpl && tpl.id, name: tpl && tpl.name })).filter(x => x.id),
       // Steps are addressed to the teacher by 1-based POSITION (what they see
       // on the card) and translated to the Stage-2 uiId here — the palette must
@@ -1200,7 +1280,8 @@ function buildAlloCommandContext(deps) {
         const plan = (activeBlueprint && Array.isArray(activeBlueprint.resourcePlan)) ? activeBlueprint.resourcePlan : [];
         return plan.map((r, i) => ({ position: i + 1, tool: r && (r.tool || r.type), uiId: r && (r.uiId || r.stepId) })).filter(s => s.uiId);
       },
-      runBlueprint: () => { setShowUDLGuide(true); return handleExecuteBlueprint(); },
+      runBlueprint: (options) => { setShowUDLGuide(true); return handleExecuteBlueprint(options); },
+      copyBlueprintDiagnostics: (diagnosticId) => typeof handleCopyBlueprintActionDiagnostics === 'function' ? handleCopyBlueprintActionDiagnostics(diagnosticId) : Promise.resolve(false),
       stopBlueprintRun: handleStopBlueprintRun,
       waitForCommandState: () => new Promise(resolve => setTimeout(() => {
         // Commit queued React updates before the next command reads guards or handlers.
@@ -1245,6 +1326,12 @@ function buildAlloCommandContext(deps) {
       shareStudentAiPolicy: studentAiPolicyForShare,
       shareAssignment: createHomeworkAssignmentLink,
       canPreviewStudentAssignment: !!latestStudentPreviewShare,
+      canPreviewCurrentAssignment: (() => {
+        try {
+          const current = [...(Array.isArray(history) ? history : []), ...(generatedContent ? [generatedContent] : [])];
+          return _alloCurrentAssignmentPreviewReady(latestStudentPreviewShare, _alloStudentSafeResources(current));
+        } catch (_) { return false; }
+      })(),
       previewStudentAssignment: () => { if (!latestStudentPreviewShare) return false; openStudentQrPreview(latestStudentPreviewShare.url, 'homework link as a student'); return true; },
       hasResumableWork: !!latestResumableWork,
       resumeLatestWork: () => { if (latestResumableWork) handleRestoreView(latestResumableWork); return latestResumableWork; },

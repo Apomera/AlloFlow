@@ -13,34 +13,85 @@ function managedAIError() {
   error.code = 'managed-ai-blocked';
   return error;
 }
+function managedAIRecord(value, allowed, required) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw managedAIError();
+  const keys = Reflect.ownKeys(value);
+  if (keys.some(key => typeof key !== 'string' || !allowed.includes(key)) || required.some(key => !Object.prototype.hasOwnProperty.call(value, key))) throw managedAIError();
+  const result = {};
+  for (const key of keys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result[key] = descriptor.value;
+  }
+  return result;
+}
+function managedAIArray(value, maximum) {
+  if (!Array.isArray(value) || value.length > maximum) throw managedAIError();
+  if (Reflect.ownKeys(value).some(key => key !== 'length' && (typeof key !== 'string' || !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length))) throw managedAIError();
+  const result = [];
+  for (let index = 0; index < value.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result.push(descriptor.value);
+  }
+  return result;
+}
+function managedAIEndpoint(value) {
+  if (typeof value !== 'string' || value.length < 1 || value.length > 2048) return '';
+  try {
+    const u = new URL(value);
+    if (u.username || u.password || u.search || u.hash) return '';
+    if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
+    return u.href.replace(/\/+$/, '');
+  } catch (_) { return ''; }
+}
+function managedAISnapshot() {
+  try {
+    const raw = managedAIProfile();
+    if (raw == null) return { raw, policy: null, signature: 'unmanaged' };
+    const p = managedAIRecord(raw, ['version', 'connections', 'allowExternalSearch'], ['version', 'connections']);
+    if (p.version !== 1 || (Object.prototype.hasOwnProperty.call(p, 'allowExternalSearch') && typeof p.allowExternalSearch !== 'boolean')) throw managedAIError();
+    const connections = managedAIArray(p.connections, 64).map(value => {
+      const row = managedAIRecord(value, ['backend', 'baseUrl', 'keyless', 'canvasHost', 'apiKeySha256'], ['backend', 'baseUrl']);
+      if (typeof row.backend !== 'string' || !/^[a-z][a-z0-9_-]{0,63}$/i.test(row.backend)) throw managedAIError();
+      const baseUrl = managedAIEndpoint(row.baseUrl);
+      if (!baseUrl || ['keyless', 'canvasHost'].some(key => Object.prototype.hasOwnProperty.call(row, key) && typeof row[key] !== 'boolean')) throw managedAIError();
+      const fingerprints = Object.prototype.hasOwnProperty.call(row, 'apiKeySha256') ? managedAIArray(row.apiKeySha256, 64) : [];
+      if (fingerprints.some(value => typeof value !== 'string' || !/^[a-f0-9]{64}$/i.test(value))) throw managedAIError();
+      return Object.freeze({ backend: row.backend, baseUrl, keyless: row.keyless === true, canvasHost: row.canvasHost === true,
+        apiKeySha256: Object.freeze(fingerprints.map(value => value.toLowerCase())) });
+    });
+    const policy = Object.freeze({ version: 1, connections: Object.freeze(connections), allowExternalSearch: p.allowExternalSearch === true });
+    return { raw, policy, signature: JSON.stringify(policy) };
+  } catch (_) { throw managedAIError(); }
+}
+function managedAIDispatchGuard(snapshot) {
+  return function () {
+    const current = managedAISnapshot();
+    if (current.raw !== snapshot.raw || current.signature !== snapshot.signature) throw managedAIError();
+    return true;
+  };
+}
 function managedExternalSearchAllowed() {
-  const policy = managedAIProfile();
-  return policy == null || (policy.version === 1 && policy.allowExternalSearch === true);
+  try { const snapshot = managedAISnapshot(); return !snapshot.policy || snapshot.policy.allowExternalSearch; }
+  catch (_) { return false; }
 }
 async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
-  const policy = managedAIProfile();
-  if (policy == null) return;
+  const snapshot = managedAISnapshot(), guard = managedAIDispatchGuard(snapshot), policy = snapshot.policy;
+  if (!policy) return guard;
   // Version 1 deliberately covers text inference. Media routes can use separate
   // providers/fallbacks; keep them blocked until their destinations are approved.
-  if (policy.version !== 1 || operation !== 'text' || !Array.isArray(policy.connections) || (search && !managedExternalSearchAllowed())) throw managedAIError();
-  const normalize = value => {
-    try {
-      const u = new URL(value);
-      if (u.username || u.password || u.search || u.hash) return '';
-      if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
-      return u.href.replace(/\/+$/, '');
-    } catch (_) { return ''; }
-  };
-  const endpoint = normalize(baseUrl);
-  const entries = policy.connections.filter(row => row && row.backend === backend && endpoint && normalize(row.baseUrl) === endpoint);
-  for (const entry of entries) {
-    if (canvasHost && entry.canvasHost === true) return;
-    if (!apiKey && entry.keyless === true) return;
-    if (apiKey && Array.isArray(entry.apiKeySha256) && globalThis.crypto?.subtle) {
-      const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
-      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-      if (entry.apiKeySha256.some(value => typeof value === 'string' && value.toLowerCase() === fingerprint)) return;
-    }
+  if (operation !== 'text' || (search && !policy.allowExternalSearch) || typeof apiKey !== 'string') throw managedAIError();
+  const endpoint = managedAIEndpoint(baseUrl);
+  const entries = policy.connections.filter(row => row.backend === backend && endpoint && row.baseUrl === endpoint);
+  if (entries.some(entry => (canvasHost && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
+  if (apiKey && entries.some(entry => entry.apiKeySha256.length) && globalThis.crypto?.subtle) {
+    let digest;
+    try { digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(apiKey)); }
+    catch (_) { throw managedAIError(); }
+    guard();
+    const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    if (entries.some(entry => entry.apiKeySha256.includes(fingerprint))) return guard;
   }
   throw managedAIError();
 }
@@ -65,10 +116,10 @@ const createGeminiAPI = (deps) => {
     // once at creation, which runs at BOOT — a key saved in AI Backend
     // Settings mid-session was invisible until a manual page reload, so a
     // teacher who had just verified their key still hit "No AI API key is
-    // configured" on the very next audit. Resolve at call time instead:
-    // boot-injected key first (Canvas injection, tests), then the live
-    // stored config. Exposed as a getter-shaped local so every existing
-    // `apiKey` read in this factory picks up the live value.
+    // configured" on the very next audit. Resolve when each logical request
+    // starts: boot-injected key first (Canvas injection, tests), then the live
+    // stored config. In-flight retries keep that snapshot; settings changes
+    // apply to the next independent request.
     const _liveStoredGeminiKey = () => {
         try {
             if (typeof localStorage === 'undefined') return '';
@@ -82,13 +133,79 @@ const createGeminiAPI = (deps) => {
     // Gemini accepts API keys through x-goog-api-key. Keeping credentials out
     // of URLs prevents them from leaking into browser history, proxy access
     // logs, referrers, exception strings, and copied diagnostics.
-    const _geminiHeaders = (includeJsonContentType) => {
+    const _geminiHeaders = (includeJsonContentType, capturedKey) => {
       const headers = {};
       if (includeJsonContentType) headers['Content-Type'] = 'application/json';
-      const _k = _resolveApiKey();
+      const _k = capturedKey;
       if (_k) headers['x-goog-api-key'] = _k;
-      return headers;
+      return Object.freeze(headers);
     };
+
+    // Resolve mutable settings once per logical request. Authentication must
+    // authorize the same credential and route that reaches the transport,
+    // including model fallbacks, connection retries and JSON repair calls.
+    const _requestSnapshots = new WeakSet();
+    const _requestGuards = new WeakMap();
+    const _requestSnapshot = (candidate) => {
+      if (candidate && _requestSnapshots.has(candidate)) return candidate;
+      const models = {};
+      for (const slot of ['default', 'fallback', 'vision', 'flash', 'image']) {
+        const value = GEMINI_MODELS && GEMINI_MODELS[slot];
+        models[slot] = value == null ? value : String(value);
+      }
+      const captured = Object.freeze({ apiKey: String(_resolveApiKey() || ''), models: Object.freeze(models) });
+      _requestSnapshots.add(captured); return captured;
+    };
+    const _authorizeRequest = async (request, operation = 'text', search = false) => {
+      let guard = _requestGuards.get(request);
+      if (!guard) {
+        guard = await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: request.apiKey,
+          canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation, search });
+        if (typeof guard !== 'function') throw managedAIError();
+        _requestGuards.set(request, guard);
+      }
+      guard(); return guard;
+    };
+    const _guardRequest = request => {
+      const guard = _requestGuards.get(request);
+      if (typeof guard !== 'function') throw managedAIError();
+      guard(); return guard;
+    };
+    const _requestUrl = model => {
+      const id = String(model == null ? '' : model).replace(/^models\//, '');
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(id) || id === '.' || id === '..') {
+        const error = new Error('Choose a valid Gemini model identifier before retrying.'); error.code = 'allo/invalid-model'; error.isFatal = true; throw error;
+      }
+      return 'https://generativelanguage.googleapis.com/v1beta/models/' + id + ':generateContent';
+    };
+    const _fetchRequest = (request, url, options, attempts, timeoutMs, telemetry) => {
+      const guard = _guardRequest(request);
+      const innerGuard = options && options.beforeRequest;
+      const beforeRequest = () => {
+        guard();
+        if (innerGuard !== undefined) {
+          try {
+            if (typeof innerGuard !== 'function') throw managedAIError();
+            const result = innerGuard();
+            if (result && typeof result.then === 'function') {
+              Promise.resolve(result).catch(() => {});
+              throw managedAIError();
+            }
+            if (result !== undefined && result !== true) throw managedAIError();
+          } catch (error) {
+            if (error && error.name === 'AbortError') throw error;
+            throw managedAIError();
+          }
+        }
+        guard();
+      };
+      // UtilsPure invokes this sync guard immediately before every native
+      // fetch. Keep the direct handoff guarded for boot/custom transports too.
+      const guardedOptions = Object.freeze({ ...options, beforeRequest });
+      beforeRequest();
+      return fetchWithExponentialBackoff(url, guardedOptions, attempts, timeoutMs, telemetry);
+    };
+    const _managedRequestDenied = error => error && error.code === 'managed-ai-blocked';
 
     // Uploaded media is attacker-controlled even when the user trusts its
     // author. Put the instruction/data boundary in the shared transport so a
@@ -200,6 +317,11 @@ const createGeminiAPI = (deps) => {
       ) {
         return { kind: 'refusal', userMessage: 'Safety filter blocked the response.', model: null };
       }
+      // No connection was attempted when setup is missing. Keep this distinct
+      // from an invalid key rejected by the service (401/403).
+      if (!status && (err?.code === 'allo/no-api-key' || lower.includes('no ai api key is configured'))) {
+        return { kind: 'config', reason: 'missing-api-key', userMessage: 'Connect an AI backend in AI Backend Settings to use AI generation. Prepared lesson resources remain available without an AI connection.', model: null };
+      }
       // Genuine quota: HTTP 429 or the structured Gemini code.
       // 429 means EITHER per-minute rate-limit (transient, retries in seconds)
       // OR per-day quota (resolves at midnight Pacific). We can't reliably
@@ -228,7 +350,6 @@ const createGeminiAPI = (deps) => {
         lower.includes('unauthenticated') ||
         lower.includes('api key not valid') ||
         lower.includes('api_key_invalid') ||
-        lower.includes('no ai api key is configured') ||
         lower.includes('permission_denied') ||
         lower.includes('authentication failed')
       ) {
@@ -488,13 +609,16 @@ const createGeminiAPI = (deps) => {
     // deploy, that's whatever the user's billed key can see. The Model
     // Diagnostics UI calls this once to populate the per-slot dropdowns.
     const listAvailableModels = async () => {
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey) });
-      if (!_resolveApiKey() && !_isCanvasEnv) {
+      const _request = _requestSnapshot();
+      await _authorizeRequest(_request);
+      if (!_request.apiKey && !_isCanvasEnv) {
         return { error: 'No API key configured', models: [], reachable: false };
       }
       try {
         const url = 'https://generativelanguage.googleapis.com/v1beta/models';
-        const r = await fetch(url, { method: 'GET', headers: _geminiHeaders(false) });
+        const requestOptions = Object.freeze({ method: 'GET', headers: _geminiHeaders(false, _request.apiKey), ...(managedAIProfile() != null ? { redirect: 'error' } : {}) });
+        _guardRequest(_request);
+        const r = await fetch(url, requestOptions);
         if (!r.ok) {
           const body = await r.text().catch(() => '');
           const cls = _classifyGeminiError(new Error(`HTTP ${r.status}: ${body.substring(0, 500)}`));
@@ -513,6 +637,7 @@ const createGeminiAPI = (deps) => {
         }));
         return { error: null, models, reachable: true, fetchedAt: (Date.now ? Date.now() : 0) };
       } catch (e) {
+        if (_managedRequestDenied(e)) throw e;
         return { error: e.message || 'Network error', models: [], reachable: false };
       }
     };
@@ -525,6 +650,7 @@ const createGeminiAPI = (deps) => {
         if (showBanner) _showQuotaBanner(cls);
         const out = new Error(cls.kind === 'quota' ? 'API_QUOTA_EXHAUSTED'
                             : cls.kind === 'auth' ? 'API_AUTH_FAILED'
+                            : cls.reason === 'missing-api-key' ? 'API_CONNECTION_NOT_CONFIGURED'
                             : 'API_MODEL_NOT_FOUND');
         out.isQuota = cls.kind === 'quota';
         out.isAuth = cls.kind === 'auth';
@@ -533,6 +659,7 @@ const createGeminiAPI = (deps) => {
         // number of times. This is retry policy, not a quota diagnosis.
         out.canvasTransientAuth = (cls.kind === 'auth' && !!_isCanvasEnv);
         out.classification = cls;
+        if (err && err.code) out.code = err.code;
         out.originalMessage = err && err.message;
         // (2026-08-15) Numeric evidence survives the re-wrap. The classified message collapses
         // 401 and 403 into API_AUTH_FAILED, and the 2026-08-14 investigation could not tell them
@@ -574,7 +701,8 @@ const createGeminiAPI = (deps) => {
       return support.simpleText === 'pass';
     };
 
-    const _tryLocalFallbackAfterQuota = async (prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }) => {
+    const _tryLocalFallbackAfterQuota = async (prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }, request) => {
+      _guardRequest(request);
       if (useSearch || useCodeExecution || (signal && signal.aborted)) return { used: false };
       const fallback = _readLocalFallbackConfig();
       if (!fallback) return { used: false };
@@ -592,7 +720,7 @@ const createGeminiAPI = (deps) => {
           baseUrl: fallback.baseUrl || 'http://127.0.0.1:32173',
           models: fallback.models || { default: fallback.localModelProfile && fallback.localModelProfile.modelId || 'local-model' },
           localModelProfile: fallback.localModelProfile,
-          fetchWithRetry: fetchWithExponentialBackoff,
+          fetchWithRetry: (...args) => _fetchRequest(request, ...args),
           optimizeImage,
           debugLog,
           warnLog,
@@ -614,6 +742,7 @@ const createGeminiAPI = (deps) => {
         } catch (_) {}
         return { used: true, value };
       } catch (localErr) {
+        if (_managedRequestDenied(localErr)) throw localErr;
         if (localErr && localErr.name === 'AbortError') throw localErr;
         try { console.warn('[callGemini] Local fallback failed:', _diagnosticErrorSummary(localErr)); } catch (_) {}
         return { used: false };
@@ -622,7 +751,9 @@ const createGeminiAPI = (deps) => {
 
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
-    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, deferBanner = false, feedbackContext = null) => {
+    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, deferBanner = false, feedbackContext = null, requestState = null) => {
+      const _request = _requestSnapshot(requestState);
+      const _models = _request.models;
       const hasVideoInput = !!(searchOptions && Object.prototype.hasOwnProperty.call(searchOptions, 'videoUrl'));
       const videoUrl = hasVideoInput ? searchOptions.videoUrl : null;
       if (hasVideoInput && (typeof videoUrl !== 'string' || videoUrl !== videoUrl.trim() || !/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(videoUrl))) {
@@ -645,8 +776,8 @@ const createGeminiAPI = (deps) => {
         invalidClip.code = 'allo/invalid-video-clip';
         throw invalidClip;
       }
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: hasVideoInput ? 'media' : 'text', search: useSearch });
-      if (!_resolveApiKey() && !_isCanvasEnv) {
+      await _authorizeRequest(_request, hasVideoInput ? 'media' : 'text', useSearch);
+      if (!_request.apiKey && !_isCanvasEnv) {
         if (hasVideoInput) {
           const missingKey = new Error('No Gemini API key is configured. Open AI Backend Settings and check the approved connection, then retry reading the video.');
           missingKey.code = 'allo/no-api-key';
@@ -657,7 +788,7 @@ const createGeminiAPI = (deps) => {
         if (useSearch) return { text: "", textParts: [], groundingMetadata: null };
         return "";
       }
-      const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`; };
+      const _buildUrl = (model) => { const url = _requestUrl(model); console.log(`[callGemini] ✉ Using model: ${model}`); return url; };
       const payload = {
         contents: [{ parts: hasVideoInput
           ? [{ text: _protectAttachmentPrompt(prompt) }, {
@@ -720,13 +851,14 @@ const createGeminiAPI = (deps) => {
         // a run, so Stop actually cancels the in-flight fetch instead of just
         // breaking the loop after the request finishes).
         const _signal = signal || (getAbortSignal ? getAbortSignal() : null) || null;
-        const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true),
+        const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
         const _innerTelemetry = telemetry && typeof telemetry === 'object' ? telemetry : null;
         let response;
-        let _modelUsed = GEMINI_MODELS.default;
+        let _modelUsed = _models.default;
         try {
-          if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.default);
+          const _primaryUrl = _buildUrl(_models.default);
+          if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(_models.default);
           // Pipeline calls have one breaker-aware outer retry owner. Running the
           // full inner retry ladder as well meant primary + fallback could exceed
           // the 180s wall and survive underneath the next outer retry. The plan
@@ -734,8 +866,9 @@ const createGeminiAPI = (deps) => {
           // one bounded attempt per model, with the live outer deadline applied.
           const _primaryPlan = _providerTransportPlan(_innerTelemetry, 2, 80000);
           if (!_primaryPlan.canStart) throw _providerDeadlineError();
-          response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
+          response = await _fetchRequest(_request, _primaryUrl, _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
         } catch (primaryErr) {
+          if (_managedRequestDenied(primaryErr)) throw primaryErr;
           if (primaryErr?.name === 'AbortError') {
             // Respect caller's abort — don't fall back to the secondary model
             // (that would just burn another 30s and another quota slice).
@@ -754,14 +887,16 @@ const createGeminiAPI = (deps) => {
           const shouldFallback = (cls.kind === 'quota' || cls.kind === 'config' || cls.kind === 'transient')
             && !(_fallbackPlan.pipelineManaged && cls.kind === 'quota')
             && _fallbackPlan.canFallback;
-          if (shouldFallback && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
+          if (shouldFallback && _models.fallback && _models.fallback !== _models.default) {
+            const _fallbackUrl = _buildUrl(_models.fallback);
             if (feedbackContext) _emitApiFeedback(feedbackContext, 'retrying', primaryErr);
-            console.warn(`[callGemini] Primary model (${GEMINI_MODELS.default}) ${cls.kind} — falling back to ${GEMINI_MODELS.fallback}`);
+            console.warn(`[callGemini] Primary model (${_models.default}) ${cls.kind} — falling back to ${_models.fallback}`);
             try {
-              if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(GEMINI_MODELS.fallback);
-              response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.fallback), _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
-              _modelUsed = GEMINI_MODELS.fallback;
+              if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(_models.fallback);
+              response = await _fetchRequest(_request, _fallbackUrl, _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
+              _modelUsed = _models.fallback;
             } catch (fbErr) {
+              if (_managedRequestDenied(fbErr)) throw fbErr;
               // Both models failed — the original error is more informative
               // for classification (the fallback's error is usually the same
               // type cascading), so keep the primary in case of quota/auth.
@@ -848,7 +983,7 @@ const createGeminiAPI = (deps) => {
                      """,
                      TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, trailing commas) and return ONLY the valid JSON. Do not explain or add any text.
                  `;
-                 return await callGemini(repairPrompt, true, false, 0.1);
+                 return await callGemini(repairPrompt, true, false, 0.1, null, signal, false, telemetry, null, _request);
              }
              else if (reason !== 'STOP') {
                  throw new Error(`Generation Stopped: ${reason}`);
@@ -888,6 +1023,7 @@ const createGeminiAPI = (deps) => {
         }
         return text || "";
       } catch (err) {
+        if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
         const cls = _classifyGeminiError(err);
         // Transient/other errors are usually recovered by the retry layers —
@@ -915,7 +1051,7 @@ const createGeminiAPI = (deps) => {
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
           if (cls.kind === 'quota' && !hasVideoInput) {
             if (feedbackContext && _readLocalFallbackConfig()) _emitApiFeedback(feedbackContext, 'retrying', err);
-            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution });
+            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }, _request);
             if (localFallback.used) {
               // Local completion recovers the task, not the remote connection.
               // Keep the Gemini quota evidence for a later remote request.
@@ -947,14 +1083,15 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, ms));
     });
 
-    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null) => {
+    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, requestState = null) => {
+      const _request = _requestSnapshot(requestState);
       const context = _newFeedbackRequest('text');
       const effectiveSignal = signal || (typeof getAbortSignal === 'function' ? getAbortSignal() : null) || null;
       _emitApiFeedback(context, 'pending');
       let terminalFeedbackEmitted = false;
       try {
         if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
-        if (!_resolveApiKey() && !_isCanvasEnv) {
+        if (!_request.apiKey && !_isCanvasEnv) {
           const missingKey = new Error('No AI API key is configured. Open AI Backend Settings and check the approved connection, then retry.');
           missingKey.code = 'allo/no-api-key';
           _throwClassified(missingKey);
@@ -963,7 +1100,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
           const rungStartedAt = Date.now();
           try {
-            const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, searchOptions, true, context);
+            const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, searchOptions, true, context, _request);
             if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
             _emitApiFeedback(context, 'succeeded', null, attempt + 1);
             return value;
@@ -1002,14 +1139,22 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
     };
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'media' });
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent`;
+      const _request = _requestSnapshot();
+      const imageAllowed = () => {
+        if (typeof window !== 'undefined' && window.AlloImageGeneration) return window.AlloImageGeneration.isEnabled();
+        try { return localStorage.getItem('alloflow_ai_image_generation_enabled') !== 'false'; } catch (_) { return true; }
+      };
+      if (!imageAllowed()) return null;
+      await _authorizeRequest(_request, 'media');
+      if (!imageAllowed()) return null;
+      const url = _requestUrl(_request.models.image);
       const _explicitSignal = options && options.signal
         ? options.signal
         : (options && typeof options.aborted === 'boolean' ? options : null);
-      const _signal = _explicitSignal
+      const _requestedImageSignal = _explicitSignal
         || (typeof getAbortSignal === 'function' ? getAbortSignal() : null)
         || null;
+      const _signal = (typeof window !== 'undefined' && window.AlloImageGeneration?.signalFor(_requestedImageSignal)) || _requestedImageSignal;
       const _throwIfImageEditAborted = () => {
         if (!_signal || !_signal.aborted) return;
         const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
@@ -1034,23 +1179,27 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       };
       try {
-        const response = await fetch(url, {
+        const requestOptions = Object.freeze({
           method: 'POST',
-          headers: _geminiHeaders(true),
+          headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
           body: JSON.stringify(payload),
           ...(_signal ? { signal: _signal } : {})
         });
+        _guardRequest(_request);
+        const response = await fetch(url, requestOptions);
         _throwIfImageEditAborted();
         const data = await response.json();
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
         if (!imagePart) throw new Error("No image generated in response");
         const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
         const optimized = await optimizeImage(rawUrl, width, qual);
+        if (!imageAllowed()) return null;
         _throwIfImageEditAborted();
         _noteApiSuccess(); // image preparation completed and was not cancelled
         return optimized;
       } catch (err) {
+        if (!imageAllowed()) return null;
         warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(err));
         throw err;
       }
@@ -1068,7 +1217,8 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       }).filter(part => part.inlineData.data);
     };
     const callGeminiVision = async (prompt, base64Data, mimeType, options = null) => {
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'media' });
+      const _request = _requestSnapshot();
+      await _authorizeRequest(_request, 'media');
       const _explicitSignal = options && options.signal
         ? options.signal
         : (options && typeof options.aborted === 'boolean' ? options : null);
@@ -1085,14 +1235,14 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       // then burns its retries and reports "All audit attempts failed" with no
       // hint. Fail fast with an actionable message instead (mirrors the
       // callGemini no-key guard, but audits need a thrown error, not '').
-      if (!_resolveApiKey() && !_isCanvasEnv) {
+      if (!_request.apiKey && !_isCanvasEnv) {
         const noKeyError = new Error('No AI API key is configured. Open AI Backend Settings and add your provider key, then run the audit again.');
         noKeyError.code = 'allo/no-api-key';
         throw noKeyError;
       }
-      const primaryModel = GEMINI_MODELS.vision || GEMINI_MODELS.flash || GEMINI_MODELS.default;
-      const fallbackModel = GEMINI_MODELS.fallback;
-      const _visionUrl = (m) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
+      const primaryModel = _request.models.vision || _request.models.flash || _request.models.default;
+      const fallbackModel = _request.models.fallback;
+      const _visionUrl = _requestUrl;
       const payload = {
         contents: [{
           parts: [
@@ -1101,7 +1251,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         }],
         generationConfig: { maxOutputTokens: 65536 }
       };
-      const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true),
+      const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
       const _innerTelemetry = options && options.diagnosticTelemetry && typeof options.diagnosticTelemetry === 'object'
         ? options.diagnosticTelemetry : null;
@@ -1109,14 +1259,16 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       let modelUsed = primaryModel;
       try {
         try {
+          const primaryUrl = _visionUrl(primaryModel);
           // Use the same backoff wrapper callGemini uses — this gives Vision
           // the same 429/5xx retry behavior + signal propagation.
           if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(primaryModel);
           const _primaryPlan = _providerTransportPlan(_innerTelemetry, 2, 50000);
           if (!_primaryPlan.canStart) throw _providerDeadlineError();
-          response = await fetchWithExponentialBackoff(_visionUrl(primaryModel), _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
+          response = await _fetchRequest(_request, primaryUrl, _fetchOpts, _primaryPlan.attempts, _primaryPlan.timeoutMs, _innerTelemetry);
           _throwIfVisionAborted();
         } catch (primaryErr) {
+          if (_managedRequestDenied(primaryErr)) throw primaryErr;
           _throwIfVisionAborted();
           if (primaryErr?.name === 'AbortError') throw primaryErr;
           const cls = _classifyGeminiError(primaryErr);
@@ -1125,13 +1277,15 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
             && !(_fallbackPlan.pipelineManaged && cls.kind === 'quota')
             && _fallbackPlan.canFallback;
           if (shouldFallback && fallbackModel && fallbackModel !== primaryModel) {
+            const fallbackUrl = _visionUrl(fallbackModel);
             console.warn(`[Vision] ${primaryModel} ${cls.kind} — falling back to ${fallbackModel}`);
             try {
               if (_innerTelemetry && typeof _innerTelemetry.onModel === 'function') _innerTelemetry.onModel(fallbackModel);
-              response = await fetchWithExponentialBackoff(_visionUrl(fallbackModel), _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
+              response = await _fetchRequest(_request, fallbackUrl, _fetchOpts, _fallbackPlan.attempts, _fallbackPlan.timeoutMs, _innerTelemetry);
               _throwIfVisionAborted();
               modelUsed = fallbackModel;
             } catch (fbErr) {
+              if (_managedRequestDenied(fbErr)) throw fbErr;
               console.error(`[Vision] Fallback ${fallbackModel} also failed:`, _diagnosticErrorSummary(fbErr));
               throw (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') ? primaryErr : fbErr;
             }
@@ -1183,6 +1337,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         _noteApiSuccess(); // usable Vision text clears the connection notice
         return text;
       } catch (err) {
+        if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
         const cls = _classifyGeminiError(err);
         console.error(`[Vision] ${modelUsed} error (${cls.kind}):`, _diagnosticErrorSummary(err));
@@ -1199,21 +1354,24 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
     // fabrication shipped to deploy for weeks because nothing checked at
     // boot). Returns a classification, not a throw.
     const probeModelHealth = async (modelName) => {
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey) });
-      const model = modelName || GEMINI_MODELS.default;
-      if (!_resolveApiKey() && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
+      const _request = _requestSnapshot();
+      const model = modelName == null ? _request.models.default : String(modelName);
+      await _authorizeRequest(_request);
+      if (!_request.apiKey && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        const url = _requestUrl(model);
         const probePayload = {
           contents: [{ parts: [{ text: 'ping' }] }],
           generationConfig: { maxOutputTokens: 1 }
         };
-        const r = await fetch(url, {
+        const requestOptions = Object.freeze({
           method: 'POST',
-          headers: _geminiHeaders(true),
+          headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
           body: JSON.stringify(probePayload)
         });
+        _guardRequest(_request);
+        const r = await fetch(url, requestOptions);
         if (r.ok) return { kind: 'ok', model };
         const body = await r.text().catch(() => '');
         const cls = _classifyGeminiError(new Error(`HTTP ${r.status}: ${body.substring(0, 500)}`));
@@ -1222,6 +1380,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         }
         return { ...cls, model };
       } catch (probeErr) {
+        if (_managedRequestDenied(probeErr)) throw probeErr;
         return { kind: 'transient', userMessage: probeErr.message, model };
       }
     };

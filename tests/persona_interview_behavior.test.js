@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { loadAlloModule } from './setup.js';
 
 const personaSource = fs.readFileSync('personas_source.jsx', 'utf8');
 
-function createHarness({ personaState, resource, callGemini, callGeminiImageEdit, isPersonaFreeResponse = true }) {
+function createHarness({ personaState, resource, callGemini, callGeminiImageEdit, isPersonaFreeResponse = true, languageSettings = {}, translationHelpers = null }) {
   const safety = { aiCheck: vi.fn(), check: vi.fn(() => []) };
   const safetyFlagHandler = vi.fn();
   const scoreUpdates = [];
@@ -16,7 +17,7 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
   let isOpen = true;
 
   const windowObject = {
-    AlloModules: {},
+    AlloModules: translationHelpers ? { TextPipelineHelpers: translationHelpers } : {},
     callGemini,
     callGeminiImageEdit,
   };
@@ -94,6 +95,7 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
     callImagen: vi.fn(),
     resilientJsonParse: async (text) => JSON.parse(text),
   });
+  Object.assign(liveRef.current, languageSettings);
   sync();
 
   const api = windowObject.AlloModules.createPersonas({
@@ -108,6 +110,7 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
 
   return {
     api,
+    liveRef,
     safety,
     safetyFlagHandler,
     scoreUpdates,
@@ -118,6 +121,39 @@ function createHarness({ personaState, resource, callGemini, callGeminiImageEdit
     get isOpen() { return isOpen; },
   };
 }
+
+describe('Persona per-message companion languages', () => {
+  function languageHarness(translationMode = 'auto') {
+    loadAlloModule('text_pipeline_helpers_module.js');
+    const translationHelpers = window.AlloModules.TextPipelineHelpers;
+    const character = { name: 'Ada', role: 'Mathematician', year: '1843', rapport: 20, quests: [], suggestedQuestions: [] };
+    return createHarness({
+      resource: { id: 'saved-language-persona', type: 'persona', config: {}, data: [character] },
+      personaState: { mode: 'single', selectedCharacter: character, selectedCharacters: [],
+        chatHistory: [{ role: 'model', text: 'Hola' }], suggestions: [], panelSuggestions: [], earnedBadges: [], isLoading: false },
+      callGemini: vi.fn(async () => JSON.stringify({ response: 'Respuesta', translation: 'Companion text', rapportChange: 0 })),
+      translationHelpers,
+      languageSettings: { translationMode, currentUiLanguage: 'Arabic', resolveTranslationPolicy: translationHelpers.resolveTranslationPolicy },
+    });
+  }
+
+  it('keeps each saved target when the app language changes between turns', async () => {
+    const h = languageHarness();
+    await h.api.handlePersonaChatSubmit('Primera pregunta', true);
+    expect(h.state.chatHistory.at(-1).translationTarget).toBe('Arabic');
+    h.liveRef.current.currentUiLanguage = 'French';
+    await h.api.handlePersonaChatSubmit('Otra pregunta', true);
+    const replies = h.state.chatHistory.filter(message => message.translation);
+    expect(replies.map(message => message.translationTarget)).toEqual(['Arabic', 'French']);
+  });
+
+  it('discards an unsolicited companion when translations are off', async () => {
+    const h = languageHarness('off');
+    await h.api.handlePersonaChatSubmit('Pregunta', true);
+    expect(h.state.chatHistory.at(-1).translation).toBeUndefined();
+    expect(h.state.chatHistory.at(-1).translationTarget).toBeUndefined();
+  });
+});
 
 describe('Persona interview state integrity', () => {
   it('preserves the completed turn and resource metadata when a portrait edit resolves late', async () => {
@@ -380,6 +416,7 @@ describe('Persona interview state integrity', () => {
     expect(harness.state.selectedCharacters[0].accumulatedXP).toBe(90);
     expect(harness.state.selectedCharacters[1].accumulatedXP).toBe(50);
     expect(harness.state.chatHistory.at(-1).translation).toBe('Answer B');
+    expect(harness.state.chatHistory.at(-1).translationTarget).toBe('English');
     expect(harness.state.chatHistory.some((message) => message.speakerName === 'Unknown')).toBe(false);
 
     harness.api.handleClosePersonaChat();

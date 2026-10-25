@@ -12,10 +12,27 @@
 .pack-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; margin-top:18px; }
 .pack-topic { border:1px solid #cbd5e1; border-radius:16px; padding:22px; background:#fff; min-width:0; }
 .pack-topic h3 { font-size:1.15rem; line-height:1.4; margin:6px 0 18px; overflow-wrap:anywhere; }
+.pack-preview { margin:0 0 18px; }
+.pack-preview img { display:block; width:100%; height:auto; aspect-ratio:8/5; object-fit:contain; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; }
+.pack-preview figcaption { margin-top:7px; font-size:12px; line-height:1.5; color:#475569; }
 .pack-topic-meta { color:#475569; font-size:13px; }
 .pack-version h4 { font-size:14px; margin:10px 0 4px; }
 .pack-version p { font-size:13px; margin:5px 0; }
 .pack-credit { color:#475569; }
+.pack-version .pack-resource-count { margin-top:12px; }
+.pack-version .pack-core-route { color:#0f5132; background:#f0fdf4; padding:9px 11px; border-radius:7px; margin:8px 0; }
+.pack-version .pack-audience, .pack-version .pack-purpose { margin:12px 0; }
+.pack-resource-list { font-size:13px; margin-bottom:12px; }
+.pack-resource-list summary { cursor:pointer; padding:9px 0; font-weight:650; }
+.pack-resource-list ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 15px; margin:4px 0 12px; padding-left:18px; line-height:1.5; }
+.pack-resource-list li { padding-left:2px; overflow-wrap:anywhere; }
+.pack-resource-list li span { color:#475569; white-space:nowrap; }
+.pack-sources { margin:12px 0; padding:10px 12px; background:#f8fafc; border-left:3px solid #a5b4fc; border-radius:0 8px 8px 0; }
+.pack-sources p { font-weight:650; }
+.pack-sources ul { list-style:none; margin:0; padding:0; }
+.pack-sources li { font-size:13px; line-height:1.65; margin-top:5px; overflow-wrap:anywhere; }
+.pack-external-note { font-size:12px; }
+.pack-date { color:#475569; }
 .pack-actions { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; align-items:center; }
 .pack-actions .pack-open { background:#4338ca; border-color:#4338ca; color:#fff; }
 .pack-other-versions { border-top:1px solid #e2e8f0; margin-top:16px; }

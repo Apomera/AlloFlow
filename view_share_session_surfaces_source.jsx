@@ -242,14 +242,12 @@ function ClassMailboxSetupView(props) {
                 </button>
               </div>
             )}
-            {/* Script freshness: the server reports its VERSION on the connect
-                self-test; older deployments keep working (resource push +
-                hand-raise) but lack the session-doc store that powers polls,
-                quiz, groups and Pictionary — tell the teacher how to update
-                (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 24 && (
+            {/* The connect self-test reports VERSION. Redeploying the current
+                script applies the absolute live-session access deadline and
+                existing participant controls at the same deployment URL. */}
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 26 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v24 for delivery into your Drive (Docs, Slides, Sheets, Forms), independent image-delivery status, lesson boards, and current live tools (about 1 minute, the URL stays the same):</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v26 to enforce the original six-hour live-session access deadline and preserve teacher assignments when students reconnect. Existing Drive delivery, lesson boards and live tools remain available at the same URL:</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
                   <li>{t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:'} <b>{t('mailbox.new_version') || 'New version'}</b> {t('mailbox.deploy') || '→ Deploy.'}</li>

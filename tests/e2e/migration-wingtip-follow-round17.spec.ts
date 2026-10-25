@@ -350,8 +350,8 @@ function brief(state: any) {
 test('Migration anatomical wingtip follow isolates the actual side geometry for all eight species without changing the bird, marked outline, camera or saved work', async ({ page }) => {
   test.setTimeout(330_000); await mount(page, { ...observationSeed(), flightWingStep: 13 });
   const originalWork = speciesWork(await saved(page)), species = [];
-  await expect(followButton(page, 0)).toHaveAttribute('aria-label', 'Follow individual’s left wingtip');
-  await expect(followButton(page, 1)).toHaveAttribute('aria-label', 'Follow individual’s right wingtip');
+  await expect(followButton(page, 0)).toHaveAccessibleName('Individual’s left: solid path');
+  await expect(followButton(page, 1)).toHaveAccessibleName('Individual’s right: dashed path');
   // Exercise path-on initial readiness before any action can trigger a React
   // rerender, choose a checkpoint, capture a mark, or change the source.
   const bootData = await saved(page), bootBefore = await followState(page); await expect(followButton(page, 0)).toBeEnabled();
@@ -444,7 +444,7 @@ for (const dark of [false, true]) test.describe('Migration anatomical wingtip fo
     await followButton(page, 1).tap(); await frames(page); await expectFollowControls(page, null); expectFollowGeometry(await followState(page), null, reference);
     await followButton(page, 0).tap(); await frames(page); await checkButton(page).tap(); await frames(page); await expectCue(page, 'both'); await expectFollowControls(page, 0);
     await page.locator('[data-study-wingtip-path="true"]').screenshot({ path: join(report, stem + '-activity.png') });
-    await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap(); const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }); await expect(input).toBeFocused();
+    await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap(); const input = page.getByRole('textbox', { name: 'My observation', exact: true }); await expect(input).toBeFocused();
     await expect(input).toHaveValue(original.flightStudyObservations.drafts['canada_goose:primaries']); expect(work(await saved(page))).toEqual(work(original));
     await input.fill('I followed the individual’s left wingtip with the pose held. Front and From above changed its screen position, while its anatomical side stayed the same.');
     await page.getByRole('button', { name: 'Record observation', exact: true }).tap(); const recorded = await saved(page);

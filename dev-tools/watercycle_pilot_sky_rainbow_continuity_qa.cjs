@@ -1,0 +1,2 @@
+'use strict';
+const defaults={suite:'sky-rainbow-continuity',sections:'sky-rainbow-continuity',captures:'sky-rainbow-aligned-water,sky-rainbow-downward-water,sky-rainbow-portrait-water,sky-rainbow-collection-water'};for(const[key,value]of Object.entries(defaults))if(!process.argv.some(arg=>arg.startsWith('--'+key+'=')))process.argv.push('--'+key+'='+value);require('./watercycle_pilot_rain_cloud_depth_qa.cjs');

@@ -137,7 +137,7 @@ test('a wind investigation records immutable observations and identifies confoun
   const lab = await investigation(page);
   await lab.locator('[data-experiment-variable="wind"]').click();
   await expect(lab.getByRole('button', { name: 'Capture baseline', exact: true })).toBeDisabled();
-  await lab.getByRole('textbox', { name: 'Flight investigation prediction', exact: true }).fill('A tailwind will raise ground speed while drafting credit stays constant.');
+  await lab.getByRole('textbox', { name: 'What do you predict, and why?', exact: true }).fill('A tailwind will raise ground speed while drafting credit stays constant.');
   await lab.getByRole('button', { name: 'Capture baseline', exact: true }).click();
   const baseline = await page.evaluate(() => (window as any).__toolData.migration.flightInvestigation.baseline);
   expect(baseline).toMatchObject({ speciesId: 'canada_goose', wind: 0, groundSpeed: 40 });
@@ -155,19 +155,19 @@ test('a wind investigation records immutable observations and identifies confoun
   await expect(lab.locator('[data-experiment-comparison]')).toHaveAttribute('data-comparison', 'confounded');
   await lab.getByRole('button', { name: 'Record trial', exact: true }).click();
   await expect(lab.locator('[data-experiment-trial]')).toHaveCount(2);
-  await lab.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true }).fill('With only wind changed, ground speed increased. The species change confounded the next comparison.');
-  await lab.getByRole('textbox', { name: 'Flight investigation explanation', exact: true }).fill('This model keeps airspeed fixed. A tailwind adds to speed over ground.');
+  await lab.getByRole('textbox', { name: 'Evidence I noticed', exact: true }).fill('With only wind changed, ground speed increased. The species change confounded the next comparison.');
+  await lab.getByRole('textbox', { name: 'How does the evidence support or challenge my prediction?', exact: true }).fill('This model keeps airspeed fixed. A tailwind adds to speed over ground.');
   await lab.getByRole('button', { name: 'Restore baseline controls', exact: true }).click();
   await expect(page.getByRole('combobox', { name: '3D migration focus species', exact: true })).toHaveValue('canada_goose');
   await expect(lab.locator('[data-experiment-comparison]')).toHaveAttribute('data-comparison', 'unchanged');
   expect(await page.evaluate(() => (window as any).__toolData.migration.flightInvestigation.trials[0])).toEqual(saved);
 
   // Use the real tabs so the scene and the investigation remount together.
-  await page.locator('#migration-tab-inquiry').click();
-  await page.locator('#migration-tab-flight3d').click();
+  await page.locator('[data-migration-tab="inquiry"]').click();
+  await page.locator('[data-migration-tab="flight3d"]').click();
   await expect(page.locator('[data-experiment-trial]')).toHaveCount(2);
-  await expect(page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true })).toHaveValue(/species change confounded/);
-  await expect(page.getByRole('textbox', { name: 'Flight investigation explanation', exact: true })).toHaveValue(/tailwind adds/);
+  await expect(page.getByRole('textbox', { name: 'Evidence I noticed', exact: true })).toHaveValue(/species change confounded/);
+  await expect(page.getByRole('textbox', { name: 'How does the evidence support or challenge my prediction?', exact: true })).toHaveValue(/tailwind adds/);
   expect(await page.evaluate(() => (window as any).__toolData.migration.flightInvestigation.trials[0])).toEqual(saved);
 });
 
@@ -185,7 +185,7 @@ for (const dark of [false, true]) test.describe(`phone ${dark ? 'dark' : 'light'
       });
     }
     const lab = await investigation(page);
-    await lab.getByRole('textbox', { name: 'Flight investigation prediction', exact: true }).fill('A following wind will increase ground speed.');
+    await lab.getByRole('textbox', { name: 'What do you predict, and why?', exact: true }).fill('A following wind will increase ground speed.');
     await lab.getByRole('button', { name: 'Capture baseline', exact: true }).click();
     await wind(page, 10);
     await lab.getByRole('button', { name: 'Record trial', exact: true }).click();

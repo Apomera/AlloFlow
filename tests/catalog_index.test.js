@@ -19,6 +19,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const root = path.resolve(import.meta.dirname, '..');
 const gen = require(path.join(root, 'catalog', 'generate_index.js'));
+const { catalogLicense } = require(path.join(root, 'catalog', 'allopack_entry.js'));
 const index = JSON.parse(fs.readFileSync(path.join(root, 'catalog', 'index.json'), 'utf8'));
 const published = JSON.parse(fs.readFileSync(path.join(root, 'catalog', 'published_allopacks.json'), 'utf8'));
 const approvedFiles = fs.readdirSync(path.join(root, 'catalog', 'approved')).filter((f) => f.endsWith('.json'));
@@ -84,7 +85,7 @@ describe('Community Catalog index', () => {
       const entry = index.entries.find((e) => e.path === p.path);
       const pack = JSON.parse(fs.readFileSync(path.join(root, p.path), 'utf8').replace(/^﻿/, ''));
       expect(entry.title).toBe(p.title || pack.allopack.title);
-      expect(entry.license).toBe(p.license || pack.allopack.license || 'CC-BY-4.0');
+      expect(entry.license).toBe(catalogLicense(p.license || pack.allopack.license));
       if (p.slug) expect(entry.slug).toBe(p.slug);
     }
   });

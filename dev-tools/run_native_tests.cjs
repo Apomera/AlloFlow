@@ -7,9 +7,15 @@ const ROOT = path.resolve(__dirname, '..');
 
 // These suites use node:test, not Vitest. Keep emulator tests on their own lane.
 const NATIVE_TESTS = Object.freeze([
+  'blueprint_action_diagnostics.test.cjs',
   'blueprint_module_preflight.test.cjs',
   'catalog_import_completion.test.cjs',
+  'check_secrets_security.test.cjs',
+  'lan_roster_authorization.test.cjs',
   'lesson_deep_link_host.test.cjs',
+  'mcp_ace_browser_security.test.cjs',
+  'mcp_artifact_source_bytes.test.cjs',
+  'mcp_bundle_audit_security.test.cjs',
   'module_load_diagnostics.test.cjs',
   'module_wait_deadline.test.cjs',
   'native_test_discovery.test.cjs',

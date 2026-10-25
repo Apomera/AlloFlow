@@ -324,12 +324,13 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                     signal: downloadSignal,
                     priority: 'normal',
                     reason: 'download-audio',
+                    ...(deps.language ? { language: deps.language } : {}),
                 });
                 if (!audioUrl) throw new Error(`Local TTS returned no audio for segment ${requestedSegmentCount}`);
                 const response = await fetch(audioUrl, { signal: downloadSignal || undefined });
                 if (!response.ok) throw new Error(`Local TTS clip could not be read for segment ${requestedSegmentCount}`);
                 result = { bytes: _extractMonoPcm16WavBytes(await response.arrayBuffer(), requestedSegmentCount) };
-            } else result = await fetchTTSBytes(text, voice, 1, null, downloadSignal, 'normal');
+            } else result = await fetchTTSBytes(text, voice, 1, deps.language || null, downloadSignal, 'normal');
             if (downloadSignal?.aborted) throw _downloadAbortError();
             const bytes = _normalizeRequiredTtsBytes(result, requestedSegmentCount);
             totalPcmBytes += bytes.byteLength;
@@ -504,40 +505,43 @@ const handleCardAudioSequence = async (e, deps) => {
   const labelTerm = t('flashcards.front_label_term');
   const labelDef = t('flashcards.back_label_def');
   const labelEng = t('languages.english');
+  const baseLanguage = window.AlloModules?.TextPipelineHelpers?.getGlossaryBaseLanguage?.(generatedContent, item)
+    || item.termLanguage || generatedContent?.baseLanguage || 'English';
+  const termLanguage = item.termLanguage || baseLanguage;
+  const definitionLanguage = item.definitionLanguage || baseLanguage;
+  const nativeGlossary = Number(item.glossaryLanguageSchemaVersion || generatedContent?.glossaryLanguageSchemaVersion
+    || generatedContent?.config?.glossaryLanguageSchemaVersion) >= 1;
+  const translationParts = language => {
+    const value = item.translations?.[language];
+    const shared = window.AlloModules?.normalizeGlossaryTranslation;
+    if (typeof shared === 'function') return shared(value);
+    if (value && typeof value === 'object') return { term: value.term || value.word || '', definition: value.def || value.definition || '' };
+    const text = typeof value === 'string' ? value : '';
+    const colon = text.search(/[:：]/);
+    return { term: colon >= 0 ? text.slice(0, colon).trim() : '', definition: colon >= 0 ? text.slice(colon + 1).trim() : text };
+  };
   try {
           let sequence = [];
           if (flashcardMode === 'standard') {
-              sequence = [item.term];
+              sequence = [{ text: item.term, language: termLanguage }];
               if (standardDeckLang !== 'English Only' && item.translations?.[standardDeckLang]) {
-                  const fullTrans = item.translations[standardDeckLang];
-                  if (fullTrans.includes(":")) {
-                      const transTerm = fullTrans.substring(0, fullTrans.indexOf(":")).trim();
-                      if (transTerm) sequence.push(`${standardDeckLang} ${labelTerm}: ${transTerm}`);
-                  }
+                  const transTerm = translationParts(standardDeckLang).term;
+                  if (transTerm) sequence.push({ text: nativeGlossary ? transTerm : `${standardDeckLang} ${labelTerm}: ${transTerm}`, language: standardDeckLang });
               }
-              sequence.push(item.def);
+              sequence.push({ text: item.def, language: definitionLanguage });
               if (standardDeckLang !== 'English Only' && item.translations?.[standardDeckLang]) {
-                  const fullTrans = item.translations[standardDeckLang];
-                  let transDef = fullTrans;
-                  if (fullTrans.includes(":")) {
-                      transDef = fullTrans.substring(fullTrans.indexOf(":") + 1).trim();
-                  }
-                  sequence.push(`${standardDeckLang} ${labelDef}: ${transDef}`);
+                  const transDef = translationParts(standardDeckLang).definition;
+                  if (transDef) sequence.push({ text: nativeGlossary ? transDef : `${standardDeckLang} ${labelDef}: ${transDef}`, language: standardDeckLang });
               }
           } else {
-              const transText = item.translations?.[flashcardLang] || "";
-              let transTerm = "";
-              let transDef = transText;
-              if (transText.includes(":")) {
-                  const splitIdx = transText.indexOf(":");
-                  transTerm = transText.substring(0, splitIdx).trim();
-                  transDef = transText.substring(splitIdx + 1).trim();
-              }
+              const translated = translationParts(flashcardLang);
+              const transTerm = translated.term, transDef = translated.definition;
+              const baseLabel = /^english$/i.test(baseLanguage) ? labelEng : baseLanguage;
               sequence = [
-                  `${labelEng} ${labelTerm}: ${item.term}`,
-                  `${labelDef}: ${item.def}`,
-                  transTerm ? `${flashcardLang} ${labelTerm}: ${transTerm}` : null,
-                  `${flashcardLang} ${labelDef}: ${transDef}`
+                  { text: nativeGlossary ? item.term : `${baseLabel} ${labelTerm}: ${item.term}`, language: termLanguage },
+                  { text: nativeGlossary ? item.def : `${labelDef}: ${item.def}`, language: definitionLanguage },
+                  transTerm ? { text: nativeGlossary ? transTerm : `${flashcardLang} ${labelTerm}: ${transTerm}`, language: flashcardLang } : null,
+                  transDef ? { text: nativeGlossary ? transDef : `${flashcardLang} ${labelDef}: ${transDef}`, language: flashcardLang } : null
               ].filter(Boolean);
           }
     const playNext = async idx => {
@@ -545,7 +549,7 @@ const handleCardAudioSequence = async (e, deps) => {
       let url = null;
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          url = await callTTS(sequence[idx], window.__alloSelectedVoice || selectedVoice, 1, { signal: controller.signal });
+          url = await callTTS(sequence[idx].text, window.__alloSelectedVoice || selectedVoice, 1, { language: sequence[idx].language, signal: controller.signal });
         } catch (error) {
           if (!isCurrent()) { finish(); return; }
           warnLog('Card audio generation failed:', error);

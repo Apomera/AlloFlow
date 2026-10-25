@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vite
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const { Simulate } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
@@ -117,7 +118,7 @@ describe('Reports from the review scope', () => {
   });
   it('discards AI recommendations returned after the report target changes', async () => {
     let resolveAI; const callGemini=vi.fn(()=>new Promise(resolve=>{resolveAI=resolve;}));
-    seed(); localStorage.setItem('bl_ai_consent_v1','1'); await mount({callGemini}); await openReport(); await click(host.querySelector('[aria-label="Generate Recs"]'));
+    seed(); localStorage.setItem('bl_ai_consent_v1','1'); await mount({callGemini}); await openReport(); await click(host.querySelector('[aria-label="Generate Recs"]')); await actWithSensitivePromptReview(React, () => {});
     expect(callGemini).toHaveBeenCalled(); await change('#bl-report-target','break');
     await React.act(async()=>resolveAI('Outdated recommendation for Requests help'));
     expect(host.textContent).not.toContain('Outdated recommendation');

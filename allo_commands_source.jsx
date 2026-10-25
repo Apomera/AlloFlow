@@ -419,6 +419,10 @@ const PLAN_CONTRACTS = Object.freeze({
     terminal: true,
     reason: 'Generates a reviewed Full Pack, or prepares its required review plan first.'
   },
+  open_project_save: {
+    demoSafe: false, interaction: 'interactive', terminal: true,
+    reason: 'Opens the native Save Project dialog for filename review and explicit save confirmation.'
+  },
   open_video_studio: {
     demoSafe: false,
     reason: 'Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead.'
@@ -441,6 +445,7 @@ const PLAN_CONTRACTS = Object.freeze({
   },
   create_activity_rubric: { demoSafe: false, interaction: 'guided', reason: 'Runs rubric generation for the current activity.' },
   open_command_blueprints: { demoSafe: false, interaction: 'interactive', terminal: true, reason: 'Opens the teacher-owned saved workflow library; selection and approval remain user-controlled.' },
+  open_lesson_revision: { demoSafe: false, interaction: 'interactive', terminal: true, reason: 'Opens resource selection and a reviewed native revision; applying changes remains user-controlled.' },
   share_assignment: { demoSafe: false, interaction: 'external', reason: 'Creates a student-facing assignment link after confirmation.' },
   preview_assignment_as_student: { demoSafe: false, interaction: 'external', reason: 'Opens an already-shared student assignment in a new tab.' },
   launch_flashcards: { requires: ['glossary'] },
@@ -956,6 +961,13 @@ function buildAlloCommands(ctx, opts = {}) {
       return t('cmd.open_block_suggestions_done', 'Document Builder opened. Block suggestions are in the highlighted panel near the top.');
     } },
     { id: 'open_history', icon: '🕘', roles: 'all', label: t('cmd.open_history', 'Open history'), aliases: ['history', 'my history', 'saved work', 'previous work', 'recent lessons', 'projects'], hint: t('cmd.open_history_hint', 'Browse saved lessons and projects'), run: (c) => { c.openHistory(); return t('cmd.open_history_done', 'History opened.'); } },
+    { id: 'open_project_save', icon: '\u{1F4BE}', roles: ['teacher', 'parent', 'independent'],
+      when: (c) => c.canSaveTeacherProject === true && typeof c.openProjectSave === 'function',
+      label: t('cmd.open_project_save', 'Save project'), aliases: ['save project', 'save teacher project', 'save project file', 'back up this project'],
+      hint: t('cmd.open_project_save_hint', 'Open Save Project to name and save a file for reopening later'),
+      run: (c) => c.openProjectSave() === false
+        ? { ok: false, narration: t('cmd.open_project_save_unavailable', 'Save Project is not available for the current work.') }
+        : t('cmd.open_project_save_done', 'Save Project opened. Review the file name and choose Save to download your project.') },
     { id: 'open_document_builder', opensPanel: 'exportPreview', icon: '📝', roles: ['teacher', 'parent', 'independent'], label: t('cmd.open_document_builder', 'Open the Document Builder'), aliases: ['document builder', 'builder', 'export preview', 'differentiate'], hint: t('cmd.open_document_builder_hint', 'Build and export differentiated documents'), run: (c) => { c.openExportPreview(); return t('cmd.open_document_builder_done', 'Document Builder opened.'); } },
     { id: 'open_wizard', icon: '🪄', roles: ['teacher', 'parent', 'independent'], label: t('cmd.open_wizard', 'Start the lesson wizard'), aliases: ['wizard', 'new lesson', 'create lesson', 'guided setup'], hint: t('cmd.open_wizard_hint', 'Step-by-step lesson creation'), run: (c) => { c.setShowWizard(true); return t('cmd.open_wizard_done', 'Lesson wizard started.'); } },
     { id: 'open_notebook', opensPanel: 'notebook', icon: '📓', roles: 'all', label: t('cmd.open_notebook', 'Open my notebook'), aliases: ['notebook', 'notes'], hint: t('cmd.open_notebook_hint', 'Saved notes and entries'), run: (c) => { c.setShowNotebook(true); return t('cmd.open_notebook_done', 'Notebook opened.'); } },
@@ -1022,6 +1034,12 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', requiresCapabilities: ['assignmentDirectionsEditor'], label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
     { id: 'open_assessment_builder', icon: '\u{1F9ED}', roles: 'teacher', requiresCapabilities: ['assessmentBuilder'], label: t('cmd.open_assessment_builder', 'Open Assessment Builder'), aliases: ['assessment builder', 'build assessment', 'make an assessment', 'assessment tools'], hint: t('cmd.open_assessment_builder_hint', 'Design an assessment and supporting activities'), run: (c) => { c.openAssessmentBuilder(); return t('cmd.open_assessment_builder_done', 'Assessment Builder opened.'); } },
     { id: 'open_udl_guide', icon: '\u267F', roles: ['teacher', 'parent', 'independent'], requiresCapabilities: ['udlGuide'], label: t('cmd.open_udl_guide', 'Open the UDL Guide'), aliases: ['udl guide', 'universal design guide', 'udl help', 'accessibility guide'], hint: t('cmd.open_udl_guide_hint', 'Review UDL supports for the current lesson'), run: (c) => { c.openUdlGuide(); return t('cmd.open_udl_guide_done', 'UDL Guide opened.'); } },
+    { id: 'open_lesson_revision', icon: '✏', roles: 'teacher', when: c => !!c.canReviseLesson && typeof c.startLessonRevision === 'function',
+      label: t('cmd.open_lesson_revision', 'Revise an existing lesson'),
+      aliases: ['revise existing lesson', 'revise an existing lesson', 'edit existing lesson', 'edit an existing lesson', 'revise this lesson', 'revise my lesson', 'revise existing resources'],
+      hint: t('cmd.open_lesson_revision_hint', 'Select native activities, review proposed changes, then apply or undo them'),
+      run: c => c.startLessonRevision() === false ? { ok: false, narration: t('cmd.open_lesson_revision_unavailable', 'Open a teacher lesson with editable resources first.') }
+        : t('cmd.open_lesson_revision_done', 'Select the resources and describe your changes. Nothing changes until you review and apply the revision.') },
     // ── Lesson blueprint commands (2026-07-28) ──
     // Each is gated on the capability the host exposes, so a command that
     // cannot work never appears in the palette. Deliberately NO
@@ -1040,7 +1058,7 @@ function buildAlloCommands(ctx, opts = {}) {
         if (c.signal) c.signal.addEventListener('abort', stop, { once: true });
         try {
           if (c.signal && c.signal.aborted) return { ok: false, cancelled: true, narration: t('cmd.cancelled', 'Cancelled.') };
-          const result = await c.runBlueprint();
+          const result = await c.runBlueprint({ onProgress: c.onCommandProgress });
           if (!result || !result.status) return { ok: false, narration: t('cmd.run_lesson_blueprint_no_result', 'The lesson plan did not return a completion result. Check its progress before retrying.') };
           return { ...result, ok: result.status === 'completed', partial: result.status === 'partial', cancelled: result.status === 'stopped',
             narration: result.narration || (result.status === 'completed'
@@ -2993,7 +3011,7 @@ const _COMMAND_SUGGESTION_HANDLERS = Object.freeze({
   open_udl_guide: 'openUdlGuide', jump_to_lesson_plan: 'jumpToLatestLessonPlan', open_history: 'openHistory',
   open_assessment_builder: 'openAssessmentBuilder', launch_flashcards: 'launchFlashcards',
   open_document_builder: 'openExportPreview', open_export_menu: 'setShowExportMenu',
-  open_project_settings: 'openProjectSettings', preview_assignment_as_student: 'previewStudentAssignment',
+  open_project_settings: 'openProjectSettings', open_project_save: 'openProjectSave', preview_assignment_as_student: 'previewStudentAssignment',
   export_pack: 'exportPack', save_my_work: 'saveStudentWork',
 });
 function _suggestionStartsWork(id) {
@@ -3045,6 +3063,7 @@ function _suggestionDescription(ctx, command) {
     open_document_builder: [null, 'Review and arrange the resources before exporting.', 'Opens Document Builder to prepare differentiated documents and choose an export.'],
     open_export_menu: [null, 'Choose a file format for the current content.', 'Opens export options; you choose what to download.'],
     export_pack: [null, 'Keep a portable copy of the current lesson resources.', 'Prepares the lesson pack download.'],
+    open_project_save: [null, 'Keep an editable project file so you can reopen this work later.', 'Opens Save Project, where you review the file name and confirm the project download.'],
     save_my_work: [null, 'Keep your current responses so you can reopen them later.', 'Opens the student save dialog for a local work file.'],
     open_project_settings: [null, 'Review learner permissions before distributing a project.', 'Opens the project settings; settings change only when you edit them.'],
     preview_assignment_as_student: [null, 'A shared student link is already available to check.', 'Opens that shared assignment in a separate student preview tab.'],
@@ -3067,6 +3086,74 @@ function _lessonSuggestionParams(text, matched) {
   if (match[2]) params.grade = match[2];
   return sanitizeCommandParams('create_lesson', params);
 }
+function _commandSummaryGrade(value) {
+  const raw = typeof value === 'number' && Number.isFinite(value) ? String(value) : (typeof value === 'string' ? value.trim().toLowerCase() : '');
+  if (/^(?:k|kindergarten)$/.test(raw)) return 'Kindergarten';
+  if (/^(?:pre[- ]?k|preschool)$/.test(raw)) return 'Pre-K';
+  if (/^(?:college|university)$/.test(raw)) return 'College';
+  if (/^(?:graduate|graduate level)$/.test(raw)) return 'Graduate level';
+  const match = raw.match(/^(?:(?:grade|year)\s+)?(1[0-2]|[1-9])(?:st|nd|rd|th)?(?:\s+grade)?$/);
+  return match ? 'Grade ' + Number(match[1]) : '';
+}
+function getCommandContextSummary(ctx) {
+  ctx = ctx || {};
+  const count = ctx.commandResourceCount;
+  return {
+    source: ctx.hasSourceText ? 'current' : (ctx.hasSourceOrAnalysis ? 'analysis' : 'none'),
+    grade: _commandSummaryGrade(ctx.commandGradeLevel == null ? ctx.gradeLevel : ctx.commandGradeLevel),
+    plan: ctx.hasActiveBlueprint ? 'blueprint' : (ctx.fullPackPlanReady ? 'full-pack' : 'none'),
+    resourceCount: typeof count === 'number' && Number.isFinite(count) ? Math.max(0, Math.min(999, Math.floor(count))) : 0,
+  };
+}
+function getCommandCompletionActions(ctx, commandId, result) {
+  ctx = ctx || {};
+  if (!result || result.handled !== true || result.ok !== true || result.partial || result.pending || result.cancelled
+      || (result.status != null && result.status !== 'completed') || getCommandAudience(ctx) === 'student' || ctx.generationBusy) return [];
+  if (['generate_full_pack', 'generate_source_text'].includes(commandId)) return [];
+  const producer = buildAlloCommands(ctx, { includeGated: true }).find(command => command.id === commandId);
+  const completedBlueprint = commandId === 'run_lesson_blueprint' && result.status === 'completed';
+  const rebuiltResource = commandId === 'rebuild_lesson_step';
+  if (!producer || typeof producer.runAsync !== 'function'
+      || (!completedBlueprint && !rebuiltResource && (!/^generate_/.test(commandId) || !getCommandContract(producer).produces.length))) return [];
+  if (!ctx.contentLoaded && !(Number(ctx.commandResourceCount) > 0)) return [];
+  const commands = _suggestionCommands(ctx);
+  const descriptions = [
+    ['open_document_builder', 'Review lesson', 'Your generated resources are ready to review.', 'Opens Document Builder to review and arrange the current resources before choosing an export.'],
+    ['preview_assignment_as_student', 'Preview as student', 'An existing student assignment matches the current resources.', 'Opens that existing matching assignment in a separate student preview tab.'],
+    ['open_project_save', 'Save project', 'Keep an editable copy that can be reopened later.', 'Opens Save Project, where you review the file name and confirm the project download.'],
+  ];
+  const actions = [];
+  for (const [id, label, reason, effect] of descriptions) {
+    if (id === 'preview_assignment_as_student' && ctx.canPreviewCurrentAssignment !== true) continue;
+    const command = commands.find(candidate => candidate.id === id);
+    if (!command || !validateCommandSuggestion(ctx, { commandId: id, params: {} }).ok) continue;
+    actions.push({ commandId: id,
+      label: _suggestionText(ctx, 'completion.' + id + '.label', label, 120),
+      reason: _suggestionText(ctx, 'completion.' + id + '.reason', reason, 180),
+      effect: _suggestionText(ctx, 'completion.' + id + '.effect', effect, 260), params: {} });
+  }
+  return actions.slice(0, 3);
+}
+
+function getCommandClarification(ctx, rawText, matchedPreview) {
+  ctx = ctx || {};
+  if (getCommandAudience(ctx) !== 'teacher' || ctx.generationBusy || (matchedPreview && matchedPreview.commandId)) return null;
+  const raw = typeof rawText === 'string' ? rawText.trim() : '';
+  if (!raw || raw.length > 200 || _isPrivateRecognitionText(raw) || stripExplicitCommandPrefix(raw)) return null;
+  const text = raw.toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').replace(/^please\s+/, '').replace(/^(?:can|could|would) you (?:please )?/, '');
+  const vague = /^(?:help(?: me)?(?: (?:with (?:this|it|that)|get started))?|help me teach (?:this|it|that)|what (?:should|can|do) i do next|what(?:'s| is) next|what can (?:i|we) (?:make|do) with (?:this|it|that)|(?:i(?:'m| am)|we(?:'re| are)) (?:not sure|unsure) (?:what to do|where to start)(?: next)?)$/;
+  if (!vague.test(text)) return null;
+  const choices = [];
+  if (getCommandSuggestions(ctx, 'help me build a lesson', null).some(option => option.commandId === 'create_lesson')) {
+    choices.push({ id: 'lesson', label: _suggestionText(ctx, 'clarify.lesson', 'A complete lesson', 80) });
+  }
+  if (getCommandSuggestions(ctx, 'support this reading', null).length) {
+    choices.push({ id: 'resource', label: _suggestionText(ctx, 'clarify.resource', 'One learning resource', 80) });
+  }
+  choices.push({ id: 'advice', label: _suggestionText(ctx, 'clarify.advice', 'Planning advice', 80) });
+  return choices.length > 1 ? { question: _suggestionText(ctx, 'clarify.question', 'What would you like help with?', 180), choices } : null;
+}
+
 function getCommandSuggestions(ctx, rawText, matchedPreview) {
   ctx = ctx || {};
   const text = String(rawText || '').trim().slice(0, 600);
@@ -3787,7 +3874,8 @@ function _deviceStorage() {
   if (!window.__alloDeviceStoragePromise) {
     window.__alloDeviceStoragePromise = new Promise(function (resolve, reject) {
       var s = document.createElement("script");
-      s.src = DEVICE_STORAGE_URL;
+      if (typeof window.__alloConfigureTrustedScript !== "function") throw new Error("Trusted script delivery is unavailable.");
+      window.__alloConfigureTrustedScript(s, DEVICE_STORAGE_URL);
       // A script that neither loads nor errors would leave this promise
       // pending forever, and every awaiting caller with it. Always settle.
       var settled = false;
@@ -4061,7 +4149,10 @@ function _getWhisperPipeline(profileOrLanguage) {
   if (!profile.supported || !profile.modelId) return Promise.reject(new Error("Whisper does not support " + profile.requestedLanguage + "."));
   if (!_whisperPipelinePromise || _whisperPipelineModelId !== profile.modelId) {
     _whisperPipelineModelId = profile.modelId;
-    var loading = import(TRANSFORMERS_URL).then(function (T) {
+    var loading = Promise.resolve().then(function () {
+      if (typeof window === "undefined" || typeof window.__alloLoadVerifiedRuntime !== "function") throw new Error("Verified Whisper runtime delivery is unavailable");
+      return window.__alloLoadVerifiedRuntime('transformers331');
+    }).then(function (T) {
       modelCache.installTransformersCache(T.env);
       return T.pipeline("automatic-speech-recognition", profile.modelId, { device: "wasm", dtype: "q8" });
     });
@@ -5631,7 +5722,7 @@ const CMD_GROUP = {
   onboarding_full_platform:'navigate', onboarding_guided_setup:'navigate', onboarding_learning_tools:'navigate', onboarding_educator_tools:'navigate',
   onboarding_student_role:'navigate', onboarding_teacher_role:'navigate', onboarding_parent_role:'navigate', onboarding_independent_role:'navigate',
   describe_current_screen:'help', list_current_actions:'help', go_back:'navigate', close_current_surface:'navigate', repeat_last_response:'help',
-  open_educator_hub:'navigate', open_learning_hub:'navigate', open_source_input:'navigate', open_source_url:'navigate', open_source_generator:'navigate', open_history:'navigate', open_document_builder:'navigate', open_wizard:'navigate',
+  open_educator_hub:'navigate', open_learning_hub:'navigate', open_source_input:'navigate', open_source_url:'navigate', open_source_generator:'navigate', open_history:'navigate', open_document_builder:'navigate', open_project_save:'navigate', open_wizard:'navigate',
   open_notebook:'navigate', open_translate:'navigate', open_class_session:'navigate', open_class_analytics:'navigate', open_share_collect:'navigate',
   open_live_session_center:'live', open_live_poll:'live', open_quick_check:'live', open_pictionary_host:'live', open_group_tools:'live', open_student_signal:'live',
   open_export_menu:'navigate', open_ai_settings:'navigate', go_dashboard:'navigate', open_roster:'navigate', open_project_settings:'navigate',
@@ -5655,7 +5746,7 @@ const CMD_GROUP = {
   open_research_suite:'navigate', return_to_start:'navigate',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
   pipeline_fix_again:'pipeline', pipeline_stop:'pipeline', pipeline_new_doc:'pipeline',
-  edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', open_command_blueprints:'create', start_lesson_blueprint:'create', run_lesson_blueprint:'create', plan_full_pack:'create', generate_full_pack:'create', rebuild_lesson_step:'create', apply_lesson_template:'create', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
+  edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', open_command_blueprints:'create', open_lesson_revision:'create', start_lesson_blueprint:'create', run_lesson_blueprint:'create', plan_full_pack:'create', generate_full_pack:'create', rebuild_lesson_step:'create', apply_lesson_template:'create', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
   next_assignment_step:'navigate', read_assignment_directions:'accessibility', show_success_criteria:'navigate', send_teacher_signal:'live', review_teacher_feedback:'navigate',
   // These 27 were written with double-quoted keys, which the grouping gate's
   // regex did not match, so nothing ever noticed they had no group. Palette
@@ -5678,7 +5769,7 @@ const CMD_GROUP = {
 };
 const CMD_CONTEXT = {
   pipeline_score:['pipeline'], pipeline_issues:['pipeline'], pipeline_downloads:['pipeline'], pipeline_verification:['pipeline'], pipeline_tour:['pipeline'], translate_document:['pipeline'],
-  open_document_builder:['educatorHub','content'], open_source_input:['sourceSetup'], open_source_url:['sourceSetup'], open_source_generator:['sourceSetup'], open_history:['content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
+  open_project_save:['content'], open_document_builder:['educatorHub','content'], open_source_input:['sourceSetup'], open_source_url:['sourceSetup'], open_source_generator:['sourceSetup'], open_history:['content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
   open_class_session:['educatorHub','liveSession'], open_class_analytics:['educatorHub','behaviorLens'], open_share_collect:['educatorHub'],
   open_live_session_center:['liveSession'], open_live_poll:['liveSession'], open_quick_check:['liveSession'], open_pictionary_host:['liveSession'], open_group_tools:['liveSession'], open_student_signal:['liveSession'], open_roster:['educatorHub'], open_project_settings:['educatorHub'],
   open_notebook:['learningHub'], toggle_socratic:['learningHub'],
@@ -5695,7 +5786,7 @@ const CMD_CONTEXT = {
   stop_reading:['reading'], line_spacing_more:['reading'], line_spacing_less:['reading'], open_submission_inbox:['educatorHub'], generate_outline:['content'], export_pack:['content'],
   launch_flashcards:['content','learningHub'], clear_my_answers:['content'], clear_workspace:['content'], open_persona_chat:['content'],
   pipeline_fix_again:['pipeline'], pipeline_stop:['pipeline'], pipeline_new_doc:['pipeline'],
-  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], open_command_blueprints:['educatorHub','content'], start_lesson_blueprint:['educatorHub','content'], open_research_suite:['educatorHub'], run_lesson_blueprint:['content'], plan_full_pack:['content'], generate_full_pack:['content'], rebuild_lesson_step:['content'], apply_lesson_template:['content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
+  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], open_command_blueprints:['educatorHub','content'], open_lesson_revision:['content'], start_lesson_blueprint:['educatorHub','content'], open_research_suite:['educatorHub'], run_lesson_blueprint:['content'], plan_full_pack:['content'], generate_full_pack:['content'], rebuild_lesson_step:['content'], apply_lesson_template:['content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
   next_assignment_step:['content'], read_assignment_directions:['content','reading'], show_success_criteria:['content'], send_teacher_signal:['liveSession'], review_teacher_feedback:['content'],
 };
 const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display','pipeline','help','voice'];

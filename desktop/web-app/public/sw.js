@@ -1,6 +1,5 @@
 // AlloFlow Service Worker
-// Navigation: cached shell immediately, refresh in the background.
-// Hashed JS/CSS: precached at install and served cache-first.
+// Navigation and boot assets stay bound to this worker's approved release.
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
@@ -8,8 +7,13 @@ const RELEASE_ID = '__RELEASE_ID__';
 const RELEASE_BUILT_AT = __BUILD_TS__;
 const CACHE_NAME = 'alloflow-v__RELEASE_ID__-__BUILD_TS__';
 const PRECACHE_PATHS = __PRECACHE_PATHS__;
+const PRECACHE_DIGESTS = __PRECACHE_DIGESTS__;
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
+const RELEASE_ASSETS = new Map(Object.entries(PRECACHE_DIGESTS).map(([asset, record]) => [scopedUrl(asset), record]));
+const RELEASE_PATHS = new Set([...RELEASE_ASSETS.keys()].map(asset => new URL(asset).pathname));
+const STATIC_CODE_PATH = new URL('./static/', self.registration.scope).pathname;
+const MAX_RELEASE_ASSET_BYTES = 64 * 1024 * 1024;
 const CLASSROOM_NETWORK_PATHS = new Set([
     '/classroom-import.html', '/classroom-import',
     '/classroom_import_config.js', '/classroom_import_app.js',
@@ -29,23 +33,79 @@ const cleanCopy = (response) => {
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers: response.headers });
 };
 
+// The digest map is emitted with the trusted worker, never fetched alongside
+// an asset. Bound the decoded stream before allocating/hash computation.
+async function verifyReleaseResponse(response, assetUrl) {
+    const expected = RELEASE_ASSETS.get(assetUrl);
+    if (!expected || !Number.isSafeInteger(expected.bytes) || expected.bytes < 0
+        || expected.bytes > MAX_RELEASE_ASSET_BYTES || !/^[a-f0-9]{96}$/.test(expected.sha384)
+        || !response || response.status !== 200) throw new Error('[SW] unapproved release asset: ' + assetUrl);
+    const reader = response.clone().body?.getReader();
+    if (!reader) throw new Error('[SW] release asset has no readable body');
+    const bytes = new Uint8Array(expected.bytes);
+    let length = 0;
+    try {
+        while (true) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            if (length + chunk.value.byteLength > expected.bytes) throw new Error('[SW] release asset exceeds its approved length');
+            bytes.set(chunk.value, length);
+            length += chunk.value.byteLength;
+        }
+    } catch (error) {
+        reader.cancel().catch(() => {});
+        throw error;
+    }
+    if (length !== expected.bytes) throw new Error('[SW] release asset length mismatch');
+    const digest = await crypto.subtle.digest('SHA-384', bytes);
+    const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    if (actual !== expected.sha384) throw new Error('[SW] release asset digest mismatch');
+    if (assetUrl === SHELL_URL) {
+        const release = new TextDecoder().decode(bytes).match(/window\.__alloReleaseId\s*=\s*["']([a-f0-9]+)["']/);
+        if (!release || release[1] !== RELEASE_ID) throw new Error('[SW] shell release does not match worker');
+    }
+    return cleanCopy(response);
+}
+
+const releaseUnavailable = () => new Response('This approved AlloFlow release is unavailable. Reconnect and try again.', {
+    status: 503,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+});
+
+const cacheable = response => response && response.ok
+    && !/(?:^|,)\s*(?:private|no-store)(?:\s|,|=|$)/i.test(response.headers.get('Cache-Control') || '')
+    && response.headers.get('Vary') !== '*';
+
+async function releaseResponse(assetUrl) {
+    const cache = await caches.open(CACHE_NAME);
+    const stored = await cache.match(assetUrl);
+    if (stored) {
+        try {
+            if (!cacheable(stored)) throw new Error('[SW] private response is not an offline asset');
+            return await verifyReleaseResponse(stored, assetUrl);
+        }
+        catch (_) { await cache.delete(assetUrl); }
+    }
+    try {
+        const response = await verifyReleaseResponse(await fetch(assetUrl, { cache: 'no-cache' }), assetUrl);
+        if (cacheable(response)) await cache.put(assetUrl, response.clone());
+        return response;
+    } catch (_) { return releaseUnavailable(); }
+}
+
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing:', CACHE_NAME);
-    // Install succeeds only when the HTML and every hashed boot asset are cached.
+    // Verify the complete boot set before writing any candidate cache entry.
+    // A partial/mixed deployment must not replace an already approved cache.
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => Promise.all(PRECACHE_PATHS.map(scopedUrl).map((assetUrl) =>
-            fetch(assetUrl, { cache: 'reload' }).then(async (response) => {
-                if (!response.ok) throw new Error('[SW] precache failed: ' + assetUrl + ' -> ' + response.status);
-                // A deployment can switch between fetching sw.js and HTML.
-                // Never announce a release unless its own shell was installed.
-                if (assetUrl === SHELL_URL) {
-                    const html = await response.clone().text();
-                    const release = html.match(/window\.__alloReleaseId\s*=\s*["']([a-f0-9]+)["']/);
-                    if (!release || release[1] !== RELEASE_ID) throw new Error('[SW] shell release does not match worker');
-                }
-                return cache.put(assetUrl, cleanCopy(response));
-            })
-        )))
+        Promise.all(PRECACHE_PATHS.map(async asset => {
+            const assetUrl = scopedUrl(asset);
+            const response = await verifyReleaseResponse(await fetch(assetUrl, { cache: 'reload' }), assetUrl);
+            return [assetUrl, response];
+        })).then(async assets => {
+            const cache = await caches.open(CACHE_NAME);
+            await Promise.all(assets.filter(([, response]) => cacheable(response)).map(([assetUrl, response]) => cache.put(assetUrl, response)));
+        })
     );
     // Do not call skipWaiting(): never interrupt an active classroom tab.
 });
@@ -80,7 +140,17 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+    if (event.request.method !== 'GET') return;
     if (url.origin !== self.location.origin && event.request.mode !== 'navigate') return;
+
+    // Classroom API responses and credential-bearing/private requests must
+    // never enter an offline cache or use a cached substitute.
+    if (event.request.headers.has('Authorization') || event.request.cache === 'no-store'
+        || /(?:^|,)\s*no-store(?:\s|,|$)/i.test(event.request.headers.get('Cache-Control') || '')
+        || /(?:^|\/)api(?:\/|$)/i.test(url.pathname)) {
+        event.respondWith(fetch(event.request, { cache: 'no-store' }));
+        return;
+    }
 
     // Standalone Classroom pages must never become the app shell. Fetch the
     // helper and its configuration afresh so cached enablement cannot reopen
@@ -104,32 +174,21 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (event.request.mode === 'navigate') {
-        event.respondWith(
-            caches.open(CACHE_NAME).then((cache) => cache.match(SHELL_URL).then((stored) => {
-                const cached = stored && !stored.redirected ? stored : null;
-                const networkFetch = fetch(event.request).then((response) => {
-                    if (response.ok) cache.put(SHELL_URL, cleanCopy(response.clone()));
-                    return response;
-                }).catch(() => cached || new Response('AlloFlow is loading...', {
-                    status: 503,
-                    headers: { 'Content-Type': 'text/html' }
-                }));
-                return cached || networkFetch;
-            }))
-        );
+        // New HTML belongs to its own waiting worker. Never refresh A's shell
+        // to B while a classroom has chosen Later or is still using A.
+        event.respondWith(releaseResponse(SHELL_URL));
         return;
     }
 
-    if (url.pathname.match(/\/static\/(js|css)\/.*\.[a-f0-9]{8}\./)) {
-        event.respondWith(
-            caches.open(CACHE_NAME).then((cache) => cache.match(event.request).then((cached) => {
-                if (cached) return cached;
-                return fetch(event.request).then((response) => {
-                    if (response.ok) cache.put(event.request, response.clone());
-                    return response;
-                });
-            }))
-        );
+    if (url.origin === self.location.origin && RELEASE_PATHS.has(url.pathname)) {
+        // A different query can name a different release. It cannot bypass the
+        // approved map and fall through to a generic version-keyed cache.
+        event.respondWith(RELEASE_ASSETS.has(url.href) ? releaseResponse(url.href) : Promise.resolve(releaseUnavailable()));
+        return;
+    }
+
+    if (url.pathname.startsWith(STATIC_CODE_PATH) && /\.(?:js|css)$/i.test(url.pathname)) {
+        event.respondWith(Promise.resolve(releaseUnavailable()));
         return;
     }
 
@@ -142,11 +201,11 @@ self.addEventListener('fetch', (event) => {
     if (url.origin === self.location.origin && url.searchParams.has('v')) {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => cache.match(event.request).then((cached) => {
-                if (cached) return cached;
+                if (cacheable(cached)) return cached;
                 // A new release cache must not inherit a still-fresh HTTP
                 // cache entry for an unchanged local module URL.
                 return fetch(event.request, { cache: 'no-cache' }).then((response) => {
-                    if (response.ok) cache.put(event.request, response.clone());
+                    if (cacheable(response)) cache.put(event.request, response.clone());
                     return response;
                 });
             }))
@@ -160,12 +219,12 @@ self.addEventListener('fetch', (event) => {
             // later microtask, by which time the page may have consumed the body
             // and clone() throws "Response body is already used" (cache write
             // silently failed on every request). Same pattern as the handlers above.
-            if (response.ok) {
+            if (cacheable(response)) {
                 const copy = response.clone();
                 caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
             }
             return response;
-        }).catch(() => caches.match(event.request).then((response) => response || new Response(
+        }).catch(() => caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then((response) => cacheable(response) ? response : new Response(
             'Network error and no cache available.',
             { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' } }
         )))

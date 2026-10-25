@@ -330,7 +330,7 @@ for (const dark of [false, true]) test.describe('Migration marked view restore p
     await page.locator('[data-study-marked-pose]').screenshot({ path: join(report, stem + '-activity.png') });
     await returnButton(page).tap(); await frames(page); await checkButton(page).tap(); await frames(page); await expect(checkCue(page)).toHaveAttribute('data-marked-comparison-kind', 'same');
     await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap();
-    const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }); await expect(input).toBeFocused();
+    const input = page.getByRole('textbox', { name: 'My observation', exact: true }); await expect(input).toBeFocused();
     await expect(input).toHaveValue(original.flightStudyObservations.drafts['canada_goose:primaries']); expect(work(await saved(page))).toEqual(work(original));
     await input.fill('Restoring my marked view kept the current wing pose. Returning the wings then matched my original comparison.');
     await page.getByRole('button', { name: 'Record observation', exact: true }).tap(); const recorded = await saved(page);

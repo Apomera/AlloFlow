@@ -407,7 +407,8 @@ function BridgeSendModal(props) {
                     reader.onload = (ev) => {
                       window.__bridgeAttachedImage = ev.target.result;
                       const btn = document.getElementById('bridge-attach-image-btn');
-                      if (btn) btn.innerHTML = '<span>✅</span> ' + file.name.substring(0, 20) + (file.name.length > 20 ? '…' : '');
+                      // File names are untrusted text, including HTML-like names from other platforms.
+                      if (btn) btn.textContent = '✅ ' + file.name.substring(0, 20) + (file.name.length > 20 ? '…' : '');
                       const removeBtn = document.getElementById('bridge-remove-image-btn');
                       if (removeBtn) removeBtn.style.display = 'flex';
                       addToast('Image attached: ' + file.name, 'success');

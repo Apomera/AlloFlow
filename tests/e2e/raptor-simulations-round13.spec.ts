@@ -104,7 +104,7 @@ test('native optics use consistent length units, first Bessel zero, and radial i
     const inspected = intensity(setting.diameter, setting.focal, setting.wavelength, setting.cursor);
     expect(Math.abs(actual.inspector.x - (52 + setting.cursor / setting.radius * 536))).toBeLessThan(1e-4);
     expect(Math.abs(actual.inspector.y - (220 - inspected * 170))).toBeLessThan(1e-4);
-    await expect(page.locator('[data-aperture-intensity-reading]')).toHaveText('At ' + setting.cursor.toFixed(1) + ' μm: current I/I₀ = ' + inspected.toFixed(6));
+    await expect(page.locator('[data-aperture-intensity-reading]')).toHaveText('At ' + setting.cursor.toFixed(1) + ' μm: current I/I₀ = ' + (inspected > 0 && inspected < 0.000001 ? 'Below 0.000001' : inspected.toFixed(6)));
     expect(intensity(setting.diameter, setting.focal, setting.wavelength, expected.first)).toBeLessThan(1e-25);
   }
   await page.getByText('Read the ideal model, units, and sources').click();

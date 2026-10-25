@@ -2353,6 +2353,7 @@ Return ONLY JSON.`;
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.UdlChat = {
+  supportsReviewedBlueprintExecution: true,
   planAndSendUdlMessage,
   handleSendUDLMessage,
   resolveBlueprintSourceChoice,
@@ -2491,11 +2492,392 @@ function _sameBotCommandScope(left, right) {
   return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
+const _botCommandOperations = new WeakMap();
+function _botCommandOperationState(ref) {
+  if (!ref || typeof ref !== 'object') return { run: null, recovery: null };
+  if (!_botCommandOperations.has(ref)) _botCommandOperations.set(ref, { run: null, recovery: null, completion: null });
+  return _botCommandOperations.get(ref);
+}
+function _latestBotOperationId(messages) {
+  const latest = Array.isArray(messages) && messages.slice().reverse().find(message => message && message.operationId);
+  return latest ? latest.operationId : null;
+}
+function _botProgressSnapshot(run) {
+  return { phase: run.phase, startedAt: run.startedAt, phaseStartedAt: run.phaseStartedAt,
+    ...(run.diagnosticId ? { diagnosticId: run.diagnosticId } : {}) };
+}
+function _botCommandStartsWork(id) {
+  return /^(?:generate_|rebuild_)/.test(id) || ['create_lesson', 'start_lesson_blueprint', 'run_lesson_blueprint', 'plan_full_pack', 'apply_lesson_template', 'create_activity_rubric'].includes(id);
+}
+function _captureBotCompletionOwner(ctx, deps) {
+  return ctx && typeof ctx.commandWorkspaceToken === 'string' && ctx.commandWorkspaceToken
+    ? [ctx.commandWorkspaceToken] : _captureBotCommandScope(ctx, deps);
+}
+
+const _lessonRevisionConversations = new WeakMap();
+function _lessonRevisionStartRequest(text) {
+  const match = /^(?:(?:please|can you|could you|would you)\s+)?(?:help me\s+)?(?:revise|edit|improve|modify)\s+(?:(?:my|this|the|an|a|our|these|those)\s+)?(?:(?:existing|current|saved|created|generated)\s+)?(lesson(?:\s+materials?)?|materials?|resources?|quizzes|quiz|activities|activity|glossary|directions|worksheet|rubric|faq|outline|timeline|sentence[- ]frames)\b([\s\S]*)$/i.exec(text);
+  if (!match) return null;
+  const noun = match[1].toLowerCase();
+  const type = /^(?:quiz|quizzes)$/.test(noun) ? 'quiz' : /^sentence[- ]frames$/.test(noun) ? 'sentence-frames'
+    : ['glossary', 'directions', 'rubric', 'faq', 'outline', 'timeline'].includes(noun) ? noun : '';
+  return { type, instruction: match[2].replace(/[\s:,.!?-]/g, '') ? text : '' };
+}
+function _isLessonRevisionMessage(manualText, deps) {
+  if (manualText && typeof manualText === 'object') return /^lesson-revision-/.test(manualText.action || '');
+  const raw = String(manualText == null ? deps.udlInput || '' : manualText).trim();
+  const session = deps._pendingBotCmdRef && _lessonRevisionConversations.get(deps._pendingBotCmdRef);
+  return !!_lessonRevisionStartRequest(raw) || !!(session && session.mode !== 'closed'
+    && _latestBotOperationId(deps.udlMessages) === session.id && _lessonRevisionFollowupIntent(raw, session));
+}
+function _lessonRevisionFollowupIntent(raw, session) {
+  if (!raw) return null;
+  if (['preparing', 'refining', 'questioning'].includes(session.mode)
+      && /^(?:please\s+)?(?:stop|cancel)(?:\s+(?:preparing|refining|answering|the|this|revision|request|proposal|draft))*[.!]?$/i.test(raw)) return 'stop';
+  if ((session.reviewId || session.undoId) && /^(?:please\s+)?undo\b/i.test(raw)) return 'undo-help';
+  if (!session.reviewId || !['review', 'refining', 'questioning'].includes(session.mode)) return null;
+  if (/^(?:please\s+)?(?:open|go|navigate|take me|close|exit|start|create|build|generate)\b/i.test(raw)) return null;
+  if (/^(?:please\s+)?keep\s+(?:those|these|the|my)\s+(?:proposed\s+)?(?:edits|changes)[.!?]?$/i.test(raw)) return 'keep';
+  const suggestionReference = /\b(?:what you (?:just )?(?:suggested|recommended)|(?:that|your|the) (?:suggestion|recommendation))\b/i.test(raw);
+  if (suggestionReference && /^(?:please\s+)?(?:do|use|try|apply|make)\b/i.test(raw)) return session.hasScopedAnswer ? 'refine' : 'clarify';
+  const reference = /\b(?:this|that|these|those|it|proposal|draft|proposed|edits?|changes?|above)\b/i.test(raw)
+    || suggestionReference
+    || /\bq\s*\d+\b/i.test(raw)
+    || /\b(?:question|prompt|item|direction|instruction)s?\s+(?:\d+|one|two|three|four|five|six|first|second|third|fourth|fifth|sixth)\b/i.test(raw)
+    || /\b(?:the|current|existing|my)\s+(?:lesson|quiz|activity|glossary|directions|rubric|wording)\b/i.test(raw);
+  const politeEdit = /^(?:(?:please|can you|could you|would you)\s+)*(?:keep|retain|preserve|shorten|lengthen|simplify|expand|change|revise|modify|add|remove|replace|edit|make|rewrite|reword)\b/i.test(raw);
+  if (politeEdit && (reference || /^(?:(?:please|can you|could you|would you)\s+)*(?:add|remove|shorten|lengthen|rewrite|reword)\b/i.test(raw))) return 'refine';
+  if ((reference || /^(?:what|why|how)\s+(?:did|do|would)\s+you\b/i.test(raw))
+      && /^(?:please\s+)?(?:what|why|how|where|which|who|is|are|does|do|can|could|would|should|will|explain)\b/i.test(raw)) return 'question';
+  if (reference || /^(?:shorter|longer|easier|harder|better|more|less|yes|apply|go ahead|looks good)[.!?\s]*$/i.test(raw)) return 'clarify';
+  return null;
+}
+const _lessonRevisionErrorText = value => typeof value === 'string' ? value.slice(0, 600)
+  : value && typeof value.message === 'string' ? value.message.slice(0, 600) : '';
+async function _handleLessonRevisionMessage(manualText, deps) {
+  let action = manualText && typeof manualText === 'object' ? manualText : null;
+  const raw = action ? '' : String(manualText == null ? deps.udlInput || '' : manualText).trim();
+  const startRequest = _lessonRevisionStartRequest(raw);
+  const owner = deps._pendingBotCmdRef;
+  const setMessages = deps.setUdlMessages;
+  if (!owner || typeof owner !== 'object' || typeof setMessages !== 'function' || typeof deps._alloCmdCtx !== 'function') return true;
+  let session = _lessonRevisionConversations.get(owner);
+  const followupIntent = !action && session && _latestBotOperationId(deps.udlMessages) === session.id ? _lessonRevisionFollowupIntent(raw, session) : null;
+  const start = action?.action === 'lesson-revision-start' || !!startRequest && !followupIntent;
+  if (followupIntent) action = { action: followupIntent === 'stop' ? 'lesson-revision-stop' : 'lesson-revision-followup',
+    requestId: session.id, reviewToken: session.reviewToken, pendingToken: session.pendingToken, mode: followupIntent, instruction: raw };
+  if (!start && !(action && /^lesson-revision-/.test(action.action || ''))) return false;
+  const ctx = deps._alloCmdCtx();
+  const available = current => !!current && current.canReviseLesson === true && !current.isStudentLinkMode
+    && typeof current.getLessonRevisionResources === 'function' && typeof current.prepareLessonRevision === 'function';
+  const errorText = (result, fallback) => _lessonRevisionErrorText(result?.error) || fallback;
+  const announce = text => { try { window.alloAnnounce?.(text); } catch (_) {} };
+  const sameWorkspace = current => _sameBotCommandScope(session.owner, _captureBotCompletionOwner(current, deps));
+  const message = (text = '') => ({ role: 'model', type: 'lesson-revision', localOnly: true,
+    operationKind: 'lesson-revision', operationId: session.id,
+    operationStatus: session.mode === 'closed' ? 'closed' : session.busy ? 'pending' : 'review', text,
+    lessonRevision: { requestId: session.id, mode: session.mode, formVersion: session.formVersion,
+      resources: session.resources, selectedIds: session.selectedIds, instruction: session.instruction,
+      error: session.error || '', changes: session.changes || [], warnings: session.warnings || [],
+      followupText: session.followupText || '', followupVersion: session.followupVersion || 0,
+      needsFollowupChoice: !!session.needsFollowupChoice, answer: session.answer || '',
+      reviewToken: session.reviewToken || '', undoToken: session.undoToken || '', pendingToken: session.pendingToken || '',
+      changedCount: session.changedCount || 0, resourceIds: session.appliedResourceIds || [],
+      canUndo: !!session.undoId, canSave: !!ctx.canSaveTeacherProject && typeof ctx.openProjectSave === 'function',
+      canPreview: typeof ctx.openLessonRevisionPreview === 'function' } });
+  const publish = (text, initial = false) => {
+    const next = message(text);
+    setMessages(previous => {
+      if (initial) return [...previous, next];
+      if (_latestBotOperationId(previous) !== session.id) return previous;
+      return previous.map(item => item.operationId === session.id ? next : item);
+    });
+    announce(text);
+  };
+  const stopRequest = () => {
+    session.controller?.abort();
+    session.version++;
+    session.controller = null;
+    session.pendingToken = null;
+  };
+  const discard = (close = false) => {
+    stopRequest();
+    if ((session.reviewId || close) && typeof ctx.discardLessonRevision === 'function') ctx.discardLessonRevision(session.reviewId, ...(close ? [{ close: true }] : []));
+    session.reviewId = null;
+    session.reviewToken = null;
+  };
+  if (start) {
+    if (!available(ctx)) {
+      setMessages(previous => [...previous, { role: 'model', localOnly: true,
+        text: 'Open a teacher lesson with editable resources to revise existing material.' }]);
+      return true;
+    }
+    const operation = _botCommandOperationState(owner);
+    if (ctx.generationBusy || session?.busy || operation.run?.startsWork || deps._planRunRef?.current?.running) {
+      setMessages(previous => [...previous, { role: 'model', localOnly: true,
+        text: 'Wait for the current work to finish or stop it before revising this lesson.' }]);
+      return true;
+    }
+    const previousUndo = session && session.mode !== 'closed' && sameWorkspace(ctx)
+      ? { undoId: session.undoId, undoToken: session.undoToken, appliedResourceIds: session.appliedResourceIds, changedCount: session.changedCount } : {};
+    if (session) discard(!sameWorkspace(ctx));
+    const planning = deps._botCommandPlanningRef;
+    if (planning) {
+      planning.current?.controller?.abort();
+      planning.current = { controller: null, serial: (Number(planning.current?.serial) || 0) + 1 };
+    }
+    owner.current = null;
+    if (deps._pendingBotPlanRef) deps._pendingBotPlanRef.current = null;
+    operation.recovery = null;
+    operation.completion = null;
+    let listed;
+    try { listed = ctx.getLessonRevisionResources(); }
+    catch (_) {
+      setMessages(previous => [...previous, { role: 'model', localOnly: true, text: 'The lesson resources could not be loaded. Open Revise existing lesson again.' }]);
+      return true;
+    }
+    const resources = (Array.isArray(listed) ? listed : []).filter((item, index, all) => item && item.id != null
+      && all.findIndex(candidate => candidate && String(candidate.id) === String(item.id)) === index).slice(0, 200)
+      .map(item => ({ id: String(item.id), type: String(item.type || '').slice(0, 80), title: String(item.title || item.type || 'Resource').slice(0, 240),
+        supported: item.supported === true, reason: String(item.reason || '').slice(0, 400),
+        fieldCount: Math.max(0, Number(item.fieldCount) || 0), current: item.current === true }));
+    const matching = resources.filter(item => item.supported && (!startRequest?.type || item.type === startRequest.type));
+    const first = matching.find(item => item.current) || (!startRequest?.type || matching.length === 1 ? matching[0] : null);
+    session = { id: _botInteractionId(), owner: _captureBotCompletionOwner(ctx, deps), resources,
+      selectedIds: first ? [first.id] : [], instruction: startRequest?.instruction || '', formVersion: 0, version: 0, mode: 'select', busy: false,
+      ...previousUndo };
+    _lessonRevisionConversations.set(owner, session);
+    deps.setUdlInput?.('');
+    publish('Choose the existing material to revise, then describe the changes. You will review the proposed edits before applying them.', true);
+    return true;
+  }
+  if (!session || action.requestId !== session.id || _latestBotOperationId(deps.udlMessages) !== session.id || session.mode === 'closed') return true;
+  if (!available(ctx) || !sameWorkspace(ctx)) {
+    discard(true); session.mode = 'closed'; session.busy = false; session.undoId = null; session.undoToken = null;
+    deps.setIsChatProcessing?.(false);
+    publish('The lesson or authoring role changed. Open Revise existing lesson again to work on the current material.');
+    return true;
+  }
+  if (action.action === 'lesson-revision-cancel') {
+    if (['applying', 'undoing'].includes(session.mode)) return true;
+    discard(true); session.mode = 'closed'; session.busy = false; session.undoId = null; session.undoToken = null;
+    deps.setIsChatProcessing?.(false);
+    publish('Revision closed. Applied changes stay in the lesson; any unapplied proposal was discarded.');
+    return true;
+  }
+  if (action.action === 'lesson-revision-stop' && action.pendingToken === session.pendingToken && ['preparing', 'refining', 'questioning'].includes(session.mode)) {
+    stopRequest(); session.busy = false; session.mode = session.reviewId ? 'review' : 'select'; session.error = '';
+    deps.setIsChatProcessing?.(false);
+    publish(session.reviewId ? 'Stopped. The reviewed proposal is unchanged, and your follow-up is kept.' : 'Stopped. Your request, selection, and previous Undo are kept.');
+    return true;
+  }
+  if (action.action === 'lesson-revision-followup' && ['undo-help', 'keep'].includes(action.mode)) {
+    deps.setUdlInput?.('');
+    publish(action.mode === 'undo-help'
+      ? 'To undo the last applied lesson revision, use the Undo last applied revision button. Pending edits have not been applied.'
+      : 'These edits remain in the proposal. Choose Apply edits when you want to change the lesson.');
+    return true;
+  }
+  if (action.action === 'lesson-revision-undo' && session.undoId && action.undoToken === session.undoToken && !['applying', 'undoing'].includes(session.mode)
+      && !ctx.generationBusy && typeof ctx.undoLessonRevision === 'function') {
+    const returnMode = ['applied', 'undone'].includes(session.mode) ? 'applied' : 'select';
+    if (session.mode === 'select') {
+      if (typeof action.instruction === 'string' && action.instruction.length <= 4000) session.instruction = action.instruction;
+      if (Array.isArray(action.resourceIds)) {
+        const availableIds = new Set(session.resources.filter(item => item.supported).map(item => item.id));
+        session.selectedIds = [...new Set(action.resourceIds.map(String))].filter(id => availableIds.has(id));
+      }
+    }
+    if (typeof action.followupText === 'string' && action.followupText.length <= 4000) session.followupText = action.followupText;
+    discard(); session.busy = true; session.mode = 'undoing'; session.needsFollowupChoice = false;
+    deps.setIsChatProcessing?.(false);
+    publish('Undoing the last applied revision. Any pending proposal is set aside.');
+    try {
+      const result = await ctx.undoLessonRevision(session.undoId);
+      session.busy = false; session.mode = result?.ok && returnMode === 'applied' ? 'undone' : returnMode;
+      session.error = result?.ok ? '' : errorText(result, 'Undo could not be applied because the edited material changed. Your request is kept; prepare a fresh proposal when ready.');
+      if (result?.ok) { session.undoId = null; session.undoToken = null; session.changes = []; session.warnings = []; session.answer = ''; session.hasScopedAnswer = false; }
+      session.formVersion++; session.followupVersion++;
+      publish(result?.ok ? 'The last applied revision was undone. Your next request is kept for a fresh review.' : 'Undo did not change the lesson. Your request and previous Undo are kept.');
+    } catch (_) {
+      session.busy = false; session.mode = returnMode; session.formVersion++; session.followupVersion++;
+      session.error = 'Undo could not finish. Your request and previous Undo are kept; review the current lesson before trying again.';
+      publish('The undo result could not be confirmed.');
+    }
+    return true;
+  }
+  if (session.busy || ctx.generationBusy) return true;
+  if (['lesson-revision-refine', 'lesson-revision-question', 'lesson-revision-followup', 'lesson-revision-followup-choice'].includes(action.action)
+      && session.mode === 'review' && session.reviewId && action.reviewToken === session.reviewToken) {
+    let mode = action.action === 'lesson-revision-refine' ? 'refine' : action.action === 'lesson-revision-question' ? 'question' : action.mode;
+    let instruction = typeof action.instruction === 'string' ? action.instruction : '';
+    if (action.action === 'lesson-revision-followup-choice') {
+      if (!session.needsFollowupChoice || !['refine', 'question'].includes(mode)) return true;
+      instruction = session.followupText;
+    }
+    session.followupText = instruction; session.followupVersion++; session.needsFollowupChoice = false; session.error = '';
+    deps.setUdlInput?.('');
+    if (mode === 'clarify') {
+      if (/^(?:yes|apply|go ahead|looks good)[.!?\s]*$/i.test(instruction)) {
+        publish('The proposal is unchanged. Use Apply edits to apply it, or describe a specific change in the follow-up box.');
+      } else {
+        session.needsFollowupChoice = true;
+        publish('Should I refine the proposed edits, or answer a question about them? The proposal is unchanged.');
+      }
+      return true;
+    }
+    if (!['refine', 'question'].includes(mode) || !instruction.trim() || instruction.length > 4000) {
+      session.error = 'Enter a follow-up in 4,000 characters or fewer. The proposal is unchanged.';
+      publish('The proposal is kept for your review.'); return true;
+    }
+    const reviewId = session.reviewId;
+    session.controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const version = ++session.version;
+    session.pendingToken = _botInteractionId();
+    session.busy = true; session.mode = mode === 'refine' ? 'refining' : 'questioning';
+    deps.setIsChatProcessing?.(true);
+    publish(mode === 'refine' ? 'Refining the current proposal. The lesson and its earlier applied Undo are unchanged.' : 'Answering about this proposal. No edits will be applied or changed.');
+    try {
+      const result = await ctx.prepareLessonRevision({ reviewId, instruction, mode, signal: session.controller?.signal });
+      if (_lessonRevisionConversations.get(owner) !== session || version !== session.version) {
+        if (result?.review?.id && result.review.id !== session.reviewId && typeof ctx.discardLessonRevision === 'function') ctx.discardLessonRevision(result.review.id);
+        return true;
+      }
+      if (!available(deps._alloCmdCtx()) || !sameWorkspace(deps._alloCmdCtx())) {
+        if (result?.review?.id && typeof ctx.discardLessonRevision === 'function') ctx.discardLessonRevision(result.review.id);
+        discard(true); session.mode = 'closed'; session.busy = false; session.undoId = null; session.undoToken = null;
+        deps.setIsChatProcessing?.(false);
+        publish('The lesson changed during the follow-up. Open Revise existing lesson again.'); return true;
+      }
+      session.busy = false; session.mode = 'review'; session.pendingToken = null;
+      if (mode === 'question' && result?.ok && typeof result.answer === 'string' && result.answer.trim()) {
+        session.answer = result.answer; session.hasScopedAnswer = true; session.error = '';
+        publish('Answer about the proposed edits. The proposal is unchanged and still requires Apply edits.');
+      } else if (mode === 'refine' && result?.ok && typeof result.review?.id === 'string' && result.review.id
+          && Array.isArray(result.review.changes) && result.review.changes.length) {
+        session.reviewId = result.review.id; session.reviewToken = _botInteractionId(); session.changes = result.review.changes;
+        session.warnings = Array.isArray(result.review.warnings) ? result.review.warnings : [];
+        if (typeof result.review.instruction === 'string' && result.review.instruction.length <= 4000) session.instruction = result.review.instruction;
+        session.followupText = ''; session.followupVersion++; session.answer = ''; session.error = '';
+        publish('The refined proposal is ready. Review the complete before-and-after changes before choosing Apply edits.');
+      } else {
+        session.error = errorText(result, mode === 'refine' ? 'The proposal could not be refined. The previous proposal and your follow-up are kept.' : 'The question could not be answered. The proposal and your follow-up are kept.');
+        publish('The reviewed proposal is unchanged. You can retry the follow-up, apply the proposal, or use the earlier Undo.');
+      }
+    } catch (error) {
+      if (_lessonRevisionConversations.get(owner) === session && version === session.version) {
+        session.busy = false; session.mode = 'review'; session.pendingToken = null;
+        session.error = error?.name === 'AbortError' ? 'The follow-up stopped. The proposal is unchanged.' : 'The follow-up could not finish. The proposal and your text are kept.';
+        publish('The reviewed proposal is unchanged.');
+      }
+    } finally {
+      if (_lessonRevisionConversations.get(owner) === session && version === session.version) deps.setIsChatProcessing?.(false);
+    }
+    return true;
+  }
+  if (action.action === 'lesson-revision-edit' && ['review', 'applied', 'undone'].includes(session.mode)) {
+    if (session.mode === 'review' && action.reviewToken !== session.reviewToken) return true;
+    discard(); session.mode = 'select'; session.error = ''; session.formVersion++;
+    session.answer = ''; session.hasScopedAnswer = false; session.followupText = ''; session.followupVersion++; session.needsFollowupChoice = false;
+    publish('Adjust the request or selection and prepare a new revision for review.');
+    return true;
+  }
+  if (action.action === 'lesson-revision-prepare' && session.mode === 'select') {
+    const ids = Array.isArray(action.resourceIds) ? [...new Set(action.resourceIds.map(String))] : [];
+    const allowedIds = new Set(session.resources.filter(item => item.supported).map(item => item.id));
+    session.instruction = typeof action.instruction === 'string' ? action.instruction : '';
+    session.selectedIds = ids.filter(id => allowedIds.has(id));
+    session.formVersion++;
+    if (!ids.length || ids.length !== session.selectedIds.length || !session.instruction.trim() || session.instruction.length > 4000) {
+      session.error = 'Choose at least one available resource and describe the revision in 4,000 characters or fewer.';
+      publish('The revision request needs a little more detail.'); return true;
+    }
+    session.error = ''; session.mode = 'preparing'; session.busy = true;
+    session.controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const version = ++session.version;
+    session.pendingToken = _botInteractionId();
+    deps.setIsChatProcessing?.(true);
+    publish('Preparing proposed edits for the selected material. Your lesson is unchanged.');
+    try {
+      const result = await ctx.prepareLessonRevision({ resourceIds: session.selectedIds.slice(), instruction: session.instruction,
+        signal: session.controller?.signal });
+      if (_lessonRevisionConversations.get(owner) !== session || version !== session.version) {
+        if (result?.review?.id && result.review.id !== session.reviewId && typeof ctx.discardLessonRevision === 'function') ctx.discardLessonRevision(result.review.id);
+        return true;
+      }
+      if (!available(deps._alloCmdCtx()) || !sameWorkspace(deps._alloCmdCtx())) {
+        if (result?.review?.id && typeof ctx.discardLessonRevision === 'function') ctx.discardLessonRevision(result.review.id);
+        discard(true); session.mode = 'closed'; session.busy = false; session.undoId = null; session.undoToken = null;
+        deps.setIsChatProcessing?.(false);
+        publish('The lesson changed while the revision was being prepared. Open Revise existing lesson again.'); return true;
+      }
+      if (!result?.ok || !result.review || typeof result.review.id !== 'string' || !result.review.id
+          || !Array.isArray(result.review.changes) || !result.review.changes.length) {
+        session.mode = 'select'; session.error = errorText(result, 'No proposed changes were returned. Adjust the request and try again.');
+      } else {
+        session.reviewId = result.review.id; session.reviewToken = _botInteractionId();
+        session.changes = result.review.changes;
+        session.warnings = Array.isArray(result.review.warnings) ? result.review.warnings : [];
+        session.answer = ''; session.hasScopedAnswer = false; session.followupText = ''; session.followupVersion++; session.needsFollowupChoice = false;
+        session.mode = 'review'; session.error = '';
+      }
+      session.busy = false; session.pendingToken = null;
+      publish(session.mode === 'review' ? 'Review the proposed changes below. Apply edits when they are ready.' : 'The lesson is unchanged. Your request and selection are kept.');
+    } catch (error) {
+      if (_lessonRevisionConversations.get(owner) === session && version === session.version) {
+        session.mode = 'select'; session.busy = false; session.pendingToken = null;
+        session.error = error?.name === 'AbortError' ? 'Revision preparation stopped. Your lesson is unchanged.' : 'The revision could not be prepared. Your lesson is unchanged; try again.';
+        publish('Your request and selection are kept.');
+      }
+    } finally {
+      if (_lessonRevisionConversations.get(owner) === session && version === session.version) deps.setIsChatProcessing?.(false);
+    }
+    return true;
+  }
+  if (action.action === 'lesson-revision-apply' && session.mode === 'review' && session.reviewId && action.reviewToken === session.reviewToken && typeof ctx.applyLessonRevision === 'function') {
+    session.busy = true; session.mode = 'applying'; publish('Applying the reviewed edits to your lesson.');
+    try {
+      const result = await ctx.applyLessonRevision(session.reviewId);
+      session.busy = false;
+      if (!result?.ok) {
+        discard(); session.mode = 'select'; session.formVersion++;
+        session.error = errorText(result, 'These edits could not be applied. Prepare a new revision from the current lesson.');
+        publish('The revision was not applied. Your request and selection are kept.');
+      } else {
+        session.reviewId = null; session.reviewToken = null; session.undoId = result.undoId; session.undoToken = result.undoId ? _botInteractionId() : null; session.mode = 'applied'; session.error = ''; session.hasScopedAnswer = false;
+        session.changedCount = Number(result.changedCount) || session.changes.length;
+        session.appliedResourceIds = Array.isArray(result.resourceIds) ? result.resourceIds.map(String) : session.selectedIds.slice();
+        publish('The reviewed edits are applied. Preview the activity or save the project. Undo is available for this revision while this session stays open.');
+      }
+    } catch (_) {
+      session.busy = false; session.mode = 'select'; session.formVersion++;
+      session.error = 'The revision could not be applied. Check the current lesson before preparing another proposal.';
+      publish('Your request and selection are kept.');
+    }
+    return true;
+  }
+  if (action.action === 'lesson-revision-preview' && ['applied', 'undone'].includes(session.mode)
+      && (action.resourceId == null || session.appliedResourceIds?.includes(String(action.resourceId))) && typeof ctx.openLessonRevisionPreview === 'function') {
+    let opened = false;
+    try { opened = await ctx.openLessonRevisionPreview(action.resourceId == null ? undefined : String(action.resourceId)); } catch (_) {}
+    if (opened === false) {
+      session.error = 'The student preview could not open. Check that the resource is still available.'; publish('Your lesson edits are kept.');
+    }
+    return true;
+  }
+  if (action.action === 'lesson-revision-save' && ['applied', 'undone'].includes(session.mode) && ctx.canSaveTeacherProject && typeof ctx.openProjectSave === 'function') {
+    try { ctx.openProjectSave(); } catch (_) { session.error = 'The Save project dialog could not open. Your edits remain in the lesson.'; publish('Your lesson edits are kept.'); }
+    return true;
+  }
+  return true;
+}
+
 // AlloBot command-planning layer — extracted to UdlChat (2026-07-20).
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function planAndSendUdlMessage(manualText, deps) {
   const recognitionCandidate = manualText != null ? manualText : deps.udlInput;
   if (_handleStoreRecognitionBoundary(recognitionCandidate, deps)) return { ok: false, localOnly: true };
+  if (_isLessonRevisionMessage(manualText, deps) && await _handleLessonRevisionMessage(manualText, deps)) return { handled: true, localOnly: true };
   const {
     captureIntentSnapshot, restoreIntentSnapshot, inputText, setInputText, answerUdlQuestion, setIsChatProcessing = () => {},
     _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat: sendOrdinaryUdlChat, activeView, generatedContent, history, t,
@@ -2504,8 +2886,15 @@ async function planAndSendUdlMessage(manualText, deps) {
     const _sendUdlToChat = text => _handleStoreRecognitionBoundary(text == null ? udlInput : text, deps) ? { ok: false, localOnly: true } : sendOrdinaryUdlChat(text);
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _inputAction = manualText && typeof manualText === 'object' ? manualText : null;
-    if (_inputAction && /^command-(?:option|choice|params)$/.test(_inputAction.action || '') &&
+    const _operationState = _botCommandOperationState(_pendingBotCmdRef);
+    if (_inputAction && /^command-(?:option|choice|params|clarify)$/.test(_inputAction.action || '') &&
         (!_pendingBotCmdRef.current || _inputAction.requestId !== _pendingBotCmdRef.current.id)) return;
+    if (_inputAction && /^command-(?:retry|diagnostics)$/.test(_inputAction.action || '') &&
+        (!_operationState.recovery || _inputAction.requestId !== _operationState.recovery.id ||
+         _latestBotOperationId(udlMessages) !== _inputAction.requestId)) return;
+    if (_inputAction && _inputAction.action === 'command-complete' &&
+        (!_operationState.completion || _inputAction.requestId !== _operationState.completion.id ||
+         _latestBotOperationId(udlMessages) !== _inputAction.requestId)) return;
     const _rawUtter = _inputAction ? (_inputAction.action === 'command-choice' ? String(_inputAction.value || '') : '') : String((manualText != null ? manualText : udlInput) || '');
     const answerQuestion = async text => {
       if (_handleStoreRecognitionBoundary(text, deps)) return { ok: false, localOnly: true };
@@ -2526,11 +2915,16 @@ async function planAndSendUdlMessage(manualText, deps) {
     const libraryCard = (...args) => ({ ..._commandWorkflowLibraryCard(...args), ..._workflowMetadata(_pendingBotPlanRef.current || {}) });
     const commandCard = (pending, prefix) => {
       if (!pending.id) pending.id = _botInteractionId();
+      if (pending.clarification) return { role: 'model', type: 'choices', operationKind: 'command',
+        operationId: pending.id, operationStatus: 'review', text: prefix || '',
+        commandContextSummary: pending.contextSummary, commandClarification: pending.clarification,
+        choices: [{ label: _chatText(t, 'chat_guide.cmd_confirm_skip', 'Just chat'), value: '__allo_skip' }] };
       const contract = _AC && _AC.getCommandContract ? _AC.getCommandContract(pending.commandId) : {};
       const options = !pending.needsInput && Array.isArray(pending.suggestions) ? pending.suggestions.slice(0, 5) : [];
       const multiple = options.length > 1;
       const explanation = options[0] ? [options[0].reason, options[0].effect].filter(Boolean).join(' ') : '';
       return { role: 'model', type: 'choices', operationKind: 'command', operationId: pending.id, operationStatus: 'review',
+        commandContextSummary: pending.contextSummary,
         text: prefix || (multiple ? _chatText(t, 'chat_guide.action_options_intro', 'There are a few useful ways to approach this. The first is my suggestion; choose the action that fits what you want to do.') :
           (explanation ? '**' + (pending.label || pending.commandId) + '**\n\n' + explanation : '') || _chatText(t, 'chat_guide.cmd_confirm_prompt', 'It looks like you want to **{label}**. Run that, or keep chatting?', { label: pending.label || pending.commandId })),
         ...(multiple ? { commandOptions: options.map(option => ({ commandId: option.commandId, label: option.label, reason: option.reason, effect: option.effect })) } : {}),
@@ -2538,20 +2932,46 @@ async function planAndSendUdlMessage(manualText, deps) {
         choices: [ ...(multiple ? [] : [{ label: _chatText(t, 'chat_guide.cmd_confirm_do', 'Do it'), value: '__allo_do' }]),
           { label: _chatText(t, 'chat_guide.cmd_confirm_skip', 'Just chat'), value: '__allo_skip' } ] };
     };
+    const summaryForAction = (ctx, commandId, params = {}) => {
+      if (!_AC || typeof _AC.getCommandContextSummary !== 'function') return undefined;
+      const lessonSetup = ['create_lesson', 'start_lesson_blueprint'].includes(commandId);
+      const newTopic = lessonSetup && !!params.topic;
+      const summary = _AC.getCommandContextSummary({ ...ctx,
+        ...(lessonSetup && params.grade ? { commandGradeLevel: params.grade } : {}),
+        ...(newTopic ? { hasSourceText: false, hasSourceOrAnalysis: false, hasActiveBlueprint: false, fullPackPlanReady: false, commandResourceCount: 0 } : {}) });
+      return newTopic ? { ...summary, newLesson: true } : summary;
+    };
     const makeCommandPending = (ctx, match, originalText, suggestions) => ({
       commandId: suggestions && suggestions[0] ? suggestions[0].commandId : match.commandId,
       params: suggestions && suggestions[0] ? suggestions[0].params || {} : match.params || {},
       label: suggestions && suggestions[0] ? suggestions[0].label : match.label,
       suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 5) : [], originalText,
+      contextSummary: summaryForAction(ctx, suggestions && suggestions[0] ? suggestions[0].commandId : match.commandId,
+        suggestions && suggestions[0] ? suggestions[0].params : match.params),
       scope: _captureBotCommandScope(ctx, deps), id: _botInteractionId(),
     });
+    const makeClarificationPending = (ctx, originalText, clarification) => ({
+      originalText, clarification, id: _botInteractionId(), scope: _captureBotCommandScope(ctx, deps),
+      contextSummary: _AC && typeof _AC.getCommandContextSummary === 'function' ? _AC.getCommandContextSummary(ctx) : undefined,
+    });
+    const suggestionRequest = pending => pending.suggestionIntent === 'lesson' ? 'help me build a lesson' :
+      pending.suggestionIntent === 'resource' ? 'support this reading' : pending.originalText || '';
     const refreshCommandOffer = (pending, ctx) => {
       _pendingBotCmdRef.current = null;
       const text = _chatText(t, 'chat_guide.action_options_changed', 'Your lesson or available actions changed. Review the updated choices before continuing.');
       closeOperation(pending, text);
-      const suggestions = _AC && typeof _AC.getCommandSuggestions === 'function' ? _AC.getCommandSuggestions(ctx, pending.originalText || '', pending) : [];
+      if (pending.clarification) {
+        const clarification = _AC && typeof _AC.getCommandClarification === 'function' && _AC.getCommandClarification(ctx, pending.originalText || '', null);
+        if (clarification) {
+          _pendingBotCmdRef.current = makeClarificationPending(ctx, pending.originalText, clarification);
+          setUdlMessages(prev => [...prev, commandCard(_pendingBotCmdRef.current, text)]);
+        }
+        return;
+      }
+      const suggestions = _AC && typeof _AC.getCommandSuggestions === 'function' ? _AC.getCommandSuggestions(ctx, suggestionRequest(pending), pending) : [];
       if (suggestions.length) {
         const fresh = makeCommandPending(ctx, pending, pending.originalText, suggestions);
+        fresh.suggestionIntent = pending.suggestionIntent;
         _pendingBotCmdRef.current = fresh;
         setUdlMessages(prev => [...prev, commandCard(fresh, text)]);
       }
@@ -2563,6 +2983,176 @@ async function planAndSendUdlMessage(manualText, deps) {
       };
       return { role: 'model', text: view.text, operationKind: 'command', operationId: id, operationStatus: view.status };
     };
+    const retirePendingInterpretation = () => {
+      const previous = _botCommandPlanningRef.current || {};
+      if (previous.controller) { try { previous.controller.abort(); } catch (_) {} }
+      _botCommandPlanningRef.current = { controller: null, serial: (Number(previous.serial) || 0) + 1 };
+    };
+    const offerCompletionActions = async (pending, result, owner) => {
+      if (!_AC || typeof _AC.getCommandCompletionActions !== 'function') return;
+      const firstContext = _alloCmdCtx();
+      if (!_sameBotCommandScope(owner, _captureBotCompletionOwner(firstContext, deps))) return;
+      if (typeof firstContext.waitForCommandState === 'function') await firstContext.waitForCommandState();
+      const ctx = _alloCmdCtx();
+      if (!_sameBotCommandScope(owner, _captureBotCompletionOwner(ctx, deps))) return;
+      const actions = _AC.getCommandCompletionActions(ctx, pending.commandId, result).slice(0, 3);
+      if (!actions.length) return;
+      const completion = { id: pending.id, scope: _captureBotCommandScope(ctx, deps), actions,
+        sourceCommandId: pending.commandId, resultFlags: { handled: result.handled, ok: result.ok, status: result.status,
+          partial: !!result.partial, pending: !!result.pending, cancelled: !!result.cancelled } };
+      setUdlMessages(prev => {
+        if (_latestBotOperationId(prev) !== pending.id || !prev.some(item => item.operationId === pending.id && item.operationStatus === 'success')) return prev;
+        _operationState.completion = completion;
+        return prev.map(item => item.operationId === pending.id && item.operationStatus === 'success'
+          ? { ...item, commandContextSummary: summaryForAction(ctx, pending.commandId, pending.params),
+            commandCompletion: { requestId: pending.id, actions: actions.map(action => ({ commandId: action.commandId, label: action.label, effect: action.effect, reason: action.reason })) } } : item);
+      });
+    };
+    const runReviewedCommand = async (pending, ctx) => {
+      const now = Date.now();
+      const run = { id: pending.id, startedAt: now, phaseStartedAt: now,
+        owner: _captureBotCompletionOwner(ctx, deps),
+        active: true, startsWork: _botCommandStartsWork(pending.commandId),
+        phase: pending.commandId === 'run_lesson_blueprint' ? 'preparing-tools' : /^generate_/.test(pending.commandId) ? 'generating' : 'starting' };
+      if (!_operationState.run || run.startsWork) _operationState.run = run;
+      _operationState.recovery = null;
+      _operationState.completion = null;
+      const onProgress = progress => {
+        if (!run.active || !progress || !['preparing-tools', 'generating'].includes(progress.phase)) return;
+        run.phase = progress.phase;
+        run.phaseStartedAt = Number.isFinite(progress.phaseStartedAt) ? progress.phaseStartedAt : Date.now();
+        if (typeof progress.diagnosticId === 'string' && /^[A-Za-z0-9_.:-]{1,100}$/.test(progress.diagnosticId)) run.diagnosticId = progress.diagnosticId;
+        setUdlMessages(prev => prev.map(item => item.operationId === run.id && item.operationStatus === 'pending'
+          ? { ...item, commandProgress: _botProgressSnapshot(run) } : item));
+      };
+      setUdlMessages(prev => [...prev, { role: 'model', operationKind: 'command', operationId: run.id, operationStatus: 'pending',
+        commandContextSummary: pending.contextSummary, commandProgress: _botProgressSnapshot(run),
+        text: _chatText(t, 'chat_guide.action_starting', 'Starting: {label}', { label: pending.label || pending.commandId }) }]);
+      const publish = result => {
+        const message = { ...commandMessage(result, run.id), commandContextSummary: pending.contextSummary };
+        if (message.operationStatus === 'pending') {
+          message.text = _chatText(t, 'chat_guide.action_working', 'Working on: {label}', { label: pending.label || pending.commandId });
+          message.commandProgress = _botProgressSnapshot(run);
+        }
+        else if (run.active) {
+          run.active = false;
+          const ownsRun = _operationState.run === run;
+          if (ownsRun) _operationState.run = null;
+          const failed = message.operationStatus === 'error' || message.operationStatus === 'failed';
+          if (failed && ownsRun) {
+            const selected = (pending.suggestions || []).find(option => option.commandId === pending.commandId) ||
+              { commandId: pending.commandId, label: pending.label, params: pending.params || {} };
+            const canRetry = !result?.partial && !result?.cancelled && !result?.pending && typeof _AC.validateCommandSuggestion === 'function' &&
+              _AC.validateCommandSuggestion(_alloCmdCtx(), selected).ok;
+            const canCopyDiagnostics = !!run.diagnosticId && typeof _alloCmdCtx().copyBlueprintDiagnostics === 'function';
+            _operationState.recovery = { id: run.id, selected, originalText: pending.originalText, diagnosticId: run.diagnosticId, canRetry };
+            message.commandRecovery = { requestId: run.id, canRetry, canCopyDiagnostics };
+          }
+        }
+        setUdlMessages(prev => prev.map(item => item.operationId === run.id && item.operationStatus === 'pending' ? message : item));
+        if (message.operationStatus === 'success') offerCompletionActions(pending, result, run.owner).catch(() => {});
+        return message;
+      };
+      try {
+        const result = await _AC.runCommandById({ ...ctx, onCommandProgress: onProgress }, pending.commandId, pending.params, { confirmed: true });
+        if (result && result.needsInput) {
+          if (!run.active) return;
+          run.active = false;
+          if (_operationState.run === run) _operationState.run = null;
+          pending.needsInput = true;
+          setUdlMessages(prev => {
+            if (_latestBotOperationId(prev) !== run.id || !prev.some(item => item.operationId === run.id && item.operationStatus === 'pending') ||
+                (_pendingBotCmdRef.current && _pendingBotCmdRef.current.id !== run.id)) return prev;
+            _pendingBotCmdRef.current = pending;
+            return [...prev, commandCard(pending, result.narration)];
+          });
+          return;
+        }
+        const message = publish(result);
+        try { if (window.alloAnnounce) window.alloAnnounce(message.text); } catch (_) {}
+        if (result && result.pending && result.completion) {
+          Promise.resolve(result.completion).then(publish).catch(() => publish({ handled: true, ok: false,
+            narration: _chatText(t, 'cmd.failed', 'That command could not finish.') }));
+        }
+      } catch (_) {
+        publish({ handled: true, ok: false, narration: _chatText(t, 'chat_guide.cmd_failed', 'I could not run that command.') });
+      }
+    };
+    if (_inputAction && _inputAction.action === 'command-approved-blueprint') {
+      const ctx = _alloCmdCtx();
+      if (!ctx || typeof ctx.isCurrentBlueprint !== 'function' || !ctx.isCurrentBlueprint(_inputAction.blueprint)) return;
+      if ((_operationState.run && _operationState.run.startsWork) || _planRunRef.current.running) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: _chatText(t, 'chat_guide.action_already_running', 'Your previous action is still working. Wait for it to finish before starting another action.') }]);
+        return;
+      }
+      const candidate = { commandId: 'run_lesson_blueprint', label: _chatText(t, 'cmd.run_lesson_blueprint', 'Generate the lesson plan'), params: {}, preview: true };
+      const checked = _AC && typeof _AC.validateCommandSuggestion === 'function' && _AC.validateCommandSuggestion(ctx, candidate);
+      if (!checked || !checked.ok || !_AC.runCommandById) return;
+      retirePendingInterpretation();
+      if (_pendingBotCmdRef.current) closeOperation(_pendingBotCmdRef.current, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+      if (_pendingBotPlanRef.current) closeOperation(_pendingBotPlanRef.current, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+      _pendingBotCmdRef.current = null;
+      _pendingBotPlanRef.current = null;
+      setUdlInput('');
+      const options = typeof _AC.getCommandSuggestions === 'function' ? _AC.getCommandSuggestions(ctx, 'run the blueprint', candidate) : [];
+      const pending = makeCommandPending(ctx, candidate, candidate.label, options.filter(option => option.commandId === candidate.commandId));
+      await runReviewedCommand(pending, ctx);
+      return;
+    }
+    if (_inputAction && _inputAction.action === 'command-complete') {
+      const completion = _operationState.completion;
+      const ctx = _alloCmdCtx();
+      const selected = completion.actions.find(action => action.commandId === _inputAction.commandId);
+      if (!selected) return;
+      const currentActions = _AC && typeof _AC.getCommandCompletionActions === 'function'
+        ? _AC.getCommandCompletionActions(ctx, completion.sourceCommandId, completion.resultFlags) : [];
+      const current = currentActions.find(action => action.commandId === selected.commandId);
+      const checked = current && typeof _AC.validateCommandSuggestion === 'function' && _AC.validateCommandSuggestion(ctx, current);
+      const fresh = _sameBotCommandScope(completion.scope, _captureBotCommandScope(ctx, deps));
+      if (!fresh || !checked || !checked.ok || (_operationState.run && _operationState.run.startsWork)) {
+        _operationState.completion = null;
+        setUdlMessages(prev => [...prev.map(item => item.operationId === completion.id ? { ...item, commandCompletion: undefined } : item),
+          { role: 'model', text: _chatText(t, 'chat_guide.completion_changed', 'The lesson or available next steps changed. Ask again to see the current options.') }]);
+        return;
+      }
+      retirePendingInterpretation();
+      _operationState.completion = null;
+      setUdlMessages(prev => prev.map(item => item.operationId === completion.id ? { ...item, commandCompletion: undefined } : item));
+      const next = makeCommandPending(ctx, current, current.label, [{ ...current, params: checked.params || current.params || {} }]);
+      await runReviewedCommand(next, ctx);
+      return;
+    }
+    if (_inputAction && /^command-(?:retry|diagnostics)$/.test(_inputAction.action || '')) {
+      const recovery = _operationState.recovery;
+      if (_inputAction.action === 'command-diagnostics') {
+        if (!recovery.diagnosticId || recovery.copying || typeof _alloCmdCtx().copyBlueprintDiagnostics !== 'function') return;
+        recovery.copying = true;
+        try {
+          const copied = await _alloCmdCtx().copyBlueprintDiagnostics(recovery.diagnosticId);
+          setUdlMessages(prev => _latestBotOperationId(prev) === recovery.id ? [...prev, { role: 'model',
+            text: copied ? _chatText(t, 'chat_guide.action_diagnostics_copied', 'Diagnostic details copied. They contain loading stages and timings, without lesson text.') :
+              _chatText(t, 'chat_guide.action_diagnostics_not_copied', 'The diagnostic details could not be copied. Try again or open the error log.') }] : prev);
+        } catch (_) {
+          setUdlMessages(prev => _latestBotOperationId(prev) === recovery.id ? [...prev, { role: 'model',
+            text: _chatText(t, 'chat_guide.action_diagnostics_not_copied', 'The diagnostic details could not be copied. Try again or open the error log.') }] : prev);
+        } finally { recovery.copying = false; }
+        return;
+      }
+      if (!recovery.canRetry || _operationState.run) return;
+      _operationState.recovery = null;
+      const ctx = _alloCmdCtx();
+      const checked = _AC && typeof _AC.validateCommandSuggestion === 'function' && _AC.validateCommandSuggestion(ctx, recovery.selected);
+      if (!checked || !checked.ok) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: _chatText(t, 'chat_guide.action_retry_unavailable', 'That action is not available in the current lesson. Ask again to see the current options.') }]);
+        return;
+      }
+      const available = _AC.getCommandSuggestions ? _AC.getCommandSuggestions(ctx, recovery.originalText || '', recovery.selected) : [];
+      const selected = available.find(option => option.commandId === recovery.selected.commandId) || recovery.selected;
+      const fresh = makeCommandPending(ctx, selected, recovery.originalText, [{ ...selected, params: checked.params || selected.params || {} }]);
+      _pendingBotCmdRef.current = fresh;
+      setUdlMessages(prev => [...prev, commandCard(fresh, _chatText(t, 'chat_guide.action_retry_review', 'Review the current lesson and this action before trying again. Nothing has restarted.'))]);
+      return;
+    }
     const _previousBotPlanning = _botCommandPlanningRef.current || {};
     if (_previousBotPlanning.controller) { try { _previousBotPlanning.controller.abort(); } catch (_) {} }
     const _botPlanningSerial = (Number(_previousBotPlanning.serial) || 0) + 1;
@@ -2647,6 +3237,44 @@ async function planAndSendUdlMessage(manualText, deps) {
     // post a confirm chip and run the command only on an explicit "Do it". The
     // Ctrl+K palette and voice loop still execute directly (explicit surfaces).
 
+    const clarifying = _pendingBotCmdRef.current;
+    if (clarifying && clarifying.clarification) {
+      const reply = String(_rawUtter).trim().toLowerCase();
+      const choices = clarifying.clarification.choices || [];
+      const choiceId = _inputAction && _inputAction.action === 'command-clarify' ? _inputAction.choiceId :
+        /^[1-3]$/.test(reply) ? choices[Number(reply) - 1]?.id :
+        choices.find(choice => choice.id === reply || String(choice.label).toLowerCase() === reply)?.id;
+      const selected = choices.find(choice => choice.id === choiceId);
+      const skip = _rawUtter === '__allo_skip' || ['no', 'cancel', 'stop', 'just chat', 'chat', 'nevermind', 'never mind'].includes(reply);
+      if (selected) {
+        const ctx = _alloCmdCtx();
+        const visible = !Array.isArray(udlMessages) || udlMessages.some(message => message.operationId === clarifying.id && message.operationStatus === 'review');
+        if (!visible) { _pendingBotCmdRef.current = null; return; }
+        if (!_sameBotCommandScope(clarifying.scope, _captureBotCommandScope(ctx, deps))) { refreshCommandOffer(clarifying, ctx); return; }
+        _pendingBotCmdRef.current = null;
+        setUdlInput('');
+        closeOperation(clarifying, _chatText(t, 'chat_guide.action_goal_chosen', 'Goal selected: {label}', { label: selected.label }));
+        if (selected.id === 'advice') { await answerQuestion(clarifying.originalText); return; }
+        const request = selected.id === 'lesson' ? 'help me build a lesson' : 'support this reading';
+        const suggestions = _AC && _AC.getCommandSuggestions ? _AC.getCommandSuggestions(ctx, request, null) : [];
+        if (!suggestions.length) return;
+        const fresh = makeCommandPending(ctx, suggestions[0], clarifying.originalText, suggestions);
+        fresh.suggestionIntent = selected.id;
+        _pendingBotCmdRef.current = fresh;
+        setUdlMessages(prev => [...prev, commandCard(fresh)]);
+        return;
+      }
+      if (skip) {
+        _pendingBotCmdRef.current = null;
+        closeOperation(clarifying, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+        if (['__allo_skip', 'just chat', 'chat'].includes(reply)) return _sendUdlToChat(clarifying.originalText);
+        return;
+      }
+      if (_inputAction || ['yes', 'ok', 'okay', 'sure', 'go', 'do it'].includes(reply)) return;
+      closeOperation(clarifying, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+      _pendingBotCmdRef.current = null;
+    }
+
     // (1) Resolving a confirm chip we posted on the previous turn.
     const _pending = _pendingBotCmdRef.current;
     if (_pending) {
@@ -2682,6 +3310,10 @@ async function planAndSendUdlMessage(manualText, deps) {
             refreshCommandOffer(_pending, _acceptCtx); return;
           }
         }
+        if (_isDo && _operationState.run && _operationState.run.startsWork && _botCommandStartsWork(_selectedOption ? _selectedOption.commandId : _pending.commandId)) {
+          setUdlMessages(prev => [...prev, { role: 'model', text: _chatText(t, 'chat_guide.action_already_running', 'Your previous action is still working. Wait for it to finish before starting another action.') }]);
+          return;
+        }
         if (_selectedOption) {
           _pending.commandId = _selectedOption.commandId;
           _pending.label = _selectedOption.label;
@@ -2691,30 +3323,7 @@ async function planAndSendUdlMessage(manualText, deps) {
         _pendingBotCmdRef.current = null;
         setUdlInput('');
         if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
-          setUdlMessages(prev => [...prev, { role: 'model', operationKind: 'command', operationId: _pending.id, operationStatus: 'pending',
-            text: _chatText(t, 'chat_guide.action_starting', 'Starting: {label}', { label: _pending.label || _pending.commandId }) }]);
-          try {
-            const _res = await _AC.runCommandById(_acceptCtx, _pending.commandId, _pending.params, { confirmed: true });
-            if (_res && _res.needsInput) {
-              _pending.needsInput = true;
-              _pendingBotCmdRef.current = _pending;
-              setUdlMessages(prev => [...prev, commandCard(_pending, _res.narration)]);
-              return;
-            }
-            const id = _pending.id || _botInteractionId();
-            const message = commandMessage(_res, id);
-            setUdlMessages(prev => [...prev, message]);
-            try { if (window.alloAnnounce) window.alloAnnounce(message.text); } catch (_) {}
-            if (_res && _res.pending && _res.completion) {
-              Promise.resolve(_res.completion).then(result => {
-                setUdlMessages(prev => prev.map(item => item.operationId === id && item.operationStatus === 'pending' ? commandMessage(result, id) : item));
-              }).catch(() => {
-                setUdlMessages(prev => prev.map(item => item.operationId === id && item.operationStatus === 'pending' ? commandMessage({ handled: true, ok: false, narration: _chatText(t, 'cmd.failed', 'That command could not finish.') }, id) : item));
-              });
-            }
-          } catch (_) {
-            setUdlMessages(prev => [...prev, commandMessage({ handled: true, ok: false, narration: _chatText(t, 'chat_guide.cmd_failed', 'I could not run that command.') }, _pending.id)]);
-          }
+          await runReviewedCommand(_pending, _acceptCtx);
           return;
         }
         closeOperation(_pending, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
@@ -3067,6 +3676,16 @@ async function planAndSendUdlMessage(manualText, deps) {
           const _canSuggest = typeof _AC.getCommandSuggestions === 'function';
           let _match = await _AC.routeUtterance(_routingCtx, _rawUtter, { allowAi: !_canSuggest, preview: true, signal: _botPlanningSignal });
           if (!_isCurrentBotCommandPlanning()) return;
+          const _clarification = typeof _AC.getCommandClarification === 'function' && _AC.getCommandClarification(_alloCmdCtx(), _rawUtter, _match);
+          if (_clarification) {
+            _releaseBotCommandPlanning();
+            const current = _alloCmdCtx();
+            if (!_sameBotCommandScope(_routingScope, _captureBotCommandScope(current, deps))) return;
+            _pendingBotCmdRef.current = makeClarificationPending(current, _rawUtter, _clarification);
+            setUdlInput('');
+            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, commandCard(_pendingBotCmdRef.current)]);
+            return;
+          }
           let _suggestions = _canSuggest ? _AC.getCommandSuggestions(_alloCmdCtx(), _rawUtter, _match) : [];
           if (!_match && !_suggestions.length && _canSuggest) {
             _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });

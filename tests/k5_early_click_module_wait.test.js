@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
+import { createHash } from 'node:crypto';
 
 const ANTI = readFileSync(process.env.ALLO_ANTI_CANDIDATE || resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 function between(start, end) {
@@ -70,6 +71,15 @@ for (const k of ['TextPipelineHelpers', 'TextUtilityHelpers', 'PhaseKHelpers', '
   MODULES[k + 'Module'] = `window.AlloModules.${k} = {}; window.AlloModules.${k}Module = true;`;
 }
 const urlOf = name => `${ORIGIN}/m/${name}.js?v=1`;
+const deliveryPolicySource = readFileSync(resolve(process.cwd(), 'browser_delivery_policy.js'), 'utf8');
+// These are deliberately synthetic classroom modules. Approve their actual
+// fixture bytes instead of disabling the shipped loader's integrity checks.
+const deliveryManifest = {
+  schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false,
+  assets: Object.fromEntries(Object.entries(MODULES).map(([name, body]) => [
+    `m/${name}.js`, { integrity: 'sha384-' + createHash('sha384').update(body).digest('base64'), bytes: Buffer.byteLength(body) },
+  ])),
+};
 
 let browser;
 let dir;
@@ -101,13 +111,15 @@ async function openPage({ hold = [], fail = [] } = {}) {
     return route.fulfill({ status: 200, contentType: 'application/javascript', body: MODULES[name] || '' });
   });
   await page.goto(ORIGIN + '/');
-  await page.evaluate(({ registry, ensure, names, urls }) => {
+  await page.evaluate(({ registry, ensure, names, urls, policySource, deliveryManifest }) => {
     window.AlloModules = {};
     window.__k5log = [];
     window.__toasts = [];
     window.addEventListener('unhandledrejection', e => window.__k5log.push('unhandled:' + (e.reason && e.reason.message)));
     // eslint-disable-next-line no-new-func
     new Function('names', 'urls', `
+      ${policySource}
+      const __alloBrowserDelivery = _alloCreateBrowserDeliveryPolicy(${JSON.stringify(deliveryManifest)}, { baseUrl: window.location.href });
       var pluginCdnVersion = 'k5';
       var localizeModuleUrl = function (u) { return u; };
       var moduleFallbackUrl = function (o) { return o + (o.indexOf('?') === -1 ? '?' : '&') + 'fallback=1'; };
@@ -117,7 +129,7 @@ async function openPage({ hold = [], fail = [] } = {}) {
       names.forEach(function (n, i) { loadModule(n, urls[i]); });
       __alloBootstrappingModules = false;
     `)(names, urls);
-  }, { registry: SRC.registry, ensure: SRC.ensure, names: Object.keys(MODULES).filter(n => n !== 'HostHandlers'), urls: Object.keys(MODULES).filter(n => n !== 'HostHandlers').map(urlOf) });
+  }, { registry: SRC.registry, ensure: SRC.ensure, names: Object.keys(MODULES).filter(n => n !== 'HostHandlers'), urls: Object.keys(MODULES).filter(n => n !== 'HostHandlers').map(urlOf), policySource: deliveryPolicySource, deliveryManifest });
   // HostHandlers is boot-critical: it is requested at once, so hold it to model a slow arrival.
   await page.evaluate(url => {
     const s = document.createElement('script'); s.src = url;

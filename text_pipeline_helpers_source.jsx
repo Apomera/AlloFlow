@@ -30,19 +30,145 @@ const TRANSLATION_MODE_OFF = 'off';
 
 const _normLangName = (value) => String(value == null ? '' : value).trim();
 
-// Language names arrive from three places (a baked option list, a free-text
-// "add a language" field capped at 40 chars, and saved profiles), so compare
-// case- and accent-insensitively rather than by identity. 'Spanish' typed into
-// the chip field must not read as a different language from 'spanish'.
+const _foldLanguageName = value => _normLangName(value).toLowerCase().normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+const _languageDisplayNames = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Chinese',
+  'Arabic', 'Hebrew', 'Farsi', 'Urdu', 'Pashto', 'Dari', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Gujarati',
+  'Kannada', 'Malayalam', 'Marathi', 'Punjabi', 'Nepali', 'Sinhala', 'Japanese', 'Korean', 'Russian',
+  'Ukrainian', 'Polish', 'Dutch', 'Greek', 'Turkish', 'Romanian', 'Vietnamese', 'Thai', 'Lao', 'Khmer',
+  'Burmese', 'Somali', 'Swahili', 'Amharic', 'Tigrinya', 'Hausa', 'Igbo', 'Yoruba', 'Kinyarwanda', 'Kirundi',
+  'Lingala', 'Hmong', 'Indonesian', 'Malay', 'Haitian Creole', 'Latin', 'Esperanto', 'Twi'];
+const _exactLanguageAliases = {
+  francais: 'French', español: 'Spanish', espanol: 'Spanish', deutsch: 'German', italiano: 'Italian',
+  portugues: 'Portuguese', 'persian': 'Farsi', 'french canadian': 'French (Canadian)',
+  'fr-ca': 'French (Canadian)', 'french (canada)': 'French (Canadian)',
+  'fr-fr': 'fr-FR', 'french (france)': 'fr-FR',
+  'en-us': 'en-US', 'american english': 'en-US', 'english (united states)': 'en-US',
+  'en-gb': 'en-GB', 'british english': 'en-GB', 'english (united kingdom)': 'en-GB',
+  'es-es': 'Spanish (Castilian)', 'castilian spanish': 'Spanish (Castilian)',
+  'es-419': 'Spanish (Latin America)', 'latin american spanish': 'Spanish (Latin America)',
+  'pt-br': 'Portuguese (Brazil)', 'brazilian portuguese': 'Portuguese (Brazil)',
+  'pt-pt': 'Portuguese (Portugal)', 'european portuguese': 'Portuguese (Portugal)',
+  'pt-ao': 'Portuguese (Angola)', 'angolan portuguese': 'Portuguese (Angola)',
+  'zh-hans': 'Chinese (Simplified)', 'zh-cn': 'Chinese (Simplified)',
+  'zh-hant': 'Chinese (Traditional)', 'zh-tw': 'Chinese (Traditional)',
+};
+const _exactLanguageAlias = key => Object.prototype.hasOwnProperty.call(_exactLanguageAliases, key) ? _exactLanguageAliases[key] : '';
+const normalizeLanguageName = value => {
+  if (typeof value !== 'string') return '';
+  const name = value.trim().replace(/\s+/g, ' ');
+  if (!name) return '';
+  const folded = _foldLanguageName(name.replace(/_/g, '-'));
+  if (folded === 'all selected languages') return 'All Selected Languages';
+  if (_exactLanguageAlias(folded)) return _exactLanguageAlias(folded);
+  const variant = Object.values(_exactLanguageAliases).find(candidate => _foldLanguageName(candidate) === folded);
+  if (variant) return variant;
+  const known = _languageDisplayNames.find(candidate => _foldLanguageName(candidate) === folded);
+  if (known) return known;
+  // ISO language tags are exact identifiers. Keep regional variants separate;
+  // stripping their region would silently merge distinct authored choices.
+  if (/^[a-z]{2,3}(?:[-_][a-z0-9]{2,8})*$/i.test(name)) {
+    try {
+      const tag = Intl.getCanonicalLocales(name.replace(/_/g, '-'))[0];
+      if (_exactLanguageAlias(tag.toLowerCase())) return _exactLanguageAlias(tag.toLowerCase());
+      if (tag.includes('-')) return tag;
+      const display = new Intl.DisplayNames(['en'], { type: 'language' }).of(tag);
+      if (display && display.toLowerCase() !== tag.toLowerCase()) {
+        return _exactLanguageAlias(_foldLanguageName(display))
+          || _languageDisplayNames.find(candidate => _foldLanguageName(candidate) === _foldLanguageName(display)) || display;
+      }
+    } catch (_) {}
+  }
+  // Reuse only exact registered aliases. Never call the async/fuzzy matcher
+  // while resolving a persisted preference or deduplicating language pills.
+  const aliases = typeof window !== 'undefined' ? (window.AlloLangMatcher || window.AlloModules?.LanguageMatcher)?._ALIASES : null;
+  if (aliases && typeof aliases === 'object') {
+    const exact = Object.keys(aliases).find(alias => _foldLanguageName(alias) === folded);
+    if (exact && typeof aliases[exact] === 'string') return aliases[exact];
+    const display = Object.values(aliases).find(candidate => typeof candidate === 'string' && _foldLanguageName(candidate) === folded);
+    if (display) return display;
+  }
+  return name;
+};
 const isSameLanguage = (a, b) => {
-  const fold = (s) => _normLangName(s)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ');
-  const x = fold(a);
-  const y = fold(b);
-  return x !== '' && x === y;
+  const x = _foldLanguageName(normalizeLanguageName(a));
+  const y = _foldLanguageName(normalizeLanguageName(b));
+  return !!x && x === y;
+};
+const _concreteLanguage = value => {
+  const language = normalizeLanguageName(value);
+  return language && !/^(all selected languages|all-selected|app|auto|off)$/i.test(language) ? language : '';
+};
+const normalizeOutputLanguagePreference = (preference, legacyLanguage) => {
+  if (preference && typeof preference === 'object' && !Array.isArray(preference)) {
+    if (preference.mode === 'app') return { mode: 'app' };
+    if (preference.mode === 'all-selected') return { mode: 'all-selected' };
+    if (preference.mode === 'language') {
+      const language = _concreteLanguage(preference.language);
+      if (language) return { mode: 'language', language };
+    }
+  }
+  const legacy = normalizeLanguageName(legacyLanguage);
+  if (legacy === 'All Selected Languages') return { mode: 'all-selected' };
+  const language = _concreteLanguage(legacy);
+  // An old saved English choice is explicit. Only a fresh record with no
+  // stored language inherits the current app language.
+  return language ? { mode: 'language', language } : { mode: 'app' };
+};
+const resolveOutputLanguagePreference = (preference, appLanguage) => {
+  const normalized = normalizeOutputLanguagePreference(preference);
+  return normalized.mode === 'all-selected' ? 'All Selected Languages'
+    : normalized.mode === 'language' ? normalized.language : _concreteLanguage(appLanguage) || 'English';
+};
+const _uniqueLanguageOptions = values => {
+  const result = [];
+  values.forEach(value => {
+    const language = _concreteLanguage(value);
+    if (language && !result.some(existing => isSameLanguage(existing, language))) result.push(language);
+  });
+  return result;
+};
+const languageOptions = (appLanguage, additional, activeExplicit) => _uniqueLanguageOptions([
+  _concreteLanguage(appLanguage) || 'English', 'English', ...(Array.isArray(additional) ? additional : []),
+  activeExplicit && typeof activeExplicit === 'object' ? activeExplicit.mode === 'language' ? activeExplicit.language : '' : activeExplicit
+]);
+const allGenerationLanguages = (appLanguage, additional) => _uniqueLanguageOptions([
+  _concreteLanguage(appLanguage) || 'English', ...(Array.isArray(additional) ? additional : [])
+]);
+const getGlossaryAudioCacheKey = (value, language) => (normalizeLanguageName(language) || 'English')
+  + '\u241f' + (typeof value === 'string' ? value : '');
+const getGlossaryBaseLanguage = (artifact, row) => {
+  const entry = row && typeof row === 'object' ? row : null;
+  const config = artifact?.config || {};
+  const values = [entry?.termLanguage, entry?.definitionLanguage, entry?.baseLanguage, entry?.glossaryBaseLanguage,
+    artifact?.baseLanguage, artifact?.glossaryBaseLanguage, artifact?.termLanguage, artifact?.definitionLanguage,
+    config.baseLanguage, config.glossaryBaseLanguage, config.termLanguage, config.definitionLanguage,
+    artifact?.data?.baseLanguage, artifact?.data?.glossaryBaseLanguage];
+  // Legacy config.language describes the requested translation column, not
+  // the English term/definition base. Never infer the base from that field.
+  const saved = values.map(_concreteLanguage).find(Boolean);
+  if (saved) return saved;
+  const rows = Array.isArray(artifact?.data) ? artifact.data : Array.isArray(artifact?.data?.terms) ? artifact.data.terms : [];
+  const rowLanguages = rows.map(value => [value?.termLanguage, value?.baseLanguage].map(_concreteLanguage).find(Boolean) || '');
+  // A definition can be in another language. Only unanimous explicit term/base
+  // metadata identifies the base of an imported row-only native glossary.
+  if (rowLanguages.some(Boolean)) return rowLanguages.every(language => language && isSameLanguage(language, rowLanguages[0])) ? rowLanguages[0] : 'English';
+  const translated = artifact?.translationOf || artifact?.translationSourceId || artifact?.sourceTranslationOf
+    || config.translationOf || config.translationSourceId || config.sourceTranslationOf || artifact?.meta?.translatedTo;
+  // Older standalone exports used top-level language as explicit source
+  // metadata. A translated copy or a legacy config destination is different.
+  if (!config.language && !translated) return _concreteLanguage(artifact?.language) || 'English';
+  return 'English';
+};
+const getArtifactPrimaryLanguage = (artifact, fallback = 'English') => {
+  if (artifact?.type === 'glossary') return getGlossaryBaseLanguage(artifact);
+  const config = artifact?.config || {};
+  const values = [artifact?.type === 'analysis' ? artifact?.data?.sourceLanguage : '',
+    artifact?.type === 'analysis' ? artifact?.sourceSnapshot?.language : '',
+    config.language, artifact?.language, artifact?.instructionalText?.complexity?.language,
+    config.instructionalText?.complexity?.language, artifact?.sourceLanguage, artifact?.data?.sourceLanguage,
+    artifact?.data?.language, artifact?.data?.lessonRef?.language, artifact?.sourceSnapshot?.language];
+  return values.map(_concreteLanguage).find(Boolean) || _concreteLanguage(fallback) || 'English';
 };
 
 // mode: the stored setting. outputLanguage: the language the CONTENT is in
@@ -101,6 +227,24 @@ const getArtifactTranslationTarget = artifact => {
     artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget]
     .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
   return saved?.trim() || 'English'; // Legacy bilingual artifacts predate destination metadata.
+};
+
+// Structured companion fields use the same saved destination as bilingual prose.
+// Unknown custom languages remain unlabelled until the language helpers load.
+const getArtifactTranslationTextAttributes = artifact => {
+  const target = getArtifactTranslationTarget(artifact);
+  const languageHelpers = typeof window !== 'undefined' ? window.AlloModules?.ModuleScopeExtras : null;
+  let lang = '';
+  let dir = '';
+  try { lang = languageHelpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || ''; } catch (_) {}
+  try { dir = languageHelpers?.getContentDirection?.(target) || ''; } catch (_) {}
+  if (!lang) {
+    const knownRtl = { arabic: 'ar', hebrew: 'he', farsi: 'fa', persian: 'fa', urdu: 'ur', pashto: 'ps', sindhi: 'sd', yiddish: 'yi', dhivehi: 'dv' };
+    const folded = target.toLowerCase();
+    lang = knownRtl[folded] || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : folded === 'english' ? 'en' : 'und');
+  }
+  if (!dir) dir = /^(ar|he|fa|ur|ps|sd|yi|dv)(?:-|$)/i.test(lang) ? 'rtl' : lang === 'und' ? 'auto' : 'ltr';
+  return { lang, dir, style: { textAlign: 'start' } };
 };
 
 const isTranslationControlRelevant = (mode, outputLanguage, uiLanguage, allowedTargets) => {
@@ -1842,8 +1986,17 @@ const createTextPipelineHelpers = () => ({
   resolveTranslationPolicy,
   isTranslationControlRelevant,
   translationTargetChoices,
+  normalizeLanguageName,
+  normalizeOutputLanguagePreference,
+  resolveOutputLanguagePreference,
+  languageOptions,
+  allGenerationLanguages,
+  getGlossaryAudioCacheKey,
+  getArtifactPrimaryLanguage,
+  getGlossaryBaseLanguage,
   isSameLanguage,
   getArtifactTranslationTarget,
+  getArtifactTranslationTextAttributes,
   TRANSLATION_MODE_AUTO,
   TRANSLATION_MODE_OFF,
   extractSourceTextForProcessing,

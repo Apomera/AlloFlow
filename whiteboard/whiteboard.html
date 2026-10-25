@@ -128,6 +128,8 @@
     return;
   }
   var E = window.ExcalidrawLib;
+  var imageSlot = new URLSearchParams(window.location.search).get('imageSlot') || '';
+  var slotInitialized = false, pendingSlotScene = null;
   var React = window.React, ReactDOM = window.ReactDOM;
   // The opener's origin is learned from its ack (see the message listener in Boot);
   // until then we post with '*'. Outbound is the user's own drawing, not a secret,
@@ -159,7 +161,9 @@
       if (!window.opener || window.opener.closed) return;
       var handshake = !!(payload && HANDSHAKE_TYPES[payload.type]);
       if (!handshake && !linked) return;
+      if (imageSlot) payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-'), token: imageSlot });
       var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';
+      if (imageSlot) target = window.location.origin;
       window.opener.postMessage(payload, target);
     } catch (_) {}
   };
@@ -231,13 +235,20 @@
 
   var excalidrawAPI = null;
   var reactRoot = null;
+  function restoreSlotScene() {
+    if (!excalidrawAPI || !pendingSlotScene) return;
+    var scene = pendingSlotScene; pendingSlotScene = null;
+    if (scene.files) excalidrawAPI.addFiles(Object.values(scene.files));
+    excalidrawAPI.updateScene({ elements: scene.elements, appState: scene.appState || {} });
+    excalidrawAPI.scrollToContent(scene.elements, { fitToContent: true });
+  }
 
   function mount() {
     var container = document.getElementById('excal');
     container.innerHTML = '';
     reactRoot = ReactDOM.createRoot(container);
     reactRoot.render(React.createElement(E.Excalidraw, {
-      excalidrawAPI: function (api) { excalidrawAPI = api; },
+      excalidrawAPI: function (api) { excalidrawAPI = api; restoreSlotScene(); },
       onChange: function () { scheduleAiButtonSync(); },
       // Warm, classroom-friendly defaults.
       initialData: { appState: { viewBackgroundColor: '#ffffff', currentItemStrokeColor: IND } },
@@ -323,10 +334,11 @@
           var scene = null;
           try {
             var candidate = { type: 'excalidraw', version: 2, source: 'https://alloflow-cdn.pages.dev/whiteboard', elements: els, appState: { viewBackgroundColor: appState.viewBackgroundColor || '#ffffff' }, files: files };
-            if (JSON.stringify(candidate).length < 240000) scene = candidate;
+            if (JSON.stringify(candidate).length < (imageSlot ? 2 * 1024 * 1024 : 240000)) scene = candidate;
           } catch (_s) {}
+          if (imageSlot && !scene) { flash('This editable drawing is too large. Remove large embedded photos and try again.', false); return; }
           toOpener({ type: 'allocwb-save', title: name, png: reader.result, scene: scene, elementCount: els.length });
-          flash('Saved “' + name + '” to AlloFlow ✓', true);
+          flash(imageSlot ? 'Saving drawing…' : 'Saved “' + name + '” to AlloFlow ✓', !imageSlot);
         };
         reader.readAsDataURL(blob);
       })
@@ -813,7 +825,7 @@
 
   // AI assist needs the AlloFlow app (it holds the key/quota); hide it if opened standalone.
   var aibar = document.getElementById('aibar');
-  if (aibar && !window.opener) aibar.style.display = 'none';
+  if (aibar && (!window.opener || imageSlot)) aibar.style.display = 'none';
   var wireAi = function (id, mode, opts) { var b = document.getElementById(id); if (b) b.addEventListener('click', function () { aiRequest(mode, opts); }); };
   wireAi('aiDiagramBtn', 'diagram');
   wireAi('aiImageBtn', 'image');
@@ -840,6 +852,18 @@
       if (!window.opener || ev.source !== window.opener) return;
       var d = ev.data;
       if (!d || typeof d !== 'object') return;
+      if (imageSlot) {
+        if (ev.origin !== window.location.origin || d.token !== imageSlot) return;
+        if (d.type === 'alloasset-ack' && !slotInitialized) {
+          slotInitialized = true; openerOrigin = ev.origin; setLinked(true);
+          var name = document.getElementById('nameInput'); if (name) name.value = String(d.title || 'Drawing').slice(0, 120);
+          var save = document.getElementById('saveBtn'); if (save) { save.textContent = 'Use drawing'; save.setAttribute('aria-label', 'Use drawing in the selected resource image'); }
+          if (d.scene && Array.isArray(d.scene.elements) && d.scene.elements.length <= 5000 && JSON.stringify(d.scene).length <= 2 * 1024 * 1024) { pendingSlotScene = d.scene; restoreSlotScene(); }
+        } else if (d.type === 'alloasset-saved') { flash('Drawing saved to your resource.', true); window.close(); }
+        else if (d.type === 'alloasset-error') flash(String(d.message || 'The drawing could not be saved.'), false);
+        else if (d.type === 'alloasset-disconnected') { setLinked(false); flash('The resource was closed. Export PNG to keep this drawing.', false); }
+        return;
+      }
       // Adopt the opener's origin ONLY when it is a real one. An opaque opener
       // reports the string 'null', which is not a parseable targetOrigin, so
       // storing it made every later toOpener() throw into its own catch and go

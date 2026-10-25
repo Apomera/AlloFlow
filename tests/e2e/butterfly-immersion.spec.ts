@@ -33,7 +33,7 @@ async function mount(page:any,fallback=false){
 }
 
 async function visitWithoutFlight(page:any,name:string){
- await page.getByRole('button',{name:'Visit '+name+' without flying',exact:true}).click();
+ await page.getByRole('button',{name:'Visit without flying · '+name,exact:true}).click();
  await page.getByRole('button',{name:'Land here',exact:true}).click();
 }
 async function audit(page:any){

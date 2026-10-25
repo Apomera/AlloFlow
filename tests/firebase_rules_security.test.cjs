@@ -17,14 +17,20 @@ const {
   updateDoc,
 } = require("../desktop/web-app/node_modules/firebase/firestore");
 
-const projectId = "demo-alloflow";
+const projectId = process.env.FIREBASE_RULES_TEST_PROJECT_ID || "demo-alloflow";
+if (!["demo-alloflow", "demo-alloflow-session-metadata"].includes(projectId)) {
+  console.error("Use a local demo Firestore test project.");
+  process.exit(2);
+}
 const emulator = String(process.env.FIRESTORE_EMULATOR_HOST || "").split(":");
 if (emulator.length !== 2) {
   console.error("Run this test through Firebase emulators:exec.");
   process.exit(2);
 }
 
-const rules = fs.readFileSync(path.join(__dirname, "..", "firestore.rules"), "utf8");
+const rules = fs.readFileSync(process.env.FIRESTORE_RULES_PATH
+  ? path.resolve(process.env.FIRESTORE_RULES_PATH)
+  : path.join(__dirname, "..", "firestore.rules"), "utf8");
 const appId = "security-test";
 const sessionPath = (code) => "artifacts/" + appId + "/public/data/sessions/" + code;
 const assetPath = (id) => "artifacts/" + appId + "/public/data/session_assets/" + id;

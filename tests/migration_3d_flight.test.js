@@ -29,7 +29,7 @@ describe('Migration Lab 3D flight experience', () => {
     // deck is the first tab and still reads "3D Flight", so pin that instead.
     loadTool('stem_lab/stem_tool_migration.js', 'migration');
     const bar = renderTool('migration', {});
-    const firstTab = bar.indexOf('id="migration-tab-flight3d"');
+    const firstTab = bar.indexOf('data-migration-tab="flight3d"');
     expect(firstTab).toBeGreaterThan(-1);
     expect(bar.slice(firstTab, firstTab + 400)).toContain('3D Flight');
     // An unknown PERSISTED tab id must resolve to the default deck, not render
@@ -37,7 +37,7 @@ describe('Migration Lab 3D flight experience', () => {
     expect(renderTool('migration', { migration: { tab: 'zzz_not_a_tab' } }).length)
       .toBe(renderTool('migration', { migration: {} }).length);
     for (const other of ['vformation', 'wind', 'routes', 'world', 'aero', 'navigate', 'inquiry']) {
-      expect(bar.indexOf('id="migration-tab-' + other + '"')).toBeGreaterThan(firstTab);
+      expect(bar.indexOf('data-migration-tab="' + other + '"')).toBeGreaterThan(firstTab);
     }
   });
 

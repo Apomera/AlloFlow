@@ -25,7 +25,7 @@ async function mount(page:any){
  await expect.poll(()=>page.evaluate(()=>!!(window as any).__feedingScene)).toBe(true);
 }
 async function openAt(page:any,name='Wild bergamot'){
- await page.getByRole('button',{name:'Visit '+name+' without flying',exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
+ await page.getByRole('button',{name:'Visit without flying · '+name,exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
  await page.getByRole('button',{name:'Watch feeding & pollination',exact:true}).click();
  await expect(page.getByRole('region',{name:'Feeding and pollination observation',exact:true})).toBeVisible();
 }
@@ -103,6 +103,7 @@ test('mobile reduced motion allows keyboard scrubbing and preserves the comparis
  const stage=page.locator('.bf-stage');await expect(stage).toHaveAttribute('data-bf-feeding-progress','1.000');
  await scrubByKeyboard(page);const progress=await stage.getAttribute('data-bf-feeding-progress');await page.waitForTimeout(200);expect(await stage.getAttribute('data-bf-feeding-progress')).toBe(progress);
  await expect(page.getByRole('button',{name:'Continue feeding motion',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Replay feeding motion',exact:true})).toBeDisabled();
+ const reducedSpeed=page.getByRole('combobox',{name:'Playback speed',exact:true});await expect(reducedSpeed).toBeEnabled();await reducedSpeed.selectOption('0.5');await expect(reducedSpeed).toHaveValue('0.5');await page.waitForTimeout(200);expect(await stage.getAttribute('data-bf-feeding-progress')).toBe(progress);
  await still(page);await page.getByRole('button',{name:'Fly to next flower',exact:true}).click();await page.getByRole('button',{name:'Transfer pollen',exact:true}).click();
  await page.getByRole('button',{name:'Misses receptive surface',exact:true}).click();await page.getByRole('button',{name:'Pollen close-up',exact:true}).click();await stage.screenshot({path:shots+'/mobile-pollen-comparison.png'});
  const before=await page.evaluate(()=>(window as any).__toolData.butterfly);await page.locator('.bf-gl').evaluate((canvas:HTMLCanvasElement)=>canvas.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));

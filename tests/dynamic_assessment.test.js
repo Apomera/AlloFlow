@@ -13,10 +13,11 @@
 //
 // Functions are module-level; exposed via the existing _meta seam (extended).
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { createRealDaWorkspaceFixture } from './helpers/dynamic_assessment_workspace_fixture.js';
 
 const require = createRequire(import.meta.url);
 
@@ -33,15 +34,20 @@ describe('SSR render smoke — dialog shell, start screen, active phase, summary
   // ZPD card added in the WCAG/theming uplift. SSR only (no effects).
   const STORAGE_KEY = 'alloflow_dynamic_assessment_v1';
   let RDS, DA;
-  beforeAll(() => {
+  let protectedFixture;
+  beforeAll(async () => {
     RDS = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
     DA = window.AlloModules.DynamicAssessment;
+    protectedFixture = await createRealDaWorkspaceFixture(window.React);
+    window.AlloModules.SensitiveWorkspace = protectedFixture.api;
   });
+  afterAll(() => protectedFixture?.dispose());
   const renderWith = (state, startScreenView) => {
-    if (state === null) window.localStorage.removeItem(STORAGE_KEY);
-    else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    if (startScreenView) window.localStorage.setItem('alloflow_da_session_state_v1', JSON.stringify({ startScreenView }));
-    else window.localStorage.removeItem('alloflow_da_session_state_v1');
+    const storage = protectedFixture.session.storage;
+    if (state === null) storage.removeItem(STORAGE_KEY);
+    else storage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (startScreenView) storage.setItem('alloflow_da_session_state_v1', JSON.stringify({ startScreenView }));
+    else storage.removeItem('alloflow_da_session_state_v1');
     const React = window.React;
     return RDS.renderToStaticMarkup(React.createElement(DA, {
       React, onClose: () => {}, addToast: () => {}, t: (k) => k, studentNickname: '', outputLanguage: 'English'

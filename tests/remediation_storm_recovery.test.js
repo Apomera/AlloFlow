@@ -117,6 +117,7 @@ describe('the teacher is pointed at the cheap action, not the expensive one', ()
 describe('a clean document is not headlined like a broken one', () => {
   let verdict;
   beforeAll(() => {
+    loadAlloModule('verification_policy_module.js');
     loadAlloModule('doc_pipeline_module.js');
     verdict = window.AlloModules.createDocPipeline({
       callGemini: async () => 'OK', callGeminiVision: async () => '', callImagen: async () => null,
@@ -127,16 +128,23 @@ describe('a clean document is not headlined like a broken one', () => {
 
   // The field-log document, exactly: axe clean, Equal Access clean, 99% coverage, AI audit partial
   // because the service was throttling.
-  const fieldLog = (over) => Object.assign({
-    afterScore: 90,
-    axeAudit: { totalViolations: 0, score: 100 },
-    secondEngineAudit: { failViolations: 0, score: 100 },
-    verificationState: 'partial',
-    _aiVerificationIncomplete: true,
-    integrityCoverage: 99,
-    fidelityNotes: [],
-    needsExpertReview: false,
-  }, over || {});
+  const fieldLog = (over) => {
+    const r = Object.assign({
+      afterScore: 90,
+      verificationAudit: { score: 90, issues: [], _partialAudit: true },
+      axeAudit: { totalViolations: 0, totalIncomplete: 0, score: 100 },
+      secondEngineAudit: { failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0, score: 100 },
+      _aiVerificationIncomplete: true,
+      integrityCoverage: 99,
+      fidelityNotes: [],
+      needsExpertReview: false,
+    }, over || {});
+    const evidence = window.AlloModules.VerificationPolicy.deriveVerificationState({
+      ai: r.verificationAudit, axe: r.axeAudit, equalAccess: r.secondEngineAudit,
+      aiIncomplete: r._aiVerificationIncomplete,
+    });
+    return Object.assign(r, evidence, { verificationReasons: evidence.reasons, verificationReviewCount: evidence.reviewCount });
+  };
 
   it('a throttled AI audit over clean engines is a CAUTION, not a review case', () => {
     const v = verdict(fieldLog(), { targetScore: 95 });
@@ -144,6 +152,12 @@ describe('a clean document is not headlined like a broken one', () => {
     const blob = JSON.stringify(v);
     expect(blob, 'the throttle must still be disclosed somewhere').toMatch(/AI verification could not fully complete|throttl/i);
     expect(v.level, 'a clean document must not carry the same verdict as one with real barriers').not.toBe('review');
+  });
+
+  it('retains the disclosed caution when the AI audit was entirely unavailable and both checkers completed cleanly', () => {
+    const r = fieldLog({ verificationAudit: null });
+    expect(r.verificationReasons).toEqual(['ai-unavailable']);
+    expect(verdict(r, { targetScore: 95 }).level).toBe('caution');
   });
 
   it('an UNKNOWN checker state still goes to review — absence of evidence is not clean', () => {
@@ -162,8 +176,45 @@ describe('a clean document is not headlined like a broken one', () => {
     expect(v.level).toBe('review');
   });
 
-  it('the carve-out is narrow: it requires axe to have RUN and reported zero', () => {
-    expect(dp).toContain('var _aiOnlyIncomplete = !!(r._aiVerificationIncomplete && vio === 0 && (eaFails === 0 || eaFails == null));');
+  const unresolved = {
+    'missing Equal Access': (r) => { r.secondEngineAudit = null; },
+    'unknown axe review count': (r) => { delete r.axeAudit.totalIncomplete; },
+    'unknown Equal Access review counts': (r) => { delete r.secondEngineAudit.potentialViolations; delete r.secondEngineAudit.manualViolations; delete r.secondEngineAudit.reviewFindingCount; },
+    'axe items requiring review': (r) => { r.axeAudit.totalIncomplete = 1; },
+    'Equal Access potential findings': (r) => { r.secondEngineAudit.potentialViolations = 1; r.secondEngineAudit.reviewFindingCount = 1; },
+    'Equal Access manual findings': (r) => { r.secondEngineAudit.manualViolations = 1; r.secondEngineAudit.reviewFindingCount = 1; },
+    'an open AI finding': (r) => { r.verificationAudit.issues = [{ issue: 'Description needs correction.' }]; },
+    'an AI finding requiring review': (r) => { r.verificationAudit.issues = [{ issue: 'Check reading order.', requiresManualReview: true }]; },
+  };
+  for (const [name, mutate] of Object.entries(unresolved)) {
+    it('keeps ' + name + ' in review during an incomplete AI audit', () => {
+      const input = fieldLog(); mutate(input);
+      const r = fieldLog(input);
+      expect(r.verificationState).toBe('partial');
+      expect(verdict(r, { targetScore: 95 }).level).toBe('review');
+    });
+  }
+
+  it.each(['document-language-needs-review', 'verification-html-binding-missing-or-stale', 'unrecognized-verification-evidence'])('does not suppress the canonical reason %s', (reason) => {
+    const r = fieldLog(); r.verificationReasons.push(reason);
+    expect(verdict(r, { targetScore: 95 }).level).toBe('review');
+  });
+
+  it('requires canonical reasons rather than guessing why verification is partial', () => {
+    const r = fieldLog(); delete r.verificationReasons;
+    expect(verdict(r, { targetScore: 95 }).level).toBe('review');
+  });
+
+  it('does not let a stale complete state hide an incomplete AI audit and a missing checker', () => {
+    const r = fieldLog({ secondEngineAudit: null }); r.verificationState = 'complete';
+    expect(verdict(r, { targetScore: 95 }).level).toBe('review');
+  });
+
+  it('does not ignore stored partial checker coverage or review findings', () => {
+    const partial = fieldLog(); partial.verificationCoverage.equalAccess = 'partial';
+    expect(verdict(partial, { targetScore: 95 }).level).toBe('review');
+    const review = fieldLog(); review.verificationReviewCount = 1;
+    expect(verdict(review, { targetScore: 95 }).level).toBe('review');
   });
 });
 

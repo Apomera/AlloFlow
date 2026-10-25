@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // What reaches the finished report.
 //
 // WHY (2026-09-23), from an audit of the Report Writer:
@@ -17,6 +21,7 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let React, createRoot, T;
@@ -74,7 +79,7 @@ describe('placeholders and the export gate', () => {
 describe('in the workflow', () => {
   let mounted = null;
   afterEach(async () => { if (mounted) { await React.act(async () => mounted.root.unmount()); mounted.host.remove(); mounted = null; } });
-  const act = (fn) => React.act(async () => { await fn(); });
+  const act = (fn) => actWithSensitivePromptReview(React, fn);
   const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   const typeInto = (el, value) => act(() => {
     const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
@@ -163,17 +168,19 @@ describe('in the workflow', () => {
     }
   }, 90000);
 
-  it('translation keeps its date and the [Student] token, and goes stale when the report changes', async () => {
+  it('translation restores its local report date, preserves [Student], and goes stale when the report changes', async () => {
     const prompts = [];
-    const ui = await mount(async (p) => { if (String(p).startsWith('Translate the following')) { prompts.push(String(p)); return 'Resumen: [Student] obtuvo 88.'; } return '{"errors":[]}'; },
+    const ui = await mount(async (p) => { if (String(p).startsWith('Translate the following')) { prompts.push(String(p)); return 'Fecha: [REPORT_GENERATED_DATE]\nResumen: [Student] obtuvo 88.'; } return '{"errors":[]}'; },
       SNAP({ Summary: '[Student] earned a Full Scale IQ of 88 on the WISC-V.' }));
     await click(ui.steps()[9]);
     await click(ui.host.querySelector('button[aria-label="Translate report"]'));
     for (let i = 0; i < 100 && !prompts.length; i++) await wait();
     await wait();
-    expect(prompts[0]).toContain('Date: ' + new Date().toLocaleDateString());
+    expect(prompts[0]).toContain('Date: [REPORT_GENERATED_DATE]');
+    expect(prompts[0]).not.toContain(new Date().toLocaleDateString());
     expect(prompts[0]).not.toContain('[DATE]');
     expect(prompts[0]).toMatch(/Copy every token in square brackets, such as \[Student\], exactly as written/);
+    expect(ui.host.textContent).toContain('Fecha: ' + new Date().toLocaleDateString());
     const copyButton = () => ui.host.querySelector('button[aria-label="Copy unreviewed translated draft"]');
     expect(copyButton().disabled).toBe(false);
     await click(ui.steps()[7]);

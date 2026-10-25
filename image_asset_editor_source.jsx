@@ -4,6 +4,61 @@ const IMAGE_ASSET_MAX_SOURCE_CHARS = 15 * 1024 * 1024;
 const IMAGE_ASSET_MAX_OUTPUT_CHARS = 6 * 1024 * 1024;
 const IMAGE_ASSET_MAX_PIXELS = 40 * 1000 * 1000;
 
+// A device preference, deliberately separate from imported project settings.
+// Reads also work before this deferred module has loaded (see the API guards).
+const AI_IMAGE_PREFERENCE_KEY = 'alloflow_ai_image_generation_enabled';
+function readAiImagePreference() {
+  try { return localStorage.getItem(AI_IMAGE_PREFERENCE_KEY) !== 'false'; } catch (_) { return true; }
+}
+if (!window.AlloImageGeneration) {
+  let enabled = readAiImagePreference(), revision = 0, controller = new AbortController();
+  if (!enabled) controller.abort();
+  const listeners = new Set();
+  const notify = () => {
+    revision++;
+    if (!enabled) controller.abort();
+    else if (controller.signal.aborted) controller = new AbortController();
+    listeners.forEach(fn => fn(enabled));
+  };
+  window.AlloImageGeneration = {
+    isEnabled: () => enabled,
+    revision: () => revision,
+    signalFor(signal) {
+      if (!signal) return controller.signal;
+      if (typeof AbortSignal.any === 'function') return AbortSignal.any([signal, controller.signal]);
+      const combined = new AbortController(), policySignal = controller.signal;
+      const abort = () => { combined.abort(); signal.removeEventListener('abort', abort); policySignal.removeEventListener('abort', abort); };
+      signal.addEventListener('abort', abort, { once: true }); policySignal.addEventListener('abort', abort, { once: true });
+      if (signal.aborted || policySignal.aborted) abort();
+      return combined.signal;
+    },
+    setEnabled(value) {
+      enabled = value !== false;
+      try { localStorage.setItem(AI_IMAGE_PREFERENCE_KEY, String(enabled)); } catch (_) {}
+      notify();
+    },
+    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+  };
+  window.addEventListener('storage', event => {
+    if (event.key === AI_IMAGE_PREFERENCE_KEY || event.key === null) { enabled = readAiImagePreference(); notify(); }
+  });
+}
+
+function AiImageGenerationToggle() {
+  const policy = window.AlloImageGeneration;
+  const [enabled, setEnabled] = React.useState(policy.isEnabled);
+  React.useEffect(() => policy.subscribe(setEnabled), [policy]);
+  const helpId = React.useId();
+  return <div className="mt-3" data-help-key="universal_image_generation">
+    <label className="flex min-h-11 items-center gap-3 text-sm font-bold text-slate-800">
+      <input type="checkbox" role="switch" checked={enabled} aria-describedby={helpId}
+        onChange={event => policy.setEnabled(event.target.checked)} className="h-5 w-5 accent-indigo-600" />
+      Allow AI image generation
+    </label>
+    <p id={helpId} className="mt-1 text-xs text-slate-600">Remembered on this device. When off, new AI pictures and AI image edits are skipped across resources. You can still upload images, draw, and use existing pictures.</p>
+  </div>;
+}
+
 const IMAGE_ASSET_ASPECTS = Object.freeze({
   square: Object.freeze({ label: 'Square (1:1)', ratio: 1 }),
   landscape: Object.freeze({ label: 'Landscape (4:3)', ratio: 4 / 3 }),

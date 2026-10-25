@@ -24,6 +24,7 @@ beforeAll(() => {
   globalThis.React = window.React = React;
   try { loadAlloModule('behavior_lens_module.js'); } catch (e) { /* UI half may need a host */ }
   behaviorLensRuntime();
+  behaviorLensInternals(); // Bind the explicit already-unlocked component fixture.
 });
 const src = readFileSync('behavior_lens_module.js', 'utf8');
 const flush = () => new Promise(r => setTimeout(r, 0));

@@ -20,7 +20,7 @@ const advance = new Function('engineNow', 'live', 'migrNum', section('          
 const dispose = new Function(section('      function disposeMigrationObject(', '      function releaseMigrationStudyPointer(') + '\nreturn disposeMigrationObject;')();
 const renderControls = new Function('h', 'React', 't', 'species', 'studyView', 'formationMode', 'season',
   'studyMarkedPoseState', '_f3dEngineRef', '_liveVals', 'upd', 'announceToSR', 'migrNum', '_f3dStudyCyclePauseRef',
-  'd', '_f3dHostRef', 'studyCyclePositionState', 'studyWingtipFollowState',
+  'd', '_f3dHostRef', 'studyCyclePositionState', 'studyWingtipFollowState', 'studyGuidesHidden',
   section('  function MigrationStudyContextReadout(', '  function migrNum(') +
   section('      function migrationStudyCycleContext(', '      function renderFlight3D()') +
   section('        function renderStudySceneNoteAction(', '        function renderStudyObservation()') +
@@ -79,7 +79,7 @@ function controls(seed = {}, suppliedFixture) {
       tree = renderControls(React.createElement, React, (_, fallback) => fallback,
         { id: state.flightSpecies }, { bird: state.flightStudyBird, step: state.flightWingStep }, state.flightFormation, state.flightSeason,
         statuses, engineRef, live,
-        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num, { current: null }, state, { current: host }, [null], [null]);
+        (key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; }, announce, num, { current: null }, state, { current: host }, [null], [null], false);
       return ReactDOMServer.renderToStaticMarkup(tree);
     },
     action(name) { return walk(tree, node => node.props?.['data-marked-pose-action'] === name)[0]; },

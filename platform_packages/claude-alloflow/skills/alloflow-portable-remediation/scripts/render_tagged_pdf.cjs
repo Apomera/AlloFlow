@@ -41,22 +41,34 @@ function loadPlaywright() {
   return null;
 }
 
-function executableReady(chromium) {
-  try {
-    const bundled = chromium.executablePath();
-    if (bundled && fs.existsSync(bundled)) return { ready: true, executablePath: bundled };
-  } catch (_) {}
-  const configured = process.env.ALLOFLOW_CHROMIUM_PATH;
-  if (configured && fs.existsSync(configured)) {
-    return { ready: true, executablePath: path.resolve(configured) };
-  }
-  return {
-    ready: false,
-    reason: 'Playwright is present but no local Chromium executable was found.',
+function browserLaunchOptions(timeout = 30000) {
+  // Playwright selects its matching headless shell when executablePath is
+  // omitted. chromium.executablePath() names the separate headed build.
+  const options = {
+    headless: true,
+    timeout,
+    args: [
+      '--disable-background-networking',
+      '--disable-component-update',
+      '--disable-default-apps',
+      '--disable-domain-reliability',
+      '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints',
+      '--disable-sync',
+      '--metrics-recording-only',
+      '--no-first-run',
+    ],
   };
+  const configured = process.env.ALLOFLOW_CHROMIUM_PATH;
+  if (configured) {
+    if (!fs.existsSync(configured) || !fs.statSync(configured).isFile()) {
+      throw new Error('ALLOFLOW_CHROMIUM_PATH does not identify a local Chromium executable.');
+    }
+    options.executablePath = path.resolve(configured);
+  }
+  return options;
 }
 
-function capabilities() {
+async function capabilities() {
   const loaded = loadPlaywright();
   if (!loaded) {
     return {
@@ -65,14 +77,20 @@ function capabilities() {
       networkPolicy: 'deny',
     };
   }
-  const executable = executableReady(loaded.api.chromium);
-  if (!executable.ready) {
+  let browser;
+  try {
+    // A package or headed executable on disk does not establish that the local
+    // headless browser can start. This probe never installs or downloads it.
+    browser = await loaded.api.chromium.launch(browserLaunchOptions(10000));
+  } catch (error) {
     return {
       available: false,
-      reason: executable.reason,
+      reason: compactError(error),
       package: loaded.packageName,
       networkPolicy: 'deny',
     };
+  } finally {
+    if (browser) await browser.close().catch(() => {});
   }
   return {
     available: true,
@@ -560,26 +578,11 @@ async function render() {
   const pdfuaPart = pdfuaIdArg === '1' ? 1 : null;
   const loaded = loadPlaywright();
   if (!loaded) throw new Error('A local Playwright or Playwright Core package is required.');
-  const executable = executableReady(loaded.api.chromium);
-  if (!executable.ready) throw new Error(executable.reason);
 
   let browser;
   let blockedNetworkRequests = 0;
   try {
-    browser = await loaded.api.chromium.launch({
-      headless: true,
-      executablePath: executable.executablePath,
-      args: [
-        '--disable-background-networking',
-        '--disable-component-update',
-        '--disable-default-apps',
-        '--disable-domain-reliability',
-        '--disable-features=AutofillServerCommunication,MediaRouter,OptimizationHints',
-        '--disable-sync',
-        '--metrics-recording-only',
-        '--no-first-run',
-      ],
-    });
+    browser = await loaded.api.chromium.launch(browserLaunchOptions());
     const context = await browser.newContext({
       javaScriptEnabled: false,
       serviceWorkers: 'block',
@@ -654,7 +657,7 @@ async function render() {
 
 async function main() {
   if (process.argv.includes('--capabilities')) {
-    output(capabilities());
+    output(await capabilities());
     return;
   }
   try {

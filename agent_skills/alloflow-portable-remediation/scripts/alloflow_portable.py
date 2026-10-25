@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.9"
+VERSION = "0.2.10"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -984,7 +984,10 @@ def renderer_capability() -> Dict[str, Any]:
             capture_output=True,
             encoding="utf-8",
             errors="replace",
-            timeout=20,
+            # The helper bounds Chromium launch itself to 10 seconds. Allow
+            # additional time for Node startup and browser-profile cleanup on
+            # slower local disks; discovery must still fail on a real timeout.
+            timeout=40,
             check=False,
         )
         data = json.loads(result.stdout) if result.stdout.strip() else {}
@@ -1428,29 +1431,30 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
 
     with tempfile.TemporaryDirectory(prefix=".alloflow-portable-", dir=out_dir) as staging_name:
         staging = Path(staging_name)
-        staged_paths = {key: staging / value for key, value in names.items()}
+        # Private filenames need not repeat the source stem. Keeping them short
+        # avoids exceeding Windows' path limit solely because staging inserts a
+        # random directory, while every published artifact keeps its full name.
+        staged_paths = {key: staging / value for key, value in {
+            "html": "source.html", "pdf": "output.pdf",
+            "report": "report.json", "receipt": "receipt.json",
+        }.items()}
         write_text_new(staged_paths["html"], rendered)
 
         pdf_result: Dict[str, Any]
         if args.pdf == "never":
             pdf_result = {"status": "not_run", "reason": "Disabled by request."}
         else:
-            pdf_cap = renderer_capability()
-            if pdf_cap.get("available") is not True:
-                if args.pdf == "required":
-                    raise PortableError(
-                        "Tagged-PDF generation was required but is unavailable: "
-                        + compact_error(pdf_cap.get("reason")),
-                        4,
-                    )
-                pdf_result = {"status": "not_run", "reason": compact_error(pdf_cap.get("reason"))}
-            else:
-                pdf_result = render_pdf(staged_paths["html"], staged_paths["pdf"], pdfua_id="1")
-                if args.pdf == "required" and pdf_result.get("status") != "completed":
-                    raise PortableError(
-                        "Tagged-PDF generation failed: " + compact_error(pdf_result.get("reason")),
-                        4,
-                    )
+            # The actual render is the authoritative capability check. A separate
+            # launch/close probe both duplicated startup work and could time out
+            # before a render that would succeed. The helper still verifies the
+            # tagged bytes; explicit capability discovery retains its own probe.
+            pdf_result = render_pdf(staged_paths["html"], staged_paths["pdf"],
+                                    pdfua_id="none" if args.verapdf == "never" else "1")
+            if args.pdf == "required" and pdf_result.get("status") != "completed":
+                raise PortableError(
+                    "Tagged-PDF generation failed: " + compact_error(pdf_result.get("reason")),
+                    4,
+                )
 
         if pdf_result.get("status") == "completed":
             if args.verapdf == "never":
@@ -1460,29 +1464,32 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
         else:
             pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
 
-        # Honesty pass: the file initially carries the PDF/UA-1 identifier so a
-        # fully conforming result is machine-identifiable. If validation found
-        # unresolved rules, the file has not earned that claim — rebuild it
-        # without the identifier (the same withholding convention the main
-        # pipeline uses) and report the withheld state.
-        pdf_ua_identifier_withheld = False
-        if (
+        # Identification is provisional until local validation completes and
+        # passes. Disabled, unavailable and failed validation cannot leave that
+        # machine-readable claim on a delivered PDF either.
+        pdf_ua_identifier_withheld = (
             pdf_result.get("status") == "completed"
+            and not (pdf_ua.get("status") == "completed" and pdf_ua.get("compliant") is True)
+        )
+        if (
+            pdf_ua_identifier_withheld
             and pdf_result.get("pdfUaIdentifierClaimed") is True
-            and pdf_ua.get("status") == "completed"
-            and pdf_ua.get("compliant") is False
         ):
+            revalidate_final_bytes = pdf_ua.get("status") == "completed" and pdf_ua.get("compliant") is False
             staged_paths["pdf"].unlink()
             retry = render_pdf(staged_paths["html"], staged_paths["pdf"], pdfua_id="none")
-            if retry.get("status") == "completed":
+            if retry.get("status") == "completed" and retry.get("pdfUaIdentifierClaimed") is not True:
                 pdf_result = retry
-                pdf_ua = validate_pdf_ua(staged_paths["pdf"])
-                pdf_ua_identifier_withheld = True
+                # Completed noncompliance must describe the final bytes. An
+                # incomplete/disabled check stays unverified: do not manufacture
+                # known issues by checking an intentionally withheld identifier.
+                if revalidate_final_bytes:
+                    pdf_ua = validate_pdf_ua(staged_paths["pdf"])
             else:
                 pdf_result = {
                     "status": "failed",
                     "reason": "Rebuilding the PDF without the PDF/UA identifier failed: "
-                    + compact_error(retry.get("reason")),
+                    + compact_error(retry.get("reason") or "The renderer still claimed PDF/UA identification."),
                 }
                 pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
 
@@ -1511,8 +1518,8 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             manual_review.append("PDF/UA validation did not run to completion.")
         if pdf_ua_identifier_withheld:
             manual_review.append(
-                "The PDF/UA identifier was deliberately withheld because validation found unresolved "
-                "rules. A missing-identification failure in failedRules reflects that withholding, "
+                "The PDF/UA identifier was deliberately withheld because local validation did not "
+                "complete and pass. Any missing-identification failure reflects that withholding, "
                 "not an additional defect."
             )
 
@@ -1639,6 +1646,12 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             staged_pairs.insert(1, (staged_paths["pdf"], final_paths["pdf"]))
         publish_staged(staged_pairs)
 
+    if args.pdf == "required" and pdf_result.get("status") != "completed":
+        raise PortableError(
+            "Tagged-PDF generation failed while withholding unverified identification. "
+            "The report was kept for diagnosis; no tagged PDF was published.",
+            4,
+        )
     if args.verapdf == "required":
         if pdf_ua.get("status") != "completed":
             raise PortableError(

@@ -81,7 +81,12 @@
         primaryLanguage: primaryLanguage,
         language: primaryLanguage,
         leveledTextLanguage: primaryLanguage,
+        outputLanguagePreference: req.outputLanguagePreference !== undefined ? req.outputLanguagePreference : prior.outputLanguagePreference,
         selectedLanguages: list(req.selectedLanguages !== undefined ? req.selectedLanguages : prior.selectedLanguages),
+        nativeLanguageDefaultsVersion: Number(req.nativeLanguageDefaultsVersion !== undefined ? req.nativeLanguageDefaultsVersion : prior.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+        appLanguage: req.appLanguage || req.currentUiLanguage || prior.appLanguage || prior.currentUiLanguage || 'English',
+        effectiveLanguageList: list(req.effectiveLanguageList !== undefined ? req.effectiveLanguageList
+          : (req.selectedLanguages !== undefined || req.appLanguage !== undefined || req.currentUiLanguage !== undefined ? [] : prior.effectiveLanguageList)),
         translationMode: req.translationMode !== undefined ? req.translationMode : prior.translationMode,
         currentUiLanguage: req.currentUiLanguage !== undefined ? req.currentUiLanguage : prior.currentUiLanguage,
         translationTargetChoices: list(req.translationTargetChoices !== undefined ? req.translationTargetChoices : prior.translationTargetChoices),
@@ -185,7 +190,7 @@
     }
 
     function generationSettingsChanged(before, after) {
-      var keys = ['gradeLevel', 'tone', 'primaryLanguage', 'language', 'leveledTextLanguage', 'selectedLanguages',
+      var keys = ['gradeLevel', 'tone', 'primaryLanguage', 'language', 'leveledTextLanguage', 'selectedLanguages', 'nativeLanguageDefaultsVersion', 'appLanguage', 'effectiveLanguageList',
         'translationMode', 'currentUiLanguage', 'translationTarget', 'resolvedTranslationTarget',
         'differentiationRange', 'differentiationGrades', 'differentiationTypes', 'differentiationCustomGrades',
         'studentInterests', 'dokLevel', 'useEmojis', 'textFormat', 'imageGenerationStyle', 'universalImageStyle', 'imageAspectRatio',

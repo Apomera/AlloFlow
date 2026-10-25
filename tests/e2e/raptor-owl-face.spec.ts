@@ -60,7 +60,7 @@ test.describe('Owl facial feather surfaces', () => {
     const pixelChecks: any[] = [];
     for (const view of ['front', 'side']) {
       await page.locator('[data-study-view=' + view + ']').click();
-      await page.getByRole('combobox', { name: 'Studio light', exact: true }).selectOption('side');
+      await page.getByRole('combobox', { name: 'Studio rendering', exact: true }).selectOption('side');
       await page.locator('[data-raptor-flight-stage]').screenshot({ path: output + '/' + label + '-' + view + '.png' });
       await page.locator('[data-raptor-canvas]').evaluate((canvas: any) => { const w = window as any, copy = document.createElement('canvas'); copy.width = canvas.width; copy.height = canvas.height; const ctx = copy.getContext('2d')!; ctx.drawImage(canvas, 0, 0); w.owlPixels = ctx.getImageData(0, 0, copy.width, copy.height).data; w.owlDisc.visible = false; });
       await page.locator('[data-study-view=' + view + ']').click();

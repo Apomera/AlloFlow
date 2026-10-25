@@ -1030,6 +1030,16 @@
             pendingValues: function () { return Array.from(pendingByKey.values()); } });
     }
 
+    function flushWorkspacePersistence(scheduler, context) {
+        if (!scheduler || typeof scheduler.flush !== 'function') throw new Error('BehaviorLens persistence is unavailable.');
+        var result = scheduler.flush(context);
+        if (!result || !result.ok) {
+            throw result && result.errors && result.errors[0] && result.errors[0].error
+                || new Error('Pending BehaviorLens work could not be saved.');
+        }
+        return result;
+    }
+
     function createLocalWorkspaceWritePlan(options) {
         options = options || {};
         var workspace = options.workspace && typeof options.workspace === 'object'
@@ -1564,6 +1574,7 @@
         utf8ByteLength: utf8ByteLength,
         formatByteSize: formatByteSize,
         createWorkspacePersistenceScheduler: createWorkspacePersistenceScheduler,
+        flushWorkspacePersistence: flushWorkspacePersistence,
         createLocalWorkspaceWritePlan: createLocalWorkspaceWritePlan,
         assessLocalStorageWrite: assessLocalStorageWrite,
         parseCsvRows: parseCsvRows,

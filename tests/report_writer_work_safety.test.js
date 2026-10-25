@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Protecting the clinician's work in the report.
 //
 // WHY (2026-09-23), from an audit of the Report Writer:
@@ -21,6 +25,7 @@ import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let React, createRoot;
@@ -35,7 +40,7 @@ beforeAll(() => {
 
 let mounted = null;
 afterEach(async () => { if (mounted) { await React.act(async () => mounted.root.unmount()); mounted.host.remove(); mounted = null; } });
-const act = (fn) => React.act(async () => { await fn(); });
+const act = (fn) => actWithSensitivePromptReview(React, fn);
 const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 const setValue = (el, value) => {
   const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : el.tagName === 'SELECT' ? window.HTMLSelectElement.prototype : window.HTMLInputElement.prototype;
@@ -158,7 +163,7 @@ describe('one change at a time', () => {
     expect(ui.host.querySelector('button[aria-label="Generate report"]').disabled).toBe(false);
   }, 60000);
 
-  it('the audit does not overwrite a report that changed while it ran', async () => {
+  it('opening another report cancels the old audit without overwriting the new report', async () => {
     let release;
     const ui = await mount((p) => (String(p).includes('You are a clinical accuracy auditor') && !release
       ? new Promise(r => { release = r; }) : Promise.resolve('{"results":[{"claim":"x","status":"verified","chunkId":"c1","explanation":"ok","confidence":"high"}]}')));
@@ -169,8 +174,8 @@ describe('one change at a time', () => {
     // Meanwhile another report is opened.
     await ui.importSnapshot(SNAPSHOT({ Summary: 'A different report opened mid-audit.' }));
     await act(async () => { release('{"results":[{"claim":"x","status":"verified","chunkId":"c1","explanation":"ok","confidence":"high"}]}'); });
-    for (let i = 0; i < 200 && !ui.toasts().some(m => /changed while the audit was running/.test(m)); i++) await wait();
-    expect(ui.toasts().join(' ')).toMatch(/changed while the audit was running/);
+    for (let i = 0; i < 200 && !ui.toasts().some(m => /accuracy check was stopped/.test(m)); i++) await wait();
+    expect(ui.toasts().join(' ')).toMatch(/accuracy check was stopped.*report was not changed/);
     await click(ui.steps()[7]);
     expect(ui.summary()).toContain('A different report opened mid-audit.');
   }, 60000);

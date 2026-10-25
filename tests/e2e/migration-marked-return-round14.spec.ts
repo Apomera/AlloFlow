@@ -323,7 +323,7 @@ for (const dark of [false, true]) test.describe('Migration marked return phone '
     const front = await comparisonState(page); expectLinks(front, reference);
     await page.locator('.migration-flight-stage').screenshot({ path: join(report, stem + '-stage.png') });
     await page.getByRole('button', { name: 'Describe wing motion', exact: true }).tap();
-    const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const input = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
     expect(work(await saved(page))).toEqual(work(before));
     await input.fill('I compared raised and lowered wingtip positions and returned to my marked pose.');

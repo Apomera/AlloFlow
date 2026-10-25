@@ -239,7 +239,7 @@ async function checkTarget(locator: Locator) {
 
 test('Study context follows current viewing choices while projected wingtip cues retain size through native keyboard views and zoom', async ({ page }) => {
   await mount(page);
-  await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }));
+  await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }));
   await activate(page, cycle(page, 2));
   const initial = await saved(page), first = await cueAudit(page); expectCues(first, 2);
   await activate(page, page.getByRole('button', { name: 'Front', exact: true }));
@@ -255,7 +255,7 @@ test('Study context follows current viewing choices while projected wingtip cues
   expect(above.pose.phase).toBe(first.pose.phase); expect(above.pose.serial).toBe(13); expect(above.pose.body).toEqual(first.pose.body);
   await stage(page).screenshot({ path: join(report, 'desktop-study-context-stage.png') });
   const describe = page.getByRole('button', { name: 'Describe this wing segment', exact: true }); await checkTarget(describe); await activate(page, describe);
-  const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const note = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(note).toBeFocused(); await expect(note).toHaveValue(initial.flightStudyObservations.drafts['canada_goose:inner-wing']);
   await expectContext(page, 'inner-wing', 2); expect(work(await saved(page))).toEqual(work(initial));
   await page.locator('[data-study-observation]').screenshot({ path: join(report, 'desktop-study-context-notes.png') });
@@ -270,7 +270,7 @@ for (const dark of [false, true]) test.describe('Migration current study context
   test('Current cycle and anatomical side remain visible beside learner notes with readable fixed-size cues and explicit evidence recording', async ({ page }) => {
     const stem = 'mobile-' + (dark ? 'dark' : 'light') + '-study-context';
     await mount(page, dark);
-    await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }), true);
+    await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), true);
     const region = dark ? 'primaries' : 'inner-wing';
     await activate(page, page.locator('[data-study-region="' + region + '"]'), true);
     await activate(page, cycle(page, 2), true);
@@ -283,7 +283,7 @@ for (const dark of [false, true]) test.describe('Migration current study context
     await stage(page).screenshot({ path: join(report, stem + '-stage.png') });
     const describe = page.getByRole('button', { name: 'Describe this wing segment', exact: true }); await checkTarget(describe);
     await activate(page, describe, true);
-    const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const note = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(note).toBeFocused(); await expect(note).toHaveValue(original.flightStudyObservations.drafts['canada_goose:' + region]);
     await expectContext(page, region, 6); await expect(currentContext(page)).toContainText('Followed wingtip: individual’s left.');
     expect(work(await saved(page))).toEqual(work(original));

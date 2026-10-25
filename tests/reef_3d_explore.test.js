@@ -13,7 +13,7 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'resize', 'setInput', 'setLight', 'setPaused', 'setView', 'setVision', 'swimTo'];
+const CONTROLLER_KEYS = ['clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setPaused', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
 const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'moments', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
@@ -1095,5 +1095,87 @@ describe.skipIf(!HAS_SPECIES)('Reef3DExplore with the real Reef3DSpecies', () =>
     expect(t.errors).toEqual([]);
     t.controller.dispose();
     expect(created.filter((r) => !disposed.has(r)).map((r) => r.type)).toEqual([]);
+  });
+});
+
+describe('Reef3DExplore live motion preference', () => {
+  it('pauses an active reef in place and retains control of resuming after preference changes', () => {
+    const t = runtime(), c = t.controller; t.run(0.5);
+    const diver = c.getState().diver, organisms = fingerprint(t);
+    c.setReducedMotion(true); t.run(1);
+    expect(c.getState()).toMatchObject({ reducedMotion: true, paused: true, diver });
+    expect(fingerprint(t)).toBe(organisms);
+    c.lookCamera(40, -20); c.zoomCamera(-0.18); t.step();
+    expect(c.getState().diver).toEqual(diver); expect(fingerprint(t)).toBe(organisms);
+    c.setReducedMotion(false); t.run(1);
+    expect(c.getState()).toMatchObject({ reducedMotion: false, paused: true, diver });
+    expect(fingerprint(t)).toBe(organisms);
+    c.setPaused(false); t.run(1); expect(fingerprint(t)).not.toBe(organisms);
+  });
+  it('does not re-pause explicit resume on repeated values but pauses a new enable transition', () => {
+    const t = runtime(), c = t.controller;
+    c.setReducedMotion(true); c.setPaused(false); c.setReducedMotion(true);
+    expect(c.getState()).toMatchObject({ paused: false, reducedMotion: true });
+    c.setReducedMotion(false); expect(c.getState().paused).toBe(false);
+    c.setReducedMotion(true); expect(c.getState().paused).toBe(true);
+  });
+  it('accepts a preference change before staged loading completes without recreating the reef', () => {
+    const t = runtime({ staged: true }), c = t.controller;
+    expect(c.getState().ready).toBe(false); c.setReducedMotion(true);
+    for (let i = 0; i < 1000 && !c.getState().ready; i++) t.step();
+    expect(c.getState()).toMatchObject({ ready: true, reducedMotion: true, paused: true });
+    const organisms = fingerprint(t); t.run(1); expect(fingerprint(t)).toBe(organisms);
+    expect(t.errors).toEqual([]);
+  });
+  it('ignores motion preference calls after disposal', () => {
+    const t = runtime(), c = t.controller; c.dispose();
+    const state = c.getState(), renders = t.counts.render, notifications = t.states.length;
+    c.setReducedMotion(true); t.run(1);
+    expect(c.getState()).toEqual(state); expect(t.counts.render).toBe(renders); expect(t.states).toHaveLength(notifications);
+  });
+});
+
+describe('Reef3DExplore accessible camera controller', () => {
+  const cameraPose = t => ({ position: t.renderer.camera.position.toArray(), rotation: t.renderer.camera.quaternion.toArray(), fov: t.renderer.camera.fov });
+  it('uses the same look response as a pointer drag', () => {
+    const t = runtime({ reducedMotion: true }); t.controller.setPaused(true); t.controller.resetCamera();
+    expect(t.controller.lookCamera(40, -30)).toBe(true); const fromButton = cameraPose(t);
+    t.controller.resetCamera(); t.pointer('pointerdown', 300, 200); t.pointer('pointermove', 340, 170); t.pointer('pointerup', 340, 170);
+    const fromPointer = cameraPose(t);
+    for (const key of ['position', 'rotation']) fromPointer[key].forEach((value, i) => expect(value).toBeCloseTo(fromButton[key][i], 7));
+  });
+  it('preserves the established 2.2–9 m zoom range and pitch limits', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller, cam = t.renderer.camera, diver = t.scene.getObjectByName('reef-explore-diver');
+    c.setPaused(true); c.resetCamera();
+    const horizontalDistance = () => Math.hypot(cam.position.x - diver.position.x, cam.position.z - diver.position.z);
+    for (let i = 0; i < 8; i++) c.zoomCamera(1);
+    expect(horizontalDistance()).toBeCloseTo(9 * Math.cos(0.32), 6); const far = cameraPose(t); c.zoomCamera(1); expect(cameraPose(t)).toEqual(far);
+    for (let i = 0; i < 8; i++) c.zoomCamera(-1);
+    expect(horizontalDistance()).toBeCloseTo(2.2 * Math.cos(0.32), 6); const near = cameraPose(t); c.zoomCamera(-1); expect(cameraPose(t)).toEqual(near);
+    c.lookCamera(0, 1000); const upper = cameraPose(t); c.lookCamera(0, 1000); expect(cameraPose(t)).toEqual(upper);
+    c.lookCamera(0, -1000); const lower = cameraPose(t); c.lookCamera(0, -1000); expect(cameraPose(t)).toEqual(lower); expect(lower.rotation).not.toEqual(upper.rotation);
+  });
+  it('can look, zoom and reset while paused without moving the diver or any organism', () => {
+    const t = runtime({ reducedMotion: true }), c = t.controller; c.setPaused(true); c.resetCamera(); t.step();
+    const initial = cameraPose(t), diver = c.getState().diver, positions = census(t).map(o => [o.uid, o.pos]);
+    c.lookCamera(40, 40); c.zoomCamera(-0.18); expect(cameraPose(t)).not.toEqual(initial); c.resetCamera();
+    expect(cameraPose(t)).toEqual(initial); t.run(1);
+    expect(c.getState().paused).toBe(true); expect(c.getState().diver).toEqual(diver); expect(census(t).map(o => [o.uid, o.pos])).toEqual(positions);
+    expect(t.errors).toEqual([]);
+  });
+  it('keeps Mask view field of view fixed while allowing look and reset', () => {
+    const t = runtime({ reducedMotion: true, view: 'first' }), c = t.controller; c.setPaused(true); c.resetCamera(); const initial = cameraPose(t);
+    expect(c.zoomCamera(-0.18)).toBe(false); expect(c.zoomCamera(0.18)).toBe(false); expect(cameraPose(t)).toEqual(initial);
+    c.lookCamera(40, -40); expect(cameraPose(t).rotation).not.toEqual(initial.rotation); expect(cameraPose(t).position).toEqual(initial.position);
+    c.resetCamera(); expect(cameraPose(t)).toEqual(initial); expect(c.getState()).toMatchObject({ view: 'first', paused: true });
+  });
+  it('rejects unfinished and disposed controllers and keeps malformed input finite', () => {
+    const loading = runtime({ staged: true });
+    for (const method of ['lookCamera', 'zoomCamera', 'resetCamera']) expect(loading.controller[method](40, 40)).toBe(false);
+    const t = runtime({ reducedMotion: true }), c = t.controller; c.setPaused(true); c.resetCamera(); const initial = cameraPose(t);
+    c.lookCamera(NaN, Infinity); c.zoomCamera('bad'); expect(cameraPose(t)).toEqual(initial);
+    c.dispose(); const renders = t.counts.render;
+    for (const method of ['lookCamera', 'zoomCamera', 'resetCamera']) expect(c[method](40, 40)).toBe(false);
+    t.step(); expect(t.counts.render).toBe(renders); expect(t.errors).toEqual([]);
   });
 });

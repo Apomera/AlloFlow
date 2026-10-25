@@ -140,11 +140,12 @@ describe('Continuous adult male hummingbird head markings', () => {
 
   it.each(['canada_goose', 'snow_goose', 'arctic_tern', 'peregrine', 'sandhill_crane', 'bartailed_godwit', 'monarch'])('leaves %s outside the hummingbird color and resource branch', id => {
     const bird = flyer(id), head = bird.getObjectByName(id === 'monarch' ? 'migration-monarch-head' : 'migration-bird-head');
-    expect(head.geometry.parameters.widthSegments).toBe(id === 'peregrine' ? 24 : 12);
-    expect(head.geometry.parameters.heightSegments).toBe(id === 'peregrine' ? 16 : 8);
+    expect(head.geometry.parameters.widthSegments).toBe(id === 'peregrine' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose' ? 24 : 12);
+    expect(head.geometry.parameters.heightSegments).toBe(id === 'peregrine' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose' ? 16 : 8);
     expect(head.material.roughness).toBe(id === 'monarch' ? .68 : .66);
     expect(head.material.metalness).toBe(id === 'monarch' ? .04 : 0);
-    if (id !== 'peregrine') expect(head.geometry.attributes.color).toBeUndefined();
+    if (id === 'peregrine' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose') expect(head.geometry.attributes.color.count).toBe(425);
+    else expect(head.geometry.attributes.color).toBeUndefined();
     dispose(bird);
   });
 });

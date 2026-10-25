@@ -7,8 +7,9 @@
  * What it stores, where:
  *  - Live messages and documents: bounded Apps Script CacheService entries,
  *    eligible for early eviction and expiring within 45 minutes to 6 hours.
- *  - Session markers/secrets: Script Properties for at most 6 hours so a
- *    teacher refresh can recover a class after cache eviction.
+ *  - Session markers/secrets: an absolute 6-hour access window. Persistent
+ *    markers and cached session data are removed on close or pruning paths;
+ *    this is not a scheduled physical-deletion guarantee.
  *  - Homework packs and completed submission JSON: files in the owner's
  *    "AlloFlow Class Mailbox" Drive folder. Delete them any time.
  *
@@ -24,7 +25,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 24;
+var VERSION = 26;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -100,6 +101,7 @@ function doPost(e) {
   try {
     return handle(p || {});
   } catch (err) {
+    if (err && err.code === 'mailbox-session-busy') return out({ ok: false, e: 'busy' });
     return out({ ok: false, e: 'server', d: String((err && err.message) || err).slice(0, 200) });
   }
 }
@@ -173,10 +175,10 @@ function handle(p) {
 
   if (a === 'rotateadmin') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
-    pruneExpiredSessions(props);
+    pruneExpiredSessions(props, cache);
     var active = listSessions(props);
     if (active.length && !p.force) return out({ ok: false, e: 'sessions-active', count: active.length });
-    if (active.length) closeAllSessions(cache, props);
+    if (active.length && closeAllSessions(cache, props) < 0) return out({ ok: false, e: 'busy' });
     var rotated = newToken();
     props.setProperty('admin', rotated);
     saveTokenNote(rotated);
@@ -184,7 +186,8 @@ function handle(p) {
   }
   if (a === 'closeall') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
-    return out({ ok: true, closed: closeAllSessions(cache, props), t: Date.now() });
+    var closed = closeAllSessions(cache, props);
+    return closed < 0 ? out({ ok: false, e: 'busy' }) : out({ ok: true, closed: closed, t: Date.now() });
   }
 
   if (a === 'open') {
@@ -193,10 +196,16 @@ function handle(p) {
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
     // A reused code must not resurface messages, documents, or signaling from
     // a previous class that happened to use the same short code.
-    clearSessionEphemeral(cache, code);
-    cache.put('s:' + code, String(p.k), SESSION_TTL_SEC);
-    props.setProperty('sess_' + code, String(p.k) + '|' + Date.now());
-    pruneExpiredSessions(props);
+    var opened = withSessionLifecycleLock(function() {
+      clearSessionEphemeral(cache, code);
+      cache.remove('s:' + code);
+      var openedAt = Date.now();
+      props.setProperty('sess_' + code, String(p.k) + '|' + openedAt);
+      cacheSessionSecret(cache, code, { k: String(p.k), at: openedAt, expiresAt: openedAt + SESSION_TTL_SEC * 1000 }, openedAt);
+      return true;
+    });
+    if (!opened) return out({ ok: false, e: 'busy' });
+    pruneExpiredSessions(props, cache);
     return out({ ok: true, t: Date.now() });
   }
 
@@ -218,8 +227,7 @@ function handle(p) {
     if (!actor) return out({ ok: false, e: 'denied' });
     if (a === 'end') {
       if (actor.role !== 'teacher') return out({ ok: false, e: 'not-admin' });
-      closeSession(cache, props, sc);
-      return out({ ok: true });
+      return closeSession(cache, props, sc) ? out({ ok: true }) : out({ ok: false, e: 'busy' });
     }
     if (a === 'send') return send(cache, sc, p, actor);
     return recv(cache, sc, p, actor);
@@ -246,7 +254,7 @@ function handle(p) {
   // re-entry needed after a refresh.
   if (a === 'mysessions') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
-    pruneExpiredSessions(props);
+    pruneExpiredSessions(props, cache);
     var sessions = [];
     try {
       var all = props.getProperties();
@@ -348,46 +356,110 @@ function clearSessionEphemeral(cache, code) {
   removeCacheKeys(cache, keys);
 }
 
-function closeSession(cache, props, code) {
-  clearSessionEphemeral(cache, code);
+function withSessionLifecycleLock(callback) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return undefined;
+  try { return callback(); } finally { lock.releaseLock(); }
+}
+
+function closeSessionLocked(cache, props, code) {
+  // Rewarming and lifecycle changes share this lock. Removing the cached
+  // capability first also preserves the live marker if cache removal fails.
   cache.remove('s:' + code);
-  try { props.deleteProperty('sess_' + code); } catch (e) {}
+  props.deleteProperty('sess_' + code);
+  if (props.getProperty('sess_' + code) !== null) throw new Error('session-close-failed');
+  clearSessionEphemeral(cache, code);
+}
+
+function closeSession(cache, props, code) {
+  return withSessionLifecycleLock(function() { closeSessionLocked(cache, props, code); return true; }) === true;
 }
 
 function closeAllSessions(cache, props) {
-  var sessions = listSessions(props);
-  sessions.forEach(function(s) { closeSession(cache, props, s.c); });
-  return sessions.length;
+  var count = withSessionLifecycleLock(function() {
+    var sessions = listSessions(props);
+    sessions.forEach(function(s) { closeSessionLocked(cache, props, s.c); });
+    return sessions.length;
+  });
+  return count === undefined ? -1 : count;
 }
 
-// Session secret lookup: cache first, durable PropertiesService fallback
-// (rewarming the cache), honoring the same 6h TTL.
+function validSessionWindow(value, now) {
+  return value && typeof value.k === 'string' && isToken(value.k)
+    && typeof value.at === 'number' && isFinite(value.at) && Math.floor(value.at) === value.at
+    && value.at > 0 && value.at <= now
+    && value.expiresAt === value.at + SESSION_TTL_SEC * 1000
+    && now < value.expiresAt;
+}
+
+function sessionMarker(stored, now) {
+  if (typeof stored !== 'string') return null;
+  var match = /^([A-Za-z0-9_-]{10,96})\|([1-9][0-9]{0,15})$/.exec(stored);
+  if (!match) return null;
+  var at = Number(match[2]);
+  var marker = { k: match[1], at: at, expiresAt: at + SESSION_TTL_SEC * 1000 };
+  return validSessionWindow(marker, now) ? marker : null;
+}
+
+function cacheSessionSecret(cache, code, marker, now) {
+  var remaining = Math.floor((marker.expiresAt - now) / 1000);
+  if (remaining > 0) cache.put('s:' + code, JSON.stringify({ v: 1, k: marker.k, at: marker.at, expiresAt: marker.expiresAt }), Math.min(SESSION_TTL_SEC, remaining));
+}
+
+// Cache hits carry the original absolute deadline, never a new six-hour lease.
+// Cold/legacy cache migration and lifecycle changes are serialized, so a late
+// refill cannot resurrect a capability after close or session-code reuse.
+// Manual edits of Script Properties do not revoke an already cached envelope;
+// use end/closeall. Ordinary polling does not read Script Properties each time.
 function sessionSecretFor(code, cache, props) {
-  var secret = cache.get('s:' + code);
-  if (secret) return secret;
-  var stored = props.getProperty('sess_' + code);
-  if (!stored) return null;
-  var sep = stored.indexOf('|');
-  var key = sep > -1 ? stored.slice(0, sep) : stored;
-  var ts = sep > -1 ? parseInt(stored.slice(sep + 1), 10) || 0 : 0;
-  if (ts && Date.now() - ts > SESSION_TTL_SEC * 1000) {
-    try { props.deleteProperty('sess_' + code); } catch (e) {}
-    return null;
+  if (typeof code !== 'string' || !/^[A-Z0-9]{4,8}$/.test(code)) return null;
+  var cached = cache.get('s:' + code);
+  if (cached) {
+    try {
+      var envelope = JSON.parse(cached);
+      if (envelope && envelope.v === 1 && validSessionWindow(envelope, Date.now())) return envelope.k;
+    } catch (e) { /* migrate a legacy plain-secret cache from its marker */ }
   }
-  cache.put('s:' + code, key, SESSION_TTL_SEC);
-  return key;
+  var secret = withSessionLifecycleLock(function() {
+    var now = Date.now();
+    var stored = props.getProperty('sess_' + code);
+    // A random unknown code is not a cleanup job. Avoid hundreds of cache
+    // removals on an unauthenticated lookup with no durable session marker.
+    if (stored === null) {
+      if (cached) cache.remove('s:' + code);
+      return null;
+    }
+    var marker = sessionMarker(stored, now);
+    if (!marker) {
+      closeSessionLocked(cache, props, code);
+      return null;
+    }
+    cache.remove('s:' + code);
+    cacheSessionSecret(cache, code, marker, now);
+    return marker.k;
+  });
+  if (secret === undefined) {
+    var busy = new Error('mailbox-session-busy');
+    busy.code = 'mailbox-session-busy';
+    throw busy;
+  }
+  return secret;
 }
 
-function pruneExpiredSessions(props) {
+function pruneExpiredSessions(props, cache) {
   try {
-    var all = props.getProperties();
-    Object.keys(all).forEach(function(k) {
-      if (k.indexOf('sess_') !== 0) return;
-      var sep = all[k].indexOf('|');
-      var ts = sep > -1 ? parseInt(all[k].slice(sep + 1), 10) || 0 : 0;
-      if (!ts || Date.now() - ts > SESSION_TTL_SEC * 1000) props.deleteProperty(k);
+    return withSessionLifecycleLock(function() {
+      var all = props.getProperties();
+      Object.keys(all).forEach(function(k) {
+        if (k.indexOf('sess_') !== 0 || sessionMarker(all[k], Date.now())) return;
+        // Current callers supply the cache. Keep a defensive marker-only path
+        // for older local maintenance invocations without treating it as purge.
+        if (cache) closeSessionLocked(cache, props, k.slice(5));
+        else props.deleteProperty(k);
+      });
+      return true;
     });
-  } catch (e) { /* best-effort */ }
+  } catch (e) { return false; /* cleanup is best-effort, expiry denial is not */ }
 }
 
 function normalizeParticipantMessage(value, uid) {
@@ -709,7 +781,7 @@ function validWsProgressValue(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, audioStatus: 1, audioReady: 1, audioTotal: 1, audioRequestAt: 1, audioDeliveryAt: 1, at: 1 };
   var keys = Object.keys(value);
-  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  for (var i = 0; i < keys.length; i++) { if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false; }
   if (value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
   if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
   if (value.done != null && typeof value.done !== 'boolean') return false;
@@ -729,7 +801,7 @@ function validWsProbeResultValue(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   var allowed = { activity: 1, correct: 1, total: 1, accuracy: 1, itemsPerMin: 1, elapsed: 1, grade: 1, form: 1, at: 1 };
   var keys = Object.keys(value);
-  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  for (var i = 0; i < keys.length; i++) { if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false; }
   if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
   if (value.grade != null && !(typeof value.grade === 'string' && /^[A-Za-z0-9 -]{1,16}$/.test(value.grade))) return false;
   if (value.form != null && !(typeof value.form === 'string' && /^[A-Za-z0-9-]{1,8}$/.test(value.form))) return false;
@@ -746,7 +818,7 @@ function validOrganizerProgressValue(value) {
   var allowed = { activityId: 1, type: 1, gameType: 1, status: 1, score: 1, correct: 1, total: 1, attempts: 1, at: 1 };
   var keys = Object.keys(value);
   if (keys.length !== 9) return false;
-  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  for (var i = 0; i < keys.length; i++) if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false;
   var types = ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall', 'reflection'];
   var gameTypes = ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'];
   if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9:_-]{8,160}$/.test(value.activityId))) return false;
@@ -762,7 +834,7 @@ function validActivityProgressValue(value) {
   var allowed = { version: 1, activityId: 1, kind: 1, status: 1, completed: 1, total: 1, at: 1 };
   var keys = Object.keys(value);
   if (keys.length !== 7) return false;
-  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  for (var i = 0; i < keys.length; i++) if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false;
   if (value.version !== 1) return false;
   if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.activityId))) return false;
   if (!(typeof value.kind === 'string' && /^[a-z][a-z0-9_]{0,39}$/.test(value.kind))) return false;
@@ -788,7 +860,7 @@ function validLiveHostPresenceValue(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const allowed = { state: 1, heartbeatAt: 1, expiresAt: 1, leaseId: 1 };
   const keys = Object.keys(value);
-  for (let i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  for (let i = 0; i < keys.length; i++) if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false;
   if (value.state !== 'online') return false;
   if (!(typeof value.heartbeatAt === 'number' && isFinite(value.heartbeatAt) && value.heartbeatAt > 0)) return false;
   if (!(typeof value.expiresAt === 'number' && isFinite(value.expiresAt) && value.expiresAt > value.heartbeatAt)) return false;
@@ -796,8 +868,31 @@ function validLiveHostPresenceValue(value) {
   if (value.leaseId !== null && !(typeof value.leaseId === 'string' && /^[A-Za-z0-9_-]{8,120}$/.test(value.leaseId))) return false;
   return true;
 }
+function sameParticipantRosterValue(before, after) {
+  if (before === after) return true;
+  if (!before || !after || typeof before !== 'object' || typeof after !== 'object'
+      || Array.isArray(before) !== Array.isArray(after)) return false;
+  var keys = Object.keys(before);
+  if (keys.length !== Object.keys(after).length) return false;
+  for (var i = 0; i < keys.length; i++) {
+    if (!Object.prototype.hasOwnProperty.call(after, keys[i])
+        || !sameParticipantRosterValue(before[keys[i]], after[keys[i]])) return false;
+  }
+  return true;
+}
+function validParticipantReadingTheme(value) {
+  return value === null || ['default', 'warm', 'sepia', 'dark', 'highContrast', 'blue', 'green', 'rose', 'dyslexia', 'dim'].indexOf(value) !== -1;
+}
+function validParticipantReadingFavorites(value) {
+  if (value === null) return true;
+  if (!Array.isArray(value) || value.length > 10) return false;
+  for (var i = 0; i < value.length; i++) {
+    if (typeof value[i] !== 'string' || !validParticipantReadingTheme(value[i]) || value.indexOf(value[i]) !== i) return false;
+  }
+  return true;
+}
 function validParticipantRosterField(field, value, uid) {
-  if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
+  if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid' && !Array.isArray(value) && Object.keys(value).length === 1;
   if (field === 'uid') return value === uid;
   if (field === 'name') return typeof value === 'string' && value.length <= 40;
   if (field === 'joinedAt') return typeof value === 'string' && value.length <= 40;
@@ -812,6 +907,9 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'organizerProgress') return validOrganizerProgressValue(value);
   if (field === 'activityProgress') return validActivityProgressValue(value);
   if (field === 'imageDelivery') return validMailboxImageDeliveryValue(value);
+  if (field === 'readingTheme') return validParticipantReadingTheme(value);
+  if (field === 'readingThemeFavorites') return validParticipantReadingFavorites(value);
+  if (field === 'readingPreferenceAt') return value === null || validWsMetricNumber(value, 999999999999999);
   return false;
 }
 function validQuizResponseReceipt(value) {
@@ -819,7 +917,7 @@ function validQuizResponseReceipt(value) {
   var allowed = { activityId: 1, questionIndex: 1, questionIndexes: 1, submittedAt: 1, flow: 1 };
   var keys = Object.keys(value);
   if (keys.length !== 4 && keys.length !== 5) return false;
-  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  for (var i = 0; i < keys.length; i++) if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false;
   if (!(typeof value.activityId === 'string'
       && value.activityId.length >= 1
       && value.activityId.length <= 120)) return false;
@@ -857,7 +955,7 @@ function validConceptQuestAction(value, uid) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   var keys = Object.keys(value);
   var allowed = { abilityId: 1, roleId: 1, answerIndex: 1, submittedAt: 1, supportId: 1, supportTargetUid: 1, turnKey: 1 };
-  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  for (var i = 0; i < keys.length; i++) if (!Object.prototype.hasOwnProperty.call(allowed, keys[i])) return false;
   if (value.turnKey != null && (typeof value.turnKey !== 'string' || value.turnKey.length > 160)) return false;
   if (['analyze', 'explain', 'connect', 'question'].indexOf(value.abilityId) === -1) return false;
   if (value.roleId != null && value.roleId !== '' && ['analyst', 'explainer', 'connector', 'investigator'].indexOf(value.roleId) === -1) return false;
@@ -906,7 +1004,8 @@ function participantCanPatchSession(updates, uid, sessionData) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingResourceAt: 1, viewingResourceStatus: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, imageDelivery: 1, lastSeen: 1
+    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, imageDelivery: 1, lastSeen: 1,
+    readingTheme: 1, readingThemeFavorites: 1, readingPreferenceAt: 1
   };
   var roots = [
     'bridgeReactions.' + uid,
@@ -973,16 +1072,41 @@ function participantCanPatchSession(updates, uid, sessionData) {
       continue;
     }
     if (pathStarts(key, rosterRoot)) {
+      // Authorize against the latest cache envelope, read under docWrite's
+      // ScriptLock. A replacement is also a deletion of every omitted field.
+      var oldRoster = sessionData && Object.prototype.hasOwnProperty.call(sessionData, 'roster') ? sessionData.roster : {};
+      if (!oldRoster || typeof oldRoster !== 'object' || Array.isArray(oldRoster)) return false;
+      var oldEntry = Object.prototype.hasOwnProperty.call(oldRoster, uid) ? oldRoster[uid] : {};
+      if (!oldEntry || typeof oldEntry !== 'object' || Array.isArray(oldEntry)) return false;
       var rest = key === rosterRoot ? '' : key.slice(rosterRoot.length + 1);
       if (rest) {
         var field = rest.split('.')[0];
-        if (!rosterFields[field] || rest.indexOf('.') !== -1 || !validParticipantRosterField(field, updates[key], uid)) return false;
+        if (!Object.prototype.hasOwnProperty.call(rosterFields, field) || rest.indexOf('.') !== -1) return false;
+        var leaf = updates[key];
+        if (leaf && typeof leaf === 'object' && leaf.__op === 'deleteField') {
+          if (!validParticipantRosterField(field, leaf, uid)) return false;
+        } else if (!(Object.prototype.hasOwnProperty.call(oldEntry, field) && sameParticipantRosterValue(oldEntry[field], leaf))
+            && !validParticipantRosterField(field, leaf, uid)) return false;
       } else {
         var entry = updates[key];
-        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
-        var entryKeys = Object.keys(entry);
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry) || entry.__op === 'deleteField') return false;
+        // Root/leaf overlaps have order-dependent replacement semantics.
+        for (var overlap = 0; overlap < keys.length; overlap++) {
+          if (keys[overlap] !== rosterRoot && pathStarts(keys[overlap], rosterRoot)) return false;
+        }
+        var entryKeys = Object.keys(oldEntry);
+        Object.keys(entry).forEach(function(field) { if (entryKeys.indexOf(field) === -1) entryKeys.push(field); });
         for (var e = 0; e < entryKeys.length; e++) {
-          if (!rosterFields[entryKeys[e]] || !validParticipantRosterField(entryKeys[e], entry[entryKeys[e]], uid)) return false;
+          var entryField = entryKeys[e];
+          var hadField = Object.prototype.hasOwnProperty.call(oldEntry, entryField);
+          var hasField = Object.prototype.hasOwnProperty.call(entry, entryField);
+          if (hadField && hasField && sameParticipantRosterValue(oldEntry[entryField], entry[entryField])) continue;
+          if (!Object.prototype.hasOwnProperty.call(rosterFields, entryField)) return false;
+          if (!hasField) { if (entryField === 'uid') return false; continue; }
+          // Nested sentinels are literal data in applyDocUpdates, not deletes.
+          var replacement = entry[entryField];
+          if (replacement && typeof replacement === 'object' && replacement.__op === 'deleteField') return false;
+          if (!validParticipantRosterField(entryField, replacement, uid)) return false;
         }
       }
       continue;
@@ -1028,7 +1152,7 @@ function participantCanWritePeer(tok, actor, action, payload) {
   var keys = Object.keys(body);
   for (var i = 0; i < keys.length; i++) {
     var top = String(keys[i]).split('.')[0];
-    if (!allowed[top]) return false;
+    if (!Object.prototype.hasOwnProperty.call(allowed, top)) return false;
   }
   return true;
 }
@@ -1056,6 +1180,10 @@ function docWrite(cache, code, action, p, actor) {
       return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
     }
     var current = readDocEnvelope(cache, code, tok);
+    if (actor.role === 'participant' && tok === 's' && current
+        && (!current.d || typeof current.d !== 'object' || Array.isArray(current.d))) {
+      return out({ ok: false, e: 'denied' });
+    }
     if (actor.role === 'participant' && tok === 's'
         && !participantCanPatchSession(updates, actor.uid, current && current.d)) {
       return out({ ok: false, e: 'denied' });

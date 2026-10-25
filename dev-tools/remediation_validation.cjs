@@ -145,9 +145,10 @@ function executeValidation({ reportDir, run = runCli, capture = () => captureIde
     save();
     if (errors.length) throw new Error(phase.error);
   };
-  // Replace an old success before setup checks, so failures remain unambiguous.
-  save();
   try {
+    // Initial publication is setup too: retain its failure and final identity
+    // evidence rather than leaving a previous passing summary.
+    save();
     for (const file of [unitReport, browserReport, path.join(reportDir, 'unit.log'), path.join(reportDir, 'browser.log')]) if (fs.existsSync(file)) fs.unlinkSync(file);
     summary.identity.before = capture();
     save();

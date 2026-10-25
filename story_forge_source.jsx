@@ -830,6 +830,8 @@ const sanitizeIllustrations = (obj) => {
     const url = safeImageUrl(v.imageUrl);
     if (url && url.length <= 15000000) {
       const clean = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt.slice(0, 1200) : '' };
+      if (typeof v.altText === 'string') clean.altText = v.altText.slice(0,1600);
+      if (v.whiteboardScene && Array.isArray(v.whiteboardScene.elements) && JSON.stringify(v.whiteboardScene).length <= 2*1024*1024) clean.whiteboardScene = v.whiteboardScene;
       if (Number.isFinite(Number(v.displayWidth))) clean.displayWidth = clampStoryIllustrationWidth(v.displayWidth);
       out[String(k).slice(0, 64)] = clean;
     }
@@ -912,6 +914,7 @@ const sanitizeContinuityReferences = (arr) => Array.isArray(arr)
         wardrobe: typeof value.wardrobe === 'string' ? value.wardrobe.slice(0, 240) : '',
         props: typeof value.props === 'string' ? value.props.slice(0, 240) : '',
         imageUrl: safeImageUrl(value.imageUrl).slice(0, 15000000),
+        whiteboardScene: value.whiteboardScene && Array.isArray(value.whiteboardScene.elements) && JSON.stringify(value.whiteboardScene).length <= 2*1024*1024 ? value.whiteboardScene : null,
       };
     }).filter(item => item.name || item.aliases || item.role || item.appearance || item.wardrobe || item.props || item.imageUrl)
   : [];
@@ -2103,6 +2106,7 @@ const sanitizeStoryForgeProject = (value = {}) => {
     _storyForgeProjectVersion: STORYFORGE_PROJECT_VERSION,
     illustrations: sanitizeIllustrations(source.illustrations),
     coverArt: safeImageUrl(source.coverArt).slice(0, 15000000),
+    ...(source.coverArtwork && typeof source.coverArtwork === 'object' ? { coverArtwork: { altText: String(source.coverArtwork.altText || '').slice(0,1600), whiteboardScene: source.coverArtwork.whiteboardScene && Array.isArray(source.coverArtwork.whiteboardScene.elements) && JSON.stringify(source.coverArtwork.whiteboardScene).length <= 2*1024*1024 ? source.coverArtwork.whiteboardScene : null } } : {}),
     audioSegments: sanitizeAudioSegments(source.audioSegments),
     audioStore: sanitizeStoryForgeAudioStore(source.audioStore),
     comicFlowReport: draft.artifactType === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,
@@ -2853,7 +2857,7 @@ const StoryForge = React.memo(({
     const maxLength = field === 'imageUrl' ? 15000000 : field === 'name' ? 80 : field === 'aliases' ? 240 : field === 'role' ? 120 : field === 'appearance' ? 360 : 240;
     setComicContinuity(prev => sanitizeComicContinuity({
       ...prev,
-      references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, [field]: String(value || '').slice(0, maxLength) } : reference),
+      references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, [field]: String(value || '').slice(0, maxLength), ...(field === 'imageUrl' ? { whiteboardScene: null } : {}) } : reference),
     }));
     setIsDirty(true);
   };
@@ -2875,7 +2879,7 @@ const StoryForge = React.memo(({
       if (!imageUrl) return;
       setComicContinuity(prev => sanitizeComicContinuity({
         ...prev,
-        references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, imageUrl } : reference),
+        references: (prev.references || []).map(reference => reference.id === referenceId ? { ...reference, imageUrl, whiteboardScene: null } : reference),
       }));
       setIsDirty(true);
       sfAnnounce(ta('a11y.storyforge_cast_reference_art_attached'));
@@ -3038,7 +3042,7 @@ const StoryForge = React.memo(({
     const snapshot = sanitizeStoryForgeProject({
     ...createDraftSnapshot(),
     illustrations,
-    coverArt,
+    coverArt, coverArtwork,
     audioSegments,
     comicFlowReport,
   });
@@ -3053,7 +3057,11 @@ const StoryForge = React.memo(({
     snapshot: createProjectSnapshot(),
   });
   const [illustrations, setIllustrations] = useState({});
+  const authoredImagesRef = useRef(null);
+
   const [coverArt, setCoverArt] = useState(null);
+  const [coverArtwork, setCoverArtwork] = useState(null);
+  authoredImagesRef.current = { illustrations, paragraphs, comicContinuity, coverArt, saveKey: SAVE_KEY };
   const [coverArtLoading, setCoverArtLoading] = useState(false);
   const characterPortraitRef = useRef(null);
   const getComicConsistencyReference = (idx) => {
@@ -3911,7 +3919,7 @@ const StoryForge = React.memo(({
   const [draftCount, setDraftCount] = useState(1);
   feedbackStateRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, currentReviewDraftSignature, gradeLevel, sourceTopic, draftCount]);
   // An identity token detects edits during asynchronous checkpoint writes without serializing media.
-  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload, comicFlowReport]);
+  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, coverArtwork, audioSegments, audioStorePayload, comicFlowReport]);
   useEffect(() => { if (lessonImportProposal) lessonImportPreviewRef.current?.focus(); }, [lessonImportProposal]);
   useEffect(() => {
     if (!focusMode || phase !== 'write') return;
@@ -4340,7 +4348,7 @@ const StoryForge = React.memo(({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, coverArtwork, audioSegments, audioStorePayload]);
 
   const applySanitizedDraft = (value) => {
     setLessonImportProposal(null);
@@ -4388,6 +4396,7 @@ const StoryForge = React.memo(({
     const draft = applySanitizedDraft(project);
     setIllustrations(project.illustrations);
     setCoverArt(project.coverArt || null);
+    setCoverArtwork(project.coverArtwork || null);
     setAudioSegments(hydrateStoryForgeAudioSegments(project.audioSegments));
     storyAudioServiceRef.current = null;
     storyAudioStoreRef.current = null;
@@ -4576,7 +4585,7 @@ const StoryForge = React.memo(({
       illustrations: Object.fromEntries(
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl }])
       ),
-      coverArt,
+      coverArt, coverArtwork,
       gradingResult,
       analytics: {
         totalWords, vocabUsedCount, vocabTotal: vocabTerms.length,
@@ -5714,7 +5723,7 @@ Return ONLY JSON:
   };
 
   const confirmIllustration = async (customPrompt) => {
-    if (!promptPreview || !onCallImagen) return;
+    if (!promptPreview || !onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
     const { paragraphId, idx } = promptPreview;
     const imgPrompt = finalizeImagePrompt(customPrompt || promptPreview.prompt);
     setPromptPreview(null);
@@ -5739,7 +5748,7 @@ Return ONLY JSON:
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
-      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
+      setIllustrations(prev => ({ ...prev, [paragraphId]: imageUrl ? { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } : { ...prev[paragraphId], isLoading: false } }));
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -5748,7 +5757,7 @@ Return ONLY JSON:
   };
 
   const illustrateParagraph = async (paragraphId, text, idx) => {
-    if (!onCallImagen) return;
+    if (!onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
@@ -5782,7 +5791,7 @@ Return ONLY JSON:
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
-      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
+      setIllustrations(prev => ({ ...prev, [paragraphId]: imageUrl ? { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } : { ...prev[paragraphId], isLoading: false } }));
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -5859,7 +5868,7 @@ Return ONLY JSON:
   };
 
   const generateCoverArt = async () => {
-    if (!onCallImagen || !onCallGemini) return;
+    if (!onCallImagen || !onCallGemini || window.AlloImageGeneration?.isEnabled() === false) return;
     setCoverArtLoading(true);
     try {
       const style = getStyleDesc();
@@ -5871,7 +5880,7 @@ Return ONLY JSON:
       );
       const imgPrompt = promptResult.trim() + ` STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. ${isComicCover ? 'Comic' : 'Storybook'} cover composition.`;
       const imageUrl = await onCallImagen(imgPrompt, 768, 0.9);
-      if (imageUrl) setCoverArt(imageUrl);
+      if (imageUrl) { setCoverArt(imageUrl); setCoverArtwork(null); }
     } catch (err) {
       console.warn('Cover art generation failed:', err);
       if (addToast) addToast(t('toasts.cover_art_generation_failed'), 'error');
@@ -7241,7 +7250,7 @@ Return ONLY JSON:
         chaptersHtml += `</article>`;
       } else {
         chaptersHtml += `<article class="chapter" aria-label="Scene ${idx + 1}">`;
-        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="Illustration for scene ${idx + 1}" />`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="${escapeHtml(illustrations[p.id]?.altText || `Illustration for scene ${idx + 1}`)}" />`;
         const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
         if (beatLabel && p.plotBeat) {
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
@@ -8042,7 +8051,7 @@ show();
       illustrations: Object.fromEntries(
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
       ),
-      coverArt,
+      coverArt, coverArtwork,
       // ── Progress & analytics data (for teacher review) ──
       gradingResult,
       analytics: {
@@ -10218,6 +10227,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               </div>
 
               {/* Cover Art Preview */}
+              {window.AlloModules?.ResourceImageInput && <details className="my-3 rounded-xl border border-purple-200 bg-white p-3"><summary className="min-h-11 cursor-pointer font-bold">Upload or draw cover art</summary>{React.createElement(window.AlloModules.ResourceImageInput, {
+                key:SAVE_KEY+':cover',label:'Cover art',value:coverArt||'',alt:coverArtwork?.altText||'',scene:coverArtwork?.whiteboardScene,disabled:isProcessing||coverArtLoading,
+                onApply:result=>{if(authoredImagesRef.current.saveKey!==SAVE_KEY||authoredImagesRef.current.coverArt!==coverArt)return false;setCoverArt(result.dataUrl);setCoverArtwork({altText:result.alt,whiteboardScene:result.scene||null});setIsDirty(true);return true;}
+              })}</details>}
               {(coverArt || coverArtLoading) && (
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center">
                   <div className="text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2">{ta('a11y.storyforge_ui_cover_art')}</div>
@@ -10226,7 +10239,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <RefreshCw size={32} className="text-purple-700 animate-spin motion-reduce:animate-none" />
                     </div>
                   ) : coverArt && (
-                    <img src={coverArt} alt="Artifact cover art" className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
+                    <img src={coverArt} alt={coverArtwork?.altText || "Artifact cover art"} className="max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" />
                   )}
                 </div>
               )}
@@ -10293,6 +10306,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                     <ImageIcon size={12} aria-hidden="true" /> Upload art
                                     <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleContinuityReferenceImage(reference.id, e)} aria-label={ta('a11y.storyforge_aria_upload_cast_reference_art').replace('{0}', referenceIndex + 1)} />
                                   </label>
+                                  {window.AlloModules?.ResourceImageInput&&<details><summary className="min-h-11 cursor-pointer">Upload or draw reference art</summary>{React.createElement(window.AlloModules.ResourceImageInput,{key:SAVE_KEY+':'+reference.id,label:reference.name||'Character reference',value:reference.imageUrl||'',scene:reference.whiteboardScene,onApply:result=>{
+                                    const current=authoredImagesRef.current.comicContinuity.references.find(item=>item.id===reference.id);
+                                    if(authoredImagesRef.current.saveKey!==SAVE_KEY||!current||(current.imageUrl||'')!==(reference.imageUrl||''))return false;
+                                    setComicContinuity(previous=>({...previous,references:previous.references.map(item=>item.id===reference.id?{...item,imageUrl:result.dataUrl,whiteboardScene:result.scene||null}:item)}));setIsDirty(true);return true;
+                                  }})}</details>}
                                   {reference.imageUrl && (
                                     <button type="button" onClick={() => updateContinuityReference(reference.id, 'imageUrl', '')} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100" aria-label={ta('a11y.storyforge_aria_remove_cast_reference_art').replace('{0}', referenceIndex + 1)}>
                                       <X size={12} aria-hidden="true" /> Remove art
@@ -10838,6 +10856,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="flex-1">
                       <div className="text-xs font-bold text-purple-600 mb-1">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {idx + 1}</div>
                       <p className="text-sm text-slate-700 leading-relaxed">{p.text || p.scaffoldFrame || <span className="italic text-slate-500">{ta('a11y.storyforge_ui_no_draft_text_yet')}</span>}</p>
+                      {window.AlloModules?.ResourceImageInput && <details className="my-3"><summary className="min-h-11 cursor-pointer font-bold">Upload or draw an illustration</summary>{React.createElement(window.AlloModules.ResourceImageInput, {
+                        key:SAVE_KEY+':'+p.id,label:'Scene '+(idx+1),disabled:isProcessing||!!illustrations[p.id]?.isLoading,value:illustrations[p.id]?.imageUrl||'',alt:illustrations[p.id]?.altText||'',scene:illustrations[p.id]?.whiteboardScene,
+                        onApply:result=>{
+                          const current=authoredImagesRef.current;
+                          if(current.saveKey!==SAVE_KEY||current.illustrations[p.id]?.isLoading||!current.paragraphs.some(item=>item.id===p.id&&item.text===p.text)||(current.illustrations[p.id]?.imageUrl||'')!==(illustrations[p.id]?.imageUrl||''))return false;
+                          setIllustrations(previous=>({...previous,[p.id]:{...previous[p.id],imageUrl:result.dataUrl,altText:result.alt,whiteboardScene:result.scene||null,isLoading:false,error:false}}));
+                          setIsDirty(true);
+                          return true;
+                        }
+                      })}</details>}
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
@@ -10863,7 +10891,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         </div>
                       ) : illustrations[p.id]?.imageUrl ? (
                         <div className="relative group">
-                          <img src={illustrations[p.id].imageUrl} alt={`Illustration ${idx + 1}`} className="w-full rounded-xl shadow-md border border-purple-100" />
+                          <img src={illustrations[p.id].imageUrl} alt={illustrations[p.id].altText || `Illustration ${idx + 1}`} className="w-full rounded-xl shadow-md border border-purple-100" />
                           <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             {illustrations[p.id]?.previousImageUrl && (
                               <button type="button"
@@ -12169,7 +12197,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Preview */}
               <div className="sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg">
                 <div className="text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50">
-                  {coverArt && <img src={coverArt} alt="Artifact cover art" className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
+                  {coverArt && <img src={coverArt} alt={coverArtwork?.altText || "Artifact cover art"} className="max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" />}
                   <h3 className="text-3xl font-black text-amber-900">{storyTitle || storyPrompt || sourceTopic || (artifactType === 'comic' ? 'My Comic' : 'My Story')}</h3>
                   {authorName && <p className="text-amber-800 text-sm mt-1 font-bold">By {authorName}</p>}
                   <p className="text-amber-700 text-sm mt-1 italic">{genreLabel(genre) || 'Creative Writing'} · {vocabTerms.length} {ta('a11y.storyforge_ui_vocabulary_terms')}</p>
@@ -12274,7 +12302,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     {paragraphs.map((p, idx) => (
                       <div key={p.id} className="flex flex-col items-center gap-4">
                         {illustrations[p.id]?.imageUrl && (
-                          <img src={illustrations[p.id].imageUrl} alt={`Scene ${idx + 1}`} className="max-w-md rounded-xl shadow-md" />
+                          <img src={illustrations[p.id].imageUrl} alt={illustrations[p.id].altText || `Scene ${idx + 1}`} className="max-w-md rounded-xl shadow-md" />
                         )}
                         <p className="text-sm text-slate-800 leading-relaxed max-w-lg text-center" style={{ textIndent: '2em', textAlign: 'left' }}>{p.text}</p>
                         {idx < paragraphs.length - 1 && <div className="text-amber-400 text-lg">—</div>}

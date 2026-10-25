@@ -27,7 +27,7 @@ test.afterEach(async ({ page }) => {
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
 const inspect = (page: Page) => page.locator('[data-study-action="inspect-current-view"]');
-const note = (page: Page) => page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const opposite = (page: Page) => page.locator('[data-study-cycle-action="opposite"]');
 async function frames(page: Page) {
@@ -211,7 +211,7 @@ async function inspectWithoutChanges(page: Page, before: any, beforeVisual: any,
 async function inspectionFlow(page: Page, dark: boolean, touch: boolean) {
   const stem = touch ? 'mobile-' + (dark ? 'dark' : 'light') + '-study-inspection' : 'desktop-study-inspection';
   await mount(page, dark);
-  await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }), touch);
+  await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), touch);
   await activate(page, cycle(page, 2), touch); await expectSelected(page, 2);
   await activate(page, page.getByRole('button', { name: 'Mark wing pose', exact: true }), touch);
   const originalSaved = await saved(page), marked3 = await visualState(page); expectVisual(marked3, 0);

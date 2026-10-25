@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { expect } from 'vitest';
+import { setupBehaviorLens, React, ReactDOMServer, baseProps } from './behavior_lens_harness.js';
 
 let workspaceRuntime = null;
 export function behaviorLensRuntime() {
@@ -32,6 +33,10 @@ const RESERVED = new Set(('break case catch class const continue debugger defaul
 let internals = null;
 export function behaviorLensInternals() {
   if (internals) return internals;
+  // These component characterizations start from the explicit already-unlocked
+  // synthetic clinical fixture. The real protected-boundary suite does not use
+  // this source-extraction helper.
+  setupBehaviorLens();
   behaviorLensRuntime();
   // The module reads React's hooks at load; supply the app's React if a suite has not.
   if (!globalThis.React) {
@@ -46,7 +51,10 @@ export function behaviorLensInternals() {
   window.AlloModules = window.AlloModules || {};
   const registered = window.AlloModules.BehaviorLens;
   delete window.AlloModules.BehaviorLens; // the module returns early when already registered
-  try { new Function(source.slice(0, close) + probe + source.slice(close))(); }
+  try {
+    new Function(source.slice(0, close) + probe + source.slice(close))();
+    ReactDOMServer.renderToStaticMarkup(React.createElement(window.AlloModules.BehaviorLens, baseProps()));
+  }
   finally { if (registered) window.AlloModules.BehaviorLens = registered; }
   internals = window.__blInternalsForTests;
   delete window.__blInternalsForTests;

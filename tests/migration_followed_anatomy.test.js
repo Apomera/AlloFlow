@@ -248,13 +248,14 @@ describe('Trace anatomy on a validated followed bird wing', () => {
     expect(ui.state.flightStudyObservations.records).toEqual({});
   });
 
-  it('keeps old evidence prompts when anatomy is off, no side is followed, or a non-wing region is selected', () => {
+  it('keeps region-specific prompts when anatomy is off, no side is followed, or a non-wing region is selected', () => {
     const ui = fixture({ flightShowAnatomy: false, flightStudyRegion: 'inner-wing', flightStudyObservationOpen: true }); ui.follow(0);
     expect(notePrompt(ui)).toContain('Distinguish anatomical side from screen side'); expect(notePrompt(ui)).not.toContain('Name the followed');
     ui.toggleAnatomy(); expect(notePrompt(ui)).toContain('Name the followed'); ui.follow(0);
     expect(notePrompt(ui)).toContain('Predict how the outer tips move relative to the body'); expect(notePrompt(ui)).not.toContain('Name the followed');
     ui.follow(1); ui.region('head'); expect(ui.host.querySelector('#migration-study-motion-evidence-prompt')).toBeNull();
-    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('Describe the bill shape');
+    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('Predict which parts of the white cheek and chinstrap');
+    expect(ui.host.querySelector('#migration-study-observation-prompt').textContent).toContain('Compare Profile with From below');
     ui.region('tail'); expect(ui.host.querySelector('#migration-study-motion-evidence-prompt')).toBeNull();
   });
 

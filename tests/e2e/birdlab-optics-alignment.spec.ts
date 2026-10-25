@@ -7,7 +7,7 @@ import { readPng } from './helpers/png_pixels';
 test.use({ video: 'off', hasTouch: true, trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true } });
 test.describe.configure({ retries: 0, timeout: 180_000, mode: 'serial' });
 const harness = new GlHarness({ toolId: 'birdLab', toolFile: 'stem_lab/stem_tool_birdlab.js', preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'], width: 1100, height: 1000, appStyles: true, layout: 'document' });
-const report = resolve('reports/avian-simulations-round29-2026-10-22/optics');
+const report = resolve(process.env.AVIAN_REPORT_DIR || 'reports/avian-simulations-round29-2026-10-22/optics');
 const rules = ['color-contrast', 'button-name', 'label', 'aria-valid-attr-value', 'aria-required-children', 'aria-required-parent', 'nested-interactive'];
 test.beforeAll(async () => { mkdirSync(report, { recursive: true }); await harness.start(); });
 test.afterAll(async () => harness.stop());

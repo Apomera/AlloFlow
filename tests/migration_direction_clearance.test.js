@@ -168,7 +168,7 @@ describe('Direction chevrons remain readable beside the actual live tip', () => 
   it.each(ids)('keeps every visible %s triangle clear across viewpoints, cycle positions and phone/desktop fits', id => {
     const f = fixture(id), pool = resources(f), positions = f.cycle().geometry.attributes.position.array.slice(), distances = f.cycle().geometry.attributes.lineDistance.array.slice();
     const buildVersion = f.root.userData.buildVersion, seen = [0, 0];
-    for (const size of sizes) for (const [yaw, pitch] of [[0, 15], [90, 15], [0, 60], [35, 15]]) {
+    for (const size of sizes) for (const [yaw, pitch] of [[0, 15], [90, 15], [0, 60], [35, 15], [0, -60], [180, -60], [90, -45]]) {
       f.view({ ...size, yaw, pitch });
       for (let checkpoint = 0; checkpoint < 8; checkpoint++) {
         f.pose(checkpoint * tau / 8); const before = modelPose(f), camera = f.camera.matrixWorld.toArray();

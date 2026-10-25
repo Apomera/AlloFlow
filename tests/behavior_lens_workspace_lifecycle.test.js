@@ -266,382 +266,82 @@ afterEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = priorActFlag;
 });
 
-describe('Behavior Lens mounted workspace lifecycle', () => {
-  it('ignores a late cloud response after a rapid student switch', async () => {
-    const gates = { studenta001: deferred(), studentb002: deferred() };
-    const firebase = installFirebase(gates);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
+
+// These mounted cases run inside an unlocked synthetic protected session.
+// Plaintext account sync is intentionally disabled; pure transaction/conflict
+// algorithms retain their separate tests and the actual service tests cover
+// atomic encrypted conflicts and lock-time durability.
+describe('Behavior Lens protected local workspace lifecycle', () => {
+  const seedWorkspace = (id, name, count) => localStorage.setItem('behaviorLens_workspace_' + id, JSON.stringify(workspace(name, count)));
+  const withHost = async fn => {
+    const host = document.createElement('div'); document.body.appendChild(host);
     const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(
-        () => firebase.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/studenta001')),
-        'Student A cloud read did not start'
-      );
-      await switchStudent(host, 'Student B');
-      await waitForCondition(
-        () => firebase.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/studentb002')),
-        'Student B cloud read did not start'
-      );
-
-      gates.studentb002.resolve(cloudSnapshot(workspace('Student B', 2)));
-      await waitForCondition(() => abcMetric(host) === '2', 'Student B workspace did not hydrate');
-      expect(host.querySelector('select[aria-label="Choose a student"]').value).toBe('Student B');
-
-      gates.studenta001.resolve(cloudSnapshot(workspace('Student A', 5)));
-      await flushReact();
-      await flushReact();
-
-      expect(host.querySelector('select[aria-label="Choose a student"]').value).toBe('Student B');
-      expect(abcMetric(host)).toBe('2');
-    } finally {
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
-  });
-
-  it('clears the prior student workspace while the destination cloud read is pending', async () => {
-    const gates = { studenta001: deferred(), studentb002: deferred() };
-    const firebase = installFirebase(gates);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(
-        () => firebase.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/studenta001')),
-        'Student A cloud read did not start'
-      );
-      gates.studenta001.resolve(cloudSnapshot(workspace('Student A', 4)));
-      await waitForCondition(() => abcMetric(host) === '4', 'Student A workspace did not hydrate');
-
-      await switchStudent(host, 'Student B');
-      await waitForCondition(
-        () => firebase.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/studentb002')),
-        'Student B cloud read did not start'
-      );
-      expect(host.querySelector('select[aria-label="Choose a student"]').value).toBe('Student B');
-      expect(abcMetric(host)).toBeNull();
-
-      gates.studentb002.resolve(cloudSnapshot(workspace('Student B', 1)));
-      await waitForCondition(() => abcMetric(host) === '1', 'Student B workspace did not hydrate');
-    } finally {
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
-  });
-  it('surfaces a revision conflict and leaves a newer cloud workspace untouched', async () => {
-    const initialRemote = Object.assign(workspace('Student A', 1), {
-      revision: 1,
-      updatedAt: '2026-08-09T12:00:00.000Z'
+    try { await flushReact(); await fn(host); }
+    finally { await React.act(async () => root.unmount()); host.remove(); }
+  };
+  it('never starts legacy cloud authentication or record reads', async () => {
+    seedWorkspace('studenta001', 'Student A', 1); const cloud = installFirebase({});
+    await withHost(async host => {
+      expect(abcMetric(host)).toBe('1');
+      expect(cloud.getDoc).not.toHaveBeenCalled();
+      expect(window.__alloFirebase.signInAnonymously).not.toHaveBeenCalled();
+      expect(window.__alloFirebase.setDoc).not.toHaveBeenCalled();
     });
-    const firebase = installVersionedFirebase(initialRemote);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(() => abcMetric(host) === '1', 'Versioned cloud workspace did not hydrate');
-      firebase.replaceStudentRemote(Object.assign(workspace('Student A', 2), {
-        revision: 2,
-        updatedAt: '2026-08-09T13:00:00.000Z'
-      }));
-
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
-        (button) => button.textContent.includes('Student Profile')
-      );
-      expect(profileToggle).toBeTruthy();
-      await React.act(async () => {
-        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const interests = profileToggle.parentElement.querySelector('textarea');
-      expect(interests).toBeTruthy();
-      const setTextareaValue = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        'value'
-      ).set;
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'Local unsynced interest');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await Promise.resolve();
-      });
-
-      await React.act(async () => {
-        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 2100));
-      });
-      await waitForCondition(
-        () => Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-          alert.textContent.includes('A newer cloud copy exists for this student.')
-        ),
-        'Revision conflict alert did not appear'
-      );
-
-      const conflictAlert = Array.from(host.querySelectorAll('[role="alert"]')).find((alert) =>
-        alert.textContent.includes('A newer cloud copy exists for this student.')
-      );
-      expect(conflictAlert.textContent).toContain('Local revision 1; cloud revision 2.');
-      expect(firebase.runTransaction).toHaveBeenCalled();
-      expect(firebase.readStudentRemote()).toMatchObject({ revision: 2 });
-      expect(firebase.readStudentRemote().abcEntries).toHaveLength(2);
-
-      const keepLocalButton = Array.from(conflictAlert.querySelectorAll('button')).find(
-        (button) => button.textContent.includes('Replace cloud with local')
-      );
-      expect(keepLocalButton).toBeTruthy();
-      await React.act(async () => {
-        keepLocalButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const confirmation = document.querySelector('[role="alertdialog"]');
-      expect(confirmation).toBeTruthy();
-      const confirmOverwrite = Array.from(confirmation.querySelectorAll('button')).find(
-        (button) => button.textContent.includes('Replace cloud copy')
-      );
-      expect(confirmOverwrite).toBeTruthy();
-      await React.act(async () => {
-        confirmOverwrite.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      await waitForCondition(
-        () => firebase.readStudentRemote().revision === 3,
-        'Force overwrite did not advance the actual cloud revision'
-      );
-      expect(firebase.readStudentRemote()).toMatchObject({
-        revision: 3,
-        studentProfile: { interests: 'Local unsynced interest' }
-      });
-      expect(Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-        alert.textContent.includes('A newer cloud copy exists for this student.')
-      )).toBe(false);
-    } finally {
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
   });
-  it('retries a transient cloud save after browser reconnects', async () => {
-    const originalOnline = navigator.onLine;
-    const initialRemote = Object.assign(workspace('Student A', 1), {
-      revision: 1,
-      updatedAt: '2026-08-09T12:00:00.000Z'
+  it('switches between local cases without carrying the earlier case records', async () => {
+    seedWorkspace('studenta001', 'Student A', 4); seedWorkspace('studentb002', 'Student B', 2);
+    await withHost(async host => {
+      expect(abcMetric(host)).toBe('4'); await switchStudent(host, 'Student B'); await flushReact();
+      expect(abcMetric(host)).toBe('2'); expect(host.querySelector('select[aria-label="Choose a student"]').value).toBe('Student B');
+      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001')).abcEntries).toHaveLength(4);
     });
-    const firebase = installRetryFirebase(initialRemote);
-    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
-    window.dispatchEvent(new Event('offline'));
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(() => abcMetric(host) === '1', 'Retry test workspace did not hydrate');
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
-        (button) => button.textContent.includes('Student Profile')
-      );
-      expect(profileToggle).toBeTruthy();
-      await React.act(async () => {
-        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const interests = profileToggle.parentElement.querySelector('textarea');
-      const setTextareaValue = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        'value'
-      ).set;
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'Queued while offline');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await Promise.resolve();
-      });
-      await React.act(async () => {
-        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 2100));
-      });
-      expect(firebase.studentAttempts()).toBe(1);
-      expect(firebase.readStudentRemote()).toMatchObject({ revision: 1 });
-      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_dirty_studenta001'))).toMatchObject({
-        pending: true,
-        revision: 1
-      });
-      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
-        status.textContent.includes('Queued')
-      )).toBe(true);
-
-      Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
-      window.dispatchEvent(new Event('online'));
-      await waitForCondition(
-        () => firebase.readStudentRemote().revision === 2,
-        'Queued workspace did not retry after reconnect'
-      );
-      expect(firebase.readStudentRemote().studentProfile.interests).toBe('Queued while offline');
-      expect(firebase.studentAttempts()).toBe(2);
-      expect(localStorage.getItem('behaviorLens_workspace_dirty_studenta001')).toBeNull();
-    } finally {
-      Object.defineProperty(navigator, 'onLine', { configurable: true, value: originalOnline });
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
   });
-  it('recovers dirty local work across reload before applying a newer cloud copy', async () => {
-    const local = Object.assign(workspace('Student A', 3), {
-      revision: 1,
-      savedAt: '2026-08-09T12:30:00.000Z'
-    });
-    localStorage.setItem('behaviorLens_workspace_studenta001', JSON.stringify(local));
-    localStorage.setItem('behaviorLens_workspace_dirty_studenta001', JSON.stringify({
-      pending: true,
-      revision: 1,
-      savedAt: local.savedAt
-    }));
-    const remote = Object.assign(workspace('Student A', 2), {
-      revision: 2,
-      updatedAt: '2026-08-09T13:00:00.000Z'
-    });
-    const firebase = installVersionedFirebase(remote);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      try {
-        await waitForCondition(
-          () => Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-            alert.textContent.includes('Unsynced local work and the cloud copy differ.')
-          ),
-          'Reload recovery conflict did not appear'
-        );
-      } catch (error) {
-        const alerts = Array.from(host.querySelectorAll('[role="alert"]')).map((alert) => alert.textContent.trim());
-        const studentReads = firebase.getDoc.mock.calls.filter(([ref]) => ref.path.endsWith('/studenta001')).length;
-        const dirty = localStorage.getItem('behaviorLens_workspace_dirty_studenta001');
-        throw new Error(`Reload recovery conflict did not appear; metric=${abcMetric(host)} studentReads=${studentReads} dirty=${dirty} alerts=${JSON.stringify(alerts)}`);
-      }
+  it('rapid local switches keep the final selected case and both stored histories', async () => {
+    seedWorkspace('studenta001', 'Student A', 3); seedWorkspace('studentb002', 'Student B', 1);
+    await withHost(async host => {
+      await switchStudent(host, 'Student B'); await switchStudent(host, 'Student A'); await flushReact();
       expect(abcMetric(host)).toBe('3');
-      expect(firebase.readStudentRemote()).toMatchObject({ revision: 2 });
-      const recoveryAlert = Array.from(host.querySelectorAll('[role="alert"]')).find((alert) =>
-        alert.textContent.includes('Unsynced local work and the cloud copy differ.')
-      );
-      expect(recoveryAlert.textContent).toContain('Local revision 1; cloud revision 2.');
-      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
-        status.textContent.trim() === 'Conflict'
-      )).toBe(true);
-      const useCloudButton = Array.from(recoveryAlert.querySelectorAll('button')).find(
-        (button) => button.textContent.includes('Use cloud copy')
-      );
-      await React.act(async () => {
-        useCloudButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      // Replacing this browser's copy asks first (since 2026-09-24); confirm in the dialog.
-      await waitForCondition(() => Array.from(document.querySelectorAll('button')).some((button) =>
-        button.textContent.trim() === 'Use cloud copy' && !recoveryAlert.contains(button)), 'The use-cloud confirmation did not open');
-      await React.act(async () => {
-        Array.from(document.querySelectorAll('button')).find((button) =>
-          button.textContent.trim() === 'Use cloud copy' && !recoveryAlert.contains(button)).click();
-        await Promise.resolve();
-      });
-      await waitForCondition(() => abcMetric(host) === '2', 'Cloud recovery choice did not hydrate');
-      await waitForCondition(
-        () => localStorage.getItem('behaviorLens_workspace_dirty_studenta001') === null,
-        'Cloud recovery choice did not clear the dirty marker'
-      );
-      expect(firebase.readStudentRemote()).toMatchObject({ revision: 2 });
-    } finally {
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
-  });
-
-  it('pauses shared writes and preserves a durable draft when another tab changes the workspace', async () => {
-    const remote = Object.assign(workspace('Student A', 1), {
-      revision: 1,
-      updatedAt: '2026-08-09T12:00:00.000Z'
+      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_studentb002')).abcEntries).toHaveLength(1);
     });
-    const firebase = installVersionedFirebase(remote);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(() => abcMetric(host) === '1', 'Cross-tab workspace did not hydrate');
-      const workspaceKey = 'behaviorLens_workspace_studenta001';
-      const previousValue = localStorage.getItem(workspaceKey);
-      const otherTabWorkspace = Object.assign(workspace('Student A', 2), {
-        revision: 1,
-        savedAt: '2026-08-09T13:00:00.000Z'
-      });
-      const otherValue = JSON.stringify(otherTabWorkspace);
-      localStorage.setItem(workspaceKey, otherValue);
-      await React.act(async () => {
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: workspaceKey,
-          oldValue: previousValue,
-          newValue: otherValue,
-          storageArea: localStorage,
-          url: window.location.href
-        }));
-        await Promise.resolve();
-      });
-
-      await waitForCondition(
-        () => Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-          alert.textContent.includes('Another tab changed this workspace.')
-        ),
-        'Cross-tab conflict alert did not appear'
-      );
-      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
-        status.textContent.trim() === 'Tab conflict'
-      )).toBe(true);
-      const draftKey = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)).find(
-        (key) => key && key.startsWith('behaviorLens_workspace_tabdraft_studenta001_')
-      );
-      expect(draftKey).toBeTruthy();
-      expect(JSON.parse(localStorage.getItem(draftKey)).abcEntries).toHaveLength(1);
-
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
-        (button) => button.textContent.includes('Student Profile')
-      );
-      await React.act(async () => {
-        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const interests = profileToggle.parentElement.querySelector('textarea');
-      const setTextareaValue = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        'value'
-      ).set;
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'Preserved only in this tab draft');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await Promise.resolve();
-      });
-      await waitForCondition(
-        () => JSON.parse(localStorage.getItem(draftKey)).studentProfile.interests === 'Preserved only in this tab draft',
-        'Current tab edits were not redirected to the durable draft'
-      );
-      expect(JSON.parse(localStorage.getItem(workspaceKey)).abcEntries).toHaveLength(2);
-      expect(firebase.readStudentRemote()).toMatchObject({ revision: 1 });
-
-      const conflictAlert = Array.from(host.querySelectorAll('[role="alert"]')).find((alert) =>
-        alert.textContent.includes('Another tab changed this workspace.')
-      );
-      const loadOtherButton = Array.from(conflictAlert.querySelectorAll('button')).find(
-        (button) => button.textContent.includes('Load other tab copy')
-      );
-      await React.act(async () => {
-        loadOtherButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      await waitForCondition(() => abcMetric(host) === '2', 'Other-tab workspace did not hydrate');
-      expect(localStorage.getItem(draftKey)).toBeNull();
-      expect(Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-        alert.textContent.includes('Another tab changed this workspace.')
-      )).toBe(false);
-    } finally {
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
   });
-
+  it('opening a case with no saved records does not display the preceding case', async () => {
+    seedWorkspace('studenta001', 'Student A', 3);
+    await withHost(async host => {
+      expect(abcMetric(host)).toBe('3'); await switchStudent(host, 'Student B'); await flushReact();
+      expect(['0', null]).toContain(abcMetric(host));
+      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001')).abcEntries).toHaveLength(3);
+    });
+  });
+  it('edits are staged locally and never sent to a configured legacy account', async () => {
+    seedWorkspace('studenta001', 'Student A', 1); const cloud = installVersionedFirebase(workspace('Student A', 9));
+    await withHost(async host => {
+      const toggle = [...host.querySelectorAll('button[aria-expanded]')].find(button => button.textContent.includes('Student Profile'));
+      await React.act(async () => toggle.click());
+      const area = toggle.parentElement.querySelector('textarea');
+      await React.act(async () => {
+        Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set.call(area, 'PRIVATE LOCAL INTEREST');
+        area.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await waitForCondition(() => JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001') || '{}').studentProfile?.interests === 'PRIVATE LOCAL INTEREST', 'Profile edit was not staged locally');
+      expect(cloud.getDoc).not.toHaveBeenCalled(); expect(cloud.runTransaction).not.toHaveBeenCalled();
+      expect(cloud.readStudentRemote().abcEntries).toHaveLength(9);
+    });
+  });
+  it('reconnect cannot send protected data through legacy Firebase sync', async () => {
+    seedWorkspace('studenta001', 'Student A', 2); const cloud = installVersionedFirebase(workspace('Student A', 9));
+    await withHost(async host => {
+      await React.act(async () => window.dispatchEvent(new Event('online'))); await flushReact();
+      expect(abcMetric(host)).toBe('2'); expect(cloud.getDoc).not.toHaveBeenCalled(); expect(cloud.runTransaction).not.toHaveBeenCalled();
+    });
+  });
+  it('dirty local work survives remount without a newer cloud record replacing it', async () => {
+    seedWorkspace('studenta001', 'Student A', 3);
+    localStorage.setItem('behaviorLens_workspace_dirty_studenta001', JSON.stringify({ pending: true, revision: 1 }));
+    const cloud = installVersionedFirebase({ ...workspace('Student A', 9), revision: 8 });
+    await withHost(async host => expect(abcMetric(host)).toBe('3'));
+    await withHost(async host => expect(abcMetric(host)).toBe('3'));
+    expect(cloud.getDoc).not.toHaveBeenCalled(); expect(cloud.runTransaction).not.toHaveBeenCalled();
+  });
   it('warns and offers export before projected browser storage reaches capacity', async () => {
     const remote = Object.assign(workspace('Student A', 1), { revision: 1 });
     installVersionedFirebase(remote);
@@ -684,121 +384,6 @@ describe('Behavior Lens mounted workspace lifecycle', () => {
       host.remove();
     }
   });
-
-  it('surfaces a durable export action when browser workspace storage fails', async () => {
-    const remote = Object.assign(workspace('Student A', 1), { revision: 1 });
-    installVersionedFirebase(remote);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-    let storageSpy = null;
-
-    try {
-      await waitForCondition(() => abcMetric(host) === '1', 'Storage failure workspace did not hydrate');
-      const originalSetItem = window.Storage.prototype.setItem;
-      storageSpy = vi.spyOn(window.Storage.prototype, 'setItem').mockImplementation(function (key, value) {
-        if (key === 'behaviorLens_workspace_studenta001') {
-          const error = new DOMException('Storage quota exceeded', 'QuotaExceededError');
-          throw error;
-        }
-        return originalSetItem.call(this, key, value);
-      });
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
-        (button) => button.textContent.includes('Student Profile')
-      );
-      await React.act(async () => {
-        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const interests = profileToggle.parentElement.querySelector('textarea');
-      const setTextareaValue = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        'value'
-      ).set;
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'Triggers storage warning');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await Promise.resolve();
-      });
-      await waitForCondition(
-        () => Array.from(host.querySelectorAll('[role="alert"]')).some((alert) =>
-          alert.textContent.includes('Local workspace backup needs attention.')
-        ),
-        'Local persistence warning did not appear'
-      );
-      const storageAlert = Array.from(host.querySelectorAll('[role="alert"]')).find((alert) =>
-        alert.textContent.includes('Local workspace backup needs attention.')
-      );
-      expect(storageAlert.textContent).toContain('Browser storage is full.');
-      expect(storageAlert.querySelector('button').textContent).toContain('Export workspace now');
-    } finally {
-      if (storageSpy) storageSpy.mockRestore();
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
-  });
-  it('preserves a newer local edit when an older cloud save finishes late', async () => {
-    const initialRemote = Object.assign(workspace('Student A', 1), {
-      revision: 1,
-      updatedAt: '2026-08-09T12:00:00.000Z'
-    });
-    const firebase = installDelayedSaveFirebase(initialRemote);
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    const root = await mountBehaviorLens(host, 'Student A');
-
-    try {
-      await waitForCondition(() => abcMetric(host) === '1', 'Delayed-save workspace did not hydrate');
-      const profileToggle = Array.from(host.querySelectorAll('button[aria-expanded]')).find(
-        (button) => button.textContent.includes('Student Profile')
-      );
-      await React.act(async () => {
-        profileToggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await Promise.resolve();
-      });
-      const interests = profileToggle.parentElement.querySelector('textarea');
-      const setTextareaValue = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        'value'
-      ).set;
-
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'First edit sent to cloud');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 2100));
-      });
-      await waitForCondition(() => firebase.studentCommitStarted(), 'Delayed cloud save did not start');
-
-      await React.act(async () => {
-        setTextareaValue.call(interests, 'Newer local edit must survive');
-        interests.dispatchEvent(new Event('input', { bubbles: true }));
-        await new Promise((resolvePromise) => window.setTimeout(resolvePromise, 350));
-      });
-      const dirtyBeforeAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_dirty_studenta001'));
-      const localBeforeAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001'));
-      expect(localBeforeAck.studentProfile.interests).toBe('Newer local edit must survive');
-      expect(dirtyBeforeAck.snapshotId).toBe(localBeforeAck.snapshotId);
-
-      firebase.commitGate.resolve();
-      await waitForCondition(
-        () => firebase.readStudentRemote().revision === 2,
-        'Delayed cloud save did not finish'
-      );
-
-      const localAfterAck = JSON.parse(localStorage.getItem('behaviorLens_workspace_studenta001'));
-      expect(localAfterAck.studentProfile.interests).toBe('Newer local edit must survive');
-      expect(localAfterAck.snapshotId).toBe(localBeforeAck.snapshotId);
-      expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_dirty_studenta001')).snapshotId)
-        .toBe(localBeforeAck.snapshotId);
-      expect(Array.from(host.querySelectorAll('[role="status"]')).some((status) =>
-        status.textContent.includes('Local changes pending')
-      )).toBe(true);
-    } finally {
-      firebase.commitGate.resolve();
-      await React.act(async () => { root.unmount(); });
-      host.remove();
-    }
-  }, 15000);
 
   it('paginates a large ABC table without dropping filtered records', async () => {
     const largeWorkspace = workspace('Student A', 120);

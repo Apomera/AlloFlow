@@ -226,6 +226,16 @@ describe('dark mode: state variants are remapped too', () => {
     expect(variants.supported).toContain('hover:bg-slate-100');
   });
 
+  it('remaps the native image-upload button surface and text in both themes', () => {
+    for (const token of ['file:bg-fuchsia-100', 'file:text-fuchsia-900']) {
+      expect(variants.supported).toContain(token);
+      expect(variants.unsupported).not.toContain(token);
+      for (const theme of ['dark', 'contrast']) {
+        expect(css).toContain('.theme-' + theme + ' .allo-docsuite [class~="' + token + '"]::file-selector-button');
+      }
+    }
+  });
+
   it('emits a rule for every supported variant token whose base token maps', () => {
     const missing = variants.supported.filter((full) => {
       const s = gen.splitVariant(full);

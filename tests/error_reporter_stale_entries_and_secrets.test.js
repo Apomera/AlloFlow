@@ -47,7 +47,15 @@ const oldEntry = (ageMs, message, extra = {}) => ({
 });
 
 function reportOf(w) {
-  w.AlloModules.ErrorReporter.openPanel('errors');
+  if (!w.document.getElementById('allo-err-panel')) w.AlloModules.ErrorReporter.openPanel('errors');
+  let checkbox = w.document.getElementById('aer-review-confirm');
+  expect(checkbox).toBeTruthy();
+  expect(checkbox.disabled).toBe(false);
+  checkbox.click();
+  checkbox = w.document.getElementById('aer-review-confirm');
+  if (!checkbox.checked) checkbox.click();
+  expect(w.document.getElementById('aer-review-confirm').checked).toBe(true);
+  expect(w.document.getElementById('aer-send').disabled).toBe(false);
   w.document.getElementById('aer-send').click();
   return w.__sent[w.__sent.length - 1];
 }

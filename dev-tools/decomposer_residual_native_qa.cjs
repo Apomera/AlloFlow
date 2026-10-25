@@ -1,0 +1,43 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const root=process.cwd(),arg=name=>process.argv.find(value=>value.startsWith('--'+name+'='))?.slice(name.length+3),label=arg('report')||'native';assert(/^[a-z0-9-]+$/.test(label));const folder=path.join(root,'reports/decomposer-residual-wcag',label);fs.mkdirSync(folder,{recursive:true});
+const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
+const baseline=arg('source')||'reports/decomposer-comfort-wcag/final-source.js',expected=sha(fs.readFileSync(baseline));
+const prior=fs.readFileSync('dev-tools/decomposer_hunt_navigation_qa.cjs','utf8');
+const at=prior.indexOf('function paletteContrast(target) {'),end=prior.indexOf('\nconst server =',at);assert(at>=0&&end>at);
+const paletteContrast=new Function(prior.slice(at,end)+'\nreturn paletteContrast;')();
+const temp=fs.mkdtempSync(path.join(folder,'native-profile-'));process.env.TEMP=process.env.TMP=temp;
+const browsers=path.join(process.env.USERPROFILE,'AppData/Local/ms-playwright');if(fs.existsSync(browsers))process.env.PLAYWRIGHT_BROWSERS_PATH=browsers;
+const {chromium}=require('playwright');
+const result={sourceSha256:expected,baseline,preview:arg('url')||'http://127.0.0.1:8777/',scope:'Bounded independent gradient/arrow contrast adjudication and actual sequential focus visibility. Computed gradient interpolation only, plus original isolated review-host paint. No complete WCAG claim.',palettes:[],focus:[],comparison:[],captures:[],errors:[]};
+const cssFile=fs.readdirSync('app/static/css').find(file=>/^main\.[a-z0-9]+\.css$/i.test(file));
+result.inputs=['dev-tools/decomposer_residual_native_qa.cjs','dev-tools/decomposer_hunt_navigation_qa.cjs','tests/helpers/stem_focus_visibility_browser_checks.js','tests/helpers/stem_wcag_browser_checks.js','app/static/css/'+cssFile,'app_styles_module.js','stem_lab/stem_lab_module.js'].map(file=>({path:file,sha256:sha(fs.readFileSync(file))}));
+let browser;
+const save=()=>fs.writeFileSync(path.join(folder,'native-residual-progress.json'),JSON.stringify(result,null,2));
+(async()=>{try{
+ const source=await fetch(result.preview+'stem_lab/stem_tool_decomposer.js').then(response=>response.text());assert.equal(sha(source),expected,'Review preview differs from frozen baseline');
+ browser=await chromium.launch({headless:true,args:['--disk-cache-size=1','--media-cache-size=1','--disable-background-networking']});
+ const page=await browser.newPage({viewport:{width:640,height:1000},reducedMotion:'reduce'});page.on('pageerror',error=>result.errors.push(String(error)));await page.goto(result.preview);await page.waitForFunction(()=>window.decomposerData);
+ const settle=()=>page.evaluate(async()=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));await Promise.all(document.getAnimations().filter(animation=>Number.isFinite(animation.effect.getTiming().iterations)).map(animation=>animation.finished.catch(()=>{})));await new Promise(resolve=>requestAnimationFrame(resolve));});
+ async function mount(seed,theme){await page.emulateMedia({forcedColors:theme==='forced-colors'?'active':'none'});await page.evaluate(({seed,theme})=>{window.qaAiMode='complete';mountDecomposer(seed,theme==='forced-colors'?'light':theme);},{seed,theme});await settle();}
+ const quiz={tab:'quiz',selected:'Water',quizMode:true,quizQ:{text:'Which formula represents water?',opts:['H₂O','NaCl','CO₂','O₂'],answer:'H₂O',answered:true,chosen:'H₂O',concept:'molecule'},quizScore:25,quizStreak:5,bestStreak:12};
+ for(const [name,seed] of [['quiz',quiz],['tutor',{tab:'tutor',selected:'Water',aiInput:'Draft question'}]])for(const theme of ['light','dark','contrast','forced-colors']){
+  await mount(seed,theme);const targets=await page.evaluate(()=>{
+   const root=document.querySelector('#tool-root'),panel=root.querySelector('[role=tabpanel]'),hero=panel.firstElementChild;
+   const named=[['intro',root.querySelector('.from-amber-50>p')],['intro-read',root.querySelector('button[aria-label="Read aloud"]')],['research-points',[...root.querySelectorAll('span')].find(el=>/^\d+ RP$/.test(el.textContent))],['section-title',hero.querySelector('h3')],['section-hint',hero.querySelector('p')],['snapshot',root.querySelector('[data-decomposer-snapshot]')],['send-arrow',root.querySelector('button[aria-label="Send question"]')]];
+   return named.filter(([,el])=>el).map(([name,el])=>{const chain=[];for(let node=el;node;node=node.parentElement){const style=getComputedStyle(node);chain.push({tag:node.tagName,class:node.className,color:style.color,background:style.backgroundColor,image:style.backgroundImage,opacity:Number(style.opacity)});}const style=getComputedStyle(el);return{name,text:el.textContent,color:style.color,disabled:el.disabled||false,chain};});
+  });
+  for(const target of targets)target.contrast=paletteContrast(target);
+  const record={name,theme,targets};result.palettes.push(record);console.log('PALETTE '+name+' '+theme+' minimum '+Math.min(...targets.map(target=>target.contrast.minimumSampledContrast||0)));save();
+ }
+ await mount({tab:'explore',selected:'Table Salt'},'light');await page.locator('#stem-decomposer-compare-open').click();await settle();
+ result.comparison.push(await page.evaluate(()=>{const select=document.querySelector('#stem-decomposer-compare-select'),box=select.parentElement.parentElement;return{scenario:'Open comparison from Table Salt',selected:decomposerData.selected,storedCompareTo:decomposerData.compareTo,selectValue:select.value,selectText:select.selectedOptions[0]?.textContent,cardNames:[...box.querySelectorAll('.text-center.mb-2 .text-sm.font-bold')].map(el=>el.textContent)};}));
+ if(process.argv.includes('--captures')){const file=path.join(folder,'comparison-table-salt.png');await page.locator('#stem-decomposer-compare-select').locator('xpath=../..').screenshot({path:file});result.captures.push({path:path.relative(root,file),sha256:sha(fs.readFileSync(file))});}
+ await mount({tab:'explore',selected:'Water',compareMode:true,compareTo:'Table Salt'},'light');await page.locator('[data-decomposer-material="Table Salt"]').click();await settle();
+ result.comparison.push(await page.evaluate(()=>{const select=document.querySelector('#stem-decomposer-compare-select'),box=select.parentElement.parentElement;return{scenario:'Switch source to existing comparison partner',selected:decomposerData.selected,storedCompareTo:decomposerData.compareTo,selectValue:select.value,selectText:select.selectedOptions[0]?.textContent,cardNames:[...box.querySelectorAll('.text-center.mb-2 .text-sm.font-bold')].map(el=>el.textContent)};}));save();
+ const {auditFocusVisibility}=await import('../tests/helpers/stem_focus_visibility_browser_checks.js');
+ for(const [name,seed] of [['compare',{tab:'explore',selected:'Water',compareMode:true,compareTo:'Table Salt'}],['mix',{tab:'reactions',selected:'Water',reactantA:'Water',reactantB:'Table Salt'}],['quiz',{...quiz,quizQ:{...quiz.quizQ,answered:false,chosen:null}}],['tutor',{tab:'tutor',selected:'Water',aiInput:'Draft question',aiMessages:[{role:'assistant',text:'Water contains hydrogen and oxygen.'}]}]])for(const theme of ['light','dark','contrast','forced-colors']){
+  await mount(seed,theme);const focus=await auditFocusVisibility(page,{maxSteps:120});result.focus.push({name,theme,...focus});console.log('FOCUS '+name+' '+theme+' '+focus.traversed+'/'+focus.candidates+' failures '+focus.failures.length+' unreached '+focus.unreached.length);save();
+ }
+ result.success=result.palettes.every(row=>row.targets.every(target=>target.contrast.known&&target.contrast.minimumSampledContrast>=(target.name==='send-arrow'?3:4.5)))&&result.focus.every(row=>row.failures.length===0&&row.unreached.length===0)&&result.comparison.every(row=>row.selectValue!==row.selected&&row.cardNames.length===2&&row.cardNames[0]===row.selected&&row.cardNames[1]===row.selectValue)&&result.errors.length===0;
+ }catch(error){result.harnessError=String(error);console.error(error);process.exitCode=1;}finally{if(browser){await browser.close();result.browserClosed=true;}const resolved=fs.realpathSync(temp),base=fs.realpathSync(folder);assert(resolved.startsWith(base+path.sep)&&path.basename(resolved).startsWith('native-profile-'));fs.rmSync(resolved,{recursive:true,force:true});result.profileCleaned=true;fs.writeFileSync(path.join(folder,'native-residual-results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({success:result.success,palettes:result.palettes.reduce((count,row)=>count+row.targets.length,0),focusCases:result.focus.length,comparison:result.comparison}));}})();

@@ -65,7 +65,7 @@ const rayStart=source.indexOf('lightRays.forEach(function(r) {',rayShimmerStart)
 if(rayShimmerStart<0||rayStart<rayShimmerStart)throw new Error('Actual light-ray shimmer block missing');
 const rayFrame=braced(rayStart)+');';
 if(!rayFrame.includes('r.mesh.material.opacity')||rayFrame.includes('recyclePos'))throw new Error('Light-ray test selected a recycling block');
-const frame=new Function('live','dt','Math',helper('updateCLHuntWaterLighting')+String.raw`
+const frame=new Function('live','dt','Math',helper('updateCLHuntWaterLighting')+helper('sunlightFractionAt')+helper('realDepthFor')+String.raw`
   const {gameState,scene,sun,ambient,fillLight,octopus,sandTex,causticsTex,caustics,backdrop,camera,backdropMat,surfaceSheet,surfaceMat,surfaceFlow,shaftGroup,shafts,sandDownwelling,lightRays,updateGround}=live;
   const DEPTH_ZONES=live.zones,depthZoneFor=live.zoneFor,now=live.now;
   var causticPhase=live.phase;
@@ -163,5 +163,27 @@ describe('Cephalopod Hunter underwater lighting finish',()=>{
       live.gameState.paused=true;const paused=state(live);for(let tick=0;tick<20;tick++){live.now+=50;frame(live,.05,visualMath);}expect(state(live)).toBe(paused);
       live.gameState.paused=false;live.gameState.gameOver=true;const finished=state(live);frame(live,.05,visualMath);expect(state(live)).toBe(finished);
     }finally{dispose(live);}
+  });
+  // Scene light used to fall off with raw scene units, so the HUD's 723 m
+  // vampire-squid water kept 68% daylight and 2950 m still showed a sunlit cliff.
+  it('takes sunlight from the REAL depth the HUD prints: full on the reef, twilight by 200 m, none in the aphotic zone',()=>{
+    const sun=new Function('Math',helper('sunlightFractionAt')+';return sunlightFractionAt;')(visualMath);
+    const real=new Function('DEPTH_ZONES','depthZoneFor','Math',helper('realDepthFor')+';return realDepthFor;')(depth.zones,depth.zoneFor,visualMath);
+    expect(sun(0)).toBe(1);expect(sun(26)).toBe(1);expect(sun(30)).toBe(1);
+    expect(sun(200)).toBeGreaterThan(0.12);expect(sun(200)).toBeLessThan(0.3);
+    expect(sun(723)).toBeLessThan(0.01);expect(sun(1000)).toBeLessThan(0.001);
+    let prev=2;for(let m=0;m<=7000;m+=25){const v=sun(m);expect(v).toBeLessThanOrEqual(prev);expect(v).toBeGreaterThanOrEqual(0);prev=v;}
+    // The live frame: reef water keeps its tuned tint, 723 m water is darker and has no shafts.
+    const settleAt=(y)=>{const live=world();try{for(let tick=0;tick<120;tick++){live.gameState.verticalY=y;live.octopus.position.y=y+.55;live.now+=50;frame(live,.05,visualMath);}return {bg:live.scene.background.clone(),shaft:live.shafts[0].mesh.material.opacity,sand:live.sandDownwelling.value,sun:live.sun.intensity};}finally{dispose(live);}};
+    const reef=settleAt(0.55),mid=settleAt(-6);
+    expect(real(-6)).toBeGreaterThan(600);expect(real(-6)).toBeLessThan(800);
+    expect(reef.sand).toBeCloseTo(1,5);expect(mid.sand).toBeLessThan(0.01);expect(mid.shaft).toBeLessThan(0.001);expect(mid.sun).toBeLessThan(reef.sun*0.15);
+    const lum=(c)=>0.2126*c.r+0.7152*c.g+0.0722*c.b;
+    expect(lum(mid.bg)).toBeLessThan(lum(reef.bg));
+    // Against each zone's OWN authored tint (the midwater tint is already darker
+    // than the reef's, so a reef-vs-midwater comparison cannot see the change).
+    const zoneColor=(key)=>new THREE.Color(depth.zones[key].fogColor);
+    expect(lum(reef.bg)/lum(zoneColor('reef'))).toBeGreaterThan(0.97);
+    expect(lum(mid.bg)/lum(zoneColor('midwater'))).toBeLessThan(0.6);
   });
 });

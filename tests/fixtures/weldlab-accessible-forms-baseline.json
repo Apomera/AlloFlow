@@ -1,0 +1,38 @@
+{
+  "replacements": [
+    {
+      "old": "                    }, el.label, h('span', { className: 'font-normal text-slate-600' }, ' · ' + el.name)),\n",
+      "new": "                    }, el.label, h('span', { className: 'font-normal text-slate-600' }, ' · ' + el.name + ' · ' + __alloT('stem.weldlab.weight_percent', 'weight percent'))),\n"
+    },
+    {
+      "old": "                      value: ceComp[el.k] != null ? ceComp[el.k] : 0,\n                      'aria-label': el.name + ' ' + __alloT('stem.weldlab.weight_percent', 'weight percent'),\n",
+      "new": "                      value: ceComp[el.k] != null ? ceComp[el.k] : 0,\n"
+    },
+    {
+      "old": "                h('input', { id: 'pipe2-guess', type: 'number', inputMode: 'numeric', value: guess, onChange: function (e) { setGuess(e.target.value); setGuessFb(null); }, className: 'w-40 px-2 py-1.5 rounded-lg border-2 border-slate-500 text-sm text-slate-900 bg-white', placeholder: '$' }),\n",
+      "new": "                h('input', { id: 'pipe2-guess', type: 'number', inputMode: 'numeric', value: guess, 'aria-invalid': guessFb && guessFb.kind === 'nan' ? 'true' : undefined, 'aria-describedby': guessFb ? 'a11y14_pipe_pay_feedback' : undefined, onChange: function (e) { setGuess(e.target.value); setGuessFb(null); }, className: 'w-40 px-2 py-1.5 rounded-lg border-2 border-slate-500 text-sm text-slate-900 bg-white', placeholder: '$' }),\n"
+    },
+    {
+      "old": "                    var g = parseFloat(String(guess).replace(/[$,\\s]/g, ''));\n                    if (!isFinite(g)) { setGuessFb({ kind: 'nan' }); return; }\n                    var diff = g - pay.projectNet, ok = Math.abs(diff) <= Math.max(50, Math.abs(pay.projectNet) * 0.05);\n                    setGuessFb({ kind: ok ? 'ok' : 'off', diff: diff });\n                    announce(ok ? __alloT('stem.weldlab.pipe2_sr_correct', 'Correct') : __alloT('stem.weldlab.pipe2_sr_incorrect', 'Incorrect'));\n",
+      "new": "                    var a11y14_text = String(guess).trim();\n                    var g = a11y14_text !== '' && /^[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?$/i.test(a11y14_text) ? Number(a11y14_text) : NaN;\n                    var a11y14_attempt = (guessFb && guessFb.a11y14_attempt || 0) + 1;\n                    if (!isFinite(g)) { setGuessFb({ kind: 'nan', a11y14_attempt: a11y14_attempt }); return; }\n                    var diff = g - pay.projectNet, ok = Math.abs(diff) <= Math.max(50, Math.abs(pay.projectNet) * 0.05);\n                    setGuessFb({ kind: ok ? 'ok' : 'off', diff: diff, a11y14_attempt: a11y14_attempt });\n"
+    },
+    {
+      "old": "              guessFb && h('p', { className: 'text-sm font-bold ' + (guessFb.kind === 'ok' ? 'text-emerald-900' : 'text-rose-900') },\n                guessFb.kind === 'nan' ? __alloT('stem.weldlab.pipe2_pay_nan', 'Type a dollar amount first.')\n                  : guessFb.kind === 'ok' ? __alloFill(__alloT('stem.weldlab.pipe2_pay_ok', '✓ Within 5%: the model says {value1}.'), { value1: money(pay.projectNet) })\n                  : __alloFill(__alloT('stem.weldlab.pipe2_pay_off', '✗ Off by {value1}. Rework it: straight time + overtime + per diem − costs, per week, then × weeks.'), { value1: money(Math.abs(guessFb.diff)) }))\n",
+      "new": "              h('p', { id: 'a11y14_pipe_pay_feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-bold ' + (guessFb && guessFb.kind === 'ok' ? 'text-emerald-900' : 'text-rose-900') },\n                guessFb && h('span', { key: guessFb.a11y14_attempt },\n                  guessFb.kind === 'nan' ? __alloT('stem.weldlab.pipe2_pay_nan', 'Type a dollar amount first.')\n                    : guessFb.kind === 'ok' ? __alloFill(__alloT('stem.weldlab.pipe2_pay_ok', '✓ Within 5%: the model says {value1}.'), { value1: money(pay.projectNet) })\n                    : __alloFill(__alloT('stem.weldlab.pipe2_pay_off', '✗ Off by {value1}. Rework it: straight time + overtime + per diem − costs, per week, then × weeks.'), { value1: money(Math.abs(guessFb.diff)) })))\n"
+    }
+  ],
+  "regions": [
+    {
+      "name": "ce",
+      "start": "        function renderCeSection() {",
+      "end": "        function renderCrackSketch(kind, focused, detail) {",
+      "sha256": "4fc6f56d1208414ac4df6dfe9770037873dfc2b1300d73215bd370479fef7dbe"
+    },
+    {
+      "name": "pay",
+      "start": "        function renderPay() {",
+      "end": "        function renderOrbitalExplorer() {",
+      "sha256": "b60bf77b41ff248627c823ff52f5005ea263735d6d1e6ce83a65ec6204000e3d"
+    }
+  ]
+}

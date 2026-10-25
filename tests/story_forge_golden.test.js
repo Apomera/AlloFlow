@@ -32,6 +32,20 @@ beforeAll(() => {
 });
 
 describe('computeReadingLevel — Flesch-Kincaid grade', () => {
+  it('round-trips authored scenes, cover art, and reference drawings through project sanitization', () => {
+    const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    const scene = { elements: [{ id: 'box', type: 'rectangle', x: 0, y: 0, width: 50, height: 40 }], files: {} };
+    const project = FK.sanitizeStoryForgeProject({ artifactType: 'comic', layoutMode: 'comic', coverArt: png,
+      coverArtwork: { altText: 'A mountain', whiteboardScene: scene },
+      illustrations: { p: { imageUrl: png, altText: 'A hill', whiteboardScene: scene } },
+      comicContinuity: { references: [{ id: 'hero', name: 'Hero', imageUrl: png, whiteboardScene: scene }] } });
+    const restored = FK.sanitizeStoryForgeProject(JSON.parse(JSON.stringify(project)));
+    expect(restored.coverArt).toBe(png); expect(restored.coverArtwork.whiteboardScene).toEqual(scene);
+    expect(restored.coverArtwork.altText).toBe('A mountain');
+    expect(restored.illustrations.p.whiteboardScene).toEqual(scene);
+    expect(restored.illustrations.p.altText).toBe('A hill');
+    expect(restored.comicContinuity.references[0].whiteboardScene).toEqual(scene);
+  });
   it('returns null for empty / too-short text (<20 chars trimmed)', () => {
     expect(FK.computeReadingLevel('')).toBeNull();
     expect(FK.computeReadingLevel('short')).toBeNull();

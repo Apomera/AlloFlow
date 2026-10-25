@@ -295,9 +295,11 @@ describe('Migration Lab formation readout', () => {
     draws.length = 0;
     drive(10);
 
-    const line = draws.find((d) => /Energy saved/.test(d));
-    expect(line, 'the canvas prints an energy-saved readout').toBeTruthy();
-    const shown = Number((line.match(/Energy saved\s+(\d+)%/) || [])[1]);
+    const value = m.host.querySelector('[data-formation-saving]');
+    expect(value, 'the visible semantic readout reports follower savings').toBeTruthy();
+    const shown = Number(value.textContent.replace('%', '').trim());
+    expect(value.closest('figcaption')).not.toBeNull();
+    expect(draws.some(text => /Energy saved/.test(text)), 'readout prose should not remain in the bitmap').toBe(false);
     const modelV = Math.round(tool._testing.savingFor('v') * 100);
     expect(Number.isFinite(shown)).toBe(true);
     // A perfect V is the best case, so it should reach the documented saving

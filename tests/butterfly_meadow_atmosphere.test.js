@@ -184,12 +184,23 @@ describe('Meadow atmosphere and pollinator watching',()=>{
     world.animate(12,false,false);expect(motion()).toEqual([12,1,1]);
   });
 
-  it('uses meadow time for floating seeds and keeps the paused and reduced-motion atmosphere still',()=>{
+  it('uses meadow time for seeds and distant birds, keeping paused and reduced-motion scenery still',()=>{
     const particles=world.atmosphere.root;
     const geometry=particles.geometry,material=particles.material,positions=geometry.attributes.position.array;
     const uniforms=material.uniforms;
     expect(particles.isPoints).toBe(true);
     expect(Array.from(positions).every(Number.isFinite)).toBe(true);
+    const records=geometry.attributes.bfParticle,kinds=Array.from({length:records.count},(_,index)=>records.getW(index));
+    expect(geometry.attributes.position.count).toBe(98);
+    expect(kinds.filter(kind=>kind===0)).toHaveLength(76);
+    expect(kinds.filter(kind=>kind===1)).toHaveLength(20);
+    expect(kinds.filter(kind=>kind===2)).toHaveLength(2);
+    for(let index=96;index<98;index++){
+      const point=new THREE.Vector3().fromBufferAttribute(geometry.attributes.position,index);
+      expect(point.y,'birds remain above the flower patches').toBeGreaterThan(30);
+      expect(Math.min(Math.abs(point.x),Math.abs(point.z)),'bird paths stay at the distant woodland').toBeGreaterThan(150);
+      expect(records.getY(index),'distant birds retain a small apparent silhouette').toBeLessThan(3);
+    }
     world.animate(7.25,false,false);
     expect(uniforms.bfAirClock.value).toBe(7.25);
     expect(particles.visible).toBe(true);

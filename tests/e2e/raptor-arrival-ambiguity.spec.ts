@@ -1,0 +1,52 @@
+import { test, expect, type Page } from '@playwright/test';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { GlHarness } from './helpers/stem_gl_harness';
+import { readPng } from './helpers/png_pixels';
+test.use({video:'off',trace:'off',hasTouch:true});test.describe.configure({timeout:180000,retries:0});
+const output=resolve(process.env.AVIAN_REPORT_DIR ? process.env.AVIAN_REPORT_DIR + '/arrival' : 'reports/avian-simulations-round35-2026-10-23/raptor'),root='[data-arrival-ambiguity]';
+const harness=new GlHarness({toolId:'raptorHunt',toolFile:'stem_lab/stem_tool_raptorhunt.js',width:1100,height:1000,appStyles:true,layout:'document',extraScripts:['node_modules/axe-core/axe.min.js']});
+test.beforeAll(async()=>{mkdirSync(output,{recursive:true});await harness.start();});test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
+async function mount(page:Page){const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await harness.mount(page,{raptorHunt:{activeSection:'hearing'}},undefined,{expectCanvas:false});await expect(page.locator(root)).toBeVisible();return errors;}
+async function verify(page:Page){const data=await page.evaluate(()=>{
+  const points=(selector:string)=>[...document.querySelectorAll(selector)].map(n=>{const circle=n as SVGCircleElement;return[circle.cx.baseVal.value,circle.cy.baseVal.value];});
+  const sources=points('[data-ambiguity-source]'),ears=points('[data-ambiguity-ear]'),values:any={},bars:any={};
+  document.querySelectorAll('[data-ambiguity-value]').forEach(n=>values[n.getAttribute('data-ambiguity-value')!]=Number(n.textContent));document.querySelectorAll('[data-ambiguity-bar]').forEach(n=>bars[n.getAttribute('data-ambiguity-bar')!]=(n as SVGRectElement).width.baseVal.value);
+  const paths=[...document.querySelectorAll('[data-ambiguity-path]')].map(n=>{const line=n as SVGLineElement;return[line.x1.baseVal.value,line.y1.baseVal.value,line.x2.baseVal.value,line.y2.baseVal.value];});
+  const axis=document.querySelector('[data-ambiguity-reference-axis]') as SVGLineElement;
+  return {sources,ears,values,bars,paths,axis:[axis.x1.baseVal.value,axis.y1.baseVal.value,axis.x2.baseVal.value,axis.y2.baseVal.value],matched:document.querySelector('[data-ambiguity-matched]')!.getAttribute('data-ambiguity-matched'),head:Number((document.querySelector('#rh-sound-head') as HTMLInputElement).value)};
+});
+  const lengths=data.sources.map((s,idx)=>data.ears.map((ear,i)=>{const value=Math.hypot(s[0]-ear[0],s[1]-ear[1]),key=(idx?'B':'A')+'-'+i;expect(data.values[key]).toBeCloseTo(value,2);expect(data.bars[key]).toBeCloseTo(value/280*300,4);expect(data.paths[idx*2+i]).toEqual([...s,...ear]);return value;}));
+  data.sources.forEach(s=>expect(Math.hypot(s[0]-320,s[1]-280)).toBeCloseTo(220,4));expect(Math.hypot(data.ears[0][0]-data.ears[1][0],data.ears[0][1]-data.ears[1][1])).toBeCloseTo(76,4);
+  // The fixed axis bisects the two sources and is perpendicular to their difference.
+  const direction=[data.axis[2]-data.axis[0],data.axis[3]-data.axis[1]],mid=[(data.sources[0][0]+data.sources[1][0])/2-320,(data.sources[0][1]+data.sources[1][1])/2-280],delta=[data.sources[1][0]-data.sources[0][0],data.sources[1][1]-data.sources[0][1]];
+  expect(Math.abs(mid[0]*direction[1]-mid[1]*direction[0])).toBeLessThan(.02);expect(Math.abs(delta[0]*direction[0]+delta[1]*direction[1])).toBeLessThan(.02);
+  return {...data,lengths};
+}
+test('held source reflections begin indistinguishable and separate under controlled receiver turns',async({page})=>{
+  const errors=await mount(page),checks:any[]=[];
+  for(const [bearing,head] of [[40,0],[-65,-20],[20,55],[0,0],[88,30]]){
+    await page.locator('#rh-sound-bearing').fill(String(bearing));await page.locator('#rh-sound-head').fill(String(head));await page.locator('[data-ambiguity-hold]').click();const initial=await verify(page);expect(initial.matched).toBe('true');initial.lengths[0].forEach((d,i)=>expect(d).toBeCloseTo(initial.lengths[1][i],4));
+    const next=head>0?head-25:head+25;await page.locator('[data-ambiguity-head]').fill(String(next));const changed=await verify(page);expect(changed.matched).toBe('false');expect(changed.sources).toEqual(initial.sources);expect(changed.head).toBe(next);checks.push({bearing,head,initial,changed});
+    await page.locator('[data-ambiguity-restore]').click();expect((await verify(page)).matched).toBe('true');await page.locator('[data-ambiguity-clear]').click();await expect(page.locator('[data-ambiguity-hold]')).toBeFocused();await expect(page.locator('[data-ambiguity-scene]')).toHaveCount(0);
+  }
+  await page.locator('#rh-sound-bearing').fill('90');await page.locator('#rh-sound-head').fill('0');await expect(page.locator('[data-ambiguity-hold]')).toBeDisabled();await expect(page.locator(root)).toContainText('positions overlap');
+  await page.locator('#rh-sound-bearing').fill('40');await page.locator('[data-ambiguity-hold]').click();await page.locator('[data-ambiguity-head]').fill('-50');await expect(page.locator('[data-ambiguity-hold]')).toBeDisabled();await page.locator('[data-ambiguity-clear]').click();await expect(page.locator('#rh-sound-bearing')).toBeFocused();await page.locator('#rh-sound-head').fill('0');await page.locator('[data-ambiguity-hold]').click();await page.locator('#rh-sound-bearing').fill('30');await expect(page.locator(root)).toHaveAttribute('data-ambiguity-active','false');
+  await page.locator('[data-ambiguity-hold]').click();await page.locator('[data-sound-challenge]').click();await expect(page.locator(root)).toHaveCount(0);await expect(page.locator('[data-ambiguity-source]')).toHaveCount(0);await page.locator('[data-sound-explore]').click();await expect(page.locator(root)).toHaveAttribute('data-ambiguity-active','false');
+  expect(errors).toEqual([]);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);writeFileSync(resolve(output,'ambiguity-geometry.json'),JSON.stringify(checks,null,2));
+});
+async function screenPoint(page:Page,x:number,y:number){return page.locator('[data-ambiguity-scene]').evaluate((n:SVGSVGElement,p)=>{const point=n.createSVGPoint();point.x=p.x;point.y=p.y;const v=point.matrixTransform(n.getScreenCTM()!);return{x:v.x,y:v.y};},{x,y});}
+test('direct rotation supports keyboard, drag cancellation and touch across responsive layouts',async({page})=>{
+  const errors=await mount(page),layouts:any[]=[];await page.locator('[data-ambiguity-hold]').click();
+  const handle=page.locator('[data-ambiguity-handle]');await handle.focus();await page.keyboard.press('End');expect((await verify(page)).head).toBe(60);await page.keyboard.press('Home');expect((await verify(page)).head).toBe(-60);await page.keyboard.press('Shift+ArrowRight');expect((await verify(page)).head).toBe(-50);await page.locator('[data-ambiguity-restore]').click();
+  await handle.scrollIntoViewIfNeeded();let a=await screenPoint(page,320,169),b=await screenPoint(page,320+111*Math.sin(Math.PI/6),280-111*Math.cos(Math.PI/6));
+  await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:5});expect((await verify(page)).head).toBeCloseTo(30,0);await page.keyboard.press('Escape');await page.mouse.up();expect((await verify(page)).head).toBe(0);
+  for(const [viewport,host] of [[1280,1100],[1280,500],[390,390]]){
+    await page.setViewportSize({width:viewport,height:1200});await page.locator('#wrap').evaluate((n:HTMLElement,width)=>{n.style.width=width+'px';n.style.maxWidth='100%';},host);await page.locator('[data-ambiguity-head]').fill('25');await verify(page);
+    const layout=await page.locator(root).evaluate(n=>({doc:document.documentElement.scrollWidth,controls:[...n.querySelectorAll('button,input')].map(c=>c.getBoundingClientRect().height),handle:n.querySelector('[data-ambiguity-handle] circle')!.getBoundingClientRect().width,labels:[...n.querySelectorAll('svg text')].map(c=>c.getBoundingClientRect().height)}));expect(layout.doc).toBeLessThanOrEqual(viewport);layout.controls.forEach(h=>expect(h).toBeGreaterThanOrEqual(44));expect(layout.handle).toBeGreaterThanOrEqual(44);layout.labels.forEach(h=>expect(h).toBeGreaterThan(9));
+    const axe=await page.evaluate(async()=>(await (window as any).axe.run({include:['[data-arrival-ambiguity]']},{runOnly:{type:'rule',values:['color-contrast','button-name','label','aria-valid-attr-value','aria-required-children','aria-required-parent','nested-interactive']}})).violations.map((v:any)=>({id:v.id,nodes:v.nodes.map((n:any)=>n.target)})));expect(axe).toEqual([]);layouts.push({viewport,host,...layout,axe});
+    if(host===1100||host===390){await page.setViewportSize({width:viewport,height:3200});await page.evaluate(async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});await page.locator(root).evaluate(n=>{for(let p=n.parentElement;p;p=p.parentElement)p.scrollTop=0;window.scrollTo(0,0);n.scrollIntoView({block:'center',behavior:'instant'});});const bounds=(await page.locator(root).boundingBox())!;expect(bounds.y).toBeGreaterThanOrEqual(0);expect(bounds.y+bounds.height).toBeLessThanOrEqual(3200);const path=resolve(output,`ambiguity-${host}.png`);await page.locator(root).screenshot({path,scale:'css',animations:'disabled'});const png=readPng(readFileSync(path));expect(Math.abs(png.width-bounds.width)).toBeLessThanOrEqual(2);expect(Math.abs(png.height-bounds.height)).toBeLessThanOrEqual(2);await page.setViewportSize({width:viewport,height:1200});}
+  }
+  await page.locator('[data-ambiguity-head]').fill('0');await handle.scrollIntoViewIfNeeded();a=await screenPoint(page,320,169);b=await screenPoint(page,320-111*Math.sin(Math.PI/6),280-111*Math.cos(Math.PI/6));const cdp=await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,...a}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,...b}]});await expect.poll(async()=>Number(await page.locator('[data-ambiguity-head]').inputValue())).toBe(-30);await verify(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});await expect.poll(async()=>Number(await page.locator('[data-ambiguity-head]').inputValue())).toBe(0);await verify(page);await cdp.detach();expect(errors).toEqual([]);writeFileSync(resolve(output,'ambiguity-layout.json'),JSON.stringify(layouts,null,2));
+});

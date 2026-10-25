@@ -74,18 +74,18 @@ async function sceneState(page: Page) {
 async function openObservation(page: Page) {
   const root = page.locator('[data-study-observation]');
   if (!(await root.evaluate(el => (el as HTMLDetailsElement).open))) await root.locator(':scope > summary').click();
-  await expect(page.getByRole('textbox', { name: 'Shape and motion observation', exact: true })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'My observation', exact: true })).toBeVisible();
 }
 
 async function twoObservations(page: Page) {
   await openObservation(page);
   await page.locator('[data-study-viewpoint="profile"]').click();
-  await page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }).fill('The goose has a continuous curved neck and a bill in front of its head.');
+  await page.getByRole('textbox', { name: 'My observation', exact: true }).fill('The goose has a continuous curved neck and a bill in front of its head.');
   await page.getByRole('button', { name: 'Record observation', exact: true }).click();
   await page.getByRole('combobox', { name: '3D migration focus species', exact: true }).selectOption('monarch');
   await page.locator('[data-study-viewpoint="above"]').click();
   await openObservation(page);
-  await page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }).fill('The Monarch has two patterned wing pairs and antennae rather than a bill.');
+  await page.getByRole('textbox', { name: 'My observation', exact: true }).fill('The Monarch has two patterned wing pairs and antennae rather than a bill.');
   await page.getByRole('button', { name: 'Record observation', exact: true }).click();
   const comparison = page.locator('[data-study-comparison]');
   if (!(await comparison.evaluate(el => (el as HTMLDetailsElement).open))) await comparison.locator(':scope > summary').click();
@@ -180,7 +180,7 @@ test('Migration recorded observations compare species and export only saved evid
   await page.getByRole('button', { name: 'Record comparison', exact: true }).click();
   await expect(page.locator('[data-study-saved-comparison]')).toContainText(claim);
   await page.getByRole('textbox', { name: 'My observation comparison', exact: true }).fill('UNRECORDED_COMPARISON_DRAFT');
-  await page.getByRole('textbox', { name: 'Shape and motion observation', exact: true }).fill('UNRECORDED_OBSERVATION_DRAFT');
+  await page.getByRole('textbox', { name: 'My observation', exact: true }).fill('UNRECORDED_OBSERVATION_DRAFT');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download observation notebook (HTML)', exact: true }).click();
   const download = await downloadPromise;

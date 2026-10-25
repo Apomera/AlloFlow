@@ -109,7 +109,7 @@ test('nectar-only plants offer no leaf-feeding illustration and retain intact su
 test('mobile reduced motion retains reversible bites through illustrated fallback and 3D recovery',async({page})=>{
  const errors=errorsOn(page);await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await mount(page,saved());
  const stage=page.locator('.bf-stage'),before=await state(page);await focus(page);const slider=await half(page),native=await snapshot(page);expectReplacement(native);await stage.screenshot({path:shots+'/mobile-feeding-3d.png'});
- for(const name of ['Continue stage motion','Replay stage motion','Pause stage motion'])await expect(page.getByRole('button',{name,exact:true})).toBeDisabled();await expect(page.getByRole('combobox',{name:'Stage playback speed',exact:true})).toBeDisabled();
+ for(const name of ['Continue stage motion','Replay stage motion','Pause stage motion'])await expect(page.getByRole('button',{name,exact:true})).toBeDisabled();const reducedSpeed=page.getByRole('combobox',{name:'Stage playback speed',exact:true});await expect(reducedSpeed).toBeEnabled();await reducedSpeed.selectOption('0.5');await expect(reducedSpeed).toHaveValue('0.5');
  await page.waitForTimeout(200);await expect(stage).toHaveAttribute('data-bf-life-progress','0.500');
  await page.evaluate(()=>{const w=window as any;w.__feedingDisposals=0;w.__lifeScene.getObjectByName('larval-feeding-leaf').geometry.addEventListener('dispose',()=>w.__feedingDisposals++);});
  await page.locator('.bf-gl').evaluate((canvas:HTMLCanvasElement)=>canvas.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));

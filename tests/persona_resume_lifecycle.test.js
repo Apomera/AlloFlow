@@ -73,6 +73,19 @@ const discard = () => [...host.querySelectorAll('button')].find(button => button
 const advance = async () => { await act(async () => vi.advanceTimersByTimeAsync(1600)); };
 
 describe('Persona resume and autosave lifecycle', () => {
+  it('retains the saved companion language when reopening a conversation', async () => {
+    const saved = snapshot();
+    saved.state.chatHistory = savedHistory.map((message, index) => index === savedHistory.length - 1
+      ? { ...message, translation: 'مرحبا', translationTarget: 'Arabic' } : message);
+    const h = await render({ saved });
+    await act(async () => resume().click());
+    expect(h.props.personaState.chatHistory.at(-1)).toMatchObject({ translation: 'مرحبا', translationTarget: 'Arabic' });
+    expect([...host.querySelectorAll('p[dir="auto"]')].some(node => node.textContent === 'مرحبا')).toBe(true);
+    await advance();
+    expect(h.storage.set).toHaveBeenLastCalledWith('persona_sessions', expect.any(String), expect.objectContaining({
+      state: expect.objectContaining({ chatHistory: expect.arrayContaining([expect.objectContaining({ translationTarget: 'Arabic' })]) }),
+    }));
+  });
   for (const mode of ['single', 'panel']) {
     it(mode + ' ignores a late snapshot after a newer conversation starts', async () => {
       const h = await render({ delayedRead: true, mode });

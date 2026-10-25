@@ -191,8 +191,8 @@ async function completeEvidenceReview(page: Page) {
   const root = await openChallenges(page);
   await root.locator('[data-flight-challenge="wind"]').click();
   const step = (id: string) => root.locator(`[data-mission-progress-step="${id}"]`);
-  const prediction = root.getByRole('textbox', { name: 'Flight challenge prediction', exact: true });
-  const explanation = root.getByRole('textbox', { name: 'Flight challenge explanation', exact: true });
+  const prediction = root.getByRole('textbox', { name: 'My prediction: which control will I change, and why?', exact: true });
+  const explanation = root.getByRole('textbox', { name: 'My explanation: what numbers or route changes support my claim?', exact: true });
   await prediction.fill('A tailwind should improve forward progress while Monarch airspeed stays fixed in this model.');
   await root.locator('[data-flight-challenge-action="load"]').click();
   const wind = page.getByRole('slider', { name: /Along-route wind in meters per second/ });

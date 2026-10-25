@@ -885,7 +885,11 @@ function PersonaChatView(props) {
       var translation = _boundedSnapshotText(message.translation, 12000);
       var evidenceNote = _boundedSnapshotText(message.evidenceNote, 4000);
       if (speakerName) normalized.speakerName = speakerName;
-      if (translation) normalized.translation = translation;
+      if (translation) {
+        normalized.translation = translation;
+        var savedTarget = _boundedSnapshotText(message.translationTarget || message.translationLanguage, 120);
+        normalized.translationTarget = savedTarget && !/^(auto|off)$/i.test(savedTarget) ? savedTarget : 'English';
+      }
       if (evidenceNote) normalized.evidenceNote = evidenceNote;
       var evidenceApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
       var sourceEvidence = message.role === 'model' && evidenceApi && evidenceApi.normalize(message.sourceEvidence);
@@ -1029,7 +1033,7 @@ function PersonaChatView(props) {
         })];
       }),
       chatHistory: (personaState.chatHistory || []).slice(-80).map(function (message) {
-        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
+        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.translationTarget, 120), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
       }),
       earnedBadges: (personaState.earnedBadges || []).slice(0, 20),
       avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : ''
@@ -1720,7 +1724,7 @@ function PersonaChatView(props) {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
-    }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
+    }, t('persona.translation_label') || 'Translation'), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('persona.speak_translation'),
       onClick: e => {
@@ -1731,6 +1735,8 @@ function PersonaChatView(props) {
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 12
     }))), /*#__PURE__*/React.createElement("p", {
+      lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
+      dir: "auto",
       className: "text-xs text-slate-500 leading-relaxed italic"
     }, msg.translation)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
       message: msg,
@@ -2471,7 +2477,7 @@ function PersonaChatView(props) {
         className: "flex items-center gap-2 mb-1"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
-      }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
+      }, t('persona.translation_label') || 'Translation'), /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-label": t('persona.speak_translation'),
         onClick: e => {
@@ -2483,6 +2489,8 @@ function PersonaChatView(props) {
       }, /*#__PURE__*/React.createElement(Volume2, {
         size: 12
       }))), /*#__PURE__*/React.createElement("p", {
+        lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
+        dir: "auto",
         className: "text-xs text-slate-500 leading-relaxed italic"
       }, translationText)));
     })())), /*#__PURE__*/React.createElement("span", {

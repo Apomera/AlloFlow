@@ -15,6 +15,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 let root, host, toasts, replies;
@@ -118,7 +119,7 @@ describe('the hub analysis card', () => {
     seed({ aiAnalysis: freshAnalysis() });
     replies = ['[]'];
     await mount(); await click('All tools');
-    await click('Open AI Pattern Analysis'); await tick();
+    await click('Open AI Pattern Analysis'); await actWithSensitivePromptReview(React, () => {}); await tick();
     expect(toasts.some(([m, k]) => k === 'error' && /Analysis failed/.test(m))).toBe(true);
     expect(text()).toContain('SAVED SUMMARY of the pattern');              // was replaced by an empty card
   });

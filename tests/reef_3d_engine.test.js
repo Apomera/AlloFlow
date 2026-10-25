@@ -110,7 +110,7 @@ describe('Reef3D contract', () => {
 
   it('mounts on the stub renderer with the house renderer settings and builds the scene', () => {
     const t = runtime();
-    expect(Object.keys(t.controller).sort()).toEqual(['dispose', 'getState', 'goToPoint', 'highlightPoint', 'resize', 'setCameraMode', 'setPaused']);
+    expect(Object.keys(t.controller).sort()).toEqual(['dispose', 'getState', 'goToPoint', 'highlightPoint', 'lookCamera', 'resetCamera', 'resize', 'setCameraMode', 'setPaused', 'setReducedMotion', 'zoomCamera']);
     expect(t.counts.render).toBeGreaterThan(0);
     expect(t.renderer.toneMapping).toBe(THREE.ACESFilmicToneMapping);
     expect(t.renderer.outputEncoding).toBe(THREE.sRGBEncoding);
@@ -417,5 +417,59 @@ describe('Reef3D lifecycle', () => {
     expect(t.counts.dispose).toBe(1);
     expect(first.getState().ready).toBe(false);
     second.dispose();
+  });
+});
+
+describe('Reef3D accessible camera and live motion preference', () => {
+  it('looks, zooms and resets while paused without moving the point, fish or habitat', () => {
+    const t = runtime(); t.controller.goToPoint(12); t.controller.setPaused(true); t.controller.resetCamera(); t.step();
+    const initial = t.renderer.camera.position.clone(), fish = t.fish().map(f => f.position.toArray());
+    const habitat = t.renderer.scene.getObjectByName('reef-habitat'), children = habitat.children.slice(), before = t.counts.render;
+    t.controller.lookCamera(40, -30); t.step(); expect(t.renderer.camera.position.distanceTo(initial)).toBeGreaterThan(0.1);
+    const looked = t.renderer.camera.position.clone(); t.controller.zoomCamera(-0.18); t.step(); expect(t.renderer.camera.position.distanceTo(looked)).toBeGreaterThan(0.1);
+    t.controller.resetCamera(); t.step(); expect(t.renderer.camera.position.distanceTo(initial)).toBeLessThan(1e-6);
+    expect(t.counts.render).toBeGreaterThan(before); expect(t.controller.getState()).toMatchObject({paused:true,pointIndex:12,highlightIndex:12});
+    expect(t.fish().map(f => f.position.toArray())).toEqual(fish); expect(habitat.children).toEqual(children); expect(t.renderer.scene.getObjectByName('reef-habitat')).toBe(habitat);
+  });
+
+  it('clamps button zoom and look input, and resets both camera modes', () => {
+    const t = runtime({reducedMotion:true});
+    for (const mode of ['diver','overview']) {
+      t.controller.setCameraMode(mode); t.controller.resetCamera(); t.step(); const initial = t.renderer.camera.position.clone();
+      for (let i=0;i<30;i++) t.controller.zoomCamera(-0.5); t.step(); const close = t.renderer.camera.position.clone(); t.controller.zoomCamera(-0.5); t.step(); expect(t.renderer.camera.position.distanceTo(close)).toBeLessThan(1e-6);
+      for (let i=0;i<30;i++) t.controller.zoomCamera(0.5); t.step(); const far = t.renderer.camera.position.clone(); t.controller.zoomCamera(0.5); t.step(); expect(t.renderer.camera.position.distanceTo(far)).toBeLessThan(1e-6); expect(far.distanceTo(close)).toBeGreaterThan(1);
+      t.controller.lookCamera(Infinity,NaN); t.controller.zoomCamera(NaN); t.step(); expect(t.renderer.camera.position.toArray().every(Number.isFinite)).toBe(true);
+      t.controller.lookCamera(1e6,-1e6); t.step(); expect(t.renderer.camera.position.toArray().every(Number.isFinite)).toBe(true);
+      t.controller.resetCamera(); t.step(); expect(t.renderer.camera.position.distanceTo(initial)).toBeLessThan(1e-6);
+    }
+  });
+
+  it('does not repeatedly toggle pause while Space is held, and preserves canvas-only keyboard ownership', () => {
+    const t = runtime(); t.key(t.canvas,' '); expect(t.controller.getState().paused).toBe(true);
+    for(let i=0;i<4;i++){const event=new KeyboardEvent('keydown',{key:' ',repeat:true,bubbles:true,cancelable:true});t.canvas.dispatchEvent(event);expect(event.defaultPrevented).toBe(true);}
+    expect(t.controller.getState().paused).toBe(true); t.key(document.body,' '); expect(t.controller.getState().paused).toBe(true); t.key(t.canvas,' '); expect(t.controller.getState().paused).toBe(false);
+  });
+
+  it('applies a live preference in place, freezes motion, and waits for explicit resume after disabling it', () => {
+    const t=runtime();t.controller.goToPoint(9);t.run(0.5);const scene=t.renderer.scene, habitat=scene.getObjectByName('reef-habitat'),fish=t.fish();
+    t.controller.setReducedMotion(true);t.step();const stopped=fish.map(f=>f.position.toArray());t.run(1);
+    expect(t.controller.getState()).toMatchObject({reducedMotion:true,paused:true,pointIndex:9,ready:true});expect(fish.map(f=>f.position.toArray())).toEqual(stopped);
+    t.key(t.canvas,' ');t.step();expect(t.controller.getState().paused).toBe(true);expect(fish.map(f=>f.position.toArray())).toEqual(stopped);
+    t.controller.setPaused(false);t.run(0.5);expect(t.controller.getState().paused).toBe(true);expect(fish.map(f=>f.position.toArray())).toEqual(stopped);
+    t.controller.setReducedMotion(false);t.run(0.5);expect(t.controller.getState()).toMatchObject({reducedMotion:false,paused:true});expect(fish.map(f=>f.position.toArray())).toEqual(stopped);
+    t.controller.setPaused(false);t.run(0.5);expect(fish.map(f=>f.position.toArray())).not.toEqual(stopped);
+    t.controller.setReducedMotion(false);expect(t.controller.getState().paused).toBe(false);expect(t.renderer.scene).toBe(scene);expect(scene.getObjectByName('reef-habitat')).toBe(habitat);expect(t.fish()).toEqual(fish);expect(t.counts.dispose).toBe(0);
+  });
+
+  it('starts reduced-motion scenes paused and leaves camera and point control available', () => {
+    const t=runtime({reducedMotion:true});expect(t.controller.getState()).toMatchObject({paused:true,reducedMotion:true});const start=t.fish().map(f=>f.position.toArray());
+    t.key(t.canvas,' ');expect(t.controller.getState().paused).toBe(true);t.controller.goToPoint(19);t.controller.lookCamera(40,0);t.step();expect(t.controller.getState().pointIndex).toBe(19);expect(t.fish().map(f=>f.position.toArray())).toEqual(start);
+    t.controller.setReducedMotion(false);expect(t.controller.getState().paused).toBe(true);t.key(t.canvas,' ');t.run(1);expect(t.controller.getState().paused).toBe(false);expect(t.fish().map(f=>f.position.toArray())).not.toEqual(start);
+  });
+
+  it('ignores new camera and motion calls after disposal without scheduling more frames', () => {
+    const t=runtime();t.controller.dispose();const renders=t.counts.render,state=t.controller.getState();
+    t.controller.lookCamera(40,20);t.controller.zoomCamera(0.18);t.controller.resetCamera();t.controller.setReducedMotion(true);t.step();
+    expect(t.frames.size).toBe(0);expect(t.counts.render).toBe(renders);expect(t.controller.getState()).toEqual(state);
   });
 });

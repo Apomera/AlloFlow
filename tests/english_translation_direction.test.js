@@ -1,63 +1,98 @@
-// An English translation must read left to right, whatever it was translated
-// FROM.
-//
-// Bilingual output is one string split on "--- ENGLISH TRANSLATION ---" and
-// rendered inside a wrapper whose direction comes from the CONTENT language
-// (dir={getContentDirection(...)}). When the source is Arabic, Hebrew, Farsi or
-// Urdu that wrapper is dir="rtl", and the English half inherited it: the text
-// right-aligned and every full stop jumped to the left of its sentence, so a
-// heading rendered as ".Magma Earth and". The English is still English; only
-// the container was wrong.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { transformSync } from '@babel/core';
 
+const require = createRequire(import.meta.url);
+const React = require('../desktop/web-app/node_modules/react');
+const { renderToStaticMarkup } = require('../desktop/web-app/node_modules/react-dom/server');
 const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+const bilingualText = 'Primary passage.\n\n--- ENGLISH TRANSLATION ---\n\nCompanion passage.';
+const languageCodes = { English: 'en-US', Spanish: 'es-ES', French: 'fr-FR', Arabic: 'ar-SA', Hebrew: 'he-IL' };
+const direction = language => /^(Arabic|Hebrew)$/i.test(language) ? 'rtl' : 'ltr';
+const t = key => ({
+  'output.english_translation': 'English Translation',
+  'output.translation_into': 'Translation ({language})',
+}[key] || key);
 
-const translationBlock = (src) => {
-  const at = src.indexOf('const BilingualFieldRenderer');
-  if (at < 0) throw new Error('BilingualFieldRenderer not found');
-  return src.slice(at, at + 2500);
-};
+function renderer(file, generatedContent, currentUiLanguage = 'French') {
+  const source = readFileSync(file, 'utf8');
+  const start = source.indexOf('  const BilingualFieldRenderer =');
+  const end = source.indexOf('  const REFERENCES_HEADER_RE =', start);
+  if (start < 0 || end < start) throw new Error(`${file}: bilingual renderer boundaries changed`);
+  const compiled = transformSync(source.slice(start, end) + '\nreturn BilingualFieldRenderer;', {
+    plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false, parserOpts: { allowReturnOutsideFunction: true },
+  }).code;
+  return new Function('React', 'renderFormattedText', 't', 'generatedContent', 'currentUiLanguage',
+    'getSpeechLangCode', 'getContentDirection', compiled)(
+    React, text => text, t, generatedContent, currentUiLanguage,
+    language => languageCodes[language] || 'en-US', direction,
+  );
+}
 
-describe('the English half is explicitly LTR', () => {
-  for (const f of COPIES) {
-    it(`${f} sets dir="ltr" on the translation block`, () => {
-      const block = translationBlock(readFileSync(f, 'utf8'));
-      expect(block).toMatch(/<div dir="ltr" className="relative mt-2 ps-4/);
-    });
+function render(file, artifact, props = {}, uiLanguage = 'French') {
+  const Component = renderer(file, artifact, uiLanguage);
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = renderToStaticMarkup(React.createElement(Component, { text: bilingualText, ...props }));
+  return { wrapper, companion: wrapper.querySelector('.border-s-4') };
+}
 
-    it(`${f} also pins alignment, in case an ancestor aligns by class`, () => {
-      // dir alone fixes inherited direction, but not an explicit text-right
-      // utility somewhere up the tree.
-      const block = translationBlock(readFileSync(f, 'utf8'));
-      const opening = block.slice(block.indexOf('<div dir="ltr"'), block.indexOf('<div dir="ltr"') + 200);
-      expect(opening).toContain('text-left');
-    });
+describe.each(COPIES)('saved companion language: %s', file => {
+  it('keeps an English companion labeled English after the app language changes', () => {
+    const { companion } = render(file, { config: { language: 'Arabic', translationTarget: 'English' } });
+    expect(companion.textContent).toContain('English Translation');
+    expect(companion.textContent).not.toContain('Translation (French)');
+    expect(companion.getAttribute('lang')).toBe('en-US');
+    expect(companion.getAttribute('dir')).toBe('ltr');
+    expect(companion.classList.contains('text-left')).toBe(true);
+    expect(companion.previousElementSibling.hasAttribute('dir')).toBe(false);
+  });
 
-    it(`${f} leaves the SOURCE half inheriting direction`, () => {
-      // The other half really is in the target language, so it must keep
-      // following the content wrapper. Forcing both to ltr would break Arabic.
-      const block = translationBlock(readFileSync(f, 'utf8'));
-      const sourceHalf = block.slice(0, block.indexOf('<div dir="ltr"'));
-      expect(sourceHalf).toContain('renderFormattedText(targetText)');
-      expect(sourceHalf, 'source half must not be forced ltr').not.toContain('dir="ltr"');
-    });
+  it.each(['Arabic', 'Hebrew'])('uses the saved %s direction and language, including before helpers load', language => {
+    const { companion } = render(file, { config: { translationPolicy: { target: language } } });
+    expect(companion.getAttribute('dir')).toBe('rtl');
+    expect(companion.getAttribute('lang')).toBe(languageCodes[language]);
+    expect(companion.classList.contains('text-right')).toBe(true);
+    expect(companion.classList.contains('text-left')).toBe(false);
+    expect(companion.textContent).toContain(`Translation (${language})`);
+    const label = companion.firstElementChild;
+    expect(label.getAttribute('lang')).toBe('fr-FR');
+    expect(label.getAttribute('dir')).toBe('ltr');
+  });
 
-    it(`${f} explains why, since the symptom is confusing`, () => {
-      const block = translationBlock(readFileSync(f, 'utf8'));
-      expect(block).toMatch(/English translation is English, whatever the source language/);
-    });
-  }
-});
+  it.each([
+    { translationPolicy: { target: 'Spanish' } },
+    { translationTarget: 'Spanish' },
+    { config: { translationTarget: 'Spanish' } },
+    { config: { attachedTranslationTarget: 'Spanish' } },
+  ])('reads saved language metadata %j', artifact => {
+    const { companion } = render(file, artifact);
+    expect(companion.getAttribute('lang')).toBe('es-ES');
+    expect(companion.textContent).toContain('Translation (Spanish)');
+  });
 
-describe('direction still follows the content language elsewhere', () => {
-  for (const f of COPIES) {
-    it(`${f} keeps getContentDirection driving the content wrapper`, () => {
-      // The fix is scoped to the translation block. If this helper stopped
-      // being used, RTL source text would render left to right, which is the
-      // same bug pointing the other way.
-      const src = readFileSync(f, 'utf8');
-      expect(src).toContain('getContentDirection');
-    });
-  }
+  it('defaults legacy bilingual content to English without consulting current settings', () => {
+    const { companion } = render(file, { config: { translationTarget: 'off' } }, {}, 'Arabic');
+    expect(companion.getAttribute('lang')).toBe('en-US');
+    expect(companion.getAttribute('dir')).toBe('ltr');
+    expect(companion.textContent).toContain('English Translation');
+  });
+
+  it('accepts the actual artifact when rendering a resource other than the active one', () => {
+    const { companion } = render(file, { translationTarget: 'English' }, { artifact: { translationTarget: 'Arabic' } });
+    expect(companion.getAttribute('lang')).toBe('ar-SA');
+    expect(companion.getAttribute('dir')).toBe('rtl');
+  });
+
+  it('accepts an explicit companion language for isolated fields', () => {
+    const { companion } = render(file, { translationTarget: 'English' }, { translationLanguage: 'Hebrew' });
+    expect(companion.getAttribute('lang')).toBe('he-IL');
+    expect(companion.textContent).toContain('Translation (Hebrew)');
+  });
+
+  it('renders single-language content without inventing a second pane', () => {
+    const { wrapper, companion } = render(file, { translationTarget: 'Arabic' }, { text: 'One passage only.' });
+    expect(companion).toBeNull();
+    expect(wrapper.textContent).toBe('One passage only.');
+  });
 });

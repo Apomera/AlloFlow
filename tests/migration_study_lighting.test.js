@@ -83,7 +83,7 @@ describe('Pooled camera-relative migration Study lighting', () => {
     const lights = []; f.scene.traverse(node => { if (node.isLight) lights.push(node); }); expect(lights).toEqual([f.hemi, f.sun, f.rim]);
   });
 
-  it.each([[180, 10], [90, 10], [0, 60], [-75, -10], [35, 15]])('keeps actual light offsets camera-relative at yaw %s elevation %s', (yaw, pitch) => {
+  it.each([[180, 10], [90, 10], [0, 60], [-75, -10], [35, 15], [0, -60], [180, -60], [90, -45]])('keeps actual light offsets camera-relative at yaw %s elevation %s', (yaw, pitch) => {
     const f = fixture(); f.theme(true);
     const y = yaw * Math.PI / 180, p = pitch * Math.PI / 180;
     f.camera.position.copy(f.target).add(new THREE.Vector3(Math.sin(y) * Math.cos(p), Math.sin(p), Math.cos(y) * Math.cos(p)).multiplyScalar(11));

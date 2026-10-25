@@ -57,38 +57,44 @@ describe('Migration bird silhouettes and connected field markings', () => {
     finiteGeometry(bird);
   });
 
-  it('wraps a single Canada chinstrap below the head and keeps it surface-aligned', () => {
-    const bird = flyer('canada_goose');
-    const head = named(bird, 'migration-bird-head')[0];
-    const marks = named(bird, 'migration-goose-chinstrap');
-    expect(marks).toHaveLength(1);
-    const mark = marks[0];
-    expect(mark.position.toArray()).toEqual(head.position.toArray());
-    expect(mark.scale.toArray()).toEqual(head.scale.toArray());
-    const p = mark.geometry.attributes.position;
-    expect(p.count).toBe(85);
-    const points = Array.from({ length: p.count }, (_, i) => new THREE.Vector3().fromBufferAttribute(p, i));
-    expect(Math.min(...points.map(v => v.x))).toBeLessThan(-0.18);
-    expect(Math.max(...points.map(v => v.x))).toBeGreaterThan(0.18);
-    expect(Math.min(...points.map(v => v.y))).toBeLessThan(-0.19);
-    for (const point of points) expect(point.length()).toBeCloseTo(0.204, 5);
-    const bill = named(bird, 'migration-bird-bill')[0];
-    expect(bill.scale.x).toBeGreaterThan(bill.scale.z * 1.9);
+  it('joins the Canada Goose cheeks and chinstrap on one head surface', () => {
+    const bird = flyer('canada_goose'), head = named(bird, 'migration-bird-head')[0];
+    expect(named(bird, 'migration-goose-chinstrap')).toHaveLength(0);
+    expect(head.material.vertexColors).toBe(true); expect(head.material.color.getHex()).toBe(0xffffff);
+    const p = head.geometry.attributes.position, c = head.geometry.attributes.color;
+    expect(p.count).toBe(425); expect(c.count).toBe(p.count);
+    const pale = [], left = new Set(), right = new Set();
+    for (let i = 0; i < p.count; i++) {
+      const point = new THREE.Vector3().fromBufferAttribute(p, i); expect(point.length()).toBeCloseTo(.2, 5);
+      if (Math.min(c.getX(i), c.getY(i), c.getZ(i)) > .8) {
+        pale.push(point);
+        const key = [Math.abs(point.x), point.y, point.z].map(v => Math.round(v * 1e6)).join(',');
+        if (point.x < -1e-6) left.add(key); else if (point.x > 1e-6) right.add(key);
+      }
+    }
+    expect(left.size).toBeGreaterThan(20); expect(left).toEqual(right);
+    expect(Math.min(...pale.map(v => v.x))).toBeLessThan(-.19); expect(Math.max(...pale.map(v => v.x))).toBeGreaterThan(.19);
+    expect(Math.min(...pale.map(v => v.y))).toBeLessThan(-.19); expect(Math.max(...pale.map(v => v.y))).toBeLessThan(.03);
+    const bill = named(bird, 'migration-bird-bill')[0]; expect(bill.scale.x).toBeGreaterThan(bill.scale.z * 1.9);
   });
 
-  it('puts the red crane crown above pale cheeks and lengthens the straight bill', () => {
+  it('puts red crown and pale cheeks on one crane head surface and retains the long straight bill', () => {
     const crane = flyer('sandhill_crane');
     const head = named(crane, 'migration-bird-head')[0];
-    const crown = named(crane, 'migration-crane-crown')[0];
-    expect(crown.material.color.getHex()).toBe(0xb91c1c);
-    const crownP = crown.geometry.attributes.position;
-    for (let vertex = 0; vertex < crownP.count; vertex++) expect(crownP.getY(vertex)).toBeGreaterThan(0.11);
-    expect(crown.position.toArray()).toEqual(head.position.toArray());
-    const cheeks = named(crane, 'migration-crane-cheek');
-    expect(cheeks).toHaveLength(2);
-    expect(cheeks[0].geometry).toBe(cheeks[1].geometry);
-    expect(cheeks[0].material).toBe(cheeks[1].material);
-    expect(cheeks[0].material.color.getHex()).toBe(0xe3e0d8);
+    expect(named(crane, 'migration-crane-crown')).toHaveLength(0);
+    expect(named(crane, 'migration-crane-cheek')).toHaveLength(0);
+    expect(head.material.vertexColors).toBe(true); expect(head.material.color.getHex()).toBe(0xffffff);
+    const p = head.geometry.attributes.position, c = head.geometry.attributes.color;
+    let crown = 0; const paleLeft = new Set(), paleRight = new Set();
+    for (let i = 0; i < p.count; i++) {
+      if (c.getX(i) > c.getY(i) * 2 && c.getX(i) > c.getZ(i) * 2) { crown++; expect(p.getY(i)).toBeGreaterThan(0); }
+      if (Math.min(c.getX(i), c.getY(i), c.getZ(i)) > .8) {
+        // SphereGeometry duplicates its seam: compare unique mirrored surface points.
+        const key = [Math.abs(p.getX(i)), p.getY(i), p.getZ(i)].map(v => Math.round(v * 1e6)).join(',');
+        if (p.getX(i) < -.1) paleLeft.add(key); if (p.getX(i) > .1) paleRight.add(key);
+      }
+    }
+    expect(crown).toBeGreaterThan(40); expect(paleLeft.size).toBeGreaterThan(15); expect([...paleRight].sort()).toEqual([...paleLeft].sort());
     const bill = named(crane, 'migration-bird-bill')[0];
     expect(bill.geometry.parameters.height).toBeGreaterThan(head.geometry.parameters.radius * 2);
     expect(named(crane, 'migration-goose-chinstrap')).toHaveLength(0);
@@ -119,14 +125,14 @@ describe('Migration bird silhouettes and connected field markings', () => {
     finiteGeometry(bird);
   });
 
-  it('keeps a pale tern face below a separate black cap and a thinner red bill', () => {
+  it('keeps a pale tern face and black cap on one surface with a thinner red bill', () => {
     const bird = flyer('arctic_tern');
     const head = named(bird, 'migration-bird-head')[0];
-    const cap = named(bird, 'migration-tern-cap')[0];
+    expect(named(bird, 'migration-tern-cap')).toHaveLength(0);
     const bill = named(bird, 'migration-bird-bill')[0];
-    expect(head.material.color.getHex()).toBe(0xf3f5f8);
-    expect(cap.material.color.getHex()).toBe(0x111827);
-    expect(cap.position.toArray()).toEqual(head.position.toArray());
+    expect(head.material.color.getHex()).toBe(0xffffff);
+    expect(head.material.vertexColors).toBe(true);
+    expect(head.geometry.attributes.color.count).toBe(425);
     expect(bill.material.color.getHex()).toBe(0xdc2626);
     expect(bill.geometry.parameters.radius).toBeLessThan(0.05);
   });

@@ -1,8 +1,8 @@
 {
-  "sourceSha256": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
-  "mirrorSha256": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
-  "finalSourceSha256": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
-  "finalMirrorSha256": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
+  "sourceSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "mirrorSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "finalSourceSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "finalMirrorSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
   "sourceStable": true,
   "mirrorStable": true,
   "configurations": [
@@ -16,10 +16,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 508.3828125,
+      "row47Gap": 515.05078125,
       "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-default-1100.png"
     },
     {
@@ -32,10 +35,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 508.3828125,
+      "row47Gap": 515.05078125,
       "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-dark-1100.png"
     },
     {
@@ -48,10 +54,13 @@
       "minSVGContrast": 11.105742198629125,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 508.3828125,
+      "row47Gap": 515.05078125,
       "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-contrast-1100.png"
     },
     {
@@ -64,10 +73,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 185.3828125,
-      "cardCount": 5,
+      "row47Gap": 192.05078125,
+      "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-default-375.png"
     },
     {
@@ -80,10 +92,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 165.3828125,
+      "row47Gap": 172.05078125,
       "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-dark-375.png"
     },
     {
@@ -96,10 +111,13 @@
       "minSVGContrast": 11.105742198629125,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 165.3828125,
+      "row47Gap": 172.05078125,
       "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-contrast-375.png"
     },
     {
@@ -112,10 +130,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 130.3828125,
-      "cardCount": 3,
+      "row47Gap": 137.05078125,
+      "cardCount": 4,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-default-320.png"
     },
     {
@@ -128,10 +149,13 @@
       "minSVGContrast": 7.318928113412897,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 110.3828125,
-      "cardCount": 3,
+      "row47Gap": 117.05078125,
+      "cardCount": 2,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-dark-320.png"
     },
     {
@@ -144,13 +168,16 @@
       "minSVGContrast": 11.105742198629125,
       "pageOverflow": 0,
       "noOverflow": true,
-      "row47Gap": 110.3828125,
-      "cardCount": 3,
+      "row47Gap": 117.05078125,
+      "cardCount": 2,
       "inspectionCardVisible": true,
       "annotationVectorClearance": true,
+      "selectedCardTitle": "Falling",
+      "selectedCardReading": "y = 72.94 m · t = 1.820 s",
+      "selectedCardPaintMatchesOriginal": true,
       "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-velocity-clarity-2026-10-02\\velocity-contrast-320.png"
     }
   ],
   "errors": [],
-  "completedAt": "2026-10-02T20:09:26.978Z"
+  "completedAt": "2026-10-25T16:45:11.196Z"
 }

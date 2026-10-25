@@ -207,22 +207,18 @@ describe('DA clinical isolation — the flag is actually wired', () => {
 
   it.each(['dynamic_assessment_module.js',
            'desktop/web-app/public/dynamic_assessment_module.js'])(
-    '%s keeps each extracted callback clinically isolated', (file) => {
+    '%s protects the adapter and blocks publishing clinical resources into ordinary history', (file) => {
       const adapter = readFileSync(resolve(process.cwd(), file), 'utf8');
-      expect(adapter).toContain('function DynamicAssessmentHostAdapter(props)');
-      expect(adapter).toContain('DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter');
-
-      const visualStart = adapter.indexOf('onGenerateVisualOrganizer: async');
-      const sentenceComment = adapter.indexOf('// Sentence-frames host callback', visualStart);
-      const sentenceStart = adapter.indexOf('onGenerateSentenceFrames: async', sentenceComment);
-      const resourceStart = adapter.indexOf('onOpenResource:', sentenceStart);
-      expect(visualStart).toBeGreaterThan(-1);
-      expect(sentenceComment).toBeGreaterThan(visualStart);
-      expect(sentenceStart).toBeGreaterThan(sentenceComment);
-      expect(resourceStart).toBeGreaterThan(sentenceStart);
-      const visualCallback = adapter.slice(visualStart, sentenceComment);
-      expect(visualCallback).toMatch(/const cfg\s*=\s*\{\s*isolatedContext:\s*true\s*\}/);
-      expect(visualCallback).toMatch(/handleGenerate\([\s\S]*?\bcfg\b[\s\S]*?\)/);
-      expect(adapter.slice(sentenceStart, resourceStart)).toMatch(/handleGenerate\([\s\S]*isolatedContext:\s*true/);
+      const start = adapter.indexOf('function DynamicAssessmentHostAdapter(props)');
+      const end = adapter.indexOf('function DynamicAssessment(props)', start);
+      expect(start).toBeGreaterThan(-1); expect(end).toBeGreaterThan(start);
+      const body = adapter.slice(start, end);
+      expect(adapter.includes('ProtectedDynamicAssessment.HostAdapter = daProtectedComponent(DynamicAssessmentHostAdapter)')).toBe(true);
+      expect(body.includes('daMountedWorkspace(props.sensitiveWorkspace)')).toBe(true);
+      expect(body.includes('daBlockedParentCallbacks(host.addToast)')).toBe(true);
+      expect(/setHistory|setGeneratedContent|handleGenerate\s*\(|host\.history/.test(body)).toBe(false);
+      for (const callback of ['onGenerateGlossary', 'onGenerateManipulative', 'onGenerateWordSoundsProbe', 'onGenerateVisualOrganizer', 'onGenerateSentenceFrames', 'onUpdateManipulativePreset', 'onUpdateWordSoundsProbe', 'onOpenResource']) {
+        expect(new RegExp(callback + ': blocked').test(adapter)).toBe(true);
+      }
     });
 });

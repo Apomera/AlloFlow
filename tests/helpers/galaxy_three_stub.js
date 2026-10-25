@@ -44,7 +44,7 @@ export function installCanvas2DStub() {
     const noop = (name) => (...args) => { checkNumbers(name, args); };
     [
       'fillRect', 'clearRect', 'strokeRect', 'beginPath', 'closePath', 'fill', 'stroke',
-      'moveTo', 'lineTo', 'arc', 'quadraticCurveTo', 'bezierCurveTo', 'ellipse',
+      'moveTo', 'lineTo', 'arc', 'arcTo', 'quadraticCurveTo', 'bezierCurveTo', 'ellipse',
       'save', 'restore', 'translate', 'rotate', 'scale', 'setTransform', 'transform',
       'setLineDash', 'fillText', 'strokeText', 'drawImage', 'clip', 'rect',
     ].forEach((name) => { ctx[name] = noop(name); });

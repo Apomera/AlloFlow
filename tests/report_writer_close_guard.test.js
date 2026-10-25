@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Closing the Report Writer with unsaved work.
 //
 // WHY (2026-09-23): Escape anywhere in the dialog, a click on the backdrop and
@@ -43,7 +47,7 @@ async function open(persist = false) {
   mounted = { host, root };
   await act(() => root.render(React.createElement(window.AlloModules.ReportWriter, {
     onClose, callGemini: vi.fn(async () => '{}'), addToast: vi.fn(), t: key => key,
-    studentNickname: 'Student A', behaviorLensData: null, longitudinalData: null, dashboardData: [],
+    studentNickname: '', behaviorLensData: null, longitudinalData: null, dashboardData: [],
   })));
   const steps = () => Array.from(host.querySelectorAll('nav[aria-label="Report Writer steps"] button'));
   const addScore = async () => {
@@ -70,7 +74,7 @@ describe('closing the Report Writer', () => {
     await escape(ui.host.querySelector('input[aria-label="Custom subtest name"]'));
     expect(ui.onClose).not.toHaveBeenCalled();
     expect(ui.ask()).toBeTruthy();
-    expect(ui.ask().textContent).toMatch(/kept only while the Report Writer is open/);
+    expect(ui.ask().textContent).toMatch(/Closing discards this session-only report/);
     expect(document.activeElement.textContent).toBe('Keep working');
     expect(ui.dialog().hasAttribute('inert')).toBe(true);
     const results = await axe.run(ui.host, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] }, rules: { 'color-contrast': { enabled: false } } });
@@ -119,6 +123,6 @@ describe('closing the Report Writer', () => {
     await click(Array.from(ui.host.querySelectorAll('button')).find(b => b.textContent.includes('Add Case Document')));
     await escape(ui.dialog());
     expect(ui.onClose).not.toHaveBeenCalled();
-    expect(ui.ask().textContent).toMatch(/case documents never are/);
+    expect(ui.ask().textContent).toMatch(/closing discards temporary source documents/);
   }, 60000);
 });

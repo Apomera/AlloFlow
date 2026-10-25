@@ -49,8 +49,8 @@ function wav({ rate = 22050, channels = 1, extra = true } = {}) {
   return bytes;
 }
 function hostHelper(name, next, dependencies) {
-  const start = hostSource.indexOf('  const ' + name + ' =');
-  const end = hostSource.indexOf('  const ' + next, start);
+  const start = hostSource.indexOf('const ' + name + ' =');
+  const end = hostSource.indexOf('const ' + next, start);
   if (start < 0 || end < 0) throw Error('Host extraction failed: ' + name);
   const region = hostSource.slice(start, end);
   // Only evaluate the requested declaration, not unrelated host statements before the next helper.
@@ -208,10 +208,13 @@ describe('portable audio encoding and requested model provenance', () => {
     const callTTS = vi.fn(async (_text, _voice, _speed, options) => { options.onResolvedProfile(resolved); return 'blob:fresh'; });
     const synthesize = hostHelper('_synthSentenceForStore', '_persistKaraokeAudioField', {
       _aiConfig: { ttsProvider: 'local' }, selectedVoice: 'af_heart', leveledTextLanguage: 'English', currentUiLanguage: 'English', voiceSpeed: 1,
+      generatedContent: { type: 'analysis', data: { sourceLanguage: 'French' }, config: { language: 'Spanish' } },
+      getSavedResourceLanguage: hostHelper('getSavedResourceLanguage', 'getSavedCompanionLanguage', {}),
       callTTS, _encodeReadAloudBridgeAudio: async () => ({ b64: 'encoded', mime: 'audio/mpeg' }), warnLog: () => {},
     });
     const result = await synthesize('Generate again.', { operation: 'regenerate' });
-    expect(callTTS.mock.calls[0][3].force).toBe(true); expect(result.provenance).toEqual(resolved);
+    expect(callTTS.mock.calls[0][3].force).toBe(true); expect(callTTS.mock.calls[0][3].language).toBe('French');
+    expect(result.provenance).toEqual(resolved);
   });
   it('preserves older offline clips while rejecting a known legacy Gemini model mismatch', () => {
     const store = M.KaraokeAudioStore.createStore();

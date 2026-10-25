@@ -7,6 +7,107 @@
         console.log("[CDN] BehaviorLens already loaded, skipping duplicate");
         return;
     }
+    // Clinical persistence is available only inside an unlocked protected session.
+    // Keep these facades local to this module; never replace browser storage globals.
+    let blProtectedSession = null;
+    let blProtectedEpoch = null;
+    let blRegisteredFlushSession = null;
+    const blObservationFlushers = new Set();
+    const blPendingConfirmations = new Set();
+    const blActiveReaders = new Set();
+    function blRequireProtectedSession() {
+        const session = blProtectedSession;
+        if (!session || typeof session.assertCurrent !== 'function') throw new Error('Unlock the protected clinical workspace first.');
+        session.assertCurrent(blProtectedEpoch);
+        return session;
+    }
+    function blProtectedStorage(kind) {
+        const facade = {};
+        ['getItem', 'setItem', 'removeItem', 'key', 'clear'].forEach(method => {
+            facade[method] = (...args) => {
+                const session = blRegisteredFlushSession || blRequireProtectedSession();
+                const storage = kind === 'session' ? session.sessionStorage : session.storage;
+                if (!storage || typeof storage[method] !== 'function') throw new Error('Protected clinical storage is unavailable.');
+                return storage[method](...args);
+            };
+        });
+        Object.defineProperty(facade, 'length', { get: () => {
+            const session = blRegisteredFlushSession || blRequireProtectedSession();
+            const storage = kind === 'session' ? session.sessionStorage : session.storage;
+            if (!storage) throw new Error('Protected clinical storage is unavailable.');
+            return storage.length;
+        } });
+        return Object.freeze(facade);
+    }
+    const localStorage = blProtectedStorage('local');
+    const sessionStorage = blProtectedStorage('session');
+    function blExportGuard(kind) {
+        const session = blRequireProtectedSession();
+        const epoch = session.captureEpoch();
+        session.assertCanExport(kind);
+        session.assertCurrent(epoch);
+        return () => session.assertCurrent(epoch);
+    }
+    function blCreateDownloadLink() {
+        const session = blRequireProtectedSession();
+        const epoch = session.captureEpoch();
+        const link = document.createElement('a');
+        const click = link.click.bind(link);
+        link.click = (...args) => {
+            try {
+                session.assertCurrent(epoch);
+                session.assertCanExport('download');
+                session.assertCurrent(epoch);
+            } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    if (link.href && link.href.startsWith('blob:') && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(link.href);
+                    return false;
+                }
+                throw error;
+            }
+            return click(...args);
+        };
+        return link;
+    }
+    function blOpenReadableWindow(...args) {
+        try { blExportGuard('print-preview'); }
+        catch (error) { if (error && error.name === 'AbortError') return null; throw error; }
+        return window.open(...args);
+    }
+    function blCreateExportImage() {
+        const session = blRequireProtectedSession();
+        const epoch = session.captureEpoch();
+        const image = new Image();
+        image.addEventListener('load', event => {
+            if (!session.isCurrent(epoch)) event.stopImmediatePropagation();
+        });
+        return image;
+    }
+    function blCreateProtectedReader() {
+        const session = blRequireProtectedSession();
+        const epoch = session.captureEpoch();
+        const reader = new FileReader();
+        blActiveReaders.add(reader);
+        ['load', 'loadend', 'error', 'abort', 'progress'].forEach(type => reader.addEventListener(type, event => {
+            if (type === 'loadend') blActiveReaders.delete(reader);
+            if (!session.isCurrent(epoch)) event.stopImmediatePropagation();
+        }));
+        return reader;
+    }
+    function blCancelProtectedReaders() {
+        blActiveReaders.forEach(reader => { try { reader.abort(); } catch (_) {} });
+        blActiveReaders.clear();
+    }
+    function useProtectedBehaviorLensTransport(provider, session, boundEpoch) {
+        const epoch = boundEpoch === undefined ? session.captureEpoch() : boundEpoch;
+        return React.useMemo(() => typeof provider !== 'function' ? provider : async (...args) => {
+            session.assertCurrent(epoch);
+            session.assertCanTransmit('ai');
+            const result = await provider(...args);
+            session.assertCurrent(epoch);
+            return result;
+        }, [provider, session, epoch]);
+    }
     function getBehaviorLensWorkspaceRuntime() {
         return window.AlloModules && window.AlloModules.BehaviorLensWorkspace;
     }
@@ -73,6 +174,8 @@
     // Inject once — provides @media overrides for iPad & phone layouts
     var behaviorLensConfirmSequence = 0;
     function askBehaviorLensConfirmation(message, options) {
+        const protectedSession = blRequireProtectedSession();
+        const protectedEpoch = protectedSession.captureEpoch();
         return new Promise(function(resolve) {
             if (!document.body) { resolve(false); return; }
             options = options || {};
@@ -117,6 +220,7 @@
             function finish(accepted) {
                 if (settled) return;
                 settled = true;
+                blPendingConfirmations.delete(cancelForLock);
                 document.removeEventListener('keydown', onKeyDown, true);
                 try { overlay.remove(); } catch (e) {}
                 blocked.forEach(function(entry) {
@@ -125,8 +229,10 @@
                 });
                 try { if (opener && opener.isConnected && opener !== document.body && typeof opener.focus === 'function') opener.focus();
                 else { var fallback = document.querySelector('.bl-root [data-bl-panel-content] [data-bl-add-observation]') || document.querySelector('.bl-root [role="dialog"]'); if (fallback && typeof fallback.focus === 'function') fallback.focus(); } } catch (e) {}
-                resolve(accepted === true);
+                resolve(accepted === true && protectedSession.isCurrent(protectedEpoch));
             }
+            const cancelForLock = () => finish(false);
+            blPendingConfirmations.add(cancelForLock);
             function onKeyDown(event) {
                 if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
                 if (event.key !== 'Tab') return;
@@ -741,8 +847,12 @@
     // promise resolves only when the text was copied; otherwise it says so and stays
     // pending, so a success message chained on it never shows.
     function blTryCopy(text) {
+        let assertCurrent;
+        try { assertCurrent = blExportGuard('clipboard'); }
+        catch (error) { if (error && error.name === 'AbortError') return Promise.resolve(false); throw error; }
         const viaTextarea = () => {
             try {
+                assertCurrent();
                 const ta = document.createElement('textarea');
                 ta.value = String(text == null ? '' : text);
                 ta.setAttribute('readonly', '');
@@ -818,6 +928,8 @@
         return cleanup;
     }
     function blPrintPanel(eventOrElement) {
+        try { blExportGuard('print'); }
+        catch (error) { if (error && error.name === 'AbortError') return false; throw error; }
         const from = eventOrElement && (eventOrElement.currentTarget || eventOrElement.target || eventOrElement);
         const root = (from && typeof from.closest === 'function' && from.closest('[data-bl-panel-content]')) || document.querySelector('[data-bl-panel-content]');
         const cleanup = blPreparePrint(root);
@@ -2472,7 +2584,9 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
         useEffect(() => { writeDraft(); }, [draft, hasData, writeDraft]);
         useEffect(() => {
             window.addEventListener('pagehide', writeDraft);
-            return () => { window.removeEventListener('pagehide', writeDraft); writeDraft(); };
+            const flush = () => { if (!writeDraft()) throw new Error('The unfinished BehaviorLens observation could not be saved.'); };
+            blObservationFlushers.add(flush);
+            return () => { blObservationFlushers.delete(flush); window.removeEventListener('pagehide', writeDraft); writeDraft(); };
         }, [writeDraft]);
         const clearDraft = () => {
             cleared.current = true;
@@ -3138,7 +3252,7 @@ Leave intensity exactly as it is unless the instruction changes it. Never invent
             if (!content) return;
             const clone = content.cloneNode(true);
             clone.querySelectorAll('button').forEach(button => button.replaceWith(document.createTextNode(button.textContent)));
-            const popup = window.open('', '_blank');
+            const popup = blOpenReadableWindow('', '_blank');
             if (!popup) { setPrintError('The print window was blocked. Allow pop-ups for this page and try again.'); return; }
             popup.opener = null;
             popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Behavior Lens review</title><style>@page{size:auto;margin:18mm}body{font:12pt Georgia,serif;color:#111;line-height:1.5;max-width:190mm;margin:auto}h1,h2,h3{break-after:avoid}figure{margin:20px 0;break-inside:avoid}svg{width:100%;height:auto}table{width:100%;border-collapse:collapse;font-size:10pt}th,td{padding:8px;border-bottom:1px solid #aaa;text-align:left;overflow-wrap:anywhere}tr{break-inside:avoid}thead{display:table-header-group}p{white-space:pre-wrap;overflow-wrap:anywhere}button{font:inherit}.bl-document-table,.bl-document-graph{overflow:visible!important}.bl-document-graph svg{min-width:0!important}</style></head><body>' + clone.innerHTML + '</body></html>');
@@ -5012,8 +5126,8 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
             }
             const blob = new Blob([content], { type });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = filename; a.click();
+            const a = blCreateDownloadLink();
+            a.href = url; a.download = filename; if (a.click() === false) return;
             URL.revokeObjectURL(url);
         };
 
@@ -5131,7 +5245,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                             html += '</div>';
                         }
                         html += `<div style="margin-top:24px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:8pt;color:#94a3b8;text-align:center;">Generated by BehaviorLens — AlloFlow UDL Platform</div></body></html>`;
-                        const w = window.open('', '_blank');
+                        const w = blOpenReadableWindow('', '_blank');
                         if (w) { w.document.write(html); w.document.close(); w.print(); }
                     },
                     disabled: filteredAbc.length === 0 && filteredObs.length === 0,
@@ -5382,7 +5496,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
                         html += `<div class="footer">Generated by BehaviorLens — AlloFlow UDL Platform &bull; ${esc(now)} &bull; CONFIDENTIAL: For educational use only</div></body></html>`;
 
-                        const w = window.open('', '_blank');
+                        const w = blOpenReadableWindow('', '_blank');
                         if (w) { w.document.write(html); w.document.close(); setTimeout(function(){ w.print(); }, 400); }
                     },
                     disabled: filteredAbc.length === 0,
@@ -7473,8 +7587,8 @@ Create student-friendly language and return ONLY valid JSON:
                         canvas.setAttribute('aria-hidden', 'true');
                         canvas.width = 1200; canvas.height = 1600;
                         const ctx = canvas.getContext('2d');
-                        const img = new Image();
-                        img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1200, 1600); ctx.drawImage(img, 0, 0, 1200, 1600); const a = document.createElement('a'); a.download = 'traffic_light_poster.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
+                        const img = blCreateExportImage();
+                        img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1200, 1600); ctx.drawImage(img, 0, 0, 1200, 1600); const a = blCreateDownloadLink(); a.download = 'traffic_light_poster.png'; a.href = canvas.toDataURL('image/png'); if (a.click() === false) return; if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
                         img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
                     },
                     className: 'flex-1 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-100 transition-all'
@@ -8568,10 +8682,10 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             };
             const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = url;
             a.download = `home-log-${(studentName || 'student').replace(/\s+/g, '_')}-${blLocalDateKey(new Date())}.json`;
-            a.click();
+            if (a.click() === false) return;
             URL.revokeObjectURL(url);
             if (addToast) addToast(tt('behavior_lens.toast.home_log_exported_as_snapshot', 'Home log exported as snapshot 📦'), 'success');
         };
@@ -9744,8 +9858,8 @@ Keep language warm and age-appropriate.`;
             const filename = `alloflow_snapshot_${safeName}_${role}_${dateSuffix}.json`;
             const blob = new Blob([content], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = filename; a.click();
+            const a = blCreateDownloadLink();
+            a.href = url; a.download = filename; if (a.click() === false) return;
             URL.revokeObjectURL(url);
             addToast && addToast(tt('behavior_lens.toast.snapshot_exported_as_n_v2', 'Snapshot exported as {filename}', { filename }), 'success');
         };
@@ -9778,7 +9892,7 @@ Keep language warm and age-appropriate.`;
         };
 
         const parseFile = (file) => {
-            const reader = new FileReader();
+            const reader = blCreateProtectedReader();
             reader.onload = (e) => {
                 try {
                     let data = JSON.parse(e.target.result);
@@ -10176,9 +10290,9 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
             };
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             const dateSuffix = blLocalDateKey(new Date());
-            a.href = url; a.download = `alloflow_consent_template_${dateSuffix}.json`; a.click();
+            a.href = url; a.download = `alloflow_consent_template_${dateSuffix}.json`; if (a.click() === false) return;
             URL.revokeObjectURL(url);
             addToast && addToast(tt('behavior_lens.toast.consent_template_exported', 'Consent template exported'), 'success');
         };
@@ -10186,7 +10300,7 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
         const handleImportTemplate = (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            const reader = new FileReader();
+            const reader = blCreateProtectedReader();
             reader.onload = async (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
@@ -10243,7 +10357,7 @@ Rewrite each section to be warmer, more accessible, and family-friendly. Keep ev
                     <div class="sig-label">${esc(tt('bl.parent_guardian_name', 'Parent/Guardian Printed Name'))}</div>
                 </div>
                 </body></html>`;
-            const win = window.open('', '_blank');
+            const win = blOpenReadableWindow('', '_blank');
             if (!win) { if (addToast) addToast(tt('behavior_lens.toast.popup_blocked', 'The print window was blocked. Allow pop-ups for this site and try again.'), 'error'); return; }
             win.document.write(printContent);
             win.document.close();
@@ -19178,7 +19292,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             const svg = document.getElementById('aba-graph-svg');
             if (!svg) return;
             const svgData = new XMLSerializer().serializeToString(svg);
-            const printWin = window.open('', '_blank');
+            const printWin = blOpenReadableWindow('', '_blank');
             printWin.document.write(`<html><head><title>${esc(graphTitle) || 'ABA Graph'}</title><style>body{margin:20px;font-family:Arial,sans-serif}svg{width:100%;max-width:800px}@media print{body{margin:0}}</style></head><body>${svgData}<br/><p style="font-size:10px;color:#666">Generated by BehaviorLens — ${esc(new Date().toLocaleDateString())}</p></body></html>`);
             printWin.document.close();
             printWin.print();
@@ -19361,8 +19475,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             if (!svg) return;
                             const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
                             const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a'); a.href = url; a.download = `${(mbTitle || 'multiple_baseline').replace(/\s+/g, '_')}.svg`;
-                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            const a = blCreateDownloadLink(); a.href = url; a.download = `${(mbTitle || 'multiple_baseline').replace(/\s+/g, '_')}.svg`;
+                            document.body.appendChild(a); if (a.click() === false) return; document.body.removeChild(a); URL.revokeObjectURL(url);
                             if (addToast) addToast(t('toasts.svg_exported'), 'success');
                         },
                         className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
@@ -19513,8 +19627,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             if (!svg) return;
                             const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
                             const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a'); a.href = url; a.download = `${(atTitle || 'at_design').replace(/\s+/g, '_')}.svg`;
-                            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                            const a = blCreateDownloadLink(); a.href = url; a.download = `${(atTitle || 'at_design').replace(/\s+/g, '_')}.svg`;
+                            document.body.appendChild(a); if (a.click() === false) return; document.body.removeChild(a); URL.revokeObjectURL(url);
                             if (addToast) addToast(t('toasts.svg_exported'), 'success');
                         },
                         className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
@@ -19909,8 +20023,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         if (!svg) return;
                         const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
                         const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a'); a.href = url; a.download = `${(graphTitle || 'aba_graph').replace(/\s+/g, '_')}.svg`;
-                        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                        const a = blCreateDownloadLink(); a.href = url; a.download = `${(graphTitle || 'aba_graph').replace(/\s+/g, '_')}.svg`;
+                        document.body.appendChild(a); if (a.click() === false) return; document.body.removeChild(a); URL.revokeObjectURL(url);
                         if (addToast) addToast(tt('behavior_lens.toast.svg_exported', 'SVG exported!'), 'success');
                     },
                     className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
@@ -21115,6 +21229,7 @@ Keep it under 150 words.`);
         var _mf = useState(null), mediaFile = _mf[0], setMediaFile = _mf[1];
         var _mt = useState(null), mediaType = _mt[0], setMediaType = _mt[1];
         var _mu = useState(null), mediaUrl = _mu[0], setMediaUrl = _mu[1];
+        useEffect(() => () => { if (mediaUrl) URL.revokeObjectURL(mediaUrl); }, [mediaUrl]);
         var _sm = useState('partial'), samplingMethod = _sm[0], setSamplingMethod = _sm[1];
         var _ai = useState(300), aiIntervalSec = _ai[0], setAiIntervalSec = _ai[1];
         var _tb = useState(''), targetBehaviors = _tb[0], setTargetBehaviors = _tb[1];
@@ -21296,7 +21411,7 @@ Keep it under 150 words.`);
             setAiProgress(0);
             setAiCoding(null);
 
-            var reader = new FileReader();
+            var reader = blCreateProtectedReader();
             reader.onload = function() {
                 var base64Data = reader.result;
                 var sampDesc = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
@@ -21353,7 +21468,7 @@ Keep it under 150 words.`);
             setIoaComparison2(null);
             setAiVsAiComparison(null);
 
-            var reader2 = new FileReader();
+            var reader2 = blCreateProtectedReader();
             reader2.onload = function() {
                 var base64Data2 = reader2.result;
                 var sampDesc2 = IOA_SAMPLING.find(function(s) { return s.id === samplingMethod; });
@@ -21574,7 +21689,7 @@ Keep it under 150 words.`);
             setIaProcessing(true);
             setIaResults(null);
 
-            var reader = new FileReader();
+            var reader = blCreateProtectedReader();
             reader.onload = function() {
                 var base64 = reader.result;
                 var roleInfo = IA_ROLES.find(function(r) { return r.id === iaRole; });
@@ -23128,8 +23243,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             canvas.setAttribute('aria-hidden', 'true');
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'latency_trials.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
+            const img = blCreateExportImage();
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = blCreateDownloadLink(); a.download = 'latency_trials.png'; a.href = canvas.toDataURL('image/png'); if (a.click() === false) return; if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
@@ -23420,9 +23535,9 @@ Keep the language professional but accessible.`;
             ];
             const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url;
+            const a = blCreateDownloadLink(); a.href = url;
             a.download = `social_validity_${blLocalDateKey(new Date())}.txt`;
-            a.click(); URL.revokeObjectURL(url);
+            if (a.click() === false) return; URL.revokeObjectURL(url);
             addToast && addToast(t('toasts.report_exported'));
         };
 
@@ -23706,9 +23821,9 @@ Keep the language professional but accessible.`;
             });
             const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = url; a.download = `maintenance_summary_${blLocalDateKey(new Date())}.txt`;
-            a.click(); URL.revokeObjectURL(url);
+            if (a.click() === false) return; URL.revokeObjectURL(url);
             addToast && addToast(t('toasts.summary_exported'));
         };
 
@@ -23988,8 +24103,8 @@ Keep the language professional but accessible.`;
             canvas.setAttribute('aria-hidden', 'true');
             canvas.width = W * 2; canvas.height = H * 2;
             const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = document.createElement('a'); a.download = 'cumulative_record.png'; a.href = canvas.toDataURL('image/png'); a.click(); if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
+            const img = blCreateExportImage();
+            img.onload = () => { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); const a = blCreateDownloadLink(); a.download = 'cumulative_record.png'; a.href = canvas.toDataURL('image/png'); if (a.click() === false) return; if (addToast) addToast(t('toasts.exported_as_png'), 'success'); };
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
@@ -24887,7 +25002,7 @@ Keep the language professional but accessible.`;
         }
         return { entries: [], source: 'none' };
     }
-    const caseloadStorage = () => { try { return window.localStorage; } catch (e) { return null; } };
+    const caseloadStorage = () => { try { blRequireProtectedSession(); return localStorage; } catch (e) { return null; } };
     function caseloadRow(name, found, now) {
         const entries = found.entries;
         const times = entries.map(e => Date.parse(e && (e.occurredAt || e.timestamp))).filter(Number.isFinite);
@@ -25947,7 +26062,7 @@ Keep the language professional but accessible.`;
             const file = e.target.files?.[0];
             if (!file) return;
             const read = (encoding) => {
-                const reader = new FileReader();
+                const reader = blCreateProtectedReader();
                 reader.onload = (ev) => {
                     const text = String(ev.target.result || '');
                     // A spreadsheet's "CSV (Comma delimited)" is Windows-1252: read as UTF-8,
@@ -25997,10 +26112,10 @@ Keep the language professional but accessible.`;
                 ? `${headers.join(',')}\n${new Date().toISOString()},Teacher gave instruction,Called out,Verbal redirect,3,Classroom,Math period`
                 : `${headers.join(',')}\nAlex,3rd,ADHD,Preferential seating,Responds well to visual cues`;
             const blob = new Blob([sample], { type: 'text/csv' });
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = URL.createObjectURL(blob);
             a.download = `behaviorlens_${importMode}_template.csv`;
-            a.click();
+            if (a.click() === false) return;
             URL.revokeObjectURL(a.href);
         };
 
@@ -26499,10 +26614,10 @@ Keep the language professional but accessible.`;
             if (!await confirmShare()) return;
             const snapshot = generateSnapshot();
             const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = URL.createObjectURL(blob);
             a.download = `behaviorlens_share_${selectedStudent || 'student'}_${shareRole}_${blLocalDateKey(new Date())}.json`;
-            a.click();
+            if (a.click() === false) return;
             URL.revokeObjectURL(a.href);
             if (addToast) addToast(tt('behavior_lens.toast.share_file_downloaded', 'Share file downloaded!'), 'success');
         };
@@ -26532,7 +26647,7 @@ Keep the language professional but accessible.`;
                 e.target.value = '';
                 return;
             }
-            const reader = new FileReader();
+            const reader = blCreateProtectedReader();
             reader.onload = (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
@@ -26991,7 +27106,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             html += `</div></body></html>`;
 
             // Open in new tab
-            const win = window.open('', '_blank');
+            const win = blOpenReadableWindow('', '_blank');
             if (win) {
                 win.document.write(html);
                 win.document.close();
@@ -26999,10 +27114,10 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             } else {
                 // Fallback: download as HTML
                 const blob = new Blob([html], { type: 'text/html' });
-                const a = document.createElement('a');
+                const a = blCreateDownloadLink();
                 a.href = URL.createObjectURL(blob);
                 a.download = `progress_report_${(student || 'student').replace(/\s/g, '_')}.html`;
-                a.click();
+                if (a.click() === false) return;
                 URL.revokeObjectURL(a.href);
                 if (addToast) addToast(tt('behavior_lens.toast.popups_blocked_downloaded_as_html_file_instead', 'Pop-ups blocked — downloaded as HTML file instead.'), 'info');
             }
@@ -28485,9 +28600,9 @@ IMPORTANT rules for expert keys:
         return '';
     };
     const BehaviorLensApp = ({
-        onClose,
-        callGemini,
-        callGeminiVision,
+        onClose: closeHost,
+        callGemini: rawCallGemini,
+        callGeminiVision: rawCallGeminiVision,
         addToast,
         t,
         studentNickname,
@@ -28499,8 +28614,75 @@ IMPORTANT rules for expert keys:
         firebaseAuth,
         isCanvasEnv,
         appId: hostAppId,
-        onOpenAlloSheet
+        onOpenAlloSheet,
+        sensitiveWorkspace
     }) => {
+        if (!sensitiveWorkspace || !sensitiveWorkspace.storage || !sensitiveWorkspace.sessionStorage) {
+            throw new Error('The protected clinical workspace is unavailable.');
+        }
+        const protectedEpochRef = useRef(null);
+        try { protectedEpochRef.current = sensitiveWorkspace.captureEpoch(); }
+        catch (error) { if (protectedEpochRef.current === null) throw error; }
+        blProtectedSession = sensitiveWorkspace;
+        blProtectedEpoch = protectedEpochRef.current;
+        const callGemini = useProtectedBehaviorLensTransport(rawCallGemini, sensitiveWorkspace, protectedEpochRef.current);
+        const callGeminiVision = useProtectedBehaviorLensTransport(rawCallGeminiVision, sensitiveWorkspace, protectedEpochRef.current);
+        const protectedCloseInProgress = useRef(false);
+        const onClose = useCallback(async () => {
+            if (protectedCloseInProgress.current) return;
+            const epoch = sensitiveWorkspace.captureEpoch();
+            protectedCloseInProgress.current = true;
+            try {
+                sensitiveWorkspace.assertCurrent(epoch);
+                blCancelProtectedReaders();
+                blPendingConfirmations.forEach(cancel => cancel());
+                blObservationFlushers.forEach(flush => flush());
+                getBehaviorLensWorkspaceRuntime().flushWorkspacePersistence(localWorkspaceSaveSchedulerRef.current, { reason: 'close' });
+                await sensitiveWorkspace.flush();
+                sensitiveWorkspace.assertCurrent(epoch);
+                if (typeof closeHost === 'function') closeHost();
+            } catch (error) {
+                if (error?.name !== 'AbortError' && addToast) addToast('BehaviorLens could not save pending protected work. The workspace remains open; retry after storage is available.', 'error');
+            } finally { protectedCloseInProgress.current = false; }
+        }, [sensitiveWorkspace, closeHost, addToast]);
+        const [referenceRevision, setReferenceRevision] = useState(0);
+        const importedDashboard = useMemo(() => {
+            try { const value = JSON.parse(localStorage.getItem('bl_imported_dashboard_v1') || 'null'); return Array.isArray(value) ? value : []; }
+            catch (_) { return []; }
+        }, [referenceRevision]);
+        const importOtherToolReferences = async () => {
+            const epoch = sensitiveWorkspace.captureEpoch();
+            const confirmed = await askBehaviorLensConfirmation(
+                'Import student choices, roster references, Symbol Studio resources and preference summaries from other tools on this browser profile? Imported copies will be protected here. Their original copies remain outside the protected clinical workspace and are not deleted.',
+                { title: 'Import other-tool references', confirmText: 'Import references' }
+            );
+            if (!confirmed) return;
+            try {
+                sensitiveWorkspace.assertCurrent(epoch);
+                // This is an explicit import only. Normal reads use the sealed facades above.
+                const source = window.localStorage;
+                const exact = ['alloStudentProfiles', 'alloActiveProfileId', 'alloSymbolFamiliarity', 'alloSymbolGallery', 'alloflow_roster_key', 'students_data'];
+                const prefixes = ['alloSymbolFamiliarity__', 'alloSymbolGallery__', 'prefassess_'];
+                for (let i = 0; i < source.length; i += 1) {
+                    const key = source.key(i);
+                    if (!key || !(exact.includes(key) || prefixes.some(prefix => key.startsWith(prefix)))) continue;
+                    sensitiveWorkspace.assertCurrent(epoch);
+                    const value = source.getItem(key);
+                    if (value != null) localStorage.setItem(key, value);
+                }
+                if (Array.isArray(dashboardData)) localStorage.setItem('bl_imported_dashboard_v1', JSON.stringify(
+                    Array.from(new Set(dashboardData.map(student => typeof student?.studentNickname === 'string' ? student.studentNickname.slice(0, 120) : '').filter(Boolean)))
+                        .map(studentNickname => ({ studentNickname }))
+                ));
+                await sensitiveWorkspace.flush();
+                sensitiveWorkspace.assertCurrent(epoch);
+                setReferenceRevision(value => value + 1);
+                if (studentNickname) setSelectedStudent(studentNickname);
+                if (addToast) addToast('Reference copies imported into the protected workspace. Original other-tool copies remain unchanged.', 'success');
+            } catch (error) {
+                if (error?.name !== 'AbortError' && addToast) addToast('The references could not be saved in the protected workspace. Original copies were not changed.', 'error');
+            }
+        };
 
         // ── UI localization state (drives tt()/trRuntime declared above) ──
         // Publishes the current UI language, per-device cache, and the pack
@@ -28549,7 +28731,7 @@ IMPORTANT rules for expert keys:
         // React's rules of hooks and avoid "Rendered fewer hooks than expected"
         // (React error #300). Firebase v9 modular SDK.
         const _fb = window.__alloFirebase || {};
-        const [_syncStatus, _setSyncStatus] = useState(isCanvasEnv ? 'disabled' : 'idle');
+        const [_syncStatus, _setSyncStatus] = useState('disabled');
         const [_cloudUserId, _setCloudUserId] = useState(null);
         const [cloudConflict, setCloudConflict] = useState(null);
         const [browserOnline, setBrowserOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine !== false);
@@ -28610,7 +28792,7 @@ IMPORTANT rules for expert keys:
 
         // Attempt anonymous sign-in on mount
         useEffect(() => {
-            if (isCanvasEnv || !firestore || !firebaseAuth || _authAttempted.current) return;
+            if (sensitiveWorkspace || isCanvasEnv || !firestore || !firebaseAuth || _authAttempted.current) return;
             if (!_fb.onAuthStateChanged || !_fb.signInAnonymously) {
                 warnLog('CloudSync: Firebase helpers not available on window.__alloFirebase');
                 _setSyncStatus('offline');
@@ -28659,7 +28841,7 @@ IMPORTANT rules for expert keys:
         }, [_cloudUserId, _cloudAppId]);
 
         const _performCloudSave = useCallback(async (studentId, data, options = {}) => {
-            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId || (data && data.isPracticeMode === true)) return false;
+            if (sensitiveWorkspace || isCanvasEnv || !firestore || !_cloudUserId || !studentId || (data && data.isPracticeMode === true)) return false;
             if (!_fb.doc || !_fb.runTransaction) {
                 warnLog('CloudSync: Firestore transactions unavailable; refusing a non-atomic workspace write');
                 _setSyncStatus('offline');
@@ -28773,7 +28955,7 @@ IMPORTANT rules for expert keys:
             return pending;
         }, [_performCloudSave]);
         const _loadFromCloud = useCallback(async (studentId, options = {}) => {
-            if (isCanvasEnv || !firestore || !_cloudUserId || !studentId) return null;
+            if (sensitiveWorkspace || isCanvasEnv || !firestore || !_cloudUserId || !studentId) return null;
             if (!_fb.doc || !_fb.getDoc) return null;
             const path = _cloudDocPath(studentId);
             if (!path) return null;
@@ -28818,9 +29000,17 @@ IMPORTANT rules for expert keys:
 
         // Assemble the cloudSync object (same interface as before)
         const pendingCloudSaveCount = Object.keys(_pendingCloudSavesRef.current).length;
-        const cloudSync = { saveToCloud: _saveToCloud, overwriteCloud: (studentId, data) => _saveToCloud(studentId, data, { force: true }), loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: isCanvasEnv ? null : _cloudUserId, cloudConflict, browserOnline, pendingSaveCount: pendingCloudSaveCount };
+        const cloudSync = { saveToCloud: _saveToCloud, overwriteCloud: (studentId, data) => _saveToCloud(studentId, data, { force: true }), loadFromCloud: _loadFromCloud, syncStatus: _syncStatus, setSyncStatus: _setSyncStatus, userId: sensitiveWorkspace || isCanvasEnv ? null : _cloudUserId, cloudConflict, browserOnline, pendingSaveCount: pendingCloudSaveCount };
         const [activePanel, setActivePanel] = useState('hub');
-        const [selectedStudent, setSelectedStudent] = useState(studentNickname || '');
+        const [selectedStudent, setSelectedStudent] = useState(() => {
+            try { return localStorage.getItem('bl_selected_student') || ''; } catch (_) { return ''; }
+        });
+        useEffect(() => {
+            try {
+                if (selectedStudent) localStorage.setItem('bl_selected_student', selectedStudent);
+                else localStorage.removeItem('bl_selected_student');
+            } catch (_) { /* The shared workspace retains and reports failed queued writes. */ }
+        }, [selectedStudent]);
         const behaviorLensDialogRef = useRef(null);
         const behaviorLensCloseRef = useRef(null);
         const behaviorLensOpenerRef = useRef(null);
@@ -28920,6 +29110,8 @@ IMPORTANT rules for expert keys:
             try { return localStorage.getItem('bl_ai_consent_v1') === '1'; } catch { return false; }
         });
         const [showAiConsentModal, setShowAiConsentModal] = useState(false);
+        const [sensitiveAiReview, setSensitiveAiReview] = useState(null);
+        const sensitiveAiGateRef = useRef(null);
         const aiConsentDialogRef = useRef(null);
         const aiConsentOpenerRef = useRef(null);
         useEffect(() => {
@@ -29626,11 +29818,11 @@ IMPORTANT rules for expert keys:
             const json = JSON.stringify(workspace);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = url;
             a.download = `behaviorlens_${(selectedStudent || 'data').replace(/\s+/g, '_')}_${blLocalDateKey(new Date())}.json`;
             document.body.appendChild(a);
-            a.click();
+            if (a.click() === false) return;
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             setLastSavedAt(now);
@@ -29660,7 +29852,7 @@ IMPORTANT rules for expert keys:
                 e.target.value = '';
                 return;
             }
-            const reader = new FileReader();
+            const reader = blCreateProtectedReader();
             reader.onload = async (ev) => {
                 try {
                     const data = JSON.parse(ev.target.result);
@@ -29765,7 +29957,7 @@ IMPORTANT rules for expert keys:
                 }
             };
             files.forEach(file => {
-                const reader = new FileReader();
+                const reader = blCreateProtectedReader();
                 reader.onload = (ev) => {
                     try {
                         const data = JSON.parse(ev.target.result);
@@ -29883,11 +30075,33 @@ IMPORTANT rules for expert keys:
         useEffect(() => {
             setSummaryLoading(false);
             setAnalyzing(false);
+            sensitiveAiGateRef.current?.cancelAll();
         }, [aiContextKey]);
+        const aiProviderRef = useRef({ text: callGemini, vision: callGeminiVision });
+        aiProviderRef.current = { text: callGemini, vision: callGeminiVision };
         useEffect(() => {
             aiRequestContextRef.current.mounted = true;
-            return () => { aiRequestContextRef.current.mounted = false; aiRequestContextRef.current.generation += 1; };
+            return () => {
+                aiRequestContextRef.current.mounted = false;
+                aiRequestContextRef.current.generation += 1;
+                sensitiveAiGateRef.current?.cancelAll({ notify: false });
+            };
         }, []);
+        const reviewSensitiveAiPrompt = useCallback(async (prompt, options) => {
+            const privacy = window.AlloModules && window.AlloModules.IdentifierRedaction;
+            if (!privacy || typeof privacy.createSensitivePromptGate !== 'function' || typeof privacy.SensitivePromptReview !== 'function') {
+                if (addToast) addToast('Privacy review is unavailable. Reload before sending BehaviorLens data to AI.', 'warning');
+                return null;
+            }
+            if (!sensitiveAiGateRef.current) sensitiveAiGateRef.current = privacy.createSensitivePromptGate({ onChange: setSensitiveAiReview });
+            try {
+                return await sensitiveAiGateRef.current.request(prompt, { studentName: selectedStudent, label: 'BehaviorLens', ...options });
+            } catch (error) {
+                if (error && error.name === 'AbortError') return null;
+                if (addToast) addToast('The AI request could not be prepared safely. Nothing was sent.', 'warning');
+                return null;
+            }
+        }, [selectedStudent, addToast]);
         const beginStudentAiRequest = (kind) => {
             const state = aiRequestContextRef.current;
             state.requests[kind] = (state.requests[kind] || 0) + 1;
@@ -29906,9 +30120,12 @@ IMPORTANT rules for expert keys:
                 return null;
             }
             const generation = aiRequestContextRef.current.generation;
-            const result = await callGemini(prompt, jsonMode);
+            const privacy = window.AlloModules && window.AlloModules.IdentifierRedaction;
+            const reviewed = await reviewSensitiveAiPrompt(prompt);
+            if (!reviewed || window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.text !== callGemini) return null;
+            const result = await callGemini(reviewed.prompt, jsonMode);
             return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
-        }, [callGemini, aiConsent, addToast, t]);
+        }, [callGemini, aiConsent, addToast, t, reviewSensitiveAiPrompt]);
 
         // ── Vision/media consent gate ──
         // The IOA video/audio coding path sends the student's recording (and
@@ -29923,9 +30140,12 @@ IMPORTANT rules for expert keys:
                 return null;
             }
             const generation = aiRequestContextRef.current.generation;
-            const result = await callGeminiVision(prompt, base64, mime);
+            const privacy = window.AlloModules && window.AlloModules.IdentifierRedaction;
+            const reviewed = await reviewSensitiveAiPrompt(prompt, { media: { mime: String(mime || 'recording') } });
+            if (!reviewed || window.AlloModules?.IdentifierRedaction !== privacy || !aiRequestContextRef.current.mounted || aiRequestContextRef.current.generation !== generation || aiProviderRef.current.vision !== callGeminiVision) return null;
+            const result = await callGeminiVision(reviewed.prompt, base64, mime);
             return aiRequestContextRef.current.mounted && aiRequestContextRef.current.generation === generation ? result : null;
-        }, [callGeminiVision, aiConsent, addToast, t]);
+        }, [callGeminiVision, aiConsent, addToast, t, reviewSensitiveAiPrompt]);
 
         // ── Contextual AI wrapper — auto-injects student profile + notes ──
         // Routes through callGeminiGuarded so the consent gate fires for
@@ -30217,6 +30437,16 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         useEffect(() => {
             const scheduler = localWorkspaceSaveSchedulerRef.current;
+            const unregister = sensitiveWorkspace.registerFlush(() => {
+                const previous = blRegisteredFlushSession;
+                blRegisteredFlushSession = sensitiveWorkspace;
+                try {
+                    blCancelProtectedReaders();
+                    blPendingConfirmations.forEach(cancel => cancel());
+                    blObservationFlushers.forEach(flush => flush());
+                    getBehaviorLensWorkspaceRuntime().flushWorkspacePersistence(scheduler, { reason: 'protected-workspace-lock' });
+                } finally { blRegisteredFlushSession = previous; }
+            });
             const flushForPageLifecycle = () => scheduler.flush({ reason: 'page-lifecycle', silent: true });
             const flushWhenHidden = () => {
                 if (document.visibilityState === 'hidden') flushForPageLifecycle();
@@ -30224,11 +30454,12 @@ Use professional language. Refer to "the student" (not the codename).`;
             window.addEventListener('pagehide', flushForPageLifecycle);
             document.addEventListener('visibilitychange', flushWhenHidden);
             return () => {
+                unregister();
                 window.removeEventListener('pagehide', flushForPageLifecycle);
                 document.removeEventListener('visibilitychange', flushWhenHidden);
                 scheduler.flush({ reason: 'unmount', silent: true });
             };
-        }, []);
+        }, [sensitiveWorkspace]);
 
         useEffect(() => {
             if (!selectedStudent) {
@@ -30438,7 +30669,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
             const suppressDirtyMark = suppressNextDirtyMarkRef.current;
             suppressNextDirtyMarkRef.current = false;
-            const localOnly = !!isCanvasEnv || isPracticeMode || activeStudentId === PRACTICE_WORKSPACE_ID;
+            const localOnly = !!sensitiveWorkspace || !!isCanvasEnv || isPracticeMode || activeStudentId === PRACTICE_WORKSPACE_ID;
             const effectiveSuppressDirtyMark = suppressDirtyMark || localOnly;
             localWorkspaceSaveSchedulerRef.current.schedule({
                 identity: saveKey,
@@ -30487,9 +30718,11 @@ Use professional language. Refer to "the student" (not the codename).`;
         // Available students from dashboardData
         const studentOptions = useMemo(() => {
             if (familyOnly) return [];
-            if (!dashboardData || !Array.isArray(dashboardData)) return [];
-            return dashboardData.map(s => s.studentNickname).filter(Boolean);
-        }, [dashboardData, familyOnly]);
+            return Array.from(new Set([
+                ...studentRoster.map(student => student.name),
+                ...importedDashboard.map(student => student.studentNickname)
+            ].filter(Boolean)));
+        }, [studentRoster, importedDashboard, familyOnly]);
 
         // WCAG 2.1.2 + 2.4.3: Escape closes modals + restore focus
         useEffect(function() {
@@ -30822,8 +31055,10 @@ Use professional language. Refer to "the student" (not the codename).`;
             });
 
             try {
+                const assertCurrent = blExportGuard('allosheet');
                 const pending = onOpenAlloSheet(envelope);
                 const opened = pending && typeof pending.then === 'function' ? await pending : pending;
+                assertCurrent();
                 if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
                 const message = tt('behavior_lens.allosheet.received_for_review', 'Reviewed tables were received for destination review in AlloSheet. This did not enable AI or write back to BehaviorLens.');
                 setShowAlloSheetHandoff(false);
@@ -30863,7 +31098,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             const canvas = document.createElement('canvas');
             canvas.setAttribute('aria-hidden', 'true');
             const ctx = canvas.getContext('2d');
-            const img = new Image();
+            const img = blCreateExportImage();
             img.onload = () => {
                 canvas.width = img.width * 2;
                 canvas.height = img.height * 2;
@@ -30872,10 +31107,10 @@ Use professional language. Refer to "the student" (not the codename).`;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
                 canvas.toBlob(blob => {
-                    const a = document.createElement('a');
+                    const a = blCreateDownloadLink();
                     a.href = URL.createObjectURL(blob);
                     a.download = filename || 'behaviorlens-graph.png';
-                    a.click();
+                    if (a.click() === false) return;
                     URL.revokeObjectURL(a.href);
                     if (addToast) addToast(tt('behavior_lens.toast.png_exported', 'PNG exported!'), 'success');
                 }, 'image/png');
@@ -30937,10 +31172,10 @@ Use professional language. Refer to "the student" (not the codename).`;
             // Anything else is plain text: it was saved as .csv, unescaped, and broke columns.
             const asText = csvContent == null;
             const blob = new Blob([asText ? getToolExportData(activePanel) : csvContent], { type: asText ? 'text/plain' : 'text/csv' });
-            const a = document.createElement('a');
+            const a = blCreateDownloadLink();
             a.href = URL.createObjectURL(blob);
             a.download = `behaviorlens-${activePanel}-${studentLabel.replace(/\s+/g, '_')}.${asText ? 'txt' : 'csv'}`;
-            a.click();
+            if (a.click() === false) return;
             URL.revokeObjectURL(a.href);
             if (addToast) addToast(asText ? tt('behavior_lens.toast.text_downloaded', 'Text file downloaded') : tt('behavior_lens.toast.csv_downloaded', 'CSV downloaded!'), 'success');
             setShowExportMenu(false);
@@ -32592,6 +32827,9 @@ Use professional language. Refer to "the student" (not the codename).`;
             onKeyDown: handleBehaviorLensDialogKeyDown
         },
             h('div', { id: 'behavior-lens-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'bl-sr-only' }, _blAnnouncement),
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-950' },
+                h('span', null, 'Clinical records stay in the protected workspace. Other-tool references require an explicit import.'),
+                h('button', { type: 'button', onClick: importOtherToolReferences, className: 'min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 font-bold' }, 'Import other-tool references')),
             // Top bar
             h('div', { className: 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm shrink-0 z-10' },
                 h('div', { className: 'bl-app-header px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2' },
@@ -32692,7 +32930,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             title: 'Local workspace changes are waiting for cloud synchronization'
                         }, 'Local changes pending'),
                         // Cloud Sync Status Badge
-                        !isCanvasEnv && h('div', {
+                        !sensitiveWorkspace && !isCanvasEnv && h('div', {
                             role: 'status',
                             'aria-label': cloudSync.syncStatus === 'too-large' ? 'Too large for cloud sync; saved in this browser' : cloudSync.syncStatus === 'conflict' ? 'Cloud sync conflict' : cloudSync.syncStatus === 'offline' ? (cloudSync.pendingSaveCount > 0 ? 'Cloud offline; local changes queued for retry' : 'Cloud offline; local storage active') : 'Cloud sync status',
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
@@ -33363,7 +33601,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     callGemini: callGeminiWithContext, t, addToast
                 }),
                 activePanel === 'caseload' && h(CaseloadDashboard, {
-                    abcEntries, dashboardData, callGemini: callGeminiWithContext,
+                    abcEntries, dashboardData: importedDashboard, callGemini: callGeminiWithContext,
                     t, addToast, selectedStudent, setSelectedStudent: switchToStudent, openPanel, studentRoster
                 }),
                 activePanel === 'compare' && h(ComparisonDashboard, {
@@ -33373,7 +33611,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                     switchToStudent
                 }),
                 activePanel === 'mtss' && h(MTSSTierManager, {
-                    dashboardData, abcEntries, callGemini: callGeminiWithContext,
+                    dashboardData: importedDashboard, abcEntries, callGemini: callGeminiWithContext,
                     t, addToast, selectedStudent, studentRoster, setStudentRoster
                 }),
                 activePanel === 'nlabc' && h(NaturalLanguageABC, {
@@ -34397,6 +34635,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                     )
                 )
             ),
+            sensitiveAiReview && window.AlloModules?.IdentifierRedaction?.SensitivePromptReview && h(window.AlloModules.IdentifierRedaction.SensitivePromptReview, {
+                key: sensitiveAiReview.id,
+                React,
+                review: sensitiveAiReview,
+                onAccept: (id, value) => sensitiveAiGateRef.current?.accept(id, value),
+                onCancel: id => sensitiveAiGateRef.current?.cancel(id)
+            }),
             // ─── AI Consent Modal (first OFF→ON transition) ──
             // FERPA-adjacent: sending student PII to a third-party LLM
             // requires informed consent. This modal fires on the very first
@@ -34431,7 +34676,8 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 h('li', null, tt('behavior_lens.ai.consent_li_abc', 'ABC entries (antecedent, behavior, consequence, intensity, notes, setting) — for the active student')),
                                 h('li', null, tt('behavior_lens.ai.consent_li_profile', 'Student profile (strengths, interests, triggers, goals, accommodations, notes)')),
                                 h('li', null, tt('behavior_lens.ai.consent_li_obs', 'Observation session summaries and recent session notes')),
-                                h('li', null, tt('behavior_lens.ai.consent_li_codename', 'The student codename you have chosen (NOT a real name unless you typed one in)'))
+                                h('li', null, tt('behavior_lens.ai.consent_li_codename', 'The student codename you have chosen (NOT a real name unless you typed one in)')),
+                                h('li', null, 'You will review and can edit the outgoing text before each request. Automatic removal can miss names and identifying context; recordings and images are not anonymized.')
                             )
                         ),
                         h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-lg p-4' },
@@ -34439,7 +34685,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             h('ul', { className: 'list-disc pl-5 space-y-1 text-emerald-900' },
                                 h('li', null, t('behavior_lens.ai.consent_li_no_other_students') || "Data for any student other than the active one"),
                                 h('li', null, tt('behavior_lens.ai.consent_li_no_cloud_creds', 'Your Firebase/cloud credentials, school account, or device identifiers')),
-                                h('li', null, tt('behavior_lens.ai.consent_li_no_real_names', 'Real student names (unless you typed one into the codename field)'))
+                                h('li', null, 'Common identifiers are removed from the outgoing text, but names and identifying details in free text may remain. Check the review before sending.')
                             )
                         ),
                         h('p', { className: 'text-xs text-slate-600 italic' },
@@ -34517,7 +34763,33 @@ Use professional language. Refer to "the student" (not the codename).`;
     // Preserve the long-standing source-introspection contract used by the
     // focused BehaviorLens characterization suite.
     BehaviorLensRuntimeBoundary.toString = () => BehaviorLensApp.toString();
-    window.AlloModules.BehaviorLens = BehaviorLensRuntimeBoundary;
+    const BehaviorLensProtectedBoundary = (props) => {
+        const [revision, setRevision] = React.useState(0);
+        const api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
+        React.useEffect(() => {
+            const refresh = () => setRevision(value => value + 1);
+            window.addEventListener('alloflow:module-registry-changed', refresh);
+            if (!api || typeof api.Boundary !== 'function') {
+                try { window.__alloLazySensitiveWorkspace?.(); } catch (_) {}
+            }
+            return () => window.removeEventListener('alloflow:module-registry-changed', refresh);
+        }, [api, revision]);
+        if (!api || typeof api.Boundary !== 'function') return h('div', {
+            role: 'status', 'aria-live': 'polite', 'data-behavior-lens-protection': 'waiting',
+            className: 'fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/75 p-6'
+        }, h('div', { className: 'max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl' },
+            h('p', { className: 'font-black text-slate-900' }, 'Preparing the protected clinical workspace…'),
+            h('button', { type: 'button', className: 'mt-4 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white', onClick: () => {
+                try { window.__alloLazySensitiveWorkspace?.(); } catch (_) {}
+                setRevision(value => value + 1);
+            } }, 'Retry loading'),
+            typeof props.onClose === 'function' ? h('button', { type: 'button', className: 'ml-2 mt-4 min-h-11 rounded-lg border px-4 py-2 font-bold', onClick: props.onClose }, 'Close') : null));
+        return h(api.Boundary, { React, feature: 'behavior-lens', onClose: props.onClose,
+            children: session => h(BehaviorLensRuntimeBoundary, { ...props, sensitiveWorkspace: session }) });
+    };
+    BehaviorLensProtectedBoundary.displayName = 'BehaviorLens';
+    BehaviorLensProtectedBoundary.toString = () => BehaviorLensApp.toString();
+    window.AlloModules.BehaviorLens = BehaviorLensProtectedBoundary;
 
     debugLog("BehaviorLens module registered ✅");
 })();

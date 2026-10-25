@@ -37,6 +37,9 @@
   ]);
 
   var SOURCE_GLOBAL_SINGLETON_TYPES = Object.freeze(['analysis']);
+  // Types whose generator never reads a row directive. A planner directive on
+  // them must not make a saved artifact look stale (it re-planned analysis).
+  var DIRECTIVE_FREE_TYPES = Object.freeze(['analysis']);
   var CONTEXT_SINGLETON_TYPES = Object.freeze([
     'simplified', 'glossary', 'lesson-plan', 'alignment-report'
   ]);
@@ -228,6 +231,53 @@
     }), fallback == null ? fallback : normalizeLanguageValue(fallback));
   }
 
+  function nativeLanguageList(settings) {
+    var source = settings || {};
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    // Reviewed jobs retain their concrete list even if the app locale changes.
+    if (Array.isArray(source.effectiveLanguageList) && source.effectiveLanguageList.length) {
+      return Number(source.nativeLanguageDefaultsVersion) >= 1 && helpers && typeof helpers.allGenerationLanguages === 'function'
+        ? helpers.allGenerationLanguages(source.effectiveLanguageList[0], source.effectiveLanguageList.slice(1))
+        : normalizeLanguageValues(source.effectiveLanguageList);
+    }
+    var appLanguage = normalizeLanguageValue(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English');
+    if (Number(source.nativeLanguageDefaultsVersion) >= 1) {
+      return helpers && typeof helpers.allGenerationLanguages === 'function'
+        ? helpers.allGenerationLanguages(appLanguage, source.selectedLanguages)
+        : normalizeLanguageValues([appLanguage].concat(source.selectedLanguages || []));
+    }
+    return normalizeLanguageValues(['English'].concat(source.selectedLanguages || []), 'English');
+  }
+
+  function resolvedCompanionLanguage(settings) {
+    var source = settings || {};
+    var mode = clean(source.translationMode || (source.translationPolicy && source.translationPolicy.mode)) || 'auto';
+    if (fold(mode) === 'off' || source.translationPolicy && source.translationPolicy.enabled === false) return '';
+    var target = fold(mode) === 'auto'
+      ? nativeLanguageName(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English')
+      : nativeLanguageName(source.translationTarget || (source.translationPolicy && source.translationPolicy.target) || mode);
+    return fold(target) === fold(nativeLanguageName(source.language || source.leveledTextLanguage)) ? '' : target;
+  }
+  function nativeLanguageName(value, fallback) {
+    var normalized = normalizeLanguageValue(value, fallback);
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    return helpers && typeof helpers.normalizeLanguageName === 'function' ? helpers.normalizeLanguageName(normalized) : normalized;
+  }
+
+  function glossaryLanguagePlan(settings, language) {
+    var source = settings || {};
+    var native = Number(source.nativeLanguageDefaultsVersion) >= 1;
+    var output = normalizeLanguageValue(source.language || source.leveledTextLanguage, 'English');
+    var all = fold(output) === 'all selected languages';
+    var base = native ? nativeLanguageName(all ? source.appLanguage || source.currentUiLanguage : language || output, 'English') : 'English';
+    var attached = all ? (native ? nativeLanguageList(source) : source.selectedLanguages || [])
+      : (native ? [] : [output]);
+    var companion = native ? resolvedCompanionLanguage(source) : normalizeLanguageValue(source.translationTarget);
+    if (companion) attached = attached.concat([companion]);
+    return { baseLanguage: base, translationLanguages: normalizeLanguageValues(attached)
+      .filter(function (value) { return fold(value) !== fold(base) && fold(value) !== 'all selected languages'; }) };
+  }
+
   function deepFreeze(value, seen) {
     if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
     var visited = seen || [];
@@ -374,7 +424,9 @@
     });
     var customInstructions = resourceDirective(row)
       || clean(effectiveConfigValue(row, source, type, 'customInstructions'));
-    if (customInstructions) fields.customInstructions = fold(customInstructions);
+    if (customInstructions && DIRECTIVE_FREE_TYPES.indexOf(type) === -1) {
+      fields.customInstructions = fold(customInstructions);
+    }
     if (getResourcePolicy(type).allowVariants) {
       var mode = resourceMode(row);
       if (mode) fields.mode = fold(mode);
@@ -552,13 +604,15 @@
     var interests = uniqueStrings(Array.isArray(interestInput)
       ? interestInput : (clean(interestInput) ? [interestInput] : []))
       .map(fold).sort();
+    var native = Number(settings && settings.nativeLanguageDefaultsVersion) >= 1;
+    var companion = native ? resolvedCompanionLanguage(settings) : '';
     return {
       standardsFingerprint: clean(settings && settings.standardsFingerprint),
       groupId: clean(settings && (settings.groupId || settings.rosterGroupId)),
-      translationMode: clean(settings && settings.translationMode),
-      currentUiLanguage: fold(normalizeLanguageValue(settings
+      translationMode: native ? (companion ? 'included' : 'off') : clean(settings && settings.translationMode),
+      currentUiLanguage: native ? '' : fold(normalizeLanguageValue(settings
         && (settings.currentUiLanguage || settings.uiLanguage))),
-      translationTarget: fold(normalizeLanguageValue(settings && (settings.translationTarget
+      translationTarget: native ? fold(companion) : fold(normalizeLanguageValue(settings && (settings.translationTarget
         || settings.translationTargetLanguage || settings.attachedTranslationTarget
         || (settings.translationPolicy && settings.translationPolicy.target)))),
       studentInterests: interests,
@@ -598,7 +652,9 @@
   function buildFrozenGenerationSettings(settings) {
     var source = isObject(settings) ? settings : {};
     var gradeLevel = clean(source.gradeLevel || source.grade);
-    var language = normalizeLanguageValue(source.language || source.leveledTextLanguage, 'English');
+    var language = Number(source.nativeLanguageDefaultsVersion) >= 1
+      ? nativeLanguageName(source.language || source.leveledTextLanguage, source.appLanguage || source.currentUiLanguage || 'English')
+      : normalizeLanguageValue(source.language || source.leveledTextLanguage, 'English');
     var selectedLanguages = normalizeLanguageValues(source.selectedLanguages);
     var differentiationRange = clean(source.differentiationRange) || 'None';
     var suppliedGrades = uniqueStrings(source.differentiationGrades || source.grades);
@@ -630,6 +686,11 @@
       gradeLevel: gradeLevel,
       language: language,
       selectedLanguages: selectedLanguages,
+      nativeLanguageDefaultsVersion: Number(source.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+      appLanguage: Number(source.nativeLanguageDefaultsVersion) >= 1
+        ? nativeLanguageName(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English')
+        : normalizeLanguageValue(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English'),
+      effectiveLanguageList: nativeLanguageList(source),
       differentiationRange: differentiationRange,
       differentiationGrades: differentiationGrades,
       differentiationTypes: uniqueStrings(source.differentiationTypes),
@@ -731,8 +792,14 @@
       // singleton while making a changed attached-language set a new exact
       // identity rather than reusing a glossary with the wrong translations.
       if (type === 'glossary') {
-        payload.attachedLanguages = normalizeLanguageValues(settings.selectedLanguages)
-          .map(fold).sort();
+        if (settings.nativeLanguageDefaultsVersion >= 1) {
+          var glossary = glossaryLanguagePlan(settings, cell.language);
+          payload.glossaryLanguageSchemaVersion = 1;
+          payload.baseLanguage = fold(glossary.baseLanguage);
+          payload.attachedLanguages = glossary.translationLanguages.map(fold).sort();
+        } else {
+          payload.attachedLanguages = normalizeLanguageValues(settings.selectedLanguages).map(fold).sort();
+        }
       }
       if (policy.allowVariants) payload.variant = clean(cell.variantKey || buildVariantKey(resource, policy, options || settings));
     }
@@ -755,8 +822,8 @@
       && (resource.language || resource.leveledTextLanguage));
     var requested = normalizeLanguageValue(rowLanguage || settings.language, 'English');
     if (fold(requested) !== 'all selected languages') return [requested];
-    if (MULTILINGUAL_FANOUT_TYPES.indexOf(type) === -1) return ['English'];
-    return normalizeLanguageValues(['English'].concat(settings.selectedLanguages), 'English');
+    if (MULTILINGUAL_FANOUT_TYPES.indexOf(type) === -1) return [settings.nativeLanguageDefaultsVersion >= 1 ? settings.appLanguage : 'English'];
+    return nativeLanguageList(settings);
   }
 
   function artifactIdentityValues(artifact) {
@@ -805,8 +872,25 @@
     var provenance = isObject(artifact.provenance) ? artifact.provenance : {};
     var identity = isObject(artifact.generationIdentity) ? artifact.generationIdentity
       : (isObject(config.generationIdentity) ? config.generationIdentity : {});
-    return clean(artifact.generationConfigFingerprint || config.generationConfigFingerprint
+    var stored = clean(artifact.generationConfigFingerprint || config.generationConfigFingerprint
       || provenance.generationConfigFingerprint || identity.generationConfigFingerprint);
+    return directiveFreeConfigFingerprint(artifact, config, stored);
+  }
+
+  // Artifacts saved before DIRECTIVE_FREE_TYPES carry a fingerprint that hashed
+  // the directive. Rehash their stored projection without it, but only when
+  // that projection still reproduces the stored fingerprint exactly.
+  function directiveFreeConfigFingerprint(artifact, config, stored) {
+    var type = getResourceType(artifact);
+    if (!stored || DIRECTIVE_FREE_TYPES.indexOf(type) === -1) return stored;
+    var projection = isObject(artifact.generationConfig) ? artifact.generationConfig : config.generationConfig;
+    if (!isObject(projection) || !isObject(projection.fields)
+        || !own(projection.fields, 'customInstructions')) return stored;
+    var prefix = 'cfg-' + (projection.type || type || 'unknown') + '-';
+    if (prefix + hashText(stableStringify(projection)) !== stored) return stored;
+    var fields = Object.assign({}, projection.fields);
+    delete fields.customInstructions;
+    return prefix + hashText(stableStringify(Object.assign({}, projection, { fields: fields })));
   }
 
   function artifactVariantKey(artifact, policy) {

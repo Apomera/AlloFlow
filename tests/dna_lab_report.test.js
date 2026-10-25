@@ -25,7 +25,7 @@ describe('DNA Lab student report preview', () => {
     expect(html).toContain('Student DNA lab report');
     expect(html).toContain('Evidence to cite');
     expect(html).toContain('Guided knowledge checks');
-    expect(html).toContain('Reflection / claim');
+    expect(html).toContain('DNA lab report reflection or claim');
     expect(html).toContain('The insertion changed the downstream reading frame.');
     expect(html).toContain('Download report');
   });

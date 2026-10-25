@@ -8,7 +8,25 @@ var useMemo = React.useMemo;
 var useCallback = React.useCallback;
 var Fragment = React.Fragment;
 let _glossaryTipSeq = 0;
-const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode, children, readerInteractions = false, readerProps = {} }) => {
+const _glossaryTranslationParts = (value) => {
+  if (value && typeof value === "object") return { term: String(value.term || value.word || ""), definition: String(value.definition || value.def || value.text || "") };
+  const text = typeof value === "string" ? value : "";
+  const separator = text.indexOf(":");
+  return separator >= 0 ? { term: text.slice(0, separator).trim(), definition: text.slice(separator + 1).trim() } : { term: text, definition: "" };
+};
+const _glossaryFieldAttributes = (language) => {
+  const helpers = window.AlloModules?.TextPipelineHelpers;
+  return helpers?.getArtifactTranslationTextAttributes?.({ translationTarget: language }) || { lang: language === "English" ? "en" : void 0, dir: "auto", style: { textAlign: "start" } };
+};
+const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLineFocusMode, children, readerInteractions = false, readerProps = {} }) => {
+  const baseLanguage = window.AlloModules?.TextPipelineHelpers?.getGlossaryBaseLanguage?.(artifact, item) || item.baseLanguage || item.termLanguage || "English";
+  const termLanguage = item.termLanguage || baseLanguage;
+  const definitionLanguage = item.definitionLanguage || baseLanguage;
+  const childText = typeof children === "string" ? children.trim().toLowerCase() : "";
+  const isSourceTerm = childText && childText === String(item.sourceTerm || "").trim().toLowerCase();
+  const isBaseTerm = childText && childText === String(item.term || "").trim().toLowerCase();
+  const passageLanguage = isSourceTerm && (!isBaseTerm || leveledTextLanguage === item.sourceLanguage) ? item.sourceLanguage || leveledTextLanguage || termLanguage : isBaseTerm ? termLanguage : leveledTextLanguage || termLanguage;
+  const translation = leveledTextLanguage !== definitionLanguage ? _glossaryTranslationParts(item.translations?.[leveledTextLanguage]) : null;
   const [tip, setTip] = React.useState(null);
   const termRef = React.useRef(null), hideTimer = React.useRef(null);
   const tipIdRef = React.useRef(null);
@@ -68,6 +86,8 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
     {
       ref: termRef,
       ...readerProps,
+      ..._glossaryFieldAttributes(passageLanguage),
+      style: { ...readerProps.style, textAlign: "start" },
       onClick: (event) => {
         if (readerInteractions) event.stopPropagation();
         show(event);
@@ -102,6 +122,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
         {
           id: tipIdRef.current,
           role: "tooltip",
+          ..._glossaryFieldAttributes(definitionLanguage),
           onMouseEnter: () => {
             if (hideTimer.current) clearTimeout(hideTimer.current);
           },
@@ -115,12 +136,14 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
             top: tip.top + "px",
             transform: tip.placeAbove ? "translateY(-100%)" : "none",
             zIndex: 300,
-            color: "#ffffff"
+            color: "#ffffff",
+            textAlign: "start"
           }
         },
         /* @__PURE__ */ React.createElement(
           "strong",
           {
+            ..._glossaryFieldAttributes(termLanguage),
             className: "block mb-1.5 pb-1.5 text-sm font-black text-center tracking-wide border-b border-slate-600/60",
             style: { color: "#fde047" }
           },
@@ -136,8 +159,8 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
             loading: "lazy"
           }
         ),
-        /* @__PURE__ */ React.createElement("span", { style: { color: "#ffffff" } }, item.def || item.definition || item.explanation || item.text),
-        leveledTextLanguage !== "English" && item.translations && item.translations[leveledTextLanguage] && /* @__PURE__ */ React.createElement("span", { className: "block mt-2 pt-2 border-t border-slate-600 italic", style: { color: "#c7d2fe" } }, item.translations[leveledTextLanguage]),
+        /* @__PURE__ */ React.createElement("span", { ..._glossaryFieldAttributes(definitionLanguage), style: { color: "#ffffff", textAlign: "start" } }, item.def || item.definition || item.explanation || item.text),
+        translation && (translation.term || translation.definition) && /* @__PURE__ */ React.createElement("span", { ..._glossaryFieldAttributes(leveledTextLanguage), className: "block mt-2 pt-2 border-t border-slate-600 italic", style: { color: "#c7d2fe", textAlign: "start" } }, [translation.term, translation.definition].filter(Boolean).join(": ")),
         /* @__PURE__ */ React.createElement(
           "svg",
           {
@@ -164,8 +187,9 @@ const glossaryTextSegments = (value, glossary, language = "English") => {
       if (typeof term === "string" && term.trim()) terms.set(term.trim().toLowerCase(), item);
     };
     add(item.term);
-    const translation = language !== "English" && item.translations?.[language];
-    if (typeof translation === "string" && translation.includes(":")) add(translation.split(":")[0]);
+    add(item.sourceTerm);
+    const translation = item.translations?.[language];
+    if (translation) add(_glossaryTranslationParts(translation).term);
   });
   if (!text || !terms.size) return [{ text, start: 0, end: text.length }];
   const escape = (term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -193,12 +217,10 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
   glossary.forEach((item) => {
     if (item.isSelected === false) return;
     if (item.term) termMap.set(item.term.toLowerCase(), item);
-    if (leveledTextLanguage !== "English" && item.translations && item.translations[leveledTextLanguage]) {
-      const transString = item.translations[leveledTextLanguage];
-      if (transString.includes(":")) {
-        const possibleTerm = transString.split(":")[0].trim().toLowerCase();
-        if (possibleTerm.length > 1) termMap.set(possibleTerm, item);
-      }
+    if (typeof item.sourceTerm === "string" && item.sourceTerm.trim()) termMap.set(item.sourceTerm.trim().toLowerCase(), item);
+    if (item.translations?.[leveledTextLanguage]) {
+      const possibleTerm = _glossaryTranslationParts(item.translations[leveledTextLanguage]).term.trim().toLowerCase();
+      if (possibleTerm.length > 1) termMap.set(possibleTerm, item);
     }
   });
   const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
@@ -231,17 +253,16 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
       if (isCloze) {
         const uniqueId = instanceKey != null && instanceKey !== "" ? `cloze-${instanceKey}-${i}-${item.term}` : `cloze-${i}-${item.term}-${text.length}`;
         const _translated = (() => {
-          if (leveledTextLanguage === "English") return "";
           const tr = item.translations && item.translations[leveledTextLanguage];
           if (!tr) return "";
-          return String(tr).includes(":") ? String(tr).split(":")[0].trim() : String(tr).trim();
+          return _glossaryTranslationParts(tr).term.trim();
         })();
         return /* @__PURE__ */ React.createElement(
           ClozeInput,
           {
             key: i,
             targetWord: item.term,
-            acceptedAnswers: _translated ? [item.term, _translated] : [item.term],
+            acceptedAnswers: Array.from(new Set([item.term, item.sourceTerm, _translated, part].filter(Boolean))),
             displayWord: _translated || item.term,
             passageWord: part,
             isSolved: clozeInstanceSet.has(uniqueId),
@@ -265,6 +286,7 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
         {
           key: i,
           item,
+          artifact: generatedContent,
           leveledTextLanguage,
           isDarkBg,
           isLineFocusMode

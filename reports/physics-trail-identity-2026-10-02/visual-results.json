@@ -1,8 +1,8 @@
 {
-  "sourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
-  "mirrorSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
-  "finalSourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
-  "finalMirrorSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+  "sourceSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "mirrorSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "finalSourceSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
+  "finalMirrorSha256": "d23727607732169d3a27a852de8e1957e3bf3b84de1040efb9af4dd1737beab0",
   "sourceStable": true,
   "mirrorStable": true,
   "configurations": [
@@ -11,7 +11,7 @@
       "theme": "default",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.168331513924977,
       "minUnderpaintContrast": 1,
@@ -41,7 +41,7 @@
       "theme": "dark",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.168331513924977,
       "minUnderpaintContrast": 1,
@@ -71,7 +71,7 @@
       "theme": "contrast",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 21,
+      "minTextContrast": 19.555999999999997,
       "minSVGContrast": 7.802587876839611,
       "minCanvasContrast": 12.390490865548248,
       "minUnderpaintContrast": 1,
@@ -101,7 +101,7 @@
       "theme": "default",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.069851975673235,
       "minUnderpaintContrast": 1,
@@ -131,7 +131,7 @@
       "theme": "dark",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.069851975673235,
       "minUnderpaintContrast": 1,
@@ -161,7 +161,7 @@
       "theme": "contrast",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 21,
+      "minTextContrast": 19.555999999999997,
       "minSVGContrast": 7.802587876839611,
       "minCanvasContrast": 12.390490865548248,
       "minUnderpaintContrast": 1,
@@ -191,7 +191,7 @@
       "theme": "default",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.083520661252516,
       "minUnderpaintContrast": 1,
@@ -221,7 +221,7 @@
       "theme": "dark",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 11.642242170794445,
+      "minTextContrast": 10.68081860732971,
       "minSVGContrast": 5.752500888271728,
       "minCanvasContrast": 9.083520661252516,
       "minUnderpaintContrast": 1,
@@ -251,7 +251,7 @@
       "theme": "contrast",
       "rows": 5,
       "minFont": 12,
-      "minTextContrast": 21,
+      "minTextContrast": 19.555999999999997,
       "minSVGContrast": 7.802587876839611,
       "minCanvasContrast": 12.390490865548248,
       "minUnderpaintContrast": 1,
@@ -2429,7 +2429,7 @@
           "rgb": [
             113,
             229,
-            235
+            234
           ],
           "surface": [
             16,
@@ -2441,8 +2441,8 @@
             229,
             235
           ],
-          "contrast": 10.402305382240577,
-          "channelError": 0
+          "contrast": 10.393805509880638,
+          "channelError": 1
         },
         {
           "x": 8,
@@ -2743,7 +2743,7 @@
           "svgX": 11.25,
           "rgb": [
             156,
-            218,
+            217,
             173
           ],
           "surface": [
@@ -2756,8 +2756,8 @@
             217,
             173
           ],
-          "contrast": 9.617919396004842,
-          "channelError": 1
+          "contrast": 9.541672587165676,
+          "channelError": 0
         },
         {
           "x": 23,
@@ -2784,7 +2784,7 @@
           "x": 24,
           "svgX": 12.25,
           "rgb": [
-            161,
+            162,
             216,
             165
           ],
@@ -2798,8 +2798,8 @@
             216,
             165
           ],
-          "contrast": 9.496649115226745,
-          "channelError": 0
+          "contrast": 9.512030487749053,
+          "channelError": 1
         },
         {
           "x": 25,
@@ -2910,7 +2910,7 @@
           "x": 30,
           "svgX": 15.25,
           "rgb": [
-            179,
+            178,
             211,
             141
           ],
@@ -2924,7 +2924,7 @@
             211,
             140
           ],
-          "contrast": 9.303475087364962,
+          "contrast": 9.285968461703442,
           "channelError": 1
         },
         {
@@ -3015,7 +3015,7 @@
           "x": 35,
           "svgX": 17.75,
           "rgb": [
-            192,
+            193,
             207,
             120
           ],
@@ -3029,8 +3029,8 @@
             207,
             120
           ],
-          "contrast": 9.169715758798553,
-          "channelError": 1
+          "contrast": 9.189030198226765,
+          "channelError": 0
         },
         {
           "x": 36,
@@ -3058,7 +3058,7 @@
           "svgX": 18.75,
           "rgb": [
             198,
-            206,
+            205,
             112
           ],
           "surface": [
@@ -3071,8 +3071,8 @@
             206,
             112
           ],
-          "contrast": 9.188891964260947,
-          "channelError": 0
+          "contrast": 9.118119841327973,
+          "channelError": 1
         },
         {
           "x": 38,
@@ -3374,7 +3374,7 @@
           "rgb": [
             241,
             194,
-            51
+            50
           ],
           "surface": [
             16,
@@ -3386,8 +3386,8 @@
             194,
             50
           ],
-          "contrast": 9.219138546647516,
-          "channelError": 1
+          "contrast": 9.217851732648153,
+          "channelError": 0
         },
         {
           "x": 53,

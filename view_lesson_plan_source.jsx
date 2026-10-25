@@ -285,7 +285,7 @@ function LessonPlanView(props) {
     window.addEventListener('alloflow:criterion-rollup', onRollup);
     return function () { window.removeEventListener('alloflow:criterion-rollup', onRollup); };
   }, []);
-  var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
+  var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, artifact: generatedContent, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
   return (
                     <div className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10">
                         {audienceView && !['study', 'family'].includes(generatedContent.config?.generationInputs?.mode) && <p role="status" className="rounded-lg border border-slate-300 p-3 text-sm">This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text.</p>}

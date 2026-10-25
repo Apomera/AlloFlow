@@ -72,6 +72,7 @@
     { name: 'job_cancel', title: 'Cancel a running job', kind: 'external-effect' },
     { name: 'job_get_result', title: 'Read job result artifacts', kind: 'read-only' },
     { name: 'artifact_validate', title: 'Validate an artifact', kind: 'read-only' },
+    { name: 'resource_pack_capabilities', title: 'Discover resource-pack formats', kind: 'read-only' },
     { name: 'resource_pack_generate', title: 'Generate a resource-pack draft', kind: 'external-effect' },
     { name: 'resource_pack_validate', title: 'Validate a resource pack', kind: 'read-only' },
     { name: 'resource_pack_preview', title: 'Preview a resource pack', kind: 'read-only' },

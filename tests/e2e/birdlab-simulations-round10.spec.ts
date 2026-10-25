@@ -117,6 +117,7 @@ test('native vane contacts separate and rejoin in sequence, with a frozen before
 
 test('one optional smoothing clock preserves manual inspection and pause and cleans up on exit', async ({ page }) => {
   await mount(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => {
     let now = 1000, id = 0; const frames = new Map<number, FrameRequestCallback>();
     requestAnimationFrame = callback => { frames.set(++id, callback); return id; };
@@ -148,6 +149,8 @@ test('one optional smoothing clock preserves manual inspection and pause and cle
   await page.emulateMedia({ reducedMotion: 'no-preference' }); await page.locator('[data-vane-play]').click();
   await page.emulateMedia({ reducedMotion: 'reduce' }); await expect(root).toHaveAttribute('data-playing', 'false');
   await page.locator('[data-vane-reopen]').click(); await expect(root).toHaveAttribute('data-vane-stroke', '0.000');
+  await expect(page.locator('[data-vane-play]')).toBeDisabled();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.locator('[data-vane-play]').click(); await page.getByRole('button', { name: '← Menu', exact: true }).click();
   await expect(root).toHaveCount(0); await step(10000); expect(await page.evaluate(() => (window as any).vanePending())).toBe(0);
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);

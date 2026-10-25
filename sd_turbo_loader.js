@@ -177,11 +177,11 @@
     if (state.initPromise) return state.initPromise;
     state.initPromise = (async function () {
       if (!(await supported())) throw new Error('This device/browser has no WebGPU — local image generation is unavailable.');
-      var ortModule = await import(ORT_ESM);
+      if (typeof window.__alloLoadVerifiedRuntime !== 'function') throw new Error('Verified image runtime delivery is unavailable');
+      var ortModule = await window.__alloLoadVerifiedRuntime('ort121');
       var ort = ortModule.default || ortModule;
-      ort.env.wasm.wasmPaths = ORT_WASM_BASE;
       state.ort = ort;
-      var transformers = await import(TRANSFORMERS_ESM);
+      var transformers = await window.__alloLoadVerifiedRuntime('transformers331');
       state.tokenizer = await transformers.AutoTokenizer.from_pretrained('Xenova/clip-vit-base-patch16');
 
       var overrides = {

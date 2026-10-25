@@ -717,6 +717,10 @@ const cancelAdventureSceneImage = (setAdventureState) => {
 };
 
 const generateAdventureImage = (sceneText, targetTurn, deps) => {
+  if (window.AlloImageGeneration?.isEnabled() === false) {
+    deps.setAdventureState?.(state => ({ ...state, isImageLoading: false, loadingStage: null }));
+    return Promise.resolve();
+  }
   const owner = deps.setAdventureState;
   const text = String(sceneText || '');
   const turn = Number(targetTurn);

@@ -1,0 +1,24 @@
+import { test,expect } from '@playwright/test';
+import { resolve } from 'node:path';
+test.use({video:'off'});
+test('Local practice review shortcuts load the current accessible modules',async({page})=>{
+ test.skip(!process.env.WELDLAB_PREVIEW_URL,'Local preview is opt-in.');
+ await page.setViewportSize({width:320,height:900});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(process.env.WELDLAB_PREVIEW_URL!);
+ await page.waitForFunction(()=>Boolean((document.getElementById('preview-app-css') as HTMLLinkElement)?.sheet));
+ const card=page.locator('[data-sym2-math="frac2dec"]');
+ await expect(card.locator('input[type="text"]')).toHaveAccessibleName('Fraction to decimal Your answer');
+ await card.getByRole('button',{name:'Check answer',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(card.locator('input[type="text"]')).toBeFocused();
+ await expect(card.locator('input[type="text"]')).toHaveAttribute('aria-invalid','true');
+ await card.screenshot({path:resolve('reports/weldlab-wcag-practice/preview-math-320.png')});
+ await page.getByRole('button',{name:'Scenario navigation',exact:true}).click();
+ await page.getByRole('radiogroup',{name:'Consumable options'}).getByRole('radio').first().click();
+ await page.getByRole('button',{name:'Next scenario →',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(page.locator('#weld-consumables-panel h3[tabindex="-1"]')).toBeFocused();
+ await page.locator('#weld-consumables-panel').screenshot({path:resolve('reports/weldlab-wcag-practice/preview-scenario-320.png')});
+ await page.getByRole('button',{name:'Qualification quiz',exact:true}).click();
+ await page.getByRole('button',{name:'Next →',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(page.locator('[data-qp-step-heading="run"]')).toBeFocused();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+});

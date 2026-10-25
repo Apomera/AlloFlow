@@ -334,7 +334,7 @@ function HistoryPanel(props) {
     pendingHistoryResource = null,
     handleCancelEdit, handleClearHistory, handleCreateUnit, handleDeleteHistoryItem,
     handleDeleteUnit, handleDragEnd, handleDragEnter, handleDragStart, handleLoadProject,
-    handleMoveToUnit, handleRestoreView, handleSaveEdit,
+    handleMoveToUnit, handleMoveAllToUnit, handleRestoreView, handleSaveEdit,
     handleSetIsProjectSettingsOpenToTrue, handleSetIsUnitModalOpenToFalse,
     handleSetIsUnitModalOpenToTrue, handleSetMovingItemIdToNull, handleStartEdit,
     handleToggleIsHistoryMaximized, history, initiateSaveStudentProject,
@@ -576,6 +576,18 @@ function HistoryPanel(props) {
   const [resourceSearch, setResourceSearch] = React.useState('');
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState('all');
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
+  // Bulk filing. An older host without handleMoveAllToUnit also ignores the
+  // create-unit option, so both controls stay hidden there.
+  const canMoveInBulk = typeof handleMoveAllToUnit === 'function';
+  const [moveAllTarget, setMoveAllTarget] = React.useState('');
+  const [moveUnfiledOnCreate, setMoveUnfiledOnCreate] = React.useState(false);
+  const moveAllBarRef = React.useRef(null);
+  React.useEffect(() => { if (!isUnitModalOpen) setMoveUnfiledOnCreate(false); }, [isUnitModalOpen]);
+  const moveUiText = (key, fallback, values) => {
+    const value = t(key, values);
+    if (value && value !== key) return value;
+    return Object.keys(values || {}).reduce((text, name) => text.split('{' + name + '}').join(String(values[name])), fallback);
+  };
   const moreActionsButtonRef = React.useRef(null);
   const moreActionsMenuRef = React.useRef(null);
   const getSafeArtifactField = (item, field) => {
@@ -724,6 +736,25 @@ function HistoryPanel(props) {
     setResourceSearch('');
     setResourceTypeFilter('all');
   };
+  // "Uncategorized" includes resources whose unit no longer exists, matching the host filter.
+  const knownUnitIds = new Set((Array.isArray(units) ? units : [])
+    .map(unit => getSafeRowText(getSafeArtifactField(unit, 'id'), '', 160)).filter(Boolean));
+  const unfiledCount = safeHistory.filter(item => item && getSafeArtifactField(item, 'id') && getSafeArtifactField(item, 'type')
+    && !knownUnitIds.has(getSafeRowText(getSafeArtifactField(item, 'unitId'), '', 160))).length;
+  const moveAllTargetId = knownUnitIds.has(moveAllTarget) ? moveAllTarget : '';
+  const showMoveAll = canMoveInBulk && isTeacherMode && !isIndependentMode && !isSyncMode
+    && activeUnitId === 'uncategorized' && filteredHistory.length > 0;
+  const moveAllShown = () => {
+    if (!moveAllTargetId) return;
+    const panel = moveAllBarRef.current?.closest('#tour-history-panel');
+    const ids = filteredHistory.map(item => getPersistedArtifactInstanceId(item) || getSafePublicArtifactId(item));
+    if (!handleMoveAllToUnit(ids, moveAllTargetId)) return;
+    setMoveAllTarget('');
+    // Every shown row leaves this view, so the bar unmounts; keep focus in the panel.
+    window.requestAnimationFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
+  };
+  const createUnit = () => handleCreateUnit(canMoveInBulk && moveUnfiledOnCreate && unfiledCount > 0
+    ? { moveUncategorized: true } : undefined);
   const moveMenuRef = React.useRef(null);
   const moveTriggerRef = React.useRef(null);
   const movePanelRef = React.useRef(null);
@@ -1229,6 +1260,28 @@ function HistoryPanel(props) {
                             )}
                         </div>
                     )}
+                    {showMoveAll && (
+                        <div ref={moveAllBarRef} data-history-move-all className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5">
+                            {units.length > 0 ? (<>
+                                <label htmlFor="history-move-all-target" className="text-xs font-semibold text-slate-700">
+                                    {isResourceFilterActive
+                                        ? moveUiText('history.move_shown_label', 'Move the {count} shown to', { count: filteredHistory.length })
+                                        : moveUiText('history.move_all_label', 'Move all {count} to', { count: filteredHistory.length })}
+                                </label>
+                                <select id="history-move-all-target" value={moveAllTargetId} onChange={(e) => setMoveAllTarget(e.target.value)}
+                                    className="min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                                    <option value="">{resourceUiText('history.move_all_choose', 'Choose a unit')}</option>
+                                    {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                </select>
+                                <button type="button" data-history-move-all-submit disabled={!moveAllTargetId} onClick={moveAllShown}
+                                    className="min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-600">
+                                    {resourceUiText('history.move_all_button', 'Move')}
+                                </button>
+                            </>) : (
+                                <p className="text-xs text-slate-600">{resourceUiText('history.move_all_no_units', 'Create a unit folder first, then you can move these resources into it at once.')}</p>
+                            )}
+                        </div>
+                    )}
                     {(unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && (
                         <div className="flex flex-wrap items-center gap-2">
                             <button type="button" data-history-organize aria-pressed={isOrganizing}
@@ -1254,11 +1307,21 @@ function HistoryPanel(props) {
                                     placeholder={t('history.new_unit_placeholder')}
                                     className="min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                                     autoFocus
-                                    onKeyDown={(e) => e.key === 'Enter' && handleCreateUnit()}
+                                    onKeyDown={(e) => e.key === 'Enter' && createUnit()}
                                 />
-                                <button data-help-key="history_save_unit_btn" onClick={handleCreateUnit} className="min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800">{t('common.save')}</button>
+                                <button data-help-key="history_save_unit_btn" onClick={createUnit} className="min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800">{t('common.save')}</button>
                                 <button data-help-key="history_cancel_unit_btn" onClick={handleSetIsUnitModalOpenToFalse} className="min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white">{t('common.cancel')}</button>
                             </div>
+                            {canMoveInBulk && unfiledCount > 0 && (
+                                <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700">
+                                    <input type="checkbox" data-history-move-unfiled checked={moveUnfiledOnCreate}
+                                        onChange={(e) => setMoveUnfiledOnCreate(e.target.checked)}
+                                        className="h-4 w-4 shrink-0 rounded border-slate-400 text-indigo-700 focus:ring-2 focus:ring-indigo-300" />
+                                    <span>{unfiledCount === 1
+                                        ? resourceUiText('history.move_uncategorized_on_create_one', 'Also move the 1 uncategorized resource into this unit')
+                                        : moveUiText('history.move_uncategorized_on_create', 'Also move the {count} uncategorized resources into this unit', { count: unfiledCount })}</span>
+                                </label>
+                            )}
                         </div>
                     )}
                 </div>
@@ -1433,8 +1496,9 @@ function HistoryPanel(props) {
                             ? formatHistoryDate(itemDate)
                             : '';
                         const itemDateTime = itemDateLabel ? itemDate.toISOString() : undefined;
-                        const itemUnitId = getSafeRowText(getSafeArtifactField(item, 'unitId'), '', 160);
-                        const itemUnit = getHistoryRowUnit(itemUnitId);
+                        const storedUnitId = getSafeRowText(getSafeArtifactField(item, 'unitId'), '', 160);
+                        const itemUnit = getHistoryRowUnit(storedUnitId);
+                        const itemUnitId = itemUnit ? storedUnitId : '';
                         const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, 'name'), 'Unit', 160);
                         const itemData = getSafeArtifactField(item, 'data');
                         const generatedArtifactData = getSafeArtifactField(generatedContent, 'data');

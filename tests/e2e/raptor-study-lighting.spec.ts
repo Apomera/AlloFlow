@@ -25,7 +25,9 @@ test.describe('Raptor inspection lighting', () => {
     await harness.mount(page, { raptorHunt: { activeSection: 'hunt', activeMission: 'open', selectedSpecies: species,
       flightSession: { speciesId: species, missionId: 'open' }, huntTutorialDismissed: true, graphicsQuality: quality,
       activeInvestigation: 'speed', investigations: { speed: { prediction: 'Lighting will change which feather details I can see.' } }
-    } }, "document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
+    } }, undefined, { expectCanvas: false });
+    // This fixture owns RAF; readiness must use a timer instead of waiting for a frame.
+    await page.waitForFunction(() => !!(document.querySelector('[data-raptor-canvas]') as any)?._rhSnapshot, null, { polling: 50, timeout: 60000 });
     await page.locator('[data-raptor-canvas]').evaluate((c: any) => { c._rhCommand('environment', { windSpeed: 0, dayPhase: 0.44, cloudCover: 0.15 }); for (let i = 0; i < 8; i++) (window as any).lightStep(25); });
   }
   async function state(page: any) { return page.evaluate(() => (window as any).__toolData.raptorHunt); }
@@ -56,7 +58,7 @@ test.describe('Raptor inspection lighting', () => {
     test(`reveals the frozen surface without changing habitat or geometry: ${model.species}`, async ({ page }) => {
       const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
       await mount(page, model.species, model.quality); const flight = await snapshot(page); await inspect(page, model.region);
-      const select = page.getByRole('combobox', { name: 'Studio light', exact: true }); await expect(select).toHaveValue('soft'); await expect(select).toBeEnabled();
+      const select = page.getByRole('combobox', { name: 'Studio rendering', exact: true }); await expect(select).toHaveValue('soft'); await expect(select).toBeEnabled();
       const soft = await snapshot(page); frozen(flight, soft); expect(soft.draw.lights).toHaveLength(3); expect(soft.environment).toEqual({ ...flight.environment, roots: soft.environment.roots });
       await pixels(page, true); await page.locator('[data-raptor-flight-stage]').screenshot({ path: output + '/' + model.species + '-soft.png' });
       const modes: any[] = [];
@@ -80,19 +82,19 @@ test.describe('Raptor inspection lighting', () => {
     });
 
   test('matches light settings and preserves honest comparison context through notebook, export, and restoration', async ({ page }) => {
-    await mount(page); await inspect(page); const select = page.getByRole('combobox', { name: 'Studio light', exact: true });
+    await mount(page); await inspect(page); const select = page.getByRole('combobox', { name: 'Studio rendering', exact: true });
     await select.selectOption('side'); await keep(page); const first = (await state(page)).flightStudyMoments[0]; expect(first.view.lighting).toBe('side'); expect(first.presentationLabel).toBe('Studio side lighting');
     await select.selectOption('rim'); await expect(page.getByRole('button', { name: 'Moment kept', exact: true })).toBeDisabled(); // One capture per frozen instant still applies.
     await page.getByRole('button', { name: 'Resume from this moment', exact: true }).click(); await page.evaluate(() => (window as any).lightStep(100)); await inspect(page);
     await expect(select).toHaveValue('rim'); await keep(page); expect((await state(page)).flightStudyMoments[1].view.lighting).toBe('rim');
     await page.getByRole('button', { name: 'Match saved view', exact: true }).click(); await expect(select).toHaveValue('side'); await expect(page.locator('.rh-study-match')).toHaveAttribute('data-matched', 'true');
-    await page.getByRole('button', { name: 'Review kept moments', exact: true }).click(); await expect(page.locator('[data-study-camera-comparison]')).toContainText('different studio lights');
+    await page.getByRole('button', { name: 'Review kept moments', exact: true }).click(); await expect(page.locator('[data-study-camera-comparison]')).toContainText('different studio renderings');
     await expect(page.locator('[data-study-moment=A] img')).toHaveAttribute('alt', /Studio side lighting/); await expect(page.locator('[data-study-moment=B] img')).toHaveAttribute('alt', /Studio rim lighting/);
     await page.locator('[data-study-moment=A] textarea').fill('Side lighting makes the feather ridges easier to trace. The rim light emphasizes the outer edge.');
     await page.locator('[data-study-moment=A]').getByRole('button', { name: 'Add to notebook', exact: true }).click(); expect((await state(page)).investigations.speed.evidence[0].reading.view.lighting).toBe('side');
     await page.locator('.rh-flight-moments').screenshot({ path: output + '/lighting-comparison.png' });
     const pending = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download visual report', exact: true }).click(); const download = await pending; await download.saveAs(output + '/lighting-observations.html');
-    const html = readFileSync((await download.path())!, 'utf8'); expect(html).toContain('Studio side lighting'); expect(html).toContain('Studio rim lighting'); expect(html).toContain('different studio lights'); expect(html).toContain(first.image);
+    const html = readFileSync((await download.path())!, 'utf8'); expect(html).toContain('Studio side lighting'); expect(html).toContain('Studio rim lighting'); expect(html).toContain('different studio renderings'); expect(html).toContain(first.image);
     const saved = await page.evaluate(() => (window as any).__toolData); await harness.destroy(page); await page.evaluate(data => (window as any).__mount(data), saved);
     await expect.poll(() => page.locator('[data-raptor-canvas]').evaluate((c: any) => !!c._rhSnapshot)).toBe(true); await page.locator('[data-raptor-study-button]').click();
     await page.getByRole('button', { name: 'Match saved view', exact: true }).click(); await expect(select).toHaveValue('side'); expect((await state(page)).flightStudyMoments[0].image).toBe(first.image);
@@ -110,7 +112,7 @@ test.describe('Raptor inspection lighting', () => {
   test('keeps short-phone and fullscreen inspection usable with keyboard, reduced motion, and forced colors', async ({ page }) => {
     await mount(page, 'greatHorned'); await inspect(page, 'head');
     await page.addStyleTag({ content: '#wrap{width:390px}' }); await page.setViewportSize({ width: 390, height: 740 }); await page.emulateMedia({ reducedMotion: 'reduce' });
-    const select = page.getByRole('combobox', { name: 'Studio light', exact: true });
+    const select = page.getByRole('combobox', { name: 'Studio rendering', exact: true });
     await expect.poll(() => page.locator('.rh-study-panel').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(1);
     await select.focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown'); await expect(select).toHaveValue('side');
     const layout = await page.locator('.rh-study-panel').evaluate(el => { const p = el.getBoundingClientRect(), header = document.querySelector('.rh-study-header')!.getBoundingClientRect(), stage = document.querySelector('[data-raptor-flight-stage]')!.getBoundingClientRect(); return { visibleBirdHeight: p.top - header.bottom, scrolls: el.scrollHeight > el.clientHeight, overflow: getComputedStyle(el).overflowY, fits: el.scrollWidth <= el.clientWidth + 1, within: p.bottom <= stage.bottom }; });

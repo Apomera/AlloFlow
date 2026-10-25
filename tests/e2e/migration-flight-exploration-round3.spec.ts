@@ -92,13 +92,13 @@ async function challenges(page: Page) {
 async function completeWindChallenge(page: Page) {
   const root = await challenges(page);
   await root.locator('[data-flight-challenge="wind"]').click();
-  await root.getByRole('textbox', { name: 'Flight challenge prediction', exact: true }).fill('A tailwind will let this Monarch make forward ground progress.');
+  await root.getByRole('textbox', { name: 'My prediction: which control will I change, and why?', exact: true }).fill('A tailwind will let this Monarch make forward ground progress.');
   await root.locator('[data-flight-challenge-action="load"]').click();
   await expect(page.getByRole('combobox', { name: '3D migration focus species', exact: true })).toHaveValue('monarch');
   await expect(page.getByRole('slider', { name: /Along-route wind in meters per second/ })).toHaveValue('-15');
   await page.getByRole('slider', { name: /Along-route wind in meters per second/ }).fill('4');
   await expect(root.locator('[data-flight-challenge-feedback]')).toHaveAttribute('data-model-condition', 'met');
-  await root.getByRole('textbox', { name: 'Flight challenge explanation', exact: true }).fill('With airspeed fixed, the following wind raises modeled ground speed from zero to 21 mph. Real butterflies also respond to gusts.');
+  await root.getByRole('textbox', { name: 'My explanation: what numbers or route changes support my claim?', exact: true }).fill('With airspeed fixed, the following wind raises modeled ground speed from zero to 21 mph. Real butterflies also respond to gusts.');
   await root.locator('[data-flight-challenge-action="check"]').click();
   const attempt = root.locator('[data-flight-challenge-attempt="1"]');
   // Saved attempts may be intentionally collapsed, but their actual saved
@@ -179,11 +179,11 @@ test('a flight challenge checks model conditions and preserves its prediction, r
   await completeWindChallenge(page);
   const stored = await page.evaluate(() => (window as any).__toolData.migration.flightChallenges);
   expect(stored.work.wind.attempts).toHaveLength(1);
-  await page.locator('#migration-tab-inquiry').click();
-  await page.locator('#migration-tab-flight3d').click();
+  await page.locator('[data-migration-tab="inquiry"]').click();
+  await page.locator('[data-migration-tab="flight3d"]').click();
   const restored = await challenges(page);
-  await expect(restored.getByRole('textbox', { name: 'Flight challenge prediction', exact: true })).toHaveValue(/Monarch make forward/);
-  await expect(restored.getByRole('textbox', { name: 'Flight challenge explanation', exact: true })).toHaveValue(/from zero to 21 mph/);
+  await expect(restored.getByRole('textbox', { name: 'My prediction: which control will I change, and why?', exact: true })).toHaveValue(/Monarch make forward/);
+  await expect(restored.getByRole('textbox', { name: 'My explanation: what numbers or route changes support my claim?', exact: true })).toHaveValue(/from zero to 21 mph/);
   expect(await page.evaluate(() => (window as any).__toolData.migration.flightChallenges)).toEqual(stored);
   await page.screenshot({ path: join(report, 'desktop-flight-challenges.png'), fullPage: true });
 });

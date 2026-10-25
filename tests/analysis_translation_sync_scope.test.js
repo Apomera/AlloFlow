@@ -2,7 +2,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
-beforeAll(() => loadAlloModule('firestore_sync_module.js'));
+beforeAll(() => {
+  loadAlloModule('firestore_sync_module.js');
+  loadAlloModule('text_pipeline_helpers_module.js');
+});
 
 const createHost = new Function(readFileSync('host_handlers_source.jsx', 'utf8') + '\nreturn createHostHandlers;')();
 const source = () => ({
@@ -140,15 +143,56 @@ describe('analysis language views survive sync without replacing source edits', 
 });
 
 describe('translation modal scope is captured from the clicked button', () => {
-  it.each(['single', 'all'])('uses %s even when React has not committed the previous scope', async scope => {
+  it.each(['single', 'pack'])('uses %s and the modal companion choice before React commits the previous scope', async scope => {
     vi.useFakeTimers();
-    const quiz = { id: 'quiz', type: 'quiz', data: 'Question' };
-    const h = harness([source(), quiz], scope === 'single' ? 'all' : 'single');
+    const current = { ...source(), unitId: 'current-unit' };
+    const quiz = { id: 'quiz', type: 'quiz', unitId: 'current-unit', data: 'Question' };
+    const unrelated = { id: 'other-quiz', type: 'quiz', unitId: 'other-unit', data: 'Other question' };
+    const h = harness([current, quiz, unrelated], scope === 'single' ? 'pack' : 'single');
     const app = readFileSync('AlloFlowANTI.txt', 'utf8');
-    const body = app.match(new RegExp("onClick=\\{\\(\\) => \\{ (setTranslateScope\\('" + scope + "'\\);[^}]+)\\}\\}"))[1];
+    const body = app.match(new RegExp("onClick=\\{\\(\\) => \\{ (setTranslateScope\\('" + scope + "'\\);.*?) \\}\\}"))[1];
     let pending;
-    new Function('setTranslateScope', 'handleTranslateAction', body)(vi.fn(), requested => { pending = h.handlers.handleTranslateAction(requested); });
+    new Function('setTranslateScope', 'handleTranslateAction', 'companionPolicy', body)(vi.fn(), (requested, options) => {
+      pending = h.handlers.handleTranslateAction(requested, options);
+    }, { mode: 'off' });
     await vi.runAllTimersAsync(); await pending;
     expect(h.deps.translateResourceItem.mock.calls.map(([item]) => item.id)).toEqual(scope === 'single' ? ['source'] : ['source', 'quiz']);
+    for (const [, targetLanguage, options] of h.deps.translateResourceItem.mock.calls) {
+      expect(targetLanguage).toBe('French');
+      expect(options.translationPolicy).toMatchObject({ enabled: false, target: '', mode: 'off' });
+    }
+  });
+
+  it('keeps the primary and companion languages fixed for every resource while settings change during a reply', async () => {
+    vi.useFakeTimers();
+    const h = harness([source(), { id: 'quiz', type: 'quiz', data: 'Question' }], 'single');
+    const pipeline = window.AlloModules.TextPipelineHelpers;
+    Object.assign(h.deps, {
+      targetTranslationLang: ' French ', currentUiLanguage: 'Spanish', translationMode: 'auto',
+      selectedLanguages: ['French', 'Spanish', 'Arabic'],
+      resolveTranslationPolicy: vi.fn(pipeline.resolveTranslationPolicy),
+      translationTargetChoices: pipeline.translationTargetChoices
+    });
+    h.deps.translateResourceItem = vi.fn(async item => {
+      if (h.deps.translateResourceItem.mock.calls.length === 1) {
+        h.deps.targetTranslationLang = 'Arabic';
+        h.deps.currentUiLanguage = 'German';
+        h.deps.translationMode = 'off';
+        h.deps.selectedLanguages = [];
+      }
+      return item.type === 'analysis'
+        ? { ...item, data: { ...item.data, displayReportLanguage: 'French', reportTranslations: { French: { concepts: ['Eau'] } } } }
+        : { ...item, data: 'Question traduite', translationOf: item.id };
+    });
+    await translate(h, 'all');
+    expect(h.deps.translateResourceItem.mock.calls.map(([item]) => item.id)).toEqual(['source', 'quiz']);
+    expect(h.deps.resolveTranslationPolicy).toHaveBeenCalledTimes(1);
+    expect(h.deps.resolveTranslationPolicy).toHaveBeenCalledWith('auto', 'French', 'Spanish', expect.any(Array));
+    const policy = h.deps.translateResourceItem.mock.calls[0][2].translationPolicy;
+    expect(policy).toMatchObject({ enabled: true, target: 'Spanish', mode: 'auto' });
+    for (const [, targetLanguage, options] of h.deps.translateResourceItem.mock.calls) {
+      expect(targetLanguage).toBe('French');
+      expect(options.translationPolicy).toBe(policy);
+    }
   });
 });

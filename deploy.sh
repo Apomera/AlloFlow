@@ -151,6 +151,7 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   node _check_tool_catalog.cjs
   echo "  ✓ tool catalog ↔ dispatcher branches in sync both ways (a resource type present in one and absent from the other silently drops it from AlloBot autofill / lesson packs, or leaves a catalog entry pointing at a branch that no longer exists; the checker shipped 2026-07 telling you to 'run before deploys' and then had zero callers until 2026-07-27)."
   node dev-tools/check_agent_core_mirrors.cjs
+  node dev-tools/sync_static_svg_policy.cjs --check
   echo "  ✓ agent_core_* modules match their hand-copied mirrors. These have NO builder, and the two copies have different consumers: desktop/mcp/alloflow-mcp-stdio.cjs requires the ROOT copy while the web app loads desktop/web-app/public. Drift makes an MCP agent and the teacher's UI disagree about the same blueprint contract — the agent validates against one set of rules and the UI executes under another; 2026-07-28."
   node dev-tools/check_da_clinical_isolation.cjs
   echo "  ✓ Dynamic Assessment supports inherit NO ambient lesson context (topic, vocabulary, standards, roster differentiation, student interests). The DA host passed { isolatedContext: true } into the shared dispatcher from the Phase-4 organizer work onward, under a comment promising it suppressed all of that — and the dispatcher never read the flag, so every DA support silently inherited the open lesson. A confounded support invalidates the modifiability measure; 2026-07-28."

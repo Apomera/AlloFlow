@@ -183,14 +183,23 @@ describe('Peregrine head identity and resource stability', () => {
   it.each(['canada_goose', 'snow_goose', 'arctic_tern', 'ruby_hummingbird', 'sandhill_crane', 'bartailed_godwit', 'monarch'])('keeps %s outside the Peregrine-specific facial system', id => {
     const bird = flyer(id), head = bird.getObjectByName(id === 'monarch' ? 'migration-monarch-head' : 'migration-bird-head');
     expect(head.geometry.type).toBe('SphereGeometry');
-    expect(head.geometry.parameters.widthSegments).toBe(id === 'ruby_hummingbird' ? 24 : 12);
-    expect(head.geometry.parameters.heightSegments).toBe(id === 'ruby_hummingbird' ? 16 : 8);
-    if (id === 'ruby_hummingbird') expect(head.geometry.attributes.color.count).toBe(425);
+    expect(head.geometry.parameters.widthSegments).toBe(id === 'ruby_hummingbird' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose' ? 24 : 12);
+    expect(head.geometry.parameters.heightSegments).toBe(id === 'ruby_hummingbird' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose' ? 16 : 8);
+    if (id === 'ruby_hummingbird' || id === 'sandhill_crane' || id === 'arctic_tern' || id === 'canada_goose') expect(head.geometry.attributes.color.count).toBe(425);
     else expect(head.geometry.attributes.color).toBeUndefined();
     expect(bird.getObjectByName('migration-peregrine-eye-rings')).toBeUndefined();
     const bill = bird.getObjectByName('migration-bird-bill');
     if (id === 'monarch') expect(bill).toBeUndefined();
-    else { expect(bill.geometry.type).toBe('ConeGeometry'); expect(bill.material.vertexColors).toBe(false); }
+    else if (id === 'bartailed_godwit') {
+      expect(bill.geometry.type).toBe('BufferGeometry'); expect(bill.geometry.attributes.color.count).toBe(74);
+      expect(bill.material.vertexColors).toBe(true); expect(bill.rotation.x).toBe(-Math.PI / 2);
+    } else if (id === 'canada_goose' || id === 'snow_goose') {
+      expect(bill.geometry.type).toBe('BufferGeometry'); expect(bill.geometry.attributes.position.count).toBe(114);
+      expect(bill.material.vertexColors).toBe(id === 'snow_goose'); expect(bill.rotation.x).toBe(-Math.PI / 2);
+      expect(bill.scale.toArray()).toEqual([1.18, 1, .58]);
+      if (id === 'snow_goose') expect(bill.geometry.attributes.color.count).toBe(114);
+      else { expect(bill.geometry.attributes.color).toBeUndefined(); expect(bill.material.color.getHex()).toBe(0x1f2937); }
+    } else { expect(bill.geometry.type).toBe('ConeGeometry'); expect(bill.material.vertexColors).toBe(false); }
     dispose(bird);
   });
 });

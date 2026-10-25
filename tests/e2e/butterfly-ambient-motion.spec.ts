@@ -42,7 +42,7 @@ async function showFeedingStill(page:Page){
 test('global pause controls feeding, while replay preserves the selected comparison',async({page})=>{
  const errors=await mount(page),stage=page.locator('.bf-stage');
  await page.getByRole('button',{name:'Pause all motion',exact:true}).click();
- await page.getByRole('button',{name:'Visit Common milkweed without flying',exact:true}).click();
+ await page.getByRole('button',{name:'Visit without flying · Common milkweed',exact:true}).click();
  await page.getByRole('button',{name:'Land here',exact:true}).click();
  await page.getByRole('button',{name:'Watch feeding & pollination',exact:true}).click();
  await expect(stage).toHaveAttribute('data-bf-motion-paused','true');

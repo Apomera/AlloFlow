@@ -19,6 +19,18 @@ const enterDescription = (w, value) => {
   return field;
 };
 const sentPayload = (w, index = 0) => JSON.parse(w.fetch.mock.calls[index][1].body);
+function confirmReview(w) {
+  let checkbox = element(w, 'aer-review-confirm');
+  expect(checkbox).toBeTruthy();
+  expect(checkbox.disabled).toBe(false);
+  if (!checkbox.checked) checkbox.click();
+  // Newly typed credentials are visibly scrubbed on the first confirmation;
+  // review that updated copy and confirm once more, using real DOM actions.
+  checkbox = element(w, 'aer-review-confirm');
+  if (!checkbox.checked) checkbox.click();
+  expect(element(w, 'aer-review-confirm').checked).toBe(true);
+  expect(element(w, 'aer-send').disabled).toBe(false);
+}
 
 function boot(fetchImpl = () => Promise.resolve(response({ ok: true, id: 'bug-receipt-123' }))) {
   vi.useFakeTimers();
@@ -52,6 +64,9 @@ describe('error report submission receipts', () => {
   it.each(['pending', 'saved', 'failed', 'timeout'])('keeps keyboard focus and dialog shortcuts after focused Send becomes disabled: %s', async outcome => {
     let finish;
     const { w, api } = boot(() => new Promise(resolve => { finish = resolve; }));
+    expect(element(w, 'aer-send').disabled).toBe(true);
+    expect(w.fetch).not.toHaveBeenCalled();
+    confirmReview(w);
     const send = element(w, 'aer-send');
     send.focus();
     expect(w.document.activeElement).toBe(send);
@@ -84,6 +99,7 @@ describe('error report submission receipts', () => {
 
   it('keeps a saved receipt visible, distinguishes review, and copies no private log or URL', async () => {
     const { w, api, clipboard } = boot();
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(status(w)).toContain('Report saved');
@@ -124,6 +140,7 @@ describe('error report submission receipts', () => {
   it('prevents duplicate pending requests across refresh, tab switches, close, and reopen', async () => {
     let resolve;
     const { w, api } = boot(() => new Promise(done => { resolve = done; }));
+    confirmReview(w);
     const staleSend = element(w, 'aer-send');
     staleSend.click();
     staleSend.onclick();
@@ -149,6 +166,7 @@ describe('error report submission receipts', () => {
 
   it('states rejection honestly and offers an unsent form without logs in its URL', async () => {
     const { w } = boot(() => Promise.resolve(response({ ok: false }, false)));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(status(w)).toContain('Report not saved');
@@ -157,17 +175,19 @@ describe('error report submission receipts', () => {
     expect(element(w, 'aer-receipt-id')).toBeNull();
     expect(element(w, 'aer-send').disabled).toBe(false);
     const form = element(w, 'aer-report-form');
-    expect(form.href).toMatch(/^https:\/\/docs\.google\.com\/forms\//);
-    expect(form.href).not.toContain('entry.');
-    expect(form.href).not.toContain(logCanary);
-    expect(form.getAttribute('target')).toBe('_blank');
-    expect(form.getAttribute('rel')).toContain('noopener');
-    form.addEventListener('click', event => event.preventDefault());
+    expect(form.tagName).toBe('BUTTON');
+    expect(form.getAttribute('href')).toBeNull();
+    expect(w.open).not.toHaveBeenCalled();
     form.click();
     expect(status(w)).toContain('cannot confirm a submission made in that form');
-    expect(w.open).not.toHaveBeenCalled();
+    expect(w.open).toHaveBeenCalledExactlyOnceWith(expect.stringMatching(/^https:\/\/docs\.google\.com\/forms\//), '_blank', 'noopener,noreferrer');
+    const formUrl = w.open.mock.calls[0][0];
+    expect(formUrl).not.toContain('entry.');
+    expect(formUrl).not.toContain(logCanary);
+    expect(formUrl).not.toContain('JOIN_SECRET');
     expect(w.fetch).toHaveBeenCalledTimes(1);
     w.fetch.mockResolvedValueOnce(response({ ok: true, id: 'retry-receipt' }));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(element(w, 'aer-receipt-id').textContent).toBe('retry-receipt');
@@ -177,6 +197,7 @@ describe('error report submission receipts', () => {
   it('bounds a stalled request, aborts it, and ignores a late success', async () => {
     let resolve;
     const { w } = boot(() => new Promise(done => { resolve = done; }));
+    confirmReview(w);
     click(w, 'aer-send');
     const signal = w.fetch.mock.calls[0][1].signal;
     await vi.advanceTimersByTimeAsync(19999);
@@ -195,6 +216,7 @@ describe('error report submission receipts', () => {
 
   it('also times out a response whose JSON body never finishes', async () => {
     const { w } = boot(() => Promise.resolve({ ok: true, json: () => new Promise(() => {}) }));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     await vi.advanceTimersByTimeAsync(20000);
@@ -204,6 +226,7 @@ describe('error report submission receipts', () => {
 
   it('marks interrupted connections unconfirmed without inventing a receipt', async () => {
     const { w } = boot(() => Promise.reject(new Error('Network disconnected')));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(status(w)).toContain('Save not confirmed');
@@ -214,6 +237,7 @@ describe('error report submission receipts', () => {
 
   it('shows legacy confirmed saving without inventing a missing receipt ID', async () => {
     const { w } = boot(() => Promise.resolve(response({ ok: true })));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(status(w)).toContain('Report saved');
@@ -225,6 +249,7 @@ describe('error report submission receipts', () => {
 
   it.each([null, { ok: 'yes', id: 'unconfirmed-id' }, {}])('does not turn a malformed acknowledgement into success: %j', async json => {
     const { w } = boot(() => Promise.resolve(response(json)));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(status(w)).toContain('Save not confirmed');
@@ -237,6 +262,7 @@ describe('error report submission receipts', () => {
     const { w, clipboard } = boot(() => Promise.resolve(response({ ok: true, id: receipt })));
     clipboard.writeText.mockRejectedValue(new Error('Clipboard blocked'));
     w.document.execCommand = vi.fn(() => false);
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(element(w, 'aer-receipt-id').textContent).toBe(receipt);
@@ -249,6 +275,7 @@ describe('error report submission receipts', () => {
 
   it('only begins another report after the deliberate New report action', async () => {
     const { w, api } = boot();
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     element(w, 'aer-send').onclick();
@@ -258,9 +285,11 @@ describe('error report submission receipts', () => {
     expect(element(w, 'aer-receipt-id')).toBeNull();
     expect(element(w, 'aer-copy-receipt')).toBeNull();
     expect(status(w)).not.toContain('bug-receipt-123');
-    expect(element(w, 'aer-send').disabled).toBe(false);
+    expect(element(w, 'aer-send').disabled).toBe(true);
+    expect(element(w, 'aer-review-confirm').checked).toBe(false);
     expect(w.document.activeElement).toBe(description(w));
     w.fetch.mockResolvedValueOnce(response({ ok: true, id: 'next-receipt' }));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(element(w, 'aer-receipt-id').textContent).toBe('next-receipt');
@@ -345,10 +374,13 @@ describe('optional error report description', () => {
     expect(field.labels[0].textContent).toMatch(/what happened/i);
     expect(field.labels[0].textContent).toMatch(/optional/i);
     expect(field.required).toBe(false);
-    expect(field.maxLength).toBe(2000);
+    // Redact pasted credentials before applying the JS 2,000-character bound;
+    // native maxlength could truncate a secret before it can be recognized.
+    expect(field.getAttribute('maxlength')).toBeNull();
     expect(field.readOnly).toBe(false);
     expect(field.getAttribute('aria-describedby').split(/\s+/)).toContain('aer-description-help');
     expect(element(w, 'aer-description-help').textContent.trim()).not.toBe('');
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(sentPayload(w).what).toContain(logCanary);
@@ -366,6 +398,7 @@ describe('optional error report description', () => {
     expect(clipboard.writeText.mock.calls[0][0]).toContain(text);
     expect(clipboard.writeText.mock.calls[0][0]).toContain('No errors captured');
     expect(w.fetch).not.toHaveBeenCalled();
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(sentPayload(w).what).toMatch(/^== What happened\? ==\n/);
@@ -381,7 +414,7 @@ describe('optional error report description', () => {
     const raw = '</textarea><img id="description-injected" src=x onerror="alert(1)">\nhttps://example.test/?allo_mb=DESCRIPTION_JOIN_SECRET&token=DESCRIPTION_TOKEN_SECRET&view=normal';
     enterDescription(w, raw);
     api.record('error', 'Refresh while a description contains markup');
-    expect(description(w).value).toBe(raw);
+    expect(description(w).value).toBe('</textarea><img id="description-injected" src=x onerror="alert(1)">\nhttps://example.test/?allo_mb=[redacted]&token=[redacted]&view=normal');
     expect(element(w, 'description-injected')).toBeNull();
     expect(w.alert).not.toHaveBeenCalled();
     const stored = Array.from({ length: w.localStorage.length }, (_, index) => w.localStorage.getItem(w.localStorage.key(index))).join('\n');
@@ -389,6 +422,7 @@ describe('optional error report description', () => {
     expect(stored).not.toContain('DESCRIPTION_JOIN_SECRET');
     click(w, 'aer-copy');
     await flush();
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     for (const output of [clipboard.writeText.mock.calls[0][0], w.fetch.mock.calls[0][1].body]) {
@@ -410,12 +444,17 @@ describe('optional error report description', () => {
     enterDescription(w, bounded + 'DESCRIPTION_OVERFLOW_MUST_NOT_SEND');
     api.record('error', 'Long diagnostic: ' + 'L'.repeat(12000));
     expect(description(w).value).toBe(bounded);
+    expect(element(w, 'aer-report-what').value).not.toContain('Long diagnostic:');
+    click(w, 'aer-refresh-report');
+    expect(element(w, 'aer-report-what').value).toContain('Long diagnostic:');
     click(w, 'aer-copy');
     await flush();
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     const what = sentPayload(w).what;
-    expect(what.length).toBeLessThanOrEqual(8000);
+    expect(what.length).toBeLessThanOrEqual(16000);
+    expect(element(w, 'aer-report-what').value.length).toBeLessThanOrEqual(8000);
     expect(what).toContain(bounded);
     expect(what).toContain('Long diagnostic:');
     expect(what.indexOf(bounded)).toBeLessThan(what.indexOf('Long diagnostic:'));
@@ -455,6 +494,7 @@ describe('optional error report description', () => {
     const { w, api } = boot(fetchImpl);
     const draft = 'The original explanation of the problem.';
     enterDescription(w, draft);
+    confirmReview(w);
     click(w, 'aer-send');
     if (outcome === 'timeout') await vi.advanceTimersByTimeAsync(20000);
     else await flush();
@@ -463,8 +503,9 @@ describe('optional error report description', () => {
     expect(description(w).disabled).toBe(false);
     const fallback = element(w, 'aer-report-form');
     expect(fallback).toBeTruthy();
-    expect(fallback.href).not.toContain('entry.');
-    expect(fallback.href).not.toContain(encodeURIComponent(draft));
+    expect(fallback.tagName).toBe('BUTTON');
+    expect(fallback.getAttribute('href')).toBeNull();
+    expect(w.open).not.toHaveBeenCalled();
     api.record('error', 'An event after the failed attempt');
     click(w, 'aer-close');
     api.openPanel('errors');
@@ -472,6 +513,7 @@ describe('optional error report description', () => {
     const revised = draft + ' It also happens after reopening.';
     enterDescription(w, revised);
     w.fetch.mockResolvedValueOnce(response({ ok: true, id: 'description-retry-receipt' }));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(sentPayload(w).what).toContain(draft);
@@ -486,6 +528,7 @@ describe('optional error report description', () => {
     const { w, api, clipboard } = boot(() => new Promise(done => { resolve = done; }));
     const original = 'This explanation belongs only to the first report.';
     const staleField = enterDescription(w, original);
+    confirmReview(w);
     click(w, 'aer-send');
     expect(description(w).readOnly).toBe(true);
     expect(element(w, 'aer-send').disabled).toBe(true);
@@ -514,13 +557,15 @@ describe('optional error report description', () => {
     expect(description(w).readOnly).toBe(false);
     expect(w.document.activeElement).toBe(description(w));
     expect(element(w, 'aer-receipt-id')).toBeNull();
-    expect(element(w, 'aer-send').disabled).toBe(false);
+    expect(element(w, 'aer-send').disabled).toBe(true);
+    expect(element(w, 'aer-review-confirm').checked).toBe(false);
     click(w, 'aer-copy');
     await flush();
     expect(clipboard.writeText.mock.calls[1][0]).not.toContain(original);
     expect(w.fetch).toHaveBeenCalledTimes(1);
     enterDescription(w, 'A new explanation for a different problem.');
     w.fetch.mockResolvedValueOnce(response({ ok: true, id: 'second-description-receipt' }));
+    confirmReview(w);
     click(w, 'aer-send');
     await flush();
     expect(sentPayload(w, 1).what).toContain('A new explanation for a different problem.');

@@ -287,21 +287,286 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
 }
 function AllobotCommandOptions({ options, requestId, tx, disabled, styles, onChoose }) {
   const descriptionPrefix = React.useId();
-  return /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-3 list-none p-0 min-w-0", "aria-label": tx("chat_guide.command_options", "Choose an action"), "data-testid": "command-options" }, options.map((option, index) => {
+  return /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2 list-none p-0 min-w-0", "aria-label": tx("chat_guide.command_options", "Choose an action"), "data-testid": "command-options" }, options.map((option, index) => {
     const descriptionId = descriptionPrefix + "-" + index;
-    return /* @__PURE__ */ React.createElement("li", { key: option.commandId, className: "min-w-0 rounded-lg border border-current/20 p-3", style: { overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("p", { className: `text-xs font-semibold mb-2 ${styles.subText}` }, index === 0 ? tx("chat_guide.command_suggested", "Suggested") : tx("chat_guide.command_alternative", "Alternative")), /* @__PURE__ */ React.createElement(
+    const description = /* @__PURE__ */ React.createElement(React.Fragment, null, option.effect && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, tx("chat_guide.command_effect", "What it does"), ": "), option.effect), option.reason && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, tx("chat_guide.command_reason", "Why it fits"), ": "), option.reason));
+    return /* @__PURE__ */ React.createElement("li", { key: option.commandId, className: "min-w-0 rounded-lg border border-current/20 p-3", style: { overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold mb-2 " + styles.subText }, index === 0 ? tx("chat_guide.command_suggested", "Suggested") : tx("chat_guide.command_alternative", "Alternative")), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         disabled: disabled || !requestId,
         "aria-describedby": descriptionId,
-        className: `w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${index === 0 ? styles.button : styles.secondaryButton}`,
+        className: "w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + (index === 0 ? styles.button : styles.secondaryButton),
         style: { minHeight: 44, overflowWrap: "anywhere", outlineOffset: 3 },
         onClick: () => onChoose({ action: "command-option", requestId, commandId: option.commandId })
       },
       option.label
-    ), /* @__PURE__ */ React.createElement("div", { id: descriptionId, className: "mt-2 space-y-1 text-xs break-words", style: { overflowWrap: "anywhere" } }, option.effect && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, tx("chat_guide.command_effect", "What it does"), ": "), option.effect), option.reason && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, tx("chat_guide.command_reason", "Why it fits"), ": "), option.reason)));
+    ), index === 0 ? /* @__PURE__ */ React.createElement("div", { id: descriptionId, className: "mt-2 space-y-1 text-xs break-words", style: { overflowWrap: "anywhere" } }, description) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { id: descriptionId, className: "sr-only" }, description), /* @__PURE__ */ React.createElement("details", { className: "mt-1 text-xs", "data-testid": "command-option-details" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded px-1 py-2 font-medium focus-visible:ring-2 focus-visible:ring-indigo-500", style: { minHeight: 44 } }, tx("chat_guide.command_option_details", "Details"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, ": ", option.label)), /* @__PURE__ */ React.createElement("div", { className: "space-y-1 break-words", style: { overflowWrap: "anywhere" } }, description))));
   }));
+}
+function AllobotCommandContext({ summary, tx }) {
+  if (!summary || typeof summary !== "object") return null;
+  const parts = [];
+  if (summary.newLesson === true) {
+    parts.push(tx("chat_guide.context_new_lesson", "New lesson"));
+    parts.push(tx("chat_guide.context_source_to_prepare", "Source to prepare"));
+  } else if (summary.source === "current") parts.push(tx("chat_guide.context_current_source", "Using current source"));
+  else if (summary.source === "analysis") parts.push(tx("chat_guide.context_source_analysis", "Using source analysis"));
+  else if (summary.source === "none") parts.push(tx("chat_guide.context_no_source", "Source not added yet"));
+  if (typeof summary.grade === "string" && summary.grade.trim()) parts.push(summary.grade.trim().slice(0, 40));
+  if (summary.newLesson !== true) {
+    if (summary.plan === "blueprint") parts.push(tx("chat_guide.context_lesson_plan_ready", "Lesson plan ready"));
+    else if (summary.plan === "full-pack") parts.push(tx("chat_guide.context_full_pack_ready", "Full Pack plan ready"));
+    else if (summary.plan === "none") parts.push(tx("chat_guide.context_no_plan", "No plan generated yet"));
+  }
+  const count = summary.newLesson === true ? 0 : Number(summary.resourceCount);
+  if (Number.isInteger(count) && count > 0 && count <= 999) parts.push(String(count) + " " + (count === 1 ? tx("chat_guide.context_resource", "saved resource") : tx("chat_guide.context_resources", "saved resources")));
+  return parts.length ? /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-xs font-medium break-words", "aria-label": tx("chat_guide.context_summary", "Current lesson context"), "data-testid": "command-context-summary", style: { overflowWrap: "anywhere" } }, parts.join(" \xB7 ")) : null;
+}
+function AllobotCommandProgress({ progress, tx }) {
+  const [now, setNow] = React.useState(() => Date.now());
+  const startedAt = Number(progress && progress.startedAt);
+  const phaseStartedAt = Number(progress && progress.phaseStartedAt);
+  const validStart = Number.isFinite(startedAt) && startedAt > 0;
+  React.useEffect(() => {
+    if (!validStart) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1e3);
+    return () => clearInterval(timer);
+  }, [validStart, startedAt]);
+  const phase = progress && progress.phase;
+  const label = phase === "preparing-tools" ? tx("chat_guide.progress_preparing_tools", "Preparing lesson tools") : phase === "generating" ? tx("chat_guide.progress_generating", "Generating resources") : phase === "starting" ? tx("chat_guide.progress_starting", "Starting your action") : tx("chat_guide.progress_working", "Working on your request");
+  const elapsed = validStart ? Math.min(86400, Math.max(0, Math.floor((now - startedAt) / 1e3))) : null;
+  const phaseElapsed = Number.isFinite(phaseStartedAt) && phaseStartedAt > 0 ? Math.max(0, now - phaseStartedAt) : (elapsed || 0) * 1e3;
+  const slow = phaseElapsed >= (phase === "preparing-tools" ? 3e4 : 6e4);
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1 text-xs", "data-testid": "command-progress" }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "font-semibold" }, label), elapsed !== null && /* @__PURE__ */ React.createElement("p", { "aria-live": "off", "data-testid": "command-elapsed" }, tx("chat_guide.progress_elapsed", "Elapsed"), ": ", elapsed, "s"), slow && /* @__PURE__ */ React.createElement("p", { role: "status" }, tx("chat_guide.progress_slow", "This is taking longer than usual. Check the current progress before retrying.")));
+}
+function AllobotCommandClarification({ clarification, requestId, tx, disabled, styles, onChoose }) {
+  const choices = Array.isArray(clarification?.choices) ? clarification.choices.filter((choice, index, all) => choice && ["lesson", "resource", "advice"].includes(choice.id) && typeof choice.label === "string" && choice.label.trim() && all.findIndex((item) => item?.id === choice.id) === index).slice(0, 3) : [];
+  if (!choices.length) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2", role: "group", "aria-label": tx("chat_guide.clarify_outcome", "Choose the outcome you want"), "data-testid": "command-clarification" }, clarification.question && /* @__PURE__ */ React.createElement("p", { className: "font-medium break-words" }, String(clarification.question).slice(0, 240)), choices.map((choice) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: choice.id,
+      type: "button",
+      disabled: disabled || !requestId,
+      className: "block w-full px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + styles.secondaryButton,
+      style: { minHeight: 44, overflowWrap: "anywhere", outlineOffset: 3 },
+      onClick: () => onChoose({ action: "command-clarify", requestId, choiceId: choice.id })
+    },
+    choice.label
+  )));
+}
+function AllobotCommandRecovery({ recovery, operationId, tx, disabled, styles, onChoose }) {
+  if (!recovery || !operationId || recovery.requestId !== operationId) return null;
+  const common = { type: "button", disabled, className: "px-3 py-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + styles.secondaryButton, style: { minHeight: 44, overflowWrap: "anywhere", outlineOffset: 3 } };
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2", "data-testid": "command-recovery" }, recovery.canRetry === true && /* @__PURE__ */ React.createElement("button", { ...common, onClick: () => onChoose({ action: "command-retry", requestId: operationId }) }, tx("chat_guide.command_retry", "Retry this plan")), recovery.canCopyDiagnostics === true && /* @__PURE__ */ React.createElement("button", { ...common, onClick: () => onChoose({ action: "command-diagnostics", requestId: operationId }) }, tx("chat_guide.command_copy_diagnostics", "Copy diagnostic details")));
+}
+function _allobotCompletionActions(completion) {
+  const actions = Array.isArray(completion?.actions) ? completion.actions : [];
+  return actions.filter((action, index, all) => action && typeof action.commandId === "string" && action.commandId.trim() && action.commandId === action.commandId.trim() && typeof action.label === "string" && action.label.trim() && all.findIndex((item) => item?.commandId === action.commandId) === index).slice(0, 3);
+}
+function AllobotCommandCompletion({ completion, operationId, tx, disabled, styles, onChoose }) {
+  const descriptionPrefix = React.useId();
+  const actions = _allobotCompletionActions(completion);
+  if (!actions.length) return null;
+  const bound = !!operationId && completion.requestId === operationId;
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2", role: "group", "aria-label": tx("chat_guide.completion_next_steps", "Next steps"), "data-testid": "command-completion" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold" }, tx("chat_guide.completion_next_steps", "Next steps")), actions.map((action, index) => {
+    const effect = typeof action.effect === "string" ? action.effect.trim().slice(0, 200) : "";
+    const descriptionId = descriptionPrefix + "-next-" + index;
+    return /* @__PURE__ */ React.createElement("div", { key: action.commandId, className: "min-w-0" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: disabled || !bound,
+        "aria-describedby": effect ? descriptionId : void 0,
+        className: "block w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 " + styles.secondaryButton,
+        style: { minHeight: 44, overflowWrap: "anywhere", outlineOffset: 3 },
+        onClick: () => onChoose({ action: "command-complete", requestId: operationId, commandId: action.commandId })
+      },
+      action.label
+    ), effect && /* @__PURE__ */ React.createElement("p", { id: descriptionId, className: "mt-1 text-xs break-words", style: { overflowWrap: "anywhere" } }, effect));
+  }));
+}
+function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, onChoose }) {
+  const [selection, setSelection] = React.useState(() => revision?.selectedIds || []);
+  const [instruction, setInstruction] = React.useState(() => revision?.instruction || "");
+  const [followup, setFollowup] = React.useState(() => revision?.followupText || "");
+  const headingRef = React.useRef(null);
+  React.useEffect(() => {
+    setSelection(revision?.selectedIds || []);
+    setInstruction(revision?.instruction || "");
+  }, [revision?.requestId, revision?.formVersion]);
+  React.useEffect(() => {
+    setFollowup(revision?.followupText || "");
+  }, [revision?.requestId, revision?.followupVersion]);
+  React.useEffect(() => {
+    const heading = headingRef.current;
+    const scroller = heading?.closest('[data-testid="allobot-active-work"]');
+    if (scroller) scroller.scrollTop = 0;
+    heading?.focus({ preventScroll: true });
+  }, [revision?.requestId, revision?.mode]);
+  if (!revision || revision.requestId !== operationId) return null;
+  const resources = Array.isArray(revision.resources) ? revision.resources : [];
+  const pendingRequest = ["preparing", "refining", "questioning"].includes(revision.mode);
+  const busy = pendingRequest || ["applying", "undoing"].includes(revision.mode);
+  const reviewing = ["review", "refining", "questioning"].includes(revision.mode);
+  const blocked = disabled || busy;
+  const button = `w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${styles.secondaryButton}`;
+  const choose = (action, values = {}) => onChoose({
+    action: "lesson-revision-" + action,
+    requestId: operationId,
+    ...["apply", "edit", "refine", "question", "followup-choice"].includes(action) ? { reviewToken: revision.reviewToken } : {},
+    ...action === "stop" ? { pendingToken: revision.pendingToken } : {},
+    ...action === "undo" ? { undoToken: revision.undoToken, ...revision.mode === "select" ? { resourceIds: selection, instruction } : {}, followupText: followup } : {},
+    ...values
+  });
+  const humanLabel = (value) => String(value || "").replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().replace(/(^|:\s*)([a-z])/g, (_, prefix, first) => prefix + first.toUpperCase());
+  const fieldLabel = (key) => ({
+    question: "Question",
+    expectedAnswer: "Expected answer",
+    correctAnswer: "Correct answer",
+    options: "Answer choices",
+    def: "Definition",
+    definition: "Definition",
+    text: "Prompt",
+    tier: "Vocabulary category"
+  })[key] || humanLabel(key);
+  const display = (value) => {
+    if (typeof value === "string") return value;
+    if (value == null) return tx("chat_guide.revision_new_item", "New item; no existing content is replaced.");
+    if (Array.isArray(value)) return value.map((item) => "\u2022 " + display(item)).join("\n");
+    if (typeof value !== "object") return String(value);
+    const entries = Object.entries(value).filter(([key]) => !/^(?:id|type|kind)$/i.test(key));
+    if (!entries.length || entries.every(([, child]) => child === "")) return tx("chat_guide.revision_blank_writing", "Blank writing field for the learner.");
+    const responseType = { mcq: "Multiple choice", "short-answer": "Written response", shortAnswer: "Written response" }[value.type];
+    return [responseType ? tx("chat_guide.revision_response_type", "Response type") + ": " + responseType : "", ...entries.map(([key, child]) => fieldLabel(key) + ": " + (child === "" ? tx("chat_guide.revision_blank_writing", "Blank writing field for the learner.") : (Array.isArray(child) ? "\n" : "") + display(child)))].filter(Boolean).join("\n\n");
+  };
+  const warningText = (warning) => typeof warning === "string" ? warning : warning?.message || warning?.label || "";
+  return /* @__PURE__ */ React.createElement("section", { className: "min-w-0 mt-3 space-y-3", "data-testid": "lesson-revision", "aria-label": tx("chat_guide.revision_title", "Revise existing lesson") }, /* @__PURE__ */ React.createElement("h3", { ref: headingRef, tabIndex: -1, className: "font-bold text-sm outline-none", "data-testid": "lesson-revision-heading" }, revision.mode === "review" ? tx("chat_guide.revision_review", "Review proposed edits") : revision.mode === "applied" ? tx("chat_guide.revision_applied", "Revision applied") : revision.mode === "undone" ? tx("chat_guide.revision_undone", "Revision undone") : tx("chat_guide.revision_title", "Revise existing lesson")), revision.error && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-sm break-words", style: { overflowWrap: "anywhere" } }, revision.error), revision.canUndo && /* @__PURE__ */ React.createElement("div", { className: "space-y-1", "data-testid": "lesson-revision-undo" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      disabled: ["applying", "undoing"].includes(revision.mode) || disabled && !pendingRequest,
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("undo")
+    },
+    tx("chat_guide.revision_undo_last", "Undo last applied revision")
+  ), /* @__PURE__ */ React.createElement("p", { className: `text-xs ${styles.subText}` }, tx("chat_guide.revision_undo_last_help", "Restores the last changes you applied. Any pending revision request is stopped and set aside."))), revision.mode === "select" && /* @__PURE__ */ React.createElement(
+    "form",
+    {
+      className: "space-y-3",
+      "aria-label": tx("chat_guide.revision_request", "Lesson revision request"),
+      onSubmit: (event) => {
+        event.preventDefault();
+        if (!blocked && selection.length && instruction.trim()) choose("prepare", { resourceIds: selection, instruction });
+      }
+    },
+    /* @__PURE__ */ React.createElement("p", { className: `text-xs ${styles.subText}` }, tx("chat_guide.revision_scope", "Edit text or add prompts and items; existing response fields stay in place.")),
+    /* @__PURE__ */ React.createElement("fieldset", { disabled: blocked, className: "min-w-0 space-y-2" }, /* @__PURE__ */ React.createElement("legend", { className: "text-xs font-semibold mb-2" }, tx("chat_guide.revision_resources", "Choose material to revise (required)")), resources.map((resource) => /* @__PURE__ */ React.createElement("label", { key: resource.id, className: "flex min-w-0 items-start gap-2 rounded-lg border p-2", style: { minHeight: 44 } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        className: "mt-1 shrink-0",
+        value: resource.id,
+        checked: selection.includes(resource.id),
+        disabled: blocked || !resource.supported,
+        onChange: (event) => setSelection((previous) => event.target.checked ? [.../* @__PURE__ */ new Set([...previous, resource.id])] : previous.filter((id) => id !== resource.id))
+      }
+    ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs break-words", style: { overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("span", { className: "block font-semibold" }, resource.title, resource.current ? " (" + tx("chat_guide.revision_current", "current") + ")" : ""), /* @__PURE__ */ React.createElement("span", { className: `block ${styles.subText}` }, resource.supported ? resource.type : resource.reason || tx("chat_guide.revision_unavailable", "This resource cannot be revised here yet."))))), !resources.length && /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, tx("chat_guide.revision_empty", "No editable resources are open. Load a saved lesson or create a resource first."))),
+    /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold" }, tx("chat_guide.revision_instruction", "What should change? (required)"), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        required: true,
+        rows: 4,
+        maxLength: 4e3,
+        disabled: blocked,
+        value: instruction,
+        onChange: (event) => setInstruction(event.target.value),
+        placeholder: tx("chat_guide.revision_placeholder", "For example: simplify the directions and add two discussion prompts. Keep the questions and rubric unchanged."),
+        className: `block mt-1 w-full min-w-0 rounded-lg border p-2 text-sm font-normal ${styles.input}`,
+        style: { overflowWrap: "anywhere" }
+      }
+    )),
+    revision.followupText && /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, tx("chat_guide.revision_kept_followup", "Kept follow-up")), /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap break-words", style: { overflowWrap: "anywhere" } }, revision.followupText)),
+    /* @__PURE__ */ React.createElement("p", { className: `text-xs ${styles.subText}` }, tx("chat_guide.revision_ai_scope", "Prepare revision sends the editable fields of your selected material and this request to your configured AI provider.")),
+    /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: blocked || !selection.length || !instruction.trim(), style: { minHeight: 44 }, className: button }, tx("chat_guide.revision_prepare", "Prepare revision"))
+  ), busy && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-sm" }, revision.mode === "preparing" ? tx("chat_guide.revision_preparing", "Preparing proposed edits\u2026") : revision.mode === "refining" ? tx("chat_guide.revision_refining", "Refining the current proposal\u2026") : revision.mode === "questioning" ? tx("chat_guide.revision_questioning", "Answering about this proposal\u2026") : revision.mode === "undoing" ? tx("chat_guide.revision_undoing", "Restoring the earlier content\u2026") : tx("chat_guide.revision_applying", "Applying reviewed edits\u2026")), reviewing && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-xs" }, tx("chat_guide.revision_review_hint", "Compare each proposed change. Your lesson stays unchanged until you choose Apply edits.")), (revision.warnings || []).map((warning, index) => /* @__PURE__ */ React.createElement("p", { key: index, className: "text-xs font-semibold break-words", style: { overflowWrap: "anywhere" } }, warningText(warning))), /* @__PURE__ */ React.createElement("ol", { className: "space-y-3", "aria-label": tx("chat_guide.revision_changes", "Proposed changes") }, (revision.changes || []).map((change, index) => /* @__PURE__ */ React.createElement("li", { key: index, className: "min-w-0 rounded-lg border p-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold break-words", style: { overflowWrap: "anywhere" } }, index + 1, ". ", change.resourceTitle || resources.find((item) => item.id === change.resourceId)?.title || tx("chat_guide.revision_resource", "Resource"), ": ", humanLabel(change.label || tx("chat_guide.revision_content", "Content"))), /* @__PURE__ */ React.createElement("details", { open: true, className: "min-w-0 text-xs" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-semibold", style: { minHeight: 24 } }, tx("chat_guide.revision_compare", "Before and after")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 font-semibold" }, tx("chat_guide.revision_before", "Before")), /* @__PURE__ */ React.createElement("pre", { className: "mt-1 whitespace-pre-wrap break-words font-sans", style: { overflowWrap: "anywhere" } }, display(change.before)), /* @__PURE__ */ React.createElement("p", { className: "mt-2 font-semibold" }, tx("chat_guide.revision_after", "After")), /* @__PURE__ */ React.createElement("pre", { className: "mt-1 whitespace-pre-wrap break-words font-sans", style: { overflowWrap: "anywhere" } }, display(change.after)))))), revision.answer && /* @__PURE__ */ React.createElement("section", { className: "rounded-lg border p-2 text-sm", "aria-label": tx("chat_guide.revision_answer", "Answer about the proposal") }, /* @__PURE__ */ React.createElement("h4", { className: "font-semibold mb-1" }, tx("chat_guide.revision_answer", "Answer about the proposal")), /* @__PURE__ */ React.createElement("p", { className: "whitespace-pre-wrap break-words", style: { overflowWrap: "anywhere" } }, revision.answer), /* @__PURE__ */ React.createElement("p", { className: `text-xs mt-2 ${styles.subText}` }, tx("chat_guide.revision_answer_unchanged", "This answer does not change the proposal or the lesson."))), revision.needsFollowupChoice && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tx("chat_guide.revision_followup_choose", "Choose how to handle the follow-up"), className: "space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs whitespace-pre-wrap break-words" }, revision.followupText), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, style: { minHeight: 44 }, className: button, onClick: () => choose("followup-choice", { mode: "refine" }) }, tx("chat_guide.revision_refine", "Refine proposal")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, style: { minHeight: 44 }, className: button, onClick: () => choose("followup-choice", { mode: "question" }) }, tx("chat_guide.revision_ask", "Ask about proposal"))), !revision.needsFollowupChoice && /* @__PURE__ */ React.createElement("form", { className: "space-y-2 rounded-lg border p-2", "aria-label": tx("chat_guide.revision_followup_form", "Follow up on the proposed edits"), onSubmit: (event) => event.preventDefault() }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold" }, tx("chat_guide.revision_followup_label", "Refine these edits or ask a question"), /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      rows: 3,
+      maxLength: 4e3,
+      disabled: blocked,
+      value: followup,
+      onChange: (event) => setFollowup(event.target.value),
+      className: `block mt-1 w-full min-w-0 rounded-lg border p-2 text-sm font-normal ${styles.input}`,
+      placeholder: tx("chat_guide.revision_followup_placeholder", "For example: keep those edits, but shorten question three. Or ask why a change was proposed."),
+      style: { overflowWrap: "anywhere" }
+    }
+  )), /* @__PURE__ */ React.createElement("p", { className: `text-xs ${styles.subText}` }, tx("chat_guide.revision_followup_scope", "Refine returns a new proposal for review. Ask answers about this proposal without editing it. Both use only the selected material and proposed edits with your configured AI provider.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      disabled: blocked || !followup.trim(),
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("refine", { instruction: followup })
+    },
+    tx("chat_guide.revision_refine", "Refine proposal")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      disabled: blocked || !followup.trim(),
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("question", { instruction: followup })
+    },
+    tx("chat_guide.revision_ask", "Ask about proposal")
+  )), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked || !revision.changes?.length, style: { minHeight: 44 }, className: button, onClick: () => choose("apply") }, tx("chat_guide.revision_apply", "Apply edits")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, style: { minHeight: 44 }, className: button, onClick: () => choose("edit") }, tx("chat_guide.revision_change_request", "Change the request"))), ["applied", "undone"].includes(revision.mode) && /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": tx("chat_guide.revision_next", "Revision next steps") }, revision.canPreview && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      disabled: blocked,
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("preview")
+    },
+    tx("chat_guide.revision_preview_lesson", "Preview lesson as student")
+  ), revision.canPreview && revision.resourceIds?.length > 1 && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "text-xs cursor-pointer py-2" }, tx("chat_guide.revision_preview_one", "Preview one resource")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 mt-1" }, revision.resourceIds.map((id) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: id,
+      type: "button",
+      disabled: blocked,
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("preview", { resourceId: id })
+    },
+    tx("chat_guide.revision_preview", "Preview as student"),
+    ": ",
+    resources.find((item) => item.id === id)?.title || tx("chat_guide.revision_resource", "Resource")
+  )))), revision.canSave && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, style: { minHeight: 44 }, className: button, onClick: () => choose("save") }, tx("chat_guide.revision_save", "Save project")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, style: { minHeight: 44 }, className: button, onClick: () => choose("edit") }, tx("chat_guide.revision_another", "Prepare another revision"))), pendingRequest && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("stop")
+    },
+    tx("chat_guide.revision_stop_request", "Stop this request")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      disabled: disabled && !pendingRequest || ["applying", "undoing"].includes(revision.mode),
+      style: { minHeight: 44 },
+      className: button,
+      onClick: () => choose("cancel")
+    },
+    tx("chat_guide.revision_close", "Close revision")
+  ));
 }
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {
 } }) {
@@ -576,8 +841,11 @@ function UDLGuideModal(props) {
   };
   const latestOperation = [...udlMessages || []].reverse().find((message) => message.operationKind);
   const activeOperation = latestOperation && latestOperation.operationStatus !== "closed" ? latestOperation : null;
+  const revisionOwnsComposer = activeOperation?.operationKind === "lesson-revision" && ["review", "refining", "questioning"].includes(activeOperation.lessonRevision?.mode);
   const commandOptions = activeOperation?.operationKind === "command" && Array.isArray(activeOperation.commandOptions) ? activeOperation.commandOptions.filter((option, index, options) => option && typeof option.commandId === "string" && option.commandId.trim() && typeof option.label === "string" && option.label.trim() && options.findIndex((candidate) => candidate?.commandId === option.commandId) === index).slice(0, 5) : [];
-  const isChoosingCommand = commandOptions.length > 0 && activeOperation.operationStatus === "review";
+  const commandCompletion = activeOperation?.operationKind === "command" && activeOperation.operationStatus === "success" ? activeOperation.commandCompletion : null;
+  const hasCommandCompletion = !!activeOperation?.operationId && commandCompletion?.requestId === activeOperation.operationId && _allobotCompletionActions(commandCompletion).length > 0;
+  const isChoosingCommand = !!activeOperation && activeOperation.operationKind === "command" && (activeOperation.operationStatus === "review" && (commandOptions.length > 0 || !!activeOperation.commandClarification) || activeOperation.operationStatus === "pending" && !!activeOperation.commandProgress || ["error", "failed"].includes(activeOperation.operationStatus) && !!activeOperation.operationId && activeOperation.commandRecovery?.requestId === activeOperation.operationId && (activeOperation.commandRecovery.canRetry === true || activeOperation.commandRecovery.canCopyDiagnostics === true) || hasCommandCompletion) || activeOperation?.operationKind === "lesson-revision";
   if (!showUDLGuide) return null;
   if (isCollapsed) {
     return /* @__PURE__ */ React.createElement(
@@ -720,6 +988,21 @@ function UDLGuideModal(props) {
         /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
         /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
       ),
+      props.canReviseLesson === true && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          role: "menuitem",
+          type: "button",
+          disabled: isChatProcessing,
+          onClick: () => {
+            handleSendUDLMessage({ action: "lesson-revision-start" });
+            setChatMenuOpen(false);
+          },
+          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 disabled:opacity-40",
+          style: { minHeight: 44 }
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tx("chat_guide.revision_title", "Revise existing lesson"))
+      ),
       /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -756,7 +1039,7 @@ function UDLGuideModal(props) {
       },
       /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
     ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: closeGuide, className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))),
-    /* @__PURE__ */ React.createElement(AllobotContextControls, { messages: udlMessages, busy: isChatProcessing, setInput: setUdlInput, clearChat: () => {
+    revisionOwnsComposer ? /* @__PURE__ */ React.createElement("section", { className: `rounded-lg border p-2 text-xs ${chatStyles.body}`, "data-testid": "lesson-revision-context", "aria-label": tx("chat_guide.revision_chat_context", "Proposal follow-up context") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.revision_chat_context_help", "Questions and refinement about this proposal include the selected authored fields, proposed edits, and recent questions and answers in this revision. They do not use your ordinary chat context choices.")), /* @__PURE__ */ React.createElement("p", { className: `mt-1 ${chatStyles.subText}` }, tx("chat_guide.revision_other_chat_context", "Unrelated questions and app commands still use their ordinary settings. Your ordinary chat context choice is unchanged."))) : /* @__PURE__ */ React.createElement(AllobotContextControls, { messages: udlMessages, busy: isChatProcessing, setInput: setUdlInput, clearChat: () => {
       setUdlMessages([]);
       setUdlInput("");
     }, t, theme, taskActive: Boolean(isAutoFillMode || activeBlueprint || activeOperation) }),
@@ -871,7 +1154,54 @@ function UDLGuideModal(props) {
         "data-testid": "active-command-workflow",
         className: `p-3 rounded-xl text-sm ${chatStyles.modelBubble}`
       },
+      /* @__PURE__ */ React.createElement(AllobotCommandContext, { summary: activeOperation.commandContextSummary, tx }),
       /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, renderFormattedText(activeOperation.text)),
+      activeOperation.operationKind === "lesson-revision" && /* @__PURE__ */ React.createElement(
+        AllobotLessonRevision,
+        {
+          key: activeOperation.operationId,
+          revision: activeOperation.lessonRevision,
+          operationId: activeOperation.operationId,
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onChoose: handleSendUDLMessage
+        }
+      ),
+      activeOperation.operationKind === "command" && activeOperation.operationStatus === "pending" && activeOperation.commandProgress && /* @__PURE__ */ React.createElement(AllobotCommandProgress, { key: activeOperation.operationId, progress: activeOperation.commandProgress, tx }),
+      activeOperation.operationKind === "command" && activeOperation.operationStatus === "review" && activeOperation.commandClarification && /* @__PURE__ */ React.createElement(
+        AllobotCommandClarification,
+        {
+          clarification: activeOperation.commandClarification,
+          requestId: activeOperation.operationId,
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onChoose: handleSendUDLMessage
+        }
+      ),
+      activeOperation.operationKind === "command" && ["error", "failed"].includes(activeOperation.operationStatus) && /* @__PURE__ */ React.createElement(
+        AllobotCommandRecovery,
+        {
+          recovery: activeOperation.commandRecovery,
+          operationId: activeOperation.operationId,
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onChoose: handleSendUDLMessage
+        }
+      ),
+      commandCompletion && /* @__PURE__ */ React.createElement(
+        AllobotCommandCompletion,
+        {
+          completion: commandCompletion,
+          operationId: activeOperation.operationId,
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onChoose: handleSendUDLMessage
+        }
+      ),
       commandOptions.length > 0 && /* @__PURE__ */ React.createElement(
         AllobotCommandOptions,
         {
@@ -883,7 +1213,7 @@ function UDLGuideModal(props) {
           onChoose: handleSendUDLMessage
         }
       ),
-      !commandOptions.length && activeOperation.commandReview && /* @__PURE__ */ React.createElement(
+      !commandOptions.length && !activeOperation.commandClarification && activeOperation.commandReview && /* @__PURE__ */ React.createElement(
         AlloCommandFields,
         {
           key: activeOperation.operationId + ":" + JSON.stringify(activeOperation.commandReview.params),
@@ -940,7 +1270,7 @@ function UDLGuideModal(props) {
         tx("chat_guide.remove_step", "Remove step")
       )))),
       hasUnappliedFields && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs" }, tx("chat_guide.apply_before_run", "Apply your edited details before running the plan.")),
-      /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": tx("chat_guide.workflow_actions", "Workflow actions") }, (activeOperation.choices || []).filter((choice) => !commandOptions.length || choice.value !== "__allo_do").map((choice, index) => /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": tx("chat_guide.workflow_actions", "Workflow actions") }, (activeOperation.choices || []).filter((choice) => !commandOptions.length && !activeOperation.commandClarification && !commandCompletion || choice.value !== "__allo_do").map((choice, index) => /* @__PURE__ */ React.createElement(
         "button",
         {
           key: index,
@@ -951,7 +1281,7 @@ function UDLGuideModal(props) {
         },
         choice.label
       )))
-    ), activeBlueprint && /* @__PURE__ */ React.createElement("details", { open: true, "data-testid": "active-lesson-blueprint" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold mb-2" }, tx("chat_guide.active_lesson", "Current lesson plan")), /* @__PURE__ */ React.createElement(
+    ), activeBlueprint && activeOperation?.operationKind !== "lesson-revision" && /* @__PURE__ */ React.createElement("details", { open: true, "data-testid": "active-lesson-blueprint" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold mb-2" }, tx("chat_guide.active_lesson", "Current lesson plan")), /* @__PURE__ */ React.createElement(
       InteractiveBlueprintCard,
       {
         config: activeBlueprint,
@@ -966,7 +1296,7 @@ function UDLGuideModal(props) {
         onSaveTemplate: handleSaveLessonTemplate,
         onPreviewStep: handlePreviewBlueprintStep,
         onUpdate: handleBlueprintUIUpdate,
-        onConfirm: handleExecuteBlueprint,
+        onConfirm: () => window.AlloModules?.UdlChat?.supportsReviewedBlueprintExecution === true ? handleSendUDLMessage({ action: "command-approved-blueprint", blueprint: activeBlueprint }) : handleExecuteBlueprint(),
         onCancel: () => {
           if (isExecutingBlueprint) {
             addToast(t("blueprint.cancel_while_running") || "This plan is still generating. Wait for it to finish.", "info");
@@ -1131,7 +1461,18 @@ function UDLGuideModal(props) {
         id: "udl-autofill-check",
         "data-help-key": "chat_autofill"
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 text-xs" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: "cursor-pointer font-semibold" }, tx("chat_guide.plan_lesson_mode", "Help me build a lesson")), /* @__PURE__ */ React.createElement("p", { id: "udl-lesson-mode-help", className: `mt-1 ${chatStyles.subText}` }, tx("chat_guide.plan_lesson_mode_help", "Uses lesson settings and recent discussion to draft a plan for your review."))))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 text-xs" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: "cursor-pointer font-semibold" }, tx("chat_guide.plan_lesson_mode", "Help me build a lesson")), /* @__PURE__ */ React.createElement("p", { id: "udl-lesson-mode-help", className: `mt-1 ${chatStyles.subText}` }, tx("chat_guide.plan_lesson_mode_help", "Uses lesson settings and recent discussion to draft a plan for your review.")))), props.canReviseLesson === true && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: isChatProcessing,
+        "data-testid": "start-lesson-revision",
+        style: { minHeight: 44 },
+        className: `w-full px-3 py-2 mb-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 ${chatStyles.secondaryButton}`,
+        onClick: () => handleSendUDLMessage({ action: "lesson-revision-start" })
+      },
+      tx("chat_guide.revision_title", "Revise existing lesson")
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": tx("chat_guide.input_aria", "Ask the UDL guide a question"),

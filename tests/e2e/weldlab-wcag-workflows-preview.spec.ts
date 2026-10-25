@@ -1,0 +1,21 @@
+import { test,expect } from '@playwright/test';
+import { resolve } from 'node:path';
+test.use({video:'off'});
+test('Local workflow shortcuts expose the current keyboard improvements',async({page})=>{
+ test.skip(!process.env.WELDLAB_PREVIEW_URL,'Local preview is opt-in.');
+ await page.setViewportSize({width:320,height:900});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(process.env.WELDLAB_PREVIEW_URL!);
+ await page.waitForFunction(()=>Boolean((document.getElementById('preview-app-css') as HTMLLinkElement)?.sheet));
+ await page.getByRole('radiogroup',{name:'Response choices'}).getByRole('radio').first().click();
+ await page.getByRole('button',{name:'Next scenario →',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(page.locator('[data-ppe-scenario-heading]')).toBeFocused();
+ await page.locator('[data-ppe-scenario-heading]').locator('..').screenshot({path:resolve('reports/weldlab-wcag-workflows/preview-ppe-320.png')});
+ await page.getByRole('button',{name:'Code task navigation',exact:true}).click();
+ await page.getByRole('radiogroup',{name:'Pick the clause'}).getByRole('radio').first().click();
+ await page.getByRole('button',{name:'Next task ➡️',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(page.locator('[data-codes-step-heading="clause"]')).toBeFocused();
+ await page.getByRole('button',{name:'Roadmap decisions',exact:true}).click();
+ await page.getByRole('button',{name:'↺ Clear my two choices',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(page.locator('[data-maine-decision-heading="d1"]')).toBeFocused();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+});

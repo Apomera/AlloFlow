@@ -156,7 +156,7 @@ describe('Explicit opposite cycle comparison', () => {
     expect(ui.host.querySelectorAll('[data-study-cycle-action="opposite"]')).toHaveLength(1);
     expect(ui.state.flightWingStep).toBe(19); expect(ui.engine.markedWingPose.capturePose).not.toHaveBeenCalled();
     ui.writes.length = 0; ui.click(ui.oppositeNode());
-    expect(ui.writes).toEqual([]); expect(ui.announce).toHaveBeenLastCalledWith('Choose a numbered cycle position in a ready Study view first.');
+    expect(ui.writes).toEqual([]); expect(ui.host.querySelector('[data-scene-feedback]').textContent).toBe('Choose a numbered cycle position in a ready Study view first.');
   });
 
   it('uses a retained old handler for rapid 3 to 7 to 3 choices before pause acknowledgements', () => {
@@ -171,7 +171,7 @@ describe('Explicit opposite cycle comparison', () => {
     expect(ui.badge().getAttribute('data-study-stage-cycle-position')).toBe('2');
     expect(ui.engine.wingStepSerial).toBe(19); expect(ui.engine.time).toBe(1.3);
     expect(ui.writes).toEqual([{ flightPaused: true }, { flightPaused: true }]);
-    expect(ui.announce).toHaveBeenLastCalledWith('Selected opposite cycle position 3. Flight paused. Keep the view fixed and describe what you see.');
+    expect(ui.host.querySelector('[data-scene-feedback]').textContent).toBe('Selected opposite cycle position 3. Flight paused. Keep the view fixed and describe what you see.');
     ui.flushOne(); expect(ui.live.flightStudyCyclePosition).toBe(2); expect(ui.opposite().disabled).toBe(false);
   });
 
@@ -223,7 +223,7 @@ describe('Explicit opposite cycle comparison', () => {
     ui.writes.length = 0; const phase = ui.engine.wingStepPhase, time = ui.engine.time, serial = ui.engine.wingStepSerial;
     act(() => { oldHandler(); });
     expect(ui.writes).toEqual([]); expect([ui.engine.wingStepPhase, ui.engine.time, ui.engine.wingStepSerial]).toEqual([phase, time, serial]);
-    expect(ui.announce).toHaveBeenLastCalledWith('Choose a numbered cycle position in a ready Study view first.');
+    expect(ui.host.querySelector('[data-scene-feedback]').textContent).toBe('Choose a numbered cycle position in a ready Study view first.');
   });
 
   it('disables a rebuilt-source action without rerendering the parent and guards its retained handler', async () => {

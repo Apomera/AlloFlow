@@ -2594,7 +2594,12 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   const incorrectPlacedCount = isChecked ? items.filter(i => i.currentContainer !== 'deck' && i.currentContainer !== i.categoryId).length : 0;
   const renderCard = (item) => {
-    const isLongTextCard = !item.image && String(item.content || '').length > 80;
+    const isLongTextCard = String(item.content || '').length > 80;
+    // Reviewed author feedback is plain text and becomes available only after
+    // a placement is checked. Do not mount answer text in the unsorted deck.
+    const authoredExplanation = typeof item.explanation === 'string' && item.explanation.length <= 1500
+      ? item.explanation.trim() : '';
+    const canReview = isChecked && item.currentContainer !== 'deck';
     const imageDescription = item.image ? matchingImageDescription(item) : '';
     const cardDescription = imageDescription && imageDescription !== item.content
       ? `${item.content}. ${imageDescription}` : item.content;
@@ -2603,7 +2608,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         if (item.currentContainer === item.categoryId) {
             statusClass = "border-green-500 bg-green-50 ring-2 ring-green-200";
         } else {
-            statusClass = "border-red-400 bg-red-50 opacity-75 border-dashed";
+            statusClass = `border-red-400 bg-red-50 border-dashed${authoredExplanation ? '' : ' opacity-75'}`;
         }
     }
     if (keyboardSelectedItemId === item.id) {
@@ -2622,14 +2627,16 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         onKeyDown={(e) => handleCardKeyDown(e, item)}
         onClick={() => { if (!isChecked && !locked) { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } } }}
         tabIndex={isChecked || locked ? -1 : 0}
-        role="button"
-        aria-pressed={keyboardSelectedItemId === item.id}
+        role={isChecked || locked ? 'group' : 'button'}
+        aria-pressed={isChecked || locked ? undefined : keyboardSelectedItemId === item.id}
         aria-label={locked
-          ? `${cardDescription}. ${t('concept_sort.locked_aria') || 'Correct and locked in place.'}`
-          : `${cardDescription}. ${item.currentContainer === 'deck' ? t('concept_sort.unsorted_aria') : t('concept_sort.sorted_aria')}. ${t('concept_sort.move_aria')}`}
+          ? `${cardDescription}. ${gameMessage(t, 'concept_sort.locked_aria', 'Correct and locked in place.')}`
+          : canReview
+            ? `${cardDescription}. ${item.currentContainer === item.categoryId ? gameMessage(t, 'common.correct', 'Correct') : gameMessage(t, 'common.incorrect', 'Incorrect')}. ${gameMessage(t, 'concept_sort.sorted_aria', 'Sorted')}: ${buckets.find(b => b.id === item.currentContainer)?.label || item.currentContainer}.`
+            : `${cardDescription}. ${item.currentContainer === 'deck' ? t('concept_sort.unsorted_aria') : t('concept_sort.sorted_aria')}. ${t('concept_sort.move_aria')}`}
         className={`
-            relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
-            ${statusClass} ${isChecked ? 'cursor-default' : ''} ${draggedItem && draggedItem.id === item.id ? 'opacity-30 scale-95' : ''}
+            relative p-3 rounded-lg shadow-sm transition-all transform mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
+            ${statusClass} ${isChecked || locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing hover:scale-105'} ${draggedItem && draggedItem.id === item.id ? 'opacity-30 scale-95' : ''}
         `}
         data-help-key="concept_sort_card_item"
       >
@@ -2643,11 +2650,11 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                     src={item.image}
                     alt={item.imageDecorative ? '' : (imageDescription || item.content || '')}
                     className="object-contain rounded bg-white/50"
-                    style={{ width: _imgPx + 'px', height: _imgPx + 'px' }}
+                    style={{ width: _imgPx + 'px', height: _imgPx + 'px', maxWidth: '100%' }}
                     decoding="async"
                 />
-                <div className="flex items-center gap-1">
-                    <p className="text-xs font-bold text-center leading-tight text-slate-800">{item.content}</p>
+                <div className="flex items-center gap-1" style={isLongTextCard ? { flexDirection: 'column', width: '100%' } : undefined}>
+                    <p className={isLongTextCard ? "text-sm font-bold leading-snug text-slate-800" : "text-xs font-bold text-center leading-tight text-slate-800"} style={isLongTextCard ? { textAlign: 'start', overflowWrap: 'anywhere', width: '100%' } : undefined}>{item.content}</p>
                     <SpeakButton text={item.content} size={11} />
                 </div>
             </div>
@@ -2663,7 +2670,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                <div className="mt-1 text-[11px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
-               {onExplainIncorrect && !studentAiOff && (
+               {!authoredExplanation && onExplainIncorrect && !studentAiOff && (
                  <button type="button"
                    onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
                    className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
@@ -2672,7 +2679,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                    {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
                  </button>
                )}
-               {explanations[item.id] && explanations[item.id] !== 'loading' && (
+               {!authoredExplanation && explanations[item.id] && explanations[item.id] !== 'loading' && (
                  <div className="mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-start">
                    {explanations[item.id]}
                  </div>
@@ -2684,6 +2691,20 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                <div className="absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
                <div className="mt-1 text-[11px] font-bold text-green-600 text-center">✓</div>
              </>
+        )}
+        {canReview && authoredExplanation && (
+            <details
+                data-concept-sort-authored-feedback={item.id}
+                data-help-key="concept_sort_authored_explanation"
+                className="mt-2 w-full min-w-0 rounded border border-indigo-200 bg-white text-sm text-indigo-900 text-start"
+                style={{ overflowWrap: 'anywhere' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <summary className="cursor-pointer rounded px-3 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                    {gameMessage(t, 'concept_sort.why_label', 'Why?')}
+                </summary>
+                <p data-sort-explanation-text className="px-3 pb-3 leading-relaxed whitespace-pre-wrap">{authoredExplanation}</p>
+            </details>
         )}
       </div>
     );
@@ -2721,7 +2742,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
-    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
+    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
@@ -2934,7 +2955,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            )}
                        </div>)}
                        {deckItems.map(item => (
-                           <div key={item.id} className="shrink-0 w-[160px]" style={!item.image && String(item.content || '').length > 80 ? { width: 'min(280px, calc(100vw - 48px))' } : undefined}>
+                           <div key={item.id} className="shrink-0 w-[160px]" style={String(item.content || '').length > 80 ? { width: 'min(280px, calc(100vw - 48px))' } : undefined}>
                                {renderCard(item)}
                            </div>
                        ))}

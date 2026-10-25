@@ -57,13 +57,13 @@ describe('display + read-aloud settings persist across sessions', () => {
   });
 
   // Canvas localStorage is EPHEMERAL, but durability is already solved one
-  // layer down: utils_pure mirrors the WHOLE localStorage into the durable
-  // bridge (ls_prefs/all) and hydrates it back before first paint. These pins
+  // layer down: utils_pure mirrors ordinary preferences into the durable
+  // bridge (ls_prefs/all) and hydrates them back before first paint. These pins
   // guard that mechanism, because every persisted setting depends on it.
   it('the localStorage-to-bridge mirror that makes these durable still exists', () => {
     const utils = readFileSync('utils_pure_source.jsx', 'utf-8');
     expect(utils).toContain("ds.get('ls_prefs', 'all')");   // hydrate
-    expect(utils).toContain("ds.set('ls_prefs', 'all', dump, { queue: false })"); // snapshot (awaited, unqueued write)
+    expect(utils).toContain("ds.compareAndSwap('ls_prefs', 'all', expected, next, { queue: false })"); // snapshot (awaited, unqueued atomic write)
     expect(utils).toContain('window.__alloPrefsHydrated');       // mount gate holds first paint
     expect(utils).toContain("window.addEventListener('pagehide', _lsSnapshot)");
     // Hydration must never clobber a value written earlier this session.

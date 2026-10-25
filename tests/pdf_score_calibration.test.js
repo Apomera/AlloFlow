@@ -61,6 +61,23 @@ describe('mixed education policy calibration — synthetic regression evidence',
     const entry = structuredClone(synthetic.entries[0]); delete entry.observed.result.integrityCoverage;
     expect(evaluateObservation(entry).layers.fidelity.status).toBe('unavailable');
   });
+  it('retains the AI-only caution through the canonical calibration adapter', () => {
+    const entry = structuredClone(synthetic.entries[0]);
+    entry.observed.verification.aiIncomplete = true;
+    entry.observed.verification.ai._partialAudit = true;
+    const actual = evaluateObservation(entry);
+    expect(actual.verificationState).toBe('partial');
+    expect(actual.distributionLevel).toBe('caution');
+    expect(actual.distributionReasons).toEqual(expect.arrayContaining([expect.stringMatching(/AI verification could not fully complete/)]));
+  });
+  it.each(['missing', 'manual'])('keeps %s Equal Access evidence in review with incomplete AI', state => {
+    const entry = structuredClone(synthetic.entries[0]);
+    entry.observed.verification.aiIncomplete = true;
+    entry.observed.verification.ai._partialAudit = true;
+    if (state === 'missing') entry.observed.verification.equalAccess = null;
+    else entry.observed.verification.equalAccess.manualViolations = 1;
+    expect(evaluateObservation(entry).distributionLevel).toBe('review');
+  });
 });
 describe('human review calibration provenance and quality measures', () => {
   it('reports an empty corpus as uncalibrated with no invented metric', () => {

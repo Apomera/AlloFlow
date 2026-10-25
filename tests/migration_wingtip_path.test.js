@@ -220,7 +220,7 @@ describe('Migration body-relative wingtip cycle guide', () => {
     const engine = Object.assign(f.engine, { wingtipPath: f.root, markedWingPose: { clearPose: vi.fn() },
       speciesId: 'canada_goose', camera: f.camera, viewHeight: 390 });
     const live = { flightShowWingtipPath: true, flightCamera: 'study', isDark: false };
-    const frame = new Function('engineNow', 'live', 'studyBirdIndex', 'host', 'followedTipSide',
+    const frame = new Function('engineNow', 'live', 'studyBirdIndex', 'host', 'followedTipSide', 'guidesHidden',
       section('          engineNow.wingtipPath.updatePath(', '          engineNow.renderer.render('));
     const installLoss = new Function('renderer', 'cancelMigrationStudyPreview', 'engine', 'host', 'statusNode', 't',
       'studyCyclePositionState', '_liveVals', '_f3dStudyCyclePauseRef', 'studyWingtipFollowState', '_f3dStudyStepAckRef',
@@ -228,16 +228,22 @@ describe('Migration body-relative wingtip cycle guide', () => {
     const stepAckRef = { current: { pending: { manualStep: 20 } } };
     installLoss({ domElement: canvas }, vi.fn(), engine, host, document.createElement('div'), (_, fallback) => fallback,
       [null, vi.fn()], { current: live }, { current: null }, [null, vi.fn()], stepAckRef);
-    frame(engine, live, 0, host, undefined);
+    frame(engine, live, 0, host, undefined, false);
     expect(f.root.visible).toBe(true);
     const version = f.root.userData.buildVersion;
+    frame(engine, live, 0, host, undefined, true);
+    expect(f.root.visible).toBe(false); expect(f.root.userData.buildVersion).toBe(version);
+    expect(live.flightShowWingtipPath).toBe(true);
+    frame(engine, live, 0, host, undefined, false); expect(f.root.visible).toBe(true);
+    engine.studyGuidesOwner = { sourceUuid: f.root.userData.sourceBirdUuid };
     const event = new Event('webglcontextlost', { cancelable: true });
     canvas.dispatchEvent(event);
     expect(stepAckRef.current.pending).toBeNull();
+    expect(engine.studyGuidesOwner).toBeNull();
     expect(event.defaultPrevented).toBe(true); expect(host.hasAttribute('data-flight-ready')).toBe(false);
     // Keep the preference enabled and continue the real RAF call. The guard
     // must prevent a later frame from rebuilding the cache just invalidated.
-    for (let laterFrame = 0; laterFrame < 5; laterFrame++) frame(engine, live, 0, host, undefined);
+    for (let laterFrame = 0; laterFrame < 5; laterFrame++) frame(engine, live, 0, host, undefined, false);
     expect(live.flightShowWingtipPath).toBe(true);
     expect(f.root.userData.buildVersion).toBe(version);
     expect(f.root.userData.available).toBe(false); expect(f.root.visible).toBe(false);

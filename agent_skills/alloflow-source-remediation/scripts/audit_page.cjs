@@ -41,16 +41,22 @@ function loadPlaywright() {
   return null;
 }
 
-function executableReady(chromium) {
-  try {
-    const bundled = chromium.executablePath();
-    if (bundled && fs.existsSync(bundled)) return { ready: true, executablePath: bundled };
-  } catch (_) {}
+function browserLaunchOptions() {
+  // Leave executablePath unset for Playwright's matching headless shell rather
+  // than forcing the separate headed Chromium build returned by executablePath().
+  const options = {
+    headless: true,
+    timeout: 30000,
+    args: ['--disable-background-networking', '--disable-component-update'],
+  };
   const configured = process.env.ALLOFLOW_CHROMIUM_PATH;
-  if (configured && fs.existsSync(configured)) {
-    return { ready: true, executablePath: path.resolve(configured) };
+  if (configured) {
+    if (!fs.existsSync(configured) || !fs.statSync(configured).isFile()) {
+      throw new Error('ALLOFLOW_CHROMIUM_PATH does not identify a local Chromium executable.');
+    }
+    options.executablePath = path.resolve(configured);
   }
-  return { ready: false, reason: 'No Chromium executable found (install Playwright browsers or set ALLOFLOW_CHROMIUM_PATH).' };
+  return options;
 }
 
 function resolveAxe() {
@@ -78,17 +84,11 @@ async function main() {
 
   const loaded = loadPlaywright();
   if (!loaded) output({ ok: false, error: 'A local Playwright or Playwright Core package is required.' }, 2);
-  const executable = executableReady(loaded.api.chromium);
-  if (!executable.ready) output({ ok: false, error: executable.reason }, 2);
 
   let browser;
   let blockedNetworkRequests = 0;
   try {
-    browser = await loaded.api.chromium.launch({
-      headless: true,
-      executablePath: executable.executablePath,
-      args: ['--disable-background-networking', '--disable-component-update'],
-    });
+    browser = await loaded.api.chromium.launch(browserLaunchOptions());
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     await context.route(/^https?:/, (route) => { blockedNetworkRequests += 1; route.abort(); });
     const page = await context.newPage();

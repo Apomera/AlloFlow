@@ -97,6 +97,8 @@
   var ALLOWED_LICENSES = [
     { value: 'CC-BY-SA-4.0', label: 'CC-BY-SA-4.0 (recommended; remix and share alike)' },
     { value: 'CC-BY-4.0',    label: 'CC-BY-4.0 (remix freely with attribution)' },
+    { value: 'CC-BY-NC-SA-4.0', label: 'CC-BY-NC-SA-4.0 (non-commercial; share alike)' },
+    { value: 'CC-BY-NC-4.0', label: 'CC-BY-NC-4.0 (non-commercial; with attribution)' },
     { value: 'CC0',          label: 'CC0 (public domain dedication)' },
   ];
 
@@ -443,6 +445,33 @@
     return String(value == null ? '' : value).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   }
 
+  function catalogStandardCodes(entry) {
+    return (entry && Array.isArray(entry.standards) ? entry.standards : [])
+      .map(function (s) { return s && typeof s.code === 'string' ? s.code.trim() : ''; }).filter(Boolean);
+  }
+  function shortStandardCode(code) {
+    return String(code).replace(/^CCSS\.(?:ELA-LITERACY|MATH\.CONTENT)\./i, '').replace(/^(?:C3(?: Framework)?|NGSS)\s+/i, '').trim();
+  }
+  // A code-shaped query ("SL.6.1", "MS-LS1-1", "6.RP.A.1"), or null for ordinary words.
+  function catalogStandardQuery(value) {
+    var q = String(value == null ? '' : value).trim().toLowerCase();
+    return /^[a-z0-9]+(?:[.-][a-z0-9]+)+$/.test(q) && /\d/.test(q) && /[a-z]/.test(q) ? q : null;
+  }
+  // Whole-segment match: "sl.6.1" finds SL.6.1 and SL.6.1.A but never SL.6.10.
+  function catalogStandardMatches(entry, codeQuery) {
+    var re = new RegExp('(^|[.\\s-])' + codeQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[.\\s-])');
+    return catalogStandardCodes(entry).some(function (code) { return re.test(code.toLowerCase()); });
+  }
+  function catalogStandardsSummary(entry) {
+    var list = (Array.isArray(entry && entry.standards) ? entry.standards : []).filter(function (s) { return s && typeof s.code === 'string' && s.code.trim(); });
+    if (!list.length) return null;
+    var shown = list.slice(0, 4).map(function (s) { return shortStandardCode(s.code); }).join(', ');
+    return {
+      text: shown + (list.length > 4 ? ' +' + (list.length - 4) : ''),
+      title: list.map(function (s) { return s.code + (typeof s.description === 'string' && s.description ? ': ' + s.description : ''); }).join('\n'),
+    };
+  }
+
   function catalogGradeSet(value) {
     var raw = String(value == null ? '' : value).toLowerCase().trim()
       .replace(/[–—]/g, '-').replace(/\bgrades?\b/g, '').replace(/\bkindergarten\b/g, 'k')
@@ -473,8 +502,11 @@
     }
     var query = normalizeCatalogSearch(filters.search);
     if (query) {
+      var codeQuery = catalogStandardQuery(filters.search);
+      if (codeQuery && catalogStandardMatches(entry, codeQuery)) return true;
       var tags = Array.isArray(entry.tags) ? entry.tags.filter(function (tag) { return typeof tag === 'string'; }) : [];
-      var hay = normalizeCatalogSearch((entry.title || '') + ' ' + tags.join(' '));
+      // A code query never falls back to code fragments: "SL.6.1" must not match SL.6.4 plus RI.6.1.
+      var hay = normalizeCatalogSearch((entry.title || '') + ' ' + tags.join(' ') + (codeQuery ? '' : ' ' + catalogStandardCodes(entry).join(' ')));
       if (!query.split(/\s+/).every(function (term) { return hay.indexOf(term) !== -1; })) return false;
     }
     return true;
@@ -510,16 +542,89 @@
     var result;
     try { if (typeof window.__alloT === 'function') result = window.__alloT(key, values); } catch (_) {}
     if (!result || result === key) {
-      var english = { 'export.title': 'Lesson', 'export.default_lesson_title': 'Lesson', 'export.student_copy': 'Student resources: ', 'export.teacher_copy': 'Teacher resources: ', 'export.table_of_contents': 'Contents', 'export.toc': 'Contents', 'export.html_page_title': 'AlloFlow Resource Pack', 'export.generated_date_label': 'Generated:', 'export.name_label': 'Name', 'export.date_label': 'Date', 'export.period_label': 'Period', 'export.topic': 'Topic', 'export_status.no_content': 'No content to preview.' };
-      result = english[key] || String(key).split('.').pop().replace(/_/g, ' ');
+      var teacherHeaders = { essentialQuestion: 'Essential Question', objectives: 'Objectives', hook: 'Hook / Engagement', directInstruction: 'Direct Instruction', guidedPractice: 'Guided Practice', independentPractice: 'Independent Practice', closure: 'Closure & Assessment' };
+      var teacherHeader = /^lesson_headers\.teacher\.(\w+)$/.exec(key);
+      var guideLabels = { 'lesson_plan.materials_header': 'Materials Needed', 'lesson_plan.activities_header': 'Activities', 'lesson_plan.assessment_header': 'Assessment', 'lesson_plan.extensions_header': 'Extensions', 'lesson_plan.teacher_guide': 'Teacher Guide' };
+      var english = { 'export.title': 'Lesson', 'export.default_lesson_title': 'Lesson', 'export.student_copy': 'Student resources: ', 'export.teacher_copy': 'Teacher resources: ', 'export.table_of_contents': 'Contents', 'export.toc': 'Contents', 'export.html_page_title': 'AlloFlow Resource Pack', 'export.generated_date_label': 'Generated:', 'export.name_label': 'Name', 'export.date_label': 'Date', 'export.period_label': 'Period', 'export.topic': 'Topic', 'export_status.no_content': 'No content to preview.', 'output.header_score': 'Score', 'output.generated_via': 'Created with AlloFlow', 'output.col_image': 'Image', 'output.col_term': 'Term', 'output.col_def': 'Definition', 'output.quiz_mcq': 'Multiple Choice', 'output.quiz_open_responses': 'Open responses', 'output.quiz_questions': 'Questions' };
+      result = (teacherHeader && teacherHeaders[teacherHeader[1]]) || guideLabels[key] || english[key] || String(key).split('.').pop().replace(/_/g, ' ').replace(/([a-z0-9])([A-Z])/g, '$1 $2');
       result = result.charAt(0).toUpperCase() + result.slice(1);
     }
     return String(result).replace(/\{([^}]+)\}/g, function (match, name) { return values && values[name] != null ? String(values[name]) : match; });
   }
 
-  async function generateCatalogPreview(lesson, entry) {
+  function catalogPrintOptions(lesson) {
     var history = lesson && Array.isArray(lesson.history) ? lesson.history : lesson && lesson.payload && lesson.payload.history;
-    if (!Array.isArray(history) || !history.length) throw new Error('This lesson uses an interactive format. Download it or load it in AlloFlow to explore its content.');
+    // Keep teacher plans in their own print scope. Study and Family Guides may
+    // be handed to learners. Match the existing delivery rule even when the
+    // session transport module has not been loaded yet.
+    var transport = window.AlloModules && window.AlloModules.SessionTransport;
+    var teachers = [];
+    history = (Array.isArray(history) ? history : []).filter(function (item) {
+      if (!item) return false;
+      if (item.type !== 'lesson-plan') return true;
+      var mode = item.config && item.config.generationInputs && item.config.generationInputs.mode;
+      var studentGuide = transport && typeof transport.isStudentDeliverableGuide === 'function'
+        ? transport.isStudentDeliverableGuide(item) : mode === 'study' || mode === 'family';
+      if (!studentGuide) teachers.push(item);
+      return studentGuide;
+    });
+    var metadata = lesson && (lesson.allopack || lesson.payload && lesson.payload.allopack);
+    var ids = metadata && metadata.workflowRevision && metadata.workflowRevision.coreResourceIds;
+    var core = Array.isArray(ids) && ids.length > 0 && ids.length <= history.length && ids.every(function (id, index) {
+      return typeof id === 'string' && id.trim() && ids.indexOf(id) === index && history.filter(function (item) { return item.id === id; }).length === 1;
+    }) ? ids.map(function (id) { return history.find(function (item) { return item.id === id; }); }) : [];
+    return { history: history, core: core, teachers: teachers };
+  }
+
+  function catalogPrintResources(lesson, selection) {
+    var options = catalogPrintOptions(lesson);
+    if (selection === 'teacher') {
+      if (!options.teachers.length) throw new Error('This pack has no teacher guide to print.');
+      return options.teachers;
+    }
+    if (selection === 'core' && options.core.length) return options.core;
+    if (typeof selection === 'string' && selection.indexOf('resource:') === 0) {
+      var id = selection.slice(9), resource = options.history.find(function (item) { return item.id === id; });
+      if (!resource) throw new Error('Choose a printable student resource to preview.');
+      return [resource];
+    }
+    return options.history;
+  }
+
+  function catalogIndividualPrintCredit(lesson, entry) {
+    var metadata = lesson && (lesson.allopack || lesson.payload && lesson.payload.allopack) || {};
+    var text = function (value) { return typeof value === 'string' ? value.trim() : ''; };
+    var title = text(metadata.title) || text(entry && entry.title) || text(lesson && lesson.title);
+    var author = text(metadata.author), basis = metadata.sourceBasis || {};
+    var sources = Array.isArray(basis.sources) ? basis.sources.slice() : [];
+    if (basis.articleUrl || basis.articleTitle || basis.articleAuthor) sources.unshift({ url: basis.articleUrl, title: basis.articleTitle, author: basis.articleAuthor });
+    var seen = new Set();
+    var sourceLinks = sources.map(function (source) {
+      if (!source || typeof source !== 'object') return '';
+      var sourceTitle = text(source.title), sourceAuthor = text(source.author), url = '';
+      try {
+        var parsed = new URL(text(source.url));
+        if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = parsed.href;
+      } catch (_) {}
+      if (!sourceTitle && !sourceAuthor && !url) return '';
+      var identity = [sourceTitle, sourceAuthor, url].join('\n');
+      if (seen.has(identity)) return '';
+      seen.add(identity);
+      var label = escapeHtml(sourceTitle || (url ? new URL(url).hostname : 'Source'));
+      return (url ? '<a href="' + escapeHtml(url) + '" rel="noopener noreferrer">' + label + '</a>' : label) + (sourceAuthor ? ' (' + escapeHtml(sourceAuthor) + ')' : '');
+    }).filter(Boolean);
+    if (!title && !author && !sourceLinks.length) return '';
+    return '<div class="catalog-print-credit" style="margin:0 0 4px;text-align:left;font-size:10px;line-height:1.35;overflow-wrap:anywhere;">' +
+      (title || author ? '<p style="margin:0;">From: ' + escapeHtml(title) + (author ? ' · ' + escapeHtml(author) : '') + '</p>' : '') +
+      (sourceLinks.length ? '<p style="margin:2px 0 0;">Source reading: ' + sourceLinks.join('; ') + '</p>' : '') + '</div>';
+  }
+
+  async function generateCatalogPreview(lesson, entry, selection) {
+    var teacherCopy = selection === 'teacher';
+    var originalHistory = lesson && Array.isArray(lesson.history) ? lesson.history : lesson && lesson.payload && lesson.payload.history;
+    if (!Array.isArray(originalHistory) || !originalHistory.length) throw new Error('This lesson uses an interactive format. Download it or load it in AlloFlow to explore its content.');
+    var history = catalogPrintResources(lesson, selection);
+    if (!history.length) throw new Error('This lesson has no student resources to preview. Download it or load it in AlloFlow to use its teacher materials.');
     var factory = window.AlloModules && window.AlloModules.createDocPipeline;
     if (!factory) {
       if (typeof window.__alloEnsureLazyModule !== 'function') throw new Error('The lesson preview renderer is unavailable. Reload AlloFlow and try again.');
@@ -530,24 +635,123 @@
     var languageCodes = { en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian', pt: 'Portuguese', ar: 'Arabic', he: 'Hebrew', fa: 'Farsi', ur: 'Urdu', ru: 'Russian', uk: 'Ukrainian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', hi: 'Hindi', bn: 'Bengali', pa: 'Punjabi', ta: 'Tamil', vi: 'Vietnamese', th: 'Thai', tr: 'Turkish', pl: 'Polish', so: 'Somali', sw: 'Swahili' };
     var language = settings.leveledTextLanguage || (lesson.allopack && lesson.allopack.language) || 'English';
     language = languageCodes[String(language).toLowerCase().split(/[-_]/)[0]] || language;
-    var questions = history.filter(function (item) { return item.type === 'quiz'; }).reduce(function (items, item) { return items.concat(item.data && Array.isArray(item.data.questions) ? item.data.questions : []); }, []);
-    var openQuestions = questions.length > 0 && questions.every(function (question) { return /^(shortanswer|short-answer|open|openended|essay)$/i.test(String(question.type || '')); });
-    var previewTranslate = function (key, values) {
-      // The native formatter uses this key for every question set, including
-      // open responses. Keep the preview heading true to the saved resources.
-      return key === 'output.quiz_mcq' ? (openQuestions ? 'Open responses' : 'Questions') : catalogPreviewTranslate(key, values);
-    };
-    var previewCss = '.export-header{background:#f1f5f9!important}.export-header h1.export-title,.export-header p.export-meta{color:#1e3a5f!important}.resource-header span{color:#475569!important}.alloflow-reading-tools-shell,button,select{display:none!important}';
+    var previewCss = '.export-header{background:#f1f5f9!important}.export-header h1.export-title,.export-header p.export-meta{color:#1e3a5f!important}.resource-header span{color:#475569!important}.alloflow-reading-tools-shell,button,select{display:none!important}.alloflow-export-footer{margin-top:6px!important;padding:4px 0!important;border:0!important;font-size:9px!important;break-inside:avoid;page-break-inside:avoid}@media print{.a11y-badge,.alloflow-export-save-tools{display:none!important}}';
+    previewCss += '.export-header .catalog-print-credit,.export-header .catalog-print-credit p,.export-header .catalog-print-credit a,.export-header .catalog-packet-credit{color:#334155!important}';
     var pipeline = factory({
-      addToast: function () {}, t: previewTranslate, isRtlLang: function (language) { return /^(ar|he|fa|ur|arabic|hebrew|farsi|urdu)(?:[-_ ]|$)/i.test(String(language || '')); },
+      addToast: function () {}, t: catalogPreviewTranslate, isRtlLang: function (language) { return /^(ar|he|fa|ur|arabic|hebrew|farsi|urdu)(?:[-_ ]|$)/i.test(String(language || '')); },
       updateExportPreview: function () {}, getDefaultTitle: function (type) { return String(type || 'Resource').replace(/-/g, ' '); },
       state: { leveledTextLanguage: language, currentUiLanguage: 'English', exportConfig: {}, customExportCSS: previewCss },
     });
     // This reads completed resources only. No AI providers or workspace setters
     // are supplied. Scriptless sandboxing applies even to authored HTML fields.
-    var html = pipeline.generateFullPackHTML(history, entry.title || lesson.title || 'Lesson', true, {}, { includeTeacherKey: false });
+    var title = teacherCopy ? (history.length === 1 ? history[0].title : 'Teacher guides: ' + (entry.title || lesson.title || 'Lesson'))
+      : typeof selection === 'string' && selection.indexOf('resource:') === 0 ? history[0].title : entry.title || lesson.title || 'Lesson';
+    // Explicit teacher audience retains the guide's facilitation narrative in
+    // the main copy. No answer-key appendix or unrelated student work is added.
+    var credit = teacherCopy || typeof selection === 'string' && selection.indexOf('resource:') === 0 ? catalogIndividualPrintCredit(lesson, entry) : '';
+    var coveredSources = [], creditLink = /<a href="([^"]+)"/g, creditMatch;
+    while ((creditMatch = creditLink.exec(credit))) coveredSources.push(creditMatch[1].replace(/&amp;/g, '&'));
+    var previewConfig = teacherCopy ? { includeTeacherKey: false, audience: 'teacher' } : { includeTeacherKey: false };
+    if (coveredSources.length) previewConfig.sourceLinksCoveredBy = coveredSources;
+    var html = pipeline.generateFullPackHTML(history, title, !teacherCopy, {}, previewConfig);
     if (typeof html !== 'string' || !html.trim()) throw new Error('This lesson has no printable resources to preview.');
+    if (teacherCopy || typeof selection === 'string' && selection.indexOf('resource:') === 0) {
+      var guideTitle = /<h1\b[^>]*\bclass="[^"]*\bexport-title\b[^"]*"[^>]*>[\s\S]*?<\/h1>/i;
+      if (teacherCopy && guideTitle.test(html)) {
+        // Keep the standalone guide's attribution at the front, where it
+        // cannot become an otherwise empty final sheet.
+        html = html.replace(guideTitle, function (heading) { return heading + credit; });
+        html = html.replace(/<footer\b[^>]*\bclass="[^"]*\balloflow-export-footer\b[^"]*"[^>]*>[\s\S]*?<\/footer>/i, '');
+      } else if (credit) {
+        var footer = /<footer\b[^>]*\bclass="[^"]*\balloflow-export-footer\b[^"]*"[^>]*>/i;
+        if (footer.test(html)) html = html.replace(footer, function (opening) { return opening + credit; });
+        else {
+          var creditFooter = '<footer class="alloflow-export-footer">' + credit + '<p>' + escapeHtml(catalogPreviewTranslate('output.generated_via')) + '</p></footer>';
+          html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, function (closing) { return creditFooter + closing; }) : html + creditFooter;
+        }
+      }
+    } else {
+      // Put the packet credit with its title so it cannot create an otherwise
+      // empty final page. Individual resource source credits stay in the footer.
+      var packetTitle = /<h1\b[^>]*\bclass="[^"]*\bexport-title\b[^"]*"[^>]*>[\s\S]*?<\/h1>/i;
+      if (packetTitle.test(html)) {
+        html = html.replace(packetTitle, function (heading) { return heading + '<p class="catalog-packet-credit" style="font-size:0.8rem;margin:4px 0 0;">' + escapeHtml(catalogPreviewTranslate('output.generated_via')) + '</p>'; });
+        html = html.replace(/<footer\b[^>]*\bclass="[^"]*\balloflow-export-footer\b[^"]*"[^>]*>[\s\S]*?<\/footer>/i, '');
+      }
+    }
     return '<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'none\'; style-src \'unsafe-inline\'; img-src https: data: blob:; font-src data:; connect-src \'none\'; frame-src \'none\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'">' + html;
+  }
+
+  // The visible preview intentionally has an opaque origin. Print a separate,
+  // scriptless copy so the parent can invoke the browser's print dialog without
+  // importing a lesson or weakening the preview's sandbox.
+  function createCatalogPrintJob(html) {
+    var frame = null, loadTimer = null, assetTimer = null, cleanupTimer = null;
+    var cancelled = false, settled = false, loadHandled = false, resolveJob, rejectJob;
+    var previousFocus = document.activeElement;
+    var promise = new Promise(function (resolve, reject) { resolveJob = resolve; rejectJob = reject; });
+    function cleanup() {
+      clearTimeout(loadTimer); clearTimeout(assetTimer); clearTimeout(cleanupTimer);
+      if (frame) {
+        frame.onload = null; frame.onerror = null;
+        if (frame.parentNode) frame.parentNode.removeChild(frame);
+        frame = null;
+      }
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        try { previousFocus.focus({ preventScroll: true }); } catch (_) {}
+      }
+    }
+    function fail(error) {
+      if (!settled) { settled = true; rejectJob(error); }
+      cleanup();
+    }
+    function cancel() {
+      cancelled = true;
+      var error = new Error('Printing was cancelled.'); error.code = 'catalog-print-cancelled';
+      fail(error);
+    }
+    try {
+      if (typeof html !== 'string' || !html.trim()) throw new Error('The print copy is not ready. Please try again.');
+      frame = document.createElement('iframe');
+      frame.setAttribute('data-catalog-print-frame', 'true');
+      frame.setAttribute('title', 'Print lesson');
+      frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
+      frame.setAttribute('aria-hidden', 'true');
+      frame.tabIndex = -1;
+      frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;pointer-events:none;';
+      frame.onload = async function () {
+        if (loadHandled || cancelled) return;
+        loadHandled = true;
+        clearTimeout(loadTimer);
+        try {
+          var target = frame && frame.contentWindow, doc = frame && frame.contentDocument;
+          if (!target || !doc || typeof target.print !== 'function') throw new Error('Printing is unavailable in this browser.');
+          var images = Array.prototype.map.call(doc.images || [], function (image) {
+            if (image.complete) return Promise.resolve();
+            return new Promise(function (resolve) {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+            });
+          });
+          if (doc.fonts && doc.fonts.ready) images.push(Promise.resolve(doc.fonts.ready).catch(function () {}));
+          // A slow remote image must not leave the print action stuck forever.
+          await Promise.race([Promise.all(images), new Promise(function (resolve) { assetTimer = setTimeout(resolve, 5000); })]);
+          clearTimeout(assetTimer);
+          if (cancelled || !frame) return;
+          target.addEventListener('afterprint', cleanup, { once: true });
+          // Some browsers do not dispatch afterprint when the dialog is closed.
+          cleanupTimer = setTimeout(cleanup, 120000);
+          target.focus();
+          target.print();
+          if (!settled) { settled = true; resolveJob(); }
+        } catch (error) { fail(error); }
+      };
+      frame.onerror = function () { fail(new Error('The print copy could not be opened. Please try again.')); };
+      loadTimer = setTimeout(function () { fail(new Error('The print copy took too long to open. Please try again.')); }, 15000);
+      frame.srcdoc = html;
+      document.body.appendChild(frame);
+    } catch (error) { fail(error); }
+    return { promise: promise, cancel: cancel };
   }
 
   function LessonLinkButton(props) {
@@ -615,8 +819,19 @@
     var selectionState = useState(props.selectedSlug || ''), selectedSlug = selectionState[0], setSelectedSlug = selectionState[1];
     var previewState = useState({ status: 'idle' }), preview = previewState[0], setPreview = previewState[1];
     var previewRetryState = useState(0), previewRetry = previewRetryState[0], setPreviewRetry = previewRetryState[1];
+    var printState = useState(false), isPrinting = printState[0], setIsPrinting = printState[1];
+    var printJobRef = React.useRef(null);
+    var printRequestRef = React.useRef(null);
+    var previewRenderRef = React.useRef(0);
     useEffect(function () { setSelectedSlug(props.selectedSlug || ''); }, [props.selectedSlug]);
     useEffect(function () { mountedRef.current = true; return function () { mountedRef.current = false; if (actionRef.current) actionRef.current.abort(); }; }, []);
+    useEffect(function () {
+      setIsPrinting(false);
+      return function () {
+        printRequestRef.current = null;
+        if (printJobRef.current) { printJobRef.current.cancel(); printJobRef.current = null; }
+      };
+    }, [selectedSlug, preview.html]);
 
     useEffect(function () {
       var cancelled = false, controller = new AbortController(), timedOut = false;
@@ -643,6 +858,7 @@
       var entry = state.entries.find(function (candidate) { return candidate.slug === selectedSlug; });
       if (!entry) { setPreview({ status: 'missing' }); return; }
       var cancelled = false, controller = new AbortController(), timedOut = false, lesson = null;
+      var renderId = ++previewRenderRef.current;
       var timeout = setTimeout(function () { timedOut = true; controller.abort(); }, 25000);
       setPreview({ status: 'loading', entry: entry });
       (async function () {
@@ -650,15 +866,30 @@
           lesson = await fetchCatalogLesson(entry, fetch, controller.signal);
           clearTimeout(timeout);
           if (cancelled) return;
-          setPreview({ status: 'rendering', entry: entry, lesson: lesson });
-          var html = await generateCatalogPreview(lesson, entry);
-          if (!cancelled) setPreview({ status: 'ready', entry: entry, lesson: lesson, html: html });
+          var options = catalogPrintOptions(lesson);
+          var selection = options.core.length ? 'core' : options.history.length ? 'all' : options.teachers.length ? 'teacher' : 'all';
+          setPreview({ status: 'rendering', entry: entry, lesson: lesson, selection: selection });
+          var html = await generateCatalogPreview(lesson, entry, selection);
+          if (!cancelled && renderId === previewRenderRef.current) setPreview({ status: 'ready', entry: entry, lesson: lesson, selection: selection, html: html });
         } catch (error) {
-          if (!cancelled) setPreview({ status: 'error', entry: entry, lesson: lesson, error: timedOut ? 'The lesson request timed out. Please try again.' : error.message });
+          if (!cancelled && renderId === previewRenderRef.current) setPreview({ status: 'error', entry: entry, lesson: lesson, error: timedOut ? 'The lesson request timed out. Please try again.' : error.message });
         } finally { clearTimeout(timeout); }
       })();
-      return function () { cancelled = true; clearTimeout(timeout); controller.abort(); };
+      return function () { cancelled = true; ++previewRenderRef.current; clearTimeout(timeout); controller.abort(); };
     }, [selectedSlug, state.status, state.entries, previewRetry]);
+
+    async function changePrintSelection(selection) {
+      if (!preview.lesson || activeAction || isPrinting) return;
+      var lesson = preview.lesson, entry = preview.entry, renderId = ++previewRenderRef.current;
+      setActionError('');
+      setPreview({ status: 'rendering', entry: entry, lesson: lesson, selection: selection });
+      try {
+        var html = await generateCatalogPreview(lesson, entry, selection);
+        if (mountedRef.current && renderId === previewRenderRef.current) setPreview({ status: 'ready', entry: entry, lesson: lesson, selection: selection, html: html });
+      } catch (error) {
+        if (mountedRef.current && renderId === previewRenderRef.current) setPreview({ status: 'error', entry: entry, lesson: lesson, selection: selection, error: error.message });
+      }
+    }
 
     var filteredEntries = useMemo(function () {
       return state.entries.filter(function (entry) { return catalogEntryMatches(entry, filters); });
@@ -702,7 +933,34 @@
       }
     }
 
+    async function printPreview(selection) {
+      if (printRequestRef.current || isPrinting || activeAction || preview.status !== 'ready') return;
+      if (printJobRef.current) printJobRef.current.cancel();
+      var request = {}, job = null;
+      printRequestRef.current = request;
+      setActionError(''); setIsPrinting(true);
+      try {
+        var html = selection === 'teacher' ? await generateCatalogPreview(preview.lesson, preview.entry, 'teacher') : preview.html;
+        if (!mountedRef.current || printRequestRef.current !== request) return;
+        job = createCatalogPrintJob(html);
+        printJobRef.current = job;
+        await job.promise;
+      }
+      catch (error) {
+        if (mountedRef.current && printRequestRef.current === request && error.code !== 'catalog-print-cancelled') {
+          var message = (selection === 'teacher' ? 'Could not print teacher guide: ' : 'Could not print lesson: ') + (error && error.message || String(error));
+          setActionError(message); addToast && addToast(message, 'error');
+        }
+      } finally {
+        if (printRequestRef.current === request) {
+          printRequestRef.current = null;
+          if (mountedRef.current) setIsPrinting(false);
+        }
+      }
+    }
+
     if (selectedSlug) {
+      var printOptions = preview.lesson ? catalogPrintOptions(preview.lesson) : { history: [], core: [], teachers: [] };
       return e('section', { className: 'flex flex-col gap-4', 'aria-label': tr("catalog.a11y_published_lesson_preview", "Published lesson preview") },
         e('button', { type: 'button', className: 'self-start min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { setSelectedSlug(''); setActionError(''); } }, 'Back to catalog'),
         state.status === 'loading' && e('p', { role: 'status' }, 'Finding the published lesson…'),
@@ -711,16 +969,38 @@
         state.status === 'ok' && preview.entry && preview.entry.slug === selectedSlug && e(React.Fragment, null,
           e('h3', { className: 'text-2xl font-bold text-slate-900' }, preview.entry.title),
           e('p', { className: 'text-sm text-slate-600' }, [preview.entry.subject, preview.entry.grade_level ? 'Grade ' + preview.entry.grade_level : '', preview.entry.credit ? 'Credit: ' + preview.entry.credit : ''].filter(Boolean).join(' · ')),
-          e('p', { className: 'text-sm text-slate-600' }, 'Preview the completed student resources. Load the lesson in AlloFlow to use its interactive tools.'),
+          e('p', { className: 'text-sm text-slate-600' }, preview.selection === 'teacher' ? 'Preview the educator guide. Print this copy to prepare and teach the lesson.' : 'Preview the printable student resources. Print this copy, or load the lesson in AlloFlow to use its interactive tools.'),
+          printOptions.teachers.length > 0 && e('p', { className: 'text-sm text-slate-600' }, 'Print the teacher guide directly below, or choose it in Print selection to preview it first.'),
+          preview.lesson && (printOptions.history.length > 0 || printOptions.teachers.length > 0) && e('div', { className: 'flex flex-col gap-2 p-3 rounded border border-slate-200 bg-slate-50' },
+            e('label', { className: 'text-sm font-semibold text-slate-700', htmlFor: 'catalog-print-selection' }, 'Print selection'),
+            e('select', { id: 'catalog-print-selection', value: preview.selection || 'all', disabled: !!activeAction || isPrinting, className: 'w-full min-h-11 px-3 py-2 border rounded bg-white text-slate-900', onChange: function (event) { changePrintSelection(event.target.value); } },
+              printOptions.history.length > 0 && e('optgroup', { label: 'Lesson packets' },
+                printOptions.core.length > 0 && e('option', { value: 'core' }, 'Core lesson (' + printOptions.core.length + ' resources)'),
+                e('option', { value: 'all' }, 'All student resources (' + printOptions.history.length + ')')
+              ),
+              printOptions.history.length > 0 && e('optgroup', { label: 'Individual resources' }, printOptions.history.map(function (item) { return e('option', { key: item.id, value: 'resource:' + item.id }, item.title); })),
+              printOptions.teachers.length > 0 && e('optgroup', { label: 'Educator materials' }, e('option', { value: 'teacher' }, printOptions.teachers.length === 1 ? 'Teacher guide' : 'Teacher guides (' + printOptions.teachers.length + ')'))
+            ),
+            e('p', { className: 'text-sm text-slate-600', role: 'status' }, preview.selection === 'teacher'
+              ? 'Previewing and printing ' + (printOptions.teachers.length === 1 ? 'the teacher guide.' : 'all ' + printOptions.teachers.length + ' teacher guides.')
+              : preview.selection === 'core'
+              ? 'Previewing and printing the ' + printOptions.core.length + '-resource core lesson. Other student resources are available in the full collection.'
+              : preview.selection && preview.selection.indexOf('resource:') === 0
+                ? 'Previewing and printing one resource. Keep any named companion case or activity with it.'
+                : 'Previewing and printing all ' + printOptions.history.length + ' student resources.'),
+            e('p', { className: 'text-xs text-slate-600' }, 'Load in AlloFlow and Download JSON always use the complete pack.')
+          ),
           e('div', { className: 'flex flex-wrap gap-3 items-start' },
             e(LessonLinkButton, { entry: preview.entry, addToast: addToast }),
-            preview.lesson && e('button', { type: 'button', disabled: !!activeAction, className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { runEntryAction(preview.entry, 'download', preview.lesson); } }, 'Download JSON'),
-            preview.lesson && loadProjectFromJson && e('button', { type: 'button', disabled: !!activeAction, className: 'min-h-11 px-3 py-2 rounded bg-indigo-600 text-white font-semibold', onClick: function () { runEntryAction(preview.entry, 'load', preview.lesson); } }, activeAction ? 'Opening…' : 'Load in AlloFlow')
+            preview.lesson && e('button', { type: 'button', disabled: !!activeAction || isPrinting, className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { runEntryAction(preview.entry, 'download', preview.lesson); } }, 'Download JSON'),
+            preview.lesson && e('button', { type: 'button', disabled: !!activeAction || isPrinting || preview.status !== 'ready', className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: printPreview }, isPrinting ? 'Preparing print…' : 'Print / Save PDF'),
+            printOptions.teachers.length > 0 && e('button', { type: 'button', disabled: !!activeAction || isPrinting || preview.status !== 'ready', className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { printPreview('teacher'); } }, printOptions.teachers.length === 1 ? 'Print teacher guide' : 'Print teacher guides'),
+            preview.lesson && loadProjectFromJson && e('button', { type: 'button', disabled: !!activeAction || isPrinting, className: 'min-h-11 px-3 py-2 rounded bg-indigo-600 text-white font-semibold', onClick: function () { runEntryAction(preview.entry, 'load', preview.lesson); } }, activeAction ? 'Opening…' : 'Load in AlloFlow')
           ),
           preview.lesson && loadProjectFromJson && e('p', { className: 'text-sm text-slate-600' }, 'Loading this lesson replaces the current workspace. Save your current project first if you want to keep it.'),
           (preview.status === 'loading' || preview.status === 'rendering') && e('p', { role: 'status' }, preview.status === 'loading' ? 'Loading the published lesson…' : 'Preparing the lesson preview…'),
           preview.status === 'error' && e('div', { role: 'alert', className: 'p-3 rounded border border-red-300 text-red-800' }, e('p', null, preview.error), e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded', onClick: function () { setPreviewRetry(function (v) { return v + 1; }); } }, 'Retry lesson preview')),
-          preview.status === 'ready' && e('iframe', { title: 'Completed lesson: ' + preview.entry.title, srcDoc: preview.html, sandbox: '', referrerPolicy: 'no-referrer', tabIndex: 0, className: 'w-full border border-slate-300 rounded-lg bg-white', style: { height: '65vh', minHeight: '360px' } })
+          preview.status === 'ready' && e('iframe', { title: (preview.selection === 'teacher' ? 'Teacher guide: ' : 'Completed lesson: ') + preview.entry.title, srcDoc: preview.html, sandbox: '', referrerPolicy: 'no-referrer', tabIndex: 0, className: 'w-full border border-slate-300 rounded-lg bg-white', style: { height: '65vh', minHeight: '360px' } })
         ),
         actionError && e('p', { role: 'alert', className: 'text-red-800' }, actionError)
       );
@@ -753,7 +1033,7 @@
           })
         ),
         e('div', null,
-          e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'cat-filter-search' }, 'Search title or tags'),
+          e('label', { className: 'block text-xs font-semibold text-slate-600 mb-1', htmlFor: 'cat-filter-search' }, 'Search title, tags or standard'),
           e('input', {
             id: 'cat-filter-search',
             ref: searchInputRef,
@@ -792,6 +1072,7 @@
               })
             ),
             entry.credit && e('div', { className: 'text-xs text-slate-500' }, 'Credit: ' + entry.credit),
+            (function (standards) { return standards && e('div', { className: 'text-xs text-slate-600', title: standards.title }, 'Standards: ' + standards.text); })(catalogStandardsSummary(entry)),
             e('div', { className: 'text-[10px] text-slate-600 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
             e('button', { type: 'button', className: 'min-h-11 px-3 py-2 border rounded text-indigo-700 font-semibold', onClick: function () { setSelectedSlug(entry.slug); } }, 'Preview lesson'),
             e(LessonLinkButton, { entry: entry, addToast: addToast }),
@@ -822,7 +1103,7 @@
 
     var jsonText$ = useState(initialJson);
     var jsonText = jsonText$[0], setJsonText = jsonText$[1];
-    var meta$ = useState({ title: initialTitle, subject: '', grade_level: '', tags: '', credit: '', license: 'CC-BY-SA-4.0' });
+    var meta$ = useState({ title: initialTitle, subject: '', grade_level: '', tags: '', standards: '', credit: '', license: 'CC-BY-SA-4.0' });
     var meta = meta$[0], setMeta = meta$[1];
     var aff$ = useState({ author_or_authorized: false, no_pii: false, license_agreed: false, age_eligible: false });
     var aff = aff$[0], setAff = aff$[1];
@@ -860,6 +1141,7 @@
           grade_level: meta.grade_level.trim(),
           tags: meta.tags.split(',').map(function (t) { return t.trim(); }).filter(Boolean).slice(0, 20),
           credit: meta.credit.trim() || null,
+          standards: meta.standards.trim() || null,
           license: meta.license,
         },
         affirmations: aff,
@@ -953,6 +1235,11 @@
           e('label', { className: labelClass, htmlFor: 'cat-tags' }, 'Tags ',
             e('span', { className: 'font-normal text-slate-500' }, '(comma-separated)')),
           e('input', { id: 'cat-tags', type: 'text', placeholder: tr('catalog_photosynthesis_peer_teaching', 'photosynthesis, peer-teaching'), className: inputClass, value: meta.tags, onChange: function (ev) { setMeta(Object.assign({}, meta, { tags: ev.target.value })); } })
+        ),
+        e('div', null,
+          e('label', { className: labelClass, htmlFor: 'cat-standards' }, 'Standards ',
+            e('span', { className: 'font-normal text-slate-500' }, '(optional; separate with semicolons)')),
+          e('input', { id: 'cat-standards', type: 'text', maxLength: 2000, placeholder: tr('catalog_standards_example', 'e.g., CCSS.ELA-LITERACY.SL.6.1 (collaborative discussions); NGSS MS-LS1-1'), className: inputClass, value: meta.standards, onChange: function (ev) { setMeta(Object.assign({}, meta, { standards: ev.target.value })); } })
         ),
         e('div', null,
           e('label', { className: labelClass, htmlFor: 'cat-credit' }, 'Credit ',
@@ -4245,9 +4532,11 @@
   CommunityCatalog._fetchCatalogLesson = fetchCatalogLesson;
   CommunityCatalog._parseCatalogLesson = parseCatalogLesson;
   CommunityCatalog._catalogEntryMatches = catalogEntryMatches;
+  CommunityCatalog._catalogStandardsSummary = catalogStandardsSummary;
   CommunityCatalog._catalogGradeSet = catalogGradeSet;
   CommunityCatalog._catalogLessonPermalink = catalogLessonPermalink;
   CommunityCatalog._generateCatalogPreview = generateCatalogPreview;
+  CommunityCatalog._createCatalogPrintJob = createCatalogPrintJob;
   CommunityCatalog.BrowseTab = BrowseTab;
   CommunityCatalog.LessonLinkButton = LessonLinkButton;
   CommunityCatalog.PdSubmit = PdSubmit;

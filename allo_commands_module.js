@@ -532,6 +532,12 @@ const PLAN_CONTRACTS = Object.freeze({
     terminal: true,
     reason: "Generates a reviewed Full Pack, or prepares its required review plan first."
   },
+  open_project_save: {
+    demoSafe: false,
+    interaction: "interactive",
+    terminal: true,
+    reason: "Opens the native Save Project dialog for filename review and explicit save confirmation."
+  },
   open_video_studio: {
     demoSafe: false,
     reason: "Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead."
@@ -554,6 +560,7 @@ const PLAN_CONTRACTS = Object.freeze({
   },
   create_activity_rubric: { demoSafe: false, interaction: "guided", reason: "Runs rubric generation for the current activity." },
   open_command_blueprints: { demoSafe: false, interaction: "interactive", terminal: true, reason: "Opens the teacher-owned saved workflow library; selection and approval remain user-controlled." },
+  open_lesson_revision: { demoSafe: false, interaction: "interactive", terminal: true, reason: "Opens resource selection and a reviewed native revision; applying changes remains user-controlled." },
   share_assignment: { demoSafe: false, interaction: "external", reason: "Creates a student-facing assignment link after confirmation." },
   preview_assignment_as_student: { demoSafe: false, interaction: "external", reason: "Opens an already-shared student assignment in a new tab." },
   launch_flashcards: { requires: ["glossary"] },
@@ -1107,6 +1114,16 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openHistory();
       return t("cmd.open_history_done", "History opened.");
     } },
+    {
+      id: "open_project_save",
+      icon: "\u{1F4BE}",
+      roles: ["teacher", "parent", "independent"],
+      when: (c) => c.canSaveTeacherProject === true && typeof c.openProjectSave === "function",
+      label: t("cmd.open_project_save", "Save project"),
+      aliases: ["save project", "save teacher project", "save project file", "back up this project"],
+      hint: t("cmd.open_project_save_hint", "Open Save Project to name and save a file for reopening later"),
+      run: (c) => c.openProjectSave() === false ? { ok: false, narration: t("cmd.open_project_save_unavailable", "Save Project is not available for the current work.") } : t("cmd.open_project_save_done", "Save Project opened. Review the file name and choose Save to download your project.")
+    },
     { id: "open_document_builder", opensPanel: "exportPreview", icon: "\u{1F4DD}", roles: ["teacher", "parent", "independent"], label: t("cmd.open_document_builder", "Open the Document Builder"), aliases: ["document builder", "builder", "export preview", "differentiate"], hint: t("cmd.open_document_builder_hint", "Build and export differentiated documents"), run: (c) => {
       c.openExportPreview();
       return t("cmd.open_document_builder_done", "Document Builder opened.");
@@ -1232,6 +1249,16 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openUdlGuide();
       return t("cmd.open_udl_guide_done", "UDL Guide opened.");
     } },
+    {
+      id: "open_lesson_revision",
+      icon: "\u270F",
+      roles: "teacher",
+      when: (c) => !!c.canReviseLesson && typeof c.startLessonRevision === "function",
+      label: t("cmd.open_lesson_revision", "Revise an existing lesson"),
+      aliases: ["revise existing lesson", "revise an existing lesson", "edit existing lesson", "edit an existing lesson", "revise this lesson", "revise my lesson", "revise existing resources"],
+      hint: t("cmd.open_lesson_revision_hint", "Select native activities, review proposed changes, then apply or undo them"),
+      run: (c) => c.startLessonRevision() === false ? { ok: false, narration: t("cmd.open_lesson_revision_unavailable", "Open a teacher lesson with editable resources first.") } : t("cmd.open_lesson_revision_done", "Select the resources and describe your changes. Nothing changes until you review and apply the revision.")
+    },
     // ── Lesson blueprint commands (2026-07-28) ──
     // Each is gated on the capability the host exposes, so a command that
     // cannot work never appears in the palette. Deliberately NO
@@ -1256,7 +1283,7 @@ function buildAlloCommands(ctx, opts = {}) {
         if (c.signal) c.signal.addEventListener("abort", stop, { once: true });
         try {
           if (c.signal && c.signal.aborted) return { ok: false, cancelled: true, narration: t("cmd.cancelled", "Cancelled.") };
-          const result = await c.runBlueprint();
+          const result = await c.runBlueprint({ onProgress: c.onCommandProgress });
           if (!result || !result.status) return { ok: false, narration: t("cmd.run_lesson_blueprint_no_result", "The lesson plan did not return a completion result. Check its progress before retrying.") };
           return {
             ...result,
@@ -3546,6 +3573,7 @@ const _COMMAND_SUGGESTION_HANDLERS = Object.freeze({
   open_document_builder: "openExportPreview",
   open_export_menu: "setShowExportMenu",
   open_project_settings: "openProjectSettings",
+  open_project_save: "openProjectSave",
   preview_assignment_as_student: "previewStudentAssignment",
   export_pack: "exportPack",
   save_my_work: "saveStudentWork"
@@ -3595,6 +3623,7 @@ function _suggestionDescription(ctx, command) {
     open_document_builder: [null, "Review and arrange the resources before exporting.", "Opens Document Builder to prepare differentiated documents and choose an export."],
     open_export_menu: [null, "Choose a file format for the current content.", "Opens export options; you choose what to download."],
     export_pack: [null, "Keep a portable copy of the current lesson resources.", "Prepares the lesson pack download."],
+    open_project_save: [null, "Keep an editable project file so you can reopen this work later.", "Opens Save Project, where you review the file name and confirm the project download."],
     save_my_work: [null, "Keep your current responses so you can reopen them later.", "Opens the student save dialog for a local work file."],
     open_project_settings: [null, "Review learner permissions before distributing a project.", "Opens the project settings; settings change only when you edit them."],
     preview_assignment_as_student: [null, "A shared student link is already available to check.", "Opens that shared assignment in a separate student preview tab."]
@@ -3616,6 +3645,73 @@ function _lessonSuggestionParams(text, matched) {
   if (match[1] && match[1].trim()) params.topic = match[1].trim();
   if (match[2]) params.grade = match[2];
   return sanitizeCommandParams("create_lesson", params);
+}
+function _commandSummaryGrade(value) {
+  const raw = typeof value === "number" && Number.isFinite(value) ? String(value) : typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (/^(?:k|kindergarten)$/.test(raw)) return "Kindergarten";
+  if (/^(?:pre[- ]?k|preschool)$/.test(raw)) return "Pre-K";
+  if (/^(?:college|university)$/.test(raw)) return "College";
+  if (/^(?:graduate|graduate level)$/.test(raw)) return "Graduate level";
+  const match = raw.match(/^(?:(?:grade|year)\s+)?(1[0-2]|[1-9])(?:st|nd|rd|th)?(?:\s+grade)?$/);
+  return match ? "Grade " + Number(match[1]) : "";
+}
+function getCommandContextSummary(ctx) {
+  ctx = ctx || {};
+  const count = ctx.commandResourceCount;
+  return {
+    source: ctx.hasSourceText ? "current" : ctx.hasSourceOrAnalysis ? "analysis" : "none",
+    grade: _commandSummaryGrade(ctx.commandGradeLevel == null ? ctx.gradeLevel : ctx.commandGradeLevel),
+    plan: ctx.hasActiveBlueprint ? "blueprint" : ctx.fullPackPlanReady ? "full-pack" : "none",
+    resourceCount: typeof count === "number" && Number.isFinite(count) ? Math.max(0, Math.min(999, Math.floor(count))) : 0
+  };
+}
+function getCommandCompletionActions(ctx, commandId, result) {
+  ctx = ctx || {};
+  if (!result || result.handled !== true || result.ok !== true || result.partial || result.pending || result.cancelled || result.status != null && result.status !== "completed" || getCommandAudience(ctx) === "student" || ctx.generationBusy) return [];
+  if (["generate_full_pack", "generate_source_text"].includes(commandId)) return [];
+  const producer = buildAlloCommands(ctx, { includeGated: true }).find((command) => command.id === commandId);
+  const completedBlueprint = commandId === "run_lesson_blueprint" && result.status === "completed";
+  const rebuiltResource = commandId === "rebuild_lesson_step";
+  if (!producer || typeof producer.runAsync !== "function" || !completedBlueprint && !rebuiltResource && (!/^generate_/.test(commandId) || !getCommandContract(producer).produces.length)) return [];
+  if (!ctx.contentLoaded && !(Number(ctx.commandResourceCount) > 0)) return [];
+  const commands = _suggestionCommands(ctx);
+  const descriptions = [
+    ["open_document_builder", "Review lesson", "Your generated resources are ready to review.", "Opens Document Builder to review and arrange the current resources before choosing an export."],
+    ["preview_assignment_as_student", "Preview as student", "An existing student assignment matches the current resources.", "Opens that existing matching assignment in a separate student preview tab."],
+    ["open_project_save", "Save project", "Keep an editable copy that can be reopened later.", "Opens Save Project, where you review the file name and confirm the project download."]
+  ];
+  const actions = [];
+  for (const [id, label, reason, effect] of descriptions) {
+    if (id === "preview_assignment_as_student" && ctx.canPreviewCurrentAssignment !== true) continue;
+    const command = commands.find((candidate) => candidate.id === id);
+    if (!command || !validateCommandSuggestion(ctx, { commandId: id, params: {} }).ok) continue;
+    actions.push({
+      commandId: id,
+      label: _suggestionText(ctx, "completion." + id + ".label", label, 120),
+      reason: _suggestionText(ctx, "completion." + id + ".reason", reason, 180),
+      effect: _suggestionText(ctx, "completion." + id + ".effect", effect, 260),
+      params: {}
+    });
+  }
+  return actions.slice(0, 3);
+}
+function getCommandClarification(ctx, rawText, matchedPreview) {
+  ctx = ctx || {};
+  if (getCommandAudience(ctx) !== "teacher" || ctx.generationBusy || matchedPreview && matchedPreview.commandId) return null;
+  const raw = typeof rawText === "string" ? rawText.trim() : "";
+  if (!raw || raw.length > 200 || _isPrivateRecognitionText(raw) || stripExplicitCommandPrefix(raw)) return null;
+  const text = raw.toLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/, "").replace(/^please\s+/, "").replace(/^(?:can|could|would) you (?:please )?/, "");
+  const vague = /^(?:help(?: me)?(?: (?:with (?:this|it|that)|get started))?|help me teach (?:this|it|that)|what (?:should|can|do) i do next|what(?:'s| is) next|what can (?:i|we) (?:make|do) with (?:this|it|that)|(?:i(?:'m| am)|we(?:'re| are)) (?:not sure|unsure) (?:what to do|where to start)(?: next)?)$/;
+  if (!vague.test(text)) return null;
+  const choices = [];
+  if (getCommandSuggestions(ctx, "help me build a lesson", null).some((option) => option.commandId === "create_lesson")) {
+    choices.push({ id: "lesson", label: _suggestionText(ctx, "clarify.lesson", "A complete lesson", 80) });
+  }
+  if (getCommandSuggestions(ctx, "support this reading", null).length) {
+    choices.push({ id: "resource", label: _suggestionText(ctx, "clarify.resource", "One learning resource", 80) });
+  }
+  choices.push({ id: "advice", label: _suggestionText(ctx, "clarify.advice", "Planning advice", 80) });
+  return choices.length > 1 ? { question: _suggestionText(ctx, "clarify.question", "What would you like help with?", 180), choices } : null;
 }
 function getCommandSuggestions(ctx, rawText, matchedPreview) {
   ctx = ctx || {};
@@ -6378,6 +6474,7 @@ const CMD_GROUP = {
   open_source_generator: "navigate",
   open_history: "navigate",
   open_document_builder: "navigate",
+  open_project_save: "navigate",
   open_wizard: "navigate",
   open_notebook: "navigate",
   open_translate: "navigate",
@@ -6502,6 +6599,7 @@ const CMD_GROUP = {
   open_assessment_builder: "create",
   open_udl_guide: "help",
   open_command_blueprints: "create",
+  open_lesson_revision: "create",
   start_lesson_blueprint: "create",
   run_lesson_blueprint: "create",
   plan_full_pack: "create",
@@ -6576,6 +6674,7 @@ const CMD_CONTEXT = {
   pipeline_verification: ["pipeline"],
   pipeline_tour: ["pipeline"],
   translate_document: ["pipeline"],
+  open_project_save: ["content"],
   open_document_builder: ["educatorHub", "content"],
   open_source_input: ["sourceSetup"],
   open_source_url: ["sourceSetup"],
@@ -6662,6 +6761,7 @@ const CMD_CONTEXT = {
   open_assessment_builder: ["educatorHub", "content"],
   open_udl_guide: ["educatorHub", "content"],
   open_command_blueprints: ["educatorHub", "content"],
+  open_lesson_revision: ["content"],
   start_lesson_blueprint: ["educatorHub", "content"],
   open_research_suite: ["educatorHub"],
   run_lesson_blueprint: ["content"],
@@ -7201,6 +7301,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, micLevelMonitor: micLevelMonitor, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, getCommandSuggestions: getCommandSuggestions, validateCommandSuggestion: validateCommandSuggestion, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validateCommandParams: validateCommandParams, formatCommandResult: formatCommandResult, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, listMainVoiceEditableFields: listMainVoiceEditableFields, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, createTutorialCommandAdapter: createTutorialCommandAdapter, createGeneratedResourceCommandAdapter: createGeneratedResourceCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel, classifyCommandIntent: classifyCommandIntent, commandChangesScreen: commandChangesScreen, stripExplicitCommandPrefix: stripExplicitCommandPrefix, commandOfferPrompt: commandOfferPrompt };
+  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, micLevelMonitor: micLevelMonitor, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, getCommandSuggestions: getCommandSuggestions, getCommandContextSummary: getCommandContextSummary, getCommandClarification: getCommandClarification, getCommandCompletionActions: getCommandCompletionActions, validateCommandSuggestion: validateCommandSuggestion, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validateCommandParams: validateCommandParams, formatCommandResult: formatCommandResult, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, listMainVoiceEditableFields: listMainVoiceEditableFields, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, createTutorialCommandAdapter: createTutorialCommandAdapter, createGeneratedResourceCommandAdapter: createGeneratedResourceCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel, classifyCommandIntent: classifyCommandIntent, commandChangesScreen: commandChangesScreen, stripExplicitCommandPrefix: stripExplicitCommandPrefix, commandOfferPrompt: commandOfferPrompt };
   console.log('[CDN] AlloCommands loaded');
 })();

@@ -12,6 +12,7 @@ import { sliceBetween } from './helpers/anchored_slice.js';
 
 let pipeline;
 beforeAll(() => {
+  loadAlloModule('verification_policy_module.js');
   loadAlloModule('doc_pipeline_module.js');
   pipeline = window.AlloModules.createDocPipeline({
     callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
@@ -21,11 +22,17 @@ beforeAll(() => {
 });
 
 // The Spanish family letter's final state on 10-19: every engine clean, Equal Access "please check" items only.
-const base = () => ({
-  verificationState: 'review-required',
-  verificationReasons: ['equal-access-potential:6', 'equal-access-manual:1', 'axe-incomplete:2'],
+const canonical = (r) => {
+  const evidence = window.AlloModules.VerificationPolicy.deriveVerificationState({
+    ai: r.verificationAudit, axe: r.axeAudit, equalAccess: r.secondEngineAudit,
+    aiIncomplete: r._aiVerificationIncomplete,
+  });
+  return Object.assign(r, evidence, { verificationReasons: evidence.reasons, verificationReviewCount: evidence.reviewCount });
+};
+const base = () => canonical({
   verificationAudit: { score: 100, issues: [] },
-  axeAudit: { totalViolations: 0 }, secondEngineAudit: { failViolations: 0 },
+  axeAudit: { score: 100, totalViolations: 0, totalIncomplete: 2 },
+  secondEngineAudit: { score: 100, failViolations: 0, potentialViolations: 6, manualViolations: 1, reviewFindingCount: 7 },
   afterScore: 86, integrityCoverage: 100, fidelityNotes: [],
 });
 const gate = (r, opts) => pipeline.taggedPdfReleaseGate(r, opts || { targetScore: 90 });
@@ -36,7 +43,21 @@ describe('taggedPdfReleaseGate', () => {
     expect(gate(base())).toMatchObject({ ok: true, code: 'checker_review_items_only' });
   });
   it('releases a document the verdict already calls ready or caution', () => {
-    expect(gate({ ...base(), verificationState: 'complete', verificationReasons: [], afterScore: 98 })).toMatchObject({ ok: true });
+    const r = base(); r.axeAudit.totalIncomplete = 0;
+    Object.assign(r.secondEngineAudit, { potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 });
+    expect(gate(canonical({ ...r, afterScore: 98 }))).toMatchObject({ ok: true });
+  });
+  it.each(['missing', 'partial', 'potential', 'manual'])('withholds PDF construction when AI is incomplete and Equal Access is %s', (state) => {
+    const r = base(); r._aiVerificationIncomplete = true; r.verificationAudit._partialAudit = true;
+    r.axeAudit.totalIncomplete = 0;
+    Object.assign(r.secondEngineAudit, { potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 });
+    if (state === 'missing') r.secondEngineAudit = null;
+    if (state === 'partial') { delete r.secondEngineAudit.potentialViolations; delete r.secondEngineAudit.manualViolations; delete r.secondEngineAudit.reviewFindingCount; }
+    if (state === 'potential') { r.secondEngineAudit.potentialViolations = 1; r.secondEngineAudit.reviewFindingCount = 1; }
+    if (state === 'manual') { r.secondEngineAudit.manualViolations = 1; r.secondEngineAudit.reviewFindingCount = 1; }
+    canonical(r);
+    expect(pipeline.distributionVerdict(r, { targetScore: 90 }).level).toBe('review');
+    expect(gate(r)).toMatchObject({ ok: false, code: 'distribution_review_required' });
   });
   const blocked = {
     'an open AI audit issue': (r) => { r.verificationAudit.issues = [{ ruleId: 'alt-quality', issue: 'Alt text describes the wrong image.' }]; r.verificationReasons.push('ai-confirmed-issues:1'); },
@@ -54,6 +75,9 @@ describe('taggedPdfReleaseGate', () => {
     'missing AI audit evidence': (r) => { delete r.verificationAudit; },
     'missing axe evidence': (r) => { delete r.axeAudit; },
     'missing Equal Access evidence': (r) => { delete r.secondEngineAudit; },
+    'an incomplete AI audit even if its reason was omitted': (r) => { r._aiVerificationIncomplete = true; r.verificationAudit._partialAudit = true; },
+    'unknown axe review count': (r) => { delete r.axeAudit.totalIncomplete; },
+    'unknown Equal Access review counts': (r) => { delete r.secondEngineAudit.potentialViolations; delete r.secondEngineAudit.manualViolations; delete r.secondEngineAudit.reviewFindingCount; },
   };
   for (const [name, mutate] of Object.entries(blocked)) {
     it('withholds the PDF for ' + name, () => {

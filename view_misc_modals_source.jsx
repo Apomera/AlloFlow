@@ -63,27 +63,283 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
 // availability and request freshness; the card only sends the selected identity.
 function AllobotCommandOptions({ options, requestId, tx, disabled, styles, onChoose }) {
   const descriptionPrefix = React.useId();
-  return <ol className="mt-3 space-y-3 list-none p-0 min-w-0" aria-label={tx('chat_guide.command_options', 'Choose an action')} data-testid="command-options">
+  return <ol className="mt-3 space-y-2 list-none p-0 min-w-0" aria-label={tx('chat_guide.command_options', 'Choose an action')} data-testid="command-options">
     {options.map((option, index) => {
       const descriptionId = descriptionPrefix + '-' + index;
+      const description = <>
+        {option.effect && <p><span className="font-semibold">{tx('chat_guide.command_effect', 'What it does')}: </span>{option.effect}</p>}
+        {option.reason && <p><span className="font-semibold">{tx('chat_guide.command_reason', 'Why it fits')}: </span>{option.reason}</p>}
+      </>;
       return <li key={option.commandId} className="min-w-0 rounded-lg border border-current/20 p-3" style={{ overflowWrap: 'anywhere' }}>
-        <p className={`text-xs font-semibold mb-2 ${styles.subText}`}>
+        <p className={'text-xs font-semibold mb-2 ' + styles.subText}>
           {index === 0 ? tx('chat_guide.command_suggested', 'Suggested') : tx('chat_guide.command_alternative', 'Alternative')}
         </p>
         <button type="button" disabled={disabled || !requestId}
           aria-describedby={descriptionId}
-          className={`w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${index === 0 ? styles.button : styles.secondaryButton}`}
+          className={'w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (index === 0 ? styles.button : styles.secondaryButton)}
           style={{ minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 }}
           onClick={() => onChoose({ action: 'command-option', requestId, commandId: option.commandId })}>
           {option.label}
         </button>
-        <div id={descriptionId} className="mt-2 space-y-1 text-xs break-words" style={{ overflowWrap: 'anywhere' }}>
-          {option.effect && <p><span className="font-semibold">{tx('chat_guide.command_effect', 'What it does')}: </span>{option.effect}</p>}
-          {option.reason && <p><span className="font-semibold">{tx('chat_guide.command_reason', 'Why it fits')}: </span>{option.reason}</p>}
-        </div>
+        {index === 0
+          ? <div id={descriptionId} className="mt-2 space-y-1 text-xs break-words" style={{ overflowWrap: 'anywhere' }}>{description}</div>
+          : <>
+            <div id={descriptionId} className="sr-only">{description}</div>
+            <details className="mt-1 text-xs" data-testid="command-option-details">
+              <summary className="cursor-pointer rounded px-1 py-2 font-medium focus-visible:ring-2 focus-visible:ring-indigo-500" style={{ minHeight: 44 }}>
+                {tx('chat_guide.command_option_details', 'Details')}<span className="sr-only">: {option.label}</span>
+              </summary>
+              <div className="space-y-1 break-words" style={{ overflowWrap: 'anywhere' }}>{description}</div>
+            </details>
+          </>}
       </li>;
     })}
   </ol>;
+}
+
+function AllobotCommandContext({ summary, tx }) {
+  if (!summary || typeof summary !== 'object') return null;
+  const parts = [];
+  if (summary.newLesson === true) {
+    parts.push(tx('chat_guide.context_new_lesson', 'New lesson'));
+    parts.push(tx('chat_guide.context_source_to_prepare', 'Source to prepare'));
+  } else if (summary.source === 'current') parts.push(tx('chat_guide.context_current_source', 'Using current source'));
+  else if (summary.source === 'analysis') parts.push(tx('chat_guide.context_source_analysis', 'Using source analysis'));
+  else if (summary.source === 'none') parts.push(tx('chat_guide.context_no_source', 'Source not added yet'));
+  if (typeof summary.grade === 'string' && summary.grade.trim()) parts.push(summary.grade.trim().slice(0, 40));
+  if (summary.newLesson !== true) {
+    if (summary.plan === 'blueprint') parts.push(tx('chat_guide.context_lesson_plan_ready', 'Lesson plan ready'));
+    else if (summary.plan === 'full-pack') parts.push(tx('chat_guide.context_full_pack_ready', 'Full Pack plan ready'));
+    else if (summary.plan === 'none') parts.push(tx('chat_guide.context_no_plan', 'No plan generated yet'));
+  }
+  const count = summary.newLesson === true ? 0 : Number(summary.resourceCount);
+  if (Number.isInteger(count) && count > 0 && count <= 999) parts.push(String(count) + ' ' + (count === 1 ? tx('chat_guide.context_resource', 'saved resource') : tx('chat_guide.context_resources', 'saved resources')));
+  return parts.length ? <p className="mb-2 text-xs font-medium break-words" aria-label={tx('chat_guide.context_summary', 'Current lesson context')} data-testid="command-context-summary" style={{ overflowWrap: 'anywhere' }}>{parts.join(' · ')}</p> : null;
+}
+
+function AllobotCommandProgress({ progress, tx }) {
+  const [now, setNow] = React.useState(() => Date.now());
+  const startedAt = Number(progress && progress.startedAt);
+  const phaseStartedAt = Number(progress && progress.phaseStartedAt);
+  const validStart = Number.isFinite(startedAt) && startedAt > 0;
+  React.useEffect(() => {
+    if (!validStart) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [validStart, startedAt]);
+  const phase = progress && progress.phase;
+  const label = phase === 'preparing-tools' ? tx('chat_guide.progress_preparing_tools', 'Preparing lesson tools')
+    : phase === 'generating' ? tx('chat_guide.progress_generating', 'Generating resources')
+    : phase === 'starting' ? tx('chat_guide.progress_starting', 'Starting your action')
+    : tx('chat_guide.progress_working', 'Working on your request');
+  const elapsed = validStart ? Math.min(86400, Math.max(0, Math.floor((now - startedAt) / 1000))) : null;
+  const phaseElapsed = Number.isFinite(phaseStartedAt) && phaseStartedAt > 0 ? Math.max(0, now - phaseStartedAt) : (elapsed || 0) * 1000;
+  const slow = phaseElapsed >= (phase === 'preparing-tools' ? 30000 : 60000);
+  return <div className="mt-2 space-y-1 text-xs" data-testid="command-progress">
+    <p role="status" aria-live="polite" aria-atomic="true" className="font-semibold">{label}</p>
+    {elapsed !== null && <p aria-live="off" data-testid="command-elapsed">{tx('chat_guide.progress_elapsed', 'Elapsed')}: {elapsed}s</p>}
+    {slow && <p role="status">{tx('chat_guide.progress_slow', 'This is taking longer than usual. Check the current progress before retrying.')}</p>}
+  </div>;
+}
+
+function AllobotCommandClarification({ clarification, requestId, tx, disabled, styles, onChoose }) {
+  const choices = Array.isArray(clarification?.choices) ? clarification.choices.filter((choice, index, all) => choice && ['lesson', 'resource', 'advice'].includes(choice.id) && typeof choice.label === 'string' && choice.label.trim() && all.findIndex(item => item?.id === choice.id) === index).slice(0, 3) : [];
+  if (!choices.length) return null;
+  return <div className="mt-3 space-y-2" role="group" aria-label={tx('chat_guide.clarify_outcome', 'Choose the outcome you want')} data-testid="command-clarification">
+    {clarification.question && <p className="font-medium break-words">{String(clarification.question).slice(0, 240)}</p>}
+    {choices.map(choice => <button key={choice.id} type="button" disabled={disabled || !requestId}
+      className={'block w-full px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + styles.secondaryButton}
+      style={{ minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 }}
+      onClick={() => onChoose({ action: 'command-clarify', requestId, choiceId: choice.id })}>{choice.label}</button>)}
+  </div>;
+}
+
+function AllobotCommandRecovery({ recovery, operationId, tx, disabled, styles, onChoose }) {
+  if (!recovery || !operationId || recovery.requestId !== operationId) return null;
+  const common = { type: 'button', disabled, className: 'px-3 py-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + styles.secondaryButton, style: { minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 } };
+  return <div className="mt-3 flex flex-wrap gap-2" data-testid="command-recovery">
+    {recovery.canRetry === true && <button {...common} onClick={() => onChoose({ action: 'command-retry', requestId: operationId })}>{tx('chat_guide.command_retry', 'Retry this plan')}</button>}
+    {recovery.canCopyDiagnostics === true && <button {...common} onClick={() => onChoose({ action: 'command-diagnostics', requestId: operationId })}>{tx('chat_guide.command_copy_diagnostics', 'Copy diagnostic details')}</button>}
+  </div>;
+}
+
+function _allobotCompletionActions(completion) {
+  const actions = Array.isArray(completion?.actions) ? completion.actions : [];
+  return actions.filter((action, index, all) => action && typeof action.commandId === 'string' && action.commandId.trim()
+    && action.commandId === action.commandId.trim() && typeof action.label === 'string' && action.label.trim()
+    && all.findIndex(item => item?.commandId === action.commandId) === index).slice(0, 3);
+}
+
+function AllobotCommandCompletion({ completion, operationId, tx, disabled, styles, onChoose }) {
+  const descriptionPrefix = React.useId();
+  const actions = _allobotCompletionActions(completion);
+  if (!actions.length) return null;
+  const bound = !!operationId && completion.requestId === operationId;
+  return <div className="mt-3 space-y-2" role="group" aria-label={tx('chat_guide.completion_next_steps', 'Next steps')} data-testid="command-completion">
+    <p className="text-xs font-semibold">{tx('chat_guide.completion_next_steps', 'Next steps')}</p>
+    {actions.map((action, index) => {
+      const effect = typeof action.effect === 'string' ? action.effect.trim().slice(0, 200) : '';
+      const descriptionId = descriptionPrefix + '-next-' + index;
+      return <div key={action.commandId} className="min-w-0">
+        <button type="button" disabled={disabled || !bound} aria-describedby={effect ? descriptionId : undefined}
+          className={'block w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold text-left whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + styles.secondaryButton}
+          style={{ minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 }}
+          onClick={() => onChoose({ action: 'command-complete', requestId: operationId, commandId: action.commandId })}>{action.label}</button>
+        {effect && <p id={descriptionId} className="mt-1 text-xs break-words" style={{ overflowWrap: 'anywhere' }}>{effect}</p>}
+      </div>;
+    })}
+  </div>;
+}
+
+function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, onChoose }) {
+  const [selection, setSelection] = React.useState(() => revision?.selectedIds || []);
+  const [instruction, setInstruction] = React.useState(() => revision?.instruction || '');
+  const [followup, setFollowup] = React.useState(() => revision?.followupText || '');
+  const headingRef = React.useRef(null);
+  React.useEffect(() => {
+    setSelection(revision?.selectedIds || []);
+    setInstruction(revision?.instruction || '');
+  }, [revision?.requestId, revision?.formVersion]);
+  React.useEffect(() => { setFollowup(revision?.followupText || ''); }, [revision?.requestId, revision?.followupVersion]);
+  React.useEffect(() => {
+    const heading = headingRef.current;
+    const scroller = heading?.closest('[data-testid="allobot-active-work"]');
+    if (scroller) scroller.scrollTop = 0;
+    heading?.focus({ preventScroll: true });
+  }, [revision?.requestId, revision?.mode]);
+  if (!revision || revision.requestId !== operationId) return null;
+  const resources = Array.isArray(revision.resources) ? revision.resources : [];
+  const pendingRequest = ['preparing', 'refining', 'questioning'].includes(revision.mode);
+  const busy = pendingRequest || ['applying', 'undoing'].includes(revision.mode);
+  const reviewing = ['review', 'refining', 'questioning'].includes(revision.mode);
+  const blocked = disabled || busy;
+  const button = `w-full min-w-0 px-3 py-2 rounded-lg text-sm font-bold whitespace-normal break-words disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${styles.secondaryButton}`;
+  const choose = (action, values = {}) => onChoose({ action: 'lesson-revision-' + action, requestId: operationId,
+    ...(['apply', 'edit', 'refine', 'question', 'followup-choice'].includes(action) ? { reviewToken: revision.reviewToken } : {}),
+    ...(action === 'stop' ? { pendingToken: revision.pendingToken } : {}),
+    ...(action === 'undo' ? { undoToken: revision.undoToken, ...(revision.mode === 'select' ? { resourceIds: selection, instruction } : {}), followupText: followup } : {}), ...values });
+  const humanLabel = value => String(value || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').toLowerCase()
+    .replace(/(^|:\s*)([a-z])/g, (_, prefix, first) => prefix + first.toUpperCase());
+  const fieldLabel = key => ({ question: 'Question', expectedAnswer: 'Expected answer', correctAnswer: 'Correct answer', options: 'Answer choices',
+    def: 'Definition', definition: 'Definition', text: 'Prompt', tier: 'Vocabulary category' }[key] || humanLabel(key));
+  const display = value => {
+    if (typeof value === 'string') return value;
+    if (value == null) return tx('chat_guide.revision_new_item', 'New item; no existing content is replaced.');
+    if (Array.isArray(value)) return value.map(item => '• ' + display(item)).join('\n');
+    if (typeof value !== 'object') return String(value);
+    const entries = Object.entries(value).filter(([key]) => !/^(?:id|type|kind)$/i.test(key));
+    if (!entries.length || entries.every(([, child]) => child === '')) return tx('chat_guide.revision_blank_writing', 'Blank writing field for the learner.');
+    const responseType = { mcq: 'Multiple choice', 'short-answer': 'Written response', shortAnswer: 'Written response' }[value.type];
+    return [responseType ? tx('chat_guide.revision_response_type', 'Response type') + ': ' + responseType : '', ...entries.map(([key, child]) =>
+      fieldLabel(key) + ': ' + (child === '' ? tx('chat_guide.revision_blank_writing', 'Blank writing field for the learner.') : (Array.isArray(child) ? '\n' : '') + display(child)))].filter(Boolean).join('\n\n');
+  };
+  const warningText = warning => typeof warning === 'string' ? warning : warning?.message || warning?.label || '';
+  return <section className="min-w-0 mt-3 space-y-3" data-testid="lesson-revision" aria-label={tx('chat_guide.revision_title', 'Revise existing lesson')}>
+    <h3 ref={headingRef} tabIndex={-1} className="font-bold text-sm outline-none" data-testid="lesson-revision-heading">
+      {revision.mode === 'review' ? tx('chat_guide.revision_review', 'Review proposed edits')
+        : revision.mode === 'applied' ? tx('chat_guide.revision_applied', 'Revision applied')
+        : revision.mode === 'undone' ? tx('chat_guide.revision_undone', 'Revision undone')
+        : tx('chat_guide.revision_title', 'Revise existing lesson')}
+    </h3>
+    {revision.error && <p role="alert" className="text-sm break-words" style={{ overflowWrap: 'anywhere' }}>{revision.error}</p>}
+    {revision.canUndo && <div className="space-y-1" data-testid="lesson-revision-undo">
+      <button type="button" disabled={['applying', 'undoing'].includes(revision.mode) || disabled && !pendingRequest} style={{ minHeight: 44 }} className={button}
+        onClick={() => choose('undo')}>{tx('chat_guide.revision_undo_last', 'Undo last applied revision')}</button>
+      <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_undo_last_help', 'Restores the last changes you applied. Any pending revision request is stopped and set aside.')}</p>
+    </div>}
+    {revision.mode === 'select' && <form className="space-y-3" aria-label={tx('chat_guide.revision_request', 'Lesson revision request')}
+      onSubmit={event => { event.preventDefault(); if (!blocked && selection.length && instruction.trim()) choose('prepare', { resourceIds: selection, instruction }); }}>
+      <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_scope', 'Edit text or add prompts and items; existing response fields stay in place.')}</p>
+      <fieldset disabled={blocked} className="min-w-0 space-y-2">
+        <legend className="text-xs font-semibold mb-2">{tx('chat_guide.revision_resources', 'Choose material to revise (required)')}</legend>
+        {resources.map(resource => <label key={resource.id} className="flex min-w-0 items-start gap-2 rounded-lg border p-2" style={{ minHeight: 44 }}>
+          <input type="checkbox" className="mt-1 shrink-0" value={resource.id} checked={selection.includes(resource.id)} disabled={blocked || !resource.supported}
+            onChange={event => setSelection(previous => event.target.checked ? [...new Set([...previous, resource.id])] : previous.filter(id => id !== resource.id))} />
+          <span className="min-w-0 text-xs break-words" style={{ overflowWrap: 'anywhere' }}>
+            <span className="block font-semibold">{resource.title}{resource.current ? ' (' + tx('chat_guide.revision_current', 'current') + ')' : ''}</span>
+            <span className={`block ${styles.subText}`}>{resource.supported ? resource.type : resource.reason || tx('chat_guide.revision_unavailable', 'This resource cannot be revised here yet.')}</span>
+          </span>
+        </label>)}
+        {!resources.length && <p className="text-xs">{tx('chat_guide.revision_empty', 'No editable resources are open. Load a saved lesson or create a resource first.')}</p>}
+      </fieldset>
+      <label className="block text-xs font-semibold">
+        {tx('chat_guide.revision_instruction', 'What should change? (required)')}
+        <textarea required rows={4} maxLength={4000} disabled={blocked} value={instruction}
+          onChange={event => setInstruction(event.target.value)} placeholder={tx('chat_guide.revision_placeholder', 'For example: simplify the directions and add two discussion prompts. Keep the questions and rubric unchanged.')}
+          className={`block mt-1 w-full min-w-0 rounded-lg border p-2 text-sm font-normal ${styles.input}`} style={{ overflowWrap: 'anywhere' }} />
+      </label>
+      {revision.followupText && <div className="text-xs">
+        <p className="font-semibold">{tx('chat_guide.revision_kept_followup', 'Kept follow-up')}</p>
+        <p className="whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{revision.followupText}</p>
+      </div>}
+      <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_ai_scope', 'Prepare revision sends the editable fields of your selected material and this request to your configured AI provider.')}</p>
+      <button type="submit" disabled={blocked || !selection.length || !instruction.trim()} style={{ minHeight: 44 }} className={button}>
+        {tx('chat_guide.revision_prepare', 'Prepare revision')}
+      </button>
+    </form>}
+    {busy && <p role="status" className="text-sm">{revision.mode === 'preparing' ? tx('chat_guide.revision_preparing', 'Preparing proposed edits…')
+      : revision.mode === 'refining' ? tx('chat_guide.revision_refining', 'Refining the current proposal…')
+      : revision.mode === 'questioning' ? tx('chat_guide.revision_questioning', 'Answering about this proposal…')
+      : revision.mode === 'undoing' ? tx('chat_guide.revision_undoing', 'Restoring the earlier content…') : tx('chat_guide.revision_applying', 'Applying reviewed edits…')}</p>}
+    {reviewing && <>
+      <p className="text-xs">{tx('chat_guide.revision_review_hint', 'Compare each proposed change. Your lesson stays unchanged until you choose Apply edits.')}</p>
+      {(revision.warnings || []).map((warning, index) => <p key={index} className="text-xs font-semibold break-words" style={{ overflowWrap: 'anywhere' }}>{warningText(warning)}</p>)}
+      <ol className="space-y-3" aria-label={tx('chat_guide.revision_changes', 'Proposed changes')}>
+        {(revision.changes || []).map((change, index) => <li key={index} className="min-w-0 rounded-lg border p-2 space-y-2">
+          <p className="text-xs font-semibold break-words" style={{ overflowWrap: 'anywhere' }}>{index + 1}. {change.resourceTitle || resources.find(item => item.id === change.resourceId)?.title || tx('chat_guide.revision_resource', 'Resource')}: {humanLabel(change.label || tx('chat_guide.revision_content', 'Content'))}</p>
+          <details open className="min-w-0 text-xs">
+            <summary className="cursor-pointer font-semibold" style={{ minHeight: 24 }}>{tx('chat_guide.revision_compare', 'Before and after')}</summary>
+            <p className="mt-2 font-semibold">{tx('chat_guide.revision_before', 'Before')}</p>
+            <pre className="mt-1 whitespace-pre-wrap break-words font-sans" style={{ overflowWrap: 'anywhere' }}>{display(change.before)}</pre>
+            <p className="mt-2 font-semibold">{tx('chat_guide.revision_after', 'After')}</p>
+            <pre className="mt-1 whitespace-pre-wrap break-words font-sans" style={{ overflowWrap: 'anywhere' }}>{display(change.after)}</pre>
+          </details>
+        </li>)}
+      </ol>
+      {revision.answer && <section className="rounded-lg border p-2 text-sm" aria-label={tx('chat_guide.revision_answer', 'Answer about the proposal')}>
+        <h4 className="font-semibold mb-1">{tx('chat_guide.revision_answer', 'Answer about the proposal')}</h4>
+        <p className="whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{revision.answer}</p>
+        <p className={`text-xs mt-2 ${styles.subText}`}>{tx('chat_guide.revision_answer_unchanged', 'This answer does not change the proposal or the lesson.')}</p>
+      </section>}
+      {revision.needsFollowupChoice && <div role="group" aria-label={tx('chat_guide.revision_followup_choose', 'Choose how to handle the follow-up')} className="space-y-2">
+        <p className="text-xs whitespace-pre-wrap break-words">{revision.followupText}</p>
+        <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('followup-choice', { mode: 'refine' })}>{tx('chat_guide.revision_refine', 'Refine proposal')}</button>
+        <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('followup-choice', { mode: 'question' })}>{tx('chat_guide.revision_ask', 'Ask about proposal')}</button>
+      </div>}
+      {!revision.needsFollowupChoice && <form className="space-y-2 rounded-lg border p-2" aria-label={tx('chat_guide.revision_followup_form', 'Follow up on the proposed edits')} onSubmit={event => event.preventDefault()}>
+        <label className="block text-xs font-semibold">
+          {tx('chat_guide.revision_followup_label', 'Refine these edits or ask a question')}
+          <textarea rows={3} maxLength={4000} disabled={blocked} value={followup} onChange={event => setFollowup(event.target.value)}
+            className={`block mt-1 w-full min-w-0 rounded-lg border p-2 text-sm font-normal ${styles.input}`}
+            placeholder={tx('chat_guide.revision_followup_placeholder', 'For example: keep those edits, but shorten question three. Or ask why a change was proposed.')}
+            style={{ overflowWrap: 'anywhere' }} />
+        </label>
+        <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_followup_scope', 'Refine returns a new proposal for review. Ask answers about this proposal without editing it. Both use only the selected material and proposed edits with your configured AI provider.')}</p>
+        <button type="button" disabled={blocked || !followup.trim()} style={{ minHeight: 44 }} className={button}
+          onClick={() => choose('refine', { instruction: followup })}>{tx('chat_guide.revision_refine', 'Refine proposal')}</button>
+        <button type="button" disabled={blocked || !followup.trim()} style={{ minHeight: 44 }} className={button}
+          onClick={() => choose('question', { instruction: followup })}>{tx('chat_guide.revision_ask', 'Ask about proposal')}</button>
+      </form>}
+      <button type="button" disabled={blocked || !revision.changes?.length} style={{ minHeight: 44 }} className={button} onClick={() => choose('apply')}>{tx('chat_guide.revision_apply', 'Apply edits')}</button>
+      <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('edit')}>{tx('chat_guide.revision_change_request', 'Change the request')}</button>
+    </>}
+    {['applied', 'undone'].includes(revision.mode) && <div className="space-y-2" role="group" aria-label={tx('chat_guide.revision_next', 'Revision next steps')}>
+      {revision.canPreview && <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button}
+        onClick={() => choose('preview')}>{tx('chat_guide.revision_preview_lesson', 'Preview lesson as student')}</button>}
+      {revision.canPreview && revision.resourceIds?.length > 1 && <details>
+        <summary className="text-xs cursor-pointer py-2">{tx('chat_guide.revision_preview_one', 'Preview one resource')}</summary>
+        <div className="space-y-2 mt-1">{revision.resourceIds.map(id => <button key={id} type="button" disabled={blocked} style={{ minHeight: 44 }} className={button}
+          onClick={() => choose('preview', { resourceId: id })}>{tx('chat_guide.revision_preview', 'Preview as student')}: {resources.find(item => item.id === id)?.title || tx('chat_guide.revision_resource', 'Resource')}</button>)}</div>
+      </details>}
+      {revision.canSave && <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('save')}>{tx('chat_guide.revision_save', 'Save project')}</button>}
+      <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('edit')}>{tx('chat_guide.revision_another', 'Prepare another revision')}</button>
+    </div>}
+    {pendingRequest && <button type="button" style={{ minHeight: 44 }} className={button}
+      onClick={() => choose('stop')}>{tx('chat_guide.revision_stop_request', 'Stop this request')}</button>}
+    <button type="button" disabled={disabled && !pendingRequest || ['applying', 'undoing'].includes(revision.mode)} style={{ minHeight: 44 }} className={button}
+      onClick={() => choose('cancel')}>{tx('chat_guide.revision_close', 'Close revision')}</button>
+  </section>;
 }
 
 // Schema fields are local drafts. Applying a form never executes a command.
@@ -307,11 +563,24 @@ function UDLGuideModal(props) {
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key, fallback) : null; return value && value !== key ? value : fallback; };
   const latestOperation = [...(udlMessages || [])].reverse().find(message => message.operationKind);
   const activeOperation = latestOperation && latestOperation.operationStatus !== 'closed' ? latestOperation : null;
+  const revisionOwnsComposer = activeOperation?.operationKind === 'lesson-revision'
+    && ['review', 'refining', 'questioning'].includes(activeOperation.lessonRevision?.mode);
   const commandOptions = activeOperation?.operationKind === 'command' && Array.isArray(activeOperation.commandOptions)
     ? activeOperation.commandOptions.filter((option, index, options) => option && typeof option.commandId === 'string' && option.commandId.trim()
       && typeof option.label === 'string' && option.label.trim() && options.findIndex(candidate => candidate?.commandId === option.commandId) === index).slice(0, 5)
     : [];
-  const isChoosingCommand = commandOptions.length > 0 && activeOperation.operationStatus === 'review';
+  const commandCompletion = activeOperation?.operationKind === 'command' && activeOperation.operationStatus === 'success'
+    ? activeOperation.commandCompletion : null;
+  const hasCommandCompletion = !!activeOperation?.operationId && commandCompletion?.requestId === activeOperation.operationId
+    && _allobotCompletionActions(commandCompletion).length > 0;
+  const isChoosingCommand = !!activeOperation && activeOperation.operationKind === 'command' && (
+    (activeOperation.operationStatus === 'review' && (commandOptions.length > 0 || !!activeOperation.commandClarification)) ||
+    (activeOperation.operationStatus === 'pending' && !!activeOperation.commandProgress) ||
+    (['error', 'failed'].includes(activeOperation.operationStatus) && !!activeOperation.operationId &&
+      activeOperation.commandRecovery?.requestId === activeOperation.operationId &&
+      (activeOperation.commandRecovery.canRetry === true || activeOperation.commandRecovery.canCopyDiagnostics === true)) ||
+    hasCommandCompletion
+  ) || activeOperation?.operationKind === 'lesson-revision';
   if (!(showUDLGuide)) return null;
   if (isCollapsed) {
       return (
@@ -451,6 +720,12 @@ function UDLGuideModal(props) {
                                     <span className="block text-[11px] text-slate-500">{isShowMeMode ? t('common.on', 'On') : t('common.off', 'Off')} — {t('chat_guide.show_me_desc', 'Asking “where is…” always points, with or without this.')}</span>
                                 </span>
                             </button>
+                            {props.canReviseLesson === true && <button role="menuitem" type="button"
+                                disabled={isChatProcessing}
+                                onClick={() => { handleSendUDLMessage({ action: 'lesson-revision-start' }); setChatMenuOpen(false); }}
+                                className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 disabled:opacity-40" style={{ minHeight: 44 }}>
+                                <span className="font-bold">{tx('chat_guide.revision_title', 'Revise existing lesson')}</span>
+                            </button>}
                             <button role="menuitem" type="button"
                                 onClick={() => { saveFullChat(); setChatMenuOpen(false); }}
                                 className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
@@ -482,7 +757,10 @@ function UDLGuideModal(props) {
                 <button data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
-        <AllobotContextControls messages={udlMessages} busy={isChatProcessing} setInput={setUdlInput} clearChat={() => { setUdlMessages([]); setUdlInput(''); }} t={t} theme={theme} taskActive={Boolean(isAutoFillMode || activeBlueprint || activeOperation)} />
+        {revisionOwnsComposer ? <section className={`rounded-lg border p-2 text-xs ${chatStyles.body}`} data-testid="lesson-revision-context" aria-label={tx('chat_guide.revision_chat_context', 'Proposal follow-up context')}>
+          <p>{tx('chat_guide.revision_chat_context_help', 'Questions and refinement about this proposal include the selected authored fields, proposed edits, and recent questions and answers in this revision. They do not use your ordinary chat context choices.')}</p>
+          <p className={`mt-1 ${chatStyles.subText}`}>{tx('chat_guide.revision_other_chat_context', 'Unrelated questions and app commands still use their ordinary settings. Your ordinary chat context choice is unchanged.')}</p>
+        </section> : <AllobotContextControls messages={udlMessages} busy={isChatProcessing} setInput={setUdlInput} clearChat={() => { setUdlMessages([]); setUdlInput(''); }} t={t} theme={theme} taskActive={Boolean(isAutoFillMode || activeBlueprint || activeOperation)} />}
         {/* 4.1.3 Status Messages. The reply arrives with no focus change, so a
             screen-reader user got nothing. The transcript is the log; `polite`
             + `additions` announces only the new turn rather than re-reading the
@@ -660,10 +938,24 @@ function UDLGuideModal(props) {
             {activeOperation && (
               <section aria-label={tx('chat_guide.active_workflow', 'Current command workflow')} data-testid="active-command-workflow"
                 className={`p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
+                <AllobotCommandContext summary={activeOperation.commandContextSummary} tx={tx} />
                 <div role="status" aria-live="polite">{renderFormattedText(activeOperation.text)}</div>
+                {activeOperation.operationKind === 'lesson-revision' && <AllobotLessonRevision key={activeOperation.operationId}
+                  revision={activeOperation.lessonRevision} operationId={activeOperation.operationId}
+                  tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
+                {activeOperation.operationKind === 'command' && activeOperation.operationStatus === 'pending' && activeOperation.commandProgress &&
+                  <AllobotCommandProgress key={activeOperation.operationId} progress={activeOperation.commandProgress} tx={tx} />}
+                {activeOperation.operationKind === 'command' && activeOperation.operationStatus === 'review' && activeOperation.commandClarification &&
+                  <AllobotCommandClarification clarification={activeOperation.commandClarification} requestId={activeOperation.operationId}
+                    tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
+                {activeOperation.operationKind === 'command' && ['error', 'failed'].includes(activeOperation.operationStatus) &&
+                  <AllobotCommandRecovery recovery={activeOperation.commandRecovery} operationId={activeOperation.operationId}
+                    tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
+                {commandCompletion && <AllobotCommandCompletion completion={commandCompletion} operationId={activeOperation.operationId}
+                  tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
                 {commandOptions.length > 0 && <AllobotCommandOptions options={commandOptions} requestId={activeOperation.operationId}
                   tx={tx} disabled={isChatProcessing} styles={chatStyles} onChoose={handleSendUDLMessage} />}
-                {!commandOptions.length && activeOperation.commandReview && <AlloCommandFields
+                {!commandOptions.length && !activeOperation.commandClarification && activeOperation.commandReview && <AlloCommandFields
                   key={activeOperation.operationId + ':' + JSON.stringify(activeOperation.commandReview.params)}
                   fields={activeOperation.commandReview.fields} params={activeOperation.commandReview.params}
                   onDirty={dirty => markFieldsDirty(activeOperation.operationId, dirty)}
@@ -691,7 +983,7 @@ function UDLGuideModal(props) {
                 ))}
                 {hasUnappliedFields && <p role="status" className="mt-2 text-xs">{tx('chat_guide.apply_before_run', 'Apply your edited details before running the plan.')}</p>}
                 <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={tx('chat_guide.workflow_actions', 'Workflow actions')}>
-                  {(activeOperation.choices || []).filter(choice => !commandOptions.length || choice.value !== '__allo_do').map((choice, index) => (
+                  {(activeOperation.choices || []).filter(choice => (!commandOptions.length && !activeOperation.commandClarification && !commandCompletion) || choice.value !== '__allo_do').map((choice, index) => (
                     <button key={index} type="button"
                       disabled={choice.disabled || (activeOperation.operationKind === 'command' && !activeOperation.operationId) || (isChatProcessing && choice.value !== '__allo_plan_stop') || (hasUnappliedFields && ['__allo_do', '__allo_plan_run'].includes(choice.value))}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 ${chatStyles.button}`}
@@ -702,7 +994,7 @@ function UDLGuideModal(props) {
                 </div>
               </section>
             )}
-            {activeBlueprint && (
+            {activeBlueprint && activeOperation?.operationKind !== 'lesson-revision' && (
               <details open data-testid="active-lesson-blueprint">
                 <summary className="cursor-pointer text-sm font-bold mb-2">{tx('chat_guide.active_lesson', 'Current lesson plan')}</summary>
                 <InteractiveBlueprintCard
@@ -718,7 +1010,9 @@ function UDLGuideModal(props) {
                           onSaveTemplate={handleSaveLessonTemplate}
                           onPreviewStep={handlePreviewBlueprintStep}
                           onUpdate={handleBlueprintUIUpdate}
-                          onConfirm={handleExecuteBlueprint}
+                          onConfirm={() => window.AlloModules?.UdlChat?.supportsReviewedBlueprintExecution === true
+                            ? handleSendUDLMessage({ action: 'command-approved-blueprint', blueprint: activeBlueprint })
+                            : handleExecuteBlueprint()}
                           onCancel={() => {
                               // isExecutingBlueprint had NO reader anywhere in the app
                               // until this line, so Cancel stayed live mid-run: it nulled
@@ -948,6 +1242,12 @@ function UDLGuideModal(props) {
                <p id="udl-lesson-mode-help" className={`mt-1 ${chatStyles.subText}`}>{tx('chat_guide.plan_lesson_mode_help', 'Uses lesson settings and recent discussion to draft a plan for your review.')}</p>
              </div>
           </div>
+          {props.canReviseLesson === true && <button type="button" disabled={isChatProcessing}
+            data-testid="start-lesson-revision" style={{ minHeight: 44 }}
+            className={`w-full px-3 py-2 mb-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 ${chatStyles.secondaryButton}`}
+            onClick={() => handleSendUDLMessage({ action: 'lesson-revision-start' })}>
+            {tx('chat_guide.revision_title', 'Revise existing lesson')}
+          </button>}
           </>}
           <div className="flex gap-2">
              <input aria-label={tx('chat_guide.input_aria', 'Ask the UDL guide a question')}

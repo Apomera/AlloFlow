@@ -3706,16 +3706,29 @@ function _buildTagOutline(html) {
 // Lists AI-reconstructed-from-image tables (data-allo-reconstructed) in the remediated HTML, for the
 // human accept/reject gate. Pure + jsdom-testable. The reconstruction (doc_pipeline) is additive —
 // the original image is kept beside each table — so rejecting one just removes the table.
-function _listReconstructedTables(html) {
+function _listReconstructedTables(html, pipeline) {
   const out = [];
   try {
     const doc = new DOMParser().parseFromString(html || '', 'text/html');
     doc.querySelectorAll('table[data-allo-reconstructed]').forEach((t) => {
       const cap = t.querySelector('caption');
+      let previewHtml = '';
+      try {
+        // A project import or model response can forge the reconstruction marker.
+        // Sanitize at the live-DOM boundary; leave the source document untouched.
+        const clean = _viewSanitizeMarkupForExport(t.outerHTML, pipeline);
+        const preview = new DOMParser().parseFromString(clean, 'text/html');
+        const table = preview.querySelector('table[data-allo-reconstructed]');
+        if (table) {
+          // Document CSS must not restyle the surrounding application.
+          table.querySelectorAll('style').forEach((node) => node.remove());
+          previewHtml = table.outerHTML;
+        }
+      } catch (_) { /* Keep review/reject controls available without unsafe markup. */ }
       out.push({
         caption: cap ? cap.textContent.replace(/\s+/g, ' ').trim().slice(0, 100) : '',
         rows: t.querySelectorAll('tbody tr').length,
-        html: t.outerHTML, // mini-preview (2026-06-12): show the table right here
+        html: previewHtml,
       });
     });
   } catch (_) {}
@@ -8121,6 +8134,20 @@ function PdfAuditView(props) {
   const _workspaceEvidence = useMemo(() => pdfFixResult ? _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline) : null, [pdfFixResult, _docPipeline]);
   const _workspaceVerdict = pdfFixResult && typeof _docPipeline?.distributionVerdict === 'function'
     ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore, inProgress: _modalWorkBusy }) : null;
+  // When a run settles, move focus to the verdict so keyboard and screen-reader users land on the outcome.
+  const _wasWorkBusyRef = useRef(false);
+  useEffect(() => {
+    const settled = _wasWorkBusyRef.current && !_modalWorkBusy && !!pdfFixResult;
+    _wasWorkBusyRef.current = !!_modalWorkBusy;
+    if (!settled) return undefined;
+    const timer = setTimeout(() => {
+      const strip = document.querySelector('[data-help-key="pdf_audit_verdict_strip"]');
+      const active = document.activeElement;
+      const typing = active && (active.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName));
+      if (strip && !typing && !strip.contains(active)) strip.focus({ preventScroll: false });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [_modalWorkBusy, pdfFixResult]);
   const _workspaceState = _pdfWorkspaceState({ audit: pdfAuditResult, result: pdfFixResult, busy: _modalWorkBusy,
     auditLoading: pdfAuditLoading, batchMode: pdfBatchMode, batchProcessing: pdfBatchProcessing,
     batchIngesting, batchStopping: _batchStopRequested, batchPhase: _batchRecovery?.phase, batchSummary: pdfBatchSummary, queue: pdfBatchQueue, progress: remediationProgress, auditWait,
@@ -11536,7 +11563,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               _toastForRemediationOperation(_fixRemainingOperation, fullyVerified
                                 ? `Fix pass verified successfully: ${Number.isFinite(startCount) ? startCount : '?'} → ${bestIssueCount} confirmed issues (${totalPasses} passes).`
                                 : improved
-                                  ? `Canonical issue burden improved to ${countLabel} (${totalPasses} passes), but verification is ${bestVerification?.verificationState || 'unavailable'}; review is still required.`
+                                  ? `Remaining problems went down to ${countLabel} (${totalPasses} passes), but checking is ${bestVerification?.verificationState || 'unavailable'}; a person still needs to review.`
                                   : `${totalPasses} passes completed. ${countLabel} confirmed issues remain and verification is ${bestVerification?.verificationState || 'unavailable'}; manual remediation may be required.`, fullyVerified ? 'success' : (improved ? 'warning' : 'info'));
                             }
                           } catch(e) { if (_remediationOperationIsCurrent(_fixRemainingOperation)) { warnLog('Fix remaining failed:', e); _toastForRemediationOperation(_fixRemainingOperation, t('toasts.fix_remaining_failed') + (e?.message || 'unknown error'), 'error'); } }
@@ -11545,12 +11572,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : (() => {
                             const evidence = _viewCanonicalRemediationEvidence(pdfFixResult, _docPipeline);
                             const action = Number.isFinite(evidence.totalEngineFindings) && evidence.totalEngineFindings > 0
-                              ? `Fix ${evidence.totalEngineFindings} Engine Finding${evidence.totalEngineFindings === 1 ? '' : 's'}`
+                              ? `Fix ${evidence.totalEngineFindings} Remaining Problem${evidence.totalEngineFindings === 1 ? '' : 's'}`
                               : evidence.reviewCount > 0
-                                ? `Address ${evidence.reviewCount} Review Finding${evidence.reviewCount === 1 ? '' : 's'}`
+                                ? `Check ${evidence.reviewCount} Item${evidence.reviewCount === 1 ? '' : 's'} Needing Review`
                               : evidence.allThreeComplete
-                                ? 'Run Additional Fix Pass'
-                                : 'Complete 3-Engine Verification';
+                                ? 'Run Another Fix Pass'
+                                : 'Finish Checking';
                             return <><Wrench size={16} /><span className="flex flex-col items-start leading-tight"><span>{action}</span><span className="text-[10px] font-semibold text-amber-100">{evidence.compactLabel}</span></span></>;
                           })()}
                         </button>
@@ -11645,7 +11672,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (/Step 4|Auto-fix|Auto-continue|Improv|pass \d/i.test(stepText)) {
                               if (/Verif|check/i.test(stepText)) return { what: 'Verifying that each round of fixes actually improved accessibility without introducing new problems.', why: 'After fixing issues, we re-check the entire document. For example, fixing one heading level might affect the navigation hierarchy elsewhere, or adding alt text to one image might create a duplicate ID. If any fix accidentally made the document less accessible, it\'s automatically rolled back. This verify-then-accept approach ensures the document only gets better, never worse — because an accessibility regression could leave a student more confused than before.' };
                               if (/surg|micro/i.test(stepText)) return { what: 'Applying targeted accessibility fixes — each one addresses a single specific barrier in your document.', why: 'These are precise repairs: adding a meaningful description to a specific image (so a blind student knows what it shows instead of hearing silence), correcting a heading that jumped from "Chapter" to "Subsection" with no "Section" in between (so keyboard navigation makes logical sense), adding a label to a form field (so a screen reader announces "Student Name" instead of just "edit text"), and adding scope attributes to table headers (so a screen reader can say "Column: Grade, Row: Student A, Value: 92" instead of just "92" with no context).' };
-                              if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'Your document passed! No remaining accessibility barriers were detected by either the automated checker or AI reviewer.', why: 'Your document now meets WCAG 2.2 Level AA — the standard required by the ADA for all public educational institutions as of April 2026. This means: a student using a screen reader can navigate by headings and read all content including image descriptions; a student with low vision can zoom to 200% without losing content; a student who can\'t use a mouse can reach every element by keyboard; data tables announce their headers so values have context; and the document has proper reading order, sufficient color contrast, and labeled form fields.' };
+                              if (/zero issue|clean|0 issue/i.test(stepText)) return { what: 'No remaining issues were found in this pass by the automated checkers or the AI reviewer.', why: 'Automated checks can only test part of WCAG, so this is not a conformance claim. The checks look for things like heading structure, image descriptions, keyboard reachability, table headers, reading order, color contrast and form labels. A person should still read the document once before you share it.' };
                               if (/\d+ issue|\d+ axe.*\d+ AI/i.test(stepText)) {
                                 const m = stepText.match(/(\d+)\s*issue/); const count = m ? m[1] : 'several';
                                 if (fixIssuesList && fixIssuesList.issues && fixIssuesList.issues.length > 0) {
@@ -13260,11 +13287,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <li key={_rfKey(f)} className="pdf-workspace-review-row flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-950">
                                 <span className="shrink-0 font-bold" aria-hidden="true">{f.bucket === 'incomplete' ? '⚠' : f.bucket === 'potential' ? '🔎' : '👀'}</span>
                                 <div className="flex-1 min-w-0">
-                                  <span className="font-mono font-bold">{f.id}</span>
-                                  <span className="ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[9px] font-bold uppercase tracking-wide">{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + (_rfBucketLabel[f.bucket] || f.bucket)}</span>
-                                  {f.nodes > 0 && <span className="ml-1 opacity-70">{f.nodes} {f.nodes === 1 ? (t('pdf_audit.review_queue.element') || 'element') : (t('pdf_audit.review_queue.elements') || 'elements')}</span>}
-                                  {(f.wcagCriteria || []).length > 0 && <span className="ml-1 opacity-70">WCAG {f.wcagCriteria.join(', ')}</span>}
-                                  {f.description && <span className="block mt-0.5 opacity-90">{f.description}</span>}
+                                  {/* Plain-language question first; the engine rule id is reference detail. */}
+                                  {f.description && <span className="block font-semibold">{f.description}</span>}
+                                  <span className={'block opacity-80' + (f.description ? ' mt-0.5' : '')}>
+                                    <span className={f.description ? 'font-mono' : 'font-mono font-bold'}>{f.id}</span>
+                                    <span className="ml-1 px-1 py-0.5 rounded bg-white/80 border border-amber-300 text-[10px] font-bold uppercase tracking-wide">{(_rfEngineLabel[f.engine] || f.engine) + ' · ' + (_rfBucketLabel[f.bucket] || f.bucket)}</span>
+                                    {f.nodes > 0 && <span className="ml-1">{f.nodes} {f.nodes === 1 ? (t('pdf_audit.review_queue.element') || 'element') : (t('pdf_audit.review_queue.elements') || 'elements')}</span>}
+                                    {(f.wcagCriteria || []).length > 0 && <span className="ml-1">WCAG {f.wcagCriteria.join(', ')}</span>}
+                                  </span>
                                   {(f.where || []).length > 0 && <span className="block mt-0.5 font-mono text-[10px] opacity-80">→ {f.where.map((w, wi) => <span key={wi}>{wi > 0 ? ' · ' : ''}“{w}”</span>)}</span>}
                                   {_triageFor(f) && <span className="block mt-0.5 text-[10px] font-bold text-indigo-900">{_triageLabel(_triageFor(f))}</span>}
                                   {_rfIsSheet(f) && _rfCanConfirmSheet && (
@@ -13341,7 +13371,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _icon = _v.inProgress ? '⏳' : _v.level === 'ready' ? '✅' : _v.level === 'caution' ? '⚠️' : '🛑';
                         const _items = _v.level === 'review' ? _v.review.concat(_v.cautions) : _v.cautions;
                         return (
-                          <div role="status" data-help-key="pdf_audit_verdict_strip" className={`rounded-xl border-2 p-3 ${_sty}`}>
+                          <div role="status" data-help-key="pdf_audit_verdict_strip" tabIndex={-1} className={`rounded-xl border-2 p-3 ${_sty}`}>
                             <p className="text-sm font-black"><span aria-hidden="true">{_icon} </span>{(_v.inProgress ? t('pdf_audit.verdict.in_progress_' + _v.level) : t('pdf_audit.verdict.' + _v.level)) || _v.headline}</p>
                             {_items.length > 0 && (
                               <ul className="mt-1 ml-5 list-disc text-xs space-y-0.5">
@@ -13823,7 +13853,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               it as the big headline (even in slate) reads as "your doc is now N/100". Render a dash
                               instead so there is no headline number, and demote the structural figure to a small
                               caption below. The "re-run for a full score" CTA lives in the sub-line beneath. */}
-                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-600' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
+                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-600' : (blendedAfter || 0) < 50 ? 'text-red-600' : ((blendedAfter || 0) < 80 || _workspaceVerdict?.level !== 'ready' || _workspaceVerdict?.inProgress) ? 'text-amber-600' : 'text-green-600'}`}
                             title={_aiIncomplete ? (t('pdf_audit.score.after_incomplete_title') || 'No verified score yet — the AI semantic audit was throttled and did not finish. Re-run for a full score. The structural-only number is shown below.') : undefined}>
                             {_aiIncomplete
                               ? (<span role="img" aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
@@ -15341,18 +15371,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             confirms (default = keep) or rejects it here; the original image is kept
                             beside each, so rejecting just removes the table. (Avoids a fragment-IIFE;
                             _listReconstructedTables is cheap + only called when the marker is present.) */}
-                        {pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf('data-allo-reconstructed') >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml).length > 0 && (
+                        {pdfFixResult.accessibleHtml && pdfFixResult.accessibleHtml.indexOf('data-allo-reconstructed') >= 0 && _listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).length > 0 && (
                           <div className="w-full mt-1 bg-purple-50 border border-purple-300 rounded-xl px-3 py-2 text-xs">
                             <div className="font-bold text-purple-800">✨ AI-reconstructed structure — please verify</div>
-                            <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
+                            <div className="text-[11px] text-purple-700 mt-0.5">{_listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).length} table(s) were rebuilt from images so screen readers can navigate the structure. The original image is kept beside each — check each matches its image, and reject any that's wrong (the image stays).</div>
                             <ul className="mt-1 space-y-1" role="list">
-                              {_listReconstructedTables(pdfFixResult.accessibleHtml).map((r, i) => (
+                              {_listReconstructedTables(pdfFixResult.accessibleHtml, _docPipeline).map((r, i) => (
                                 <li key={i} className="flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
                                   <span className="flex-1 min-w-0 truncate text-slate-700">{r.caption || ('Reconstructed table ' + (i + 1))} <span className="text-slate-500">({r.rows} row{r.rows === 1 ? '' : 's'})</span></span>
                                   {/* Inline mini-preview (2026-06-12, maintainer ask):
                                       verify the table right here — no preview pane
-                                      needed. The html is OUR generated table. */}
+                                      needed. The html is sanitized at the preview boundary. */}
                                   {r.html && (
                                     <button onClick={() => setReconPreviewIdx((prev) => prev === i ? null : i)} aria-expanded={reconPreviewIdx === i} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">
                                       {reconPreviewIdx === i ? ('▾ ' + (t('pdf_audit.recon.hide_preview') || 'Hide')) : ('🔍 ' + (t('pdf_audit.recon.preview') || 'Preview here'))}
@@ -20642,6 +20672,14 @@ Return ONLY the plain-language summary.`, false));
                 🤖 Full Re-audit (AI + axe-core)
               </button>
 
+              {pdfFixResult?.accessibleHtml && window.AlloModules?.ResourceImagesPanel && React.createElement(window.AlloModules.ResourceImagesPanel, {
+                resource:{id:'document-images',type:'document',data:{html:pdfFixResult.accessibleHtml},imageAssets:pdfFixResult.imageAssets},
+                onUpdateResource:(_id,updater)=>setPdfFixResult(previous=>{
+                  if(!previous?.accessibleHtml)return previous;
+                  const before={id:'document-images',type:'document',data:{html:previous.accessibleHtml},imageAssets:previous.imageAssets};
+                  const next=updater(before);return next===before?previous:{...previous,accessibleHtml:next.data.html,imageAssets:next.imageAssets};
+                })
+              })}
               {/* Extracted images — collapsible gallery, draggable into iframe placeholders */}
               {extractedImagesList.length > 0 && (() => {
                 // Dedup identical extractions (the same letterhead/logo extracted

@@ -130,7 +130,8 @@ describe('Study identity beside the canvas preserves the unobstructed model view
     expect(ui.species().getAttribute('data-scene-study-species')).toBe(id);
     expect(ui.species().textContent).toContain(name);
     expect(ui.strip().getAttribute('aria-label')).toBe('Study scene context');
-    expect(ui.badge()).toBeNull(); expect(ui.buttons()).toBeNull();
+    expect(ui.badge()).toBeNull();
+    expect([...ui.buttons().querySelectorAll('button')].map(button => button.textContent)).toEqual(['Fit whole model', 'Turn view 180°']);
     expect(ui.stage.closest('[data-migration-3d-flight]').getAttribute('data-study-strip')).toBe('true');
     if (id === 'monarch') {
       expect(ui.region().textContent).toBe('Whole-insect wing motion');
@@ -160,8 +161,9 @@ describe('Study identity beside the canvas preserves the unobstructed model view
     expect(ui.opposite() !== null).toBe(paths);
     const noteAction = ui.strip().querySelector('[data-study-scene-action="continue-note"]');
     expect(noteAction !== null).toBe(notes);
-    if (!paths && !notes) expect(ui.buttons()).toBeNull();
-    else expect(ui.buttons()).not.toBeNull();
+    expect(ui.buttons()).not.toBeNull();
+    expect(ui.buttons().querySelector('[data-scene-study-action="fit"]')).not.toBeNull();
+    if (!paths && !notes) expect(ui.buttons().querySelectorAll('button')).toHaveLength(2);
     for (const button of ui.buttons()?.querySelectorAll('button') || []) {
       expect(button.type).toBe('button');
       expect(getComputedStyle(button).minHeight).toBe('44px');

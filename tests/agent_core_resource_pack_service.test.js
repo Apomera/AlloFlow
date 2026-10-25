@@ -74,6 +74,14 @@ describe('Agent Core resource-pack service', () => {
     expect(JSON.parse(exported.json).history).toHaveLength(3);
   });
 
+  it('scans long text without unbounded email-regex retries and still detects addresses', () => {
+    const candidate = request(structuredClone(HISTORY));
+    candidate.history[1].data[0].def = 'x'.repeat(100000);
+    expect(service.compose(candidate).ok).toBe(true);
+    candidate.history[1].data[0].def += ' student+fixture@example.org';
+    expect(service.compose(candidate).errors.some(error => error.code === 'privacy-risk-detected')).toBe(true);
+  }, 5000);
+
   it('supports provider injection without coupling the service to a network client', async () => {
     const generated = await service.generate({
       requestId: 'generated-1', sourceTopic: 'Water cycle', sourceText: 'Water changes state.', learningGoal: 'Explain the cycle.',

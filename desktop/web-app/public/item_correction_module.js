@@ -53,6 +53,22 @@
   // repo. If unreachable (e.g. route not yet deployed), fall back to the pre-filled Google Form.
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitItemCorrection';
 
+  // Managed support configuration does not authorize independent community
+  // contributions. Any configured policy blocks both POST and form fallback;
+  // a custom bug-report endpoint never receives this different payload.
+  function communityFeedbackBlocked() {
+    try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
+    catch (_) { return true; }
+  }
+  var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
+  function metadataPageUrl() {
+    try {
+      var parsed = new URL(location.href || '');
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '[embedded app]';
+      return parsed.origin;
+    } catch (_) { return '[embedded app]'; }
+  }
+
   // What kind of problem is being reported. Kept short + stable so the ingest tool can bucket them.
   var KINDS = [
     { id: 'wrong-answer', label: 'The keyed answer looks wrong' },
@@ -80,6 +96,7 @@
 
   // ── Build the pre-filled Google Form URL (fallback; mirrors translation feedback technique) ──
   function buildFormUrl(payload) {
+    if (communityFeedbackBlocked()) return '';
     var what =
       '[AlloFlow Practice Item Correction]\n' +
       'pack: ' + payload.packTitle + ' (' + payload.packId + ')\n' +
@@ -90,7 +107,7 @@
       'prompt: ' + (payload.prompt || '').slice(0, 1200) + '\n' +
       'currentAnswer: ' + (payload.currentAnswer || '(n/a)') + '\n' +
       'suggested: ' + payload.suggested;
-    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + (location.href || '').slice(0, 300);
+    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + metadataPageUrl();
     var browser = navigator.userAgent + ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
     return FORM_BASE +
       '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent('Practice Item Correction') +
@@ -161,10 +178,10 @@
       '<textarea id="allo-ic-suggest" rows="3" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Source or reasoning (optional)</div>' +
       '<textarea id="allo-ic-note" rows="2" placeholder="e.g. per the current ETS blueprint / IDEA 2004 / a citation link" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
-      '<div id="allo-ic-err" role="alert" style="display:none;color:#dc2626;font:13px system-ui;margin-bottom:10px"></div>' +
+      '<div id="allo-ic-err" role="alert" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
         '<button id="allo-ic-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-ic-send" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
+        '<button id="allo-ic-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -173,6 +190,13 @@
     $('allo-ic-x').onclick = closeModal;
     $('allo-ic-cancel').onclick = closeModal;
     overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    function showManagedBlock() {
+      var error = $('allo-ic-err');
+      if (error) { error.textContent = COMMUNITY_BLOCK_MESSAGE; error.style.display = 'block'; }
+      var button = $('allo-ic-send');
+      if (button) { button.disabled = true; button.textContent = 'Sending disabled'; }
+    }
 
     function showThanks(viaForm) {
       panel.innerHTML =
@@ -191,6 +215,7 @@
     }
 
     $('allo-ic-send').onclick = function () {
+      if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       var errEl = $('allo-ic-err');
       var suggested = ($('allo-ic-suggest').value || '').trim();
       if (!suggested) { errEl.textContent = 'Please describe your suggested fix.'; errEl.style.display = 'block'; return; }
@@ -212,12 +237,23 @@
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
       var fellBack = false;
       var fallbackToForm = function () {
+        if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         if (fellBack) return; fellBack = true;
-        try { window.open(buildFormUrl(payload), '_blank', 'noopener'); } catch (_) { location.href = buildFormUrl(payload); }
+        var formUrl = buildFormUrl(payload);
+        if (!formUrl) { showManagedBlock(); return; }
+        try { window.open(formUrl, '_blank', 'noopener,noreferrer'); }
+        catch (_) {
+          if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+          errEl.textContent = 'The report form could not be opened. Your draft stays here. You can try again or contact your support team.';
+          errEl.style.display = 'block';
+          sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
+          return;
+        }
         showThanks(true);
       };
       try {
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) { if (res.ok && res.j && res.j.ok) showThanks(false); else fallbackToForm(); })
           .catch(function () { fallbackToForm(); });

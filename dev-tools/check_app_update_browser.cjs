@@ -29,8 +29,8 @@ let origin;
 let caseNumber = 0;
 const records = [];
 
-function shell() {
-  const shellId = shellReleaseOverride === undefined ? deployment.id : shellReleaseOverride;
+function shell(approved = false) {
+  const shellId = approved || shellReleaseOverride === undefined ? deployment.id : shellReleaseOverride;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Update lifecycle fixture</title>
     <script>window.__alloReleaseId=${JSON.stringify(shellId)};window.__alloReleaseBuiltAt=${deployment.builtAt};</script>
     <script>window.fixtureDeferManager=new URLSearchParams(location.search).has('defer-manager');
@@ -58,12 +58,15 @@ function shell() {
 }
 
 function worker() {
+  const integrity = bytes => ({ sha384: createHash('sha384').update(bytes).digest('hex'), bytes: Buffer.byteLength(bytes) });
+  const digests = { './index.html': integrity(shell(true)), './alloflow_update.js': integrity(fs.readFileSync(managerPath)) };
   let body = fs.readFileSync(workerPath, 'utf8');
   body = body.replace(/alloflow-v/g, 'alloflow-case-' + caseNumber + '-v')
     .replace(/__BUILD_TS__/g, String(deployment.builtAt))
     .replace(/__RELEASE_ID__/g, deployment.id)
     .replace(/__RELEASE_BUILT_AT__/g, String(deployment.builtAt))
-    .replace(/__PRECACHE_PATHS__/g, JSON.stringify(['./index.html', './alloflow_update.js']));
+    .replace(/__PRECACHE_PATHS__/g, JSON.stringify(['./index.html', './alloflow_update.js']))
+    .replace(/__PRECACHE_DIGESTS__/g, JSON.stringify(digests));
   assert(!/__RELEASE_[A-Z_]+__/.test(body), 'Unsubstituted release metadata in worker fixture');
   return body + '\n// fixture-worker-revision: ' + workerRevision + '\n';
 }
@@ -199,7 +202,7 @@ async function scenario(name, run) {
   server = http.createServer((request, response) => {
     const url = new URL(request.url, 'http://localhost');
     const pathname = url.pathname.replace(/^\/case-\d+/, '');
-    response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('Cache-Control', 'no-cache');
     if (pathname === '/app/index.html') {
       response.writeHead(308, { Location: url.pathname.replace(/index\.html$/, '') }); response.end(); return;
     }
@@ -296,30 +299,32 @@ async function scenario(name, run) {
       return { before, after: await apply(page, 'B') };
     });
 
-    await scenario('Current HTML under an older worker stays quiet before and after activation', async context => {
+    await scenario('Older worker keeps its own shell until explicit activation', async context => {
       const page = await open(context);
       await installed(page);
       await update(page, 'B');
-      await page.reload(); // Cached A is served while its cache refreshes to B.
-      await poll(page, async ({ previous, expected }) => {
+      await ready(page, 'B');
+      await page.reload();
+      await installed(page);
+      await poll(page, async previous => {
         const keys = await caches.keys();
         for (const key of keys.filter(key => key.includes(previous))) {
           const response = await (await caches.open(key)).match(new URL('./index.html', location.href).href);
-          if (response && (await response.text()).includes('window.__alloReleaseId=' + JSON.stringify(expected))) return true;
+          if (response && (await response.text()).includes('window.__alloReleaseId=' + JSON.stringify(previous))) return true;
         }
         return false;
-      }, { previous: release('A').id, expected: release('B').id });
+      }, release('A').id);
       await page.reload();
       await installed(page);
-      assert.equal(await page.evaluate(() => window.__alloReleaseId), release('B').id);
-      const before = await quiet(page, 'current HTML must not announce its own waiting release');
+      assert.equal(await page.evaluate(() => window.__alloReleaseId), release('A').id);
+      await ready(page, 'B');
+      const before = await snapshot(page);
       assert.equal(before.waiting, true);
       const other = await open(context);
       await activateFromOtherTab(other);
       await installed(page);
-      const after = await quiet(page, 'current HTML remains current after another tab activates');
-      assert(!after.trace.some(state => state.ready), 'already-current page must never transiently prompt');
-      return { before, after };
+      await ready(page, 'B');
+      return { before, after: await apply(page, 'B') };
     });
 
     await scenario('Manager started after another tab activates still finds the genuine active update', async context => {

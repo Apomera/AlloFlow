@@ -26,6 +26,17 @@ const CS_TEMPLATES = [
 
 const CS_TONES = ['warm and plain', 'formal', 'brief'];
 const CS_LANGUAGES = ['Spanish', 'Somali', 'Maay Maay', 'Arabic', 'French', 'Portuguese', 'Lingala', 'Kirundi', 'Kinyarwanda', 'Swahili', 'Vietnamese', 'Khmer', 'Chinese (Simplified)', 'Haitian Creole', 'Ukrainian', 'Dari', 'Pashto', 'Tigrinya', 'Amharic'];
+// BCP 47 tags so screen readers switch voice for the translated part (WCAG 3.1.2).
+const CS_LANGUAGE_TAGS = { 'Spanish': 'es', 'Somali': 'so', 'Maay Maay': 'ymm', 'Arabic': 'ar', 'French': 'fr', 'Portuguese': 'pt', 'Lingala': 'ln', 'Kirundi': 'rn', 'Kinyarwanda': 'rw', 'Swahili': 'sw', 'Vietnamese': 'vi', 'Khmer': 'km', 'Chinese (Simplified)': 'zh-Hans', 'Haitian Creole': 'ht', 'Ukrainian': 'uk', 'Dari': 'fa-AF', 'Pashto': 'ps', 'Tigrinya': 'ti', 'Amharic': 'am' };
+const CS_RTL_TAGS = new Set(['ar', 'fa-AF', 'ps']);
+function csLangAttrs(language) {
+  const tag = CS_LANGUAGE_TAGS[language];
+  return tag ? ' lang="' + tag + '"' + (CS_RTL_TAGS.has(tag) ? ' dir="rtl"' : '') : '';
+}
+function csPageLang() {
+  const root = typeof document !== 'undefined' ? document.documentElement : null;
+  return csEscapeHtml((root && root.lang) || 'en');
+}
 const CS_FAMILY_TARGET_GRADE = 8;
 const CS_DISCLOSURE = 'Drafted with AI assistance from notes I entered, and reviewed by me.';
 
@@ -199,11 +210,11 @@ function csPrintHtml(title, pages, options) {
     o.nameLine ? '<p class="name">For the family of: <span class="blank"></span></p>' : '',
     pg.label ? '<p class="label">' + esc(pg.label) + '</p>' : '',
     para(pg.text),
-    pg.translation && pg.language ? '<hr><p class="lang">' + esc(pg.language) + '</p>' + para(pg.translation) : '',
+    pg.translation && pg.language ? '<hr><p class="lang">' + esc(pg.language) + '</p><div' + csLangAttrs(pg.language) + '>' + para(pg.translation) + '</div>' : '',
     o.disclosure ? '<p class="note">' + esc(CS_DISCLOSURE) + '</p>' : '',
     '</section>',
   ].join('')).join('');
-  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(title || 'Communication') + '</title><style>'
+  return '<!DOCTYPE html><html lang="' + csPageLang() + '"><head><meta charset="utf-8"><title>' + esc(title || 'Communication') + '</title><style>'
     + 'body{font:12pt/1.5 Georgia,serif;color:#000;margin:0}.page{padding:0.75in;page-break-after:always;break-after:page}.page:last-child{page-break-after:auto;break-after:auto}'
     + '.name{font-size:13pt;margin:0 0 18pt}.blank{display:inline-block;min-width:3.5in;border-bottom:1px solid #000}.label{font-size:9pt;color:#444;margin:0 0 6pt}.lang{font-weight:bold}.note{font-size:9pt;color:#444;margin-top:18pt}'
     + '</style></head><body>' + body + '</body></html>';
@@ -402,7 +413,7 @@ function csDraftToHtml(title, draft, translation, options) {
   if (translation && o.language) {
     parts.push('<hr>');
     parts.push('<p><em>' + csEscapeHtml(o.language) + ' (machine draft; please have a bilingual colleague check before sending)</em></p>');
-    parts.push(para(translation));
+    parts.push('<div' + csLangAttrs(o.language) + '>' + para(translation) + '</div>');
   }
   if (o.disclosure !== false) parts.push('<p><small>' + csEscapeHtml(CS_DISCLOSURE) + '</small></p>');
   return parts.join('\n');

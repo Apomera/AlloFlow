@@ -330,7 +330,7 @@ test('Migration Describe wing motion opens the existing correct draft with nativ
   await expect(button).toHaveAttribute('aria-describedby', 'migration-wing-motion-note-help');
   await expect(page.locator('#migration-wing-motion-note-help')).toContainText('Primary feathers');
   await keyboardClick(page, button);
-  const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
   await expect(input).toHaveAttribute('data-study-observation-key', 'canada_goose:primaries');
   await expect(page.locator('[data-study-observation]')).toHaveAttribute('open', '');
@@ -407,7 +407,7 @@ for (const dark of [false, true]) test.describe('Migration phone ' + (dark ? 'da
     const button = page.getByRole('button', { name: 'Describe wing motion', exact: true });
     const buttonBox = await button.boundingBox(); expect(buttonBox?.height).toBeGreaterThanOrEqual(44);
     await button.tap();
-    const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const input = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(input).toBeFocused(); await expect(input).toHaveValue(before.flightStudyObservations.drafts['canada_goose:primaries']);
     await expect(page.locator('#migration-study-motion-evidence-prompt')).toHaveAttribute('data-study-motion-evidence', 'path');
     expect(work(await saved(page))).toEqual(work(before));

@@ -239,6 +239,22 @@ const ROOTS_NO_LOCALE = JSON.stringify({
 });
 
 describe('handleGenerateTermEtymology — per-locale root glosses', () => {
+  it('explains the saved French word rather than its English translation', async () => {
+    loadAlloModule('text_pipeline_helpers_module.js');
+    const resource = { id: 'french-words', type: 'glossary', baseLanguage: 'French', glossaryLanguageSchemaVersion: 1,
+      config: { language: 'French' }, data: [{ term: 'conservation', def: 'Protection de la nature.', termLanguage: 'French', definitionLanguage: 'French' }] };
+    const deps = makeDeps({ generatedContent: resource, currentUiLanguage: 'Arabic', selectedLanguages: ['English', 'Spanish'], gradeLevel: '5th Grade',
+      callGemini: vi.fn(async () => JSON.stringify({ prosePerLanguage: { French: 'Du latin conservatio.' },
+        roots: [{ root: 'conservatio', lang: 'latin', meaning: 'protection', langByLocale: { French: 'latin' }, meaningByLang: { French: 'protection' } }] })),
+    });
+    await GH.handleGenerateTermEtymology(0, 'conservation', deps);
+    expect(deps.callGemini.mock.calls[0][0]).toContain('THIS word\'s history and morphemes in French');
+    expect(deps.callGemini.mock.calls[0][0]).not.toContain('entered English');
+    expect(deps.callGemini).toHaveBeenCalledTimes(1);
+    const saved = deps.setGeneratedContent.mock.calls[0][0](resource);
+    expect(saved.data[0].etymology).toBe('Du latin conservatio.');
+    expect(Object.keys(saved.data[0].etymologyByLang)).toEqual(['French']);
+  });
   it('repairs a missing meaningByLang instead of falling back to English', async () => {
     const callGemini = vi.fn()
       .mockResolvedValueOnce(ROOTS_NO_LOCALE)

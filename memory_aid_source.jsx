@@ -3872,7 +3872,7 @@ function MemoryAidView(props) {
     }
     const popup = window.open('', '_blank');
     if (!popup) { addToast(tr('export_popup_blocked', 'Allow the preview window to open, then try again.'), 'info'); return; }
-    popup.document.open(); popup.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Memory Aid</title></head><body>' + renderMemoryAidPreset(printable.data, preset, tr) + '</body></html>'); popup.document.close();
+    popup.document.open(); popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>Memory Aid</title></head><body>' + renderMemoryAidPreset(printable.data, preset, tr) + '</body></html>'); popup.document.close();
   };
 
   const addCard = () => {

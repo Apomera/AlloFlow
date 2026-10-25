@@ -16,7 +16,7 @@ async function mount(page:any,saved:any={}){
  await expect(page.locator('.bf-stage')).toHaveAttribute('data-bf-renderer','three');
 }
 async function openAt(page:any,name:string){
- await page.getByRole('button',{name:'Visit '+name+' without flying',exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
+ await page.getByRole('button',{name:'Visit without flying · '+name,exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
  await page.getByRole('button',{name:'Watch feeding & pollination',exact:true}).click();
  await expect(page.getByRole('region',{name:'Feeding and pollination observation',exact:true})).toBeVisible();
 }

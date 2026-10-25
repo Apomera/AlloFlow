@@ -242,7 +242,8 @@ describe('slider challenge', () => {
   it('the N shortcut also starts a box challenge', async () => {
     const c = await mountVolume(state({ shape: 'cylinder' }));
     await React.act(async () => {
-      document.body.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
+      // WCAG 2.1.4: shortcuts act only while focus is inside the tool.
+      c.querySelector('[data-volume-root]').dispatchEvent(new window.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
     });
     expect(latest.challenge).toBeTruthy();
     expect(latest.shape).toBe('prism');

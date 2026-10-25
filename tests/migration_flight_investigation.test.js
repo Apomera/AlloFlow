@@ -32,11 +32,11 @@ function investigation(seed = {}, overrides = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-experiment-action'] === name); }
   function edit(label, value) {
-    find(node => node.type === 'textarea' && node.props['aria-label'] === label).props.onChange({ target: { value } });
+    find(node => node.type === 'textarea' && (node.props.id === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   function control(label, value) {
-    find(node => node.props?.['aria-label'] === label).props.onChange({ target: { value } });
+    find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   return {
@@ -49,7 +49,7 @@ function investigation(seed = {}, overrides = {}) {
 }
 
 function predictAndCapture(ui, text = 'A tailwind will increase ground speed because it carries the bird along.') {
-  ui.edit('Flight investigation prediction', text);
+  ui.edit('migration-experiment-prediction', text);
   ui.action('baseline').props.onClick();
   ui.draw();
 }
@@ -89,7 +89,8 @@ describe('Migration 3D flight investigation', () => {
     ui.draw();
     expect(ui.state.flightInvestigation.trials).toHaveLength(1);
     expect(ui.state.flightInvestigation.trials[0]).toMatchObject({ variable: 'wind', baseline: { wind: -4, groundSpeed: 31 }, snapshot: { wind: 8, groundSpeed: 58, benefit: 22 } });
-    expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('Controlled comparison'));
+    expect(ui.draw()).toContain('data-learning-feedback="investigation"');
+    expect(ui.announce).not.toHaveBeenCalled();
     expect(ui.awardXP).not.toHaveBeenCalled();
   });
 
@@ -139,8 +140,8 @@ describe('Migration 3D flight investigation', () => {
     const ui = investigation({ flightSpecies: 'canada_goose', selectedSpecies: 'monarch', flightWind: -4, flightFormation: 'solo', flightSeason: 'spring', flightCamera: 'side', aiExplorerText: 'Monarch route facts', aiExplorerReqId: 17, inquiry: { explanation: 'My energy notes' } });
     ui.draw();
     predictAndCapture(ui);
-    ui.edit('Flight investigation evidence notes', 'The land passed faster with a tailwind.');
-    ui.edit('Flight investigation explanation', 'The airspeed stayed fixed; the wind changed ground speed.');
+    ui.edit('migration-experiment-evidence', 'The land passed faster with a tailwind.');
+    ui.edit('migration-experiment-explanation', 'The airspeed stayed fixed; the wind changed ground speed.');
     ui.set({ flightSpecies: 'peregrine', flightWind: 25, flightFormation: 'v', flightSeason: 'fall' });
     ui.draw();
     ui.action('record').props.onClick();
@@ -161,7 +162,7 @@ describe('Migration 3D flight investigation', () => {
     ui.draw();
     ui.action('record').props.onClick();
     ui.draw();
-    ui.edit('Flight investigation prediction', 'My second prediction');
+    ui.edit('migration-experiment-prediction', 'My second prediction');
     ui.action('baseline').props.onClick();
     ui.draw();
     expect(ui.state.flightInvestigation.baseline.wind).toBe(5);
@@ -190,7 +191,7 @@ describe('Migration 3D flight investigation', () => {
     ui.draw();
     expect(ui.state.flightInvestigation.trials.map(row => row.snapshot.wind)).toEqual([1, 3, 4, 5, 6]);
     expect(ui.action('record').props.disabled).toBe(false);
-    ui.edit('Flight investigation evidence notes', 'Keep this until I reset.');
+    ui.edit('migration-experiment-evidence', 'Keep this until I reset.');
     ui.action('reset').props.onClick();
     ui.draw();
     expect(ui.state.flightInvestigation).toEqual({ variable: 'wind', prediction: '', baseline: null, trials: [], evidence: '', explanation: '' });
@@ -207,7 +208,7 @@ describe('Migration 3D flight investigation', () => {
     expect(html).not.toMatch(/NaN|Infinity|\[object Object\]/);
     expect(ui.all(node => node.props?.['data-experiment-trial'])).toHaveLength(1);
     expect(ui.action('record').props.disabled).toBe(true);
-    ui.edit('Flight investigation prediction', 'Recovered prediction');
+    ui.edit('migration-experiment-prediction', 'Recovered prediction');
     expect(ui.state.flightInvestigation).toMatchObject({ baseline: null, evidence: 'A readable evidence note', explanation: 'A readable explanation', trials: [{ baseline: { groundSpeed: 40, benefit: 22 }, snapshot: { groundSpeed: 51, benefit: 22 } }] });
   });
 
@@ -215,7 +216,7 @@ describe('Migration 3D flight investigation', () => {
     const ui = investigation({ flightInvestigation });
     expect(() => ui.draw()).not.toThrow();
     expect(ui.action('baseline').props.disabled).toBe(true);
-    expect(ui.all(node => node.type === 'textarea' && node.props['aria-label']?.startsWith('Flight investigation'))).toHaveLength(3);
+    expect(ui.all(node => node.type === 'textarea' && ['migration-experiment-prediction', 'migration-experiment-evidence', 'migration-experiment-explanation'].includes(node.props.id))).toHaveLength(3);
   });
 
   it('resolves natural formation from canonical IDs even when all formation prose is translated', () => {

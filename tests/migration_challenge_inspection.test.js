@@ -34,11 +34,12 @@ function fixture(seed = {}, options = {}) {
       baseline: { ...starts.wind }, trials: [], evidence: 'Other evidence', explanation: 'Other reasoning' },
     flightStudyObservations: { drafts: { 'canada_goose:tail': 'Study draft' }, records: {} },
     inquiry: { hypothesis: 'Independent question' }, ...seed }, refresh;
-  let readRefs = [], readStates = [];
+  let readRefs = [], readStates = [], readIds = [];
   const refs = [], writes = [], queued = [], announce = vi.fn(), awardXP = vi.fn();
   const tracedReact = { ...React,
     useRef(value) { const ref = React.useRef(value); readRefs.push(ref); if (!refs.includes(ref)) refs.push(ref); return ref; },
-    useState(value) { const pair = React.useState(value); readStates.push(pair); return pair; }
+    useState(value) { const pair = React.useState(value); readStates.push(pair); return pair; },
+    useId() { const id = React.useId(); readIds.push(id); return id; }
   };
   const ctx = makeCtx({ ...options.ctx, React: tracedReact, announceToSR: announce, awardXP,
     update: (_, key, value) => { writes.push({ [key]: value }); state = { ...state, [key]: value }; refresh(n => n + 1); },
@@ -51,7 +52,7 @@ function fixture(seed = {}, options = {}) {
   const host = document.createElement('div'); document.body.append(host);
   const root = ReactDOMClient.createRoot(host); mounts.push(root);
   function Component() {
-    refresh = React.useState(0)[1]; readRefs = []; readStates = [];
+    refresh = React.useState(0)[1]; readRefs = []; readStates = []; readIds = [];
     ctx.toolData = { migration: state }; return tool.render(ctx);
   }
   act(() => { root.render(React.createElement(Component)); });
@@ -94,7 +95,8 @@ function fixture(seed = {}, options = {}) {
     },
     abandon(patch) {
       const savedRefs = readRefs.slice(), savedStates = readStates.slice(); let r = 0, s = 0;
-      const replay = { ...React, useRef: () => savedRefs[r++], useState: () => savedStates[s++], useEffect: () => {}, useCallback: fn => fn };
+      const savedIds = readIds.slice(); let idIndex = 0;
+      const replay = { ...React, useId: () => savedIds[idIndex++], useRef: () => savedRefs[r++], useState: () => savedStates[s++], useEffect: () => {}, useCallback: fn => fn };
       return tool.render({ ...ctx, React: replay, toolData: { migration: { ...state, ...patch } } });
     }
   };
@@ -227,7 +229,8 @@ describe('Saved flight challenge inspection', () => {
   it('keeps duplicate-instance return focus and inspection controls in their own workspace', async () => {
     const first = fixture(), second = fixture(); first.inspect(); await first.frame(); second.inspect(); await second.frame();
     const back = first.back(), props = committedProps(back); first.invoke(props, second.back());
-    expect(document.activeElement).toBe(second.stage); first.return();
+    expect(document.activeElement).toBe(second.stage);
+    first.back().focus(); first.return();
     expect(document.activeElement).toBe(first.row().querySelector('[data-flight-reflection-action="edit"]'));
     expect(second.panel().open).toBe(false);
   });

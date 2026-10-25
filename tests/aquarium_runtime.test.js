@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
+import { React, ReactDOMClient, ReactDOMServer, loadTool, makeCtx, newStore, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquarium.js'), 'utf8').replace(/\r\n/g, '\n');
 const coreStart = source.indexOf('var AquariumEcosystemCore = (function() {');
@@ -11,6 +12,51 @@ const ecosystemCore = runInNewContext(
   '(function(){ var window = {}; ' + source.slice(coreStart, coreEnd) + '; return AquariumEcosystemCore; })()',
   { isFinite, Math, Number, Array, Object }
 );
+
+function renderTutorialContractDom() {
+  resetStemLab();
+  const tool = loadTool('stem_lab/stem_tool_aquarium.js', 'aquarium');
+  const store = newStore({ _aquarium: {
+    mode: 'tank', selectedTank: 'freshwater', aquariumWorkspacePanel: 'observe',
+    tutorialDismissed: false, tutorialPanelOpen: true, tutorialNotebookOpen: true, tutorialOutlineOpen: true,
+    soundEnabled: false, simRunning: false, fishIdentityVersion: 3,
+    tankFish: [], fishInstanceIds: [], tankPlants: [], equipment: {},
+    waterChem: { pH: 7, temp: 76, ammonia: 0, nitrite: 0, nitrate: 10, salinity: 0, dissolvedO2: 7, co2: 3 }
+  } });
+  function Host() { return tool.render(makeCtx({}, store)); }
+  const host = document.createElement('div');
+  host.innerHTML = ReactDOMServer.renderToStaticMarkup(React.createElement(Host));
+  return host;
+}
+
+async function withMountedCare(patch, check) {
+  resetStemLab();
+  const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const tool = loadTool('stem_lab/stem_tool_aquarium.js', 'aquarium'), store = newStore();
+  const host = document.createElement('div'); document.body.appendChild(host);
+  const root = ReactDOMClient.createRoot(host); let latest;
+  function Host() {
+    const [data, setData] = React.useState({ _aquarium: {
+      mode: 'tank', selectedTank: 'freshwater', aquariumWorkspacePanel: 'decide',
+      soundEnabled: false, simRunning: false, lightsOn: true, tutorialDismissed: true,
+      fishIdentityVersion: 3, tankFish: ['guppy', 'guppy'], fishInstanceIds: ['fish-1', 'fish-2'], nextFishInstanceId: 3,
+      fishNames: { 'fish-1': 'Azure', 'fish-2': 'Pearl' }, hungerLevels: { 'fish-1': 60, 'fish-2': 60 },
+      fishSickness: {}, fishCareLog: {}, quarantinedFish: {}, tankPlants: [], equipment: {},
+      simTick: 10, simDay: 0, simHour: 12, coins: 50,
+      waterChem: { pH: 7, temp: 76, ammonia: 0, nitrite: 0, nitrate: 12, salinity: 0, dissolvedO2: 7, co2: 3 }, ...patch
+    } });
+    latest = data._aquarium;
+    return tool.render(makeCtx({ toolData: data, setToolData: setData }, store));
+  }
+  try {
+    await React.act(async () => root.render(React.createElement(Host)));
+    await check({ host, state: () => latest, activate: button => React.act(async () => { button.focus(); button.click(); }) });
+  } finally {
+    await React.act(async () => root.unmount()); host.remove();
+    globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+  }
+}
 
 describe('Aquarium runtime and chemistry learning contract', () => {
   it('uses instance-scoped timers and audio with visibility and unmount cleanup', () => {
@@ -30,26 +76,63 @@ describe('Aquarium runtime and chemistry learning contract', () => {
   });
 
   it('offers keyboard-operable chemistry cards and described trend graphics', () => {
-    expect(source).toContain('return React.createElement("button", {');
-    expect(source).toContain("'aria-pressed': isActive");
-    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_nitrogen_cycle_trends', 'Nitrogen cycle trends')`);
-    expect(source).toContain('role: "img"');
+    resetStemLab();
+    const tool = loadTool('stem_lab/stem_tool_aquarium.js', 'aquarium');
+    const store = newStore({ _aquarium: {
+      mode: 'tank', selectedTank: 'freshwater', aquariumWorkspacePanel: 'observe', chemTooltip: 'pH',
+      soundEnabled: false, simRunning: false, tutorialDismissed: true, fishIdentityVersion: 3,
+      tankFish: [], fishInstanceIds: [], tankPlants: [], equipment: {},
+      waterChem: { pH: 7, temp: 76, ammonia: 0.1, nitrite: 0.05, nitrate: 12, salinity: 0, dissolvedO2: 7, co2: 3 },
+      chemHistory: [
+        { tick: 0, ammonia: 0, nitrite: 0, nitrate: 10 },
+        { tick: 1, ammonia: 0.1, nitrite: 0.05, nitrate: 12 }
+      ]
+    } });
+    function Host() { return tool.render(makeCtx({}, store)); }
+    const host = document.createElement('div');
+    host.innerHTML = ReactDOMServer.renderToStaticMarkup(React.createElement(Host));
+    const cards = [...host.querySelectorAll('[data-aquarium-chem-toggle]')];
+    expect(cards).toHaveLength(8);
+    cards.forEach(card => {
+      expect(card.tagName).toBe('BUTTON');
+      expect(card.type).toBe('button');
+      expect(card.getAttribute('aria-label')).toContain('status');
+      expect(card.getAttribute('aria-expanded')).toBe(String(card.dataset.aquariumChemToggle === 'pH'));
+      const panel = host.querySelector('[id="' + card.getAttribute('aria-controls') + '"]');
+      expect(panel?.hasAttribute('data-aquarium-chem-explanation')).toBe(true);
+      expect(panel.hidden).toBe(false);
+    });
+    const trends = [...host.querySelectorAll('[aria-label="Nitrogen cycle trends"] svg[role="img"]')];
+    expect(trends).toHaveLength(3);
+    trends.forEach(graphic => expect(graphic.getAttribute('aria-label')).toMatch(/trend across 2 readings; latest .+ ppm/));
   });
 
-  it('models selectable water-change dilution and blocks empty-tank feeding', () => {
+  it('models selectable water-change dilution and blocks empty-tank feeding', async () => {
     expect(source).toContain('var waterChangePercent = d.waterChangePercent || 25');
     expect(source).toContain('var remaining = 1 - fraction');
     expect(source).toContain('waterChem.ammonia * remaining');
     expect(source).toContain('waterChem.nitrate * remaining');
-    expect(source).toContain('id: "aquarium-water-change-percent"');
+    await withMountedCare({ tankFish: [], fishInstanceIds: [], waterChangePercent: 50 }, async ({ host, state, activate }) => {
+      const select = host.querySelector('[data-aquarium-water-change-percent]');
+      expect(select.tagName).toBe('SELECT'); expect(select.value).toBe('50');
+      expect(host.querySelector('label[for="' + select.id + '"]')).toBeTruthy();
+      expect(host.querySelector('[id="' + select.getAttribute('aria-describedby') + '"]').textContent).toContain('NO3 6.0 ppm');
+      expect(host.querySelector('[data-aquarium-feed-food="flake"]').disabled).toBe(true);
+      await activate(host.querySelector('[data-aquarium-water-change-action]'));
+      expect(state().waterChem.nitrate).toBeCloseTo(6); expect(state().maintenanceLog[0].percent).toBe(50);
+    });
     expect(source).toContain('"Preview - NH3 "');
     expect(source).toContain('if (tankFish.length === 0)');
   });
 
-  it('uses native tank controls, clear focus, and accessible event semantics', () => {
+  it('uses native tank controls, clear focus, and accessible event semantics', async () => {
     expect(source).toContain('role: "region"');
     expect(source).toContain('return React.createElement("button", { type: "button",');
-    expect(source).toContain('"Remove " + displayName + " from tank"');
+    await withMountedCare({}, async ({ host }) => {
+      const remove = host.querySelector('[data-aquarium-stock-remove="fish-1"]');
+      expect(remove.tagName).toBe('BUTTON'); expect(remove.type).toBe('button');
+      expect(remove.getAttribute('aria-label')).toContain('Remove'); expect(remove.getAttribute('aria-label')).toContain('Azure');
+    });
     expect(source).toContain('role: "log"');
     expect(source).toContain('.aqua-fish:focus-visible, .aqua-fish-svg:focus-visible');
   });
@@ -74,9 +157,14 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('finalFishInstanceIds.push(fryInstanceId)');
   });
 
-  it('persists an accessible sound preference and bounds every event update', () => {
+  it('persists an accessible sound preference and bounds every event update', async () => {
     expect(source).toContain("var soundEnabled = d.soundEnabled !== undefined ? d.soundEnabled : true");
-    expect(source).toContain("'aria-label': soundEnabled ? \"Mute aquarium sounds\" : \"Enable aquarium sounds\"");
+    await withMountedCare({}, async ({ host, state, activate }) => {
+      const sound = host.querySelector('[data-aquarium-sound-toggle]');
+      expect(sound.getAttribute('aria-label')).toContain('Muted'); expect(sound.getAttribute('aria-pressed')).toBe('false');
+      await activate(sound); expect(sound.getAttribute('aria-label')).toContain('Sound');
+      expect(sound.getAttribute('aria-pressed')).toBe('true'); expect(state().soundEnabled).toBe(true);
+    });
     expect(source).toContain("'aria-pressed': soundEnabled");
     expect(source).toContain("upd('soundEnabled', !soundEnabled)");
     expect(source).toContain('if (Array.isArray(aq.eventLog) && aq.eventLog.length > 25)');
@@ -114,9 +202,19 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("return fishNames[fishInstanceIds[idx]] ||");
   });
 
-  it('offers targeted treatment and live persistent volume control', () => {
+  it('offers targeted treatment and live persistent volume control', async () => {
     expect(source).toContain('var medicateFish = function (targetFishId)');
-    expect(source).toContain("onClick: function () { medicateFish(fishKey); }");
+    await withMountedCare({ fishSickness: { 'fish-1': { disease: 'ich', severity: 1 }, 'fish-2': { disease: 'velvet', severity: 2 } } }, async ui => {
+      const treatment = ui.host.querySelector('[data-aquarium-care-treat="fish-1"]');
+      expect(treatment.getAttribute('aria-label')).toContain('Treat Azure');
+      await ui.activate(treatment);
+      expect(ui.state().fishSickness['fish-1']).toBeUndefined();
+      expect(ui.state().fishSickness['fish-2'].disease).toBe('velvet');
+      expect(ui.state().waterChem.ammonia).toBeCloseTo(.1);
+      expect(treatment.getAttribute('aria-disabled')).toBe('true');
+      expect(treatment.textContent).toBe('Treated');
+      expect(document.activeElement).toBe(treatment);
+    });
     expect(source).toContain("ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)");
     expect(source).toContain('function aquaGain(baseGain)');
     expect(source).toContain("upd('soundVolume', Number(event.target.value))");
@@ -164,7 +262,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(individualFeedStart).toBeGreaterThan(liveFeedStart);
     expect(lightsStart).toBeGreaterThan(individualFeedStart);
   });
-  it('models an accessible hospital tank across treatment and simulation systems', () => {
+  it('models an accessible hospital tank across treatment and simulation systems', async () => {
     expect(source).toContain('var quarantinedFish = migrateFishState(d.quarantinedFish)');
     expect(source).toContain('var toggleFishQuarantine = function (fishId)');
     expect(source).toContain('fishSickness: {}, fishStress: {}, quarantinedFish: {}');
@@ -180,14 +278,24 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('delete _quarantinedFish[removedKey]');
     expect(source).toContain('quarantinedFish: _quarantinedFish');
     expect(source).toContain("'aria-pressed': isQuarantined");
-    expect(source).toContain('"Move " + displayName + " to the hospital tank"');
+    await withMountedCare({}, async ui => {
+      const hospital = ui.host.querySelector('[data-aquarium-care-hospital="fish-1"]');
+      expect(hospital.textContent).toBe('Isolate');
+      expect(hospital.getAttribute('aria-label')).toContain('Isolate Azure');
+      expect(hospital.getAttribute('aria-pressed')).toBe('false');
+      await ui.activate(hospital);
+      expect(ui.state().quarantinedFish['fish-1']).toBeTruthy();
+      expect(hospital.getAttribute('aria-pressed')).toBe('true');
+      expect(hospital.textContent).toBe('Release');
+      expect(hospital.getAttribute('aria-label')).toContain('Release Azure');
+    });
 
     const quarantineStart = source.indexOf('var toggleFishQuarantine = function (fishId)');
     const treatmentStart = source.indexOf('var medicateFish = function (targetFishId)');
     expect(quarantineStart).toBeGreaterThan(-1);
     expect(treatmentStart).toBeGreaterThan(quarantineStart);
   });
-  it('models contagious outbreaks and a batch containment response', () => {
+  it('models contagious outbreaks and a batch containment response', async () => {
     expect(source).toContain('var mainTankSickFishIds = Object.keys(fishSickness).filter');
     expect(source).toContain('var quarantineAllSickFish = function ()');
     expect(source).toContain("msg: 'Moved to hospital tank during outbreak response'");
@@ -198,7 +306,12 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var transmissionChance = Math.max(0, Math.min(0.35, contagiousFishIds.length * 0.08) - cleanerProtection)');
     expect(source).toContain('source: sourceFishId');
     expect(source).toContain("'aria-live': \"polite\"");
-    expect(source).toContain('" sick fish to the hospital tank"');
+    await withMountedCare({ fishSickness: { 'fish-1': { disease: 'ich', severity: 1 }, 'fish-2': { disease: 'ich', severity: 1 } } }, async ({ host, state, activate }) => {
+      const isolate = host.querySelector('[data-aquarium-isolate-all]');
+      expect(isolate.getAttribute('aria-label')).toContain('Isolate all sick (2)');
+      await activate(isolate); expect(Object.keys(state().quarantinedFish)).toHaveLength(2);
+      expect(isolate.getAttribute('aria-disabled')).toBe('true'); expect(document.activeElement).toBe(isolate);
+    });
 
     const exposureStart = source.indexOf('var susceptibleIndexes = _tankFish.map');
     const contactStart = source.indexOf('var contagiousFishIds = Object.keys(newSickness).filter', exposureStart);
@@ -206,7 +319,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(contactStart).toBeGreaterThan(exposureStart);
     expect(progressionStart).toBeGreaterThan(contactStart);
   });
-  it('provides scheduled preventive maintenance with bounded service records', () => {
+  it('provides scheduled preventive maintenance with bounded service records', async () => {
     expect(source).toContain("var lastWaterChangeTick = typeof d.lastWaterChangeTick === 'number'");
     expect(source).toContain('var maintenanceLog = Array.isArray(d.maintenanceLog) ? d.maintenanceLog.slice(-12) : []');
     expect(source).toContain('var maintenanceOverdue = hoursSinceWaterChange >= 168');
@@ -218,9 +331,16 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('lastWaterChangeTick: simTick, maintenanceLog: nextMaintenanceLog');
     expect(source).toContain('lastWaterChangeTick: 0, maintenanceLog: [], maintenanceHistoryExpanded: false');
     expect(source).toContain('role: "progressbar"');
-    expect(source).toContain("'aria-controls': \"aquarium-maintenance-history\"");
+    await withMountedCare({}, async ({ host, activate }) => {
+      const toggle = host.querySelector('[data-aquarium-maintenance-history-toggle]');
+      const history = host.querySelector('[id="' + toggle.getAttribute('aria-controls') + '"]');
+      expect(history.hidden).toBe(true); expect(history.getAttribute('role')).toBe('group');
+      await activate(toggle); expect(history.hidden).toBe(false); expect(toggle.getAttribute('aria-expanded')).toBe('true');
+      const recommended = host.querySelector('[data-aquarium-water-change-recommended]');
+      expect(recommended.getAttribute('aria-label')).toBe('Do recommended 10% water change');
+    });
     expect(source).toContain('role: "listitem"');
-    expect(source).toContain('"Perform recommended " + recommendedWaterChangePercent + " percent water change"');
+    expect(source).toContain('"Do recommended " + recommendedWaterChangePercent + "% water change"');
 
     const scheduleStart = source.indexOf('var lastWaterChangeTick =');
     // treatedOverride lets the recommended action always dechlorinate.
@@ -230,7 +350,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(waterChangeStart).toBeGreaterThan(scheduleStart);
     expect(plannerStart).toBeGreaterThan(waterChangeStart);
   });
-  it('makes equipment upgrades measurable and directly operable', () => {
+  it('makes equipment upgrades measurable and directly operable', async () => {
     expect(source).toContain('function getTickEquipmentDefinition(type)');
     expect(source).toContain("var _filterEquipment = getTickEquipmentDefinition('filter')");
     // Filter rating and working condition set the colony's CAPACITY.
@@ -246,7 +366,12 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var tempDrift = (desiredTemp - _waterChem.temp) * heaterCorrectionRate + tempNoise');
     expect(source).toContain('Aquarium equipment systems');
     expect(source).toContain('Object.keys(EQUIPMENT_CATALOG).map(function (type)');
-    expect(source).toContain('onClick: function () { buyEquipment(type); }');
+    await withMountedCare({ coins: 500, equipment: { filter: 2 } }, async ({ host, state, activate }) => {
+      const upgrade = host.querySelector('[data-aquarium-equipment-upgrade="filter"]');
+      await activate(upgrade); expect(state().equipment.filter).toBe(3); expect(state().coins).toBe(350);
+      expect(document.activeElement).toBe(upgrade); expect(upgrade.getAttribute('aria-disabled')).toBe('true');
+      await activate(upgrade); expect(state().coins).toBe(350);
+    });
     expect(source).toContain("eventLog: appendTankEvent('\\u2B06\\uFE0F Upgraded '");
     expect(source).toContain("if (newEquip.filter >= 2 && newEquip.heater >= 2");
 
@@ -256,7 +381,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(filterEffectStart).toBeGreaterThan(equipmentStateStart);
     expect(equipmentUiStart).toBeGreaterThan(filterEffectStart);
   });
-  it('models equipment wear, degraded output, and accessible servicing', () => {
+  it('models equipment wear, degraded output, and accessible servicing', async () => {
     expect(source).toContain('var equipmentCondition = {}');
     expect(source).toContain("equipmentCondition[type] = typeof savedCondition === 'number'");
     expect(source).toContain('var equipmentNeedsServiceCount = Object.keys(equipmentCondition)');
@@ -269,8 +394,14 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('equipmentCondition: _nextEquipmentCondition');
     expect(source).toContain("'aria-label': catalog.name + \" condition\"");
     expect(source).toContain('equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status"');
-    expect(source).toContain('condition < 95 && React.createElement("button"');
-    expect(source).toContain('onClick: function () { serviceEquipment(type); }');
+    await withMountedCare({ equipmentCondition: { filter: 50 } }, async ({ host, state, activate }) => {
+      const service = host.querySelector('[data-aquarium-equipment-action="filter"]');
+      expect(service.getAttribute('aria-label')).toContain('Clean filter'); await activate(service);
+      expect(state().equipmentCondition.filter).toBe(100); expect(state().bioColonyLag.maturity).toBeCloseTo(.82);
+      expect(document.activeElement).toBe(service); expect(service.getAttribute('aria-disabled')).toBe('true');
+      await activate(service); expect(state().bioColonyLag.maturity).toBeCloseTo(.82);
+    });
+    expect(source).toContain("'data-aquarium-equipment-action': type");
 
     const serviceStart = source.indexOf('var serviceEquipment = function (type)');
     const tutorialStart = source.indexOf('var advanceTutorial = function ()');
@@ -321,7 +452,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('Math.max(0.15, priorColony - mediaDisturbance)');
   });
 
-  it('creates preventable equipment faults with persistent outages and repairs', () => {
+  it('creates preventable equipment faults with persistent outages and repairs', async () => {
     expect(source).toContain('var equipmentFaults = {}');
     expect(source).toContain("var savedFault = d.equipmentFaults && d.equipmentFaults[type]");
     expect(source).toContain('var equipmentFaultCount = Object.keys(equipmentFaults).length');
@@ -341,7 +472,13 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('equipmentFaults: _equipmentFaults');
     expect(source).toContain('equipmentFaultCount > 0 && React.createElement("span", { role: "alert"');
     expect(source).toContain('SYSTEM OFFLINE: no output until repaired.');
-    expect(source).toContain('onClick: function () { repairEquipment(type); }');
+    await withMountedCare({ equipmentFaults: { filter: { tick: 0, reason: 'Low-condition failure' } }, equipmentCondition: { filter: 0 } }, async ({ host, state, activate }) => {
+      const repair = host.querySelector('[data-aquarium-equipment-action="filter"]');
+      expect(repair.getAttribute('aria-label')).toContain('Repair (5)'); await activate(repair);
+      expect(state().equipmentFaults.filter).toBeUndefined(); expect(state().equipmentCondition.filter).toBe(75);
+      expect(state().coins).toBe(45); expect(document.activeElement).toBe(repair);
+      expect(repair.getAttribute('aria-label')).toContain('Clean filter');
+    });
 
     const repairStart = source.indexOf('var repairEquipment = function (type)');
     const tutorialStart = source.indexOf('var advanceTutorial = function ()');
@@ -371,10 +508,17 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('tutorialProgress: nextProgress');
     expect((source.match(/tutorialEquipmentMaintained: true/g) || []).length).toBeGreaterThanOrEqual(3);
 
-    expect(source).toContain("'aria-labelledby': \"aquarium-learning-path-title\"");
+    const tutorialDom = renderTutorialContractDom();
+    const path = tutorialDom.querySelector('[data-aquarium-learning-path]');
+    const heading = tutorialDom.querySelector('[id="' + path.getAttribute('aria-labelledby') + '"]');
+    expect(heading.textContent).toBe('Guided Aquarium Learning Path');
+    expect(tutorialDom.querySelector('[data-aquarium-lesson-heading]').textContent).toContain('Choose a Habitat');
     expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_aquarium_learning_path_progress', 'Aquarium learning path progress')`);
     expect(source).toContain('currentTutorialEvidence.complete ? "\\u2705 Evidence ready: "');
-    expect(source).toContain("'aria-controls': \"aquarium-learning-outline\"");
+    const outlineToggle = tutorialDom.querySelector('[data-aquarium-tutorial-outline-toggle]');
+    const outline = tutorialDom.querySelector('[id="' + outlineToggle.getAttribute('aria-controls') + '"]');
+    expect(outline.tagName).toBe('OL');
+    expect(outline.hidden).toBe(false);
     expect(source).toContain('onClick: function () { selectTutorialLesson(lessonIndex); }');
     expect(source).toContain('onClick: resumeTutorial');
     expect(source).toContain('"Hide learning path"');
@@ -402,7 +546,19 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('notebook: {');
     expect(source).toContain('prediction: !!currentTutorialNote.prediction.trim()');
 
-    expect(source).toContain("'aria-controls': \"aquarium-lesson-notebook\"");
+    const notebookDom = renderTutorialContractDom();
+    const notebookToggle = notebookDom.querySelector('[data-aquarium-notebook-toggle]');
+    const notebook = notebookDom.querySelector('[id="' + notebookToggle.getAttribute('aria-controls') + '"]');
+    expect(notebook.hasAttribute('data-aquarium-notebook')).toBe(true);
+    expect(notebook.hidden).toBe(false);
+    const fields = [...notebook.querySelectorAll('textarea')];
+    expect(fields).toHaveLength(3);
+    expect(new Set(fields.map(field => field.id)).size).toBe(3);
+    fields.forEach(field => {
+      expect(notebook.querySelector('label[for="' + field.id + '"]').textContent.trim()).not.toBe('');
+      const hint = field.getAttribute('aria-describedby');
+      if (hint) expect(notebookDom.querySelector('[id="' + hint + '"]')).toBeTruthy();
+    });
     expect(source).toContain('Lesson lab notebook');
     expect(source).toContain('"Predict \\u2192 Observe \\u2192 Explain"');
     expect(source).toContain('value: currentTutorialNote.prediction');
@@ -1400,6 +1556,23 @@ describe('Aquarium workspace hierarchy', () => {
     for (const id of ['aquarium-exchange-network-title', 'aquarium-vitality-map-title', 'aquarium-exchange-history-title']) {
       expect(find(systems, node => prop(node, 'id', id)), id).toBeTruthy();
     }
-    expect(find(sections[careIndex], node => node.type === 'Literal' && node.value === 'Toggle aquarium simulation')).toBeTruthy();
+    await withMountedCare({ lightsOn: false }, async ui => {
+      const simulation = ui.host.querySelector('[data-aquarium-care-simulation]');
+      expect(simulation.tagName).toBe('BUTTON'); expect(simulation.type).toBe('button');
+      expect(simulation.getAttribute('aria-label') || simulation.textContent).toContain('Run Simulation');
+      await ui.activate(simulation);
+      expect(ui.state().simRunning).toBe(true);
+      expect(simulation.getAttribute('aria-label') || simulation.textContent).toContain('Pause');
+      await ui.activate(simulation);
+      expect(ui.state().simRunning).toBe(false);
+      expect(simulation.getAttribute('aria-label') || simulation.textContent).toContain('Run Simulation');
+      const lights = ui.host.querySelector('[data-aquarium-care-lights]');
+      expect(lights.getAttribute('aria-pressed')).toBe('false');
+      expect(lights.getAttribute('aria-label') || lights.textContent).toContain('Lights Off');
+      await ui.activate(lights);
+      expect(ui.state().lightsOn).toBe(true);
+      expect(lights.getAttribute('aria-pressed')).toBe('true');
+      expect(lights.getAttribute('aria-label') || lights.textContent).toContain('Lights On');
+    });
   });
 });

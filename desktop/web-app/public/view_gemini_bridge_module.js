@@ -544,7 +544,7 @@ function BridgeSendModal(props) {
             reader.onload = (ev) => {
               window.__bridgeAttachedImage = ev.target.result;
               const btn = document.getElementById("bridge-attach-image-btn");
-              if (btn) btn.innerHTML = "<span>\u2705</span> " + file.name.substring(0, 20) + (file.name.length > 20 ? "\u2026" : "");
+              if (btn) btn.textContent = "\u2705 " + file.name.substring(0, 20) + (file.name.length > 20 ? "\u2026" : "");
               const removeBtn = document.getElementById("bridge-remove-image-btn");
               if (removeBtn) removeBtn.style.display = "flex";
               addToast("Image attached: " + file.name, "success");

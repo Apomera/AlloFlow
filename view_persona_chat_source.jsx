@@ -617,7 +617,8 @@ function PersonaChatView(props) {
         ? Promise.resolve(window.alloDeviceStorage)
         : new Promise(function (resolve, reject) {
             var s = document.createElement('script');
-            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
+            if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
+            window.__alloConfigureTrustedScript(s, 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent');
             s.onload = function () {
               if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
               else reject(new Error('device storage module missing after load'));
@@ -731,7 +732,11 @@ function PersonaChatView(props) {
       var translation = _boundedSnapshotText(message.translation, 12000);
       var evidenceNote = _boundedSnapshotText(message.evidenceNote, 4000);
       if (speakerName) normalized.speakerName = speakerName;
-      if (translation) normalized.translation = translation;
+      if (translation) {
+        normalized.translation = translation;
+        var savedTarget = _boundedSnapshotText(message.translationTarget || message.translationLanguage, 120);
+        normalized.translationTarget = savedTarget && !/^(auto|off)$/i.test(savedTarget) ? savedTarget : 'English';
+      }
       if (evidenceNote) normalized.evidenceNote = evidenceNote;
       var evidenceApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
       var sourceEvidence = message.role === 'model' && evidenceApi && evidenceApi.normalize(message.sourceEvidence);
@@ -849,7 +854,7 @@ function PersonaChatView(props) {
         return [character && character.id, character && character.name, character && character.rapport, character && character.accumulatedXP, (character && character.quests || []).slice(0, 6).map(function (quest) { return [quest && quest.id, quest && quest.isCompleted]; })];
       }),
       chatHistory: (personaState.chatHistory || []).slice(-80).map(function (message) {
-        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
+        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.translationTarget, 120), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
       }),
       earnedBadges: (personaState.earnedBadges || []).slice(0, 20),
       avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : ''
@@ -1456,7 +1461,7 @@ function PersonaChatView(props) {
                                                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                                                                    {t('persona.translation_label') || 'English translation'}
+                                                                    {t('persona.translation_label') || 'Translation'}
                                                                 </span>
                                                                 <button type="button"
                                                                     aria-label={t('persona.speak_translation')}
@@ -1469,7 +1474,7 @@ function PersonaChatView(props) {
                                                                     <Volume2 size={12}/>
                                                                 </button>
                                                             </div>
-                                                            <p className="text-xs text-slate-500 leading-relaxed italic">{msg.translation}</p>
+                                                            <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-500 leading-relaxed italic">{msg.translation}</p>
                                                         </div>
                                                     )}
                                                     {!isUser && <PersonaEvidenceNote message={msg} source={generatedContent?.config?.personaSource} t={t}/>}
@@ -2139,7 +2144,7 @@ function PersonaChatView(props) {
                                                      {translationText && (
                                                          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                              <div className="flex items-center gap-2 mb-1">
-                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('persona.translation_label') || 'English translation'}</span>
+                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('persona.translation_label') || 'Translation'}</span>
                                                                  <button type="button"
                                                                      aria-label={t('persona.speak_translation')}
                                                                      onClick={(e) => {
@@ -2152,7 +2157,7 @@ function PersonaChatView(props) {
                                                                      <Volume2 size={12}/>
                                                                  </button>
                                                              </div>
-                                                             <p className="text-xs text-slate-500 leading-relaxed italic">{translationText}</p>
+                                                             <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-500 leading-relaxed italic">{translationText}</p>
                                                          </div>
                                                      )}
                                                  </>

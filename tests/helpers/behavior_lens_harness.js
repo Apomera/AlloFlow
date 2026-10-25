@@ -100,6 +100,45 @@ const BUILTIN_GLOBALS = new Set([
 let _loaded = false;
 let _BehaviorLens = null;
 
+// These business-behavior characterizations deliberately exercise an ALREADY
+// UNLOCKED, provider-approved clinical session. Browser storage below is only
+// their synthetic fixture store, not a production encryption implementation.
+// Protected-boundary tests replace this fixture with a locked service and with
+// the real authenticated-encryption service; they must not inherit this adapter.
+function installUnlockedClinicalFixture() {
+  const callbacks = new Set();
+  const storage = {
+    getItem: key => window.localStorage.getItem(key),
+    setItem: (key, value) => window.localStorage.setItem(key, value),
+    removeItem: key => window.localStorage.removeItem(key),
+    key: index => window.localStorage.key(index),
+    clear: () => window.localStorage.clear(),
+    get length() { return window.localStorage.length; }
+  };
+  const sessionStore = {
+    ...storage,
+    getItem: key => window.sessionStorage.getItem(key),
+    setItem: (key, value) => window.sessionStorage.setItem(key, value),
+    removeItem: key => window.sessionStorage.removeItem(key),
+    key: index => window.sessionStorage.key(index),
+    clear: () => window.sessionStorage.clear()
+  };
+  Object.defineProperty(sessionStore, 'length', { get: () => window.sessionStorage.length });
+  const session = {
+    storage, sessionStorage: sessionStore, captureEpoch: () => 1,
+    isCurrent: epoch => epoch === 1,
+    assertCurrent(epoch) { if (epoch !== 1) throw Object.assign(new Error('Fixture epoch changed'), { name: 'AbortError' }); },
+    assertCanTransmit: () => {}, // Synthetic deployment explicitly approves this test provider.
+    assertCanExport: () => {}, // Readable export actions are exercised by their owning tests.
+    registerFlush(fn) { callbacks.add(fn); return () => callbacks.delete(fn); },
+    flush: async () => {}
+  };
+  window.AlloModules.SensitiveWorkspace = {
+    _behaviorLensUnlockedTestFixture: true,
+    Boundary: ({ children }) => children(session)
+  };
+}
+
 function installAmbientGlobals() {
   const stubs = { React };
 
@@ -161,6 +200,10 @@ export function setupBehaviorLens() {
   installAmbientGlobals();
 
   window.AlloModules = window.AlloModules || {};
+  installUnlockedClinicalFixture();
+  // IdentifierRedaction is a boot-critical production dependency. Loading the
+  // real gate does not accept any AI request; each test must review explicitly.
+  new Function(readFileSync(resolve(process.cwd(), 'identifier_redaction_module.js'), 'utf8'))();
   const workspaceSrc = readFileSync(resolve(process.cwd(), 'behavior_lens_workspace_module.js'), 'utf8');
   const src = readFileSync(resolve(process.cwd(), 'behavior_lens_module.js'), 'utf8');
   // eslint-disable-next-line no-new-func
@@ -173,6 +216,9 @@ export function setupBehaviorLens() {
     throw new Error('Harness setup failed: BehaviorLens did not register on window.AlloModules');
   }
   _loaded = true;
+  // Bind module-scope storage helpers through the same authorized component
+  // entry point. This is a render-only pass; no network effects execute.
+  ReactDOMServer.renderToStaticMarkup(React.createElement(_BehaviorLens, baseProps()));
   return api();
 }
 
@@ -208,7 +254,15 @@ export function baseProps(overrides) {
     firebaseAuth: null,
     isCanvasEnv: true,  // pilot default — Lisa runs AlloFlow inside Gemini Canvas
   };
-  return Object.assign(base, overrides || {});
+  const props = Object.assign(base, overrides || {});
+  if (window.AlloModules?.SensitiveWorkspace?._behaviorLensUnlockedTestFixture) {
+    // Existing workflow cases describe already-imported/selected synthetic
+    // clinical data. Seed that protected-session fixture explicitly rather
+    // than teaching production code to auto-import parent props.
+    if (props.studentNickname) localStorage.setItem('bl_selected_student', props.studentNickname);
+    if (Array.isArray(props.dashboardData)) localStorage.setItem('bl_imported_dashboard_v1', JSON.stringify(props.dashboardData));
+  }
+  return props;
 }
 
 /**

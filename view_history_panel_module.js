@@ -345,6 +345,7 @@ function HistoryPanel(props) {
     handleDragStart,
     handleLoadProject,
     handleMoveToUnit,
+    handleMoveAllToUnit,
     handleRestoreView,
     handleSaveEdit,
     handleSetIsProjectSettingsOpenToTrue,
@@ -611,6 +612,18 @@ function HistoryPanel(props) {
   const [resourceSearch, setResourceSearch] = React.useState("");
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState("all");
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
+  const canMoveInBulk = typeof handleMoveAllToUnit === "function";
+  const [moveAllTarget, setMoveAllTarget] = React.useState("");
+  const [moveUnfiledOnCreate, setMoveUnfiledOnCreate] = React.useState(false);
+  const moveAllBarRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!isUnitModalOpen) setMoveUnfiledOnCreate(false);
+  }, [isUnitModalOpen]);
+  const moveUiText = (key, fallback, values) => {
+    const value = t(key, values);
+    if (value && value !== key) return value;
+    return Object.keys(values || {}).reduce((text, name) => text.split("{" + name + "}").join(String(values[name])), fallback);
+  };
   const moreActionsButtonRef = React.useRef(null);
   const moreActionsMenuRef = React.useRef(null);
   const getSafeArtifactField = (item, field) => {
@@ -766,6 +779,19 @@ function HistoryPanel(props) {
     setResourceSearch("");
     setResourceTypeFilter("all");
   };
+  const knownUnitIds = new Set((Array.isArray(units) ? units : []).map((unit) => getSafeRowText(getSafeArtifactField(unit, "id"), "", 160)).filter(Boolean));
+  const unfiledCount = safeHistory.filter((item) => item && getSafeArtifactField(item, "id") && getSafeArtifactField(item, "type") && !knownUnitIds.has(getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160))).length;
+  const moveAllTargetId = knownUnitIds.has(moveAllTarget) ? moveAllTarget : "";
+  const showMoveAll = canMoveInBulk && isTeacherMode && !isIndependentMode && !isSyncMode && activeUnitId === "uncategorized" && filteredHistory.length > 0;
+  const moveAllShown = () => {
+    if (!moveAllTargetId) return;
+    const panel = moveAllBarRef.current?.closest("#tour-history-panel");
+    const ids = filteredHistory.map((item) => getPersistedArtifactInstanceId(item) || getSafePublicArtifactId(item));
+    if (!handleMoveAllToUnit(ids, moveAllTargetId)) return;
+    setMoveAllTarget("");
+    window.requestAnimationFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
+  };
+  const createUnit = () => handleCreateUnit(canMoveInBulk && moveUnfiledOnCreate && unfiledCount > 0 ? { moveUncategorized: true } : void 0);
   const moveMenuRef = React.useRef(null);
   const moveTriggerRef = React.useRef(null);
   const movePanelRef = React.useRef(null);
@@ -1147,7 +1173,27 @@ function HistoryPanel(props) {
       "aria-label": t("history.delete_unit_tooltip")
     },
     /* @__PURE__ */ React.createElement(Trash2, { size: 14 })
-  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), (unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), showMoveAll && /* @__PURE__ */ React.createElement("div", { ref: moveAllBarRef, "data-history-move-all": true, className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" }, units.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { htmlFor: "history-move-all-target", className: "text-xs font-semibold text-slate-700" }, isResourceFilterActive ? moveUiText("history.move_shown_label", "Move the {count} shown to", { count: filteredHistory.length }) : moveUiText("history.move_all_label", "Move all {count} to", { count: filteredHistory.length })), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      id: "history-move-all-target",
+      value: moveAllTargetId,
+      onChange: (e) => setMoveAllTarget(e.target.value),
+      className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, resourceUiText("history.move_all_choose", "Choose a unit")),
+    units.map((u) => /* @__PURE__ */ React.createElement("option", { key: u.id, value: u.id }, u.name))
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-history-move-all-submit": true,
+      disabled: !moveAllTargetId,
+      onClick: moveAllShown,
+      className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-600"
+    },
+    resourceUiText("history.move_all_button", "Move")
+  )) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, resourceUiText("history.move_all_no_units", "Create a unit folder first, then you can move these resources into it at once."))), (unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1173,9 +1219,18 @@ function HistoryPanel(props) {
       placeholder: t("history.new_unit_placeholder"),
       className: "min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
       autoFocus: true,
-      onKeyDown: (e) => e.key === "Enter" && handleCreateUnit()
+      onKeyDown: (e) => e.key === "Enter" && createUnit()
     }
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_save_unit_btn", onClick: handleCreateUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))))), (() => {
+  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_save_unit_btn", onClick: createUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))), canMoveInBulk && unfiledCount > 0 && /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "checkbox",
+      "data-history-move-unfiled": true,
+      checked: moveUnfiledOnCreate,
+      onChange: (e) => setMoveUnfiledOnCreate(e.target.checked),
+      className: "h-4 w-4 shrink-0 rounded border-slate-400 text-indigo-700 focus:ring-2 focus:ring-indigo-300"
+    }
+  ), /* @__PURE__ */ React.createElement("span", null, unfiledCount === 1 ? resourceUiText("history.move_uncategorized_on_create_one", "Also move the 1 uncategorized resource into this unit") : moveUiText("history.move_uncategorized_on_create", "Also move the {count} uncategorized resources into this unit", { count: unfiledCount }))))), (() => {
     let stations = [];
     try {
       stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
@@ -1305,8 +1360,9 @@ function HistoryPanel(props) {
       const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
       const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
       const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
-      const itemUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
-      const itemUnit = getHistoryRowUnit(itemUnitId);
+      const storedUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
+      const itemUnit = getHistoryRowUnit(storedUnitId);
+      const itemUnitId = itemUnit ? storedUnitId : "";
       const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, "name"), "Unit", 160);
       const itemData = getSafeArtifactField(item, "data");
       const generatedArtifactData = getSafeArtifactField(generatedContent, "data");

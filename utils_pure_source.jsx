@@ -380,7 +380,8 @@ const _dsBridge = () => {
       ? Promise.resolve(window.alloDeviceStorage)
       : new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
+          if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
+          window.__alloConfigureTrustedScript(s, 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent');
           s.onload = () => {
             // Pages answers missing files with its SPA index as HTML 200 —
             // verify the global actually appeared (lame.min.js lesson).
@@ -403,11 +404,17 @@ const _dsMirrorSet = (key, storedValue) => {
 // preferences) live in plain localStorage, which resets every Canvas
 // session with the throwaway origin. On Canvas surfaces: hydrate
 // localStorage from the bridge at load (only keys the session hasn't
-// already written — never clobber fresher values), then snapshot the whole
-// store back periodically and on hide/unload. window.__alloPrefsHydrated +
+// already written — never clobber fresher values), then snapshot ordinary
+// preferences periodically and on hide/unload. Clinical records have their
+// own encrypted workspace; older bridge copies stay untouched until that
+// workspace verifies their encrypted migration. window.__alloPrefsHydrated +
 // the allo-prefs-hydrated event let the monolith's mount gate hold first
 // paint briefly so boot-time reads (theme, a11y) see restored values.
 const _isPrivateClassroomStorageKey = (key) => key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys';
+const _isProtectedClinicalStorageKey = (key) => typeof key === 'string' && [
+  'behaviorLens_', 'bl_', 'allo_behaviorlens_',
+  'alloflow_dynamic_assessment_', 'alloflow_da_', 'allo_rw_'
+].some((prefix) => key.startsWith(prefix));
 if (_dsBridgeWanted && typeof window !== 'undefined') {
   let _prefsHydrationPromise = null;
   let _lsSnapshotPromise = null;
@@ -428,7 +435,7 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
       if (snap && typeof snap === 'object') {
         Object.keys(snap).forEach((k) => {
           try {
-            if (_isPrivateClassroomStorageKey(k)) return;
+            if (_isPrivateClassroomStorageKey(k) || _isProtectedClinicalStorageKey(k)) return;
             if (typeof snap[k] !== 'string') return;
             const currentValue = localStorage.getItem(k);
             if (currentValue === snap[k]) return;
@@ -455,6 +462,11 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
   // keeps its entire world in alloflow_allohaven_v1), so only cross the
   // bridge when something actually changed since the last snapshot.
   let _lsLastSnapshotSig = null;
+  const _prefsStorageDurable = (ds) => {
+    if (typeof ds?.status !== 'function' || typeof ds.compareAndSwap !== 'function') return false;
+    const status = ds.status();
+    return status?.connected === true && ['direct', 'bridge-iframe', 'bridge-popup'].includes(status.backend);
+  };
   const _lsSnapshot = () => {
     if (_prefsHydrationPromise || window.__alloPrefsHydrationStatus !== 'ready') return;
     _lsSnapshotRequested = true;
@@ -464,15 +476,32 @@ if (_dsBridgeWanted && typeof window !== 'undefined') {
         _lsSnapshotRequested = false;
         const ds = await _dsBridge();
         if (_prefsHydrationPromise || window.__alloPrefsHydrationStatus !== 'ready') return;
-        const dump = {};
+        if (!_prefsStorageDurable(ds)) return;
+        const dump = Object.create(null);
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (k && !_isPrivateClassroomStorageKey(k)) dump[k] = localStorage.getItem(k);
+          if (k && !_isPrivateClassroomStorageKey(k) && !_isProtectedClinicalStorageKey(k)) dump[k] = localStorage.getItem(k);
         }
         const sig = JSON.stringify(dump);
         if (sig === _lsLastSnapshotSig) continue;
-        const result = await ds.set('ls_prefs', 'all', dump, { queue: false });
-        if (!result?.queued) _lsLastSnapshotSig = sig;
+        // Preserve sole legacy clinical copies without introducing new ones.
+        // Re-read on every CAS retry: a concurrent verified migration can
+        // remove an old copy, and a stale preference write must not revive it.
+        for (let attempt = 0; attempt < 5; attempt++) {
+          if (!_prefsStorageDurable(ds)) break;
+          const current = await ds.get('ls_prefs', 'all');
+          if (!_prefsStorageDurable(ds)) break;
+          if (current != null && (typeof current !== 'object' || Array.isArray(current))) break;
+          const next = Object.assign(Object.create(null), dump);
+          if (current) Object.keys(current).forEach((k) => {
+            if (_isProtectedClinicalStorageKey(k)) next[k] = current[k];
+          });
+          const expected = current == null ? { mode: 'absent' }
+            : Number.isSafeInteger(current.revision) && current.revision > 0
+              ? current.revision : { mode: 'value', value: current };
+          const result = await ds.compareAndSwap('ls_prefs', 'all', expected, next, { queue: false });
+          if (result?.applied === true && _prefsStorageDurable(ds)) { _lsLastSnapshotSig = sig; break; }
+        }
       }
     })().catch(() => {}).finally(() => { _lsSnapshotPromise = null; });
     return _lsSnapshotPromise;
@@ -868,6 +897,16 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
   // true hangs. We compose with the caller's signal so an explicit Stop still cancels instantly
   // and is NOT retried (a caller abort is final; our own timeout is transient).
   const callerSignal = options.signal || null;
+  // Authorization is checked at actual dispatch, including retries. Capture
+  // the guard so a later options mutation cannot remove it, and never forward
+  // this application-only callback to native fetch.
+  const beforeRequest = options.beforeRequest;
+  const nativeOptions = { ...options };
+  delete nativeOptions.beforeRequest;
+  const _managedRequestBlocked = () => {
+    const error = new Error('Managed AI policy blocked this request.');
+    error.code = 'managed-ai-blocked'; error.isFatal = true; return error;
+  };
   const _safeUrl = String(url).split('?')[0]; // redact ?key=… from error messages (own-key/self-hosted users land in error reports)
   const _notify = (name, info) => {
     try { if (telemetry && typeof telemetry[name] === 'function') telemetry[name](info); } catch (_) {}
@@ -898,6 +937,7 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
     let _timedOut = false;
     let _timer = null;
     let _retryAfter = null;
+    let _guardRejected = false;
     const _onCallerAbort = () => { if (_timeoutCtrl) { try { _timeoutCtrl.abort(); } catch (_) {} } };
     if (_timeoutCtrl) {
       _timer = setTimeout(() => { _timedOut = true; try { _timeoutCtrl.abort(); } catch (_) {} }, perRequestTimeoutMs);
@@ -907,7 +947,19 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
       }
     }
     try {
-      const response = await fetch(url, _timeoutCtrl ? { ...options, signal: _timeoutCtrl.signal } : options);
+      const init = _timeoutCtrl ? { ...nativeOptions, signal: _timeoutCtrl.signal } : { ...nativeOptions };
+      if (beforeRequest !== undefined) {
+        try {
+          if (typeof beforeRequest !== 'function') throw _managedRequestBlocked();
+          const result = beforeRequest();
+          if (result && typeof result.then === 'function') {
+            Promise.resolve(result).catch(() => {});
+            throw _managedRequestBlocked();
+          }
+          if (result !== undefined && result !== true) throw _managedRequestBlocked();
+        } catch (error) { _guardRejected = true; throw error; }
+      }
+      const response = await fetch(url, init);
       // Retry-After (2026-08-15): when a rate limiter says HOW LONG, that number is the single most
       // valuable diagnostic in the log — it separates "server-directed backoff" from guessing, and
       // the 2026-08-14 investigation had to infer the refill rate from success timestamps because
@@ -969,6 +1021,11 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
         }
       }
     } catch (error) {
+      if (_guardRejected) {
+        if (error && error.name === 'AbortError') throw _abortError();
+        throw _managedRequestBlocked();
+      }
+      if (error && error.code === 'managed-ai-blocked') throw _managedRequestBlocked();
       const _errorPolicy = classifyProviderError(error);
       _notify('onInnerError', {
         attempt: i + 1,
@@ -1029,11 +1086,34 @@ const isYouTubeUrl = (url) => {
 };
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     if (!url || !url.trim()) return null;
-    let targetUrl = url.trim();
-    const safeProviderDetail = (value) => {
-        const detail = String(value == null ? '' : value);
-        return apiKey ? detail.split(String(apiKey)).join('[redacted]') : detail;
+    const blockedImport = () => {
+        const error = new Error('External source import is disabled by this managed deployment. Paste approved text or use a school-approved import route.');
+        error.code = 'managed-ai-blocked'; error.isFatal = true; return error;
     };
+    const assertLegacyImportAllowed = () => {
+        try { if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return; } catch (_) {}
+        // Version 1 approves selected text inference, not URL disclosure to
+        // public relays, URL Context, or video processing. Search permission
+        // cannot authorize a different source-import processor.
+        throw blockedImport();
+    };
+    const isManagedImportBlocked = error => error && error.code === 'managed-ai-blocked';
+    const statusCode = value => typeof value === 'number' && Number.isInteger(value) && value >= 100 && value <= 599 ? value : 0;
+    const failureCategory = error => error && error.code === 'source-no-transcript' ? 'no-readable-transcript'
+        : error && statusCode(error.httpStatus) ? 'http-' + statusCode(error.httpStatus)
+        : error && error.name === 'AbortError' ? 'timeout-or-cancelled' : 'source-request-failed';
+    const sourceFetch = async (endpoint, options = {}, timeoutMs = 20000) => {
+        const init = { ...options, redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+        const controller = timeoutMs > 0 ? new AbortController() : null;
+        let timeoutId = null;
+        try {
+            if (controller) { init.signal = controller.signal; timeoutId = setTimeout(() => controller.abort(), timeoutMs); }
+            assertLegacyImportAllowed();
+            return await fetch(endpoint, init);
+        } finally { if (timeoutId != null) clearTimeout(timeoutId); }
+    };
+    assertLegacyImportAllowed();
+    let targetUrl = url.trim();
     // ─────────────────────────────────────────────────────────────
     // Tier-2 fallback: Gemini URL Context tool
     // Called when Jina + raw-HTML extraction all fail or return garbage.
@@ -1045,7 +1125,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             console.log('[URL Fetch] ⏭️ Gemini URL Context skipped — no API key');
             return null;
         }
-        console.log(`[URL Fetch] 🤖 Attempting Gemini URL Context fallback for ${targetUrl}`);
+        console.log('[URL Fetch] Attempting cloud URL Context fallback');
         const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
         const urlCtxPayload = {
             contents: [{
@@ -1057,18 +1137,13 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             generationConfig: { temperature: 0.1, maxOutputTokens: 65536 }
         };
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 45000);
-            const resp = await fetch(urlCtxEndpoint, {
+            const resp = await sourceFetch(urlCtxEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
-                body: JSON.stringify(urlCtxPayload),
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+                body: JSON.stringify(urlCtxPayload)
+            }, 45000);
             if (!resp.ok) {
-                const errBody = await resp.text().catch(() => '');
-                console.warn(`[URL Fetch] ❌ Gemini URL Context HTTP ${resp.status}: ${safeProviderDetail(errBody).substring(0, 300)}`);
+                console.warn('[URL Fetch] URL Context request rejected', { httpStatus: statusCode(resp.status) });
                 return null;
             }
             const data = await resp.json();
@@ -1076,9 +1151,9 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             const urlMeta = data?.candidates?.[0]?.urlContextMetadata?.urlMetadata;
             if (Array.isArray(urlMeta) && urlMeta.length > 0) {
                 const status = urlMeta[0]?.urlRetrievalStatus;
-                console.log(`[URL Fetch] 🤖 Gemini URL retrieval status: ${status}`);
+                console.log('[URL Fetch] URL retrieval result:', status === 'URL_RETRIEVAL_STATUS_SUCCESS' ? 'success' : 'unavailable');
                 if (status && status !== 'URL_RETRIEVAL_STATUS_SUCCESS') {
-                    console.warn(`[URL Fetch] ❌ Gemini could not retrieve URL (${status})`);
+                    console.warn('[URL Fetch] URL retrieval unavailable');
                     return null;
                 }
             }
@@ -1094,7 +1169,8 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             console.log(`[URL Fetch] ✅ Gemini URL Context success: ${extracted.length} chars extracted`);
             return extracted.trim();
         } catch (e) {
-            console.warn('[URL Fetch] ❌ Gemini URL Context threw:', safeProviderDetail(e?.message || e));
+            if (isManagedImportBlocked(e)) throw e;
+            console.warn('[URL Fetch] URL Context failed:', failureCategory(e));
             return null;
         }
     };
@@ -1112,15 +1188,14 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 }],
                 generationConfig: { temperature: 0.1, maxOutputTokens: 65536 }
             };
-            const ytResponse = await fetch(ytUrl, {
+            const ytResponse = await sourceFetch(ytUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(ytPayload)
-            });
+            }, 0);
             if (!ytResponse.ok) {
-                const errData = await ytResponse.json().catch(() => ({}));
-                const errMsg = errData?.error?.message || `HTTP ${ytResponse.status}`;
-                throw new Error(`Gemini YouTube API error: ${errMsg}`);
+                const error = new Error('Cloud transcript request was rejected.');
+                error.code = 'source-transcript-http'; error.httpStatus = statusCode(ytResponse.status); throw error;
             }
             const ytData = await ytResponse.json();
             const transcript = ytData?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -1128,12 +1203,12 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                 if (toastCallback) toastCallback("✅ YouTube transcript extracted successfully!", "success");
                 return `Source: ${targetUrl}\n(YouTube transcript extracted via Gemini AI)\n\n${transcript.trim()}`;
             } else {
-                throw new Error("Transcript too short or empty.");
+                const error = new Error('Transcript too short or empty.'); error.code = 'source-no-transcript'; throw error;
             }
         } catch (ytErr) {
-            const safeError = safeProviderDetail(ytErr.message);
-            warnLog("[YouTube Transcript] Gemini extraction failed, falling back to standard URL fetch:", safeError);
-            if (toastCallback) toastCallback(`YouTube transcript failed (${safeError}). Trying standard fetch...`, "warning");
+            if (isManagedImportBlocked(ytErr)) throw ytErr;
+            warnLog('[YouTube Transcript] Cloud extraction failed; trying standard source import:', failureCategory(ytErr));
+            if (toastCallback) toastCallback('YouTube transcript unavailable (' + failureCategory(ytErr) + '). Trying standard source import...', 'warning');
         }
     }
     try {
@@ -1171,27 +1246,22 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         };
         try {
             const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(jinaUrl)}`;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000);
-            response = await fetch(proxyUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
+            response = await sourceFetch(proxyUrl);
         } catch (e) {
-            warnLog("Primary proxy failed, attempting fallback...", e);
+            if (isManagedImportBlocked(e)) throw e;
+            warnLog('Primary source relay failed; trying fallback:', failureCategory(e));
         }
         if (!response || !response.ok) {
             try {
                 const fallbackUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(jinaUrl)}&t=${Date.now()}`;
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 20000);
-                response = await fetch(fallbackUrl, { signal: controller.signal });
-                clearTimeout(timeoutId);
-            } catch(e) { warnLog('Caught error:', e?.message || e); }
+                response = await sourceFetch(fallbackUrl);
+            } catch(e) { if (isManagedImportBlocked(e)) throw e; warnLog('Source relay fallback failed:', failureCategory(e)); }
         }
         let text = "";
         if (response && response.ok) {
             text = await response.text();
         }
-        debugLog(`[URL Fetch] Jina returned ${text.length} chars for ${targetUrl}`);
+        debugLog('[URL Fetch] Source relay characters:', text.length);
         const lowerText = text.toLowerCase();
         const isBlocked = lowerText.includes("access denied") ||
                           lowerText.includes("security check") ||
@@ -1207,10 +1277,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
              // Try corsproxy.io first
              try {
                  const rawProxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-                 const controller = new AbortController();
-                 const timeoutId = setTimeout(() => controller.abort(), 20000);
-                 const rawResponse = await fetch(rawProxyUrl, { signal: controller.signal });
-                 clearTimeout(timeoutId);
+                 const rawResponse = await sourceFetch(rawProxyUrl);
                  if (rawResponse.ok) {
                      const rawText = await rawResponse.text();
                      if (rawText && rawText.trim().length > 200) {
@@ -1221,16 +1288,14 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                      }
                  }
              } catch (directErr) {
-                 warnLog("[URL Fetch] corsproxy raw fallback failed:", directErr?.message);
+                 if (isManagedImportBlocked(directErr)) throw directErr;
+                 warnLog('[URL Fetch] Raw source relay failed:', failureCategory(directErr));
              }
              // Second raw fallback via allorigins
              if (!rawOk) {
                  try {
                      const rawFallbackUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}&t=${Date.now()}`;
-                     const controller = new AbortController();
-                     const timeoutId = setTimeout(() => controller.abort(), 20000);
-                     const rawResponse2 = await fetch(rawFallbackUrl, { signal: controller.signal });
-                     clearTimeout(timeoutId);
+                     const rawResponse2 = await sourceFetch(rawFallbackUrl);
                      if (rawResponse2.ok) {
                          const rawText2 = await rawResponse2.text();
                          if (rawText2 && rawText2.trim().length > 200) {
@@ -1241,7 +1306,8 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
                          }
                      }
                  } catch (e) {
-                     warnLog("[URL Fetch] allorigins raw fallback failed:", e?.message);
+                     if (isManagedImportBlocked(e)) throw e;
+                     warnLog('[URL Fetch] Second raw source relay failed:', failureCategory(e));
                  }
              }
              // If both raw fallbacks failed but we had usable-ish Jina text, fall back to it
@@ -1251,7 +1317,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
              }
              if (!rawOk && (!savedJinaText || savedJinaText.trim().length < 50)) {
                  if (isBlocked) throw new Error("URL blocked by security check (CAPTCHA/403). Please paste text manually.");
-                 throw new Error(`Failed to fetch readable content from ${targetUrl}. The site may be JavaScript-rendered or blocking extraction.`);
+                 throw new Error('Failed to fetch readable content. The site may require manual text import.');
              }
         }
         const finalLower = text.toLowerCase();
@@ -1264,13 +1330,14 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             throw new Error("URL blocked by security check. Please paste text manually.");
         }
         if (!text || text.trim().length < 50) {
-            throw new Error(`Content too short or empty (got ${text ? text.trim().length : 0} chars from ${targetUrl}). The site may be JavaScript-rendered or blocking extraction — try pasting text manually.`);
+            throw new Error('Content too short or empty. Try pasting approved text manually.');
         }
         text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
         text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
         text = text.replace(/\[\d+\]/g, '');
         text = text.replace(/^\[.+\]:\s*http.+$/gm, '');
         if (geminiCaller) {
+            assertLegacyImportAllowed();
             const cleanPrompt = `
                 You are an expert content extractor.
                 Analyze the following ${usedRawSource ? 'raw HTML source code' : 'raw text'} extracted from a webpage:
@@ -1292,17 +1359,20 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         console.log(`[URL Fetch] ✅ Jina path success: ${text.trim().length} chars returned (usedRawSource=${usedRawSource})`);
         return `Source: ${targetUrl}\n\n${text.trim()}`;
     } catch (err) {
+        if (isManagedImportBlocked(err)) throw err;
         // ── Tier-2 fallback: Gemini URL Context before giving up ──
-        console.warn(`[URL Fetch] ⚠️ Jina + raw-HTML path failed: ${err.message}. Trying Gemini URL Context fallback...`);
+        console.warn('[URL Fetch] Standard source import failed; trying URL Context:', failureCategory(err));
         if (toastCallback) toastCallback("Jina failed — trying Gemini URL Context...", "info");
         const geminiExtracted = await tryGeminiUrlContext();
         if (geminiExtracted) {
             if (toastCallback) toastCallback("✅ Content extracted via Gemini URL Context!", "success");
             return `Source: ${targetUrl}\n(Extracted via Gemini URL Context)\n\n${geminiExtracted}`;
         }
-        console.error(`[URL Fetch] ❌ ALL methods failed for ${targetUrl}`);
-        if (toastCallback) toastCallback(err.message || "URL import failed.", "error");
-        throw err;
+        console.error('[URL Fetch] All source import methods failed');
+        const error = new Error('Failed to fetch readable content. Paste approved text or use a school-approved import route.');
+        error.code = 'source-import-failed';
+        if (toastCallback) toastCallback(error.message, 'error');
+        throw error;
     }
 };
 

@@ -291,7 +291,7 @@ test('Migration matched comparison standardizes actual views and wing phase whil
     expect(view.data.flightStudyObservations.comparison.draft).toBe(before.data.flightStudyObservations.comparison.draft);
     expect(view.data.flightInvestigation).toEqual(before.data.flightInvestigation);
   }
-  await expect(page.getByRole('textbox', { name: 'Shape and motion observation', exact: true })).toHaveValue('Unsaved tern follow-up.');
+  await expect(page.getByRole('textbox', { name: 'My observation', exact: true })).toHaveValue('Unsaved tern follow-up.');
   await expect(page.locator('[data-study-revisit-status]')).not.toHaveText('');
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-matched-tern-above.png') });
   await page.locator('.migration-flight-controls').screenshot({ path: join(report, 'desktop-matched-comparison-workflow.png') });

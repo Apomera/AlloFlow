@@ -2685,7 +2685,71 @@
     return <p role="status" aria-live="polite" aria-atomic="true" data-reader-popup-status className="sr-only">{announcement}</p>;
   }
 
+  // The host can open this view before its interactive formatter leaves the
+  // deferred queue. Keep that dependency boundary outside the reader's hooks.
   function SimplifiedView(props) {
+    const dependencies = [
+      { key: 'PureHelpersModule', name: 'PureHelpers', methods: ['splitTextToSentences', 'diffWords'] },
+      { key: 'PhaseNHelpersModule', name: 'PhaseNHelpers', methods: ['formatInteractiveText'] },
+      { key: 'TextUtilityHelpersModule', name: 'TextUtilityHelpers', methods: ['highlightGlossaryTerms'] }
+    ];
+    // Standalone renderers inject their own functions and have no host loader.
+    const usesHostLoader = typeof window.__alloPromoteModule === 'function' || !!window.__alloModuleRegistry;
+    const ready = dependency => dependency.methods.every(method => typeof window.AlloModules?.[dependency.name]?.[method] === 'function');
+    const dependencyReady = () => !usesHostLoader || dependencies.every(ready);
+    const readDependency = () => dependencyReady() ? 'ready'
+      : dependencies.some(dependency => !ready(dependency) && ['failed', 'loaded'].includes(window.__alloModuleRegistry?.[dependency.key]?.status)) ? 'failed' : 'loading';
+    const [loadState, setLoadState] = React.useState(readDependency);
+    const retryLoadRef = React.useRef(null);
+    React.useEffect(() => {
+      if (!usesHostLoader) return undefined;
+      let disposed = false, requestNumber = 0;
+      const unavailable = new Set();
+      const refresh = () => {
+        if (disposed) return;
+        const next = dependencyReady() ? 'ready' : dependencies.some(dependency => !ready(dependency) && unavailable.has(dependency.key)) ? 'failed' : readDependency();
+        setLoadState(previous => previous === next ? previous : next);
+      };
+      const request = () => {
+        const thisRequest = ++requestNumber;
+        unavailable.clear();
+        if (dependencyReady()) { refresh(); return; }
+        dependencies.filter(dependency => !ready(dependency)).forEach(dependency => {
+          const finish = failed => {
+            if (disposed || thisRequest !== requestNumber) return;
+            const pending = window.__alloModuleRegistry?.[dependency.key]?.status === 'pending';
+            if (!ready(dependency) && (failed || !pending)) unavailable.add(dependency.key);
+            refresh();
+          };
+          try {
+            const result = typeof window.__alloPromoteModule === 'function' && window.__alloPromoteModule(dependency.key);
+            refresh();
+            if (result && typeof result.then === 'function') Promise.resolve(result).then(() => finish(false), () => finish(true));
+            else finish(result === false);
+          } catch (_) { finish(true); }
+        });
+      };
+      window.addEventListener('alloflow:module-registry-changed', refresh);
+      retryLoadRef.current = request;
+      request(); // Recheck after promotion: it may have registered synchronously.
+      return () => {
+        disposed = true; ++requestNumber;
+        retryLoadRef.current = null;
+        window.removeEventListener('alloflow:module-registry-changed', refresh);
+      };
+    }, [usesHostLoader]);
+    if (dependencyReady()) return <SimplifiedViewContent {...props} />;
+    const text = (key, fallback) => {
+      const value = typeof props.t === 'function' ? props.t(key) : '';
+      return typeof value === 'string' && value && value !== key ? value : fallback;
+    };
+    return <div data-reader-dependency-state={loadState} role={loadState === 'failed' ? 'alert' : 'status'} className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-slate-800">
+      <p>{loadState === 'failed' ? text('errors.load_failed', 'The reading tools could not load.') : text('common.loading', 'Loading…')}</p>
+      {loadState === 'failed' && <button type="button" onClick={() => retryLoadRef.current?.()} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white">{text('common.retry', 'Retry')}</button>}
+    </div>;
+  }
+
+  function SimplifiedViewContent(props) {
     const liveReaderProps = React.useRef(props); liveReaderProps.current = props;
     const localDraftSessionRef = React.useRef(null);
     const supportDraftSessionRef = props.supportDraftSessionRef || localDraftSessionRef;

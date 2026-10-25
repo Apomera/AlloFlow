@@ -7,6 +7,16 @@ import {saveSolo,readSolo} from '../lesson_board_storage.js';
 const {makeBoard,source,png,glossary,support}=createRequire(import.meta.url)('../dev-tools/fixtures/lesson_board_support.cjs');
 const storage=()=>{const map=new Map();return {getItem:key=>map.get(key)??null,setItem:(key,value)=>map.set(key,value)};};
 describe('Board vocabulary and visual support',()=>{
+ it('keeps editable drawings in saved board backups and omits their source from live sharing',async()=>{
+  const board=makeBoard(),raw=support(),scene={elements:[{id:'a',type:'rectangle',x:0,y:0,width:30,height:20}],files:{}};
+  raw.drawings={picture:{alt:'A classroom drawing',scene}};
+  const clean=s.prepareSupport(raw,board);
+  expect(clean.drawings.picture.scene).toEqual(scene);
+  const imported=transfer.parseBoardFile(transfer.exportBoardFile(board,source,'English',clean));
+  expect(imported.support.drawings.picture.alt).toBe('A classroom drawing');
+  const live=await s.liveSupport(clean,board,async image=>image);
+  expect(live.support.drawings).toBeUndefined();expect(clean.drawings.picture.scene).toEqual(scene);
+ });
  it('reuses one image for several terms without changing the glossary or game',async()=>{const board=makeBoard(),resource=glossary(),before=JSON.stringify({board,resource}),resize=vi.fn(async image=>image);const result=await s.attachGlossary(board,s.emptySupport(),resource,s.glossaryTerms(resource).map(t=>t.id),resize);expect(resize).toHaveBeenCalledTimes(1);expect(Object.keys(result.support.assets)).toHaveLength(1);expect(result.support.terms).toHaveLength(3);expect(result.support.terms[0].translations.French).toContain('Évaporation');expect(JSON.stringify({board,resource})).toBe(before);});
  it('confirms glossary source and language without matching a word alone',()=>{const right=glossary(),wrong={...glossary(),id:'wrong',sourceText:'A completely different lesson.'},otherLanguage={...right,id:'french',config:{language:'French'}};expect(s.glossaryCandidates([wrong,right,otherLanguage],null,source,'English').map(item=>[item.id,item.matched])).toEqual([['french',false],['water-glossary',true],['wrong',false]]);});
  it('accepts the canonical source fingerprint and keeps unknown provenance explicit',()=>{const resource=glossary();delete resource.sourceText;resource.config.sourceFingerprint='src-verified';expect(s.glossaryCandidates([resource],null,source,'English','src-verified')[0].matched).toBe(true);expect(s.glossaryCandidates([resource],null,source,'English')[0].matched).toBe(false);});

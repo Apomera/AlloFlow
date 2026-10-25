@@ -78,6 +78,8 @@ describe('actual host loader diagnostics and reporter integration', () => {
     deliverMatrix(w); await pending;
     expect(w.__alloModuleLoadTrace.at(-1)).toMatchObject({ attemptId: slow.attemptId, outcome: 'recovered' });
     expect(w.AlloModules.ErrorReporter.getBuffer().map(e => e.level)).toEqual(['warn', 'info']);
+    expect(w.document.getElementById('aer-report-what').value).not.toContain('module-wait/recovered');
+    w.document.getElementById('aer-refresh-report').click();
     expect(copy(w)).toContain('module-wait/recovered');
     expect(w.document.getElementById('allo-err-badge')?.style.display || 'none').toBe('none');
     await vi.advanceTimersByTimeAsync(70000);
@@ -95,6 +97,8 @@ describe('actual host loader diagnostics and reporter integration', () => {
     expect(copy(w)).toContain('group=' + parent.id);
     deliverMatrix(w); await pending; parent.finish('ready');
     expect(w.AlloModules.ErrorReporter.getBuffer().map(e => e.level)).toEqual(['warn', 'info']);
+    expect(w.document.getElementById('aer-report-what').value).not.toContain('blueprint-preflight/recovered');
+    w.document.getElementById('aer-refresh-report').click();
     expect(copy(w)).toContain('blueprint-preflight/recovered');
   });
 

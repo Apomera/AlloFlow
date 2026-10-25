@@ -30,10 +30,10 @@ function mission(seed = {}, overrides = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-flight-challenge-action'] === name); }
   function select(id) { find(node => node.props?.['data-flight-challenge'] === id).props.onClick(); draw(); }
-  function edit(label, value) { find(node => node.type === 'textarea' && node.props?.['aria-label'] === label).props.onChange({ target: { value } }); draw(); }
-  function control(label, value) { find(node => node.props?.['aria-label'] === label).props.onChange({ target: { value } }); draw(); }
+  function edit(label, value) { find(node => node.type === 'textarea' && (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
+  function control(label, value) { find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
   function load(prediction = 'I will change the named control and compare the model measurements.') {
-    edit('Flight challenge prediction', prediction); action('load').props.onClick(); draw();
+    edit('migration-mission-prediction', prediction); action('load').props.onClick(); draw();
   }
   return {
     draw, find, action, select, edit, control, load, announce, awardXP,
@@ -73,13 +73,13 @@ describe('Migration flight challenges', () => {
     const seed = { flightSpecies: 'peregrine', flightWind: 7, flightSeason: 'spring', flightFormation: 'loose', flightCamera: 'side', flightPaused: true, selectedSpecies: 'monarch', aiExplorerText: 'Keep these route facts', inquiry: { hypothesis: 'Keep inquiry' }, flightInvestigation: oldStudy };
     const ui = mission(seed);
     ui.draw();
-    ui.edit('Flight challenge prediction', 'Wind prediction');
-    ui.edit('Flight challenge explanation', 'Wind explanation');
+    ui.edit('migration-mission-prediction', 'Wind prediction');
+    ui.edit('migration-mission-notes', 'Wind explanation');
     ui.select('formation');
     expect(ui.state).toMatchObject(seed);
     expect(ui.state.flightInvestigation).toBe(oldStudy);
     expect(ui.state.flightInvestigation.trials).toHaveLength(6);
-    ui.edit('Flight challenge prediction', 'Formation prediction');
+    ui.edit('migration-mission-prediction', 'Formation prediction');
     ui.select('wind');
     expect(ui.draw()).toContain('Wind explanation');
     expect(ui.state.flightChallenges.work.wind.prediction).toBe('Wind prediction');
@@ -100,11 +100,12 @@ describe('Migration flight challenges', () => {
   it('records real headwind recovery metrics without awarding XP or grading the explanation', () => {
     const ui = mission(); ui.draw(); ui.load();
     ui.control(WIND_LABEL, '4');
-    ui.edit('Flight challenge explanation', '0 mph became 21 mph while the species and swarm were unchanged.');
+    ui.edit('migration-mission-notes', '0 mph became 21 mph while the species and swarm were unchanged.');
     expect(ui.feedback()).toBe('met');
     ui.action('check').props.onClick(); ui.draw();
     expect(ui.state.flightChallenges.work.wind.attempts[0]).toMatchObject({ baseline: windStart, snapshot: { speciesId: 'monarch', wind: 4, groundSpeed: 21, benefit: 0 }, notes: '0 mph became 21 mph while the species and swarm were unchanged.' });
-    expect(ui.announce).toHaveBeenLastCalledWith(expect.stringContaining('without an automatic grade'));
+    expect(ui.draw()).toContain('data-learning-feedback="challenge"');
+    expect(ui.announce).not.toHaveBeenCalled();
     expect(ui.draw()).toContain('this check does not assess your explanation');
     expect(ui.awardXP).not.toHaveBeenCalled();
   });
@@ -149,10 +150,10 @@ describe('Migration flight challenges', () => {
 
   it('keeps attempts frozen when predictions, notes, setup, or active goals change and after reloading', () => {
     const ui = mission(); ui.draw(); ui.load('First prediction');
-    ui.edit('Flight challenge explanation', 'First explanation'); ui.control(WIND_LABEL, '4');
+    ui.edit('migration-mission-notes', 'First explanation'); ui.control(WIND_LABEL, '4');
     ui.action('check').props.onClick(); ui.draw();
-    ui.edit('Flight challenge prediction', 'Second prediction');
-    ui.edit('Flight challenge explanation', 'Second explanation');
+    ui.edit('migration-mission-prediction', 'Second prediction');
+    ui.edit('migration-mission-notes', 'Second explanation');
     ui.action('load').props.onClick(); ui.draw();
     ui.select('season'); ui.select('wind');
     const restored = mission(ui.state); restored.draw();
@@ -185,48 +186,11 @@ describe('Migration flight challenges', () => {
     expect(html).not.toMatch(/NaN|Infinity|\[object Object\]/);
     expect(ui.all(node => node.props?.['data-flight-challenge-attempt'])).toHaveLength(1);
     expect(ui.feedback()).toBe('pending');
-    ui.edit('Flight challenge prediction', 'Recovered prediction');
+    ui.edit('migration-mission-prediction', 'Recovered prediction');
     expect(ui.state.flightChallenges.work.wind).toMatchObject({ notes: 'Preserved notes', setup: null, attempts: [{ baseline: { groundSpeed: 0, benefit: 0 }, snapshot: { groundSpeed: 21, benefit: 0 }, notes: 'Saved note' }] });
   });
 
-  it.each([
-    { count: 3, remove: 2, destination: 'next' },
-    { count: 3, remove: 3, destination: 'previous' },
-    { count: 1, remove: 1, destination: 'check' },
-    { count: 1, remove: 1, destination: 'prediction', emptyPrediction: true }
-  ])('restores focus to $destination after removing challenge attempt $remove', ({ count, remove, destination, emptyPrediction }) => {
-    const ui = mission({ flightChallenges: { selectedId: 'wind', work: { wind: {
-      prediction: emptyPrediction ? '' : 'Preserved prediction', notes: 'Preserved notes', setup: windStart,
-      attempts: Array.from({ length: count }, (_, index) => ({ baseline: windStart, snapshot: { ...windStart, wind: index + 1 }, prediction: 'Earlier prediction', notes: 'Earlier explanation' }))
-    } } } });
-    ui.draw();
-    const focus = { next: vi.fn(), previous: vi.fn(), check: vi.fn(), prediction: vi.fn() };
-    const remainingButtons = count === 1 ? [] : [{ focus: vi.fn() }, { focus: destination === 'next' ? focus.next : focus.previous }];
-    const panel = {
-      querySelectorAll: vi.fn(() => remainingButtons),
-      querySelector: vi.fn(selector => selector === '[data-flight-challenge-action="check"]'
-        ? { focus: focus.check, disabled: !!emptyPrediction }
-        : selector === '#migration-mission-prediction' ? { focus: focus.prediction } : null)
-    };
-    const originalGet = document.getElementById.bind(document);
-    const getElement = vi.spyOn(document, 'getElementById').mockImplementation(id => id === 'migration-flight-challenges' ? panel : originalGet(id));
-    let deferred;
-    const timer = vi.spyOn(globalThis, 'setTimeout').mockImplementation(callback => { deferred = callback; return 0; });
-    try {
-      ui.find(node => node.props?.['aria-label'] === 'Remove challenge attempt ' + remove).props.onClick();
-      ui.draw();
-      expect(ui.state.flightChallenges.work.wind.attempts).toHaveLength(count - 1);
-      expect(deferred).toBeTypeOf('function');
-      deferred();
-      expect(panel.querySelectorAll).toHaveBeenCalledWith('[data-flight-challenge-attempt] .migration-mission-remove');
-      expect(focus[destination]).toHaveBeenCalledOnce();
-      for (const [name, handler] of Object.entries(focus)) if (name !== destination) expect(handler).not.toHaveBeenCalled();
-      expect(ui.state.flightChallenges.work.wind.notes).toBe('Preserved notes');
-    } finally {
-      timer.mockRestore();
-      getElement.mockRestore();
-    }
-  });
+  // Removal focus and ownership are exercised with real React DOM in migration_removal_focus.test.js.
 
   it.each([null, 'old schema', [], { work: [] }, { selectedId: 'unknown', work: { wind: { attempts: 'bad', prediction: {}, notes: [] } } }])('renders malformed challenge state safely: %j', flightChallenges => {
     const ui = mission({ flightChallenges });
@@ -239,7 +203,14 @@ describe('Migration flight challenges', () => {
     const ui = mission({}, { t: (key, fallback) => key.startsWith('stem.migration.mission_') ? 'Translated ' + key : /formation/i.test(key) ? 'Translated formation prose' : fallback || key });
     expect(ui.draw()).toContain('Translated stem.migration.mission_summary');
     ui.select('formation');
-    ui.edit('Translated stem.migration.mission_prediction_aria', 'My translated prediction');
+    const translatedView = document.createElement('div');
+    translatedView.innerHTML = ui.draw();
+    const prediction = translatedView.querySelector('#migration-mission-prediction');
+    expect(prediction).not.toBeNull();
+    expect(prediction.labels).toHaveLength(1);
+    expect(prediction.labels[0].textContent.trim()).toBe('Translated stem.migration.mission_prediction_label');
+    expect(prediction.hasAttribute('aria-label')).toBe(false);
+    ui.edit('migration-mission-prediction', 'My translated prediction');
     ui.action('load').props.onClick(); ui.draw();
     ui.control('3D migration flight pattern', 'natural');
     expect(ui.feedback()).toBe('met');

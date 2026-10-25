@@ -22,6 +22,7 @@ const require = createRequire(import.meta.url);
 const V = require('../desktop/mcp/remediation_verification.cjs');
 const E = require('../desktop/mcp/remediation_epub_validation.cjs');
 const Driver = require('../desktop/mcp/remediation_headless_driver.cjs');
+const { makeZip } = require('../desktop/mcp/zip_writer.cjs');
 
 const report = (validation) => ({ report: { jobs: [{ validationResult: [validation] }], buildInformation: { releaseDetails: [{ id: 'core', version: '1.30.2' }] } } });
 const IRS = { compliant: false, details: { failedRules: 3, failedChecks: 12, passedRules: 103, passedChecks: 2164395,
@@ -152,17 +153,33 @@ describe('Java probe: "did not respond in time" is not "not found"', () => {
   });
   it('EPUB validation reports the same distinction instead of "Install Java"', async () => {
     const epub = join(scratch, 'book.epub');
-    writeFileSync(epub, Buffer.from('PK fixture, never opened because Java does not answer', 'latin1'));
+    // Use the connector's ZIP writer, as the EPUB validation suites do. Archive
+    // preflight deliberately precedes Java; a fake PK prefix never reaches it.
+    writeFileSync(epub, makeZip([
+      { name: 'mimetype', data: 'application/epub+zip', store: true },
+      { name: 'META-INF/container.xml', data: '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>' },
+      { name: 'OEBPS/content.opf', data: '<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">urn:alloflow:java-probe-fixture</dc:identifier><dc:title>Java probe fixture</dc:title><dc:language>en</dc:language><meta property="dcterms:modified">2026-10-24T00:00:00Z</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>' },
+      { name: 'OEBPS/content.xhtml', data: '<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><title>Java probe fixture</title></head><body><h1>Java probe fixture</h1><p>Read the original instructions.</p></body></html>' },
+      { name: 'OEBPS/nav.xhtml', data: '<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en"><head><title>Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">Java probe fixture</a></li></ol></nav></body></html>' },
+    ]));
     const keep = { bin: process.env.ALLOFLOW_MCP_JAVA_BIN, t: process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS, jar: process.env.ALLOFLOW_MCP_EPUBCHECK_JAR };
     process.env.ALLOFLOW_MCP_JAVA_BIN = process.execPath;
     process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS = '1';
-    process.env.ALLOFLOW_MCP_EPUBCHECK_JAR = epub; // any existing file: the Java probe comes first
+    process.env.ALLOFLOW_MCP_EPUBCHECK_JAR = epub; // Existing path; the unavailable Java probe prevents jar execution.
     try {
       const result = await E.validate(epub, { stateDir: scratch, timeoutMs: 5000 });
+      expect(result.checks.archive.status).toBe('passed');
       expect(result.checks.epubcheck.status).toBe('unavailable');
       expect(result.checks.epubcheck.error).toMatch(/^Java did not respond in time/);
       expect(result.checks.epubcheck.error).not.toMatch(/Install Java/);
       expect(result.reviewRequired).toBe(true);
+      process.env.ALLOFLOW_MCP_JAVA_BIN = join(scratch, 'no-such-epub-java-' + Date.now());
+      process.env.ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS = '60000';
+      const missingResult = await E.validate(epub, { stateDir: scratch, timeoutMs: 5000 });
+      expect(missingResult.checks.archive.status).toBe('passed');
+      expect(missingResult.checks.epubcheck.status).toBe('unavailable');
+      expect(missingResult.checks.epubcheck.error).toMatch(/^Java runtime not found/);
+      expect(missingResult.reviewRequired).toBe(true);
     } finally {
       for (const [k, v] of [['ALLOFLOW_MCP_JAVA_BIN', keep.bin], ['ALLOFLOW_MCP_JAVA_PROBE_TIMEOUT_MS', keep.t], ['ALLOFLOW_MCP_EPUBCHECK_JAR', keep.jar]]) {
         if (v === undefined) delete process.env[k]; else process.env[k] = v;

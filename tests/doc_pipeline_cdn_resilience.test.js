@@ -17,7 +17,7 @@ const SRC = fs.readFileSync(path.resolve(__dirname, '../doc_pipeline_source.jsx'
 // The two helpers + the _cdnLoadPromises cache are a contiguous block; slice from
 // _waitForGlobal's declaration through the close of _loadCdnScript and eval as a unit.
 function makeLoaderFactory() {
-  const start = SRC.indexOf('const _waitForGlobal = ');
+  const start = SRC.indexOf('function _configureTrustedDocumentScript(');
   const lcs = SRC.indexOf('const _loadCdnScript = ', start);
   if (start < 0 || lcs < 0) throw new Error('CDN loader block not found in source');
   const braceStart = SRC.indexOf('{', SRC.indexOf('=>', lcs));
@@ -38,7 +38,14 @@ const makeLoader = makeLoaderFactory();
 // does in Firefox/Safari (captive portal, SPA fallback on a missing path).
 function env(goodUrls, startLoaded, badUrls = [], hollowUrls = []) {
   let loaded = !!startLoaded;
-  const win = {};
+  // This suite measures network readiness/failover after policy approval. The
+  // separate integrity suite exercises missing/denied approval and exact pins.
+  const win = { __alloConfigureTrustedScript(script, url) {
+    script.integrity = 'sha384-synthetic-reviewed-fixture';
+    script.crossOrigin = 'anonymous';
+    script.src = url;
+    return script;
+  } };
   const counters = { injected: 0 }; // <script> tags created — proof of whether a chain was re-polled
   const doc = {
     querySelector: () => null,

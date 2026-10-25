@@ -78,12 +78,20 @@ test('defaults cover all maintained package trees, including shipped and hosted 
 
 test('new tracked npm lockfiles cannot silently fall outside audit coverage', () => {
   const { execFileSync } = require('node:child_process');
+  const fs = require('node:fs');
   const path = require('node:path');
   const root = path.resolve(__dirname, '..');
   const tracked = execFileSync('git', ['ls-files', '-z', '--', '*package-lock.json'], { cwd: root, encoding: 'utf8' })
     .split('\0').filter(Boolean).sort();
   const covered = Object.values(SCOPES).map((scope) => scope === '.' ? 'package-lock.json' : scope + '/package-lock.json').sort();
-  assert.deepEqual(covered, tracked, 'Classify each new tracked lockfile in the security audit.');
+  assert.deepEqual(tracked.filter((file) => !covered.includes(file)), [], 'Classify each new tracked lockfile in the security audit.');
+  // A newly configured scope can exist before it is staged in Git. It must
+  // still point to real inputs, and it must not remove any tracked coverage.
+  for (const file of covered) {
+    assert.ok(fs.existsSync(path.join(root, file)), 'Missing configured audit input: ' + file);
+    const manifest = file.replace(/package-lock\.json$/, 'package.json');
+    assert.ok(fs.existsSync(path.join(root, manifest)), 'Missing configured audit manifest: ' + manifest);
+  }
 });
 
 test('thresholds, JSON output, and explicit scope selection preserve honest results', () => {

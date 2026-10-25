@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Quotations in a Report Writer draft must come from something the clinician
 // supplied. A model puts plausible words in quotation marks; a fabricated quote
 // in a signed report is worse than a paraphrase. psycheck lists quotes of six or
@@ -8,6 +12,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 
 const require = createRequire(import.meta.url);
 let U;
@@ -47,7 +52,7 @@ describe('the Verify button reports unsourced quotations without blocking', () =
     const host = document.createElement('div');
     document.body.appendChild(host);
     const root = createRoot(host);
-    const act = (fn) => React.act(async () => { await fn(); });
+    const act = (fn) => actWithSensitivePromptReview(React, fn);
     const click = (el) => act(() => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
     try {
       await act(() => root.render(React.createElement(window.AlloModules.ReportWriter, {

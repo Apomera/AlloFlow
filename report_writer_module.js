@@ -64,7 +64,8 @@
 
     const h = React.createElement;
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
-    const warnLog = (...args) => console.warn("[RW-WARN]", ...args);
+    // Provider errors and custom section names can contain clinical text.
+    const warnLog = () => console.warn('[RW-WARN] Report Writer operation needs review.');
     const debugLog = (...args) => {
         if (typeof console !== "undefined") console.log("[RW-DBG]", ...args);
     };
@@ -544,6 +545,7 @@
         return (String(query || '') + ' ' + Array.from(extra).join(' ')).trim();
     };
     let rwRefProjectCache = { key: null, project: null, skipped: [] };
+    const rwClearReferenceIndex = () => { rwRefProjectCache = { key: null, project: null, skipped: [] }; };
     const rwReferenceProject = (referenceLibrary) => {
         const E = typeof window !== 'undefined' ? window.LumenEvidence : null;
         const refs = (Array.isArray(referenceLibrary) ? referenceLibrary : []).filter(r => r && typeof r.text === 'string' && r.text.trim());
@@ -2884,12 +2886,26 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
     const RW_SCHEMA_VERSION = 2;
     const RW_MAX_JSON_CHARS = 2_000_000;
     const RW_MAX_DISCREPANCY_JSON_CHARS = 1_000_000;
-    const safeGetItem = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
-    const safeSetItem = (k, v) => {
-        try { localStorage.setItem(k, v); return true; }
-        catch (e) { warnLog('localStorage write failed:', e); return false; }
+    const rwWorkspaceApi = () => window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    const rwAssertWorkspace = (session, epoch) => {
+        const api = rwWorkspaceApi();
+        if (!api || typeof api.isSession !== 'function' || !api.isSession(session, 'report-writer')) {
+            const error = new Error('Unlock the protected clinical workspace before using Report Writer.');
+            error.name = 'AbortError';
+            error.code = 'ALLOFLOW_SENSITIVE_WORKSPACE_LOCKED';
+            throw error;
+        }
+        if (epoch !== undefined) session.assertCurrent(epoch);
+        return session;
     };
-    const safeRemoveItem = (k) => { try { localStorage.removeItem(k); return true; } catch { return false; } };
+    const rwCreateStorageAdapter = (session, facade, epoch) => ({
+        safeGetItem: key => { try { rwAssertWorkspace(session, epoch); return facade.getItem(key); } catch { return null; } },
+        safeSetItem: (key, value) => {
+            try { rwAssertWorkspace(session, epoch); facade.setItem(key, value); return true; }
+            catch { warnLog(); return false; }
+        },
+        safeRemoveItem: key => { try { rwAssertWorkspace(session, epoch); facade.removeItem(key); return true; } catch { return false; } }
+    });
     const createEmptyBackground = () => ({
         referralReason: '', developmental: '', medical: '', educational: '', social: '', behavioral: '', observations: ''
     });
@@ -3117,7 +3133,80 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
     const rwStoppedError = () => { const err = new Error('Stopped'); err.name = 'AbortError'; err.rwStopped = true; return err; };
     const rwIsStopped = (err) => !!err && (err.rwStopped === true || err.name === 'AbortError');
 
-    const ReportWriterPanel = ({ studentName, abcEntries, observationSessions, aiAnalysis, studentProfile, longitudinalData, dashboardData, callGemini, t, addToast, workStateRef }) => {
+    const rwReviewCancelledError = () => {
+        const err = rwStoppedError();
+        err.code = 'ALLOFLOW_AI_REVIEW_CANCELLED';
+        return err;
+    };
+    const rwReviewUnavailableError = () => {
+        const err = new Error('Sensitive AI review is unavailable. Reload the app before sending Report Writer text.');
+        err.code = 'ALLOFLOW_AI_REVIEW_UNAVAILABLE';
+        return err;
+    };
+    // One boundary covers generation, extraction, verification, corrections,
+    // and translation. Review changes only the outbound copy; the clinical
+    // record, citation IDs, and transport options remain under their owners.
+    const rwCreateReviewedAiCaller = (rawCallGemini, { getGate, getOptions, isCurrent, getWorkspace, createOperation }) => {
+        if (typeof rawCallGemini !== 'function') return null;
+        return async (prompt, ...args) => {
+            let signal = args[4];
+            let operation = null;
+            const workspace = typeof getWorkspace === 'function' ? getWorkspace() : null;
+            let epoch;
+            const assertCurrent = () => {
+                if ((signal && signal.aborted) || !isCurrent()) throw rwReviewCancelledError();
+                rwAssertWorkspace(workspace, epoch);
+            };
+            try {
+                assertCurrent();
+                epoch = workspace.captureEpoch();
+                workspace.assertCanTransmit('ai');
+                operation = typeof createOperation === 'function' ? createOperation(signal) : null;
+                if (operation) signal = operation.signal;
+                const gate = getGate();
+                if (!gate || typeof gate.request !== 'function') throw rwReviewUnavailableError();
+                const hasSearchQuery = typeof args[3] === 'string';
+                const reviewed = await gate.request(prompt, {
+                    ...getOptions(),
+                    ...(hasSearchQuery ? { searchQuery: args[3] } : {}),
+                    signal,
+                    label: 'Report Writer'
+                });
+                // Review approval never revives a locked workspace or old case.
+                assertCurrent();
+                workspace.assertCanTransmit('ai');
+                if (getGate() !== gate) throw rwReviewUnavailableError();
+                if (!reviewed || typeof reviewed.prompt !== 'string'
+                    || (hasSearchQuery && typeof reviewed.searchQuery !== 'string')) throw rwReviewUnavailableError();
+                const dispatchArgs = args.slice();
+                if (hasSearchQuery) dispatchArgs[3] = reviewed.searchQuery;
+                if (operation) dispatchArgs[4] = signal;
+                const result = await rawCallGemini(reviewed.prompt, ...dispatchArgs);
+                assertCurrent();
+                if (getGate() !== gate) throw rwReviewUnavailableError();
+                return result;
+            } finally {
+                if (operation && typeof operation.release === 'function') operation.release();
+                if (!isCurrent() || !workspace || typeof workspace.isCurrent !== 'function' || !workspace.isCurrent(epoch)) {
+                    rwClearCaseIndex();
+                    rwClearReferenceIndex();
+                }
+            }
+        };
+    };
+
+    const ReportWriterPanel = ({ studentName, abcEntries, observationSessions, aiAnalysis, studentProfile, longitudinalData, dashboardData, callGemini: rawCallGemini, t, addToast: rawAddToast, workStateRef, sensitiveWorkspace }) => {
+        const secureStorageRef = useRef(null);
+        if (!secureStorageRef.current) secureStorageRef.current = rwAssertWorkspace(sensitiveWorkspace).storage;
+        const secureStorage = secureStorageRef.current;
+        let renderEpoch;
+        try { renderEpoch = sensitiveWorkspace.captureEpoch(); } catch { renderEpoch = null; }
+        const mountedRef = useRef(true);
+        const workspaceIsCurrent = (epoch = renderEpoch) => {
+            try { rwAssertWorkspace(sensitiveWorkspace, epoch); return mountedRef.current; } catch { return false; }
+        };
+        const addToast = (...args) => { if (workspaceIsCurrent() && typeof rawAddToast === 'function') rawAddToast(...args); };
+        const { safeGetItem, safeSetItem, safeRemoveItem } = rwCreateStorageAdapter(sensitiveWorkspace, secureStorage, renderEpoch);
         const STEPS = [
             { num: 1, label: __alloT('report_writer.step_student_selection', 'Student Selection'), icon: '👤' },
             { num: 2, label: __alloT('report_writer.step_background_history', 'Background & History'), icon: '📋' },
@@ -3170,6 +3259,8 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         // returns. 'sections' covers generation and the audit, which never run
         // together.
         const aiRunsRef = useRef({});
+        const directAiControllersRef = useRef(new Set());
+        const fileReadersRef = useRef(new Set());
         const [stopRequested, setStopRequested] = useState({});
         const [genFraction, setGenFraction] = useState(null);
         const beginAiRun = (kind) => {
@@ -3190,7 +3281,13 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             const signal = run ? run.signal : null;
             if (signal && signal.aborted) return Promise.reject(rwStoppedError());
             return Promise.resolve(callGemini(prompt, jsonMode, false, null, null, signal, codeExec ? RW_CODE_EXEC : false))
-                .then(result => { if (signal && signal.aborted) throw rwStoppedError(); return result; });
+                .then(result => { if (signal && signal.aborted) throw rwStoppedError(); return result; })
+                .catch(error => {
+                    // Cancel the whole user operation, including concurrent
+                    // passes still waiting for review of their own payloads.
+                    if (rwIsStopped(error) && run && !run.signal.aborted) run.abort();
+                    throw error;
+                });
         };
         const stopButton = (kind, label) => h('button', {
             type: 'button', onClick: () => stopAiRun(kind), disabled: !!stopRequested[kind],
@@ -3214,7 +3311,12 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         const [checking, setChecking] = useState(false);
         const [auditStatus, setAuditStatus] = useState('not_run');
         const [auditedFingerprint, setAuditedFingerprint] = useState(null);
-        const [persistLocally, setPersistLocally] = useState(() => safeGetItem(PERSIST_PREF_KEY) === 'true');
+        const [persistLocally, setPersistLocally] = useState(() => {
+            const preference = safeGetItem(PERSIST_PREF_KEY);
+            // Workspace setup explicitly opted in to encrypted records. Keep
+            // any existing opt-out (or malformed preference) session-only.
+            return preference === null ? true : preference === 'true';
+        });
         // Step 6: Export
         const [importText, setImportText] = useState('');
         const [savedReports, setSavedReports] = useState([]);
@@ -3273,11 +3375,8 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         const [badCitations, setBadCitations] = useState([]);
         const [psycheckFingerprint, setPsycheckFingerprint] = useState(null);
         // ─── Phase D — Dynamic Assessment ingestion ───
-        // When DA Studio writes window.__alloDAExport, surface a banner
-        // offering to ingest its fact chunks + pre-drafted section into
-        // this report. Detect on mount + on the 'alloDAExportReady' event
-        // dispatched from DA, so the banner appears whether RW was already
-        // open or just got opened.
+        // Protected handoffs are consumed only after workspace unlock. Raw
+        // legacy window globals are never a clinical import authority.
         const [daExportPayload, setDaExportPayload] = useState(null);
         const [daIngestDismissed, setDaIngestDismissed] = useState(false);
         // Assessment Center RTI export (→ IEP-Ready Packet). Mirrors the DA pair.
@@ -3306,6 +3405,81 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         const confirmationPreviousFocusRef = useRef(null);
         const reducedMotion = useReducedMotion();
         const effectiveStudentName = (manualStudentName || studentName || '').trim();
+        const [sensitivePromptReview, setSensitivePromptReview] = useState(null);
+        const sensitivePromptGateRef = useRef(null);
+        const sensitivePromptApiRef = useRef(null);
+        const sensitivePromptScopeRef = useRef({ key: null, provider: rawCallGemini, generation: 0, mounted: true });
+        const sensitivePromptCaseKey = JSON.stringify([studentName || '', selectedStudentId, effectiveStudentName]);
+        if (sensitivePromptScopeRef.current.key !== sensitivePromptCaseKey
+            || sensitivePromptScopeRef.current.provider !== rawCallGemini) {
+            sensitivePromptScopeRef.current.key = sensitivePromptCaseKey;
+            sensitivePromptScopeRef.current.provider = rawCallGemini;
+            sensitivePromptScopeRef.current.generation += 1;
+        }
+        const sensitivePromptGeneration = sensitivePromptScopeRef.current.generation;
+        const abortSensitiveWork = (notify = true, invalidate = true) => {
+            if (invalidate) sensitivePromptScopeRef.current.generation += 1;
+            Object.values(aiRunsRef.current).forEach(run => run.abort());
+            directAiControllersRef.current.forEach(controller => controller.abort());
+            directAiControllersRef.current.clear();
+            fileReadersRef.current.forEach(reader => { try { reader.abort(); } catch {} });
+            fileReadersRef.current.clear();
+            if (sensitivePromptGateRef.current) sensitivePromptGateRef.current.cancelAll({ notify });
+        };
+        const captureSensitiveOperation = () => {
+            rwAssertWorkspace(sensitiveWorkspace, renderEpoch);
+            return { epoch: renderEpoch, generation: sensitivePromptScopeRef.current.generation };
+        };
+        const operationIsCurrent = operation => workspaceIsCurrent(operation.epoch)
+            && sensitivePromptScopeRef.current.generation === operation.generation;
+        const assertSensitiveOperation = operation => {
+            if (!operationIsCurrent(operation)) throw rwReviewCancelledError();
+        };
+        const invalidateSensitivePromptCase = () => {
+            abortSensitiveWork();
+        };
+        useEffect(() => {
+            abortSensitiveWork(true, false);
+        }, [sensitivePromptCaseKey, rawCallGemini]);
+        useEffect(() => {
+            mountedRef.current = true;
+            sensitivePromptScopeRef.current.mounted = true;
+            return () => {
+                mountedRef.current = false;
+                sensitivePromptScopeRef.current.mounted = false;
+                sensitivePromptScopeRef.current.generation += 1;
+                abortSensitiveWork(false, false);
+                rwClearCaseIndex();
+                rwClearReferenceIndex();
+            };
+        }, []);
+        const callGemini = rwCreateReviewedAiCaller(rawCallGemini, {
+            getWorkspace: () => sensitiveWorkspace,
+            createOperation: incomingSignal => {
+                if (incomingSignal) return { signal: incomingSignal };
+                const controller = new AbortController();
+                directAiControllersRef.current.add(controller);
+                return { signal: controller.signal, release: () => directAiControllersRef.current.delete(controller) };
+            },
+            getGate: () => {
+                const api = _redactionApi();
+                if (!api || typeof api.createSensitivePromptGate !== 'function'
+                    || typeof api.SensitivePromptReview !== 'function') throw rwReviewUnavailableError();
+                const previousApi = sensitivePromptApiRef.current;
+                if (previousApi && (previousApi.api !== api || previousApi.create !== api.createSensitivePromptGate
+                    || previousApi.review !== api.SensitivePromptReview)) throw rwReviewUnavailableError();
+                if (!sensitivePromptGateRef.current) {
+                    sensitivePromptGateRef.current = api.createSensitivePromptGate({ onChange: setSensitivePromptReview });
+                    sensitivePromptApiRef.current = { api, create: api.createSensitivePromptGate, review: api.SensitivePromptReview };
+                }
+                return sensitivePromptGateRef.current;
+            },
+            getOptions: () => ({ studentName: effectiveStudentName, people: reportPeople }),
+            isCurrent: () => sensitivePromptScopeRef.current.mounted
+                && sensitivePromptScopeRef.current.generation === sensitivePromptGeneration
+                && sensitivePromptScopeRef.current.provider === rawCallGemini
+        });
+        const SensitivePromptReview = _redactionApi() && _redactionApi().SensitivePromptReview;
         const aiCaseDocs = effectiveStudentName ? caseDocuments.filter(d => d.allowAI) : [];
         // Records the local verifier may match a prior score against (never sent).
         const caseRecords = caseDocuments.map(d => ({ title: d.title, text: d.text }));
@@ -3452,6 +3626,52 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             bgExtractedHash,
             savedAt: new Date().toISOString()
         }), [reportTitle, effectiveStudentName, selectedStudentId, studentAge, studentGrade, selectedAssessment, scoreEntries, bgSections, clinicalObs, factChunks, reportSections, accuracyResults, hypotheses, selectedHypotheses, differentialResults, blueprint, styleProfile, reportType, reportGenPasses, sectionEvidenceMap, reportPeople, rtiTrendSeries, translatedReport, translationLang, isDemoLoaded, bgExtractedHash]);
+        const workspaceFlushRef = useRef(null);
+        workspaceFlushRef.current = async ({ reason, forLock } = {}) => {
+            if (forLock || reason === 'close') abortSensitiveWork();
+            if (reason === 'backup' && hasTemporarySources) {
+                const backupEpoch = sensitiveWorkspace.captureEpoch();
+                const confirmed = typeof window.confirm === 'function' && window.confirm('This encrypted backup includes saved Report Writer records. Temporary source documents, paste previews and uncommitted imports are excluded and will remain open here. Preserve those materials separately. Continue with a saved-records backup?');
+                sensitiveWorkspace.assertCurrent(backupEpoch);
+                if (!confirmed) {
+                    const error = new Error('Preserve temporary Report Writer sources or confirm their exclusion before backing up saved records.');
+                    error.code = 'PROTECTED_UNSAVED_SESSION';
+                    throw error;
+                }
+            }
+            if (forLock && hasTemporarySources) {
+                const error = new Error('Preserve or explicitly discard Report Writer temporary source materials before locking.');
+                error.code = 'PROTECTED_UNSAVED_SESSION';
+                throw error;
+            }
+            if (!persistLocally && (unsavedWork || (reason === 'backup' && hasReportContent)) && reason !== 'close') {
+                const error = new Error('Enable encrypted autosave or save a report copy before locking or backing up this session-only draft.');
+                error.code = 'PROTECTED_UNSAVED_SESSION';
+                throw error;
+            }
+            // The service invokes this while the UI epoch is already stale.
+            // This captured encrypted facade remains usable only for staging
+            // the latest opt-in draft until the lock commit finishes.
+            if (persistLocally) {
+                secureStorage.setItem(DRAFT_KEY, JSON.stringify(buildReportSnapshot()));
+                secureStorage.setItem(SAVED_KEY, JSON.stringify(savedReports));
+                secureStorage.setItem(REFS_STORAGE_KEY, JSON.stringify(referenceLibrary));
+                secureStorage.setItem(STYLE_STORAGE_KEY, styleProfile);
+            }
+            secureStorage.setItem(PERSIST_PREF_KEY, persistLocally ? 'true' : 'false');
+            await sensitiveWorkspace.flush();
+        };
+        useEffect(() => sensitiveWorkspace.registerFlush(options => workspaceFlushRef.current(options)), [sensitiveWorkspace]);
+        const allowReadableExport = kind => {
+            try {
+                rwAssertWorkspace(sensitiveWorkspace, renderEpoch);
+                sensitiveWorkspace.assertCanExport(kind);
+                return true;
+            } catch (error) {
+                if (!error || error.name !== 'AbortError') addToast('The protected workspace could not approve this export.', 'error');
+                return false;
+            }
+        };
 
 
         // ── Demo Data Generator ──
@@ -3627,6 +3847,7 @@ Include 6-10 assessment scores using REAL subtest names from the assessment batt
                 setIsDemoLoaded(true);
                 if (addToast) addToast(rwFmt(__alloT('report_writer.toast_ai_demo_case_generated_fictional_data', 'AI demo case "{label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]'), { label: parsed.label }), 'success');
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog('AI demo generation error:', err);
                 if (addToast) addToast(t('toasts.ai_demo_generation_failed_try'), 'error');
             } finally { setGeneratingDemo(false); }
@@ -3663,6 +3884,7 @@ Return ONLY the adapted text, no commentary.`;
                 setAccuracyResults([]);
                 if (addToast) addToast(rwFmt(__alloT('report_writer.toast_adapted_for_reading_level', '"{section}" adapted for {targetLevel} reading level'), { section, targetLevel }), 'success');
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog('Grade-level adaptation error:', err);
                 if (addToast) addToast(t('toasts.adaptation_failed'), 'error');
             } finally { setAdaptingSection(null); }
@@ -3674,14 +3896,17 @@ Return ONLY the adapted text, no commentary.`;
             setTranslating(true);
             const run = beginAiRun('translate');
             try {
-                // The date goes in after redaction: "9/23/2026" is a calendar date
-                // and came back as [DATE] in every translation.
-                const header = scrubPII(`${reportTitle}\nStudent: [Student]\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}`) + `\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
+                // Keep the app-generated report date local. The outgoing-copy
+                // review removes calendar dates, so a distinct placeholder is
+                // restored after translation without restoring dates from any
+                // student's clinical narrative.
+                const reportDate = new Date().toLocaleDateString();
+                const header = scrubPII(`${reportTitle}\nStudent: [Student]\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}`) + `\nDate: [REPORT_GENERATED_DATE]\n${'─'.repeat(50)}\n\n`;
                 const body = Object.entries(exportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v}`).join('\n\n' + '─'.repeat(50) + '\n\n');
                 const fullReport = header + scrubPII(body);
                 const prompt = `Translate the following psychoeducational report into ${translationLang}. Maintain all clinical terminology accuracy — use the accepted ${translationLang} clinical equivalents for assessment names and diagnostic terms. Keep all scores, numbers, and assessment names (WISC-V, BASC-3, etc.) in their original form. Copy every token in square brackets, such as [Student], exactly as written: never translate it. Preserve all formatting including headers and section breaks.\n\n${fullReport}`;
                 const result = await aiCall('translate', prompt, false);
-                setTranslatedReport(result.trim());
+                setTranslatedReport(result.trim().replace(/\[REPORT_GENERATED_DATE\]/g, () => reportDate));
                 setTranslatedFingerprint(reportFingerprint);
                 if (addToast) addToast((rwFmt(__alloT('report_writer.toast_report_translated_to', 'Report translated to {translationLang}'), { translationLang }) + ' ✅'), 'success');
             } catch (err) {
@@ -3691,6 +3916,7 @@ Return ONLY the adapted text, no commentary.`;
             } finally { endAiRun('translate', run); setTranslating(false); }
         };
         const copyTranslatedReport = () => {
+            if (!allowReadableExport('clipboard')) return;
             const translatedDraft = `UNREVIEWED AI-ASSISTED TRANSLATION — CLINICAL AND LANGUAGE REVIEW REQUIRED\nLanguage: ${translationLang}\n\n${translatedReport.replace(/\[Student\]/g, () => effectiveStudentName || '[Student]')}`;
             navigator.clipboard.writeText(translatedDraft).then(() => {
                 if (addToast) addToast(t('toasts.translated_report_copied'), 'success');
@@ -3706,12 +3932,12 @@ Return ONLY the adapted text, no commentary.`;
             { key: 'otherSources', label: __alloT('report_writer.field_other_sources', 'Other Sources'), icon: '\u{1F4CE}', placeholder: __alloT('report_writer.placeholder_any_additional_collateral_sources_e_g', 'Any additional collateral sources (e.g., tutor notes, medical records summaries)...') }
         ];
 
-        // ── Auto-load draft from localStorage on mount ──
+        // ── Auto-load the opted-in encrypted draft after workspace unlock ──
         useEffect(() => {
             if (!persistLocally) return;
             const draft = safeGetItem(DRAFT_KEY);
             if (draft) {
-                try { applyReportSnapshot(JSON.parse(draft), { silent: true, clearStoredDraft: false }); debugLog('Draft restored from localStorage'); }
+                try { applyReportSnapshot(JSON.parse(draft), { silent: true, clearStoredDraft: false }); debugLog('Draft restored from protected workspace'); }
                 catch (e) { warnLog('Draft load error:', e); safeRemoveItem(DRAFT_KEY); }
             }
             const refs = safeGetItem(REFS_STORAGE_KEY);
@@ -3755,7 +3981,7 @@ Return ONLY the adapted text, no commentary.`;
             if (!citesReferences || !referenceLibrary.length) return undefined;
             let live = true;
             rwEnsureLumenEvidence().then(ok => {
-                if (live && ok) { rwReferenceProject(referenceLibrary); setRefIndexVersion(v => v + 1); }
+                if (live && workspaceIsCurrent() && ok) { rwReferenceProject(referenceLibrary); setRefIndexVersion(v => v + 1); }
             });
             return () => { live = false; };
         }, [referenceLibrary, citesReferences]);
@@ -3772,43 +3998,45 @@ Return ONLY the adapted text, no commentary.`;
         useEffect(() => { safeSetItem(PERSIST_PREF_KEY, persistLocally ? 'true' : 'false'); }, [persistLocally]);
 
         // ── Phase D — DA export detection ──
-        // Check for window.__alloDAExport on mount + listen for the custom
-        // event DA dispatches when it stashes a payload. If found, surface
-        // the ingest banner. Dismissal is local to this RW session.
+        // Listen to the protected service, not the old plaintext global bridge.
         useEffect(() => {
             const check = () => {
-                if (typeof window !== 'undefined' && window.__alloDAExport) {
-                    setDaExportPayload(window.__alloDAExport);
+                if (!workspaceIsCurrent()) return;
+                const payload = sensitiveWorkspace.consumeTransfer('dynamic-assessment');
+                if (payload) {
+                    setDaExportPayload(payload);
                     setDaIngestDismissed(false);
                 }
             };
             check();
             const handler = () => check();
             if (typeof window !== 'undefined') {
-                window.addEventListener('alloDAExportReady', handler);
+                window.addEventListener('alloflow:sensitive-workspace-status', handler);
                 return () => {
-                    try { window.removeEventListener('alloDAExportReady', handler); } catch (e) { /* ignore */ }
+                    try { window.removeEventListener('alloflow:sensitive-workspace-status', handler); } catch (e) { /* ignore */ }
                 };
             }
-        }, []);
+        }, [sensitiveWorkspace, renderEpoch]);
 
         // ── RTI export detection (Assessment Center → IEP packet; mirrors DA) ──
         useEffect(() => {
             const check = () => {
-                if (typeof window !== 'undefined' && window.__alloRTIExport) {
-                    setRtiExportPayload(window.__alloRTIExport);
+                if (!workspaceIsCurrent()) return;
+                const payload = sensitiveWorkspace.consumeTransfer('assessment-center');
+                if (payload) {
+                    setRtiExportPayload(payload);
                     setRtiIngestDismissed(false);
                 }
             };
             check();
             const handler = () => check();
             if (typeof window !== 'undefined') {
-                window.addEventListener('alloRTIExportReady', handler);
+                window.addEventListener('alloflow:sensitive-workspace-status', handler);
                 return () => {
-                    try { window.removeEventListener('alloRTIExportReady', handler); } catch (e) { /* ignore */ }
+                    try { window.removeEventListener('alloflow:sensitive-workspace-status', handler); } catch (e) { /* ignore */ }
                 };
             }
-        }, []);
+        }, [sensitiveWorkspace, renderEpoch]);
 
         // ── Phase D — Ingest action ──
         // Pulls DA fact chunks into factChunks (auto-verified since they're
@@ -3841,8 +4069,7 @@ Return ONLY the adapted text, no commentary.`;
                 next[idx] = { ...next[idx], enabled: true };
                 return next;
             });
-            // Clear the global so duplicate ingest isn't possible
-            try { delete window.__alloDAExport; } catch (e) { window.__alloDAExport = null; }
+            // The protected channel consumed this handoff exactly once.
             setDaExportPayload(null);
             setDaIngestDismissed(false);
             if (addToast) addToast(('✅ ' + rwFmt(__alloT('report_writer.toast_ingested_da_fact_chunks_section_draft', 'Ingested {count} DA fact chunks + section draft'), { count: incomingChunks.length })), 'success');
@@ -3886,7 +4113,6 @@ Return ONLY the adapted text, no commentary.`;
             const incomingSections = {};
             Object.keys(sections).forEach(name => { if (sections[name]) incomingSections[name] = sections[name]; });
             replaceSections(incomingSections, 'imported');
-            try { delete window.__alloRTIExport; } catch (e) { window.__alloRTIExport = null; }
             setRtiExportPayload(null);
             setRtiIngestDismissed(false);
             if (addToast) addToast(('✅ ' + rwFmt(__alloT('report_writer.toast_ingested_rti_fact_chunks_section_drafts', 'Ingested {count} RTI fact chunks + {count2} section drafts → IEP-Ready Packet'), { count: incomingChunks.length, count2: Object.keys(sections).length })), 'success');
@@ -3897,6 +4123,7 @@ Return ONLY the adapted text, no commentary.`;
 
         // ── Saved Reports helpers ──
         const resetCaseState = ({ clearStoredDraft = true, silent = false } = {}) => {
+            invalidateSensitivePromptCase();
             if (clearStoredDraft) safeRemoveItem(DRAFT_KEY);
             setCurrentStep(1);
             setReportTitle('Psychoeducational Evaluation Report');
@@ -4010,13 +4237,14 @@ Return ONLY the adapted text, no commentary.`;
             if (!silent && addToast) addToast(__alloT('report_writer.toast_report_data_loaded_rerun_the_accuracy', 'Report data loaded; rerun the accuracy audit before formal export.'), 'success');
             return data;
         };
-        const saveReportToGallery = () => {
+        const saveReportToGallery = async () => {
             const name = saveReportName.trim() || `Report ${new Date().toLocaleDateString()}`;
             const entry = { ...buildReportSnapshot(), id: uid(), name, savedAt: new Date().toISOString() };
             const updated = [entry, ...savedReports].slice(0, 20);
             setSavedReports(updated);
             setSaveReportName('');
-            const persisted = persistLocally ? safeSetItem(SAVED_KEY, JSON.stringify(updated)) : false;
+            let persisted = persistLocally ? safeSetItem(SAVED_KEY, JSON.stringify(updated)) : false;
+            if (persisted) { try { await sensitiveWorkspace.flush(); } catch { persisted = false; } }
             if (addToast) addToast(
                 persistLocally ? (persisted ? rwFmt(__alloT('report_writer.toast_report_saved_on_this_device', 'Report "{name}" saved on this device'), { name }) : rwFmt(__alloT('report_writer.toast_report_kept_for_this_session_device', 'Report "{name}" kept for this session; device storage failed'), { name })) : rwFmt(__alloT('report_writer.toast_report_saved_for_this_session_only', 'Report "{name}" saved for this session only'), { name }),
                 persistLocally && !persisted ? 'info' : 'success'
@@ -4046,24 +4274,47 @@ Return ONLY the adapted text, no commentary.`;
             title: __alloT('report_writer.confirm_stop_storing_title', 'Stop storing on this device?'),
             message: __alloT('report_writer.confirm_stop_storing_message', 'Drafts, saved reports, references and style guidance stored in this browser are deleted. The open report stays until you close the Report Writer.'),
             confirmLabel: __alloT('report_writer.confirm_stop_storing', 'Stop storing and delete') }, () => applyPersistence(enabled));
-        const applyPersistence = (enabled) => {
+        const applyPersistence = async (enabled) => {
             setPersistLocally(enabled);
+            safeSetItem(PERSIST_PREF_KEY, enabled ? 'true' : 'false');
             if (!enabled) {
                 [DRAFT_KEY, SAVED_KEY, REFS_STORAGE_KEY, STYLE_STORAGE_KEY].forEach(safeRemoveItem);
+                try { await sensitiveWorkspace.flush(); } catch { addToast('Encrypted record deletion could not be confirmed. Keep the workspace open and try again.', 'error'); return; }
                 if (addToast) addToast(__alloT('report_writer.toast_persistent_device_storage_disabled_and_stored', 'Persistent device storage disabled and stored clinical data cleared. Current session data remains open.'), 'info');
             } else {
-                safeSetItem(DRAFT_KEY, JSON.stringify(buildReportSnapshot()));
-                safeSetItem(SAVED_KEY, JSON.stringify(savedReports));
-                safeSetItem(REFS_STORAGE_KEY, JSON.stringify(referenceLibrary));
-                safeSetItem(STYLE_STORAGE_KEY, styleProfile);
-                if (addToast) addToast(__alloT('report_writer.toast_persistent_device_storage_enabled_current_sessio', 'Persistent device storage enabled. Current session data was stored unencrypted in this browser profile.'), 'info');
+                const staged = [
+                    safeSetItem(DRAFT_KEY, JSON.stringify(buildReportSnapshot())),
+                    safeSetItem(SAVED_KEY, JSON.stringify(savedReports)),
+                    safeSetItem(REFS_STORAGE_KEY, JSON.stringify(referenceLibrary)),
+                    safeSetItem(STYLE_STORAGE_KEY, styleProfile)
+                ].every(Boolean);
+                try { if (!staged) throw new Error('Protected staging failed'); await sensitiveWorkspace.flush(); }
+                catch { addToast('Encrypted autosave could not be confirmed. Keep the workspace open and try again.', 'error'); return; }
+                if (addToast) addToast(__alloT('report_writer.toast_encrypted_storage_enabled', 'Encrypted device storage enabled for Report Writer.'), 'info');
             }
         };
-        const clearStoredClinicalData = () => {
+        const clearStoredClinicalData = async () => {
             setPersistLocally(false);
+            safeSetItem(PERSIST_PREF_KEY, 'false');
             [DRAFT_KEY, SAVED_KEY, REFS_STORAGE_KEY, STYLE_STORAGE_KEY].forEach(safeRemoveItem);
             setSavedReports([]);
+            try { await sensitiveWorkspace.flush(); } catch { addToast('Encrypted record deletion could not be confirmed. Keep the workspace open and try again.', 'error'); return; }
             if (addToast) addToast(__alloT('report_writer.toast_stored_report_writer_data_cleared_from', 'Stored Report Writer data cleared from this device. Current unsaved session remains open.'), 'success');
+        };
+        const discardTemporarySources = () => {
+            abortSensitiveWork();
+            setCaseDocuments([]);
+            setPriorFind(null);
+            rwClearCaseIndex();
+            setReportPaste('');
+            setReportPastePreview(null);
+            setNewCaseTitle('');
+            setNewCaseText('');
+            setNewRefName('');
+            setNewRefText('');
+            setImportText('');
+            setDiscrepancyReport(null);
+            setPsycheckFingerprint(null);
         };
 
         // ── PII scrubbing ──
@@ -4129,16 +4380,19 @@ Return ONLY the adapted text, no commentary.`;
         // refusals (a scanned PDF with no text layer, an over-long file) are
         // shown as they are, since they tell the clinician what to do next.
         const importReferenceFile = async (input) => {
+            const operation = captureSensitiveOperation();
             const file = input && input.files && input.files[0];
             if (!file) return;
             setRefImporting(true);
             try {
                 if (!(await rwEnsureLumenDocuments())) throw new Error(__alloT('report_writer.document_reader_could_not_load', 'The document reader could not load. Paste the text instead.'));
+                assertSensitiveOperation(operation);
                 const spec = await window.LumenDocuments.extractLocalDocument(file);
+                assertSensitiveOperation(operation);
                 setReferenceLibrary(prev => [...prev, { id: uid(), name: spec.title, text: spec.content, addedAt: new Date().toISOString(), fileName: spec.fileName || file.name, fileFormat: spec.fileFormat || '' }]);
                 if (addToast) addToast(rwFmt(__alloT('report_writer.toast_added_characters_to_your_references', 'Added "{title}" ({value} characters) to your references.'), { title: spec.title, value: spec.content.length.toLocaleString() }), 'success');
             } catch (e) {
-                if (addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
+                if (operationIsCurrent(operation) && addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
             } finally {
                 setRefImporting(false);
                 try { input.value = ''; } catch (_) { /* some browsers lock the value */ }
@@ -4152,15 +4406,18 @@ Return ONLY the adapted text, no commentary.`;
             setReportPasteLevel(result.ciLevel || 95);
         };
         const importReportPasteFile = async (input) => {
+            const operation = captureSensitiveOperation();
             const file = input && input.files && input.files[0];
             if (!file) return;
             setReportPasteImporting(true);
             try {
                 if (!(await rwEnsureLumenDocuments())) throw new Error(__alloT('report_writer.document_reader_could_not_load', 'The document reader could not load. Paste the text instead.'));
+                assertSensitiveOperation(operation);
                 const spec = await window.LumenDocuments.extractLocalDocument(file);
+                assertSensitiveOperation(operation);
                 readReportPaste(spec.content);
             } catch (e) {
-                if (addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
+                if (operationIsCurrent(operation) && addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
             } finally {
                 setReportPasteImporting(false);
                 try { input.value = ''; } catch (_) { /* some browsers lock the value */ }
@@ -4234,15 +4491,18 @@ Return ONLY the adapted text, no commentary.`;
             if (addToast) addToast(rwFmt(__alloT('report_writer.toast_case_document_added', 'Added case document "{title}" ({count} characters). It is not used with the AI until you turn that on.'), { title: name, count: String(text || '').length.toLocaleString() }), 'success');
         };
         const importCaseFile = async (input) => {
+            const operation = captureSensitiveOperation();
             const file = input && input.files && input.files[0];
             if (!file) return;
             setCaseImporting(true);
             try {
                 if (!(await rwEnsureLumenDocuments())) throw new Error(__alloT('report_writer.document_reader_could_not_load', 'The document reader could not load. Paste the text instead.'));
+                assertSensitiveOperation(operation);
                 const spec = await window.LumenDocuments.extractLocalDocument(file);
+                assertSensitiveOperation(operation);
                 addCaseDocument(spec.title, spec.content, spec.fileName || file.name);
             } catch (e) {
-                if (addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
+                if (operationIsCurrent(operation) && addToast) addToast((e && e.message) || __alloT('report_writer.toast_that_file_could_not_be_read', 'That file could not be read.'), 'error');
             } finally {
                 setCaseImporting(false);
                 try { input.value = ''; } catch (_) { /* some browsers lock the value */ }
@@ -4437,7 +4697,11 @@ Extract 5-20 key facts. Be precise and factual.`;
                                 verified: false, immutable: false, devNormResult: null, origin: 'extracted'
                             });
                         });
-                    } catch (err) { bgExtractFailures++; warnLog('Fact extraction error (window ' + (w + 1) + '):', err); }
+                    } catch (err) {
+                        if (rwIsStopped(err)) throw err;
+                        bgExtractFailures++;
+                        warnLog('Fact extraction error (window ' + (w + 1) + '):', err);
+                    }
                 }
                 if (bgExtractCapped && addToast) {
                     addToast(('⚠️ ' + rwFmt(__alloT('report_writer.toast_background_text_is_very_long_facts', 'Background text is very long — facts were extracted from the first {count} part(s) only. Review the remainder manually.'), { count: capped.length })), 'info');
@@ -4471,6 +4735,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                     }
                 }
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog('Extract error:', err);
                 if (addToast) addToast(t('toasts.extraction_failed'), 'error');
             } finally { setExtracting(false); }
@@ -4496,6 +4761,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                 setBgExtractedHash(rwTextHash(text));
                 if (addToast) addToast(rwFmt(__alloT('report_writer.toast_background_reextracted', 'Background facts extracted again: {added} new (verify them below), {kept} unchanged, {removed} no longer in the text.'), { added: merged.added, kept: merged.kept, removed: merged.removed }), 'success');
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog('Re-extract error:', err);
                 if (addToast) addToast(t('toasts.extraction_failed'), 'error');
             } finally { setExtracting(false); }
@@ -4572,6 +4838,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                 setDifferentialResults(results);
                 if (addToast) addToast(t('toasts.differential_analysis_complete_u2705'), 'success');
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog('Differential analysis error:', err);
                 if (addToast) addToast(t('toasts.differential_analysis_failed'), 'error');
             } finally { setRunningDifferential(false); }
@@ -4791,7 +5058,9 @@ If no errors, return {"errors":[]}.`, true); }
                         // Triangulated: run N passes in parallel, score each, pick best
                         const passPromises = genVariants.slice(0, numPasses).map(variant => {
                             const prompt = buildSectionPrompt(section, verifiedChunks, variant);
-                            return aiCall('sections', prompt, false, true).then(r => parseEvidenceResponse(r, citableFor(section, verifiedChunks))).catch(() => null);
+                            return aiCall('sections', prompt, false, true)
+                                .then(r => parseEvidenceResponse(r, citableFor(section, verifiedChunks)))
+                                .catch(error => { if (rwIsStopped(error)) throw error; return null; });
                         });
                         const passResults = (await Promise.all(passPromises)).filter(Boolean);
                         if (run.signal.aborted) throw rwStoppedError();
@@ -5070,7 +5339,9 @@ Return ONLY JSON:
                 if (scoreEntries.length > 0) {
                     try {
                         const allScoreData = scoreEntries.map(s => `${s.assessment} \u2014 ${s.subtest}: ${rwScoreFactText(s)}`).join('\n');
-                        const { errors, parseOk } = await verifySectionAgainstScores(sectionName, text, allScoreData);
+                        const verification = await verifySectionAgainstScores(sectionName, text, allScoreData);
+                        if (verification.skipReason === 'stopped') throw rwStoppedError();
+                        const { errors, parseOk } = verification;
                         const criticalErrs = errors.filter(e => e.severity === 'critical');
                         if (criticalErrs.length > 0) {
                             const corrections = criticalErrs.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
@@ -5080,6 +5351,7 @@ Return ONLY JSON:
                             text = fixed.text;
                             usedChunks = fixed.usedChunks;
                             const postFix = await verifySectionAgainstScores(sectionName, text, allScoreData);
+                            if (postFix.skipReason === 'stopped') throw rwStoppedError();
                             const remainingCritical = postFix.errors.filter(e => e.severity === 'critical').length;
                             if (addToast) addToast(
                                 postFix.parseOk && remainingCritical === 0
@@ -5095,6 +5367,7 @@ Return ONLY JSON:
                             if (addToast) addToast((rwFmt(__alloT('report_writer.toast_regenerated_score_citation_s_verified', '"{sectionName}" regenerated; {count} score citation(s) verified'), { sectionName, count: scoreEntries.length }) + ' ✅'), 'success');
                         }
                     } catch(vErr) {
+                        if (rwIsStopped(vErr)) throw vErr;
                         warnLog(`[Report] Post-regen verification failed for ${sectionName}:`, vErr);
                         if (addToast) addToast(rwFmt(__alloT('report_writer.toast_regenerated_verification_pass_failed_please_revi', '"{sectionName}" regenerated; verification pass failed — please review'), { sectionName }), 'info');
                     }
@@ -5105,6 +5378,7 @@ Return ONLY JSON:
                 setSectionEvidenceMap(prev => ({ ...prev, [sectionName]: usedChunks }));
                 setAccuracyResults([]); // clear stale accuracy data
             } catch (err) {
+                if (rwIsStopped(err)) return;
                 warnLog(`Regeneration error for ${sectionName}:`, err);
                 if (addToast) addToast(rwFmt(__alloT('report_writer.toast_failed_to_regenerate', 'Failed to regenerate "{sectionName}"'), { sectionName }), 'error');
             } finally {
@@ -5119,6 +5393,7 @@ Return ONLY JSON:
         // validates it against a size-bounded allowlisted schema, then stores it in component-local state.
         // No persistence. No Firestore write. No export inclusion.
         const handleImportDiscrepancyReport = (event) => {
+            const operation = captureSensitiveOperation();
             const file = event && event.target && event.target.files && event.target.files[0];
             if (!file) return;
             const inputEl = event.target;
@@ -5128,8 +5403,10 @@ Return ONLY JSON:
                 return;
             }
             const reader = new FileReader();
+            fileReadersRef.current.add(reader);
             reader.onload = (ev) => {
                 try {
+                    if (!operationIsCurrent(operation)) return;
                     const raw = typeof ev.target.result === 'string' ? ev.target.result.replace(/^\uFEFF/, '') : '';
                     if (!raw) throw new Error('The selected discrepancy report is empty');
                     if (raw.length > RW_MAX_DISCREPANCY_JSON_CHARS) throw new Error('Psycheck JSON exceeds the 1 MB limit');
@@ -5145,13 +5422,15 @@ Return ONLY JSON:
                     );
                 } catch (e) {
                     warnLog('[Report] psycheck import failed:', e);
-                    if (addToast) addToast(rwFmt(__alloT('report_writer.toast_failed_to_import_discrepancy_report', 'Failed to import discrepancy report: {value}'), { value: (e && e.message) || e }), 'error');
+                    if (operationIsCurrent(operation) && addToast) addToast('The discrepancy report could not be imported. Check the file and try again.', 'error');
                 } finally {
+                    fileReadersRef.current.delete(reader);
                     if (inputEl) inputEl.value = '';
                 }
             };
             const handleReadFailure = () => {
-                if (addToast) addToast(__alloT('report_writer.toast_failed_to_read_discrepancy_report_file', 'Failed to read discrepancy report file'), 'error');
+                fileReadersRef.current.delete(reader);
+                if (operationIsCurrent(operation) && addToast) addToast(__alloT('report_writer.toast_failed_to_read_discrepancy_report_file', 'Failed to read discrepancy report file'), 'error');
                 if (inputEl) inputEl.value = '';
             };
             reader.onerror = handleReadFailure;
@@ -5677,11 +5956,16 @@ Return ONLY valid JSON:
         const hasReportContent = scoreEntries.length > 0 || factChunks.length > 0 || caseDocuments.length > 0
             || Object.values(reportSections || {}).some(v => String(v || '').trim())
             || Object.values(bgSections || {}).some(v => String(v || '').trim())
-            || Object.values(clinicalObs || {}).some(o => String((o && typeof o === 'object' ? o.text : o) || '').trim());
-        const unsavedWork = hasReportContent && (caseDocuments.length > 0 || (!persistLocally && savedSnapshot !== snapshotText));
+            || Object.values(clinicalObs || {}).some(o => String((o && typeof o === 'object' ? o.text : o) || '').trim())
+            || !!((effectiveStudentName && effectiveStudentName !== String(studentName || '').trim()) || studentAge || studentGrade || referenceLibrary.length || styleProfile.trim());
+        const hasOtherTemporarySources = caseDocuments.length > 0 || !!reportPaste.trim() || !!reportPastePreview
+            || !!newCaseTitle.trim() || !!newCaseText.trim() || !!newRefName.trim() || !!newRefText.trim()
+            || !!discrepancyReport;
+        const hasTemporarySources = hasOtherTemporarySources || !!importText.trim();
+        const unsavedWork = hasTemporarySources || (hasReportContent && !persistLocally && savedSnapshot !== snapshotText);
         useEffect(() => {
-            if (workStateRef) workStateRef.current = { unsaved: unsavedWork, caseDocuments: caseDocuments.length > 0, persisted: persistLocally };
-        }, [workStateRef, unsavedWork, caseDocuments.length, persistLocally]);
+            if (workStateRef) workStateRef.current = { unsaved: unsavedWork, caseDocuments: hasTemporarySources, persisted: persistLocally, flush: options => workspaceFlushRef.current(options) };
+        }, [workStateRef, unsavedWork, hasTemporarySources, persistLocally]);
         useEffect(() => {
             if (!unsavedWork) return undefined;
             const warn = (event) => { event.preventDefault(); event.returnValue = ''; return ''; };
@@ -5689,6 +5973,7 @@ Return ONLY valid JSON:
             return () => window.removeEventListener('beforeunload', warn);
         }, [unsavedWork]);
         const exportJSON = () => {
+            if (!allowReadableExport('json')) return;
             const data = { ...buildReportSnapshot(), exportedAt: new Date().toISOString() };
             setSavedSnapshot(snapshotKey());
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -5703,7 +5988,9 @@ Return ONLY valid JSON:
             setTimeout(() => URL.revokeObjectURL(url), 0);
             if (addToast) addToast(t('toasts.json_exported'), 'success');
         };
-        const importJSON = () => confirmThen(unsavedWork, replaceCaseRequest(), importJSONNow);
+        // The incoming JSON is protected while pending, but is not earlier
+        // report work that importing that very JSON would overwrite.
+        const importJSON = () => confirmThen(hasOtherTemporarySources || (hasReportContent && !persistLocally && savedSnapshot !== snapshotText), replaceCaseRequest(), importJSONNow);
         const importJSONNow = () => {
             try {
                 if (importText.length > RW_MAX_JSON_CHARS) throw new Error('Report JSON exceeds the 2 MB limit');
@@ -5714,6 +6001,7 @@ Return ONLY valid JSON:
         };
         const copyFullReport = () => {
             if (!requireFormalExportReady()) return;
+            if (!allowReadableExport('clipboard')) return;
             const draftNotice = `${'═'.repeat(50)}\nCONFIDENTIAL DRAFT — AI-ASSISTED DOCUMENT\nThis report requires review and approval by the\nlicensed school psychologist before use in\neducational decision-making.\n${'═'.repeat(50)}\n\n`;
             const header = `${reportTitle}\nStudent: ${effectiveStudentName || '[Student]'}\nAge: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'}\nDate: ${new Date().toLocaleDateString()}\n${'─'.repeat(50)}\n\n`;
             const body = Object.entries(exportSections).map(([k, v]) => `${k.toUpperCase()}\n\n${v.replace(/\[Student\]/g, () => effectiveStudentName || '[Student]')}`).join('\n\n' + '─'.repeat(50) + '\n\n');
@@ -5814,6 +6102,7 @@ Return ONLY valid JSON:
                 if (addToast) addToast(__alloT('report_writer.toast_audit_findings_are_stale_for_the', 'Audit findings are stale for the current report. Rerun the accuracy audit before copying them.'), 'error');
                 return;
             }
+            if (!allowReadableExport('clipboard')) return;
             const summary = buildAuditSummary(true);
             if (!summary) {
                 if (addToast) addToast(__alloT('report_writer.toast_no_audit_findings_yet_run_the', 'No audit findings yet — run the accuracy check first.'), 'info');
@@ -5828,6 +6117,7 @@ Return ONLY valid JSON:
 
         const printReport = () => {
             if (!requireFormalExportReady()) return;
+            if (!allowReadableExport('print')) return;
             const w = window.open('', '_blank');
             if (!w) {
                 if (addToast) addToast(__alloT('report_writer.toast_the_print_window_was_blocked_allow', 'The print window was blocked. Allow pop-ups and try again.'), 'error');
@@ -5893,7 +6183,25 @@ Return ONLY valid JSON:
         }, [currentStep]);
 
         // ── Render ──
+        let approvedAi = false;
+        try { sensitiveWorkspace.assertCanTransmit('ai'); approvedAi = true; } catch {}
         return h('div', { ref: panelRootRef, className: 'space-y-4' },
+            !approvedAi && h('p', { role: 'note', className: 'rounded-lg border border-sky-300 bg-sky-50 p-3 text-sm' },
+                'Clinical AI processing is disabled until this school deployment approves its connection. Local editing, imports and confirmed readable exports remain available.'),
+            sensitivePromptReview && typeof SensitivePromptReview === 'function' && h(SensitivePromptReview, {
+                React,
+                review: sensitivePromptReview,
+                onAccept: (id, payload) => sensitivePromptGateRef.current && sensitivePromptGateRef.current.accept(id, payload),
+                onCancel: (id) => sensitivePromptGateRef.current && sensitivePromptGateRef.current.cancel(id)
+            }),
+            hasTemporarySources && h('aside', { role: 'note', 'aria-label': 'Temporary Report Writer sources', className: 'rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm' },
+                h('p', null, 'Temporary source documents, paste previews and uncommitted imports are not included in saved-records backups. Preserve them separately or explicitly discard them before locking.'),
+                h('button', { type: 'button', className: 'mt-2 rounded border border-amber-700 px-3 py-1', onClick: () => setConfirmationRequest({
+                    title: 'Discard temporary source materials?',
+                    message: 'This clears case document originals, score paste previews, uncommitted imports and the discrepancy file. Entered scores, the report draft and saved records remain.',
+                    confirmLabel: 'Discard temporary sources', onConfirm: discardTemporarySources
+                }) }, 'Review and discard temporary sources')
+            ),
             confirmationRequest && h('div', {
                 ref: confirmationOverlayRef,
                 className: 'fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4',
@@ -7392,15 +7700,15 @@ Return ONLY valid JSON:
                     h('div', { className: 'rounded-lg border border-violet-200 bg-white p-2 space-y-1' },
                         h('label', { className: 'flex items-center gap-2 text-[11px] font-medium text-slate-700' },
                             h('input', { id: 'rw-persist-device', type: 'checkbox', checked: persistLocally, onChange: event => updatePersistence(event.target.checked) }),
-                            __alloT('report_writer.persist_report_writer_data_on_this', 'Persist Report Writer data on this device')
+                            __alloT('report_writer.encrypted_autosave', 'Encrypted autosave for Report Writer')
                         ),
                         h('p', { className: 'text-[11px] text-slate-600' }, persistLocally
-                            ? __alloT('report_writer.enabled_drafts_saved_reports_references_and', 'Enabled: drafts, saved reports, references, and style guidance are stored unencrypted in this browser profile.')
-                            : __alloT('report_writer.session_only_mode_data_is_not', 'Session-only mode: data is not written to persistent browser storage.')),
+                            ? __alloT('report_writer.encrypted_storage_description', 'Drafts, saved reports, references and style guidance are encrypted in this protected workspace. Readable exports are separate files.')
+                            : __alloT('report_writer.protected_session_only_description', 'Session-only mode: clinical report data stays in memory. Save a copy or enable encrypted autosave before locking.')),
                         h('button', { type: 'button', className: 'text-[11px] px-2 py-1 rounded bg-red-50 text-red-700 border border-red-300 hover:bg-red-100', onClick: () => {
                             setConfirmationRequest({
                                 title: __alloT('report_writer.confirm_clear_stored_title', 'Clear stored clinical data?'),
-                                message: __alloT('report_writer.confirm_clear_stored_message', 'This permanently removes Report Writer drafts, saved reports, references, and style guidance stored in this browser profile. The currently open session will remain visible.'),
+                                message: __alloT('report_writer.confirm_clear_encrypted_records_message', 'This removes Report Writer saved encrypted records from this workspace. Exported files and backups are separate. The currently open report remains visible.'),
                                 confirmLabel: __alloT('report_writer.confirm_clear_stored', 'Clear stored data'),
                                 onConfirm: clearStoredClinicalData
                             });
@@ -7486,6 +7794,7 @@ Return ONLY valid JSON:
         referencesConsulted: rwReferencesConsulted,
         referencesConsultedText: rwReferencesConsultedText,
         buildReferenceContext,
+        createReviewedAiCaller: rwCreateReviewedAiCaller,
         validateReportPayload,
         validateDiscrepancyPayload,
         getTranslationLanguageMeta,
@@ -7493,7 +7802,7 @@ Return ONLY valid JSON:
         escapeHtml,
         renderTrendSvg: _rwTrendSvg
     });
-    window.AlloModules.ReportWriter = ({
+    const ReportWriterInternal = ({
         onClose,
         callGemini,
         addToast,
@@ -7501,12 +7810,24 @@ Return ONLY valid JSON:
         studentNickname,
         behaviorLensData,
         longitudinalData,
-        dashboardData
+        dashboardData,
+        sensitiveWorkspace
     }) => {
         const dialogRef = useRef(null);
         const closeButtonRef = useRef(null);
         const previousFocusRef = useRef(null);
-        const closeDialog = () => { if (typeof onClose === 'function') onClose(); };
+        const closingRef = useRef(false);
+        const closeDialog = async () => {
+            if (closingRef.current) return;
+            closingRef.current = true;
+            try {
+                const work = workStateRef.current;
+                if (work && typeof work.flush === 'function') await work.flush({ reason: 'close', forLock: false });
+                if (typeof onClose === 'function') onClose();
+            } catch {
+                if (typeof addToast === 'function') addToast('The protected report could not be saved. Keep this workspace open and try again.', 'error');
+            } finally { closingRef.current = false; }
+        };
         // Escape, a click outside the dialog and the close button all used to
         // close at once, and in session-only mode that discards the report.
         const workStateRef = useRef({ unsaved: false });
@@ -7593,9 +7914,9 @@ Return ONLY valid JSON:
                 h('h2', { id: 'rw-close-title', className: 'text-base font-bold text-slate-900' }, __alloT('report_writer.close_confirm_title', 'Close the Report Writer?')),
                 h('p', { id: 'rw-close-description', className: 'mt-2 text-sm leading-relaxed text-slate-700' },
                     closeAsk.persisted
-                        ? __alloT('report_writer.close_confirm_case_documents', 'The report is stored on this device, but case documents never are: closing discards them.')
-                        : __alloT('report_writer.close_confirm_session', 'This report is kept only while the Report Writer is open. Closing it discards its scores, notes and draft. To keep them, use Save JSON in Export & Save, or turn on device storage there.')
-                            + (closeAsk.caseDocuments ? ' ' + __alloT('report_writer.close_confirm_case_documents_too', 'Case documents are never stored either.') : '')),
+                        ? __alloT('report_writer.close_confirm_temporary_sources', 'The report has encrypted autosave, but closing discards temporary source documents, paste previews and uncommitted imports.')
+                        : __alloT('report_writer.close_confirm_protected_session', 'Closing discards this session-only report. Save a copy in Export & Save, or enable encrypted autosave there, to keep its scores, notes and draft.')
+                            + (closeAsk.caseDocuments ? ' ' + __alloT('report_writer.close_confirm_temporary_sources_too', 'Temporary source materials are not saved either.') : '')),
                 h('div', { className: 'mt-5 flex justify-end gap-2' },
                     h('button', { ref: keepWorkingRef, type: 'button', className: 'rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100', onClick: () => setCloseAsk(null) }, __alloT('report_writer.close_keep_working', 'Keep working')),
                     h('button', { type: 'button', className: 'rounded-lg bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-800', onClick: () => { setCloseAsk(null); closeDialog(); } }, __alloT('report_writer.close_discard', 'Close and discard'))
@@ -7625,8 +7946,48 @@ Return ONLY valid JSON:
                     callGemini,
                     t,
                     addToast,
-                    workStateRef
+                    workStateRef,
+                    sensitiveWorkspace
                 })
+            )
+        );
+    };
+
+    // This outer component never reads clinical props or mounts their hooks
+    // until the shared boundary supplies an unlocked, genuine capability.
+    window.AlloModules.ReportWriter = props => {
+        const [, refreshRegistry] = useState(0);
+        const [attempt, setAttempt] = useState(0);
+        const [loadFailed, setLoadFailed] = useState(false);
+        const api = rwWorkspaceApi();
+        const ready = api && typeof api.Boundary === 'function' && typeof api.isSession === 'function';
+        useEffect(() => {
+            let live = true;
+            const changed = () => { if (live) refreshRegistry(value => value + 1); };
+            window.addEventListener('alloflow:module-registry-changed', changed);
+            if (!ready) {
+                setLoadFailed(false);
+                if (typeof window.__alloLazySensitiveWorkspace === 'function') {
+                    Promise.resolve().then(() => window.__alloLazySensitiveWorkspace()).then(() => {
+                        if (!live) return;
+                        const loaded = rwWorkspaceApi();
+                        setLoadFailed(!loaded || typeof loaded.Boundary !== 'function' || typeof loaded.isSession !== 'function');
+                        changed();
+                    }).catch(() => { if (live) setLoadFailed(true); });
+                } else setLoadFailed(true);
+            }
+            return () => { live = false; window.removeEventListener('alloflow:module-registry-changed', changed); };
+        }, [attempt, ready]);
+        if (ready) return h(api.Boundary, {
+            React, feature: 'report-writer', onClose: props.onClose,
+            children: session => h(ReportWriterInternal, { ...props, sensitiveWorkspace: session })
+        });
+        return h('div', { className: 'fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4' },
+            h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'rw-protected-title', className: 'bg-white rounded-xl max-w-lg p-6 space-y-3' },
+                h('h1', { id: 'rw-protected-title', className: 'text-lg font-bold' }, 'Protected Report Writer'),
+                h('p', { role: 'status' }, loadFailed ? 'The protected workspace could not load. Clinical records remain closed.' : 'Loading the protected clinical workspace. Clinical records remain closed.'),
+                h('button', { type: 'button', autoFocus: true, onClick: () => setAttempt(value => value + 1) }, 'Retry protected workspace'),
+                h('button', { type: 'button', onClick: props.onClose }, 'Close')
             )
         );
     };

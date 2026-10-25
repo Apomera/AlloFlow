@@ -23,6 +23,11 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync, execSync } = require('child_process');
 const { createHash } = require('crypto');
+const { assertBuiltDelivery, buildManifest: buildBrowserDeliveryManifest, buildHostBlock: buildBrowserDeliveryHostBlock, replaceHostBlock: replaceBrowserDeliveryHostBlock } = require('./dev-tools/build_browser_delivery_manifest.cjs');
+const { assertVendorAssets, assertOptionalHost, buildBlock: buildOptionalDeliveryBlock, replaceBlock: replaceOptionalDeliveryBlock } = require('./dev-tools/build_optional_browser_delivery_policy.cjs');
+const { assertPrivateLoaderCoverage } = require('./dev-tools/check_private_loader_coverage.cjs');
+const { readManifest: readRuntimeGraphManifest, regular: readRuntimeGraphFile, assertRuntimeAssets, assertRuntimeHost,
+    buildBlock: buildRuntimeGraphBlock, replaceBlock: replaceRuntimeGraphBlock } = require('./dev-tools/build_runtime_graph_delivery_policy.cjs');
 
 // ── Parse CLI args ──────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -60,6 +65,15 @@ const STUDENT_SHELL_ENTRIES = [
     'alloflow_desktop_bridge.js',
     'alloflow_update.js',
     'static',
+    'lame.min.js',
+    'vendor/vexflow-5.0.0/vexflow.js',
+    'vendor/jsonrepair-3.15.0.min.js',
+    'vendor/jszip-3.10.1.min.js',
+    'vendor/pptxgenjs-3.12.0.bundle.js',
+    'vendor/lz-string-1.4.4.min.js',
+    'vendor/idb-keyval-6.2.0.umd.min.js',
+    'vendor/three-r128/three.min.js',
+    'vendor/three-r128/OrbitControls.js',
     // The shell asks for ./vendor/ scripts and ./fonts/; without these Pages answers with HTML.
     'vendor',
     'fonts',
@@ -103,14 +117,24 @@ function publishStudentShell() {
         || !html.includes('./static/js/main.') || !html.includes('./static/css/main.')) {
         throw new Error('Compiled split shell is missing its root or hashed boot assets.');
     }
+    const { assertReleaseDigests } = require('./desktop/web-app/postbuild.js');
+    assertReleaseDigests(STUDENT_SHELL_BUILD_DIR);
+    assertBuiltDelivery({ root: ROOT, buildDir: STUDENT_SHELL_BUILD_DIR });
+    assertOptionalHost({ root: ROOT, buildDir: STUDENT_SHELL_BUILD_DIR });
+    const runtimeDelivery = assertRuntimeHost({ root: ROOT, buildDir: STUDENT_SHELL_BUILD_DIR });
+    if (!/navigator\.serviceWorker\.register\((['"])\.\/sw\.js\1,\s*\{\s*scope:\s*(['"])\.\/\2,\s*updateViaCache:\s*(['"])none\3\s*\}\)/.test(html)) {
+        throw new Error('Student shell must have scoped relative service-worker registration before release hashing.');
+    }
 
     fs.rmSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true, force: true });
     fs.mkdirSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true });
 
-    for (const entry of STUDENT_SHELL_ENTRIES) {
+    const shellEntries = [...new Set([...STUDENT_SHELL_ENTRIES, ...runtimeDelivery.records.map(record => record.asset)])];
+    for (const entry of shellEntries) {
         const src = path.join(STUDENT_SHELL_BUILD_DIR, entry);
         if (!fs.existsSync(src)) continue;
         const dest = path.join(STUDENT_SHELL_PUBLIC_DIR, entry);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
         if (fs.statSync(src).isDirectory()) {
             fs.cpSync(src, dest, { recursive: true });
         } else {
@@ -119,20 +143,9 @@ function publishStudentShell() {
     }
 
     const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
-    let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
-    // The hosted build uses a root URL; the /app/ copy owns this boot asset locally.
-    publishedHtml = publishedHtml.replace(/(["'])\/alloflow_desktop_bridge\.js\1/g, '$1./alloflow_desktop_bridge.js$1');
-    publishedHtml = publishedHtml.replace(/(["'])\/alloflow_update\.js\1/g, '$1./alloflow_update.js$1');
-    // postbuild may preserve readable or minified service-worker registration.
-    const rootSwRegistration = /navigator\.serviceWorker\.register\((['"])\/sw\.js\1,\s*\{\s*updateViaCache:\s*(['"])none\2\s*\}\)/;
-    if (!rootSwRegistration.test(publishedHtml)) {
-        throw new Error('Student shell service-worker registration anchor was not found.');
-    }
-    publishedHtml = publishedHtml.replace(
-        rootSwRegistration,
-        "navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' })"
-    );
-    fs.writeFileSync(publishedIndex, publishedHtml, 'utf8');
+    // postbuild normalizes paths BEFORE hashing. Never edit approved HTML here.
+    const publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
+    if (publishedHtml !== html) throw new Error('Student shell HTML changed while copying the approved release.');
 
     const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
     let sw = fs.readFileSync(publishedSw, 'utf8');
@@ -143,6 +156,8 @@ function publishStudentShell() {
         .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
         .replace("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
     fs.writeFileSync(publishedSw, sw, 'utf8');
+    assertReleaseDigests(STUDENT_SHELL_PUBLIC_DIR);
+    assertRuntimeAssets({ root: ROOT, buildDir: STUDENT_SHELL_PUBLIC_DIR });
 
     let copiedFiles = 0;
     const oversized = [];
@@ -230,6 +245,11 @@ const MODULES = [
     },    {
         name: 'AlloRecoveryVaultIntegration',
         filename: 'allo_recovery_vault_integration_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SensitiveWorkspace',
+        filename: 'sensitive_workspace_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -2338,17 +2358,14 @@ const LOAD_MODULE_RE = /loadModule\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/g;
 // ── Get git hash for prod mode ──────────────────────────────────
 let gitHash = null;
 if (mode === 'prod') {
-    if (explicitHash) {
-        gitHash = explicitHash;
-        console.log(`📌 Using explicit hash: ${gitHash}`);
-    } else {
-        try {
-            gitHash = execSync('git rev-parse --short HEAD', { cwd: ROOT, encoding: 'utf-8' }).trim();
-            console.log(`🔍 Auto-detected git hash: ${gitHash}`);
-        } catch (e) {
-            console.error('❌ Could not determine git hash. Pass --hash=<hash> or run from within the git repo.');
-            process.exit(1);
-        }
+    try {
+        if (explicitHash && !/^[a-f0-9]{7,40}$/.test(explicitHash)) throw new Error('--hash must be a hexadecimal commit ID');
+        gitHash = execFileSync('git', ['rev-parse', '--verify', `${explicitHash || 'HEAD'}^{commit}`], { cwd: ROOT, encoding: 'utf-8' }).trim();
+        if (!/^[a-f0-9]{40}$/.test(gitHash)) throw new Error('Git did not return a full commit ID');
+        console.log(`📌 Resolved release commit: ${gitHash}`);
+    } catch (e) {
+        console.error('❌ Could not resolve a full release commit: ' + e.message);
+        process.exit(1);
     }
 
     // ── Dirty-tree guard: block prod builds with uncommitted module files ──
@@ -2395,8 +2412,8 @@ if (mode === 'prod') {
     if (explicitHash && !forceFlag) {
         try {
             const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
-            const newerCommits = execSync(
-                `git log --oneline ${explicitHash}..HEAD -- ${allManagedFiles.join(' ')}`,
+            const newerCommits = execFileSync(
+                'git', ['log', '--oneline', `${gitHash}..HEAD`, '--', ...allManagedFiles],
                 { cwd: ROOT, encoding: 'utf-8' }
             ).trim();
             if (newerCommits) {
@@ -2606,8 +2623,30 @@ if (replacementCount === 0) {
     console.log(`\n✅ Replaced ${replacementCount} module URL(s) for ${mode.toUpperCase()} mode`);
 }
 
+// Finalize only after the generated public copies have been synchronized.
+// Shell-only/dry-run builds must already have identical public bytes.
+// --force never relaxes byte or commit approval.
+function finalizeBrowserDeliveryHost(writeOutput) {
+    // Compilation and mirror synchronization happen earlier. Never approve
+    // stale generated loaders merely because their old bytes can be hashed.
+    assertPrivateLoaderCoverage({ root: ROOT });
+    const manifest = buildBrowserDeliveryManifest({ root: ROOT, fallbackCommit: mode === 'prod' ? gitHash : null });
+    content = replaceBrowserDeliveryHostBlock(content, buildBrowserDeliveryHostBlock(manifest));
+    const vendors = assertVendorAssets({ root: ROOT });
+    content = replaceOptionalDeliveryBlock(content, buildOptionalDeliveryBlock(vendors.catalog));
+    const runtimes = assertRuntimeAssets({ root: ROOT });
+    content = replaceRuntimeGraphBlock(content, buildRuntimeGraphBlock(runtimes.manifest, ROOT));
+    console.log(`🔐 Browser delivery: ${Object.keys(manifest.assets).length} scripts approved (${manifest.releaseId})`);
+    if (!writeOutput) return;
+    writeWorkspaceFileAtomic(OUTPUT, content, 'utf-8');
+    writeWorkspaceFileAtomic(BACKUP, content, 'utf-8');
+    if (mode === 'prod') writeWorkspaceFileAtomic(SOURCE, content, 'utf-8');
+    console.log(`📄 Written: ${path.relative(ROOT, OUTPUT)} and ${path.relative(ROOT, BACKUP)}`);
+}
+
 // ── Write output ────────────────────────────────────────────────
 if (dryRun) {
+    finalizeBrowserDeliveryHost(false);
     console.log('\n🔍 Dry run — no files written.');
 } else {
     // Ensure output directory exists
@@ -2617,23 +2656,10 @@ if (dryRun) {
         process.exit(1);
     }
 
-    writeWorkspaceFileAtomic(OUTPUT, content, 'utf-8');
-    console.log(`📄 Written: ${path.relative(ROOT, OUTPUT)}`);
-
-    // Also write backup copy
-    writeWorkspaceFileAtomic(BACKUP, content, 'utf-8');
-    console.log(`📄 Backup:  ${path.relative(ROOT, BACKUP)}`);
-
-    // ── Write hashes back to root AlloFlowANTI.txt (prod only) ──
-    // Keeps the root source-of-truth file in sync with deployed CDN hashes.
-    if (mode === 'prod') {
-        writeWorkspaceFileAtomic(SOURCE, content, 'utf-8');
-        console.log(`📄 Source:  ${path.relative(ROOT, SOURCE)} (updated with @${gitHash})`);
-    }
-
     // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
 
     if (hasFlag('shell-only')) {
+        finalizeBrowserDeliveryHost(true);
         console.log('📄 Shell-only build complete; module copies unchanged.');
         process.exit(0);
     }
@@ -2669,9 +2695,22 @@ if (dryRun) {
         fs.mkdirSync(path.dirname(axeCoreDest), { recursive: true });
         fs.copyFileSync(axeCoreSource, axeCoreDest);
     }
+    // Copy only reviewed runtime paths during a normal build. A failed root
+    // hash cannot replace a valid public asset, and no model is downloaded.
+    const runtimeManifest = readRuntimeGraphManifest(ROOT);
+    const runtimePaths = [];
+    for (const record of Object.values(runtimeManifest.assets)) {
+        if (!record.path) continue;
+        const bytes = readRuntimeGraphFile(ROOT, record.path);
+        if (bytes.length !== record.bytes || createHash('sha384').update(bytes).digest('hex') !== record.sha384) {
+            throw new Error('Reviewed runtime source bytes differ before copying: ' + record.path);
+        }
+        runtimePaths.push(record.path);
+    }
     const modulesToCopy = [
         // Root-level modules
         ...MODULES.map(m => m.filename),
+        ...new Set(runtimePaths),
         'word_sounds_module.js',
         'teacher_module.js',
         'classroom-import.html',
@@ -2701,6 +2740,7 @@ if (dryRun) {
         'stem_lab/raptor_distance_fieldwork.js',
         'stem_lab/raptor_distance_results.js',
         'stem_lab/raptor_distance_match.js',
+        'stem_lab/raptor_distance_signal.js',
         'stem_lab/raptor_distance_scene.js',
         'stem_lab/raptor_distance_study.js',
         'stem_lab/birdlab_3d_bird.js',
@@ -2767,6 +2807,8 @@ if (dryRun) {
         }
     });
     console.log(`📦 Auto-copied ${copyCount} module/plugin files and ${assetDirCopyCount} companion asset folders to desktop/web-app/public/`);
+
+    finalizeBrowserDeliveryHost(true);
 
     // Show next steps
     console.log('\n── Next Steps ──');

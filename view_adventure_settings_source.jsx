@@ -222,6 +222,12 @@ function AdventureSetupEditor(props) {
   const permissions = settings.adventurePermissions || {};
   const label = (key, fallback) => adventureSetupText(props.t, key, fallback);
   const id = props.idPrefix || 'adventure-setup';
+  const languageApi = typeof window !== 'undefined' ? window.AlloModules?.TextPipelineHelpers : null;
+  const normalizeLanguage = languageApi?.normalizeLanguageName || (value => String(value || '').trim());
+  const appLanguage = normalizeLanguage(props.currentUiLanguage) || 'English';
+  const hasLanguagePreference = Object.prototype.hasOwnProperty.call(props, 'adventureLanguagePreference');
+  const followsAppLanguage = hasLanguagePreference && (props.adventureLanguagePreference == null || props.adventureLanguagePreference === '__app__');
+  const languageSelection = followsAppLanguage ? '__app__' : (props.adventureLanguagePreference || props.adventureLanguageMode || 'English');
   const locked = permission => adventureSetupLocked(props, permission);
   // Explain the teacher policy independently of a temporary processing lock.
   const fixedByTeacher = permission => !props.isTeacherMode && adventureSetupLocked({ isTeacherMode: false, studentProjectSettings: settings }, permission);
@@ -233,7 +239,7 @@ function AdventureSetupEditor(props) {
     <span>{title}{help && <span className="as-help" id={id + '-' + field + '-help'}>{help}</span>}{fixedHint(permission, field)}</span>
   </label>;
   const field = (key, title, value, setter, options, permission, help) => <label className="as-field" htmlFor={id + '-' + key}>{title}
-    <select className="as-control" aria-label={title} aria-describedby={describedBy(permission, key, help)} id={id + '-' + key} value={value} disabled={locked(permission) || typeof props[setter] !== 'function'} onChange={e => change(setter, e.target.value, permission)}>
+    <select className="as-control" aria-label={title} aria-describedby={describedBy(permission, key, help)} id={id + '-' + key} value={value} disabled={locked(permission) || typeof props[setter] !== 'function'} onChange={e => change(setter, key === 'language' && e.target.value === '__app__' && !hasLanguagePreference ? appLanguage : e.target.value, permission)}>
       {options.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
     </select>{help && <span className="as-help" id={id + '-' + key + '-help'}>{help}</span>}{fixedHint(permission, key)}
   </label>;
@@ -245,11 +251,19 @@ function AdventureSetupEditor(props) {
         ? label('mode_social_guide', 'Practise what you could say or do, with room for boundaries, different perspectives, and repair.')
         : label('mode_story_guide', 'Explore a story through decisions that use ideas from the lesson.');
   const modes = [['choice', label('adventure.mode_choice', 'Standard Adventure Mode')], ['debate', label('adventure.mode_debate', 'Debate')], ['system', label('adventure.mode_system', 'Systems simulation')]];
-  const languages = Array.from(new Set((props.selectedLanguages || []).filter(lang => lang !== 'English')));
-  const languageOptions = [['English', label('adventure.lang_options.english_only', 'English only')], ...languages.flatMap(lang => [[lang, lang], [lang + ' + English', lang + ' · ' + label('with_translation', 'with translation')]])];
-  if (languages.length > 1) languageOptions.push(['All + English', languages.join(', ') + ' · ' + label('with_translation', 'with translation')]);
+  const uniqueLanguages = values => Array.from(new Set((values || []).map(normalizeLanguage).filter(Boolean)));
+  const addedLanguages = uniqueLanguages(props.selectedLanguages).filter(lang => lang !== 'English');
+  const availableLanguages = typeof languageApi?.languageOptions === 'function'
+    ? languageApi.languageOptions(appLanguage, props.selectedLanguages, !String(languageSelection).includes(' + English') && languageSelection !== '__app__' ? languageSelection : '')
+    : uniqueLanguages(['English', appLanguage, ...(props.selectedLanguages || [])]);
+  const languages = availableLanguages.filter(lang => lang !== 'English');
+  const appOptionCopy = typeof props.t === 'function' ? props.t('universal.output_use_app') : '';
+  const appOptionLabel = (appOptionCopy && appOptionCopy !== 'universal.output_use_app' ? appOptionCopy : 'Use app language ({language})').replace('{language}', appLanguage);
+  const languageOptions = [['__app__', appOptionLabel], ['English', label('adventure.lang_options.english_only', 'English only')], ...languages.flatMap(lang => [[lang, lang], [lang + ' + English', lang + ' · ' + label('with_translation', 'with translation')]])];
+  // This legacy mode still fans out over explicitly added languages only.
+  if (addedLanguages.length > 1) languageOptions.push(['All + English', addedLanguages.join(', ') + ' · ' + label('with_translation', 'with translation')]);
   // Preserve a saved selection even if the teacher's current language list differs.
-  if (props.adventureLanguageMode && !languageOptions.some(option => option[0] === props.adventureLanguageMode)) languageOptions.push([props.adventureLanguageMode, props.adventureLanguageMode]);
+  if (languageSelection && !languageOptions.some(option => option[0] === languageSelection)) languageOptions.push([languageSelection, languageSelection]);
   const resources = Array.isArray(state.systemResources) ? state.systemResources : [];
   const [removedResource, setRemovedResource] = React.useState(null);
   const [resourceAnnouncement, setResourceAnnouncement] = React.useState('');
@@ -315,7 +329,7 @@ function AdventureSetupEditor(props) {
       <h3 id={id + '-essential-heading'} className="as-title">{label('essential_setup', 'Essential setup')}</h3>
       <div className="as-grid">
         {field('input-mode', label('adventure.interaction_mode', 'Interaction mode'), props.adventureInputMode || 'choice', 'setAdventureInputMode', modes, 'allowModeSwitch', modeGuide)}
-        {languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), props.adventureLanguageMode || 'English', 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
+        {languageOptions.length > 1 && field('language', label('adventure.language_label', 'Adventure language'), languageSelection, 'setAdventureLanguageMode', languageOptions, 'allowLanguageSwitch', label('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.'))}
         <label className="as-field" htmlFor={id + '-response'}>{label('response_format', 'Student responses')}
           <select aria-label={label('response_format', 'Student responses')} aria-describedby={describedBy('freeResponse', 'response')} id={id + '-response'} className="as-control" value={props.adventureFreeResponseEnabled ? 'written' : 'choice'} disabled={locked('freeResponse') || typeof props.setAdventureFreeResponseEnabled !== 'function'} onChange={e => change('setAdventureFreeResponseEnabled', e.target.value === 'written', 'freeResponse')}>
             <option value="choice">{label('response_choices', 'Choose from suggestions')}</option><option value="written">{label('response_written', 'Write or dictate')}</option>

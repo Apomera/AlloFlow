@@ -1,0 +1,77 @@
+[
+  {
+    "owner": "heat-penetration-label-ground",
+    "old": "              h('text', { x: x0 - 22, y: topY + p / 2 + 4, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, '3'),",
+    "new": "              h('g', { 'data-hi-preview-label': 'penetration' },\n                h('rect', { x: x0 - 25, y: topY + p / 2 - 9, width: 14, height: 18, rx: 2, fill: '#0f172a' }),\n                h('text', { x: x0 - 22, y: topY + p / 2 + 4, fontSize: 11, fontWeight: 700, fill: '#f8fafc' }, '3')\n              ),"
+  },
+  {
+    "owner": "heat-through-warning-ground",
+    "old": "              through && h('text', { x: x1 + 16, y: topY + th - 4, fontSize: 12, fontWeight: 700, fill: '#fca5a5' }, '!')",
+    "new": "              through && h('g', { 'data-hi-preview-label': 'through-warning' },\n                h('rect', { x: x1 + 13, y: topY + th - 18, width: 14, height: 18, rx: 2, fill: '#0f172a' }),\n                h('text', { x: x1 + 16, y: topY + th - 4, fontSize: 12, fontWeight: 700, fill: '#fca5a5' }, '!')\n              )"
+  },
+  {
+    "owner": "Underwater probe destination ref",
+    "old": "var uwPredictionRef = useRef(null), uwDepthControlRef = useRef(null), uwDecisionStartRef = useRef(null);",
+    "new": "var uwPredictionRef = useRef(null), uwDepthControlRef = useRef(null), uwDecisionStartRef = useRef(null), uwProbeTimeRef = useRef(null);"
+  },
+  {
+    "owner": "Underwater explicit probe focus target",
+    "old": "var el = request.target === 'prediction' ? uwPredictionRef.current : request.target === 'decisions' ? uwDecisionStartRef.current :\n            uwDepthControlRef.current && uwDepthControlRef.current.querySelector('input[type=\"range\"]');",
+    "new": "var el = request.target === 'prediction' ? uwPredictionRef.current : request.target === 'decisions' ? uwDecisionStartRef.current : request.target === 'probe' ? uwProbeTimeRef.current :\n            uwDepthControlRef.current && uwDepthControlRef.current.querySelector('input[type=\"range\"]');"
+  },
+  {
+    "owner": "Underwater native probe result association",
+    "old": "h('input', { id: 'uw4-cooling-time', 'data-uw-probe-time': true, type: 'range', min: 0, max: 40, step: 0.01, value: uwProbeTime.toFixed(2),",
+    "new": "h('input', { id: 'uw4-cooling-time', ref: uwProbeTimeRef, 'data-uw-probe-time': true, 'aria-describedby': 'uw5-probe-readings', type: 'range', min: 0, max: 40, step: 0.01, value: uwProbeTime.toFixed(2),"
+  },
+  {
+    "owner": "Underwater Previous endpoint focus",
+    "old": "'data-uw-probe-step': 'back', disabled: uwProbeTime <= 0, onClick: function () { setUwProbeTime(Math.max(0, uwProbeTime - 0.25)); }",
+    "new": "'data-uw-probe-step': 'back', disabled: uwProbeTime <= 0, onClick: function () { var next = Math.max(0, uwProbeTime - 0.25); if (next === 0) focusUnderwaterStep('probe'); setUwProbeTime(next); }"
+  },
+  {
+    "owner": "Underwater Next endpoint focus",
+    "old": "'data-uw-probe-step': 'forward', disabled: uwProbeTime >= 40, onClick: function () { setUwProbeTime(Math.min(40, uwProbeTime + 0.25)); }",
+    "new": "'data-uw-probe-step': 'forward', disabled: uwProbeTime >= 40, onClick: function () { var next = Math.min(40, uwProbeTime + 0.25); if (next === 40) focusUnderwaterStep('probe'); setUwProbeTime(next); }"
+  },
+  {
+    "owner": "Underwater persistent concise model feedback",
+    "old": "            h('div', { className: 'flex flex-wrap gap-3' }, uwCurves.map(function (curve) {\n              var temperature = tech2CoolTemp(curve.mult, uwProbeTime), band = uwProbeBand(temperature);",
+    "new": "            h('p', { id: 'uw5-probe-readings', 'data-uw-probe-live': true, 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, uwCurves.map(function (curve) { var temperature = tech2CoolTemp(curve.mult, uwProbeTime); return curve.label + ': ' + temperature.toFixed(1) + ' °C. ' + uwProbeBand(temperature).text; }).join('; ')),\n            h('div', { className: 'flex flex-wrap gap-3' }, uwCurves.map(function (curve) {\n              var temperature = tech2CoolTemp(curve.mult, uwProbeTime), band = uwProbeBand(temperature);"
+  },
+  {
+    "owner": "Posture endpoint destination and one-shot request",
+    "old": "        var postureCaseState = useState(0);\n        var hocChecked = hocCheckedState[0], setHocChecked = hocCheckedState[1];",
+    "new": "        var postureCaseState = useState(0);\n        var postureSelectRef = useRef(null), postureSelectFocusRef = useRef(false);\n        useEffect(function () {\n          if (!postureSelectFocusRef.current) return;\n          postureSelectFocusRef.current = false;\n          if (postureSelectRef.current) { try { postureSelectRef.current.focus(); } catch (_) {} }\n        }, [postureCaseState[0]]);\n        var hocChecked = hocCheckedState[0], setHocChecked = hocCheckedState[1];"
+  },
+  {
+    "owner": "Posture Previous endpoint focus",
+    "old": "'data-posture-prev': '', disabled: index === 0, 'aria-controls': 'safe10-posture-reading', onClick: function () { choose(index - 1); }",
+    "new": "'data-posture-prev': '', disabled: index === 0, 'aria-controls': 'safe10-posture-reading', onClick: function () { if (index === 1) postureSelectFocusRef.current = true; choose(index - 1); }"
+  },
+  {
+    "owner": "Posture native select destination",
+    "old": "h('select', { id: 'safe10-posture-select', 'data-posture-select': '', value: index,",
+    "new": "h('select', { id: 'safe10-posture-select', ref: postureSelectRef, 'data-posture-select': '', value: index,"
+  },
+  {
+    "owner": "Posture Next endpoint focus",
+    "old": "'data-posture-next': '', disabled: index === POSTURE_CASES.length - 1, 'aria-controls': 'safe10-posture-reading', onClick: function () { choose(index + 1); }",
+    "new": "'data-posture-next': '', disabled: index === POSTURE_CASES.length - 1, 'aria-controls': 'safe10-posture-reading', onClick: function () { if (index === POSTURE_CASES.length - 2) postureSelectFocusRef.current = true; choose(index + 1); }"
+  },
+  {
+    "owner": "phase-annotation-proposal",
+    "old": "          var px = X(fecC), py = Y(fecT);\n          var aria = __alloFill",
+    "new": "          var px = X(fecC), py = Y(fecT);\n          // Near a plot label, a hollow ring keeps the selected coordinate and its label visible together.\n          var pointOverCallout = callouts.some(function (co) {\n            var dx = px - X(co.c), dy = py - Y(co.t), clearance = (co.r || 9) + 11;\n            return dx * dx + dy * dy < clearance * clearance;\n          }) || FEC_PRESETS.some(function (p) {\n            var halfWidth = (p.label.length * 7 + 6) / 2;\n            var dx = Math.max(Math.abs(px - X(p.c)) - halfWidth, 0);\n            var dy = Math.max(Math.abs(py - (Y(400) - 30)) - 8, 0);\n            return dx * dx + dy * dy < 11 * 11;\n          });\n          var aria = __alloFill"
+  },
+  {
+    "owner": "phase-annotation-proposal",
+    "old": "            // Numbered fields (names in the legend below)\n            callouts.map(function (co) {\n              var r = co.r || 9;\n              return h('g', { key: 'n' + co.id },\n                h('circle', { cx: X(co.c), cy: Y(co.t), r: r, fill: '#0f172a', stroke: '#f8fafc', strokeWidth: 1.25 }),\n                h('text', { x: X(co.c), y: Y(co.t) + (r > 8 ? 4 : 3.5), textAnchor: 'middle', fontSize: r > 8 ? 11 : 10, fontWeight: 700, fill: '#f8fafc' }, String(FEC_PHASES[co.id].n))\n              );\n            }),\n            // The draggable point\n            h('line', { x1: L, y1: py, x2: px, y2: py, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3' }),\n            h('line', { x1: px, y1: py, x2: px, y2: B, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3' }),\n            h('circle', { cx: px, cy: py, r: 8, fill: '#fde047', stroke: '#0f172a', strokeWidth: 2.5 })",
+    "new": "            // The selected coordinate stays exact; guides and marker paint beneath the numbered fields.\n            h('line', { x1: L, y1: py, x2: px, y2: py, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3' }),\n            h('line', { x1: px, y1: py, x2: px, y2: B, stroke: '#fde047', strokeWidth: 1, strokeDasharray: '3 3' }),\n            h('defs', null, h('clipPath', { id: 'met2-fec-marker-clip' }, h('rect', { x: L, y: T, width: R - L, height: B - T }))),\n            h('g', { 'data-fec-selected-marker': '', 'data-collision': pointOverCallout ? 'true' : 'false', clipPath: 'url(#met2-fec-marker-clip)' },\n              pointOverCallout ? [\n                h('circle', { key: 'halo', cx: px, cy: py, r: 13, fill: 'none', stroke: '#0f172a', strokeWidth: 6 }),\n                h('circle', { key: 'ring', cx: px, cy: py, r: 13, fill: 'none', stroke: '#fde047', strokeWidth: 3 })\n              ] : h('circle', { cx: px, cy: py, r: 8, fill: '#fde047', stroke: '#0f172a', strokeWidth: 2.5 })\n            ),\n            // Preset names stay above the movable guides; their carbon-position ticks remain below.\n            FEC_PRESETS.map(function (p) {\n              var width = p.label.length * 7 + 6;\n              return h('g', { key: 'label-' + p.id, 'data-fec-preset-label': p.id },\n                h('rect', { x: X(p.c) - width / 2, y: Y(400) - 38, width: width, height: 16, rx: 2, fill: '#0f172a' }),\n                h('text', { x: X(p.c), y: Y(400) - 26, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, p.label)\n              );\n            }),\n            // Numbered fields (names in the legend below) retain their original phase coordinates.\n            callouts.map(function (co) {\n              var r = co.r || 9;\n              return h('g', { key: 'n' + co.id, 'data-fec-callout': co.id },\n                h('circle', { cx: X(co.c), cy: Y(co.t), r: r, fill: '#0f172a', stroke: '#f8fafc', strokeWidth: 1.25 }),\n                h('text', { x: X(co.c), y: Y(co.t) + (r > 8 ? 4 : 3.5), textAnchor: 'middle', fontSize: r > 8 ? 11 : 10, fontWeight: 700, fill: '#f8fafc' }, String(FEC_PHASES[co.id].n))\n              );\n            })"
+  },
+  {
+    "owner": "phase-preset-label-tick-preservation",
+    "old": "            // Preset steels along the bottom\n            FEC_PRESETS.map(function (p) {\n              return h('g', { key: p.id },\n                h('line', { x1: X(p.c), y1: Y(400), x2: X(p.c), y2: Y(450), stroke: '#f8fafc', strokeWidth: 1.5 }),\n                h('text', { x: X(p.c), y: Y(400) - 26, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#f8fafc' }, p.label)\n              );\n            }),",
+    "new": "            // Preset steel ticks retain their original coordinates and paint layer.\n            FEC_PRESETS.map(function (p) {\n              return h('g', { key: p.id },\n                h('line', { x1: X(p.c), y1: Y(400), x2: X(p.c), y2: Y(450), stroke: '#f8fafc', strokeWidth: 1.5 })\n              );\n            }),"
+  }
+]

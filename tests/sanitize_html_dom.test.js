@@ -84,9 +84,14 @@ describe('sanitizeHtml keeps ordinary content', () => {
   });
 });
 
-describe('without a DOM it still uses the regex fallback', () => {
+describe('without a working DOM it fails closed to literal text', () => {
   const fallback = make(undefined);
-  it('strips script tags and spaced handlers', () => {
-    expect(fallback('<p onclick="x()">a</p><script>alert(1)</script>')).toBe('<p>a</p>');
+  it('does not guess at HTML parsing with regular expressions', () => {
+    const value = '<p onclick="x()">a</p><script>alert(1)</script>';
+    expect(fallback(value)).toContain('&lt;p');
+    expect(executable(fallback(value))).toEqual([]);
+    const host = document.createElement('div'); host.innerHTML = fallback(value);
+    expect(host.textContent).toBe(value);
+    expect(host.querySelectorAll('*')).toHaveLength(0);
   });
 });

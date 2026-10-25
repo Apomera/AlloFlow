@@ -78,7 +78,7 @@ describe('PDF-C4: PDF/UA self-check tile never renders NaN% (zero applicable rul
 describe('timeout + leak hygiene (PDF-C1/C2/C3, DB-B1) — matches the codebase _withTimeout + finally{destroy} pattern', () => {
   it('extractPdfStructTree: hoisted pdf + timeouts on every pdf.js await + finally destroy', () => {
     expect(dp).toMatch(/let pdf = null; \/\/ hoisted so finally can always destroy/);
-    expect(dp).toMatch(/pdf = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: bytes \}\)\.promise, 60000, 'pdf\.js getDocument \(structTree\)'\)/);
+    expect(dp).toMatch(/pdf = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: bytes, isEvalSupported: false \}\)\.promise, 60000, 'pdf\.js getDocument \(structTree\)'\)/);
     expect(dp).toMatch(/await _withTimeout\(pdf\.getPage\(p\), 30000, 'getPage \(structTree\)/);
     expect(dp).toMatch(/await _withTimeout\(page\.getStructTree\(\), 30000, 'getStructTree/);
     expect(dp).toMatch(/await _withTimeout\(page\.getTextContent\(\{ includeMarkedContent: true \}\), 30000, 'getTextContent \(structTree\)/);
@@ -86,7 +86,7 @@ describe('timeout + leak hygiene (PDF-C1/C2/C3, DB-B1) — matches the codebase 
     expect(dp).toMatch(/release the pdf\.js worker doc on every path/);
   });
   it('detectPdfBlankFields: timeouts + try/finally so destroy runs even if the loop throws', () => {
-    expect(dp).toMatch(/pdoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: bytes\.slice\(\) \}\)\.promise, 60000, 'pdf\.js getDocument \(blank fields\)'\)/);
+    expect(dp).toMatch(/pdoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: bytes\.slice\(\), isEvalSupported: false \}\)\.promise, 60000, 'pdf\.js getDocument \(blank fields\)'\)/);
     expect(dp).toMatch(/await _withTimeout\(pdoc\.getPage\(pi\), 30000, 'getPage \(blank fields\)/);
     expect(dp).toMatch(/await _withTimeout\(page\.getTextContent\(\), 30000, 'getTextContent \(blank fields\)/);
     expect(dp).toMatch(/always release the pdf\.js doc, even if the loop throws/);
@@ -95,9 +95,14 @@ describe('timeout + leak hygiene (PDF-C1/C2/C3, DB-B1) — matches the codebase 
     expect(dp).toMatch(/await _withTimeout\(fetch\(u\), 15000, 'Noto font fetch'\)/);
     expect(dp).toMatch(/await _withTimeout\(r\.arrayBuffer\(\), 15000, 'Noto font bytes'\)/);
   });
-  it('axe-core CDN fetch loop is bounded (sibling of DB-B1) — fetch AND body read', () => {
-    expect(dp).toMatch(/await _withTimeout\(fetch\(u\), 15000, 'axe-core CDN fetch'\)/);
-    expect(dp).toMatch(/await _withTimeout\(r\.text\(\), 15000, 'axe-core CDN body'\)/);
+  it('axe-core source loading is bounded and delegated to byte verification', () => {
+    const start = dp.indexOf('for (const u of _AXE_CDN_URLS) {');
+    const end = dp.indexOf('_axeSourceCache = txt; return txt;', start);
+    const block = dp.slice(start, end);
+    expect(start).toBeGreaterThanOrEqual(0); expect(end).toBeGreaterThan(start);
+    expect(block).toContain('window.__alloFetchTrustedScriptText');
+    expect(block).toMatch(/await _withTimeout\(fetchTrusted\(u, 'axe-core'\), 15000, 'verified axe-core source'\)/);
+    expect(block).not.toMatch(/fetch\(u\)|r\.text\(\)/);
   });
 });
 

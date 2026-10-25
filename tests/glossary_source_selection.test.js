@@ -5,6 +5,7 @@ import { loadAlloModule } from './setup.js';
 let dispatcher, contract;
 beforeAll(() => {
   loadAlloModule('instructional_context_module.js');
+  loadAlloModule('text_pipeline_helpers_module.js');
   contract = window.AlloModules.InstructionalContext;
   // Exercise the editable dispatcher so this regression also protects rebuilds.
   new Function(readFileSync('generate_dispatcher_source.jsx', 'utf8'))();
@@ -65,6 +66,35 @@ function generate(f, config = {}, keepLoading = false, switchView = true) {
 }
 
 const acceptAndCancelChoice = request => { request.onComplete(undefined); return true; };
+
+describe('native glossary generation language contract', () => {
+  it.each([
+    ['French', 'auto', 'French', []],
+    ['Spanish', 'off', 'Spanish', []],
+    ['Spanish', 'auto', 'Spanish', ['French']],
+    ['All Selected Languages', 'off', 'French', ['Spanish']],
+  ])('generates %s with %s support and saves actual base metadata', async (output, mode, base, languages) => {
+    const priorImages = window.AlloImageGeneration;
+    window.AlloImageGeneration = { isEnabled: () => false };
+    try {
+      const f = fixture({ history: readings().slice(0, 1), selectedReadingSourceId: 'moon',
+        nativeLanguageDefaultsVersion: 1, appLanguage: 'French', currentUiLanguage: 'French',
+        leveledTextLanguage: output, selectedLanguages: ['French', 'Spanish', 'spanish'], translationMode: mode,
+        resolveTranslationPolicy: window.AlloModules.TextPipelineHelpers.resolveTranslationPolicy,
+        useEmojis: false, includeEtymology: false, glossaryDefinitionLevel: 'Same as Global Level',
+      });
+      f.callGemini.mockResolvedValue(JSON.stringify([{ term: base === 'Spanish' ? 'Luna' : 'Lune', def: 'Une définition.',
+        sourceTerm: 'Moon', sourceLanguage: 'English', translations: { English: 'Moon: A natural satellite.', French: 'Lune: Un satellite.', Spanish: 'Luna: Un satélite.' } }]));
+      const resource = await generate(f, { rethrowErrors: true });
+      expect(resource).toMatchObject({ baseLanguage: base, glossaryLanguageSchemaVersion: 1,
+        config: { language: base, baseLanguage: base, nativeLanguageDefaultsVersion: 1 } });
+      expect(resource.data[0]).toMatchObject({ termLanguage: base, definitionLanguage: base, sourceTerm: 'Moon', sourceLanguage: 'English' });
+      expect(Object.keys(resource.data[0].translations)).toEqual(languages);
+      expect(f.callGemini.mock.calls[0][0]).toContain('PRIMARY LANGUAGE: Write each visible term and definition in ' + base);
+      expect(f.callGemini.mock.calls[0][0]).not.toContain('An English definition');
+    } finally { window.AlloImageGeneration = priorImages; }
+  });
+});
 
 describe('glossary asks for the source before starting generation', () => {
   it('requests the picker with readable titles and previews only when the sources are ambiguous', async () => {

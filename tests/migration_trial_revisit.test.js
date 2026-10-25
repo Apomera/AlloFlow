@@ -187,7 +187,7 @@ describe('Migration recorded trial and paired baseline revisits', () => {
 
   it('keeps status while evidence is edited and hides it when the source trial content changes', () => {
     const ui = fixture(); ui.click(ui.revisit());
-    const textarea = ui.node(node => node.props?.['aria-label'] === 'Flight investigation evidence notes');
+    const textarea = ui.node(node => node.props?.id === 'migration-experiment-evidence');
     act(() => { textarea.props.onChange({ target: { value: 'I noticed a different vector length.' } }); });
     expect(ui.status()).toContain('Revisited trial 1.');
     const work = ui.state.flightInvestigation;

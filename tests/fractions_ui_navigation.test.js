@@ -89,7 +89,8 @@ describe('Fraction Lab activity navigation', () => {
   it('number shortcuts switch both the focus and activity', async () => {
     const state = await mount({ navMode: 'teacher', tab: 'myAccount' });
     for (const [number, mode, tab] of [['3','practice','operations'],['6','learn','wall'],['2','practice','compare'],['1','learn','practice'],['4','practice','equivalents'],['5','practice','converter']]) {
-      await key(document.body, number);
+      // WCAG 2.1.4: shortcuts act only while focus is inside the tool.
+      await key(document.querySelector('[data-fractions-root]'), number);
       expect(state()).toMatchObject({ navMode: mode, tab });
       expect(selected().id).toBe('fraction-section-tab-' + tab);
     }

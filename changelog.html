@@ -10,7 +10,7 @@
 <meta property="og:site_name" content="AlloFlow">
 <meta property="og:url" content="https://apomera.github.io/AlloFlow/changelog.html">
 <meta property="og:title" content="AlloFlow Release History &amp; Changelog">
-<meta property="og:description" content="Review AlloFlow release history, version notes, and links to shipped Gemini Canvas releases.">
+<meta property="og:description" content="Review AlloFlow release history and version notes, and open the current version for classroom work.">
 <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
@@ -19,10 +19,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/changelog.html">
 <meta name="twitter:title" content="AlloFlow Release History &amp; Changelog">
-<meta name="twitter:description" content="Review AlloFlow release history, version notes, and links to shipped Gemini Canvas releases.">
+<meta name="twitter:description" content="Review AlloFlow release history and version notes, and open the current version for classroom work.">
 <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
-<meta name="description" content="Review AlloFlow release history, version notes, and links to shipped Gemini Canvas releases.">
+<meta name="description" content="Review AlloFlow release history and version notes, and open the current version for classroom work.">
 <link rel="icon" type="image/svg+xml" href="allobot.svg">
 <style>
   :root {
@@ -122,16 +122,29 @@
   .open-link {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
-    color: var(--indigo);
-    font-weight: 500;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--indigo);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
   }
   .open-link::after {
-    content: "\2197";
+    content: "\2192";
     font-size: 0.9em;
     line-height: 1;
   }
+  .current-access {
+    margin-bottom: 24px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+  }
+  .current-access p { margin-bottom: 12px; color: var(--slate); }
+  .history-note { color: var(--muted); font-size: 0.85rem; }
   .empty, .loading {
     background: var(--card);
     border: 1px dashed var(--line);
@@ -175,6 +188,11 @@
     <h1>Changelog</h1>
     <p class="sub">AlloFlow release history, newest first.</p>
 
+    <aside class="current-access" aria-label="Current version access">
+      <p id="version-access-guidance">Older versions may lack current fixes. Use the current supported version for classroom work.</p>
+      <a id="current-version-link" class="open-link" href="launch.html" aria-describedby="version-access-guidance">Open current version</a>
+    </aside>
+
     <div id="status" class="loading" role="status" aria-live="polite">Loading releases&hellip;</div>
     <ol id="list" class="releases" aria-label="Release history" hidden></ol>
   </main>
@@ -190,15 +208,6 @@
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
-  }
-
-  function safeURL(u) {
-    if (typeof u !== "string") return null;
-    var t = u.trim();
-    if (!t) return null;
-    // Only allow http(s) URLs to avoid javascript: etc.
-    if (!/^https?:\/\//i.test(t)) return null;
-    return t;
   }
 
   function formatDate(iso) {
@@ -252,12 +261,7 @@
       var dateRaw = r.released || "";
       var dateText = formatDate(dateRaw);
       var notes = escapeHTML(r.notes || "");
-      var url = safeURL(r.canvas_url);
       var dateAttr = dateRaw ? ' datetime="' + escapeHTML(dateRaw) + '"' : "";
-
-      var linkHTML = url
-        ? '<a class="open-link" href="' + escapeHTML(url) + '" target="_blank" rel="noopener noreferrer" aria-label="Open version ' + version + ' in a new tab">Open this version</a>'
-        : "";
 
       return (
         '<li class="release">' +
@@ -266,7 +270,7 @@
             (dateText ? '<time class="date"' + dateAttr + '>' + dateText + '</time>' : "") +
           '</header>' +
           (notes ? '<p class="notes">' + notes + '</p>' : "") +
-          linkHTML +
+          '<p class="history-note">Historical release notes</p>' +
         '</li>'
       );
     }).join("");

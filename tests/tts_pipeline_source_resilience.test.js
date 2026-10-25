@@ -437,10 +437,16 @@ describe('source resilience contracts', () => {
     expect(service).toContain('function descriptorSynthesisProfile');
 
     const host = read('AlloFlowANTI.txt');
-    // Host enumerator labels lanes: adapted language for source/body/FAQ,
-    // explicit English for the side-by-side translation lane.
+    // Host enumerator labels source/body/FAQ with the resource language and
+    // companion lanes with their saved target, retaining English as fallback.
     expect(host).toContain("leveledTextLanguage || currentUiLanguage || 'English'");
-    expect(host).toContain("addPart(part, 'target/' + paragraphIndex, 'English')");
+    expect(host).toContain("addPart(part, 'target/' + paragraphIndex, getSavedCompanionLanguage(resource))");
+    const companionBody = host.match(/const getSavedCompanionLanguage = resource => \{([\s\S]*?)\n\};/);
+    expect(companionBody).toBeTruthy();
+    const companionLanguage = new Function('window', 'resource', companionBody[1]);
+    expect(companionLanguage({ AlloModules: {} }, {})).toBe('English');
+    expect(companionLanguage({ AlloModules: {} }, { config: { translationPolicy: { target: 'Spanish' } } })).toBe('Spanish');
+    expect(companionLanguage({ AlloModules: {} }, { translationTarget: 'French' })).toBe('French');
     // Host default must match the fresh-path floor; 15000 stranded playback
     // mid-retry (field log 2026-08-03, French).
     expect(host).toContain('audioLoadMs: 30000');

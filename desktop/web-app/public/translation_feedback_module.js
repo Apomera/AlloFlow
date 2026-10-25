@@ -46,6 +46,22 @@
   // pre-filled Google Form so the user's input is never lost.
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitTranslation';
 
+  // A managed support destination does not authorize independent community
+  // contributions. Any configured policy blocks this POST and form fallback;
+  // these payloads are never rerouted to a bug-report endpoint.
+  function communityFeedbackBlocked() {
+    try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
+    catch (_) { return true; }
+  }
+  var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
+  function metadataPageUrl() {
+    try {
+      var parsed = new URL(location.href || '');
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '[embedded app]';
+      return parsed.origin;
+    } catch (_) { return '[embedded app]'; }
+  }
+
   var lastContext = null;   // {key, current, language}
   var pill = null, overlay = null;
   var pillHideTimer = null;
@@ -64,6 +80,7 @@
 
   // ── Build the pre-filled Google Form URL (mirrors error_reporter technique) ──
   function buildFormUrl(payload) {
+    if (communityFeedbackBlocked()) return '';
     // Machine-parseable block for dev-tools/i18n/ingest_translation_feedback.cjs.
     // Stable delimiters so the ingest regex is robust to user edits around it.
     var what =
@@ -73,7 +90,7 @@
       'current: ' + payload.current + '\n' +
       'suggested: ' + payload.suggested + '\n' +
       'english: ' + (payload.english || '(n/a)');
-    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + (location.href || '').slice(0, 300);
+    var steps = (payload.note ? payload.note + '\n\n' : '') + 'URL: ' + metadataPageUrl();
     var browser = navigator.userAgent + ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
     return FORM_BASE +
       '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent('Translation Correction') +
@@ -104,7 +121,7 @@
       if (cached) { EN = flatten(JSON.parse(cached)); return; }
     } catch (_) {}
     try {
-      fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js')
+      fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js', { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { return r.text(); })
         .then(function (txt) {
           var j = txt.replace(/^[^{]*/, '').replace(/;?\s*$/, '');
@@ -143,7 +160,7 @@
   function offerFor(ctx) {
     if (!ctx || !document.body) return;
     lastContext = { key: ctx.key || '', current: ctx.current || '', language: currentLanguage(ctx) };
-    loadEnglish();
+    if (!communityFeedbackBlocked()) loadEnglish();
     ensurePill();
     pill.textContent = '✎ Suggest a better ' + lastContext.language + ' translation';
     pill.style.display = 'inline-flex';
@@ -200,10 +217,10 @@
       '<textarea id="allo-tfb-suggest" rows="3" placeholder="Type the corrected text" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Why / notes (optional)</div>' +
       '<textarea id="allo-tfb-note" rows="2" placeholder="e.g. wrong register, regional word, sounds robotic" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
-      '<div id="allo-tfb-err" role="alert" style="display:none;color:#dc2626;font:13px system-ui;margin-bottom:10px"></div>' +
+      '<div id="allo-tfb-err" role="alert" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
         '<button id="allo-tfb-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-tfb-send" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Open report form →</button>' +
+        '<button id="allo-tfb-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Open report form →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -212,6 +229,13 @@
     $('allo-tfb-x').onclick = closeModal;
     $('allo-tfb-cancel').onclick = closeModal;
     overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    function showManagedBlock() {
+      var error = $('allo-tfb-err');
+      if (error) { error.textContent = COMMUNITY_BLOCK_MESSAGE; error.style.display = 'block'; }
+      var button = $('allo-tfb-send');
+      if (button) { button.disabled = true; button.textContent = 'Sending disabled'; }
+    }
 
     function showThanks(viaForm) {
       panel.innerHTML =
@@ -230,6 +254,7 @@
     }
 
     $('allo-tfb-send').onclick = function () {
+      if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       var errEl = $('allo-tfb-err');
       var suggested = ($('allo-tfb-suggest').value || '').trim();
       if (!suggested) { errEl.textContent = 'Please enter your suggested translation.'; errEl.style.display = 'block'; return; }
@@ -246,12 +271,23 @@
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
       var fellBack = false;
       var fallbackToForm = function () {
+        if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         if (fellBack) return; fellBack = true;
-        try { window.open(buildFormUrl(payload), '_blank', 'noopener'); } catch (_) { location.href = buildFormUrl(payload); }
+        var formUrl = buildFormUrl(payload);
+        if (!formUrl) { showManagedBlock(); return; }
+        try { window.open(formUrl, '_blank', 'noopener,noreferrer'); }
+        catch (_) {
+          if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+          errEl.textContent = 'The report form could not be opened. Your draft stays here. You can try again or contact your support team.';
+          errEl.style.display = 'block';
+          sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
+          return;
+        }
         showThanks(true);
       };
       try {
-        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+        fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' })
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) { if (res.ok && res.j && res.j.ok) showThanks(false); else fallbackToForm(); })
           .catch(function () { fallbackToForm(); });

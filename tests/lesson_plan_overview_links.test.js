@@ -16,6 +16,7 @@ beforeAll(() => {
   vi.stubGlobal('ExternalLink', () => null);
   loadAlloModule('phase_k_helpers_module.js');
   loadAlloModule('view_renderers_module.js');
+  loadAlloModule('module_scope_extras_module.js');
   loadAlloModule('view_lesson_plan_module.js');
   PlanView = window.AlloModules.LessonPlanView;
 
@@ -32,13 +33,14 @@ beforeAll(() => {
   const { code } = require('@babel/core').transformSync(helpers, {
     plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false,
   });
-  shellHelpers = new Function('React', 'renderFormattedText', 't', `
-    const translationMode = 'English', leveledTextLanguage = 'French', currentUiLanguage = 'English', selectedLanguages = [];
-    const resolveTranslationPolicy = () => ({ enabled: true, target: 'English' });
-    const translationTargetChoices = () => [];
+  const createShellHelpers = new Function('React', 'renderFormattedText', 't', 'generatedContent', 'getSpeechLangCode', 'getContentDirection', `
+    const currentUiLanguage = 'English';
     ${code}
     return { normalizeResourceLinks, normalizeMaterialItem, BilingualFieldRenderer };
   `);
+  const language = window.AlloModules.ModuleScopeExtras;
+  shellHelpers = (react, render, translate, artifact = { config: { translationTarget: 'English' } }) =>
+    createShellHelpers(react, render, translate, artifact, language.getSpeechLangCode, language.getContentDirection);
 }, 30000);
 
 afterEach(() => {
@@ -49,7 +51,7 @@ afterEach(() => {
 });
 afterAll(() => vi.unstubAllGlobals());
 
-function mount(data, { renderer = true, history } = {}) {
+function mount(data, { renderer = true, history, config = {}, ambientArtifact } = {}) {
   const target = { id: 'fraction-models', type: 'source', title: 'Fraction models', data: { text: 'Compare equal parts.' } };
   const open = vi.fn(), toast = vi.fn(), t = () => '';
   const inlineDeps = { history: history || [target], handleRestoreView: open, addToast: toast, t,
@@ -59,9 +61,10 @@ function mount(data, { renderer = true, history } = {}) {
     sanitizeTruncatedCitations: text => text, normalizeResourceLinks: helpers.normalizeResourceLinks, t,
     formatInlineText: (...args) => window.AlloModules.PhaseKHelpers.formatInlineText(...args, inlineDeps),
   });
-  helpers = shellHelpers(React, renderFormattedText, t);
+  const artifact = { id: 'plan', type: 'lesson-plan', data, config };
+  helpers = shellHelpers(React, renderFormattedText, t, ambientArtifact || artifact);
   const props = {
-    generatedContent: { id: 'plan', type: 'lesson-plan', data }, isTeacherMode: true, t,
+    generatedContent: artifact, isTeacherMode: true, t,
     ...(renderer ? { ...helpers, renderFormattedText } : {}),
   };
   host = document.createElement('div');
@@ -79,6 +82,19 @@ function resourceButtons(container) {
 
 describe('Lesson at a glance resource links', () => {
   const link = '[Fraction models](resource:fraction-models)';
+
+  it('uses the displayed plan saved French companion instead of the shell active resource', () => {
+    const { overview } = mount({ objectives: ['هدف الدرس\n--- ENGLISH TRANSLATION ---\nObjectif de la leçon.'] }, {
+      config: { language: 'Arabic', translationTarget: 'French' },
+      ambientArtifact: { config: { language: 'Spanish', translationTarget: 'English' } },
+    });
+    const companion = overview.querySelector('.border-s-4');
+    expect(companion.textContent).toContain('Translation (French)');
+    expect(companion.textContent).toContain('Objectif de la leçon.');
+    expect(companion.getAttribute('lang')).toBe('fr-FR');
+    expect(companion.getAttribute('dir')).toBe('ltr');
+    expect(companion.classList.contains('text-left')).toBe(true);
+  });
 
   it('leaves existing material Markdown stable, including links within a sentence', () => {
     const { normalizeMaterialItem } = shellHelpers(React, text => text, () => '');

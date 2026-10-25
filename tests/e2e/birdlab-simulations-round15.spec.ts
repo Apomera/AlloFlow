@@ -10,7 +10,7 @@ const harness = new GlHarness({ toolId: 'birdLab', toolFile: 'stem_lab/stem_tool
 test.beforeAll(async () => harness.start());
 test.afterAll(async () => harness.stop());
 const fillEvidence: any[] = [];
-const fillEvidencePath = resolve('reports/avian-simulations-round15-2026-10-20/season-fill-paint-evidence.json');
+const fillEvidencePath = resolve(process.env.AVIAN_SEASON_FILL_EVIDENCE_PATH || 'reports/avian-simulations-round15-2026-10-20/season-fill-paint-evidence.json');
 test.afterEach(async ({ page }) => {
   try {
     if (fillEvidence.length) {

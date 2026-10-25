@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "duckdb.module": {
+      "kind": "module",
+      "path": "duckdb-assets/duckdb-browser.mjs",
+      "bytes": 227413,
+      "sha384": "509d389b8b9b15ec67f42071c157902115846890f5b049de48207974f63a99f94b9fa94448ff93c32b40fcb9c90898ef",
+      "mirrors": [],
+      "closed": true
+    },
+    "duckdb.worker": {
+      "kind": "worker",
+      "path": "duckdb-assets/duckdb-browser-mvp.worker.js",
+      "bytes": 844644,
+      "sha384": "001078405814a10a9f88c46fe0499edb4442a3eacefff38110e25f8946e26450511ffe13e31cbc55cbb884b5e03f1434",
+      "mirrors": [],
+      "closed": true
+    },
+    "duckdb.part0": {
+      "kind": "part",
+      "path": "duckdb-assets/duckdb-mvp.wasm.part00",
+      "bytes": 16777216,
+      "sha384": "84902b9ca2761ddef705ed707f469caa4fded6fea7d558afd4697b31918d0775807f59fa9fcec9e33d710a73843d8253",
+      "mirrors": []
+    },
+    "duckdb.part1": {
+      "kind": "part",
+      "path": "duckdb-assets/duckdb-mvp.wasm.part01",
+      "bytes": 16777216,
+      "sha384": "132a7037c5eb8e930e441c42d7dc17e3b4c72c8dc5dd7be618d5cb7e3b87f75fd1921ae7a51c6bf09b65c5ebc52fda4a",
+      "mirrors": []
+    },
+    "duckdb.part2": {
+      "kind": "part",
+      "path": "duckdb-assets/duckdb-mvp.wasm.part02",
+      "bytes": 5808219,
+      "sha384": "ea9defaf2fe7a7589d2fd72f53d75b00b3aea77007601adb09d2a764cef7816d338cf3ecea0c1cc77b6d648adbe2c066",
+      "mirrors": []
+    },
+    "duckdb.wasm": {
+      "kind": "wasm",
+      "path": null,
+      "bytes": 39362651,
+      "sha384": "68fc439ada2f350c8c4f2f12ef3a25354887a1036fb642c639625d3ed4295b54f9d8342ea9e1aeb6611d6f4c9c06836c",
+      "mirrors": [],
+      "parts": [
+        "duckdb.part0",
+        "duckdb.part1",
+        "duckdb.part2"
+      ]
+    }
+  },
+  "graphs": {
+    "duckdb": {
+      "assets": [
+        "duckdb.module",
+        "duckdb.worker",
+        "duckdb.part0",
+        "duckdb.part1",
+        "duckdb.part2",
+        "duckdb.wasm"
+      ],
+      "entry": "duckdb.module",
+      "bindings": {
+        "worker": "duckdb.worker",
+        "wasm": "duckdb.wasm"
+      }
+    }
+  }
+}

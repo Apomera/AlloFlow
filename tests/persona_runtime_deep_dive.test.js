@@ -83,6 +83,22 @@ const makeReflectionHarness = (overrides = {}) => {
 };
 
 describe('Persona runtime deep-dive fixes', () => {
+  it('labels saved transcript companions by their message language after an app-language change', async () => {
+    const harness = makeReflectionHarness({
+      currentUiLanguage: 'French',
+      personaState: { mode: 'single', selectedCharacter: { name: 'Ada', context: 'Computing' }, selectedCharacters: [], earnedBadges: [],
+        chatHistory: [
+          { role: 'user', text: 'Explain the idea.' },
+          { role: 'model', text: 'First reply.', translation: 'مرحبا', translationTarget: 'Arabic' },
+          { role: 'model', text: 'Legacy reply.', translation: 'Legacy English text.' },
+        ] },
+    });
+    await PhaseKHelpers.handleSaveReflection(harness.deps);
+    const transcript = harness.getHistory()[0].data;
+    expect(transcript).toContain('Translation (Arabic):');
+    expect(transcript).toContain('English translation:');
+    expect(transcript).not.toContain('Translation (French):');
+  });
   it('keeps initial Persona state aligned with the core reset contract', () => {
     const stateStart = appSource.indexOf('const [personaState, setPersonaState] = useState({');
     const stateEnd = appSource.indexOf('const [personaAutoRead, setPersonaAutoRead]', stateStart);

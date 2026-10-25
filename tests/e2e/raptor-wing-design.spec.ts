@@ -7,7 +7,7 @@ import { readPng } from './helpers/png_pixels';
 test.use({ video: 'off', trace: 'off', hasTouch: true });
 test.describe.configure({ retries: 0, timeout: 180_000 });
 const root = '[data-raptor-wing-design]', board = '[data-wing-design-board]';
-const report = resolve('reports/avian-simulations-round30-2026-10-22/raptor');
+const report = resolve(process.env.AVIAN_WING_DESIGN_REPORT || 'reports/avian-simulations-round30-2026-10-22/raptor');
 const harness = new GlHarness({ toolId: 'raptorHunt', toolFile: 'stem_lab/stem_tool_raptorhunt.js', extraScripts: ['node_modules/axe-core/axe.min.js'], width: 1280, height: 1000, appStyles: true, layout: 'document' });
 const rules = ['color-contrast', 'button-name', 'label', 'aria-valid-attr-value', 'aria-required-children', 'aria-required-parent', 'nested-interactive'];
 test.beforeAll(async () => { mkdirSync(report, { recursive: true }); await harness.start(); });

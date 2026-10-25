@@ -90,6 +90,7 @@ afterEach(() => {
   window.__alloFocusTrapStack = [];
   delete window.__alloMakeQrSvg;
   delete window.AlloModules.ErrorReporter;
+  delete window.ALLOFLOW_SUPPORT_REPORTING_POLICY;
   vi.restoreAllMocks();
 });
 
@@ -203,5 +204,48 @@ describe('Project Settings accessibility', () => {
     }
     expect(close).toHaveBeenCalledOnce();
     expect(host.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it.each([undefined, null, false, { version: 1, enabled: false }, { version: 1, enabled: true }, { version: 99, enabled: true }])('does not bypass managed support through a form when the reporter is missing: %j', async policy => {
+    window.ALLOFLOW_SUPPORT_REPORTING_POLICY = policy;
+    const external = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const message = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const { dialog, close } = await renderDialog();
+    const feedback = [...dialog.querySelectorAll('button')].find(button => button.textContent.includes('Report a problem or send feedback'));
+    await act(async () => feedback.click());
+    expect(external).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+    expect(message).toHaveBeenCalledOnce();
+  });
+
+  it('refuses an older reporter without policy support in a managed configuration', async () => {
+    window.ALLOFLOW_SUPPORT_REPORTING_POLICY = { version: 1, enabled: false };
+    const openManualReport = vi.fn();
+    window.AlloModules.ErrorReporter = { openManualReport };
+    const external = vi.spyOn(window, 'open').mockImplementation(() => null);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const { dialog } = await renderDialog();
+    await act(async () => [...dialog.querySelectorAll('button')].find(button => button.textContent.includes('Report a problem or send feedback')).click());
+    expect(openManualReport).not.toHaveBeenCalled();
+    expect(external).not.toHaveBeenCalled();
+  });
+
+  it('still opens policy-aware local diagnostics when external reporting is disabled', async () => {
+    window.ALLOFLOW_SUPPORT_REPORTING_POLICY = { version: 1, enabled: false };
+    const openManualReport = vi.fn();
+    window.AlloModules.ErrorReporter = { getSupportReportingPolicy: () => ({ enabled: false, valid: true }), openManualReport };
+    const external = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const { dialog, close } = await renderDialog();
+    await act(async () => [...dialog.querySelectorAll('button')].find(button => button.textContent.includes('Report a problem or send feedback')).click());
+    expect(openManualReport).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
+    expect(external).not.toHaveBeenCalled();
+  });
+
+  it('retains the explicit public-form fallback when no managed support policy exists', async () => {
+    const external = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const { dialog } = await renderDialog();
+    await act(async () => [...dialog.querySelectorAll('button')].find(button => button.textContent.includes('Report a problem or send feedback')).click());
+    expect(external).toHaveBeenCalledExactlyOnceWith('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
   });
 });

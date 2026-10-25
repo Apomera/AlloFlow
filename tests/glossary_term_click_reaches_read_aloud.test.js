@@ -28,9 +28,44 @@ beforeAll(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   window.React = globalThis.React = React;
   window.ReactDOM = globalThis.ReactDOM = ReactDOM;
+  loadAlloModule('text_pipeline_helpers_module.js');
   loadAlloModule('text_utility_helpers_module.js');
   TextUtilityHelpers = window.AlloModules.TextUtilityHelpers;
   if (!TextUtilityHelpers) throw new Error('TextUtilityHelpers failed to register');
+});
+
+describe('native glossary source terms and saved field languages', () => {
+  it('highlights the original source vocabulary without changing the saved native term', () => {
+    const item = { term: 'Lune', def: 'Un satellite naturel.', baseLanguage: 'French', termLanguage: 'French', definitionLanguage: 'French', sourceTerm: 'Moon', sourceLanguage: 'English', translations: { Spanish: { term: 'Luna', definition: 'Un satélite natural.' } } };
+    const parts = TextUtilityHelpers.glossaryTextSegments('Moon, Lune, Luna.', [item], 'Spanish').filter(part => part.item);
+    expect(parts.map(part => part.text)).toEqual(['Moon', 'Lune', 'Luna']);
+    expect(parts.every(part => part.item === item)).toBe(true);
+    expect(item.term).toBe('Lune');
+  });
+
+  it('uses saved Arabic fields in the tooltip while the highlighted source word stays English', () => {
+    window.AlloModules.ModuleScopeExtras = {
+      getSpeechLangCode: language => ({ English: 'en', Arabic: 'ar', Spanish: 'es' }[language] || 'und'),
+      getContentDirection: language => language === 'Arabic' ? 'rtl' : 'ltr',
+    };
+    const item = { term: 'قمر', def: 'جرم يدور حول الأرض.', baseLanguage: 'Arabic', termLanguage: 'Arabic', definitionLanguage: 'Arabic', sourceTerm: 'Moon', sourceLanguage: 'English', translations: { English: { term: 'Moon', definition: 'A natural satellite.' } } };
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    const children = TextUtilityHelpers.highlightGlossaryTerms('The Moon rises.', [item], false, false, { ...makeDeps(), currentUiLanguage: 'Spanish', generatedContent: { type: 'analysis', config: { language: 'English' } } });
+    React.act(() => root.render(React.createElement('div', null, children)));
+    const term = host.querySelector('.allo-glossary-term');
+    expect(term.textContent).toBe('Moon');
+    expect(term.lang).toBe('en');
+    React.act(() => term.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    const tooltip = document.querySelector('[role="tooltip"]');
+    expect(tooltip.lang).toBe('ar');
+    expect(tooltip.dir).toBe('rtl');
+    expect(tooltip.querySelector('strong').textContent).toBe('قمر');
+    expect(tooltip.querySelector('strong').lang).toBe('ar');
+    expect(tooltip.querySelector('span[lang="en"]').textContent).toBe('Moon: A natural satellite.');
+    React.act(() => root.unmount());
+  });
 });
 
 afterEach(() => {

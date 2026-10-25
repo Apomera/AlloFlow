@@ -25,6 +25,21 @@ const createTTS = (deps) => {
         setShowKokoroOfferModal,
     } = deps;
 
+    // The managed AI v1 contract permits reviewed text inference only. These
+    // legacy speech routes bypass AIProvider, so enforce its media denial at
+    // the actual transport too, including after a queued request resumes.
+    // Match the existing policy's absent/null behavior; never use a browser
+    // preference as district approval. Local/device speech remains available.
+    const _assertCloudTtsAllowed = () => {
+        if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return;
+        const error = new Error('Cloud speech is not approved by the managed AI deployment. Use a local or device voice.');
+        error.code = 'managed-ai-blocked';
+        throw error;
+    };
+    const _isManagedTtsBlocked = error => error?.code === 'managed-ai-blocked';
+    const _ttsDiagnosticCode = error => _isManagedTtsBlocked(error) ? 'managed-ai-blocked'
+        : error?.name === 'AbortError' ? 'aborted' : error?.code === 'tts-http-error' ? 'tts-http-error' : 'speech-request-failed';
+
     const DEFAULT_GEMINI_VOICE = 'Kore';
     const _voiceId = (value) => {
         if (typeof value === 'string') return value.trim();
@@ -343,11 +358,12 @@ const createTTS = (deps) => {
         );
     });
     const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal', requestedModel = GEMINI_MODELS?.tts) => {
+        _assertCloudTtsAllowed();
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
         const safeVoice = _resolveGeminiVoice(voiceName);
         const speechProfile = _normalizeTtsSpeechProfile(language);
         if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
-        debugLog("[fetchTTSBytes] text:", text?.substring(0, 30), "lang:", speechProfile.cacheIdentity);
+        debugLog("[fetchTTSBytes] characters:", String(text || '').length, "lang:", speechProfile.cacheIdentity);
         // Foreground read-aloud must not wait behind speculative/bulk preloads.
         // Keep one serialized lane for interactive playback and one for normal
         // background work. This deliberately caps cloud concurrency at two while
@@ -364,6 +380,7 @@ const createTTS = (deps) => {
             chars: String(text || '').length,
         });
         const queuedTask = state[queueSlot].then(async () => {
+            _assertCloudTtsAllowed();
             const taskStartedAt = Date.now();
             // Watchdog: abort the network call after the lane's time budget.
             // Chained with the caller's signal; a watchdog abort is rethrown
@@ -456,6 +473,7 @@ const createTTS = (deps) => {
             }
             try {
               const fetchStartedAt = Date.now();
+              _assertCloudTtsAllowed();
               const response = await awaitTtsHardDeadline(fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
@@ -490,8 +508,10 @@ const createTTS = (deps) => {
                     try { window.__ttsGeminiAuthFailed = true; } catch (_) {}
                     console.warn("[TTS]" + " cloud TTS key rejected — switching this session to the local voice.");
                 }
-                console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
-                throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                console.error("[TTS] API Error; HTTP status:", response.status);
+                const httpError = new Error(`API Error: ${response.status}`);
+                httpError.code = 'tts-http-error';
+                throw httpError;
               }
               const data = await awaitTtsHardDeadline(response.json(), Math.max(1, fetchTimeoutMs - (Date.now() - fetchStartedAt)), () => {
                   watchdogFired = true;
@@ -505,7 +525,7 @@ const createTTS = (deps) => {
               const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data && (!p.inlineData.mimeType || /^audio\//i.test(p.inlineData.mimeType)));
               const base64Audio = part?.inlineData?.data;
               if (!base64Audio) {
-                  console.error("[TTS] No audio data in response. Keys:", Object.keys(data), "candidates:", JSON.stringify(data.candidates?.[0]?.content?.parts?.map(p => Object.keys(p))).substring(0, 200));
+                  console.error("[TTS] No audio data in response; candidate count:", Array.isArray(data.candidates) ? data.candidates.length : 0);
                   throw new Error("No audio data received.");
               }
               const bytes = decodeBase64(base64Audio);
@@ -513,7 +533,7 @@ const createTTS = (deps) => {
               _noteGeminiSuccess();
               return { bytes, base64: base64Audio };
             } catch (err) {
-              console.warn("[TTS] Gemini TTS Fetch Error:", err.message);
+              console.warn("[TTS] Gemini TTS Fetch Error:", _ttsDiagnosticCode(err));
               throw err;
             }
                 })();
@@ -523,7 +543,7 @@ const createTTS = (deps) => {
                 const mapped = rethrowWatchdog(taskError);
                 _ttsTrace('fetch:fail', {
                     ms: Date.now() - taskStartedAt,
-                    error: String((mapped && mapped.message) || mapped).substring(0, 140),
+                    error: _ttsDiagnosticCode(mapped),
                     aborted: !!(mapped && mapped.name === 'AbortError'),
                 });
                 throw mapped;
@@ -691,7 +711,7 @@ let piperLoadPromise = null;
             }
             return await piperLoadPromise;
         } catch (error) {
-            console.warn('[TTS] Piper loader failed:', error?.message || error);
+            console.warn('[TTS] Piper loader failed:', _ttsDiagnosticCode(error));
             return null;
         }
     };
@@ -744,7 +764,7 @@ let piperLoadPromise = null;
                 kokoroLoadPromise = Promise.resolve(window.__loadKokoroTTS())
                     .then(() => (window._kokoroTTS && window._kokoroTTS.ready ? window._kokoroTTS : null))
                     .catch((error) => {
-                        console.warn('[TTS] Kokoro loader failed:', error?.message || error);
+                        console.warn('[TTS] Kokoro loader failed:', _ttsDiagnosticCode(error));
                         return null;
                     })
                     .finally(() => { kokoroLoadPromise = null; window.__kokoroTTSDownloading = false; });
@@ -799,7 +819,7 @@ let piperLoadPromise = null;
             return engine;
         } catch (error) {
             if (error?.name === 'AbortError') throw error;
-            console.warn('[TTS] ensureKokoroTts failed:', error?.message || error);
+            console.warn('[TTS] ensureKokoroTts failed:', _ttsDiagnosticCode(error));
             return null;
         }
     };
@@ -932,7 +952,7 @@ let piperLoadPromise = null;
                     _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
             } catch (error) {
                 if (_isAbortError(error)) throw error;
-                _ttsTrace('calltts:selected-provider-failed', { provider: 'kokoro', error: String(error?.message || error) });
+                _ttsTrace('calltts:selected-provider-failed', { provider: 'kokoro', error: _ttsDiagnosticCode(error) });
                 return null;
             }
         }
@@ -958,7 +978,7 @@ let piperLoadPromise = null;
             // a warmed sentence was synthesized again when playback asked.
             const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1', _geminiModel]);
             if (!_isKokoroVoice && !_forceRefresh && state.urlCache.has(canvasCacheKey)) {
-                debugLog('callTTS Canvas cache HIT:', text?.substring(0, 30));
+                debugLog('callTTS Canvas cache HIT; characters:', String(text || '').length);
                 _ttsTrace('calltts:cache-hit', { chars: String(text || '').length, voice: voiceName });
                 return _emitResolvedProfile(
                     state.urlCache.get(canvasCacheKey),
@@ -1021,7 +1041,7 @@ let piperLoadPromise = null;
                         entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority, _geminiModel), startedAt: Date.now() };
                         callTTSInFlight.set(canvasCacheKey, entry);
                     } else {
-                        debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
+                        debugLog('callTTS Canvas in-flight JOIN; characters:', String(text || '').length);
                         _ttsTrace('calltts:inflight-join', { chars: String(text || '').length });
                     }
                     try {
@@ -1034,7 +1054,7 @@ let piperLoadPromise = null;
                 };
                 for (let canvasAttempt = 0; canvasAttempt < canvasMaxAttempts; canvasAttempt++) {
                     try {
-                        console.log(`[Canvas TTS] Attempting Gemini TTS${canvasAttempt > 0 ? ` (retry ${canvasAttempt})` : ''} for:`, text?.substring(0, 40), 'voice:', voiceName);
+                        console.log(`[Canvas TTS] Attempting Gemini TTS${canvasAttempt > 0 ? ` (retry ${canvasAttempt})` : ''}; characters:`, String(text || '').length, 'voice:', voiceName);
                         const ttsResult = await fetchCanvasTTSBytes();
                         console.log('[Canvas TTS] fetchTTSBytes result:', ttsResult ? 'got audio (' + (ttsResult.bytes?.length || 0) + ' bytes)' : 'null');
                         if (ttsResult) {
@@ -1064,18 +1084,18 @@ let piperLoadPromise = null;
                         _ttsTrace('calltts:canvas-attempt-fail', {
                             attempt: canvasAttempt + 1,
                             of: canvasMaxAttempts,
-                            error: String(msg).substring(0, 140),
+                            error: _ttsDiagnosticCode(e),
                         });
-                        if (_isAbortError(e)) { throw e; } // caller cancelled — exit cascade
+                        if (_isAbortError(e) || _isManagedTtsBlocked(e)) { throw e; } // cancellation or deployment denial must not downgrade
                         if (msg.includes('429') || msg.includes('Rate Limited')) {
                             state.rateLimitedUntil = Date.now() + 60000;
                             window.__ttsGeminiQuotaFailed = true;
-                            console.warn('[Canvas TTS] Rate limited; using local fallback:', msg);
+                            console.warn('[Canvas TTS] Rate limited; using local fallback:', _ttsDiagnosticCode(e));
                             break;
                         }
                         if (msg.includes('Missing API Key')) {
                             window.__ttsGeminiAuthFailed = true;
-                            console.warn('[Canvas TTS] Missing API key; using local fallback:', msg);
+                            console.warn('[Canvas TTS] Missing API key; using local fallback:', _ttsDiagnosticCode(e));
                             break;
                         }
                         const isDeadlineTimeout = msg.includes('timeout after');
@@ -1088,13 +1108,13 @@ let piperLoadPromise = null;
                             ttsTimeoutStrikes += 1;
                             if (ttsTimeoutStrikes < 2 && canvasAttempt < canvasMaxAttempts - 1) {
                                 _ttsTrace('calltts:canvas-timeout-retry', { strike: ttsTimeoutStrikes });
-                                console.warn('[Canvas TTS] Gemini timed out — retrying once before the cooldown:', msg);
+                                console.warn('[Canvas TTS] Gemini timed out — retrying once before the cooldown:', _ttsDiagnosticCode(e));
                                 await waitForTtsDelay(600, _signal);
                                 continue;
                             }
                             state.timeoutRetryAt = Date.now() + TTS_TIMEOUT_COOLDOWN_MS;
                             _ttsTrace('calltts:canvas-timeout-fallback', { cooldownMs: TTS_TIMEOUT_COOLDOWN_MS, strikes: ttsTimeoutStrikes });
-                            console.warn('[Canvas TTS] Gemini timed out; using local fallback:', msg);
+                            console.warn('[Canvas TTS] Gemini timed out; using local fallback:', _ttsDiagnosticCode(e));
                             break;
                         }
                         // finishReason=OTHER is a completed model refusal, not a
@@ -1110,11 +1130,11 @@ let piperLoadPromise = null;
                         const isTransient = _isRetryableTtsError(msg);
                         if (isTransient && canvasAttempt < canvasMaxAttempts - 1) {
                             const backoffMs = 800 * Math.pow(2, canvasAttempt);
-                            console.warn(`[Canvas TTS] Transient error "${msg}" — retrying in ${backoffMs}ms (attempt ${canvasAttempt + 2}/${canvasMaxAttempts})`);
+                            console.warn(`[Canvas TTS] Transient error — retrying in ${backoffMs}ms (attempt ${canvasAttempt + 2}/${canvasMaxAttempts})`, _ttsDiagnosticCode(e));
                             await waitForTtsDelay(backoffMs, _signal);
                             continue;
                         }
-                        console.warn('[Canvas TTS] Gemini unavailable after retries; using local fallback:', msg);
+                        console.warn('[Canvas TTS] Gemini unavailable after retries; using local fallback:', _ttsDiagnosticCode(e));
                         if (msg.includes('401') || msg.includes('403') || msg.includes('API key')) {
                             window.__ttsGeminiAuthFailed = true;
                         }
@@ -1209,8 +1229,8 @@ let piperLoadPromise = null;
                     }
                 } catch (e) {
                     if (_isAbortError(e)) throw e;
-                    console.warn('[Canvas TTS] Kokoro fallback failed:', e?.message);
-                    _ttsTrace('calltts:kokoro-fallback-fail', { error: String(e?.message || e).substring(0, 100) });
+                    console.warn('[Canvas TTS] Kokoro fallback failed:', _ttsDiagnosticCode(e));
+                    _ttsTrace('calltts:kokoro-fallback-fail', { error: _ttsDiagnosticCode(e) });
                 }
                 try {
                     if (PIPER_HANDLES_ENGLISH && window._piperTTS) {
@@ -1228,8 +1248,8 @@ let piperLoadPromise = null;
                     }
                 } catch (e) {
                     if (_isAbortError(e)) throw e;
-                    console.warn('[Canvas TTS] Piper en fallback failed:', e?.message);
-                    _ttsTrace('calltts:piper-fallback-fail', { error: String(e?.message || e).substring(0, 100) });
+                    console.warn('[Canvas TTS] Piper en fallback failed:', _ttsDiagnosticCode(e));
+                    _ttsTrace('calltts:piper-fallback-fail', { error: _ttsDiagnosticCode(e) });
                 }
             } else {
                 try {
@@ -1248,15 +1268,15 @@ let piperLoadPromise = null;
                     }
                 } catch (e) {
                     if (_isAbortError(e)) throw e;
-                    console.warn('[Canvas TTS] Piper', ttsLang, 'fallback failed:', e?.message);
-                    _ttsTrace('calltts:piper-fallback-fail', { lang: ttsLang, error: String(e?.message || e).substring(0, 100) });
+                    console.warn('[Canvas TTS] Piper', ttsLang, 'fallback failed:', _ttsDiagnosticCode(e));
+                    _ttsTrace('calltts:piper-fallback-fail', { lang: ttsLang, error: _ttsDiagnosticCode(e) });
                 }
             }
             // Nothing on the Canvas cascade produced audio: the caller will
             // fall back to the device/browser voice. Record WHY we got here.
             _ttsTrace('calltts:canvas-null', {
                 chars: String(text || '').length,
-                lastError: canvasLastErr ? String(canvasLastErr.message || canvasLastErr).substring(0, 140) : null,
+                lastError: canvasLastErr ? _ttsDiagnosticCode(canvasLastErr) : null,
                 quotaFailed: !!window.__ttsGeminiQuotaFailed,
                 authFailed: !!window.__ttsGeminiAuthFailed,
             });
@@ -1319,7 +1339,7 @@ let piperLoadPromise = null;
                     _kokoroDeferredToGemini = true; // engine returned nothing
                 } catch (e) {
                     if (_isAbortError(e)) { throw e; }
-                    console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
+                    console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', _ttsDiagnosticCode(e));
                     _kokoroDeferredToGemini = true;
                 }
             } else if (await ensureKokoroTts(undefined, _signal)) {
@@ -1341,7 +1361,7 @@ let piperLoadPromise = null;
                     _kokoroDeferredToGemini = true;
                 } catch (e) {
                     if (_isAbortError(e)) { throw e; }
-                    console.warn('[TTS] Woken Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
+                    console.warn('[TTS] Woken Kokoro engine failed — deferring to provider/cloud voices:', _ttsDiagnosticCode(e));
                     _kokoroDeferredToGemini = true;
                 }
             } else if (window._isDesktopBundledApp) {
@@ -1390,7 +1410,7 @@ let piperLoadPromise = null;
                 }
             } catch (error) {
                 if (_isAbortError(error)) throw error;
-                _routeNote('piper-failed', error?.message || 'multilingual local fallback failed');
+                _routeNote('piper-failed', _ttsDiagnosticCode(error));
             }
         }
 
@@ -1419,7 +1439,8 @@ let piperLoadPromise = null;
                     _routeNote('browser-required', 'ttsProvider=' + _ttsOvr);
                     return null;
                 }
-                console.warn('[callTTS] AIProvider TTS failed:', e?.message);
+                if (_isManagedTtsBlocked(e)) throw e;
+                console.warn('[callTTS] AIProvider TTS failed:', _ttsDiagnosticCode(e));
                 if (_ttsOvr === 'local' || (_ttsOvr === 'auto' && _isLocalAI)) return null;
             }
         }
@@ -1430,7 +1451,7 @@ let piperLoadPromise = null;
         voiceName = _resolveGeminiVoice(voiceName);
         const cacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1', _geminiModel]);
         if (!_forceRefresh && state.urlCache.has(cacheKey)) {
-            debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
+            debugLog("⚡ callTTS cache HIT; characters:", String(text || '').length);
             return _emitResolvedProfile(
                 state.urlCache.get(cacheKey),
                 _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true })
@@ -1499,7 +1520,7 @@ let piperLoadPromise = null;
                 entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority, _geminiModel), startedAt: Date.now() };
                 callTTSInFlight.set(cacheKey, entry);
             } else {
-                debugLog('callTTS in-flight JOIN:', text?.substring(0, 30));
+                debugLog('callTTS in-flight JOIN; characters:', String(text || '').length);
             }
             try {
                 return await entry.promise;
@@ -1530,7 +1551,7 @@ let piperLoadPromise = null;
                 );
             } catch (e) {
                 lastError = e;
-                if (_isAbortError(e)) { throw e; } // caller cancelled — no retry
+                if (_isAbortError(e) || _isManagedTtsBlocked(e)) { throw e; } // cancellation or deployment denial must not retry
                 if (e.message?.includes('Missing API Key')) {
                     throw e;
                 }
@@ -1542,12 +1563,12 @@ let piperLoadPromise = null;
                 }
                 if (attempt < maxRetries) {
                     const delay = 1000 * (attempt + 1);
-                    console.warn(`[TTS-Bot] ⚠️ Attempt ${attempt + 1} failed, will retry...`, e.message);
+                    console.warn(`[TTS-Bot] ⚠️ Attempt ${attempt + 1} failed, will retry...`, _ttsDiagnosticCode(e));
                     await waitForTtsDelay(delay, _signal);
                 }
             }
         }
-        warnLog("[TTS] All retries exhausted for:", text?.substring(0, 30), lastError?.message);
+        warnLog("[TTS] All retries exhausted; characters:", String(text || '').length, 'code:', _ttsDiagnosticCode(lastError));
         // ── V4: non-English had no engine between the cloud and the checkbox ──
         // English fails soft: Gemini -> Kokoro -> browser, and Kokoro is tried
         // inside this function. Every other language went Gemini -> (nothing) ->
@@ -1623,18 +1644,18 @@ let piperLoadPromise = null;
                         }
                         throw new Error('fetchTTSBytes returned empty result');
                     } catch (e) {
-                        if (_isDirectAbortError(e)) throw e;
+                        if (_isDirectAbortError(e) || _isManagedTtsBlocked(e)) throw e;
                         const msg = e?.message || '';
                         if (msg.includes('429') || msg.includes('Rate Limited')) {
                             state.rateLimitedUntil = Date.now() + 60000;
-                            console.warn('[callTTSDirect] Gemini rate-limited — falling back to local:', msg);
+                            console.warn('[callTTSDirect] Gemini rate-limited — falling back to local:', _ttsDiagnosticCode(e));
                             break;
                         }
                         const isDeadlineTimeout = msg.includes('timeout after');
                         if (isDeadlineTimeout) {
                             state.timeoutRetryAt = Date.now() + TTS_TIMEOUT_COOLDOWN_MS;
                             _ttsTrace('callttsdirect:canvas-timeout-fallback', { cooldownMs: TTS_TIMEOUT_COOLDOWN_MS });
-                            console.warn('[callTTSDirect] Gemini timed out; using local fallback:', msg);
+                            console.warn('[callTTSDirect] Gemini timed out; using local fallback:', _ttsDiagnosticCode(e));
                             break;
                         }
                         // Bot lines keep their extra tolerance for a one-off
@@ -1643,11 +1664,11 @@ let piperLoadPromise = null;
                         const isTransient = _isRetryableTtsError(msg) || msg.includes('model refused');
                         if (isTransient && botAttempt < botCanvasMaxAttempts - 1) {
                             const backoffMs = 800 * Math.pow(2, botAttempt);
-                            console.warn(`[callTTSDirect] Transient Gemini error "${msg}" — retrying in ${backoffMs}ms (attempt ${botAttempt + 2}/${botCanvasMaxAttempts})`);
+                            console.warn(`[callTTSDirect] Transient Gemini error — retrying in ${backoffMs}ms (attempt ${botAttempt + 2}/${botCanvasMaxAttempts})`, _ttsDiagnosticCode(e));
                             await waitForTtsDelay(backoffMs, _directSignal);
                             continue;
                         }
-                        console.warn('[callTTSDirect] Gemini TTS failed after retries, falling back to local:', msg);
+                        console.warn('[callTTSDirect] Gemini TTS failed after retries, falling back to local:', _ttsDiagnosticCode(e));
                         break;
                     }
                 }
@@ -1666,20 +1687,20 @@ let piperLoadPromise = null;
                         const url = await window._kokoroTTS.speakStreaming(cleanedText, voiceName, speed, { signal: _directSignal });
                         if (url) return url;
                     }
-                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Kokoro failed:', e?.message); }
+                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Kokoro failed:', _ttsDiagnosticCode(e)); }
                 try {
                     if (PIPER_HANDLES_ENGLISH && window._piperTTS) {
                         const url = await window._piperTTS.speak(cleanedText, 'en', speed, { signal: _directSignal });
                         if (url) return url;
                     }
-                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Piper en fallback failed:', e?.message); }
+                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Piper en fallback failed:', _ttsDiagnosticCode(e)); }
             } else {
                 try {
                     if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
                         const url = await window._piperTTS.speak(cleanedText, ttsLang, speed, { signal: _directSignal });
                         if (url) return url;
                     }
-                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Piper', ttsLang, 'failed:', e?.message); }
+                } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Piper', ttsLang, 'failed:', _ttsDiagnosticCode(e)); }
             }
             return null;
         }
@@ -1706,8 +1727,8 @@ let piperLoadPromise = null;
                     if (kokoroBotUrl) { _routeNoteBot('kokoro'); return kokoroBotUrl; }
                 } catch (e) {
                     if (_isDirectAbortError(e)) throw e;
-                    console.warn('[callTTSDirect] Kokoro engine failed - deferring to provider/cloud:', e?.message);
-                    _routeNoteBot('kokoro-failed', e?.message);
+                    console.warn('[callTTSDirect] Kokoro engine failed - deferring to provider/cloud:', _ttsDiagnosticCode(e));
+                    _routeNoteBot('kokoro-failed', _ttsDiagnosticCode(e));
                 }
                 if (_directSignal?.aborted) {
                     const abortError = new Error('TTS request aborted');
@@ -1744,7 +1765,8 @@ let piperLoadPromise = null;
                     _routeNoteBot('browser-required', 'ttsProvider=' + _ttsOvrBot);
                     return null;
                 }
-                console.warn('[callTTSDirect] AIProvider TTS failed:', e?.message);
+                if (_isManagedTtsBlocked(e)) throw e;
+                console.warn('[callTTSDirect] AIProvider TTS failed:', _ttsDiagnosticCode(e));
                 if (_ttsOvrBot === 'local' || (_ttsOvrBot === 'auto' && _isLocalAIBot)) return null;
             }
         }
@@ -1763,10 +1785,10 @@ let piperLoadPromise = null;
         }
         const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS-Bot] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
-        console.log("[TTS-Bot] 🎤 callTTSDirect called:", { text: text?.substring(0, 40), voice: safeVoice, speed });
+        console.log("[TTS-Bot] 🎤 callTTSDirect called:", { characters: String(text || '').length, voice: safeVoice, speed });
         const cacheKey = JSON.stringify([String(text || ''), safeVoice, _directLanguage, 'natural-rate-v1', _directModel]);
         if (state.urlCache.has(cacheKey)) {
-            console.log("[TTS-Bot] ⚡ Cache HIT:", text?.substring(0, 30));
+            console.log("[TTS-Bot] ⚡ Cache HIT; characters:", String(text || '').length);
             return state.urlCache.get(cacheKey);
         }
         let lastError = null;
@@ -1779,6 +1801,7 @@ let piperLoadPromise = null;
                     await waitForTtsDelay(backoffDelay, _directSignal);
                 }
                 const queuedTask = state.botQueue.then(async () => {
+                    _assertCloudTtsAllowed();
                     console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
                     const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;
                     const url = baseUrl;
@@ -1810,6 +1833,7 @@ let piperLoadPromise = null;
                     try { _directSignal?.addEventListener?.('abort', onDirectAbort, { once: true }); } catch (_) {}
                     let response;
                     try {
+                        _assertCloudTtsAllowed();
                         response = await awaitTtsHardDeadline(fetch(url, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
@@ -1826,7 +1850,7 @@ let piperLoadPromise = null;
                     } finally {
                         try { _directSignal?.removeEventListener?.('abort', onDirectAbort); } catch (_) {}
                     }
-                    console.log("[TTS-Bot] API response status:", response.status, response.statusText);
+                    console.log("[TTS-Bot] API response HTTP status:", response.status);
                     if (!response.ok) {
                       if (response.status === 429) {
                         state.rateLimitedUntil = Date.now() + 60000;
@@ -1849,12 +1873,14 @@ let piperLoadPromise = null;
                     try { window.__ttsGeminiAuthFailed = true; } catch (_) {}
                     console.warn("[TTS-Bot]" + " cloud TTS key rejected — switching this session to the local voice.");
                 }
-                console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
-                      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                      console.error("[TTS-Bot] ❌ API Error; HTTP status:", response.status);
+                      const httpError = new Error(`API Error: ${response.status}`);
+                      httpError.code = 'tts-http-error';
+                      throw httpError;
                     }
                     const data = await response.json();
                     if (data.promptFeedback?.blockReason) {
-                        console.error("[TTS-Bot] ❌ Content blocked:", data.promptFeedback.blockReason);
+                        console.error("[TTS-Bot] ❌ Content blocked by the provider.");
                         throw new Error(`TTS Content Blocked: ${data.promptFeedback.blockReason}`);
                     }
                     if (data.candidates?.[0]?.finishReason === 'OTHER') {
@@ -1880,10 +1906,10 @@ let piperLoadPromise = null;
                 const blob = new Blob([wavBuffer], { type: 'audio/wav' });
                 const url = URL.createObjectURL(blob);
                 _cacheSet(cacheKey, url);
-                console.log("[TTS-Bot] ✅ Bot speech generated via dedicated queue for:", text?.substring(0, 30));
+                console.log("[TTS-Bot] ✅ Bot speech generated via dedicated queue; characters:", String(text || '').length);
                 return url;
             } catch (e) {
-                if (_isDirectAbortError(e)) throw e;
+                if (_isDirectAbortError(e) || _isManagedTtsBlocked(e)) throw e;
                 if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) return null;
 
                 lastError = e;
@@ -1892,11 +1918,11 @@ let piperLoadPromise = null;
                     throw e;
                 }
                 if (attempt < maxRetries) {
-                    console.warn(`[TTS-Bot] ⚠️ Attempt ${attempt + 1} failed, will retry with backoff...`, e.message);
+                    console.warn(`[TTS-Bot] ⚠️ Attempt ${attempt + 1} failed, will retry with backoff...`, _ttsDiagnosticCode(e));
                 }
             }
         }
-        console.error("[TTS-Bot] ❌ All retries exhausted after backoff:", lastError?.message || lastError);
+        console.error("[TTS-Bot] ❌ All retries exhausted after backoff:", _ttsDiagnosticCode(lastError));
         throw lastError;
     };
 

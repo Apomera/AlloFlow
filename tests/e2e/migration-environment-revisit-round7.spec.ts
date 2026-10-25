@@ -199,7 +199,7 @@ test('Migration keyboard revisit restores paused views and saved comparison sour
   await mount(page, { flightStudyBird: 4, flightStudyYaw: 65, flightStudyPitch: 25, flightStudyZoom: 1.1,
     flightWingStep: 2, flightStudyRegion: 'primaries', flightShowAnatomy: true });
   await openObservation(page);
-  const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await input.fill('Recorded goose: the outer feathers spread beyond the inner wing.');
   await page.getByRole('button', { name: 'Record observation', exact: true }).click();
   const gooseRecord = (await state(page)).observations.records['canada_goose:primaries'];
@@ -268,7 +268,7 @@ for (const dark of [false, true]) test.describe(`Migration phone ${dark ? 'dark'
     expect(await page.evaluate(() => scrollY)).toBe(scrollBefore);
     await expect(page.locator('[data-study-region="tail"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-study-observation]')).toHaveAttribute('open', '');
-    const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const note = page.getByRole('textbox', { name: 'My observation', exact: true });
     await note.fill('The tail extends behind the body and changes its outline between viewpoints.');
     await page.getByRole('button', { name: 'Record observation', exact: true }).click();
     const recorded = (await state(page)).observations.records['canada_goose:tail'];

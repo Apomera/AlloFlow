@@ -33,7 +33,7 @@ function notebook(seed = {}) {
   function find(predicate) { return walk(tree, predicate)[0]; }
   function action(name) { return find(node => node.props?.['data-experiment-action'] === name); }
   function edit(label, value) {
-    find(node => node.type === 'textarea' && node.props['aria-label'] === label).props.onChange({ target: { value } });
+    find(node => node.type === 'textarea' && (node.props.id === label || node.props['aria-label'] === label)).props.onChange({ target: { value } });
     draw();
   }
   function record(wind) {
@@ -49,7 +49,7 @@ function notebook(seed = {}) {
 }
 
 function capture(ui, prediction = 'A tailwind will increase ground speed.') {
-  ui.edit('Flight investigation prediction', prediction);
+  ui.edit('migration-experiment-prediction', prediction);
   ui.action('baseline').props.onClick(); ui.draw();
 }
 
@@ -104,9 +104,9 @@ describe('Migration flight notebook exports and completion', () => {
     ui.record(8);
     ui.set({ flightSpecies: 'snow_goose' });
     ui.action('record').props.onClick(); ui.draw();
-    ui.edit('Flight investigation prediction', '=1+1,"bird"\nNext line');
-    ui.edit('Flight investigation evidence notes', '@SUM(1,2)\r\nA "quoted" line');
-    ui.edit('Flight investigation explanation', '\t=2+2');
+    ui.edit('migration-experiment-prediction', '=1+1,"bird"\nNext line');
+    ui.edit('migration-experiment-evidence', '@SUM(1,2)\r\nA "quoted" line');
+    ui.edit('migration-experiment-explanation', '\t=2+2');
     const before = JSON.stringify(ui.state);
     ui.action('export-csv').props.onClick();
     expect(downloads).toEqual([{ filename: 'migration-flight-investigation.csv', url: 'blob:flight-notebook-1', attached: true }]);
@@ -135,7 +135,7 @@ describe('Migration flight notebook exports and completion', () => {
 
   it.each(['=1+1', '+SUM(A1)', '-SUM(A1)', '@SUM(A1)', '\t=1', '\r=1', '  =1'])('neutralizes a spreadsheet formula-like learner cell: %j', async text => {
     const ui = notebook();
-    ui.edit('Flight investigation prediction', text);
+    ui.edit('migration-experiment-prediction', text);
     ui.action('export-csv').props.onClick();
     const row = parseCsv(await blobs[0].text())[0];
     expect(row['Current prediction']).toBe("'" + text);
@@ -146,8 +146,8 @@ describe('Migration flight notebook exports and completion', () => {
     const ui = notebook();
     capture(ui, '<img src=x onerror="alert(1)">');
     ui.record(0);
-    ui.edit('Flight investigation evidence notes', '<script>attack()</script>\nWing & wind');
-    ui.edit('Flight investigation explanation', 'I revised my "prediction".');
+    ui.edit('migration-experiment-evidence', '<script>attack()</script>\nWing & wind');
+    ui.edit('migration-experiment-explanation', 'I revised my "prediction".');
     ui.action('export-html').props.onClick();
     expect(downloads[0].filename).toBe('migration-flight-investigation.html');
     expect(blobs[0].type).toBe('text/html;charset=utf-8');
@@ -165,8 +165,11 @@ describe('Migration flight notebook exports and completion', () => {
   it('reports download failures and removes its temporary anchor', () => {
     const ui = notebook();
     vi.spyOn(URL, 'createObjectURL').mockImplementation(() => { throw new Error('Unavailable download'); });
+    const before = structuredClone(ui.state);
     ui.action('export-csv').props.onClick();
-    expect(ui.announce).toHaveBeenLastCalledWith('Download was blocked by this browser.');
+    expect(ui.state).toEqual(before);
+    expect(ui.draw()).toContain('data-learning-feedback="investigation"');
+    expect(ui.announce).not.toHaveBeenCalled();
     expect(document.querySelector('a[download]')).toBeNull();
   });
 
@@ -175,32 +178,16 @@ describe('Migration flight notebook exports and completion', () => {
     capture(ui);
     ui.record(0);
     expect(ui.complete()).toBe('false');
-    ui.edit('Flight investigation evidence notes', 'Wind changed from -4 to zero.');
+    ui.edit('migration-experiment-evidence', 'Wind changed from -4 to zero.');
     expect(ui.complete()).toBe('false');
-    ui.edit('Flight investigation explanation', '  ');
+    ui.edit('migration-experiment-explanation', '  ');
     expect(ui.complete()).toBe('false');
-    ui.edit('Flight investigation explanation', 'The fixed airspeed model adds wind to ground speed.');
+    ui.edit('migration-experiment-explanation', 'The fixed airspeed model adds wind to ground speed.');
     expect(ui.complete()).toBe('true');
-    ui.edit('Flight investigation evidence notes', '  ');
+    ui.edit('migration-experiment-evidence', '  ');
     expect(ui.complete()).toBe('false');
   });
 
-  it('restores focus to the next remaining remove control and then to Record when the final row is removed', () => {
-    const ui = notebook();
-    capture(ui);
-    ui.record(0); ui.record(3); ui.record(5);
-    document.body.innerHTML = ui.draw();
-    const remove = ui.find(node => node.props?.['aria-label'] === 'Remove trial 2');
-    remove.props.onClick();
-    document.body.innerHTML = ui.draw();
-    vi.runOnlyPendingTimers();
-    expect(document.activeElement.getAttribute('aria-label')).toBe('Remove trial 2');
-    expect(ui.state.flightInvestigation.trials.map(row => row.snapshot.wind)).toEqual([0, 5]);
-    ui.find(node => node.props?.['aria-label'] === 'Remove trial 2').props.onClick();
-    document.body.innerHTML = ui.draw(); vi.runOnlyPendingTimers();
-    expect(document.activeElement.getAttribute('aria-label')).toBe('Remove trial 1');
-    ui.find(node => node.props?.['aria-label'] === 'Remove trial 1').props.onClick();
-    document.body.innerHTML = ui.draw(); vi.runOnlyPendingTimers();
-    expect(document.activeElement.getAttribute('data-experiment-action')).toBe('record');
-  });
+  // Removal focus and ownership are exercised with real React DOM in migration_removal_focus.test.js.
+
 });

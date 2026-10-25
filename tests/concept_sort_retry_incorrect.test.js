@@ -23,7 +23,7 @@ const DATA = {
   ],
 };
 
-const card = (text) => Array.from(host.querySelectorAll('[role="button"][aria-label]')).find((el) => el.getAttribute('aria-label').startsWith(text + '.'));
+const card = (text) => Array.from(host.querySelectorAll('[data-concept-sort-item-id][aria-label]')).find((el) => el.getAttribute('aria-label').startsWith(text + '.'));
 const buttonWithText = (text) => Array.from(host.querySelectorAll('button')).find((el) => el.textContent.includes(text) || (el.getAttribute('aria-label') || '').includes(text));
 const moveHereButtons = () => Array.from(host.querySelectorAll('button[data-move-here]'));
 async function click(el) { expect(el, 'element to click').toBeTruthy(); await act(async () => { el.click(); }); }

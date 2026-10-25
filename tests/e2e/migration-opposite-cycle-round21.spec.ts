@@ -233,7 +233,7 @@ async function resetZoom(page: Page) {
 }
 async function oppositeComparison(page: Page, touch = false) {
   await expect(opposite(page)).toBeDisabled();
-  await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }), touch);
+  await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), touch);
   await activate(page, cycle(page, 2), touch); await selectedPosition(page, 2);
   await expect(opposite(page)).toBeEnabled(); await checkTarget(opposite(page));
   await activate(page, page.getByRole('button', { name: 'Mark wing pose', exact: true }), touch);
@@ -269,7 +269,7 @@ test('Opposite cycle comparison preserves one fixed experiment while anatomy lab
   const picked = await anatomyAudit(page); expectAnatomy(picked, 'inner-wing'); expect(picked.pose).toEqual(pick.pose); expect(picked.marked).toEqual(pick.marked);
   await stage(page).screenshot({ path: join(report, 'desktop-opposite-cycle-stage.png') });
   await activate(page, page.getByRole('button', { name: 'Describe this wing segment', exact: true }));
-  const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const note = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(note).toBeFocused(); await expect(note).toHaveValue(flow.original.flightStudyObservations.drafts['canada_goose:inner-wing']);
   expect(work(await saved(page))).toEqual(work(flow.original));
   await page.locator('[data-study-observation]').screenshot({ path: join(report, 'desktop-opposite-cycle-notes.png') });
@@ -296,7 +296,7 @@ for (const dark of [false, true]) test.describe('Migration opposite cycle phone 
     const picked = await anatomyAudit(page); expectAnatomy(picked, region); expect(picked.pose).toEqual(pick.pose); expect(picked.marked).toEqual(pick.marked);
     await stage(page).screenshot({ path: join(report, stem + '-stage.png') });
     const describe = page.getByRole('button', { name: 'Describe this wing segment', exact: true }); await checkTarget(describe); await activate(page, describe, true);
-    const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const note = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(note).toBeFocused(); await expect(note).toHaveValue(flow.original.flightStudyObservations.drafts['canada_goose:' + region]);
     await selectedPosition(page, 2); expect(work(await saved(page))).toEqual(work(flow.original));
     const evidence = 'I predicted a change, marked cycle position 3, and compared position 7 with the view fixed. I followed the individual’s left wing and can describe the visible difference against the dashed outline.';

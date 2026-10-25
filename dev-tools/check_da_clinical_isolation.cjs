@@ -130,35 +130,34 @@ for (const rel of HOST_SHELLS) {
   }
 }
 
-// ── 5. Each extracted callback must opt in independently. ──
-// A total token count alone is insufficient: both flags could accidentally land
-// in one callback while the other silently resumes inheriting ambient context.
+// ── 5. Protected DA must not publish clinical resources to ordinary history. ──
+// The protected clinical workspace intentionally blocks these legacy routes
+// until a protected resource publisher exists. Dispatcher guards above remain
+// mandatory for every other consumer of the shared generation pipeline.
 for (const rel of HOST_ADAPTERS) {
   const text = read(rel);
   if (!text) continue;
   if (!text.includes('function DynamicAssessmentHostAdapter(props)') ||
-      !text.includes('DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter')) {
-    errors.push(`${rel} does not publish the extracted DynamicAssessmentHostAdapter.`);
+      !text.includes('ProtectedDynamicAssessment.HostAdapter = daProtectedComponent(DynamicAssessmentHostAdapter)')) {
+    errors.push(`${rel} does not publish the protected DynamicAssessmentHostAdapter.`);
     continue;
   }
 
-  const visualStart = text.indexOf('onGenerateVisualOrganizer: async');
-  const sentenceComment = text.indexOf('// Sentence-frames host callback', visualStart);
-  const sentenceStart = text.indexOf('onGenerateSentenceFrames: async', sentenceComment);
-  const resourceStart = text.indexOf('onOpenResource:', sentenceStart);
-  if (visualStart < 0 || sentenceComment < 0 || sentenceStart < 0 || resourceStart < 0) {
-    errors.push(`${rel} is missing a bounded visual-organizer or sentence-frames host callback.`);
+  const start = text.indexOf('function DynamicAssessmentHostAdapter(props)');
+  const end = text.indexOf('function DynamicAssessment(props)', start);
+  if (start < 0 || end <= start) {
+    errors.push(`${rel} is missing the bounded protected host adapter.`);
     continue;
   }
-
-  const visualCallback = text.slice(visualStart, sentenceComment);
-  const sentenceCallback = text.slice(sentenceStart, resourceStart);
-  if (!/const cfg\s*=\s*\{\s*isolatedContext:\s*true\s*\}/.test(visualCallback) ||
-      !/handleGenerate\([\s\S]*?\bcfg\b[\s\S]*?\)/.test(visualCallback)) {
-    errors.push(`${rel} visual-organizer callback no longer passes isolatedContext: true to handleGenerate.`);
+  const body = text.slice(start, end);
+  if (!body.includes('daMountedWorkspace(props.sensitiveWorkspace)') || !body.includes('daBlockedParentCallbacks(host.addToast)')) {
+    errors.push(`${rel} does not apply the protected capability and blocked parent-publishing callbacks.`);
   }
-  if (!/handleGenerate\([\s\S]*isolatedContext:\s*true/.test(sentenceCallback)) {
-    errors.push(`${rel} sentence-frames callback no longer passes isolatedContext: true to handleGenerate.`);
+  if (/setHistory|setGeneratedContent|handleGenerate\s*\(|host\.history/.test(body)) {
+    errors.push(`${rel} reintroduces unprotected parent-history generation, persistence or automatic imports.`);
+  }
+  for (const callback of ['onGenerateGlossary', 'onGenerateManipulative', 'onGenerateWordSoundsProbe', 'onGenerateVisualOrganizer', 'onGenerateSentenceFrames', 'onUpdateManipulativePreset', 'onUpdateWordSoundsProbe', 'onOpenResource']) {
+    if (!new RegExp(callback + ': blocked').test(text)) errors.push(`${rel} does not explicitly block ${callback}.`);
   }
 }
 

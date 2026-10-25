@@ -16,6 +16,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { React, baseProps, setupBehaviorLens } from './helpers/behavior_lens_harness.js';
+import { actWithSensitivePromptReview } from './helpers/sensitive_prompt_review_user.js';
 const require = createRequire(import.meta.url);
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const { Simulate } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
@@ -169,7 +170,7 @@ describe('AI replies a family reads', () => {
     await mount();
     if (family) { await click(familyToggle()); await click('Add home observation'); }
     else { await click('All tools'); await click(host.querySelector('[aria-label="Open Home Behavior Log"], [aria-label^="Open Home"]') || buttonMatching(/Home Behavior Log/)); }
-    await click(buttonMatching(/Analyze Patterns/)); await tick();
+    await click(buttonMatching(/Analyze Patterns/)); await actWithSensitivePromptReview(React, () => {}); await tick();
     return prompts.join('\n');
   }
   it('Family view sends interests and strengths, not staff notes, triggers or accommodations', async () => {

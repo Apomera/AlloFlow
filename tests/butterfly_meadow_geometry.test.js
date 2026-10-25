@@ -49,9 +49,9 @@ describe('Butterfly meadow native geometry',()=>{
     }
   });
 
-  it('keeps distant hill surfaces below tree roots, woodland grass and projected canopy shadows',()=>{
+  it('buries open trunk feet in the ground and keeps distant hills clear of woodland vegetation and shadows',()=>{
     world.scene.updateMatrixWorld(true);
-    const hills=[],samples=[],shadows=[],material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
+    const hills=[],samples=[],shadows=[],trunkFootHeights=[],material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
     let groundBounds;
     const matrix=new THREE.Matrix4(),point=new THREE.Vector3(),counts={trees:0,grass:0};
     function eachMatrix(object,visit){
@@ -71,6 +71,12 @@ describe('Butterfly meadow native geometry',()=>{
       });
       if(object.geometry.name==='woodland-curved-trunk')eachMatrix(object,transform=>{
         samples.push({kind:'tree foot',point:new THREE.Vector3(0,-.5,0).applyMatrix4(transform)});counts.trees++;
+        const positions=object.geometry.attributes.position;
+        let bottom=Infinity;
+        for(let vertex=0;vertex<positions.count;vertex++)bottom=Math.min(bottom,positions.getY(vertex));
+        for(let vertex=0;vertex<positions.count;vertex++)if(Math.abs(positions.getY(vertex)-bottom)<.000001){
+          trunkFootHeights.push(point.fromBufferAttribute(positions,vertex).applyMatrix4(transform).y);
+        }
       });
       if(object.name==='shared-meadow-grass')eachMatrix(object,transform=>{
         point.setFromMatrixPosition(transform);
@@ -83,6 +89,13 @@ describe('Butterfly meadow native geometry',()=>{
     });
     expect(hills).toHaveLength(11);expect(counts.trees).toBe(57);expect(counts.grass).toBeGreaterThan(1000);expect(shadows).toHaveLength(57);
     expect(groundBounds,'ground covers the buried lower portions of the hills').toBeDefined();
+    expect(trunkFootHeights).toHaveLength(57*9);
+    expect(Math.max(...trunkFootHeights),'every tilted open trunk rim stays below the soil surface').toBeLessThan(groundBounds.max.y);
+    for(const shadow of shadows){
+      const shadowHeight=shadow.matrix.elements[13];
+      expect(shadowHeight,'woodland shadows remain above the soil').toBeGreaterThan(groundBounds.max.y);
+      expect(shadowHeight,'woodland shadows hug the soil without crossing trunk bark').toBeLessThan(groundBounds.max.y+.01);
+    }
     for(const hill of hills){
       const box=hill.userData.bounds;
       expect(box.min.x).toBeGreaterThanOrEqual(groundBounds.min.x);expect(box.max.x).toBeLessThanOrEqual(groundBounds.max.x);

@@ -96,7 +96,7 @@ async function geometry(page: Page) {
 
 async function observe(page: Page, region: string, note: string) {
   await page.locator(`[data-study-region="${region}"]`).click();
-  const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toBeVisible();
   await input.fill(note);
   await page.getByRole('button', { name: 'Record observation', exact: true }).click();
@@ -182,7 +182,7 @@ test('Migration observation records preserve species, region and viewpoint while
   // Native details are exposed as groups; query the named disclosure directly.
   await expect(disclosure).toContainText('Whole-insect wing motion');
   await expect(page.locator('[data-study-region]')).toHaveCount(0);
-  const input = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const input = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(input).toHaveValue('');
   await input.fill('Both patterned wing pairs move together in the insect model.');
   await page.getByRole('button', { name: 'Record observation', exact: true }).click();

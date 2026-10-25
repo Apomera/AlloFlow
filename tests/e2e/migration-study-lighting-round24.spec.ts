@@ -27,7 +27,7 @@ test.afterEach(async ({ page }) => {
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
 const context = (page: Page) => page.locator('#migration-study-current-context');
-const note = (page: Page) => page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const viewpoint = (page: Page, id: string) => page.locator('[data-study-viewpoint="' + id + '"]');
 const checkedCue = (page: Page) => context(page).locator('[data-study-checked-comparison]');
@@ -262,7 +262,7 @@ async function lightingFlow(page: Page, id: string, region: string, dark: boolea
   if (!touch) {
     await activate(page, page.getByRole('button', { name: 'Reset study view', exact: true }));
     await activate(page, cycle(page, 2));
-    const followLeft = page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true });
+    const followLeft = page.getByRole('button', { name: 'Individual’s left: solid path', exact: true });
     if (await followLeft.getAttribute('aria-pressed') !== 'true') await activate(page, followLeft);
     await activate(page, page.locator('[data-study-region="primaries"]'));
     const beforeResize = await saved(page); await setTheme(page, true); await page.setViewportSize({ width: 390, height: 844 }); await frames(page);

@@ -24,11 +24,79 @@
   // Pretest baseline + Posttest score → Modifiability Index =
   //   (post - pre) / (maxPossible - pre)  — proportion of growth realized.
   //
-  // Persistence: localStorage 'alloflow_dynamic_assessment_v1'.
+  // Persistence: protected clinical workspace bucket; no raw browser-storage fallback.
   // No examiner free-text observations are ever synced to Firestore.
   // ═══════════════════════════════════════════════════════════
 
   var STORAGE_KEY = "alloflow_dynamic_assessment_v1";
+  var DA_PERSIST_KEY = "alloflow_da_session_state_v1";
+  var DA_MOUNTED_WORKSPACES = new WeakMap();
+  var DA_REVIEWED_PROVIDERS = new WeakSet();
+  var DA_GUARDED_EXPORT_CALLBACKS = new WeakSet();
+  function daRequireWorkspace(session) {
+    var api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!api || typeof api.isSession !== "function" || !api.isSession(session, "dynamic-assessment")) {
+      throw new Error("Unlock the protected clinical workspace to use Dynamic Assessment.");
+    }
+    return session;
+  }
+  function daProtectedBoundary(props) {
+    var React = props.React || window.React;
+    var refresh = React.useState(0);
+    React.useEffect(function () {
+      var update = function () { refresh[1](function (n) { return n + 1; }); };
+      window.addEventListener("alloflow:module-registry-changed", update);
+      try {
+        if (typeof window.__alloLazySensitiveWorkspace === "function") {
+          Promise.resolve(window.__alloLazySensitiveWorkspace()).then(update, update);
+        }
+      } catch (_) {}
+      return function () { window.removeEventListener("alloflow:module-registry-changed", update); };
+    }, []);
+    var api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!api || typeof api.Boundary !== "function" || typeof api.isSession !== "function") {
+      return React.createElement("section", { role: "status", "data-da-protected-loading": "true" },
+        React.createElement("h2", null, "Protected Dynamic Assessment"),
+        React.createElement("p", null, "The protected clinical workspace is loading. Clinical records remain closed."),
+        React.createElement("p", null, "Sample activity: sort three shapes by size."),
+        React.createElement("button", { type: "button", onClick: function () {
+          try { if (typeof window.__alloLazySensitiveWorkspace === "function") Promise.resolve(window.__alloLazySensitiveWorkspace()).then(function () { refresh[1](function (n) { return n + 1; }); }, function () {}); } catch (_) {}
+        } }, "Retry protected workspace"),
+        React.createElement("button", { type: "button", onClick: props.onClose }, "Close"));
+    }
+    return React.createElement(api.Boundary, { React: React, feature: "dynamic-assessment", onClose: props.onClose,
+      children: function (session) {
+        daRequireWorkspace(session);
+        DA_MOUNTED_WORKSPACES.set(session, session.captureEpoch());
+        return React.createElement(props.Internal, Object.assign({}, props.innerProps, { sensitiveWorkspace: session }));
+      }
+    });
+  }
+  function daProtectedComponent(Internal) {
+    return function (props) {
+      props = props || {};
+      var React = props.React || window.React;
+      if (!React || typeof React.createElement !== "function") return null;
+      var onClose = props.onClose || (props.host && props.host.setIsDynamicAssessmentOpen ? function () { props.host.setIsDynamicAssessmentOpen(false); } : undefined);
+      return React.createElement(daProtectedBoundary, { React: React, Internal: Internal, innerProps: props, onClose: onClose });
+    };
+  }
+  function daBlockedParentCallbacks(addToast) {
+    function blocked() {
+      var message = "Clinical resources stay in the protected workspace. Publishing or opening them in ordinary app history is unavailable until a protected resource route is ready.";
+      if (typeof addToast === "function") addToast(message);
+      throw new Error(message);
+    }
+    return { mathFluencyProbes: [], daResourceManifest: [],
+      onGenerateGlossary: blocked, onGenerateManipulative: blocked,
+      onGenerateWordSoundsProbe: blocked, onGenerateVisualOrganizer: blocked,
+      onGenerateSentenceFrames: blocked, onUpdateManipulativePreset: blocked,
+      onUpdateWordSoundsProbe: blocked, onOpenResource: blocked };
+  }
+  function daMountedWorkspace(session) {
+    if (!session || !DA_MOUNTED_WORKSPACES.has(session)) throw new Error("Protected Dynamic Assessment must open through its workspace boundary.");
+    return session;
+  }
   var DA_SCHEMA_VERSION = "1.4.0";
   var DA_AUDIT_TRAIL_VERSION = "1.0.0";
   var DA_BACKUP_FORMAT = "alloflow-da-session-backup";
@@ -1560,6 +1628,12 @@
   READING_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
   WM_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
   LANGUAGE_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
+  var DA_BUILT_IN_ITEMS = Object.assign({}, ITEMS_BY_ID);
+  function daClearClinicalItems() {
+    Object.keys(ITEMS_BY_ID).forEach(function (key) { delete ITEMS_BY_ID[key]; });
+    Object.keys(DA_BUILT_IN_ITEMS).forEach(function (key) { ITEMS_BY_ID[key] = DA_BUILT_IN_ITEMS[key]; });
+    try { delete window.__alloDAExport; } catch (_) { window.__alloDAExport = undefined; }
+  }
 
   function getItemsByDomainAndDifficulty(domain, difficulty) {
     var pool;
@@ -3228,9 +3302,9 @@
     return envelope;
   }
 
-  function loadState() {
+  function loadState(storage) {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = storage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
       var parsed = JSON.parse(raw);
       var base = defaultState();
@@ -3242,19 +3316,19 @@
   // Save quotient state. Most failures are quota-exceeded; surface them
   // via a window-level flag so the React layer can show a toast without
   // tight coupling.
-  function saveState(s) {
+  function saveState(s, storage) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      storage.setItem(STORAGE_KEY, JSON.stringify(s));
       if (typeof window !== "undefined") window.__alloDaStorageFailed = false;
     } catch (e) {
       // Quota exceeded is the common one. Mark a flag so the component
       // can warn the user. Subsequent saves keep trying.
       if (typeof window !== "undefined") {
         window.__alloDaStorageFailed = true;
-        window.__alloDaStorageError = (e && e.message) ? e.message : "Unknown localStorage error";
+        window.__alloDaStorageError = "Protected clinical storage could not stage this change.";
       }
       if (typeof console !== "undefined") {
-        try { console.warn("[DA] localStorage save failed:", e); } catch (err) { /* ignore */ }
+        try { console.warn("[DA] protected storage staging failed"); } catch (err) { /* ignore */ }
       }
     }
   }
@@ -3635,7 +3709,7 @@
   // SECTION 2.4 — Report Writer export (Phase D)
   // ═════════════════════════════════════════════════════════
   // Builds a structured payload from a completed DA session that the
-  // Report Writer module ingests via window.__alloDAExport. Payload
+  // Report Writer ingests through the protected workspace transfer channel. Payload
   // contains both atomic fact chunks (for AI section-drafting downstream)
   // AND a pre-drafted narrative section the clinician can paste in or
   // edit. Template-generated so it's deterministic; clinician can
@@ -3987,9 +4061,11 @@
   }
 
   // Top-level export that DA's summary screen calls. Writes the payload
-  // to window.__alloDAExport for the Report Writer to pick up. Returns
+  // to the protected Report Writer transfer channel. Returns
   // the payload so callers can also toast / log it.
-  function exportSessionToReportWriter(session, studentName) {
+  function exportSessionToReportWriter(session, studentName, workspace) {
+    workspace = daRequireWorkspace(workspace);
+    workspace.assertCanExport("report-writer");
     if (!session) return null;
     var payload = {
       sessionId: session.id,
@@ -4028,12 +4104,7 @@
       exportedAt: new Date().toISOString()
     };
     if (typeof window !== "undefined") {
-      window.__alloDAExport = payload;
-      // Dispatch a custom event so a Report Writer that's already mounted
-      // can react without polling.
-      try {
-        window.dispatchEvent(new CustomEvent("alloDAExportReady", { detail: { sessionId: payload.sessionId } }));
-      } catch (e) { /* CustomEvent unsupported — Report Writer falls back to mount-time check */ }
+      workspace.transfer("report-writer", payload);
     }
     return payload;
   }
@@ -6357,424 +6428,187 @@
   // Host-owned resource generation and navigation callbacks live beside the
   // lazy Dynamic Assessment UI. This keeps the app shell to a small, explicit
   // dependency contract while preserving the existing single-module request.
+  // A review authorizes one outbound copy, never a change to saved case data.
+  // The adapter also uses this boundary for supplemental resource callbacks.
+  function useDaSensitiveAiReview(React, contextKey, studentName, enabled, workspace) {
+    var reviewTuple = React.useState(null);
+    var review = reviewTuple[0];
+    var setReview = reviewTuple[1];
+    var holder = React.useRef(null);
+    if (!holder.current) holder.current = { mounted: true, version: 0, ownKey: contextKey, childKey: "", studentName: studentName || "", gate: null, api: null, providers: {}, pendingProviders: [] };
+    var live = holder.current;
+    if (live.ownKey !== contextKey) { live.ownKey = contextKey; live.version += 1; }
+    live.studentName = studentName || "";
+
+    function cancelled() {
+      var error = new Error("Dynamic Assessment AI review was cancelled or its case changed.");
+      error.name = "AbortError";
+      error.code = "ALLOFLOW_AI_REVIEW_CANCELLED";
+      return error;
+    }
+    function cancelAll(notify) {
+      if (live.gate) live.gate.cancelAll({ notify: notify !== false });
+    }
+    React.useEffect(function () {
+      live.mounted = true;
+      return function () {
+        live.mounted = false;
+        live.version += 1;
+        cancelAll(false);
+      };
+    }, []);
+    React.useEffect(function () { cancelAll(); }, [contextKey]);
+    React.useEffect(function () {
+      if (live.pendingProviders.some(function (entry) { return live.providers[entry.kind] !== entry.provider; })) cancelAll();
+    });
+
+    if (!live.updateContext) live.updateContext = function (key, name) {
+      if (live.childKey !== key) {
+        live.childKey = key;
+        live.version += 1;
+        cancelAll();
+      }
+      live.childStudentName = name || "";
+    };
+    async function request(prompt, options) {
+      options = options || {};
+      daRequireWorkspace(workspace);
+      var workspaceEpoch = workspace.captureEpoch();
+      workspace.assertCurrent(workspaceEpoch);
+      workspace.assertCanTransmit("ai");
+      var api = window.AlloModules && window.AlloModules.IdentifierRedaction;
+      if (!live.mounted || (options.signal && options.signal.aborted)) throw cancelled();
+      if (!api || typeof api.createSensitivePromptGate !== "function" || typeof api.SensitivePromptReview !== "function") {
+        throw new Error("Sensitive AI review is unavailable. No Dynamic Assessment content was sent.");
+      }
+      if (!live.gate || live.api !== api) {
+        cancelAll();
+        live.api = api;
+        live.gate = api.createSensitivePromptGate({ onChange: function (next) { if (live.mounted) setReview(next); } });
+      }
+      var version = live.version;
+      var approved = await live.gate.request(prompt, Object.assign({}, options, {
+        studentName: live.childStudentName || live.studentName,
+        people: [],
+        label: options.label || "Dynamic Assessment"
+      }));
+      workspace.assertCurrent(workspaceEpoch);
+      workspace.assertCanTransmit("ai");
+      if (!live.mounted || version !== live.version || live.api !== (window.AlloModules && window.AlloModules.IdentifierRedaction) || (options.signal && options.signal.aborted)) throw cancelled();
+      return approved;
+    }
+    function wrap(provider, kind) {
+      live.providers[kind] = provider;
+      if (typeof provider !== "function" || !enabled) return provider;
+      var wrapped = async function () {
+        var args = Array.prototype.slice.call(arguments);
+        daRequireWorkspace(workspace);
+        var workspaceEpoch = workspace.captureEpoch();
+        workspace.assertCurrent(workspaceEpoch);
+        workspace.assertCanTransmit("ai");
+        var version = live.version;
+        var promptIndex = kind === "directive" ? 3 : 0;
+        var entry = { kind: kind, provider: provider };
+        live.pendingProviders.push(entry);
+        var approved;
+        try {
+          approved = await request(args[promptIndex], {
+            searchQuery: kind === "text" ? args[4] : undefined,
+            signal: kind === "text" ? args[5] : undefined,
+            media: kind === "imageEdit" ? { mime: "image/*" } : undefined,
+            label: kind === "directive" ? "Review instructions for supplementary resource" : kind === "text" ? "Dynamic Assessment AI request" : "Dynamic Assessment image request"
+          });
+        } finally {
+          var pendingIndex = live.pendingProviders.indexOf(entry);
+          if (pendingIndex >= 0) live.pendingProviders.splice(pendingIndex, 1);
+        }
+        if (version !== live.version || live.providers[kind] !== provider) throw cancelled();
+        daRequireWorkspace(workspace);
+        workspace.assertCurrent(workspaceEpoch);
+        workspace.assertCanTransmit("ai");
+        args[promptIndex] = approved.prompt;
+        if (kind === "text" && typeof args[4] === "string") args[4] = approved.searchQuery;
+        var result = await provider.apply(this, args);
+        workspace.assertCurrent(workspaceEpoch);
+        if (!live.mounted || version !== live.version) throw cancelled();
+        return result;
+      };
+      DA_REVIEWED_PROVIDERS.add(wrapped);
+      return wrapped;
+    }
+    function renderReview() {
+      if (!enabled || !review || !live.api || typeof live.api.SensitivePromptReview !== "function") return null;
+      return React.createElement(live.api.SensitivePromptReview, {
+        React: React,
+        review: review,
+        onAccept: function (id, value) {
+          if (!live.mounted || live.api !== (window.AlloModules && window.AlloModules.IdentifierRedaction)) { cancelAll(); return { sent: false, changed: false }; }
+          return live.gate.accept(id, value);
+        },
+        onCancel: function (id) { if (live.gate) live.gate.cancel(id); }
+      });
+    }
+    return { wrap: wrap, request: request, render: renderReview, updateContext: live.updateContext };
+  }
+
   function DynamicAssessmentHostAdapter(props) {
     props = props || {};
+    var workspace = daMountedWorkspace(props.sensitiveWorkspace);
+    var epoch = DA_MOUNTED_WORKSPACES.get(workspace);
     var React = props.React || window.React;
-    var DA = props.DynamicAssessment || DynamicAssessment;
     var host = props.host || {};
-    var addToast = host.addToast;
-    var autoRemoveWords = host.autoRemoveWords;
-    var callGemini = host.callGemini;
-    var callGeminiImageEdit = host.callGeminiImageEdit;
-    var callImagen = host.callImagen;
-    var cleanJson = host.cleanJson;
-    var gradeLevel = host.gradeLevel;
-    var handleGenerate = host.handleGenerate;
-    var handleRestoreView = host.handleRestoreView;
-    var history = host.history;
-    var leveledTextLanguage = host.leveledTextLanguage;
-    var selectedLanguages = host.selectedLanguages;
-    var setGeneratedContent = host.setGeneratedContent;
-    var setHistory = host.setHistory;
-    var setIsDynamicAssessmentOpen = host.setIsDynamicAssessmentOpen;
-    var setIsGeneratingTermImage = host.setIsGeneratingTermImage;
-    var studentNickname = host.studentNickname;
-    var t = host.t;
-
-    if (!React || typeof React.createElement !== "function") {
-      throw new Error("DynamicAssessmentHostAdapter requires React");
-    }
-    if (typeof DA !== "function") {
-      throw new Error("DynamicAssessmentHostAdapter requires the DynamicAssessment component");
-    }
-
-    return React.createElement(
-      "div",
-      {
-        className: "fixed inset-0 z-[60] bg-black/50 overflow-y-auto",
-        onClick: function () { setIsDynamicAssessmentOpen(false); }
-      },
-      React.createElement(
-        "div",
-        {
-          className: "bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl",
-          onClick: function (event) { event.stopPropagation(); }
-        },
-        React.createElement(DA, {
-            React: React,
-            onClose: () => setIsDynamicAssessmentOpen(false),
-            callGemini: callGemini,
-            addToast,
-            t,
-            studentNickname: studentNickname || '',
-            mathFluencyProbes: Array.isArray(history)
-                ? history.filter(e => e && e.type === 'math-fluency-probe').slice(-5).reverse()
-                : [],
-            outputLanguage: leveledTextLanguage || 'English',
-            // Dynamic Assessment → AlloSheet uses the shared
-            // popup bridge; the source tool never writes back.
-            onOpenAlloSheet: (artifact) => {
-                const bridge = window.AlloSheetHostBridge;
-                if (!bridge || typeof bridge.open !== 'function') {
-                    addToast('AlloSheet is still loading. Try again in a moment.', 'error');
-                    return false;
-                }
-                const root = document.documentElement;
-                const body = document.body;
-                const alloSheetTheme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
-                    ? 'contrast'
-                    : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
-                        ? 'light'
-                        : 'dark';
-                if (typeof bridge.openTransfer === 'function') {
-                    const transfer = bridge.openTransfer({ theme: alloSheetTheme, artifact });
-                    if (!transfer) {
-                        addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
-                        return false;
-                    }
-                    transfer.decision.then((decision) => {
-                        if (decision && decision.status === 'accepted') addToast('Dynamic Assessment tables opened in AlloSheet for review.', 'success');
-                        else if (decision && decision.status === 'cancelled') addToast('AlloSheet review canceled. Dynamic Assessment data did not change.', 'info');
-                    }).catch(() => {});
-                    return transfer.delivered.then(() => true);
-                }
-                const popup = bridge.open({ theme: alloSheetTheme, artifact });
-                if (!popup) {
-                    addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
-                    return false;
-                }
-                return true;
-            },
-            // Phase Z+ — DA-generated resource inventory so DA can suggest REUSE
-            // (via existingResourceId) instead of minting duplicates when Gemini
-            // is producing a second probe that needs the same support. Recent
-            // DA resources only, max 20 entries to keep the prompt compact.
-            daResourceManifest: Array.isArray(history)
-                ? history
-                    .filter(e => e && e.fromDA && (e.type === 'glossary' || e.type === 'manipulative-resource' || e.type === 'word-sounds' || e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort' || e.type === 'sentence-frames'))
-                    .slice(-20)
-                    .reverse()
-                    .map(e => {
-                        const base = { id: e.id, title: e.title || '' };
-                        if (e.type === 'glossary') {
-                            const terms = Array.isArray(e.data) ? e.data.map(d => d && d.term).filter(Boolean).slice(0, 6) : [];
-                            return { ...base, kind: 'glossary', summary: terms.join(', ') };
-                        }
-                        if (e.type === 'manipulative-resource') {
-                            return { ...base, kind: 'math-manipulative', toolId: e.toolId, summary: e.toolId + (e.data && e.data.preset ? ' preset' : '') };
-                        }
-                        if (e.type === 'word-sounds' && e.isProbeMode) {
-                            const wcount = Array.isArray(e.wsPreloadedWords) ? e.wsPreloadedWords.length : (Array.isArray(e.data) ? e.data.length : 0);
-                            return { ...base, kind: 'word-sounds-probe', activity: e.probeActivity, summary: (e.probeActivity || 'probe') + ' · ' + wcount + ' words' };
-                        }
-                        if (e.type === 'outline' || e.type === 'timeline' || e.type === 'concept-sort') {
-                            // Visual organizers (Phase 4). structureType distinguishes
-                            // concept-map / mind-map / outline within the 'outline' type.
-                            const vo = e.type === 'outline'
-                                ? (e.data && e.data.structureType ? e.data.structureType : 'outline')
-                                : e.type;
-                            return { ...base, kind: 'visual-organizer', toolType: e.type, summary: vo };
-                        }
-                        if (e.type === 'sentence-frames') {
-                            return { ...base, kind: 'sentence-frames', summary: 'expressive sentence frames' };
-                        }
-                        return null;
-                    })
-                    .filter(Boolean)
-                : [],
-            // Phase Z — Supplementary resource generation (reversed Lesson-Plan link pattern).
-            // DA decides what resources each item needs and asks the host to mint them.
-            // The host returns { id } so DA can inline-link to the freshly-generated resource.
-            onGenerateGlossary: async (seedTerms, title, provenance) => {
-                const safeTerms = (Array.isArray(seedTerms) ? seedTerms : [])
-                    .map(s => String(s || '').trim()).filter(s => s.length > 1).slice(0, 6);
-                if (safeTerms.length === 0) throw new Error('No seed terms supplied.');
-                const lang = leveledTextLanguage || 'English';
-                // Mirror handleQuickAddGlossary's prompt shape exactly — same field
-                // names (term/def/tier/translations) the main GlossaryView consumes.
-                const wantTranslations = Array.isArray(selectedLanguages) && selectedLanguages.length > 0;
-                const prompt = wantTranslations
-                    ? `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n  3. Provide translations into: ${selectedLanguages.join(', ')}. Format each translation as "Translated Term: Translated Definition".\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific", "translations": { "<Lang>": "TranslatedTerm: TranslatedDef", ... } }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
-                    : `Generate glossary entries for these target terms for a ${gradeLevel || 'grade-appropriate'} student in ${lang}.\nFor each term:\n  1. Provide a simple definition appropriate for the grade level.\n  2. Categorize as "Academic" (general Tier 2) or "Domain-Specific" (topic Tier 3).\n\nReturn ONLY a JSON array; each element has: { "term": string, "def": string, "tier": "Academic" | "Domain-Specific" }\n\nTarget terms:\n${safeTerms.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
-                const raw = await callGemini(prompt, true);
-                const cleaned = typeof cleanJson === 'function' ? cleanJson(raw) : raw;
-                let parsed;
-                try { parsed = JSON.parse(cleaned); }
-                catch (e) { throw new Error('Glossary AI response was not valid JSON.'); }
-                if (!Array.isArray(parsed) || parsed.length === 0) {
-                    throw new Error('Glossary AI returned an empty list.');
-                }
-                const data = parsed.slice(0, 6).map(entry => ({
-                    term: String(entry.term || '').trim(),
-                    def: String(entry.def || entry.definition || '').trim(),
-                    tier: entry.tier === 'Domain-Specific' || entry.tier === 'Academic' ? entry.tier : undefined,
-                    translations: entry.translations && typeof entry.translations === 'object' ? entry.translations : {}
-                })).filter(e => e.term && e.def);
-                if (data.length === 0) throw new Error('Glossary AI returned no usable entries.');
-                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                const newItem = {
-                    id: newId,
-                    type: 'glossary',
-                    data: data,
-                    title: String(title || `Glossary: ${data.slice(0, 2).map(d => d.term).join(', ')}`).slice(0, 80),
-                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                    timestamp: new Date(),
-                    config: {},
-                    fromDA: true,
-                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                };
-                setHistory(prev => [...prev, newItem]);
-                // Fire-and-forget icon generation, mirroring handleQuickAddGlossary's
-                // pipeline EXACTLY: callImagen for the icon, then (if autoRemoveWords)
-                // callGeminiImageEdit to strip any letters the model leaked in. Sequential
-                // so we don't burst the rate limiter; per-term failures tolerated.
-                (async () => {
-                    for (let i = 0; i < data.length; i++) {
-                        const term = data[i].term;
-                        const definition = data[i].def;
-                        const imgPrompt = `Icon style illustration of "${term}" (Context: ${definition}). Simple, clear, flat vector art style, white background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
-                        // Flip the per-term spinner the GlossaryView already renders
-                        // (same state used by manual handleGenerateTermImage at line 20103).
-                        // The "Creating icon…" copy + animated RefreshCw appear automatically.
-                        setIsGeneratingTermImage(prev => ({ ...prev, [i]: true }));
-                        try {
-                            let imageUrl = await callImagen(imgPrompt);
-                            if (!imageUrl) {
-                                setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
-                                continue;
-                            }
-                            if (autoRemoveWords) {
-                                try {
-                                    const rawBase64 = imageUrl.split(',')[1];
-                                    const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
-                                } catch (editErr) {
-                                    console.warn('[DA glossary] Auto-remove text failed for term:', term, editErr && editErr.message);
-                                }
-                            }
-                            setHistory(prev => prev.map(it => {
-                                if (it.id !== newId || !Array.isArray(it.data)) return it;
-                                const newData = it.data.slice();
-                                const liveIdx = newData.findIndex(d => d && d.term === term);
-                                if (liveIdx < 0) return it;
-                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
-                                return { ...it, data: newData };
-                            }));
-                            setGeneratedContent(prev => {
-                                if (!prev || prev.id !== newId || prev.type !== 'glossary' || !Array.isArray(prev.data)) return prev;
-                                const newData = prev.data.slice();
-                                const liveIdx = newData.findIndex(d => d && d.term === term);
-                                if (liveIdx < 0) return prev;
-                                newData[liveIdx] = { ...newData[liveIdx], image: imageUrl };
-                                return { ...prev, data: newData };
-                            });
-                        } catch (imgErr) {
-                            console.warn('[DA glossary] Image gen failed for term:', term, imgErr && imgErr.message);
-                        } finally {
-                            setIsGeneratingTermImage(prev => ({ ...prev, [i]: false }));
-                        }
-                    }
-                })();
-                return { id: newId };
-            },
-            // Phase Z++ — In-place update callbacks for the "✏️ Edit" flow on
-            // manipulative + word-sounds chips. Same resource id stays put;
-            // only the data payload changes. Glossary edits go through
-            // onGenerateGlossary (regeneration) since they involve new images.
-            onUpdateManipulativePreset: async (resourceId, newPreset, newTitle) => {
-                setHistory(prev => prev.map(it => {
-                    if (!it || it.id !== resourceId || it.type !== 'manipulative-resource') return it;
-                    return Object.assign({}, it, {
-                        data: Object.assign({}, it.data || {}, { preset: newPreset || {} }),
-                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
-                    });
-                }));
-                return { id: resourceId };
-            },
-            onUpdateWordSoundsProbe: async (resourceId, activity, words, newTitle) => {
-                const safeWords = (Array.isArray(words) ? words : [])
-                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
-                    .filter(w => w.length >= 2 && w.length <= 14)
-                    .slice(0, 12);
-                if (safeWords.length < 3) throw new Error('Need at least 3 valid words.');
-                const wordObjs = safeWords.map(w => ({
-                    word: w, term: w, targetWord: w, ttsReady: false, _audioRequested: false
-                }));
-                setHistory(prev => prev.map(it => {
-                    if (!it || it.id !== resourceId || it.type !== 'word-sounds') return it;
-                    return Object.assign({}, it, {
-                        data: wordObjs,
-                        wsPreloadedWords: wordObjs,
-                        probeActivity: activity || it.probeActivity,
-                        lessonPlanSequence: activity ? [activity] : it.lessonPlanSequence,
-                        configSummary: `Probe: ${(activity || it.probeActivity || '').replace(/_/g, ' ')}`,
-                        title: newTitle ? String(newTitle).slice(0, 80) : it.title
-                    });
-                }));
-                return { id: resourceId };
-            },
-            // Phase 3 — Word Sounds probe host callback. Mints a
-            // type:'word-sounds' history entry with isProbeMode=true,
-            // preloaded word list, and the chosen activity. Clicking
-            // the inline link routes through handleRestoreView →
-            // launches Word Sounds Studio in probe mode at that activity.
-            onGenerateWordSoundsProbe: async (activity, words, title, provenance) => {
-                const ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
-                if (!ALLOWED[activity]) throw new Error('Unsupported phonics activity: ' + activity);
-                const safeWords = (Array.isArray(words) ? words : [])
-                    .map(w => String(w || '').toLowerCase().replace(/[^a-z]/g, ''))
-                    .filter(w => w.length >= 2 && w.length <= 14)
-                    .slice(0, 12);
-                if (safeWords.length < 3) throw new Error('Need at least 3 valid words for a probe.');
-                const wordObjs = safeWords.map(w => ({
-                    word: w,
-                    term: w,
-                    targetWord: w,
-                    ttsReady: false,
-                    _audioRequested: false
-                }));
-                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                const newItem = {
-                    id: newId,
-                    type: 'word-sounds',
-                    title: String(title || `Word Sounds Probe: ${activity} (${safeWords.length} words)`).slice(0, 80),
-                    data: wordObjs,
-                    wsPreloadedWords: wordObjs,
-                    lessonPlanSequence: [activity],
-                    lessonPlanConfig: { activities: [{ id: activity, count: safeWords.length }] },
-                    configSummary: `Probe: ${activity.replace(/_/g, ' ')}`,
-                    isProbeMode: true,
-                    probeActivity: activity,
-                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                    timestamp: new Date(),
-                    config: {},
-                    fromDA: true,
-                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                };
-                setHistory(prev => [...prev, newItem]);
-                return { id: newId };
-            },
-            // Phase 2 — Math manipulative host callback. Mints a
-            // type:'manipulative-resource' history entry pointing at
-            // a STEAM Lab tool (numberline / fractions / areamodel)
-            // with preset state Gemini specified. Opening the entry
-            // (via the inline link chip) routes through handleRestoreView
-            // which slots the preset into labToolData + opens StemLab.
-            onGenerateManipulative: async (toolId, preset, title, provenance) => {
-                const ALLOWED = { numberline: true, fractions: true, areamodel: true };
-                if (!ALLOWED[toolId]) throw new Error('Unsupported manipulative toolId: ' + toolId);
-                const safePreset = (preset && typeof preset === 'object') ? preset : {};
-                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                const newItem = {
-                    id: newId,
-                    type: 'manipulative-resource',
-                    toolId: toolId,
-                    data: { preset: safePreset },
-                    title: String(title || `${toolId} (DA)`).slice(0, 80),
-                    meta: 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : ''),
-                    timestamp: new Date(),
-                    config: {},
-                    fromDA: true,
-                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null
-                };
-                setHistory(prev => [...prev, newItem]);
-                return { id: newId };
-            },
-            // Phase 4 — Visual organizer host callback. The elegant
-            // path: instead of DA-specific render code, route through
-            // the SAME shared dispatcher (handleGenerate) the main app
-            // uses for outline/concept-map/mind-map/timeline/concept-sort.
-            // Reuses the generator + parsing + minting + restore machinery
-            // for free. CRITICAL: passes isolatedContext so the dispatcher
-            // suppresses ALL ambient lesson context (Lesson DNA, standards,
-            // differentiation, selected concepts, source topic, and the
-            // per-tool main-app custom instructions) — the organizer stays
-            // self-contained to the DA item so no outside topic/vocabulary
-            // contaminates the assessment. toolType picks the organizer;
-            // directive is the sole source content.
-            //
-            // ENFORCED, not merely asserted: this exact comment was true in
-            // intent and false in fact from the Phase-4 organizer work until
-            // 2026-07-28 — the dispatcher never read the flag (zero
-            // occurrences of the token), so every DA support silently
-            // inherited the open lesson. The suppression now lives at each
-            // ambient value's computation point in generate_dispatcher_source.jsx,
-            // is pinned by tests/da_clinical_isolation.test.js (which drives the
-            // real dispatcher and checks BOTH directions), and is blocked at
-            // deploy by dev-tools/check_da_clinical_isolation.cjs. Do not
-            // weaken any of the three without a clinical rationale.
-            onGenerateVisualOrganizer: async (toolType, directive, title, provenance) => {
-                const TOOLTYPE_MAP = {
-                    'outline':      { type: 'outline', outlineType: 'Standard Outline' },
-                    'concept-map':  { type: 'outline', outlineType: 'Key Concept Map' },
-                    'mind-map':     { type: 'outline', outlineType: 'Mind Map' },
-                    'timeline':     { type: 'timeline' },
-                    'concept-sort': { type: 'concept-sort' }
-                };
-                const mapping = TOOLTYPE_MAP[toolType];
-                if (!mapping) throw new Error('Unsupported visual organizer type: ' + toolType);
-                const safeDirective = String(directive || '').trim();
-                if (safeDirective.length < 8) throw new Error('Visual organizer directive too thin to generate.');
-                // isolatedContext keeps the organizer self-contained to the DA
-                // item — the dispatcher generates purely from safeDirective and
-                // injects no ambient lesson topic/vocabulary/standards.
-                const cfg = { isolatedContext: true };
-                if (mapping.outlineType) cfg.outlineType = mapping.outlineType;
-                // switchView=false so the main view doesn't change while DA is open.
-                // handleGenerate returns the newly-minted history item.
-                const newItem = await handleGenerate(mapping.type, null, false, safeDirective, cfg, false);
-                if (!newItem || !newItem.id) throw new Error('Visual organizer generation returned no resource.');
-                // handleGenerate doesn't set DA provenance — patch it in so the
-                // "🔬 DA · item N" badge + "Return to Dynamic Assessment" pill work
-                // exactly as they do for glossary/manipulative/word-sounds.
-                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
-                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
-                    fromDA: true,
-                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
-                    meta: daMeta,
-                    title: title ? String(title).slice(0, 80) : it.title
-                }) : it));
-                return { id: newItem.id };
-            },
-            // Sentence-frames host callback — the expressive/output scaffold.
-            // Same shared pipeline as visual organizers: route through
-            // handleGenerate('sentence-frames', directive, {isolatedContext})
-            // so it stays self-contained to the DA item, mint a standard
-            // 'sentence-frames' history entry, and let handleRestoreView's
-            // default branch open it. directive is the sole source content.
-            onGenerateSentenceFrames: async (directive, title, provenance) => {
-                const safeDirective = String(directive || '').trim();
-                if (safeDirective.length < 8) throw new Error('Sentence-frames directive too thin to generate.');
-                const newItem = await handleGenerate('sentence-frames', null, false, safeDirective, { isolatedContext: true }, false);
-                if (!newItem || !newItem.id) throw new Error('Sentence-frames generation returned no resource.');
-                const daMeta = 'from Dynamic Assessment' + (provenance && typeof provenance.daItemIndex === 'number' ? ` · item ${provenance.daItemIndex + 1}` : '');
-                setHistory(prev => prev.map(it => it.id === newItem.id ? Object.assign({}, it, {
-                    fromDA: true,
-                    daItemIndex: provenance && typeof provenance.daItemIndex === 'number' ? provenance.daItemIndex : null,
-                    daItemPrompt: provenance && provenance.daItemPrompt ? String(provenance.daItemPrompt).slice(0, 120) : null,
-                    meta: daMeta,
-                    title: title ? String(title).slice(0, 80) : it.title
-                }) : it));
-                return { id: newItem.id };
-            },
-            onOpenResource: (resourceId) => {
-                const item = (Array.isArray(history) ? history : []).find(h => h && h.id === resourceId);
-                if (!item) {
-                    addToast(t('toasts.resource_not_found_history') || 'Resource not found in history (it may have been deleted).', 'info');
-                    return;
-                }
-                setIsDynamicAssessmentOpen(false);
-                setTimeout(() => { handleRestoreView(item); }, 50);
-            }
-        })
-      )
-    );
+    var DA = props.DynamicAssessment || DynamicAssessment;
+    var aiReview = useDaSensitiveAiReview(React, String(host.studentNickname || ""), host.studentNickname, true, workspace);
+    function close() { if (typeof host.setIsDynamicAssessmentOpen === "function") host.setIsDynamicAssessmentOpen(false); }
+    var childProps = Object.assign({
+      React: React, sensitiveWorkspace: workspace, onClose: close,
+      callGemini: aiReview.wrap(host.callGemini, "text"),
+      onSensitiveContextChange: aiReview.updateContext,
+      addToast: host.addToast, t: host.t,
+      studentNickname: host.studentNickname || "",
+      outputLanguage: host.leveledTextLanguage || "English",
+      onOpenAlloSheet: function (artifact) {
+        workspace.assertCurrent(epoch);
+        workspace.assertCanExport("allosheet");
+        var bridge = window.AlloSheetHostBridge;
+        if (!bridge || typeof bridge.open !== "function") throw new Error("AlloSheet is still loading. Try again in a moment.");
+        var root = document.documentElement;
+        var body = document.body;
+        var theme = ((root && root.classList.contains("theme-contrast")) || (body && body.classList.contains("theme-contrast"))) ? "contrast"
+          : ((root && root.classList.contains("theme-light")) || (body && body.classList.contains("theme-light"))) ? "light" : "dark";
+        var transfer = typeof bridge.openTransfer === "function" ? bridge.openTransfer({ theme: theme, artifact: artifact }) : null;
+        if (transfer) {
+          if (transfer.decision && typeof transfer.decision.then === "function") transfer.decision.then(function (decision) {
+            if (!workspace.isCurrent(epoch) || typeof host.addToast !== "function") return;
+            if (decision && decision.status === "accepted") host.addToast("Dynamic Assessment tables opened in AlloSheet for review.", "success");
+            else if (decision && decision.status === "cancelled") host.addToast("AlloSheet review canceled. Dynamic Assessment data did not change.", "info");
+          }).catch(function () {});
+          return Promise.resolve(transfer.delivered).then(function () { workspace.assertCurrent(epoch); return true; });
+        }
+        if (typeof bridge.openTransfer === "function") throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
+        if (!bridge.open({ theme: theme, artifact: artifact })) throw new Error("AlloSheet could not open. Allow pop-ups and try again.");
+        return true;
+      }
+    }, daBlockedParentCallbacks(host.addToast));
+    DA_GUARDED_EXPORT_CALLBACKS.add(childProps.onOpenAlloSheet);
+    return React.createElement("div", { className: "fixed inset-0 z-[60] bg-black/50 overflow-y-auto", onClick: close },
+      React.createElement("div", { className: "bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl", onClick: function (event) { event.stopPropagation(); } },
+        React.createElement(DA, childProps), aiReview.render()));
   }
   function DynamicAssessment(props) {
+    props = props || {};
+    var workspace = daMountedWorkspace(props.sensitiveWorkspace);
+    var localStorage = workspace.storage;
+    var daRenderEpoch = DA_MOUNTED_WORKSPACES.get(workspace);
+    function daAssertOperation() { workspace.assertCurrent(daRenderEpoch); }
+    function daCanExport(kind) {
+      try { daAssertOperation(); workspace.assertCanExport(kind); return true; }
+      catch (error) {
+        if (error && error.name !== "AbortError" && typeof props.addToast === "function") props.addToast(error.message || "This export is unavailable.");
+        return false;
+      }
+    }
+    props = Object.assign({}, props, daBlockedParentCallbacks(props.addToast));
     var React = props.React || window.React;
     var h = React.createElement;
     var useState = React.useState;
@@ -7247,10 +7081,12 @@
     var setDaOutputLanguage = daOutputLangTuple[1];
     useEffect(function () { setDaOutputLanguage(hostOutputLanguage); }, [hostOutputLanguage]);
 
-    // ── Top-level state (loaded from localStorage) ──
-    var stTuple = useState(loadState);
+    // ── Top-level state (loaded from the validated protected facade) ──
+    var stTuple = useState(function () { return loadState(localStorage); });
     var state = stTuple[0];
     var setState = stTuple[1];
+    var daLatestState = React.useRef(state);
+    daLatestState.current = state;
 
     // Dynamic Assessment → AlloSheet review state. The review is local to
     // this mounted module; no artifact is created until the educator confirms.
@@ -7276,22 +7112,28 @@
     var daAlloFeedback = daAlloFeedbackTuple[0];
     var setDaAlloFeedback = daAlloFeedbackTuple[1];
     function patch(partial) {
+      daAssertOperation();
       setState(function (prev) {
+        daAssertOperation();
         // Accept a partial object OR a (prev)=>partial function. The functional
         // form lets callers recompute from the freshest state (e.g. restore-merge
         // dedup against prev.sessions, avoiding a stale-closure clobber).
         var p = (typeof partial === "function") ? partial(prev) : partial;
         var next = daApplyRetention(Object.assign({}, prev, p));
-        saveState(next);
+        daLatestState.current = next;
+        saveState(next, localStorage);
         return next;
       });
     }
     function patchSession(partial) {
+      daAssertOperation();
       setState(function (prev) {
+        daAssertOperation();
         if (!prev.activeSession) return prev;
         var nextSess = Object.assign({}, prev.activeSession, partial, { lastTouchedAt: new Date().toISOString() });
         var next = Object.assign({}, prev, { activeSession: nextSess });
-        saveState(next);
+        daLatestState.current = next;
+        saveState(next, localStorage);
         return next;
       });
     }
@@ -7441,6 +7283,9 @@
       };
     }, [daAlloReviewOpen]);
     function transferDaAlloReview() {
+      if (DA_GUARDED_EXPORT_CALLBACKS.has(props.onOpenAlloSheet)) {
+        try { daAssertOperation(); } catch (_) { return; }
+      } else if (!daCanExport("allosheet")) return;
       if (daAlloBusy) return;
       if (typeof props.onOpenAlloSheet !== "function") {
         setDaAlloFeedback({ kind: "error", text: "AlloSheet is not available in this host yet. The Dynamic Assessment data remains unchanged." });
@@ -7742,7 +7587,7 @@
       // eslint-disable-next-line
     }, [tourStep, startScreenView, viewingSessionId, daConfirm, state.activeSession ? state.activeSession.currentPhase : null]);
 
-    // ── Polish — surface localStorage save failures as a toast ──
+    // ── Surface protected staging failures as a toast ──
     // The state mutator pings window.__alloDaStorageFailed on quota errors.
     // We poll lightly on every render of an active session; when the flag
     // flips true we show a single toast and reset it so we don't spam.
@@ -7751,7 +7596,7 @@
       if (typeof window === "undefined") return;
       if (window.__alloDaStorageFailed && !storageToastShownRef.current) {
         storageToastShownRef.current = true;
-        addToast("⚠ Couldn't save to local storage — likely quota full. Your current session will continue but won't persist across reloads. Free up some space and try again.");
+        addToast("Protected save could not finish. Keep this workspace open and retry before locking or closing the page.");
       }
       if (!window.__alloDaStorageFailed && storageToastShownRef.current) {
         storageToastShownRef.current = false;
@@ -7778,9 +7623,8 @@
     useEffect(function () {
       if (typeof localStorage === "undefined") return;
       try {
-        var hasItems = Array.isArray(generatedItems) && generatedItems.length > 0;
         var midReview = startScreenView === "custom-review" || startScreenView === "custom-builder";
-        if (hasItems && midReview) {
+        if (midReview) {
           localStorage.setItem(DA_PERSIST_KEY, JSON.stringify({
             _savedAt: Date.now(),
             startScreenView: startScreenView,
@@ -7849,13 +7693,12 @@
     //   'sessions'        → all-sessions browser (Phase F)
     //   'session-detail'  → read-only detail of one saved session (Phase F)
     //   'tour'            → onboarding tutorial (Phase G)
-    // Phase Z+ — DA state persistence (localStorage). When the user clicks
+    // Phase Z+ — encrypted DA draft persistence. When the user clicks
     // an inline DA-generated resource link, the DA modal closes — and React
     // state is lost. We persist the in-progress review state so reopening
     // DA (via the floating "Return to Dynamic Assessment" pill or the menu)
     // lands the clinician back on the review screen they were on, not the
     // empty home screen. Stored keys are namespaced under DA_PERSIST_KEY.
-    var DA_PERSIST_KEY = "alloflow_da_session_state_v1";
     function _loadPersistedDaState() {
       try {
         if (typeof localStorage === "undefined") return null;
@@ -8106,6 +7949,58 @@
     var domainDraftTuple = useState("math");
     var domainDraft = domainDraftTuple[0];
     var setDomainDraft = domainDraftTuple[1];
+
+    // Always declare these hooks, including when the adapter owns the review UI.
+    // A change of learner, active case, saved case, or naming choice invalidates
+    // a pending send; reviewing an old case never authorizes the next one.
+    var daAiCaseName = (state.activeSession && state.activeSession.studentNickname) ||
+      (codenameMode === "anonymous" ? "" : nicknameDraft) || canonicalHostNickname;
+    var daAiCaseKey = JSON.stringify([
+      canonicalHostNickname,
+      state.activeSession ? state.activeSession.id : null,
+      state.activeSession ? state.activeSession.studentNickname : null,
+      viewingSessionId, nicknameDraft, codenameMode, rosterChoice
+    ]);
+    var daOwnAiReview = useDaSensitiveAiReview(React, daAiCaseKey, daAiCaseName, !DA_REVIEWED_PROVIDERS.has(props.callGemini), workspace);
+    useEffect(function () {
+      if (typeof props.onSensitiveContextChange !== "function") return;
+      props.onSensitiveContextChange(daAiCaseKey, daAiCaseName);
+      return function () { props.onSensitiveContextChange("Dynamic Assessment case closed", ""); };
+    }, [daAiCaseKey, daAiCaseName, props.onSensitiveContextChange]);
+    props = Object.assign({}, props, { callGemini: daOwnAiReview.wrap(props.callGemini, "text") });
+    var daLatestDraft = React.useRef(null);
+    daLatestDraft.current = { startScreenView: startScreenView, generatedItems: generatedItems, customForm: customForm };
+    var daLatestWorkspace = React.useRef(null);
+    daLatestWorkspace.current = { workspace: workspace, storage: localStorage, epoch: daRenderEpoch };
+    function stageProtectedState(storage) {
+      storage.setItem(STORAGE_KEY, JSON.stringify(daLatestState.current));
+      var draft = daLatestDraft.current;
+      if (draft && Array.isArray(draft.generatedItems)
+        && (draft.startScreenView === "custom-review" || draft.startScreenView === "custom-builder")) {
+        storage.setItem(DA_PERSIST_KEY, JSON.stringify(Object.assign({ _savedAt: Date.now() }, draft)));
+      } else {
+        storage.removeItem(DA_PERSIST_KEY);
+      }
+    }
+    useEffect(function () {
+      // Lock invalidates operation epochs before staging. This callback uses
+      // the validated facade captured while ready; the service flushes next.
+      return workspace.registerFlush(function () { stageProtectedState(localStorage); });
+    }, [workspace, localStorage]);
+    useEffect(function () {
+      return function () {
+        var latest = daLatestWorkspace.current;
+        if (latest && latest.workspace.isCurrent(latest.epoch)) {
+          try {
+            stageProtectedState(latest.storage);
+            Promise.resolve(latest.workspace.flush()).catch(function () {
+              if (typeof props.addToast === "function") props.addToast("Protected save could not finish. Keep the workspace open and retry before locking.");
+            });
+          } catch (_) {}
+        }
+        daClearClinicalItems();
+      };
+    }, []);
 
     function getNicknameValue() {
       return codenameMode === "anonymous"
@@ -8769,6 +8664,7 @@
     }
 
     function copyTextToClipboard(text) {
+      if (!daCanExport("clipboard")) return;
       try {
         if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
           return navigator.clipboard.writeText(text).then(function () { addToast("Copied to clipboard."); });
@@ -9728,7 +9624,7 @@
         "aria-label": "Dynamic Assessment Studio",
         tabIndex: -1,
         onKeyDown: daTrapTab
-      }, view, renderDaConfirm(), renderDaBackupDialog());
+      }, view, renderDaConfirm(), renderDaBackupDialog(), daOwnAiReview.render());
     }
     // Phase U: if activeSession is paused, route to the start screen with
     // a resume banner instead of dropping into the item view.
@@ -10389,6 +10285,7 @@
             onClick: function () {
               try {
                 var csv = buildSessionStatsCsv(state.sessions || []);
+                if (!daCanExport("csv")) return;
                 var blob = new Blob([csv], { type: "text/csv" });
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement("a");
@@ -10537,6 +10434,7 @@
               onClick: function () {
                 try {
                   var csv = buildItemAnalyticsCsv(allStats);
+                  if (!daCanExport("csv")) return;
                   var blob = new Blob([csv], { type: "text/csv" });
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement("a");
@@ -12330,6 +12228,7 @@
       var exportMode = mode === "redacted" ? "redacted" : "full";
       var performExport = function () {
         try {
+          if (!daCanExport(exportMode === "full" ? "json" : "redacted-json")) return;
           var source = exportMode === "redacted" ? daRedactSessionForExport(sessionRecord) : sessionRecord;
           var payload = Object.assign({}, source, {
             _exportFormat: "alloflow-da-session",
@@ -12371,6 +12270,8 @@
     // The payload format belongs to Dynamic Assessment; encryption and envelope
     // validation belong to the shared AlloCrypto security module.
     function downloadDaBackup(value, fileName) {
+      daAssertOperation();
+      workspace.assertCanExport("encrypted-backup");
       var json = JSON.stringify(value, null, 2);
       var blob = new Blob([json], { type: "application/json" });
       var url = URL.createObjectURL(blob);
@@ -12397,6 +12298,7 @@
     // Merge imported sessions into state.sessions. Existing local sessions always
     // win, and every accepted record receives a privacy-safe restore audit event.
     function mergeImportedSessions(imported, restoreOptions) {
+      daAssertOperation();
       var options = restoreOptions || {};
       var importedAt = new Date().toISOString();
       var candidates = [], skipped = 0;
@@ -12440,6 +12342,7 @@
     }
 
     function importSessionsFromFile() {
+      daAssertOperation();
       try {
         var opener = null;
         try { opener = document.activeElement; } catch (_) {}
@@ -12454,6 +12357,7 @@
           var reader = new FileReader();
           reader.onload = function () {
             try {
+              daAssertOperation();
               var parsed = JSON.parse(String(reader.result || ""));
               if (parsed && parsed._exportFormat === DA_ENCRYPTED_BACKUP_FORMAT) {
                 daOpenEncryptedRestoreDialog(parsed, opener, file.name);
@@ -12929,6 +12833,7 @@
     // then runs the same Phase Z host callback path so the manipulative lands
     // in history + the rung gets the inline link + usage hint.
     function addManualManipulativeToItem(idx) {
+      var callGeminiFn = props.callGemini;
       var item = generatedItems[idx];
       if (!item) return;
       if (typeof props.onGenerateManipulative !== "function") {
@@ -13183,6 +13088,7 @@
     // prompt, then runs the same Phase Z host callback path so the probe
     // lands in history + the rung gets the inline link + usage hint.
     function addManualWordSoundsProbeToItem(idx) {
+      var callGeminiFn = props.callGemini;
       var item = generatedItems[idx];
       if (!item) return;
       if (typeof props.onGenerateWordSoundsProbe !== "function") {
@@ -13273,6 +13179,7 @@
     // directive for THIS item, then routes through the same host callback
     // (which uses the shared handleGenerate pipeline). Falls back to an outline.
     function addManualVisualOrganizerToItem(idx) {
+      var callGeminiFn = props.callGemini;
       var item = generatedItems[idx];
       if (!item) return;
       if (typeof props.onGenerateVisualOrganizer !== "function") {
@@ -13356,6 +13263,7 @@
     // response demand + frame style for THIS item, then routes through the
     // same host callback. Falls back to the item prompt as the directive.
     function addManualSentenceFramesToItem(idx) {
+      var callGeminiFn = props.callGemini;
       var item = generatedItems[idx];
       if (!item) return;
       if (typeof props.onGenerateSentenceFrames !== "function") {
@@ -16403,7 +16311,7 @@
                   onClick: function () {
                     try {
                       document.body.setAttribute("data-da-print-mode", "teacher-handoff");
-                      window.print();
+                      if (daCanExport("print")) window.print();
                       setTimeout(function () { try { document.body.removeAttribute("data-da-print-mode"); } catch (e) {} }, 500);
                     } catch (e) { addToast("Print is not available in this browser."); }
                   },
@@ -16523,7 +16431,7 @@
                   try {
                     // Open print dialog — the @media print stylesheet swaps to the letter mode
                     document.body.setAttribute("data-da-print-mode", "family-letter");
-                    window.print();
+                    if (daCanExport("print")) window.print();
                     // Reset after the print dialog closes
                     setTimeout(function () { try { document.body.removeAttribute("data-da-print-mode"); } catch (e) {} }, 500);
                   } catch (e) { addToast("Print is not available in this browser."); }
@@ -16893,7 +16801,7 @@
           // Phase E — Print packet
           evidence.sufficient ? h("button", {
             onClick: function () {
-              try { window.print(); }
+              try { if (daCanExport("print")) window.print(); }
               catch (e) { addToast("Print is not available in this browser."); }
             },
             "aria-label": "Print clinical observation report",
@@ -16928,7 +16836,14 @@
                 // Phase X — include any monitoring plan
                 progressMonitoring: progressMonitoring || null
               });
-              var payload = exportSessionToReportWriter(ready, s.studentNickname);
+              var payload;
+              try {
+                daAssertOperation();
+                payload = exportSessionToReportWriter(ready, s.studentNickname, workspace);
+              } catch (error) {
+                if (error && error.name !== "AbortError") addToast(error.message || "Report Writer transfer could not finish.");
+                return;
+              }
               if (payload) {
                 var extras = [];
                 if (iepGoals.length > 0) extras.push(iepGoals.length + " IEP goal" + (iepGoals.length === 1 ? "" : "s"));
@@ -16943,7 +16858,7 @@
               }
             },
             "aria-label": "Send DA findings to Report Writer",
-            title: "Stashes DA findings on window.__alloDAExport. Open Report Writer next to ingest them as fact chunks + a pre-drafted section.",
+            title: "Transfer reviewed findings to the protected Report Writer workspace.",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📝 Send to Report Writer") : null,
           h("button", {
@@ -16977,17 +16892,19 @@
   // SECTION 5 — Export
   // ═════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
-  DynamicAssessment.HostAdapter = DynamicAssessmentHostAdapter;
-  window.AlloModules.DynamicAssessment = DynamicAssessment;
+  var ProtectedDynamicAssessment = daProtectedComponent(DynamicAssessment);
+  ProtectedDynamicAssessment.HostAdapter = daProtectedComponent(DynamicAssessmentHostAdapter);
+  window.AlloModules.DynamicAssessment = ProtectedDynamicAssessment;
   // Also expose constants for future host integrations / Report Writer.
   // Public read-only query: return DA sessions for a given student nickname,
   // most-recent-first. Used by sibling tools (Student Analytics, Report Writer,
   // etc.) to surface DA findings without coupling to DA's internal storage shape.
   // Returns [] on any failure — never throws.
-  function getSessionsByStudent(nickname) {
+  function getSessionsByStudent(nickname, workspace) {
     if (!nickname || typeof nickname !== "string") return [];
     try {
-      var raw = typeof localStorage !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      daRequireWorkspace(workspace);
+      var raw = workspace.storage.getItem(STORAGE_KEY);
       if (!raw) return [];
       var state = JSON.parse(raw);
       var sessions = Array.isArray(state && state.sessions) ? state.sessions : [];

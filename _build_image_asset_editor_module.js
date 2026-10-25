@@ -18,7 +18,7 @@ if (!fs.existsSync(SOURCE)) {
 
 let compiled = '';
 try {
-  compiled = transformSync('/* global React */\n' + fs.readFileSync(SOURCE, 'utf8'), {
+  compiled = transformSync('/* global React */\n' + fs.readFileSync(SOURCE, 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'resource_image_controls_source.jsx'), 'utf8'), {
     loader: 'jsx',
     format: 'esm',
     jsxFactory: 'React.createElement',
@@ -42,6 +42,10 @@ const outputCode = [
   'window.AlloModules = window.AlloModules || {};',
   'window.AlloModules.ImageAssetEditor = ImageAssetEditor;',
   'window.AlloModules.ImageAssetPicker = ImageAssetPicker;',
+  'window.AlloModules.AiImageGenerationToggle = AiImageGenerationToggle;',
+  'window.AlloModules.ResourceImagesPanel = ResourceImagesPanel;',
+  'window.AlloModules.ResourceImageInput = ResourceImageInput;',
+  'window.AlloModules.ResourceImageTools = { resourceImageSlots, replaceResourceImage, openResourceDrawing, validResourceDrawingScene };',
   'window.AlloModules.ImageAssetTools = {',
   '  IMAGE_ASSET_ACCEPT: IMAGE_ASSET_ACCEPT,',
   '  IMAGE_ASSET_MAX_FILE_BYTES: IMAGE_ASSET_MAX_FILE_BYTES,',

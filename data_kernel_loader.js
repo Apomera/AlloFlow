@@ -177,72 +177,37 @@
     }
     return recipes;
   }
-  function importFunction() {
-    try { return new Function('url', 'return import(url);'); } catch (_) { return null; }
-  }
-
-  function loadWasmAsset(base) {
-    var direct = { url: base + 'duckdb-mvp.wasm', revoke: function () {} };
-    if (typeof fetch !== 'function' || typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
-      return Promise.resolve(direct);
-    }
-    return fetch(base + 'duckdb-mvp.wasm.manifest.json').then(function (response) {
-      if (!response.ok) throw new Error('DuckDB WASM manifest returned HTTP ' + response.status + '.');
-      return response.json();
-    }).then(function (manifest) {
-      if (!manifest || manifest.format !== 'alloflow-chunked-wasm-v1' || !Array.isArray(manifest.parts) || !manifest.parts.length) {
-        throw new Error('DuckDB WASM manifest is invalid.');
-      }
-      return Promise.all(manifest.parts.map(function (part) {
-        var file = String(part && part.file || '');
-        if (!/^duckdb-mvp\.wasm\.part\d+$/.test(file)) throw new Error('DuckDB WASM manifest contains an unsafe part name.');
-        return fetch(base + file).then(function (response) {
-          if (!response.ok) throw new Error(file + ' returned HTTP ' + response.status + '.');
-          return response.arrayBuffer();
-        }).then(function (bytes) {
-          if (part.bytes && bytes.byteLength !== Number(part.bytes)) throw new Error(file + ' failed its size check.');
-          return bytes;
-        });
-      })).then(function (parts) {
-        var total = parts.reduce(function (sum, bytes) { return sum + bytes.byteLength; }, 0);
-        if (manifest.bytes && total !== Number(manifest.bytes)) throw new Error('DuckDB WASM chunks failed their total-size check.');
-        var objectUrl = URL.createObjectURL(new Blob(parts, { type: 'application/wasm' }));
-        return {
-          url: objectUrl,
-          revoke: function () { try { URL.revokeObjectURL(objectUrl); } catch (_) {} }
-        };
-      });
-    }).catch(function () {
-      // Self-hosters that still provide the legacy monolithic file remain
-      // compatible. Public AlloFlow deployments use the chunk manifest.
-      return direct;
-    });
-  }
-
   function loadRuntime() {
     if (runtimePromise) return runtimePromise;
     runtimeInfo.state = 'loading';
     var base = resolveAssetBase();
-    var importer = importFunction();
-    if (!importer) {
-      runtimeInfo.state = 'fallback';
-      runtimeInfo.backend = 'fallback';
-      runtimePromise = Promise.resolve(null);
-      return runtimePromise;
-    }
-    runtimePromise = importer(base + 'duckdb-browser.mjs').then(function (duckdb) {
+    var worker = null, workerAsset = null, wasmAsset = null;
+    runtimePromise = Promise.resolve().then(function () {
+      if (typeof window.__alloLoadVerifiedRuntime !== 'function' || typeof window.__alloGetVerifiedRuntimeAsset !== 'function') {
+        throw new Error('Verified analytical runtime delivery is unavailable.');
+      }
+      return window.__alloLoadVerifiedRuntime('duckdb');
+    }).then(async function (duckdb) {
       if (!duckdb || !duckdb.AsyncDuckDB || !duckdb.ConsoleLogger) throw new Error('DuckDB-Wasm browser exports are incomplete.');
-      var worker = new Worker(base + 'duckdb-browser-mvp.worker.js');
+      workerAsset = await window.__alloGetVerifiedRuntimeAsset('duckdb', 'worker');
+      wasmAsset = await window.__alloGetVerifiedRuntimeAsset('duckdb', 'wasm');
+      worker = new Worker(workerAsset.url);
+      var terminate = worker.terminate.bind(worker);
+      worker.terminate = function () { try { return terminate(); } finally { workerAsset.revoke(); } };
       var db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
-      return loadWasmAsset(base).then(function (wasmAsset) {
-        return db.instantiate(wasmAsset.url).then(function () {
+      try {
+        return await db.instantiate(wasmAsset.url).then(function () {
           runtimeInfo.state = 'ready';
           runtimeInfo.backend = 'duckdb-wasm';
           runtimeInfo.error = null;
           return { duckdb: duckdb, db: db, worker: worker, base: base };
-        }).finally(wasmAsset.revoke);
-      });
+        });
+      } finally { wasmAsset.revoke(); }
     }).catch(function (error) {
+      if (worker) worker.terminate();
+      if (workerAsset) workerAsset.revoke();
+      if (wasmAsset) wasmAsset.revoke();
+      if (typeof window.__alloDisposeVerifiedRuntime === 'function') window.__alloDisposeVerifiedRuntime('duckdb');
       runtimeInfo.state = 'fallback';
       runtimeInfo.backend = 'fallback';
       runtimeInfo.error = String(error && error.message || error || 'DuckDB-Wasm unavailable');

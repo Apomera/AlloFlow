@@ -805,6 +805,14 @@ function ProjectSettingsView(props) {
     onClick: () => {
       try {
         var reporter = window.AlloModules && window.AlloModules.ErrorReporter;
+        // A missing/older reporter must not bypass managed support
+        // restrictions by opening the public fallback form directly.
+        if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY') && (!reporter || typeof reporter.getSupportReportingPolicy !== 'function')) {
+          try {
+            window.alert('The support reporter is unavailable for this managed configuration. Reload the app or use your organization\'s approved support channel.');
+          } catch (_) {}
+          return;
+        }
         if (reporter && (typeof reporter.openManualReport === 'function' || typeof reporter.openPanel === 'function')) {
           if (typeof reporter.openManualReport === 'function') reporter.openManualReport();else reporter.openPanel('errors');
           handleSetIsProjectSettingsOpenToFalse();

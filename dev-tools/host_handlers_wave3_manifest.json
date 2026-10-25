@@ -334,9 +334,17 @@
     "handleRegenerateWithRigor",
     "_readTextDomain",
     "handleScaffoldChange",
-    "handleScaffoldTextChange"
+    "handleScaffoldTextChange",
+    "getLessonRevisionResources",
+    "prepareLessonRevision",
+    "applyLessonRevision",
+    "undoLessonRevision",
+    "discardLessonRevision",
+    "openLessonRevisionPreview"
   ],
   "deps": [
+    "resolveAssignmentResources",
+    "_alloEncodeAlloPack",
     "ALLOHAVEN_CLASSROOM_REWARD_REASONS",
     "ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS",
     "ALLOHAVEN_RECOGNITION_CAPS",

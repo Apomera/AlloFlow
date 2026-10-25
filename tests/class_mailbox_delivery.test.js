@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const serverVersion = Number((gsSource.match(/var VERSION = (\d+);/) || [])[1]);
 const manifestText = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'appsscript.json'), 'utf8');
 const readme = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'README.md'), 'utf8');
 
@@ -218,10 +219,10 @@ describe('manifest keeps the scope story true', () => {
 });
 
 describe('hello advertises delivery so a stale deployment is detectable', () => {
-    it('reports v24 and the delivery capabilities', () => {
+    it('reports the shipped version and the delivery capabilities', () => {
         const { call } = makeSandbox();
         const hello = call({ a: 'hello' });
-        expect(hello.v).toBe(24);
+        expect(hello.v).toBe(serverVersion);
         expect(hello.delivery).toEqual(['drive', 'doc', 'slides', 'sheet', 'form', 'fetchpage']);
         expect(hello.activities).toContain('survey');
     });
@@ -378,7 +379,7 @@ describe('fetchpage: read a page for the owner from Google servers', () => {
         expect(res.text.split('\n').length).toBeGreaterThanOrEqual(3);
         expect(res.truncated).toBe(false);
         expect(res.chars).toBe(res.text.length);
-        expect(fetches[0].options.headers['User-Agent']).toContain('AlloFlowClassMailbox/24');
+        expect(fetches[0].options.headers['User-Agent']).toContain('AlloFlowClassMailbox/' + serverVersion);
         expect(fetches[0].options.followRedirects).toBe(true);
     });
 

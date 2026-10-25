@@ -13,7 +13,9 @@ beforeAll(() => {
   K = win.AlloModules.PhaseKHelpers;
 });
 const big = 'data:image/png;base64,' + 'A'.repeat(512 * 1024);
-const deps = (reply, prompts = []) => ({ callGemini: async (prompt) => { prompts.push(prompt); return typeof reply === 'function' ? reply(prompt) : reply; }, cleanJson: (s) => s, warnLog: () => {} });
+// These fixtures exercise media, parsing and verification; companion behavior
+// is covered separately by header_translation_policy.test.js.
+const deps = (reply, prompts = []) => ({ translationPolicy: { enabled: false, target: '', mode: 'off' }, callGemini: async (prompt) => { prompts.push(prompt); return typeof reply === 'function' ? reply(prompt) : reply; }, cleanJson: (s) => s, warnLog: () => {} });
 
 describe('translate-all', () => {
   it('keeps inline pictures out of the prompt and restores them in the copy', async () => {

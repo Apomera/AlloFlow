@@ -208,6 +208,11 @@ const checks = [
     description: 'BLOCKING. Catches HALF-translated alerts.*/confirms.* (incl. destructive-action confirms) that the passthrough metric misses — the 2026-06-08 Finding-1 regression class. Source-relative + script-aware + cognate-safe; at 0 after the fix, so it only fires on a new regression.',
   },
   {
+    name: 'Static SVG security policy sync',
+    cmd: ['node', 'dev-tools/sync_static_svg_policy.cjs', '--check'],
+    description: 'The MCP validator and all app hosts enforce the same static SVG drawing boundary.',
+  },
+  {
     name: 'Deploy mirror sync',
     cmd: ['node', 'dev-tools/check_deploy_mirror.cjs', '--quiet'],
     description: 'Every file present at BOTH root and desktop/web-app/public/ matches byte-for-byte (~7,900 pairs). Was an allowlist of *_module.js/quiz_*/stem_lab/sel_hub (464 files) until 2026-08-25, which let help_strings.js sit 3 weeks stale in the deploy while reporting green.',

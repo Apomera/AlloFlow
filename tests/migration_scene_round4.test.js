@@ -54,7 +54,7 @@ describe('Migration species framing and identified anatomy', () => {
       expect(Number.isFinite(bird.userData.studyRadius)).toBe(true);
       for (const aspect of [2.1, 390 / 360, 0.65]) {
         const camera = new THREE.PerspectiveCamera(54, aspect, 0.1, 900);
-        for (const [yaw, pitch] of [[0, 15], [35, 15], [90, 10], [180, 10], [0, 60], [-90, -10]]) {
+        for (const [yaw, pitch] of [[0, 15], [35, 15], [90, 10], [180, 10], [0, 60], [-90, -10], [0, -60], [180, -60], [90, -45]]) {
           lookAtBird(camera, bird, yaw, pitch);
           for (const phase of [-Math.PI / 2, 0, Math.PI / 2]) {
             bird.userData.wings[0].rotation.z = Math.sin(phase) * bird.userData.flapAmount;

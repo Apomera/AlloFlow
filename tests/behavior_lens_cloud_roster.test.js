@@ -69,79 +69,67 @@ describe('the roster save', () => {
   });
 });
 
-describe('a new browser signed in to the same account', () => {
-  it('finds the student under the id their cloud work was saved with', async () => {
-    const cloud = installCloud(CLOUD);
-    await mount('Student A');
-    expect(roster().find(r => r.name === 'Student A').id).toBe('cloud-a');   // was a new id
-    expect(cloud.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/cloud-a'))).toBe(true);
-    await tick();
-    expect(JSON.stringify(JSON.parse(localStorage.getItem('behaviorLens_workspace_cloud-a') || '{}').abcEntries || [])).toContain('CLOUD ENTRY behavior');
+
+// Protected records deliberately disable the old plaintext account sync. The
+// pure merge contract above remains useful, while mounted tests enforce the
+// current deployment boundary and preserve the local encrypted-session data.
+describe('protected roster ignores legacy account sync', () => {
+  const seed = () => {
+    localStorage.setItem('bl_onboarded', '1');
+    localStorage.setItem('bl_student_roster', JSON.stringify(CLOUD.__roster__.roster));
+    localStorage.setItem('behaviorLens_workspace_cloud-a', JSON.stringify(CLOUD['cloud-a']));
+  };
+  const assertNoCloud = cloud => {
+    expect(cloud.getDoc).not.toHaveBeenCalled();
+    expect(window.__alloFirebase.signInAnonymously).not.toHaveBeenCalled();
+    expect(window.__alloFirebase.setDoc).not.toHaveBeenCalled();
+    expect(window.__alloFirebase.runTransaction).not.toHaveBeenCalled();
+  };
+  it('does not read, authenticate or write a legacy account when Firebase is available', async () => {
+    const cloud = installCloud(CLOUD); await mount('Student A'); await tick();
+    assertNoCloud(cloud);
+    expect(cloud.store).toEqual(CLOUD);
   });
-  it('shows the account\'s other students, and its saves keep them', async () => {
-    const cloud = installCloud(CLOUD);
-    await mount('Student A');
+  it('does not copy the parent dashboard or cloud roster into clinical storage automatically', async () => {
+    const cloud = installCloud(CLOUD); await mount('Student A');
+    expect(roster()).toEqual([]);
+    expect(localStorage.getItem('behaviorLens_workspace_cloud-a')).toBeNull();
+    assertNoCloud(cloud);
+  });
+  it('keeps existing protected roster ids and records without asking the cloud', async () => {
+    seed(); const cloud = installCloud(CLOUD); await mount('Student A');
     expect(roster().map(r => r.id)).toEqual(expect.arrayContaining(['cloud-a', 'cloud-b']));
-    await tick();
-    expect(cloud.store.__roster__.roster.map(r => r.id)).toEqual(expect.arrayContaining(['cloud-a', 'cloud-b']));
+    expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_cloud-a')).abcEntries[0].behavior).toBe('CLOUD ENTRY behavior');
+    assertNoCloud(cloud);
   });
-  it('a student removed from quick switch stays removed here after the page closes', async () => {
-    installCloud(CLOUD);
-    await mount('Student A');
-    await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'All tools').click());
+  it('removing a local quick-switch entry persists after remount and does not delete its records', async () => {
+    seed(); const cloud = installCloud(CLOUD); await mount('Student A');
+    await click([...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'All tools'));
     await click(host.querySelector('[aria-label="Remove student Student B from quick switch"]')); await tick();
     expect(roster().map(r => r.id)).not.toContain('cloud-b');
-    await unmount();
-    installCloud(CLOUD);                                                      // still in the account roster
-    await mount('Student A');
+    await unmount(); await mount('Student A');
     expect(roster().map(r => r.id)).not.toContain('cloud-b');
+    expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_cloud-a')).abcEntries).toHaveLength(1);
+    assertNoCloud(cloud);
   });
-  it('opening a removed student by name again finds the same saved work', async () => {
-    const cloud = installCloud(CLOUD);
-    await mount('Student A');
-    await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'All tools').click());
-    await click(host.querySelector('[aria-label="Remove student Student B from quick switch"]')); await tick();
-    await React.act(async () => [...host.querySelectorAll('button')].find(el => el.textContent.trim() === 'Today').click());
-    const picker = host.querySelector('#bl-today-student');
-    await React.act(async () => { picker.value = 'Student B'; picker.dispatchEvent(new Event('change', { bubbles: true })); });
-    await tick(); await tick();
-    expect(roster().find(r => r.name === 'Student B').id).toBe('cloud-b');   // was a new id: the work under cloud-b was lost to this device
-    expect(cloud.getDoc.mock.calls.some(([ref]) => ref.path.endsWith('/cloud-b'))).toBe(true);
-    expect(JSON.parse(localStorage.getItem('bl_roster_removed')).map(e => e.id)).not.toContain('cloud-b');
+  it('keeps dirty local work when a legacy cloud account has a newer record', async () => {
+    seed();
+    const local = { ...CLOUD['cloud-a'], revision: 1, abcEntries: [{ ...CLOUD['cloud-a'].abcEntries[0], behavior: 'UNSENT LOCAL NOTE' }] };
+    localStorage.setItem('behaviorLens_workspace_cloud-a', JSON.stringify(local));
+    localStorage.setItem('behaviorLens_workspace_dirty_cloud-a', JSON.stringify({ pending: true, revision: 1 }));
+    const cloud = installCloud({ ...CLOUD, 'cloud-a': { ...CLOUD['cloud-a'], revision: 9 } });
+    await mount('Student A'); await tick();
+    expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_cloud-a')).abcEntries[0].behavior).toBe('UNSENT LOCAL NOTE');
+    assertNoCloud(cloud);
   });
-});
-
-describe('reading the roster in the background', () => {
-  it('leaves the open student\'s cloud conflict and its banner alone', async () => {
-    // Unsynced work in this browser (revision 1) and a newer cloud copy (revision 2).
-    localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'cloud-a', name: 'Student A' }]));
-    localStorage.setItem('behaviorLens_workspace_cloud-a', JSON.stringify(Object.assign({}, CLOUD['cloud-a'], { revision: 1, savedAt: '2026-09-20T12:30:00.000Z' })));
-    localStorage.setItem('behaviorLens_workspace_dirty_cloud-a', JSON.stringify({ pending: true, revision: 1, savedAt: '2026-09-20T12:30:00.000Z' }));
-    let release;
-    installCloud(Object.assign({}, CLOUD, { 'cloud-a': Object.assign({}, CLOUD['cloud-a'], { revision: 2, updatedAt: '2026-09-20T13:00:00.000Z' }) }), { __roster__: new Promise(r => { release = r; }) });
-    await mount('Student A');
-    const banner = () => [...host.querySelectorAll('[role="alert"]')].some(el => el.textContent.includes('Unsynced local work and the cloud copy differ.'));
-    expect(banner()).toBe(true);
-    const status = () => [...host.querySelectorAll('[role="status"]')].some(el => el.textContent.trim() === 'Conflict');
-    expect(status()).toBe(true);
-    await React.act(async () => { release(); }); await tick();
-    expect(banner()).toBe(true);                                              // a roster read cleared it
-    expect(status()).toBe(true);                                              // and read "Syncing" or "Synced"
+  it('reconnect events cannot reenable legacy roster writes', async () => {
+    seed(); const cloud = installCloud(CLOUD); await mount('Student A');
+    await React.act(async () => window.dispatchEvent(new Event('online'))); await tick();
+    assertNoCloud(cloud); expect(cloud.store).toEqual(CLOUD);
   });
-});
-
-describe('when there is no cloud to ask', () => {
-  it('a student opened with no Firebase helpers gets an id at once', async () => {
-    await mount('Student A');                                                 // no window.__alloFirebase
-    expect(roster().map(r => r.name)).toContain('Student A');
-  });
-  it('a failed sign-in does not hold the student for five seconds', async () => {
-    window.__alloFirebase = {
-      onAuthStateChanged: (_auth, listener) => { listener(null); return () => {}; },
-      signInAnonymously: vi.fn(async () => { throw new Error('auth/network-request-failed'); }),
-      doc: (_db, ...parts) => ({ path: parts.join('/') }), getDoc: vi.fn(), setDoc: vi.fn(), runTransaction: vi.fn()
-    };
-    await mount('Student A');
-    expect(roster().map(r => r.name)).toContain('Student A');                 // waited out the 5 s timer
+  it('opens an explicitly selected local case without Firebase helpers', async () => {
+    seed(); await mount('Student A');
+    expect(roster().find(r => r.name === 'Student A').id).toBe('cloud-a');
+    expect(JSON.parse(localStorage.getItem('behaviorLens_workspace_cloud-a')).abcEntries).toHaveLength(1);
   });
 });

@@ -130,6 +130,22 @@ function cardHarness(options = {}) {
 }
 
 describe('flashcard audio setting and lifecycle coverage', () => {
+  it('reads native glossary base and translation segments in their saved languages', async () => {
+    vi.useFakeTimers();
+    const h = cardHarness({ deps: {
+      generatedContent: { id: 'native-cards', type: 'glossary', baseLanguage: 'French', glossaryLanguageSchemaVersion: 1,
+        data: [{ term: 'pain', def: 'Aliment cuit.', termLanguage: 'French', definitionLanguage: 'French', translations: { Spanish: { term: 'pan', def: 'Alimento cocido.' } } }] },
+      flashcardMode: 'language', flashcardLang: 'Spanish',
+    } });
+    await h.start();
+    for (let index = 0; index < 3; index++) {
+      h.audio[index].onended();
+      await vi.advanceTimersByTimeAsync(500);
+    }
+    expect(h.deps.callTTS.mock.calls.map(call => [call[0], call[3].language])).toEqual([
+      ['pain', 'French'], ['Aliment cuit.', 'French'], ['pan', 'Spanish'], ['Alimento cocido.', 'Spanish'],
+    ]);
+  });
   it('honors header voice/speed/volume, live changes, and cleanly finishes the last card segment', async () => {
     vi.useFakeTimers();
     const h = cardHarness();

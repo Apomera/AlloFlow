@@ -10,34 +10,85 @@ function managedAIError() {
   error.code = 'managed-ai-blocked';
   return error;
 }
+function managedAIRecord(value, allowed, required) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw managedAIError();
+  const keys = Reflect.ownKeys(value);
+  if (keys.some(key => typeof key !== 'string' || !allowed.includes(key)) || required.some(key => !Object.prototype.hasOwnProperty.call(value, key))) throw managedAIError();
+  const result = {};
+  for (const key of keys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result[key] = descriptor.value;
+  }
+  return result;
+}
+function managedAIArray(value, maximum) {
+  if (!Array.isArray(value) || value.length > maximum) throw managedAIError();
+  if (Reflect.ownKeys(value).some(key => key !== 'length' && (typeof key !== 'string' || !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length))) throw managedAIError();
+  const result = [];
+  for (let index = 0; index < value.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) throw managedAIError();
+    result.push(descriptor.value);
+  }
+  return result;
+}
+function managedAIEndpoint(value) {
+  if (typeof value !== 'string' || value.length < 1 || value.length > 2048) return '';
+  try {
+    const u = new URL(value);
+    if (u.username || u.password || u.search || u.hash) return '';
+    if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
+    return u.href.replace(/\/+$/, '');
+  } catch (_) { return ''; }
+}
+function managedAISnapshot() {
+  try {
+    const raw = managedAIProfile();
+    if (raw == null) return { raw, policy: null, signature: 'unmanaged' };
+    const p = managedAIRecord(raw, ['version', 'connections', 'allowExternalSearch'], ['version', 'connections']);
+    if (p.version !== 1 || (Object.prototype.hasOwnProperty.call(p, 'allowExternalSearch') && typeof p.allowExternalSearch !== 'boolean')) throw managedAIError();
+    const connections = managedAIArray(p.connections, 64).map(value => {
+      const row = managedAIRecord(value, ['backend', 'baseUrl', 'keyless', 'canvasHost', 'apiKeySha256'], ['backend', 'baseUrl']);
+      if (typeof row.backend !== 'string' || !/^[a-z][a-z0-9_-]{0,63}$/i.test(row.backend)) throw managedAIError();
+      const baseUrl = managedAIEndpoint(row.baseUrl);
+      if (!baseUrl || ['keyless', 'canvasHost'].some(key => Object.prototype.hasOwnProperty.call(row, key) && typeof row[key] !== 'boolean')) throw managedAIError();
+      const fingerprints = Object.prototype.hasOwnProperty.call(row, 'apiKeySha256') ? managedAIArray(row.apiKeySha256, 64) : [];
+      if (fingerprints.some(value => typeof value !== 'string' || !/^[a-f0-9]{64}$/i.test(value))) throw managedAIError();
+      return Object.freeze({ backend: row.backend, baseUrl, keyless: row.keyless === true, canvasHost: row.canvasHost === true,
+        apiKeySha256: Object.freeze(fingerprints.map(value => value.toLowerCase())) });
+    });
+    const policy = Object.freeze({ version: 1, connections: Object.freeze(connections), allowExternalSearch: p.allowExternalSearch === true });
+    return { raw, policy, signature: JSON.stringify(policy) };
+  } catch (_) { throw managedAIError(); }
+}
+function managedAIDispatchGuard(snapshot) {
+  return function () {
+    const current = managedAISnapshot();
+    if (current.raw !== snapshot.raw || current.signature !== snapshot.signature) throw managedAIError();
+    return true;
+  };
+}
 function managedExternalSearchAllowed() {
-  const policy = managedAIProfile();
-  return policy == null || (policy.version === 1 && policy.allowExternalSearch === true);
+  try { const snapshot = managedAISnapshot(); return !snapshot.policy || snapshot.policy.allowExternalSearch; }
+  catch (_) { return false; }
 }
 async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
-  const policy = managedAIProfile();
-  if (policy == null) return;
+  const snapshot = managedAISnapshot(), guard = managedAIDispatchGuard(snapshot), policy = snapshot.policy;
+  if (!policy) return guard;
   // Version 1 deliberately covers text inference. Media routes can use separate
   // providers/fallbacks; keep them blocked until their destinations are approved.
-  if (policy.version !== 1 || operation !== 'text' || !Array.isArray(policy.connections) || (search && !managedExternalSearchAllowed())) throw managedAIError();
-  const normalize = value => {
-    try {
-      const u = new URL(value);
-      if (u.username || u.password || u.search || u.hash) return '';
-      if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
-      return u.href.replace(/\/+$/, '');
-    } catch (_) { return ''; }
-  };
-  const endpoint = normalize(baseUrl);
-  const entries = policy.connections.filter(row => row && row.backend === backend && endpoint && normalize(row.baseUrl) === endpoint);
-  for (const entry of entries) {
-    if (canvasHost && entry.canvasHost === true) return;
-    if (!apiKey && entry.keyless === true) return;
-    if (apiKey && Array.isArray(entry.apiKeySha256) && globalThis.crypto?.subtle) {
-      const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
-      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-      if (entry.apiKeySha256.some(value => typeof value === 'string' && value.toLowerCase() === fingerprint)) return;
-    }
+  if (operation !== 'text' || (search && !policy.allowExternalSearch) || typeof apiKey !== 'string') throw managedAIError();
+  const endpoint = managedAIEndpoint(baseUrl);
+  const entries = policy.connections.filter(row => row.backend === backend && endpoint && row.baseUrl === endpoint);
+  if (entries.some(entry => (canvasHost && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
+  if (apiKey && entries.some(entry => entry.apiKeySha256.length) && globalThis.crypto?.subtle) {
+    let digest;
+    try { digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(apiKey)); }
+    catch (_) { throw managedAIError(); }
+    guard();
+    const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    if (entries.some(entry => entry.apiKeySha256.includes(fingerprint))) return guard;
   }
   throw managedAIError();
 }

@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "builder": "dev-tools/build_browser_runtime_graphs.cjs",
+  "esbuildVersion": "0.28.1",
+  "generatedAt": "2026-10-24T21:17:10.851Z",
+  "entries": {
+    "piper": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm",
+    "kokoro": "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm",
+    "transformers": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+    "ort": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs"
+  },
+  "sources": [
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.data",
+      "bytes": 18077249,
+      "sha384": "e9787705f887f97edee0ccb5d64ebabc3a7b5945909a7e487e6b31e19075c20f2f03dfa598e52e72e9ea26936c354b9f"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm",
+      "bytes": 635212,
+      "sha384": "a7ba79de91cc749fc2ceae6bf22d1c5d65602c0f8279711e922d4d1b234dd0129f3452c87717a0d11d3ee52ccd4a8a77"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+      "bytes": 856055,
+      "sha384": "a2b5da6d94e23d450023ec5183eaa1e69a168e5a44dfe5775c13c68fa549a818ab20bbfdc67b5a9bc13babe666d91c8c"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 49241,
+      "sha384": "bdbfd61cd9ccff3e215b73a3648b497e68be57f3169472351d6a96c001169e19dbb181a294d183628b33fab60a2d513a"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 22792576,
+      "sha384": "98f95211528ba8b53becd02bbd4fac7064b0d9905d81f2ad1b98bc420ac9d4e4997c43bb9950d13f022c25fc96dd4282"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/+esm",
+      "bytes": 462603,
+      "sha384": "3dab529691e821f71282b4ac737e3d630d6800121efac3ced8b7da7ee1347663015386a7feaa3797922e6550d6ced63c"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 21596019,
+      "sha384": "bbf6c3b31dfd73ec2dd0b6c798e0b2771b787f28a2837d75f214203937cebeb7e481270ce21468d88c13b65c72a08d36"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/package.json",
+      "bytes": 2818,
+      "sha384": "5a7e6a0fb3aa32ac950c067f69ab29b8f869a82c0eb2c5bb8ba47703eaa779c0a0ff522e975814b70bfef4ede524eb3f"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm",
+      "bytes": 15151,
+      "sha384": "b325f1bb6407e6163e5e6399612aae88a72d5b0080fbc1b981a8005ba51fc9327b2b556914a1cefb481b53ed96695b1e"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/dist/piper-o91UDS6e.js/+esm",
+      "bytes": 113344,
+      "sha384": "37fa24611e1e0359e154e0249144af4fa6003aaf361463fb2dda19f0822992ed525accb6e8f51ac3a56d3f63b92d5955"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/dist/voices_static-D_OtJDHM.js/+esm",
+      "bytes": 97882,
+      "sha384": "81a12c7f765866777df8a6fcad9e37c06b29569fd4b5b042db7bdd497b0077501cfde5114e79c24ad86ef09acbeb2512"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm",
+      "bytes": 11488,
+      "sha384": "3975186acb081083be3079be60ef7554523483a5537379033aa0e6efbfa8da7dbf296357c8c6203ee8e97663254e79a0"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-common@1.22.0-dev.20250409-89f8206ba4/+esm",
+      "bytes": 19403,
+      "sha384": "6a5a00de8ef3d80902426a83af4a26c93476d2005d23670de5b56e81a33e4a3909f98513b866a03c570b16e15c6378d4"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/+esm",
+      "bytes": 563798,
+      "sha384": "c11f91fe5a8a7193a17f6a8ce68c7f1710ee19e1577de204c05f0e995077f15df7c92b9dd12188c59f9207b722d07025"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm-simd.wasm",
+      "bytes": 10595041,
+      "sha384": "7d168b18f233bc5da98465b888eb689d36acfe1ffe822e699ee45b6081431cc018eb097c3e306239de369555290da35d"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm.wasm",
+      "bytes": 9758086,
+      "sha384": "927679b038ae4e2b05831065c18dedc10107f10960b21ba94c8158d92b31d9fcf8d73a62bfc67868a16b77ddd6a2c030"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 53602,
+      "sha384": "810d5d66cf3ce2277c6459865a2a6d2eced61cb581726cdb5832df2d730ac0e474e415334125bce262cdc92c7e735a66"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 23914392,
+      "sha384": "65bfb71e22a47917da2a906e8d625b82800541d24fd2ef3aedfd08fc21b609ef76b987c6689edcfd98b494a51856b3c7"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs",
+      "bytes": 347693,
+      "sha384": "4baf102cf2afefcfa5c8981962fe384f8d1ae63faefb02a0752318824ca262d1c6bb4e447327a15872a500877d0afab6"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+      "bytes": 395093,
+      "sha384": "22145e51145ec69c523760783e80844e0c6910c49b5d9c5bd2252078512bea96785426fb7db4662b67e5ca5284101171"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 44484,
+      "sha384": "ec626a1f9bdcf3762ded51f0acc5d333c6cd0abb7f7bff1e0ada24f33941daee5dc2a9a1cd26a4cc29105ab7d8191378"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/package.json",
+      "bytes": 3531,
+      "sha384": "71356320dc21297142f9d410ea16d001a16f3ca7f3462a2b5d43f6646c1c30dec19374619910b8bbd091185987aac7a8"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/phonemizer@1.2.1/+esm",
+      "bytes": 1346128,
+      "sha384": "aa5304efad7fcfbeadd06ced9a2d1cdd09400a059df4d7e79ca7600930e7482531c422bb49631a2a91e3277458c3f667"
+    }
+  ],
+  "transformations": [
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm",
+      "forcedSupportedSingleThread": true
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm",
+      "disabledWorkerSites": 0,
+      "staticallyBoundWasmImports": 0
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/+esm",
+      "disabledWorkerSites": 2,
+      "staticallyBoundWasmImports": 0
+    },
+    {
+      "nodeOnlyModule": "crypto",
+      "browserOnly": true
+    },
+    {
+      "nodeOnlyModule": "fs",
+      "browserOnly": true
+    },
+    {
+      "nodeOnlyModule": "path",
+      "browserOnly": true
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/+esm",
+      "actualBackendExport": "__alloflowRuntimeBackend"
+    },
+    {
+      "importer": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/+esm",
+      "unversionedImport": "https://cdn.jsdelivr.net/npm/onnxruntime-common/+esm",
+      "pinnedImport": "https://cdn.jsdelivr.net/npm/onnxruntime-common@1.22.0-dev.20250409-89f8206ba4/+esm"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+      "anchoredImportMetaUrls": 11
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/+esm",
+      "disabledWorkerSites": 2,
+      "staticallyBoundWasmImports": 1
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "anchoredImportMetaUrls": 6
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "disabledWorkerSites": 1,
+      "staticallyBoundWasmImports": 0
+    },
+    {
+      "nodeOnlyModule": "worker_threads",
+      "browserOnly": true
+    },
+    {
+      "nodeOnlyModule": "module",
+      "browserOnly": true
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+      "actualBackendExport": "__alloflowRuntimeBackend"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+      "anchoredImportMetaUrls": 9
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm",
+      "disabledWorkerSites": 2,
+      "staticallyBoundWasmImports": 1
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "anchoredImportMetaUrls": 5
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "disabledWorkerSites": 1,
+      "staticallyBoundWasmImports": 0
+    },
+    {
+      "nodeOnlyModule": "worker_threads",
+      "browserOnly": true
+    },
+    {
+      "nodeOnlyModule": "module",
+      "browserOnly": true
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs",
+      "anchoredImportMetaUrls": 3
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs",
+      "disabledWorkerSites": 1,
+      "staticallyBoundWasmImports": 1
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "anchoredImportMetaUrls": 6
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "disabledWorkerSites": 1,
+      "staticallyBoundWasmImports": 0
+    },
+    {
+      "nodeOnlyModule": "worker_threads",
+      "browserOnly": true
+    },
+    {
+      "nodeOnlyModule": "module",
+      "browserOnly": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "piper",
+      "file": "piper.closed.mjs",
+      "bytes": 788566,
+      "sha384": "f1884b1c5218340ee886929c37f341b013f4bd3837bf232020b090c92dfbb36dd2877237f0a29361708e5f7e59559f0d",
+      "closure": "no imports/workers/importScripts",
+      "threadedWorkers": false
+    },
+    {
+      "name": "kokoro",
+      "file": "kokoro.closed.mjs",
+      "bytes": 2267244,
+      "sha384": "8c3835d7a2e9eadf077cd1543dbc91047aadf6ee5a3488271ec9dc4ff9ca0e12e6b514ef6a35248bc79903f2ddf330b5",
+      "closure": "no imports/workers/importScripts",
+      "threadedWorkers": false
+    },
+    {
+      "name": "transformers",
+      "file": "transformers.closed.mjs",
+      "bytes": 925973,
+      "sha384": "9c5887e102e3838a3aeaf0b0550cbf2bb75cd7d922e5f9adbabed81e73f406c953c79c9e0ce3038c0a240a8ac96f7526",
+      "closure": "no imports/workers/importScripts",
+      "threadedWorkers": false
+    },
+    {
+      "name": "ort",
+      "file": "ort.closed.mjs",
+      "bytes": 402386,
+      "sha384": "8986603e90c3ccac4973ca1bfaa0aca78a4ba73b4329f65be23fea82571e8d6e92317ae14449dde9a09654403307e3ea",
+      "closure": "no imports/workers/importScripts",
+      "threadedWorkers": false
+    },
+    {
+      "name": "piper-ort-simd.wasm",
+      "file": "piper-ort-simd.wasm",
+      "bytes": 10595041,
+      "sha384": "7d168b18f233bc5da98465b888eb689d36acfe1ffe822e699ee45b6081431cc018eb097c3e306239de369555290da35d",
+      "kind": "wasm"
+    },
+    {
+      "name": "piper-ort.wasm",
+      "file": "piper-ort.wasm",
+      "bytes": 9758086,
+      "sha384": "927679b038ae4e2b05831065c18dedc10107f10960b21ba94c8158d92b31d9fcf8d73a62bfc67868a16b77ddd6a2c030",
+      "kind": "wasm"
+    },
+    {
+      "name": "transformers-3.3.1.wasm",
+      "file": "transformers-3.3.1.wasm",
+      "bytes": 22792576,
+      "sha384": "98f95211528ba8b53becd02bbd4fac7064b0d9905d81f2ad1b98bc420ac9d4e4997c43bb9950d13f022c25fc96dd4282",
+      "kind": "wasm"
+    },
+    {
+      "name": "kokoro-transformers-3.5.1.wasm",
+      "file": "kokoro-transformers-3.5.1.wasm",
+      "bytes": 21596019,
+      "sha384": "bbf6c3b31dfd73ec2dd0b6c798e0b2771b787f28a2837d75f214203937cebeb7e481270ce21468d88c13b65c72a08d36",
+      "kind": "wasm"
+    },
+    {
+      "name": "ort-1.21.0.wasm",
+      "file": "ort-1.21.0.wasm",
+      "bytes": 23914392,
+      "sha384": "65bfb71e22a47917da2a906e8d625b82800541d24fd2ef3aedfd08fc21b609ef76b987c6689edcfd98b494a51856b3c7",
+      "kind": "wasm"
+    },
+    {
+      "name": "piper-phonemizer.wasm",
+      "file": "piper-phonemizer.wasm",
+      "bytes": 635212,
+      "sha384": "a7ba79de91cc749fc2ceae6bf22d1c5d65602c0f8279711e922d4d1b234dd0129f3452c87717a0d11d3ee52ccd4a8a77",
+      "kind": "wasm"
+    },
+    {
+      "name": "piper-phonemizer.data",
+      "file": "piper-phonemizer.data",
+      "bytes": 18077249,
+      "sha384": "e9787705f887f97edee0ccb5d64ebabc3a7b5945909a7e487e6b31e19075c20f2f03dfa598e52e72e9ea26936c354b9f",
+      "kind": "data"
+    }
+  ],
+  "modelsDownloaded": false
+}

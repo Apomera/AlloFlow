@@ -50,6 +50,35 @@
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/submitBug';
   var SUBMIT_TIMEOUT_MS = 20000;
   var DESCRIPTION_MAX_LENGTH = 2000;
+  var MAX_DIAGNOSTIC_TEXT_CHARS = 64 * 1024;
+  var OMITTED_DIAGNOSTIC_TEXT = '[Diagnostic text omitted because it exceeds the supported size limit.]';
+
+  // Deployment convenience, not an authorization boundary against page code.
+  // Never read approval from browser storage. A district must also enforce its
+  // chosen support destinations through its service and network controls.
+  function getSupportReportingPolicy() {
+    var blocked = { valid: false, enabled: false, endpoint: '', allowGoogleFormFallback: false, signature: 'invalid' };
+    try {
+      if (!Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')) {
+        return { valid: true, enabled: true, endpoint: SUBMIT_URL, allowGoogleFormFallback: true,
+          signature: JSON.stringify([true, SUBMIT_URL, true]) };
+      }
+      var value = window.ALLOFLOW_SUPPORT_REPORTING_POLICY;
+      if (!value || typeof value !== 'object' || Array.isArray(value)
+          || Object.keys(value).some(function (key) { return !['version', 'enabled', 'endpoint', 'allowGoogleFormFallback'].includes(key); })
+          || value.version !== 1 || typeof value.enabled !== 'boolean'
+          || (value.endpoint !== undefined && typeof value.endpoint !== 'string')
+          || (value.allowGoogleFormFallback !== undefined && typeof value.allowGoogleFormFallback !== 'boolean')) return blocked;
+      var endpoint = value.endpoint === undefined ? SUBMIT_URL : value.endpoint;
+      var parsed = new URL(endpoint);
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash
+          || endpoint.trim() !== endpoint || /[?#]/.test(endpoint)) return blocked;
+      endpoint = parsed.href;
+      var allowForm = value.enabled && value.allowGoogleFormFallback === true;
+      return { valid: true, enabled: value.enabled, endpoint: endpoint, allowGoogleFormFallback: allowForm,
+        signature: JSON.stringify([value.enabled, endpoint, allowForm]) };
+    } catch (_) { return blocked; }
+  }
 
   var STORAGE_KEY = 'alloflow_error_log';
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
@@ -75,11 +104,98 @@
   // ?allo_mbp= : base64 JSON holding the mailbox URL and key). Entries kept
   // it in localStorage and every bug report sent it. Scrub wherever a URL
   // or message is stored or sent.
-  function redactSecrets(s) {
+  function isCredentialField(key) {
+    return /^(?:authorization|proxy[-_]authorization|x[-_](?:goog[-_])?api[-_]key|api[-_]?key|access[-_]?token|refresh[-_]?token|id[-_]?token|token|secret|client[-_]?secret|password|passwd|credential|private[-_]?key|session[-_]?(?:id|token|secret)|cookie|set[-_]cookie)$/i.test(key);
+  }
+  function redactSecrets(s, nesting) {
     if (!s) return s || '';
-    return String(s)
+    // Omit the whole value before parsing or regular-expression work. Taking
+    // a prefix first could leave a truncated credential that no longer matches.
+    if (typeof s === 'string' && s.length > MAX_DIAGNOSTIC_TEXT_CHARS) return OMITTED_DIAGNOSTIC_TEXT;
+    var depth = nesting || 0;
+    var text = String(s);
+    if (text.length > MAX_DIAGNOSTIC_TEXT_CHARS) return OMITTED_DIAGNOSTIC_TEXT;
+    if (depth < 3) {
+      // Server bodies and redirect targets are often escaped or URL-encoded.
+      // Decode only structured quoted strings/URLs, with a strict recursion
+      // bound, and retain the original representation when nothing is removed.
+      text = text.replace(/"(?:\\.|[^"\\])*"/g, function (quoted, offset, source) {
+        try {
+          var decoded = JSON.parse(quoted);
+          if (isCredentialField(decoded) && /^\s*:/.test(source.slice(offset + quoted.length))) return JSON.stringify(decoded);
+          var cleaned = redactSecrets(decoded, depth + 1);
+          return cleaned === decoded ? quoted : JSON.stringify(cleaned);
+        } catch (_) { return quoted; }
+      });
+      text = text.replace(/\b(?:https?|wss?|ftp)%(?:25){0,2}3A%(?:25){0,2}2F%(?:25){0,2}2F[^\s"'<>;&]+/gi, function (encoded) {
+        var decoded = encoded, layers = 0;
+        try {
+          while (layers < 3 && !/^[a-z][a-z0-9+.-]*:\/\//i.test(decoded)) {
+            var next = decodeURIComponent(decoded);
+            if (next === decoded) break;
+            decoded = next; layers++;
+          }
+          if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(decoded)) return encoded;
+          var cleaned = redactSecrets(decoded, depth + 1);
+          if (cleaned === decoded) return encoded;
+          while (layers-- > 0) cleaned = encodeURIComponent(cleaned);
+          return cleaned;
+        } catch (_) { return encoded; }
+      });
+    }
+    return text
+      .replace(/-----BEGIN ([A-Z0-9 ]*PRIVATE KEY)-----[\s\S]*?(?:-----END \1-----|$)/g, '[redacted private key]')
+      .replace(/\b(Bearer|Basic)\s+([A-Za-z0-9+/_=.-]+)/gi, function (value, scheme, token) {
+        if (scheme.toLowerCase() === 'basic') { try { if (atob(token).indexOf(':') < 0) return value; } catch (_) { return value; } }
+        else if (token.length < 8) return value;
+        return scheme + ' [redacted]';
+      })
+      .replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g, '[redacted]')
+      .replace(/(?:sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,})\b/g, '[redacted]')
+      .replace(/(\b(?:cookie|set-cookie)\s*:\s*)(?!["'])[^\r\n]*/gi, '$1[redacted]')
+      .replace(/(^|[^A-Za-z0-9_-])(["']?)([A-Za-z][A-Za-z0-9_-]*)(\2\s*[:=]\s*)(\[redacted\]|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;&}\]]+)/g, function (whole, prefix, keyQuote, key, separator, value) {
+        if (!isCredentialField(key)) return whole;
+        var quote = value[0] === '"' || value[0] === "'" ? value[0] : '';
+        return prefix + keyQuote + key + separator + quote + '[redacted]' + quote;
+      })
+      .replace(/\b([A-Za-z][A-Za-z0-9+.-]{0,31}:\/\/)[^\s\/?#@]+@/g, '$1')
+      .replace(/\b(?:https?|wss?|ftp):\/\/[^\s"'<>]+/gi, function (raw) {
+        var ending = raw.match(/[),.;}]+$/);
+        var suffix = ending ? ending[0] : '';
+        try {
+          var url = new URL(suffix ? raw.slice(0, -suffix.length) : raw);
+          url.username = ''; url.password = '';
+          Array.from(url.searchParams.keys()).forEach(function (key) {
+            if (/^(?:allo_(?:mbp?|pack))$|key|token|secret|passw(?:or)?d|auth|signature|credential|session[-_]?id/i.test(key)) url.searchParams.set(key, '[redacted]');
+            else if (depth < 3) {
+              var value = url.searchParams.get(key);
+              var cleaned = redactSecrets(value, depth + 1);
+              if (cleaned !== value) url.searchParams.set(key, cleaned);
+            }
+          });
+          if (url.hash) url.hash = '[redacted]';
+          return url.href.replace(/%5Bredacted%5D/gi, '[redacted]') + suffix;
+        } catch (_) { return raw; }
+      })
       .replace(/([?&#]allo_(?:mbp?|pack)=)[^&#\s"']*/g, '$1[redacted]')
-      .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
+      .replace(/([?&#][\w.-]*(?:key|token|secret|passw(?:or)?d|auth|signature|credential|session[-_]?id)[\w.-]*=)[^&#\s"']*/gi, '$1[redacted]');
+  }
+
+  function sanitizeDiagnosticValue(value, depth, seen) {
+    if (typeof value === 'string') return redactSecrets(value);
+    if (!value || typeof value !== 'object') return value;
+    if ((depth || 0) >= 8) return '[omitted nested diagnostic]';
+    var visited = seen || new WeakSet();
+    if (visited.has(value)) return '[circular diagnostic]';
+    visited.add(value);
+    var output = Array.isArray(value) ? [] : {};
+    Object.keys(value).forEach(function (key) {
+      var safeKey = redactSecrets(key);
+      if (safeKey === '__proto__' || safeKey === 'constructor' || safeKey === 'prototype') return;
+      output[safeKey] = isCredentialField(key)
+        ? '[redacted]' : sanitizeDiagnosticValue(value[key], (depth || 0) + 1, visited);
+    });
+    return output;
   }
 
   // ── Initial state (rehydrated from localStorage) ──
@@ -104,12 +220,7 @@
         // a throw here must skip the CHECK, not wipe the whole buffer.
         try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
         return true;
-      }).map(function (entry) {
-        entry.url = redactSecrets(entry.url);
-        entry.message = redactSecrets(entry.message);
-        entry.stack = redactSecrets(entry.stack);
-        return entry;
-      });
+      }).map(function (entry) { return sanitizeDiagnosticValue(entry); });
     }
     catch (e) { return []; }
   })();
@@ -120,6 +231,7 @@
   var includeWarns = !!prefs.includeWarns;
 
   function persistBuffer() {
+    buffer = buffer.map(function (entry) { return sanitizeDiagnosticValue(entry); });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(buffer)); } catch (e) {}
   }
   function persistPrefs() {
@@ -178,14 +290,14 @@
       level: level,                                    // 'error' | 'warn'
       message: msg,
       stack: stack ? redactSecrets(String(stack)).slice(0, 2000) : '',
-      source: source ? String(source).slice(0, 200) : '',
+      source: source ? redactSecrets(String(source)).slice(0, 200) : '',
       line: line || 0,
       column: column || 0,
       url: redactSecrets(window.location.href).slice(0, 300),
       count: 1,
       v: APP_BUILD_TAG,  // which app build captured this — stale-entry pruning key
       load: LOAD_ID,      // which page load - only this load's errors reach the badge
-      ...(api ? { api: api } : {})
+      ...(api ? { api: sanitizeDiagnosticValue(api) } : {})
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
@@ -296,9 +408,9 @@
       var when = '';
       try { when = new Date(e.at).toISOString().slice(11, 19); } catch (_) {}
       var detail = '';
-      try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(d); } catch (_) { detail = '[unserializable]'; }
+      try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(sanitizeDiagnosticValue(d)); } catch (_) { detail = '[unserializable]'; }
       if (detail.length > 110) detail = detail.slice(0, 110) + '…';
-      return when + ' ' + String(e.event || '') + ' ' + detail;
+      return when + ' ' + redactSecrets(String(e.event || '')) + ' ' + detail;
     }).join('\n');
   }
 
@@ -361,7 +473,7 @@
         else if (!snap.failed.length && !snap.pending.length && !queued.length) bits.push('all modules loaded');
       }
     } catch (_) { bits.push('module status unavailable'); }
-    return bits.join(' · ');
+    return redactSecrets(bits.join(' · '));
   }
 
   // Appended to every report: which build/surface this is, plus the tails of
@@ -382,8 +494,7 @@
     return parts.join('\n\n');
   }
 
-  function buildReportPayload() {
-    captureDescriptionDraft();
+  function buildCapturedReportPayload() {
     var ua = navigator.userAgent;
     var browserDevice = ua + ' · ' + (window.screen ? (window.screen.width + 'x' + window.screen.height) : '?') +
       ' · viewport ' + (window.innerWidth || '?') + 'x' + (window.innerHeight || '?');
@@ -399,28 +510,110 @@
     }).join('\n\n---\n\n');
     if (!what) what = '(No errors captured. Sending a manual report.)';
     else what = 'This page load: ' + nowCount + ' unresolved error' + (nowCount === 1 ? '' : 's') + '. Others below are labelled.\n\n' + what;
-    try { what = buildReportExtras().slice(0, 4000) + '\n\n' + what; } catch (_) {}
+    try { what = redactSecrets(buildReportExtras()).slice(0, 4000) + '\n\n' + what; } catch (_) {}
     what = redactSecrets(what);
-    var description = redactSecrets(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
-    if (description) what = '== What happened? ==\n' + description + '\n\n' + what;
-
     var steps = 'URL: ' + redactSecrets(window.location.href);
-    if (window.location.hash) steps += '\nHash: ' + redactSecrets(window.location.hash);
+    if (window.location.hash) steps += '\nURL fragment omitted.';
     if (window.AlloModules) {
       var loaded = Object.keys(window.AlloModules).filter(function (k) { return k !== 'ErrorReporter'; });
       if (loaded.length) steps += '\nModules loaded: ' + loaded.join(', ');
     }
     steps += '\n\n(Optional: tell me what you were doing when this happened.)';
 
-    return {
+    return sanitizeDiagnosticValue({
       typeOfIssue: 'Bug Report',
       whatHappened: what.slice(0, 8000),
       stepsRepro: steps.slice(0, 4000),
-      browserDevice: browserDevice.slice(0, 500)
+      browserDevice: redactSecrets(browserDevice).slice(0, 500),
+      url: redactSecrets(window.location.href).slice(0, 500)
+    });
+  }
+
+  function ensureReportDraft() {
+    if (!reportDraft) reportDraft = buildCapturedReportPayload();
+    return reportDraft;
+  }
+  function resetReportDraft() {
+    reportDraft = buildCapturedReportPayload();
+    reviewedSignature = '';
+    if (panel) OUTGOING_FIELDS.forEach(function (spec) {
+      var field = panel.querySelector('#' + spec[0]);
+      if (field) field.value = reportDraft[spec[1]];
+    });
+  }
+
+  var OUTGOING_FIELDS = [
+    ['aer-report-what', 'whatHappened', 'Diagnostics to include', 8000, 8],
+    ['aer-report-steps', 'stepsRepro', 'Context and steps to include', 4000, 3],
+    ['aer-report-browser', 'browserDevice', 'Browser and device details', 500, 2],
+    ['aer-report-url', 'url', 'Page URL to include', 500, 2]
+  ];
+  function captureOutgoingDraft() {
+    if (!panel || submission.status === 'sending' || submission.status === 'saved') return false;
+    var draft = ensureReportDraft();
+    var sanitized = false;
+    OUTGOING_FIELDS.forEach(function (spec) {
+      var field = panel.querySelector('#' + spec[0]);
+      if (!field) return;
+      var clean = redactSecrets(field.value).slice(0, spec[3]);
+      if (draft[spec[1]] !== clean) {
+        draft[spec[1]] = clean;
+        reviewedSignature = '';
+      }
+      if (field.value !== clean) { field.value = clean; reviewedSignature = ''; sanitized = true; }
+    });
+    return sanitized;
+  }
+  function buildReportPayload() {
+    captureDescriptionDraft();
+    captureOutgoingDraft();
+    var draft = ensureReportDraft();
+    var description = redactSecrets(descriptionDraft.trim()).slice(0, DESCRIPTION_MAX_LENGTH);
+    return {
+      typeOfIssue: 'Bug Report',
+      whatHappened: redactSecrets((description ? '== What happened? ==\n' + description + '\n\n' : '') + draft.whatHappened).slice(0, 16000),
+      stepsRepro: redactSecrets(draft.stepsRepro).slice(0, 4000),
+      browserDevice: redactSecrets(draft.browserDevice).slice(0, 500),
+      url: redactSecrets(draft.url).slice(0, 500)
     };
+  }
+  function payloadSignature(policy) {
+    return JSON.stringify([policy.signature, buildReportPayload()]);
+  }
+  function updateReviewControls() {
+    if (!panel) return;
+    var policy = getSupportReportingPolicy();
+    var confirmed = policy.enabled && reviewedSignature && reviewedSignature === payloadSignature(policy);
+    var checkbox = panel.querySelector('#aer-review-confirm');
+    if (checkbox) checkbox.checked = !!confirmed;
+    var send = panel.querySelector('#aer-send');
+    if (send) send.disabled = submission.status === 'sending' || submission.status === 'saved' || !confirmed;
+  }
+  function sanitizeReviewDraft() {
+    var changed = captureDescriptionDraft();
+    if (captureOutgoingDraft()) changed = true;
+    var cleanedDescription = redactSecrets(descriptionDraft);
+    if (cleanedDescription !== descriptionDraft) { descriptionDraft = cleanedDescription; changed = true; }
+    var draft = ensureReportDraft();
+    OUTGOING_FIELDS.forEach(function (spec) {
+      var cleaned = redactSecrets(draft[spec[1]]).slice(0, spec[3]);
+      if (cleaned !== draft[spec[1]]) { draft[spec[1]] = cleaned; changed = true; }
+      var field = panel && panel.querySelector('#' + spec[0]);
+      if (field && field.value !== cleaned) field.value = cleaned;
+    });
+    var description = panel && panel.querySelector('#aer-description');
+    if (description && description.value !== descriptionDraft) description.value = descriptionDraft;
+    if (changed) {
+      reviewedSignature = '';
+      reviewNotice = 'Credentials were removed. Review the updated fields and confirm again before sending.';
+    }
+    return changed;
   }
 
   function buildPrefilledFormUrl() {
+    var policy = getSupportReportingPolicy();
+    if (!policy.enabled || !policy.allowGoogleFormFallback || !reviewedSignature
+        || reviewedSignature !== payloadSignature(policy)) return '';
     var p = buildReportPayload();
     return FORM_BASE +
       '&entry.' + ENTRY_TYPE    + '=' + encodeURIComponent(p.typeOfIssue) +
@@ -441,13 +634,23 @@
   var descriptionDraft = '';
   var descriptionComposing = false;
   var descriptionRefreshPending = false;
+  // This outgoing copy is frozen across later log captures. Only explicit
+  // editing or Update report changes it; the persisted diagnostic log is separate.
+  var reportDraft = null;
+  var reviewedSignature = '';
+  var reviewNotice = '';
+  var displayedPolicySignature = '';
 
   function captureDescriptionDraft() {
     var field = panel && panel.querySelector('#aer-description');
     if (field && submission.status !== 'sending' && submission.status !== 'saved') {
-      descriptionDraft = field.value.slice(0, DESCRIPTION_MAX_LENGTH);
-      if (field.value !== descriptionDraft) field.value = descriptionDraft;
+      var raw = field.value;
+      var next = redactSecrets(raw).slice(0, DESCRIPTION_MAX_LENGTH);
+      if (descriptionDraft !== next) reviewedSignature = '';
+      descriptionDraft = next;
+      if (raw !== descriptionDraft) { field.value = descriptionDraft; reviewedSignature = ''; return true; }
     }
+    return false;
   }
 
   // Translator. The badge is built with raw DOM, so its accessible name never
@@ -599,7 +802,7 @@
     var when = '';
     try { when = new Date(e.at).toLocaleTimeString(); } catch (_) {}
     var detail = '';
-    try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(d); } catch (_) { detail = '[unserializable]'; }
+    try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(sanitizeDiagnosticValue(d)); } catch (_) { detail = '[unserializable]'; }
     if (detail.length > 200) detail = detail.slice(0, 200) + '…';
     return '<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #f1f5f9;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">' +
       '<span style="color:#94a3b8;white-space:nowrap;">' + escapeHtml(when) + '</span>' +
@@ -611,10 +814,10 @@
   function buildTtsDiagText() {
     var payload;
     try {
-      payload = JSON.stringify({
+      payload = JSON.stringify(sanitizeDiagnosticValue({
         at: new Date().toISOString(),
         surface: 'error-reporter',
-        userAgent: String(navigator.userAgent || '').slice(0, 120),
+        userAgent: redactSecrets(String(navigator.userAgent || '')).slice(0, 120),
         flags: {
           geminiQuotaFailed: !!window.__ttsGeminiQuotaFailed,
           geminiAuthFailed: !!window.__ttsGeminiAuthFailed,
@@ -624,7 +827,7 @@
         },
         lastRoute: window.__ttsLastRoute || null,
         trace: ttsTraceEntries()
-      }, null, 2);
+      }), null, 2);
     } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
     return payload;
   }
@@ -669,14 +872,14 @@
     var payload;
     try {
       var p = searchProviderRef();
-      payload = JSON.stringify({
+      payload = JSON.stringify(sanitizeDiagnosticValue({
         at: new Date().toISOString(),
         surface: 'error-reporter',
         identity: identityLine(),
         transports: (p && typeof p.describeTransports === 'function') ? p.describeTransports() : null,
         lastSelfTest: window.__alloSearchSelfTest || null,
         trace: searchTraceEntries()
-      }, null, 2);
+      }), null, 2);
     } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
     return payload;
   }
@@ -742,13 +945,13 @@
   function buildSessionDiagText() {
     var payload;
     try {
-      payload = JSON.stringify({
+      payload = JSON.stringify(sanitizeDiagnosticValue({
         at: new Date().toISOString(),
         surface: 'error-reporter',
         identity: identityLine(),
         health: window.__alloSessionHealth || null,
         trace: sessionTraceEntries()
-      }, null, 2);
+      }), null, 2);
     } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
     return payload;
   }
@@ -791,7 +994,7 @@
     return '<div style="margin:0 0 16px;">' +
       '<label for="aer-description" style="display:block;margin-bottom:6px;font:700 14px/1.4 system-ui,sans-serif;color:#1e293b;">' +
         escapeHtml(_errT('error_reporter_description_label', 'What happened? (optional)')) + '</label>' +
-      '<textarea id="aer-description" rows="3" maxlength="' + DESCRIPTION_MAX_LENGTH + '" aria-describedby="aer-description-help"' + (locked ? ' readonly' : '') +
+      '<textarea id="aer-description" rows="3" aria-describedby="aer-description-help"' + (locked ? ' readonly' : '') +
         ' placeholder="' + escapeHtml(_errT('error_reporter_description_placeholder', 'What were you doing? What did you expect, and what happened instead?')) + '"' +
         ' style="display:block;box-sizing:border-box;width:100%;min-height:84px;max-height:220px;resize:vertical;padding:9px 10px;border:1px solid #94a3b8;border-radius:8px;background:#fff;color:#0f172a;font:16px/1.45 system-ui,sans-serif;">' + escapeHtml(descriptionDraft) + '</textarea>' +
       '<p id="aer-description-help" style="margin:6px 0 0;font:12px/1.5 system-ui,sans-serif;color:#475569;">' +
@@ -799,32 +1002,67 @@
       '</div>';
   }
 
+  function outgoingReviewHtml() {
+    var draft = ensureReportDraft();
+    var locked = submission.status === 'sending' || submission.status === 'saved';
+    var policy = getSupportReportingPolicy();
+    displayedPolicySignature = policy.signature;
+    return '<section aria-label="Outgoing support report" style="margin:16px 0;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">' +
+      '<h3 style="margin:0 0 8px;font:700 14px/1.4 system-ui,sans-serif;">Review the report to send</h3>' +
+      '<p style="font:12px/1.5 system-ui,sans-serif;">Report type: Bug Report. Your optional description above and the fields below are the complete report. Edit or remove private information; edits do not change the captured log. New events are not added to this draft automatically.</p>' +
+      '<p id="aer-support-destination" style="font:12px/1.5 system-ui,sans-serif;overflow-wrap:anywhere;">' +
+        escapeHtml(policy.enabled ? 'Support destination: ' + policy.endpoint : policy.valid ? 'External support reporting is disabled by this deployment. Local diagnostics and Copy log remain available.' : 'External support reporting is unavailable because the deployment policy is invalid. Local diagnostics and Copy log remain available.') + '</p>' +
+      OUTGOING_FIELDS.map(function (spec) {
+        return '<label for="' + spec[0] + '" style="display:block;margin-top:10px;font:700 12px/1.5 system-ui,sans-serif;">' + spec[2] + '</label>' +
+          '<textarea id="' + spec[0] + '" rows="' + spec[4] + '"' + (locked ? ' readonly' : '') +
+          ' style="box-sizing:border-box;width:100%;padding:8px;border:1px solid #64748b;border-radius:6px;background:#fff;color:#0f172a;font:16px/1.5 system-ui,sans-serif;">' + escapeHtml(draft[spec[1]]) + '</textarea>';
+      }).join('') +
+      '<button id="aer-refresh-report" type="button"' + (locked ? ' disabled' : '') + ' style="margin-top:10px;padding:8px;">Update report from current log</button>' +
+      '<p id="aer-review-notice" role="status" style="font:12px/1.5 system-ui,sans-serif;color:#854d0e;">' + escapeHtml(reviewNotice) + '</p>' +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font:13px/1.5 system-ui,sans-serif;"><input id="aer-review-confirm" type="checkbox"' +
+        (locked || !policy.enabled ? ' disabled' : '') +
+        (reviewedSignature && reviewedSignature === payloadSignature(policy) ? ' checked' : '') +
+      '>I reviewed this report and am permitted to send these fields to the support destination shown above.</label></section>';
+  }
+
   function submissionFooterHtml() {
     var busy = submission.status === 'sending';
     var saved = submission.status === 'saved';
     var failed = submission.status === 'failed' || submission.status === 'uncertain';
-    var text = 'Send this log privately to the developers. A saved receipt confirms storage, not developer review.';
+    var policy = getSupportReportingPolicy();
+    var confirmed = policy.enabled && reviewedSignature && reviewedSignature === payloadSignature(policy);
+    var text = 'Send only the reviewed fields to the support destination shown above. A receipt confirms storage, not review.';
     if (busy) text = 'Sending your report. You can close this window; the result will be here when you reopen it.';
     if (failed) text = submission.message;
-    if (saved) text = 'Report saved. This confirms storage, not that a developer has reviewed it.';
+    if (saved) text = policy.endpoint === SUBMIT_URL
+      ? 'Report saved. This confirms storage, not that a developer has reviewed it.'
+      : 'Report saved. The support service confirmed storage, not that anyone has reviewed it.';
     return '<footer style="padding:14px 18px;border-top:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-shrink:0;">' +
       '<div id="aer-submit-status" role="status" aria-live="polite" aria-atomic="true" style="width:100%;font:12px/1.5 system-ui,sans-serif;color:#334155;overflow-wrap:anywhere;">' +
         '<p style="margin:0;">' + escapeHtml(text) + '</p>' +
         (saved ? '<p style="margin:6px 0 0;"><strong>' + (submission.id ? 'Receipt: <span id="aer-receipt-id">' + escapeHtml(submission.id) + '</span>' : 'No receipt ID was returned by the server.') + '</strong><br>Saved: ' + escapeHtml(submission.savedAt) + '</p>' : '') +
-        (failed ? '<p style="margin:6px 0 0;">You can use Copy log above, paste it into the report form, and press Submit there. Opening the form does not send your report.' + (submission.formOpened ? ' This app cannot confirm a submission made in that form.' : '') + '</p>' : '') +
+        (failed ? '<p style="margin:6px 0 0;">' + (policy.enabled && policy.allowGoogleFormFallback ? 'You can use Copy log above, paste it into the report form, and press Submit there. Opening the form does not send your report.' : 'Copy log remains available for your approved support process.') + (submission.formOpened ? ' This app cannot confirm a submission made in that form.' : '') + '</p>' : '') +
       '</div>' +
-      '<button id="aer-send" type="button"' + (busy || saved ? ' disabled' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved ? 'default' : 'pointer') + ';">' +
-        (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : '📬 Send to Developers') + '</button>' +
+      '<button id="aer-send" type="button"' + (busy || saved || !confirmed ? ' disabled' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved || !confirmed ? 'default' : 'pointer') + ';">' +
+        (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : 'Send reviewed report') + '</button>' +
       (saved && submission.id ? '<button id="aer-copy-receipt" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Copy receipt</button>' : '') +
       (saved ? '<button id="aer-new-report" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">New report</button>' : '') +
-      (failed ? '<a id="aer-report-form" href="' + escapeHtml(FORM_BASE) + '" target="_blank" rel="noopener noreferrer" style="color:#0f766e;font:700 12px/1.5 system-ui,sans-serif;">Open report form</a>' : '') +
+      (failed && policy.enabled && policy.allowGoogleFormFallback ? '<button id="aer-report-form" type="button" style="color:#0f766e;font:700 12px/1.5 system-ui,sans-serif;padding:8px;">Open report form</button>' : '') +
       '</footer>';
   }
 
   function submitReport() {
     if (submission.status === 'sending' || submission.status === 'saved') return;
+    var policy = getSupportReportingPolicy();
+    if (sanitizeReviewDraft()) { refreshPanelIfOpen(); return; }
+    if (!policy.enabled || !reviewedSignature || reviewedSignature !== payloadSignature(policy)) {
+      reviewedSignature = '';
+      reviewNotice = policy.enabled ? 'The report or support policy changed. Review the current fields and destination, then confirm before sending.' : 'This deployment does not permit external support reporting. You can still copy local diagnostics.';
+      refreshPanelIfOpen();
+      return;
+    }
     var p = buildReportPayload();
-    var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: redactSecrets(location.href || '').slice(0, 500) };
+    var payload = { type: p.typeOfIssue, what: p.whatHappened, steps: p.stepsRepro, browser: p.browserDevice, url: p.url };
     var attempt = { controller: typeof AbortController === 'function' ? new AbortController() : null, timer: null };
     activeSubmission = attempt;
     submission = { status: 'sending', id: '', savedAt: '', message: '', formOpened: false };
@@ -841,9 +1079,15 @@
       if (attempt.controller) attempt.controller.abort();
     }, SUBMIT_TIMEOUT_MS);
     try {
-      var options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+      var options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
       if (attempt.controller) options.signal = attempt.controller.signal;
-      fetch(SUBMIT_URL, options)
+      var dispatchPolicy = getSupportReportingPolicy();
+      if (!dispatchPolicy.enabled || dispatchPolicy.signature !== policy.signature) {
+        reviewedSignature = '';
+        finish('failed', 'Report not sent. The deployment support policy changed; review the destination again.');
+        return;
+      }
+      fetch(dispatchPolicy.endpoint, options)
         .then(function (response) {
           return response.json().then(function (json) { return { ok: response.ok, json: json }; }, function () { return { ok: response.ok, json: null }; });
         })
@@ -906,6 +1150,7 @@
       // Log scroll
       '<div id="aer-error-content" role="region" aria-label="Captured error entries" style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
         descriptionHtml() +
+        outgoingReviewHtml() +
         entriesHtml +
       '</div>' +
       // Footer / submit
@@ -924,7 +1169,7 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
           '<div>' +
             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
+            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Review a copy before sharing it with support.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
             '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
           '</div>' +
           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
@@ -983,6 +1228,7 @@
 
   function closePanel() {
     captureDescriptionDraft();
+    captureOutgoingDraft();
     descriptionComposing = false;
     descriptionRefreshPending = false;
     if (panel) { panel.remove(); panel = null; }
@@ -996,6 +1242,12 @@
     // Replacing an active IME composition would lose unfinished input.
     if (descriptionComposing) { descriptionRefreshPending = true; return; }
     captureDescriptionDraft();
+    captureOutgoingDraft();
+    var retainedFields = OUTGOING_FIELDS.map(function (spec) {
+      var field = panel.querySelector('#' + spec[0]);
+      return field ? { field: field, spec: spec, start: field.selectionStart, end: field.selectionEnd,
+        direction: field.selectionDirection, top: field.scrollTop, left: field.scrollLeft } : null;
+    }).filter(Boolean);
     var description = panel.querySelector('#aer-description');
     var selection = description ? { start: description.selectionStart, end: description.selectionEnd, direction: description.selectionDirection, top: description.scrollTop, left: description.scrollLeft } : null;
     var content = panel.querySelector('#aer-error-content');
@@ -1011,6 +1263,15 @@
       replacement.parentNode.replaceChild(description, replacement);
       description.setSelectionRange(selection.start, selection.end, selection.direction);
     }
+    retainedFields.forEach(function (item) {
+      var replacementField = panel.querySelector('#' + item.spec[0]);
+      if (!replacementField) return;
+      item.field.readOnly = replacementField.readOnly;
+      item.field.value = reportDraft[item.spec[1]];
+      replacementField.parentNode.replaceChild(item.field, replacementField);
+      item.field.setSelectionRange(item.start, item.end, item.direction);
+      item.field.scrollTop = item.top; item.field.scrollLeft = item.left;
+    });
     wirePanelHandlers();
     if (focusedId) {
       var target = document.getElementById(focusedId);
@@ -1027,6 +1288,7 @@
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
   // existing per-tab copy handlers (async clipboard, execCommand fallback).
   function copyDiagnosticsText(text, btnId, resetLabel) {
+    text = redactSecrets(text);
     var $ = function (id) { return document.getElementById(id); };
     var flash = function (label) {
       var b = $(btnId);
@@ -1096,7 +1358,7 @@
     };
     if ($('aer-sess-refresh')) $('aer-sess-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-sess-copy')) $('aer-sess-copy').onclick = function () {
-      var text = buildSessionDiagText();
+      var text = redactSecrets(buildSessionDiagText());
       var btn = $('aer-sess-copy');
       var flash = function (label) {
         if (!btn) return;
@@ -1128,7 +1390,7 @@
       refreshPanelIfOpen();
     };
     if ($('aer-tts-copy')) $('aer-tts-copy').onclick = function () {
-      var text = buildTtsDiagText();
+      var text = redactSecrets(buildTtsDiagText());
       var btn = $('aer-tts-copy');
       var flash = function (label) {
         if (!btn) return;
@@ -1166,17 +1428,18 @@
     };
     if ($('aer-clear')) $('aer-clear').onclick = function () {
       buffer.length = 0;
+      resetReportDraft();
       persistBuffer();
       updateBadge();
       refreshPanelIfOpen();
     };
     if ($('aer-copy')) $('aer-copy').onclick = function () {
       var p = buildReportPayload();
-      var text = '== AlloFlow Error Report ==\n' +
+      var text = redactSecrets('== AlloFlow Error Report ==\n' +
         'Type: ' + p.typeOfIssue + '\n' +
         'Browser: ' + p.browserDevice + '\n\n' +
         'Context:\n' + p.stepsRepro + '\n\n' +
-        'Log:\n' + p.whatHappened;
+        'Log:\n' + p.whatHappened);
       
       function copyFallback(txt) {
         try {
@@ -1221,6 +1484,7 @@
           return;
         }
         captureDescriptionDraft();
+        updateReviewControls();
       };
       $('aer-description').oncompositionstart = function () {
         if (this === $('aer-description') && !this.readOnly) descriptionComposing = true;
@@ -1232,6 +1496,43 @@
         if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
       };
     }
+    OUTGOING_FIELDS.forEach(function (spec) {
+      var field = $(spec[0]);
+      if (!field) return;
+      field.oninput = function () {
+        if (this !== $(spec[0]) || this.readOnly) return;
+        captureOutgoingDraft();
+        updateReviewControls();
+      };
+      field.oncompositionstart = function () { if (!this.readOnly) descriptionComposing = true; };
+      field.oncompositionend = function () {
+        descriptionComposing = false;
+        captureOutgoingDraft();
+        updateReviewControls();
+        if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+      };
+    });
+    if ($('aer-review-confirm')) $('aer-review-confirm').onchange = function () {
+      if (submission.status === 'sending' || submission.status === 'saved') return;
+      var checked = this.checked;
+      var policy = getSupportReportingPolicy();
+      reviewedSignature = '';
+      if (policy.signature !== displayedPolicySignature || !policy.enabled) {
+        reviewNotice = 'The support policy changed. Review the current destination before confirming.';
+        refreshPanelIfOpen();
+        return;
+      }
+      if (sanitizeReviewDraft()) { refreshPanelIfOpen(); return; }
+      if (checked) { reviewedSignature = payloadSignature(policy); reviewNotice = ''; }
+      updateReviewControls();
+    };
+    if ($('aer-refresh-report')) $('aer-refresh-report').onclick = function () {
+      if (submission.status === 'sending' || submission.status === 'saved') return;
+      captureDescriptionDraft();
+      resetReportDraft();
+      reviewNotice = 'The draft was updated from the current log. Review and confirm it before sending.';
+      refreshPanelIfOpen();
+    };
     if ($('aer-send')) $('aer-send').onclick = submitReport;
     if ($('aer-copy-receipt')) $('aer-copy-receipt').onclick = function () {
       if (submission.status !== 'saved' || !submission.id) return;
@@ -1241,17 +1542,29 @@
       if (submission.status !== 'saved') return;
       submission = { status: 'idle', id: '', savedAt: '', message: '', formOpened: false };
       descriptionDraft = '';
+      resetReportDraft();
+      reviewNotice = '';
       if ($('aer-description')) $('aer-description').value = '';
       refreshPanelIfOpen();
       if ($('aer-description')) $('aer-description').focus();
     };
-    if ($('aer-report-form')) $('aer-report-form').onclick = function () {
+    if ($('aer-report-form')) $('aer-report-form').onclick = function (event) {
+      var policy = getSupportReportingPolicy();
+      if (!policy.enabled || !policy.allowGoogleFormFallback || !reviewedSignature
+          || reviewedSignature !== payloadSignature(policy)) {
+        if (event) event.preventDefault();
+        reviewedSignature = '';
+        reviewNotice = 'The report or support policy changed. Review it again before using an external report form.';
+        refreshPanelIfOpen();
+        return false;
+      }
       if (submission.formOpened) return;
       submission.formOpened = true;
       // A form in another tab has its own Submit action. Never treat opening it
       // as a successful report or put the captured log in its public URL.
       var status = $('aer-submit-status');
       if (status) status.appendChild(document.createTextNode(' This app cannot confirm a submission made in that form.'));
+      window.open(FORM_BASE, '_blank', 'noopener,noreferrer');
     };
   }
 
@@ -1260,8 +1573,10 @@
   window.AlloModules.ErrorReporter = {
     record: record,
     setIncludeWarns: function (v) { includeWarns = !!v; prefs.includeWarns = includeWarns; persistPrefs(); },
-    getBuffer: function () { return buffer.slice(); },
-    clearBuffer: function () { buffer.length = 0; persistBuffer(); updateBadge(); refreshPanelIfOpen(); },
+    getBuffer: function () { return buffer.map(function (entry) { return sanitizeDiagnosticValue(entry); }); },
+    clearBuffer: function () { buffer.length = 0; resetReportDraft(); persistBuffer(); updateBadge(); refreshPanelIfOpen(); },
+    getSupportReportingPolicy: getSupportReportingPolicy,
+    redactSecrets: redactSecrets,
     openPanel: openPanel,
     // Direct deep-link to the read-aloud/TTS trace tab (AI backend settings
     // exposes this so the log is reachable with ZERO captured errors — a

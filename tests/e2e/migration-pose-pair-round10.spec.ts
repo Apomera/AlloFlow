@@ -228,7 +228,7 @@ test('Migration stage-adjacent pair review switches the historical sources by ke
   await expect(tray).toHaveAttribute('data-review-active', 'trial');
   await keyboardClick(page, tray.getByRole('button', { name: 'Saved baseline', exact: true }));
   await keyboardClick(page, tray.getByRole('button', { name: 'Add evidence', exact: true }));
-  const evidence = page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true }); await expect(evidence).toBeFocused();
+  const evidence = page.getByRole('textbox', { name: 'Evidence I noticed', exact: true }); await expect(evidence).toBeFocused();
   await expect(evidence).toHaveValue(seed.flightInvestigation.evidence);
   const after = await saved(page); expect(retainedLearning(after)).toEqual(retainedLearning(before));
   await tray.getByText('Prediction when recorded', { exact: true }).click();
@@ -252,7 +252,7 @@ test('Migration pair review distinguishes changed controls, hides stale sources 
   for (const name of ['Saved baseline', 'Saved trial']) await expect(tray.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'false');
   await keyboardClick(page, tray.getByRole('button', { name: 'Saved baseline', exact: true }));
   await expect(tray).toHaveAttribute('data-review-active', 'baseline');
-  const evidence = page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true });
+  const evidence = page.getByRole('textbox', { name: 'Evidence I noticed', exact: true });
   await evidence.fill('Keep my revised evidence while the same historical pair remains selected.');
   await expect(tray).toBeVisible(); await expect(tray).toHaveAttribute('data-review-active', 'baseline');
   await page.evaluate(() => { (window as any).__toolData.migration.flightInvestigation.trials[1].prediction += ' Changed source.'; (window as any).__rerender(); });
@@ -265,7 +265,7 @@ test('Migration pair review distinguishes changed controls, hides stale sources 
   await page.getByRole('button', { name: 'Remove trial 1', exact: true }).click(); await frames(page);
   await expect(page.locator('[data-experiment-trial]')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Record trial', exact: true })).toBeDisabled();
-  await expect(page.getByRole('textbox', { name: 'Flight investigation prediction', exact: true })).toBeFocused();
+  await expect(page.getByRole('textbox', { name: 'What do you predict, and why?', exact: true })).toBeFocused();
   const after = await saved(page);
   for (const key of ['flightStudyObservations', 'flightChallenges', 'inquiry']) expect(after[key]).toEqual(before[key]);
   expect(after.flightInvestigation.evidence).toBe('Keep my revised evidence while the same historical pair remains selected.');
@@ -295,7 +295,7 @@ for (const dark of [false, true]) test.describe('phone ' + (dark ? 'dark' : 'lig
     await page.locator('.migration-flight-stage').screenshot({ path: join(report, stem + '-saved-trial-stage.png') });
     await tray.screenshot({ path: join(report, stem + '-saved-trial-tray.png') });
     await tray.getByRole('button', { name: 'Add evidence', exact: true }).tap();
-    await expect(page.getByRole('textbox', { name: 'Flight investigation evidence notes', exact: true })).toBeFocused();
+    await expect(page.getByRole('textbox', { name: 'Evidence I noticed', exact: true })).toBeFocused();
     await page.addScriptTag({ content: axeSource });
     const review = await page.evaluate(async () => {
       const axe = await (window as any).axe.run(document.querySelector('#wrap'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } });

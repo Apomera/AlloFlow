@@ -90,4 +90,13 @@ describe('tool loading diagnostics', () => {
 
 it('does not claim completion when an older host cannot report its queue',()=>{const w=boot({failed:[],pending:[]});expect(report(w)).toContain('queue status unavailable');expect(report(w)).not.toContain('all modules loaded');});
 it('keeps valid diagnostic events when another timestamp is invalid',()=>{const w=boot({failed:[],pending:[],queued:[]},[event(),event({at:1e30})]);expect(report(w)).toContain('blueprint-preflight/slow');});
-it('redacts embedded assignment payloads from the existing URL metadata',()=>{const w=boot({failed:[],pending:[],queued:[]});w.history.replaceState({},'', '/app/#allo_pack=PRIVATE_ASSIGNMENT_CANARY');w.AlloModules.ErrorReporter.record('warn','Tool wait exceeded15s','','module-loader',0,0);const text=report(w);expect(text).not.toContain('PRIVATE_ASSIGNMENT_CANARY');expect(text).toContain('allo_pack=[redacted]');expect(JSON.stringify(w.AlloModules.ErrorReporter.getBuffer())).not.toContain('PRIVATE_ASSIGNMENT_CANARY');});
+it('redacts the complete assignment-bearing URL fragment from diagnostic metadata', () => {
+  const w = boot({ failed: [], pending: [], queued: [] });
+  w.history.replaceState({}, '', '/app/#allo_pack=PRIVATE_ASSIGNMENT_CANARY');
+  w.AlloModules.ErrorReporter.record('warn', 'Tool wait exceeded15s', '', 'module-loader', 0, 0);
+  const text = report(w);
+  expect(text).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
+  expect(text).toContain('URL: https://example.test/app/#[redacted]');
+  expect(text).toContain('URL fragment omitted.');
+  expect(JSON.stringify(w.AlloModules.ErrorReporter.getBuffer())).not.toContain('PRIVATE_ASSIGNMENT_CANARY');
+});

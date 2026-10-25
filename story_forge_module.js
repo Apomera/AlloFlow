@@ -821,6 +821,8 @@ const sanitizeIllustrations = (obj) => {
     const url = safeImageUrl(v.imageUrl);
     if (url && url.length <= 15e6) {
       const clean = { imageUrl: url, prompt: typeof v.prompt === "string" ? v.prompt.slice(0, 1200) : "" };
+      if (typeof v.altText === "string") clean.altText = v.altText.slice(0, 1600);
+      if (v.whiteboardScene && Array.isArray(v.whiteboardScene.elements) && JSON.stringify(v.whiteboardScene).length <= 2 * 1024 * 1024) clean.whiteboardScene = v.whiteboardScene;
       if (Number.isFinite(Number(v.displayWidth))) clean.displayWidth = clampStoryIllustrationWidth(v.displayWidth);
       out[String(k).slice(0, 64)] = clean;
     }
@@ -898,7 +900,8 @@ const sanitizeContinuityReferences = (arr) => Array.isArray(arr) ? arr.slice(0, 
     appearance: typeof value.appearance === "string" ? value.appearance.slice(0, 360) : "",
     wardrobe: typeof value.wardrobe === "string" ? value.wardrobe.slice(0, 240) : "",
     props: typeof value.props === "string" ? value.props.slice(0, 240) : "",
-    imageUrl: safeImageUrl(value.imageUrl).slice(0, 15e6)
+    imageUrl: safeImageUrl(value.imageUrl).slice(0, 15e6),
+    whiteboardScene: value.whiteboardScene && Array.isArray(value.whiteboardScene.elements) && JSON.stringify(value.whiteboardScene).length <= 2 * 1024 * 1024 ? value.whiteboardScene : null
   };
 }).filter((item) => item.name || item.aliases || item.role || item.appearance || item.wardrobe || item.props || item.imageUrl) : [];
 const STORYFORGE_PROJECT_VERSION = 3;
@@ -2033,6 +2036,7 @@ const sanitizeStoryForgeProject = (value = {}) => {
     _storyForgeProjectVersion: STORYFORGE_PROJECT_VERSION,
     illustrations: sanitizeIllustrations(source.illustrations),
     coverArt: safeImageUrl(source.coverArt).slice(0, 15e6),
+    ...source.coverArtwork && typeof source.coverArtwork === "object" ? { coverArtwork: { altText: String(source.coverArtwork.altText || "").slice(0, 1600), whiteboardScene: source.coverArtwork.whiteboardScene && Array.isArray(source.coverArtwork.whiteboardScene.elements) && JSON.stringify(source.coverArtwork.whiteboardScene).length <= 2 * 1024 * 1024 ? source.coverArtwork.whiteboardScene : null } } : {},
     audioSegments: sanitizeAudioSegments(source.audioSegments),
     audioStore: sanitizeStoryForgeAudioStore(source.audioStore),
     comicFlowReport: draft.artifactType === "comic" ? sanitizeComicFlowReport(source.comicFlowReport) : null
@@ -2682,7 +2686,7 @@ const StoryForge = React.memo(({
     const maxLength = field === "imageUrl" ? 15e6 : field === "name" ? 80 : field === "aliases" ? 240 : field === "role" ? 120 : field === "appearance" ? 360 : 240;
     setComicContinuity((prev) => sanitizeComicContinuity({
       ...prev,
-      references: (prev.references || []).map((reference) => reference.id === referenceId ? { ...reference, [field]: String(value || "").slice(0, maxLength) } : reference)
+      references: (prev.references || []).map((reference) => reference.id === referenceId ? { ...reference, [field]: String(value || "").slice(0, maxLength), ...field === "imageUrl" ? { whiteboardScene: null } : {} } : reference)
     }));
     setIsDirty(true);
   };
@@ -2704,7 +2708,7 @@ const StoryForge = React.memo(({
       if (!imageUrl) return;
       setComicContinuity((prev) => sanitizeComicContinuity({
         ...prev,
-        references: (prev.references || []).map((reference) => reference.id === referenceId ? { ...reference, imageUrl } : reference)
+        references: (prev.references || []).map((reference) => reference.id === referenceId ? { ...reference, imageUrl, whiteboardScene: null } : reference)
       }));
       setIsDirty(true);
       sfAnnounce(ta("a11y.storyforge_cast_reference_art_attached"));
@@ -2888,6 +2892,7 @@ const StoryForge = React.memo(({
       ...createDraftSnapshot(),
       illustrations,
       coverArt,
+      coverArtwork,
       audioSegments,
       comicFlowReport
     });
@@ -2901,7 +2906,10 @@ const StoryForge = React.memo(({
     snapshot: createProjectSnapshot()
   });
   const [illustrations, setIllustrations] = useState({});
+  const authoredImagesRef = useRef(null);
   const [coverArt, setCoverArt] = useState(null);
+  const [coverArtwork, setCoverArtwork] = useState(null);
+  authoredImagesRef.current = { illustrations, paragraphs, comicContinuity, coverArt, saveKey: SAVE_KEY };
   const [coverArtLoading, setCoverArtLoading] = useState(false);
   const characterPortraitRef = useRef(null);
   const getComicConsistencyReference = (idx) => {
@@ -3695,7 +3703,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
   feedbackStateRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, currentReviewDraftSignature, gradeLevel, sourceTopic, draftCount]);
-  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload, comicFlowReport]);
+  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, coverArtwork, audioSegments, audioStorePayload, comicFlowReport]);
   useEffect(() => {
     if (lessonImportProposal) lessonImportPreviewRef.current?.focus();
   }, [lessonImportProposal]);
@@ -4105,7 +4113,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, coverArtwork, audioSegments, audioStorePayload]);
   const applySanitizedDraft = (value) => {
     setLessonImportProposal(null);
     setPlanProposal(null);
@@ -4151,6 +4159,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     const draft = applySanitizedDraft(project);
     setIllustrations(project.illustrations);
     setCoverArt(project.coverArt || null);
+    setCoverArtwork(project.coverArtwork || null);
     setAudioSegments(hydrateStoryForgeAudioSegments(project.audioSegments));
     storyAudioServiceRef.current = null;
     storyAudioStoreRef.current = null;
@@ -4357,6 +4366,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl }])
       ),
       coverArt,
+      coverArtwork,
       gradingResult,
       analytics: {
         totalWords,
@@ -5483,7 +5493,7 @@ Return ONLY JSON:
     }
   };
   const confirmIllustration = async (customPrompt) => {
-    if (!promptPreview || !onCallImagen) return;
+    if (!promptPreview || !onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
     const { paragraphId, idx } = promptPreview;
     const imgPrompt = finalizeImagePrompt(customPrompt || promptPreview.prompt);
     setPromptPreview(null);
@@ -5509,7 +5519,7 @@ Return ONLY JSON:
       if (imageUrl && idx === 0 && !characterPortraitRef.current) {
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || "").split(",")[1] || "";
       }
-      setIllustrations((prev) => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
+      setIllustrations((prev) => ({ ...prev, [paragraphId]: imageUrl ? { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } : { ...prev[paragraphId], isLoading: false } }));
     } catch (err) {
       console.warn("Illustration failed:", err);
       setIllustrations((prev) => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -5517,7 +5527,7 @@ Return ONLY JSON:
     }
   };
   const illustrateParagraph = async (paragraphId, text, idx) => {
-    if (!onCallImagen) return;
+    if (!onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
     setIllustrations((prev) => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
@@ -5557,7 +5567,7 @@ Return ONLY the image prompt text, nothing else.`
       if (imageUrl && idx === 0 && !characterPortraitRef.current) {
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || "").split(",")[1] || "";
       }
-      setIllustrations((prev) => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
+      setIllustrations((prev) => ({ ...prev, [paragraphId]: imageUrl ? { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } : { ...prev[paragraphId], isLoading: false } }));
     } catch (err) {
       console.warn("Illustration failed:", err);
       setIllustrations((prev) => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -5631,7 +5641,7 @@ Return ONLY the image prompt text, nothing else.`
     }
   };
   const generateCoverArt = async () => {
-    if (!onCallImagen || !onCallGemini) return;
+    if (!onCallImagen || !onCallGemini || window.AlloImageGeneration?.isEnabled() === false) return;
     setCoverArtLoading(true);
     try {
       const style = getStyleDesc();
@@ -5643,7 +5653,10 @@ Return ONLY the image prompt text, nothing else.`
       );
       const imgPrompt = promptResult.trim() + ` STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. ${isComicCover ? "Comic" : "Storybook"} cover composition.`;
       const imageUrl = await onCallImagen(imgPrompt, 768, 0.9);
-      if (imageUrl) setCoverArt(imageUrl);
+      if (imageUrl) {
+        setCoverArt(imageUrl);
+        setCoverArtwork(null);
+      }
     } catch (err) {
       console.warn("Cover art generation failed:", err);
       if (addToast) addToast(t("toasts.cover_art_generation_failed"), "error");
@@ -6953,7 +6966,7 @@ Return ONLY JSON:
         chaptersHtml += `</article>`;
       } else {
         chaptersHtml += `<article class="chapter" aria-label="Scene ${idx + 1}">`;
-        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="Illustration for scene ${idx + 1}" />`;
+        if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="scene-img" loading="lazy" alt="${escapeHtml(illustrations[p.id]?.altText || `Illustration for scene ${idx + 1}`)}" />`;
         const beatLabel2 = (PLOT_BEATS.find((b) => b.value === p.plotBeat) || {}).label;
         if (beatLabel2 && p.plotBeat) {
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel2 }))}">${escapeHtml(beatLabel2)}</div>`;
@@ -7691,6 +7704,7 @@ show();
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
       ),
       coverArt,
+      coverArtwork,
       // ── Progress & analytics data (for teacher review) ──
       gradingResult,
       analytics: {
@@ -9002,12 +9016,32 @@ show();
     /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }),
     " ",
     isProcessing ? "Generating..." : artifactType === "comic" ? "Design All Panels" : "Illustrate All Scenes"
-  ))), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_cover_art")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: "Artifact cover art", className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-continuity", tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_comic_continuity")), onCallGemini && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: draftComicContinuity, disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0), className: "px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " Draft Notes")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, [
+  ))), window.AlloModules?.ResourceImageInput && /* @__PURE__ */ React.createElement("details", { className: "my-3 rounded-xl border border-purple-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer font-bold" }, "Upload or draw cover art"), React.createElement(window.AlloModules.ResourceImageInput, {
+    key: SAVE_KEY + ":cover",
+    label: "Cover art",
+    value: coverArt || "",
+    alt: coverArtwork?.altText || "",
+    scene: coverArtwork?.whiteboardScene,
+    disabled: isProcessing || coverArtLoading,
+    onApply: (result) => {
+      if (authoredImagesRef.current.saveKey !== SAVE_KEY || authoredImagesRef.current.coverArt !== coverArt) return false;
+      setCoverArt(result.dataUrl);
+      setCoverArtwork({ altText: result.alt, whiteboardScene: result.scene || null });
+      setIsDirty(true);
+      return true;
+    }
+  })), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_cover_art")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: coverArtwork?.altText || "Artifact cover art", className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-continuity", tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_comic_continuity")), onCallGemini && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: draftComicContinuity, disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0), className: "px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " Draft Notes")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, [
     { field: "cast", label: "Cast", placeholder: "Mina: round glasses, red jacket, curious expression" },
     { field: "setting", label: "Setting", placeholder: "Library lab with teal lamps and brass shelves" },
     { field: "palette", label: "Palette", placeholder: "Teal, amber, ink black, warm paper white" },
     { field: "styleNotes", label: "Style Rules", placeholder: "Clean ink lines, consistent outfits, soft rim light" }
-  ].map(({ field, label, placeholder }) => /* @__PURE__ */ React.createElement("label", { key: field, className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, label), /* @__PURE__ */ React.createElement("textarea", { value: comicContinuity[field] || "", onChange: (e) => updateComicContinuity(field, e.target.value), placeholder, className: "w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none", "aria-label": ta("a11y.storyforge_aria_comic_continuity").replace("{0}", label.toLowerCase()) })))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-purple-100 pt-4", "data-sf-cast-references": true }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest" }, ta("a11y.storyforge_ui_cast_references")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, ta("a11y.storyforge_ui_lock_recurring_appearance_wardrobe_props_and"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addContinuityReference, className: "px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100", "aria-label": ta("a11y.storyforge_attr_add_cast_reference") }, /* @__PURE__ */ React.createElement(Plus, { size: 12, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_add_cast"))), comicContinuity.references.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-dashed border-purple-200 bg-purple-50/30 p-3 text-[11px] text-slate-500" }, ta("a11y.storyforge_ui_add_a_cast_reference_when_a")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, comicContinuity.references.map((reference, referenceIndex) => /* @__PURE__ */ React.createElement("div", { key: reference.id, className: "rounded-xl border border-purple-100 bg-purple-50/30 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-purple-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_cast").replace("{0}", referenceIndex + 1)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeContinuityReference(reference.id), className: "p-1 rounded-md text-rose-800 hover:bg-rose-50", "aria-label": ta("a11y.storyforge_aria_remove_cast_reference").replace("{0}", referenceIndex + 1), title: ta("a11y.storyforge_attr_remove_cast_reference") }, /* @__PURE__ */ React.createElement(Trash2, { size: 13, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, [["name", "Name", "Mina"], ["aliases", "Also known as", "Min, Captain M"], ["role", "Role", "Explorer"], ["appearance", "Appearance", "Round glasses, warm brown skin, short curls"], ["wardrobe", "Wardrobe", "Red jacket with a silver compass"], ["props", "Props", "Brass compass and canvas satchel"]].map(([field, label, placeholder]) => /* @__PURE__ */ React.createElement("label", { key: field, className: field === "appearance" || field === "wardrobe" || field === "props" ? "sm:col-span-2" : "" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-bold text-slate-500 mb-1" }, label), field === "name" || field === "aliases" || field === "role" ? /* @__PURE__ */ React.createElement("input", { value: reference[field] || "", onChange: (e) => updateContinuityReference(reference.id, field, e.target.value), placeholder, className: "w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700", "aria-label": ta("a11y.storyforge_aria_cast_reference").replace("{0}", label.toLowerCase()) }) : /* @__PURE__ */ React.createElement("textarea", { value: reference[field] || "", onChange: (e) => updateContinuityReference(reference.id, field, e.target.value), placeholder, className: "w-full h-14 px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700 resize-y", "aria-label": ta("a11y.storyforge_aria_cast_reference").replace("{0}", label.toLowerCase()) }))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 rounded-lg border border-purple-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-end gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-bold text-slate-500 mb-1" }, ta("a11y.storyforge_ui_reference_art_url")), /* @__PURE__ */ React.createElement("input", { type: "url", value: reference.imageUrl || "", onChange: (e) => updateContinuityReference(reference.id, "imageUrl", e.target.value), placeholder: "https://...", className: "w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700", "aria-label": ta("a11y.storyforge_aria_cast_reference_art_url").replace("{0}", referenceIndex + 1) })), /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100 cursor-pointer" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " Upload art", /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*", className: "sr-only", onChange: (e) => handleContinuityReferenceImage(reference.id, e), "aria-label": ta("a11y.storyforge_aria_upload_cast_reference_art").replace("{0}", referenceIndex + 1) })), reference.imageUrl && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateContinuityReference(reference.id, "imageUrl", ""), className: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100", "aria-label": ta("a11y.storyforge_aria_remove_cast_reference_art").replace("{0}", referenceIndex + 1) }, /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" }), " Remove art")), safeImageUrl(reference.imageUrl) && /* @__PURE__ */ React.createElement("img", { src: safeImageUrl(reference.imageUrl), alt: `Reference art for ${reference.name || "cast " + (referenceIndex + 1)}`, className: "mt-2 h-20 w-20 rounded-md border border-purple-100 object-cover" })))))))), layoutMode === "comic" && comicContinuityAudit && /* @__PURE__ */ React.createElement("div", { "data-sf-continuity-audit": true, className: "mt-4 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-cyan-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_continuity_audit")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicContinuityAudit.referenceCount ? comicContinuityAudit.usedReferenceCount + "/" + comicContinuityAudit.referenceCount + " cast references surfaced" : "Add cast references to check speaker continuity", comicContinuityAudit.issueCount ? " - " + comicContinuityAudit.issueCount + " review note" + (comicContinuityAudit.issueCount === 1 ? "" : "s") : "")), /* @__PURE__ */ React.createElement("span", { className: "self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase " + (comicContinuityAudit.status === "Clear" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700") }, comicContinuityAudit.status)), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] leading-relaxed text-slate-600" }, comicContinuityAudit.summary), comicContinuityAudit.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" }, comicContinuityAudit.rows.map((row) => {
+  ].map(({ field, label, placeholder }) => /* @__PURE__ */ React.createElement("label", { key: field, className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, label), /* @__PURE__ */ React.createElement("textarea", { value: comicContinuity[field] || "", onChange: (e) => updateComicContinuity(field, e.target.value), placeholder, className: "w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none", "aria-label": ta("a11y.storyforge_aria_comic_continuity").replace("{0}", label.toLowerCase()) })))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-purple-100 pt-4", "data-sf-cast-references": true }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest" }, ta("a11y.storyforge_ui_cast_references")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, ta("a11y.storyforge_ui_lock_recurring_appearance_wardrobe_props_and"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addContinuityReference, className: "px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100", "aria-label": ta("a11y.storyforge_attr_add_cast_reference") }, /* @__PURE__ */ React.createElement(Plus, { size: 12, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_add_cast"))), comicContinuity.references.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-dashed border-purple-200 bg-purple-50/30 p-3 text-[11px] text-slate-500" }, ta("a11y.storyforge_ui_add_a_cast_reference_when_a")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, comicContinuity.references.map((reference, referenceIndex) => /* @__PURE__ */ React.createElement("div", { key: reference.id, className: "rounded-xl border border-purple-100 bg-purple-50/30 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-purple-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_cast").replace("{0}", referenceIndex + 1)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeContinuityReference(reference.id), className: "p-1 rounded-md text-rose-800 hover:bg-rose-50", "aria-label": ta("a11y.storyforge_aria_remove_cast_reference").replace("{0}", referenceIndex + 1), title: ta("a11y.storyforge_attr_remove_cast_reference") }, /* @__PURE__ */ React.createElement(Trash2, { size: 13, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, [["name", "Name", "Mina"], ["aliases", "Also known as", "Min, Captain M"], ["role", "Role", "Explorer"], ["appearance", "Appearance", "Round glasses, warm brown skin, short curls"], ["wardrobe", "Wardrobe", "Red jacket with a silver compass"], ["props", "Props", "Brass compass and canvas satchel"]].map(([field, label, placeholder]) => /* @__PURE__ */ React.createElement("label", { key: field, className: field === "appearance" || field === "wardrobe" || field === "props" ? "sm:col-span-2" : "" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-bold text-slate-500 mb-1" }, label), field === "name" || field === "aliases" || field === "role" ? /* @__PURE__ */ React.createElement("input", { value: reference[field] || "", onChange: (e) => updateContinuityReference(reference.id, field, e.target.value), placeholder, className: "w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700", "aria-label": ta("a11y.storyforge_aria_cast_reference").replace("{0}", label.toLowerCase()) }) : /* @__PURE__ */ React.createElement("textarea", { value: reference[field] || "", onChange: (e) => updateContinuityReference(reference.id, field, e.target.value), placeholder, className: "w-full h-14 px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700 resize-y", "aria-label": ta("a11y.storyforge_aria_cast_reference").replace("{0}", label.toLowerCase()) }))), /* @__PURE__ */ React.createElement("div", { className: "sm:col-span-2 rounded-lg border border-purple-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-end gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-bold text-slate-500 mb-1" }, ta("a11y.storyforge_ui_reference_art_url")), /* @__PURE__ */ React.createElement("input", { type: "url", value: reference.imageUrl || "", onChange: (e) => updateContinuityReference(reference.id, "imageUrl", e.target.value), placeholder: "https://...", className: "w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700", "aria-label": ta("a11y.storyforge_aria_cast_reference_art_url").replace("{0}", referenceIndex + 1) })), /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100 cursor-pointer" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " Upload art", /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*", className: "sr-only", onChange: (e) => handleContinuityReferenceImage(reference.id, e), "aria-label": ta("a11y.storyforge_aria_upload_cast_reference_art").replace("{0}", referenceIndex + 1) })), window.AlloModules?.ResourceImageInput && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer" }, "Upload or draw reference art"), React.createElement(window.AlloModules.ResourceImageInput, { key: SAVE_KEY + ":" + reference.id, label: reference.name || "Character reference", value: reference.imageUrl || "", scene: reference.whiteboardScene, onApply: (result) => {
+    const current = authoredImagesRef.current.comicContinuity.references.find((item) => item.id === reference.id);
+    if (authoredImagesRef.current.saveKey !== SAVE_KEY || !current || (current.imageUrl || "") !== (reference.imageUrl || "")) return false;
+    setComicContinuity((previous) => ({ ...previous, references: previous.references.map((item) => item.id === reference.id ? { ...item, imageUrl: result.dataUrl, whiteboardScene: result.scene || null } : item) }));
+    setIsDirty(true);
+    return true;
+  } })), reference.imageUrl && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateContinuityReference(reference.id, "imageUrl", ""), className: "inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100", "aria-label": ta("a11y.storyforge_aria_remove_cast_reference_art").replace("{0}", referenceIndex + 1) }, /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" }), " Remove art")), safeImageUrl(reference.imageUrl) && /* @__PURE__ */ React.createElement("img", { src: safeImageUrl(reference.imageUrl), alt: `Reference art for ${reference.name || "cast " + (referenceIndex + 1)}`, className: "mt-2 h-20 w-20 rounded-md border border-purple-100 object-cover" })))))))), layoutMode === "comic" && comicContinuityAudit && /* @__PURE__ */ React.createElement("div", { "data-sf-continuity-audit": true, className: "mt-4 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-cyan-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_continuity_audit")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1" }, comicContinuityAudit.referenceCount ? comicContinuityAudit.usedReferenceCount + "/" + comicContinuityAudit.referenceCount + " cast references surfaced" : "Add cast references to check speaker continuity", comicContinuityAudit.issueCount ? " - " + comicContinuityAudit.issueCount + " review note" + (comicContinuityAudit.issueCount === 1 ? "" : "s") : "")), /* @__PURE__ */ React.createElement("span", { className: "self-start sm:self-auto rounded-full border px-2.5 py-1 text-[10px] font-black uppercase " + (comicContinuityAudit.status === "Clear" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700") }, comicContinuityAudit.status)), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] leading-relaxed text-slate-600" }, comicContinuityAudit.summary), comicContinuityAudit.rows.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" }, comicContinuityAudit.rows.map((row) => {
     const target = row.panelTargets?.[0];
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -9338,7 +9372,21 @@ show();
       className: "w-full text-sm p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-300 resize-none h-20",
       "aria-label": t("a11y.image_gen_prompt")
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => confirmIllustration(), className: "px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }), " Generate Image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPromptPreview(null), className: "px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors" }, "Cancel"))), paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, id: `sf-illustrate-${p.id}`, tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 mb-1" }, layoutMode === "comic" ? "Panel" : "Scene", " ", idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, p.text || p.scaffoldFrame || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-500" }, ta("a11y.storyforge_ui_no_draft_text_yet"))), illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-purple-700 italic truncate", title: illustrations[p.id].prompt }, "Prompt: ", illustrations[p.id].prompt.substring(0, 80), "..."), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => confirmIllustration(), className: "px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }), " Generate Image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPromptPreview(null), className: "px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors" }, "Cancel"))), paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, id: `sf-illustrate-${p.id}`, tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 mb-1" }, layoutMode === "comic" ? "Panel" : "Scene", " ", idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, p.text || p.scaffoldFrame || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-500" }, ta("a11y.storyforge_ui_no_draft_text_yet"))), window.AlloModules?.ResourceImageInput && /* @__PURE__ */ React.createElement("details", { className: "my-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer font-bold" }, "Upload or draw an illustration"), React.createElement(window.AlloModules.ResourceImageInput, {
+    key: SAVE_KEY + ":" + p.id,
+    label: "Scene " + (idx + 1),
+    disabled: isProcessing || !!illustrations[p.id]?.isLoading,
+    value: illustrations[p.id]?.imageUrl || "",
+    alt: illustrations[p.id]?.altText || "",
+    scene: illustrations[p.id]?.whiteboardScene,
+    onApply: (result) => {
+      const current = authoredImagesRef.current;
+      if (current.saveKey !== SAVE_KEY || current.illustrations[p.id]?.isLoading || !current.paragraphs.some((item) => item.id === p.id && item.text === p.text) || (current.illustrations[p.id]?.imageUrl || "") !== (illustrations[p.id]?.imageUrl || "")) return false;
+      setIllustrations((previous) => ({ ...previous, [p.id]: { ...previous[p.id], imageUrl: result.dataUrl, altText: result.alt, whiteboardScene: result.scene || null, isLoading: false, error: false } }));
+      setIsDirty(true);
+      return true;
+    }
+  })), illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-purple-700 italic truncate", title: illustrations[p.id].prompt }, "Prompt: ", illustrations[p.id].prompt.substring(0, 80), "..."), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9349,7 +9397,7 @@ show();
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
     " Draft Art Prompt"
-  )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto shrink-0", style: { width: "100%", maxWidth: clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth) } }, illustrations[p.id]?.isLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : illustrations[p.id]?.imageUrl ? /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Illustration ${idx + 1}`, className: "w-full rounded-xl shadow-md border border-purple-100" }), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" }, illustrations[p.id]?.previousImageUrl && /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto shrink-0", style: { width: "100%", maxWidth: clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth) } }, illustrations[p.id]?.isLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : illustrations[p.id]?.imageUrl ? /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: illustrations[p.id].altText || `Illustration ${idx + 1}`, className: "w-full rounded-xl shadow-md border border-purple-100" }), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" }, illustrations[p.id]?.previousImageUrl && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9745,7 +9793,7 @@ show();
       /* @__PURE__ */ React.createElement("span", null, issue.label),
       target && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-black text-rose-600" }, ta("a11y.storyforge_ui_panel").replace("{0}", target.number))
     );
-  }))))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-800" }, "Every page clears the current art, lettering, accessibility, pacing, and print checks.")), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: "Artifact cover art", className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || (artifactType === "comic" ? "My Comic" : "My Story")), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, genreLabel(genre) || "Creative Writing", " \xB7 ", vocabTerms.length, " ", ta("a11y.storyforge_ui_vocabulary_terms"))), layoutMode === "comic" ? (
+  }))))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-800" }, "Every page clears the current art, lettering, accessibility, pacing, and print checks.")), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: coverArtwork?.altText || "Artifact cover art", className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || (artifactType === "comic" ? "My Comic" : "My Story")), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, genreLabel(genre) || "Creative Writing", " \xB7 ", vocabTerms.length, " ", ta("a11y.storyforge_ui_vocabulary_terms"))), layoutMode === "comic" ? (
     /* Page-aware Comic Preview */
     /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "sf-page-navigator bg-slate-950 text-white px-3 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black uppercase tracking-widest" }, "Page ", focusedComicPreviewPage?.page || 1, " of ", comicPageGroups.length, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, ta("a11y.storyforge_ui_follow_the_numbered_panels"))), /* @__PURE__ */ React.createElement("div", { role: "group", className: "flex items-center gap-1.5 max-w-full", "aria-label": ta("a11y.storyforge_attr_comic_preview_page_navigation") }, /* @__PURE__ */ React.createElement(
       "button",
@@ -9795,7 +9843,7 @@ show();
     })()))
   ) : (
     /* ── Prose Layout ── */
-    /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-400 text-lg" }, "\u2014"))))
+    /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: illustrations[p.id].altText || `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-400 text-lg" }, "\u2014"))))
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 16 }), " ", ta("a11y.storyforge_ui_achievements"), earnedCount, "/", achievements.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-2" }, achievements.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: `text-center p-2.5 rounded-xl border-2 transition-all ${a.earned ? "bg-amber-50 border-amber-300 shadow-sm" : "bg-slate-50 border-slate-200 opacity-50"}`, title: ta("a11y.storyforge_ach_" + a.id + "_desc") }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl" }, a.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mt-1" }, ta("a11y.storyforge_ach_" + a.id + "_name")))))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {

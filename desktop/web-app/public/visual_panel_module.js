@@ -294,6 +294,7 @@ async function generateAnimatedPanel(panel, targetWidth = 400, targetQual = 0.8,
 }
 ;
 async function executeVisualPlan(plan, targetWidth = 400, targetQual = 0.8, artStyle = "", signal = null, deps = {}) {
+  if (window.AlloImageGeneration?.isEnabled() === false) return { ...plan, panels: (plan.panels || []).map((panel) => ({ ...panel, imageUrl: null, failed: false })) };
   const {
     callImagen,
     callGeminiImageEdit,

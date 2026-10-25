@@ -104,7 +104,7 @@ describe('Migration Study orbit, anatomical landmarks, and manual wingbeat', () 
     const { engine, flockRoot } = fixture();
     const camera = new THREE.PerspectiveCamera();
     Object.assign(engine, { camera, flockRoot, cameraTarget: new THREE.Vector3(), studyTarget: new THREE.Vector3(), studyOrbit: new THREE.Vector3(), cameraViews: { chase: new THREE.Vector3(0, 5.5, 18) } });
-    const cameraFrame = new Function('engineNow', 'live', 'migrNum', 'reducedMotionRef', 'delta', 'studyBirdIndex', 'migrationStudyDistance', 'speedValues', section('          var desired = engineNow.cameraViews[live.flightCamera]', '          if (engineNow.sunGlow)'));
+    const cameraFrame = new Function('engineNow', 'live', 'migrNum', 'reducedMotionRef', 'delta', 'studyBirdIndex', 'migrationStudyDistance', 'speedValues', 'guidesHidden = false', section('          var desired = engineNow.cameraViews[live.flightCamera]', '          if (engineNow.sunGlow)'));
     const live = { flightCamera: 'study', flightStudyYaw: 90, flightStudyPitch: 0, flightStudyZoom: 1 };
     cameraFrame(engine, live, num, { current: true }, 0.016, 8, model.migrationStudyDistance, flightSpeedValues('canada_goose', 8));
     const target = engine.flyers[8].getWorldPosition(new THREE.Vector3());

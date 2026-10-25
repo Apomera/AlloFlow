@@ -12,10 +12,10 @@ const SOURCE = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_
 
 const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
-    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel'],
-  reptile: ['green_turtle', 'hawksbill_turtle'],
-  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp'],
-  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral'],
+    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'],
+  reptile: ['green_turtle', 'hawksbill_turtle', 'banded_sea_krait'],
+  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid'],
+  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
 const ALL = Object.values(EXPECTED_IDS).flat();
@@ -153,7 +153,7 @@ describe('Reef3DSpecies contract', () => {
       expect(i.depthM[1], id).toBeGreaterThan(i.depthM[0]);
       // Published ecological ranges can extend beyond the simulation's dive
       // depths (Fishes of Australia: forceps fish 145 m, regal angelfish 80 m).
-      const depthCap = { yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100 }[id] || 60;
+      const depthCap = { longfin_bannerfish:75, bigfin_reef_squid:100, yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100, leaf_scorpionfish:135, longnose_hawkfish:100 }[id] || 60;
       expect(i.depthM[1], id).toBeLessThanOrEqual(depthCap);
       if (i.habit === 'school') { expect(i.schoolSize[0], id).toBeGreaterThanOrEqual(2); expect(i.schoolSize[1], id).toBeGreaterThan(i.schoolSize[0]); }
       else expect(i.schoolSize, id).toBeNull();
@@ -386,7 +386,8 @@ describe('Reef3DSpecies growth and health', () => {
   }, SLOW);
 
   it('colours bleached corals white and dead corals as dull skeleton with turf', () => {
-    for (const id of EXPECTED_IDS.coral) {
+    // Tubastraea has no algal symbionts; its healthy/dead states are covered separately.
+    for (const id of EXPECTED_IDS.coral.filter(id => id !== 'orange_cup_coral')) {
       const look = {};
       for (const health of ['healthy', 'bleached', 'dead']) { const h = S.create(THREE, id, { seed: 9, quality: 'low', health }); look[health] = appearance(h.root); h.dispose(); }
       const dist = (p, q) => Math.hypot(p.r - q.r, p.g - q.g, p.b - q.b);

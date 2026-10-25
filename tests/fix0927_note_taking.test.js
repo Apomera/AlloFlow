@@ -143,19 +143,20 @@ describe('N5 and N6: notebook order and printing', () => {
     expect(order).toEqual(['DATED', 'NEWEST', 'MIDDLE', 'OLDEST']);
   });
 
-  it('prints the notebook dialog, not the page behind it', () => {
-    let classDuringPrint = null;
-    const print = vi.fn(() => { classDuringPrint = document.body.classList.contains('nt-print-notebook'); });
+  // Superseded 2026-10-25 (fix1025 lane G): Canvas ignores window.print(), so the notebook prints
+  // its entries' full notes in their own window; tests/fix1025_G_scaffold_views.test.js covers the content.
+  it('prints the notebook in its own window, not the page behind it', () => {
+    const print = vi.fn();
     const original = window.print; window.print = print;
+    const written = [];
+    const popup = { document: { open: vi.fn(), write: html => written.push(html), close: vi.fn() } };
+    vi.spyOn(window, 'open').mockImplementation(() => popup);
     try {
       mount(React.createElement(M.NotebookOverlay, { isOpen: true, t, allowRuntimeAi: false, history: [entry('1', 'A')] }));
-      act(() => [...host.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Print or export notebook as PDF').click());
-      expect(print).toHaveBeenCalledTimes(1);
-      expect(classDuringPrint).toBe(true);
-      expect(host.querySelector('.nt-notebook-print[role="dialog"]')).not.toBeNull();
-      expect(document.getElementById('nt-notebook-print-style').textContent).toContain('body.nt-print-notebook');
-      window.dispatchEvent(new Event('afterprint'));
-      expect(document.body.classList.contains('nt-print-notebook')).toBe(false);
+      act(() => host.querySelector('[data-notebook-print="true"]').click());
+      expect(window.open).toHaveBeenCalledTimes(1);
+      expect(print).not.toHaveBeenCalled();
+      expect(written.join('')).toContain('<h2>A</h2>');
     } finally { window.print = original; }
   });
 });

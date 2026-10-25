@@ -15,6 +15,7 @@ function mountRoutes(initial = {}, callGemini = null) {
   const React = {
     createElement: (type, props, ...children) => ({ type, props: props || {}, children }),
     useRef(value) { const i = cursor++; return refs[i] || (refs[i] = { current: value }); },
+    useId() { const i = cursor++; return refs[i] || (refs[i] = 'route-control-' + i); },
     useEffect() {}, useCallback(fn) { return fn; }, useState(value) { return [value, () => {}]; }
   };
   const ctx = {
@@ -38,7 +39,7 @@ function mountRoutes(initial = {}, callGemini = null) {
   return {
     state: () => ctx.toolData.migration,
     key(key) { walk(tree, (n) => n.type === 'canvas').props.onKeyDown({ key, preventDefault() {} }); },
-    tab(id) { walk(tree, (n) => n.props.id === 'migration-tab-' + id).props.onClick(); },
+    tab(id) { walk(tree, (n) => n.props['data-migration-tab'] === id).props.onClick(); },
     select(label, value) {
       const field = walk(tree, (n) => n.type === 'select' && n.props['aria-label'] === label);
       expect(field, label).toBeTruthy();

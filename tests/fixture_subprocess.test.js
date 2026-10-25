@@ -62,9 +62,11 @@ describe('fixture subprocess reliability', () => {
 
   it('outer time budgets cover capability discovery, rendering and both fixtures', () => {
     const python = readFileSync(resolve(process.cwd(), 'agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py'), 'utf8');
+    const probing = python.slice(python.indexOf('def renderer_capability('), python.indexOf('def find_verapdf_jar('));
+    const capabilitySeconds = Number(probing.match(/timeout=(\d+)/)[1]);
     const rendering = python.slice(python.indexOf('def render_pdf('), python.indexOf('def normalize_verapdf('));
     const rendererSeconds = Number(rendering.match(/timeout=(\d+)/)[1]);
-    expect(PORTABLE_EXPORT_TIMEOUT_MS).toBeGreaterThanOrEqual((20 + rendererSeconds + 20) * 1000);
+    expect(PORTABLE_EXPORT_TIMEOUT_MS).toBeGreaterThanOrEqual((capabilitySeconds + rendererSeconds + 20) * 1000);
     expect(FIXTURE_SUITE_TIMEOUT_MS).toBeGreaterThanOrEqual(2 * PORTABLE_EXPORT_TIMEOUT_MS + 30000);
   });
 });

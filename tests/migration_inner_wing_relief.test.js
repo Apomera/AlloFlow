@@ -176,13 +176,14 @@ describe('Shallow inner-wing relief inside the preserved shoulder rim', () => {
     const bird = model.createMigrationFlyer(THREE, { id }, 0); roots.add(bird); bird.updateMatrixWorld(true);
     const inner = inners(bird), material = inner[0].material, before = resources(bird), [reach, sweep] = dims(id);
     const [oldNodes, oldGeometry, oldMaterial] = legacyResources[id];
-    // Peregrine rings share their bill material; hummingbird surface colors
-    // replace two cheek meshes and their shared geometry/material.
-    const headNodes = id === 'peregrine' ? 1 : id === 'ruby_hummingbird' ? -2 : 0;
-    const headGeometry = id === 'peregrine' ? 1 : id === 'ruby_hummingbird' ? -1 : 0;
+    // Peregrine rings share their bill material. Continuous hummingbird and
+    // crane, tern and Canada Goose head colors replace detached markings.
+    const headNodes = id === 'peregrine' ? 1 : id === 'ruby_hummingbird' ? -2 : id === 'sandhill_crane' ? -3 : id === 'arctic_tern' || id === 'canada_goose' ? -1 : 0;
+    const headGeometry = id === 'peregrine' ? 1 : id === 'ruby_hummingbird' ? -1 : id === 'sandhill_crane' ? -2 : id === 'arctic_tern' || id === 'canada_goose' ? -1 : 0;
+    const headMaterialsRemoved = id === 'ruby_hummingbird' ? 1 : id === 'sandhill_crane' ? 2 : id === 'arctic_tern' || id === 'canada_goose' ? 1 : 0;
     expect(before.nodes).toHaveLength(oldNodes - 2 + headNodes);
     expect(before.geometry).toHaveLength(oldGeometry - 2 + headGeometry);
-    expect(before.material).toHaveLength(oldMaterial - (id === 'ruby_hummingbird' ? 1 : 0));
+    expect(before.material).toHaveLength(oldMaterial - headMaterialsRemoved);
     expect(inner).toHaveLength(2); expect(inner[1].material).toBe(material);
     expect(material.isMeshStandardMaterial).toBe(true); expect(material.vertexColors).toBe(true); expect(material.side).toBe(THREE.DoubleSide);
     expect(material.roughness).toBe(.72);

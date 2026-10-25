@@ -1300,6 +1300,9 @@ const executeOneBlueprint = async (blueprint, ctx) => {
     // Build one from the Blueprint/DNA in that case so dispatcher resources do
     // not fall back to the ambient Universal grade.
     const executionSettingsSnapshot = settingsSnapshot || Object.freeze({
+        ...(blueprint?.globalSettings || {}),
+        nativeLanguageDefaultsVersion: Number(blueprint?.globalSettings?.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+        appLanguage: blueprint?.globalSettings?.appLanguage || blueprint?.globalSettings?.currentUiLanguage || 'English',
         gradeLevel: executionInstructionalContext.instructionalGrade || lessonDNA.grade || '',
         standardsInput: (executionStandardsContext && executionStandardsContext.promptText) || lessonDNA.standard || '',
         standardsContext: executionStandardsContext,
@@ -1377,6 +1380,13 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             variantResults: []
         });
         const stepConfig = Object.assign({}, executionSettingsSnapshot.generationOptions || {}, {
+            nativeLanguageDefaultsVersion: Number(executionSettingsSnapshot.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+            appLanguage: executionSettingsSnapshot.appLanguage || executionSettingsSnapshot.currentUiLanguage || 'English',
+            effectiveLanguageList: executionSettingsSnapshot.effectiveLanguageList,
+            requestedOutputLanguage: executionSettingsSnapshot.language || executionSettingsSnapshot.leveledTextLanguage,
+            currentUiLanguage: executionSettingsSnapshot.currentUiLanguage || executionSettingsSnapshot.appLanguage || 'English',
+            translationMode: executionSettingsSnapshot.translationMode || 'auto',
+            selectedLanguages: Array.isArray(executionSettingsSnapshot.selectedLanguages) ? executionSettingsSnapshot.selectedLanguages.slice() : [],
             customInstructions: [aiDirective, reviewedCustomInstructions]
                 .map(value => String(value || '').trim()).filter(Boolean).join(' '),
             toolOverrides: reviewedToolOverrides,
@@ -1869,15 +1879,23 @@ const handleExecuteBlueprint = async (deps) => {
         ? currentGenerationConfigSnapshot.provider : {};
     const _blueprintSettingsSnapshot = Object.freeze({
         ..._reviewedGenerationOptions,
+        nativeLanguageDefaultsVersion: Number(_globalSettings.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+        appLanguage: _globalSettings.appLanguage || _globalSettings.currentUiLanguage || 'English',
+        effectiveLanguageList: Object.freeze(Array.isArray(_globalSettings.effectiveLanguageList)
+            ? _globalSettings.effectiveLanguageList.slice()
+            : (Number(_globalSettings.nativeLanguageDefaultsVersion) >= 1
+                ? window.AlloModules?.TextPipelineHelpers?.allGenerationLanguages?.(_globalSettings.appLanguage || _globalSettings.currentUiLanguage, _globalSettings.selectedLanguages)
+                    || [_globalSettings.appLanguage || _globalSettings.currentUiLanguage || 'English', ...(_globalSettings.selectedLanguages || [])]
+                : ['English', ...(_globalSettings.selectedLanguages || [])])),
         gradeLevel: _blueprintInstructionalContext.instructionalGrade || _globalSettings.gradeLevel || gradeLevel,
         primaryLanguage: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
         language: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
         leveledTextLanguage: _globalSettings.primaryLanguage || _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
         selectedLanguages: Object.freeze(Array.isArray(_globalSettings.selectedLanguages)
             ? _globalSettings.selectedLanguages.slice()
-            : (Array.isArray(selectedLanguages) ? selectedLanguages.slice() : [])),
-        translationMode: _globalSettings.translationMode !== undefined ? _globalSettings.translationMode : translationMode,
-        currentUiLanguage: _globalSettings.currentUiLanguage !== undefined ? _globalSettings.currentUiLanguage : currentUiLanguage,
+            : []),
+        translationMode: _globalSettings.translationMode !== undefined ? _globalSettings.translationMode : 'auto',
+        currentUiLanguage: _globalSettings.currentUiLanguage !== undefined ? _globalSettings.currentUiLanguage : (_globalSettings.appLanguage || 'English'),
         translationTargetChoices: Object.freeze(Array.isArray(_globalSettings.translationTargetChoices) ? _globalSettings.translationTargetChoices.slice() : []),
         resolvedTranslationTarget: _globalSettings.resolvedTranslationTarget === undefined ? null : _globalSettings.resolvedTranslationTarget,
         studentInterests: Array.isArray(_globalSettings.studentInterests)

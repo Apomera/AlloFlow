@@ -258,7 +258,8 @@
         const promise = (async () => {
             try {
                 _fireProgress('Loading Piper TTS library', 0.05);
-                const lib = await import(/* webpackIgnore: true */ PIPER_CDN);
+                if (typeof window.__alloLoadVerifiedRuntime !== 'function') throw new Error('Verified Piper runtime delivery is unavailable');
+                const lib = await window.__alloLoadVerifiedRuntime('piper');
                 if (generation !== _generation) throw _abortError('Piper TTS was disposed while loading');
                 _PiperLib = lib;
                 _fireProgress('Piper library loaded', 0.15);

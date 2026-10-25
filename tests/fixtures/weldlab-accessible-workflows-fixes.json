@@ -1,0 +1,472 @@
+[
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, __alloT('stem.weldlab.2_test_it'",
+    "new": "h('div', { id: 'hi-inquiry-log-title', className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, __alloT('stem.weldlab.2_test_it'"
+  },
+  {
+    "owner": "root",
+    "old": ": h('div', { className: 'overflow-x-auto' },\n                        h('table', { className: 'w-full text-xs font-mono' },",
+    "new": ": h('div', { 'data-weld-reference-scroll': 'heat-log', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'hi-inquiry-log-title' },\n                        h('table', { className: 'w-full text-xs font-mono' },"
+  },
+  {
+    "owner": "root",
+    "old": "h('h2', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.arc_cmp_title'",
+    "new": "h('h2', { id: 'arc-compare-title', className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.arc_cmp_title'"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n                  h('table', { className: 'w-full text-sm text-slate-800' },\n                    h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-700' },",
+    "new": "h('div', { 'data-weld-reference-scroll': 'bead-compare', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'arc-compare-title' },\n                  h('table', { className: 'w-full text-sm text-slate-800' },\n                    h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-700' },"
+  },
+  {
+    "owner": "root",
+    "old": "h('summary', { className: 'text-sm font-bold cursor-pointer', style: { minHeight: 44, padding: '10px 0', color: edge } }, __alloT('stem.weldlab.proc7_reference'",
+    "new": "h('summary', { id: 'proc7-reference-summary', className: 'text-sm font-bold cursor-pointer', style: { minHeight: 44, padding: '10px 0', color: edge } }, __alloT('stem.weldlab.proc7_reference'"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n                h('table', { className: 'w-full text-sm' },\n                  h('thead', null,",
+    "new": "h('div', { 'data-weld-reference-scroll': 'process-matrix', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'proc7-reference-summary' },\n                h('table', { className: 'w-full text-sm' },\n                  h('thead', null,"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n                h('table', { className: 'w-full text-sm text-slate-800 border-collapse' },\n                  h('caption', { className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.car2_tbl_caption'",
+    "new": "h('div', { 'data-weld-reference-scroll': 'pathway-earnings', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'car2-earnings-table-caption' },\n                h('table', { className: 'w-full text-sm text-slate-800 border-collapse' },\n                  h('caption', { id: 'car2-earnings-table-caption', className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.car2_tbl_caption'"
+  },
+  {
+    "owner": "root",
+    "old": "h('h4', { className: 'text-base font-black text-slate-900 flex-1' }, '🧾 ' + REPORT_TITLE)",
+    "new": "h('h4', { id: 'insp2-report-title', className: 'text-base font-black text-slate-900 flex-1' }, '🧾 ' + REPORT_TITLE)"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n                h('table', { className: 'w-full text-xs text-slate-800 border-collapse' },\n                  h('thead', null, h('tr', null, REPORT_COLS.map",
+    "new": "h('div', { 'data-weld-reference-scroll': 'inspection-report', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'insp2-report-title' },\n                h('table', { className: 'w-full text-xs text-slate-800 border-collapse' },\n                  h('thead', null, h('tr', null, REPORT_COLS.map"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n              h('table', { className: 'w-full text-sm text-slate-800' },\n                h('caption', { className: 'text-left text-xs text-slate-700 pb-1' }, __alloT('stem.weldlab.safe2_sh_eyes_cap'",
+    "new": "h('div', { 'data-weld-reference-scroll': 'eye-shades', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'safe2-shade-table-caption' },\n              h('table', { className: 'w-full text-sm text-slate-800' },\n                h('caption', { id: 'safe2-shade-table-caption', className: 'text-left text-xs text-slate-700 pb-1' }, __alloT('stem.weldlab.safe2_sh_eyes_cap'"
+  },
+  {
+    "owner": "root",
+    "old": "        var pin = pinState[0], setPin = pinState[1];",
+    "new": "        var pin = pinState[0], setPin = pinState[1];\n        var pinActionRef = useRef(null);"
+  },
+  {
+    "owner": "root",
+    "old": "        function clearPin() {\n          setPin(null);",
+    "new": "        function clearPin() {\n          // The clear control disappears; return to its persistent pin action.\n          if (pinActionRef.current) { try { pinActionRef.current.focus(); } catch (_) {} }\n          setPin(null);"
+  },
+  {
+    "owner": "root",
+    "old": "h('button', { type: 'button', onClick: pinBead, className:",
+    "new": "h('button', { type: 'button', ref: pinActionRef, 'data-weld-bead-pin': '', onClick: pinBead, className:"
+  },
+  {
+    "owner": "root",
+    "old": "        var setRobNotes = robNotesState[1];",
+    "new": "        var setRobNotes = robNotesState[1];\n        var robEvidenceMarkRef = useRef(null);"
+  },
+  {
+    "owner": "root",
+    "old": "h('button', { type: 'button', 'data-rob-job-note': robLens,",
+    "new": "h('button', { ref: robEvidenceMarkRef, type: 'button', 'data-rob-job-note': robLens,"
+  },
+  {
+    "owner": "root",
+    "old": "onClick: function () { var next = Object.assign({}, robNotes); delete next[robJob]; setRobNotes(next); },",
+    "new": "onClick: function () { var next = Object.assign({}, robNotes); delete next[robJob]; setRobNotes(next); if (robEvidenceMarkRef.current) { try { robEvidenceMarkRef.current.focus(); } catch (_) {} } },"
+  },
+  {
+    "old": "        var scFbRef = useRef(null), scPrevRef = useRef(null);\n        var gearFbRef",
+    "new": "        var scFbRef = useRef(null), scPrevRef = useRef(null);\n        var scStepRef = useRef(null), scStepFocusState = useState(0);\n        function focusSafetyScenario() { scStepFocusState[1](function (n) { return n + 1; }); }\n        useEffect(function () {\n          if (scStepFocusState[0] && scStepRef.current) { try { scStepRef.current.focus(); } catch (e) {} }\n        }, [scStepFocusState[0]]);\n        var gearFbRef",
+    "owner": "ppe"
+  },
+  {
+    "old": "                  key: s.id, onClick: function () { setScIdx(i); },\n                  'aria-pressed': sel",
+    "new": "                  key: s.id, onClick: function () { focusSafetyScenario(); setScIdx(i); },\n                  'aria-pressed': sel",
+    "owner": "ppe"
+  },
+  {
+    "old": "                h('h2', { className: 'text-xl font-black text-slate-800' }, sc.title),",
+    "new": "                h('h2', { ref: scStepRef, tabIndex: -1, 'data-ppe-scenario-heading': '', className: 'text-xl font-black text-slate-800 focus:outline-none focus:ring-4 ring-orange-500/40' }, sc.title),",
+    "owner": "ppe"
+  },
+  {
+    "old": "              picked != null && h('div', { ref: scFbRef, tabIndex: -1, className: 'rounded-xl p-3 space-y-2",
+    "new": "              picked != null && h('div', { ref: scFbRef, tabIndex: -1, 'data-ppe-scenario-feedback': '', className: 'rounded-xl p-3 space-y-2",
+    "owner": "ppe"
+  },
+  {
+    "old": "scIdx + 1 < SAFETY_SCENARIOS.length && h('button', { onClick: function () { setScIdx(scIdx + 1); },",
+    "new": "scIdx + 1 < SAFETY_SCENARIOS.length && h('button', { onClick: function () { focusSafetyScenario(); setScIdx(scIdx + 1); },",
+    "owner": "ppe"
+  },
+  {
+    "old": "!ok && h('button', { onClick: function () { setScIdx(i); }, className: 'ml-2 px-2 py-1 rounded-lg border-2 border-orange-700 bg-white text-xs font-bold text-orange-800' }, __alloT('stem.weldlab.safe2_sc_review', 'Review'))",
+    "new": "!ok && h('button', { onClick: function () { focusSafetyScenario(); setScIdx(i); }, 'aria-label': __alloT('stem.weldlab.safe2_sc_review', 'Review') + ': ' + s.title, className: 'ml-2 px-2 py-1 rounded-lg border-2 border-orange-700 bg-white text-xs font-bold text-orange-800' }, __alloT('stem.weldlab.safe2_sc_review', 'Review'))",
+    "owner": "ppe"
+  },
+  {
+    "old": "h('button', { onClick: function () { setScPick({}); setScIdx(0); announce(__alloT('stem.weldlab.safe2_sc_reset_sr'",
+    "new": "h('button', { onClick: function () { focusSafetyScenario(); setScPick({}); setScIdx(0); announce(__alloT('stem.weldlab.safe2_sc_reset_sr'",
+    "owner": "ppe"
+  },
+  {
+    "old": "        var uwLast = uwLastState[0], setUwLast = uwLastState[1];\n        var uwStationState",
+    "new": "        var uwLast = uwLastState[0], setUwLast = uwLastState[1];\n        // Intentional actions may replace their own control. Request the next\n        // prompt/control explicitly; restoring a saved lab never requests focus.\n        var uwPredictionRef = useRef(null), uwDepthControlRef = useRef(null), uwDecisionStartRef = useRef(null);\n        var uwStepFocusState = useState(null);\n        function focusUnderwaterStep(target) { uwStepFocusState[1]({ target: target }); }\n        useEffect(function () {\n          var request = uwStepFocusState[0];\n          if (!request) return;\n          var el = request.target === 'prediction' ? uwPredictionRef.current : request.target === 'decisions' ? uwDecisionStartRef.current :\n            uwDepthControlRef.current && uwDepthControlRef.current.querySelector('input[type=\"range\"]');\n          if (el && el.focus) { try { el.focus(); } catch (e) {} }\n        }, [uwStepFocusState[0]]);\n        var uwStationState",
+    "owner": "ppe"
+  },
+  {
+    "old": "              h('p', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.tech2_uw_pred_q'",
+    "new": "              h('p', { ref: uwPredictionRef, tabIndex: -1, 'data-uw-prediction-prompt': '', className: 'text-sm font-bold text-slate-800 focus:outline-none focus:ring-4 ring-cyan-500/40' }, __alloT('stem.weldlab.tech2_uw_pred_q'",
+    "owner": "ppe"
+  },
+  {
+    "old": "onClick: function () { setUwPredFrom(depth); setUwPred(o.id); announce(",
+    "new": "onClick: function () { focusUnderwaterStep('depth'); setUwPredFrom(depth); setUwPred(o.id); announce(",
+    "owner": "ppe"
+  },
+  {
+    "old": "type: 'button', onClick: function () { setUwPred('skip'); },",
+    "new": "type: 'button', onClick: function () { focusUnderwaterStep('depth'); setUwPred('skip'); },",
+    "owner": "ppe"
+  },
+  {
+    "old": "type: 'button', onClick: function () { setUwPred(''); },",
+    "new": "type: 'button', onClick: function () { focusUnderwaterStep('prediction'); setUwPred(''); },",
+    "owner": "ppe"
+  },
+  {
+    "old": "type: 'button', onClick: function () { setUwDec({}); setUwLast(null); announce(",
+    "new": "type: 'button', onClick: function () { focusUnderwaterStep('decisions'); setUwDec({}); setUwLast(null); announce(",
+    "owner": "ppe"
+  },
+  {
+    "old": "                h('h3', { className: 'text-base font-black text-cyan-900' }, (qi + 1) + '. ' + q.title),",
+    "new": "                h('h3', { ref: qi === 0 ? uwDecisionStartRef : undefined, tabIndex: -1, 'data-uw-decision-heading': qi, className: 'text-base font-black text-cyan-900 focus:outline-none focus:ring-4 ring-cyan-500/40' }, (qi + 1) + '. ' + q.title),",
+    "owner": "ppe"
+  },
+  {
+    "old": "                  ref: function (el) { uwFbRefs.current[qi] = el; }, tabIndex: -1,",
+    "new": "                  ref: function (el) { uwFbRefs.current[qi] = el; }, tabIndex: -1, 'data-uw-decision-feedback': qi,",
+    "owner": "ppe"
+  },
+  {
+    "old": "              uwPred && h(LabeledSlider, {\n                label: __alloT('stem.weldlab.depth', 'Depth'),",
+    "new": "              uwPred && h('div', { ref: uwDepthControlRef, 'data-uw-depth-control': '' }, h(LabeledSlider, {\n                label: __alloT('stem.weldlab.depth', 'Depth'),",
+    "owner": "ppe"
+  },
+  {
+    "old": "                valueColor: 'text-cyan-700'\n              }),\n              uwPred && renderUwWorkshop(),",
+    "new": "                valueColor: 'text-cyan-700'\n              })),\n              uwPred && renderUwWorkshop(),",
+    "owner": "ppe"
+  },
+  {
+    "old": "        var fbRef = useRef(null);\n        var fbPrev = useRef(false);\n        var answeredNow = jq.on && jq.idx < N && jq.ans.length > jq.idx;\n        useEffect(function () {\n          var was = fbPrev.current;\n          fbPrev.current = answeredNow;\n          if (!was && answeredNow && fbRef.current) { try { fbRef.current.focus(); } catch (_) {} }\n        }, [answeredNow, jq.idx]);",
+    "new": "        var fbRef = useRef(null), jqStepRef = useRef(null), jqCatalogRef = useRef(null);\n        var jqFocusState = useState(null);\n        function focusJointStep(target) { jqFocusState[1]({ target: target }); }\n        useEffect(function () {\n          var request = jqFocusState[0];\n          var target = request && (request.target === 'feedback' ? fbRef.current : (request.target === 'catalog' ? jqCatalogRef.current : jqStepRef.current));\n          if (target) { try { target.focus(); } catch (_) {} }\n        }, [jqFocusState[0]]);",
+    "owner": "codes"
+  },
+  {
+    "old": "          upd('proc2_jqOn', true);\n          announce(__alloT('stem.weldlab.sr_joint_matching_quiz_started'",
+    "new": "          upd('proc2_jqOn', true);\n          focusJointStep('step');\n          announce(__alloT('stem.weldlab.sr_joint_matching_quiz_started'",
+    "owner": "codes"
+  },
+  {
+    "old": "          upd('proc2_jqAns', jq.ans.concat([k]));\n          announce(k === it.joint",
+    "new": "          upd('proc2_jqAns', jq.ans.concat([k]));\n          focusJointStep('feedback');\n          announce(k === it.joint",
+    "owner": "codes"
+  },
+  {
+    "old": "          upd('proc2_jqIdx', ni);\n          if (ni >= N)",
+    "new": "          upd('proc2_jqIdx', ni);\n          focusJointStep('step');\n          if (ni >= N)",
+    "owner": "codes"
+  },
+  {
+    "old": "h('h2', { className: 'text-lg font-black text-slate-900 mb-2' }, tierTitle)",
+    "new": "h('h2', { ref: jqStepRef, tabIndex: -1, 'data-joint-step-heading': 'results', className: 'text-lg font-black text-slate-900 mb-2 focus:outline-none focus:ring-4 ring-orange-500' }, tierTitle)",
+    "owner": "codes"
+  },
+  {
+    "old": "h('button', { onClick: function () { upd('proc2_jqOn', false); }, className: linkCls }, __alloT('stem.weldlab.back_to_catalog'",
+    "new": "h('button', { onClick: function () { upd('proc2_jqOn', false); focusJointStep('catalog'); }, className: linkCls }, __alloT('stem.weldlab.back_to_catalog'",
+    "owner": "codes"
+  },
+  {
+    "old": "h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.weldlab.identify_this_joint'",
+    "new": "h('h2', { ref: jqStepRef, tabIndex: -1, 'data-joint-step-heading': 'question', 'aria-describedby': 'proc2-jq-progress', className: 'text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-4 ring-orange-500' }, __alloT('stem.weldlab.identify_this_joint'",
+    "owner": "codes"
+  },
+  {
+    "old": "answered && h('div', { ref: fbRef, tabIndex: -1, className: 'p-3 rounded-lg space-y-1 focus:outline-none focus:ring-2 ring-orange-500/40 '",
+    "new": "answered && h('div', { ref: fbRef, tabIndex: -1, 'data-proc2': 'jq-feedback', className: 'p-3 rounded-lg space-y-1 focus:outline-none focus:ring-2 ring-orange-500/40 '",
+    "owner": "codes"
+  },
+  {
+    "old": "onClick: function () { upd('proc2_jqOn', false); announce(__alloT('stem.weldlab.sr_returned_to_catalog'",
+    "new": "onClick: function () { upd('proc2_jqOn', false); focusJointStep('catalog'); announce(__alloT('stem.weldlab.sr_returned_to_catalog'",
+    "owner": "codes"
+  },
+  {
+    "old": "                h('div', { className: 'text-sm font-bold text-slate-700' },\n                  __alloFill(__alloT('stem.weldlab.proc2_jq_progress'",
+    "new": "                h('div', { id: 'proc2-jq-progress', className: 'text-sm font-bold text-slate-700' },\n                  __alloFill(__alloT('stem.weldlab.proc2_jq_progress'",
+    "owner": "codes"
+  },
+  {
+    "old": "h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, __alloT('stem.weldlab.the_five_fundamental_joint_configurati'",
+    "new": "h('h2', { ref: jqCatalogRef, tabIndex: -1, 'data-joint-step-heading': 'catalog', className: 'text-lg font-black text-stone-900 mb-2 focus:outline-none focus:ring-4 ring-orange-500' }, __alloT('stem.weldlab.the_five_fundamental_joint_configurati'",
+    "owner": "codes"
+  },
+  {
+    "old": "        var sortFbRef = useRef(null);\n        var sortPrevRef",
+    "new": "        var sortStepRef = useRef(null), clauseStepRef = useRef(null);\n        var codesStepFocusState = useState(null);\n        function focusCodesStep(target) { codesStepFocusState[1]({ target: target }); }\n        useEffect(function () {\n          var request = codesStepFocusState[0];\n          var target = request && (request.target === 'sort' ? sortStepRef.current : clauseStepRef.current);\n          if (target) { try { target.focus(); } catch (_) {} }\n        }, [codesStepFocusState[0]]);\n        var sortFbRef = useRef(null);\n        var sortPrevRef",
+    "owner": "codes"
+  },
+  {
+    "old": "h('span', null, __alloFill(__alloT('stem.weldlab.insp2_card_of', 'Card {value1} of {value2}'), { value1: sortIdx + 1",
+    "new": "h('span', { id: 'codes-sort-progress' }, __alloFill(__alloT('stem.weldlab.insp2_card_of', 'Card {value1} of {value2}'), { value1: sortIdx + 1",
+    "owner": "codes"
+  },
+  {
+    "old": "h('p', { className: 'text-base font-bold text-slate-900' }, txt.t),\n              renderChangeBench(card.id)",
+    "new": "h('h4', { ref: sortStepRef, tabIndex: -1, 'data-codes-step-heading': 'sort', 'aria-describedby': 'codes-sort-progress', className: 'text-base font-bold text-slate-900 focus:outline-none focus:ring-4 ring-orange-400' }, txt.t),\n              renderChangeBench(card.id)",
+    "owner": "codes"
+  },
+  {
+    "old": "sortAnswered && h('section', { ref: sortFbRef, tabIndex: -1, className:",
+    "new": "sortAnswered && h('section', { ref: sortFbRef, tabIndex: -1, 'data-codes-feedback': 'sort', className:",
+    "owner": "codes"
+  },
+  {
+    "old": "sortIdxState[1](Math.max(0, sortIdx - 1)); }, disabled: sortIdx === 0",
+    "new": "sortIdxState[1](Math.max(0, sortIdx - 1)); focusCodesStep('sort'); }, disabled: sortIdx === 0",
+    "owner": "codes"
+  },
+  {
+    "old": "sortIdxState[1](Math.min(INSP2_SORT.length - 1, sortIdx + 1)); }, disabled: sortIdx === INSP2_SORT.length - 1",
+    "new": "sortIdxState[1](Math.min(INSP2_SORT.length - 1, sortIdx + 1)); focusCodesStep('sort'); }, disabled: sortIdx === INSP2_SORT.length - 1",
+    "owner": "codes"
+  },
+  {
+    "old": "sortState[1]({}); sortIdxState[1](0); announce(__alloT('stem.weldlab.insp2_sr_sreset'",
+    "new": "sortState[1]({}); sortIdxState[1](0); focusCodesStep('sort'); announce(__alloT('stem.weldlab.insp2_sr_sreset'",
+    "owner": "codes"
+  },
+  {
+    "old": "h('span', null, __alloFill(__alloT('stem.weldlab.insp2_task_of', 'Task {value1} of {value2}'), { value1: clauseIdx + 1",
+    "new": "h('span', { id: 'codes-clause-progress' }, __alloFill(__alloT('stem.weldlab.insp2_task_of', 'Task {value1} of {value2}'), { value1: clauseIdx + 1",
+    "owner": "codes"
+  },
+  {
+    "old": "h('section', { className: 'p-4 rounded-2xl bg-white border-4 border-slate-400 shadow' }, h('p', { className: 'text-sm font-semibold text-slate-900' }, q.q))",
+    "new": "h('section', { className: 'p-4 rounded-2xl bg-white border-4 border-slate-400 shadow' }, h('h4', { ref: clauseStepRef, tabIndex: -1, 'data-codes-step-heading': 'clause', 'aria-describedby': 'codes-clause-progress', className: 'text-sm font-semibold text-slate-900 focus:outline-none focus:ring-4 ring-orange-400' }, q.q))",
+    "owner": "codes"
+  },
+  {
+    "old": "clauseAnswered && h('section', { ref: clauseFbRef, tabIndex: -1, className:",
+    "new": "clauseAnswered && h('section', { ref: clauseFbRef, tabIndex: -1, 'data-codes-feedback': 'clause', className:",
+    "owner": "codes"
+  },
+  {
+    "old": "clauseIdxState[1](clauseIdx + 1); }, className: BTN_GO",
+    "new": "clauseIdxState[1](clauseIdx + 1); focusCodesStep('clause'); }, className: BTN_GO",
+    "owner": "codes"
+  },
+  {
+    "old": "clauseState[1]({}); clauseIdxState[1](0); announce(__alloT('stem.weldlab.insp2_sr_qreset'",
+    "new": "clauseState[1]({}); clauseIdxState[1](0); focusCodesStep('clause'); announce(__alloT('stem.weldlab.insp2_sr_qreset'",
+    "owner": "codes"
+  },
+  {
+    "old": "          announce(__alloT('stem.weldlab.sym2_ann_pr_reset', 'Practice reset. Score cleared.'));",
+    "new": "          announce(__alloT('stem.weldlab.sym2_ann_pr_reset', 'Practice reset. Score cleared.'));\n          requestFocus('sym2-pr-context');",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('p', { className: 'text-sm text-slate-800 italic' }, current.context)",
+    "new": "h('p', { id: 'sym2-pr-context', tabIndex: -1, className: 'text-sm text-slate-800 italic focus:outline-none focus:ring-2 ring-orange-500/40' }, current.context)",
+    "owner": "symbols"
+  },
+  {
+    "old": "type: 'button', onClick: function () { prIdxState[1](challengeIdx + 1); announce(__alloFill(__alloT('stem.weldlab.sr_challenge_loaded', 'Challenge {value1} loaded'), { value1: challengeIdx + 2 })); },",
+    "new": "type: 'button', onClick: function () { prIdxState[1](challengeIdx + 1); announce(__alloFill(__alloT('stem.weldlab.sr_challenge_loaded', 'Challenge {value1} loaded'), { value1: challengeIdx + 2 })); requestFocus('sym2-pr-context'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "          announce(__alloFill(__alloT('stem.weldlab.sym2_ann_b_item', 'Build {value1} of {value2}.'), { value1: i + 1, value2: SYM2_BUILD_ITEMS.length }));",
+    "new": "          announce(__alloFill(__alloT('stem.weldlab.sym2_ann_b_item', 'Build {value1} of {value2}.'), { value1: i + 1, value2: SYM2_BUILD_ITEMS.length }));\n          requestFocus('sym2-b-order');",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('p', { className: 'text-base font-bold text-slate-900' }, bItem.words)",
+    "new": "h('p', { id: 'sym2-b-order', tabIndex: -1, className: 'text-base font-bold text-slate-900 focus:outline-none focus:ring-2 ring-orange-500/40' }, bItem.words)",
+    "owner": "symbols"
+  },
+  {
+    "old": "        var entryDeskState = useState({ left: 0, right: 1, focus: 'all' });",
+    "new": "        var entryDeskState = useState({ left: 0, right: 1, focus: 'all' });\n        var pathFocusState = useState(null);\n        useEffect(function () {\n          var request = pathFocusState[0];\n          if (!request) return;\n          try { var target = document.getElementById(request.id); if (target && target.focus) target.focus(); } catch (_) {}\n        }, [pathFocusState[0]]);\n        function requestPathFocus(id) { pathFocusState[1]({ id: id }); }",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.car2_pred_title', 'Step 1 — predict before you look'))",
+    "new": "h('h3', { id: 'car2-pred-title', tabIndex: -1, className: 'text-base font-black text-slate-800 focus:outline-none focus:ring-2 ring-orange-500/40' }, __alloT('stem.weldlab.car2_pred_title', 'Step 1 — predict before you look'))",
+    "owner": "symbols"
+  },
+  {
+    "old": "onClick: function () { setPredRaw(null); announce(__alloT('stem.weldlab.car2_sr_pred_reset', 'Predictions cleared.')); },",
+    "new": "onClick: function () { setPredRaw(null); announce(__alloT('stem.weldlab.car2_sr_pred_reset', 'Predictions cleared.')); requestPathFocus('car2-pred-title'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.car2_earn_title', 'Earnings + debt explorer'))",
+    "new": "h('h3', { id: 'car2-earn-title', tabIndex: -1, className: 'text-base font-black text-slate-800 focus:outline-none focus:ring-2 ring-orange-500/40' }, __alloT('stem.weldlab.car2_earn_title', 'Earnings + debt explorer'))",
+    "owner": "symbols"
+  },
+  {
+    "old": "        function moveLad(from, to) {",
+    "new": "        function moveLad(from, to, direction) {",
+    "owner": "symbols"
+  },
+  {
+    "old": "          if (ladChecked) setLadChecked(false);\n          announce(__alloFill(__alloT('stem.weldlab.car2_sr_moved'",
+    "new": "          if (ladChecked) setLadChecked(false);\n          if (direction) {\n            var nextDirection = direction === 'up' && to === 0 ? 'down' : direction === 'down' && to === ladder.length - 1 ? 'up' : direction;\n            requestPathFocus('car2-lad-' + ladder[from] + '-' + nextDirection);\n          }\n          announce(__alloFill(__alloT('stem.weldlab.car2_sr_moved'",
+    "owner": "symbols"
+  },
+  {
+    "old": "                    disabled: i === 0, onClick: function () { moveLad(i, i - 1); },",
+    "new": "                    id: 'car2-lad-' + id + '-up', disabled: i === 0, onClick: function () { moveLad(i, i - 1, 'up'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "                    disabled: i === ladder.length - 1, onClick: function () { moveLad(i, i + 1); },",
+    "new": "                    id: 'car2-lad-' + id + '-down', disabled: i === ladder.length - 1, onClick: function () { moveLad(i, i + 1, 'down'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "onClick: function () { setLocalView('earnings'); announce(__alloT('stem.weldlab.car2_tab_earn', '2. Earnings + debt')); },",
+    "new": "onClick: function () { setLocalView('earnings'); announce(__alloT('stem.weldlab.car2_tab_earn', '2. Earnings + debt')); requestPathFocus(pred.shown ? 'car2-earn-title' : 'car2-pred-title'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "                  onClick: function () { setLadRefOpen(true); },",
+    "new": "                  onClick: function () { setLadRefOpen(true); requestPathFocus('car2-ladder-reference'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.welding_career_ladder_typical_progress', 'Welding career ladder — typical progression'))",
+    "new": "h('h3', { id: 'car2-ladder-reference', tabIndex: -1, className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 focus:outline-none focus:ring-2 ring-orange-500/40' }, __alloT('stem.weldlab.welding_career_ladder_typical_progress', 'Welding career ladder — typical progression'))",
+    "owner": "symbols"
+  },
+  {
+    "old": "        var storyAgeState = useState(18);",
+    "new": "        var storyAgeState = useState(18);\n        var storyFocusState = useState(null);\n        useEffect(function () {\n          var request = storyFocusState[0];\n          if (!request) return;\n          try { var target = document.getElementById(request.id); if (target && target.focus) target.focus(); } catch (_) {}\n        }, [storyFocusState[0]]);\n        function requestStoryFocus(id) { storyFocusState[1]({ id: id }); }",
+    "owner": "symbols"
+  },
+  {
+    "old": "        function resetQuiz() { setQWant(null); setQSchool(null); setQPlace(null); }",
+    "new": "        function resetQuiz() { setQWant(null); setQSchool(null); setQPlace(null); requestStoryFocus('story-fit-want'); }",
+    "owner": "symbols"
+  },
+  {
+    "old": "        function questionBlock(title, opts, value, setter) {\n          return h('div', { className: 'space-y-2' },\n            h('h4', { className: 'text-sm font-bold text-fuchsia-900' }, title),\n            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },",
+    "new": "        function questionBlock(id, title, opts, value, setter) {\n          return h('div', { className: 'space-y-2' },\n            h('h4', { id: id, tabIndex: -1, className: 'text-sm font-bold text-fuchsia-900 focus:outline-none focus:ring-2 ring-fuchsia-500/40' }, title),\n            h('div', { role: 'radiogroup', 'aria-labelledby': id, onKeyDown: radioGroupKeys, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },",
+    "owner": "symbols"
+  },
+  {
+    "old": "                  key: o.id,\n                  onClick: function() { setter(o.id); announce(o.label); },\n                  'aria-pressed': sel ? 'true' : 'false',",
+    "new": "                  key: o.id, type: 'button', role: 'radio',\n                  onClick: function() { setter(o.id); announce(o.label); },\n                  'aria-checked': sel ? 'true' : 'false',",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('div', { className: 'text-sm font-bold text-slate-800' }, (sel ? '● ' : '○ ') + o.label)",
+    "new": "h('div', { className: 'text-sm font-bold text-slate-800' }, h('span', { 'aria-hidden': true }, sel ? '● ' : '○ '), o.label)",
+    "owner": "symbols"
+  },
+  {
+    "old": "questionBlock(__alloT('stem.weldlab.car2_fit_q1'",
+    "new": "questionBlock('story-fit-want', __alloT('stem.weldlab.car2_fit_q1'",
+    "owner": "symbols"
+  },
+  {
+    "old": "questionBlock(__alloT('stem.weldlab.car2_fit_q2'",
+    "new": "questionBlock('story-fit-school', __alloT('stem.weldlab.car2_fit_q2'",
+    "owner": "symbols"
+  },
+  {
+    "old": "              questionBlock(__alloT('stem.weldlab.car2_fit_q3', '3. Where do you want to work?'), placeOpts, qPlace, setQPlace),",
+    "new": "              questionBlock('story-fit-place', __alloT('stem.weldlab.car2_fit_q3', '3. Where do you want to work?'), placeOpts, qPlace, setQPlace),\n              h('div', { role: 'status', 'aria-atomic': 'true', 'data-career-fit-status': '', className: 'sr-only' }, quizComplete ? __alloT('stem.weldlab.your_top_matches', '🎯 Your top matches') + ': ' + matches.map(function (match) { return storyName(match.id) + ', ' + __alloFill(__alloT('stem.weldlab.car2_fit_score', 'match: {value1}/7'), { value1: match.sc }); }).join('; ') : ''),",
+    "owner": "symbols"
+  },
+  {
+    "old": "onClick: function() { setIdx(m.i); setMode('browse'); announce(__alloFill(__alloT('stem.weldlab.sr_showing', 'Showing {value1}'), { value1: st.name })); },",
+    "new": "onClick: function() { setIdx(m.i); setMode('browse'); announce(__alloFill(__alloT('stem.weldlab.sr_showing', 'Showing {value1}'), { value1: st.name })); requestStoryFocus('story-profile-title'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "h('div', { className: 'text-xl font-black text-fuchsia-900' }, __alloFill(__alloT('stem.weldlab.car2_cs_name_age', '{value1}, age {value2}'), { value1: s.name, value2: s.age }))",
+    "new": "h('h3', { id: 'story-profile-title', tabIndex: -1, className: 'text-xl font-black text-fuchsia-900 focus:outline-none focus:ring-2 ring-fuchsia-500/40' }, __alloFill(__alloT('stem.weldlab.car2_cs_name_age', '{value1}, age {value2}'), { value1: s.name, value2: s.age }))",
+    "owner": "symbols"
+  },
+  {
+    "old": "onClick: function () { setCmp([idx, idx === 0 ? 1 : 0]); setMode('compare'); announce(__alloT('stem.weldlab.car2_cs_tab_cmp', '⚖ Compare two')); },",
+    "new": "onClick: function () { setCmp([idx, idx === 0 ? 1 : 0]); setMode('compare'); announce(__alloT('stem.weldlab.car2_cs_tab_cmp', '⚖ Compare two')); requestStoryFocus('car2-cmp-0'); },",
+    "owner": "symbols"
+  },
+  {
+    "old": "        var roadChoice = car2RoadNorm(roadChoiceState[0]), setRoadChoice = roadChoiceState[1];\n        // Inspection state",
+    "new": "        var roadChoice = car2RoadNorm(roadChoiceState[0]), setRoadChoice = roadChoiceState[1];\n        var roadPickerRef = useRef(null), roadHeadingRef = useRef(null), roadFirstDecisionRef = useRef(null);\n        var roadFocusState = useState(null);\n        function focusRoadmapStep(target) { roadFocusState[1]({ target: target }); }\n        useEffect(function () {\n          var request = roadFocusState[0];\n          if (!request) return;\n          var el = request.target === 'picker' ? roadPickerRef.current : request.target === 'decision' ? roadFirstDecisionRef.current : roadHeadingRef.current;\n          if (el && el.focus) { try { el.focus(); } catch (e) {} }\n        }, [roadFocusState[0]]);\n        // Inspection state",
+    "owner": "maine"
+  },
+  {
+    "old": "'data-maine-open-route': networkPath, onClick: function () { setRoadPath(networkPath); setMeMode('roadmap'); inspectYearState[1](0); },",
+    "new": "'data-maine-open-route': networkPath, onClick: function () { focusRoadmapStep('route'); setRoadPath(networkPath); setMeMode('roadmap'); inspectYearState[1](0); },",
+    "owner": "maine"
+  },
+  {
+    "old": "            h('div', { className: 'text-sm font-black text-fuchsia-900' }, title),\n            h('div', { role: 'radiogroup', 'aria-label': title, onKeyDown: radioGroupKeys,",
+    "new": "            h('h3', { ref: field === 'd1' ? roadFirstDecisionRef : undefined, tabIndex: -1, 'data-maine-decision-heading': field, className: 'text-sm font-black text-fuchsia-900 focus:outline-none focus:ring-4 ring-fuchsia-500/40' }, title),\n            h('div', { role: 'radiogroup', 'aria-label': title, onKeyDown: radioGroupKeys,",
+    "owner": "maine"
+  },
+  {
+    "old": "h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.car2_me_pick'",
+    "new": "h('p', { ref: roadPickerRef, tabIndex: -1, 'data-maine-roadmap-picker': '', className: 'text-sm text-slate-800 focus:outline-none focus:ring-4 ring-fuchsia-500/40' }, __alloT('stem.weldlab.car2_me_pick'",
+    "owner": "maine"
+  },
+  {
+    "old": "                    key: p.id,\n                    onClick: function() { setRoadPath(p.id); announce(__alloFill(__alloT('stem.weldlab.sr_selected'",
+    "new": "                    key: p.id, 'data-maine-start-path': p.id,\n                    onClick: function() { focusRoadmapStep('route'); setRoadPath(p.id); announce(__alloFill(__alloT('stem.weldlab.sr_selected'",
+    "owner": "maine"
+  },
+  {
+    "old": "h('h2', { className: 'text-xl font-black text-fuchsia-900' }, curRoadmap.icon + ' ' + curRoadmap.title),",
+    "new": "h('h2', { ref: roadHeadingRef, tabIndex: -1, 'data-maine-roadmap-heading': '', className: 'text-xl font-black text-fuchsia-900 focus:outline-none focus:ring-4 ring-fuchsia-500/40' }, curRoadmap.icon + ' ' + curRoadmap.title),",
+    "owner": "maine"
+  },
+  {
+    "old": "onClick: function() { setRoadPath(null); announce(__alloT('stem.weldlab.sr_returned_to_path_picker'",
+    "new": "onClick: function() { focusRoadmapStep('picker'); setRoadPath(null); announce(__alloT('stem.weldlab.sr_returned_to_path_picker'",
+    "owner": "maine"
+  },
+  {
+    "old": "onClick: function () { setRoadChoice(null); announce(__alloT('stem.weldlab.car2_sr_road_reset'",
+    "new": "onClick: function () { focusRoadmapStep('decision'); setRoadChoice(null); announce(__alloT('stem.weldlab.car2_sr_road_reset'",
+    "owner": "maine"
+  },
+  {
+    "owner": "root",
+    "old": "h('div', { className: 'overflow-x-auto' },\n              h('table', { className: 'w-full text-sm border-collapse' },\n                h('caption', { className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.car2_me_grid_cap'",
+    "new": "h('div', { 'data-weld-reference-scroll': 'roadmap-summary', className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-labelledby': 'car2-roadmap-table-caption' },\n              h('table', { className: 'w-full text-sm border-collapse' },\n                h('caption', { id: 'car2-roadmap-table-caption', className: 'text-left text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.car2_me_grid_cap'"
+  },
+  {
+    "owner": "symbols-roving",
+    "old": "        function questionBlock(id, title, opts, value, setter) {\n          return h('div', { className: 'space-y-2' },\n            h('h4', { id: id, tabIndex: -1, className: 'text-sm font-bold text-fuchsia-900 focus:outline-none focus:ring-2 ring-fuchsia-500/40' }, title),\n            h('div', { role: 'radiogroup', 'aria-labelledby': id, onKeyDown: radioGroupKeys, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },\n              opts.map(function(o) {\n                var sel = (value === o.id);\n                return h('button', {\n                  key: o.id, type: 'button', role: 'radio',",
+    "new": "        function questionBlock(id, title, opts, value, setter) {\n          return h('div', { className: 'space-y-2' },\n            h('h4', { id: id, tabIndex: -1, className: 'text-sm font-bold text-fuchsia-900 focus:outline-none focus:ring-2 ring-fuchsia-500/40' }, title),\n            h('div', { role: 'radiogroup', 'aria-labelledby': id, onKeyDown: radioGroupKeys, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },\n              opts.map(function(o, optionIndex) {\n                var sel = (value === o.id);\n                return h('button', {\n                  key: o.id, type: 'button', role: 'radio', tabIndex: sel || (!value && optionIndex === 0) ? 0 : -1,"
+  },
+  {
+    "owner": "root-contrast",
+    "old": "h('details', { className: 'weldlab-setup' },",
+    "new": "h('details', { className: 'weldlab-setup bg-white' },"
+  }
+]

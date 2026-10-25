@@ -6,7 +6,7 @@ import { readPng } from './helpers/png_pixels';
 
 test.use({ video: 'off', trace: 'off', hasTouch: true });
 test.describe.configure({ retries: 0, timeout: 180_000 });
-const report = resolve('reports/avian-simulations-round30-2026-10-22/chorus');
+const report = resolve(process.env.AVIAN_REPORT_DIR ? process.env.AVIAN_REPORT_DIR + '/chorus' : 'reports/avian-simulations-round30-2026-10-22/chorus');
 const root = '[data-birdlab-chorus-study]', timeline = '[data-chorus-timeline]';
 const voices = ['robin', 'chickadee', 'redwingBlackbird', 'bluejay'];
 const eligibility = [[0], [0, 1, 2], [0, 1, 2, 3], [1, 3]];

@@ -6,7 +6,7 @@ import { readPng } from './helpers/png_pixels';
 
 test.use({video:'off',trace:'off',hasTouch:true});
 test.describe.configure({timeout:300000,retries:0});
-const output=resolve('reports/avian-simulations-round32-2026-10-22/raptor');
+const output=resolve(process.env.AVIAN_REPORT_DIR ? process.env.AVIAN_REPORT_DIR + '/camera' : 'reports/avian-simulations-round32-2026-10-22/raptor');
 const probes=`window.AlloPostFXEnabled=false;window.cameraDraws=0;(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const r=new Original({...options,preserveDrawingBuffer:true}),render=r.render.bind(r);r.render=function(scene,camera){window.cameraProbe={scene,camera,renderer:r};window.cameraDraws++;return render(scene,camera);};return r;};})();`;
 const harness=new GlHarness({toolId:'raptorHunt',toolFile:'stem_lab/stem_tool_raptorhunt.js',width:880,height:680,appStyles:true,probes,extraScripts:['node_modules/axe-core/axe.min.js']});
 test.beforeAll(async()=>{mkdirSync(output,{recursive:true});await harness.start();});

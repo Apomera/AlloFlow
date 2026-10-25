@@ -18,7 +18,7 @@ async function mount(page:any,saved:any={}){
  await expect.poll(()=>page.evaluate(()=>!!(window as any).__feedingScene)).toBe(true);
 }
 async function landAt(page:any,name:string){
- await page.getByRole('button',{name:'Visit '+name+' without flying',exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
+ await page.getByRole('button',{name:'Visit without flying · '+name,exact:true}).click();await page.getByRole('button',{name:'Land here',exact:true}).click();
 }
 async function openFeeding(page:any){
  await page.getByRole('button',{name:'Watch feeding & pollination',exact:true}).click();await expect(page.getByRole('region',{name:'Feeding and pollination observation',exact:true})).toBeVisible();
@@ -79,7 +79,7 @@ test('milkweed packets, mixed-plot flowers and mown ground keep feeding tied to 
  const design=page.getByRole('region',{name:'Habitat design activity',exact:true});await design.getByRole('button',{name:/^Keep it mown/}).click();await design.getByRole('combobox',{name:/Predict the resources/}).selectOption('neither');await design.getByRole('button',{name:'Apply habitat plan',exact:true}).click();
  await expect(stage).toHaveAttribute('data-bf-feeding','');expect(await page.evaluate(()=>(window as any).__feedingScene.getObjectByName('feeding-observation').visible)).toBe(false);await page.getByRole('button',{name:'Land here',exact:true}).click();await expect(page.getByRole('button',{name:'Watch feeding & pollination',exact:true})).toBeDisabled();
  await landAt(page,'Mown lawn');await expect(page.getByRole('button',{name:'Watch feeding & pollination',exact:true})).toBeDisabled();
- await landAt(page,'Wild bergamot');await openFeeding(page);await still(page);await page.getByRole('button',{name:'Visit Mown lawn without flying',exact:true}).click();await expect(stage).toHaveAttribute('data-bf-feeding','');expect(await page.evaluate(()=>(window as any).__feedingScene.getObjectByName('feeding-observation').visible)).toBe(false);expect(errors).toEqual([]);
+ await landAt(page,'Wild bergamot');await openFeeding(page);await still(page);await page.getByRole('button',{name:'Visit without flying · Mown lawn',exact:true}).click();await expect(stage).toHaveAttribute('data-bf-feeding','');expect(await page.evaluate(()=>(window as any).__feedingScene.getObjectByName('feeding-observation').visible)).toBe(false);expect(errors).toEqual([]);
 });
 
 test('mobile reduced motion preserves each feeding step and its accessible diagram after context loss',async({page})=>{

@@ -210,7 +210,7 @@ describe('evidence only, checked', () => {
         expect(html.match(/<section class="page">/g)).toHaveLength(2);
         expect(html.match(/For the family of:/g)).toHaveLength(2);
         expect(html).toContain('Reads &lt;b&gt;well&lt;/b&gt;.');
-        expect(html).toContain('<p class="lang">Spanish</p><p>Lee bien.</p>');
+        expect(html).toContain('<p class="lang">Spanish</p><div lang="es"><p>Lee bien.</p></div>');
         expect(html.split('<section')[2]).not.toContain('class="lang"');
         expect(html.match(new RegExp(T.CS_DISCLOSURE.replace(/[.]/g, '[.]'), 'g'))).toHaveLength(2);
         expect(html).not.toMatch(/<script/i);

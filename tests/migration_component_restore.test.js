@@ -384,10 +384,20 @@ describe('Restore one explicitly checked marked view component', () => {
   });
 
   it('cancels an active native gesture and pending revisit before issuing the one-component tuple', () => {
-    const ui = partialReady(), p = pointer(ui); let props = stageProps(ui);
+    const record = { speciesId: 'canada_goose', region: 'head', note: 'Pending revisit fixture.',
+      bird: 0, yaw: 90, pitch: 30, zoom: 1.2, wingStep: 14, paused: true, motionReduced: false };
+    const ui = partialReady({ flightStudyObservationOpen: true, flightStudyRegion: 'head',
+      flightStudyObservations: { records: { 'canada_goose:head': record } } });
+    // Create the pending request through the learner action instead of assuming
+    // the position of a private hook among unrelated transient controls.
+    ui.click(ui.node(node => node.props?.['data-study-revisit'] === 'observation'));
+    const pending = ui.refs.filter(ref => ref.current && ref.current.speciesId === record.speciesId &&
+      ['bird', 'yaw', 'pitch', 'zoom', 'wingStep'].every(key => ref.current[key] === record[key]));
+    expect(pending).toHaveLength(1);
+    const revisit = pending[0];
+    ui.check();
+    const p = pointer(ui); let props = stageProps(ui);
     act(() => { props.onPointerDown(p.event()); }); expect(p.captured).toBe(7);
-    const revisit = ui.refs[ui.refs.indexOf(ui.engineRef) + 3];
-    revisit.current = { speciesId: 'canada_goose', bird: 0, wingStep: ui.live.flightWingStep, yaw: 90, pitch: 30, zoom: 1.2 };
     const count = ui.writes.length; ui.restoreComponent('pitch'); expect(p.captured).toBeNull(); expect(revisit.current).toBeNull();
     props = stageProps(ui); act(() => { props.onPointerUp(p.event({ clientX: 240, clientY: 160 })); });
     expect(ui.writes.slice(count)).toEqual([{ flightStudyYaw: 90, flightStudyPitch: 15, flightStudyZoom: 1.2 }]);

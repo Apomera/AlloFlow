@@ -807,7 +807,10 @@ describe('three-copy sync pins (Phase C sections)', () => {
             const heal = sliceBetween(source, '// Mailbox-bridge roster self-heal', '// Delivery acknowledgment');
             expect(heal).toContain('if (!_alloMbBridgeActive()) return;');
             expect(heal).toContain('sessionData.roster[user.uid]) return;');
-            expect(heal).toContain('[`roster.${user.uid}`]');
+            ['uid', 'name', 'joinedAt', 'status'].forEach(field => {
+                expect(heal).toContain('[`roster.${user.uid}.' + field + '`]');
+            });
+            expect(heal).not.toContain('[`roster.${user.uid}`]');
         });
     });
     it('ships the canonical mailbox server script through the extracted module path', () => {

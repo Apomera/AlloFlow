@@ -136,7 +136,7 @@ describe('immutable review events and private summaries', () => {
     expect(full.review).toEqual({ status: 'new', updated_at: '2023-11-14T22:13:20.400Z', note_count: 2, status_updated_at: events[3].created_at, status_event_id: events[3].id, events });
     expect(events[1].note).toBe('Private synthetic note <script>text</script>');
     expect(kv.store.get(receipt)).toBe(original); expect(kv.store.get(otherReceipt)).toBe(original);
-    expect(kv.put.mock.calls.every(([name, , options]) => name.startsWith(prefix) && !options.expiration && !options.expirationTtl)).toBe(true);
+    expect(kv.put.mock.calls.every(([name, , options]) => name.startsWith(prefix) && options.expiration > 1700000000 && !options.expirationTtl)).toBe(true);
     kv.get.mockClear();
     const list = await (await request('GET', '/bugs', env)).json();
     expect(list.reports.find(report => report.id === receipt).review).toEqual({ status: 'new', updated_at: events[3].created_at, note_count: 2, status_updated_at: events[3].created_at, status_event_id: events[3].id });

@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -50,7 +54,7 @@ describe('Report Writer workflow shell', () => {
         callGemini: vi.fn(async () => '{"results":[]}'),
         addToast: vi.fn(),
         t: tMock,
-        studentNickname: 'Student A',
+        studentNickname: '',
         behaviorLensData: null,
         longitudinalData: null,
         dashboardData: []
@@ -188,6 +192,8 @@ describe('Report Writer workflow shell', () => {
     const importButton = Array.from(host.querySelectorAll('button')).find(button => button.textContent.includes('Import Data'));
     expect(importButton).toBeTruthy();
     await click(importButton);
+    const importConfirmation = host.querySelector('[role="alertdialog"][aria-labelledby="rw-confirm-title"]');
+    if (importConfirmation) await click([...importConfirmation.querySelectorAll('button')].find(button => button.textContent === 'Replace it'));
 
     const violations = [];
     for (let index = 0; index < 10; index += 1) {

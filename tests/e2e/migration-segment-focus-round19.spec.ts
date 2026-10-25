@@ -154,13 +154,13 @@ async function checkSize(locator: Locator) {
 
 test('Selected anatomical outlines and segment notes preserve the fixed view and GPU pool with native keyboard controls', async ({ page }) => {
   await mount(page);
-  await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }));
+  await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }));
   const original = await saved(page), inner = await anatomyAudit(page);
   expectAnatomy(inner, 'inner-wing', 0);
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-inner-wing-focus-stage.png') });
   const describe = page.getByRole('button', { name: 'Describe this wing segment', exact: true });
   await checkSize(describe); await activate(page, describe);
-  const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+  const note = page.getByRole('textbox', { name: 'My observation', exact: true });
   await expect(note).toBeFocused(); await expect(note).toHaveValue(original.flightStudyObservations.drafts['canada_goose:inner-wing']);
   expect(await saved(page)).toEqual({ ...original, flightStudyObservationOpen: true });
   const opened = await anatomyAudit(page); expect(opened.pose).toEqual(inner.pose); expect(opened.positions).toEqual(inner.positions); expect(opened.pool).toEqual(inner.pool);
@@ -168,7 +168,7 @@ test('Selected anatomical outlines and segment notes preserve the fixed view and
   const primary = await anatomyAudit(page); expectAnatomy(primary, 'primaries', 0);
   expect(primary.pose).toEqual(inner.pose); expect(primary.positions).toEqual(inner.positions); expect(primary.pool).toEqual(inner.pool);
   await activate(page, describe); await expect(note).toBeFocused(); await expect(note).toHaveValue(original.flightStudyObservations.drafts['canada_goose:primaries']);
-  await activate(page, page.getByRole('button', { name: 'Follow individual’s right wingtip', exact: true }));
+  await activate(page, page.getByRole('button', { name: 'Individual’s right: dashed path', exact: true }));
   const right = await anatomyAudit(page); expectAnatomy(right, 'primaries', 1);
   expect(right.pose).toEqual(inner.pose); expect(right.pool).toEqual(inner.pool);
   await page.locator('.migration-flight-stage').screenshot({ path: join(report, 'desktop-primary-focus-stage.png') });
@@ -186,7 +186,7 @@ for (const dark of [false, true]) test.describe('Migration segment focus phone '
   test('Touch learners keep the selected segment draft, compare fixed-camera cycle positions and explicitly record their own evidence', async ({ page }) => {
     const stem = 'mobile-' + (dark ? 'dark' : 'light') + '-segment-focus';
     await mount(page, dark);
-    await activate(page, page.getByRole('button', { name: 'Follow individual’s left wingtip', exact: true }), true);
+    await activate(page, page.getByRole('button', { name: 'Individual’s left: solid path', exact: true }), true);
     const original = await saved(page);
     const region = dark ? 'primaries' : 'inner-wing';
     await activate(page, page.locator('[data-study-region="' + region + '"]'), true);
@@ -202,7 +202,7 @@ for (const dark of [false, true]) test.describe('Migration segment focus phone '
     await checkSize(describe); await checkSize(page.locator('[data-study-region="' + region + '"]'));
     await page.locator('[data-followed-anatomy-activity]').screenshot({ path: join(report, stem + '-activity.png') });
     await activate(page, describe, true);
-    const note = page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+    const note = page.getByRole('textbox', { name: 'My observation', exact: true });
     await expect(note).toBeFocused(); await expect(note).toHaveValue(original.flightStudyObservations.drafts['canada_goose:' + region]);
     const beforeWriting = await saved(page);
     expect(beforeWriting.flightStudyRegion).toBe(region); expect(beforeWriting.flightStudyObservations).toEqual(original.flightStudyObservations);

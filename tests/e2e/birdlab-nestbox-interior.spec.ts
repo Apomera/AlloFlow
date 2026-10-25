@@ -6,7 +6,7 @@ import { readPng } from './helpers/png_pixels';
 
 test.use({ video: 'off', trace: 'off', hasTouch: true });
 test.describe.configure({ timeout: 180000, retries: 0 });
-const output = resolve('reports/avian-simulations-round32-2026-10-22/bird');
+const output = resolve(process.env.AVIAN_NESTBOX_REPORT || 'reports/avian-simulations-round32-2026-10-22/bird');
 const root = '[data-nestbox-study]', scene = '[data-box-scene]';
 const harness = new GlHarness({ toolId: 'birdLab', toolFile: 'stem_lab/stem_tool_birdlab.js', preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['node_modules/axe-core/axe.min.js'], width: 1100, height: 1000, appStyles: true, layout: 'document' });
 const specs: Record<string, number[]> = {

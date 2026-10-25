@@ -33,6 +33,38 @@ describe('validation identity', () => {
 
 const { executeValidation, manifest } = require('../dev-tools/remediation_validation.cjs');
 describe('validation run evidence', () => {
+  it('retains an initial summary-publication failure without replaying a stale success', () => {
+    const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), 'remediation-run-evidence-'));
+    const rename = fs.renameSync;
+    let injected = false, runners = 0;
+    try {
+      fs.writeFileSync(path.join(reportDir, 'summary.json'), JSON.stringify({ status: 'passed', testsPassed: 999999 }));
+      fs.renameSync = (from, to) => {
+        if (!injected && to === path.join(reportDir, 'summary.json')) {
+          injected = true;
+          throw Object.assign(new Error('Injected summary publication failure'), { code: 'EIO' });
+        }
+        return rename(from, to);
+      };
+      expect(() => executeValidation({ reportDir,
+        capture: () => ({ inputSha256: { 'source.js': 'unchanged' }, tools: {}, gitHead: 'known' }),
+        run: () => { runners++; },
+      })).toThrow(/Injected summary publication failure/);
+      const summary = JSON.parse(fs.readFileSync(path.join(reportDir, 'summary.json'), 'utf8'));
+      expect(runners).toBe(0);
+      expect(summary.status).toBe('failed');
+      expect(summary.testsPassed).toBeUndefined();
+      expect(summary.error).toContain('Injected summary publication failure');
+      expect(summary.identity.after).toBeTruthy();
+      expect(summary.phases.unit.status).toBe('not-started');
+      expect(summary.phases.browser.status).toBe('not-started');
+    } finally {
+      fs.renameSync = rename;
+      if (path.dirname(reportDir) !== path.resolve(os.tmpdir())) throw new Error('Unexpected scratch path');
+      fs.rmSync(reportDir, { recursive: true, force: true });
+    }
+  });
+
   for (const mode of ['stable', 'drift', 'runner-error', 'setup-error']) it('retains honest evidence for ' + mode, () => {
     const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), 'remediation-run-evidence-'));
     let captures = 0;

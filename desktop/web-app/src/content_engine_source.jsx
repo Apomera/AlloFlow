@@ -2924,10 +2924,20 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
     }
   };
   const addLanguage = () => {
-    if (languageInput.trim() && !selectedLanguages.includes(languageInput.trim()) && selectedLanguages.length < 4) {
-      setSelectedLanguages([...selectedLanguages, languageInput.trim()]);
-      setLanguageInput('');
-    }
+    const normalize = window.AlloModules?.TextPipelineHelpers?.normalizeLanguageName || (value => String(value || '').trim());
+    const key = value => normalize(value).toLocaleLowerCase();
+    const unique = values => (Array.isArray(values) ? values : []).map(normalize)
+      .filter((language, index, languages) => language && !/^(?:All Selected Languages|__app__)$/i.test(language)
+        && languages.findIndex(candidate => key(candidate) === key(language)) === index);
+    const language = normalize(languageInput);
+    if (!language || language.length > 40 || /^(?:All Selected Languages|__app__)$/i.test(language)) return;
+    const existing = unique(selectedLanguages);
+    if (existing.length >= 4 && !existing.some(candidate => key(candidate) === key(language))) return;
+    setSelectedLanguages(previous => {
+      const languages = unique(previous);
+      return languages.some(candidate => key(candidate) === key(language)) || languages.length >= 4 ? languages : [...languages, language];
+    });
+    setLanguageInput('');
   };
   const addInterest = () => {
     if (interestInput.trim() && !studentInterests.includes(interestInput.trim()) && studentInterests.length < 5) {
@@ -2942,10 +2952,20 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
     if (e.key === 'Enter') addInterest();
   };
   const removeLanguage = (lang) => {
-    const newLangs = selectedLanguages.filter(l => l !== lang);
+    const normalize = window.AlloModules?.TextPipelineHelpers?.normalizeLanguageName || (value => String(value || '').trim());
+    const key = value => normalize(value).toLocaleLowerCase();
+    const newLangs = (Array.isArray(selectedLanguages) ? selectedLanguages : []).map(normalize)
+      .filter((language, index, languages) => language && key(language) !== key(lang)
+        && languages.findIndex(candidate => key(candidate) === key(language)) === index);
     setSelectedLanguages(newLangs);
-    if (leveledTextLanguage === lang) setLeveledTextLanguage('English');
-    if (leveledTextLanguage === 'All Selected Languages' && newLangs.length === 0) setLeveledTextLanguage('English');
+    const live = _s();
+    // Added-language membership is independent of a fixed output preference.
+    // New hosts keep that fixed choice available outside the added inventory.
+    // Older hosts retain the fallback required by their inventory-only select.
+    if (typeof live.setOutputLanguagePreference !== 'function') {
+      if (key(leveledTextLanguage) === key(lang)) setLeveledTextLanguage('English');
+      if (leveledTextLanguage === 'All Selected Languages' && newLangs.length === 0) setLeveledTextLanguage('English');
+    }
   };
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') addLanguage();

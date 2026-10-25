@@ -2244,7 +2244,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   };
   const incorrectPlacedCount = isChecked ? items.filter((i) => i.currentContainer !== "deck" && i.currentContainer !== i.categoryId).length : 0;
   const renderCard = (item) => {
-    const isLongTextCard = !item.image && String(item.content || "").length > 80;
+    const isLongTextCard = String(item.content || "").length > 80;
+    const authoredExplanation = typeof item.explanation === "string" && item.explanation.length <= 1500 ? item.explanation.trim() : "";
+    const canReview = isChecked && item.currentContainer !== "deck";
     const imageDescription = item.image ? matchingImageDescription(item) : "";
     const cardDescription = imageDescription && imageDescription !== item.content ? `${item.content}. ${imageDescription}` : item.content;
     let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
@@ -2252,7 +2254,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       if (item.currentContainer === item.categoryId) {
         statusClass = "border-green-500 bg-green-50 ring-2 ring-green-200";
       } else {
-        statusClass = "border-red-400 bg-red-50 opacity-75 border-dashed";
+        statusClass = `border-red-400 bg-red-50 border-dashed${authoredExplanation ? "" : " opacity-75"}`;
       }
     }
     if (keyboardSelectedItemId === item.id) {
@@ -2281,12 +2283,12 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           }
         },
         tabIndex: isChecked || locked ? -1 : 0,
-        role: "button",
-        "aria-pressed": keyboardSelectedItemId === item.id,
-        "aria-label": locked ? `${cardDescription}. ${t("concept_sort.locked_aria") || "Correct and locked in place."}` : `${cardDescription}. ${item.currentContainer === "deck" ? t("concept_sort.unsorted_aria") : t("concept_sort.sorted_aria")}. ${t("concept_sort.move_aria")}`,
+        role: isChecked || locked ? "group" : "button",
+        "aria-pressed": isChecked || locked ? void 0 : keyboardSelectedItemId === item.id,
+        "aria-label": locked ? `${cardDescription}. ${gameMessage(t, "concept_sort.locked_aria", "Correct and locked in place.")}` : canReview ? `${cardDescription}. ${item.currentContainer === item.categoryId ? gameMessage(t, "common.correct", "Correct") : gameMessage(t, "common.incorrect", "Incorrect")}. ${gameMessage(t, "concept_sort.sorted_aria", "Sorted")}: ${buckets.find((b) => b.id === item.currentContainer)?.label || item.currentContainer}.` : `${cardDescription}. ${item.currentContainer === "deck" ? t("concept_sort.unsorted_aria") : t("concept_sort.sorted_aria")}. ${t("concept_sort.move_aria")}`,
         className: `
-            relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transition-all transform hover:scale-105 mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
-            ${statusClass} ${isChecked ? "cursor-default" : ""} ${draggedItem && draggedItem.id === item.id ? "opacity-30 scale-95" : ""}
+            relative p-3 rounded-lg shadow-sm transition-all transform mb-2 animate-in motion-reduce:animate-none zoom-in duration-200
+            ${statusClass} ${isChecked || locked ? "cursor-default" : "cursor-grab active:cursor-grabbing hover:scale-105"} ${draggedItem && draggedItem.id === item.id ? "opacity-30 scale-95" : ""}
         `,
         "data-help-key": "concept_sort_card_item"
       },
@@ -2297,11 +2299,11 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           src: item.image,
           alt: item.imageDecorative ? "" : imageDescription || item.content || "",
           className: "object-contain rounded bg-white/50",
-          style: { width: _imgPx + "px", height: _imgPx + "px" },
+          style: { width: _imgPx + "px", height: _imgPx + "px", maxWidth: "100%" },
           decoding: "async"
         }
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-center leading-tight text-slate-800" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 }))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-1.5", style: isLongTextCard ? { flexDirection: "column" } : void 0 }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800 text-center leading-snug", style: isLongTextCard ? { textAlign: "start", overflowWrap: "anywhere", width: "100%" } : void 0 }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 })),
-      isChecked && item.currentContainer !== "deck" && item.currentContainer !== item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(X, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-red-600 text-center leading-tight" }, "\u2717 \u2192 ", buckets.find((b) => b.id === item.categoryId)?.label), onExplainIncorrect && !studentAiOff && /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", style: isLongTextCard ? { flexDirection: "column", width: "100%" } : void 0 }, /* @__PURE__ */ React.createElement("p", { className: isLongTextCard ? "text-sm font-bold leading-snug text-slate-800" : "text-xs font-bold text-center leading-tight text-slate-800", style: isLongTextCard ? { textAlign: "start", overflowWrap: "anywhere", width: "100%" } : void 0 }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 }))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-1.5", style: isLongTextCard ? { flexDirection: "column" } : void 0 }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800 text-center leading-snug", style: isLongTextCard ? { textAlign: "start", overflowWrap: "anywhere", width: "100%" } : void 0 }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 })),
+      isChecked && item.currentContainer !== "deck" && item.currentContainer !== item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(X, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-red-600 text-center leading-tight" }, "\u2717 \u2192 ", buckets.find((b) => b.id === item.categoryId)?.label), !authoredExplanation && onExplainIncorrect && !studentAiOff && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -2313,8 +2315,20 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           "aria-label": t("games.explain_incorrect_aria") || "Explain why this was incorrect"
         },
         explanations[item.id] === "loading" ? t("concept_sort.why_loading") || "\u2026" : explanations[item.id] ? t("concept_sort.why_hide") || "Hide why" : t("concept_sort.why_label") || "Why?"
-      ), explanations[item.id] && explanations[item.id] !== "loading" && /* @__PURE__ */ React.createElement("div", { className: "mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-start" }, explanations[item.id])),
-      isChecked && item.currentContainer === item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-600 text-center" }, "\u2713"))
+      ), !authoredExplanation && explanations[item.id] && explanations[item.id] !== "loading" && /* @__PURE__ */ React.createElement("div", { className: "mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-start" }, explanations[item.id])),
+      isChecked && item.currentContainer === item.categoryId && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12 })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-600 text-center" }, "\u2713")),
+      canReview && authoredExplanation && /* @__PURE__ */ React.createElement(
+        "details",
+        {
+          "data-concept-sort-authored-feedback": item.id,
+          "data-help-key": "concept_sort_authored_explanation",
+          className: "mt-2 w-full min-w-0 rounded border border-indigo-200 bg-white text-sm text-indigo-900 text-start",
+          style: { overflowWrap: "anywhere" },
+          onClick: (e) => e.stopPropagation()
+        },
+        /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded px-3 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" }, gameMessage(t, "concept_sort.why_label", "Why?")),
+        /* @__PURE__ */ React.createElement("p", { "data-sort-explanation-text": true, className: "px-3 pb-3 leading-relaxed whitespace-pre-wrap" }, authoredExplanation)
+      )
     );
   };
   const deckItems = useMemo(() => items.filter((i) => i.currentContainer === "deck"), [items]);
@@ -2348,7 +2362,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const id = setTimeout(() => setHintAutoHidden(true), 15e3);
     return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
-  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20", style: { flexWrap: "wrap", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, gamePointsLabel(t, score))), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20", style: { flexWrap: "wrap", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, gamePointsLabel(t, score))), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "flex-grow overflow-y-auto p-6 relative",
@@ -2495,7 +2509,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           },
           /* @__PURE__ */ React.createElement(Plus, { size: 16 })
         ))),
-        deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]", style: !item.image && String(item.content || "").length > 80 ? { width: "min(280px, calc(100vw - 48px))" } : void 0 }, renderCard(item))),
+        deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]", style: String(item.content || "").length > 80 ? { width: "min(280px, calc(100vw - 48px))" } : void 0 }, renderCard(item))),
         deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))
       ), !isDeckCollapsed && deckCanScrollLeft && /* @__PURE__ */ React.createElement(
         "button",

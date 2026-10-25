@@ -792,7 +792,27 @@
     if (raw.glossary && typeof raw.glossary === "object") result.glossary = { id: text(raw.glossary.id, 150), title: text(raw.glossary.title, 160), language: text(raw.glossary.language, 80) };
     const activities = prepareVisualActivities(raw.activities, board, result.terms);
     if (Object.keys(activities).length) result.activities = activities;
+    const drawings = {};
+    for (const [id, drawing] of Object.entries(raw.drawings || {})) {
+      if (!result.assets[id] || !drawing || typeof drawing !== "object") continue;
+      const scene = drawing.scene;
+      if (scene && (!Array.isArray(scene.elements) || scene.elements.length > 1500 || JSON.stringify(scene).length > 18e4)) throw Error("board-support-invalid");
+      drawings[id] = { alt: text(drawing.alt, 500), ...scene ? { scene } : {} };
+    }
+    if (Object.keys(drawings).length) result.drawings = drawings;
     return result;
+  }
+  async function addAuthoredSupportImage(support, result, target, board) {
+    if (result.scene && (result.scene.elements?.length > 1500 || JSON.stringify(result.scene).length > 18e4)) throw Error("This drawing is too large for the Lesson Board. Remove large embedded photos or export it as a PNG to upload.");
+    const image = await resizeBoardImage(result.dataUrl, target === "world" || target === "scene:tabletop" ? 11e4 : 65e3, target === "world" || target === "scene:tabletop" ? 640 : 360);
+    const next = addSupportImage(support, image, target, board);
+    const id = "image_" + supportHash(image);
+    next.drawings = { ...next.drawings || {}, [id]: { alt: text(result.alt, 500), scene: result.scene || null } };
+    if (target.startsWith("term:")) {
+      const term = next.terms.find((item) => item.id === target.slice(5));
+      if (term) term.alt = text(result.alt, 500);
+    }
+    return prepareSupport(next, board);
   }
   function glossaryTerms(resource) {
     const seen = /* @__PURE__ */ new Set();
@@ -974,7 +994,7 @@
     return { support: prepareSupport(next, board), omitted };
   }
   async function liveSupport(raw, board, resize = resizeBoardImage, maxChars = 3e4) {
-    const support = prepareSupport(raw, board), images = Object.entries(support.assets), linked = Object.fromEntries(images.filter(([, value]) => !value.startsWith("data:"))), embedded = images.filter(([id]) => !(id in linked)), budget = Math.max(900, Math.floor((maxChars - JSON.stringify({ ...support, assets: linked }).length) / Math.max(1, embedded.length)) - 50);
+    const support = prepareSupport({ ...raw, drawings: void 0 }, board), images = Object.entries(support.assets), linked = Object.fromEntries(images.filter(([, value]) => !value.startsWith("data:"))), embedded = images.filter(([id]) => !(id in linked)), budget = Math.max(900, Math.floor((maxChars - JSON.stringify({ ...support, assets: linked }).length) / Math.max(1, embedded.length)) - 50);
     support.assets = { ...linked };
     let omitted = 0;
     for (const [id, value] of embedded) {
@@ -3605,9 +3625,20 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       } else delete next.art.projects[target];
       onChange(prepareSupport(next, board));
     };
+    const authoredSupportRef = useRef(value);
+    authoredSupportRef.current = value;
+    const authorImage = async (target, result, expected) => {
+      const started = latest.current, current = authoredSupportRef.current;
+      if (current !== expected) return false;
+      const next = await addAuthoredSupportImage(current, result, target, board);
+      if (!mounted.current || latest.current !== started || authoredSupportRef.current !== current) return false;
+      if (target === "scene:tabletop") onSceneryRequest?.();
+      onChange(next);
+      return true;
+    };
     const artwork = (target, label, term) => {
       const scenery = target === "scene:tabletop", imageId = scenery ? value.art.tabletop : target === "world" ? value.art.world : term ? term.imageId : value.art.projects[target];
-      return /* @__PURE__ */ React5.createElement("section", { className: "lb-panel", key: target, "data-artwork-slot": target }, /* @__PURE__ */ React5.createElement("h4", null, label), scenery && /* @__PURE__ */ React5.createElement("p", { className: "lb-muted" }, tr(t, "scenery_help", "Generate scenery for this board\u2019s setting. It appears beneath the pieces in 2D and 3D; routes and challenges stay unchanged. Hide pictures returns to simple terrain.")), imageId && /* @__PURE__ */ React5.createElement(SupportImage, { src: value.assets[imageId], alt: term?.alt || "", className: term?.symbol ? "lb-symbol-picture" : "", t }), /* @__PURE__ */ React5.createElement("button", { type: "button", "data-generate-board-image": target, disabled: disabled || !!busy || !callImagen, onClick: () => generateImage(target, term) }, scenery ? imageId ? tr(t, "scenery_regenerate", "Regenerate scenery") : tr(t, "scenery_generate", "Generate board scenery") : imageId ? tr(t, "replace_artwork", "Generate replacement picture") : tr(t, "generate_artwork", "Generate picture")), imageId && /* @__PURE__ */ React5.createElement("button", { type: "button", "data-remove-board-image": target, disabled: disabled || !!busy, onClick: () => removeImage(target) }, tr(t, "remove_artwork", "Remove picture")), term && findSymbol && /* @__PURE__ */ React5.createElement("button", { type: "button", "data-find-term-symbol": term.id, disabled: disabled || !!busy || termSymbols.busy, onClick: () => searchTermSymbol(term, term.term) }, tr(t, "term_symbol_find", "Find Mulberry symbol")), term && termSymbols.target === target && /* @__PURE__ */ React5.createElement("div", { "data-term-symbol-results": term.id }, /* @__PURE__ */ React5.createElement("p", { role: "status" }, termSymbols.busy ? tr(t, "symbols_searching", "Searching Mulberry symbols\u2026") : termSymbols.message), /* @__PURE__ */ React5.createElement("form", { className: "lb-row", onSubmit: (event) => {
+      return /* @__PURE__ */ React5.createElement("section", { className: "lb-panel", key: target, "data-artwork-slot": target }, /* @__PURE__ */ React5.createElement("h4", null, label), window.AlloModules?.ResourceImageInput && /* @__PURE__ */ React5.createElement("details", null, /* @__PURE__ */ React5.createElement("summary", null, tr(t, "author_picture", "Upload or draw a picture")), React5.createElement(window.AlloModules.ResourceImageInput, { key: boardScope + ":" + target, label, value: value.assets[imageId] || "", alt: term?.alt || value.drawings?.[imageId]?.alt || "", scene: value.drawings?.[imageId]?.scene, disabled: disabled || !!busy, onApply: (result) => authorImage(target, result, value) })), scenery && /* @__PURE__ */ React5.createElement("p", { className: "lb-muted" }, tr(t, "scenery_help", "Generate scenery for this board\u2019s setting. It appears beneath the pieces in 2D and 3D; routes and challenges stay unchanged. Hide pictures returns to simple terrain.")), imageId && /* @__PURE__ */ React5.createElement(SupportImage, { src: value.assets[imageId], alt: term?.alt || "", className: term?.symbol ? "lb-symbol-picture" : "", t }), /* @__PURE__ */ React5.createElement("button", { type: "button", "data-generate-board-image": target, disabled: disabled || !!busy || !callImagen, onClick: () => generateImage(target, term) }, scenery ? imageId ? tr(t, "scenery_regenerate", "Regenerate scenery") : tr(t, "scenery_generate", "Generate board scenery") : imageId ? tr(t, "replace_artwork", "Generate replacement picture") : tr(t, "generate_artwork", "Generate picture")), imageId && /* @__PURE__ */ React5.createElement("button", { type: "button", "data-remove-board-image": target, disabled: disabled || !!busy, onClick: () => removeImage(target) }, tr(t, "remove_artwork", "Remove picture")), term && findSymbol && /* @__PURE__ */ React5.createElement("button", { type: "button", "data-find-term-symbol": term.id, disabled: disabled || !!busy || termSymbols.busy, onClick: () => searchTermSymbol(term, term.term) }, tr(t, "term_symbol_find", "Find Mulberry symbol")), term && termSymbols.target === target && /* @__PURE__ */ React5.createElement("div", { "data-term-symbol-results": term.id }, /* @__PURE__ */ React5.createElement("p", { role: "status" }, termSymbols.busy ? tr(t, "symbols_searching", "Searching Mulberry symbols\u2026") : termSymbols.message), /* @__PURE__ */ React5.createElement("form", { className: "lb-row", onSubmit: (event) => {
         event.preventDefault();
         searchTermSymbol(term, termSymbols.query);
       } }, /* @__PURE__ */ React5.createElement("label", null, tr(t, "symbol_search", "Search Mulberry symbols"), /* @__PURE__ */ React5.createElement("input", { "data-term-symbol-query": true, value: termSymbols.query, maxLength: 60, onChange: (event) => setTermSymbols((state) => ({ ...state, query: event.target.value })) })), /* @__PURE__ */ React5.createElement("button", { type: "submit", disabled: termSymbols.busy || !termSymbols.query.trim() }, tr(t, "symbol_search_button", "Search"))), /* @__PURE__ */ React5.createElement("div", { className: "lb-symbol-results" }, termSymbols.items.map((item) => /* @__PURE__ */ React5.createElement("button", { type: "button", key: item.svgUrl, "data-term-symbol-choice": item.svgUrl, "aria-label": tr(t, "symbol_use", "Use symbol: {label}", { label: item.label || "" }), disabled: disabled || !!busy, onClick: () => chooseTermSymbol(term, item) }, /* @__PURE__ */ React5.createElement("img", { src: item.svgUrl, alt: "", loading: "lazy", referrerPolicy: "no-referrer" }))))));

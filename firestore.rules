@@ -1,13 +1,13 @@
 rules_version = '2';
-// AlloFlow Firestore security rules — v1.0 draft (2026-07-01).
+// AlloFlow Firestore security rules — v1.1 candidate (2026-10-24).
 //
-// Deploy: Firebase console → Firestore Database → Rules → paste → Publish.
-// BEFORE deploying, copy the currently published rules into
-// docs/firestore.rules.PREVIOUS so rollback is one paste away.
+// Deploy versioned rules/TTL through firebase.live-sessions.json only after
+// the local client and emulator checks pass; see DEPLOY_YOUR_OWN.md. Retain
+// the previous verified rules/client release for a coordinated rollback.
 // Full context + threat model: docs/LIVE_SESSION_HARDENING_PROPOSAL.md.
 // Deploy/rollback/smoke checklist: docs/FIRESTORE_RULES_DEPLOY.md.
 //
-// Design summary (matches the write paths verified in code on 2026-07-01):
+// Design summary (session metadata writers reviewed 2026-10-24):
 //   - Everything requires Firebase (anonymous) auth.
 //   - Session docs: created/deleted/edited freely ONLY by the creating
 //     teacher (hostId == auth.uid). Other participants may write exactly
@@ -16,8 +16,9 @@ rules_version = '2';
 //   - LIST on sessions is denied → codes can't be enumerated via queries.
 //   - WebRTC signaling docs: the guest owns their doc; the session host may
 //     merge only answer/iceFromHost and may delete post-connect.
-//   - Student CONTENT never appears in any of these paths by design (it is
-//     WebRTC peer-to-peer) — these rules protect metadata integrity.
+//   - This patch bounds participant metadata schemas, not de-identification.
+//     Allowed short strings can still contain identifying text. Host writes
+//     remain unrestricted by this patch; content/retention policy is separate.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -25,6 +26,23 @@ service cloud.firestore {
     function authed() { return request.auth != null; }
 
     match /artifacts/{appId} {
+
+      // Assignment expiry ends participant access even while TTL/cleanup is
+      // pending. Legacy live sessions have no assignment-expiry requirement.
+      function participantSessionOpen(data) {
+        return data.get('kind', '') != 'assignment'
+          || (data.get('expiresAt', null) is timestamp && data.expiresAt > request.time);
+      }
+      function sessionParent(code) {
+        return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code);
+      }
+      function participantParentOpen(code) {
+        return exists(sessionParent(code)) && participantSessionOpen(get(sessionParent(code)).data);
+      }
+      function parentSessionHost(code) {
+        return authed() && exists(sessionParent(code))
+          && get(sessionParent(code)).data.hostId == request.auth.uid;
+      }
 
       // ── Live session documents ─────────────────────────────────────────
       match /public/data/sessions/{code} {
@@ -34,7 +52,7 @@ service cloud.firestore {
         }
         function validOrganizerProgress(progress) {
           return progress is map
-            && progress.keys().hasAll(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
+            && progress.keys().size() == 9
             && progress.keys().hasOnly(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
             && progress.activityId is string
             && progress.activityId.size() >= 8
@@ -50,16 +68,12 @@ service cloud.firestore {
         }
         function validActivityProgress(progress) {
           return progress is map
-            && progress.keys().hasAll(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
+            && progress.keys().size() == 7
             && progress.keys().hasOnly(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
             && progress.version == 1
             && progress.activityId is string
-            && progress.activityId.size() >= 1
-            && progress.activityId.size() <= 160
             && progress.activityId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
             && progress.kind is string
-            && progress.kind.size() >= 1
-            && progress.kind.size() <= 40
             && progress.kind.matches('^[a-z][a-z0-9_]{0,39}$')
             && progress.status in ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused']
             && progress.completed is int && progress.completed >= 0 && progress.completed <= 100000
@@ -69,7 +83,7 @@ service cloud.firestore {
         }
         function validImageDelivery(receipt) {
           return receipt is map
-            && receipt.keys().hasAll(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
+            && receipt.keys().size() == 8
             && receipt.keys().hasOnly(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
             && receipt.version == 1
             && receipt.resourceId is string && receipt.resourceId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
@@ -81,29 +95,115 @@ service cloud.firestore {
             && receipt.assignmentAt is int && receipt.assignmentAt >= 0 && receipt.assignmentAt <= 999999999999999
             && receipt.at is int && receipt.at > 0 && receipt.at <= 999999999999999;
         }
+        function boundedMetric(value, maximum) {
+          return value is number && value >= 0 && value <= maximum;
+        }
+        function optionalMetric(value, field, maximum) {
+          let metric = value.get(field, null);
+          return metric is number ? metric >= 0 && metric <= maximum : metric == null;
+        }
+        function validWsProgress(progress) {
+          let p = progress is map ? progress : {};
+          let correct = p.get('correct', null);
+          let total = p.get('total', null);
+          let goal = p.get('goal', null);
+          let audioReady = p.get('audioReady', null);
+          let audioTotal = p.get('audioTotal', null);
+          let at = p.get('at', null);
+          let audioRequestAt = p.get('audioRequestAt', null);
+          let audioDeliveryAt = p.get('audioDeliveryAt', null);
+          let activity = p.get('activity', null);
+          return progress == null ? true : (progress is map
+            && p.keys().hasOnly(['kind', 'activity', 'correct', 'total', 'goal', 'done', 'at', 'audioStatus', 'audioReady', 'audioTotal', 'audioRequestAt', 'audioDeliveryAt'])
+            && p.get('kind', null) in [null, 'practice', 'probe']
+            && (activity is string ? activity.matches('^[a-z_]{1,32}$') : activity == null)
+            && (p.get('done', null) == null || p.done is bool)
+            && p.get('audioStatus', null) in [null, 'ready', 'missing', 'runtime', 'unknown', 'checking', 'unsupported', 'damaged', 'blocked', 'requested', 'resending']
+            && (correct is number ? correct >= 0 && correct <= 100000 : correct == null)
+            && (total is number ? total >= 0 && total <= 100000 : total == null)
+            && (goal is number ? goal >= 0 && goal <= 100000 : goal == null)
+            && (audioReady is number ? audioReady >= 0 && audioReady <= 100000 : audioReady == null)
+            && (audioTotal is number ? audioTotal >= 0 && audioTotal <= 100000 : audioTotal == null)
+            && (at is number ? at >= 0 && at <= 999999999999999 : at == null)
+            && (audioRequestAt is number ? audioRequestAt >= 0 && audioRequestAt <= 999999999999999 : audioRequestAt == null)
+            && (audioDeliveryAt is number ? audioDeliveryAt >= 0 && audioDeliveryAt <= 999999999999999 : audioDeliveryAt == null));
+        }
+        function validWsProbeResult(result) {
+          let p = result is map ? result : {};
+          let correct = p.get('correct', null);
+          let total = p.get('total', null);
+          let accuracy = p.get('accuracy', null);
+          let itemsPerMin = p.get('itemsPerMin', null);
+          let elapsed = p.get('elapsed', null);
+          let at = p.get('at', null);
+          let activity = p.get('activity', null);
+          let grade = p.get('grade', null);
+          let form = p.get('form', null);
+          return result == null ? true : (result is map
+            && p.keys().hasOnly(['activity', 'correct', 'total', 'accuracy', 'itemsPerMin', 'elapsed', 'grade', 'form', 'at'])
+            && (activity is string ? activity.matches('^[a-z_]{1,32}$') : activity == null)
+            && (grade is string ? grade.matches('^[A-Za-z0-9 -]{1,16}$') : grade == null)
+            && (form is string ? form.matches('^[A-Za-z0-9-]{1,8}$') : form == null)
+            && (correct is number ? correct >= 0 && correct <= 100000 : correct == null)
+            && (total is number ? total >= 0 && total <= 100000 : total == null)
+            && (accuracy is number ? accuracy >= 0 && accuracy <= 100000 : accuracy == null)
+            && (itemsPerMin is number ? itemsPerMin >= 0 && itemsPerMin <= 100000 : itemsPerMin == null)
+            && (elapsed is number ? elapsed >= 0 && elapsed <= 100000 : elapsed == null)
+            && (at is number ? at >= 0 && at <= 999999999999999 : at == null));
+        }
+        function validReadingTheme(value) {
+          return value in [null, 'default', 'warm', 'sepia', 'dark', 'highContrast', 'blue', 'green', 'rose', 'dyslexia', 'dim'];
+        }
+        function validReadingFavorites(value) {
+          return value == null || (value is list && value.size() <= 10
+            && value.toSet().size() == value.size()
+            && value.toSet().hasOnly(['default', 'warm', 'sepia', 'dark', 'highContrast', 'blue', 'green', 'rose', 'dyslexia', 'dim']));
+        }
         function rosterOnlySelf() {
-          // Students may only touch their OWN roster entry. Nested fields are
-          // deliberately not enumerated here (the client/mailbox validators
-          // enforce per-field shapes); current student-written fields include
-          // join metadata, xp, signal/signalAt, viewingResourceId/viewingAt,
-          // the Word Sounds wsProgress / wsProbeResult summaries
-          // (2026-07-12: structured numbers + pattern-checked ids only — see
-          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications),
-          // and lastSeen (2026-07-16: ms-timestamp presence heartbeat, ~60s).
-          // hostPresence is host-owned lease metadata; students cannot alter top-level host fields.
-          return resource.data.get('roster', {})
-            .diff(request.resource.data.get('roster', {}))
-            .affectedKeys().hasOnly([request.auth.uid])
-            && (!('viewingResourceStatus' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', null) == null
-              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', '')
-                in ['loading', 'ready', 'failed'])
-            && (!('organizerProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)))
-            && (!('activityProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || validActivityProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('activityProgress', null)))
-            && (!('imageDelivery' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || validImageDelivery(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('imageDelivery', null)));
+          let uid = request.auth.uid;
+          let beforeRoster = resource.data.get('roster', {});
+          let nextRoster = request.resource.data.get('roster', {});
+          let before = beforeRoster.get(uid, {});
+          let next = nextRoster.get(uid, {});
+          let changed = before.diff(next).affectedKeys();
+          // Validate changed leaves while preserving untouched legacy values.
+          // Unknown/host-owned fields survive unchanged; dotted joins preserve
+          // concurrent host assignments instead of copying stale state.
+          return beforeRoster is map && nextRoster is map && before is map && next is map
+            && beforeRoster.diff(nextRoster).affectedKeys().hasOnly([uid])
+            && uid in nextRoster
+            // Client calls are not coalesced: the largest observed batch is a
+            // four-field viewing acknowledgment plus activityProgress. Keep
+            // unrelated specialized reports in separate writes, before their
+            // value checks, so combined payloads cannot exhaust the rule budget.
+            && (changed.size() <= 5
+              && changed.intersection(['wsProgress', 'wsProbeResult', 'organizerProgress', 'imageDelivery'].toSet()).size() <= 1
+              ? (changed.hasOnly(['uid', 'name', 'joinedAt', 'status', 'xp', 'signal', 'signalAt', 'viewingAt', 'viewingResourceId', 'viewingResourceAt', 'viewingResourceStatus', 'lastSeen', 'wsProgress', 'wsProbeResult', 'organizerProgress', 'activityProgress', 'imageDelivery', 'readingTheme', 'readingThemeFavorites', 'readingPreferenceAt'])
+            && (!('uid' in changed) || next.get('uid', null) == uid)
+            && (!('name' in changed) || !('name' in next) || (next.name is string && next.name.size() <= 40))
+            && (!('joinedAt' in changed) || !('joinedAt' in next)
+              || (next.joinedAt is string
+                && next.joinedAt.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]{1,3})?Z$')))
+            && (!('status' in changed) || !('status' in next) || next.status == 'active')
+            && (!('xp' in changed) || !('xp' in next) || boundedMetric(next.xp, 10000000))
+            && (!('signal' in changed) || next.get('signal', null) in [null, 'stuck', 'slow', 'repeat', 'ready'])
+            && (!('signalAt' in changed) || optionalMetric(next, 'signalAt', 999999999999999))
+            && (!('viewingAt' in changed) || optionalMetric(next, 'viewingAt', 999999999999999))
+            && (!('viewingResourceAt' in changed) || optionalMetric(next, 'viewingResourceAt', 999999999999999))
+            && (!('lastSeen' in changed) || optionalMetric(next, 'lastSeen', 999999999999999))
+            && (!('viewingResourceId' in changed) || next.get('viewingResourceId', null) == null
+              || (next.viewingResourceId is string && next.viewingResourceId.size() <= 100))
+            && (!('viewingResourceStatus' in changed) || next.get('viewingResourceStatus', null) in [null, 'loading', 'ready', 'failed'])
+            && (!('wsProgress' in changed) || validWsProgress(next.get('wsProgress', null)))
+            && (!('wsProbeResult' in changed) || validWsProbeResult(next.get('wsProbeResult', null)))
+            && (!('organizerProgress' in changed) || !('organizerProgress' in next)
+              || (validOrganizerProgress(next.organizerProgress) && boundedMetric(next.organizerProgress.at, 999999999999999)))
+            && (!('activityProgress' in changed) || !('activityProgress' in next)
+              || (validActivityProgress(next.activityProgress) && boundedMetric(next.activityProgress.at, 999999999999999)))
+            && (!('imageDelivery' in changed) || !('imageDelivery' in next) || validImageDelivery(next.imageDelivery))
+            && (!('readingTheme' in changed) || validReadingTheme(next.get('readingTheme', null)))
+            && (!('readingThemeFavorites' in changed) || validReadingFavorites(next.get('readingThemeFavorites', null)))
+            && (!('readingPreferenceAt' in changed) || optionalMetric(next, 'readingPreferenceAt', 999999999999999))) : false);
         }
         function quizNestedOnlySelf(field) {
           return !(field in resource.data.get('quizState', {})
@@ -165,9 +265,17 @@ service cloud.firestore {
             && quizTeamOnlySelf();
         }
         function reactionsOnlySelf() {
-          return resource.data.get('bridgeReactions', {})
-            .diff(request.resource.data.get('bridgeReactions', {}))
-            .affectedKeys().hasOnly([request.auth.uid]);
+          let before = resource.data.get('bridgeReactions', {});
+          let next = request.resource.data.get('bridgeReactions', {});
+          let priorReaction = before.get(request.auth.uid, {});
+          let oldReaction = priorReaction is map ? priorReaction : {};
+          let reaction = next.get(request.auth.uid, {});
+          return before is map && next is map && oldReaction is map && reaction is map
+            && before.diff(next).affectedKeys().hasOnly([request.auth.uid])
+            && reaction.keys().hasAll(['emoji', 'timestamp'])
+            && oldReaction.diff(reaction).affectedKeys().hasOnly(['emoji', 'timestamp'])
+            && reaction.emoji in ['👍', '🤔', '❓']
+            && reaction.timestamp is int && reaction.timestamp > 0 && reaction.timestamp <= 999999999999999;
         }
         function democracyOnlySelfVote() {
           // Adventure democracy mode: students cast democracy.votes.{their uid}
@@ -334,9 +442,7 @@ service cloud.firestore {
         }
 
         // Students need GET by code; LIST would allow code enumeration.
-        allow get: if authed()
-          && (resource.data.get('kind', '') != 'assignment'
-            || (resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time));
+        allow get: if authed() && participantSessionOpen(resource.data);
         allow list: if false;
         allow create: if authed() && request.resource.data.hostId == request.auth.uid
           && (request.resource.data.get('kind', '') != 'assignment'
@@ -344,15 +450,18 @@ service cloud.firestore {
               && request.resource.data.expiresAt > request.time
               && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')));
         allow delete: if isHost();
-        allow update: if isHost() || (
-          authed()
-          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])
-          && (!('roster' in changedTop()) || rosterOnlySelf())
-          && (!('quizState' in changedTop()) || quizOnlySelf())
-          && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
-          && (!('democracy' in changedTop()) || democracyOnlySelfVote())
-          && (!('escapeRoomState' in changedTop()) || (resource.data.get('escapeRoomState', {}).get('mode', '') == 'lesson-board' ? lessonBoardPlay() : escapeRoomTeamPlay()))
-        );
+        function participantUpdate() {
+          let changed = changedTop();
+          // Explicit branches keep unknown preliminary evaluation from walking
+          // every participant validator before the final write is available.
+          return changed.hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])
+            && ('roster' in changed ? rosterOnlySelf() : true)
+            && ('quizState' in changed ? quizOnlySelf() : true)
+            && ('bridgeReactions' in changed ? reactionsOnlySelf() : true)
+            && ('democracy' in changed ? democracyOnlySelfVote() : true)
+            && ('escapeRoomState' in changed ? (resource.data.get('escapeRoomState', {}).get('mode', '') == 'lesson-board' ? lessonBoardPlay() : escapeRoomTeamPlay()) : true);
+        }
+        allow update: if isHost() ? true : (authed() && participantSessionOpen(resource.data) && participantUpdate());
         // Lesson Board private answers (native Firestore). A learner writes only their own answer
         // document; only that learner and the session host can read it. Accepted values live in a
         // host-only document, so the shared session document carries receipts without answers.
@@ -376,9 +485,12 @@ service cloud.firestore {
               && action.targetId is string && action.targetId == step.get('targetId', '')
               && action.value is string && action.value.matches('^[0-9,]{1,24}$');
           }
-          allow get: if authed() && (request.auth.uid == uid || session().hostId == request.auth.uid);
+          allow get: if authed() && (parentSessionHost(code)
+            || (request.auth.uid == uid && participantParentOpen(code)));
           allow list: if authed() && session().hostId == request.auth.uid;
-          allow create, update: if authed() && request.auth.uid == uid && privateBoardAnswer(session(), request.resource.data);
+          allow create, update: if authed() && request.auth.uid == uid
+            && (parentSessionHost(code) || participantParentOpen(code))
+            && privateBoardAnswer(session(), request.resource.data);
           allow delete: if authed() && session().hostId == request.auth.uid;
         }
         match /boardHost/{attempt} {
@@ -397,15 +509,17 @@ service cloud.firestore {
               || signalingCollection == 'quiz-signaling';
         }
         function isSessionHost() {
-          return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
+          return parentSessionHost(code);
         }
         allow read: if isSignaling() && authed()
-          && (request.auth.uid == peerUid || isSessionHost());
-        allow create: if isSignaling() && authed() && request.auth.uid == peerUid;
+          && (isSessionHost() || (request.auth.uid == peerUid && participantParentOpen(code)));
+        allow create: if isSignaling() && authed() && request.auth.uid == peerUid
+          && (isSessionHost() || participantParentOpen(code));
         allow delete: if isSignaling() && authed()
           && (request.auth.uid == peerUid || isSessionHost());
         allow update: if isSignaling() && authed() && (
           (request.auth.uid == peerUid
+            && (isSessionHost() || participantParentOpen(code))
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest']))
           || (isSessionHost()
@@ -446,6 +560,7 @@ service cloud.firestore {
           && resource.data.expiresAt is timestamp
           && resource.data.expiresAt > request.time
           && exists(parentPath())
+          && participantSessionOpen(get(parentPath()).data)
           && get(parentPath()).data.hostId == resource.data.ownerUid
         );
         allow list: if false;
@@ -494,7 +609,7 @@ service cloud.firestore {
           // document, so a participant MUST query with where(status==approved) or
           // where(uid==self). The adapter issues exactly those two queries and
           // merges; an unconstrained participant query is denied by design.
-          allow get, list: if isHost() || isOwn() || resource.data.status == "approved";
+          allow get, list: if authed() && (isHost() || isOwn() || resource.data.status == "approved");
 
           // AUTHORSHIP_NOT_FORGEABLE — uid must be the caller, and the initial
           // status must match the board policy so a student cannot self-approve

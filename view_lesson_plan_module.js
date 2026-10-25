@@ -517,6 +517,7 @@ function LessonPlanView(props) {
   }, []);
   var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, {
     ...fieldProps,
+    artifact: generatedContent,
     text: _lessonPlanText(fieldProps.text)
   }) : /*#__PURE__*/React.createElement("div", {
     className: fieldProps.className

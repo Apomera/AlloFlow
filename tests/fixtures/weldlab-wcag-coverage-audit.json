@@ -1,0 +1,436 @@
+[
+  {
+    "name": "default-menu",
+    "state": {
+      "view": "menu"
+    }
+  },
+  {
+    "name": "default-heatInput",
+    "state": {
+      "view": "heatInput"
+    }
+  },
+  {
+    "name": "default-beadLab",
+    "state": {
+      "view": "beadLab"
+    }
+  },
+  {
+    "name": "default-speedChallenge",
+    "state": {
+      "view": "speedChallenge"
+    }
+  },
+  {
+    "name": "default-metallurgy",
+    "state": {
+      "view": "metallurgy"
+    }
+  },
+  {
+    "name": "default-processCompare",
+    "state": {
+      "view": "processCompare"
+    }
+  },
+  {
+    "name": "default-processSleuth",
+    "state": {
+      "view": "processSleuth"
+    }
+  },
+  {
+    "name": "default-consumables",
+    "state": {
+      "view": "consumables"
+    }
+  },
+  {
+    "name": "default-jointCatalog",
+    "state": {
+      "view": "jointCatalog"
+    }
+  },
+  {
+    "name": "default-symbolsReader",
+    "state": {
+      "view": "symbolsReader"
+    }
+  },
+  {
+    "name": "default-mathBlueprint",
+    "state": {
+      "view": "mathBlueprint"
+    }
+  },
+  {
+    "name": "default-defectHunt",
+    "state": {
+      "view": "defectHunt"
+    }
+  },
+  {
+    "name": "default-defectDiagnose",
+    "state": {
+      "view": "defectDiagnose"
+    }
+  },
+  {
+    "name": "default-defectCatalog",
+    "state": {
+      "view": "defectCatalog"
+    }
+  },
+  {
+    "name": "default-inspection",
+    "state": {
+      "view": "inspection"
+    }
+  },
+  {
+    "name": "default-codes",
+    "state": {
+      "view": "codes"
+    }
+  },
+  {
+    "name": "default-qualPrep",
+    "state": {
+      "view": "qualPrep"
+    }
+  },
+  {
+    "name": "default-pipeWelding",
+    "state": {
+      "view": "pipeWelding"
+    }
+  },
+  {
+    "name": "default-robotic",
+    "state": {
+      "view": "robotic"
+    }
+  },
+  {
+    "name": "default-underwater",
+    "state": {
+      "view": "underwater"
+    }
+  },
+  {
+    "name": "default-careerPaths",
+    "state": {
+      "view": "careerPaths"
+    }
+  },
+  {
+    "name": "default-maineEcosystem",
+    "state": {
+      "view": "maineEcosystem"
+    }
+  },
+  {
+    "name": "default-careerStories",
+    "state": {
+      "view": "careerStories"
+    }
+  },
+  {
+    "name": "default-ppeSafety",
+    "state": {
+      "view": "ppeSafety"
+    }
+  },
+  {
+    "name": "default-safetyHealth",
+    "state": {
+      "view": "safetyHealth"
+    }
+  },
+  {
+    "name": "jointreference",
+    "state": {
+      "view": "robotic",
+      "rob_sect": "pendant",
+      "tech2_rob_prog": [
+        {
+          "x": 4,
+          "y": 6,
+          "m": "J",
+          "w": false
+        },
+        {
+          "x": 12,
+          "y": 6,
+          "m": "L",
+          "w": true
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "m": "J",
+          "w": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "planruler",
+    "state": {
+      "view": "ppeSafety",
+      "ps_view": "floor",
+      "safe2_plan": null
+    }
+  },
+  {
+    "name": "fittrace",
+    "state": {
+      "view": "careerStories",
+      "cs_mode": "fit",
+      "cs_q_want": "steady",
+      "cs_q_school": "cc",
+      "cs_q_place": "big"
+    }
+  },
+  {
+    "name": "gaugedetail",
+    "state": {
+      "view": "inspection",
+      "insp_sect": "bench"
+    }
+  },
+  {
+    "name": "toolkit",
+    "state": {
+      "view": "inspection",
+      "insp_sect": "visual"
+    }
+  },
+  {
+    "name": "symbols-practice-answer",
+    "state": {
+      "view": "symbolsReader",
+      "sr_view": "practice",
+      "sym2_pr_idx": 0,
+      "sym2_pr_ans": {
+        "0_0": 1,
+        "0_1": 1,
+        "0_2": 1
+      }
+    }
+  },
+  {
+    "name": "reference-shades",
+    "state": {
+      "view": "safetyHealth",
+      "sh_sect": "eyes"
+    }
+  },
+  {
+    "name": "reference-report",
+    "state": {
+      "view": "inspection",
+      "insp_sect": "bench",
+      "insp2_bench": {
+        "uc1": {
+          "pick": "accept",
+          "recs": [
+            6.25
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "pipe-clock-browse",
+    "state": {
+      "view": "pipeWelding",
+      "pipe_sect": "positions",
+      "pipe2_pos": "6GR",
+      "pipe2_hour": 6
+    }
+  },
+  {
+    "name": "pipe-clock-check",
+    "state": {
+      "view": "pipeWelding",
+      "pipe_sect": "positions",
+      "pipe2_chal": 0,
+      "pipe2_hour": 1
+    }
+  },
+  {
+    "name": "pipe-clock-finished",
+    "state": {
+      "view": "pipeWelding",
+      "pipe_sect": "positions",
+      "pipe2_chal": 3
+    }
+  },
+  {
+    "name": "pipe-stack-empty",
+    "state": {
+      "view": "pipeWelding",
+      "pipe_sect": "passes",
+      "pipe2_wall": 0.218,
+      "pipe2_stack": []
+    }
+  },
+  {
+    "name": "pipe-stack-finished",
+    "state": {
+      "view": "pipeWelding",
+      "pipe_sect": "passes",
+      "pipe2_wall": 0.218,
+      "pipe2_stack": [
+        "root",
+        "hot",
+        "cap"
+      ]
+    }
+  },
+  {
+    "name": "ce-predict",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "ce",
+      "met_ce_comp": {
+        "C": 0.1,
+        "Mn": 0,
+        "Cr": 0,
+        "Mo": 0,
+        "V": 0,
+        "Ni": 0,
+        "Cu": 0
+      }
+    }
+  },
+  {
+    "name": "ce-predicted",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "ce",
+      "met_ce_comp": {
+        "C": 0.1,
+        "Mn": 0,
+        "Cr": 0,
+        "Mo": 0,
+        "V": 0,
+        "Ni": 0,
+        "Cu": 0
+      },
+      "met2_cePred": {
+        "sig": "0.100|0|0|0|0|0|0",
+        "band": "LOW"
+      },
+      "met2_ceTally": {
+        "n": 1,
+        "right": 1
+      }
+    }
+  },
+  {
+    "name": "ce-free",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "ce",
+      "met_ce_comp": {
+        "C": 0.1,
+        "Mn": 0,
+        "Cr": 0,
+        "Mo": 0,
+        "V": 0,
+        "Ni": 0,
+        "Cu": 0
+      },
+      "met2_ceFree": true
+    }
+  },
+  {
+    "name": "haz-predict",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "haz",
+      "met2_hazH": 16
+    }
+  },
+  {
+    "name": "haz-predicted",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "haz",
+      "met2_hazPred": 2,
+      "met2_hazH": 25,
+      "met2_hazPredH0": 16
+    }
+  },
+  {
+    "name": "crack-case-first",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "cracking",
+      "met2_cdIdx": 0
+    }
+  },
+  {
+    "name": "crack-case-last-answer",
+    "state": {
+      "view": "metallurgy",
+      "met_sect": "cracking",
+      "met2_cdIdx": 5,
+      "met2_cdPicks": {
+        "0": 1,
+        "5": 1
+      }
+    }
+  },
+  {
+    "name": "bead-hands-on",
+    "state": {
+      "view": "beadLab",
+      "arc_handsOn": true,
+      "arc_handSpeed": 12
+    }
+  },
+  {
+    "name": "bead-recorded",
+    "state": {
+      "view": "beadLab",
+      "arc_handsOn": true,
+      "arc_run": [
+        6,
+        12,
+        24,
+        10,
+        18
+      ],
+      "arc_runHand": true
+    }
+  },
+  {
+    "name": "bead-3d",
+    "state": {
+      "view": "beadLab",
+      "bl_view": "3d"
+    }
+  },
+  {
+    "name": "bead-mission-saved",
+    "state": {
+      "view": "beadLab",
+      "arc_handsOn": true,
+      "arc_missions": {
+        "thinAl": {
+          "pred": 1,
+          "locked": true,
+          "predOk": true,
+          "done": false,
+          "tries": 2,
+          "loaded": true
+        }
+      }
+    }
+  }
+]

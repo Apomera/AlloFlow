@@ -165,11 +165,11 @@ describe('desktop app-build deployment guard', () => {
     write(buildRoot, 'static/css/main.5678cdef.css', 'body { color: #111; }\n');
 
 
-    execFileSync(process.execPath, [join(process.cwd(), 'desktop', 'web-app', 'postbuild.js')], {
-      cwd: process.cwd(),
-      env: { ...process.env, BUILD_PATH: buildRoot },
-      stdio: 'pipe',
-    });
+    // This intentionally incomplete fixture exercises stamping, not the full
+    // CLI application-delivery gate.
+    const { postbuild } = require('../desktop/web-app/postbuild.js');
+    const receipt = postbuild({ buildDir: buildRoot, templateDir: resolve('desktop/web-app/public') });
+    expect(receipt.deliveryValidated).toBe(false);
 
     expect(readFileSync(join(buildRoot, 'alloflow_desktop_bridge.js'), 'utf8')).toBe(
       readFileSync('desktop/web-app/public/alloflow_desktop_bridge.js', 'utf8')

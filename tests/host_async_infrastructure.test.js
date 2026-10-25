@@ -9,13 +9,21 @@ const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const infraStart = host.indexOf('const _alloCreateDialogStateController');
 const infraEnd = host.indexOf('const LENGTH_THRESHOLDS', infraStart);
 if (infraStart < 0 || infraEnd < 0) throw new Error('Host async infrastructure markers missing');
+const deliverySource = readFileSync(resolve(process.cwd(), 'browser_delivery_policy.js'), 'utf8');
+const optionalDeliverySource = readFileSync(resolve(process.cwd(), 'optional_browser_delivery_policy.js'), 'utf8');
+const deliveryManifest = {
+  schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false,
+  assets: Object.fromEntries(['dependency_module.js', 'retry_module.js', 'allo_device_storage_module.js'].map(name => [name, { integrity: 'sha384-' + 'A'.repeat(64), bytes: 1 }])),
+};
 
 const makeInfrastructure = () => new Function(
   'window',
   'document',
   'setTimeout',
   'clearTimeout',
-  host.slice(infraStart, infraEnd)
+  deliverySource + '\n' + optionalDeliverySource + '\nconst _alloBrowserDeliveryManifest = ' + JSON.stringify(deliveryManifest) + ';\n'
+    + 'const _alloOptionalBrowserDeliveryManifest={schemaVersion:1,libraries:{fixture:{asset:"fixture_vendor.js",integrity:"sha384-' + 'A'.repeat(64) + '",bytes:1,mirrors:[]}}};\n'
+    + 'window.__alloConfigureTrustedScript=_alloConfigureTrustedBrowserScript;\n' + host.slice(infraStart, infraEnd)
     + '\nreturn {'
     + ' createDialogController: _alloCreateDialogStateController,'
     + ' withWatchdog: _alloWithWatchdog,'
@@ -33,10 +41,11 @@ const clearTestGlobals = () => {
     '__alloDeviceStorageReadyPromise',
     '__testStorageDependency',
     'alloDeviceStorage',
+    '__alloConfigureTrustedScript',
   ].forEach((key) => {
     try { delete window[key]; } catch (_) { window[key] = null; }
   });
-  document.querySelectorAll('script[src*="example.invalid"]').forEach((script) => script.remove());
+  document.querySelectorAll('script[src*="dependency_module.js"],script[src*="retry_module.js"]').forEach((script) => script.remove());
 };
 
 afterEach(() => {
@@ -119,10 +128,10 @@ describe('bounded and retryable storage loading', () => {
       timeoutMs: 50,
       parent: document.head,
     };
-    const first = loadScriptGlobal('https://example.invalid/dependency.js', readGlobal, options);
-    const second = loadScriptGlobal('https://example.invalid/dependency.js', readGlobal, options);
+    const first = loadScriptGlobal('https://alloflow-cdn.pages.dev/dependency_module.js', readGlobal, options);
+    const second = loadScriptGlobal('https://alloflow-cdn.pages.dev/dependency_module.js', readGlobal, options);
     expect(second).toBe(first);
-    const scripts = document.querySelectorAll('script[src*="example.invalid/dependency.js"]');
+    const scripts = document.querySelectorAll('script[src*="dependency_module.js"]');
     expect(scripts).toHaveLength(1);
 
     const dependency = { ready: true };
@@ -143,9 +152,9 @@ describe('bounded and retryable storage loading', () => {
       timeoutMs: 25,
       parent: document.head,
     };
-    const first = loadScriptGlobal('https://example.invalid/retry.js', readGlobal, options);
+    const first = loadScriptGlobal('https://alloflow-cdn.pages.dev/retry_module.js', readGlobal, options);
     const firstOutcome = first.catch((error) => error);
-    const firstScript = document.querySelector('script[src*="example.invalid/retry.js"]');
+    const firstScript = document.querySelector('script[src*="retry_module.js"]');
     expect(firstScript).toBeTruthy();
 
     await vi.advanceTimersByTimeAsync(25);
@@ -155,8 +164,8 @@ describe('bounded and retryable storage loading', () => {
     expect(firstScript.onload).toBeNull();
     expect(firstScript.onerror).toBeNull();
 
-    const retry = loadScriptGlobal('https://example.invalid/retry.js', readGlobal, options);
-    const retryScript = document.querySelector('script[src*="example.invalid/retry.js"]');
+    const retry = loadScriptGlobal('https://alloflow-cdn.pages.dev/retry_module.js', readGlobal, options);
+    const retryScript = document.querySelector('script[src*="retry_module.js"]');
     expect(retryScript).toBeTruthy();
     expect(retryScript).not.toBe(firstScript);
     window.__testStorageDependency = { recovered: true };
@@ -193,7 +202,7 @@ describe('host ownership wiring contracts', () => {
     expect(host).toContain("cancelActiveFileIntakeOperations('canvas-workspace-clear')");
     // The load-start callback now refuses a concurrent saved-work operation and clears waiting
     // homework first; it still invalidates hydration before the project load proceeds.
-    const loadStartAt = host.indexOf('onProjectLoadStart: () => {');
+    const loadStartAt = host.indexOf('onProjectLoadStart: (');
     expect(loadStartAt).toBeGreaterThan(-1);
     const loadStart = host.slice(loadStartAt, host.indexOf('\n        },', loadStartAt));
     expect(loadStart).toContain('invalidateLocalDataHydration();');

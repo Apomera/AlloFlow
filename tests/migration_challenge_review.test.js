@@ -27,13 +27,13 @@ function review(seed = {}, overrides = {}) {
   }
   function all(predicate) { return walk(tree, predicate); }
   function find(predicate) { return all(predicate)[0]; }
-  function control(label, value) { find(node => node.props?.['aria-label'] === label).props.onChange({ target: { value } }); draw(); }
+  function control(label, value) { find(node => (node.props?.id === label || node.props?.['aria-label'] === label)).props.onChange({ target: { value } }); draw(); }
   function action(name) { find(node => node.props?.['data-flight-challenge-action'] === name).props.onClick(); draw(); }
   function select(id) { find(node => node.props?.['data-flight-challenge'] === id).props.onClick(); draw(); }
   function remove(number) { find(node => node.props?.['aria-label'] === 'Remove challenge attempt ' + number).props.onClick(); draw(); }
   function steps() { return Object.fromEntries(all(node => node.props?.['data-mission-progress-step']).map(node => [node.props['data-mission-progress-step'], node.props['data-recorded']])); }
   function rows() { return all(node => node.props?.['data-flight-challenge-review']); }
-  function load() { control('Flight challenge prediction', 'Changing the named control should change the model result.'); action('load'); }
+  function load() { control('migration-mission-prediction', 'Changing the named control should change the model result.'); action('load'); }
   function wind(value) { control('Along-route wind in meters per second. Negative is headwind and positive is tailwind.', String(value)); }
   draw();
   return { draw, all, find, control, action, select, remove, load, wind, steps, rows, update, updateMulti, awardXP, get state() { return state; } };
@@ -66,7 +66,7 @@ describe('Migration challenge evidence review', () => {
     expect(ui.steps().model).toBe('false');
     ui.action('check');
     expect(ui.steps()).toEqual({ prediction: 'true', attempt: 'true', model: 'true', evidence: 'false' });
-    ui.control('Flight challenge explanation', 'The model went from 0 to 21 mph with wind as the only effective change.');
+    ui.control('migration-mission-notes', 'The model went from 0 to 21 mph with wind as the only effective change.');
     expect(ui.steps().evidence).toBe('false');
     ui.action('check');
     expect(ui.steps().evidence).toBe('true');
@@ -78,7 +78,7 @@ describe('Migration challenge evidence review', () => {
 
   it('compares real saved outcomes and marks the latest model match rather than the fastest attempt', () => {
     const ui = review(); ui.load();
-    ui.wind(8); ui.control('Flight challenge explanation', 'First model evidence'); ui.action('check');
+    ui.wind(8); ui.control('migration-mission-notes', 'First model evidence'); ui.action('check');
     ui.wind(4); ui.action('check');
     ui.wind(-10); ui.action('check');
     const rows = ui.rows();
@@ -95,7 +95,7 @@ describe('Migration challenge evidence review', () => {
   it('separates confounded changes from target evidence even when the recorded speed is high', () => {
     const ui = review(); ui.load();
     ui.wind(4); ui.control('3D migration focus species', 'peregrine');
-    ui.control('Flight challenge explanation', 'An explanation is present but two flight conditions changed.');
+    ui.control('migration-mission-notes', 'An explanation is present but two flight conditions changed.');
     ui.action('check');
     expect(ui.steps()).toEqual({ prediction: 'true', attempt: 'true', model: 'false', evidence: 'false' });
     expect(text(ui.rows()[0])).toContain('Other conditions changed');
@@ -107,10 +107,10 @@ describe('Migration challenge evidence review', () => {
   it('rederives latest match and progress after removal while retaining the other goal and investigation', () => {
     const notebook = { prediction: 'Keep the investigation', trials: [] };
     const ui = review({ flightInvestigation: notebook }); ui.load();
-    ui.wind(4); ui.control('Flight challenge explanation', 'First saved reasoning'); ui.action('check');
-    ui.control('Flight challenge explanation', ''); ui.wind(5); ui.action('check');
+    ui.wind(4); ui.control('migration-mission-notes', 'First saved reasoning'); ui.action('check');
+    ui.control('migration-mission-notes', ''); ui.wind(5); ui.action('check');
     ui.wind(-10); ui.action('check');
-    ui.select('formation'); ui.control('Flight challenge prediction', 'Keep formation prediction'); ui.select('wind');
+    ui.select('formation'); ui.control('migration-mission-prediction', 'Keep formation prediction'); ui.select('wind');
     ui.remove(2);
     expect(ui.rows().map(row => row.props['data-latest-model-match'])).toEqual(['true', 'false']);
     expect(ui.steps().evidence).toBe('true');
@@ -139,7 +139,7 @@ describe('Migration challenge evidence review', () => {
   it('compares season reversal with the same speed and only the season listed as an effective change', () => {
     const ui = review(); ui.select('season'); ui.load();
     ui.control('Migration season and direction', 'spring');
-    ui.control('Flight challenge explanation', 'Spring reverses the destination without changing these model speeds.');
+    ui.control('migration-mission-notes', 'Spring reverses the destination without changing these model speeds.');
     ui.action('check');
     expect(text(ui.rows()[0])).toContain('Season: Fall → Spring');
     expect(text(ui.rows()[0])).toContain('58 → 58');

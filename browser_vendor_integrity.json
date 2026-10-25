@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "libraries": {
+    "vexflow": {
+      "asset": "vendor/vexflow-5.0.0/vexflow.js",
+      "integrity": "sha384-CqssDDrB0gDzmUGwU/TPip4CJOQif4qWkW+w31xtNqLV34D7utsq7O4N7uBAtF9u",
+      "bytes": 1128380,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/vexflow@5.0.0/build/cjs/vexflow.js",
+          "integrity": "sha384-CqssDDrB0gDzmUGwU/TPip4CJOQif4qWkW+w31xtNqLV34D7utsq7O4N7uBAtF9u",
+          "bytes": 1128380
+        }
+      ]
+    },
+    "jsonrepair": {
+      "asset": "vendor/jsonrepair-3.15.0.min.js",
+      "integrity": "sha384-ctyn1nJHmrUzPGMF/9OFj4kWb28qMVVUo8mxOFFsucMChxe5/pHDOpj/EKKPzQOG",
+      "bytes": 7436,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/jsonrepair@3.15.0/lib/umd/jsonrepair.min.js",
+          "integrity": "sha384-ctyn1nJHmrUzPGMF/9OFj4kWb28qMVVUo8mxOFFsucMChxe5/pHDOpj/EKKPzQOG",
+          "bytes": 7436
+        }
+      ]
+    },
+    "jszip": {
+      "asset": "vendor/jszip-3.10.1.min.js",
+      "integrity": "sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG",
+      "bytes": 97630,
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+          "integrity": "sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG",
+          "bytes": 97630
+        }
+      ]
+    },
+    "lamejs": {
+      "asset": "lame.min.js",
+      "integrity": "sha384-I9syldtgxP74w4DixXFS7GzcOur2n0zS7CbW4VVMxnC1u+lulqj3PPhVyM84fNt+",
+      "bytes": 156478,
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js",
+          "integrity": "sha384-xuasJXVcyv3hZq0eYpelEkBC8l4yufatZXDsKuyCU2rqfhDCb+ftuE/mSfZAteiK",
+          "bytes": 156043
+        }
+      ]
+    },
+    "pptxgenjs": {
+      "asset": "vendor/pptxgenjs-3.12.0.bundle.js",
+      "integrity": "sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ",
+      "bytes": 477529,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js",
+          "integrity": "sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ",
+          "bytes": 477529
+        }
+      ]
+    },
+    "lz-string": {
+      "asset": "vendor/lz-string-1.4.4.min.js",
+      "integrity": "sha384-+pWnyi8LtZx+cgXfD2arWgUX7pHIaEL215cEPPk9WrsegNlgvDL9DNjaqsceQq6o",
+      "bytes": 4719,
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js",
+          "integrity": "sha384-+pWnyi8LtZx+cgXfD2arWgUX7pHIaEL215cEPPk9WrsegNlgvDL9DNjaqsceQq6o",
+          "bytes": 4719
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js",
+          "integrity": "sha384-+pWnyi8LtZx+cgXfD2arWgUX7pHIaEL215cEPPk9WrsegNlgvDL9DNjaqsceQq6o",
+          "bytes": 4719
+        },
+        {
+          "url": "https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js",
+          "integrity": "sha384-+pWnyi8LtZx+cgXfD2arWgUX7pHIaEL215cEPPk9WrsegNlgvDL9DNjaqsceQq6o",
+          "bytes": 4719
+        }
+      ]
+    },
+    "idb-keyval": {
+      "asset": "vendor/idb-keyval-6.2.0.umd.min.js",
+      "integrity": "sha384-We3ydKgdt5FHM0GwpVAj/OogYHFXpnv1111aG9z8raKMqgy3FcUhHs5hEj9Jtias",
+      "bytes": 4585,
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.0/umd.min.js",
+          "integrity": "sha384-We3ydKgdt5FHM0GwpVAj/OogYHFXpnv1111aG9z8raKMqgy3FcUhHs5hEj9Jtias",
+          "bytes": 4585
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/idb-keyval@6.2.0/dist/umd.js",
+          "integrity": "sha384-oM43ZjLL5cj/w3ORvbvwAubendEp51/buLZ9CGEMjp5ExAxNxAC7N7GJ2X2Oreb9",
+          "bytes": 4745
+        },
+        {
+          "url": "https://unpkg.com/idb-keyval@6.2.0/dist/umd.js",
+          "integrity": "sha384-oM43ZjLL5cj/w3ORvbvwAubendEp51/buLZ9CGEMjp5ExAxNxAC7N7GJ2X2Oreb9",
+          "bytes": 4745
+        }
+      ]
+    },
+    "three-core": {
+      "asset": "vendor/three-r128/three.min.js",
+      "integrity": "sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu",
+      "bytes": 603445,
+      "mirrors": [
+        {
+          "url": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+          "integrity": "sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu",
+          "bytes": 603445
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
+          "integrity": "sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu",
+          "bytes": 603445
+        }
+      ]
+    },
+    "three-orbit-controls": {
+      "asset": "vendor/three-r128/OrbitControls.js",
+      "integrity": "sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf",
+      "bytes": 26375,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js",
+          "integrity": "sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf",
+          "bytes": 26375
+        },
+        {
+          "url": "https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js",
+          "integrity": "sha384-wagZhIFgY4hD+7awjQjR4e2E294y6J2HSnd8eTNc15ZubTeQeVRZwhQJ+W6hnBsf",
+          "bytes": 26375
+        }
+      ]
+    },
+    "three-copyshader": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js",
+          "integrity": "sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj",
+          "bytes": 606
+        }
+      ]
+    },
+    "three-luminosityhighpassshader": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js",
+          "integrity": "sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R",
+          "bytes": 1228
+        }
+      ]
+    },
+    "three-effectcomposer": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js",
+          "integrity": "sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg",
+          "bytes": 6271
+        }
+      ]
+    },
+    "three-renderpass": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js",
+          "integrity": "sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs",
+          "bytes": 1746
+        }
+      ]
+    },
+    "three-shaderpass": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js",
+          "integrity": "sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3",
+          "bytes": 1416
+        }
+      ]
+    },
+    "three-unrealbloompass": {
+      "asset": null,
+      "integrity": null,
+      "bytes": null,
+      "mirrors": [
+        {
+          "url": "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js",
+          "integrity": "sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa",
+          "bytes": 12612
+        }
+      ]
+    }
+  }
+}

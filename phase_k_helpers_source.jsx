@@ -1374,6 +1374,24 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
 const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart = false) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] handleSpeak fired"); } catch(_) {}
+    const speechLanguageOverride = typeof deps.speechLanguageOverride === 'string' ? deps.speechLanguageOverride.trim() : '';
+    const languageHelpers = window.AlloModules?.TextPipelineHelpers;
+    const savedPrimaryFallback = generatedContent?.type === 'glossary'
+      ? generatedContent?.baseLanguage || generatedContent?.config?.baseLanguage || 'English'
+      : (generatedContent?.type === 'analysis' ? generatedContent?.data?.sourceLanguage || generatedContent?.sourceSnapshot?.language : '')
+        || generatedContent?.config?.language || generatedContent?.language || generatedContent?.instructionalText?.complexity?.language || 'English';
+    const savedPrimaryLanguage = typeof languageHelpers?.getArtifactPrimaryLanguage === 'function'
+      ? languageHelpers.getArtifactPrimaryLanguage(generatedContent)
+      : savedPrimaryFallback;
+    const savedCompanionLanguage = typeof languageHelpers?.getArtifactTranslationTarget === 'function'
+      ? languageHelpers.getArtifactTranslationTarget(generatedContent)
+      : generatedContent?.config?.translationPolicy?.target || generatedContent?.translationTarget || generatedContent?.config?.translationTarget || 'English';
+    const sourcePaneLanguage = generatedContent?.sourceSnapshot?.language || generatedContent?.sourceInstructionalText?.complexity?.language || savedPrimaryLanguage;
+    const primarySpeechLanguage = speechLanguageOverride || (contentId === READ_ALOUD_SOURCE_PANE_ID ? sourcePaneLanguage : savedPrimaryLanguage);
+    const isUiSpeech = /^(?:help|ui|tour|tooltip)(?:[-_:]|$)/i.test(String(contentId || ''));
+    const isSavedSpeech = /^(?:simplified|faq|term|def|trans|fc|etym|root)(?:[-_:]|$)/i.test(String(contentId || ''));
+    const directSpeechLanguage = speechLanguageOverride || (isUiSpeech ? currentUiLanguage || 'English'
+      : isSavedSpeech ? savedPrimaryLanguage : leveledTextLanguage || 'English');
     const now = Date.now();
     if (!forceRestart && contentId && lastHandleSpeakRef.current &&
         contentId === lastHandleSpeakRef.current.id &&
@@ -1442,14 +1460,9 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         isSystemAudioActiveRef.current = false;
         return;
     }
-        // A short single token MIGHT be a translation key — glossary terms are
-        // spoken that way. But t() returns undefined on a MISS by design (the
-        // caller is expected to supply the fallback), and this line had none:
-        // every one-token sentence that isn't a key — an emoji, "Yes.",
-        // "Photosynthesis.", a proper noun — resolved to undefined and threw
-        // on .split() below, killing the click. Field report 2026-07-21:
-        // clicking an emoji in the FAQ. Fall back to the raw text.
-        const _looksLikeTranslationKey = !text.includes(' ') && text.length < 100;
+        // Only help/UI lanes contain translation keys. A glossary word or a
+        // saved sentence is authored content even if t() happens to know it.
+        const _looksLikeTranslationKey = isUiSpeech && !text.includes(' ') && text.length < 100;
         const effectiveText = (_looksLikeTranslationKey ? t(text) : text) || text;
         const handleSpeakTtsConfig = _pkReadTtsConfig();
         if (handleSpeakTtsConfig.provider === 'off') {
@@ -1484,10 +1497,15 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         }
     }
     if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
-        if (glossaryAudioCache.current.has(effectiveText)) {
+        const cacheKey = typeof languageHelpers?.getGlossaryAudioCacheKey === 'function'
+          ? languageHelpers.getGlossaryAudioCacheKey(effectiveText, directSpeechLanguage)
+          : directSpeechLanguage + '\u241f' + effectiveText;
+        const legacyEnglish = /^(?:en(?:[-_]|$)|english(?:\s*\(|$))/i.test(directSpeechLanguage);
+        const cached = glossaryAudioCache.current.get(cacheKey) || (legacyEnglish ? glossaryAudioCache.current.get(effectiveText) : null);
+        if (cached) {
             console.log("[handleSpeak] ⚡ Glossary CACHE HIT:", effectiveText.substring(0, 30));
             const cacheToken = ++playbackRuntime.directToken;
-            const audio = new Audio(glossaryAudioCache.current.get(effectiveText));
+            const audio = new Audio(cached);
             audio.playbackRate = 0.85;
             audio.volume = _pkClampVolume(voiceVolume);
             audioRef.current = audio;
@@ -1588,15 +1606,15 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             const occurrenceByText = new Map();
             if (sourceSentenceCount != null) {
                 const sourceUnits = createReadAloudDescriptors(cleanSentences.slice(0, sourceSentenceCount), {
-                    language: leveledTextLanguage || 'English', scope: 'source', occurrenceByText,
+                    language: primarySpeechLanguage, scope: 'source', occurrenceByText,
                 });
                 const targetUnits = createReadAloudDescriptors(cleanSentences.slice(sourceSentenceCount), {
-                    language: 'English', scope: 'target', occurrenceByText,
+                    language: speechLanguageOverride || savedCompanionLanguage, scope: 'target', occurrenceByText,
                 });
                 cleanSentences = [...sourceUnits, ...targetUnits];
             } else {
                 cleanSentences = createReadAloudDescriptors(cleanSentences, {
-                    language: leveledTextLanguage || 'English', scope: contentId === 'faq-active' ? 'faq' : 'body', occurrenceByText,
+                    language: primarySpeechLanguage, scope: contentId === 'faq-active' ? 'faq' : 'body', occurrenceByText,
                 });
             }
         }
@@ -1632,7 +1650,12 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
             isSystemAudioActiveRef.current = false;
             playbackRuntime.directController = null;
         };
-        const ttsLanguage = contentId && String(contentId).startsWith('persona-translation-') ? 'English' : (leveledTextLanguage || 'English');
+        const personaTranslationMatch = String(contentId || '').match(/^persona-(?:panel-)?translation-(\d+)$/);
+        const translationMessage = personaTranslationMatch
+            ? personaState?.chatHistory?.[Number(personaTranslationMatch[1])] : null;
+        const savedPersonaTarget = [translationMessage?.translationTarget, translationMessage?.translationLanguage]
+            .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+        const ttsLanguage = speechLanguageOverride || (personaTranslationMatch ? (savedPersonaTarget?.trim() || 'English') : directSpeechLanguage);
         const speakDirectViaBrowser = reason => {
             if (!directIsCurrent() || handleSpeakTtsConfig.provider === 'off') return false;
             warnLog(`Direct browser-TTS fallback (${reason})`);
@@ -2844,6 +2867,19 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
 const translateResourceItem = async (item, targetLanguage, deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] translateResourceItem fired"); } catch(_) {}
+      const requestTranslation = async (prompt, jsonMode = false) => {
+          const ensureActive = () => {
+              if (generationSignal?.aborted) {
+                  const error = new Error('Translation was cancelled.');
+                  error.name = 'AbortError';
+                  throw error;
+              }
+          };
+          ensureActive();
+          const reply = await callGemini(prompt, jsonMode, false, null, null, generationSignal || null);
+          ensureActive();
+          return reply;
+      };
       // A copy of an untranslatable resource is not a translation: report it.
       if (['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type)) throw new Error('This resource type has no text to translate.');
       if (item.type === 'analysis') {
@@ -2888,7 +2924,7 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
               // The requested report is already available, but its source passage
               // may be in another language. Request only that missing companion.
               try {
-                  const result = JSON.parse(cleanJson(await callGemini(`Translate the source passage into ${target}. Do not analyze, correct, or simplify it.\n${companionInstruction}\nReturn ONLY JSON: {"sourceTranslation": <string or null>}.`, true)));
+                  const result = JSON.parse(cleanJson(await requestTranslation(`Translate the source passage into ${target}. Do not analyze, correct, or simplify it.\n${companionInstruction}\nReturn ONLY JSON: {"sourceTranslation": <string or null>}.`, true)));
                   if (!result || typeof result !== 'object' || Array.isArray(result)
                       || (result.sourceTranslation !== null && (typeof result.sourceTranslation !== 'string' || !result.sourceTranslation.trim()))) {
                       throw new Error('The source translation reply was not usable.');
@@ -2928,7 +2964,7 @@ Rules:
 - Return ONLY JSON: {"report": <the same report shape>, "sourceTranslation": <string or null>}.
 ${companionInstruction}`;
           try {
-              const result = JSON.parse(cleanJson(await callGemini(prompt, true)));
+              const result = JSON.parse(cleanJson(await requestTranslation(prompt, true)));
               const translated = result && result.report;
               if (!translated || typeof translated !== 'object' || Array.isArray(translated)) throw new Error('The analysis translation reply was not usable.');
               const translateField = (value, template) => {
@@ -2971,6 +3007,118 @@ ${companionInstruction}`;
               throw error;
           }
       }
+      const primaryLanguage = String(targetLanguage || '').trim();
+      if (!primaryLanguage) throw new Error('Choose a translation language.');
+      const pipeline = window.AlloModules?.TextPipelineHelpers || {};
+      const languageKey = value => {
+          const text = String(value || '').trim().toLowerCase().replace(/_/g, '-');
+          try {
+              if (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(text)) return new Intl.DisplayNames(['en'], { type: 'language' }).of(text.split('-')[0]).toLowerCase();
+          } catch (_) {}
+          return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      };
+      const sameLanguage = (a, b) => !!languageKey(a) && languageKey(a) === languageKey(b);
+      const resolvePolicy = deps.resolveTranslationPolicy || pipeline.resolveTranslationPolicy;
+      const choicesFor = deps.translationTargetChoices || pipeline.translationTargetChoices;
+      const uiLanguage = String(currentUiLanguage || 'English').trim() || 'English';
+      const choices = typeof choicesFor === 'function' ? choicesFor(primaryLanguage, uiLanguage, selectedLanguages) : undefined;
+      // The header supplies a frozen action policy. Direct callers use the same
+      // resolver as generation; old hosts without that helper retain auto behavior.
+      const requestedPolicy = deps.translationPolicy && typeof deps.translationPolicy === 'object'
+          ? deps.translationPolicy
+          : typeof resolvePolicy === 'function'
+              ? resolvePolicy(deps.translationMode, primaryLanguage, uiLanguage, choices)
+              : { enabled: String(deps.translationMode || '').trim().toLowerCase() !== 'off', target: uiLanguage, mode: 'auto' };
+      const companionTarget = String(requestedPolicy.target || '').trim();
+      const companionEnabled = !!requestedPolicy.enabled && !!companionTarget && !sameLanguage(primaryLanguage, companionTarget);
+      const translationPolicy = { enabled: companionEnabled, target: companionEnabled ? companionTarget : '', mode: requestedPolicy.mode || 'auto' };
+      const marker = '--- ENGLISH TRANSLATION ---'; // Existing renderer/parser token; destination is saved separately.
+      const primaryText = value => typeof value === 'string' ? value.split(/---\s*(?:ENGLISH\s+)?TRANSLATION\s*---/i)[0].trim() : value;
+      const withoutCompanions = value => typeof value === 'string' ? primaryText(value)
+          : Array.isArray(value) ? value.map(withoutCompanions)
+          : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value)
+              .filter(([key]) => !/_en$/i.test(key)).map(([key, nested]) => [key, withoutCompanions(nested)])) : value;
+      const savedRowLanguages = Array.isArray(item.data) ? item.data.map(row => row?.termLanguage || row?.baseLanguage || '') : [];
+      const glossaryBaseLanguage = item.type === 'glossary' ? (pipeline.getGlossaryBaseLanguage?.(item)
+          || item.baseLanguage || item.glossaryBaseLanguage || item.config?.baseLanguage || item.config?.glossaryBaseLanguage
+          || (savedRowLanguages.length && savedRowLanguages.every(language => language && sameLanguage(language, savedRowLanguages[0])) ? savedRowLanguages[0] : 'English')) : '';
+      const nativeGlossary = item.type === 'glossary' && (Number(item.glossaryLanguageSchemaVersion || item.config?.glossaryLanguageSchemaVersion) >= 1
+          || !sameLanguage(glossaryBaseLanguage, 'English'));
+      if (nativeGlossary && !Array.isArray(item.data)) throw new Error('The native glossary has no usable word rows.');
+      const previousCompanion = [item.config?.translationPolicy?.target, item.translationPolicy?.target, item.translationTarget, item.config?.translationTarget]
+          .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+      const glossaryDerivedKeys = ['termAudio', 'termAudioUrl', 'definitionAudio', 'definitionAudioUrl', 'wordAudio', 'wordAudioProvenance',
+          'audio', 'audioUrl', 'defAudio', 'phonics', 'phonicsData', 'phonetics', 'phonemes', 'ipa', 'syllables',
+          'dictionary', 'dictionaryData', 'dictionaryEvidence', 'etymology', 'etymologyByLang', 'roots', 'relatedWords', 'translationSource'];
+      const cleanNativeGlossaryRow = row => {
+          const clean = { ...row };
+          glossaryDerivedKeys.forEach(key => { delete clean[key]; });
+          return clean;
+      };
+      const retainedGlossaryTranslations = row => Object.fromEntries(Object.entries(row?.translations || {})
+          .filter(([language]) => !sameLanguage(language, primaryLanguage)
+              && !(previousCompanion && sameLanguage(language, previousCompanion))));
+      // Old glossary records keep their English-base contract. Native rows use
+      // their saved base, never config.language (a translation column on old packs).
+      const primaryData = nativeGlossary && Array.isArray(item.data) ? item.data.map(row => ({ ...cleanNativeGlossaryRow(row), translations: retainedGlossaryTranslations(row) }))
+          : item.type === 'glossary' ? item.data : withoutCompanions(item.data);
+      const sourceLanguage = nativeGlossary ? glossaryBaseLanguage : item.config?.language || item.language || item.instructionalText?.complexity?.language || '';
+      const translationOf = item.translationOf || item.config?.translationOf || item.id;
+      const copyBase = { ...item };
+      // These caches describe the old words and voice lane, not reusable media.
+      // Illustrations and embedded resource media remain available in item.data.
+      ['karaokeAudio', 'karaokeStudentAudio', 'immersiveData', 'immersiveSource', 'posEnriched'].forEach(key => { delete copyBase[key]; });
+      const copyConfig = { ...item.config };
+      if (item.provenance && typeof item.provenance === 'object') copyBase.provenance = { ...item.provenance };
+      // Reuse checks must not mistake a translated derivative for the exact
+      // generation variant that produced its source. Source lineage stays intact.
+      const generationKeys = ['generationIdentity', 'variantKey', 'explicitVariantKey', 'variantKeyDerived', 'generationConfig', 'generationConfigFingerprint'];
+      for (const key of generationKeys) {
+          delete copyBase[key];
+          delete copyConfig[key];
+          if (copyBase.provenance) delete copyBase.provenance[key];
+      }
+      let translatedInstructionalText;
+      if (item.type === 'simplified') {
+          const priorProfile = item.instructionalText || item.config?.instructionalText || {};
+          translatedInstructionalText = { ...priorProfile, form: 'adapted', role: 'supplemental', designationSource: 'workflow-default',
+              replacementAuthorization: { authorized: false, source: 'none' },
+              complexity: { requestedGrade: priorProfile.complexity?.requestedGrade || item.config?.grade || '',
+                  language: primaryLanguage, measuredGrade: null, method: '', status: 'stale' } };
+          // Word ranges, readability and alignment checks describe the source
+          // text. A translated supporting reading needs its own evidence.
+          for (const key of ['readingSupports', 'adaptedReadingSupports', 'readingPreservation', 'levelCheck', 'alignmentCheck', 'textProfile']) {
+              delete copyBase[key];
+              delete copyConfig[key];
+          }
+          copyConfig.instructionalText = translatedInstructionalText;
+      }
+      const copyMetadata = {
+          config: { ...copyConfig, language: primaryLanguage, translationMode: translationPolicy.mode, translationTarget: translationPolicy.target,
+              attachedTranslationTarget: translationPolicy.target, translationPolicy: { ...translationPolicy },
+              translationOf, translationSourceId: item.id, translationSourceLanguage: sourceLanguage,
+              ...(nativeGlossary ? { baseLanguage: primaryLanguage, glossaryLanguageSchemaVersion: 1 } : {}) },
+          language: primaryLanguage,
+          translationTarget: translationPolicy.target,
+          attachedTranslationTarget: translationPolicy.target,
+          translationPolicy: { ...translationPolicy },
+          translationOf,
+          translationSourceId: item.id,
+          translationSourceLanguage: sourceLanguage,
+          ...(nativeGlossary ? { baseLanguage: primaryLanguage, glossaryLanguageSchemaVersion: 1 } : {}),
+          ...(translatedInstructionalText ? { instructionalText: translatedInstructionalText }
+              : item.instructionalText?.complexity ? { instructionalText: { ...item.instructionalText,
+              complexity: { ...item.instructionalText.complexity, language: primaryLanguage } } } : {}),
+          meta: item.meta && typeof item.meta === 'object' && !Array.isArray(item.meta)
+              ? { ...item.meta, translatedTo: primaryLanguage }
+              : item.meta ? `${item.meta} (${primaryLanguage})` : `Translated to ${primaryLanguage}`
+      };
+      const fieldCompanionRule = companionEnabled
+          ? `For every translated display field, provide its ${companionTarget} companion in the matching "_en" field (including arrays such as options_en). The suffix is a legacy storage key, NOT an instruction to use English. Translate the new ${primaryLanguage} content into ${companionTarget}; do not copy the source language into these companion fields.`
+          : 'Return only the primary language. Do not include any fields ending in "_en", any second-language text, or any translation delimiter.';
+      const blockCompanionRule = companionEnabled
+          ? `For each translated prose field, append "${marker}" followed by its ${companionTarget} companion in that same string. This fixed machine marker does not name the companion language. Translate the new ${primaryLanguage} content into ${companionTarget}.`
+          : 'Return only the primary language with no second-language text or translation delimiter.';
       // Inline pictures and audio never go to the model (one picture can be
       // megabytes). Placeholders keep their place; restoreMedia puts them back.
       const media = [];
@@ -2986,32 +3134,41 @@ ${companionInstruction}`;
           if (source && typeof source === 'object') Object.keys(source).forEach(key => { if (isInlineMedia(source[key]) && !isInlineMedia(out[key])) out[key] = source[key]; });
           return out;
       };
-      const dataStr = JSON.stringify(stripMedia(item.data));
+      const dataStr = JSON.stringify(stripMedia(primaryData));
+      const glossaryTargets = [...(nativeGlossary ? [] : [primaryLanguage]), ...(companionEnabled ? [companionTarget] : [])]
+          .filter((language, index, languages) => (nativeGlossary ? !sameLanguage(language, primaryLanguage) : !sameLanguage(language, 'English'))
+              && languages.findIndex(candidate => sameLanguage(candidate, language)) === index);
       let prompt = "";
       if (item.type === 'simplified') {
-          let sourceText = typeof item.data === 'string' ? item.data : '';
-          if (sourceText.includes('--- ENGLISH TRANSLATION ---')) {
-              sourceText = sourceText.split('--- ENGLISH TRANSLATION ---')[1].trim();
-          }
+          const sourceText = typeof primaryData === 'string' ? primaryData : '';
           prompt = `
               You are an expert translator for educators.
-              Task: Translate the following educational text into ${targetLanguage}.
-              Strict Output Format:
-              1. Provide the ${targetLanguage} translation.
-              2. Add the delimiter "--- ENGLISH TRANSLATION ---" on a new line.
-              3. Provide the original English text exactly as is (from the input).
+              Task: Translate the following educational text into ${primaryLanguage}.
+              Return ONLY the ${primaryLanguage} primary text. Do not include a companion translation or delimiter.
+              Preserve Markdown structure, citation markers and URLs exactly. Do not summarize or simplify.
               Input Text:
               "${sourceText}"
           `;
       } else if (item.type === 'glossary') {
-          prompt = `
-              Translate the terms and definitions in this glossary JSON into ${targetLanguage}.
+          prompt = nativeGlossary ? `
+              Translate this ${glossaryBaseLanguage} glossary into ${primaryLanguage}.
+              Input Data: ${dataStr}
+              For every row:
+              1. Translate "term" and "def" into ${primaryLanguage}. Preserve their meaning; do not simplify or substitute unrelated vocabulary.
+              2. Set termLanguage, definitionLanguage and baseLanguage to ${JSON.stringify(primaryLanguage)} and glossaryLanguageSchemaVersion to 1.
+              3. ${companionEnabled ? `Add a translations entry for ${companionTarget}, containing both translated term and definition as "Term: Definition".` : 'Do not add any translation columns or a second-language version.'}
+              4. Preserve existing unrelated named translation entries exactly. Do not add an entry for the new base language or any unrequested language.
+              5. Preserve row order, row count, IDs, illustration placeholders, sourceTerm and sourceLanguage exactly. Do not regenerate audio, pronunciation, dictionary evidence, or word roots from the old base words.
+              Return ONLY the updated JSON array.
+          ` : `
+              Translate the terms and definitions in this glossary JSON into ${primaryLanguage}.
               Input Data: ${dataStr}
               Task:
               For every item in the array:
               1. Keep the "term" and "def" fields in English.
-              2. ADD or UPDATE the "translations" object to include "${targetLanguage}".
+              2. ADD or UPDATE the "translations" object for EACH of these requested languages: ${JSON.stringify(glossaryTargets)}.
               3. Format for translation field: "TranslatedTerm: TranslatedDefinition".
+              4. Preserve all existing named-language entries unless that entry is one of the requested languages. If the list is empty, keep the English base without adding a redundant English translation.
               Return ONLY the updated JSON array.
           `;
       } else if (item.type === 'quiz') {
@@ -3019,13 +3176,9 @@ ${companionInstruction}`;
               Translate this Quiz JSON into ${targetLanguage}.
               Input Data: ${dataStr}
               Task:
-              1. For every question:
-                 - Move the current "question" text to "question_en" if "question_en" doesn't exist.
-                 - Write the ${targetLanguage} translation in "question".
-                 - Move current "options" to "options_en" if "options_en" doesn't exist.
-                 - Write ${targetLanguage} translations in "options".
-                 - Ensure the "correctAnswer" matches the new ${targetLanguage} option text.
-              2. Do the same for reflections (text -> text_en).
+              1. Translate question text, options, answer/evidence options, explanations and reflections into ${primaryLanguage}.
+              2. Ensure correctAnswer/correctAnswers match the translated option text. Preserve question types, IDs, option order, counts and all structural fields.
+              3. ${fieldCompanionRule}
               Return ONLY the updated valid JSON object.
           `;
       } else if (item.type === 'directions') {
@@ -3033,10 +3186,10 @@ ${companionInstruction}`;
           // The objectives machinery (ids, kinds, amounts, gameTypes, softGate) must survive
           // byte-identical or auto-checking breaks in the translated copy. Handles BOTH data
           // shapes: legacy markdown string and { body, objectives[] }.
-          const _dirIsObj = item.data && typeof item.data === 'object' && !Array.isArray(item.data);
-          const _dirBody = _dirIsObj ? String(item.data.body || '') : String(item.data || '');
-          const _dirLabels = (_dirIsObj && Array.isArray(item.data.objectives)) ? item.data.objectives.map(o => String((o && o.label) || '')) : [];
-          const board = _dirIsObj && item.data.choiceBoard;
+          const _dirIsObj = primaryData && typeof primaryData === 'object' && !Array.isArray(primaryData);
+          const _dirBody = _dirIsObj ? String(primaryData.body || '') : String(primaryData || '');
+          const _dirLabels = (_dirIsObj && Array.isArray(primaryData.objectives)) ? primaryData.objectives.map(o => String((o && o.label) || '')) : [];
+          const board = _dirIsObj && primaryData.choiceBoard;
           // Saved boards keep cards in choices[]; items[] is a legacy spelling.
           const _dirCards = board && typeof board === 'object' ? (Array.isArray(board.choices) ? board.choices : (Array.isArray(board.items) ? board.items : [])) : [];
           const choiceBoard = board && typeof board === 'object' ? {
@@ -3046,12 +3199,15 @@ ${companionInstruction}`;
           prompt = `
               You are an expert translator for educators.
               Task: Translate these student-facing assignment directions into ${targetLanguage}.
-              Input JSON: ${JSON.stringify({ title: item.title || '', body: _dirBody, labels: _dirLabels, choiceBoard })}
+              Input JSON: ${JSON.stringify({ title: primaryText(item.title || ''), body: _dirBody, labels: _dirLabels, choiceBoard })}
               Rules:
               1. Translate "title", "body" (keep the markdown structure, including any **Due:** line), and every entry of "labels".
               2. Keep each label SHORT — they are checklist goals a child reads at a glance.
               3. Translate choiceBoard title, prompt, and each item's label and description. Keep item order and count unchanged. Keep null choiceBoard as null.
               4. Return ONLY valid JSON of the exact same shape: {"title": "...", "body": "...", "labels": ["..."], "choiceBoard": null or {"title":"...","prompt":"...","items":[{"label":"...","description":"..."}]}}.
+              5. ${companionEnabled
+                  ? `For title, labels and choice-board text, write the ${primaryLanguage} text followed by its ${companionTarget} companion in parentheses. In body, put the ${primaryLanguage} directions first, then their ${companionTarget} companion as separate Markdown paragraphs. Use natural readable text; do not output any translation delimiter or fields ending in "_en".`
+                  : 'Use only the primary language. Do not output a companion translation, translation delimiter, or fields ending in "_en".'}
           `;
       } else {
           prompt = `
@@ -3059,20 +3215,29 @@ ${companionInstruction}`;
               Input Data: ${dataStr}
               Rules:
               1. Translate all display text values (titles, items, descriptions) into ${targetLanguage}.
-              2. For every translated field, try to preserve the original English in a new field with suffix "_en" if possible (e.g. "title" becomes ${targetLanguage}, "title_en" gets original).
-              3. Keep the JSON structure identical.
+              2. ${['lesson-plan', 'parent-guide', 'study-guide'].includes(item.type) ? blockCompanionRule : fieldCompanionRule}
+              3. Keep the JSON structure, IDs, resource references, types, numbers, booleans, URLs, media, array order and counts identical. Translate only display text.
               Return ONLY the updated valid JSON.
           `;
       }
       try {
-          const result = await callGemini(prompt, item.type !== 'simplified');
+          const result = await requestTranslation(prompt, item.type !== 'simplified');
           let newData;
           if (item.type === 'simplified') {
               if (typeof result !== 'string' || !result.trim()) throw new Error('The translation reply was empty.');
-              newData = result;
+              newData = primaryText(result);
+              if (!newData) throw new Error('The translation reply was empty.');
+              if (companionEnabled) {
+                  const companion = await requestTranslation(`Translate the ${primaryLanguage} primary text below into ${companionTarget}.
+Return ONLY the ${companionTarget} companion text with no preamble or delimiter. Preserve formatting, tone, citation markers and URLs exactly; do not summarize or simplify.
+Input Text: ${JSON.stringify(newData)}`);
+                  if (typeof companion !== 'string' || !primaryText(companion)) throw new Error('The companion translation reply was empty.');
+                  newData += `\n\n${marker}\n\n${primaryText(companion)}`;
+              }
           } else {
-              newData = restoreMedia(JSON.parse(cleanJson(result)), item.data);
+              newData = restoreMedia(JSON.parse(cleanJson(result)), primaryData);
               if (!newData || typeof newData !== 'object') throw new Error('The translation reply was not usable.');
+              if (!companionEnabled && item.type !== 'glossary') newData = withoutCompanions(newData);
           }
           if (item.type === 'quiz') {
             if (!newData.questions || !Array.isArray(newData.questions)) newData.questions = [];
@@ -3083,14 +3248,54 @@ ${companionInstruction}`;
                 else if (newData.items && Array.isArray(newData.items)) newData = newData.items;
                 else newData = [];
             }
+            if (Array.isArray(primaryData)) {
+                if (newData.length !== primaryData.length) throw new Error('The translation changed the glossary row count.');
+                newData = newData.map((row, index) => {
+                    const original = primaryData[index];
+                    if (!row || typeof row !== 'object') throw new Error('The glossary translation reply was not usable.');
+                    const namedTranslations = nativeGlossary ? { ...original.translations } : { ...original.translations, ...row.translations };
+                    if (nativeGlossary) for (const language of glossaryTargets) {
+                        const key = Object.keys(row.translations || {}).find(candidate => sameLanguage(candidate, language));
+                        if (key) namedTranslations[language] = row.translations[key];
+                    }
+                    for (const language of glossaryTargets) {
+                        const key = Object.keys(namedTranslations).find(candidate => sameLanguage(candidate, language));
+                        if (!key || typeof namedTranslations[key] !== 'string' || !namedTranslations[key].trim()) throw new Error(`The glossary translation omitted ${language}.`);
+                        if (key !== language) { namedTranslations[language] = namedTranslations[key]; delete namedTranslations[key]; }
+                    }
+                    if (!nativeGlossary) return { ...original, ...row, ...(original.id !== undefined ? { id: original.id } : {}), term: original.term, def: original.def, translations: namedTranslations };
+                    if (typeof row.term !== 'string' || !row.term.trim() || typeof row.def !== 'string' || !row.def.trim()) throw new Error('The native glossary translation omitted its primary term or definition.');
+                    const translatedRow = { ...original, ...cleanNativeGlossaryRow(row), translations: namedTranslations,
+                        termLanguage: primaryLanguage, definitionLanguage: primaryLanguage, baseLanguage: primaryLanguage, glossaryLanguageSchemaVersion: 1,
+                        ...(original.id !== undefined ? { id: original.id } : {}), ...(original.entryId !== undefined ? { entryId: original.entryId } : {}),
+                        ...(original.sourceTerm !== undefined ? { sourceTerm: original.sourceTerm } : {}), ...(original.sourceLanguage !== undefined ? { sourceLanguage: original.sourceLanguage } : {}) };
+                    const fingerprint = value => {
+                        const text = String(value.term || '').trim() + '\n' + String(value.def || '').trim();
+                        let hash = 0x811c9dc5;
+                        for (let i = 0; i < text.length; i++) { hash ^= text.charCodeAt(i); hash = Math.imul(hash, 0x01000193) >>> 0; }
+                        return 'fp-' + text.length.toString(36) + '-' + hash.toString(36);
+                    };
+                    const previous = item.data[index];
+                    const currentFingerprint = fingerprint(translatedRow);
+                    translatedRow.translationSource = Object.fromEntries(Object.keys(namedTranslations).map(language => {
+                        const previousFingerprint = previous.translationSource?.[language] || fingerprint(previous);
+                        return [language, glossaryTargets.some(target => sameLanguage(language, target)) ? currentFingerprint
+                            : !sameLanguage(glossaryBaseLanguage, primaryLanguage) && previousFingerprint === currentFingerprint ? 'stale-language-' + previousFingerprint : previousFingerprint];
+                    }));
+                    return translatedRow;
+                });
+            }
           } else if (item.type === 'sentence-frames') {
              if (!newData.items || !Array.isArray(newData.items)) newData.items = [];
              if (!newData.text) newData.text = "";
           } else if (item.type === 'outline') {
              if (!newData.branches || !Array.isArray(newData.branches)) newData.branches = [];
           } else if (item.type === 'timeline') {
-             if (!Array.isArray(newData)) {
-                 if (newData.events && Array.isArray(newData.events)) newData = newData.events;
+             // Current timelines use { items, progressionLabel, mode, ... }.
+             // Unwrap a provider wrapper only for an original legacy array.
+             if (!Array.isArray(newData) && Array.isArray(primaryData)) {
+                 if (Array.isArray(newData.events)) newData = newData.events;
+                 else if (Array.isArray(newData.items)) newData = newData.items;
                  else newData = [];
              }
           } else if (item.type === 'concept-sort') {
@@ -3120,6 +3325,75 @@ ${companionInstruction}`;
           const contentUnits = value => Array.isArray(value) ? value.length : value && typeof value === 'object'
               ? ['questions', 'items', 'branches', 'problems', 'events', 'terms', 'faqs', 'ideas'].reduce((count, key) => count + (Array.isArray(value[key]) ? value[key].length : 0), 0) : 0;
           if (item.type !== 'simplified' && item.type !== 'directions' && contentUnits(item.data) > 0 && contentUnits(newData) === 0) throw new Error('The translation reply was empty.');
+          // The model controls prose, never navigation identity or machine values.
+          // Reject dropped lists before restoring identities at their original
+          // positions; providers must preserve the requested order and counts.
+          const structuralKey = key => /^(id|type|kind|mode|gameType|gameTypes|softGate|icon|image|audio|url|uri)$/i.test(key)
+              || /(?:Id|Ids|Ref|Refs|Url|Urls|Uri|Uris)$/.test(key);
+          const restoreStructure = (value, source) => {
+              if (Array.isArray(source)) {
+                  if (!Array.isArray(value) || value.length !== source.length) throw new Error('The translation changed a resource list or option count.');
+                  return value.map((entry, index) => restoreStructure(entry, source[index]));
+              }
+              if (!source || typeof source !== 'object') {
+                  if (typeof source === 'string' && source.trim() && (typeof value !== 'string' || !value.trim())) throw new Error('The translation omitted display text.');
+                  return typeof source === 'number' || typeof source === 'boolean' ? source : value;
+              }
+              if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('The translation changed the resource structure.');
+              const out = { ...value };
+              for (const [key, original] of Object.entries(source)) {
+                  if (structuralKey(key)) out[key] = original;
+                  else if (key in out || Array.isArray(original) || typeof original === 'number' || typeof original === 'boolean'
+                      || (typeof original === 'string' && original.trim())) out[key] = restoreStructure(out[key], original);
+                  else if (original && typeof original === 'object') out[key] = restoreStructure({}, original);
+              }
+              for (const [key, companion] of Object.entries(out)) {
+                  if (/_en$/i.test(key) && Array.isArray(out[key.slice(0, -3)])
+                      && (!Array.isArray(companion) || companion.length !== out[key.slice(0, -3)].length)) {
+                      throw new Error('The companion translation changed an option count.');
+                  }
+              }
+              // Text keys in an MCQ follow the translated option at the same
+              // position, even when the provider left the old answer unchanged.
+              for (const [optionsKey, answerKey] of [['options', 'correctAnswer'], ['options', 'correctAnswers'],
+                  ['answerOptions', 'correctAnswer'], ['evidenceOptions', 'correctEvidence'],
+                  ['candidatePartners', 'correctPartnerForWrong'], ['principleOptions', 'orderingPrinciple']]) {
+                  if (!Array.isArray(source[optionsKey]) || !Array.isArray(out[optionsKey]) || !(answerKey in source)) continue;
+                  const translatedAnswer = answer => {
+                      const index = source[optionsKey].indexOf(answer);
+                      return index >= 0 ? out[optionsKey][index] : answer;
+                  };
+                  out[answerKey] = Array.isArray(source[answerKey]) ? source[answerKey].map(translatedAnswer) : translatedAnswer(source[answerKey]);
+              }
+              return out;
+          };
+          if (!['simplified', 'directions'].includes(item.type)) newData = restoreStructure(newData, primaryData);
+          if (companionEnabled && !['simplified', 'directions', 'glossary'].includes(item.type)) {
+              const hasText = value => typeof value === 'string' ? !!value.trim()
+                  : Array.isArray(value) ? value.some(hasText)
+                  : value && typeof value === 'object' ? Object.values(value).some(hasText) : false;
+              const hasCompanion = value => {
+                  if (typeof value === 'string') {
+                      const parts = value.split(/---\s*(?:ENGLISH\s+)?TRANSLATION\s*---/i);
+                      return parts.length > 1 && !!parts[0].trim() && parts.slice(1).some(part => part.trim());
+                  }
+                  if (!value || typeof value !== 'object') return false;
+                  return Object.entries(value).some(([key, nested]) => (/_en$/i.test(key)
+                      && hasText(value[key.slice(0, -3)]) && hasText(nested)) || hasCompanion(nested));
+              };
+              if (item.type === 'quiz') {
+                  for (const question of newData.questions || []) {
+                      if (hasText(question.question) && !hasText(question.question_en) && !hasCompanion(question.question)) throw new Error('The quiz translation omitted its requested companion question.');
+                      for (const key of ['options', 'answerOptions', 'evidenceOptions', 'candidatePartners', 'principleOptions']) {
+                          if (!Array.isArray(question[key]) || !question[key].length) continue;
+                          const companion = question[key + '_en'];
+                          if (!Array.isArray(companion) || companion.length !== question[key].length
+                              || question[key].some((option, index) => hasText(option) && !hasText(companion[index]))) throw new Error('The quiz translation omitted its requested companion options.');
+                      }
+                  }
+              }
+              if (!hasCompanion(newData)) throw new Error('The translation omitted the requested companion language.');
+          }
           // Teacher verification belongs to the checked text, not to a machine translation of it.
           const unverify = value => {
               if (!value || typeof value !== 'object') return value;
@@ -3131,10 +3405,14 @@ ${companionInstruction}`;
           };
           if (item.type !== 'simplified') newData = unverify(newData);
           if (item.type === 'directions') {
-              // Dedicated return: rebuild the REAL data shape (translated prose + labels, machinery
-              // untouched) and keep the meta OBJECT (derivedFrom provenance) — the generic return
-              // below stringifies meta, which would mangle it to "[object Object] (…)".
-              const _dSrc = item.data;
+              // Rebuild directions from the source machinery and translated prose.
+              // This view renders ordinary prose, so even a provider that ignores
+              // the natural-format instruction must not expose a machine token.
+              const readableDirections = value => typeof value === 'string' ? value.replace(/---\s*(?:ENGLISH\s+)?TRANSLATION\s*---/gi, '\n').trim()
+                  : Array.isArray(value) ? value.map(readableDirections)
+                  : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, readableDirections(nested)])) : value;
+              newData = readableDirections(newData);
+              const _dSrc = primaryData;
               const _dIsObj = _dSrc && typeof _dSrc === 'object' && !Array.isArray(_dSrc);
               const _dBody = (newData && typeof newData.body === 'string' && newData.body.trim()) ? newData.body : (_dIsObj ? String(_dSrc.body || '') : String(_dSrc || ''));
               const _dLbls = (newData && Array.isArray(newData.labels)) ? newData.labels : [];
@@ -3161,17 +3439,17 @@ ${companionInstruction}`;
                   };
               }
               return {
-                  ...item,
+                  ...copyBase,
+                  ...copyMetadata,
                   data: _dData,
                   title: `${_dTitle} (${targetLanguage})`,
-                  meta: (item.meta && typeof item.meta === 'object') ? { ...item.meta, translatedTo: targetLanguage } : item.meta,
               };
           }
           return {
-              ...item,
+              ...copyBase,
+              ...copyMetadata,
               data: newData,
-              meta: item.meta ? `${item.meta} (${targetLanguage})` : `Translated to ${targetLanguage}`,
-              title: `${item.title} (${targetLanguage})`
+              title: `${primaryText(item.title || item.type)} (${primaryLanguage})`
           };
       } catch (e) {
           // Rethrow so the caller reports the failure instead of adding an untranslated copy.
@@ -3453,7 +3731,12 @@ const handleSaveReflection = async (deps) => {
               ) || 'Interview participant';
               let entry = '**' + speaker + ':**\n' + boundPersistedMarkdown(message.text, 6000);
               if (message.translation) {
-                  entry += '\n\n> *English translation:* ' + boundPersistedMarkdown(message.translation, 2000);
+                  const savedTarget = [message.translationTarget, message.translationLanguage]
+                      .find(value => typeof value === 'string' && value.trim() && !/^(auto|off)$/i.test(value.trim()));
+                  const translationTarget = boundResourceLabel(savedTarget || 'English', 120);
+                  const translationLabel = translationTarget.toLowerCase() === 'english'
+                      ? 'English translation' : 'Translation (' + translationTarget + ')';
+                  entry += '\n\n> *' + translationLabel + ':* ' + boundPersistedMarkdown(message.translation, 2000);
               }
               if (message.evidenceNote) {
                   entry += '\n\n> **Evidence & simulation note:** ' + boundPersistedMarkdown(message.evidenceNote, 1500);

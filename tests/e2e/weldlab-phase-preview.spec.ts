@@ -1,0 +1,25 @@
+import { test, expect } from '@playwright/test';
+import { resolve } from 'node:path';
+test.use({video:'off'});
+test.describe.configure({timeout:120_000,retries:0});
+test('Local preview exposes the current phase, heat and probe accessibility improvements',async({page})=>{
+ test.skip(!process.env.WELDLAB_PREVIEW_URL,'Local preview is opt-in.');
+ await page.setViewportSize({width:320,height:900});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto(process.env.WELDLAB_PREVIEW_URL!);
+ await page.waitForFunction(()=>Boolean((document.getElementById('preview-app-css') as HTMLLinkElement)?.sheet));
+ await expect(page.locator('[data-fec-selected-marker]')).toHaveAttribute('data-collision','true');
+ await expect(page.locator('[data-fec-callout="austenite"] text')).toHaveText('4');
+ await page.getByRole('button',{name:'Cooling probe feedback',exact:true}).click();
+ const forward=page.locator('[data-uw-probe-step="forward"]');await forward.focus();await page.keyboard.press('Enter');
+ await expect(page.locator('#uw4-cooling-time')).toHaveValue('40');await expect(page.locator('#uw4-cooling-time')).toBeFocused();
+ await expect(page.locator('#uw5-probe-readings')).toHaveAttribute('aria-live','polite');
+ await page.getByRole('button',{name:'Posture keyboard flow',exact:true}).click();
+ await page.locator('#safe10-posture-select').selectOption('3');await page.locator('[data-posture-next]').focus();await page.keyboard.press('Enter');
+ await expect(page.locator('#safe10-posture-select')).toBeFocused();await expect(page.locator('#safe10-posture-select')).toHaveValue('4');
+ await page.getByRole('button',{name:'Heat label contrast',exact:true}).click();
+ await expect(page.locator('[data-hi-preview-label="penetration"] text')).toHaveText('3');
+ await expect(page.locator('[data-hi-preview-label="through-warning"] text')).toHaveText('!');
+ await page.getByRole('button',{name:'High contrast',exact:true}).click();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+ await page.locator('svg[aria-label^="Bead cross-section on"]').screenshot({path:resolve('reports/weldlab-phase-accessibility/preview-heat-320-contrast.png')});
+});

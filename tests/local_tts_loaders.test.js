@@ -129,6 +129,7 @@ function restoreUrlMocks() {
 function loadKokoro() {
   delete window._kokoroTTS;
   delete window.__kokoroTTSLoading;
+  window.__alloCreateVerifiedWorker = async () => new FakeWorker('blob:verified-kokoro-fixture', { type: 'module' });
   // eslint-disable-next-line no-new-func
   new Function(kokoroSource)();
   return window._kokoroTTS;
@@ -136,12 +137,12 @@ function loadKokoro() {
 
 function loadPiper(lib) {
   delete window._piperTTS;
-  window.__piperTestLib = lib;
-  const importStatement = 'const lib = await import(/* webpackIgnore: true */ PIPER_CDN);';
-  const testSource = piperSource.replace(importStatement, 'const lib = window.__piperTestLib;');
-  if (testSource === piperSource) throw new Error('Piper dynamic import test seam did not match');
+  window.__alloLoadVerifiedRuntime = vi.fn(async (graph) => {
+    if (graph !== 'piper') throw new Error('Unexpected runtime graph');
+    return lib;
+  });
   // eslint-disable-next-line no-new-func
-  new Function(testSource)();
+  new Function(piperSource)();
   return window._piperTTS;
 }
 
@@ -175,6 +176,8 @@ afterEach(() => {
   delete window.__kokoroTTSLoading;
   delete window._piperTTS;
   delete window.__piperTestLib;
+  delete window.__alloLoadVerifiedRuntime;
+  delete window.__alloCreateVerifiedWorker;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   restoreUrlMocks();
@@ -464,6 +467,8 @@ describe('Kokoro local loader resilience', () => {
     FakeWorker.autoInit = false;
     const api = loadKokoro();
     const initPromise = api.init();
+    await Promise.resolve();
+    await Promise.resolve();
     const firstWorker = FakeWorker.instances[0];
     firstWorker.fail('synthetic worker crash');
 
@@ -606,6 +611,8 @@ describe('Kokoro init stall watchdog (2026-09-14)', () => {
       const api = loadKokoro();
       const stages = [];
       const initPromise = api.init((p) => stages.push(p.stage));
+      await Promise.resolve();
+      await Promise.resolve();
       expect(FakeWorker.instances).toHaveLength(1);
       // Progress keeps the watchdog quiet; silence for 60 s trips it.
       FakeWorker.instances[0].emit({ type: 'progress', stage: 'Downloading voice model', pct: 0.3 });

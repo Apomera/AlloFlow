@@ -63,7 +63,7 @@ async function sceneSnapshot(page:Page){
   return {
    clock:stage.dataset.bfMeadowClock,flightClock:stage.dataset.clock,position:stage.dataset.position,
    camera:camera.matrixWorld.toArray(),frame:w.__pollinatorRenderer.info.render.frame,
-   visitors:visitors.map(visitor=>({matrix:visitor.matrixWorld.toArray(),phase:visitor.userData.behavior,antennae:(visitor.getObjectByName('monarch-body')||visitor.getObjectByName('butterfly-body')).material.userData.visitorAntennaFlex.value.toArray(),flex:(visitor.getObjectByName('monarch-forewing-left')||visitor.getObjectByName('butterfly-forewing-left')).material.userData.visitorWingFlex.value.toArray(),wings:['left','right'].map(side=>(visitor.getObjectByName('monarch-wing-'+side)||visitor.getObjectByName('butterfly-wing-'+side)).matrixWorld.toArray())})),
+   visitors:visitors.map(visitor=>({matrix:visitor.matrixWorld.toArray(),phase:visitor.userData.behavior,legTuck:(visitor.getObjectByName('monarch-body')||visitor.getObjectByName('butterfly-body')).material.userData.visitorLegTuck.value,antennae:(visitor.getObjectByName('monarch-body')||visitor.getObjectByName('butterfly-body')).material.userData.visitorAntennaFlex.value.toArray(),flex:(visitor.getObjectByName('monarch-forewing-left')||visitor.getObjectByName('butterfly-forewing-left')).material.userData.visitorWingFlex.value.toArray(),wings:['left','right'].map(side=>(visitor.getObjectByName('monarch-wing-'+side)||visitor.getObjectByName('butterfly-wing-'+side)).matrixWorld.toArray())})),
    watched:watched?{name:watched.name,speciesId:watched.userData.speciesId,commonName:watched.userData.commonName,scientificName:watched.userData.scientificName,phase:watched.userData.behavior,distance:watched.position.distanceTo(camera.position),center:watched.position.clone().project(camera).toArray()}:null,
    playerSpecies:player.userData.species,playerScale:player.scale.toArray(),
    flowersInFrame,detailedFlowers,
@@ -120,6 +120,7 @@ test('watching brings a real flower visitor close without flying, and pause free
  await expect(watching.getByRole('button',{name:'Bergamot visitors',exact:true})).toHaveAttribute('aria-pressed','true');
  const close=await sceneSnapshot(page);expectCloseVisitor(close);
  expect(close.watched!.speciesId).toBe('monarch');
+ for(const visitor of close.visitors)if(visitor.phase==='feeding')expect(visitor.legTuck).toBe(0);
  expect(close.playerSpecies).toBe('Danaus plexippus');expect(close.playerScale).toEqual(before.playerScale);
  expect(close.detailedFlowers).toHaveLength(1);
  expect(close.detailedFlowers[0].geometry).toBe('bergamot-tubular-flower-head-close-detail');
@@ -137,6 +138,18 @@ test('watching brings a real flower visitor close without flying, and pause free
  expect(golden.energy).toBe(before.energy);expect(golden.evidence).toBe(before.evidence);
  await stage.screenshot({path:shots+'/golden-hour-visitor.png'});
  const goldenCoverage=await coverageSample(page);
+ const bergamotHood=await page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  let flower:any;scene.traverseVisible((object:any)=>{if(!flower&&object.parent?.name==='watched-flower-detail'&&object.geometry?.name==='bergamot-tubular-flower-head-close-detail')flower=object;});
+  if(!flower)throw new Error('No promoted bergamot flower to inspect');
+  const matrix=new T.Matrix4();flower.getMatrixAt(0,matrix);matrix.premultiply(flower.matrixWorld);
+  const box=new T.Box3().setFromBufferAttribute(flower.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600);
+  camera.position.copy(center).add(new T.Vector3(.75,.45,1.1).multiplyScalar(span*1.8));camera.lookAt(center);camera.updateMatrixWorld(true);
+  try{renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png').split(',')[1];}
+  finally{renderer.render(scene,original);}
+ });
+ writeFileSync(shots+'/bergamot-hood-close-detail.png',Buffer.from(bergamotHood,'base64'));
  await watching.getByRole('button',{name:'Milkweed visitors',exact:true}).click();
  await expect(stage).toHaveAttribute('data-bf-watch-patch','milkweed');
  const milkweed=await sceneSnapshot(page);expectCloseVisitor(milkweed);
@@ -164,7 +177,7 @@ test('watching brings a real flower visitor close without flying, and pause free
   {id:'painted-lady',name:'Painted lady',latin:'Vanessa cardui'},
   {id:'cabbage-white',name:'Cabbage white',latin:'Pieris rapae'}
  ]){
-  const button=speciesButtons.getByRole('button',{name:species.name,exact:true});
+  const button=speciesButtons.getByRole('button',{name:species.name+' '+species.latin,exact:true});
   await button.click();await expect(button).toHaveAttribute('aria-pressed','true');
   await expect(stage).toHaveAttribute('data-bf-watching-species',species.id);
   const card=page.locator('[data-bf-species-card="'+species.id+'"]');
@@ -253,6 +266,61 @@ test('watching brings a real flower visitor close without flying, and pause free
  },floor);
  writeFileSync(shots+'/woodland-surface-detail.png',Buffer.from(await captureWoodlandImage(),'base64'));
  writeFileSync(shots+'/woodland-floor-daylight.png',Buffer.from(await captureWoodlandImage(true),'base64'));
+ const captureTrunkContact=(sunlit=false)=>page.evaluate((sunlit)=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  const matrix=new T.Matrix4(),point=new T.Vector3(),reference=new T.Vector3(180,0,0);let chosenMatrix:any,nearest=Infinity;
+  scene.traverseVisible((object:any)=>{
+   if(object.geometry?.name!=='woodland-curved-trunk')return;
+   for(let i=0;i<(object.isInstancedMesh?object.count:1);i++){
+    if(object.isInstancedMesh)object.getMatrixAt(i,matrix);else matrix.identity();matrix.premultiply(object.matrixWorld);
+    const distance=point.set(0,-.5,0).applyMatrix4(matrix).distanceToSquared(reference);
+    if(distance<nearest){nearest=distance;chosenMatrix=matrix.clone();}
+   }
+  });
+  if(!chosenMatrix)throw new Error('No rendered woodland trunk to inspect');
+  const root=new T.Vector3(0,-.5,0).applyMatrix4(chosenMatrix),radius=new T.Vector3().setFromMatrixColumn(chosenMatrix,0).length()*1.3;
+  const camera=new T.PerspectiveCamera(36,original.aspect,.01,600),target=root.clone().add(new T.Vector3(0,radius*.6,0));
+  camera.position.copy(root).add(new T.Vector3(radius*3.1*(sunlit?-1:1),radius*1.5,radius*3.8*(sunlit?-1:1)));camera.lookAt(target);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ },sunlit);
+ writeFileSync(shots+'/woodland-trunk-contact-daylight.png',Buffer.from(await captureTrunkContact(),'base64'));
+ writeFileSync(shots+'/woodland-trunk-sunlit-daylight.png',Buffer.from(await captureTrunkContact(true),'base64'));
+ const captureDistantBirds=()=>page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  const air=scene.getObjectByName('meadow-atmosphere'),positions=air.geometry.attributes.position,records=air.geometry.attributes.bfParticle;
+  let index=-1;for(let i=0;i<records.count;i++)if(records.getW(i)===2){index=i;break;}
+  if(index<0)throw new Error('No distant meadow bird to inspect');
+  const clock=air.material.uniforms.bfAirClock.value,phase=records.getX(index)*Math.PI*2,flight=phase+clock*records.getZ(index);
+  const target=new T.Vector3(Math.cos(flight)*positions.getX(index),positions.getY(index)+2.3*Math.sin(clock*.105+phase),Math.sin(flight)*positions.getZ(index));
+  const camera=new T.PerspectiveCamera(52,original.aspect,.1,600);camera.position.set(0,4,0);camera.lookAt(target);camera.updateMatrixWorld(true);
+  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+ });
+ writeFileSync(shots+'/meadow-distant-birds-daylight.png',Buffer.from(await captureDistantBirds(),'base64'));
+ const captureGrassLighting=()=>page.evaluate(()=>{
+  const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
+  const grass=scene.getObjectByName('shared-meadow-grass'),reference=new T.Vector3(-22,0,-4),matrix=new T.Matrix4(),point=new T.Vector3();
+  let root:any,distance=Infinity;
+  for(let i=0;i<grass.count;i++){
+   grass.getMatrixAt(i,matrix);matrix.premultiply(grass.matrixWorld);
+   if(new T.Vector3().setFromMatrixColumn(matrix,1).length()<1.25)continue;
+   point.setFromMatrixPosition(matrix);const d=point.distanceToSquared(reference);if(d<distance){distance=d;root=point.clone();}
+  }
+  if(!root)throw new Error('No tall meadow grass to inspect');
+  const camera=new T.PerspectiveCamera(42,original.aspect,.01,600);camera.position.copy(root).add(new T.Vector3(5.8,2,4.2));camera.lookAt(root.clone().add(new T.Vector3(0,.8,0)));camera.updateMatrixWorld(true);
+  const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{} as any};grass.material.onBeforeCompile(shader);
+  const controls=[shader.uniforms.bfBreeze,shader.uniforms.bfWindStrength],saved=controls.map(control=>control.value);
+  const stage=document.querySelector('.bf-stage') as HTMLElement,state=()=>JSON.stringify({clock:stage.dataset.bfMeadowClock,paused:stage.dataset.bfMotionPaused,evidence:w.__toolData}),before=state();
+  let still:string,breeze:string;
+  try{
+   controls[0].value=4.5;controls[1].value=0;renderer.render(scene,camera);still=renderer.domElement.toDataURL('image/png').split(',')[1];
+   controls[1].value=1;renderer.render(scene,camera);breeze=renderer.domElement.toDataURL('image/png').split(',')[1];
+  }finally{controls.forEach((control,index)=>{control.value=saved[index];});renderer.render(scene,original);}
+  if(state()!==before)throw new Error('Grass lighting capture changed paused meadow state');
+  return {still,breeze};
+ });
+ const daylightGrass=await captureGrassLighting();
+ writeFileSync(shots+'/meadow-grass-daylight-still.png',Buffer.from(daylightGrass.still,'base64'));
+ writeFileSync(shots+'/meadow-grass-daylight-breeze.png',Buffer.from(daylightGrass.breeze,'base64'));
  const captureBeeImage=()=>page.evaluate(()=>{
   const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,originalCamera=w.__pollinatorCamera;
   const bee=scene.getObjectByName('meadow-bumblebee');
@@ -290,9 +358,20 @@ test('watching brings a real flower visitor close without flying, and pause free
   const box=new T.Box3().setFromBufferAttribute(flower.geometry.attributes.position).applyMatrix4(matrix),center=box.getCenter(new T.Vector3()),size=box.getSize(new T.Vector3()),span=Math.max(size.x,size.y,size.z);
   const camera=new T.PerspectiveCamera(36,original.aspect,.01,600);
   camera.position.copy(center).add(new T.Vector3(.75,.45,1.1).multiplyScalar(span*1.8));camera.lookAt(center);camera.updateMatrixWorld(true);
-  renderer.render(scene,camera);const png=renderer.domElement.toDataURL('image/png').split(',')[1];renderer.render(scene,original);return png;
+  renderer.render(scene,camera);const still=renderer.domElement.toDataURL('image/png').split(',')[1];
+  // Borrow the real shared uniforms for one deterministic breeze frame.
+  // Restore them synchronously so paused application and learner state stay exact.
+  const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{} as any};flower.material.onBeforeCompile(shader);
+  const controls=[shader.uniforms.bfBreeze,shader.uniforms.bfWindStrength,shader.uniforms.bfPlantWind],saved=controls.map(control=>control.value);
+  let breeze:string;
+  try{
+   controls.forEach((control,index)=>{control.value=index===0?4.5:1;});renderer.render(scene,camera);
+   breeze=renderer.domElement.toDataURL('image/png').split(',')[1];
+  }finally{controls.forEach((control,index)=>{control.value=saved[index];});renderer.render(scene,original);}
+  return {still,breeze};
  });
- writeFileSync(shots+'/bergamot-tube-detail.png',Buffer.from(corollas,'base64'));
+ writeFileSync(shots+'/bergamot-tube-detail.png',Buffer.from(corollas.still,'base64'));
+ writeFileSync(shots+'/bergamot-breeze-lighting.png',Buffer.from(corollas.breeze,'base64'));
  const leaf=await page.evaluate(()=>{
   const w=window as any,T=w.THREE,scene=w.__pollinatorScene,renderer=w.__pollinatorRenderer,original=w.__pollinatorCamera;
   let blade:any,matrix:any;const candidate=new T.Matrix4(),color=new T.Color();
@@ -310,6 +389,12 @@ test('watching brings a real flower visitor close without flying, and pause free
  await lighting.getByRole('button',{name:'Golden hour',exact:true}).click();
  writeFileSync(shots+'/woodland-golden-hour-detail.png',Buffer.from(await captureWoodlandImage(),'base64'));
  writeFileSync(shots+'/woodland-floor-golden-hour.png',Buffer.from(await captureWoodlandImage(true),'base64'));
+ writeFileSync(shots+'/woodland-trunk-contact-golden-hour.png',Buffer.from(await captureTrunkContact(),'base64'));
+ writeFileSync(shots+'/woodland-trunk-sunlit-golden-hour.png',Buffer.from(await captureTrunkContact(true),'base64'));
+ writeFileSync(shots+'/meadow-distant-birds-golden-hour.png',Buffer.from(await captureDistantBirds(),'base64'));
+ const goldenGrass=await captureGrassLighting();
+ writeFileSync(shots+'/meadow-grass-golden-hour-still.png',Buffer.from(goldenGrass.still,'base64'));
+ writeFileSync(shots+'/meadow-grass-golden-hour-breeze.png',Buffer.from(goldenGrass.breeze,'base64'));
  writeFileSync(shots+'/meadow-bee-golden-hour-detail.png',Buffer.from(await captureBeeImage(),'base64'));
  await lighting.getByRole('button',{name:'Soft daylight',exact:true}).click();
  expect(errors).toEqual([]);
@@ -325,6 +410,7 @@ test('mobile pollinator watching is still with reduced motion and keeps controls
  await expect(stage).toHaveAttribute('data-bf-view','pollinators');
  await expect(page.getByRole('group',{name:'Pollinator watching',exact:true})).toContainText('Fluttering between blossoms');
  const first=await sceneSnapshot(page);expectCloseVisitor(first);
+ expect(first.visitors.every(visitor=>visitor.legTuck===0)).toBe(true);
  expect(first.detailedFlowers).toEqual([]);
  await page.waitForTimeout(300);expect(await sceneSnapshot(page)).toEqual(first);
  await stage.screenshot({path:shots+'/mobile-monarch-watch.png'});
@@ -334,7 +420,7 @@ test('mobile pollinator watching is still with reduced motion and keeps controls
  await page.getByRole('button',{name:'Golden hour',exact:true}).click();
  await expect(page.getByRole('button',{name:'Golden hour',exact:true})).toHaveAttribute('aria-pressed','true');
  const golden=await sceneSnapshot(page);await page.waitForTimeout(250);expect(await sceneSnapshot(page)).toEqual(golden);
- await page.getByRole('group',{name:'Butterfly species',exact:true}).getByRole('button',{name:'Cabbage white',exact:true}).click();
+ await page.getByRole('group',{name:'Butterfly species',exact:true}).getByRole('button',{name:'Cabbage white Pieris rapae',exact:true}).click();
  await expect(stage).toHaveAttribute('data-bf-watching-species','cabbage-white');
  const white=await sceneSnapshot(page);expectCloseVisitor(white);expect(white.detailedFlowers).toEqual([]);
  expect(white.watched!.scientificName).toBe('Pieris rapae');expect(white.playerSpecies).toBe('Danaus plexippus');

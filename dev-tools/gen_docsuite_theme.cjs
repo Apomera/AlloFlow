@@ -84,7 +84,9 @@ const DOCSUITE_FILES = ['view_pdf_audit_source.jsx', 'view_export_preview_source
 const APPSUITE_EXTRA = ['teacher_source.jsx', 'misc_components_source.jsx', 'games_source.jsx',
   'adventure_source.jsx', 'allo_provenance_module.js', 'anchor_charts_source.jsx', 'annotation_suite_source.jsx',
   'applied_challenge_source.jsx', 'math_fluency_module.js', 'memory_aid_source.jsx', 'module_scope_extras_source.jsx',
-  'note_taking_templates_source.jsx', 'studio_response_module.js', 'word_sounds_module.js', 'word_sounds_setup_source.jsx'];
+  'note_taking_templates_source.jsx', 'studio_response_module.js', 'word_sounds_module.js', 'word_sounds_setup_source.jsx',
+  // ResourceImagesPanel is mounted inside ANTI's scoped main region.
+  'image_asset_editor_source.jsx'];
 const SELSUITE_FILES = [
   'sel_hub/sel_tool_civicaction.js',
   'sel_hub/sel_tool_cultureexplorer.js',
@@ -225,7 +227,8 @@ function allTokens(root) {
 
 // ── State variants ──────────────────────────────────────────────────────────
 // Variant prefixes expressible as a pseudo-class on the element itself, or as
-// a `.group` / `.peer` relationship. `self` is appended to the selector;
+// a `.group` / `.peer` relationship. The native file-picker button also uses
+// the same surface/text palette. `self` is appended to the selector;
 // `ancestor` and `sibling` are prepended.
 //
 // Deliberately NOT here, and why:
@@ -247,6 +250,7 @@ const VARIANT_SEL = {
   enabled:          { self: ':enabled' },
   disabled:         { self: ':disabled' },
   checked:          { self: ':checked' },
+  file:             { self: '::file-selector-button' },
   'group-hover':    { ancestor: '.group:hover ' },
   'group-focus':    { ancestor: '.group:focus ' },
   'peer-hover':     { sibling: '.peer:hover ~ ' },

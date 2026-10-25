@@ -65,7 +65,7 @@ describe('Aquarium paired trials and care evidence', () => {
     expect(core.createExperiment(saved, 'lightsOn', false, '')).toBeNull();
     expect(core.createExperiment(saved, 'airPump', 99, 'test')).toBeNull();
     expect(core.createExperiment(saved, 'temperature', 80, 'test')).toBeNull();
-    expect(view({ observationBaseline: { tank: 'freshwater', chemistry: {} }, aquariumWorkspacePanel: 'investigate' }).byId('aquarium-paired-experiment')).toBeTruthy();
+    expect(findElement(view({ observationBaseline: { tank: 'freshwater', chemistry: {} }, aquariumWorkspacePanel: 'investigate' }).element, node => node.props?.['data-aquarium-paired-trial'] === 'true')).toBeTruthy();
   });
   it('creates two independent tanks changing exactly one setting', () => {
     const state = trial(), exp = state.inquiryExperiment;
@@ -93,7 +93,7 @@ describe('Aquarium paired trials and care evidence', () => {
     let next = initial; for (let i=0;i<4;i++) next = view(next).click('Observe both +6 h');
     expect(next.inquiryExperiment.a).toEqual(next.inquiryExperiment.b); expect(next.inquiryExperiment.elapsed).toBe(24);
     expect(next.inquiryExperiment.series).toHaveLength(25);
-    const v = view(next); const button = findElement(v.element, n => n.type === 'button' && n.props.children === 'Observe both +1 h'); expect(button.props.disabled).toBe(true);
+    const v = view(next); const button = findElement(v.element, n => n.props?.['data-aquarium-trial-action'] === 'observe-1'); expect(button.props['aria-disabled']).toBe(true); expect(button.props.disabled).not.toBe(true);
     button.props.onClick(); expect(v.state().inquiryExperiment).toEqual(next.inquiryExperiment);
   });
   it('keeps a saved pump fault and condition when changing its level', () => {
@@ -109,7 +109,10 @@ describe('Aquarium paired trials and care evidence', () => {
     expect(evidence.exchange).toBeNull();
   });
   it('reports lighting as a setting change with no invented immediate chemistry effect', () => {
-    const v = view(), after = v.click('Toggle Lights'), evidence = after.careEvidence.at(-1);
+    const v = view(), toggle = findElement(v.element, node => node.props?.['data-aquarium-care-lights'] === 'true');
+    expect(toggle?.type).toBe('button'); expect(toggle.props.disabled).not.toBe(true);
+    toggle.props.onClick();
+    const after = v.state(), evidence = after.careEvidence.at(-1);
     expect(evidence.changes.every(m=>m.delta===0)).toBe(true); expect(evidence.kind).toBe('action'); expect(after.simTick).toBe(10);
   });
   it('records actual hourly changes separately and bounds the history', () => {
@@ -191,7 +194,7 @@ describe('Aquarium paired trials and care evidence', () => {
     const replay = view(state).click('Replay from start'); expect(replay.inquiryExperiment.value).toBe(false);
   });
   it('switches the plotted reading without changing live or trial model states', () => {
-    const state = trial(), v = view(state); v.byId('aquarium-trial-metric').props.onChange({ target: { value: 'nitrate' } });
+    const state = trial(), v = view(state); findElement(v.element, node => node.props?.['data-aquarium-trial-field'] === 'metric').props.onChange({ target: { value: 'nitrate' } });
     expect(v.state()).toEqual({ ...state, inquiryChartMetric: 'nitrate' });
     const next = view(v.state()), chart = findElement(next.element,n=>n.type==='svg' && n.props['aria-label']?.startsWith('Nitrate over'));
     expect(chart).toBeTruthy();

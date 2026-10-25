@@ -1,3 +1,7 @@
+import { beforeEach as beforeEachProtectedWorkspace } from 'vitest';
+import { installReportWriterWorkspaceFixture } from './helpers/report_writer_workspace_fixture.js';
+beforeEachProtectedWorkspace(() => installReportWriterWorkspaceFixture(React));
+
 // Step 4 (Assessment Scores) as a clinician uses it: the Add buttons, the
 // entry guard, subtest scaled scores, and recording the score report's
 // percentile and confidence interval. Rendered through React against the

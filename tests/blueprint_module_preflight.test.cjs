@@ -78,7 +78,8 @@ function harness(ready = []) {
   for (const name of ready) deliver(name);
   vm.runInContext('var __alloLazyEnsurePromises = {};\n' + ensureSource + waiterSource + entrySource(source) + '\nthis.execute = handleExecuteBlueprint;', context);
   return {
-    run: () => context.execute(), deliver, promoted, toasts, executed, prepared, timers, plan, window,
+    run: options => context.execute(options), deliver, promoted, toasts, executed, prepared, timers, plan, window,
+    pending: () => vm.runInContext('blueprintCreationRequestRef.current.pending', context),
     changePlan(value) { context.activeBlueprint = value; vm.runInContext('blueprintCreationRequestRef.current.blueprint = activeBlueprint;', context); },
     fail(name) { window.__alloModuleRegistry[name].status = 'failed'; notify(); },
     expire() { for (const { fn, delay } of [...timers.values()]) { assert.equal(delay, 65000); fn(); } },
@@ -186,4 +187,84 @@ test('cancelling or replacing the reviewed plan during loading cannot start its 
 
 test('Canvas and both desktop host copies use the identical creation preflight', () => {
   for (const path of hosts.slice(1)) assert.equal(entrySource(readFileSync(resolve(root, path), 'utf8')), entrySource(source), path);
+});
+
+test('request-bound progress distinguishes tool preparation from generation without lesson content', async () => {
+  const h = harness(Object.keys(required).filter(name => name !== 'GenerationMatrix'));
+  h.plan.title = 'PRIVATE LESSON CANARY';
+  h.window.__alloModuleLoadDiagnostics = { start: () => ({ id: 'ml-test-1', finish() {} }) };
+  const snapshots = [];
+  const run = h.run({ onProgress: progress => snapshots.push(progress) });
+  assert.deepEqual(snapshots.map(progress => progress.phase), ['preparing-tools']);
+  const request = h.pending();
+  h.deliver('GenerationMatrix');
+  assert.equal((await run).ok, true);
+  assert.deepEqual(snapshots.map(progress => progress.phase), ['preparing-tools', 'generating']);
+  assert.equal(snapshots[0].diagnosticId, 'ml-test-1');
+  assert.equal(snapshots[1].diagnosticId, 'ml-test-1');
+  assert.equal(snapshots[0].startedAt, snapshots[1].startedAt);
+  assert.ok(snapshots[1].phaseStartedAt >= snapshots[0].phaseStartedAt);
+  assert.deepEqual(Object.keys(snapshots[0]).sort(), ['diagnosticId', 'phase', 'phaseStartedAt', 'startedAt']);
+  assert.doesNotMatch(JSON.stringify(snapshots), /PRIVATE LESSON CANARY|resourcePlan/);
+  assert.equal(request.settled, true);
+  assert.equal(request.listeners.size, 0);
+});
+
+test('joining the same preflight receives the current phase and shares its single execution', async () => {
+  const h = harness(Object.keys(required).filter(name => name !== 'GenerationMatrix'));
+  const firstPhases = [], secondPhases = [];
+  const first = h.run({ onProgress: progress => { firstPhases.push(progress.phase); progress.phase = 'MUTATED'; } });
+  const second = h.run({ onProgress: progress => secondPhases.push(progress.phase) });
+  assert.deepEqual(firstPhases, ['preparing-tools']);
+  assert.deepEqual(secondPhases, ['preparing-tools']);
+  assert.deepEqual(h.promoted, ['GenerationMatrix']);
+  const request = h.pending();
+  h.deliver('GenerationMatrix');
+  assert.equal((await first).ok, true);
+  assert.equal((await second).ok, true);
+  assert.deepEqual(secondPhases, ['preparing-tools', 'generating']);
+  assert.equal(h.executed.length, 1);
+  assert.equal(request.listeners.size, 0);
+});
+
+test('a failing progress listener cannot fail lesson execution and is removed on settlement', async () => {
+  const h = harness(Object.keys(required));
+  const run = h.run({ onProgress() { throw new Error('UI listener failed'); } });
+  const request = h.pending();
+  assert.equal((await run).ok, true);
+  assert.equal(h.executed.length, 1);
+  assert.equal(request.listeners.size, 0);
+  assert.equal(request.settled, true);
+});
+
+test('failed or cancelled preflight clears callbacks and never reports generation', async () => {
+  for (const cancel of [false, true]) {
+    const h = harness(Object.keys(required).filter(name => name !== 'GenerationMatrix'));
+    const snapshots = [];
+    const run = h.run({ onProgress: progress => snapshots.push(progress) });
+    const request = h.pending();
+    if (cancel) {
+      h.changePlan(null);
+      h.deliver('GenerationMatrix');
+      assert.equal((await run).status, 'cancelled');
+    } else {
+      const rejection = assert.rejects(run, error => error.code === 'allo-lazy-module-failed');
+      h.fail('GenerationMatrix');
+      await rejection;
+    }
+    assert.deepEqual(snapshots.map(progress => progress.phase), ['preparing-tools']);
+    assert.equal(h.executed.length, 0);
+    assert.equal(request.listeners.size, 0);
+    assert.equal(request.settled, true);
+  }
+});
+
+test('only bounded opaque diagnostic identifiers enter command progress', async () => {
+  const h = harness(Object.keys(required));
+  h.window.__alloModuleLoadDiagnostics = { start: () => ({ id: 'PRIVATE SOURCE CANARY', finish() {} }) };
+  const snapshots = [];
+  await h.run({ onProgress: progress => snapshots.push(progress) });
+  assert.equal(snapshots.length, 2);
+  assert.ok(snapshots.every(progress => !Object.hasOwn(progress, 'diagnosticId')));
+  assert.doesNotMatch(JSON.stringify(snapshots), /PRIVATE SOURCE CANARY/);
 });

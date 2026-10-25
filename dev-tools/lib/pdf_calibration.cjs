@@ -22,7 +22,7 @@ function loadPolicy() {
     if (a < 0 || b < 0) throw new Error('Current calibration policy anchor missing: ' + begin);
     return pipeline.slice(a, b);
   }
-  const auditHelpers = ['_alloAiAuditHasFullCoverage', '_alloUsableCompleteAiAudit', '_alloUsableAxeAudit'].map(name => {
+  const auditHelpers = ['_alloAiAuditHasFullCoverage', '_alloUsableCompleteAiAudit', '_alloUsableAxeAudit', '_alloDeriveVerificationState'].map(name => {
     const at = pipeline.indexOf('function ' + name + '(');
     const end = pipeline.indexOf('\n}\n', at);
     if (at < 0 || end < 0) throw new Error('Current calibration audit helper missing: ' + name);
@@ -31,11 +31,13 @@ function loadPolicy() {
   const helpers = auditHelpers + region('var _alloComputeHeadline = function ', '// ── Scanned-OCR block-fallback layout:')
     + region('function _alloDistributionVerdict(', '\n// Sanitize an AI-parsed doc-style object');
   const context = vm.createContext({ window: { AlloModules: {} } });
-  vm.runInContext(evidence + '\n' + helpers, context, { timeout: 15000, filename: 'calibration-current-policy.js' });
+  // Use the same canonical policy behind the production compatibility facade.
+  const program = evidence + '\nwindow.AlloModules.VerificationPolicy = window.AlloModules.AccessibilityEvidence;\n' + helpers;
+  vm.runInContext(program, context, { timeout: 15000, filename: 'calibration-current-policy.js' });
   policy = { evidence: context.window.AlloModules.AccessibilityEvidence,
     headline: context._alloComputeHeadline, distribution: context._alloDistributionVerdict,
     usableAi: context._alloUsableCompleteAiAudit, usableAxe: context._alloUsableAxeAudit,
-    fingerprint: hash(evidence + helpers + fs.readFileSync(path.join(ROOT, 'desktop/mcp/remediation_verification.cjs'), 'utf8')) };
+    fingerprint: hash(program + fs.readFileSync(path.join(ROOT, 'desktop/mcp/remediation_verification.cjs'), 'utf8')) };
   return policy;
 }
 function evaluateObservation(entry) {
@@ -53,9 +55,13 @@ function evaluateObservation(entry) {
   const governingLayerScore = p.headline(aiScore, p.headline(axeScore, eaScore));
   const result = { ...(observed.result || {}),
     afterScore: finiteScore(observed.result && observed.result.afterScore) ? observed.result.afterScore : governingLayerScore,
+    verificationAudit: observed.verification.ai || observed.verification.verificationAudit || null,
     axeAudit: observed.verification.axe || observed.verification.axeAudit || null,
     secondEngineAudit: observed.verification.equalAccess || observed.verification.secondEngineAudit || null,
     verificationState: verification.verificationState,
+    verificationReasons: verification.reasons,
+    verificationCoverage: verification.coverage,
+    verificationReviewCount: verification.reviewCount,
     _aiVerificationIncomplete: observed.verification.aiIncomplete === true || observed.verification.aiVerificationIncomplete === true
       || (observed.result && observed.result._aiVerificationIncomplete === true),
   };

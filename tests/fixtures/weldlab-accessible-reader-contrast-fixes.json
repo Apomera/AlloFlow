@@ -1,0 +1,57 @@
+[
+  {
+    "owner": "reader-semantics",
+    "old": "        var consPinnedState = useState(null);\n",
+    "new": "        var consPinnedState = useState(null);\n        var consPinActionRef = useRef(null), consCodeInputRef = useRef(null);\n"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "h('input', { id: 'tech2-dec-input', type: 'text', value: consCode,",
+    "new": "h('input', { id: 'tech2-dec-input', ref: consCodeInputRef, type: 'text', value: consCode,"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "h('button', { type: 'button', 'data-cons-code-pin': '', disabled: !r.ok,",
+    "new": "h('button', { type: 'button', ref: consPinActionRef, 'data-cons-code-pin': '', disabled: !r.ok,"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "'data-cons-code-clear': '', onClick: function () { consPinnedState[1](null); },",
+    "new": "'data-cons-code-clear': '', onClick: function () { var target = r.ok ? consPinActionRef.current : consCodeInputRef.current; if (target) { try { target.focus(); } catch (_) {} } consPinnedState[1](null); },"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "h('strong', { 'data-cons-code-summary-token': column.id, 'data-role': role, className: 'font-mono', 'aria-label': part ? undefined : __alloT('stem.weldlab.cons12_absent', 'Not present in this decoded example.') }, part ? part.seg : '—')",
+    "new": "h('strong', { 'data-cons-code-summary-token': column.id, 'data-role': role, className: 'font-mono' }, part ? part.seg : h(React.Fragment, null, h('span', { 'aria-hidden': 'true' }, '—'), h('span', { className: 'sr-only' }, __alloT('stem.weldlab.cons12_absent', 'Not present in this decoded example.'))))"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "'aria-valuetext': hours(probe) + ' / ' + hours(totalHours), onChange:",
+    "new": "'aria-valuetext': hours(probe) + ' / ' + hours(totalHours), 'aria-describedby': 'safe4-noise-cumulative', onChange:"
+  },
+  {
+    "owner": "reader-semantics",
+    "old": "h('div', { 'data-noise-cumulative': true, 'data-osha-dose': accrued.osha.dose,",
+    "new": "h('div', { id: 'safe4-noise-cumulative', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-noise-cumulative': true, 'data-osha-dose': accrued.osha.dose,"
+  },
+  {
+    "owner": "measured-contrast",
+    "old": "'data-code-reader-number': '', className: 'rounded px-2 py-1 font-mono text-sm font-black'",
+    "new": "'data-code-reader-number': '', className: 'rounded px-2 py-1 font-mono text-sm font-black bg-white'"
+  },
+  {
+    "owner": "measured-contrast",
+    "old": "'data-joint-position-option': value, className: 'inline-flex items-center gap-2 rounded-lg border-2 font-bold'",
+    "new": "'data-joint-position-option': value, className: 'inline-flex items-center gap-2 rounded-lg border-2 font-bold bg-white'"
+  },
+  {
+    "owner": "measured-contrast",
+    "old": "style: { width: 20, height: 20, margin: 0, accentColor: isContrast ? '#000000' : '#9a3412' }",
+    "new": "style: { width: 20, height: 20, margin: 0, accentColor: isContrast ? '#ffff00' : '#9a3412' }"
+  },
+  {
+    "owner": "measured-contrast",
+    "old": "                h('text', { x: vx - 25, y: vy - 49, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: focusColor('bevel') }, 'βL'),\n                example.right > 0 && h('text', { x: vx + 25, y: vy - 49, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: focusColor('bevel') }, 'βR'),\n                h('text', { x: vx, y: vy - 85, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('included') }, 'α'),\n                h('text', { x: (leftRoot + rightRoot) / 2, y: 327, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('root') }, 'R'),\n                h('text', { x: 246, y: 232, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('land') }, 'f')",
+    "new": "                h('rect', { 'data-joint-angle-label-ground': 'left', x: vx - 45, y: vy - 70, width: 40, height: 28, rx: 4, fill: '#0f172a' }),\n                h('text', { x: vx - 25, y: vy - 49, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: focusColor('bevel') }, 'βL'),\n                example.right > 0 && h('rect', { 'data-joint-angle-label-ground': 'right', x: vx + 5, y: vy - 70, width: 40, height: 28, rx: 4, fill: '#0f172a' }),\n                example.right > 0 && h('text', { x: vx + 25, y: vy - 49, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: focusColor('bevel') }, 'βR'),\n                h('text', { x: vx, y: vy - 85, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('included') }, 'α'),\n                h('text', { x: (leftRoot + rightRoot) / 2, y: 327, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('root') }, 'R'),\n                h('rect', { 'data-joint-angle-label-ground': 'land', x: 233, y: 208, width: 26, height: 32, rx: 4, fill: '#0f172a' }),\n                h('text', { x: 246, y: 232, textAnchor: 'middle', fontSize: 18, fontWeight: 800, fill: focusColor('land') }, 'f')"
+  }
+]

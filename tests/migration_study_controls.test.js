@@ -29,7 +29,7 @@ describe('Migration Study controls', () => {
     const ui = view({ flightStudyBird: 999, flightStudyYaw: 900, flightStudyPitch: -99, flightStudyZoom: 999 });
     expect(ui.label('Study individual').props.value).toBe(10);
     expect(ui.label('Study angle in degrees').props.value).toBe(180);
-    expect(ui.label('Study elevation in degrees').props.value).toBe(-10);
+    expect(ui.label('Study elevation in degrees').props.value).toBe(-60);
     expect(ui.label('Study zoom percent').props.value).toBe(160);
     expect(() => view({ flightStudyBird: {}, flightStudyYaw: {}, flightStudyPitch: Infinity, flightStudyZoom: 'bad' })).not.toThrow();
   });
@@ -80,7 +80,7 @@ describe('Migration Study controls', () => {
     expect(ui.state).toMatchObject({ flightStudyBird: 3, flightStudyYaw: 35, flightStudyPitch: 15, flightStudyZoom: 1, flightShowAnatomy: true, flightWind: 7 });
   });
 
-  it.each([['Front', 180, 10], ['Profile', 90, 10], ['From above', 0, 60]])('sets the %s viewpoint without changing zoom, individual, or investigation work', (label, yaw, pitch) => {
+  it.each([['Front', 180, 10], ['Profile', 90, 10], ['From above', 0, 60], ['From below', 0, -60]])('sets the %s viewpoint without changing zoom, individual, or investigation work', (label, yaw, pitch) => {
     const work = { prediction: 'Keep my observations', trials: [] };
     const ui = view({ flightStudyBird: 4, flightStudyZoom: 1.25, flightWind: -4, flightInvestigation: work });
     ui.button(label).props.onClick(); ui.render();
@@ -91,12 +91,14 @@ describe('Migration Study controls', () => {
     expect(ui.button(label).props['aria-pressed']).toBe('false');
   });
 
-  it('returns keyboard focus to the actual scene from Study controls', () => {
-    const ui = view();
-    const stage = document.createElement('div');
-    stage.id = 'migration-flight-stage'; stage.tabIndex = 0; document.body.appendChild(stage);
-    ui.button('Focus 3D scene').props.onClick();
-    expect(document.activeElement).toBe(stage);
+  it('does not focus an unrelated global scene from an uncommitted Study action', () => {
+    const ui = view(), before = structuredClone(ui.state);
+    const stage = document.createElement('div'), next = document.createElement('button');
+    stage.id = 'migration-flight-stage'; stage.tabIndex = 0; document.body.append(stage, next); next.focus();
+    const button = ui.button('Focus 3D scene');
+    expect(button.props['data-scene-focus']).toBe('');
+    button.props.onClick(); button.props.onClick({ currentTarget: stage });
+    expect(document.activeElement).toBe(next); expect(ui.state).toEqual(before);
   });
 
   it('places playback before flight conditions in the DOM and describes device-reduced motion truthfully', () => {

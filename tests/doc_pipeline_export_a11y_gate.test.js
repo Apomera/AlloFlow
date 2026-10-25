@@ -292,6 +292,29 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
     expect(darkHtml).toContain('print-color-adjust: exact !important');
   });
 
+  // Light-page themes: the contrast fixer checks a literal banner text color against the white
+  // page, not the banner, and rewrote white to #737373 (gray on navy). Dark never showed it.
+  it('keeps banner title and metadata at the banner color on light-page themes', () => {
+    for (const exportTheme of ['professional', 'academic', 'elementary', 'nature', 'magazine', 'highContrast']) {
+      const pipeline = window.AlloModules.createDocPipeline({
+        callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+        addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+        updateExportPreview: () => {}, getDefaultTitle: () => 'Document',
+        state: { exportTheme, currentUiLanguage: 'English' },
+      });
+      const themedHtml = pipeline.generateFullPackHTML([{ type: 'glossary', id: 'g-' + exportTheme, title: 'Terms', data: [{ term: 'Justice', def: 'Fair treatment.' }] }],
+        'Justice', false, {}, {});
+      const dom = new JSDOM(themedHtml, { pretendToBeVisual: true });
+      const doc = dom.window.document;
+      const banner = dom.window.getComputedStyle(doc.querySelector('.export-header')).color;
+      if (exportTheme === 'professional') expect(banner, 'Professional banner text').toBe('rgb(255, 255, 255)');
+      expect(dom.window.getComputedStyle(doc.querySelector('.export-title')).color, `${exportTheme} title`).toBe(banner);
+      expect(dom.window.getComputedStyle(doc.querySelector('.export-meta')).color, `${exportTheme} metadata`).toBe(banner);
+      expect(themedHtml, `${exportTheme} rule`).not.toMatch(/\.export-header \.export-meta \{ color:\s*#737373/);
+      dom.window.close();
+    }
+  });
+
   it('keeps default downloaded HTML useful offline and printable for long sections', () => {
     expect(html).not.toContain('fonts.googleapis.com/css2?family=Inter');
     expect(html).toContain('.section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto;');

@@ -27,7 +27,7 @@ test.afterEach(async ({ page }) => {
 
 const stage = (page: Page) => page.locator('.migration-flight-stage');
 const context = (page: Page) => page.locator('#migration-study-current-context');
-const note = (page: Page) => page.getByRole('textbox', { name: 'Shape and motion observation', exact: true });
+const note = (page: Page) => page.getByRole('textbox', { name: 'My observation', exact: true });
 const cycle = (page: Page, index: number) => page.getByRole('button', { name: 'Cycle position ' + (index + 1) + ' of 8', exact: true });
 const viewpoint = (page: Page, id: string) => page.locator('[data-study-viewpoint="' + id + '"]');
 const checkedCue = (page: Page) => context(page).locator('[data-study-checked-comparison]');

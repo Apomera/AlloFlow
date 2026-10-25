@@ -17,12 +17,12 @@ function view(seed = {}) {
     get state() { return state; }, announce,
     render() { ctx.toolData = { migration: state }; function Component() { tree = tool.render(ctx); return tree; } return ReactDOMServer.renderToStaticMarkup(React.createElement(Component)); },
     node(predicate) { return find(tree, predicate); },
-    label(label) { return find(tree, node => node.props?.['aria-label'] === label); },
+    label(label) { return find(tree, node => (node.props?.id === label || node.props?.['aria-label'] === label)); },
     button(text) { return find(tree, node => node.type === 'button' && node.props.children === text); },
     set(values) { state = { ...state, ...values }; ui.render(); },
     edit(label, value) { ui.label(label).props.onChange({ target: { value } }); ui.render(); },
     click(text) { ui.button(text).props.onClick(); ui.render(); },
-    note(region, note) { ui.set({ flightStudyRegion: region }); ui.edit('Shape and motion observation', note); ui.click('Record observation'); },
+    note(region, note) { ui.set({ flightStudyRegion: region }); ui.edit('migration-study-observation-note', note); ui.click('Record observation'); },
     comparison() { return ui.state.flightStudyObservations.comparison; },
     export() { ui.node(node => node.props?.['data-study-action'] === 'export-html').props.onClick(); ui.render(); }
   };
@@ -139,7 +139,7 @@ describe('Migration recorded observation comparison', () => {
     ui.set({ flightSpecies: 'monarch', flightStudyYaw: 0, flightStudyPitch: 60 }); ui.note('head', '<img src=x onerror="bad()">');
     ui.edit('Second recorded observation', 'monarch:whole-wing');
     ui.edit('My observation comparison', '<script>claim()</script> "Patterns" & feathers'); ui.click('Record comparison');
-    ui.edit('My observation comparison', 'UNRECORDED COMPARISON DRAFT'); ui.edit('Shape and motion observation', 'UNRECORDED OBSERVATION DRAFT');
+    ui.edit('My observation comparison', 'UNRECORDED COMPARISON DRAFT'); ui.edit('migration-study-observation-note', 'UNRECORDED OBSERVATION DRAFT');
     document.documentElement.lang = 'en" onmouseover="bad()';
     const beforeRecords = JSON.stringify(ui.state.flightStudyObservations.records);
     ui.export();
@@ -162,7 +162,7 @@ describe('Migration recorded observation comparison', () => {
   });
 
   it('exports a single recorded note without inventing a comparison or including drafts', async () => {
-    const ui = view(); ui.note('head', 'Only one recorded note.'); ui.edit('Shape and motion observation', 'Only a draft now.'); ui.export();
+    const ui = view(); ui.note('head', 'Only one recorded note.'); ui.edit('migration-study-observation-note', 'Only a draft now.'); ui.export();
     const html = await blobs[0].text(), doc = new DOMParser().parseFromString(html, 'text/html');
     expect(doc.querySelectorAll('tbody tr')).toHaveLength(1); expect(doc.body.textContent).toContain('Only one recorded note.');
     expect(doc.body.textContent).not.toContain('Only a draft now.'); expect(doc.body.textContent).not.toContain('Saved comparison');
