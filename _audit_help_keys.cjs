@@ -65,6 +65,13 @@ const files = listFiles(ROOT);
 // earlier audit run.
 const refRe = /['"]?data-help-key['"]?\s*[=:]\s*(?:\{?\s*['"]([a-z][\w-]*)['"]\s*\}?)/g;
 
+// Finite runtime families: check every complete key, not a non-existent prefix.
+// Unknown concatenations still fail as missing instead of silently escaping coverage.
+const dynamicFamilies = {
+  pdf_audit_view_mode_: ['single', 'batch', 'web'].map(mode => `pdf_audit_view_mode_${mode}_btn`),
+  schoolrewards_step_: ['approval', 'project', 'code', 'portal', 'index', 'manifest', 'setup', 'deployed', 'connected', 'verified'].map(step => `schoolrewards_step_${step}`),
+};
+
 const refsByKey = new Map();   // key -> { count, files: Set }
 for (const file of files) {
   let txt;
@@ -73,11 +80,14 @@ for (const file of files) {
   let m;
   refRe.lastIndex = 0;
   while ((m = refRe.exec(txt))) {
-    const k = m[1];
-    if (!refsByKey.has(k)) refsByKey.set(k, { count: 0, files: new Set() });
-    const e = refsByKey.get(k);
-    e.count++;
-    e.files.add(rel);
+    const keys = /^\s*\+/.test(txt.slice(refRe.lastIndex)) && dynamicFamilies[m[1]]
+      ? dynamicFamilies[m[1]] : [m[1]];
+    for (const k of keys) {
+      if (!refsByKey.has(k)) refsByKey.set(k, { count: 0, files: new Set() });
+      const e = refsByKey.get(k);
+      e.count++;
+      e.files.add(rel);
+    }
   }
 }
 

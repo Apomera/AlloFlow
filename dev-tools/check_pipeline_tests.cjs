@@ -104,6 +104,11 @@ if (res.status === 0) {
 }
 // On failure, show the failing portion so the gate is actionable.
 console.error('[pipeline-tests] ✗ a pipeline/doc-builder test failed:');
-const lines = out.split('\n').filter((l) => /FAIL|×|AssertionError|Error:|failed|Expected|Received/.test(l));
-console.error(lines.slice(0, 40).join('\n') || out.slice(-2000));
+// Expected-error fixtures also log "Error:". Prefer Vitest's final failure
+// section so their output cannot hide the actual failing assertion or stack.
+const clean = out.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+const failureSection = clean.search(/Failed (?:Suites|Tests)\s+\d+/);
+const details = failureSection >= 0 ? clean.slice(failureSection) : clean;
+console.error(details.length <= 30000 ? details :
+  details.slice(0, 24000) + '\n[pipeline-tests] ... diagnostic output truncated ...\n' + details.slice(-6000));
 process.exit(1);

@@ -61,7 +61,7 @@ const fixtureFactory = Function('THREE', 'feet', `
   var activePerch=null,footContactVector=new THREE.Vector3(),wingPose={fold:0},talonThrow={active:false};
   var talonPreparation=0,strikeFeedbackActive=false,strikeAge=0;
   function terrainHeightAt(){return 0;}
-  var simPaused=false,missionOutcome='active',studyActive=false,studySavedCamera=null,animId=0,disposed=false,lastT=0,windGain=null;
+  var simPaused=false,missionOutcome='active',studyActive=false,flightPathActive=false,studySavedCamera=null,animId=0,disposed=false,lastT=0,windGain=null;
   var pauseOverlay={setAttribute:function(){}},paintCalls=0,flightState='glide';
   function clearHeldInputs(){}function updateFlightState(value){flightState=value;}function setFlightAudioGate(){}
   function publishControlState(){}function refreshKeyGuide(){}function updatePerchHud(){}function updatePracticeHud(){}function updateMissionClock(){}

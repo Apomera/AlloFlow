@@ -56,7 +56,8 @@ describe('galaxy shared pointer preview and selection', () => {
 
   it('previews the same fresh animated candidate as click without changing learner state, and coalesces to ten scans per second', async () => {
     const canvas = await mount();
-    // A randomly overlapping nebula has picking priority; isolate this star fixture.
+    // Nebula centers intentionally take priority over overlapping random stars.
+    // Isolate star picking here; the named-nebula test below keeps both layers.
     await React.act(async () => canvas._setLayerVisibility('nebulae', false));
     const target = point(canvas), before = latest.galaxy;
     event(canvas, 'pointermove', target); await tick(1);

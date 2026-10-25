@@ -768,8 +768,8 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     // One model call, plus at most one repair call that sends back the specific
     // problems. Provider failures are not retried here; the host retries transient errors.
     var requestEscapeRoomData = async function(prompt, check, isGood) {
-      var attempt = async function(text) {
-        var response = await callGemini(text, true);
+      var attempt = async function(jsonPrompt) {
+        var response = await callGemini(jsonPrompt, true);
         var raw = typeof response === 'string' ? response.trim() : '';
         // callGemini answers "{}" for refusals and a missing key: an outage, not a room to repair.
         if (!raw || raw === '{}') { var empty = new Error('The AI returned no room.'); empty.provider = true; throw empty; }

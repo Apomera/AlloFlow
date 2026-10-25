@@ -1344,12 +1344,15 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it('goal notes allow blank responses and pausing without creating another goal', async () => {
     await openGoalReview({ tab: 'goals', goals: [completedNoteGoal('note-d', 'Pause and reflect')] });
+    // Reflect moves focus to the first field on a timer; typing before it lands can follow the focus.
     await noteButton(page, 'Reflect on Pause and reflect').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-d-whatWorked');
     let form = noteRegion('Reflection for Pause and reflect');
     await noteField(form, 'What got in the way? (optional)').fill('A draft barrier.');
     await noteButton(form, 'Pause for now').click();
     await page.waitForFunction(() => document.activeElement?.id === 'goal-completed-note-d');
     await noteButton(page, 'Reflect on Pause and reflect').click();
+    await page.waitForFunction(() => document.activeElement?.id === 'goal-note-note-d-whatWorked');
     form = noteRegion('Reflection for Pause and reflect');
     expect(await noteField(form, 'What got in the way? (optional)').inputValue()).toBe('A draft barrier.');
     await noteField(form, 'What got in the way? (optional)').fill('');
@@ -1528,9 +1531,13 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   }, 120000);
 
   it('calendar labels the current-week period independently of the browsed month', async () => {
-    const now = new Date(); now.setHours(0, 0, 0, 0);
+    // Node's CI timezone can differ from Chromium's, including which week it is.
+    // Seed records against the browser calendar that renders the weekly summary.
+    const midnight = await page.evaluate(() => {
+      const now = new Date(); now.setHours(0, 0, 0, 0); return now.getTime();
+    });
     await openJournal({ activeTab: 'calendar', calYear: 2020, calMonth: 0, earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
-      { timestamp: now.getTime() + 3000, mood: 5 }, { timestamp: now.getTime() + 1000, mood: 1 }, { timestamp: now.getTime() + 2000, mood: 3 }
+      { timestamp: midnight + 3000, mood: 5 }, { timestamp: midnight + 1000, mood: 1 }, { timestamp: midnight + 2000, mood: 3 }
     ] });
     const region = page.getByRole('region', { name: 'Journal calendar and summaries', exact: true });
     expect(await region.getByRole('status').innerText()).toBe('January 2020');

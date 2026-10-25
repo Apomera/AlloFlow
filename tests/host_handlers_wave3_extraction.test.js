@@ -53,7 +53,17 @@ describe('wave-3 host handler extraction', () => {
           // Soft shim (archiveLivePlan, resetCanvasWorkspaceSettings): a no-op before the module
           // lands, where throwing would take the session down; it still delegates, never duplicates.
           + `|const ${name} = \\(\\.\\.\\.__a\\) => \\{\\s*const handlers = _alloHostHandlersOptional\\(\\);\\s*return handlers \\? handlers\\.${name}\\(\\.\\.\\.__a\\) : undefined;\\s*\\};)`);
-      expect(host, name).toMatch(shim);
+      if (name === 'handleGlossaryChange') {
+        // The host now stamps translation provenance around the delegated edit.
+        const start = host.indexOf('  const handleGlossaryChange = (index, field, value, lang = null) => {');
+        expect(start).toBeGreaterThan(-1);
+        const wrapper = host.slice(start, host.indexOf('\n  };', start) + 5);
+        expect(wrapper).toContain('const result = _alloHostHandlers().handleGlossaryChange(index, field, value, lang);');
+        expect(wrapper.match(/_alloHostHandlers\(\)\.handleGlossaryChange\(/g)).toHaveLength(1);
+        expect(wrapper).toContain('return result;');
+      } else {
+        expect(host, name).toMatch(shim);
+      }
       expect(source, name).toMatch(new RegExp(`(const ${name} = |function ${name}\\()`));
     }
     // A distinctive body line from a moved handler must be gone from the host.

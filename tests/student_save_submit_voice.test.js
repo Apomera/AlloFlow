@@ -6,6 +6,8 @@ import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
 const React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+const { renderToStaticMarkup } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
+const { transformSync } = require('@babel/core');
 let parse, resolveOption, createScope;
 const APP_SOURCES = [
   ['root', 'AlloFlowANTI.txt'],
@@ -211,7 +213,24 @@ describe('student save and submission semantic voice workflows', () => {
       const cancelButton = openingButtonTag(modalSource, 'handleSetShowSaveModalToFalse', 1);
       const saveButton = openingButtonTag(modalSource, 'executeSaveFile');
       expect(cancelButton, label).toContain("aria-label={t('common.cancel')}");
-      expect(saveButton, label).toContain("aria-label={t('common.save')}");
+      // A button with visible translated text already has an accessible name.
+      // Render the actual button so removing a stale override does not fail this
+      // check, while a misleading override or an unlabeled icon-only button does.
+      const buttonStart = modalSource.indexOf(saveButton);
+      const jsx = modalSource.slice(buttonStart, modalSource.indexOf('</button>', buttonStart) + 9);
+      const code = transformSync('const element = (' + jsx + ');', {
+        plugins: [[require.resolve('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]],
+        babelrc: false, configFile: false,
+      }).code;
+      const render = new Function('React', 't', 'isProjectSaving', 'saveFileName', 'executeSaveFile', 'Loader2', 'Save', code + '; return element;');
+      const labels = { 'common.save': 'Save', 'common.saving': 'Saving…', 'modals.save_project.save_btn': 'Save' };
+      for (const busy of [false, true]) {
+        const host = document.createElement('div');
+        host.innerHTML = renderToStaticMarkup(render(React, key => labels[key] || key, busy, 'Lesson', () => {}, () => null, () => null));
+        const button = host.querySelector('button');
+        expect((button.getAttribute('aria-label') || button.textContent).trim(), label).toBe(busy ? 'Saving…' : 'Save');
+        expect(button.disabled, label).toBe(busy);
+      }
     }
   });
 

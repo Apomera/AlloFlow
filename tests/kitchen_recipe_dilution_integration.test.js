@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),R=require('../stem_lab/kitchen_studio/recipe_lab_engine.js');
-const previous=require('../reports/kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json');
+const previous=require('./helpers/reference_fixture.cjs')('kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json.gz');
 // Preserve the original six-second dilution schedules; mixing2 routes are tested separately.
 const start=()=>R.restore({...R.startRescue('starchy',0,'demonstrate'),mixingModel:1});
 function act(s,steps){for(const [a,v] of steps)s=R.act(s,a,v);return s;}

@@ -9025,7 +9025,8 @@ const d = labToolData.solarSystem || {};
                 activityId = SOLAR_INVESTIGATION_ACTIVITIES[journey.target];
                 if (journey.target === 'compare') Object.assign(patch, { modelLens: 'size', showScale: true, compare1: d.compare1 || missionEarth.name, compare2: d.compare2 || missionJupiter.name });
                 if (journey.target === 'seasons') patch.seasonsGuideActive = false;
-                marsMissionFocusRef.current = '#' + investigationCards.find(function(c) { return c.id === journey.target; }).controls;
+                var investigationCard = investigationCards.find(function(c) { return c.id === journey.target; });
+                  if (investigationCard) marsMissionFocusRef.current = '#' + investigationCard.controls;
               }
             } else if (journey.id === 'comparison') {
               if (journey.complete) journalRoute('all');

@@ -35382,7 +35382,7 @@ function getFlightCityLayout(city) {
           calcPreset: __alloT('stem.flightsim.aircraft_preset', 'Aircraft preset'),
           calcSpeed: __alloT('stem.flightsim.guided_practice_tas_units', 'True airspeed (kts)'),
           calcAltitude: __alloT('stem.flightsim.evidence_altitude_axis', 'Altitude · ft MSL'),
-          calcWingArea: __alloT('stem.raptorhunt.wing_area', 'Wing area'),
+          calcWingArea: __alloT('stem.flightsim.wing_area', 'Wing area'),
           calcCl: 'Cₗ'
         };
         function saveCalculatorReference() {

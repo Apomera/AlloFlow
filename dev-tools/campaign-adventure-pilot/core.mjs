@@ -1,7 +1,7 @@
 // Scenario transport and persistence. No access to the main app's stores or session.
 import {validateResponses} from './response-records.mjs';
 export const PREFIX = 'alloflow-campaign-pilot:v1:';
-const MAX_COMMANDS = 500;
+export const MAX_COMMANDS = 500;
 const copy = x => JSON.parse(JSON.stringify(x));
 export function makeRun(adapter, {seed = 'FIELD-01', runId, config = {}} = {}) {
   if(typeof seed!=='string'||!seed.trim()||seed.length>32)throw new Error('Use a world seed of 1 to 32 characters.');

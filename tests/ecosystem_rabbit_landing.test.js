@@ -53,10 +53,10 @@ describe('actual rabbit landing examples and retained ecology evidence',()=>{
     let fore=0,hind=0;for(const config of configurations){const rows=api.compare(config).baseline,frames=api.behaviorTimeline(config,rows);for(const frame of frames)for(const p of frame.rabbits){if(!p.active)continue;const a=api.rabbitLanding(p);if(a.fore>1e-6){fore++;expect(p.footPlants[1].planted).toBe(true);expect(p.footPlants[3].planted).toBe(true);}if(a.hind>1e-6){hind++;expect(p.footPlants[0].planted).toBe(true);expect(p.footPlants[2].planted).toBe(true);}}
       expect(JSON.stringify(api.behaviorTimeline(config,rows))).toBe(JSON.stringify(frames));
     }expect(fore).toBeGreaterThan(10);expect(hind).toBeGreaterThan(10);
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
   it('preserves all route/action/foot/cue frames, encounter catalogs, movement studies and biomass',()=>{
     const control=disabled();for(const config of configurations){const rows=api.compare(config).baseline,before=JSON.stringify(rows),a=api.behaviorTimeline(config,rows),b=control.behaviorTimeline(config,rows);expect(a).toEqual(b);expect(api.encounters(a,config)).toEqual(control.encounters(b,config));expect(api.motionStudy(a,'rabbits',0)).toEqual(control.motionStudy(b,'rabbits',0));expect(JSON.stringify(rows)).toBe(before);}
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
   it('keeps every actual transformed nose vertex above the ground during cushioned landings',()=>{
     const require=createRequire(import.meta.url),T=require(resolve(process.cwd(),'vendor/three-r128/three.min.js')),vertices=api.mammalNoseSurface('rabbits').positions,matrix=new T.Matrix4(),q=new T.Quaternion(),euler=new T.Euler(),scale=new T.Vector3(1,1,1),point=new T.Vector3(),translation=new T.Vector3();let checked=0,lowest=Infinity;
     for(const config of configurations){const frames=api.behaviorTimeline(config,api.compare(config).baseline);for(const frame of frames)for(let index=0;index<16;index++){

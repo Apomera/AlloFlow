@@ -1,5 +1,7 @@
 import fs from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { parseExpressionAt } from 'acorn';
+import { afterEach, describe, expect, it } from 'vitest';
+import { React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
 
 // Quiz-bank verification for Astronomy, Nutrition Lab, and Raptor Hunt.
 // Astronomy's authored bank never put a correct answer at choice 0 (0/6/8/1);
@@ -311,43 +313,67 @@ describe('Raptor Hunt contested-science softening', () => {
     expect(rh.american_kestrels_falco_sparverius_can).toContain('debated');
   });
 
-  it('the acuity demo hedges big-eagle multipliers in both the fallback and ui_strings', () => {
-    // 5×+ eagle acuity comes from photoreceptor-density extrapolation;
-    // behavioral psychophysics on large eagles measures ~2-3× human.
-    const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
-    expect(strings.stem.raptorhunt.what_they_feel_like_the_snellen_style_).toContain('behavioral tests on large eagles');
-    expect(rap).toContain('behavioral tests on large eagles measure closer to 2-3');
+  it('the optical demo distinguishes diffraction from practical visual acuity', () => {
+    // The old Snellen multiplier demo has been replaced by an aperture study.
+    expect(rap).toContain('h(RaptorApertureStudy,');
+    expect(rap).toContain('A first dark ring alone cannot establish a bird’s practical acuity; retinal and behavioral measurements are also needed.');
+    expect(rap).toContain('We need retinal and behavioral evidence');
   });
+
 });
 
 describe('Raptor Hunt owl hearing lab interaction', () => {
-  const hearing = (() => {
-    const start = rap.indexOf('function renderHearing()');
-    const end = rap.indexOf('      function render', start + 10);
-    expect(start).toBeGreaterThan(-1);
-    expect(end).toBeGreaterThan(start);
-    return rap.slice(start, end);
-  })();
+  const start = rap.indexOf('function RaptorSoundArrivalStudy(props)');
+  const end = parseExpressionAt(rap, start, { ecmaVersion: 'latest' }).end;
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  const Study = new Function('return (' + rap.slice(start, end) + ');')();
+  const mounted = [];
+  afterEach(async () => {
+    for (const { host, root, previousAct } of mounted.splice(0).reverse()) {
+      await React.act(async () => root.unmount()); host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousAct;
+    }
+  });
+  async function mount() {
+    const previousAct = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const host = document.createElement('div'); document.body.append(host);
+    const root = ReactDOMClient.createRoot(host); mounted.push({ host, root, previousAct });
+    await React.act(async () => root.render(React.createElement(Study, { React, translateStudy: (_, fallback) => fallback })));
+    return host;
+  }
+  async function click(host, selector) {
+    const button = host.querySelector(selector); expect(button).toBeTruthy();
+    await React.act(async () => { button.focus(); button.click(); });
+  }
 
-  it('once-bound listeners read current state from the element, not a stale closure', () => {
-    // The click listener bound once but closed over the first render's hl
-    // (started: false), leaving the strike permanently dead — and, after a
-    // section switch, grading against a stale mouse position.
-    expect(hearing).toContain('canvasEl._hlState = { hl: hl, errRadius: errRadius, setHL: setHL, awardXP: ctx.awardXP };');
-    const strike = hearing.slice(hearing.indexOf('var strikeAt = function'), hearing.indexOf("addEventListener('click'"));
-    expect(strike).toContain('canvasEl._hlState');
-    expect(strike).not.toMatch(/[^.]hl\.mouseX/); // only st.hl.* inside the strike path
-    expect(strike).toContain('st.hl.mouseX');
+  it('uses the current geometry when judging successive hidden-source challenges', async () => {
+    expect(rap).toContain('return h(RaptorSoundArrivalStudy, { translateStudy: __alloT, React: React });');
+    const host = await mount();
+    for (const answer of ['left', 'ahead', 'right']) {
+      await click(host, '[data-sound-challenge]');
+      expect(host.querySelector('[data-raptor-sound-study]').dataset.sourceHidden).toBe('true');
+      expect(host.querySelector('[data-sound-source]')).toBeNull();
+      await click(host, '[data-sound-answer="' + answer + '"]');
+      expect(host.querySelector('.rh-sound-feedback[role="status"]').textContent).toContain('Your inference fits.');
+      expect(host.querySelector('[data-sound-source]')).toBeTruthy();
+    }
   });
 
-  it('the canvas keyboard path matches its role and tabIndex', () => {
-    expect(hearing).toContain("tabIndex: 0");
-    expect(hearing).toContain("canvasEl.addEventListener('keydown'");
-    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter']) {
-      expect(hearing, key).toContain("e.key === '" + key + "'");
+  it('exposes native labelled controls and named diagrams instead of the retired canvas crosshair', async () => {
+    const host = await mount();
+    for (const [id, label] of [['rh-sound-bearing', 'Source bearing'], ['rh-sound-head', 'Head turn'], ['rh-sound-phase', 'Pulse travel']]) {
+      const input = host.querySelector('#' + id);
+      expect(input.type).toBe('range'); expect(input.disabled).toBe(false); expect(input.tabIndex).toBe(0);
+      expect(host.querySelector('label[for="' + id + '"]').textContent).toContain(label);
     }
-    expect(hearing).toContain('hl.crossX != null'); // crosshair is drawn
-    expect(hearing).toContain('arrow keys'); // aria-label describes the path
+    for (const direction of ['left', 'right']) {
+      await click(host, '[data-sound-preset="Source ' + direction + '"]');
+      expect(host.querySelector('[data-sound-cue]').dataset.soundCue).toBe(direction);
+      expect(host.querySelector('[data-sound-map]').getAttribute('aria-label')).toContain(direction[0].toUpperCase() + direction.slice(1) + ' receiver first');
+    }
+    expect(host.querySelector('[data-sound-map]').getAttribute('role')).toBe('img');
   });
 });
 

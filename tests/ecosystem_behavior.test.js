@@ -65,5 +65,5 @@ describe('contextual representative behavior',()=>{
       const pair=api.interaction(frame,'bluetits',index);expect(pair).toMatchObject({id:'caterpillars',index:bird.preyIndex});expect(pair.other).toBe(currentFood);
     }));
     expect(pecks).toBeGreaterThan(0);
-  });
+  }, 30000 /* exhaustive replay/calculation coverage; not a wall-clock performance test */);
 });

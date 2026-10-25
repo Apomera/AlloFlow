@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readHostSource } from './helpers/host_source.js';
+import { parseExpressionAt } from 'acorn';
 
 const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
 const occurrences = (source, needle) => source.split(needle).length - 1;
@@ -28,7 +29,7 @@ describe('Universal image-style inheritance', () => {
   });
 
   it('uses the same precedence for initial, added, quick-added, and regenerated Glossary images', () => {
-    expect(glossary).toContain('aria-label="Glossary image style source"');
+    expect(glossary).toContain("aria-label={glossaryText('glossary.image_style_source_aria', 'Glossary image style source')}");
     expect(glossary).toContain("if (nextMode === 'inherit') setGlossaryImageStyle('');");
     expect(dispatcher).toContain("(glossaryImageStyle || '').trim() || (universalImageStyle || '').trim()");
     // Add-term stays in Phase N; quick-add moved to the host handlers (checked through `app` below).
@@ -39,11 +40,25 @@ describe('Universal image-style inheritance', () => {
   });
 
   it('applies the effective Universal or override style to every Word Sounds image path', () => {
-    expect(wordSounds).toContain("const [imageThemeMode, setImageThemeMode] = React.useState('inherit');");
+    expect(wordSounds).toContain("const [imageThemeMode, setImageThemeMode] = useSetupState('imageThemeMode', () => 'inherit');");
     expect(wordSounds).toContain("const effectiveImageTheme = imageThemeMode === 'override' && imageTheme.trim()");
     expect(occurrences(wordSounds, 'const themePrefix = effectiveImageTheme ?')).toBe(3);
     expect(wordSounds).toContain('Style changes apply to new Word Sounds images, not Glossary images.');
     expect(app).toContain('universalImageStyle={universalImageStyle}');
+  });
+
+  it.each([
+    ['inherit', 'Old override', ' Watercolor ', 'Watercolor'],
+    ['override', ' Pencil ', 'Watercolor', 'Pencil'],
+    ['override', '   ', 'Watercolor', 'Watercolor'],
+    ['inherit', '', '', ''],
+  ])('resolves Word Sounds image style for %s mode without dropping Universal fallback', (mode, override, universal, expected) => {
+    const marker = 'const effectiveImageTheme =';
+    const start = wordSounds.indexOf(marker);
+    expect(start).toBeGreaterThan(-1);
+    const expression = parseExpressionAt(wordSounds, start + marker.length, { ecmaVersion: 'latest' });
+    const resolveStyle = new Function('imageThemeMode', 'imageTheme', 'universalImageStyle', 'return ' + wordSounds.slice(expression.start, expression.end));
+    expect(resolveStyle(mode, override, universal)).toBe(expected);
   });
 
   it('retires hidden Timeline and Concept Sort overrides instead of silently applying them', () => {

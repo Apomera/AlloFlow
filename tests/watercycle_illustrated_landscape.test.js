@@ -2,13 +2,14 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
+import { exactDeclarations } from './helpers/exact_declarations.js';
 
 const PATHS = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'];
 // Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): every
 // later published pass edits bytes outside the two paint windows. The old pin (8d288e85) was the
 // CRLF-mixed Windows copy of the pass baseline, so it also failed on LF CI checkouts. The original
 // pass baseline remains at reports/watercycle-illustrated-landscape/baseline-runtime.js.
-const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_PATH = 'tests/fixtures/regression/watercycle-freeze-reference/accepted-runtime.js';
 const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const TEST_PATH = 'tests/watercycle_illustrated_landscape.test.js';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -126,8 +127,13 @@ describe('Water Cycle illustrated landscape paint', () => {
 
   for (const source of sources) {
     describe(source.path, () => {
-      it('preserves every byte outside the two authorized paint windows', () => {
-        expect(outsidePaint(source.text)).toBe(outsidePaint(baseline));
+      it('preserves the complete landscape scene outside its two paint windows', () => {
+        // The separate pilot and Storm range features have evolved since the
+        // reference. Preserve this complete scene, including its animation and
+        // interaction code, without freezing those unrelated features.
+        const current = exactDeclarations(source.text, ['canvasRef']).canvasRef;
+        const original = exactDeclarations(baseline, ['canvasRef']).canvasRef;
+        expect(outsidePaint(current)).toBe(outsidePaint(original));
       });
 
       it('keeps existing cloud centers, scales, drift and snowmelt path exact', () => {

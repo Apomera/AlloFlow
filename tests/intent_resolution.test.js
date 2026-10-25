@@ -134,7 +134,10 @@ describe('the model is told what the user is doing', () => {
     // a surface is. (The command MENU naturally names panels, so assert on the
     // brief's own labels rather than on panel names appearing anywhere.)
     expect(prompt).not.toContain('Open right now:');
-    expect(prompt).toContain('Content loaded: none yet');
+    expect(prompt).toContain('Source text available: no');
+    expect(prompt).toContain('Source or analysis available: no');
+    expect(prompt).toContain('Resource open: no');
+    expect(prompt).toContain('Lesson blueprint ready: no');
   });
 });
 

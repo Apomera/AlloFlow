@@ -434,6 +434,8 @@ function checkpointAudit(value) {
 }
 
 function checkpointExtraction(value) {
+  // Older checkpoints omit alignment evidence; current pipeline snapshots retain it.
+  const alignmentKeys = Object.hasOwn(value || {}, 'ocrVisionAlignments') ? ['ocrVisionAlignments'] : [];
   if (!hasExactKeys(value, [
     'fileName',
     'documentDigest',
@@ -452,6 +454,7 @@ function checkpointExtraction(value) {
     'ocrColumnReorders',
     'strippedEdgeLines',
     'visionStripTrail',
+    ...alignmentKeys,
   ])) return null;
   if (
     value.fileName !== 'input.pdf' ||
@@ -478,6 +481,7 @@ function checkpointExtraction(value) {
       value.ocrColumnReorders,
       value.strippedEdgeLines,
       value.visionStripTrail,
+      ...alignmentKeys.map(key => value[key]),
     ].every(Array.isArray)
   ) return null;
   return value;

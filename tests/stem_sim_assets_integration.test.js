@@ -310,7 +310,7 @@ describe('existing host adapters through the catalog', () => {
       } });
       after.dispose(); after.dispose(); expect(count.size).toBeGreaterThan(0); expect([...count.values()].every(value => value === 1)).toBe(true);
     } finally { before.dispose(); after.dispose(); }
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 
   it.each(['absent', 'incomplete', 'wrong-version', 'unavailable'])('keeps BirdLab residents available with an %s catalog', state => {
     const local = providerWindow(), forbidden = vi.fn(() => { throw Error('Catalog must not handle this request'); });

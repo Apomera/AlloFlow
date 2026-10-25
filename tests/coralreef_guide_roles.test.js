@@ -99,6 +99,11 @@ describe('featured reef roles in the species guide', () => {
     await select(role(t), 'cleaners'); await click(t.host.querySelector('[data-start-practice]'));
     expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
     expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(featured.cleaners.length);
+    await select(t.host.querySelector('[data-practice-collection-select]'), 'all');
+    const available = X.SPECIES_META.filter(m => m.group !== 'structure').length;
+    expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(available);
+    await select(t.host.querySelector('[data-practice-collection-select]'), 'selection');
+    expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(featured.cleaners.length);
     await click(t.host.querySelector('[data-practice-start]'));
     expect(t.host.querySelector('.cr-dxp-heading').textContent).toBe('Organism 1 of 2');
     expect(featured.cleaners).toContain(t.host.querySelector('.cr-dxp-portrait img').getAttribute('src').split('/').pop().replace(/\.webp.*$/, ''));

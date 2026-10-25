@@ -45,15 +45,14 @@ test('direct Python requirements agree with the resolved locks', () => {
   }
 });
 
-test('dependency updates cover Python, containers and separately tested MCP scopes', () => {
+test('dependency updates cover Python and containers and preserve the MCP hold', () => {
   const config = YAML.parse(fs.readFileSync(path.join(root, '.github/dependabot.yml'), 'utf8'));
   for (const ecosystem of ['pip', 'docker', 'docker-compose']) {
     assert.ok(config.updates.some((entry) => entry['package-ecosystem'] === ecosystem));
   }
-  const mcp = config.updates.find((entry) => entry.directories?.includes('/desktop/mcp/runtime'));
-  assert.equal(mcp['open-pull-requests-limit'], 2);
-  assert.deepEqual(mcp.directories, ['/desktop/mcp', '/desktop/mcp/runtime', '/services/alloflow-remote-mcp', '/services/alloflow-remote-mcp/runner']);
-  assert.ok(!mcp.ignore?.some(entry => entry['dependency-name'] === '*'));
+  const hold = config.updates.find((entry) => entry.directories?.includes('/desktop/mcp/runtime'));
+  assert.equal(hold['open-pull-requests-limit'], 0);
+  assert.deepEqual(hold.ignore, [{ 'dependency-name': '*' }]);
   const actions = config.updates.find((entry) => entry['package-ecosystem'] === 'github-actions');
-  assert.ok(!actions['exclude-paths']?.some(pattern => /mcp|workflows|\*/.test(pattern)));
+  assert.ok(actions['exclude-paths'].includes('.github/workflows/remote-mcp-verify.yml'));
 });

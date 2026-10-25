@@ -256,7 +256,7 @@ describe('Compact filed-route strip leaves the flying view clear', () => {
     expect(texts()).toContain('NAV JFK');
     await paint({ width: 320, height: 763, state: { ...cruise, stalling: true }, ctrl: { ...controls, pitch: 20 } });
     expect(texts()).not.toContain('NAV JFK');
-    expect(texts()).toContain('⚠️ STALL — REDUCE ANGLE OF ATTACK');
+    expect(texts()).toContain('⚠️ STALL — BRING AoA TOWARD ZERO');
   });
 });
 

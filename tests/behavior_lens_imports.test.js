@@ -33,7 +33,6 @@ beforeAll(() => {
   S = window.AlloModules.BehaviorLensSnapshot;
   if (!I || !S) throw new Error('Behavior Lens import helpers did not register');
 });
-const flush = () => new Promise(r => setTimeout(r, 30));
 const moduleSource = readFileSync('behavior_lens_module.js', 'utf8');
 const hostIcons = name => Object.fromEntries([...componentSource(name).matchAll(/h\(([A-Z][A-Za-z0-9]*)\s*,/g)].map(m => m[1])
   .filter(id => !moduleSource.includes('const ' + id + ' =') && !moduleSource.includes('function ' + id + '(')).map(id => [id, 'span']));
@@ -129,9 +128,14 @@ describe('the home log export and Snapshot Exchange', () => {
         q.all(n => n.type === 'button' && /Import/.test(q.text(n)) && n.props.onClick)[0].props.onClick(); q.render();
         const input = q.all(n => n.type === 'input' && n.props.type === 'file')[0];
         input.props.onChange({ target: { files: [new File([content], 'home.json')] } });
-        await flush(); q.render();
-        expect(toasts.filter(([, k]) => k === 'error')).toEqual([]);   // "Not a valid AlloFlow snapshot file"
-        const merge = q.all(n => n.type === 'button' && /Merge/.test(q.text(n)))[0];
+        // FileReader completion is asynchronous; CI can take longer than 30 ms.
+        let merge;
+        await vi.waitFor(() => {
+          q.render();
+          expect(toasts.filter(([, k]) => k === 'error')).toEqual([]);
+          merge = q.all(n => n.type === 'button' && /Merge/.test(q.text(n)))[0];
+          expect(merge, 'validated snapshot preview is ready').toBeTruthy();
+        });
         merge.props.onClick(); q.render();
         const homeWrite = durableLog.filter(([key]) => key === 'homeLog').at(-1);
         expect(homeWrite[1].map(e => e.occurredAt)).toEqual(['2026-09-22T11:30:00.000Z']);
@@ -186,7 +190,10 @@ describe('consent template import', () => {
     const input = q.all(n => n.type === 'input' && n.props.type === 'file')[0];
     const template = { alloflowConsentTemplate: true, sections: [{ id: 'purpose', title: 'Purpose', content: 'District wording', required: true }, { id: 'rights', title: 'Rights', content: 'Weaker rights text', required: true }] };
     input.props.onChange({ target: { files: [new File([JSON.stringify(template)], 'consent.json')] } });
-    await flush(); await flush(); q.render();
+    await vi.waitFor(() => {
+      q.render();
+      expect(durableLog.some(([key]) => key === 'consentSections')).toBe(true);
+    });
     expect(asked).toEqual(['Import consent template']);                   // replaced without asking
     const sections = durableLog.filter(([key]) => key === 'consentSections').at(-1)[1];
     expect(sections.find(s => s.id === 'purpose').content).toBe('District wording');

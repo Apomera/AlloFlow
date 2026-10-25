@@ -105,7 +105,8 @@ function liveDelegations(src) {
       else if (value && typeof value.type === 'string') walk(value, visit, next);
     }
   }
-  const functions = new Map(), duplicate = new Set(), functionContexts = new Map();
+  const functions = new Map(), duplicate = new Set(), functionContexts = new Map(), functionIds = new Map();
+  const reassigned = new Set();
   // Sibling components can reuse hook names without sharing the same state.
   const pairs = new Set(), setters = new Map(), liveStates = new Set(), bindings = new Map();
   const isScope = (node) => fnTypes.has(node.type) || ['Program', 'BlockStatement', 'CatchClause'].includes(node.type);
@@ -135,9 +136,9 @@ function liveDelegations(src) {
   }
   const stateHook = (node) => node && node.type === 'CallExpression'
     && node.callee.type === 'MemberExpression' && node.callee.property.name === 'useState';
-  const bindFunction = (name, node) => {
+  const bindFunction = (name, node, id) => {
     if (functions.has(name)) duplicate.add(name);
-    else functions.set(name, node);
+    else { functions.set(name, node); functionIds.set(name, id); }
   };
   walk(ast, (node, ancestors) => {
     if (fnTypes.has(node.type)) {
@@ -146,9 +147,9 @@ function liveDelegations(src) {
       if (node.id) declare(node.id, node.type === 'FunctionDeclaration' ? scopeOf(ancestors) : node);
     }
     if (node.type === 'CatchClause') declare(node.param, node);
-    if (node.type === 'FunctionDeclaration' && node.id) bindFunction(node.id.name, node);
+    if (node.type === 'FunctionDeclaration' && node.id) bindFunction(node.id.name, node, node.id);
     if (node.type === 'VariableDeclarator' && node.init) {
-      if (node.id.type === 'Identifier' && fnTypes.has(node.init.type)) bindFunction(node.id.name, node.init);
+      if (node.id.type === 'Identifier' && fnTypes.has(node.init.type)) bindFunction(node.id.name, node.init, node.id);
     }
     if (node.type === 'VariableDeclarator') {
       const declaration = ancestors[ancestors.length - 1];
@@ -156,6 +157,11 @@ function liveDelegations(src) {
     }
   });
   walk(ast, (node, ancestors) => {
+    const written = node.type === 'AssignmentExpression' ? node.left : node.type === 'UpdateExpression' ? node.argument : null;
+    if (written && written.type === 'Identifier') {
+      const binding = resolve(written.name, ancestors);
+      if (binding) reassigned.add(binding.id);
+    }
     if (node.type === 'VariableDeclarator' && node.init) {
       if (node.id.type === 'Identifier' && stateHook(node.init)) {
         const pair = resolve(node.id.name, ancestors);
@@ -202,12 +208,21 @@ function liveDelegations(src) {
     if (duplicate.has(name)) continue;
     const dependencies = new Set();
     walk(fn.body, (node, ancestors) => {
-      if (fnTypes.has(node.type)) return false;
+      if (fnTypes.has(node.type)) {
+        // A scheduled callback runs; an unused nested function proves nothing.
+        const parent = ancestors[ancestors.length - 1];
+        if (!parent || parent.type !== 'CallExpression' || parent.callee.type !== 'Identifier'
+            || parent.callee.name !== 'setTimeout' || parent.arguments[0] !== node
+            || resolve('setTimeout', ancestors)) return false;
+      }
+      if (node.type === 'AssignmentExpression' && node.operator === '=' && node.left.type === 'MemberExpression'
+          && ['textContent', 'innerText'].includes(node.left.property.name || node.left.property.value)
+          && !(node.right.type === 'Literal' && !node.right.value)) healthy.add(name);
       if (node.type !== 'CallExpression') return;
       const call = node.callee;
       if (call.type === 'Identifier') {
-        dependencies.add(call.name);
         const setter = resolve(call.name, ancestors);
+        if (setter && setter.id === functionIds.get(call.name) && !reassigned.has(setter.id)) dependencies.add(call.name);
         if (['announceToSR', 'srSay', 'alloAnnounce', 'addToast'].includes(call.name)
             || (setters.has(setter) && liveStates.has(setters.get(setter)))) healthy.add(name);
       } else if (call.type === 'MemberExpression') {
@@ -283,8 +298,7 @@ for (const { label: tool, full } of collectFiles()) {
     // ★ DELEGATES — a throttle/dedupe wrapper around a sibling announcer that
     // does reach the DOM. roadready's tryAnnounce calls rrAnnounce; it is not
     // silent. This was the 4th false positive.
-    const delegatesToSibling = names.some((other) => other !== localName && provenLive.has(other)
-      && new RegExp('\\b' + other.replace(/\$/g, '\\$') + '\\s*\\(').test(body));
+    const delegatesToSibling = provenLive.has(localName);
 
     // ★ REACT-STATE live region (math_create, 2026-08-17): the announcer only
     // calls a state setter (setSrMsg / setA11yAnnouncement), and the component

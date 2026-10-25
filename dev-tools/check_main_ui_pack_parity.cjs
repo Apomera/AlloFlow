@@ -120,5 +120,5 @@ if (missingPairs.length) {
   console.log(`  translation backlog   : ${missingPairs.length} pair(s) across ${backlogKeys.size} key(s), all baselined (needs native speakers, not code)`);
 }
 if (fixed.length) {
-  console.log(`  ${fixed.length} baselined pair(s) are now translated — shrink the baseline with --update`);
+  console.log(`  ${fixed.length} baselined pair(s) are now present (possibly English fallbacks) — shrink the baseline with --update`);
 }

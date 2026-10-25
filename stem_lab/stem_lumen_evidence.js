@@ -799,7 +799,7 @@
       if (project.artifacts.some(function (a) { return a.id === id; })) return;
       project = saveReadingEntry(project, { id: id, type: entry.type, evidenceId: node.id,
         title: entry.word || entry.title, body: entry.definition || '', word: entry.word || '', understanding: 'clear' });
-      if (changed) project.artifacts.find(function (a) { return a.id === id; }).stale = true;
+      if (changed) { var artifact = project.artifacts.find(function (a) { return a.id === id; }); if (artifact) artifact.stale = true; }
     });
     return project;
   }

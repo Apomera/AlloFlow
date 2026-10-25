@@ -99,10 +99,16 @@ The release build audits the dependencies actually packaged and fails on any hig
 advisory that has not been reviewed. Reviewed advisories are recorded in
 desktop/mcp/audit_allowlist.json with the reason they are not reachable or are mitigated in this
 connector, who reviewed them, and an expiry after which the release fails again until they are
-re-reviewed. The build log prints every accepted advisory. As of 0.11.3 the accepted entries are
-two extract-zip advisories reached through DAISY Ace: Ace here only unpacks EPUBs this connector
-wrote itself, never a user-supplied archive, and the browser-download path that also uses
-extract-zip is disabled. No patched extract-zip exists.
+re-reviewed. The build log prints every accepted advisory.
+
+This source candidate has no accepted advisories. The earlier 0.11.3 bundle accepted two
+extract-zip advisories reached through DAISY Ace. The candidate removes that upstream extractor:
+its fallback rejects before I/O, while generated EPUBs use a bounded first-party extractor and
+Ace receives an already verified directory. Browser installation uses Playwright. This is a
+disabled fallback, not a patch to upstream extract-zip.
+
+The candidate has not been published. Assign a new connector version and release tag before
+publishing changed bundle bytes; do not replace an existing release under the same version.
 
 ## Registry discovery
 

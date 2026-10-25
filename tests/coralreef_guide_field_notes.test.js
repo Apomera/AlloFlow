@@ -64,6 +64,10 @@ describe('field-note collection retrieval',()=>{
     const selected=['blue_tang','green_turtle','cleaner_shrimp'];
     expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
     expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(selected.length));
+    await select(t.host.querySelector('[data-practice-collection-select]'),'all');
+    expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(X.SPECIES_META.filter(m=>m.group!=='structure').length));
+    await select(t.host.querySelector('[data-practice-collection-select]'),'selection');
+    expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(selected.length));
     await click(t.host.querySelector('[data-practice-start]'));expect(t.host.querySelector('[data-guide-note-indicator]')).toBeNull();expect(t.host.textContent).not.toContain('Private observation 31');
     expect(selected).toContain(t.host.querySelector('.cr-dxp-portrait img').getAttribute('src').split('/').pop().replace(/\.webp.*$/,''));
     expect(t.host.querySelector('.cr-dxp-heading').textContent).toBe('Organism 1 of 3');

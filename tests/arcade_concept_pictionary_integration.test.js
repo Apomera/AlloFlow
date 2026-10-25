@@ -19,6 +19,9 @@ const publishedPlugin = {
 // Every deploy re-pins the CDN refs to its own commit (deploy.sh step 6). Pins verified against the
 // committed module bytes, so a shallow CI checkout that lacks the commit can still check them.
 const verifiedHavenPins = [
+  // f7879418fa7cb45fb207bbaa74d790bc4acba78e contains these exact Git bytes;
+  // the PR's shallow checkout need not contain that earlier deploy commit.
+  { pin: 'f7879418fa', sha256: '8961f5c6d47618d8ef09bd5b0e50de1b6a47168b35e8446e269db09737fc9293' },
   { pin: publishedHaven.pin, sha256: publishedHaven.sha256 },
   { pin: '4a23d7b91', sha256: '8961f5c6d47618d8ef09bd5b0e50de1b6a47168b35e8446e269db09737fc9293' }, // deploy 2026-10-16
 ];

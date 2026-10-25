@@ -26252,7 +26252,7 @@ var d = labToolData.dissection || {};
           }
 
           function observationSummaryText() {
-            var filterLabel = observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }).label;
+            var filterLabel = (observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }) || { label: observationReviewFilter }).label;
             var lines = ['Observation review — ' + spec.name, 'Scope: ' + filterLabel + ' · ' + filteredObservationReview.length + ' of ' + observationReviewEntries.length + ' inspected structures',
               'Student notes from the virtual dissection. Confidence is self-reported; this summary does not verify identification accuracy or mastery.',
               'Only inspected structures in this specimen are included. Missing notes and confidence remain explicitly unrecorded.', ''];
@@ -28356,7 +28356,7 @@ var d = labToolData.dissection || {};
                     React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', id: 'diss-observation-review-count', 'data-observation-review-count': true }, filteredObservationReview.length + ' of ' + observationReviewEntries.length + ' inspected structures shown.'),
                     filteredObservationReview.length > 0 && React.createElement(DissectionObservationReader, { key: specimen, React: React, t: __alloT,
                       entries: filteredObservationReview, specimenName: spec.name, total: observationReviewEntries.length,
-                      filterLabel: observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }).label,
+                      filterLabel: (observationReviewChoices.find(function (choice) { return choice.id === observationReviewFilter; }) || { label: observationReviewFilter }).label,
                       search: observationSearchTokens.length ? observationSearchValue.trim() : '', onReview: reviewObservation }),
                     !filteredObservationReview.length && React.createElement('p', { 'data-observation-review-empty': true }, observationReviewEntries.length ? (observationSearchTokens.length ? 'No observations match this search and filter. Clear the search or choose another filter.' : 'No observations match this filter. Choose All inspected to review your other notes.') : 'Inspect a visible structure in the 2D specimen to begin your review list.'),
                     filteredObservationReview.length > 0 && React.createElement('details', { className: 'diss-observation-export', 'data-observation-export': true },
@@ -28785,7 +28785,7 @@ var d = labToolData.dissection || {};
                   React.createElement("p", { id: "diss-directory-count", className: "diss-directory-status", role: "status", "aria-live": "polite", "aria-atomic": "true" },
 
                     (organSearchText ? (filteredOrgans.length + ' matching ' + (filteredOrgans.length === 1 ? 'structure' : 'structures') + ' in ' + currentLayerDef.name + '.') : (filteredOrgans.length + ' structures available in ' + currentLayerDef.name + '.')) +
-                    (directoryFilter !== 'all' ? ' ' + directoryFilterChoices.find(function (choice) { return choice.id === directoryFilter; }).label + ' filter active.' : '') +
+                    (directoryFilter !== 'all' ? ' ' + (directoryFilterChoices.find(function (choice) { return choice.id === directoryFilter; }) || { label: directoryFilter }).label + ' filter active.' : '') +
                     (otherLayerMatches.length ? ' ' + otherLayerMatches.length + ' reference matches in other layers.' : '')
 
                   ),
@@ -29094,9 +29094,9 @@ var d = labToolData.dissection || {};
                       React.createElement("p", { className: "diss-biology-fact__position text-[11px]" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
                       React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx])
                     ),
-                    facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": "Biology fact navigation" },
-                      React.createElement("button", { type: "button", "aria-label": "Previous biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
-                      React.createElement("button", { type: "button", "aria-label": "Next biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(1); } }, 'Next')
+                    facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": __alloT("stem.dissection.a11y_biology_fact_navigation", "Biology fact navigation") },
+                      React.createElement("button", { type: "button", "aria-label": __alloT("stem.dissection.a11y_previous_biology_fact", "Previous biology fact"), "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
+                      React.createElement("button", { type: "button", "aria-label": __alloT("stem.dissection.a11y_next_biology_fact", "Next biology fact"), "aria-controls": factReadingId, onClick: function () { browseFact(1); } }, 'Next')
                     )
                   );
                 })(),

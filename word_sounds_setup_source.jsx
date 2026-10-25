@@ -2258,7 +2258,7 @@ const WS_CORE = createWordSoundsCore();
                     {confirmStudentExport && isStudent ? (
                         <div role="alert" data-voice-pack-student-export-confirm="true" className="flex items-center gap-2 px-5 py-3 border-t border-amber-200 bg-amber-50 flex-wrap">
                             <span className="flex-1 min-w-[200px] text-sm font-semibold text-amber-900">{T('word_sounds.voice_pack_student_export_warning', "This file holds a child's voice recordings and practice history. Save it only to a school-approved location.")}</span>
-                            <button type="button" autoFocus onClick={() => { setConfirmStudentExport(false); exportPack(); }} className="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 transition-colors">{T('word_sounds.voice_pack_student_export_confirm', 'Export file')}</button>
+                            <button type="button" autoFocus onClick={() => { setConfirmStudentExport(false); exportPack(); }} className="px-3 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-sm hover:bg-amber-800 transition-colors">{T('word_sounds.voice_pack_student_export_confirm', 'Export file')}</button>
                             <button type="button" onClick={() => setConfirmStudentExport(false)} className="px-3 py-1.5 rounded-lg bg-white text-slate-700 border border-slate-300 font-bold text-sm hover:bg-slate-50 transition-colors">{T('common.cancel', 'Cancel')}</button>
                         </div>
                     ) : null}

@@ -102,4 +102,15 @@ describe('flightsim template placeholders', () => {
     expect(unfilled.some((u) => u.includes('{grade}')),
       'the scan did not react to a planted unfilled placeholder').toBe(true);
   });
+
+  it('follows chained fills through callback semicolons and catches a missing second fill', () => {
+    const text = "__alloT('stem.flightsim.progress', '{done} of {total}').replace('{done}', rows.filter(function(row) { return row.done; }).length).replace('{total}', rows.length);";
+    expect(findUnfilled(text).unfilled).toEqual([]);
+    expect(findUnfilled(text.replace(".replace('{total}', rows.length)", '')).unfilled).toEqual(['progress  {total}']);
+  });
+
+  it('does not accept a fill belonging to a different function', () => {
+    const text = "function first() { var value = __alloT('stem.flightsim.progress', '{total}'); return value; } function second() { return value.replace('{total}', 2); }";
+    expect(findUnfilled(text).unfilled).toEqual(['progress  {total}']);
+  });
 });

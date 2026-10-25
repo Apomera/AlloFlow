@@ -1,0 +1,4 @@
+# Immutable reference bytes: preserve hashes on every platform.
+# Historical reference bytes, including their original whitespace, are hashed
+# in manifest.json. Formatting or line-ending normalization invalidates them.
+* -text -whitespace

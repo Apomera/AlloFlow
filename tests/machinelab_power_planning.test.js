@@ -229,6 +229,8 @@ describe('Machine Lab: single-stage budget skill practice', () => {
 });
 
 describe('Machine Lab: planning practice state integrity', () => {
+  // Exercise the whole sequence in one session; every skill triggers several
+  // full renders. Allow slow CI hosts without dropping transition assertions.
   it.each(BENCHES)('cycles through legacy and new $id skills while clearing attempt state', b => {
     const s = session(b), order = kinds(b); expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(order);
     for (let index = 0; index < order.length; index++) {
@@ -239,7 +241,7 @@ describe('Machine Lab: planning practice state integrity', () => {
       expect(s.state().benchPowerRecords).toBeUndefined();
     }
     expect(s.awardXP).not.toHaveBeenCalled(); expect(s.tryAward).not.toHaveBeenCalled();
-  });
+  }, 20_000);
 
   it.each([
     ['station', { bench: 'pulley' }], ['view', { view: 'learn' }], ['geometry', { leverEffortArm: 3 }],

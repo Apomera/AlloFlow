@@ -339,7 +339,18 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
+      - name: Install React 18 for the full verification harnesses
+        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+      # The pipeline gate includes real MCP tests, with the same pinned inputs as unit shards.
+      - name: Install pinned EPUBCheck vendor assets for pipeline tests
+        run: node desktop/mcp/fetch_epubcheck.cjs
+      - name: Generate the MCP source-PDF fixture for pipeline tests
+        run: node dev-tools/make_remediation_e2e_fixture.cjs
       - name: npm run verify (surfaces translation gaps + mirror drift)
+        env:
+          ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
         run: npm run verify
       - name: Translation staleness (reworded English vs existing translations)
         # Non-blocking visibility: lists packs holding a translation of an English

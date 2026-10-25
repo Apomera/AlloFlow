@@ -22,12 +22,14 @@ describe('T-Chart Sort WCAG 2.2 interaction accessibility', () => {
     expect(source).toContain('event.stopPropagation()');
   });
 
-  it.each(files)('%s announces errors, completion, reset, and timeout cancellation', (_path, source) => {
+  it.each(files)('%s announces errors, completion and reset, clears shared hints, and cancels reset timeouts', (_path, source) => {
     expect(source).toContain('Try');
     expect(source).toContain('Complete! Every item is correctly sorted.');
     expect(source).toContain('Board reset. All items returned to the unsorted bank.');
     expect(source).toContain('Reset cancelled.');
-    expect(source).toContain('hintTimerRef.current');
+    expect(source).toContain('useDiagramSortHints');
+    expect(source).toContain('sortHints.clear()');
+    expect(source).toContain('sortHints.reset()');
     expect(source).toContain('confirmResetTimerRef.current');
   });
 

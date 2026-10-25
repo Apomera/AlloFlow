@@ -73,5 +73,5 @@ describe('restrained fox fixation on an actual passing peer',()=>{
     const preyConfig=api.normalize({...config,enabled:{rabbits:true,voles:false,owls:false,caterpillars:false,bluetits:false},initial:{rabbits:90,foxes:6},cover:10}),preyPair=api.compare(preyConfig),prey=api.behaviorTimeline(preyConfig,preyPair.baseline),oldPrey=baseline.behaviorTimeline(preyConfig,preyPair.baseline);
     prey.forEach((frame,step)=>frame.foxes.forEach((p,index)=>{if(p.attention?.kind==='prey'){expect(api.foxEyeTarget(p)).toEqual(baseline.foxEyeTarget(oldPrey[step].foxes[index]));expect(p.eyeAim).toBe(oldPrey[step].foxes[index].eyeAim);}}));
     expect(api.compare(c)).toEqual(pair);expect(JSON.stringify(pair)).toBe(before);expect(api.encounters(frames,c)).toEqual(baseline.encounters(old,c));expect(hash(api.behaviorTimeline(c,pair.baseline))).toBe(hash(frames));
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 });

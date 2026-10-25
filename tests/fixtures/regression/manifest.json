@@ -1,0 +1,109 @@
+{
+  "description": "Frozen regression references recovered from local QA output. Expected values are preserved, not regenerated from the implementation under test. SHA-256 hashes identify the original uncompressed bytes.",
+  "files": {
+    "kitchen-sauce-mixing-2026-10-18/thermal3-release-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-mixing-2026-10-18/thermal3-release-fixtures.json",
+      "bytes": 68598504,
+      "sha256": "e53a8261d43ead351c2f71ad47012106173cccccc64dde101f5e7a44dd3cd59e",
+      "storedBytes": 5530467,
+      "storedSha256": "258f9e5bc56d02cd6268b97f715214d6aae4f419a2370ba64d7bfcbac5b2d62f",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_sauce_chemistry.js": {
+      "source": "reports/kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_sauce_chemistry.js",
+      "bytes": 13763,
+      "sha256": "2614d3d44d60ceadc65177b325938dfe91d181a96ceb4ece1e0fa3de9575dd90",
+      "storedBytes": 13763,
+      "storedSha256": "2614d3d44d60ceadc65177b325938dfe91d181a96ceb4ece1e0fa3de9575dd90",
+      "encoding": "identity"
+    },
+    "kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_engine.js": {
+      "source": "reports/kitchen-sauce-mixing-2026-10-18/baseline-runtime/recipe_lab_engine.js",
+      "bytes": 98155,
+      "sha256": "027bac25de2c45ed510807169257df5949cecccf4d7247aff22fe3743ac39b34",
+      "storedBytes": 98155,
+      "storedSha256": "027bac25de2c45ed510807169257df5949cecccf4d7247aff22fe3743ac39b34",
+      "encoding": "identity"
+    },
+    "kitchen-sauce-chemistry-2026-10-17/legacy-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-chemistry-2026-10-17/legacy-fixtures.json",
+      "bytes": 269006,
+      "sha256": "185e3c890375b77397d693fa94e966aee5a31894c3adf8faef3f14837968af4c",
+      "storedBytes": 23842,
+      "storedSha256": "7e6b931932f95787f182187c02ddc29be6b3b37216e360b489dd9e30dd21d6cb",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-dilution-2026-10-18/model-two-fixtures.json",
+      "bytes": 1941158,
+      "sha256": "fc749387ade47ef1385cd9abc9401d6da3c83cfe4209537b89a91be3cdfc5845",
+      "storedBytes": 109025,
+      "storedSha256": "5f7a2a3a582b90388d5f289e39705b536f66fd9296b6f1cbe06dc145a7de8ab0",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-emulsion-2026-10-18/thermal-rescue-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-emulsion-2026-10-18/thermal-rescue-fixtures.json",
+      "bytes": 2895406,
+      "sha256": "bf3fc5c5b3709a4947f8df8a7b1c79714cdb8d9114a3846ec306990b259f2469",
+      "storedBytes": 138813,
+      "storedSha256": "4ec59779e4fea2a565613a1aed49b517a8d9c1ad15dcb0cb3cd2f577a82205cd",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-holding-2026-10-18/model-one-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-holding-2026-10-18/model-one-fixtures.json",
+      "bytes": 353674,
+      "sha256": "0b4bcebb52934c729139ac42b036c6417809937015edc69b27ef658a9bfc55de",
+      "storedBytes": 32317,
+      "storedSha256": "50b25d4698df6d97f470bcdcfef4c36ee4a7aeb354f6f600e4a3e92ee473760a",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-thermal-mass-2026-10-18/thermal2-release-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-thermal-mass-2026-10-18/thermal2-release-fixtures.json",
+      "bytes": 12903934,
+      "sha256": "2693640a38c1c245c6302da7b7801abb09d701ccacd84c2c0efb7293f73e8269",
+      "storedBytes": 577400,
+      "storedSha256": "f2244eb478525594b87ec853ffff9e9426e1b8951705d5f9f2948cee9c725907",
+      "encoding": "gzip"
+    },
+    "kitchen-sauce-thermal-mass-2026-10-18/baseline-runtime/recipe_lab_sauce_chemistry.js": {
+      "source": "reports/kitchen-sauce-thermal-mass-2026-10-18/baseline-runtime/recipe_lab_sauce_chemistry.js",
+      "bytes": 13763,
+      "sha256": "2614d3d44d60ceadc65177b325938dfe91d181a96ceb4ece1e0fa3de9575dd90",
+      "storedBytes": 13763,
+      "storedSha256": "2614d3d44d60ceadc65177b325938dfe91d181a96ceb4ece1e0fa3de9575dd90",
+      "encoding": "identity"
+    },
+    "kitchen-sauce-thermal-mass-2026-10-18/baseline-runtime/recipe_lab_engine.js": {
+      "source": "reports/kitchen-sauce-thermal-mass-2026-10-18/baseline-runtime/recipe_lab_engine.js",
+      "bytes": 94681,
+      "sha256": "78cb01c926b26ee4039c2f825b78e23a226b201f4665589944aec04741bef745",
+      "storedBytes": 94681,
+      "storedSha256": "78cb01c926b26ee4039c2f825b78e23a226b201f4665589944aec04741bef745",
+      "encoding": "identity"
+    },
+    "kitchen-sauce-heat-2026-10-18/pre-thermal-fixtures.json.gz": {
+      "source": "reports/kitchen-sauce-heat-2026-10-18/pre-thermal-fixtures.json",
+      "bytes": 579334,
+      "sha256": "f58caafc1c3f8937d36a18723be16623dd115edf83547827e26320f0b8ec833e",
+      "storedBytes": 42518,
+      "storedSha256": "45a53b863d7f3ab359a24f3054fd37a4d7a8116a0018c0df1f534923c608cd27",
+      "encoding": "gzip"
+    },
+    "watercycle-freeze-reference/accepted-runtime.js": {
+      "source": "reports/watercycle-freeze-reference/accepted-runtime.js",
+      "bytes": 3410742,
+      "sha256": "9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d",
+      "storedBytes": 3410742,
+      "storedSha256": "9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d",
+      "encoding": "identity"
+    },
+    "watercycle-freeze-reference/storm-caption-paint-regions.json": {
+      "source": "reports/watercycle-freeze-reference/storm-caption-paint-regions.json",
+      "bytes": 31818,
+      "sha256": "a019c77fc3e8fd89c5e6657514d20ba3a58b558dd657e7a80e49a78f01221b25",
+      "storedBytes": 31818,
+      "storedSha256": "a019c77fc3e8fd89c5e6657514d20ba3a58b558dd657e7a80e49a78f01221b25",
+      "encoding": "identity"
+    }
+  }
+}

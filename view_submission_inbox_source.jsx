@@ -1928,9 +1928,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
 
   const statusBadge = (status) => {
     const styles = {
-      pending: { bg: '#f1f5f9', color: '#475569', label: 'Pending' },
-      decrypted: { bg: '#dcfce7', color: '#166534', label: '✓ Decrypted' },
-      error: { bg: '#fee2e2', color: '#991b1b', label: '✗ Error' }
+      pending: { bg: '#f1f5f9', color: '#475569', label: tr('Pending') },
+      decrypted: { bg: '#dcfce7', color: '#166534', label: tr('✓ Decrypted') },
+      error: { bg: '#fee2e2', color: '#991b1b', label: tr('✗ Error') }
     };
     const s = styles[status] || styles.pending;
     return /*#__PURE__*/React.createElement('span', {

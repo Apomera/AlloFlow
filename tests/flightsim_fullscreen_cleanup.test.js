@@ -137,6 +137,7 @@ describe('flight fullscreen cleanup', () => {
         // into a debrief. That replacement must release the fullscreen lock.
         const debrief = host.querySelector('#skyschool-debrief');
         expect(latest.view).toBe('debrief');
+        expect(latest.lastDebrief.interrupted).toBe(true);
         expect(debrief).toBeTruthy();
         expect(debrief.style.position).not.toBe('fixed');
         expect(debrief.style.overflow).toBe('auto');

@@ -206,6 +206,8 @@ describe('host ownership wiring contracts', () => {
     expect(loadStartAt).toBeGreaterThan(-1);
     const loadStart = host.slice(loadStartAt, host.indexOf('\n        },', loadStartAt));
     expect(loadStart).toContain('invalidateLocalDataHydration();');
+    expect(loadStart).toContain('captureImportedResponses(rawData)');
+    expect(loadStart.indexOf('captureImportedResponses(rawData)')).toBeLessThan(loadStart.indexOf('invalidateLocalDataHydration();'));
     expect(host).toContain("window.addEventListener('online', retryStorageBootstrap)");
     expect(host).toContain('window.__alloRetryStorageBootstrap = retryStorageBootstrap');
     expect(host.match(/allo_device_storage_module\.js\?v=/g) || []).toHaveLength(1);

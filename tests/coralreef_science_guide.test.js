@@ -155,9 +155,9 @@ describe('species guide navigation', () => {
     expect(label.textContent).toBe('Find a species by name');
     await type(searchBox(t.host), 'parrot');
     expect(shownCards(t.host)).toEqual(['parrotfish', 'bumphead_parrotfish']);
-    expect(t.host.textContent).toContain('Showing 2 of 47.');
+    expect(t.host.textContent).toContain(`Showing 2 of ${X.SPECIES_META.length}.`);
     await act(async () => { await new Promise((r) => setTimeout(r, 750)); });
-    expect(t.announcements).toContain('Showing 2 of 47.');
+    expect(t.announcements).toContain(`Showing 2 of ${X.SPECIES_META.length}.`);
     await type(searchBox(t.host), 'chelonia');
     expect(shownCards(t.host)).toEqual(['green_turtle']);
     await type(searchBox(t.host), '  BLUE   Tang ');

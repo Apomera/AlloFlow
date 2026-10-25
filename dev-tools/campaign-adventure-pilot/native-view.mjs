@@ -32,7 +32,7 @@ export function JourneyHost({ctx,kind='stem'}){
         .map-location{font-size:10px}.grove .map-location{min-height:44px}
         .grove .map-location span{max-width:58px;white-space:normal}
       }
-      :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--accent:#fff;color-scheme:dark}
+      :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--control-line:#aaa;--accent:#fff;color-scheme:dark}
       :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
       :host([data-theme="contrast"]) button:focus-visible{outline-color:#ff0}

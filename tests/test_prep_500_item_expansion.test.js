@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
 const root = path.resolve(import.meta.dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
 const deployDir = path.join(root, 'desktop/web-app', 'public', 'test_prep');
+const { buildInventory } = createRequire(import.meta.url)('../dev-tools/build_test_prep_status_inventory.cjs');
 
 const expectedFiles = [
   'audiology_5343',
@@ -371,26 +373,16 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       expect(answerCounts(bankItems)).toEqual([25, 25, 25, 25]);
     }
 
-    const reviewedAtByBatchId = new Map(
-      paraPro.assistantReview.independentBatchEvidence.map((batch) => [batch.id, batch.reviewedAt]),
-    );
-    for (const [index, item] of authoredItems.entries()) {
-      const independentBatchNumber = 3 + Math.floor(index / 100);
-      const independentBatchId = `independent-diagnostic-batch-${independentBatchNumber}`;
-      const assistantReviewedAt = reviewedAtByBatchId.get(independentBatchId);
-      expect(assistantReviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // Existing drafts have not acquired the historical review's approval or
+    // batch attestation fields merely by being packaged for practice.
+    for (const item of authoredItems) {
       expect(item).toMatchObject({
         authorship: 'assistant-authored-independent',
         editorialReviewer: 'OpenAI Codex',
-        assistantReviewStatus: 'reviewed-independent-practice-item',
-        examItemStatus: 'assistant-approved-as-independent-practice-item',
-        reviewStatus: 'assistant-reviewed-independent-practice-item',
-        qaStatus: 'qa-passed-independent-practice-item',
-        assistantReviewedAt,
-        independentBatchId,
-        independentBatchNumber,
-        reviewMethod:
-          'independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1',
+        assistantReviewStatus: 'reviewed-independent-draft',
+        examItemStatus: 'assistant-reviewed-independent-draft',
+        reviewStatus: 'assistant-reviewed-independent-draft',
+        qaStatus: 'pending-integrated-qa',
       });
       expect(item.sourceItemId).toBeUndefined();
       expect(item.prompt.trim().length).toBeGreaterThan(35);
@@ -595,7 +587,12 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     }
   }, 60_000);
 
-  it('ships a schema-v2 audit whose inventory is derived from hash-bound pack rows', () => {
+  it('preserves the historical review and binds current draft data in a separate inventory', () => {
+    const currentInventory = JSON.parse(fs.readFileSync(path.join(sourceDir, 'test_prep_status_inventory.json'), 'utf8'));
+    expect(currentInventory).toEqual(buildInventory());
+    expect(currentInventory.purpose).toBe('structural-inventory-not-content-approval');
+    expect(fs.readFileSync(path.join(deployDir, 'test_prep_status_inventory.json'), 'utf8'))
+      .toBe(fs.readFileSync(path.join(sourceDir, 'test_prep_status_inventory.json'), 'utf8'));
     for (const name of [
       'test_prep_assistant_review_2026-07-16.json',
       'test_prep_assistant_review_2026-07-16.md',
@@ -626,8 +623,11 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       ).size;
       const remainingGap = 500 - independentKernelCount;
 
-      expect(sha256(packBytes)).toBe(row.packSha256);
-      expect(sha256(itemsBytes)).toBe(row.itemsSha256);
+      // Historical review hashes remain unchanged. Current bytes and review
+      // labels have their own inventory, without claiming a fresh review.
+      const current = currentInventory.perPack.find(entry => entry.stem === row.stem);
+      expect(sha256(packBytes)).toBe(current.packSha256);
+      expect(sha256(itemsBytes)).toBe(current.itemsSha256);
       expect(row).toMatchObject({
         learningActivities: 500,
         sourceQuestions: layout.source,

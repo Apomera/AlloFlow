@@ -21,8 +21,13 @@ beforeAll(() => {
 });
 
 describe('Praxis School Counselor 5422 diagnostic bank', () => {
-  it('registers five ready 100-item banks with the exact ETS 25/40/20/15 blueprint', () => {
+  it('registers five 100-item banks while retaining independent drafts with the exact ETS 25/40/20/15 blueprint', () => {
     expect(pack).toBeTruthy();
+    // Draft source metadata remains pending; the hub normalizes it to review-required.
+    const rawItems = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_counselor_5422_items.json'), 'utf8'));
+    const drafts = rawItems.filter((item) => item.reviewStatus === 'assistant-reviewed-independent-draft');
+    expect(drafts).toHaveLength(100);
+    expect(drafts.every((item) => item.qaStatus === 'pending-integrated-qa')).toBe(true);
     expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 120, simulationTimeMinutes: 120 });
     expect(pack.items).toHaveLength(500);
     expect(pack.sections).toHaveLength(5);
@@ -42,12 +47,12 @@ describe('Praxis School Counselor 5422 diagnostic bank', () => {
     ]);
 
     const sourceItems = pack.items.filter((item) => item.qaStatus === 'qa-passed');
-    const independentItems = pack.items.filter((item) => item.qaStatus === 'qa-passed-independent-practice-item');
+    const independentItems = pack.items.filter((item) => item.qaStatus === 'review-required');
     const guidedItems = pack.items.filter((item) => item.qaStatus === 'structural-qa-passed-guided-practice-only');
     expect(sourceItems).toHaveLength(200);
     expect(independentItems).toHaveLength(100);
     expect(guidedItems).toHaveLength(200);
-    expect(independentItems.every((item) => item.reviewStatus === 'assistant-reviewed-independent-practice-item')).toBe(true);
+    expect(independentItems.every((item) => item.reviewStatus === 'assistant-reviewed-independent-draft')).toBe(true);
     expect(guidedItems.every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({ define: 0.25, deliver: 0.40, manage: 0.20, assess: 0.15 });
 
@@ -67,7 +72,7 @@ describe('Praxis School Counselor 5422 diagnostic bank', () => {
     expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
     const acceptedReviewPairs = [
       'source-reviewed | qa-passed',
-      'assistant-reviewed-independent-practice-item | qa-passed-independent-practice-item',
+      'assistant-reviewed-independent-draft | review-required',
       'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only',
     ];
     for (const item of pack.items) {

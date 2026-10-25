@@ -10,7 +10,7 @@ const TEST_PATH = 'tests/watercycle_storm_moments.test.js';
 // Freeze reference re-baselined 2026-10-16 to the accepted runtime (sha 9498b155, incl. the dark-chip contrast fix and air-band direction words): later
 // published passes (585a61ba2, 79e3e5eae) changed preserved declarations on purpose. The original
 // pass baseline remains at reports/watercycle-storm-moments/baseline-runtime.js.
-const BASELINE_PATH = 'reports/watercycle-freeze-reference/accepted-runtime.js';
+const BASELINE_PATH = 'tests/fixtures/regression/watercycle-freeze-reference/accepted-runtime.js';
 const BASELINE_SHA = '9498b1556f44b12bcb562e7507beccfcfc211fdcf721c4615892ad3c197de84d';
 const PRESERVED = [
   'wcPrecipClamp', 'advanceWcStormWeather', 'WC_PRECIP_DEFAULTS', 'WC_PRECIP_PRESETS',

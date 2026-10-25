@@ -105,7 +105,7 @@
     function choose(id){if(host.locked())return false;host.cancel();host.choose(id);return true;}
     function returnToKitchen(){host.cancel();var drawer=$('sceneToolDrawer');if(drawer&&drawer.open)drawer.querySelector('summary').click();$('sceneChooseTool').focus({preventScroll:true});var expanded=$('expandedKitchen');if(expanded&&expanded.open)expanded.scrollTop=0;else $('sceneToolTray').scrollIntoView({block:'nearest'});}
     back.addEventListener('click',returnToKitchen);
-    tray.querySelectorAll('[data-tool-group]').forEach(function(b){b.addEventListener('click',function(){if(host.locked())return;var selected=definition(host.tool());remembered[selected[1]]=selected[0];group=b.dataset.toolGroup;choose(remembered[group]||catalog.find(function(t){return t[1]===group;})[0]);});});
+    tray.querySelectorAll('[data-tool-group]').forEach(function(b){b.addEventListener('click',function(){if(host.locked())return;var selected=definition(host.tool());remembered[selected[1]]=selected[0];var nextGroup=b.dataset.toolGroup,first=catalog.find(function(t){return t[1]===nextGroup;});if(!first)return;group=nextGroup;choose(remembered[group]||first[0]);});});
     shelf.querySelectorAll('[data-kitchen-tool]').forEach(function(b){b.addEventListener('click',function(){if(choose(b.dataset.kitchenTool))returnToKitchen();});});
     $('sceneChooseTool').addEventListener('click',function(){var drawer=$('sceneToolDrawer');if(!drawer)return;host.cancel();drawer.open=true;var card=shelf.querySelector('[data-kitchen-tool="'+host.tool()+'"]');if(card&&!card.disabled)card.focus({preventScroll:true});else drawer.querySelector('summary').focus({preventScroll:true});drawer.scrollIntoView({block:'nearest'});});
     function render(s){

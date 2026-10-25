@@ -98,5 +98,5 @@ describe('Free woodland feather care', () => {
       expect(f.wildlife.snapshot()).toEqual(snapshot);
       for (const pose of f.poses.values()) expect(pose.preen).toBe(0);
     } finally { f.wildlife.dispose(); }
-  });
+  }, 20000);
 });

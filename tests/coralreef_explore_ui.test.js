@@ -172,6 +172,7 @@ describe('coral reef exploration workflow', () => {
     const X = window.__RR_TEST_EXPORTS__.coralReef;
     const total = X.SPECIES_META.length;
     const pictures = [...t.host.querySelectorAll('img')];
+    expect(total).toBeGreaterThan(0);
     expect(pictures).toHaveLength(total);
     expect(pictures.map(picture => picture.closest('[data-species]').getAttribute('data-species')).sort()).toEqual(X.SPECIES_META.map(species => species.id).sort());
     expect(renderer).not.toHaveBeenCalled();

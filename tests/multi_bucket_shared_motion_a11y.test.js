@@ -56,7 +56,8 @@ describe('Shared MultiBucket sorter accessibility', () => {
     expect(sourceComponent).toContain('focusMultiBucketItem');
   });
   it('cleans up timers and honors reduced motion for all shared animations and transforms', () => {
-    expect(sourceComponent).toContain('if (hintTimerRef.current) clearTimeout');
+    expect(sourceComponent).toContain("useDiagramSortHints(t, gameKey)");
+    expect(sourceComponent).not.toContain('hintTimerRef'); // Guidance now stays open until the learner dismisses it.
     expect(sourceComponent).toContain('if (confirmResetTimerRef.current) clearTimeout');
     expect(sourceComponent).toContain('const reducedMotion = useReducedMotion()');
     expect(sourceComponent.match(/useReducedMotion\(\)/g)?.length).toBe(1);

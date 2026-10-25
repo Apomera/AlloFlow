@@ -147,6 +147,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "0c5d195e5c6e"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c9c2dc9f662b"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c9c2dc9f662b"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -177,6 +187,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "7375663e94ef"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c9c2dc9f662b"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c9c2dc9f662b"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c9c2dc9f662b"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "ecdf403552c0"
@@ -192,6 +217,31 @@
     }
   },
   "arabic": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f21485eeebb3"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f21485eeebb3"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f21485eeebb3"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f21485eeebb3"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f21485eeebb3"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -302,6 +352,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "d54c7c92ce62"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ae9471adbd52"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ae9471adbd52"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -341,6 +401,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "a941fceef00d"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ae9471adbd52"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ae9471adbd52"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ae9471adbd52"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -397,6 +472,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "1ab2140e4fa0"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "fec6d27bf89c"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "fec6d27bf89c"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -426,6 +511,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "6c6d8676c0e8"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "fec6d27bf89c"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "fec6d27bf89c"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "fec6d27bf89c"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -656,6 +756,31 @@
     }
   },
   "chinese_simplified": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -726,6 +851,31 @@
     }
   },
   "chinese_traditional": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e21b4ce68242"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -836,6 +986,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "7873168dad18"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "6b5a5ce51109"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "6b5a5ce51109"
+    },
     "escape_room.end_game_confirm": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "a042149703b6",
@@ -891,6 +1051,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "4fef84f072a7"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "6b5a5ce51109"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "6b5a5ce51109"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "6b5a5ce51109"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "bed7c5b2ec25"
@@ -945,6 +1120,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "06fa7f2bbe72"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ab079aa9d002"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ab079aa9d002"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -1005,6 +1190,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "1069b6e5ea4c"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ab079aa9d002"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ab079aa9d002"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ab079aa9d002"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1075,6 +1275,31 @@
     }
   },
   "esperanto": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4923e11bb820"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4923e11bb820"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4923e11bb820"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4923e11bb820"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4923e11bb820"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1184,6 +1409,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "7873168dad18"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "46eedbd6fcfc"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "46eedbd6fcfc"
+    },
     "escape_room.generating_hint": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "fae5ecec5ab2",
@@ -1214,6 +1449,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "4fef84f072a7"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "46eedbd6fcfc"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "46eedbd6fcfc"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "46eedbd6fcfc"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "01fc20ac6cb7"
@@ -1229,6 +1479,31 @@
     }
   },
   "french": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1299,6 +1574,31 @@
     }
   },
   "french_canadian": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "24673d3601da"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1409,6 +1709,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "00f3a0f4ec73"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "373da46b1a60"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "373da46b1a60"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -1468,6 +1778,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "48615211ef2a"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "373da46b1a60"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "373da46b1a60"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "373da46b1a60"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1579,6 +1904,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "b45e05198424"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3316f5349047"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3316f5349047"
+    },
     "escape_room.generating_hint": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "fae5ecec5ab2",
@@ -1618,6 +1953,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "dfc445b8cbc0"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3316f5349047"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3316f5349047"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3316f5349047"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1689,10 +2039,35 @@
     }
   },
   "gujarati": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e707d6d518e1"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e707d6d518e1"
+    },
     "escape_room.preview_desc": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "989d394fb536",
       "translationHash": "1d63f477b1f8"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e707d6d518e1"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e707d6d518e1"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e707d6d518e1"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -1708,6 +2083,31 @@
     }
   },
   "haitian_creole": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f03c622ef542"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f03c622ef542"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f03c622ef542"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f03c622ef542"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f03c622ef542"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "abfdcf179b7c"
@@ -1763,6 +2163,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "14ef56a63f11"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "68ae10775767"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "68ae10775767"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -1793,6 +2203,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "3a839721b6c8"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "68ae10775767"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "68ae10775767"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "68ae10775767"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "45484538f865"
@@ -1808,6 +2233,31 @@
     }
   },
   "hebrew": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "9d1a72925c4b"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "9d1a72925c4b"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "9d1a72925c4b"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "9d1a72925c4b"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "9d1a72925c4b"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -1918,6 +2368,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "837fac641d61"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
     "escape_room.generating_hint": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "fae5ecec5ab2",
@@ -1952,6 +2412,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "bcec65f5a03e"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -2063,6 +2538,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "2974e89b9f13"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5a6583aa8d72"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5a6583aa8d72"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2092,6 +2577,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "8abb4dac0ff0"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5a6583aa8d72"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5a6583aa8d72"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5a6583aa8d72"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -2148,6 +2648,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "075f139dc400"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee477c1be8a2"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee477c1be8a2"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2177,6 +2687,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "2ee466833750"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee477c1be8a2"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee477c1be8a2"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee477c1be8a2"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -2232,6 +2757,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "25e1bec5cd85"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "50b63d33ee1d"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "50b63d33ee1d"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -2292,6 +2827,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "4c778062949a"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "50b63d33ee1d"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "50b63d33ee1d"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "50b63d33ee1d"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -2403,6 +2953,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "24f54c7917b4"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "878e096e01b0"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "878e096e01b0"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -2462,6 +3022,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "1e91942ed44d"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "878e096e01b0"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "878e096e01b0"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "878e096e01b0"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -2533,6 +3108,31 @@
     }
   },
   "japanese": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c56a489cbe0c"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c56a489cbe0c"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c56a489cbe0c"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c56a489cbe0c"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "c56a489cbe0c"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -2603,6 +3203,31 @@
     }
   },
   "kannada": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5c1f442d4df9"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5c1f442d4df9"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5c1f442d4df9"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5c1f442d4df9"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5c1f442d4df9"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "7aa7593b4124"
@@ -2764,6 +3389,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "7cdbaeb65af6"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d24b37f72f45"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d24b37f72f45"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2794,6 +3429,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "8eeeccb686dd"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d24b37f72f45"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d24b37f72f45"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d24b37f72f45"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "2996e30a9ae1"
@@ -2809,6 +3459,31 @@
     }
   },
   "kinyarwanda": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "afeabc29614d"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "afeabc29614d"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "afeabc29614d"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "afeabc29614d"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "afeabc29614d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "28af73d04c29"
@@ -2864,6 +3539,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "279748d1a1a4"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "bebe33e59713"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "bebe33e59713"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -2893,6 +3578,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "6edf0bfe1200"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "bebe33e59713"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "bebe33e59713"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "bebe33e59713"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -2949,6 +3649,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "4ccc7c6ffa51"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f96be5ede107"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f96be5ede107"
+    },
     "escape_room.generating_hint": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "fae5ecec5ab2",
@@ -2978,6 +3688,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "b37cb3634b89"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f96be5ede107"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f96be5ede107"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f96be5ede107"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -3089,6 +3814,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "80f0de8bf192"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7cb20807d300"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7cb20807d300"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3144,6 +3879,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "bcf47c90c28e"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7cb20807d300"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7cb20807d300"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7cb20807d300"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "f7d1bf41a516"
@@ -3198,6 +3948,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "c191398bd846"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "29cdf5ec62fb"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "29cdf5ec62fb"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -3258,6 +4018,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "6b9a7d2ca3c0"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "29cdf5ec62fb"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "29cdf5ec62fb"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "29cdf5ec62fb"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -3436,6 +4211,31 @@
     }
   },
   "malayalam": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3ac2ea5e5e90"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3ac2ea5e5e90"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3ac2ea5e5e90"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3ac2ea5e5e90"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "3ac2ea5e5e90"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "4d0168f0f639"
@@ -3721,6 +4521,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "e14b3cd4759c"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3750,6 +4560,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "4319a33bad8f"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ca1e815a4fb4"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -3806,6 +4631,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "f5feb8c475c3"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7f3a03921abb"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7f3a03921abb"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -3861,6 +4696,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "bcd56a6e26df"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7f3a03921abb"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7f3a03921abb"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "7f3a03921abb"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "e3289336d3eb"
@@ -3915,6 +4765,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "662efcd14557"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "91e40aafab71"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "91e40aafab71"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -3975,6 +4835,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "aacc457e4221"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "91e40aafab71"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "91e40aafab71"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "91e40aafab71"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -4046,6 +4921,31 @@
     }
   },
   "portuguese_angola": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -4116,6 +5016,31 @@
     }
   },
   "portuguese_brazil": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -4186,6 +5111,31 @@
     }
   },
   "portuguese_portugal": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "608e9f0873f6"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -4296,6 +5246,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "c7f5761f27c7"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e4df903ce1cc"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e4df903ce1cc"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -4325,6 +5285,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "a0b871168afd"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e4df903ce1cc"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e4df903ce1cc"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "e4df903ce1cc"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -4380,6 +5355,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "41c09ddc256f"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "92700dcf0b31"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "92700dcf0b31"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -4440,6 +5425,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "8c90988554fc"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "92700dcf0b31"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "92700dcf0b31"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "92700dcf0b31"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -4551,6 +5551,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "8f750562ecac"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "64040bda220d"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "64040bda220d"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -4610,6 +5620,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "42713d7652d5"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "64040bda220d"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "64040bda220d"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "64040bda220d"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -4681,6 +5706,31 @@
     }
   },
   "somali": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b3b8b6498f31"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b3b8b6498f31"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b3b8b6498f31"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b3b8b6498f31"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b3b8b6498f31"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "1ba18dbf8b84"
@@ -4696,6 +5746,31 @@
     }
   },
   "spanish_castilian": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -4766,6 +5841,31 @@
     }
   },
   "spanish_latin_america": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "f292e83d268b"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -4875,6 +5975,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "1502ab9cb18e"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d283df10cad9"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d283df10cad9"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -4909,6 +6019,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "c5fc3b65f3dd"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d283df10cad9"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d283df10cad9"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d283df10cad9"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -4964,6 +6089,16 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
       "translationHash": "9361a530258a"
+    },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2a58a3e110d5"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2a58a3e110d5"
     },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
@@ -5024,6 +6159,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "3d8df0995f99"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2a58a3e110d5"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2a58a3e110d5"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2a58a3e110d5"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -5135,6 +6285,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "95568c06fc36"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee519a5cd551"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee519a5cd551"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5164,6 +6324,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "fdecce509ad0"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee519a5cd551"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee519a5cd551"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "ee519a5cd551"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -5220,6 +6395,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "7d0370820008"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b12dd32b5ffe"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b12dd32b5ffe"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5249,6 +6434,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "5dc3f4b2e54a"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b12dd32b5ffe"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b12dd32b5ffe"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "b12dd32b5ffe"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -5305,6 +6505,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "f30732bc4261"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5e2d08f983ae"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5e2d08f983ae"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5359,6 +6569,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "5efb37741be6"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5e2d08f983ae"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5e2d08f983ae"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "5e2d08f983ae"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
@@ -5415,6 +6640,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "f0615900ed39"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "baa800e72898"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "baa800e72898"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5445,6 +6680,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "17fa2bee45ae"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "baa800e72898"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "baa800e72898"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "baa800e72898"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "e8d81d37e119"
@@ -5460,6 +6710,31 @@
     }
   },
   "turkish": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "98ed82005748"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "98ed82005748"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "98ed82005748"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "98ed82005748"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "98ed82005748"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -5569,6 +6844,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "9bc6f414d920"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "0b85d0aad6fa"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "0b85d0aad6fa"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
@@ -5628,6 +6913,21 @@
       "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "42713d7652d5"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "0b85d0aad6fa"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "0b85d0aad6fa"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "0b85d0aad6fa"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -5739,6 +7039,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "89198ddd7caa"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2c171d20094e"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2c171d20094e"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5794,6 +7104,21 @@
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "d0dbe26d5b33"
     },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2c171d20094e"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2c171d20094e"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "2c171d20094e"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "11f89364b5f0"
@@ -5809,6 +7134,31 @@
     }
   },
   "vietnamese": {
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4dcadc0d8e5f"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4dcadc0d8e5f"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4dcadc0d8e5f"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4dcadc0d8e5f"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "4dcadc0d8e5f"
+    },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
       "sourceHash": "f72bcde64f09",
@@ -5919,6 +7269,16 @@
       "sourceHash": "365ab100916a",
       "translationHash": "44794373f56f"
     },
+    "common.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d9efa50dd402"
+    },
+    "common.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d9efa50dd402"
+    },
     "escape_room.config_saved": {
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "4319d7096edf",
@@ -5948,6 +7308,21 @@
       "reviewReason": "hand-draft-puzzle-challenge-rename-awaiting-native-review",
       "sourceHash": "55fcdfc0f0b7",
       "translationHash": "4220d511b150"
+    },
+    "lesson_plan.header_title": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d9efa50dd402"
+    },
+    "meta.udl_aligned": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d9efa50dd402"
+    },
+    "meta.udl_lesson_plan": {
+      "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
+      "sourceHash": "6730f6f93dad",
+      "translationHash": "d9efa50dd402"
     },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",

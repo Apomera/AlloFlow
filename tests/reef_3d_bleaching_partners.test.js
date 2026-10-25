@@ -142,10 +142,11 @@ describe('Lane G2: animals with algae partners bleach, the rest do not', () => {
 
   it('adds no material family or shader program: bleaching only changes colours, maps and uniforms', () => {
     const fams = (health) => { const set = new Set(); for (const id of S.ids) for (const quality of ['low', 'high']) build(id, { seed: 3, quality, health }, (h) => meshes(h).forEach((m) => set.add(sig(m)))); return set; };
-    // Nine families (the corals suite allows up to ten), one program cache key, as before this lane.
+    // New specimen textures are present in the healthy catalog too; bleaching adds no family.
     const healthy = fams('healthy'), all = new Set([...healthy, ...fams('bleached'), ...fams('dead')]);
-    expect(all.size, 'the same material families as before').toBe(9);
-    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v6|d']));
+    expect(all, 'bleaching adds no material family to the healthy catalog').toEqual(healthy);
+    expect(all.size, 'eleven pinned specimen families').toBe(11);
+    expect(new Set([...all].map((k) => k.split(',').pop())), 'one shader patch').toEqual(new Set(['reef3d-species-v7|d']));
     for (const id of PARTNERS) for (const quality of ['low', 'high']) {
       const a = build(id, { seed: 3, quality }, (h) => meshes(h).map(sig)), b = build(id, { seed: 3, quality, health: 'bleached' }, (h) => meshes(h).map(sig));
       expect(b, id + ' ' + quality).toEqual(a);

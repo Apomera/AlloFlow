@@ -63,6 +63,7 @@ async function start(battery = 100, mode = 'aerial') {
   expect(launcher).toBeTruthy(); await act(async () => launcher.click());
   const begin = [...host.querySelectorAll('button')].find(button => button.textContent.includes('I Understand — Begin Flight'));
   expect(begin).toBeTruthy(); await act(async () => begin.click());
+  expect(latest.view).toBe('flying');
   expect(latest.flightMission.mission.missionId).toBe(missionId);
   for (const canvas of host.querySelectorAll('canvas')) {
     Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 1280 });

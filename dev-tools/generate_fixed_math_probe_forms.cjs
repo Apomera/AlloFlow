@@ -427,7 +427,7 @@ if (require.main === module) {
   const json = jsonText(data), js = jsText(data);
   if (process.argv.includes('--print')) { process.stdout.write(json); process.exit(0); }
   if (process.argv.includes('--check')) {
-    const ok = fs.readFileSync(JSON_PATH, 'utf8') === json && fs.readFileSync(JS_PATH, 'utf8') === js;
+    const ok = fs.readFileSync(JSON_PATH, 'utf8') === json && fs.readFileSync(JS_PATH, 'utf8').replace(/\r\n/g, '\n') === js.replace(/\r\n/g, '\n');
     console.log(ok ? 'probe forms match the generator' : 'probe forms differ from the generator output');
     process.exit(ok ? 0 : 1);
   }

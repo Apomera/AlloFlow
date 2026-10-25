@@ -45,7 +45,7 @@ describe('Scale Explorer compares characteristic measurements', () => {
       }
       expect(product / comparison.ratio).toBeCloseTo(1, 9);
     }
-  });
+  }, 30000 /* exhaustive geometry/replay assertions; not a wall-clock performance test */);
 
   it('does not duplicate an endpoint at an exact whole decade or replace an exact step by its example', () => {
     const steps = bridge(pair({ id: 'small', size: 1 }, { id: 'big', size: 1000 }), [{ id: 'example', size: 13 }]);

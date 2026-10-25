@@ -19,8 +19,8 @@ updates:
       security-patches:
         applies-to: security-updates
         update-types: [patch, minor]
-  # MCP runtime updates remain separate and pass their dedicated compatibility
-  # and artifact gates; they no longer have a blanket automatic-update hold.
+  # Temporary hold while MCP development is active. Alerts remain visible;
+  # this prevents automatic dependency PRs from interfering with that work.
   - package-ecosystem: npm
     directories:
       - /desktop/mcp
@@ -29,16 +29,18 @@ updates:
       - /services/alloflow-remote-mcp/runner
     schedule:
       interval: weekly
-    open-pull-requests-limit: 2
-    groups:
-      mcp-security-patches:
-        applies-to: security-updates
-        update-types: [patch, minor]
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: '*'
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 2
+    exclude-paths:
+      - .github/workflows/remote-mcp-verify.yml
+      - .github/workflows/mcp-registry-publish.yml
+      - .github/workflows/mcpb-release.yml
   - package-ecosystem: pip
     directories:
       - /docker/edge-tts-server
