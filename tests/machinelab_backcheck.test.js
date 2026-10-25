@@ -122,12 +122,14 @@ function expectBackcheck(s, kind, q, candidate, provenance = 'checked') {
 }
 
 describe('Machine Lab: back-check arithmetic', () => {
+  // Each bench sweep renders and checks all 18 or 25 skills. Windows CI can
+  // exceed the single-case 5 s default; retain the complete arithmetic sweep.
   it.each(BENCHES)('restores every $id skill through an independent inverse identity', b => {
     const s = session(b), specs = expected(b), ordered = kinds(b);
     expect(nodes(s.byId('question')).filter(n => n.type === 'option').map(n => n.props.value)).toEqual(ordered);
     expect(ordered).toHaveLength(rotary(b) ? 25 : 18);
     for (const kind of ordered) { answer(s, kind, specs[kind]); expect(s.result()).toBe('correct'); expectBackcheck(s, kind, specs[kind], specs[kind].target); }
-  });
+  }, 15000);
   it.each(BENCHES)('uses accepted entered values for all $id skills instead of replacing them with exact targets', b => {
     const s = session(b), specs = expected(b);
     for (const kind of kinds(b)) {
@@ -135,7 +137,7 @@ describe('Machine Lab: back-check arithmetic', () => {
       answer(s, kind, q, entered); expect(s.result()).toBe('correct'); expectBackcheck(s, kind, q, entered);
       expect(Number(s.find(n => n.props?.['data-ml-power-backcheck-metric'] === 'difference').props['data-value'])).toBeGreaterThan(0);
     }
-  });
+  }, 15000);
   it.each(BENCHES.filter(rotary))('retains correct rotary inverse units for non-default $id geometry', b => {
     const settings = { ...BASE, windlassHandleR: 0.6, windlassDrumR: 0.15, screwHandleR: 0.2, screwPitch: 0.012, loadDistance: 0.7 };
     const s = session(b, settings), specs = expected(b, settings, 37.5, 12.5, 230);

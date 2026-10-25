@@ -569,7 +569,7 @@ function atomicWriteJson(finalPath, value, mode = 0o600) {
 }
 
 function checkpointEngineFiles() {
-  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs')];
+  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
   const vendorManifest = [
     path.join(__dirname, 'vendor', 'manifest.json'),
@@ -700,11 +700,13 @@ function checkpointAudit(value) {
 // holds the bytes; when it is absent the digest is only shape-checked, which is
 // what a resume with no file in hand can honestly assert.
 function checkpointExtraction(value, inputSha256, expectedDocumentDigest) {
+  // Older checkpoints omit alignment evidence; current pipeline snapshots retain it.
+  const alignmentKeys = Object.hasOwn(value || {}, 'ocrVisionAlignments') ? ['ocrVisionAlignments'] : [];
   if (!hasExactKeys(value, [
     'fileName', 'documentDigest', 'text', 'groundTruthCharCount', 'groundTruthMethod',
     'groundTruthPages', 'ocrMethod', 'ocrTesseractText', 'ocrVisionText',
     'ocrDisagreements', 'ocrPageErrors', 'ocrLowConfidencePages', 'detectedFolios',
-    'ocrDupeCollapses', 'ocrColumnReorders', 'strippedEdgeLines', 'visionStripTrail',
+    'ocrDupeCollapses', 'ocrColumnReorders', 'strippedEdgeLines', 'visionStripTrail', ...alignmentKeys,
   ])) return null;
   if (
     typeof value.fileName !== 'string' || value.fileName.length === 0 || value.fileName.length > 255 ||
@@ -722,7 +724,7 @@ function checkpointExtraction(value, inputSha256, expectedDocumentDigest) {
     ![
       value.ocrDisagreements, value.ocrPageErrors, value.ocrLowConfidencePages,
       value.detectedFolios, value.ocrDupeCollapses, value.ocrColumnReorders,
-      value.strippedEdgeLines, value.visionStripTrail,
+      value.strippedEdgeLines, value.visionStripTrail, ...alignmentKeys.map(key => value[key]),
     ].every(Array.isArray)
   ) return null;
   return value;

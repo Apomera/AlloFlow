@@ -1528,9 +1528,13 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   }, 120000);
 
   it('calendar labels the current-week period independently of the browsed month', async () => {
-    const now = new Date(); now.setHours(0, 0, 0, 0);
+    // Node's CI timezone can differ from Chromium's, including which week it is.
+    // Seed records against the browser calendar that renders the weekly summary.
+    const midnight = await page.evaluate(() => {
+      const now = new Date(); now.setHours(0, 0, 0, 0); return now.getTime();
+    });
     await openJournal({ activeTab: 'calendar', calYear: 2020, calMonth: 0, earnedBadges: { calendar_viewer: true, weekly_reviewer: true }, checkIns: [
-      { timestamp: now.getTime() + 3000, mood: 5 }, { timestamp: now.getTime() + 1000, mood: 1 }, { timestamp: now.getTime() + 2000, mood: 3 }
+      { timestamp: midnight + 3000, mood: 5 }, { timestamp: midnight + 1000, mood: 1 }, { timestamp: midnight + 2000, mood: 3 }
     ] });
     const region = page.getByRole('region', { name: 'Journal calendar and summaries', exact: true });
     expect(await region.getByRole('status').innerText()).toBe('January 2020');

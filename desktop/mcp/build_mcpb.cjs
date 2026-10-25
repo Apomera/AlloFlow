@@ -21,7 +21,7 @@
  *
  * Two host-machine requirements survive packaging (disclosed in the manifest
  * description and checked by remediation_capabilities at runtime):
- *   - Node.js 18+ on PATH (MCPB node servers use the host node)
+ *   - Node.js 22.12+ on PATH (MCPB node servers use the host node)
  *   - Chromium via `npx playwright install chromium` (a browser download
  *     cannot ride a bundle)
  * --lean also omits node_modules (~50MB): then the host machine must be able
@@ -46,7 +46,7 @@ const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_worker.cjs', 'remediation_ace_browser.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
 // The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
 // Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
 const SERVER_DIRS = ['vendor'];
@@ -151,7 +151,7 @@ function buildManifest() {
     display_name: 'AlloFlow Document Accessibility',
     version: require('./connector_version.cjs'),
     description: 'Remediate PDFs (and DOCX/PPTX) for accessibility with AlloFlow\'s honesty-gated pipeline: audit, accessible-HTML rebuild, AI fix passes, tagged-PDF export, and independent PDF/UA-1 validation.',
-    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 20+ and a one-time Chromium download. Full remediation defaults to the keyless agent bridge using your MCP client model, including resumable folders. Gemini is optional; deterministic tools remain available without a key. Kokoro can narrate the complete result locally in accessible or natural style; its first use downloads public dependencies. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
+    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 22.12+ and a one-time Chromium download. Full remediation defaults to the keyless agent bridge using your MCP client model, including resumable folders. Gemini is optional; deterministic tools remain available without a key. Kokoro can narrate the complete result locally in accessible or natural style; its first use downloads public dependencies. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
     author: { name: 'Aaron Pomeranz', url: 'https://github.com/Apomera' },
     homepage: 'https://apomera.github.io/AlloFlow/',
     documentation: 'https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/README_REMEDIATION.md',
@@ -181,7 +181,7 @@ function buildManifest() {
         required: false,
       },
     },
-    compatibility: { claude_desktop: '>=1.0.0', platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=20' } },
+    compatibility: { claude_desktop: '>=1.0.0', platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=22.12.0' } },
     tools,
     keywords: ['accessibility', 'pdf', 'remediation', 'wcag', 'pdf-ua', 'education'],
     license: 'AGPL-3.0-or-later',
@@ -238,13 +238,19 @@ async function main() {
 
   if (!LEAN) {
     log('installing pinned Playwright and Ace runtimes (browser downloads disabled)…');
+    const runtimeManifest = JSON.parse(fs.readFileSync(path.join(MCP_DIR,'runtime','package.json'),'utf8'));
+    copyRecursive(path.join(MCP_DIR,'runtime','disabled-extract-zip'),path.join(STAGING,'disabled-extract-zip'));
     fs.writeFileSync(path.join(STAGING, 'package.json'), JSON.stringify({
       name: 'alloflow-remediation-mcpb', private: true, version: require('./connector_version.cjs'),
-      engines: {node: '>=20'},
-      dependencies: JSON.parse(fs.readFileSync(path.join(MCP_DIR,'runtime','package.json'),'utf8')).dependencies,
+      engines: {node: '>=22.12.0'},
+      dependencies: runtimeManifest.dependencies,
+      overrides: runtimeManifest.overrides,
     }, null, 2), 'utf8');
     fs.copyFileSync(path.join(MCP_DIR,'runtime','package-lock.json'),path.join(STAGING,'package-lock.json'));
-    execSync('npm ci --omit=dev --ignore-scripts --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
+    // The official packer excludes conventional package-lock.json files. Keep
+    // a byte-identical evidence copy that survives packing and is source-verified.
+    fs.copyFileSync(path.join(MCP_DIR,'runtime','package-lock.json'),path.join(STAGING,'runtime-dependencies.lock.json'));
+    execSync('npm ci --omit=dev --ignore-scripts --install-links --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
   } else {
     log('--lean: skipping node_modules; the host must be able to require(\'playwright\')');
   }
@@ -283,11 +289,25 @@ async function main() {
   log('SHA256SUMS.txt → ' + sums.path + ' (' + sums.sha256 + ')');
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; the Gemini API key field is optional and can be left blank for no-account tools.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
-  log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 20+ on PATH; veraPDF and EPUBCheck need a local Java runtime.');
+  log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 22.12+ on PATH; veraPDF and EPUBCheck need a local Java runtime.');
 }
 
 // Guarded so the manifest can be imported and checked against the live tool registry without
 // building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
 // Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
-module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle, writeSha256Sums };
+function getBundleSourceFiles({ includeRuntime = true } = {}) {
+  const files = {};
+  for (const file of SERVER_FILES) files['server/' + file] = path.join(MCP_DIR, file);
+  for (const file of ASSET_FILES) files['assets/' + file.replace(/\\/g, '/')] = path.join(REPO_ROOT, file);
+  if (includeRuntime) {
+    for (const file of ['index.cjs', 'package.json', 'README.md']) {
+      const source = path.join(MCP_DIR, 'runtime', 'disabled-extract-zip', file);
+      files['disabled-extract-zip/' + file] = source;
+      files['node_modules/extract-zip/' + file] = source;
+    }
+    files['runtime-dependencies.lock.json'] = path.join(MCP_DIR, 'runtime', 'package-lock.json');
+  }
+  return files;
+}
+module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle, writeSha256Sums, getBundleSourceFiles };
 if (require.main === module) main().catch((error) => { console.error('[build-mcpb] ERROR: ' + (error && error.stack || error)); process.exitCode = 1; });

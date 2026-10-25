@@ -15,7 +15,7 @@ tar -xf ../alloflow-remediation.mcpb          # bsdtar on Windows 10+, macOS, Li
 node server/alloflow-remediation-mcp-stdio.cjs   # prints "ready (stdio only; tools: ...)" on stderr
 ```
 
-Requirements on every host except Claude Desktop (which supplies Node itself): Node.js 20 or newer
+Requirements on every host except Claude Desktop (which supplies Node itself): Node.js 22.12 or newer
 on PATH, a Java runtime for PDF/UA and EPUB validation, and one `remediation_setup` call for the
 Chromium download. From a checkout, run `node desktop/mcp/fetch_epubcheck.cjs` once so the EPUBCheck
 distribution is present (the release bundle already contains it).

@@ -136,7 +136,8 @@ describe('First Response hand camera targets', () => {
     }
   });
 
-  it.each(ages)('keeps a stable envelope around moving hands throughout an inspected cycle for %s', age => {
+  // Preserve every mesh/phase assertion on Windows CI, where this CPU sweep can exceed 5 seconds.
+  it.each(ages)('keeps a stable envelope around moving hands throughout an inspected cycle for %s', { timeout: 15000 }, age => {
     const { scene, content, sample } = model(age);
     for (const [depth, lean] of [[2.5, 0], [age === 'infant' ? 4 : 5.5, 1]]) {
       sample({ depth, lean, motion: 'inspect', phase: 0 }, { childHands: 'two' });

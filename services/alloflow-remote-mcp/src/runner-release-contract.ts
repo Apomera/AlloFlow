@@ -9,8 +9,8 @@ export const RUNNER_RELEASE_CONTRACT = {
     "checkpointEngineAbi": 1
   },
   "build": {
-    "runnerBuildSha256": "4c810041bc36c549a05cd3904312e4a27ca760fc7082472937a991a36f0d4d7a",
-    "manifestSha256": "5ed46e172ebd20a2e4970fd9d679a30341657ffca5c7dde8800543cb501083bb"
+    "runnerBuildSha256": "92e6534e2d01a3930ba4fe37dc77b8205ecbe01d3750c7d986070894c5cc78fc",
+    "manifestSha256": "a2c24a91003e4e7fd41e634e3bf6c48d286c1792786e63fbfbcd2c36fb1cab9b"
   },
   "modelConfig": {
     "geminiBase": "http://gemini.internal/v1beta/models"

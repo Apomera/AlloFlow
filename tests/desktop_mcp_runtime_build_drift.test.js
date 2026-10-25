@@ -18,6 +18,7 @@ function startDisposableServer(root) {
     'remediation_headless_driver.cjs',
     'zip_writer.cjs',
     'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs',
+    'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs',
     'connector_version.cjs',
   ]) copyFileSync(join(MCP_DIR, name), join(serverDir, name));
   cpSync(join(MCP_DIR, 'vendor'), join(serverDir, 'vendor'), { recursive: true });
@@ -99,7 +100,7 @@ function startDisposableServer(root) {
 }
 
 describe('desktop MCP runtime build fencing', function () {
-  it('keeps capabilities inspectable but rejects self-test and direct processing after drift', async function () {
+  it.each(['remediation_headless_driver.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'])('keeps capabilities inspectable but rejects self-test and direct processing after drift in %s', async function (changedFile) {
     const scratch = mkdtempSync(join(tmpdir(), 'alloflow-runtime-drift-'));
     const server = startDisposableServer(scratch);
     try {
@@ -110,7 +111,7 @@ describe('desktop MCP runtime build fencing', function () {
       });
       expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
 
-      appendFileSync(server.driverPath, LF + '// deliberate post-boot drift' + LF, 'utf8');
+      appendFileSync(join(scratch, 'server', changedFile), LF + '// deliberate post-boot drift' + LF, 'utf8');
 
       const capabilityReply = await server.request('tools/call', {
         name: 'remediation_capabilities', arguments: {},
