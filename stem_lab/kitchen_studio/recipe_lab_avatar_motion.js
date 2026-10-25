@@ -28,6 +28,11 @@
   function keyframe(kind,phase,options){
     var o=options||{},plate=optionIndex(o.plate===undefined?o.plateIndex:o.plate),clove=optionIndex(o.clove),x=plate?720:285,tip=clove?465:405,piece=itemIndex(o.piece,13),area=itemIndex(o.area,7),px=420+(piece%7)*28,py=341+Math.floor(piece/7)*16,bx=o.activity==='rinse-and-dry-produce'?415+(area%4)*40:355+(area%4)*70,by=335+Math.floor(area/4)*23,poses;
     if(o.portionAware===true&&(kind==='serve'||kind==='return'))return servingKeyframe(kind,phase,o);
+    if(o.sampleAware===true&&kind==='samplePasta')return samplingKeyframe(phase,o);
+    if(o.clothAware===true&&kind==='wring')return point(phase==='pickup'||phase==='ready'?620:300,phase==='pickup'||phase==='ready'?336:306);
+    if(o.pressAware===true&&kind==='press')return phase==='pickup'||phase==='ready'?point(300,324,-14):point(px,phase==='contact'?py-5:phase==='press'?py+2:phase==='lift'?286:306);
+    if(o.foldAware===true&&kind==='fold')return foldingKeyframe(phase,foldingGeometry(o));
+    if(o.ladleAware===true&&kind==='reserveWater')return ladleKeyframe(phase,ladleGeometry(o));
     if(o.activity==='finish-pasta-in-sauce'&&kind==='pour'&&(phase==='pickup'||phase==='ready'))return point(110,290,0);
     if(thermal(o)&&(kind==='inspect'||kind==='fold')){if(phase==='pickup'||phase==='ready')return point(140,375,90);var original=keyframe(kind,phase,{}),at=panAnchor(o.panPlacement);return point(at.x+(original.x-514)*110/132,at.y+original.y-349,original.angle);}
     if(kind==='combinePasta')poses={pickup:[270,340,0],grip:[270,340,0],lift:[270,260,0],carry:[480,260,0],lower:[480,280,0],tilt:[480,280,28],ready:[480,280,28]};
@@ -54,7 +59,7 @@
     else if(kind==='setPanHeat'){var before=-60+40*itemIndex(o.initialSetting,3),after=-60+40*itemIndex(o.setting,3);poses={pickup:[690,390,before],reach:[650,375,before],adjust:[650,375,after],ready:[690,390,after]};}
     else if(kind==='moveLid'){var placement=lidPlacements(o),origin=lidAnchor(placement.from),target=lidAnchor(placement.to);poses={pickup:[origin.x,origin.y,origin.angle],lift:[origin.x,250,0],carry:[target.x,250,0],lower:[target.x,target.y,target.angle],ready:[target.x,target.y,target.angle]};}
     else if(kind==='waitPot')poses={pickup:[585,390,0],observe:[585,390,0],ready:[585,390,0]};
-    else if(kind==='setPotHeat'){var initial=-60+40*itemIndex(o.initialSetting,3),chosen=-60+40*itemIndex(o.setting,3);poses={pickup:[585,390,initial],reach:[650,375,initial],adjust:[650,375,chosen],ready:[585,390,chosen]};}
+    else if(kind==='setPotHeat'){var initial=-60+40*itemIndex(o.initialSetting,3),chosen=-60+40*itemIndex(o.setting,3),knobY=o.activity==='cook-save-and-drain-pasta'?285:375;poses={pickup:[585,390,initial],reach:[650,knobY,initial],adjust:[650,knobY,chosen],ready:[585,390,chosen]};}
     else if(kind==='movePan'){var placements=panPlacements(o),from=panAnchor(placements.from),to=panAnchor(placements.to);poses={pickup:[from.x,from.y,0],grip:[from.x,from.y,0],lift:[from.x,285,0],carry:[to.x,285,0],lower:[to.x,to.y,0],ready:[to.x,to.y,0]};}
     else if(kind==='separatePasta'){var group=bundleAnchor(o);if(phase==='position')return spoonAtBowl(group.x-10,292,-10);if(phase==='dip')return spoonAtBowl(group.x-10,group.y,-10);if(phase==='sweep')return spoonAtBowl(group.x+10,group.y,10);if(phase==='lift')return spoonAtBowl(group.x+10,292,10);return point(690,350,-32);}
     else if(kind==='sliceProduce'){var selected=cutGeometry(o);return phase==='pickup'||phase==='ready'?point(690,350,-65):point(selected.line.x,phase==='cut'?350:306,0);}
@@ -99,7 +104,11 @@
   }
   // Animation pacing is separate from the simulated kitchen clock. A deliberate
   // placement has time to settle; a knife lift is quicker than a loaded carry.
-  function transitionDuration(kind,phase,next){
+  function transitionDuration(kind,phase,next,options){
+    if(kind==='wring'&&options&&options.clothAware===true)return !next?0:({pickup:1900,carry:1550,twist:900,release:2200}[phase]||700);
+    if(kind==='press'&&options&&options.pressAware===true)return !next?0:({pickup:1600,position:850,contact:1150,press:1050,lift:1600}[phase]||700);
+    if(kind==='fold'&&options&&options.foldAware===true)return !next?0:({pickup:1900,immerse:1650,across:1500,turn:2050}[phase]||700);
+    if(kind==='reserveWater'&&options&&options.ladleAware===true)return !next?0:({pickup:2450,dip:1450,lift:2050,carry:1050,tip:850,level:850}[phase]||700);
     if(kind==='combinePasta'){var combineSteps={pickup:1050,grip:1100,lift:1600,carry:900,lower:1150,tilt:450};return !next?0:combineSteps[phase]||750;}
     if(kind==='loadMushrooms'){var loadSteps={pickup:1000,grip:1000,lift:1500,carry:850,lower:1100,tilt:450};return !next?0:loadSteps[phase]||750;}
     if(kind==='rinseProduce'){var rinseSteps={pickup:1500,carry:850,lower:1650,rinse:1000,lift:1400,drain:1350,return:1200,tip:450};return !next?0:rinseSteps[phase]||700;}
@@ -133,6 +142,11 @@
   function pose(options){
     var o=options||{},kind=o.kind||'inspect',phase=o.phase||'pickup',next=o.nextPhase||null;
     if(o.portionAware===true&&(kind==='serve'||kind==='return'))return servingPose(o);
+    if(o.sampleAware===true&&kind==='samplePasta')return samplingPose(o);
+    if(o.clothAware===true&&kind==='wring')return wringPose(o);
+    if(o.pressAware===true&&kind==='press')return pressPose(o);
+    if(o.foldAware===true&&kind==='fold')return foldingPose(o);
+    if(o.ladleAware===true&&kind==='reserveWater')return ladlePose(o);
     if(kind==='moveLid')return lidPose(o);
     if(kind==='movePan')return panPose(o);
     if(kind==='separatePasta')return bundlePose(o);
@@ -180,6 +194,130 @@
     }
     return attention(data,o,next?end:null);
   }
+  // The spoon travels by its bowl, so rolling the wrist never disconnects the
+  // handle or makes a contact cue follow a different point. Only this optional
+  // path uses the standard pan's left helper handle. Sauce remains committed
+  // model state: contact and load below are movement cues, not mixing results.
+  function foldingGeometry(options){
+    var o=options||{},moved=thermal(o),surface=moved?{x:panAnchor(o.panPlacement).x,y:350,rx:110,ry:34}:{x:514,y:349,rx:132,ry:34};
+    return {surface:surface,home:moved?point(140,375,90):point(690,350,-32),transitAngle:moved?60:0,acrossAngle:moved?8:18,activeHand:moved?'left':'right',supportAnchor:moved?point(surface.x+185,346):point(358,349),supportAngle:moved?82:-82,restHands:{left:moved?point(210,320):point(320,310),right:moved?point(690,305):point(670,300)}};
+  }
+  function foldingKeyframe(phase,geometry){
+    var s=geometry.surface;
+    if(phase==='immerse')return spoonAtBowl(s.x-.58*s.rx,s.y-3,-16);
+    if(phase==='across')return spoonAtBowl(s.x+.58*s.rx,s.y+4,geometry.acrossAngle);
+    if(phase==='turn')return spoonAtBowl(s.x-.06*s.rx,s.y-16,-38);
+    return copy(geometry.home);
+  }
+  function foldingClearAngle(x,geometry){var home=rotateOffset(geometry.home,{x:0,y:7});return geometry.transitAngle*clamp((geometry.surface.x-x)/(geometry.surface.x-home.x),0,1);}
+  function foldingHands(data,spoonContact,supportContact,pressure,workingAngle,supportAngle){
+    var active=data.activeHand,other=active==='left'?'right':'left',working=data.grip,supporting=data.supportHand;
+    data.handPoses={};
+    data.handPoses[active]={anchor:{x:working.x,y:working.y},rotation:finite(workingAngle,data.tool.angle),gesture:spoonContact>0?'wrap':'relaxed',closure:.18+(.68+.1*pressure)*spoonContact,pressure:pressure*spoonContact,contact:spoonContact,role:spoonContact>0?'working':'free',gear:'bare'};
+    data.handPoses[other]={anchor:{x:supporting.x,y:supporting.y},rotation:finite(supportAngle,data.folding.geometry.supportAngle),gesture:supportContact>0?'handle':'relaxed',closure:.18+.78*supportContact,pressure:pressure*supportContact*.3,contact:supportContact,role:supportContact>0?'stabilizing':'free',gear:'mitt'};
+    return data;
+  }
+  function foldingData(tool,geometry,phase,next,t,contact,pressure,stage,options){
+    var surface=geometry.surface,bowl=rotateOffset(tool,{x:0,y:7}),radius=Math.pow((bowl.x-surface.x)/surface.rx,2)+Math.pow((bowl.y-surface.y)/surface.ry,2),inside=ease((1-radius)/.2);
+    contact=clamp(contact,0,1)*inside;pressure=clamp(pressure,0,1)*contact;tool.visible=true;
+    var data=attention({kind:'fold',phase:phase,nextPhase:next,tool:tool,activeHand:geometry.activeHand,grip:grip(tool,'fold'),supportHand:copy(geometry.supportAnchor),targetGrip:next?grip(foldingKeyframe(next,geometry),'fold'):null,spout:null,held:true,eased:parkEase(t),progress:t*100,panSurface:copy(surface),folding:{stage:stage,bowl:{x:bowl.x,y:bowl.y},contact:contact,immersion:contact*(.35+.4*pressure),pressure:pressure,spoonContact:1,supportContact:1,supportAnchor:{x:geometry.supportAnchor.x,y:geometry.supportAnchor.y},geometry:copy(geometry),preview:true}},options,null);
+    if(!options.reducedMotion){var direction=clamp((bowl.x-surface.x)/surface.rx,-1,1);data.body.x+=direction*pressure*1.5;data.body.y+=pressure*1.2;data.body.angle+=direction*pressure*.8;data.head.y+=pressure*.35;data.shoulders={left:transformPoint({x:373,y:229},data.body),right:transformPoint({x:526,y:229},data.body)};}
+    return foldingHands(data,1,1,pressure);
+  }
+  function foldingPose(options){
+    var o=options||{},geometry=foldingGeometry(o),s=geometry.surface,phase=o.phase||'pickup',next=o.nextPhase||null,t=clamp(finite(o.progress,0)/100,0,1),u=parkEase(t),tool=foldingKeyframe(phase,geometry),contact=phase==='immerse'||phase==='across'?1:phase==='turn'?.18:0,pressure=phase==='immerse'||phase==='across'?.18:0,stage=phase,clear=s.y-82;
+    var start=rotateOffset(foldingKeyframe(phase,geometry),{x:0,y:7}),end=next?rotateOffset(foldingKeyframe(next,geometry),{x:0,y:7}):start;
+    if(phase==='pickup'&&next==='immerse'){
+      var enter;
+      if(t<.22){var lift=parkEase(t/.22);tool=spoonAtBowl(start.x,start.y+(clear-start.y)*lift,angleBlend(geometry.home.angle,geometry.transitAngle,lift));stage='spoon-lift';}
+      else if(t<.72){var carry=parkEase((t-.22)/.5);tool=spoonAtBowl(start.x+(end.x-start.x)*carry,clear-4*Math.pow(Math.sin(PI*carry),2),angleBlend(geometry.transitAngle,-16,carry));stage='spoon-carry';}
+      else{enter=parkEase((t-.72)/.28);var y=clear+(end.y-clear)*enter;tool=spoonAtBowl(end.x,y,-16);contact=parkEase((y-(s.y-14))/11);pressure=.18;stage='spoon-enter';}
+    }else if(phase==='immerse'&&next==='across'){
+      tool=spoonAtBowl(start.x+(end.x-start.x)*u,start.y+(end.y-start.y)*u+10*Math.pow(Math.sin(PI*u),2),angleBlend(-16,geometry.acrossAngle,u));contact=1;pressure=.18+.42*Math.pow(Math.sin(PI*u),2);stage='spoon-sweep';
+    }else if(phase==='across'&&next==='turn'){
+      tool=spoonAtBowl(start.x+(end.x-start.x)*u,start.y+(end.y-start.y)*u-12*Math.pow(Math.sin(PI*u),2),angleBlend(geometry.acrossAngle,-38,u));contact=1-.82*parkEase(t/.68);pressure=.18*(1-parkEase(t/.65));stage=t<.68?'spoon-fold':'spoon-unload';
+    }else if(phase==='turn'&&next==='ready'){
+      var clearAngle=foldingClearAngle(start.x,geometry);
+      if(t<.25){var rise=parkEase(t/.25);tool=spoonAtBowl(start.x,start.y+(clear-start.y)*rise,angleBlend(-38,clearAngle,rise));contact=.18*(1-parkEase(t/.15));stage='spoon-clear';}
+      else if(t<.76){var returning=parkEase((t-.25)/.51);tool=spoonAtBowl(start.x+(end.x-start.x)*returning,clear-4*Math.pow(Math.sin(PI*returning),2),angleBlend(clearAngle,geometry.transitAngle,returning));contact=0;stage='spoon-return';}
+      else{var lower=parkEase((t-.76)/.24);tool=spoonAtBowl(end.x,clear+(end.y-clear)*lower,angleBlend(geometry.transitAngle,geometry.home.angle,lower));contact=0;stage='spoon-rest';}
+    }
+    if(t===1&&next){tool=foldingKeyframe(next,geometry);contact=next==='immerse'||next==='across'?1:next==='turn'?.18:0;pressure=next==='immerse'||next==='across'?.18:0;}
+    return foldingData(tool,geometry,phase,next,t,contact,pressure,stage,o);
+  }
+  // The pan is braced with an insulated grip before the masher moves. Its
+  // plate crosses the rim only at a raised transit height; load and unloading
+  // stay vertical above the selected piece. Ingredient changes remain model
+  // actions, never an effect of this optional movement preview.
+  function pressTarget(options){var piece=itemIndex(options&&options.piece,13);return {piece:piece,x:420+piece%7*28,y:341+Math.floor(piece/7)*16};}
+  function pressHands(data,toolContact,supportContact,pressure,leftAngle,rightAngle){
+    var left=data.grip,right=data.supportHand;
+    data.handPoses={left:{anchor:{x:left.x,y:left.y},rotation:finite(leftAngle,data.tool.angle),gesture:toolContact>0?'wrap':'relaxed',closure:.18+(.7+.1*pressure)*toolContact,pressure:pressure*toolContact,contact:toolContact,role:toolContact>0?'working':'free',gear:'bare'},right:{anchor:{x:right.x,y:right.y},rotation:finite(rightAngle,82),gesture:supportContact>0?'handle':'relaxed',closure:.18+.82*supportContact,pressure:pressure*supportContact*.35,contact:supportContact,role:supportContact>0?'stabilizing':'free',gear:'mitt'}};
+    return data;
+  }
+  function pressData(tool,target,phase,next,t,pressure,stage,options){
+    tool.visible=true;var data=attention({kind:'press',phase:phase,nextPhase:next,tool:tool,activeHand:'left',grip:grip(tool,'press'),supportHand:point(705,349,-8),targetGrip:next?grip(keyframe('press',next,{pressAware:true,piece:target.piece}),'press'):null,spout:null,held:true,eased:parkEase(t),progress:t*100,contact:{x:target.x,y:target.y,amount:pressure},pressInteraction:{piece:target.piece,target:{x:target.x,y:target.y},foot:{x:tool.x,y:tool.y,rx:25,ry:7},supportAnchor:{x:705,y:349},supportContact:1,toolContact:1,pressure:pressure,stage:stage,preview:true}},options,null);
+    if(!options.reducedMotion){data.body.y+=1.6*pressure;data.head.y+=.5*pressure;data.shoulders={left:transformPoint({x:373,y:229},data.body),right:transformPoint({x:526,y:229},data.body)};}
+    return pressHands(data,1,1,pressure);
+  }
+  function pressPose(options){
+    var o=options||{},phase=o.phase||'pickup',next=o.nextPhase||null,t=clamp(finite(o.progress,0)/100,0,1),u=parkEase(t),target=pressTarget(o),tool=keyframe('press',phase,{pressAware:true,piece:target.piece}),pressure=phase==='press'?1:0,stage=phase;
+    if(phase==='pickup'&&next==='position'){
+      if(t<.26){var lifted=parkEase(t/.26);tool=point(300,324-38*lifted,-14*(1-lifted));stage='masher-lift';}
+      else if(t<.76){var carry=parkEase((t-.26)/.5);tool=point(300+(target.x-300)*carry,286-5*Math.pow(Math.sin(PI*carry),2));stage='masher-carry';}
+      else{tool=point(target.x,286+20*parkEase((t-.76)/.24));stage='masher-position';}
+    }else if(phase==='position'&&next==='contact'){tool=point(target.x,306+(target.y-5-306)*u);stage='masher-contact';}
+    else if(phase==='contact'&&next==='press'){pressure=parkEase(t/.78);tool=point(target.x,target.y-5+7*pressure);stage=t<.78?'masher-load':'masher-hold';}
+    else if(phase==='press'&&next==='lift'){
+      if(t<.25){pressure=1-parkEase(t/.25);tool=point(target.x,target.y-5+7*pressure);stage='masher-unload';}
+      else{pressure=0;tool=point(target.x,target.y-5+(286-(target.y-5))*parkEase((t-.25)/.75));stage='masher-clear';}
+    }else if(phase==='lift'&&next==='ready'){
+      if(t<.66){var returning=parkEase(t/.66);tool=point(target.x+(300-target.x)*returning,286-5*Math.pow(Math.sin(PI*returning),2));stage='masher-return';}
+      else{var lowered=parkEase((t-.66)/.34);tool=point(300,286+38*lowered,-14*lowered);stage='masher-rest';}
+    }
+    if(t===1&&next){tool=keyframe('press',next,{pressAware:true,piece:target.piece});pressure=next==='press'?1:0;}
+    return pressData(tool,target,phase,next,t,pressure,stage,o);
+  }
+  // A wring keeps its two cloth ends in the grips. Only the fabric's middle
+  // narrows; the wrists oppose each other instead of rotating a rigid towel.
+  // This optional choreography never transfers water or advances kitchen time.
+  function wringCloth(tool,twist,water,dripping){
+    var amount=clamp(twist,0,1),waist=12-8*amount,n=rounded;
+    return {aware:true,compression:amount,twist:amount,dripping:!!dripping&&water>0,waist:waist,
+      shapePath:'M-32-10C-22-14-10 '+n(-waist)+' 0 '+n(-waist)+'C10 '+n(-waist)+' 22-14 32-10L32 10C22 14 10 '+n(waist)+' 0 '+n(waist)+'C-10 '+n(waist)+'-22 14-32 10Z',
+      weavePath:'M-28-6C-12 '+n(-waist*.55+amount*3)+' 12 '+n(-waist*.55-amount*3)+' 28-6M-29 0C-12 '+n(amount*4)+' 12 '+n(-amount*4)+' 29 0M-28 6C-12 '+n(waist*.55+amount*3)+' 12 '+n(waist*.55-amount*3)+' 28 6M-23-11L-23 11M23-11L23 11M-12 '+n(-waist-1)+'Q'+n(-8+amount*4)+' 0-12 '+n(waist+1)+'M12 '+n(-waist-1)+'Q'+n(8-amount*4)+' 0 12 '+n(waist+1),
+      wetPath:'M-17 0Q0 '+n(-waist*1.5)+' 17 0Q0 '+n(waist*1.5)+'-17 0Z'};
+  }
+  function wringPresentation(data,joining,leftContact,rightContact,twist,leftAngle,rightAngle){
+    var left=data.supportHand,right=data.grip,rest=point(220,338),restAngle=arm({side:'left',hand:rest}).wristAngle+90;
+    data.handPoses={left:{anchor:{x:left.x,y:left.y},rotation:finite(leftAngle,angleBlend(restAngle,270,joining)-32*twist),gesture:joining>0?'pinch':'relaxed',closure:.18+(.47+.28*twist)*leftContact,pressure:twist*leftContact,contact:leftContact,role:leftContact>0?'stabilizing':'free',gear:'bare'},right:{anchor:{x:right.x,y:right.y},rotation:finite(rightAngle,90+32*twist),gesture:rightContact>0?'pinch':'relaxed',closure:.18+(.47+.28*twist)*rightContact,pressure:twist*rightContact,contact:rightContact,role:rightContact>0?'working':'free',gear:'bare'}};
+    return data;
+  }
+  function wringData(tool,supportHand,phase,next,t,joining,leftContact,rightContact,twist,water,stage,options,dripping){
+    tool.visible=rightContact>0;var data=attention({kind:'wring',phase:phase,nextPhase:next,tool:tool,activeHand:'right',grip:grip(tool,'wring'),supportHand:supportHand,targetGrip:next?grip(keyframe('wring',next,{clothAware:true}),'wring'):null,spout:null,held:rightContact>0,eased:parkEase(t),progress:t*100,cloth:wringCloth(tool,twist,water,dripping),clothHandling:{stage:stage,leftGrip:rotateOffset(tool,{x:-25,y:0}),rightGrip:rotateOffset(tool,{x:25,y:0}),supportContact:leftContact,workingContact:rightContact,joining:joining,waterMl:water,preview:true}},options,null);
+    return wringPresentation(data,joining,leftContact,rightContact,twist);
+  }
+  function wringPose(options){
+    var o=options||{},phase=o.phase||'pickup',next=o.nextPhase||null,t=clamp(finite(o.progress,0)/100,0,1),u=parkEase(t),home=point(620,336),bowl=point(300,306),rest=point(220,338),tool=phase==='pickup'||phase==='ready'?copy(home):copy(bowl),joining=['twist','release'].includes(phase)?1:0,leftContact=joining,twist=phase==='twist'?1:0,stage=phase,s=copy(rest);
+    if(phase==='pickup'&&next==='carry'){
+      if(t<.23){tool.y=336-56*parkEase(t/.23);stage='cloth-lift';}
+      else if(t<.78){var carry=parkEase((t-.23)/.55);tool=point(620-320*carry,280-5*Math.pow(Math.sin(PI*carry),2));stage='cloth-carry';}
+      else{tool=point(300,280+26*parkEase((t-.78)/.22));stage='cloth-lower';}
+    }else if(phase==='carry'&&next==='twist'){
+      joining=parkEase(t/.42);leftContact=parkEase((t-.42)/.16);twist=parkEase((t-.58)/.42);stage=t<.42?'support-approach':t<.58?'support-grip':'cloth-twist';
+    }else if(phase==='twist'&&next==='release'){twist=1-u;stage='cloth-untwist';}
+    else if(phase==='release'&&next==='ready'){
+      leftContact=1-parkEase(t/.16);joining=1-parkEase((t-.16)/.16);
+      if(t<.16)stage='support-release';
+      else if(t<.32)stage='support-withdraw';
+      else if(t<.46){tool.y=306-26*parkEase((t-.32)/.14);stage='cloth-lift';}
+      else if(t<.82){var returning=parkEase((t-.46)/.36);tool=point(300+320*returning,280-5*Math.pow(Math.sin(PI*returning),2));stage='cloth-carry';}
+      else{tool=point(620,280+56*parkEase((t-.82)/.18));stage='cloth-lower';}
+    }
+    if(t===1&&next){tool=keyframe('wring',next,{clothAware:true});joining=next==='twist'||next==='release'?1:0;leftContact=joining;twist=next==='twist'?1:0;}
+    s=blendPoint(rest,rotateOffset(tool,{x:-25,y:0}),joining);s.y-=6*Math.pow(Math.sin(PI*joining),2);
+    return wringData(tool,s,phase,next,t,joining,leftContact,1,twist,Math.max(0,finite(o.clothWaterMl,0)),stage,o,phase==='carry'&&twist>.05);
+  }
   // Portion handling is optional choreography. A spoonful stays in its bowl
   // until the learner's explicit Release records the one model transfer.
   function servingGeometry(kind,options){
@@ -205,6 +343,76 @@
     if(t===0)tool=copy(start);if(t===1&&next)tool=copy(end);tool.visible=true;
     var loaded=phase!=='pickup'||next==='scoop'&&t===1,hand=activeHand(kind,o),data={kind:kind,phase:phase,nextPhase:next,tool:tool,activeHand:hand,grip:grip(tool,kind),supportHand:support(kind,o),targetGrip:next?grip(end,kind):null,spout:null,held:true,eased:u,progress:t*100};
     data.servingTransfer=servingDescriptor(d,tool,phase,loaded,1,true,false);return attention(data,o,next?end:null);
+  }
+  // Sampling is an observation, not a portion transfer. Keep a solid sample in
+  // the spoon through the inspection, then return it to the same pot on either
+  // commit or cancel. The opt-in paths leave legacy choreography unchanged.
+  function samplingKeyframe(phase,options){
+    if(phase==='dip')return spoonAtBowl(450,350,0);
+    if(phase==='lift')return point(450,260,0);
+    if(phase==='check'||phase==='ready')return point(365,265,-8);
+    return options&&options.activity==='cook-save-and-drain-pasta'?point(770,351,-40):point(690,350,-32);
+  }
+  function samplingDescriptor(tool,stage,loaded,contact,preview,committed,home){
+    var bowl=rotateOffset(tool,{x:0,y:7}),data={source:{kind:'pot',x:450,y:350},position:point(tool.x,tool.y,tool.angle),bowl:{x:bowl.x,y:bowl.y},stage:stage,loaded:loaded?1:0,foodRetained:!!loaded,contact:contact,preview:preview,committed:!!committed};if(home)data.home=copy(home);return data;
+  }
+  function samplingPose(options){
+    var o=options||{},phase=o.phase||'pickup',next=o.nextPhase||null,t=clamp(finite(o.progress,0)/100,0,1),u=parkEase(t),start=samplingKeyframe(phase,o),end=next?samplingKeyframe(next,o):start,tool=blendPoint(start,end,u);
+    if(phase==='pickup'&&next==='dip')tool=clearSpoonTool(start,end,t,.28,.72,260);
+    if(phase==='lift'&&next==='check')tool.y-=4*Math.pow(Math.sin(PI*u),2);
+    if(t===0)tool=copy(start);if(t===1&&next)tool=copy(end);tool.visible=true;
+    var loaded=['dip','lift','check','ready'].includes(phase)||phase==='pickup'&&next==='dip'&&t===1,data={kind:'samplePasta',phase:phase,nextPhase:next,tool:tool,activeHand:'right',grip:grip(tool,'samplePasta'),supportHand:support('samplePasta',o),targetGrip:next?grip(end,'samplePasta'):null,spout:null,held:true,eased:u,progress:t*100};
+    data.samplingTransfer=samplingDescriptor(tool,phase,loaded,1,true,false,o.activity==='cook-save-and-drain-pasta'?samplingKeyframe('pickup',o):null);return attention(data,o,next?end:null);
+  }
+  // Water stays in the ladle until an explicit release records its transfer.
+  // These fractions allocate that one visual dose, never the kitchen state.
+  // The bowl clears the rim before lateral travel; a pour rotates about its
+  // actual lip so the stream cannot drift outside the receiving vessel.
+  function ladleGeometry(options){
+    var o=options||{},amount=clamp(finite(o.actualMl,finite(o.amountMl,50)),0,50),surface=clamp(finite(o.potSurfaceY,350),350,388);
+    return {amountMl:amount,source:{kind:'pot',x:450,y:surface},destination:{kind:'jug',x:230,y:324},home:point(300,350,-32),clearY:270,pourLip:{x:242,y:286},supportAnchor:point(550,342),restHands:{left:point(310,285),right:o.activity==='cook-save-and-drain-pasta'?point(590,282):point(620,290)}};
+  }
+  function ladleAtLip(lip,angle){var a=angle*PI/180;return spoonAtBowl(lip.x+16*Math.cos(a),lip.y+16*Math.sin(a),angle);}
+  function ladleKeyframe(phase,g){
+    if(phase==='dip')return spoonAtBowl(g.source.x,g.source.y-8,0);
+    if(phase==='lift')return spoonAtBowl(g.source.x,g.clearY,0);
+    if(phase==='carry')return spoonAtBowl(g.pourLip.x+16,g.clearY,0);
+    if(phase==='tip')return ladleAtLip(g.pourLip,0);
+    if(phase==='level'||phase==='ready')return ladleAtLip(g.pourLip,-8);
+    return copy(g.home);
+  }
+  function ladleHands(data,workingContact,supportContact,workingAngle,supportAngle){
+    var left=data.grip,right=data.supportHand;
+    data.handPoses={left:{anchor:{x:left.x,y:left.y},rotation:finite(workingAngle,data.tool.angle),gesture:workingContact>0?'wrap':'relaxed',closure:.18+.7*workingContact,pressure:0,contact:workingContact,role:workingContact>0?'working':'free',gear:'bare'},right:{anchor:{x:right.x,y:right.y},rotation:finite(supportAngle,90),gesture:supportContact>0?'handle':'relaxed',closure:.18+.78*supportContact,pressure:0,contact:supportContact,role:supportContact>0?'stabilizing':'free',gear:supportContact>0?'mitt':'bare'}};
+    return data;
+  }
+  function ladleData(tool,g,phase,next,t,stage,loaded,delivered,immersion,supporting,supportContact,options){
+    loaded=clamp(loaded,0,1);delivered=clamp(delivered,0,1-loaded);var bowl=rotateOffset(tool,{x:0,y:7}),lip=rotateOffset(tool,{x:-16,y:7});tool.visible=true;
+    var data=attention({kind:'reserveWater',phase:phase,nextPhase:next,tool:tool,activeHand:'left',grip:grip(tool,'reserveWater'),supportHand:copy(supporting),targetGrip:next?grip(ladleKeyframe(next,g),'reserveWater'):null,spout:lip,held:true,eased:parkEase(t),progress:t*100,ladleTransfer:{stage:stage,source:copy(g.source),destination:copy(g.destination),bowl:{x:bowl.x,y:bowl.y},lip:{x:lip.x,y:lip.y},streamTarget:null,amountMl:g.amountMl,capacityMl:50,loadedMl:g.amountMl*loaded,fillFraction:g.amountMl*loaded/50,sourceFraction:1-loaded-delivered,loadedFraction:loaded,destinationFraction:delivered,flow:0,immersion:clamp(immersion,0,1),ladleContact:1,supportContact:supportContact,geometry:copy(g),preview:true,committed:false}},options,null);
+    var free=arm({side:'right',hand:supporting,shoulder:data.shoulders.right}).wristAngle+90;
+    return ladleHands(data,1,supportContact,tool.angle,supportContact>0?90:free);
+  }
+  function ladlePose(options){
+    var o=options||{},g=ladleGeometry(o),phase=o.phase||'pickup',next=o.nextPhase||null,t=clamp(finite(o.progress,0)/100,0,1),u=parkEase(t),start=ladleKeyframe(phase,g),end=next?ladleKeyframe(next,g):start,tool=copy(start),loaded=phase==='pickup'?0:g.amountMl>0?1:0,immersion=phase==='dip'?1:0,supportContact=['pickup','dip','lift'].includes(phase)?1:0,supporting=supportContact?copy(g.supportAnchor):copy(g.restHands.right),stage=phase,withdraw=0;
+    if(phase==='pickup'&&next==='dip'){
+      var home=rotateOffset(start,{x:0,y:7});
+      if(t<.22){var rise=parkEase(t/.22);tool=spoonAtBowl(home.x,home.y+(g.clearY-home.y)*rise,angleBlend(start.angle,0,rise));stage='ladle-lift';}
+      else if(t<.62){var carry=parkEase((t-.22)/.4);tool=spoonAtBowl(home.x+(g.source.x-home.x)*carry,g.clearY-3*Math.pow(Math.sin(PI*carry),2),0);stage='ladle-carry';}
+      else if(t<.84){var lower=parkEase((t-.62)/.22),y=g.clearY+(g.source.y-8-g.clearY)*lower;tool=spoonAtBowl(g.source.x,y,0);immersion=clamp((y+23-g.source.y)/15,0,1);stage='ladle-enter';}
+      else{tool=copy(end);immersion=1;loaded=g.amountMl>0?parkEase((t-.84)/.16):0;stage='ladle-fill';}
+    }else if(phase==='dip'&&next==='lift'){
+      var lift=parkEase(t/.76),bowlY=g.source.y-8+(g.clearY-g.source.y+8)*lift;tool=spoonAtBowl(g.source.x,bowlY,0);immersion=clamp((bowlY+23-g.source.y)/15,0,1);stage=t<.76?'ladle-clear':'ladle-settle';
+    }else if(phase==='lift'&&next==='carry'){
+      if(t<.18){supportContact=1-parkEase(t/.18);stage='pot-release';}
+      else if(t<.36){supportContact=0;withdraw=parkEase((t-.18)/.18);supporting=blendPoint(g.supportAnchor,g.restHands.right,withdraw);supporting.y-=5*Math.pow(Math.sin(PI*withdraw),2);stage='support-withdraw';}
+      else{supportContact=0;withdraw=1;supporting=copy(g.restHands.right);var travel=parkEase((t-.36)/.64);tool=spoonAtBowl(g.source.x+(g.pourLip.x+16-g.source.x)*travel,g.clearY-3*Math.pow(Math.sin(PI*travel),2),0);stage='ladle-carry';}
+    }else if(phase==='carry'&&next==='tip'){tool=spoonAtBowl(g.pourLip.x+16,g.clearY+(g.pourLip.y-g.clearY)*u,0);stage='ladle-align';}
+    else if(phase==='tip'&&next==='level'){tool=ladleAtLip(g.pourLip,-8*u);stage='ladle-aim';}
+    else if(phase==='level'&&next==='ready'){tool=copy(end);stage='ladle-steady';}
+    if(t===1&&next){tool=copy(end);loaded=g.amountMl>0?1:0;immersion=next==='dip'?1:0;supportContact=['dip','lift'].includes(next)?1:0;supporting=supportContact?copy(g.supportAnchor):copy(g.restHands.right);}
+    var data=ladleData(tool,g,phase,next,t,stage,loaded,0,immersion,supporting,supportContact,o);
+    if(phase==='lift'&&next==='carry'&&t<.36){var free=arm({side:'right',hand:supporting,shoulder:data.shoulders.right}).wristAngle+90;data.handPoses.right.rotation=angleBlend(90,free,withdraw);}
+    return data;
   }
   // Moving a mushroom preserves its face. The preview remains at its chosen
   // destination after the jaws open, until an explicit release records it.
@@ -321,6 +529,7 @@
   function sauceInteraction(data){
     var p=data||{},kind=p.kind,tool=p.tool||p.pose;
     if(!p.held||(kind!=='pour'&&kind!=='fold')||!tool||!['x','y','angle'].every(function(key){return typeof tool[key]==='number'&&Number.isFinite(tool[key]);}))return null;
+    if(kind==='fold'&&p.folding)return {kind:'fold',contact:p.folding.contact,immersion:p.folding.immersion,pressure:p.folding.pressure,bowl:copy(p.folding.bowl),angle:tool.angle};
     var phase=p.phase,next=p.nextPhase,u=clamp(finite(p.eased,0),0,1);
     if(kind==='pour'){
       // Only the downward tilt empties the measured dose. Leveling the vessel
@@ -646,9 +855,202 @@
     if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};if(!plan.committed||source.servingTransfer.committed===true)result.servingTransfer=copy(source.servingTransfer);}
     return result;
   }
+  function samplingReturnPlan(source){
+    var d=source.samplingTransfer,home=d.home?copy(d.home):samplingKeyframe('pickup'),initial=source.tool||source.pose||home,cursor={tool:copy(initial),loaded:d.loaded===1&&d.foodRetained!==false,contact:clamp(finite(d.contact,source.held?1:0),0,1)},stages=[],total=0;
+    function add(name,weight,changes){var start=copy(cursor);Object.keys(changes).forEach(function(key){cursor[key]=copy(changes[key]);});stages.push({name:name,at:total,weight:weight,start:start,end:copy(cursor)});total+=weight;}
+    var continuing=source.parkStage==='hands-withdraw'||source.parkStage==='parked';
+    if(!continuing){
+      if(cursor.loaded){add('sample-lift',.14,{tool:point(initial.x,Math.min(initial.y,260),initial.angle)});add('sample-level',.1,{tool:point(initial.x,Math.min(initial.y,260),0)});add('sample-carry',.24,{tool:point(450,260,0)});add('sample-lower',.16,{tool:samplingKeyframe('dip')});add('sample-return',.12,{loaded:false});}
+      if(Math.hypot(cursor.tool.x-home.x,cursor.tool.y-home.y)>.001||Math.abs(cursor.tool.angle-home.angle)>.001){add('empty-lift',.14,{tool:point(cursor.tool.x,Math.min(cursor.tool.y,260),cursor.tool.angle)});add('empty-carry',.26,{tool:point(home.x,260,home.angle)});add('empty-lower',.16,{tool:copy(home)});}
+      add('tool-release',.12,{contact:0});
+    }
+    add('hands-withdraw',.16,{contact:0,loaded:false});return {home:home,stages:stages,total:total,continuing:continuing};
+  }
+  function returnSampling(source,t,options){
+    var o=options||{};if(o.reducedMotion===true)t=1;
+    var plan=samplingReturnPlan(source),time=t*plan.total,stage=plan.stages.find(function(s){return time<s.at+s.weight;})||plan.stages[plan.stages.length-1],u=parkEase((time-stage.at)/stage.weight),a=stage.start,b=stage.end,tool=blendPoint(a.tool,b.tool,u),loaded=u===1?b.loaded:a.loaded,contact=a.contact+(b.contact-a.contact)*u,from=hands(source),restGrip=grip(plan.home,'samplePasta'),ends={right:point(restGrip.x+24,restGrip.y-24),left:point(320,315)},withdrawing=stage.name==='hands-withdraw',travel=parkEase(t);
+    if(stage.name==='sample-carry'||stage.name==='empty-carry')tool.y-=4*Math.pow(Math.sin(PI*u),2);
+    var hand=withdrawing?blendPoint(plan.continuing?from.right:restGrip,ends.right,u):grip(tool,'samplePasta'),supportHand=withdrawing?blendPoint(from.left,ends.left,u):copy(from.left);if(withdrawing){hand.y-=4*Math.pow(Math.sin(PI*u),2);supportHand.y-=4*Math.pow(Math.sin(PI*u),2);}
+    var target={kind:'samplePasta',tool:copy(plan.home),grip:ends.right,supportHand:ends.left},reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0);attention(target,{reducedMotion:reduced},null);
+    var body=blendBody(source.body,target.body,travel,{x:450,y:335}),gaze=blendPoint(source.gaze,target.gaze,travel);gaze.target=blendPoint(source.gaze&&source.gaze.target,target.gaze&&target.gaze.target,travel);tool.visible=contact>0;
+    var result={kind:t===1?null:'samplePasta',parkedKind:'samplePasta',phase:t===1?'parked':'parking',nextPhase:null,tool:tool,pose:tool,activeHand:'right',grip:hand,supportHand:supportHand,targetGrip:null,next:null,spout:null,held:contact>0,parking:t<1,parkStage:t===1?'parked':stage.name,reaching:false,eased:travel,progress:t*100,body:body,head:blendBody(source.head,target.head,travel,{x:450,y:181}),gaze:gaze,shoulders:{left:transformPoint({x:373,y:229},body),right:transformPoint({x:526,y:229},body)},samplingTransfer:samplingDescriptor(tool,t===1?'parked':stage.name,loaded,contact,t<1,o.sampleCommitted===true||source.samplingTransfer.committed===true,source.samplingTransfer.home),handPoses:{}};
+    ['left','right'].forEach(function(side){var start=handPresentation(source,side),working=side==='right',p=working?hand:supportHand,initialContact=source.samplingTransfer.contact,release=working?initialContact>0?1-contact/initialContact:1:stage.name==='tool-release'?u:withdrawing?1:0,free=arm({side:side,hand:p,shoulder:result.shoulders[side]}).wristAngle+90,workingAngle=tool.angle+(start.rotation-(source.tool||source.pose).angle);result.handPoses[side]={anchor:{x:p.x,y:p.y},rotation:working&&!withdrawing?angleBlend(workingAngle,free,release):angleBlend(start.rotation,free,release),gesture:release===1?'relaxed':start.gesture,closure:release===1?.18:start.closure+(.18-start.closure)*release,pressure:0,contact:working?contact:start.contact*(1-release),role:release===1?'free':start.role,gear:start.gear};});
+    if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};result.samplingTransfer=copy(source.samplingTransfer);result.samplingTransfer.committed=o.sampleCommitted===true||source.samplingTransfer.committed===true;}
+    return result;
+  }
+  function ladleRest(g,reduced,committed,delivered){
+    var data=ladleData(copy(g.home),g,'parked',null,1,'parked',0,committed?delivered:0,0,g.restHands.right,0,{reducedMotion:reduced});
+    data.grip=copy(g.restHands.left);attention(data,{reducedMotion:reduced},null);data=parkedPose(data);data.ladleTransfer.ladleContact=0;data.ladleTransfer.preview=false;data.ladleTransfer.committed=committed;
+    return ladleHands(data,0,0,arm({side:'left',hand:data.grip,shoulder:data.shoulders.left}).wristAngle+90,arm({side:'right',hand:data.supportHand,shoulder:data.shoulders.right}).wristAngle+90);
+  }
+  function ladleReturnPlan(source,options){
+    var d=source.ladleTransfer,g=d.geometry,o=options||{},committed=o.ladleCommitted===true||d.committed===true,a=handPresentation(source,'left'),b=handPresentation(source,'right'),cursor={bowl:copy(d.bowl),angle:source.tool.angle,working:copy(source.grip),support:copy(source.supportHand),loaded:d.loadedFraction,delivered:d.destinationFraction,immersion:d.immersion,ladleContact:a.contact,supportContact:b.contact,workingAngle:a.rotation,supportAngle:b.rotation},stages=[],total=0,home=rotateOffset(g.home,{x:0,y:7}),finalDelivered=committed?cursor.loaded+cursor.delivered:0;
+    function add(name,weight,changes,pivot){var end=Object.assign({},copy(cursor),changes);if(pivot){var at=ladleAtLip(pivot,end.angle);end.bowl=rotateOffset(at,{x:0,y:7});}if(changes.bowl||changes.angle!==undefined||pivot){var tool=spoonAtBowl(end.bowl.x,end.bowl.y,end.angle);end.working=grip(tool,'reserveWater');end.workingAngle=end.angle;}stages.push({name:name,weight:weight,start:copy(cursor),end:copy(end),at:total,pivot:pivot&&copy(pivot)});total+=weight;cursor=end;}
+    function clear(){if(cursor.immersion>0||cursor.bowl.y>g.clearY+.001)add('ladle-clear',.36,{bowl:{x:cursor.bowl.x,y:Math.min(cursor.bowl.y,g.clearY)},immersion:0});if(Math.abs(cursor.angle)>.001)add('ladle-level',.26,{angle:0});}
+    if(cursor.loaded>0){
+      var receiving=committed?g.destination:g.source,lip=committed?g.pourLip:{x:g.source.x,y:g.source.y-36},currentLip=rotateOffset(spoonAtBowl(cursor.bowl.x,cursor.bowl.y,cursor.angle),{x:-16,y:7}),aligned=Math.hypot(currentLip.x-lip.x,currentLip.y-lip.y)<.001;
+      if(!committed){
+        if(Math.hypot(cursor.support.x-g.supportAnchor.x,cursor.support.y-g.supportAnchor.y)>.001){if(cursor.supportContact>0)add('pot-release',.15,{supportContact:0});add('support-approach',.32,{support:copy(g.supportAnchor),supportAngle:90,supportContact:0});}
+        if(cursor.supportContact<1)add('pot-grip',.18,{supportContact:1,supportAngle:90});
+      }else if(cursor.supportContact>0)add('pot-release',.18,{supportContact:0});
+      if(!aligned){clear();add('ladle-carry',.6,{bowl:{x:lip.x+16,y:g.clearY},angle:0});add('ladle-lower',.32,{bowl:{x:lip.x+16,y:lip.y},angle:0});}
+      if(cursor.angle>-32)add('ladle-tip',.28,{angle:-32,immersion:0},lip);
+      add(committed?'ladle-pour':'ladle-recover',.64,{angle:-68,loaded:0,delivered:committed?finalDelivered:0,immersion:0},lip);stages[stages.length-1].streamTarget=copy(receiving);
+      add('ladle-drip',.16,{});
+      add('ladle-right',.3,{angle:0},lip);
+    }
+    if(Math.hypot(cursor.bowl.x-home.x,cursor.bowl.y-home.y)>.001||Math.abs(cursor.angle-g.home.angle)>.001){
+      clear();if(Math.abs(cursor.bowl.x-home.x)>.001)add('ladle-return',.6,{bowl:{x:home.x,y:g.clearY},angle:0});add('ladle-rest',.36,{bowl:copy(home),angle:g.home.angle,immersion:0});
+    }
+    if(cursor.supportContact>0)add('pot-release',.18,{supportContact:0});
+    if(cursor.ladleContact>0)add('ladle-release',.18,{ladleContact:0});
+    var rest=ladleRest(g,false,committed,finalDelivered);add('hands-withdraw',.32,{working:copy(rest.grip),support:copy(rest.supportHand),workingAngle:handPresentation(rest,'left').rotation,supportAngle:handPresentation(rest,'right').rotation});
+    return {stages:stages,total:total,committed:committed,finalDelivered:finalDelivered};
+  }
+  function returnLadle(source,target,t,options){
+    var o=options||{},d=source.ladleTransfer,g=d?d.geometry:target.ladleTransfer?target.ladleTransfer.geometry:ladleGeometry(o),committed=o.ladleCommitted===true||!!(d&&d.committed),reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0),delivered=committed&&d?d.loadedFraction+d.destinationFraction:0,destination=ladleRest(g,reduced,committed,delivered);
+    if(t===1||o.reducedMotion===true)return destination;
+    if(!d||!source.held){
+      var empty=reach(source,destination,t*100,{contactAware:true});empty.parking=true;empty.parkedKind='reserveWater';empty.parkStage='empty-return';empty.reaching=false;empty.next=null;empty.targetGrip=null;empty.held=false;empty.tool.visible=false;
+      if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){empty[key]=copy(source[key]);});empty.tool.visible=false;empty.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}return empty;
+    }
+    var plan=ladleReturnPlan(source,o),time=t*plan.total,stage=plan.stages.find(function(s){return time<s.at+s.weight;})||plan.stages[plan.stages.length-1],u=parkEase((time-stage.at)/stage.weight),a=stage.start,b=stage.end,bowl=blendPoint(a.bowl,b.bowl,u),angle=angleBlend(a.angle,b.angle,u),tool=stage.pivot?ladleAtLip(stage.pivot,angle):spoonAtBowl(bowl.x,bowl.y,angle),working=blendPoint(a.working,b.working,u),supporting=blendPoint(a.support,b.support,u),loaded=a.loaded+(b.loaded-a.loaded)*u,received=a.delivered+(b.delivered-a.delivered)*u,immersion=a.immersion+(b.immersion-a.immersion)*u,ladleContact=a.ladleContact+(b.ladleContact-a.ladleContact)*u,supportContact=a.supportContact+(b.supportContact-a.supportContact)*u;
+    if(stage.name==='ladle-carry'||stage.name==='ladle-return'){bowl.y-=3*Math.pow(Math.sin(PI*u),2);tool=spoonAtBowl(bowl.x,bowl.y,angle);}
+    if(stage.name==='ladle-clear'){bowl=rotateOffset(tool,{x:0,y:7});immersion=Math.min(a.immersion,clamp((bowl.y+23-g.source.y)/15,0,1));}
+    if(stage.name==='hands-withdraw'){working.y-=4*Math.pow(Math.sin(PI*u),2);supporting.y-=4*Math.pow(Math.sin(PI*u),2);}else working=grip(tool,'reserveWater');
+    if(stage.name==='support-approach')supporting.y-=5*Math.pow(Math.sin(PI*u),2);
+    var result=ladleData(tool,g,'parking',null,t,stage.name,loaded,received,immersion,supporting,supportContact,{reducedMotion:reduced});result.grip=working;result.tool.visible=ladleContact>0;result.held=ladleContact>0;result.parking=true;result.parkedKind='reserveWater';result.parkStage=stage.name;result.reaching=false;result.pose=tool;result.next=null;result.targetGrip=null;result.ladleTransfer.ladleContact=ladleContact;result.ladleTransfer.committed=committed;
+    if(stage.streamTarget&&a.loaded>b.loaded&&g.amountMl>0){result.ladleTransfer.flow=16*u*u*(1-u)*(1-u);result.ladleTransfer.streamTarget=copy(stage.streamTarget);}
+    var travel=parkEase(t);result.body=blendBody(source.body,destination.body,travel,{x:450,y:335});result.head=blendBody(source.head,destination.head,travel,{x:450,y:181});result.gaze=blendPoint(source.gaze,destination.gaze,travel);result.gaze.target=blendPoint(source.gaze&&source.gaze.target,destination.gaze.target,travel);result.shoulders={left:transformPoint({x:373,y:229},result.body),right:transformPoint({x:526,y:229},result.body)};
+    ladleHands(result,ladleContact,supportContact,angleBlend(a.workingAngle,b.workingAngle,u),angleBlend(a.supportAngle,b.supportAngle,u));
+    if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders','ladleTransfer'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.ladleTransfer.committed=committed;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}return result;
+  }
+  function foldingRest(reduced,geometry){
+    var result=foldingData(copy(geometry.home),geometry,'ready',null,1,0,0,'parked',{reducedMotion:reduced}),active=geometry.activeHand,other=active==='left'?'right':'left';
+    result.grip=copy(geometry.restHands[active]);result.supportHand=copy(geometry.restHands[other]);attention(result,{reducedMotion:reduced},null);result=parkedPose(result);result.folding.preview=false;result.folding.spoonContact=0;result.folding.supportContact=0;
+    foldingHands(result,0,0,0,arm({side:active,hand:result.grip,shoulder:result.shoulders[active]}).wristAngle+90,arm({side:other,hand:result.supportHand,shoulder:result.shoulders[other]}).wristAngle+90);
+    return result;
+  }
+  function foldingReturnPlan(source){
+    var d=source.folding,g=d.geometry,home=rotateOffset(g.home,{x:0,y:7}),clear=Math.min(g.surface.y-82,d.bowl.y),active=g.activeHand,other=active==='left'?'right':'left',a=handPresentation(source,active),b=handPresentation(source,other),reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0),cursor={bowl:copy(d.bowl),angle:source.tool.angle,working:copy(source.grip),support:copy(source.supportHand),spoonContact:a.contact,supportContact:b.contact,contact:d.contact,pressure:d.pressure,workingAngle:a.rotation,supportAngle:b.rotation},stages=[],total=0;
+    function add(name,weight,changes){var end=Object.assign({},copy(cursor),changes);if(changes.bowl||changes.angle!==undefined){end.working=grip(spoonAtBowl(end.bowl.x,end.bowl.y,end.angle),'fold');end.workingAngle=end.angle;}stages.push({name:name,weight:weight,start:copy(cursor),end:copy(end),at:total});total+=weight;cursor=end;}
+    if(cursor.pressure>0)add('spoon-unload',.16,{pressure:0});
+    if(Math.hypot(cursor.bowl.x-home.x,cursor.bowl.y-home.y)>.001||Math.abs(cursor.angle-g.home.angle)>.001){
+      if(cursor.spoonContact<1)add('spoon-grip',.14,{spoonContact:1});
+      var clearAngle=foldingClearAngle(cursor.bowl.x,g);
+      if(Math.abs(cursor.bowl.y-clear)>.001||Math.abs(cursor.angle-clearAngle)>.001)add('spoon-clear',.4,{bowl:{x:cursor.bowl.x,y:clear},angle:clearAngle,contact:0,pressure:0});
+      if(Math.abs(cursor.bowl.x-home.x)>.001)add('spoon-return',.6,{bowl:{x:home.x,y:clear},angle:g.transitAngle});
+      add('spoon-rest',.36,{bowl:{x:home.x,y:home.y},angle:g.home.angle,contact:0});
+    }
+    if(cursor.supportContact>0)add('pan-release',.18,{supportContact:0});
+    if(cursor.spoonContact>0)add('spoon-release',.18,{spoonContact:0});
+    var end=foldingRest(reduced,g);add('hands-withdraw',.32,{working:copy(end.grip),support:copy(end.supportHand),workingAngle:handPresentation(end,active).rotation,supportAngle:handPresentation(end,other).rotation});
+    return {stages:stages,total:total};
+  }
+  function returnFolding(source,target,t,options){
+    var o=options||{},g=source.folding?source.folding.geometry:target.folding?target.folding.geometry:foldingGeometry(o),reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0),destination=foldingRest(reduced,g);
+    if(t===1||o.reducedMotion===true)return destination;
+    if(!source.folding||!source.held){
+      var empty=reach(source,destination,t*100,{contactAware:true});empty.parking=true;empty.parkedKind='fold';empty.parkStage='empty-return';empty.reaching=false;empty.next=null;empty.targetGrip=null;empty.held=false;empty.tool.visible=false;
+      if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){empty[key]=copy(source[key]);});empty.tool.visible=false;empty.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}return empty;
+    }
+    var plan=foldingReturnPlan(source),time=t*plan.total,stage=plan.stages.find(function(s){return time<s.at+s.weight;})||plan.stages[plan.stages.length-1],u=parkEase((time-stage.at)/stage.weight),a=stage.start,b=stage.end,bowl=blendPoint(a.bowl,b.bowl,u),angle=angleBlend(a.angle,b.angle,u),tool=spoonAtBowl(bowl.x,bowl.y,angle),working=blendPoint(a.working,b.working,u),supporting=blendPoint(a.support,b.support,u),contact=a.contact+(b.contact-a.contact)*u,pressure=a.pressure+(b.pressure-a.pressure)*u,spoonContact=a.spoonContact+(b.spoonContact-a.spoonContact)*u,supportContact=a.supportContact+(b.supportContact-a.supportContact)*u;
+    if(stage.name==='spoon-clear'){var depth=a.bowl.y-(g.surface.y-24);contact=a.contact*(depth>0?clamp((bowl.y-(g.surface.y-24))/depth,0,1):0);}
+    if(stage.name==='spoon-return'){bowl.y-=4*Math.pow(Math.sin(PI*u),2);tool=spoonAtBowl(bowl.x,bowl.y,angle);}
+    if(stage.name==='hands-withdraw'){working.y-=4*Math.pow(Math.sin(PI*u),2);supporting.y-=4*Math.pow(Math.sin(PI*u),2);}else working=grip(tool,'fold');
+    var result=foldingData(tool,g,'parking',null,t,contact,pressure,stage.name,{reducedMotion:reduced});result.grip=working;result.supportHand=supporting;result.tool.visible=spoonContact>0;result.held=spoonContact>0;result.folding.contact=contact;result.folding.pressure=pressure;result.folding.immersion=contact*(.35+.4*pressure);result.folding.spoonContact=spoonContact;result.folding.supportContact=supportContact;result.parking=true;result.parkedKind='fold';result.parkStage=stage.name;result.reaching=false;result.pose=tool;result.next=null;
+    var travel=parkEase(t);result.body=blendBody(source.body,destination.body,travel,{x:450,y:335});result.head=blendBody(source.head,destination.head,travel,{x:450,y:181});result.gaze=blendPoint(source.gaze,destination.gaze,travel);result.gaze.target=blendPoint(source.gaze&&source.gaze.target,destination.gaze.target,travel);result.shoulders={left:transformPoint({x:373,y:229},result.body),right:transformPoint({x:526,y:229},result.body)};
+    foldingHands(result,spoonContact,supportContact,pressure,angleBlend(a.workingAngle,b.workingAngle,u),angleBlend(a.supportAngle,b.supportAngle,u));
+    if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders','folding'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}
+    return result;
+  }
+  function pressRest(reduced,piece){
+    var result=pressPose({kind:'press',phase:'ready',piece:piece,pressAware:true,reducedMotion:reduced}),left=point(260,250),right=point(690,305);
+    result.grip=left;result.supportHand=right;attention(result,{reducedMotion:reduced},null);result=parkedPose(result);
+    result.pressInteraction.stage='parked';result.pressInteraction.preview=false;result.pressInteraction.supportContact=0;result.pressInteraction.toolContact=0;result.pressInteraction.pressure=0;
+    ['left','right'].forEach(function(side){var hand=side==='left'?left:right;result.handPoses[side]={anchor:{x:hand.x,y:hand.y},rotation:arm({side:side,hand:hand,shoulder:result.shoulders[side]}).wristAngle+90,gesture:'relaxed',closure:.18,pressure:0,contact:0,role:'free',gear:side==='right'?'mitt':'bare'};});
+    return result;
+  }
+  function pressReturnPlan(source){
+    var d=source.pressInteraction,home=point(300,324,-14),clear=Math.min(286,source.tool.y),lh=handPresentation(source,'left'),rh=handPresentation(source,'right'),cursor={tool:copy(source.tool),left:copy(source.grip),right:copy(source.supportHand),toolContact:lh.contact,supportContact:rh.contact,pressure:d.pressure,leftAngle:lh.rotation,rightAngle:rh.rotation},stages=[],total=0;
+    function add(name,weight,changes){var end=Object.assign({},copy(cursor),changes);if(changes.tool){end.left=grip(end.tool,'press');end.leftAngle=end.tool.angle;}stages.push({name:name,weight:weight,start:copy(cursor),end:copy(end),at:total});total+=weight;cursor=end;}
+    if(cursor.pressure>0)add('masher-unload',.24,{tool:point(cursor.tool.x,d.target.y-5),pressure:0});
+    if(Math.hypot(cursor.tool.x-home.x,cursor.tool.y-home.y)>.001||Math.abs(cursor.tool.angle-home.angle)>.001){
+      if(cursor.toolContact<1)add('masher-grip',.16,{toolContact:1});
+      if(Math.abs(cursor.tool.y-clear)>.001||Math.abs(cursor.tool.angle)>.001)add('masher-clear',.28,{tool:point(cursor.tool.x,clear)});
+      if(Math.abs(cursor.tool.x-home.x)>.001)add('masher-return',.62,{tool:point(home.x,clear)});
+      add('masher-rest',.32,{tool:copy(home)});
+    }
+    if(cursor.supportContact>0)add('pan-release',.18,{supportContact:0});
+    if(cursor.toolContact>0)add('masher-release',.18,{toolContact:0});
+    var end=pressRest(false,d.piece);add('hands-withdraw',.32,{left:copy(end.grip),right:copy(end.supportHand),leftAngle:handPresentation(end,'left').rotation,rightAngle:handPresentation(end,'right').rotation});
+    return {stages:stages,total:total};
+  }
+  function returnPress(source,t,options){
+    var o=options||{},reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0),piece=source.pressInteraction?source.pressInteraction.piece:0,destination=pressRest(reduced,piece);
+    if(t===1||o.reducedMotion===true)return destination;
+    if(!source.pressInteraction||!source.held){
+      var empty=reach(source,destination,t*100,{contactAware:true});empty.parking=true;empty.parkedKind='press';empty.parkStage='empty-return';empty.reaching=false;empty.next=null;empty.targetGrip=null;empty.held=false;empty.tool.visible=false;
+      if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){empty[key]=copy(source[key]);});empty.tool.visible=false;empty.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}return empty;
+    }
+    var plan=pressReturnPlan(source),time=t*plan.total,stage=plan.stages.find(function(s){return time<s.at+s.weight;})||plan.stages[plan.stages.length-1],u=parkEase((time-stage.at)/stage.weight),a=stage.start,b=stage.end,tool=blendPoint(a.tool,b.tool,u),left=blendPoint(a.left,b.left,u),right=blendPoint(a.right,b.right,u),pressure=a.pressure+(b.pressure-a.pressure)*u,toolContact=a.toolContact+(b.toolContact-a.toolContact)*u,supportContact=a.supportContact+(b.supportContact-a.supportContact)*u;
+    if(stage.name==='masher-return')tool.y-=5*Math.pow(Math.sin(PI*u),2);
+    if(stage.name==='hands-withdraw'){left.y-=4*Math.pow(Math.sin(PI*u),2);right.y-=4*Math.pow(Math.sin(PI*u),2);}else left=grip(tool,'press');
+    var result=pressData(tool,pressTarget({piece:piece}),'parking',null,t,pressure,stage.name,{reducedMotion:reduced});result.grip=left;result.supportHand=right;result.tool.visible=toolContact>0;result.held=toolContact>0;result.pressInteraction.toolContact=toolContact;result.pressInteraction.supportContact=supportContact;result.parking=true;result.parkedKind='press';result.parkStage=stage.name;result.reaching=false;result.pose=tool;result.next=null;
+    var travel=parkEase(t);result.body=blendBody(source.body,destination.body,travel,{x:450,y:335});result.head=blendBody(source.head,destination.head,travel,{x:450,y:181});result.gaze=blendPoint(source.gaze,destination.gaze,travel);result.gaze.target=blendPoint(source.gaze&&source.gaze.target,destination.gaze.target,travel);result.shoulders={left:transformPoint({x:373,y:229},result.body),right:transformPoint({x:526,y:229},result.body)};
+    pressHands(result,toolContact,supportContact,pressure,angleBlend(a.leftAngle,b.leftAngle,u),angleBlend(a.rightAngle,b.rightAngle,u));
+    if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders','contact','pressInteraction'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}
+    return result;
+  }
+  function wringRest(reduced){
+    var result=wringPose({kind:'wring',phase:'ready',clothAware:true,reducedMotion:reduced}),right=point(670,310),left=point(220,338);
+    result.grip=right;result.supportHand=left;attention(result,{reducedMotion:reduced},null);result=parkedPose(result);
+    result.cloth=wringCloth(result.tool,0,0,false);result.clothHandling={stage:'parked',leftGrip:point(595,336),rightGrip:point(645,336),supportContact:0,workingContact:0,joining:0,waterMl:0,preview:false};
+    ['left','right'].forEach(function(side){var hand=side==='right'?right:left;result.handPoses[side]={anchor:{x:hand.x,y:hand.y},rotation:arm({side:side,hand:hand,shoulder:result.shoulders[side]}).wristAngle+90,gesture:'relaxed',closure:.18,pressure:0,contact:0,role:'free',gear:'bare'};});
+    return result;
+  }
+  function wringReturnPlan(source){
+    var d=source.clothHandling,home=point(620,336),rest=point(220,338),clear=Math.min(280,source.tool.y),lh=handPresentation(source,'left'),rh=handPresentation(source,'right'),cursor={tool:copy(source.tool),left:copy(source.supportHand),right:copy(source.grip),leftContact:lh.contact,rightContact:rh.contact,joining:d.joining,twist:source.cloth.twist,leftAngle:lh.rotation,rightAngle:rh.rotation},stages=[],total=0;
+    function add(name,weight,changes){var end=Object.assign({},copy(cursor),changes);if(changes.tool){end.right=grip(end.tool,'wring');if(end.leftContact>0)end.left=rotateOffset(end.tool,{x:-25,y:0});}stages.push({name:name,weight:weight,start:copy(cursor),end:copy(end),at:total});total+=weight;cursor=end;}
+    if(cursor.twist>0)add('cloth-untwist',.3,{twist:0,leftAngle:270,rightAngle:90});
+    if(cursor.leftContact>0)add('support-release',.18,{leftContact:0});
+    if(Math.hypot(cursor.left.x-rest.x,cursor.left.y-rest.y)>.001||cursor.joining>0)add('support-withdraw',.28,{left:copy(rest),joining:0,leftAngle:arm({side:'left',hand:rest}).wristAngle+90});
+    if(Math.hypot(cursor.tool.x-home.x,cursor.tool.y-home.y)>.001){
+      if(cursor.rightContact<1)add('cloth-grip',.16,{rightContact:1});
+      if(Math.abs(cursor.tool.y-clear)>.001)add('cloth-lift',.24,{tool:point(cursor.tool.x,clear)});
+      if(Math.abs(cursor.tool.x-home.x)>.001)add('cloth-carry',.65,{tool:point(home.x,clear)});
+      add('cloth-lower',.28,{tool:copy(home)});
+    }
+    if(cursor.rightContact>0)add('cloth-release',.18,{rightContact:0});
+    var end=wringRest(false);add('hands-withdraw',.28,{right:copy(end.grip),left:copy(end.supportHand),rightAngle:handPresentation(end,'right').rotation,leftAngle:handPresentation(end,'left').rotation,joining:0});
+    return {stages:stages,total:total};
+  }
+  function returnWring(source,t,options){
+    var reduced=!!(source.body&&source.body.x===0&&source.body.y===0&&source.body.angle===0),destination=wringRest(reduced),o=options||{};
+    if(t===1||o.reducedMotion===true)return destination;
+    if(!source.clothHandling||!source.held){
+      var empty=reach(source,destination,t*100,{contactAware:true});empty.parking=true;empty.parkedKind='wring';empty.parkStage='empty-return';empty.reaching=false;empty.next=null;empty.targetGrip=null;empty.held=false;empty.tool.visible=false;if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders'].forEach(function(key){empty[key]=copy(source[key]);});empty.tool.visible=false;empty.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}return empty;
+    }
+    var plan=wringReturnPlan(source),time=t*plan.total,stage=plan.stages.find(function(s){return time<s.at+s.weight;})||plan.stages[plan.stages.length-1],u=parkEase((time-stage.at)/stage.weight),a=stage.start,b=stage.end,tool=blendPoint(a.tool,b.tool,u),left=blendPoint(a.left,b.left,u),right=blendPoint(a.right,b.right,u),twist=a.twist+(b.twist-a.twist)*u,joining=a.joining+(b.joining-a.joining)*u,leftContact=a.leftContact+(b.leftContact-a.leftContact)*u,rightContact=a.rightContact+(b.rightContact-a.rightContact)*u;
+    if(stage.name==='cloth-carry'){tool.y-=5*Math.pow(Math.sin(PI*u),2);right=grip(tool,'wring');}
+    if(stage.name==='support-withdraw')left.y-=6*Math.pow(Math.sin(PI*u),2);
+    if(stage.name==='hands-withdraw'){left.y-=4*Math.pow(Math.sin(PI*u),2);right.y-=4*Math.pow(Math.sin(PI*u),2);}
+    var result=wringData(tool,left,'parking',null,t,joining,leftContact,rightContact,twist,source.clothHandling.waterMl,stage.name,{reducedMotion:reduced},false);result.grip=right;
+    result.parking=true;result.parkedKind='wring';result.parkStage=stage.name;result.reaching=false;result.pose=tool;result.next=null;
+    // Gaze and torso settle continuously even while a supporting grip opens.
+    var travel=parkEase(t);result.body=blendBody(source.body,destination.body,travel,{x:450,y:335});result.head=blendBody(source.head,destination.head,travel,{x:450,y:181});result.gaze=blendPoint(source.gaze,destination.gaze,travel);result.gaze.target=blendPoint(source.gaze&&source.gaze.target,destination.gaze.target,travel);result.shoulders={left:transformPoint({x:373,y:229},result.body),right:transformPoint({x:526,y:229},result.body)};
+    wringPresentation(result,joining,leftContact,rightContact,twist,angleBlend(a.leftAngle,b.leftAngle,u),angleBlend(a.rightAngle,b.rightAngle,u));
+    if(t===0){['tool','grip','supportHand','body','head','gaze','shoulders','cloth','clothHandling'].forEach(function(key){result[key]=copy(source[key]);});result.pose=result.tool;result.handPoses={left:handPresentation(source,'left'),right:handPresentation(source,'right')};}
+    return result;
+  }
   function park(fromPose,toParkPose,progress,options){
     var source=fromPose||{},kind=source.kind||source.transitionKind||'inspect',target=toParkPose||pose({kind:kind,phase:'ready'}),destination=parkedPose(target),o=options||{},t=clamp(finite(progress,0)/100,0,1);
+    if(o.clothAware===true&&(kind==='wring'||source.parkedKind==='wring'))return returnWring(source,t,o);
+    if(o.pressAware===true&&(kind==='press'||source.parkedKind==='press'))return returnPress(source,t,o);
+    if(o.foldAware===true&&(kind==='fold'||source.parkedKind==='fold'))return returnFolding(source,target,t,o);
+    if(o.ladleAware===true&&(kind==='reserveWater'||source.parkedKind==='reserveWater'))return returnLadle(source,target,t,o);
     if(o.portionAware===true&&source.servingTransfer)return returnServing(source,t,o);
+    if(o.sampleAware===true&&source.samplingTransfer)return returnSampling(source,t,o);
     if(kind==='moveLid'&&source.lid&&source.lid.preview)return returnLid(source,t,o);
     if(kind==='movePan'&&source.panTransport&&source.panTransport.preview)return returnPan(source,t,o);
     if(kind==='moveMushroom'&&source.mushroomMove)return returnMovedMushroom(source,target,t,o);
@@ -690,7 +1092,7 @@
     });
     return result;
   }
-  function parkDuration(fromPose,toParkPose,options){if(options&&options.portionAware===true&&fromPose&&fromPose.servingTransfer)return Math.round(servingReturnPlan(fromPose,options).total*1600);var source=fromPose||{},target=toParkPose||pose({kind:source.kind||source.transitionKind||'inspect',phase:'ready'});if(source.kind==='combinePasta'&&source.combinePasta)return Math.round(combineReturnPlan(source).total*2100/.78);if(source.kind==='loadMushrooms'&&source.loadMushrooms)return Math.round(loadReturnPlan(source).total*2100/.78);if(source.kind==='rinseProduce'&&source.rinseProduce)return Math.round(rinseReturnPlan(source).total*2100/(options&&options.relaxedRest===true?.78:1));if(source.kind==='moveMushroom'&&source.mushroomMove)return Math.round(moveReturnPlan(source,target).total*2200);if(source.kind==='moveLid'&&source.lid&&source.lid.preview)return lidReturnDuration(source);if(source.kind==='movePan'&&source.panTransport&&source.panTransport.preview)return panReturnDuration(source);if(!source.held)return reachDuration(source,target);if(options&&options.clearanceAware===true&&(source.kind==='fold'||source.kind==='inspect')&&!source.panSurface)return bundleAtRest(source,target)?280:1700;if(source.kind==='separatePasta'&&source.pastaInteraction)return bundleAtRest(source,target)?280:1800;if(source.kind==='sliceProduce'&&source.cutInteraction)return bundleAtRest(source,target)?280:2100;if(source.kind==='turnMushroom'&&source.food&&source.food.preview)return 2400;var a=source.tool||source.pose,b=target.tool||target.pose,distance=a&&b?Math.hypot(b.x-a.x,b.y-a.y):0;return Math.round(clamp(800+distance*.9,800,1300));}
+  function parkDuration(fromPose,toParkPose,options){if(options&&options.ladleAware===true&&fromPose&&(fromPose.kind==='reserveWater'||fromPose.transitionKind==='reserveWater'||fromPose.parkedKind==='reserveWater')){var ladleTarget=toParkPose||pose({kind:'reserveWater',phase:'ready',ladleAware:true}),ladleG=fromPose.ladleTransfer?fromPose.ladleTransfer.geometry:ladleTarget.ladleTransfer?ladleTarget.ladleTransfer.geometry:ladleGeometry(options);return fromPose.ladleTransfer&&fromPose.held?Math.round(ladleReturnPlan(fromPose,options).total*1600):reachDuration(fromPose,ladleRest(ladleG,false,false,0),{contactAware:true});}if(options&&options.foldAware===true&&fromPose&&(fromPose.kind==='fold'||fromPose.transitionKind==='fold'||fromPose.parkedKind==='fold')){var foldTarget=toParkPose||pose({kind:'fold',phase:'ready',foldAware:true}),foldGeometry=fromPose.folding?fromPose.folding.geometry:foldTarget.folding?foldTarget.folding.geometry:foldingGeometry(options);return fromPose.folding&&fromPose.held?Math.round(foldingReturnPlan(fromPose).total*1600):reachDuration(fromPose,foldingRest(false,foldGeometry),{contactAware:true});}if(options&&options.pressAware===true&&fromPose&&(fromPose.kind==='press'||fromPose.transitionKind==='press'||fromPose.parkedKind==='press'))return fromPose.pressInteraction&&fromPose.held?Math.round(pressReturnPlan(fromPose).total*1600):reachDuration(fromPose,pressRest(false,0),{contactAware:true});if(options&&options.clothAware===true&&fromPose&&(fromPose.kind==='wring'||fromPose.transitionKind==='wring'||fromPose.parkedKind==='wring'))return fromPose.clothHandling&&fromPose.held?Math.round(wringReturnPlan(fromPose).total*1600):reachDuration(fromPose,wringRest(false),{contactAware:true});if(options&&options.sampleAware===true&&fromPose&&fromPose.samplingTransfer)return Math.round(samplingReturnPlan(fromPose).total*1600);if(options&&options.portionAware===true&&fromPose&&fromPose.servingTransfer)return Math.round(servingReturnPlan(fromPose,options).total*1600);var source=fromPose||{},target=toParkPose||pose({kind:source.kind||source.transitionKind||'inspect',phase:'ready'});if(source.kind==='combinePasta'&&source.combinePasta)return Math.round(combineReturnPlan(source).total*2100/.78);if(source.kind==='loadMushrooms'&&source.loadMushrooms)return Math.round(loadReturnPlan(source).total*2100/.78);if(source.kind==='rinseProduce'&&source.rinseProduce)return Math.round(rinseReturnPlan(source).total*2100/(options&&options.relaxedRest===true?.78:1));if(source.kind==='moveMushroom'&&source.mushroomMove)return Math.round(moveReturnPlan(source,target).total*2200);if(source.kind==='moveLid'&&source.lid&&source.lid.preview)return lidReturnDuration(source);if(source.kind==='movePan'&&source.panTransport&&source.panTransport.preview)return panReturnDuration(source);if(!source.held)return reachDuration(source,target);if(options&&options.clearanceAware===true&&(source.kind==='fold'||source.kind==='inspect')&&!source.panSurface)return bundleAtRest(source,target)?280:1700;if(source.kind==='separatePasta'&&source.pastaInteraction)return bundleAtRest(source,target)?280:1800;if(source.kind==='sliceProduce'&&source.cutInteraction)return bundleAtRest(source,target)?280:2100;if(source.kind==='turnMushroom'&&source.food&&source.food.preview)return 2400;var a=source.tool||source.pose,b=target.tool||target.pose,distance=a&&b?Math.hypot(b.x-a.x,b.y-a.y):0;return Math.round(clamp(800+distance*.9,800,1300));}
   function rounded(value){return String(Number(value.toFixed(3)));}
   function path(a,b){return 'M'+rounded(a.x)+' '+rounded(a.y)+' L'+rounded(b.x)+' '+rounded(b.y);}
   function arm(options){

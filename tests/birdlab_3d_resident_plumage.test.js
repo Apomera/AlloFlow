@@ -43,9 +43,11 @@ describe('Resident bird feather surfaces', () => {
   it.each(['high', 'low'])('keeps wrapped body tracts outward with finite unit normals and bounded geometry (%s)', quality => {
     const wildlife = fixture(quality), a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), center = new THREE.Vector3();
     try {
-      let triangles = 0, meshes = 0;
+      let triangles = 0, meshes = 0, shadows = 0;
       wildlife.root.traverse(object => {
         if (!object.geometry) return;
+        // One batched contact-shadow mesh serves every resident; it is not bird geometry.
+        if (object.name === 'resident-contact-shadows') { shadows++; return; }
         meshes++;
         const geometry = object.geometry, position = geometry.attributes.position, index = geometry.index;
         triangles += index ? index.count / 3 : position.count / 3;
@@ -63,7 +65,7 @@ describe('Resident bird feather surfaces', () => {
           expect(b.lengthSq()).toBeGreaterThan(1e-20); expect(b.dot(center)).toBeGreaterThan(0);
         }
       });
-      expect(meshes).toBeLessThanOrEqual(54);
+      expect(meshes).toBeLessThanOrEqual(54); expect(shadows).toBe(1);
       expect(triangles).toBeLessThan(quality === 'high' ? 40000 : 15000);
     } finally { wildlife.dispose(); }
   });

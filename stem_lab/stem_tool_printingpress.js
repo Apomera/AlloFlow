@@ -9475,7 +9475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                         var cert = window.open('', '_blank', 'width=800,height=600');
                         if (!cert) { addToast('Pop-up blocked. Allow pop-ups to print the certificate.', 'warn'); return; }
                         var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        var html = '<!DOCTYPE html><html><head><title>Certificate of Mastery — PrintingPress</title>' +
+                        var html = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Certificate of Mastery — PrintingPress</title>' +
                           '<style>' +
                           '@page { size: letter landscape; margin: 0.5in; }' +
                           'body { font-family: Georgia, "Times New Roman", serif; background: #f5e8c8; color: #1a1410; margin: 0; padding: 40px; min-height: 100vh; box-sizing: border-box; }' +

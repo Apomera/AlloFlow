@@ -59,10 +59,14 @@ describe('field-note collection retrieval',()=>{
     await click(collection(t));expect(ids(t)).toEqual(['clownfish']);expect(t.host.querySelector('[data-guide-note-indicator="clownfish"]')).toBeTruthy();
     const reopened=await mount(t.data);expect(ids(reopened)).toEqual(['clownfish']);expect(collection(reopened).getAttribute('aria-pressed')).toBe('true');
   });
-  it('keeps the note collection separate from unanswered practice and preserves it on return',async()=>{
+  it('practises the living note collection without exposing private prose and preserves it on return',async()=>{
     const t=await mount();await click(collection(t));await click(t.host.querySelector('[data-start-practice]'));
-    expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(X.SPECIES_META.filter(m=>m.group!=='structure').length));
+    const selected=['blue_tang','green_turtle','cleaner_shrimp'];
+    expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
+    expect(t.host.querySelector('[data-practice-count]').dataset.practiceCount).toBe(String(selected.length));
     await click(t.host.querySelector('[data-practice-start]'));expect(t.host.querySelector('[data-guide-note-indicator]')).toBeNull();expect(t.host.textContent).not.toContain('Private observation 31');
+    expect(selected).toContain(t.host.querySelector('.cr-dxp-portrait img').getAttribute('src').split('/').pop().replace(/\.webp.*$/,''));
+    expect(t.host.querySelector('.cr-dxp-heading').textContent).toBe('Organism 1 of 3');
     const back=[...t.host.querySelectorAll('button')].find(b=>b.textContent==='Back to the field guide');await click(back);expect(collection(t).getAttribute('aria-pressed')).toBe('true');expect(ids(t)).toHaveLength(4);expect(t.data.speciesPractice).toBeUndefined();
   });
 });

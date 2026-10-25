@@ -132,7 +132,8 @@ describe('Galaxy same-object model views', () => {
       expect(node.getAttribute('aria-hidden')).toBe('true');
     }
     expect(host.querySelector('[data-galaxy-hover-label]').textContent).toBe('');
-    expect(host.querySelector('[data-galaxy-hover-hint]').textContent).toContain('Click to select');
+    expect(host.querySelector('[data-galaxy-hover-hint]').textContent).toMatch(/click to select/i);
+    expect(host.querySelector('[data-galaxy-hover-hint]').textContent).toContain('Escape');
     expect(host.querySelector('[data-galaxy-object-band]')).toBeNull();
   });
 });

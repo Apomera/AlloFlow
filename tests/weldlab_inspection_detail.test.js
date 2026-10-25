@@ -1,3 +1,4 @@
+import { stripRtAnglePair } from './helpers/weldlab_rt_pair_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -76,6 +77,6 @@ describe('Inspector Bench precise navigation and same-specimen detail',()=>{
   });
 
   it('restores the entire original InspectionCWIPrep function by removing only one local detail hook, helper and rendering call',()=>{
-    const source=restoreUtFlight(readFileSync(SRC,'utf8'));let inspection=source.slice(source.indexOf('function InspectionCWIPrep('),source.indexOf('function ConsumablesDeepDive('));const at=inspection.indexOf('        function renderBenchNavigation() {'),end=inspection.indexOf('        function dimLabel(',at);expect(at).toBeGreaterThan(0);expect(end).toBeGreaterThan(at);inspection=inspection.slice(0,at)+inspection.slice(end);for(const line of ['        var benchDetailState = useState(false);\n','              renderBenchNavigation(),\n']){expect(inspection.split(line)).toHaveLength(2);inspection=inspection.replace(line,'');}expect(createHash('sha256').update(inspection).digest('hex')).toBe('693359f58fd08fc7fcf9b03c008b4f267a272f2596ace07d5c54327fe82e524b');
+    const source=restoreUtFlight(stripRtAnglePair(readFileSync(SRC,'utf8')));let inspection=source.slice(source.indexOf('function InspectionCWIPrep('),source.indexOf('function ConsumablesDeepDive('));const at=inspection.indexOf('        function renderBenchNavigation() {'),end=inspection.indexOf('        function dimLabel(',at);expect(at).toBeGreaterThan(0);expect(end).toBeGreaterThan(at);inspection=inspection.slice(0,at)+inspection.slice(end);for(const line of ['        var benchDetailState = useState(false);\n','              renderBenchNavigation(),\n']){expect(inspection.split(line)).toHaveLength(2);inspection=inspection.replace(line,'');}expect(createHash('sha256').update(inspection).digest('hex')).toBe('693359f58fd08fc7fcf9b03c008b4f267a272f2596ace07d5c54327fe82e524b');
   });
 });

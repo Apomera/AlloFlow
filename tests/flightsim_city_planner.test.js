@@ -18,7 +18,7 @@ const distanceNm = (a, b) => {
 
 beforeAll(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  tool = loadTool(process.env.SKYSCHOOL_CITY_PLANNER_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   api = window.__RR_TEST_EXPORTS__.flightSim;
 });
 beforeEach(() => {
@@ -104,6 +104,54 @@ async function selectCity(name) {
 }
 
 describe('SkySchool city planning integration', () => {
+  it('announces city search progress and completion in the same region without moving query focus', async () => {
+    delete window.SkySchoolCityServices;
+    const pending = deferred(); fetchSpy.mockImplementation(() => pending.promise);
+    await mount();
+    const status = planner().querySelector('[data-flight-city-search-status]');
+    expect(status).toBeTruthy();
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(status.textContent).toBe('');
+    // Use a separate city from the existing search-cache lifecycle fixtures.
+    await input('Kobe');
+    await act(async () => planner().querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    expect(status.textContent).toBe('Searching…');
+    expect(document.activeElement).toBe(queryInput());
+    await act(async () => pending.resolve(cityResponse('Kobe', 135.1956, 34.6901, 'Japan')));
+    expect(planner().querySelector('[data-flight-city-search-status]')).toBe(status);
+    expect(status.textContent).toBe('City results: ' + resultButtons().length);
+    expect(resultButtons().length).toBeGreaterThan(0);
+    expect(document.activeElement).toBe(queryInput());
+  });
+
+  it('clears cancelled search announcements and ignores their late response', async () => {
+    delete window.SkySchoolCityServices;
+    const pending = deferred(); fetchSpy.mockImplementation(() => pending.promise);
+    await mount(); await input('London');
+    await click(planner().querySelector('button[type="submit"]'));
+    const status = planner().querySelector('[data-flight-city-search-status]');
+    expect(status.textContent).toBe('Searching…');
+    await input('Kyoto');
+    expect(status.textContent).toBe('');
+    await act(async () => pending.resolve(cityResponse('Late London', -.1276, 51.5072, 'United Kingdom')));
+    expect(status.textContent).toBe('');
+    expect(resultButtons()).toHaveLength(0);
+    expect(document.activeElement).toBe(queryInput());
+  });
+
+  it('announces an empty city result in the mounted status region', async () => {
+    await mount();
+    const status = planner().querySelector('[data-flight-city-search-status]');
+    await input('zzzyyy-nonexistent-city');
+    await click(planner().querySelector('button[type="submit"]'));
+    expect(planner().querySelector('[data-flight-city-search-status]')).toBe(status);
+    expect(status.textContent).toContain('No city found.');
+    expect(resultButtons()).toHaveLength(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it('enables the default provider without downloading scenery in the planner', async () => {
     delete window.SkySchoolCityServices;
     const row = api.REAL_CITIES.find(item => item[0] === 'London');
@@ -298,7 +346,7 @@ describe('SkySchool city planning integration', () => {
   it('departs from the chosen From airport on the runway while keeping the city as the destination', async () => {
     await mount();
     const selected = await selectCity('London');
-    const departure = host.querySelector('select[aria-label="Departure airport"]');
+    const departure = host.querySelector('#skyschool-route-from');
     expect(departure).toBeTruthy();
     await act(async () => {
       departure.value = 'kden';

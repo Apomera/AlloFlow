@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { stripPipeMotion } from './helpers/weldlab_pipe_motion_restore.js';
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 
 const SRC = process.env.WELDLAB_SRC || 'stem_lab/stem_tool_weldlab.js';
 const require = createRequire(resolve('desktop/web-app/package.json'));
@@ -179,7 +181,9 @@ describe('Pipe groove area and wall thickness comparison', () => {
   });
 
   it('restores every original pipe lesson byte after removing only the local hook, helper and additive call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n'); let region = source.slice(source.indexOf('function PipeWeldingDeepDive('), source.indexOf('function RoboticAutomated('));
+    let source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8'));
+    if (source.includes('// ⟦pipe13 local material-point motion⟧')) source = stripPipeMotion(source);
+    let region = source.slice(source.indexOf('function PipeWeldingDeepDive('), source.indexOf('function RoboticAutomated('));
     const hook = '        var grooveCompareState = useState(0.719);\n'; expect(region.split(hook)).toHaveLength(2);
     const start = region.indexOf('        function renderGrooveAreaComparison() {'), end = region.indexOf('        function renderPasses() {', start); expect(start).toBeGreaterThan(0); expect(end).toBeGreaterThan(start);
     const helper = region.slice(start, end); expect(helper).not.toMatch(/usePersisted|\bupd\(|\bsetWall\(|\bsetStack\(|\bsetInspectPass\(|\bplacePass\(|requestAnimationFrame|setTimeout|setInterval/);

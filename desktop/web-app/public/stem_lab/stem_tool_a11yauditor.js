@@ -939,8 +939,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, t('stem.a11yauditor.background', 'Background'),
                   h('input', { type: 'color', value: ccBg, 'aria-label': t('stem.a11yauditor.background_color', 'Background color'), onChange: function(e) { upd('ccBg', e.target.value); }, className: 'w-9 h-9 rounded cursor-pointer border border-slate-300' })),
                 h('div', { className: 'flex-1 min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-center', style: { background: ccBg, color: ccFg } },
-                  h('div', { className: 'text-base font-bold' }, t('stem.a11yauditor.sample_text', 'Sample text')),
-                  h('div', { className: 'text-[0.6875rem]' }, t('stem.a11yauditor.large_heading', 'Large heading')))
+                  h('div', { className: 'text-sm' }, t('stem.a11yauditor.sample_text', 'Sample text')),
+                  h('div', { className: 'text-2xl font-bold' }, t('stem.a11yauditor.large_heading', 'Large heading')))
               ),
               h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
                 h('div', { className: 'text-xl font-black text-slate-800' }, ratio.toFixed(2) + ':1'),

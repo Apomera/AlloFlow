@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { stripRobotReference } from './helpers/weldlab_robot_reference_restore.js';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
@@ -88,7 +89,7 @@ describe('Robot application scope',()=>{
   });
 
   it('restores the complete baseline robotics function after removing only the local explorer and three authorized copy exceptions',()=>{
-    const source=readFileSync(SRC,'utf8').replace(/\r\n/g,'\n');let robot=source.slice(source.indexOf('function RoboticAutomated('),source.indexOf('function InspectionCWIPrep('));
+    const source=stripRobotReference(readFileSync(SRC,'utf8'));let robot=source.slice(source.indexOf('function RoboticAutomated('),source.indexOf('function InspectionCWIPrep('));
     // Strip only the later additive time ledger before the unchanged historical restoration.
     if(robot.includes('        function renderRobTimeLedger() {')){
       const ledgerHook="        var robBudgetState = useState({ view: 'sequence', move: 0 });\n",ledgerCall='            renderRobTimeLedger(),\n';

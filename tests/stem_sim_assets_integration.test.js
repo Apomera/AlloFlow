@@ -8,6 +8,8 @@ const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js'
 const read = file => readFileSync(resolve(file), 'utf8');
 const hostSource = read('stem_lab/stem_lab_module.js');
 const catalogSource = read('stem_lab/stem_sim_assets.js');
+const deliverySource = read('browser_delivery_policy.js');
+const createDeliveryPolicy = Function('URL', deliverySource + '\nreturn _alloCreateBrowserDeliveryPolicy;')(URL);
 const raptorSource = read('stem_lab/stem_tool_raptorhunt.js');
 const birdSource = read('stem_lab/stem_tool_birdlab.js');
 const wildlifeSource = read('stem_lab/birdlab_3d_wildlife.js');
@@ -43,9 +45,19 @@ function hostLoader() {
   const catalog = hostSource.indexOf('        ensureSimulationAssets: function');
   const end = hostSource.indexOf('        // Small shared scene kit', catalog);
   if ([start, middle, catalog, end].some(index => index < 0)) throw Error('Missing host loader boundaries');
+  const anchor = [...document.querySelectorAll('script[src]')].find(script => /\/stem_lab\/stem_lab_module\.js(?:[?#]|$)/.test(script.src));
+  const baseUrl = anchor ? new URL('../', anchor.src).href : new URL('.', document.baseURI).href;
+  const catalogBytes = Buffer.from(catalogSource);
+  const policy = createDeliveryPolicy({
+    schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false,
+    assets: { 'stem_lab/stem_sim_assets.js': {
+      integrity: 'sha384-' + createHash('sha384').update(catalogBytes).digest('base64'), bytes: catalogBytes.length,
+    } },
+  }, { baseUrl });
+  window.__alloConfigureTrustedScript = (script, url) => policy.configureScript(script, url);
   // Both methods are the host's actual implementations, including its shared
   // promise cache, DOM requests, URL resolution, failure and retry logic.
-  return Function('window', 'document', 'URL', 'return ({' + hostSource.slice(start, middle) + hostSource.slice(catalog, end) + '});')(window, document, URL);
+  return Function('window', 'document', 'URL', fn(hostSource, '_configureStemScript') + '\nreturn ({' + hostSource.slice(start, middle) + hostSource.slice(catalog, end) + '});')(window, document, URL);
 }
 async function flush() { for (let i = 0; i < 24; i++) await Promise.resolve(); }
 function catalogScripts() { return [...document.querySelectorAll('script')].filter(script => /\/stem_sim_assets\.js(?:[?#]|$)/.test(script.src)); }
@@ -55,7 +67,7 @@ describe('shared asset catalog host loading', () => {
   let saved, initialScripts;
   beforeEach(() => {
     vi.useFakeTimers();
-    saved = new Map(['StemSimAssets', '__stemScriptPromises', 'AvianWoodlandBirds', 'StemMeadow'].map(key => [key, window[key]]));
+    saved = new Map(['StemSimAssets', '__stemScriptPromises', 'AvianWoodlandBirds', 'StemMeadow', '__alloConfigureTrustedScript'].map(key => [key, window[key]]));
     saved.forEach((value, key) => { delete window[key]; });
     initialScripts = new Set(document.querySelectorAll('script'));
   });
@@ -151,6 +163,13 @@ describe('optional catalog startup in existing tools', () => {
     const local = { ...providerWindow(), THREE, StemLab: state === 'absent' ? {} : { ensureSimulationAssets: loadCatalog },
       AvianFeatherArt: { createFlightFeatherCanvas() {}, createVaneDetailCanvases() {}, applyVaneGrain() {}, vaneGrainCacheKey() {} },
       BirdLab3DMammals: { create() {} }, setTimeout: window.setTimeout.bind(window), clearTimeout: window.clearTimeout.bind(window) };
+    const companionAssets = Object.fromEntries(['birdlab_3d_bird.js', 'birdlab_3d_habitat.js', 'birdlab_3d_wildlife.js', 'birdlab_3d_engine.js'].map(name => {
+      const bytes = readFileSync(resolve('stem_lab', name));
+      return ['stem_lab/' + name, { integrity: 'sha384-' + createHash('sha384').update(bytes).digest('base64'), bytes: bytes.length }];
+    }));
+    const companionPolicy = createDeliveryPolicy({ schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null,
+      allowDesktopRemoteFallback: false, assets: companionAssets }, { baseUrl: 'https://local.invalid/offline/' });
+    Object.defineProperty(local, '__alloConfigureTrustedScript', { value: (script, url) => companionPolicy.configureScript(script, url), writable: false });
     if (state === 'host-absent') delete local.StemLab;
     const start = birdSource.indexOf('  var BIRDLAB_MODULE_BASE');
     const end = birdSource.indexOf('\n  (function() {', start);

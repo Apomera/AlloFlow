@@ -67,7 +67,8 @@ describe('Galaxy connected investigations', () => {
     root.innerHTML = renderTool('galaxy', { galaxy: { simMode: 'star', lifecycleMass: mass, activeStage: 'nebula' } });
     const controls = root.querySelector('[data-galaxy-stage-controls]');
     expect(controls.textContent).toMatch(/Stage 1 of \d+: /);
-    expect(controls.querySelectorAll('button')[0].disabled).toBe(true);
-    expect(controls.querySelectorAll('button')[1].disabled).toBe(false);
+    const previous = controls.querySelectorAll('button')[0], next = controls.querySelectorAll('button')[1];
+    expect(previous.disabled).toBe(false); expect(previous.getAttribute('aria-disabled')).toBe('true');
+    expect(next.disabled).toBe(false); expect(next.getAttribute('aria-disabled')).toBe('false');
   });
 });

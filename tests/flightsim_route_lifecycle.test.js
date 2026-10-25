@@ -134,8 +134,8 @@ describe('SkySchool flight plan ownership across departures', () => {
 
   it('replaces the earlier plan with changed airport selections', async () => {
     await mount(); await fileRoute(); const old = plan(); await endFlight();
-    await select(host.querySelector('select[aria-label="Departure airport"]'), 'egll');
-    await select(host.querySelector('select[aria-label="Destination airport"]'), 'rjtt');
+    await select(host.querySelector('#skyschool-route-from'), 'egll');
+    await select(host.querySelector('#skyschool-route-to'), 'rjtt');
     await fileRoute('planner');
     expect(plan()).not.toBe(old); expect(plan().route.map(item => item.id)).toEqual(['egll', 'rjtt']);
   });
@@ -161,8 +161,8 @@ describe('SkySchool flight plan ownership across departures', () => {
     await mount(); await fileRoute(); await endFlight();
     const old = plan();
     if (invalid === 'same') {
-      await select(host.querySelector('select[aria-label="Departure airport"]'), 'kden');
-      await select(host.querySelector('select[aria-label="Destination airport"]'), 'kden');
+      await select(host.querySelector('#skyschool-route-from'), 'kden');
+      await select(host.querySelector('#skyschool-route-to'), 'kden');
     } else await act(async () => updateSaved(invalid === 'invalid-departure' ? { planDep: 'missing-airport' } : { planDest: 'missing-airport' }));
     const launch = host.querySelector('button[aria-label="File Route: file the flight plan and depart"]');
     expect(launch.disabled).toBe(true); await click(launch);

@@ -682,6 +682,10 @@ window.StemLab = window.StemLab || {
       // ── Keyboard shortcuts ──
       React.useEffect(function() {
         function handleKey(e) {
+          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+          var iqRoot = document.querySelector('[data-inequality-root]');
+          if (!iqRoot || !e.target || !iqRoot.contains(e.target)) return;
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           var key = e.key.toLowerCase();
           if (key === '1') { e.preventDefault(); upd('graphMode', '1d'); trackMode('1d'); }
@@ -723,7 +727,7 @@ window.StemLab = window.StemLab || {
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       };
 
-      return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200', 'data-inequality-root': 'true' },
 
         // ── Header ──
         h('section', { 'data-inequality-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-fuchsia-300/40 bg-gradient-to-br from-slate-950 via-fuchsia-950 to-purple-950 text-white shadow-xl' },

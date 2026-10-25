@@ -37,7 +37,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   resetStemLab();
   window.__testHooks = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  tool = loadTool(process.env.SKYSCHOOL_NAVIGATION_FOCUS_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({});
   vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
   vi.stubGlobal('cancelAnimationFrame', vi.fn());
@@ -82,6 +82,26 @@ describe('SkySchool activity navigation focus', () => {
     await click(done);
     expect(latest.completedLessons[latest.selectedLesson]).toBe(true);
     expect(document.activeElement).not.toBe(title);
+  });
+
+  it.each([undefined, { flightTime: 'unreadable' }])('focuses recovery when the initial saved debrief cannot be read (%j)', async lastDebrief => {
+    await mount({ view: 'debrief', lastDebrief });
+    const recovery = heading('skyschool-debrief-unavailable-title');
+    expect(recovery).toBeTruthy();
+    expect(recovery.tabIndex).toBe(-1);
+    expect(document.activeElement).toBe(recovery);
+    await click(host.querySelector('[data-flight-unavailable-menu]'));
+    expect(latest.view).toBe('menu');
+    expect(document.activeElement).toBe(heading('skyschool-briefing-title'));
+  });
+
+  it('focuses the recovery heading after navigation replaces a focused activity', async () => {
+    await mount({ view: 'calculator' });
+    const slider = host.querySelector('input[type="range"]');
+    slider.focus();
+    await patch({ view: 'debrief', lastDebrief: null });
+    expect(slider.isConnected).toBe(false);
+    expect(document.activeElement).toBe(heading('skyschool-debrief-unavailable-title'));
   });
 
   it('announces question number and content through the focused heading after next, previous, and random navigation', async () => {
@@ -164,6 +184,27 @@ describe('SkySchool activity navigation focus', () => {
     await click(button('Exit'));
     expect(latest.view).toBe('debrief');
     expect(document.activeElement).toBe(heading('skyschool-debrief-title'));
+    const savedReview = latest.lastDebrief;
+    const reviewControl = host.querySelector('[data-flight-reflection] textarea');
+    expect(reviewControl).toBeTruthy();
+    reviewControl.focus();
+    await patch({ lastDebrief: { ...savedReview, reflection: 'A saved observation.' } });
+    expect(document.activeElement).toBe(reviewControl);
+    await patch({ lastDebrief: null });
+    expect(reviewControl.isConnected).toBe(false);
+    expect(document.activeElement).toBe(heading('skyschool-debrief-unavailable-title'));
+    await patch({ lastDebrief: savedReview });
+    expect(document.activeElement).toBe(heading('skyschool-debrief-title'));
+  });
+
+  it('preserves initial external focus when the saved debrief is unavailable', async () => {
+    outside = document.createElement('button');
+    outside.textContent = 'App navigation';
+    document.body.appendChild(outside);
+    outside.focus();
+    await mount({ view: 'debrief', lastDebrief: null });
+    expect(heading('skyschool-debrief-unavailable-title')).toBeTruthy();
+    expect(document.activeElement).toBe(outside);
   });
 
   it('does not pull initial focus away from an app control outside the tool', async () => {

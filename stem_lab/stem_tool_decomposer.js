@@ -40,6 +40,116 @@
     };
   }
 
+  // CSS fullscreen is a modal view: keep its keyboard and assistive-technology
+  // context with the visible scene, while leaving native fullscreen to the host.
+  function bindDecomposerSceneFullscreen(stage, name, feedbackText) {
+    var button = stage.querySelector('[data-allo-fs-btn]');
+    if (typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(button, stage);
+    if (stage.__decomposerFsGuard) {
+      stage.__decomposerFsGuard.name = name;
+      stage.__decomposerFsGuard.setFeedback(feedbackText);
+      return;
+    }
+    var guard = { name: name, active: false, released: false, feedbackText: feedbackText || '', feedbackVersion: 0 }, saved = {}, inerted = [];
+    var attrs = ['role', 'aria-modal', 'aria-label', 'aria-describedby', 'tabindex'];
+    var overflow = null, observer;
+    function controls() {
+      return Array.prototype.filter.call(stage.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]'), function(el) {
+        return el.tabIndex >= 0 && !el.closest('[hidden],[inert],[aria-hidden="true"]') && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden';
+      });
+    }
+    function focusFirst() {
+      var first = controls()[0] || stage;
+      try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
+    }
+    // This outlet is intentionally not React-owned text. Clear then deliver on
+    // the next frame so repeating the same wrong guess remains an announcement.
+    // The token prevents an older guess speaking after a newer answer or exit.
+    function announceFeedback(text) {
+      var version = ++guard.feedbackVersion;
+      var feedback = stage.querySelector('[data-decomposer-fullscreen-feedback]');
+      if (!feedback) return;
+      feedback.textContent = '';
+      if (!text || !guard.active || !stage.__alloFsOn || guard.released) return;
+      requestAnimationFrame(function() {
+        if (version === guard.feedbackVersion && guard.active && !guard.released && stage.__alloFsOn && stage.isConnected) feedback.textContent = text;
+      });
+    }
+    guard.setFeedback = function(text, repeat) {
+      text = text || '';
+      var changed = guard.feedbackText !== text;
+      guard.feedbackText = text;
+      if (changed || repeat) announceFeedback(text);
+    };
+    function restore(returnFocus) {
+      if (!guard.active) return;
+      guard.active = false;
+      announceFeedback('');
+      attrs.forEach(function(key) { if (saved[key] === null) stage.removeAttribute(key); else stage.setAttribute(key, saved[key]); });
+      stage.style.setProperty('overflow-y', overflow.value, overflow.priority);
+      if (!overflow.value) stage.style.removeProperty('overflow-y');
+      inerted.forEach(function(row) { if (row.value === null) row.node.removeAttribute('inert'); else row.node.setAttribute('inert', row.value); });
+      inerted = [];
+      var feedback = stage.querySelector('[data-decomposer-fullscreen-feedback]');
+      if (feedback) feedback.hidden = true;
+      if (returnFocus && stage.isConnected && button && button.isConnected) {
+        try { button.focus({ preventScroll: true }); } catch (e) { button.focus(); }
+      }
+    }
+    function sync() {
+      if (guard.released) return;
+      if (!stage.__alloFsOn) { restore(true); return; }
+      if (guard.active) return;
+      guard.active = true;
+      attrs.forEach(function(key) { saved[key] = stage.getAttribute(key); });
+      overflow = { value: stage.style.getPropertyValue('overflow-y'), priority: stage.style.getPropertyPriority('overflow-y') };
+      stage.setAttribute('role', 'dialog'); stage.setAttribute('aria-modal', 'true');
+      stage.setAttribute('aria-label', guard.name);
+      stage.setAttribute('aria-describedby', 'stem-decomposer-hunt-status');
+      stage.setAttribute('tabindex', '-1');
+      stage.style.setProperty('overflow-y', 'auto', 'important');
+      for (var node = stage; node && node.parentElement; node = node.parentElement) {
+        Array.prototype.forEach.call(node.parentElement.children, function(sibling) {
+          if (sibling !== node && sibling.tagName !== 'SCRIPT' && sibling.tagName !== 'STYLE') {
+            inerted.push({ node: sibling, value: sibling.getAttribute('inert') });
+            sibling.setAttribute('inert', '');
+          }
+        });
+        if (node.parentElement === document.body) break;
+      }
+      var feedback = stage.querySelector('[data-decomposer-fullscreen-feedback]');
+      if (feedback) feedback.hidden = false;
+      announceFeedback(guard.feedbackText);
+      if (!stage.contains(document.activeElement)) focusFirst();
+    }
+    function keydown(event) {
+      if (!guard.active || event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return;
+      var list = controls(), first = list[0], last = list[list.length - 1];
+      if (!first || (event.shiftKey && (document.activeElement === first || document.activeElement === stage)) || (!event.shiftKey && document.activeElement === last)) {
+        event.preventDefault();
+        var target = event.shiftKey ? last : first;
+        if (target) target.focus(); else stage.focus();
+      }
+    }
+    function focusin(event) { if (guard.active && !stage.contains(event.target)) focusFirst(); }
+    guard.release = function() {
+      if (guard.released) return;
+      guard.released = true;
+      if (stage.__alloFsOn && typeof window.__alloStemFS === 'function') window.__alloStemFS(stage);
+      restore(false);
+      if (observer) observer.disconnect();
+      stage.removeEventListener('keydown', keydown); document.removeEventListener('focusin', focusin);
+      if (button && typeof button.__alloFsRelease === 'function') button.__alloFsRelease();
+      if (window.__alloStemFsBindings) window.__alloStemFsBindings = window.__alloStemFsBindings.filter(function(row) { return row.stage !== stage; });
+      stage.__decomposerFsGuard = null;
+    };
+    stage.__decomposerFsGuard = guard;
+    observer = new MutationObserver(sync);
+    observer.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+    stage.addEventListener('keydown', keydown); document.addEventListener('focusin', focusin);
+    sync();
+  }
+
   /* ═══════════════════════════════════════════════════════════
      Sound Engine  (Web Audio API)
      ═══════════════════════════════════════════════════════════ */
@@ -428,7 +538,7 @@
       var React = ctx.React;
       var h = React.createElement;
       var isContrast = !!ctx.isContrast;
-      var onHostInk = isContrast ? ' text-white' : '';
+      var onHostInk = (isContrast || ctx.isDark) ? ' text-white' : '';
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -466,11 +576,13 @@
 
         /* ── State ── */
         var d = labToolData.decomposer || {};
+        var motionPaused = d.motionPaused === true || (d.motionPaused !== false
+          && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
             canvasNarrate('decomposer', 'init', {
-              first: 'Decomposer Lab loaded. Explore how fungi, bacteria, and invertebrates break down organic matter and recycle nutrients.',
+              first: 'Material Decomposer loaded. Explore compounds, their elements, reactions, and states of matter.',
               repeat: 'Decomposer Lab active.',
               terse: 'Decomposer Lab.'
             }, { debounce: 800 });
@@ -492,6 +604,53 @@
             return next;
           });
         };
+        function focusDecomposerElement(id) {
+          requestAnimationFrame(function() {
+            var element = document.getElementById(id);
+            if (element) element.focus();
+          });
+        }
+        function renderMotionControl() {
+          return h('button', { type: 'button', 'data-decomposer-motion-control': 'true',
+            'aria-pressed': motionPaused, onClick: function() { upd('motionPaused', !motionPaused); },
+            style: { minHeight: 44 },
+            className: 'px-4 py-2.5 rounded-xl border border-slate-400 bg-slate-100 text-slate-800 text-xs font-bold transition-colors' },
+            motionPaused ? __alloT('stem.decomposer.resume_particle_motion', 'Resume particle motion')
+              : __alloT('stem.decomposer.pause_particle_motion', 'Pause particle motion'));
+        }
+        function watchDecomposerCanvasSize(canvas, key, redraw) {
+          var property = '_decomposerSize' + key;
+          var watch = canvas[property];
+          if (!watch) {
+            watch = { width: canvas.offsetWidth, dpr: window.devicePixelRatio || 1 };
+            watch.changed = function() {
+              if (!canvas.isConnected) { releaseDecomposerCanvasSize(canvas, key); return; }
+              var width = canvas.offsetWidth;
+              var dpr = window.devicePixelRatio || 1;
+              if (width > 0 && (width !== watch.width || dpr !== watch.dpr)) {
+                watch.width = width; watch.dpr = dpr;
+                watch.redraw(canvas);
+              }
+            };
+            canvas[property] = watch;
+            if (typeof ResizeObserver !== 'undefined') {
+              watch.observer = new ResizeObserver(watch.changed);
+              watch.observer.observe(canvas);
+            }
+            window.addEventListener('resize', watch.changed);
+          }
+          watch.redraw = redraw;
+          watch.width = canvas.offsetWidth;
+          watch.dpr = window.devicePixelRatio || 1;
+        }
+        function releaseDecomposerCanvasSize(canvas, key) {
+          var property = '_decomposerSize' + key;
+          var watch = canvas[property];
+          if (!watch) return;
+          if (watch.observer) watch.observer.disconnect();
+          window.removeEventListener('resize', watch.changed);
+          delete canvas[property];
+        }
 
         var checkDecomposerChallenges = function(customState) {
           var state = customState || {};
@@ -746,8 +905,56 @@
 
         /* ── Derived state ── */
         var sel = MATERIALS.find(function(m) { return m.name === (d.selected || 'Water'); }) || MATERIALS[0];
+        function comparisonMaterial(primaryName, preferredName) {
+          return MATERIALS.find(function(material) { return material.name === preferredName && material.name !== primaryName; })
+            || (MATERIALS[1].name !== primaryName ? MATERIALS[1] : MATERIALS[0]);
+        }
         var totalAtoms = sel.elements.reduce(function(s, e) { return s + e.count; }, 0);
         var decomposed = d.decomposed || false;
+        var simulationTemperature = Math.max(-200, Math.min(500,
+          (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25));
+        var phaseGeometry = GEOMETRY[sel.name] || null;
+        var phaseOutsideModel = phaseGeometry && phaseGeometry.bp === null
+          && phaseGeometry.mp !== null && simulationTemperature >= phaseGeometry.mp;
+        // A missing boiling point marks decomposition, not a liquid that can
+        // be heated indefinitely. Never invent water's thresholds for a material.
+        var modeledPhase = null;
+        if (phaseGeometry && !phaseOutsideModel) {
+          modeledPhase = phaseGeometry.bp !== null && simulationTemperature >= phaseGeometry.bp ? 'gas'
+            : phaseGeometry.mp !== null && simulationTemperature >= phaseGeometry.mp ? 'liquid' : 'solid';
+        }
+        var phaseNames = {
+          solid: __alloT('stem.decomposer.phase_solid', 'Solid'),
+          liquid: __alloT('stem.decomposer.phase_liquid', 'Liquid'),
+          gas: __alloT('stem.decomposer.phase_gas', 'Gas')
+        };
+        var motionDescription = motionPaused
+          ? __alloT('stem.decomposer.particle_motion_paused', 'Particle motion is paused.')
+          : __alloT('stem.decomposer.particle_motion_running', 'Particle motion is running.');
+        var phaseBehaviors = {
+          solid: __alloT('stem.decomposer.solid_particle_description', 'Particles vibrate around fixed positions in an ordered arrangement.'),
+          liquid: __alloT('stem.decomposer.liquid_particle_description', 'Particles stay close together near the bottom of the container and slide past one another.'),
+          gas: __alloT('stem.decomposer.gas_particle_description', 'Particles move freely in different directions and spread through the container.')
+        };
+        var phaseDescription = !phaseGeometry
+          ? __alloT('stem.decomposer.phase_data_missing', 'Phase-transition data are unavailable for {material}. Its catalog state at room temperature is {state}. Choose another material to explore temperature changes.')
+            .replace('{material}', sel.name).replace('{state}', phaseNames[String(sel.state).toLowerCase()] || sel.state)
+          : phaseOutsideModel
+            ? __alloT('stem.decomposer.phase_model_limit', 'This temperature is outside the phase model for {material}, which is marked as decomposing when heated. Chemical decomposition is not simulated here. Lower the temperature or choose another material.')
+              .replace('{material}', sel.name)
+            : __alloT('stem.decomposer.phase_particle_description', '{material} at {temperature} °C. {behavior} {motion}')
+              .replace('{material}', sel.name).replace('{temperature}', String(simulationTemperature))
+              .replace('{behavior}', phaseBehaviors[modeledPhase]).replace('{motion}', motionDescription);
+        var atomComposition = sel.elements.map(function(el) {
+          return __alloT('stem.decomposer.atom_element_count', '{element}: {count} atoms')
+            .replace('{element}', el.name).replace('{count}', String(el.count));
+        }).join('; ');
+        var atomDescription = __alloT('stem.decomposer.atom_particle_description', '{material} ({formula}). {composition}. {arrangement} Each circle represents one element type, with its atom count shown on the label. Circle sizes give a rough count comparison. {motion}')
+          .replace('{material}', sel.name).replace('{formula}', sel.formula).replace('{composition}', atomComposition)
+          .replace('{arrangement}', decomposed
+            ? __alloT('stem.decomposer.atom_separated', 'Element groups are separated; dashed lines mark former bonds.')
+            : __alloT('stem.decomposer.atom_assembled', 'Element groups are assembled; solid lines represent bonds between groups.'))
+          .replace('{motion}', motionDescription);
         // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
         // id this build does not know matched NONE of them: the tool rendered its
         // header and tab strip over an empty body -- a dead end that looks functional.
@@ -768,6 +975,26 @@
         // Read inline at three sites inside the render tree, where there is no
         // statement position to guard. One guarded local here covers all three.
         var completedChallenges = Array.isArray(d.completedChallenges) ? d.completedChallenges : [];
+        function renderGoalDetails(kind) {
+          var isBadges = kind === 'badges';
+          var rows = isBadges ? BADGES : DECOMPOSER_CHALLENGES;
+          var summaryId = 'stem-decomposer-goals-' + kind;
+          return h('details', { 'data-decomposer-goals': kind, className: 'rounded-xl border border-slate-300 text-xs mt-2' },
+            h('summary', { id: summaryId, className: 'cursor-pointer font-bold px-3 py-2', style: { minHeight: 44, boxSizing: 'border-box' } },
+              isBadges ? __alloT('stem.decomposer.badge_requirements', 'How to earn badges')
+                : __alloT('stem.decomposer.challenge_requirements', 'View challenge goals')),
+            h('ul', { 'aria-labelledby': summaryId, className: 'px-3 pb-3 space-y-3' }, rows.map(function(row) {
+              var complete = (isBadges ? badges : completedChallenges).indexOf(row.id) !== -1;
+              return h('li', { key: row.id, 'data-decomposer-goal': isBadges ? undefined : row.id,
+                'data-decomposer-badge-criterion': isBadges ? row.id : undefined },
+                h('p', { className: 'font-bold' }, isBadges ? row.label : row.name),
+                h('p', null, row.desc),
+                h('p', { className: 'font-bold' }, (isBadges
+                  ? (complete ? __alloT('stem.decomposer.badge_earned', 'Earned') : __alloT('stem.decomposer.badge_not_earned', 'Not earned'))
+                  : (complete ? __alloT('stem.decomposer.goal_complete', 'Complete') : __alloT('stem.decomposer.goal_not_complete', 'Not complete')))
+                  + ' \u00B7 ' + (isBadges ? row.xp + ' XP' : row.rp + ' RP')));
+            })));
+        }
         var aiLoading = d.aiLoading || false;
         var band = getGradeBand(ctx);
 
@@ -1006,10 +1233,12 @@
            AI Tutor Handler
            ═══════════════════════════════════════════════════ */
         function handleAiQuestion(question) {
-          if (!question || !callGemini) return;
+          if (!question || !question.trim() || !callGemini || aiLoading) return;
           SOUNDS.aiTutor();
           var msgs = aiMessages.concat([{ role: 'user', text: question }]);
-          updMulti({ aiMessages: msgs, aiInput: '', aiLoading: true });
+          updMulti({ aiMessages: msgs, aiInput: '', aiLoading: true,
+            aiStatus: __alloT('stem.decomposer.tutor_thinking', 'The tutor is preparing an answer.') });
+          focusDecomposerElement('stem-decomposer-tutor-input');
 
           var prompt = 'You are a friendly chemistry tutor for a grade ' + (gradeLevel || 5) + ' student. '
             + 'They are exploring the Material Decomposer tool and currently looking at '
@@ -1017,16 +1246,18 @@
             + 'Answer their question briefly and clearly in 2-3 sentences. '
             + 'Question: ' + question;
 
-          callGemini(prompt, true, false, 0.8).then(function(reply) {
+          Promise.resolve().then(function() { return callGemini(prompt, true, false, 0.8); }).then(function(reply) {
             var updated = msgs.concat([{ role: 'ai', text: reply }]);
             updMulti({
               aiMessages: updated,
               aiLoading: false,
+              aiStatus: __alloT('stem.decomposer.tutor_reply', 'Tutor: {reply}').replace('{reply}', String(reply)),
               aiQuestions: (d.aiQuestions || 0) + 1
             });
           }).catch(function() {
-            var updated = msgs.concat([{ role: 'ai', text: 'Sorry, I could not get an answer right now. Try again!' }]);
-            updMulti({ aiMessages: updated, aiLoading: false });
+            var errorMessage = __alloT('stem.decomposer.tutor_error', 'The tutor could not get an answer. Please try again.');
+            var updated = msgs.concat([{ role: 'ai', text: errorMessage }]);
+            updMulti({ aiMessages: updated, aiLoading: false, aiStatus: errorMessage });
           });
         }
 
@@ -1056,17 +1287,24 @@
           canvas.dataset.decomposed = decomposed ? 'true' : 'false';
           canvas.dataset.elementsJson = JSON.stringify(sel.elements);
           canvas.dataset.materialName = sel.name;
+          canvas.dataset.motionPaused = motionPaused ? 'true' : 'false';
 
           if (tab !== 'visualize') return;
+          watchDecomposerCanvasSize(canvas, 'Atoms', canvasRef);
+          var width = canvas.offsetWidth || 500;
+          var ratio = window.devicePixelRatio || 1;
+          var resizeOnly = canvas._dcAnimRunning && canvas._dcFormula === sel.formula + (decomposed ? '_d' : '_a');
           // Prevent re-init if already running for same formula
-          if (canvas._dcAnimRunning && canvas._dcFormula === sel.formula + (decomposed ? '_d' : '_a')) return;
+          if (resizeOnly && canvas._dcDrawWidth === width && canvas._dcDrawDpr === ratio) return;
           if (canvas._dcAnimId) cancelAnimationFrame(canvas._dcAnimId);
           canvas._dcFormula = sel.formula + (decomposed ? '_d' : '_a');
           canvas._dcAnimRunning = true;
+          canvas._dcPaintKey = null;
 
           var c = canvas.getContext('2d');
-          var dpr = window.devicePixelRatio || 1;
-          var w = canvas.offsetWidth || 500;
+          var dpr = ratio;
+          var w = width;
+          canvas._dcDrawWidth = w; canvas._dcDrawDpr = dpr;
           var ht = 280;
           canvas.width = w * dpr;
           canvas.height = ht * dpr;
@@ -1119,7 +1357,15 @@
           var wasDecomposed = false;
 
           function draw() {
-            if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; return; } // stop on tab-switch/unmount (was leaking)
+            if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; releaseDecomposerCanvasSize(canvas, 'Atoms'); return; }
+            var pausedMotion = canvas.dataset.motionPaused === 'true';
+            var paintKey = canvas.dataset.formula + '|' + canvas.dataset.decomposed + '|' + canvas.dataset.materialName + '|' + canvas.dataset.elementsJson;
+            if (pausedMotion && canvas._dcPaintKey === paintKey) {
+              animId = requestAnimationFrame(draw);
+              canvas._dcAnimId = animId;
+              return;
+            }
+            canvas._dcPaintKey = paintKey;
             // Check for material change
             if (canvas.dataset.formula !== curFormula) {
               rebuildPositions();
@@ -1138,7 +1384,7 @@
             var targets = calcPositions(n, cx, cy, targetR);
 
             // Spawn particles on decompose transition
-            if (isDecomposed && !wasDecomposed) {
+            if (isDecomposed && !wasDecomposed && !pausedMotion) {
               for (var pi = 0; pi < 40; pi++) {
                 var angle = Math.random() * Math.PI * 2;
                 var speed = 1 + Math.random() * 3;
@@ -1168,8 +1414,13 @@
             // Lerp positions toward targets
             for (var i = 0; i < n; i++) {
               if (curPositions[i]) {
-                curPositions[i].x += (targets[i].x - curPositions[i].x) * 0.06;
-                curPositions[i].y += (targets[i].y - curPositions[i].y) * 0.06;
+                if (pausedMotion) {
+                  curPositions[i].x = targets[i].x;
+                  curPositions[i].y = targets[i].y;
+                } else {
+                  curPositions[i].x += (targets[i].x - curPositions[i].x) * 0.06;
+                  curPositions[i].y += (targets[i].y - curPositions[i].y) * 0.06;
+                }
               }
             }
 
@@ -1222,9 +1473,11 @@
             // Draw particles
             for (var pk = particles.length - 1; pk >= 0; pk--) {
               var p = particles[pk];
-              p.x += p.vx; p.y += p.vy;
-              p.vx *= 0.97; p.vy *= 0.97;
-              p.life -= 0.015;
+              if (!pausedMotion) {
+                p.x += p.vx; p.y += p.vy;
+                p.vx *= 0.97; p.vy *= 0.97;
+                p.life -= 0.015;
+              }
               if (p.life <= 0) { particles.splice(pk, 1); continue; }
               c.globalAlpha = p.life * 0.8;
               c.fillStyle = p.color;
@@ -1285,12 +1538,15 @@
               c.beginPath(); c.arc(px - atomR * 0.25, py - atomR * 0.25, atomR * 0.35, 0, Math.PI * 2); c.fill();
 
               // Element symbol
-              c.fillStyle = '#ffffff';
-              c.font = 'bold ' + Math.round(atomR * 0.65) + 'px system-ui, sans-serif';
+              var symbolSize = Math.round(atomR * 0.65);
+              c.font = 'bold ' + symbolSize + 'px system-ui, sans-serif';
               c.textAlign = 'center'; c.textBaseline = 'middle';
-              c.shadowColor = 'rgba(0,0,0,0.4)'; c.shadowBlur = 3;
-              c.fillText(el.sym, px, py);
               c.shadowBlur = 0;
+              var symbolWidth = c.measureText(el.sym).width + 8;
+              c.fillStyle = '#0f172a';
+              c.beginPath(); c.roundRect(px - symbolWidth / 2, py - symbolSize / 2 - 2, symbolWidth, symbolSize + 4, 3); c.fill();
+              c.fillStyle = '#ffffff';
+              c.fillText(el.sym, px, py);
 
               // Count badge
               if (el.count > 1) {
@@ -1299,7 +1555,7 @@
                 c.fillStyle = '#f59e0b';
                 c.beginPath(); c.arc(bx, by, 11, 0, Math.PI * 2); c.fill();
                 c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
-                c.fillStyle = '#fff'; c.font = 'bold 10px system-ui, sans-serif';
+                c.fillStyle = '#0f172a'; c.font = 'bold 10px system-ui, sans-serif';
                 c.fillText('\u00D7' + el.count, bx, by);
               }
 
@@ -1318,7 +1574,7 @@
             // Status badge
             c.save();
             var stLabel = isDecomposed ? '\u26A1 DECOMPOSED' : '\u269B ASSEMBLED';
-            var stColor = isDecomposed ? '#ef4444' : '#22c55e';
+            var stColor = isDecomposed ? '#fca5a5' : '#86efac';
             c.font = 'bold 10px system-ui, sans-serif';
             var stW = c.measureText(stLabel).width + 16;
             c.fillStyle = stColor + '25';
@@ -1329,16 +1585,19 @@
             c.fillText(stLabel, w / 2, ht - 12);
             c.restore();
 
-            frame++;
+            if (!pausedMotion) frame++;
             animId = requestAnimationFrame(draw);
+            canvas._dcAnimId = animId;
           }
 
           draw();
 
           // Track canvas views for badge
-          var views = parseInt(canvas.dataset.views || '0', 10) + 1;
-          canvas.dataset.views = String(views);
-          upd('canvasViews', views);
+          if (!resizeOnly) {
+            var views = parseInt(canvas.dataset.views || '0', 10) + 1;
+            canvas.dataset.views = String(views);
+            upd('canvasViews', views);
+          }
 
           canvas._dcAnimId = animId;
         };
@@ -1367,9 +1626,10 @@
           { id: 'decompHunt', label: '\u23F1\uFE0F Decompose', color: 'lime' }
         ];
         var decomposerTabKeyDown = function(e, index) {
+          if (e.ctrlKey || e.altKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing)) return;
           var nextIndex = -1;
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
-          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + TABS.length - 1) % TABS.length;
+          if (e.key === 'ArrowRight') nextIndex = (index + 1) % TABS.length;
+          else if (e.key === 'ArrowLeft') nextIndex = (index + TABS.length - 1) % TABS.length;
           else if (e.key === 'Home') nextIndex = 0;
           else if (e.key === 'End') nextIndex = TABS.length - 1;
           if (nextIndex < 0) return;
@@ -1388,10 +1648,57 @@
         /* ═══════════════════════════════════════════════════
            Main UI Render
            ═══════════════════════════════════════════════════ */
-        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+        var huntObjectGridStyles = '.decomposer-scene-objects{position:relative;inset:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,max(4em,calc((100% - 24px)/3))),1fr));gap:12px;padding:12px;box-sizing:border-box}.decomposer-scene-objects [data-decomposer-object]{position:relative!important;left:auto!important;top:auto!important;transform:none!important;min-width:0;width:100%;padding:4px}.decomposer-scene-objects .decomposer-scene-object-label{max-width:none!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}.decomposer-scene-objects [data-decomposer-object]>.absolute{display:none}';
+        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200', 'data-decomposer-active-tab': tab },
+          h('style', null,
+            '[data-decomposer-active-tab=scenes]{container-type:inline-size;container-name:decomposer-hunt}' +
+            '[data-decomposer-active-tab=scenes] :is(h3,h4,h5,p,span,button){line-height:1.5}' +
+            '.theme-contrast [data-decomposer-chooser-hero]{background:#000!important}' +
+            '.theme-contrast [data-decomposer-chooser-hero] :is(h4,p,[data-decomposer-hero-stat]){background:#000!important;color:#ff0!important;border-color:#ff0!important}' +
+            '@media(forced-colors:active){[data-decomposer-chooser-hero]{background:Canvas!important}[data-decomposer-chooser-hero] :is(h4,p,[data-decomposer-hero-stat]){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}' +
+            '.theme-contrast [data-decomposer-scene]{background:#000!important;color:#ff0!important;border-color:#ff0!important}' +
+            '@media(forced-colors:active){[data-decomposer-scene],.theme-contrast [data-decomposer-scene]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}' +
+            '[data-decomposer-goals]{background:#fff;color:#334155;overflow-wrap:anywhere}' +
+            '[data-decomposer-goals],[data-decomposer-goals] :is(summary,p,ul,li){line-height:1.5}' +
+            '[data-decomposer-goals] summary:focus-visible{outline:3px solid #4338ca;outline-offset:3px}' +
+            '.theme-contrast [data-decomposer-goals],.theme-contrast [data-decomposer-goals] summary{background:#000!important;color:#ff0!important;border-color:#ff0!important}' +
+            '.theme-contrast [data-decomposer-goals] summary:focus-visible{outline-color:#ff0}' +
+            '@media(forced-colors:active){[data-decomposer-goals],.theme-contrast [data-decomposer-goals],[data-decomposer-goals] summary,.theme-contrast [data-decomposer-goals] summary{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}[data-decomposer-goals] summary:focus-visible{outline-color:Highlight}}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(div,section,span,p,h3,h4,h5,dt,dd,label,button,input,select,textarea){line-height:1.5}' +
+            '@media(forced-colors:active){[data-decomposer-snapshot]{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important}}' +
+            '.decomposer-scene-dismiss{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:44px;min-height:44px;padding:8px;border:1px solid currentColor;border-radius:8px;background:#fff;color:#334155;cursor:pointer}' +
+            '.decomposer-scene-dismiss:focus-visible,[data-decomposer-object]:focus-visible{outline:3px solid #92400e;outline-offset:3px}' +
+            '[data-decomposer-focus]:focus{outline:3px solid #4338ca;outline-offset:3px}' +
+            '[role=tabpanel]:focus-visible,#stem-decomposer-tutor-log:focus-visible{outline:3px solid #4338ca;outline-offset:3px}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-indigo-400,.text-indigo-500){color:#4338ca}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-emerald-500,.text-emerald-600){color:#065f46}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-purple-400,.text-purple-500,.text-purple-600){color:#6b21a8}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-orange-500,.text-orange-600){color:#9a3412}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-sky-500,.text-sky-600){color:#075985}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-red-400,.text-red-500){color:#b91c1c}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) .text-cyan-600{color:#155e75}' +
+            '[data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(.text-amber-500,.text-amber-600){color:#92400e}' +
+            '.theme-contrast [data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(div,section,span,p,h3,h4,h5,dt,dd,label,button,input,select,textarea){background:#000!important;color:#ff0!important;border-color:#ff0!important;box-shadow:none!important}' +
+            '.theme-contrast [data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) button:is([aria-pressed=true],[aria-selected=true]){background:#ff0!important;color:#000!important;border:2px solid #ff0!important}' +
+            '.theme-contrast [data-decomposer-active-tab] [data-decomposer-focus]:focus{outline-color:#ff0}' +
+            '@media(forced-colors:active){[data-decomposer-focus]:focus,[role=tabpanel]:focus-visible,#stem-decomposer-tutor-log:focus-visible{outline-color:Highlight}.theme-contrast [data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) :is(div,section,span,p,h3,h4,h5,dt,dd,label,button,input,select,textarea){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.theme-contrast [data-decomposer-active-tab]:not([data-decomposer-active-tab=scenes]) button:is([aria-pressed=true],[aria-selected=true]){background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}}' +
+            '[data-decomposer-object]:focus-visible{z-index:20!important}' +
+            '[data-decomposer-active-tab=scenes] :is(.text-indigo-400,.text-indigo-500){color:#4338ca}' +
+            '[data-decomposer-active-tab=scenes] :is(.text-red-400,.text-red-500){color:#b91c1c}' +
+            '[data-decomposer-active-tab=scenes] .text-emerald-600{color:#065f46}' +
+            '[data-decomposer-active-tab=scenes] .text-cyan-600{color:#155e75}' +
+            '[data-decomposer-active-tab=scenes] .text-amber-600{color:#92400e}' +
+            '[data-decomposer-active-tab=scenes] .decomposer-scene-object-label{background:#fff!important;color:#334155!important;border-color:#94a3b8!important}' +
+            '[data-decomposer-object][data-decomposer-found=true] .decomposer-scene-object-label{background:#ecfdf5!important;color:#065f46!important;border-color:#047857!important}' +
+            '.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-object-label{background:#000!important;color:#ff0!important;border-color:#ff0!important}' +
+            '.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card,.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card :is(div,section,span,p,h4){background:#000!important;color:#ff0!important;border-color:#ff0!important;box-shadow:none!important}' +
+            '.decomposer-scene-objects{position:absolute;inset:0;pointer-events:none}.decomposer-scene-objects [data-decomposer-object]{pointer-events:auto}' +
+            '@media(max-width:600px){' + huntObjectGridStyles + '}' +
+            '@container decomposer-hunt (max-width:40em){' + huntObjectGridStyles + '}' +
+            '@media(forced-colors:active){.decomposer-scene-dismiss{background:ButtonFace;color:ButtonText;border-color:ButtonText}.decomposer-scene-dismiss:focus-visible,[data-decomposer-object]:focus-visible{outline-color:Highlight}[data-decomposer-active-tab=scenes] :is(.text-indigo-400,.text-indigo-500,.text-red-400,.text-red-500,.text-emerald-600,.text-cyan-600,.text-amber-600){color:CanvasText}[data-decomposer-active-tab=scenes] [data-decomposer-object] .decomposer-scene-object-label{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card,.theme-contrast [data-decomposer-active-tab=scenes] .decomposer-scene-card :is(div,section,span,p,h4){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'),
 
           /* ── Header ── */
-          h('div', { className: 'flex items-center gap-3 mb-3' },
+          h('div', { className: 'flex flex-wrap items-center gap-3 mb-3' },
             h('button', {
               onClick: function() { setStemLabTool(null); },
               className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]',
@@ -1435,7 +1742,7 @@
                 style: { width: Math.min(100, (completedChallenges.length / DECOMPOSER_CHALLENGES.length) * 100) + '%', boxShadow: '0 0 8px rgba(14,165,233,0.3)' }
               })
             ),
-            h('div', { className: 'flex flex-wrap gap-2 mt-1' },
+            h('div', { className: 'flex flex-wrap gap-2 mt-1', 'aria-hidden': 'true' },
               DECOMPOSER_CHALLENGES.map(function(ch) {
                 var done = completedChallenges.indexOf(ch.id) !== -1;
                 return h('div', {
@@ -1444,7 +1751,8 @@
                   style: { fontSize: '18px' }
                 }, ch.icon);
               })
-            )
+            ),
+            renderGoalDetails('challenges')
           ),
 
           /* ── Tab bar ── */
@@ -1466,6 +1774,9 @@
             })
           ),
 
+          h('div', { role: 'tabpanel', id: 'stem-decomposer-panel-' + tab,
+            'aria-labelledby': 'stem-decomposer-tab-' + tab, tabIndex: 0 },
+
           /* ── Topic-accent hero band per tab ── */
           (function() {
             var TAB_META = {
@@ -1479,22 +1790,21 @@
             };
             var meta = TAB_META[tab] || TAB_META.explore;
             return h('div', {
-              role: 'tabpanel', id: 'stem-decomposer-panel-' + tab,
-              'aria-labelledby': 'stem-decomposer-tab-' + tab, tabIndex: 0,
               className: 'mb-4',
               style: {
                 padding: '12px 14px',
                 borderRadius: 12,
                 background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                backgroundColor: isContrast ? '#000' : '#fff',
                 border: '1px solid ' + meta.accent + '55',
                 borderLeft: '4px solid ' + meta.accent,
                 display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
               }
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-              h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+                h('h3', { style: { color: '#334155', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -1502,10 +1812,16 @@
           /* ── Material selector chips (always visible) ── */
           h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {
-              return h('button', { key: m.name,
+              return h('button', { key: m.name, 'data-decomposer-material': m.name,
+                'aria-pressed': sel.name === m.name,
                 onClick: function() {
                   SOUNDS.selectMaterial();
-                  updMulti({ selected: m.name, decomposed: false });
+                  var updates = { selected: m.name, decomposed: false };
+                  if (d.compareMode) {
+                    var partner = comparisonMaterial(sel.name, d.compareTo);
+                    updates.compareTo = comparisonMaterial(m.name, partner.name === m.name ? sel.name : partner.name).name;
+                  }
+                  updMulti(updates);
                 },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '
                   + (sel.name === m.name
@@ -1525,15 +1841,15 @@
             /* Material info card */
             h('div', { className: 'bg-gradient-to-br from-slate-50 to-amber-50 rounded-xl border-2 border-amber-200 p-4 mb-3' },
 
-              h('div', { className: 'flex items-start gap-3 mb-3' },
+              h('div', { className: 'flex flex-wrap items-start gap-3 mb-3' },
                 h('span', { className: 'text-4xl' }, sel.emoji),
-                h('div', { className: 'flex-1' },
-                  h('div', { className: 'flex items-center gap-2' },
+                h('div', { style: { flex: '1 1 12em', minWidth: 0 } },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('h4', { className: 'font-bold text-slate-800 text-lg tracking-tight' }, sel.name),
                     h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-400 shadow-sm' }, sel.formula)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, sel.desc),
-                  h('div', { className: 'flex gap-3 mt-2 text-[0.6875rem] font-bold' },
+                  h('div', { className: 'flex flex-wrap gap-3 mt-2 text-[0.6875rem] font-bold' },
                     h('span', { className: 'text-cyan-600' }, '\uD83D\uDD17 ' + sel.bondType),
                     h('span', { className: 'text-indigo-600' }, '\uD83D\uDCCA ' + sel.state),
                     h('span', { className: 'text-emerald-600' }, '\u2696 ' + sel.molarMass)
@@ -1561,7 +1877,7 @@
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u2697\uFE0F Decompose into Elements'),
 
               /* Animated decomposition visual */
-              h('div', { className: 'mt-4 flex items-center justify-center gap-2 min-h-[80px] transition-all duration-500' },
+              h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2 min-h-[80px] transition-all duration-500' },
                 decomposed
                   ? sel.elements.map(function(el, i) {
                       return h('div', { 
@@ -1575,7 +1891,7 @@
                       },
                         h('div', {
                           className: 'w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg border-2 border-white/30 tracking-tight',
-                          style: { background: el.color }
+                          style: { background: el.color, color: readableInk(el.color) }
                         }, el.sym),
                         h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 mt-1' }, el.name),
                         h('span', { className: 'text-[0.6875rem] font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full mt-0.5' },
@@ -1600,13 +1916,13 @@
                   key: el.sym,
                   className: 'bg-white rounded-xl border border-slate-400 p-3 hover:border-amber-300 transition-all hover:shadow-sm'
                 },
-                  h('div', { className: 'flex items-center gap-2 mb-1.5' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2 mb-1.5' },
                     h('div', {
-                      className: 'w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-sm',
-                      style: { background: el.color }
+                      className: 'rounded-lg p-1 flex items-center justify-center text-white font-black text-sm shadow-sm',
+                      style: { background: el.color, color: readableInk(el.color), minWidth: 40, minHeight: 40, flexShrink: 0 }
                     },
                       h('div', { className: 'text-center leading-tight' },
-                        h('div', { className: 'text-[0.6875rem] opacity-70' }, el.num),
+                        h('div', { className: 'text-[0.6875rem]' }, el.num),
                         h('div', { className: 'text-base font-black' }, el.sym)
                       )
                     ),
@@ -1635,14 +1951,15 @@
             /* Compare molecules mode */
             (function() {
               var cmpMode = d.compareMode || false;
-              var cmpMat = MATERIALS.find(function(m) { return m.name === (d.compareTo || ''); }) || MATERIALS[1];
+              var cmpMat = comparisonMaterial(sel.name, d.compareTo);
 
               if (!cmpMode) {
                 return h('div', { className: 'mb-3' },
-                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_compare_molecules', 'Compare Molecules'),
+                  h('button', { id: 'stem-decomposer-compare-open', 'aria-label': __alloT('stem.decomposer.a11y_compare_molecules', 'Compare Molecules'),
                     onClick: function() {
                       SOUNDS.compare();
-                      updMulti({ compareMode: true, compareTo: MATERIALS[1].name });
+                      updMulti({ compareMode: true, compareTo: cmpMat.name });
+                      focusDecomposerElement('stem-decomposer-compare-select');
                     },
                     className: 'w-full py-2 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 transition-all active:scale-[0.97]'
                   }, '\u2696 Compare Molecules')
@@ -1650,30 +1967,35 @@
               }
 
               return h('div', { className: 'bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 mb-3' },
-                h('div', { className: 'flex items-center gap-2 mb-3' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
                   h('span', { className: 'text-sm font-bold text-indigo-800' }, '\u2696 Compare: ' + sel.name + ' vs'),
                   h('select', {
+                    id: 'stem-decomposer-compare-select',
                     'aria-label': __alloT('stem.decomposer.compare_material', 'Compare with material'),
-                    value: d.compareTo || cmpMat.name,
+                    'aria-describedby': 'stem-decomposer-comparison-status',
+                    value: cmpMat.name,
                     onChange: function(e) {
                       upd('compareTo', e.target.value);
                       upd('comparisons', (d.comparisons || 0) + 1);
                     },
-                    className: 'px-2 py-1 rounded-lg text-xs font-bold border border-indigo-600 bg-white text-indigo-700'
+                    className: 'max-w-full min-w-0 px-2 py-1 rounded-lg text-xs font-bold border border-indigo-600 bg-white text-indigo-700'
                   },
                     MATERIALS.filter(function(m) { return m.name !== sel.name; }).map(function(m) {
                       return h('option', { key: m.name, value: m.name }, m.emoji + ' ' + m.name);
                     })
                   ),
                   h('button', { 'aria-label': __alloT('stem.decomposer.a11y_close', 'Close'),
-                    onClick: function() { upd('compareMode', false); },
+                    type: 'button', style: { minHeight: 44 },
+                    onClick: function() { upd('compareMode', false); focusDecomposerElement('stem-decomposer-compare-open'); },
                     className: 'transition-colors ml-auto text-xs text-indigo-400 hover:text-indigo-600'
                   }, '\u2715 Close')
                 ),
-                h('div', { className: 'grid grid-cols-2 gap-3' },
+                h('p', { id: 'stem-decomposer-comparison-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' },
+                  __alloT('stem.decomposer.comparison_summary', 'Comparing {material} with {comparison}.').replace('{material}', sel.name).replace('{comparison}', cmpMat.name)),
+                h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,12em),1fr))' } },
                   [sel, cmpMat].map(function(mat) {
                     var tc = mat.elements.reduce(function(s, e) { return s + e.count; }, 0);
-                    return h('div', { key: mat.name, className: 'bg-white rounded-xl p-3 border border-indigo-100' },
+                    return h('div', { key: mat.name, 'data-decomposer-comparison-material': mat.name, className: 'bg-white rounded-xl p-3 border border-indigo-100' },
                       h('div', { className: 'text-center mb-2' },
                         h('span', { className: 'text-2xl' }, mat.emoji),
                         h('div', { className: 'text-sm font-bold text-slate-800' }, mat.name),
@@ -1683,8 +2005,8 @@
                         mat.elements.map(function(el) {
                           return h('div', { key: el.sym, className: 'flex items-center gap-1.5' },
                             h('div', {
-                              className: 'w-6 h-6 rounded flex items-center justify-center text-white text-[0.6875rem] font-bold',
-                              style: { background: el.color }
+                          className: 'px-1 rounded flex items-center justify-center text-white text-[0.6875rem] font-bold',
+                              style: { background: el.color, color: readableInk(el.color), minWidth: 24, minHeight: 24, flexShrink: 0 }
                             }, el.sym),
                             h('div', { className: 'flex-1 h-2 bg-slate-100 rounded-full overflow-hidden' },
                               h('div', {
@@ -1692,13 +2014,13 @@
                                 style: { width: Math.round(el.count / tc * 100) + '%', background: el.color }
                               })
                             ),
-                            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 w-5 text-right' },
+                            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 text-right' },
                               '\u00D7' + el.count
                             )
                           );
                         })
                       ),
-                      h('div', { className: 'mt-2 grid grid-cols-3 gap-1 text-center text-[0.6875rem]' },
+                      h('div', { className: 'decomposer-comparison-readouts mt-2 grid gap-1 text-center text-[0.6875rem]', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,7em),1fr))', overflowWrap: 'anywhere' } },
                         h('div', { className: 'bg-slate-50 rounded p-1' },
                           h('div', { className: 'font-bold text-slate-600' }, 'Atoms'),
                           h('div', { className: 'font-black text-slate-700' }, tc)
@@ -1765,12 +2087,12 @@
               h('p', { className: 'text-[0.6875rem] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, '\u269B\uFE0F Element Details'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 sel.elements.map(function(el) {
-                  return h('div', { key: el.sym, className: 'bg-white rounded-lg border border-indigo-100 p-2 flex items-center gap-3' },
+                  return h('div', { key: el.sym, className: 'bg-white rounded-lg border border-indigo-100 p-2 flex flex-wrap items-center gap-3' },
                     h('div', {
-                      className: 'w-12 h-14 rounded-lg flex flex-col items-center justify-center text-white shadow-sm',
-                      style: { background: el.color }
+                      className: 'rounded-lg p-1 flex flex-col items-center justify-center text-white shadow-sm',
+                      style: { background: el.color, color: readableInk(el.color), minWidth: 48, minHeight: 56, flexShrink: 0 }
                     },
-                      h('span', { className: 'text-[0.6875rem] opacity-70' }, el.num),
+                      h('span', { className: 'text-[0.6875rem]' }, el.num),
                       h('span', { className: 'text-lg font-black leading-none tracking-tight' }, el.sym),
                       h('span', { className: 'text-[0.6875rem] opacity-80' }, el.mass + ' u')
                     ),
@@ -1791,21 +2113,21 @@
                 sel.elements.map(function(el) {
                   var contribution = (el.count * parseFloat(el.mass)).toFixed(3);
                   var percent = ((el.count * parseFloat(el.mass)) / parseFloat(sel.molarMass) * 100).toFixed(1);
-                  return h('div', { key: el.sym, className: 'flex items-center gap-2 text-xs' },
-                    h('span', { className: 'font-bold text-slate-700 w-16' }, el.count + ' \u00D7 ' + el.sym),
-                    h('span', { className: 'text-slate-600 w-20' }, el.count + ' \u00D7 ' + el.mass),
-                    h('span', { className: 'font-bold text-slate-700 w-16' }, '= ' + contribution),
-                    h('div', { className: 'flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden' },
+                  return h('div', { key: el.sym, className: 'flex flex-wrap items-center gap-2 text-xs' },
+                    h('span', { className: 'font-bold text-slate-700' }, el.count + ' \u00D7 ' + el.sym),
+                    h('span', { className: 'text-slate-600' }, el.count + ' \u00D7 ' + el.mass),
+                    h('span', { className: 'font-bold text-slate-700' }, '= ' + contribution),
+                    h('div', { className: 'h-1.5 bg-slate-100 rounded-full overflow-hidden', style: { flex: '1 1 4em' } },
                       h('div', {
                         className: 'h-full rounded-full',
                         style: { width: percent + '%', background: el.color }
                       })
                     ),
-                    h('span', { className: 'text-slate-600 font-bold w-12 text-right' }, percent + '%')
+                    h('span', { className: 'text-slate-600 font-bold text-right' }, percent + '%')
                   );
                 })
               ),
-              h('div', { className: 'mt-2 pt-2 border-t border-emerald-200 flex items-center justify-between' },
+              h('div', { className: 'mt-2 pt-2 border-t border-emerald-200 flex flex-wrap gap-2 items-center justify-between' },
                 h('span', { className: 'text-xs font-bold text-emerald-700' }, 'Total Molar Mass:'),
                 h('span', { className: 'text-sm font-black text-emerald-800' }, sel.molarMass)
               )
@@ -1823,7 +2145,7 @@
             // Scene selection (when no scene active)
             !activeScene ? h('div', null,
               // Scene selection hero banner
-              h('div', { className: 'relative rounded-2xl overflow-hidden mb-5', style: { background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, var(--allo-stem-canvas, #0f172a) 100%)', padding: '24px 20px' } },
+              h('div', { 'data-decomposer-chooser-hero': true, className: 'relative rounded-2xl overflow-hidden mb-5', style: { background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #0f172a 100%)', padding: '24px 20px' } },
                 // Decorative floating molecule icons
                 h('div', { className: 'absolute inset-0 overflow-hidden pointer-events-none', style: { opacity: 0.08 } },
                   h('span', { style: { position: 'absolute', fontSize: 40, top: '10%', left: '5%' } }, '\u269B\uFE0F'),
@@ -1832,11 +2154,11 @@
                   h('span', { style: { position: 'absolute', fontSize: 34, top: '5%', right: '25%' } }, '\uD83D\uDD2C')
                 ),
                 h('div', { className: 'relative text-center' },
-                  h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2 tracking-tight' }, '\uD83E\uDDEA Chemistry Hunt'),
+                  h('h4', { className: 'text-xl font-black text-white mb-1 flex flex-wrap items-center justify-center gap-2 tracking-tight' }, '\uD83E\uDDEA Chemistry Hunt'),
                   h('p', { className: 'text-xs text-indigo-300 leading-relaxed max-w-sm mx-auto' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
-                  huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-3' },
-                    h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
-                    huntStreak >= 2 ? h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-900 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
+                  huntScore > 0 ? h('div', { className: 'flex flex-wrap items-center justify-center gap-3 mt-3' },
+                    h('span', { 'data-decomposer-hero-stat': 'score', className: 'px-3 py-1 rounded-full text-xs font-bold border', style: { background: '#fef3c7', color: '#92400e', borderColor: '#fcd34d' } }, '\u2B50 Score: ' + huntScore),
+                    huntStreak >= 2 ? h('span', { 'data-decomposer-hero-stat': 'streak', className: 'px-3 py-1 rounded-full text-xs font-bold border', style: { background: '#ffedd5', color: '#9a3412', borderColor: '#fdba74' } }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
                   ) : null
                 )
               ),
@@ -1847,7 +2169,7 @@
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
                   var pct = Math.round(sceneFound / scene.objects.length * 100);
-                  return h('button', { key: scene.id,
+                  return h('button', { key: scene.id, id: 'stem-decomposer-scene-' + scene.id, 'data-decomposer-scene': scene.id,
                     onClick: function() {
                       SOUNDS.sceneSwitch();
                       var visited = Object.assign({}, scenesVisited);
@@ -1855,6 +2177,7 @@
                       var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id]; });
                       var target = unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)] : null;
                       updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null, huntTarget: target ? target.id : null, huntWrongGuess: null });
+                      focusDecomposerElement('stem-decomposer-scene-title');
                     },
                     className: 'group relative rounded-2xl p-4 text-left border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ' +
                       (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'transition-colors border-slate-200 bg-white hover:border-indigo-600'),
@@ -1872,7 +2195,7 @@
                           scene.name,
                           complete ? h('span', { className: 'text-emerald-500 text-xs' }, '\u2705') : null
                         ),
-                        h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5 line-clamp-1' }, __alloT('stem.decomposer.' + (scene.id) + '_desc', scene.desc)),
+                        h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5' }, __alloT('stem.decomposer.' + (scene.id) + '_desc', scene.desc)),
                         h('div', { className: 'flex items-center gap-2 mt-2' },
                           h('div', { className: 'flex-1 h-2 rounded-full overflow-hidden', style: { background: complete ? '#d1fae5' : '#f1f5f9' } },
                             h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: pct + '%', background: complete ? '#10b981' : scene.accent } })
@@ -1890,7 +2213,7 @@
                 var totalObjects = SCENES.reduce(function(s, sc) { return s + sc.objects.length; }, 0);
                 var globalPct = Math.round(totalFound / totalObjects * 100);
                 return h('div', { className: 'mt-5 rounded-2xl overflow-hidden border', style: { borderColor: globalPct === 100 ? '#10b981' : '#e2e8f0' } },
-                  h('div', { className: 'px-4 py-3 flex items-center justify-between', style: { background: globalPct === 100 ? 'linear-gradient(135deg, #ecfdf5, #d1fae5)' : 'linear-gradient(135deg, #fffbeb, #fef3c7)' } },
+                  h('div', { 'data-decomposer-total-progress': true, className: 'px-4 py-3 flex items-center justify-between', style: { background: isContrast ? '#000' : globalPct === 100 ? 'linear-gradient(135deg, #ecfdf5, #d1fae5)' : 'linear-gradient(135deg, #fffbeb, #fef3c7)' } },
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-lg' }, globalPct === 100 ? '\uD83C\uDFC6' : '\uD83D\uDD0E'),
                       h('div', null,
@@ -1898,7 +2221,7 @@
                         h('p', { className: 'text-[0.6875rem]', style: { color: globalPct === 100 ? '#047857' : '#b45309' } }, totalFound + ' of ' + totalObjects + ' compounds identified')
                       )
                     ),
-                    h('span', { className: 'text-sm font-black', style: { color: globalPct === 100 ? '#059669' : '#d97706' } }, globalPct + '%')
+                    h('span', { className: 'text-sm font-black', style: { color: globalPct === 100 ? '#065f46' : '#92400e' } }, globalPct + '%')
                   ),
                   h('div', { className: 'h-1.5', style: { background: '#f1f5f9' } },
                     h('div', { className: 'h-full transition-all duration-700', style: { width: globalPct + '%', background: globalPct === 100 ? '#10b981' : 'linear-gradient(90deg, #f59e0b, #d97706)' } })
@@ -1938,22 +2261,36 @@
               }
               var linkedMat = selObj ? MATERIALS.find(function(m) { return m.name === selObj.material; }) : null;
 
+              var sceneStageNode = null;
+              var fullscreenGuessFeedback = wrongObj && wrongMat && !foundObjects[huntWrongGuess] && targetMat
+                ? __alloT('stem.decomposer.hunt_incorrect_announcement', 'Not quite. {object} contains {formula} ({material}). Keep looking for {target}.')
+                  .replace('{object}', wrongObj.name).replace('{formula}', wrongMat.formula).replace('{material}', wrongMat.name).replace('{target}', targetMat.formula + ' (' + targetMat.name + ')')
+                : '';
+
               // Pick next hunt target helper
               function pickNextTarget() {
                 var unfound = scene.objects.filter(function(o) { return !foundObjects[o.id] && o.id !== (targetObj ? targetObj.id : ''); });
                 return unfound.length > 0 ? unfound[Math.floor(Math.random() * unfound.length)].id : null;
               }
+              function dismissSceneCard(key, objectId) {
+                upd(key, null);
+                requestAnimationFrame(function() {
+                  var objectButton = document.getElementById('stem-decomposer-object-' + scene.id + '-' + objectId);
+                  if (objectButton) objectButton.focus();
+                });
+              }
 
               return h('div', null,
                 // Scene header
-                h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_exit_decomposition_scene', 'Exit decomposition scene'), onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                h('div', { className: 'flex flex-wrap items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
+                  h('button', { 'data-decomposer-scene-exit': true, 'aria-label': __alloT('stem.decomposer.a11y_exit_decomposition_scene', 'Exit decomposition scene'), onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); focusDecomposerElement('stem-decomposer-scene-' + scene.id); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
                   }, h('span', { className: 'text-2xl' }, scene.icon)),
-                  h('div', { className: 'flex-1' },
-                    h('h4', { className: 'font-bold text-slate-800 text-base' }, scene.name),
+                  h('div', { style: { flex: '1 1 8em', minWidth: 0 } },
+                    h('h4', { id: 'stem-decomposer-scene-title', tabIndex: -1, 'data-decomposer-focus': true,
+                      'aria-describedby': 'stem-decomposer-hunt-status', className: 'font-bold text-slate-800 text-base' }, scene.name),
                     h('div', { className: 'flex items-center gap-1.5 mt-0.5' },
                       h('div', { className: 'w-16 h-1.5 rounded-full overflow-hidden', style: { background: scene.accent + '20' } },
                         h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: Math.round(sceneFoundCount / scene.objects.length * 100) + '%', background: scene.accent } })
@@ -1961,7 +2298,7 @@
                       h('span', { className: 'text-[0.6875rem] font-bold', style: { color: scene.accent } }, sceneFoundCount + '/' + scene.objects.length)
                     )
                   ),
-                  h('div', { className: 'flex items-center gap-2' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
                     huntScore > 0 ? h('span', { className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold', style: { background: '#fef3c7', color: '#92400e' } }, '\u2B50 ' + huntScore) : null,
                     huntStreak >= 2 ? h('span', { className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold', style: { background: '#ffedd5', color: '#c2410c' } }, '\uD83D\uDD25 ' + huntStreak) : null,
                     allFoundInScene ? h('span', { className: 'px-2 py-1 rounded-full text-[0.6875rem] font-bold', style: { background: '#d1fae5', color: '#065f46' } }, '\u2705 Complete!') : null
@@ -1970,14 +2307,14 @@
 
                 // Challenge prompt — "Find the compound!"
                 targetObj && targetMat && !allFoundInScene ? h('div', {
-                  className: 'relative rounded-2xl border-2 p-4 mb-4 text-center overflow-hidden',
+                  className: 'decomposer-scene-card relative rounded-2xl border-2 p-4 mb-4 text-center overflow-hidden',
                   style: { borderColor: '#818cf8', background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)' }
                 },
                   // Decorative corner atoms
                   h('div', { className: 'absolute top-1 right-2 text-lg opacity-10 pointer-events-none' }, '\u269B\uFE0F'),
                   h('div', { className: 'absolute bottom-1 left-2 text-sm opacity-10 pointer-events-none' }, '\uD83E\uDDEA'),
                   h('p', { className: 'text-[0.6875rem] font-bold text-indigo-400 uppercase tracking-[0.15em] mb-2' }, '\uD83D\uDD0E Chemistry Challenge'),
-                  h('div', { className: 'inline-flex items-center gap-3 px-5 py-2 rounded-xl', style: { background: 'white', boxShadow: '0 2px 12px rgba(99,102,241,0.15)' } },
+                  h('div', { className: 'inline-flex flex-wrap items-center justify-center gap-3 px-5 py-2 rounded-xl', style: { background: 'white', boxShadow: '0 2px 12px rgba(99,102,241,0.15)' } },
                     h('span', { className: 'text-2xl font-mono font-black tracking-tight', style: { color: '#312e81' } }, targetMat.formula),
                     h('div', { className: 'w-px h-6', style: { background: '#c7d2fe' } }),
                     h('span', { className: 'text-sm font-bold text-indigo-700' }, targetMat.name)
@@ -1988,7 +2325,7 @@
 
                 // Scene complete message
                 allFoundInScene ? h('div', {
-                  className: 'relative rounded-2xl border-2 p-5 mb-4 text-center overflow-hidden',
+                  className: 'decomposer-scene-card relative rounded-2xl border-2 p-5 mb-4 text-center overflow-hidden',
                   style: { borderColor: '#34d399', background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #ccfbf1 100%)' }
                 },
                   h('div', { className: 'absolute inset-0 pointer-events-none overflow-hidden' },
@@ -2005,7 +2342,7 @@
                 ) : null,
 
                 // Wrong guess feedback
-                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'rounded-2xl border-2 border-red-200 p-3 mb-4 overflow-hidden', style: { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)' } },
+                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'decomposer-scene-card rounded-2xl border-2 border-red-200 p-3 mb-4 overflow-hidden', style: { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)' } },
                   h('div', { className: 'flex items-center gap-3' },
                     h('div', { 
                       className: 'flex items-center justify-center shrink-0 rounded-xl',
@@ -2015,7 +2352,10 @@
                       h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
                       h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
                     ),
-                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors active:scale-[0.97]' }, h(X, { size: 14, className: 'text-red-400' }))
+                    h('button', { type: 'button', 'data-decomposer-dismiss': 'feedback',
+                      'aria-label': __alloT('stem.decomposer.a11y_dismiss_guess_feedback', 'Dismiss incorrect guess feedback'),
+                      onClick: function() { dismissSceneCard('huntWrongGuess', wrongObj.id); },
+                      className: 'decomposer-scene-dismiss hover:bg-red-100 transition-colors active:scale-[0.97]' }, h(X, { size: 14, 'aria-hidden': 'true' }))
                   ),
                   targetMat ? h('p', { className: 'text-[0.6875rem] text-red-500 mt-2 font-medium pl-[52px]' }, '\uD83D\uDCA1 Keep looking for ' + targetMat.formula + ' (' + targetMat.name + ')') : null
                 ) : null,
@@ -2024,7 +2364,17 @@
                 // The scene visual is the tool's main picture: the canvas plus the
                 // labelled organisms layered over it. Fullscreen takes the whole
                 // wrapper so those labels travel with the drawing.
-                h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                h('div', { 'data-allo-fs-stage': 'true', ref: function (node) {
+                    if (node) {
+                      sceneStageNode = node;
+                      bindDecomposerSceneFullscreen(node, __alloT('stem.decomposer.fullscreen_scene', '{scene} fullscreen decomposition scene').replace('{scene}', scene.name), fullscreenGuessFeedback);
+                    } else if (sceneStageNode) {
+                      var detachedStage = sceneStageNode;
+                      Promise.resolve().then(function() {
+                        if (!detachedStage.isConnected && detachedStage.__decomposerFsGuard) detachedStage.__decomposerFsGuard.release();
+                      });
+                    }
+                  },
                   className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
                   h('button', {
                     type: 'button',
@@ -2035,6 +2385,16 @@
                     'data-fs-in': __alloT('stem.decomposer.exit_fullscreen', 'Exit fullscreen decomposer scene (Escape)'),
                     style: { position: 'absolute', top: 8, right: 8, zIndex: 25, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + scene.accent, color: '#f8fafc', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
                   }, h('span', { 'aria-hidden': 'true' }, '⛶')),
+                h('p', { id: 'stem-decomposer-hunt-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' },
+                  allFoundInScene
+                    ? __alloT('stem.decomposer.hunt_scene_complete_status', '{scene} complete. All {count} compounds have been identified.')
+                      .replace('{scene}', scene.name).replace('{count}', String(scene.objects.length))
+                    : targetMat
+                      ? __alloT('stem.decomposer.hunt_next_target_status', 'Find {formula} ({material}) in {scene}.')
+                        .replace('{formula}', targetMat.formula).replace('{material}', targetMat.name).replace('{scene}', scene.name)
+                      : __alloT('stem.decomposer.hunt_no_target_status', 'Explore the identified objects in {scene}.').replace('{scene}', scene.name)),
+                  h('p', { id: 'stem-decomposer-fullscreen-feedback', 'data-decomposer-fullscreen-feedback': true, hidden: true, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }),
+
                   // Canvas background
                   h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_visualization', 'Decomposer visualization'), 
                     ref: function(canvas) {
@@ -2275,12 +2635,18 @@
                   }),
 
                   // All objects ALWAYS visible as labeled emoji buttons
-                  scene.objects.map(function(obj) {
+                  h('div', { className: 'decomposer-scene-objects', role: 'group',
+                    'aria-label': __alloT('stem.decomposer.a11y_scene_objects', 'Scene objects') }, scene.objects.map(function(obj) {
                     var isFound = !!foundObjects[obj.id];
                     var isTarget = huntTarget === obj.id;
                     var isWrong = huntWrongGuess === obj.id;
                     var isSelected = selectedSceneObj === obj.id;
-                    return h('button', { key: obj.id,
+                    return h('button', { key: obj.id, type: 'button',
+                      id: 'stem-decomposer-object-' + scene.id + '-' + obj.id,
+                      'data-decomposer-object': obj.id,
+                      'data-decomposer-found': String(isFound),
+                      'aria-expanded': isFound ? isSelected : undefined,
+                      'aria-controls': isFound && isSelected ? 'stem-decomposer-object-details' : undefined,
                       onClick: function() {
                         if (isFound) {
                           SOUNDS.elementClick();
@@ -2321,6 +2687,17 @@
                         } else {
                           SOUNDS.quizWrong();
                           updMulti({ huntWrongGuess: obj.id, huntStreak: 0 });
+                          var guessedMaterial = MATERIALS.find(function(m) { return m.name === obj.material; });
+                          if (guessedMaterial && targetMat) {
+                            var wrongAnnouncement = __alloT('stem.decomposer.hunt_incorrect_announcement', 'Not quite. {object} contains {formula} ({material}). Keep looking for {target}.')
+                              .replace('{object}', obj.name).replace('{formula}', guessedMaterial.formula)
+                              .replace('{material}', guessedMaterial.name).replace('{target}', targetMat.formula + ' (' + targetMat.name + ')');
+                            if (sceneStageNode && sceneStageNode.__alloFsOn && sceneStageNode.__decomposerFsGuard) {
+                              sceneStageNode.__decomposerFsGuard.setFeedback(wrongAnnouncement, true);
+                            } else if (typeof announceToSR === 'function') {
+                              announceToSR(wrongAnnouncement);
+                            }
+                          }
                         }
                       },
                       className: 'absolute flex flex-col items-center transition-all duration-300',
@@ -2330,12 +2707,15 @@
                         cursor: 'pointer', zIndex: isSelected ? 10 : (isTarget ? 5 : 2),
                         filter: isWrong ? 'saturate(0.3) brightness(0.9)' : 'none'
                       },
-                      'aria-label': isFound ? obj.name + ' - identified' : obj.label
+                      'aria-label': isFound
+                        ? __alloT('stem.decomposer.hunt_identified_object', '{label} ({object}), identified')
+                          .replace('{label}', obj.label || obj.name).replace('{object}', obj.name)
+                        : (obj.label || obj.name)
                     },
-                      // Pulsing ring for current target
+                      // Static emphasis for the current target
                       isTarget && !isFound ? h('div', {
                         className: 'absolute inset-0 rounded-2xl',
-                        style: { width: 52, height: 52, left: -4, top: -4, border: '2px solid ' + scene.accent, borderRadius: 16, opacity: 0.4, animation: 'pulse 2s ease-in-out infinite' }
+                        style: { width: 52, height: 52, left: -4, top: -4, border: '2px solid ' + scene.accent, borderRadius: 16, opacity: 0.4 }
                       }) : null,
                       h('div', {
                         className: 'flex items-center justify-center transition-all duration-300',
@@ -2348,17 +2728,17 @@
                         }
                       }, h('span', { style: { fontSize: '24px' } }, obj.emoji)),
                       h('span', {
-                        className: 'text-[0.6875rem] font-bold mt-1 px-1.5 py-0.5 rounded-md',
+                        className: 'decomposer-scene-object-label text-[0.6875rem] font-bold mt-1 px-1.5 py-0.5 rounded-md',
                         style: {
                           background: isFound ? 'rgba(34,197,94,0.18)' : (isTarget && !isFound ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)'),
                           color: isFound ? '#15803d' : '#475569',
-                          maxWidth: '76px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          maxWidth: '76px', overflow: 'visible', textOverflow: 'clip', whiteSpace: 'normal', overflowWrap: 'anywhere',
                           boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                           border: isFound ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(0,0,0,0.06)'
                         }
                       }, isFound ? '\u2705 ' + (obj.label || obj.name) : (obj.label || obj.name))
                     );
-                  })
+                  }))
                 ),
 
                 // Progress bar
@@ -2383,23 +2763,28 @@
                 ),
 
                 // Detail card for selected found object
-                selObj && linkedMat && foundObjects[selObj.id] ? h('div', { className: 'bg-white rounded-xl border-2 p-4 mb-3', style: { borderColor: scene.accent } },
+                selObj && linkedMat && foundObjects[selObj.id] ? h('section', { id: 'stem-decomposer-object-details',
+                  'aria-labelledby': 'stem-decomposer-object-details-title',
+                  className: 'decomposer-scene-card bg-white rounded-xl border-2 p-4 mb-3', style: { borderColor: scene.accent } },
                   h('div', { className: 'flex items-start gap-3 mb-3' },
                     h('span', { className: 'text-3xl' }, selObj.emoji),
                     h('div', { className: 'flex-1' },
-                      h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
+                      h('h4', { id: 'stem-decomposer-object-details-title', className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[0.6875rem] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'transition-colors p-1 hover:bg-slate-100 rounded active:scale-[0.97]' }, h(X, { size: 14, className: 'text-slate-600' }))
+                    h('button', { type: 'button', 'data-decomposer-dismiss': 'details',
+                      'aria-label': __alloT('stem.decomposer.a11y_close_object_details', 'Close object details'),
+                      onClick: function() { dismissSceneCard('selectedSceneObj', selObj.id); },
+                      className: 'decomposer-scene-dismiss transition-colors hover:bg-slate-100 active:scale-[0.97]' }, h(X, { size: 14, 'aria-hidden': 'true' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
-                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
                       h('span', { className: 'text-xl' }, linkedMat.emoji),
                       h('span', { className: 'font-bold text-slate-800 text-sm' }, linkedMat.name),
                       h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-xs font-mono font-bold text-slate-700 border border-slate-400' }, linkedMat.formula)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mb-2' }, linkedMat.desc),
-                    h('div', { className: 'flex gap-3 text-[0.6875rem] font-bold' },
+                    h('div', { className: 'flex flex-wrap gap-3 text-[0.6875rem] font-bold' },
                       h('span', { className: 'text-cyan-600' }, '\uD83D\uDD17 ' + linkedMat.bondType),
                       h('span', { className: 'text-indigo-600' }, '\uD83D\uDCCA ' + linkedMat.state),
                       h('span', { className: 'text-emerald-600' }, '\u2696 ' + linkedMat.molarMass)
@@ -2407,15 +2792,15 @@
                     h('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-amber-200' },
                       linkedMat.elements.map(function(el) {
                         return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-400' },
-                          h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[0.6875rem] font-bold', style: { background: el.color } }, el.sym),
+                          h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[0.6875rem] font-bold', style: { background: el.color, color: readableInk(el.color) } }, el.sym),
                           h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, el.name),
                           el.count > 1 ? h('span', { className: 'text-[0.6875rem] text-amber-800 font-bold' }, '\u00D7' + el.count) : null
                         );
                       })
                     ),
-                    h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_explore', 'Explore'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
-                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_visualize', 'Visualize'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
+                    h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+                      h('button', { 'data-decomposer-detail-action': 'explore', 'aria-label': __alloT('stem.decomposer.a11y_explore', 'Explore'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); focusDecomposerElement('stem-decomposer-panel-explore'); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'data-decomposer-detail-action': 'visualize', 'aria-label': __alloT('stem.decomposer.a11y_visualize', 'Visualize'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); focusDecomposerElement('stem-decomposer-panel-visualize'); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
                       h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'), onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
                     )
                   )
@@ -2428,6 +2813,8 @@
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
                       return h('button', { key: obj.id,
+                        'aria-expanded': selectedSceneObj === obj.id,
+                        'aria-controls': selectedSceneObj === obj.id ? 'stem-decomposer-object-details' : undefined,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold border transition-all ' +
                           (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'transition-colors bg-white border-slate-200 text-slate-600 hover:border-amber-600')
@@ -2452,31 +2839,32 @@
             // Material picker — two slots
             h('div', { className: 'grid grid-cols-2 gap-4 mb-4' },
               // Slot A
-              h('div', { className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, 'Material A'),
+              h('div', { id: 'stem-decomposer-reactant-slot-a', role: 'group', 'aria-labelledby': 'stem-decomposer-slot-a', className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
+                h('p', { id: 'stem-decomposer-slot-a', className: 'text-[0.6875rem] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, 'Material A'),
                 reactantA ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
-                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_remove', 'Remove'), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'data-decomposer-remove': 'a', 'aria-label': __alloT('stem.decomposer.remove_material_a', 'Remove Material A: {material}').replace('{material}', reactantA), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantA; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
-              h('div', { className: 'bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200 p-3' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-rose-600 uppercase tracking-wider mb-2' }, 'Material B'),
+              h('div', { id: 'stem-decomposer-reactant-slot-b', role: 'group', 'aria-labelledby': 'stem-decomposer-slot-b', className: 'bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200 p-3' },
+                h('p', { id: 'stem-decomposer-slot-b', className: 'text-[0.6875rem] font-bold text-rose-700 uppercase tracking-wider mb-2' }, 'Material B'),
                 reactantB ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
-                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_remove', 'Remove'), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
               )
             ),
 
             // Material palette
             h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
-              MATERIALS.map(function(m) {
+              MATERIALS.map(function(m, materialIndex) {
                 var isA = reactantA === m.name;
                 var isB = reactantB === m.name;
-                return h('button', { key: m.name,
+                return h('button', { key: m.name, id: 'stem-decomposer-reactant-' + materialIndex,
+                  'data-decomposer-reactant': m.name, 'aria-pressed': isA || isB,
                   onClick: function() {
                     SOUNDS.selectMaterial();
                     if (!reactantA) { updMulti({ reactantA: m.name, activeReaction: null }); }
@@ -2502,7 +2890,7 @@
 
               return h('div', null,
                 // Mix button
-                !activeReaction ? h('button', { 'aria-label': __alloT('stem.decomposer.a11y_mix', 'Mix'),
+                !activeReaction ? h('button', { id: 'stem-decomposer-reaction-mix', type: 'button',
                   onClick: function() {
                     SOUNDS.decompose();
                     if (reaction) {
@@ -2516,6 +2904,7 @@
                     } else {
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
                     }
+                    focusDecomposerElement('stem-decomposer-reaction-result');
                   },
                   className: 'w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-600 shadow-md transition-all mb-3'
                 }, '\uD83E\uDDEA Mix ' + reactantA + ' + ' + reactantB + '!') : null,
@@ -2525,7 +2914,8 @@
                   h('div', { className: 'flex items-center gap-3 mb-3' },
                     h('span', { className: 'text-3xl' }, activeReaction.emoji),
                     h('div', null,
-                      h('h4', { className: 'font-bold text-slate-800 text-lg tracking-tight' }, activeReaction.name),
+                      h('h4', { id: 'stem-decomposer-reaction-result', tabIndex: -1, 'data-decomposer-focus': 'true',
+                        'aria-describedby': 'stem-decomposer-reaction-description', className: 'font-bold text-slate-800 text-lg tracking-tight' }, activeReaction.name),
                       h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, activeReaction.type)
                     )
                   ),
@@ -2535,7 +2925,7 @@
                     h('p', { className: 'text-sm font-mono font-bold text-slate-800' }, activeReaction.equation)
                   ),
                   // Description
-                  h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-3' }, activeReaction.desc),
+                  h('p', { id: 'stem-decomposer-reaction-description', className: 'text-xs text-slate-700 leading-relaxed mb-3' }, activeReaction.desc),
                   // Observable
                   activeReaction.observable ? h('div', { className: 'flex items-center gap-2 bg-sky-50 rounded-lg p-2 border border-sky-200 mb-3' },
                     h('span', { className: 'text-[0.6875rem] font-bold text-sky-600' }, '\uD83D\uDC41\uFE0F What you\u2019d see:'),
@@ -2548,7 +2938,7 @@
                       className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 active:scale-[0.97]'
                     }, '\uD83D\uDD0A Listen'),
                     h('button', { 'aria-label': __alloT('stem.decomposer.a11y_try_another_combo', 'Try Another Combo'),
-                      onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
+                      onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-0'); },
                       className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
                   )
@@ -2586,39 +2976,42 @@
             h('div', { className: 'bg-gradient-to-r from-blue-50 via-yellow-50 to-red-50 rounded-xl border border-slate-400 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('span', { className: 'text-[0.6875rem] font-bold text-blue-600' }, '\u2744\uFE0F Cold'),
-                h('span', { className: 'text-xs font-bold text-slate-700' }, ((typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25) + '\u00B0C'),
+                h('span', { className: 'text-xs font-bold text-slate-700' }, simulationTemperature + '\u00B0C'),
                 h('span', { className: 'text-[0.6875rem] font-bold text-red-600' }, '\uD83D\uDD25 Hot')
               ),
               h('input', {
-                type: 'range', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_slider', 'Decomposer slider'), min: -200, max: 500, step: 5,
-                value: (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25,
+                type: 'range', 'aria-label': __alloT('stem.decomposer.temperature', 'Temperature'), min: -200, max: 500, step: 5,
+                'aria-valuetext': __alloT('stem.decomposer.temperature_value', '{value} degrees Celsius').replace('{value}', String(simulationTemperature)),
+                'aria-describedby': 'stem-decomposer-state-description', disabled: !phaseGeometry,
+                value: simulationTemperature,
                 onChange: function(e) { upd('_simTemp', parseInt(e.target.value, 10)); },
-                style: { width: '100%', accentColor: (d._simTemp || 25) < 0 ? '#3b82f6' : (d._simTemp || 25) > 200 ? '#ef4444' : '#f59e0b' }
+                style: { width: '100%', minHeight: 44, accentColor: simulationTemperature < 0 ? '#3b82f6' : simulationTemperature > 200 ? '#ef4444' : '#f59e0b' }
               }),
               // State label
               (function() {
-                var temp = (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25;
-                var geo = GEOMETRY[sel.name];
-                var mp = geo ? geo.mp : 0;
-                var bp = geo ? geo.bp : 100;
-                var state = 'Solid';
-                if (bp !== null && temp >= bp) state = 'Gas';
-                else if (mp !== null && temp >= mp) state = 'Liquid';
-                var stateColors = { Solid: '#3b82f6', Liquid: '#06b6d4', Gas: '#ef4444' };
-                var stateEmoji = { Solid: '\u2744\uFE0F', Liquid: '\uD83D\uDCA7', Gas: '\uD83D\uDCA8' };
-                return h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
-                  h('span', { className: 'text-2xl' }, stateEmoji[state]),
-                  h('span', { className: 'text-sm font-black', style: { color: stateColors[state] } }, sel.name + ' is a ' + state),
-                  geo && geo.shape ? h('span', { className: 'text-[0.6875rem] text-slate-600 font-bold' }, '\u00B7 ' + geo.shape) : null
+                var stateColors = { solid: '#1d4ed8', liquid: '#0e7490', gas: '#b91c1c' };
+                var stateEmoji = { solid: '\u2744\uFE0F', liquid: '\uD83D\uDCA7', gas: '\uD83D\uDCA8' };
+                return h('div', { id: 'stem-decomposer-state-summary', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  className: 'flex flex-wrap items-center justify-center gap-3 mt-2' },
+                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, modeledPhase ? stateEmoji[modeledPhase] : '\u2139\uFE0F'),
+                  h('span', { className: 'text-sm font-black', style: { color: stateColors[modeledPhase] || '#475569' } },
+                    modeledPhase ? __alloT('stem.decomposer.phase_result', '{material}: {state}.').replace('{material}', sel.name).replace('{state}', phaseNames[modeledPhase])
+                      : __alloT('stem.decomposer.phase_unavailable', '{material}: phase prediction unavailable.').replace('{material}', sel.name))
                 );
               })()
             ),
 
-            // Particle canvas
-            h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
-              h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_interactive_visualization', 'Decomposer interactive visualization'),
-                ref: function(canvas) {
+            h('p', { id: 'stem-decomposer-state-description', className: 'bg-slate-50 rounded-xl border border-slate-300 p-3 mb-3 text-xs text-slate-700' }, phaseDescription),
+
+            // The drawing and its text alternative share the same phase decision.
+            modeledPhase && h('div', { className: 'rounded-xl border-2 border-slate-200 overflow-hidden mb-3' },
+              h('canvas', { role: 'img', 'data-decomposer-state-canvas': true,
+                'aria-label': __alloT('stem.decomposer.state_particle_model', 'Particle model of {material}').replace('{material}', sel.name),
+                'aria-describedby': 'stem-decomposer-state-summary stem-decomposer-state-description',
+                ref: function stateCanvasRef(canvas) {
                   if (!canvas) return;
+                  watchDecomposerCanvasSize(canvas, 'States', stateCanvasRef);
+                  canvas.dataset.motionPaused = motionPaused ? 'true' : 'false';
                   var c2 = canvas.getContext('2d');
                   var dpr = window.devicePixelRatio || 1;
                   var cw = canvas.offsetWidth || 500;
@@ -2626,28 +3019,24 @@
                   canvas.width = cw * dpr; canvas.height = ch2 * dpr;
                   canvas.style.height = ch2 + 'px'; c2.scale(dpr, dpr);
 
-                  var temp = (typeof d._simTemp === 'number' && isFinite(d._simTemp)) ? d._simTemp : 25;
-                  var geo = GEOMETRY[sel.name];
-                  var mp = geo ? geo.mp : 0;
-                  var bp = geo ? geo.bp : 100;
-                  var state = 'solid';
-                  if (bp !== null && temp >= bp) state = 'gas';
-                  else if (mp !== null && temp >= mp) state = 'liquid';
+                  var state = modeledPhase;
 
                   // Kill previous animation
                   if (canvas._stateAnimId) cancelAnimationFrame(canvas._stateAnimId);
 
                   // Init particles if needed or state changed
-                  if (!canvas._particles || canvas._prevState !== state) {
+                  if (!canvas._particles || canvas._prevState !== state || canvas._prevMaterial !== sel.name) {
                     canvas._prevState = state;
+                    canvas._prevMaterial = sel.name;
+                    canvas._prevStateWidth = cw;
                     canvas._particles = [];
                     var cols = 6; var rows = 5;
                     var elColor = sel.elements[0] ? sel.elements[0].color : '#60a5fa';
                     for (var pr = 0; pr < rows; pr++) {
                       for (var pc = 0; pc < cols; pc++) {
                         canvas._particles.push({
-                          x: cw * 0.25 + (pc / (cols - 1)) * cw * 0.5,
-                          y: ch2 * 0.2 + (pr / (rows - 1)) * ch2 * 0.6,
+                          x: state === 'solid' ? cw * 0.25 + (pc / (cols - 1)) * cw * 0.5 : cw * (0.16 + Math.random() * 0.68),
+                          y: state === 'solid' ? ch2 * 0.2 + (pr / (rows - 1)) * ch2 * 0.6 : state === 'liquid' ? ch2 * (0.55 + Math.random() * 0.28) : ch2 * (0.14 + Math.random() * 0.72),
                           vx: 0, vy: 0,
                           homeX: cw * 0.25 + (pc / (cols - 1)) * cw * 0.5,
                           homeY: ch2 * 0.2 + (pr / (rows - 1)) * ch2 * 0.6,
@@ -2655,13 +3044,28 @@
                         });
                       }
                     }
+                  } else if (canvas._prevStateWidth && canvas._prevStateWidth !== cw) {
+                    var widthScale = cw / canvas._prevStateWidth;
+                    canvas._particles.forEach(function(particle) {
+                      particle.x *= widthScale;
+                      particle.homeX *= widthScale;
+                      particle.vx *= widthScale;
+                    });
                   }
+                  canvas._prevStateWidth = cw;
                   var parts = canvas._particles;
                   var tick = 0;
+                  var firstStatePaint = true;
 
                   function drawState() {
-                    if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); return; } // stop on tab-switch/unmount (was leaking)
-                    tick++;
+                    if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); releaseDecomposerCanvasSize(canvas, 'States'); return; }
+                    var pausedMotion = canvas.dataset.motionPaused === 'true';
+                    if (pausedMotion && !firstStatePaint) {
+                      canvas._stateAnimId = requestAnimationFrame(drawState);
+                      return;
+                    }
+                    firstStatePaint = false;
+                    if (!pausedMotion) tick++;
                     c2.clearRect(0, 0, cw, ch2);
 
                     // Background
@@ -2679,6 +3083,7 @@
 
                     for (var i = 0; i < parts.length; i++) {
                       var pp = parts[i];
+                      if (!pausedMotion) {
                       if (state === 'solid') {
                         // Vibrate in place
                         pp.vx = (Math.random() - 0.5) * energy;
@@ -2703,6 +3108,7 @@
                         pp.x += pp.vx * energy;
                         pp.y += pp.vy * energy;
                       }
+                      }
 
                       // Wall bouncing
                       if (pp.x < wallL + pp.r) { pp.x = wallL + pp.r; pp.vx = Math.abs(pp.vx); }
@@ -2717,6 +3123,7 @@
                       pGrad.addColorStop(1, pp.color);
                       c2.fillStyle = pGrad;
                       c2.beginPath(); c2.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2); c2.fill();
+                      c2.strokeStyle = '#1e3a8a'; c2.lineWidth = 1.5; c2.stroke();
                       c2.fillStyle = 'rgba(255,255,255,0.3)';
                       c2.beginPath(); c2.arc(pp.x - 2, pp.y - 2, pp.r * 0.35, 0, Math.PI * 2); c2.fill();
                       c2.restore();
@@ -2741,7 +3148,7 @@
 
                     // State label in corner
                     var stLabels = { solid: 'SOLID \u2014 Particles vibrate in fixed lattice', liquid: 'LIQUID \u2014 Particles slide past each other', gas: 'GAS \u2014 Particles fly freely, fill container' };
-                    c2.fillStyle = '#94a3b8'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
+                    c2.fillStyle = '#475569'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
                     c2.fillText(stLabels[state] || '', cw * 0.12, ch2 * 0.97);
 
                     canvas._stateAnimId = requestAnimationFrame(drawState);
@@ -2752,20 +3159,25 @@
               })
             ),
 
+            modeledPhase && h('div', { className: 'mb-3' }, renderMotionControl()),
+
             // Phase transition info
             (function() {
               var geo = GEOMETRY[sel.name];
               if (!geo) return null;
-              return h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+              return h('div', { 'data-decomposer-phase-facts': true, className: 'grid gap-2 mb-3',
+                style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,9em),1fr))', overflowWrap: 'anywhere' } },
                 h('div', { className: 'bg-blue-50 rounded-xl border border-blue-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\u2744\uFE0F'),
-                  h('div', { className: 'text-xs font-bold text-blue-700' }, 'Melting Point'),
+                  h('div', { className: 'text-xs font-bold text-blue-700' }, geo.bp === null
+                    ? __alloT('stem.decomposer.phase_model_boundary', 'Phase model limit') : 'Melting Point'),
                   h('div', { className: 'text-sm font-black text-blue-900' }, geo.mp !== null ? geo.mp + '\u00B0C' : 'N/A')
                 ),
                 h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDCA7'),
                   h('div', { className: 'text-xs font-bold text-cyan-700' }, 'Liquid Range'),
-                  h('div', { className: 'text-sm font-black text-cyan-900' }, (geo.mp !== null && geo.bp !== null) ? geo.mp + '\u2013' + geo.bp + '\u00B0C' : 'N/A')
+                  h('div', { className: 'text-sm font-black text-cyan-900' }, (geo.mp !== null && geo.bp !== null)
+                    ? (geo.mp === geo.bp ? __alloT('stem.decomposer.phase_no_liquid_range', 'No liquid phase in this model.') : geo.mp + '\u2013' + geo.bp + '\u00B0C') : 'N/A')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
                   h('div', { className: 'text-lg' }, '\uD83D\uDD25'),
@@ -2796,16 +3208,19 @@
 
             /* Canvas */
             h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
-              h('canvas', { role: 'img',                 ref: canvasRef,
+              h('canvas', { role: 'img', 'data-decomposer-atom-canvas': true, ref: canvasRef,
                 className: 'w-full cursor-pointer',
                 style: { height: '280px', display: 'block' },
-                'aria-label': 'Molecular visualization of ' + sel.name
+                'aria-label': __alloT('stem.decomposer.atom_particle_model', 'Molecular visualization of {material}').replace('{material}', sel.name),
+                'aria-describedby': 'stem-decomposer-atom-description'
               })
             ),
 
+            h('p', { id: 'stem-decomposer-atom-description', className: 'bg-slate-50 rounded-xl border border-slate-300 p-3 mb-3 text-xs text-slate-700' }, atomDescription),
+
             /* Canvas controls */
             h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
+              h('button', { type: 'button', 'data-decomposer-transform': 'true', 'aria-pressed': decomposed,
                 onClick: function() {
                   var next = !decomposed;
                   if (next) {
@@ -2824,10 +3239,12 @@
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
               h('button', { 'aria-label': __alloT('stem.decomposer.a11y_describe', 'Describe'),
-                onClick: function() { speakText(sel.name + ' has the formula ' + sel.formula + '. ' + sel.desc); },
+                onClick: function() { speakText(atomDescription); },
                 className: 'transition-colors px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 active:scale-[0.97]'
               }, '\uD83D\uDD0A Describe')
             ),
+
+            h('div', { className: 'mb-3' }, renderMotionControl()),
 
             /* Canvas legend */
             h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3 mb-3' },
@@ -2837,7 +3254,7 @@
                   return h('div', { key: el.sym, className: 'flex items-center gap-1.5' },
                     h('div', {
                       className: 'w-5 h-5 rounded-full',
-                      style: { background: el.color }
+                      style: { background: el.color, color: readableInk(el.color) }
                     }),
                     h('span', { className: 'text-xs font-bold text-slate-700' },
                       el.sym + ' \u2014 ' + el.name
@@ -2857,7 +3274,7 @@
             ),
 
             /* Molecule stats card */
-            h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
+            h('div', { className: 'decomposer-molecule-readouts grid gap-2 mb-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))' } },
               h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800 tracking-tight' }, totalAtoms),
                 h('div', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Total Atoms')
@@ -2884,14 +3301,14 @@
           tab === 'quiz' && h('div', null,
 
             /* Quiz header / stats */
-            h('div', { className: 'flex items-center gap-3 mb-3' },
-              h('div', { className: 'flex-1' },
+            h('div', { className: 'flex flex-wrap items-center gap-3 mb-3' },
+              h('div', { className: 'flex-1 min-w-0', style: { flexBasis: '12em' } },
                 h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDDE0 Chemistry Quiz'),
                 h('p', { className: 'text-xs text-slate-600' + onHostInk }, 'Test your knowledge of chemical formulas, elements, and bonds')
               ),
               quizScore > 0 && h('div', { className: 'text-right' },
-                h('div', { className: 'text-sm font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' correct'),
-                h('div', { className: 'text-xs text-slate-600' },
+                h('div', { className: 'text-sm font-bold' + (onHostInk || ' text-emerald-600') }, '\u2B50 ' + quizScore + ' correct'),
+                h('div', { className: 'text-xs text-slate-600' + onHostInk },
                   '\uD83D\uDD25 Streak: ' + quizStreak + ' | Best: ' + bestStreak
                 )
               )
@@ -2901,9 +3318,10 @@
             (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
               h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
               h('p', { className: 'text-sm text-slate-600 mb-4' + onHostInk }, 'Ready to test your chemistry knowledge?'),
-              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_start_quiz', 'Start Quiz'),
+              h('button', { id: 'stem-decomposer-quiz-start', 'aria-label': __alloT('stem.decomposer.a11y_start_quiz', 'Start Quiz'),
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
+                  focusDecomposerElement('stem-decomposer-quiz-question');
                 },
                 className: 'px-6 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold text-sm rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md'
               }, '\uD83D\uDE80 Start Quiz')
@@ -2913,10 +3331,11 @@
             quizMode && quizQ && h('div', { className: 'bg-indigo-50 rounded-xl p-5 border-2 border-indigo-200 mb-3' },
 
               /* Question text */
-              h('p', { className: 'text-sm font-bold text-indigo-800 mb-4' }, quizQ.text),
+              h('h5', { id: 'stem-decomposer-quiz-question', tabIndex: -1, 'data-decomposer-focus': 'true',
+                className: 'text-sm font-bold text-indigo-800 mb-4' }, quizQ.text),
 
               /* Answer grid */
-              h('div', { className: 'grid grid-cols-2 gap-2 mb-4' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4' },
                 quizQ.opts.map(function(opt) {
                   var isCorrect = opt === quizQ.answer;
                   var wasChosen = quizQ.chosen === opt;
@@ -2929,8 +3348,10 @@
                         : 'bg-slate-50 text-slate-600 border-slate-200';
 
                   return h('button', { key: opt,
+                    'data-decomposer-quiz-option': opt,
                     disabled: quizQ.answered,
                     onClick: function() {
+                      if (quizQ.answered) return;
                       var correct = opt === quizQ.answer;
                       var newStreak = correct ? quizStreak + 1 : 0;
                       var newBest = Math.max(bestStreak, newStreak);
@@ -2957,6 +3378,7 @@
                         quizStreak: newStreak,
                         bestStreak: newBest
                       });
+                      focusDecomposerElement('stem-decomposer-quiz-feedback');
                       setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     },
                     className: 'px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ' + cls
@@ -2967,10 +3389,12 @@
               /* Inline wrong-option explanations and vocabulary study cards */
               quizQ.answered && h('div', { className: 'mt-3 mb-3 space-y-2 animate-in fade-in' },
                 h('div', {
+                  id: 'stem-decomposer-quiz-feedback', role: 'region', tabIndex: -1, 'data-decomposer-focus': 'true',
+                  'aria-labelledby': 'stem-decomposer-quiz-feedback-title', 'aria-describedby': 'stem-decomposer-quiz-feedback-explanation',
                   className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
                 },
-                  h('p', { className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
-                  h('p', { className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' },
+                  h('h5', { id: 'stem-decomposer-quiz-feedback-title', className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
+                  h('p', { id: 'stem-decomposer-quiz-feedback-explanation', className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' },
                     quizQ.chosen === quizQ.answer
                       ? 'Great job! That is correct.'
                       : (quizQ.wrongFeedback && quizQ.wrongFeedback[quizQ.chosen])
@@ -2985,13 +3409,18 @@
                   var definition = DECOMPOSER_VOCAB[concept];
                   var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
                   return h('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in' },
-                    h('div', { className: 'flex-1' },
-                      h('p', { className: 'text-xs font-bold text-indigo-800' }, '🔍 Concept Focus: ' + concept),
-                      h('p', { className: 'text-[0.6875rem] text-slate-600 mt-0.5 leading-relaxed font-medium' }, definition)
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('h5', { id: 'stem-decomposer-concept-title', tabIndex: -1, 'data-decomposer-focus': 'true',
+                        'aria-describedby': 'stem-decomposer-concept-definition stem-decomposer-concept-study-status',
+                        className: 'text-xs font-bold text-indigo-800' }, '🔍 Concept Focus: ' + concept),
+                      h('p', { id: 'stem-decomposer-concept-definition', className: 'text-[0.6875rem] text-slate-600 mt-0.5 leading-relaxed font-medium' }, definition),
+                      h('p', { id: 'stem-decomposer-concept-study-status', className: 'text-[0.6875rem] text-indigo-800 mt-1 font-bold' },
+                        studied ? __alloT('stem.decomposer.concept_studied', 'Term studied.') : __alloT('stem.decomposer.concept_study_hint', 'Study this term to add it to your vocabulary.'))
                     ),
                     !studied && h('button', {
                       onClick: function() {
                         studyDecomposerVocab(concept);
+                        focusDecomposerElement('stem-decomposer-concept-title');
                       },
                       className: 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[0.625rem] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]'
                     }, '📖 Study Term (+5 RP)')
@@ -3001,13 +3430,13 @@
 
               /* Next question button (after answer) */
               quizQ.answered && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next_question', 'Next Question'),
-                onClick: function() { upd('quizQ', makeQuiz()); },
+                onClick: function() { upd('quizQ', makeQuiz()); focusDecomposerElement('stem-decomposer-quiz-question'); },
                 className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all active:scale-[0.97]'
               }, '\u27A1 Next Question')
             ),
 
             /* Quiz stats panel */
-            quizScore > 0 && h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+            quizScore > 0 && h('div', { className: 'grid gap-2 mb-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,8em),1fr))' } },
               h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-emerald-700 tracking-tight' }, quizScore),
                 h('div', { className: 'text-[0.6875rem] font-bold text-emerald-500' }, 'Correct')
@@ -3026,8 +3455,9 @@
             quizScore > 0 && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_reset_quiz', 'Reset Quiz'),
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
+                focusDecomposerElement('stem-decomposer-quiz-start');
               },
-              className: 'transition-colors text-xs text-slate-600 hover:text-slate-800 font-bold'
+              className: 'transition-colors text-xs font-bold' + (onHostInk || ' text-slate-600 hover:text-slate-800')
             }, '\uD83D\uDD04 Reset Quiz')
           ),
 
@@ -3037,13 +3467,16 @@
              ═══════════════════════════════════════════════════ */
           tab === 'tutor' && h('div', null,
 
-            h('div', { className: 'flex items-center gap-2 mb-3' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
               h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDD16 Chemistry AI Tutor'),
               h('span', { className: 'text-xs text-slate-600' + onHostInk }, 'Ask me anything about ' + sel.name + '!')
             ),
 
             /* Chat messages */
-            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3 mb-3 max-h-[300px] overflow-y-auto space-y-2' },
+            h('div', { id: 'stem-decomposer-tutor-log', role: 'log', tabIndex: 0,
+              'aria-label': __alloT('stem.decomposer.tutor_conversation', 'Tutor conversation'),
+              'aria-live': 'off', 'aria-busy': aiLoading,
+              className: 'bg-slate-50 rounded-xl border border-slate-400 p-3 mb-3 max-h-[300px] overflow-y-auto space-y-2' },
               aiMessages.length === 0 && h('div', { className: 'text-center py-6' },
                 h('div', { className: 'text-4xl mb-2' }, '\uD83E\uDDEC'),
                 h('p', { className: 'text-xs text-slate-600' }, 'Ask a question about chemistry or the current molecule!')
@@ -3058,9 +3491,10 @@
                     className: 'max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed '
                       + (isUser
                         ? 'bg-purple-600 text-white rounded-br-sm'
-                        : 'bg-white text-slate-700 border border-slate-400 rounded-bl-sm')
+                        : 'bg-white text-slate-700 border border-slate-400 rounded-bl-sm'),
+                    style: { minWidth: 0, overflowWrap: 'anywhere' }
                   },
-                    msg.text,
+                    h('span', { className: 'sr-only' }, isUser ? __alloT('stem.decomposer.tutor_you', 'You: ') : __alloT('stem.decomposer.tutor_speaker', 'Tutor: ')), msg.text,
                     !isUser && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                       onClick: function() { speakText(msg.text); },
                       className: 'transition-colors ml-2 text-[0.6875rem] text-purple-400 hover:text-purple-600'
@@ -3069,31 +3503,37 @@
                 );
               }),
               aiLoading && h('div', { className: 'flex justify-start' },
-                h('div', { className: 'bg-white border border-slate-400 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse motion-reduce:animate-none' },
+                h('div', { className: 'bg-white border border-slate-400 px-3 py-2 rounded-xl text-xs text-slate-600' },
                   'Thinking...'
                 )
               )
             ),
 
+            h('p', { id: 'stem-decomposer-tutor-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+              className: 'text-xs text-slate-700 mb-3' + onHostInk }, !callGemini
+                ? __alloT('stem.decomposer.tutor_unavailable', 'The AI tutor is unavailable in this session.') : (d.aiStatus || '')),
+
             /* Input */
             h('div', { className: 'flex gap-2 mb-3' },
               h('input', {
-                type: 'text',
+                id: 'stem-decomposer-tutor-input', type: 'text', disabled: !callGemini,
+                'aria-describedby': 'stem-decomposer-tutor-status',
                 'aria-label': __alloT('stem.decomposer.a11y_ask_the_decomposer_tutor', 'Ask the Decomposer tutor'),
                 value: aiInput,
                 onChange: function(e) { upd('aiInput', e.target.value); },
                 onKeyDown: function(e) {
-                  if (e.key === 'Enter' && aiInput.trim()) {
+                  if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && !e.ctrlKey && !e.altKey && !e.metaKey && aiInput.trim() && !aiLoading && callGemini) {
+                    e.preventDefault();
                     handleAiQuestion(aiInput.trim());
                   }
                 },
                 placeholder: 'Ask about ' + sel.name + '...',
-                className: 'flex-1 px-3 py-2 rounded-xl border border-slate-400 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
+                className: 'flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-400 bg-white text-slate-800 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
-              h('button', { onClick: function() {
+              h('button', { type: 'button', style: { minWidth: 44, minHeight: 44 }, 'aria-label': __alloT('stem.decomposer.send_question', 'Send question'), onClick: function() {
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());
                 },
-                disabled: !aiInput.trim() || aiLoading,
+                disabled: !callGemini || !aiInput.trim() || aiLoading,
                 className: 'px-4 py-2 bg-purple-600 text-white font-bold text-sm rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 active:scale-[0.97]'
               }, '\u2191')
             ),
@@ -3106,7 +3546,7 @@
                 'Where is ' + sel.name + ' found in nature?',
                 band === 'g68' || band === 'g912' ? 'Explain the electron configuration' : 'Is ' + sel.name + ' safe to touch?'
               ].map(function(q, i) {
-                return h('button', { 'aria-label': __alloT('stem.decomposer.a11y_ask_question', 'Ask question'),
+                return h('button', { type: 'button', 'data-decomposer-tutor-question': q, disabled: !callGemini || aiLoading,
                   key: i,
                   onClick: function() { handleAiQuestion(q); },
                   className: 'px-2.5 py-1 bg-purple-50 text-purple-700 text-[0.6875rem] font-bold rounded-lg border border-purple-200 hover:bg-purple-100 transition-all active:scale-[0.97]'
@@ -3117,28 +3557,46 @@
 
           tab === 'decompHunt' && (function() {
             var iq = d.decompHunt || { tempC: 25, humidity: 70, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd('decompHunt', Object.assign({}, iq, patch)); }
-            var rate = (iq.tempC > 15 && iq.tempC < 40 ? 1 : 0.2) * (iq.humidity / 100) * (iq.oxygen / 100);
-            var state;
-            if (rate < 0.05) state = 'stopped';
-            else if (rate < 0.25) state = 'slow';
-            else if (rate < 0.6) state = 'medium';
-            else state = 'fast';
-            var sm = {
-              stopped: { label: '🧊 Stopped', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Temperature out of range or no moisture/oxygen.' },
-              slow:    { label: '🐢 Slow', color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Months to years.' },
-              medium:  { label: '🟢 Medium', color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
-              fast:    { label: '🔥 Fast (hot compost)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: 'Optimal: 30-40°C, 70%+ humidity, abundant O₂. Days to weeks.' }
-            }[state];
+            function setIQ(patch) {
+              setLabToolData(function(prev) {
+                var current = (prev.decomposer && prev.decomposer.decompHunt) || iq;
+                var nextIQ = Object.assign({}, current, typeof patch === 'function' ? patch(current) : patch);
+                return Object.assign({}, prev, { decomposer: Object.assign({}, prev.decomposer, { decompHunt: nextIQ }) });
+              });
+            }
+            function rateState(conditions) {
+              var rate = (conditions.tempC > 15 && conditions.tempC < 40 ? 1 : 0.2) * (conditions.humidity / 100) * (conditions.oxygen / 100);
+              return rate < 0.05 ? 'stopped' : rate < 0.25 ? 'slow' : rate < 0.6 ? 'medium' : 'fast';
+            }
+            var state = rateState(iq);
+            var rateMeta = {
+              stopped: { label: '🧊 Stopped', name: 'Stopped', color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: 'Temperature out of range or no moisture/oxygen.' },
+              slow:    { label: '🐢 Slow', name: 'Slow', color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: 'Marginal conditions. Months to years.' },
+              medium:  { label: '🟢 Medium', name: 'Medium', color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: 'Normal compost conditions. Weeks to months.' },
+              fast:    { label: '🔥 Fast (hot compost)', name: 'Fast (hot compost)', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: 'Optimal: 30-40°C, 70%+ humidity, abundant O₂. Days to weeks.' }
+            };
+            var sm = rateMeta[state];
+            var readings = Array.isArray(iq.log) ? iq.log.slice(-8) : [];
+            // Older saved activities have readings but no sequence counter.
+            function readingCount(conditions, saved) {
+              return Math.max(Number(conditions.logCount) || 0, saved.length,
+                saved.reduce(function(max, reading) { return Math.max(max, Number(reading.sequence) || 0); }, 0));
+            }
+            var logCount = readingCount(iq, readings);
+            function readingLabel(sequence) {
+              return __alloT('stem.decomposer.reading_number', 'Reading {number}').replace('{number}', String(sequence));
+            }
             return h('div', null,
               h('div', { className: 'p-4 rounded-xl bg-white border border-lime-300 shadow-sm space-y-3' },
                 h('h3', { className: 'text-sm font-black text-lime-700' }, '⏱️ Decomposition rate discovery'),
-                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, 'Sliders for temperature, humidity, oxygen. Discrete 4-state rate. No score, no reveal.'),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.decomposer.discovery_instructions', 'Change temperature, humidity, and oxygen. Save readings to compare how the estimated decomposition rate changes.')),
+                h('div', { 'data-decomposer-rate': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  'aria-label': __alloT('stem.decomposer.estimated_rate', 'Estimated decomposition rate'),
+                  className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-3' },
+                h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,9em),1fr))' } },
                   [{ k: 'tempC', l: 'Temp (°C)', mn: -10, mx: 60, st: 1 },
                    { k: 'humidity', l: 'Humidity (%)', mn: 0, mx: 100, st: 5 },
                    { k: 'oxygen', l: 'Oxygen (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
@@ -3146,18 +3604,62 @@
                       h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-lime-700' }, iq[s.k])),
                       h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
+                        style: { minHeight: 44 }, className: 'w-full', 'aria-label': s.l,
+                        'aria-valuetext': s.k === 'tempC'
+                          ? __alloT('stem.decomposer.temperature_value', '{value} degrees Celsius').replace('{value}', String(iq[s.k]))
+                          : __alloT('stem.decomposer.percent_value', '{value} percent').replace('{value}', String(iq[s.k])) }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, h: iq.humidity, o: iq.oxygen, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { type: 'button', onClick: function() {
+                    setIQ(function(current) {
+                      var saved = Array.isArray(current.log) ? current.log.slice(-8) : [];
+                      var sequence = readingCount(current, saved) + 1;
+                      var nextReadings = saved.concat([{ t: current.tempC, h: current.humidity, o: current.oxygen, st: rateState(current), sequence: sequence }]).slice(-8);
+                      return { log: nextReadings, logCount: sequence,
+                        logStatus: __alloT('stem.decomposer.reading_saved', 'Reading {number} saved. Showing the latest {count} readings.')
+                          .replace('{number}', String(sequence)).replace('{count}', String(nextReadings.length)) };
+                    });
+                  }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
+                  h('button', { type: 'button', onClick: function() { setIQ({ tempC: 25, humidity: 70, oxygen: 50, log: [], logCount: 0,
+                    logStatus: __alloT('stem.decomposer.discovery_reset', 'Discovery reset. Readings cleared and conditions restored.'),
+                    hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                ),
+                h('p', { 'data-decomposer-reading-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  className: 'text-xs text-slate-700' }, iq.logStatus || ''),
+                h('section', { 'aria-labelledby': 'decomposer-readings-heading' },
+                  h('h4', { id: 'decomposer-readings-heading', className: 'text-xs font-bold text-slate-800 mb-2' },
+                    __alloT('stem.decomposer.saved_readings', 'Saved readings (latest 8)')),
+                  readings.length === 0 && h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.decomposer.no_readings', 'No readings yet. Choose conditions, then select Log.')),
+                  h('ol', { 'data-decomposer-readings': true, className: 'grid gap-2',
+                    style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,15em),1fr))' } },
+                    readings.map(function(reading, index) {
+                      var sequence = reading.sequence || (logCount - readings.length + index + 1);
+                      return h('li', { key: sequence, 'data-decomposer-reading': true, 'aria-label': readingLabel(sequence),
+                        className: 'p-3 rounded-lg border border-slate-300 bg-slate-50', style: { minWidth: 0, overflowWrap: 'anywhere' } },
+                        h('h5', { className: 'text-xs font-bold text-slate-800 mb-2' }, readingLabel(sequence)),
+                        h('dl', { className: 'grid gap-2 text-xs', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,7em),1fr))' } },
+                          [
+                            [__alloT('stem.decomposer.temperature', 'Temperature'), reading.t + ' °C'],
+                            [__alloT('stem.decomposer.humidity', 'Humidity'), reading.h + '%'],
+                            [__alloT('stem.decomposer.oxygen', 'Oxygen'), reading.o + '%'],
+                            [__alloT('stem.decomposer.rate', 'Rate'), (rateMeta[reading.st] || rateMeta.stopped).name]
+                          ].map(function(field, fieldIndex) {
+                            return h('div', { key: fieldIndex, style: { minWidth: 0 } },
+                              h('dt', { className: 'font-bold text-slate-700' }, field[0]),
+                              h('dd', { className: 'text-slate-700' }, field[1]));
+                          })));
+                    }))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.decomposer.hypothesis_which_condition_is_most_important','Hypothesis: Which condition is most important for decomposition?'),
                   'aria-label': __alloT('stem.decomposer.a11y_decomposition_hypothesis', 'Decomposition hypothesis'),
-                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
+                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                h('button', { type: 'button', id: 'decomposer-discovery-prompts-toggle', 'data-decomposer-prompts-toggle': true,
+                  'aria-expanded': !!iq.stuckRevealed, 'aria-controls': 'decomposer-discovery-prompts',
+                  onClick: function() { setIQ(function(current) { return { stuckRevealed: !current.stuckRevealed }; }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' },
+                  iq.stuckRevealed ? __alloT('stem.decomposer.hide_open_prompts', '🤔 Hide open prompts') : __alloT('stem.decomposer.show_open_prompts', '🤔 Stuck — show open prompts')),
+                h('div', { id: 'decomposer-discovery-prompts', role: 'region', 'aria-labelledby': 'decomposer-discovery-prompts-toggle', hidden: !iq.stuckRevealed,
+                  className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, 'Why do compost bins need turning?'),
                     h('li', null, 'What happens to decomposition below 0°C?'))),
@@ -3166,8 +3668,8 @@
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.decomposer.explain_how_temperature_humidity_and_oxygen','Explain how temperature, humidity, and oxygen jointly drive decomposition.'),
                   'aria-label': __alloT('stem.decomposer.a11y_explain_decomposition_conditions', 'Explain decomposition conditions'),
-                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Design note: discrete 4-state decomposition marker; no rate score; no reveal — by design.')
+                  className: 'w-full bg-white text-slate-800 text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.decomposer.discovery_model_note', 'This simplified model groups estimated rates into four categories. Real decomposition also depends on the material and decomposers.'))
               )
             );
           })(),
@@ -3182,11 +3684,12 @@
                 badges.length + ' / ' + BADGES.length + ' earned'
               )
             ),
-            h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-1.5' },
+            h('div', { className: 'grid gap-1.5', style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,8em),1fr))' } },
               BADGES.map(function(b) {
                 var earned = badges.indexOf(b.id) >= 0;
                 return h('div', {
                   key: b.id,
+                  style: { minWidth: 0, overflowWrap: 'anywhere' },
                   className: 'rounded-xl border p-2 text-center transition-all '
                     + (earned
                       ? 'bg-amber-50 border-amber-300 shadow-sm'
@@ -3197,17 +3700,20 @@
                   h('div', { className: 'text-[0.6875rem] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-600') },
                     b.label
                   ),
-                  earned && h('div', { className: 'text-[0.6875rem] text-amber-500 font-bold' }, '+' + b.xp + ' XP')
+                  earned && h('div', { className: 'text-[0.6875rem] text-amber-700 font-bold' }, '+' + b.xp + ' XP')
                 );
               })
-            )
+            ),
+            renderGoalDetails('badges')
           ),
 
+
+          ),
 
           /* ═══════════════════════════════════════════════════
              Snapshot Button
              ═══════════════════════════════════════════════════ */
-          h('button', { 'aria-label': __alloT('stem.decomposer.a11y_snapshot', 'Snapshot'),
+          h('button', { 'data-decomposer-snapshot': true, 'aria-label': __alloT('stem.decomposer.a11y_snapshot', 'Snapshot'),
             onClick: function() {
               SOUNDS.snapshot();
               setToolSnapshots(function(prev) {

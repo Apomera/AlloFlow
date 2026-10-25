@@ -43,8 +43,11 @@ describe('neutral picture inspection during identification practice', () => {
     const stage = t.host.querySelector('[data-practice-picture-stage]');
     expect(stage.getAttribute('tabindex')).toBe('0');
     expect(stage.getAttribute('aria-label')).toBe('Enlarged organism picture');
+    stage.focus();
+    expect(document.activeElement).toBe(stage);
     await React.act(async () => stage.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })));
     expect(axis(t, 'x')).toBe(29.5);
+    expect(document.activeElement).toBe(stage);
     await click(zoom(t, 'reset'));
     expect(scale(t)).toBe(1); expect(axis(t, 'x')).toBe(0); expect(axis(t, 'y')).toBe(0);
     expect(document.activeElement).toBe(zoom(t, 'reset'));

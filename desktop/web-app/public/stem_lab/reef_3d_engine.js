@@ -355,7 +355,7 @@
     var layout = Habitat.normalizeLayout(options.layout), points = layout.points, L = layout.lengthM, belt = layout.beltHalfWidthM;
     var fishDefs = normalizeFish(options.layout && options.layout.fish, layout);
     var scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(55, 1, 0.05, 80), renderer = null, habitat = null;
-    var disposed = false, contextLost = false, raf = 0, rafIsTimer = false, lastStamp = null, elapsed = 0, frames = 0, paused = false, lastCheck = -Infinity;
+    var disposed = false, contextLost = false, raf = 0, rafIsTimer = false, lastStamp = null, elapsed = 0, frames = 0, paused = reducedMotion, lastCheck = -Infinity;
     var cameraMode = 'diver', pointIndex = points.length ? 0 : -1, highlightIndex = pointIndex, fogBase = 0.035, fogScale = 1;
     var listeners = [], resizeObserver = null, notifyTimer = 0, lastNotify = -Infinity, lastKey = '', pendingNotify = false;
     var fish = [], fishModels = {}, owned = [], boxes = [], pointers = new Map(), pinch = 0, canvasW = 0, canvasH = 0;
@@ -684,7 +684,7 @@
         frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
       };
     }
-    function stateKey(s) { return [s.pointIndex, s.highlightIndex, s.cameraMode, s.paused, s.ready, s.fishVisible.map(function (f) { return f.fishId; }).join(',')].join('|'); }
+    function stateKey(s) { return [s.pointIndex, s.highlightIndex, s.cameraMode, s.paused, s.reducedMotion, s.ready, s.fishVisible.map(function (f) { return f.fishId; }).join(',')].join('|'); }
     function emit(s, t) {
       pendingNotify = false; lastNotify = t; lastKey = stateKey(s);
       try { options.onState(s); } catch (error) { reportError(error); }
@@ -831,7 +831,29 @@
       setGoal(); placeHighlight(); if (reducedMotion) applyCamera(0, true);
       notify(true); refresh();
     }
-    function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; notify(true); refresh(); }
+    function setPaused(value) { if (disposed) return; paused = reducedMotion || !!value; lastStamp = null; notify(true); refresh(); }
+    function setReducedMotion(value) {
+      if (disposed || reducedMotion === !!value) return;
+      reducedMotion = !!value;
+      if (reducedMotion) { paused = true; if (loaded) applyCamera(0, true); }
+      lastStamp = null; notify(true); refresh();
+    }
+    function lookCamera(dx, dy) {
+      if (disposed || !loaded) return;
+      look(clamp(num(dx, 0), -200, 200), clamp(num(dy, 0), -200, 200));
+      applyCamera(0, true);
+    }
+    function zoomCamera(amount) {
+      if (disposed || !loaded) return;
+      zoom(clamp(num(amount, 0), -0.5, 0.5));
+      applyCamera(0, true);
+    }
+    function resetCamera() {
+      if (disposed || !loaded) return;
+      if (cameraMode === 'diver') { user.diver.yaw = DIVER.yaw; user.diver.pitch = DIVER.pitch; user.diver.dist = DIVER.dist; }
+      else { user.overview.yaw = 0; user.overview.pitch = 0.62; user.overview.scale = 1; }
+      setGoal(); applyCamera(0, true); refresh();
+    }
     function resize() {
       if (disposed || !renderer) return;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { width: canvas.clientWidth, height: canvas.clientHeight };
@@ -842,7 +864,7 @@
       if (cameraMode === 'overview' && loaded) { setGoal(); applyCamera(0, true); }
       refresh();
     }
-    var controller = { goToPoint: goToPoint, highlightPoint: highlightPoint, setCameraMode: setCameraMode, setPaused: setPaused, getState: snapshot, resize: resize, dispose: dispose };
+    var controller = { goToPoint: goToPoint, highlightPoint: highlightPoint, setCameraMode: setCameraMode, setPaused: setPaused, setReducedMotion: setReducedMotion, lookCamera: lookCamera, zoomCamera: zoomCamera, resetCamera: resetCamera, getState: snapshot, resize: resize, dispose: dispose };
 
     // ---- Input (canvas only for keys) -------------------------------------------------
     function jump(direction) {
@@ -872,7 +894,7 @@
       else if (key === 'PageDown') jump(-1);
       else if (key === 'Home') goToPoint(0);
       else if (key === 'End') goToPoint(points.length - 1);
-      else if (key === ' ' || key === 'Spacebar') setPaused(!paused);
+      else if (key === ' ' || key === 'Spacebar') { if (!event.repeat) setPaused(!paused); }
       else return;
       if (event.preventDefault) event.preventDefault();
     });

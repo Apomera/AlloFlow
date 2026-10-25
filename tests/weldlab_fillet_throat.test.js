@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -213,7 +214,7 @@ describe('Ideal equal-leg fillet throat probe', () => {
   });
 
   it('restores all original SymbolsReader renderers, prose, assessments and saved-field handlers by removing only the additive hook/helper/call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8'));
     let region = source.slice(source.indexOf('function SymbolsReader('), source.indexOf('function PPESafetyLab('));
     const hook = '        var filletThroatState = useState({ leg: 0.25, probe: 50 });\n', call = '              renderFilletThroatProbe(),\n';
     expect(region.split(hook)).toHaveLength(2); region = region.replace(hook, '');

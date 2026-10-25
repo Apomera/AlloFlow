@@ -265,7 +265,11 @@
         canvasContexts.push(context);
       });
       scene = new THREE.Scene(); center = new THREE.Vector3(0, .5, 0);
-      camera = new THREE.PerspectiveCamera(1, WIDTH / HEIGHT, .01, 2500);
+      // The first visible ground in the widest view is 5.67 m ahead; all
+      // targets are at least 40 m away. A 5 m near plane preserves that view
+      // while resolving the 2 mm gap between the stripe surface and backing.
+      // The former 1 cm plane quantized both surfaces to the same depth.
+      camera = new THREE.PerspectiveCamera(1, WIDTH / HEIGHT, 5, 2500);
       bird = catalog.create(THREE, 'animal.mourning-dove', '1.0.0', { quality: 'low' });
       bird.update({ flight: 0, phase: 0, walking: 0, peck: 0, lookYaw: 0 }); bird.root.updateMatrixWorld(true);
       var bounds = new THREE.Box3().setFromObject(bird.root);

@@ -197,13 +197,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fligh
 
 exports[`science-sim + studio render goldens > renders + pins a digest for galaxy [ssr] 1`] = `
 {
-  "buttons": 78,
+  "buttons": 82,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 381,
+  "lengthBucket": 392,
   "paths": 11,
   "selects": 0,
-  "sha": "6a06c6c7fbd861c9",
+  "sha": "0db6425fe92e52f7",
   "svgs": 17,
 }
 `;
@@ -275,14 +275,14 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
 
 exports[`science-sim + studio render goldens > renders + pins a digest for physics [mount] 1`] = `
 {
-  "buttons": 42,
+  "buttons": 43,
   "canvases": 1,
   "inputs": 10,
-  "lengthBucket": 557,
-  "paths": 8,
+  "lengthBucket": 561,
+  "paths": 9,
   "selects": 1,
-  "sha": "77731f0fdbbab1f2",
-  "svgs": 8,
+  "sha": "7cd6cae2f9b88835",
+  "svgs": 9,
 }
 `;
 

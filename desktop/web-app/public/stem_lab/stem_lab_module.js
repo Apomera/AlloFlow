@@ -873,6 +873,23 @@
     // Five tools share that viewer (bridgeLab, cityLab, fireEcology,
     // machineLab, titration), so BOTH of these are opt-in per viewer via
     // cfg.bloom / cfg.env. Nothing changes for a tool that does not ask.
+    function _configureStemScript(script, url) {
+      // Desktop stays on its bundled r128 files. Hosted mirrors retain their
+      // independent URLs and pass through the host's per-URL vendor digests.
+      var ownedMirrors = {
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js': 'vendor/three-r128/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js': 'vendor/three-r128/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js': 'vendor/three-r128/OrbitControls.js',
+        'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js': 'vendor/three-r128/OrbitControls.js'
+      };
+      var location = window.location || {};
+      var bundledDesktop = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(location.hostname || '')
+        && (location.pathname || '').indexOf('/app/') === 0;
+      var candidate = bundledDesktop && Object.prototype.hasOwnProperty.call(ownedMirrors, url)
+        ? 'https://alloflow-cdn.pages.dev/' + ownedMirrors[url] : url;
+      if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('The trusted STEM script policy is unavailable. Reload the reviewed application shell.');
+      return window.__alloConfigureTrustedScript(script, candidate);
+    }
     var _ORBIT_FX_URLS = [
       'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
       'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
@@ -896,7 +913,7 @@
           if (i >= _ORBIT_FX_URLS.length) { resolve(_orbitFxReady()); return; }
           try {
             var sc = document.createElement('script');
-            sc.src = _ORBIT_FX_URLS[i]; sc.async = false;
+            _configureStemScript(sc, _ORBIT_FX_URLS[i]); sc.async = false;
             sc.onload = function () { i++; next(); };
             sc.onerror = function () { i++; next(); };
             document.head.appendChild(sc);
@@ -1003,6 +1020,8 @@
             return new Promise(function (resolve, reject) {
               if (index >= urls.length) { reject(new Error(opts.failMessage || 'The library could not be loaded from any source. School network filters sometimes block CDNs — retry, or check the connection.')); return; }
               var script = document.createElement('script');
+              try { _configureStemScript(script, urls[index]); }
+              catch (error) { resolve(attempt(index + 1)); return; }
               var settled = false;
               var timer = window.setTimeout(function () { finish(false); }, timeoutMs);
               function finish(ok) {
@@ -1013,7 +1032,6 @@
                 if (script.parentNode) script.parentNode.removeChild(script);
                 resolve(attempt(index + 1));
               }
-              script.src = urls[index];
               script.async = true;
               script.crossOrigin = 'anonymous';
               script.addEventListener('load', function () { finish(true); }, { once: true });

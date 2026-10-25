@@ -1,9 +1,11 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { stripUnderwaterDepths } from './helpers/weldlab_underwater_depth_restore.js';
 
 const require = createRequire(resolve('desktop/web-app/package.json'));
 const { Simulate } = require('react-dom/test-utils');
@@ -157,7 +159,7 @@ describe('Reversible constant-temperature pressure-volume reference', () => {
   });
 
   it('restores the complete original Underwater region after removing only the one local scalar, helper and existing-prediction-gated call', () => {
-    const source = readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n'); const start = source.indexOf('      function UnderwaterLab() {'), end = source.indexOf('      function ProcessSleuth() {', start); let region = source.slice(start, end);
+    const source = stripUnderwaterDepths(stripWeldlabWcagFixes(readFileSync(SRC, 'utf8'))); const start = source.indexOf('      function UnderwaterLab() {'), end = source.indexOf('      function ProcessSleuth() {', start); let region = source.slice(start, end);
     const helperAt = region.indexOf('        function renderGasVolumeReference() {'), helperEnd = region.indexOf('        function renderArcBubble() {', helperAt); expect(helperAt).toBeGreaterThan(0); expect(helperEnd).toBeGreaterThan(helperAt); region = region.slice(0, helperAt) + region.slice(helperEnd);
     for (const line of ['        var uwGasState = useState({ depth: 33, volumeText: null });', '              uwPred && renderGasVolumeReference(),']) { expect(region.split(line)).toHaveLength(2); region = region.replace(line + '\n', ''); }
     expect(createHash('sha256').update(region).digest('hex')).toBe('ac98edcf816eb27c554ca67bcf663855a337d06390a1e317cf1e5feac2ed2b98');

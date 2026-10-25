@@ -5645,7 +5645,7 @@
                             var s = warRoomHotSeatStats[String(idx)] || { rounds: 0, mitigations: 0, detections: 0 };
                             return '<tr><td>' + esc(name) + '</td><td>' + s.rounds + '</td><td>' + s.mitigations + '</td><td>' + s.detections + '</td></tr>';
                           }).join('') : '';
-                          var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SOC War Room \u2014 Campaign #' + esc(warRoomCampaignId || '') + '</title>' +
+                          var html = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>SOC War Room \u2014 Campaign #' + esc(warRoomCampaignId || '') + '</title>' +
                             '<style>' +
                             'body{font-family:Georgia,serif;max-width:680px;margin:30px auto;padding:20px;color:#1e293b;}' +
                             'h1{margin:0;font-size:22px;}h2{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#475569;margin-top:22px;border-bottom:1px solid #cbd5e1;padding-bottom:4px;}' +

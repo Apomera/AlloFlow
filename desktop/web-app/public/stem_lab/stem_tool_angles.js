@@ -937,6 +937,8 @@ window.StemLab = window.StemLab || {
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
             h('input', { type: 'range', min: 0, max: 360, step: snapEnabled ? 15 : undefined, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': estimateActive ? '?' : convertedAngle, disabled: estimateActive, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
+            // WCAG 2.5.7: the second ray handle is drag-only otherwise; this range sets it by click or tap.
+            showSecondRay && h('input', { type: 'range', min: 0, max: 360, step: snapEnabled ? 15 : undefined, value: secondAngle, 'data-angles-second-slider': 'true', onChange: function(e) { upd('secondAngle', snapAngle(parseInt(e.target.value, 10))); }, disabled: estimateActive, 'aria-label': __alloT('stem.angles.a11y_second_angle_ray_handle', 'Second angle ray handle'), className: 'w-full h-2 bg-cyan-200 rounded-lg appearance-none cursor-pointer accent-cyan-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
             h('div', { className: 'flex justify-between mt-1' },
               h('span', { className: 'text-[0.6875rem] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },

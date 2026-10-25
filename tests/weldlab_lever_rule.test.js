@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { stripT85Sweep } from './helpers/weldlab_t85_sweep_preservation.js';
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 
 const require = createRequire(resolve('desktop/web-app/package.json'));
 const { Simulate } = require('react-dom/test-utils');
@@ -134,7 +136,7 @@ describe('Plain-carbon eutectoid-reference lever-rule bench', () => {
   });
 
   it('restores the complete pre-bench Metallurgy region after removing only the one local hook, helper and Phase call', () => {
-    const source = readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n'); const start = source.indexOf('      function MetallurgyDeepDive() {'), end = source.indexOf('      function CodesAndStandards() {', start); let region = source.slice(start, end);
+    const source = stripT85Sweep(stripWeldlabWcagFixes(readFileSync(SRC, 'utf8'))); const start = source.indexOf('      function MetallurgyDeepDive() {'), end = source.indexOf('      function CodesAndStandards() {', start); let region = source.slice(start, end);
     const helperAt = region.indexOf('        function renderLeverRuleBench() {'), helperEnd = region.indexOf('        function renderFeCExplorer() {', helperAt); expect(helperAt).toBeGreaterThan(0); expect(helperEnd).toBeGreaterThan(helperAt); region = region.slice(0, helperAt) + region.slice(helperEnd);
     for (const line of ['        var leverCarbonState = useState(0.4);', '            renderLeverRuleBench(),']) { expect(region.split(line)).toHaveLength(2); region = region.replace(line + '\n', ''); }
     expect(createHash('sha256').update(region).digest('hex')).toBe('c1d07995a2ab7e1ec7a77aeca06c66cee41c97fd2c6585a3c4312bea53dc7e17');

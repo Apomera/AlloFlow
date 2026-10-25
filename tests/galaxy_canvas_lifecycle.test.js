@@ -54,13 +54,14 @@ describe('galaxy canvas lifecycle', () => {
     control.dispatchEvent(new Event(eventName, { bubbles: true }));
   }
 
-  async function click(control) {
+  async function click(control, focused = true) {
+    if (focused) control.focus();
     await React.act(async () => {
       control.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await Promise.resolve();
     });
     await React.act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
     });
   }
 
@@ -1373,12 +1374,14 @@ describe('galaxy canvas lifecycle', () => {
     }, { addToast, announceToSR });
 
     await React.act(async () => {
+      openObservationButton('obs-rapid-first').focus();
       openObservationButton('obs-rapid-first').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      openObservationButton('obs-rapid-last').focus();
       openObservationButton('obs-rapid-last').dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await Promise.resolve();
     });
     await React.act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
     expect(latestToolData.galaxy.realSkyTarget).toBe('m42');
@@ -1665,7 +1668,7 @@ describe('galaxy canvas lifecycle', () => {
     expect(headerDestination.searchParams.get('fov')).toBe('0.42');
     expect(addToast).toHaveBeenCalledTimes(1);
     expect(announceToSR).toHaveBeenCalledTimes(1);
-    expect(document.activeElement).toBe(observationRow(observation.id));
+    expect(document.activeElement).toBe(host.querySelector('#galaxy-real-sky-aladin'));
   });
 
   it('restores finite exponent-form exact coordinates without downgrading to a preset', async () => {
@@ -2315,7 +2318,7 @@ describe('galaxy canvas lifecycle', () => {
     const copyWhileEditing = copyObservationViewButton('obs-edit-save');
     expect(copyWhileEditing).not.toBeNull();
     expect(copyWhileEditing.disabled).toBe(false);
-    await click(copyWhileEditing);
+    await click(copyWhileEditing, false);
     expect(writeText).toHaveBeenCalledWith(
       'https://aladin.cds.unistra.fr/AladinLite/?target=M%20104&fov=0.9&survey=P%2F2MASS%2Fcolor',
     );

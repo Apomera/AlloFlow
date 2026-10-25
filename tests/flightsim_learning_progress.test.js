@@ -20,10 +20,16 @@ async function mount(seed = {}) {
   function App() {
     const [data, setData] = React.useState({ flightSim: { view: 'menu', railCollapsed: false, ...seed } });
     latest = data.flightSim;
+    const committedCompletions = React.useRef(data.flightSim.completedLessons);
+    React.useEffect(() => {
+      if (committedCompletions.current !== data.flightSim.completedLessons) {
+        writes.push({ completedLessons: data.flightSim.completedLessons });
+      }
+      committedCompletions.current = data.flightSim.completedLessons;
+    }, [data.flightSim.completedLessons]);
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
       update: (id, key, value) => setData(previous => ({ ...previous, [id]: { ...previous[id], [key]: value } })),
       updateMulti: (id, patch) => {
-        writes.push(patch);
         setData(previous => ({ ...previous, [id]: { ...previous[id], ...patch } }));
       },
     }));

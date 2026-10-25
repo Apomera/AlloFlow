@@ -53,7 +53,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     const comparison={pinned:{species:'americanGoldfinch',part:'wing',time:8.63},matching:true,enabled:false,opacity:.25,visible:false};
     await act(async()=>publish({paused:true,residentInspection:{...inspection,comparison}}));
     expect(panel().querySelector('[data-resident-comparison-pin]').textContent).toBe('Replace saved shape');
-    expect(panel().querySelector('[data-resident-comparison-status]').textContent).toContain('American goldfinch · Wing feathers · 8.6 s');
+    expect(panel().querySelector('[data-resident-comparison-status]').textContent).toContain('American goldfinch · Wing feathers · A · 8.6 s');
     expect(panel().querySelector('[data-resident-comparison-toggle]').checked).toBe(false);
     await act(async()=>panel().querySelector('[data-resident-comparison-toggle]').click());
     expect(scene.setResidentFrozenSurface).toHaveBeenLastCalledWith(true);
@@ -111,7 +111,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     const studio=()=>host.querySelector('[data-birdlab-resident-inspection]');
     expect(studio().getAttribute('data-birdlab-resident-inspection')).toBe('easternBluebird');
     expect(studio().querySelector('[data-resident-part-choice="whole"]').getAttribute('aria-pressed')).toBe('true');
-    for(const part of ['whole','head','wing','tail']){
+    for(const part of ['whole','head','wing','wingB','tail']){
       await act(async()=>studio().querySelector('[data-resident-part-choice="'+part+'"]').click());
       expect(scene.setResidentPart).toHaveBeenLastCalledWith(part);
     }
@@ -163,9 +163,9 @@ describe('BirdLab optional 3D view lifecycle', () => {
     await mount(()=>Promise.resolve());
     await act(async()=>errorHandler('Graphics interrupted'));
     const parts=[...host.querySelectorAll('[data-resident-part-choice]')],views=[...host.querySelectorAll('[data-resident-view-choice]')],choices=[...parts,...views];
-    expect(parts.map(choice=>choice.getAttribute('data-resident-part-choice'))).toEqual(['whole','head','wing','tail']);
+    expect(parts.map(choice=>choice.getAttribute('data-resident-part-choice'))).toEqual(['whole','head','wing','wingB','tail']);
     expect(views.map(choice=>choice.getAttribute('data-resident-view-choice'))).toEqual(['free','side','opposite','front','rear','above']);
-    expect(choices).toHaveLength(10);expect(choices.every(choice=>choice.disabled)).toBe(true);
+    expect(choices).toHaveLength(11);expect(choices.every(choice=>choice.disabled)).toBe(true);
     await act(async()=>choices.forEach(choice=>choice.click()));
     expect(scene.setResidentPart).not.toHaveBeenCalled();expect(scene.setResidentView).not.toHaveBeenCalled();
   });

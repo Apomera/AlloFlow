@@ -480,7 +480,7 @@
     var CSP = "default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; "
       + "style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'";
     var head = [
-      '<!doctype html><html><head><meta charset="utf-8">',
+      '<!doctype html><html lang="' + String((document.documentElement || {}).lang || 'en').replace(/[^\w-]/g, '') + '"' + ((document.documentElement || {}).dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8">',
       '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">',
       '<style>html,body{margin:0}body{font:14px system-ui,-apple-system,sans-serif;padding:12px;background:' + pageBg + ';color:' + pageFg + '}',
       '#root{min-height:40px}.forge-fatal{color:' + fatalFg + ';font:12px ui-monospace,SFMono-Regular,Menlo,monospace;',

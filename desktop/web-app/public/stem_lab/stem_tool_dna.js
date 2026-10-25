@@ -67,6 +67,42 @@ window.StemLab = window.StemLab || {
       '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500,.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500{color:#475569!important}',
       '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60),.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60){background-color:#f6f8f4!important}',
       '[data-dna-tool] button{min-height:36px}',
+      '[data-dna-forensics] button{min-height:44px;min-width:44px;overflow-wrap:anywhere}',
+      '[data-dna-forensics] :is(button,[tabindex]):focus-visible{outline:3px solid #155e75!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '[data-dna-forensics] :is(h3,h4,p){overflow-wrap:anywhere}',
+      '[data-dna-forensics] button[aria-disabled=true]{cursor:default}',
+      '@media(forced-colors:active){[data-dna-forensics] :is(button,[tabindex]):focus-visible{outline-color:Highlight!important}}',
+      '.dna-reference-library{--dna-line:#d9e2df;min-width:0;color:#0f172a}',
+      '.dna-reference-library :is(#dna-reference-summary,#dna-reference-close,#dna-reference-back,[data-dna-reference-topic]){min-height:44px;min-width:44px;overflow-wrap:anywhere}',
+      '.dna-reference-library :is(#dna-reference-summary,#dna-reference-close,#dna-reference-back,[data-dna-reference-topic],#dna-reference-topic-panel):focus-visible{outline:3px solid #065f46!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '.dna-reference-library .dna-reference-topic[aria-expanded=false]:hover{background:var(--dna-reference-hover,#f8fafc)!important}',
+      '#dna-reference-topics .dna-reference-topic{transition:none!important}#dna-reference-topics .dna-reference-topic>span{color:inherit!important;transition:none!important}',
+      '@media(max-width:560px){.dna-reference-library .dna-reference-group-label{flex-basis:100%;min-width:0;text-align:left;border-right:0}.dna-reference-library .dna-reference-topic{max-width:100%;white-space:normal}}',
+      '@media(forced-colors:active){.dna-reference-library :is(#dna-reference-summary,#dna-reference-close,#dna-reference-back,[data-dna-reference-topic],#dna-reference-topic-panel):focus-visible{outline-color:Highlight!important}}',
+      '[data-dna-quiz] :is(button,input){min-height:44px;min-width:44px}',
+      '[data-dna-quiz] :is(button,input,summary,[tabindex]):focus-visible{outline:3px solid #5b21b6!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '[data-dna-quiz] :is(button,h3,p,label){overflow-wrap:anywhere}',
+      '[data-dna-quiz] button[aria-disabled=true]{cursor:default}',
+      '@media(max-width:560px){[data-dna-challenge-reference]{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+      '@media(forced-colors:active){[data-dna-quiz] :is(button,input,summary,[tabindex]):focus-visible{outline-color:Highlight!important}}',
+      '[data-dna-trace-trait]{color:#0f172a;min-width:0}',
+      '[data-dna-trace-trait] button{min-height:44px;min-width:44px;overflow-wrap:anywhere}',
+      '[data-dna-trace-trait] button[aria-disabled=true]{cursor:default}',
+      '[data-dna-trace-trait] button:focus-visible{outline:3px solid #065f46!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '[data-dna-trace-trait] .dna-trait-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:start}',
+      '[data-dna-trace-trait] .dna-trait-reason{min-width:0;overflow-wrap:anywhere}',
+      '[data-dna-trace-trait] .dna-trait-moves{display:flex;gap:4px;grid-column:3}',
+      '[data-dna-trace-trait] .dna-trait-rank-result{grid-column:2/-1}',
+      '@media(max-width:560px){[data-dna-trace-trait] .dna-trait-row{grid-template-columns:24px minmax(0,1fr)}[data-dna-trace-trait] .dna-trait-moves{grid-column:2;justify-content:flex-end}}',
+      '@media(forced-colors:active){[data-dna-trace-trait] button:focus-visible{outline-color:Highlight!important}}',
+      '[data-dna-tool] :is(#dna-report-toggle,[data-dna-lab-report] button,[data-dna-guided] button,[data-dna-reading-frame-explorer] button,[data-dna-mutation-sleuth] button){min-height:44px;min-width:44px}',
+      '[data-dna-tool] :is(#dna-use-codon-evidence,#dna-use-frame-evidence){min-height:44px;min-width:44px;scroll-margin-block-start:96px;scroll-margin-block-end:24px}',
+      '[data-dna-tool] :is(#dna-use-codon-evidence,#dna-use-frame-evidence):focus-visible{outline:3px solid #5b21b6!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '@media(forced-colors:active){[data-dna-tool] :is(#dna-use-codon-evidence,#dna-use-frame-evidence):focus-visible{outline-color:Highlight!important}}',
+      '[data-dna-tool] :is(#dna-report-toggle,[data-dna-lab-report] :is(button,textarea,input,select),[data-dna-guided] button,[data-dna-reading-frame-explorer] :is(button,[tabindex]),[data-dna-mutation-sleuth] :is(button,#dna-ms-vignette)):focus-visible{outline:3px solid #5b21b6!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+      '[data-dna-tool] [data-dna-mutation-sleuth] button{overflow-wrap:anywhere}',
+      '@media(max-width:420px){[data-dna-tool] [data-dna-ms-answers]{grid-template-columns:minmax(0,1fr)}}',
+      '@media(forced-colors:active){[data-dna-tool] :is(#dna-report-toggle,[data-dna-lab-report] :is(button,textarea,input,select),[data-dna-guided] button,[data-dna-reading-frame-explorer] :is(button,[tabindex]),[data-dna-mutation-sleuth] :is(button,#dna-ms-vignette)):focus-visible{outline-color:Highlight!important}}',
       '.dna-command-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px 17px;border:1px solid var(--dna-line);border-top:4px solid var(--dna-violet);border-radius:14px;background:var(--allo-stem-canvas,#fff);box-shadow:0 12px 30px rgba(15,23,42,.08)}',
       '.dna-back-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--dna-line);border-radius:10px;background:#fff;color:#475569;transition:transform .18s ease,border-color .18s ease}',
       '.dna-back-button:hover{transform:translateX(-2px);border-color:#a78bfa}',
@@ -693,6 +729,15 @@ window.StemLab = window.StemLab || {
       if (!dnaCleanupRef.current) dnaCleanupRef.current = {};
       var dnaCleanup = dnaCleanupRef.current;
       var dnaCompletionRef = React.useRef({});
+      var dnaMsPickLockRef = React.useRef(false);
+      var dnaMsFocusRef = React.useRef(null);
+      var dnaQuizRef = React.useRef({ alive: true, serial: 0, owners: {}, pending: {}, focus: null, challengeCheck: false, battleAttack: false });
+      var dnaQuizDataRef = React.useRef(null);
+      var dnaQuizTabRef = React.useRef(null);
+      var dnaReferenceFocusRef = React.useRef(null);
+      var dnaEvidenceFocusRef = React.useRef(null);
+      var dnaEvidenceReturnRef = React.useRef(null);
+      var dnaForensicRef = React.useRef({ alive: true, serial: 0, attempt: 0, request: null, submitted: false, focus: null });
       var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var reducedMotion = prefersReducedMotion;
 
@@ -781,6 +826,73 @@ window.StemLab = window.StemLab || {
       var upd = function(key, val) { setLabToolData(function(prev) { var nd = Object.assign({}, prev.dnaLab || {}); nd[key] = val; return Object.assign({}, prev, { dnaLab: nd }); }); };
       var updMulti = function(obj) { setLabToolData(function(prev) { return Object.assign({}, prev, { dnaLab: Object.assign({}, prev.dnaLab || {}, obj) }); }); };
 
+      React.useEffect(function() {
+        if (!d.msAnswered) dnaMsPickLockRef.current = false;
+      }, [d.msIdx, d.msSeed, d.msAnswered]);
+      React.useEffect(function() {
+        var targetId = dnaMsFocusRef.current;
+        dnaMsFocusRef.current = null;
+        if (targetId && typeof document !== 'undefined') {
+          var target = document.getElementById(targetId);
+          if (target) target.focus();
+        }
+      });
+
+      React.useEffect(function() {
+        var job = dnaReferenceFocusRef.current;
+        dnaReferenceFocusRef.current = null;
+        if (!job || typeof document === 'undefined' || (((labToolData && labToolData.dna) || {}).expSection || null) !== job.section) return;
+        var active = document.activeElement;
+        if (active !== job.origin && (job.origin.isConnected || active !== document.body)) return;
+        var target = document.getElementById(job.id);
+        var library = target && target.closest('details.dna-reference-library');
+        if (target && library && library.open) target.focus();
+      });
+
+      // A user-owned evidence handoff moves into the opened report after commit.
+      // Saved reports and background updates never create a focus request.
+      React.useEffect(function() {
+        var job = dnaEvidenceFocusRef.current;
+        dnaEvidenceFocusRef.current = null;
+        if (!job || typeof document === 'undefined' || !d.dnaReportOpen || (d.tab || 'build') !== job.tab) return;
+        var active = document.activeElement;
+        if (active !== job.origin && (job.origin.isConnected || active !== document.body)) return;
+        var target = document.getElementById('dna-evidence-mode-title');
+        if (target) target.focus();
+      });
+      function queueDnaEvidenceFocus(event) {
+        var origin = event && event.currentTarget;
+        if (typeof document === 'undefined' || !origin || document.activeElement !== origin) return;
+        dnaEvidenceFocusRef.current = { origin: origin, tab: tab };
+        dnaEvidenceReturnRef.current = { id: origin.id, tab: tab, source: origin.id === 'dna-use-frame-evidence' ? 'frame' : 'codon' };
+      }
+      function returnToDnaEvidence(event) {
+        var job = dnaEvidenceReturnRef.current;
+        if (!job || job.tab !== tab || typeof document === 'undefined' || document.activeElement !== event.currentTarget) return;
+        var target = document.getElementById(job.id);
+        if (target) target.focus();
+      }
+
+      // Selection-only radio groups share keyboard navigation; scored answer
+      // buttons deliberately keep native button behavior instead.
+      function navigateDnaRadio(event) {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        var key = event.key;
+        if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].indexOf(key) < 0) return;
+        var group = event.currentTarget.closest('[role="radiogroup"]');
+        if (!group) return;
+        var radios = Array.prototype.filter.call(group.querySelectorAll('[role="radio"]'), function(radio) {
+          return radio.closest('[role="radiogroup"]') === group && !radio.disabled && radio.getAttribute('aria-disabled') !== 'true';
+        });
+        var index = radios.indexOf(event.currentTarget);
+        if (index < 0 || !radios.length) return;
+        event.preventDefault();
+        var nextIndex = key === 'Home' ? 0 : key === 'End' ? radios.length - 1
+          : (index + (key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1) + radios.length) % radios.length;
+        radios[nextIndex].focus();
+        if (radios[nextIndex] !== event.currentTarget || radios[nextIndex].getAttribute('aria-checked') !== 'true') radios[nextIndex].click();
+      }
+
       // ═══ GRADE BAND HELPER ═══
       var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
       function getGradeBand() {
@@ -801,6 +913,8 @@ window.StemLab = window.StemLab || {
       var dnaFocusToolIds = ['build', 'replicate', 'transcribe', 'translate', 'mutate'];
       var requestedTab = d.tab || 'build';
       var tab = dnaFocusMode && dnaFocusToolIds.indexOf(requestedTab) < 0 ? 'build' : requestedTab;
+      dnaQuizDataRef.current = d;
+      dnaQuizTabRef.current = tab;
       var visibleDnaSubtools = SUBTOOLS.filter(function(tb) { return !dnaFocusMode || dnaFocusToolIds.indexOf(tb.id) >= 0; });
       var dnaModeToolCount = dnaFocusMode ? dnaFocusToolIds.length : SUBTOOLS.length;
       var dnaSeq = typeof d.dnaSequence === 'string' ? d.dnaSequence : 'ATGCGTACCTGAAACTGA';
@@ -825,6 +939,49 @@ window.StemLab = window.StemLab || {
       var challengeQ = d.challengeQ || null;
       var challengeAnswer = d.challengeAnswer || '';
       var challengeFeedback = d.challengeFeedback || '';
+      var challengeSolved = d.challengeSolved === true || (d.challengeSolved == null && challengeFeedback.indexOf('\u2705') === 0);
+      React.useEffect(function() {
+        dnaQuizRef.current.alive = true;
+        return function() {
+          dnaQuizRef.current.alive = false;
+          dnaQuizRef.current.pending = {};
+          dnaQuizRef.current.owners = {};
+          dnaQuizRef.current.focus = null;
+        };
+      }, []);
+      React.useEffect(function() {
+        if (!challengeSolved) dnaQuizRef.current.challengeCheck = false;
+      }, [d.challengeQ, d.challengeAnswer, d.challengeAttempts, challengeSolved]);
+      React.useEffect(function() {
+        if (!d.battleDone) dnaQuizRef.current.battleAttack = false;
+      }, [d.battleOrder, d.battleRound, d.battleDone]);
+      React.useEffect(function() {
+        var recovery = {};
+        ['challenge', 'battle'].forEach(function(kind) {
+          var request = dnaQuizRef.current.pending[kind];
+          var loading = kind === 'challenge' ? d.aiChallengeLoading : d.battleAILoading;
+          if (request && !ownsDnaQuizRequest(request, d)) cancelDnaQuizRequest(kind);
+          else if (request && !request.started) runDnaQuizRequest(request);
+          if (loading && !dnaQuizRef.current.pending[kind]) {
+            if (kind === 'challenge') {
+              recovery.aiChallengeLoading = false; recovery.challengeSolved = challengeSolved;
+              recovery.challengeFeedback = 'Question generation stopped. Choose a question to continue.';
+            } else {
+              recovery.battleAILoading = false; recovery.battleUseAI = false; recovery.battleAIQ = null; recovery.battleReadyNotice = 'An authored question is ready.';
+            }
+          }
+        });
+        if (Object.keys(recovery).length) updMulti(recovery);
+      }, [tab, d.aiChallengeLoading, d.challengeQ, d.challengeTier, d.battleAILoading, d.battleOrder, d.battleRound, d.battleDone]);
+      React.useEffect(function() {
+        var job = dnaQuizRef.current.focus;
+        dnaQuizRef.current.focus = null;
+        if (!job || typeof document === 'undefined' || !dnaQuizRef.current.alive || dnaQuizTabRef.current !== job.kind || dnaQuizRef.current.owners[job.kind] !== job.token) return;
+        var active = document.activeElement;
+        if (active !== job.origin && (job.origin.isConnected || active !== document.body)) return;
+        var target = document.getElementById(job.id);
+        if (target) target.focus();
+      });
       var score = d.score || 0;
       var guidedStarted = !!d.guidedStarted;
       var guidedComplete = !!d.guidedComplete;
@@ -1163,6 +1320,10 @@ window.StemLab = window.StemLab || {
         var next = !dnaReportOpen;
         upd('dnaReportOpen', next);
         announceToSR(next ? 'Lab report preview opened.' : 'Lab report preview closed.');
+        if (!next && typeof document !== 'undefined') {
+          var toggle = document.getElementById('dna-report-toggle');
+          if (toggle) toggle.focus();
+        }
       }
       function exportDnaEvidence() {
         var evidence = buildDnaEvidenceSummary();
@@ -1891,30 +2052,108 @@ window.StemLab = window.StemLab || {
       }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed, dnaReadingFrame]);
 
       // ═══ CHALLENGE HELPERS ═══
-      var challengeTier = d.challengeTier || 0;
-
-      function generateChallenge() {
-        var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === challengeTier; });
-        var q = tierQs[Math.floor(Math.random() * tierQs.length)];
-        updMulti({ challengeQ: { type: 'static', question: q.q, answer: q.a, hint: q.h }, challengeAnswer: '', challengeFeedback: '' });
-        announceToSR('Challenge: ' + q.q);
+      var challengeTier = validDnaChallengeTier(d.challengeTier);
+      function validDnaChallengeTier(value) { return [0, 1, 2].indexOf(value) >= 0 ? value : 0; }
+      function cancelDnaQuizRequest(kind) {
+        dnaQuizRef.current.owners[kind] = ++dnaQuizRef.current.serial;
+        dnaQuizRef.current.pending[kind] = null;
       }
-
+      function ownsDnaQuizRequest(request, data) {
+        if (!dnaQuizRef.current.alive || dnaQuizRef.current.owners[request.kind] !== request.id || dnaQuizTabRef.current !== request.kind) return false;
+        if (request.kind === 'challenge') return data.challengeQ === request.expected.question && validDnaChallengeTier(data.challengeTier) === request.expected.tier;
+        return data.battleOrder === request.expected.order && (data.battleRound || 0) === request.expected.round && !data.battleDone;
+      }
+      function queueDnaQuizFocus(kind, id, origin) {
+        if (typeof document !== 'undefined' && origin && document.activeElement === origin) {
+          dnaQuizRef.current.focus = { kind: kind, id: id, origin: origin, token: dnaQuizRef.current.owners[kind] };
+        }
+      }
+      function commitDnaQuizRequest(request, patch) {
+        if (!ownsDnaQuizRequest(request, dnaQuizDataRef.current)) return;
+        dnaQuizRef.current.pending[request.kind] = null;
+        setLabToolData(function(prev) {
+          if (!ownsDnaQuizRequest(request, (prev && prev.dnaLab) || {})) return prev;
+          return Object.assign({}, prev, { dnaLab: Object.assign({}, prev.dnaLab || {}, patch) });
+        });
+      }
+      function requestDnaQuiz(kind, prompt, temperature, expected, trigger, ready, fallback) {
+        var existing = dnaQuizRef.current.pending[kind];
+        if (existing && ownsDnaQuizRequest(existing, dnaQuizDataRef.current)) return;
+        cancelDnaQuizRequest(kind);
+        var request = { id: dnaQuizRef.current.owners[kind], kind: kind, expected: expected, trigger: trigger, prompt: prompt, temperature: temperature, provider: callGemini, ready: ready, fallback: fallback, started: false };
+        dnaQuizRef.current.pending[kind] = request;
+        upd(kind === 'challenge' ? 'aiChallengeLoading' : 'battleAILoading', true);
+      }
+      // Start providers after the requested question/round has committed, so
+      // immediate responses are owned just like delayed responses.
+      function runDnaQuizRequest(request) {
+        request.started = true;
+        Promise.resolve().then(function() {
+          if (!ownsDnaQuizRequest(request, dnaQuizDataRef.current)) return;
+          if (typeof request.provider !== 'function') throw new Error('No quiz provider');
+          return request.provider(request.prompt, true, false, request.temperature);
+        }).then(function(response) {
+          if (!ownsDnaQuizRequest(request, dnaQuizDataRef.current)) return;
+          var parsed;
+          try {
+            parsed = JSON.parse((typeof response === 'string' ? response : '').replace(/```json\s*/gi, '').replace(/```/g, '').trim());
+            if (!parsed || typeof parsed.question !== 'string' || !parsed.question.trim() || typeof parsed.answer !== 'string' || !parsed.answer.trim() || (parsed.hint != null && typeof parsed.hint !== 'string')) throw new Error('Invalid quiz');
+            parsed = { question: parsed.question.trim(), answer: parsed.answer.trim(), hint: typeof parsed.hint === 'string' ? parsed.hint : '' };
+          } catch (error) { request.fallback(request); return; }
+          request.ready(parsed, request);
+        }).catch(function() { if (ownsDnaQuizRequest(request, dnaQuizDataRef.current)) request.fallback(request); });
+      }
+      function quizEnter(event, action) {
+        if (event.key !== 'Enter' || event.repeat || event.isComposing || event.keyCode === 229 || (event.nativeEvent && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229))) return;
+        event.preventDefault(); action(event.currentTarget);
+      }
+      function staticDnaChallenge(tier) {
+        var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === tier; });
+        var q = tierQs[Math.floor(Math.random() * tierQs.length)];
+        return { type: 'static', question: q.q, answer: q.a, hint: q.h };
+      }
+      function generateChallenge(event) {
+        cancelDnaQuizRequest('challenge'); dnaQuizRef.current.challengeCheck = false;
+        queueDnaQuizFocus('challenge', 'dna-challenge-question', event && event.currentTarget);
+        updMulti({ challengeQ: staticDnaChallenge(challengeTier), challengeAnswer: '', challengeFeedback: '', challengeSolved: false, challengeAttempts: 0, aiChallengeLoading: false });
+      }
+      function generateAIChallenge(next, trigger) {
+        if (d.aiChallengeLoading) return;
+        var gradeCtx = next ? gradeText('kindergarten', '3rd-5th grade', '6th-8th grade', '9th-12th grade AP Bio') : gradeText('kindergarten (ages 5-7), very simple', '3rd-5th grade', '6th-8th grade', '9th-12th grade AP Biology level');
+        var prompt = next
+          ? 'Generate a genetics quiz question for ' + gradeCtx + '. DNA: ' + dnaSeq.substring(0, 12) + '. Return ONLY JSON: {"question":"...","answer":"...","hint":"..."}. Answer 1-3 words.'
+          : 'Generate a genetics/DNA quiz question for ' + gradeCtx + ' students. DNA: ' + dnaSeq.substring(0, 15) + '... Return ONLY valid JSON: {"question":"...","answer":"...","hint":"..."}. Topics: DNA structure, base pairing, replication, transcription, translation, mutations, codons, amino acids, genetic disorders. Answer should be 1-3 words.';
+        requestDnaQuiz('challenge', prompt, 0.7, { question: d.challengeQ, tier: challengeTier }, trigger, function(parsed, request) {
+          dnaQuizRef.current.challengeCheck = false;
+          queueDnaQuizFocus('challenge', 'dna-challenge-question', request.trigger);
+          commitDnaQuizRequest(request, { challengeQ: { type: 'ai', question: parsed.question, answer: parsed.answer, hint: parsed.hint, isAI: true }, challengeAnswer: '', challengeFeedback: '', challengeSolved: false, challengeAttempts: 0, aiChallengeLoading: false });
+        }, function(request) {
+          dnaQuizRef.current.challengeCheck = false;
+          queueDnaQuizFocus('challenge', 'dna-challenge-question', request.trigger);
+          commitDnaQuizRequest(request, { challengeQ: staticDnaChallenge(request.expected.tier), challengeAnswer: '', challengeFeedback: 'AI question unavailable. An authored question is ready.', challengeSolved: false, challengeAttempts: 0, aiChallengeLoading: false });
+        });
+      }
+      function stopChallengeAI(origin) {
+        cancelDnaQuizRequest('challenge');
+        queueDnaQuizFocus('challenge', challengeQ ? 'dna-challenge-ai-next' : 'dna-challenge-ai-start', origin);
+        updMulti({ aiChallengeLoading: false, challengeFeedback: 'Question generation stopped. Your current work is kept.', challengeSolved: challengeSolved });
+      }
       function checkChallenge() {
-        if (!challengeQ || !challengeAnswer) return;
+        if (dnaQuizTabRef.current !== 'challenge' || !challengeQ || !challengeAnswer.trim() || challengeSolved || d.aiChallengeLoading || dnaQuizRef.current.challengeCheck) return;
+        dnaQuizRef.current.challengeCheck = true;
         var answers = challengeQ.answer.split(',');
         var correct = answers.some(function(a) { return challengeAnswer.trim().toUpperCase() === a.trim().toUpperCase(); });
+        var attempt = (d.challengeAttempts || 0) + 1;
         if (correct) {
           var newStreak = (d.challengeStreak || 0) + 1;
           var bonus = newStreak >= 3 ? 5 : 0;
-          updMulti({ challengeFeedback: '\u2705 Correct!' + (bonus ? ' (+' + bonus + ' streak bonus!)' : ''), score: score + 10 + bonus, challengeStreak: newStreak });
+          updMulti({ challengeFeedback: '\u2705 Correct!' + (bonus ? ' (+' + bonus + ' streak bonus!)' : ''), challengeSolved: true, challengeAttempts: attempt, score: score + 10 + bonus, challengeStreak: newStreak });
           awardStemXP('dnaLab', 10, 'Challenge correct');
-          announceToSR('Correct!'); if (typeof stemCelebrate === 'function') stemCelebrate();
+          if (typeof stemCelebrate === 'function') stemCelebrate();
           if (score + 10 >= 50) checkBadge('quizWhiz');
           if (newStreak >= 5) checkBadge('streakMaster');
         } else {
-          updMulti({ challengeFeedback: '\u274c The answer is ' + answers[0] + '. ' + (challengeQ.hint || ''), challengeStreak: 0 });
-          announceToSR('Incorrect. Answer: ' + answers[0]);
+          updMulti({ challengeFeedback: '\u274c The answer is ' + answers[0] + '. ' + (challengeQ.hint || ''), challengeAttempts: attempt, challengeStreak: 0 });
         }
       }
 
@@ -2623,12 +2862,106 @@ window.StemLab = window.StemLab || {
       };
 
       // ═══ FORENSICS HELPERS ═══
-      var forensicCase = d.forensicCase || 0;
+      var forensicCase = forensicCaseIndex(d.forensicCase);
       var forensicGelRun = !!d.forensicGelRun;
       var forensicGuess = d.forensicGuess;
       var forensicResult = d.forensicResult || null;
       var forensicSolved = d.forensicSolved || 0;
       var currentCase = FORENSIC_CASES[forensicCase] || FORENSIC_CASES[0];
+
+      var forensicAttempt = dnaForensicRef.current.attempt;
+      function forensicCaseIndex(value) {
+        var index = Number(value);
+        return isFinite(index) && Math.floor(index) === index && index >= 0 && index < FORENSIC_CASES.length ? index : 0;
+      }
+      function cancelForensicRequest() {
+        dnaForensicRef.current.serial++;
+        dnaForensicRef.current.request = null;
+      }
+      function ownsForensicRequest(request, state) {
+        return dnaForensicRef.current.alive && dnaForensicRef.current.serial === request.id && dnaForensicRef.current.attempt === request.attempt && dnaQuizTabRef.current === 'forensics'
+          && forensicCaseIndex(state.forensicCase) === request.caseIndex && !!state.forensicGelRun && state.forensicGuess === request.guess && state.forensicResult === request.result;
+      }
+      function queueForensicFocus(id, origin) {
+        if (typeof document !== 'undefined' && origin && document.activeElement === origin) dnaForensicRef.current.focus = { id: id, origin: origin, attempt: dnaForensicRef.current.attempt, serial: dnaForensicRef.current.serial };
+      }
+      React.useEffect(function() {
+        dnaForensicRef.current.alive = true;
+        return function() { dnaForensicRef.current.alive = false; dnaForensicRef.current.request = null; dnaForensicRef.current.focus = null; };
+      }, []);
+      React.useEffect(function() {
+        if (!forensicResult) dnaForensicRef.current.submitted = false;
+      }, [forensicCase, forensicGelRun, forensicResult]);
+      React.useEffect(function() {
+        var request = dnaForensicRef.current.request;
+        if (request && !ownsForensicRequest(request, d)) cancelForensicRequest();
+        else if (request && !request.started) runForensicRequest(request);
+        if (d.forensicAILoading && !dnaForensicRef.current.request) updMulti({ forensicAILoading: false, forensicAIStatus: 'Explanation generation stopped. Your current work is kept.' });
+      }, [tab, d.forensicCase, d.forensicGelRun, d.forensicGuess, d.forensicResult, d.forensicAILoading]);
+      React.useEffect(function() {
+        var job = dnaForensicRef.current.focus;
+        dnaForensicRef.current.focus = null;
+        if (!job || typeof document === 'undefined' || dnaQuizTabRef.current !== 'forensics' || job.attempt !== dnaForensicRef.current.attempt || job.serial !== dnaForensicRef.current.serial) return;
+        var active = document.activeElement;
+        if (active !== job.origin && (job.origin.isConnected || active !== document.body)) return;
+        var target = document.getElementById(job.id);
+        if (target) target.focus();
+      });
+      function resetForensicCase(index, origin, next) {
+        cancelForensicRequest(); dnaForensicRef.current.attempt++; dnaForensicRef.current.submitted = false;
+        if (next) queueForensicFocus('dna-forensic-run', origin);
+        updMulti({ forensicCase: index, forensicGelRun: false, forensicGuess: null, forensicResult: null, forensicAI: null, forensicAILoading: false, forensicAIStatus: '' });
+      }
+      function runForensicGel(origin) {
+        if (dnaQuizTabRef.current !== 'forensics' || forensicGelRun || forensicAttempt !== dnaForensicRef.current.attempt) return;
+        cancelForensicRequest(); dnaForensicRef.current.attempt++; dnaForensicRef.current.submitted = false;
+        queueForensicFocus('dna-forensic-gel-title', origin);
+        updMulti({ forensicGelRun: true, forensicGuess: null, forensicResult: null, forensicAI: null, forensicAILoading: false, forensicAIStatus: '' });
+      }
+      function selectForensicGuess(index) {
+        if (dnaQuizTabRef.current !== 'forensics' || !forensicGelRun || forensicResult || dnaForensicRef.current.submitted || forensicAttempt !== dnaForensicRef.current.attempt || !currentCase.samples[index] || currentCase.samples[index].isRef) return;
+        upd('forensicGuess', index);
+      }
+      function explainForensicEvidence(origin) {
+        if (dnaQuizTabRef.current !== 'forensics' || !forensicGelRun || !forensicResult || d.forensicAILoading || dnaForensicRef.current.request || typeof callGemini !== 'function') return;
+        cancelForensicRequest();
+        var gradeCtx = gradeText('kindergarten, very simple', '3rd-5th grade', '6th-8th grade, scientific terms', '9th-12th grade, advanced forensic science');
+        var caseData = currentCase;
+        var matchSample = caseData.samples[caseData.match];
+        var evidence = caseData.samples.map(function(sample) { return sample.label + ': ' + sample.fragments.join(', ') + ' bp'; }).join('; ');
+        var method = forensicCase === 1
+          ? 'This is a simplified parentage exercise: compare the child with the mother, then explain how the designated candidate accounts for child bands not present in the mother. The child bands not present in the mother in this dataset are ' + caseData.samples[0].fragments.filter(function(size) { return caseData.samples[1].fragments.indexOf(size) < 0; }).join(', ') + ' bp. Do not claim the child and candidate have identical profiles.'
+          : 'Compare the designated sample with the reference fragment profile.';
+        var prompt = 'You are a forensic genetics teacher. Grade: ' + gradeCtx + '. Case: "' + caseData.name + '" - ' + caseData.desc + ' Restriction enzyme: ' + caseData.enzyme + '. Teaching fragment data: ' + evidence + '. The designated answer in this teaching dataset is ' + matchSample.label + '. ' + method + ' Explain in 3-4 sentences the evidence, what restriction enzymes do, and how gel electrophoresis separates fragments by size. Keep the clean single-source teaching-model limitations clear; do not assert identity or parentage from these bands alone.';
+        var request = { id: dnaForensicRef.current.serial, attempt: dnaForensicRef.current.attempt, caseIndex: forensicCase, guess: forensicGuess, result: forensicResult, provider: callGemini, prompt: prompt, started: false };
+        dnaForensicRef.current.request = request;
+        updMulti({ forensicAILoading: true, forensicAIStatus: '' });
+      }
+      function finishForensicRequest(request, response, failed) {
+        if (!ownsForensicRequest(request, dnaQuizDataRef.current)) return;
+        dnaForensicRef.current.request = null;
+        setLabToolData(function(prev) {
+          var state = (prev && prev.dnaLab) || {};
+          if (!ownsForensicRequest(request, state)) return prev;
+          var patch = failed ? { forensicAILoading: false, forensicAIStatus: 'AI explanation unavailable. The fragment table and case feedback remain available.' }
+            : { forensicAILoading: false, forensicAI: response.trim(), forensicAIStatus: 'Explanation ready.' };
+          return Object.assign({}, prev, { dnaLab: Object.assign({}, state, patch) });
+        });
+      }
+      function runForensicRequest(request) {
+        request.started = true;
+        Promise.resolve().then(function() {
+          if (!ownsForensicRequest(request, dnaQuizDataRef.current)) return;
+          return request.provider(request.prompt, true, false, 0.7);
+        }).then(function(response) {
+          finishForensicRequest(request, response, typeof response !== 'string' || !response.trim());
+        }).catch(function() { finishForensicRequest(request, '', true); });
+      }
+      function stopForensicExplanation(origin) {
+        cancelForensicRequest();
+        queueForensicFocus(typeof callGemini === 'function' ? 'dna-forensic-ai-button' : 'dna-forensic-submit', origin);
+        updMulti({ forensicAILoading: false, forensicAIStatus: 'Stopped waiting for an explanation. Your current work is kept.' });
+      }
 
       function bandY(size) {
         var logMin = Math.log(80), logMax = Math.log(850);
@@ -2669,9 +3002,9 @@ window.StemLab = window.StemLab || {
           ctx2d.font = 'bold 7px sans-serif';
           ctx2d.textAlign = 'center';
           ctx2d.textBaseline = 'middle';
-          ctx2d.fillStyle = '#ef4444';
+          ctx2d.fillStyle = '#991b1b';
           ctx2d.fillText('- (cathode)', w / 2, 6);
-          ctx2d.fillStyle = '#22c55e';
+          ctx2d.fillStyle = '#166534';
           ctx2d.fillText('+ (anode)', w / 2, h2 - 6);
 
           var wellY = 18;
@@ -2708,7 +3041,7 @@ window.StemLab = window.StemLab || {
             ctx2d.fill();
 
             // Label text
-            ctx2d.fillStyle = '#64748b';
+            ctx2d.fillStyle = '#94a3b8';
             ctx2d.font = '5px sans-serif';
             ctx2d.textAlign = 'left';
             ctx2d.fillText(size + 'bp', ladderX + bandWidth / 2 + 4, currentY + 1.25);
@@ -2770,18 +3103,17 @@ window.StemLab = window.StemLab || {
       };
 
       function checkForensicAnswer() {
-        if (forensicGuess == null) return;
+        if (dnaQuizTabRef.current !== 'forensics' || !forensicGelRun || forensicResult || dnaForensicRef.current.submitted || forensicAttempt !== dnaForensicRef.current.attempt || forensicGuess == null || !currentCase.samples[forensicGuess] || currentCase.samples[forensicGuess].isRef) return;
+        dnaForensicRef.current.submitted = true;
         var correct = forensicGuess === currentCase.match;
         if (correct) {
           var ns = forensicSolved + 1;
           updMulti({ forensicResult: 'correct', forensicSolved: ns });
-          addToast('\u2705 Correct! DNA match confirmed!', 'success');
           awardStemXP('dnaLab', 15, 'Solved forensics case');
           if (typeof stemCelebrate === 'function') stemCelebrate();
           checkBadge('csiGenetics');
         } else {
           updMulti({ forensicResult: 'wrong' });
-          addToast('\u274c Not a match. Look at the banding pattern more carefully.', 'error');
         }
       }
 
@@ -2797,43 +3129,44 @@ window.StemLab = window.StemLab || {
       var battleUseAI = !!d.battleUseAI;
       var battleAIQ = d.battleAIQ || null; // current AI-generated question
 
-      function startBattle(useAI) {
+      function startBattle(useAI, origin) {
+        cancelDnaQuizRequest('battle'); dnaQuizRef.current.battleAttack = false;
         var order = [];
         for (var i = 0; i < BATTLE_QS.length; i++) order.push(i);
         for (var i = order.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
           var tmp = order[i]; order[i] = order[j]; order[j] = tmp;
         }
-        updMulti({ battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleOrder: order, battleAnswer: '', battleFeedback: '', battleDone: false, battleWon: false, battleUseAI: !!useAI, battleAIQ: null, battleAILoading: false });
-        if (useAI) generateBattleAIQ(0);
+        updMulti({ battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleOrder: order, battleAnswer: '', battleFeedback: '', battleDone: false, battleWon: false, battleUseAI: !!useAI, battleAIQ: null, battleAILoading: false, battleReadyNotice: '' });
+        if (useAI) generateBattleAIQ(0, order, origin);
+        queueDnaQuizFocus('battle', 'dna-battle-question', origin);
       }
-
-      function generateBattleAIQ(round) {
-        if (!callGemini) return;
-        upd('battleAILoading', true);
+      function generateBattleAIQ(round, order, trigger) {
         var gradeCtx = gradeText('kindergarten (ages 5-7), very simple', '3rd-5th grade', '6th-8th grade', '9th-12th grade AP Biology');
         var prompt = 'Generate a genetics/DNA battle quiz question (round ' + (round + 1) + '/10) for ' + gradeCtx + ' students. Make it exciting and varied. Topics: DNA structure, replication, transcription, translation, mutations, codons, amino acids, CRISPR, genetic disorders, proteins. Return ONLY valid JSON: {"question":"...","answer":"...","hint":"..."}. Answer should be 1-3 words.';
-        callGemini(prompt, true, false, 0.8).then(function(resp) {
-          try {
-            var clean = (typeof resp === 'string' ? resp : '').replace(/```json\s*/gi, '').replace(/```/g, '').trim();
-            var parsed = JSON.parse(clean);
-            if (parsed.question && parsed.answer) {
-              updMulti({ battleAIQ: { q: parsed.question, a: parsed.answer, h: parsed.hint || '' }, battleAILoading: false });
-            } else { throw new Error('bad'); }
-          } catch (e) { updMulti({ battleAIQ: null, battleAILoading: false, battleUseAI: false }); }
-        }).catch(function() { updMulti({ battleAIQ: null, battleAILoading: false, battleUseAI: false }); });
+        requestDnaQuiz('battle', prompt, 0.8, { order: order, round: round }, trigger, function(parsed, request) {
+          commitDnaQuizRequest(request, { battleAIQ: { q: parsed.question, a: parsed.answer, h: parsed.hint }, battleAILoading: false, battleReadyNotice: 'Round ' + (round + 1) + ': ' + parsed.question });
+        }, function(request) {
+          var fallback = BATTLE_QS[request.expected.order[request.expected.round]];
+          commitDnaQuizRequest(request, { battleAIQ: null, battleAILoading: false, battleUseAI: false, battleReadyNotice: 'AI question unavailable. Round ' + (round + 1) + ': ' + (fallback ? fallback.q : 'An authored question is ready.') });
+        });
       }
-
+      function stopBattleAI(origin) {
+        cancelDnaQuizRequest('battle');
+        queueDnaQuizFocus('battle', 'dna-battle-answer', origin);
+        updMulti({ battleAIQ: null, battleAILoading: false, battleUseAI: false, battleReadyNotice: 'Question generation stopped. The authored question for this round is ready.' });
+      }
       function getCurrentBattleQ() {
+        if (battleUseAI && d.battleAILoading) return null;
         if (battleUseAI && battleAIQ) return battleAIQ;
         var qIdx = (battleOrder || [])[battleRound];
         return BATTLE_QS[qIdx] || null;
       }
-
-      function battleAttack() {
-        if (!battleAnswer.trim() || battleDone) return;
+      function battleAttack(origin) {
+        if (dnaQuizTabRef.current !== 'battle' || !battleAnswer.trim() || battleDone || d.battleAILoading || dnaQuizRef.current.battleAttack) return;
         var q = getCurrentBattleQ();
         if (!q) return;
+        dnaQuizRef.current.battleAttack = true;
         var answers = q.a.split(',');
         var correct = answers.some(function(a) { return battleAnswer.trim().toUpperCase().indexOf(a.trim().toUpperCase()) >= 0; });
         var newEHP = battleEnemyHP;
@@ -2854,8 +3187,9 @@ window.StemLab = window.StemLab || {
         var nextRound = battleRound + 1;
         var done = newEHP <= 0 || newPHP <= 0 || nextRound >= maxRounds;
         var won = done && newEHP <= newPHP;
-        updMulti({ battleEnemyHP: newEHP, battlePlayerHP: newPHP, battleRound: nextRound, battleAnswer: '', battleFeedback: fb, battleDone: done, battleWon: won, battleAIQ: null });
-        if (!done && battleUseAI) generateBattleAIQ(nextRound);
+        if (done) queueDnaQuizFocus('battle', 'dna-battle-result', origin);
+        updMulti({ battleEnemyHP: newEHP, battlePlayerHP: newPHP, battleRound: nextRound, battleAnswer: '', battleFeedback: fb, battleDone: done, battleWon: won, battleAIQ: null, battleReadyNotice: '' });
+        if (!done && battleUseAI) generateBattleAIQ(nextRound, battleOrder, origin);
         if (done && won) {
           checkBadge('geneWarrior');
           awardStemXP('dnaLab', 25, 'Won Gene Defense battle');
@@ -3034,10 +3368,14 @@ window.StemLab = window.StemLab || {
       var dnaEvidenceHasSnapshot = ['codon', 'frame'].indexOf(dnaEvidenceCitation) >= 0 && !!dnaEvidenceCitationDetail;
       var dnaEvidenceSourceLabel = dnaEvidenceCitation === 'frame' ? 'reading frame' : 'codon';
       var dnaEvidenceCitationStale = !!(dnaEvidenceHasSnapshot && dnaEvidenceCitationSequenceKey !== dnaEvidenceSequenceKey);
+      var dnaEvidenceRefreshAvailable = dnaEvidenceCitation === 'frame' || (dnaEvidenceCitation === 'codon' && !!dnaSelectedCodonEvidenceDetail);
+      var dnaEvidenceReturnAvailable = !!(dnaEvidenceReturnRef.current && dnaEvidenceReturnRef.current.tab === tab &&
+        (dnaEvidenceReturnRef.current.source === 'frame' ? tab === 'translate' : tab === 'mutate' && !!dnaSelectedCodonEvidenceDetail));
       var dnaSelectedCodonEvidenceSaved = !!(dnaSelectedCodonEvidenceDetail && dnaEvidenceCitation === 'codon' && dnaEvidenceCitationDetail === dnaSelectedCodonEvidenceDetail && !dnaEvidenceCitationStale);
       var dnaSelectedFrameEvidenceSaved = !!(dnaEvidenceCitation === 'frame' && dnaEvidenceCitationDetail === dnaSelectedFrameEvidenceDetail && !dnaEvidenceCitationStale);
-      function useSelectedDnaCodonAsEvidence() {
+      function useSelectedDnaCodonAsEvidence(event) {
         if (!dnaSelectedCodonEvidenceDetail) return;
+        queueDnaEvidenceFocus(event);
         updMulti({
           dnaEvidenceCitation: 'codon',
           dnaEvidenceCitationDetail: dnaSelectedCodonEvidenceDetail,
@@ -3047,9 +3385,9 @@ window.StemLab = window.StemLab || {
           dnaReportOpen: true
         });
         addToast('Codon ' + dnaImpactSelectedCodon.index + ' added to your evidence report.', 'success');
-        announceToSR('Codon ' + dnaImpactSelectedCodon.index + ' evidence added to the lab report.');
       }
-      function useSelectedDnaFrameAsEvidence() {
+      function useSelectedDnaFrameAsEvidence(event) {
+        queueDnaEvidenceFocus(event);
         updMulti({
           dnaEvidenceCitation: 'frame',
           dnaEvidenceCitationDetail: dnaSelectedFrameEvidenceDetail,
@@ -3059,9 +3397,9 @@ window.StemLab = window.StemLab || {
           dnaReportOpen: true
         });
         addToast('Reading frame +' + dnaSelectedReadingFrame.frame + ' added to your evidence report.', 'success');
-        announceToSR('Reading frame plus ' + dnaSelectedReadingFrame.frame + ' evidence added to the lab report.');
       }
       function refreshSelectedDnaEvidence() {
+        if (!dnaEvidenceHasSnapshot || !dnaEvidenceCitationStale || !dnaEvidenceRefreshAvailable) return;
         if (dnaEvidenceCitation === 'frame') useSelectedDnaFrameAsEvidence();
         else useSelectedDnaCodonAsEvidence();
       }
@@ -3452,7 +3790,7 @@ window.StemLab = window.StemLab || {
               ),
               h("div", { className: "flex flex-wrap items-center justify-end gap-2" },
                 h("span", { className: "rounded-full px-2 py-1 text-[0.5625rem] font-black uppercase tracking-wide " + (selectedRow.changed ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900") }, selectedRow.changed ? "Changed" : "Same"),
-                h("button", { type: "button", onClick: useSelectedDnaCodonAsEvidence, className: "rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-[0.5625rem] font-black text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500", "data-dna-use-codon-evidence": true, "aria-pressed": dnaSelectedCodonEvidenceSaved }, dnaSelectedCodonEvidenceSaved ? "Added to report" : dnaEvidenceCitationStale ? "Refresh report evidence" : dnaEvidenceCitation === "codon" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use as evidence")
+                h("button", { type: "button", id: "dna-use-codon-evidence", onClick: useSelectedDnaCodonAsEvidence, className: "rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-[0.5625rem] font-black text-sky-800 hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500", "data-dna-use-codon-evidence": true, "aria-pressed": dnaSelectedCodonEvidenceSaved }, dnaSelectedCodonEvidenceSaved ? "Added to report" : dnaEvidenceCitationStale ? "Refresh report evidence" : dnaEvidenceCitation === "codon" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use as evidence")
               )
             ),
             h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
@@ -3496,7 +3834,6 @@ window.StemLab = window.StemLab || {
         if (!reasoningCorrect) feedback.push('Write at least 8 words that connect your evidence with because, shows, so, or therefore.');
         if (score === 3) feedback.unshift('Strong claim-evidence-reasoning link. Your explanation connects the molecular evidence to the conclusion.');
         updMulti({ dnaEvidenceScore: score, dnaEvidenceFeedback: feedback.join(' ') });
-        announceToSR(score === 3 ? 'Evidence and reasoning check complete.' : 'Evidence and reasoning feedback updated.');
         if (score === 3 && typeof stemCelebrate === 'function') stemCelebrate();
       }
       function analyzeExperimentSequence(sequence) {
@@ -3871,6 +4208,13 @@ window.StemLab = window.StemLab || {
         : dnaScenarioForDisplay.mutationType === 'Insertion'
           ? 'Add ' + dnaScenarioPreviewPlan.to + ' before base ' + dnaScenarioPreviewPlan.position
           : 'Change base ' + dnaScenarioPreviewPlan.position + ': ' + dnaScenarioPreviewPlan.from + ' \u2192 ' + dnaScenarioPreviewPlan.to;
+      var dnaBattleQuestion = getCurrentBattleQ();
+      var dnaBattleStatus = battleOrder.length ? battleFeedback : '';
+      if (battleOrder.length && !battleDone) {
+        if (d.battleAILoading) dnaBattleStatus += ' Preparing round ' + (battleRound + 1) + '. You can stop waiting to use the authored question.';
+        else if (d.battleReadyNotice) dnaBattleStatus += ' ' + d.battleReadyNotice;
+        else if (battleRound > 0 && dnaBattleQuestion) dnaBattleStatus += ' Next: round ' + (battleRound + 1) + '. ' + dnaBattleQuestion.q;
+      }
       var __dnaMainView = h("div", { className: "space-y-3 max-w-7xl mx-auto animate-in fade-in duration-200", "data-dna-tool": true, "data-dna-active-tab": tab },
 
         // ═══ COMMAND HEADER ═══
@@ -3887,7 +4231,7 @@ window.StemLab = window.StemLab || {
           ),
           h("div", { className: "dna-command-actions" },
               h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
-              h("button", { onClick: toggleDnaReport, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100", 'aria-label': __alloT('stem.dna.a11y_open_student_dna_lab_report', 'Open student DNA lab report') }, 'Lab report'),
+              h("button", { type: "button", id: "dna-report-toggle", onClick: toggleDnaReport, 'aria-expanded': dnaReportOpen, 'aria-controls': dnaReportOpen ? 'dna-lab-report-panel' : undefined, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100" }, 'Lab report'),
           h("div", { className: "flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1", "data-dna-view-mode": dnaFocusMode ? "focus" : "explore", role: "group", "aria-label": __alloT('stem.dna.a11y_dna_lab_view_mode', 'DNA Lab view mode') },
             h("button", { type: "button", onClick: function() { setDnaFocusMode(true); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (dnaFocusMode ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": dnaFocusMode }, "Focus"),
             h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (!dnaFocusMode ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": !dnaFocusMode }, "Explore")
@@ -4180,7 +4524,7 @@ window.StemLab = window.StemLab || {
                     h("div", { className: "flex flex-wrap gap-2", role: 'radiogroup', 'aria-label': guidedStep.prompt },
                       guidedStep.choices.map(function(choice) {
                         var selected = guidedSelectedAnswer === choice;
-                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[0.6875rem] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
+                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, tabIndex: selected || (guidedStep.choices.indexOf(guidedSelectedAnswer) < 0 && choice === guidedStep.choices[0]) ? 0 : -1, onKeyDown: navigateDnaRadio, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[0.6875rem] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
                       })
                     ),
                     h("div", { className: "flex flex-wrap items-center gap-2" },
@@ -4194,11 +4538,21 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        dnaReportOpen && h("section", { className: "rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm", "data-dna-lab-report": true, role: "region", "aria-labelledby": "dna-lab-report-title" },
+        dnaReportOpen && h("section", { id: "dna-lab-report-panel", className: "rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm", "data-dna-lab-report": true, role: "region", "aria-labelledby": "dna-lab-report-title" },
+          h("style", null, [
+            '[data-dna-tool] [data-dna-lab-report]{min-width:0;overflow-wrap:anywhere}',
+            '[data-dna-tool] [data-dna-lab-report] :is(select,textarea){box-sizing:border-box;min-width:0;max-width:100%;min-height:44px}',
+            '[data-dna-tool] [data-dna-lab-report] button{white-space:normal;overflow-wrap:anywhere}',
+            '[data-dna-tool] [data-dna-lab-report] :is(button,select,textarea,#dna-evidence-mode-title){scroll-margin-block-start:96px;scroll-margin-block-end:24px}',
+            '[data-dna-tool] [data-dna-lab-report] [hidden]{display:none!important}',
+            '[data-dna-tool] [data-dna-lab-report] :is(button,select,textarea,#dna-evidence-mode-title):focus-visible{outline:3px solid #5b21b6!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #fff!important;transition:none!important}',
+            '[data-dna-tool] [data-dna-lab-report] #dna-evidence-refresh[aria-disabled=true]{cursor:default;background:#f1f5f9;color:#475569;border-color:#64748b}',
+            '@media(forced-colors:active){[data-dna-tool] [data-dna-lab-report] :is(button,select,textarea,#dna-evidence-mode-title):focus-visible{outline-color:Highlight!important;box-shadow:none!important}[data-dna-tool] [data-dna-lab-report] :is(button,select,textarea){border:1px solid ButtonText!important}}'
+          ].join('')),
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
               h("h4", { id: "dna-lab-report-title", className: "text-sm font-black text-amber-950" }, "Student DNA lab report"),
-              h("p", { className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, "Use the evidence below to make a claim, describe what changed, and explain how the sequence supports your conclusion." )
+              h("p", { id: "dna-report-help", className: "mt-1 max-w-3xl text-[0.6875rem] leading-relaxed text-slate-700" }, "Use the evidence below to make a claim, describe what changed, and explain how the sequence supports your conclusion." )
             ),
             h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide text-amber-800" }, gradeBand + " reading level")
           ),
@@ -4218,51 +4572,50 @@ window.StemLab = window.StemLab || {
               h("p", { className: "mt-1 text-[0.6875rem] text-slate-700" }, h("span", { className: "font-black" }, "Lab stations visited: "), visitedCount + "/" + SUBTOOLS.length)
             )
           ),
-          h("label", { className: "mt-3 block rounded-lg border border-amber-200 bg-white p-3" },
-            h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-700" }, "Reflection / claim"),
-            h("textarea", { value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-amber-500", 'aria-label': __alloT('stem.dna.a11y_dna_lab_report_reflection_or_claim', 'DNA lab report reflection or claim'), placeholder: t('stem.dna.what_changed_what_stayed_the_same_what_evide','What changed? What stayed the same? What evidence supports your claim?') })
+          h("label", { htmlFor: "dna-report-reflection", className: "mt-3 block rounded-lg border border-amber-200 bg-white p-3" },
+            h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-amber-700" }, __alloT('stem.dna.a11y_dna_lab_report_reflection_or_claim', 'DNA lab report reflection or claim')),
+            h("textarea", { id: "dna-report-reflection", "aria-describedby": "dna-report-help", value: dnaReportNote, onChange: function(e) { upd('dnaReportNote', e.target.value); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-500 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-amber-500", 'aria-label': __alloT('stem.dna.a11y_dna_lab_report_reflection_or_claim', 'DNA lab report reflection or claim'), placeholder: t('stem.dna.what_changed_what_stayed_the_same_what_evide','What changed? What stayed the same? What evidence supports your claim?') })
           ),
           h("section", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3", "data-dna-evidence-mode": true, role: "region", "aria-labelledby": "dna-evidence-mode-title" },
             h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
               h("div", null,
-                h("h5", { id: "dna-evidence-mode-title", className: "text-[0.6875rem] font-black uppercase tracking-wide text-violet-900" }, "Evidence & Reasoning mode"),
-                h("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, dnaEvidenceRubric.prompt)
+                h("h5", { id: "dna-evidence-mode-title", tabIndex: -1, className: "text-[0.6875rem] font-black uppercase tracking-wide text-violet-900" }, "Evidence & Reasoning mode"),
+                h("p", { id: "dna-evidence-prompt", className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, dnaEvidenceRubric.prompt)
               ),
               h("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800" }, "Check: " + dnaEvidenceScore + "/3")
             ),
             h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
-              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
+              h("label", { htmlFor: "dna-evidence-claim", className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
                 "Claim",
-                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': __alloT('stem.dna.a11y_choose_an_evidence_based_claim', 'Choose an evidence-based claim') },
+                h("select", { id: "dna-evidence-claim", "aria-describedby": "dna-evidence-prompt", value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700" },
                   h("option", { value: "" }, "Choose a claim"),
                   dnaEvidenceRubric.claims.map(function(claim) { return h("option", { key: claim.id, value: claim.id }, claim.label); })
                 )
               ),
-              h("label", { className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
+              h("label", { htmlFor: "dna-evidence-citation", className: "block text-[0.625rem] font-black uppercase tracking-wide text-violet-800" },
                 "Evidence citation",
-                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700", 'aria-label': __alloT('stem.dna.a11y_choose_evidence_to_cite', 'Choose evidence to cite') },
+                h("select", { id: "dna-evidence-citation", "aria-describedby": "dna-evidence-citation-help dna-evidence-citation-status", value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[0.6875rem] font-bold text-slate-700" },
                   h("option", { value: "" }, "Choose evidence"),
                   dnaEvidenceCitationOptions.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
                 )
               )
             ),
-            dnaEvidenceHasSnapshot && h("div", { className: "mt-3 rounded-lg border p-3 " + (dnaEvidenceCitationStale ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50"), "data-dna-evidence-citation-detail": true, "data-evidence-source": dnaEvidenceCitation, "data-stale": dnaEvidenceCitationStale ? "true" : "false", role: "status" },
-              h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
-                h("div", null,
-                  h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide " + (dnaEvidenceCitationStale ? "text-amber-800" : "text-emerald-800") }, dnaEvidenceCitationStale ? "Earlier sequence" : "Current sequence"),
-                  h("p", { className: "mt-1 mb-0 text-[0.625rem] font-bold leading-relaxed text-slate-700" }, dnaEvidenceCitationDetail)
-                ),
-                dnaEvidenceCitationStale && h("button", { type: "button", onClick: refreshSelectedDnaEvidence, className: "rounded-lg border border-amber-400 bg-white px-2.5 py-1.5 text-[0.5625rem] font-black text-amber-900 hover:bg-amber-100" }, dnaEvidenceCitation === 'frame' ? "Refresh from frame explorer" : "Refresh from spotlight")
-              ),
-              dnaEvidenceCitationStale && h("p", { className: "mt-2 mb-0 text-[0.625rem] leading-relaxed text-amber-900" }, "The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning.")
+            h("p", { id: "dna-evidence-citation-help", className: "mt-2 text-[0.6875rem] leading-relaxed text-slate-700" }, "Choose evidence that supports your claim. The codon spotlight and reading-frame explorer can add an exact snapshot to this report."),
+            h("p", { id: "dna-evidence-citation-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 text-[0.6875rem] font-bold leading-relaxed text-slate-800" }, dnaEvidenceHasSnapshot ? (dnaEvidenceCitationStale ? (dnaEvidenceRefreshAvailable ? "Earlier sequence. The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning." : "Earlier sequence. There is no current mutation comparison to refresh this saved codon evidence. Run another mutation or choose a different evidence source; your saved snapshot remains below.") : "Current sequence. Your saved " + dnaEvidenceSourceLabel + " evidence is ready for the reasoning check.") : ''),
+            h("div", { hidden: !dnaEvidenceHasSnapshot, className: "mt-3 rounded-lg border p-3 " + (dnaEvidenceCitationStale ? "border-amber-500 bg-amber-50" : "border-emerald-600 bg-emerald-50"), "data-dna-evidence-citation-detail": true, "data-evidence-source": dnaEvidenceCitation, "data-stale": dnaEvidenceCitationStale ? "true" : "false", role: "region", "aria-labelledby": "dna-evidence-citation-title" },
+              h("h6", { id: "dna-evidence-citation-title", className: "text-[0.6875rem] font-black text-slate-900" }, "Saved molecular evidence"),
+              h("p", { className: "mt-1 mb-0 text-[0.6875rem] font-bold leading-relaxed text-slate-700" }, dnaEvidenceCitationDetail),
+              h("button", { id: "dna-evidence-refresh", type: "button", "aria-disabled": !dnaEvidenceCitationStale || !dnaEvidenceRefreshAvailable, tabIndex: dnaEvidenceCitationStale && dnaEvidenceRefreshAvailable ? 0 : -1, "aria-describedby": "dna-evidence-citation-status", onClick: refreshSelectedDnaEvidence, className: "mt-2 rounded-lg border border-amber-600 bg-white px-3 py-2 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100" }, dnaEvidenceCitation === 'frame' ? "Refresh from frame explorer" : "Refresh from spotlight")
             ),
-            h("label", { className: "mt-3 block rounded-lg border border-violet-500 bg-white p-3" },
-              h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
-              h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-violet-500", 'aria-label': __alloT('stem.dna.a11y_explain_how_the_evidence_supports_the_claim', 'Explain how the evidence supports the claim'), placeholder: t('stem.dna.use_because_shows_so_or_therefore_to_connect','Use because, shows, so, or therefore to connect the evidence to your claim.') })
+            dnaEvidenceReturnAvailable && h("button", { id: "dna-evidence-return", type: "button", onClick: returnToDnaEvidence, className: "mt-2 rounded-lg border border-violet-600 bg-white px-3 py-2 text-[0.6875rem] font-black text-violet-900 hover:bg-violet-100" }, dnaEvidenceReturnRef.current.source === 'frame' ? "Return to reading-frame explorer" : "Return to codon spotlight"),
+            h("label", { htmlFor: "dna-evidence-reasoning", className: "mt-3 block rounded-lg border border-violet-500 bg-white p-3" },
+              h("span", { className: "text-[0.625rem] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.dna.a11y_explain_how_the_evidence_supports_the_claim', 'Explain how the evidence supports the claim')),
+              h("textarea", { id: "dna-evidence-reasoning", "aria-describedby": "dna-evidence-reasoning-help", value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-500 px-2 py-2 text-[0.6875rem] text-slate-700 outline-none focus:border-violet-500", 'aria-label': __alloT('stem.dna.a11y_explain_how_the_evidence_supports_the_claim', 'Explain how the evidence supports the claim'), placeholder: t('stem.dna.use_because_shows_so_or_therefore_to_connect','Use because, shows, so, or therefore to connect the evidence to your claim.') })
             ),
+            h("p", { id: "dna-evidence-reasoning-help", className: "mt-2 text-[0.6875rem] leading-relaxed text-slate-700" }, "Write at least 8 words. Connect your evidence to the claim with words such as because, shows, so, or therefore."),
             h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
-              h("button", { type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
-              dnaEvidenceFeedback && h("span", { className: "text-[0.6875rem] leading-relaxed text-slate-700", role: "status" }, dnaEvidenceFeedback)
+              h("button", { id: "dna-evidence-check", type: "button", onClick: checkDnaEvidence, className: "rounded-lg bg-violet-700 px-3 py-2 text-[0.6875rem] font-black text-white hover:bg-violet-800" }, "Check reasoning"),
+              h("span", { id: "dna-evidence-feedback", className: "text-[0.6875rem] leading-relaxed text-slate-700", role: "status", "aria-live": "polite", "aria-atomic": "true" }, dnaEvidenceFeedback)
             )
           ),          h("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
             h("p", { className: "m-0 max-w-xl text-[0.625rem] leading-relaxed text-slate-600" }, "Tip: connect the sequence change to the codon and protein evidence, then note any uncertainty."),
@@ -4566,7 +4919,7 @@ window.StemLab = window.StemLab || {
               dnaReadingFrames.map(function(frame) {
                 var isSelected = frame.frame === dnaSelectedReadingFrame.frame;
                 var statusTone = frame.status === 'complete' ? "bg-emerald-100 text-emerald-800" : frame.status === 'open' ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700";
-                return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
+                return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, tabIndex: isSelected ? 0 : -1, onKeyDown: navigateDnaRadio, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
                   h("span", { className: "absolute inset-x-0 top-0 h-1 " + (frame.status === 'complete' ? "bg-emerald-500" : frame.status === 'open' ? "bg-amber-500" : "bg-slate-300"), "aria-hidden": "true" }),
                   h("div", { className: "flex items-center justify-between gap-2" },
                     h("span", { className: "text-[0.75rem] font-black text-slate-900" }, "Frame +" + frame.frame),
@@ -4624,16 +4977,16 @@ window.StemLab = window.StemLab || {
                   h("div", { className: "text-[0.5625rem] font-black uppercase tracking-wide text-indigo-700" }, "Frame +" + dnaSelectedReadingFrame.frame + " evidence"),
                   h("p", { className: "mt-1 mb-0 text-[0.6875rem] font-bold leading-relaxed text-slate-800" }, dnaSelectedFrameInterpretation)
                 ),
-                h("button", { type: "button", onClick: useSelectedDnaFrameAsEvidence, className: "rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[0.625rem] font-black text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "data-dna-use-frame-evidence": true, "aria-pressed": dnaSelectedFrameEvidenceSaved }, dnaSelectedFrameEvidenceSaved ? "Added to report" : dnaEvidenceCitation === "frame" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use frame as evidence")
+                h("button", { type: "button", id: "dna-use-frame-evidence", onClick: useSelectedDnaFrameAsEvidence, className: "rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[0.625rem] font-black text-indigo-900 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", "data-dna-use-frame-evidence": true, "aria-pressed": dnaSelectedFrameEvidenceSaved }, dnaSelectedFrameEvidenceSaved ? "Added to report" : dnaEvidenceCitation === "frame" && dnaEvidenceCitationDetail ? "Replace report evidence" : "Use frame as evidence")
               ),
-              h("div", { className: "mt-3 overflow-x-auto rounded-lg bg-slate-50 p-2 pb-2 focus:outline-none focus:ring-2 focus:ring-indigo-400", tabIndex: 0, "aria-label": "Scrollable codon rail for reading frame plus " + dnaSelectedReadingFrame.frame },
+              h("div", { className: "mt-3 overflow-x-auto rounded-lg bg-slate-50 p-2 pb-2 focus:outline-none focus:ring-2 focus:ring-indigo-400", tabIndex: 0, role: "region", "aria-label": "Scrollable codon rail for reading frame plus " + dnaSelectedReadingFrame.frame },
                 h("div", { className: "flex min-w-max gap-1.5 font-mono", role: "list", "aria-label": "Codons in reading frame plus " + dnaSelectedReadingFrame.frame },
                   dnaSelectedReadingFrame.codons.map(function(entry, entryIndex) {
                     var codonState = dnaSelectedReadingFrame.startIndex < 0 ? "untranslated" : entryIndex === dnaSelectedReadingFrame.startIndex ? "start" : entryIndex === dnaSelectedReadingFrame.stopIndex ? "stop" : entryIndex < dnaSelectedReadingFrame.startIndex ? "before-start" : "coding";
                     var codonTone = codonState === "start" ? "border-emerald-400 bg-emerald-100 text-emerald-900" : codonState === "stop" ? "border-rose-400 bg-rose-100 text-rose-900" : codonState === "coding" ? "border-indigo-200 bg-indigo-50 text-indigo-900" : "border-slate-200 bg-white text-slate-500";
                     return h("span", { key: entry.pos, role: "listitem", className: "min-w-[66px] snap-start rounded-md border px-2 py-1.5 text-center text-[0.625rem] font-black shadow-sm " + codonTone, "data-codon-state": codonState, title: "Bases " + (entry.pos + 1) + "-" + (entry.pos + 3) + ": " + entry.codon + " -> " + entry.aa },
                       h("span", { className: "block" }, entry.codon),
-                      h("span", { className: "mt-0.5 block font-sans text-[0.5rem] opacity-80" }, entry.aa)
+                      h("span", { className: "mt-0.5 block font-sans text-[0.5rem]" }, entry.aa)
                     );
                   }),
                   dnaSelectedReadingFrame.codons.length === 0 && h("span", { className: "text-[0.625rem] italic text-slate-500" }, "Not enough bases for a complete codon in this frame.")
@@ -5253,6 +5606,7 @@ window.StemLab = window.StemLab || {
               { id: 'frameshift', label: t('stem.dna.frameshift', 'Frameshift'),       color: '#7c3aed', icon: '\u21AA\uFE0F',  def: 'Insertion or deletion NOT divisible by 3. Reading frame shifts; downstream protein is garbage. Usually catastrophic.' },
               { id: 'inframe',    label: t('stem.dna.in_frame_indel', 'In-frame indel'),   color: '#0ea5e9', icon: '\u2795', def: 'Insertion or deletion that IS divisible by 3. Adds or removes whole amino acids; rest of protein is unchanged.' }
             ];
+            var msLabelInk = { silent: '#166534', missense: '#92400e', nonsense: '#991b1b', frameshift: '#5b21b6', inframe: '#075985' };
             var MS_VIGNETTES = [
               { id: 1, before: 'ATG GCC TTC TAA',  after: 'ATG GCC TTT TAA',          change: 'TTC \u2192 TTT (3rd-position C\u2192T)',
                 aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Phe-stop', correct: 'silent',
@@ -5296,6 +5650,8 @@ window.StemLab = window.StemLab || {
             var msShown = d.msShown || [];
             var msOpen = !!d.msOpen;
             function startMs() {
+              dnaMsPickLockRef.current = false;
+              dnaMsFocusRef.current = 'dna-ms-vignette';
               var pool = [];
               for (var i = 0; i < MS_VIGNETTES.length; i++) if (msShown.indexOf(i) < 0) pool.push(i);
               if (pool.length === 0) { pool = []; for (var j = 0; j < MS_VIGNETTES.length; j++) pool.push(j); msShown = []; }
@@ -5308,7 +5664,8 @@ window.StemLab = window.StemLab || {
               upd('msShown', msShown.concat([pick]));
             }
             function pickMs(typeId) {
-              if (msAnswered) return;
+              if (msAnswered || dnaMsPickLockRef.current) return;
+              dnaMsPickLockRef.current = true;
               var v = MS_VIGNETTES[msIdx];
               var correct = typeId === v.correct;
               var newScore = msScore + (correct ? 1 : 0);
@@ -5321,7 +5678,7 @@ window.StemLab = window.StemLab || {
               upd('msStreak', newStreak);
               upd('msBest', newBest);
             }
-            return h("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl border-2 border-violet-300 p-4" },
+            return h("div", { "data-dna-mutation-sleuth": true, className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl border-2 border-violet-300 p-4" },
               h("div", { className: "flex items-center justify-between mb-2 flex-wrap gap-2" },
                 h("div", { className: "flex items-center gap-2" },
                   h("span", { style: { fontSize: 22 }, "aria-hidden": "true" }, '\uD83D\uDD75\uFE0F'),
@@ -5331,17 +5688,18 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 h("button", {
+                  id: 'dna-ms-toggle', type: 'button', 'aria-expanded': msOpen,
+                  'aria-controls': msOpen ? 'dna-ms-panel' : undefined,
                   onClick: function() { upd('msOpen', !msOpen); },
                   className: "transition-colors px-3 py-1 rounded-lg bg-violet-200 text-violet-800 text-[0.6875rem] font-bold hover:bg-violet-300 active:scale-[0.97]"
                 }, msOpen ? 'Hide \u25B4' : 'Play \u2192')
               ),
-              msOpen && (msIdx < 0
+              msOpen && h("div", { id: "dna-ms-panel" }, msIdx < 0
                 ? h("div", { className: "text-center py-3" },
                     h("p", { className: "text-[0.6875rem] text-slate-700 leading-relaxed mb-3" },
                       t('stem.dna.10_mutation_vignettes_each_shows_a_sho', '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type - silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.')),
                     h("button", {
-                      onClick: startMs,
-                      'aria-label': t('stem.dna.start_mutation_effect_sleuth', 'Start Mutation Effect Sleuth'),
+                      id: 'dna-ms-start', type: 'button', onClick: startMs,
                       className: "transition-colors px-4 py-2 rounded-lg bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                     }, t('stem.dna.start_vignette_1_of_10', '\uD83D\uDD75\uFE0F Start - vignette 1 of 10'))
                   )
@@ -5359,7 +5717,7 @@ window.StemLab = window.StemLab || {
                         h("span", null, t('stem.dna.best', 'Best '), h('strong', { className: "text-fuchsia-700" }, msBest))
                       ),
                       h("div", { className: "bg-white rounded-lg p-3 border border-violet-500 mb-2" },
-                        h("div", { className: "text-[0.625rem] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
+                        h("h3", { id: 'dna-ms-vignette', tabIndex: -1, className: "text-[0.625rem] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
                         h("div", { className: "font-mono text-[0.75rem] text-slate-700 mb-1" },
                           h('span', { className: "text-slate-500" }, 'Before:  '),
                           h('span', { className: "text-emerald-700 font-bold" }, v.before)
@@ -5374,7 +5732,7 @@ window.StemLab = window.StemLab || {
                           h('div', null, h('span', { className: 'text-slate-500' }, t('stem.dna.aa_after', 'AA after:  ')), v.aaAfter)
                         )
                       ),
-                      h("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", role: 'radiogroup', 'aria-label': t('stem.dna.pick_the_mutation_effect_type', 'Pick the mutation effect type') },
+                      h("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", "data-dna-ms-answers": true, role: 'group', 'aria-label': t('stem.dna.pick_the_mutation_effect_type', 'Pick the mutation effect type') },
                         MS_TYPES.map(function(t) {
                           var picked = msAnswered && msPick === t.id;
                           var isRight = msAnswered && t.id === v.correct;
@@ -5384,24 +5742,30 @@ window.StemLab = window.StemLab || {
                             else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
                             else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
                           } else {
-                            bg = t.color + '15'; border = t.color + '60'; color = '#1e293b';
+                            bg = t.color + '15'; border = msLabelInk[t.id]; color = '#1e293b';
                           }
                           return h('button', {
-                            key: t.id, role: 'radio',
-                            'aria-checked': picked ? 'true' : 'false',
-                            'aria-label': t.label,
-                            disabled: msAnswered,
+                            key: t.id, type: 'button', 'data-dna-ms-answer': t.id,
+                            'aria-labelledby': 'dna-ms-label-' + t.id,
+                            'aria-describedby': 'dna-ms-definition-' + t.id + (msAnswered ? ' dna-ms-feedback' : ''),
+                            'aria-disabled': msAnswered,
                             onClick: function() { pickMs(t.id); },
                             style: { padding: '10px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: msAnswered ? 'default' : 'pointer', textAlign: 'left', fontSize: 11, fontWeight: 700, transition: 'all 0.15s', minHeight: 64 }
                           },
                             h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
                               h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, t.icon),
-                              h('span', { style: { color: msAnswered ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
+                              h('span', { id: 'dna-ms-label-' + t.id, style: { color: msAnswered ? color : msLabelInk[t.id], fontSize: 12, fontWeight: 800 } }, t.label)
                             ),
-                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color: 'var(--allo-stem-text-soft, #475569)' } }, t.def)
+                            h('div', { id: 'dna-ms-definition-' + t.id, style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color : '#475569' } }, t.def),
+                            msAnswered && (picked || isRight) && h('div', { className: 'mt-1 text-[0.625rem] font-black' },
+                              picked && isRight ? 'Your answer - correct' : picked ? 'Your answer' : 'Correct answer')
                           );
                         })
                       ),
+                      h("p", { id: 'dna-ms-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                        className: msAnswered ? 'mt-3 text-[0.75rem] font-bold' : 'm-0', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                        msAnswered ? (pickedCorrect ? 'Correct - ' : 'The effect is ') + MS_TYPES.filter(function(x) { return x.id === v.correct; })[0].label
+                          + (!pickedCorrect && msPick ? ' (you picked ' + MS_TYPES.filter(function(x) { return x.id === msPick; })[0].label + ').' : '.') : ''),
                       msAnswered && h("div", {
                         className: "mt-3 p-3 rounded-lg",
                         style: {
@@ -5409,11 +5773,6 @@ window.StemLab = window.StemLab || {
                           border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
                         }
                       },
-                        h("div", { className: "text-[0.75rem] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
-                          pickedCorrect
-                            ? '\u2705 Correct - ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
-                            : '\u274C The effect is ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label + (msPick ? ' (you picked ' + (MS_TYPES.filter(function(x) { return x.id === msPick; })[0]).label + ')' : '')
-                        ),
                         h("p", { className: "text-[0.6875rem] text-slate-700 leading-relaxed mb-2" }, v.why),
                         allDone
                           ? h("div", { className: "p-2 rounded bg-violet-100 border border-violet-300" },
@@ -5426,12 +5785,12 @@ window.StemLab = window.StemLab || {
                                 ' - these distinctions take practice. Re-read the codon table + the rationales on misses, then retake.'
                               ),
                               h("button", {
-                                onClick: function() { upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
+                                type: 'button', onClick: function() { dnaMsFocusRef.current = 'dna-ms-start'; upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
                                 className: "transition-colors mt-2 px-3 py-1.5 rounded bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                               }, t('stem.dna.restart', '\uD83D\uDD04 Restart'))
                             )
                           : h("button", {
-                              onClick: startMs,
+                              type: 'button', onClick: startMs,
                               className: "transition-colors px-3 py-1.5 rounded bg-violet-600 text-white text-[0.6875rem] font-bold hover:bg-violet-700 active:scale-[0.97]"
                             }, t('stem.dna.next_vignette', '\u27A1\uFE0F Next vignette'))
                       )
@@ -5445,14 +5804,14 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // FORENSICS TAB (NEW)
         // ═══════════════════════════════════════════
-        tab === 'forensics' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-forensics", "data-dna-workspace": "forensics" },
-          h("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-200 p-4 space-y-3" },
-            h("div", { className: "flex items-center gap-2 mb-1" },
-              h("span", { className: "text-lg" }, "\uD83D\uDD0D"),
-              h("h4", { className: "text-sm font-bold text-cyan-800" }, t('stem.dna.dna_forensics_gel_electrophoresis', "DNA Forensics - Gel Electrophoresis")),
-              h("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[0.6875rem] font-bold rounded-full" }, "CASE " + (forensicCase + 1) + "/" + FORENSIC_CASES.length)
+        tab === 'forensics' && h('div', { className: 'space-y-4', id: 'dna-workspace', role: 'tabpanel', 'aria-labelledby': 'dna-tab-forensics', 'data-dna-workspace': 'forensics', 'data-dna-forensics': true },
+          h('section', { className: 'bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-200 p-4 space-y-3', 'aria-labelledby': 'dna-forensic-title' },
+            h('div', { className: 'flex items-center flex-wrap gap-2 mb-1' },
+              h('span', { className: 'text-lg', 'aria-hidden': true }, '\uD83D\uDD0D'),
+              h('h4', { id: 'dna-forensic-title', className: 'text-sm font-bold text-cyan-800' }, t('stem.dna.dna_forensics_gel_electrophoresis', 'DNA Forensics - Gel Electrophoresis')),
+              h('span', { className: 'px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[0.6875rem] font-bold rounded-full' }, 'CASE ' + (forensicCase + 1) + '/' + FORENSIC_CASES.length)
             ),
-            h("p", { className: "text-xs text-slate-600" },
+            h('p', { className: 'text-xs text-slate-600' },
               gradeText(
                 'A DNA profile compares selected markers, a little like comparing a pattern of barcode lines. This activity uses simplified fragment bands; real laboratories use controls, multiple markers, and statistics.',
                 'Restriction enzymes cut DNA at specific sequences, and gel electrophoresis separates fragments by size. The same bands are consistent with the same source in this simplified activity, but real conclusions require quality checks and statistical interpretation.',
@@ -5460,93 +5819,76 @@ window.StemLab = window.StemLab || {
                 'RFLP and STR profiling are different methods. Modern forensic workflows amplify many STR loci and report statistical weight using population data, laboratory controls, and validated interpretation procedures. A random-match probability is not a universal constant and does not alone identify a person as the source.'
               )
             ),
-
-            h("p", { className: "text-[0.6875rem] text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-lg p-2" },
-              "Model limit: these are clean, single-source teaching patterns. Real evidence may be partial, degraded, contaminated, or mixed, and analysts quantify the strength of support rather than declaring identity from bands alone."
-            ),
-
-            // Case selector
-            h("div", { className: "flex gap-1 flex-wrap" },
-              FORENSIC_CASES.map(function(c, idx) {
-                return h("button", { type: "button", key: idx, 'aria-pressed': forensicCase === idx, onClick: function() { updMulti({ forensicCase: idx, forensicGelRun: false, forensicGuess: null, forensicResult: null }); },
-                  className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
-                }, (idx + 1) + '. ' + c.name);
+            h('p', { id: 'dna-forensic-model-limit', className: 'text-[0.6875rem] text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-lg p-2' }, 'Model limit: these are clean, single-source teaching patterns. Real evidence may be partial, degraded, contaminated, or mixed, and analysts quantify the strength of support rather than declaring identity from bands alone.'),
+            h('div', { id: 'dna-forensic-cases', role: 'group', 'aria-label': 'Forensics cases', className: 'flex gap-1 flex-wrap' },
+              FORENSIC_CASES.map(function(caseData, index) {
+                return h('button', { type: 'button', key: index, 'data-dna-forensic-case': index, 'aria-pressed': forensicCase === index,
+                  onClick: function(event) { resetForensicCase(index, event.currentTarget, false); },
+                  className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold ' + (forensicCase === index ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-cyan-50 border border-slate-500')
+                }, h('span', { 'aria-hidden': true }, ['\uD83D\uDD0D', '\uD83D\uDC68\u200D\uD83D\uDC67', '\uD83D\uDC3A', '\uD83E\uDDA0'][index] + ' '), caseData.name,
+                  forensicCase === index && h('span', { 'aria-hidden': true }, ' ✓'));
               })
             ),
-
-            h("div", { className: "bg-white rounded-lg p-3 border" },
-              h("p", { className: "text-xs font-bold text-slate-700" }, currentCase.name),
-              h("p", { className: "text-[0.6875rem] text-slate-600 mt-1" }, currentCase.desc),
-              h("p", { className: "text-[0.6875rem] text-cyan-700 mt-1" }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
+            h('div', { className: 'bg-white rounded-lg p-3 border border-slate-300' },
+              h('h3', { id: 'dna-forensic-case-title', tabIndex: -1, className: 'text-xs font-bold text-slate-800' }, currentCase.name),
+              h('p', { id: 'dna-forensic-case-description', className: 'text-[0.6875rem] text-slate-600 mt-1' }, currentCase.desc),
+              h('p', { className: 'text-[0.6875rem] text-cyan-800 mt-1' }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
             ),
-
-            // Run gel button
-            !forensicGelRun && h("button", { type: "button", onClick: function() { upd('forensicGelRun', true); addToast('\u26A1 Running gel electrophoresis...', 'success'); }, className: "px-4 py-2 text-sm font-bold bg-cyan-700 text-white rounded-xl hover:bg-cyan-700 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.run_gel_electrophoresis', '\u26A1 Run Gel Electrophoresis')),
-
-            forensicGelRun && h("div", { className: "space-y-3" },
-              h("canvas", { ref: _forensicCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': t('stem.dna.gel_electrophoresis_results', 'Gel electrophoresis results') }),
-              h("div", { className: "overflow-x-auto rounded-lg border border-cyan-100 bg-white" },
-                h("table", { className: "w-full min-w-[420px] text-left text-[0.625rem]" },
-                  h("caption", { className: "sr-only" }, "DNA sample fragment sizes shown in the gel"),
-                  h("thead", { className: "bg-cyan-50 text-cyan-900" },
-                    h("tr", null,
-                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Lane"),
-                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Role"),
-                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Fragment sizes")
+            !forensicGelRun && h('button', { id: 'dna-forensic-run', type: 'button', 'aria-describedby': 'dna-forensic-case-title dna-forensic-case-description',
+              onClick: function(event) { runForensicGel(event.currentTarget); }, className: 'px-4 py-2 text-sm font-bold bg-cyan-700 text-white rounded-xl shadow-md' }, t('stem.dna.run_gel_electrophoresis', '\u26A1 Run Gel Electrophoresis')),
+            forensicGelRun && h('div', { className: 'space-y-3' },
+              h('h3', { id: 'dna-forensic-gel-title', tabIndex: -1, className: 'text-sm font-bold text-cyan-900' }, 'Gel results — ' + currentCase.name),
+              h('canvas', { ref: _forensicCanvasRef, style: { width: '100%', height: 240, background: '#eff6ff' }, tabIndex: 0, role: 'img',
+                'aria-label': 'Gel electrophoresis results for ' + currentCase.name + '. Reference: ' + currentCase.samples[0].label + '. Fragment sizes are provided in the table.', 'aria-describedby': 'dna-forensic-gel-caption' }),
+              h('div', { id: 'dna-forensic-fragments', role: 'region', tabIndex: 0, 'aria-labelledby': 'dna-forensic-gel-title', 'aria-describedby': 'dna-forensic-gel-caption', className: 'overflow-x-auto rounded-lg border border-cyan-300 bg-white' },
+                h('table', { className: 'w-full min-w-[420px] text-left text-[0.625rem]' },
+                  h('caption', { id: 'dna-forensic-gel-caption', className: 'sr-only' }, 'DNA sample fragment sizes shown in the gel — ' + currentCase.name),
+                  h('thead', { className: 'bg-cyan-50 text-cyan-900' },
+                    h('tr', null,
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Lane'),
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Role'),
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Fragment sizes')
                     )
                   ),
-                  h("tbody", null,
-                    currentCase.samples.map(function(sample) {
-                      return h("tr", { key: sample.label, className: "border-t border-cyan-100 text-slate-600" },
-                        h("td", { className: "px-3 py-2 font-bold text-slate-800" }, sample.label),
-                        h("td", { className: "px-3 py-2" }, sample.isRef ? "Reference" : "Comparison"),
-                        h("td", { className: "px-3 py-2 font-mono" }, sample.fragments.join(', ') + " bp")
-                      );
-                    })
-                  )
+                  h('tbody', null, currentCase.samples.map(function(sample) {
+                    return h('tr', { key: sample.label, className: 'border-t border-cyan-100 text-slate-600' },
+                      h('th', { scope: 'row', className: 'px-3 py-2 font-bold text-slate-800' }, sample.label),
+                      h('td', { className: 'px-3 py-2' }, sample.isRef ? 'Reference' : 'Comparison'),
+                      h('td', { className: 'px-3 py-2 font-mono' }, sample.fragments.join(', ') + ' bp')
+                    );
+                  }))
                 )
               ),
-
-              // Answer selection
-              !forensicResult && h("div", { className: "space-y-2" },
-                h("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, 'Which sample matches the ' + currentCase.samples[0].label + '?'),
-                h("div", { className: "flex gap-2 flex-wrap", role: "group", 'aria-label': __alloT('stem.dna.a11y_choose_the_comparison_sample', 'Choose the comparison sample') },
-                  currentCase.samples.map(function(s, idx) {
-                    if (s.isRef) return null;
-                    return h("button", { type: "button", key: idx, 'aria-pressed': forensicGuess === idx, onClick: function() { upd('forensicGuess', idx); },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (forensicGuess === idx ? 'bg-cyan-700 text-white shadow-md ring-2 ring-cyan-300' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
-                    }, s.label);
+              h('div', { className: 'space-y-2' },
+                h('h4', { id: 'dna-forensic-question', className: 'text-[0.6875rem] font-bold text-slate-700' }, forensicCase === 1 ? 'Which candidate father accounts for the child bands not present in the mother?' : 'Which sample matches the ' + currentCase.samples[0].label + '?'),
+                h('p', { id: 'dna-forensic-choice-label', className: 'text-[0.6875rem] text-slate-600' }, 'Choose the comparison sample'),
+                h('div', { id: 'dna-forensic-choices', className: 'flex gap-2 flex-wrap', role: 'group', 'aria-labelledby': 'dna-forensic-case-title dna-forensic-choice-label', 'aria-describedby': 'dna-forensic-question' },
+                  currentCase.samples.map(function(sample, index) {
+                    if (sample.isRef) return null;
+                    return h('button', { type: 'button', key: index, 'data-dna-forensic-guess': index, 'aria-pressed': forensicGuess === index, 'aria-disabled': !!forensicResult, tabIndex: forensicResult ? -1 : 0,
+                      onClick: function() { selectForensicGuess(index); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold border ' + (forensicGuess === index ? 'bg-cyan-700 text-white border-cyan-800 shadow-md' : 'bg-white text-slate-700 border-slate-500 hover:bg-cyan-50')
+                    }, sample.label, forensicGuess === index && h('span', { 'aria-hidden': true }, ' ✓'));
                   })
                 ),
-                h("button", { type: "button", onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800 shadow-md active:scale-[0.97]' : 'bg-slate-500 text-white cursor-not-allowed') }, t('stem.dna.submit_answer', '\u2713 Submit Answer'))
+                h('button', { id: 'dna-forensic-submit', type: 'button', onClick: checkForensicAnswer, 'aria-disabled': !!forensicResult || forensicGuess == null || !currentCase.samples[forensicGuess] || !!currentCase.samples[forensicGuess].isRef,
+                  'aria-describedby': 'dna-forensic-question', className: 'px-4 py-2 text-sm font-bold rounded-xl bg-cyan-700 text-white' }, t('stem.dna.submit_answer', '\u2713 Submit Answer'))
               ),
-
-              // Result
-              forensicResult && h("div", { className: "space-y-2" },
-                h("div", { role: "status", className: "p-3 rounded-xl text-sm font-bold " + (forensicResult === 'correct' ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-200' : 'bg-red-50 text-red-700 border-2 border-red-200') },
-                  forensicResult === 'correct' ? '\u2705 Correct for this teaching dataset: the selected fragment pattern matches the reference. A real report would also quantify the statistical weight and consider other evidence.' : '\u274c Incorrect. Compare the band positions more carefully - matching samples have identical fragment sizes.',
-                  h("button", { type: "button", onClick: function() {
-                    var nextCase = (forensicCase + 1) % FORENSIC_CASES.length;
-                    updMulti({ forensicCase: nextCase, forensicGelRun: false, forensicGuess: null, forensicResult: null, forensicAI: null });
-                  }, className: "mt-2 px-3 py-1.5 text-xs font-bold bg-white text-slate-600 rounded-lg border block" }, t('stem.dna.next_case', '\u21BB Next Case'))
-                ),
-                // AI Forensics Analysis
-                callGemini && h("div", null,
-                  h("button", { onClick: function() {
-                    if (d.forensicAILoading) return;
-                    upd('forensicAILoading', true);
-                    var gradeCtx = gradeText('kindergarten, very simple', '3rd-5th grade', '6th-8th grade, scientific terms', '9th-12th grade, advanced forensic science');
-                    var caseData = currentCase;
-                    var matchSample = caseData.samples[caseData.match];
-                    var prompt = 'You are a forensic genetics teacher. Grade: ' + gradeCtx + '. Case: "' + caseData.name + '" - ' + caseData.desc + ' The restriction enzyme ' + caseData.enzyme + ' was used. The ' + caseData.samples[0].label + ' matched ' + matchSample.label + ' because they share identical fragment sizes: ' + matchSample.fragments.join(', ') + ' bp. Explain in 3-4 sentences why the bands match, what restriction enzymes do, and how gel electrophoresis separates DNA. Be educational and engaging.';
-                    callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ forensicAI: typeof r === 'string' ? r : 'Analysis unavailable.', forensicAILoading: false }); }).catch(function() { updMulti({ forensicAI: 'AI unavailable.', forensicAILoading: false }); });
-                  }, disabled: d.forensicAILoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.forensicAILoading ? 'bg-cyan-700 text-white cursor-wait' : 'bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-md') }, d.forensicAILoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain the Evidence'),
-                  d.forensicAI && h("div", { className: "mt-2 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-xs text-cyan-900 leading-relaxed" },
-                    h("span", { className: "text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-wider block mb-1" }, t('stem.dna.forensic_analysis', '\uD83E\uDDE0 Forensic Analysis')),
-                    d.forensicAI
-                  )
+              forensicResult && h('div', { className: 'space-y-2' },
+                h('p', { className: 'p-3 rounded-xl text-sm font-bold border-2 ' + (forensicResult === 'correct' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-800 border-red-200') }, forensicResult === 'correct'
+                  ? (forensicCase === 1 ? 'Correct for this teaching dataset: the selected candidate accounts for the child bands absent from the mother. Real parentage testing uses validated markers and statistical interpretation.' : '\u2705 Correct for this teaching dataset: the selected fragment pattern matches the reference. A real report would also quantify the statistical weight and consider other evidence.')
+                  : (forensicCase === 1 ? 'Compare the child bands with the mother first, then look for a candidate whose bands account for the remaining child bands.' : '\u274c Incorrect. Compare the band positions more carefully - matching samples have identical fragment sizes.')),
+                h('button', { id: 'dna-forensic-next', type: 'button', onClick: function(event) { resetForensicCase((forensicCase + 1) % FORENSIC_CASES.length, event.currentTarget, true); }, className: 'px-3 py-1.5 text-xs font-bold bg-white text-slate-700 rounded-lg border border-slate-500' }, t('stem.dna.next_case', '\u21BB Next Case')),
+                (callGemini || d.forensicAILoading || d.forensicAI || d.forensicAIStatus) && h('div', null,
+                  h('button', { id: 'dna-forensic-ai-button', type: 'button', 'aria-disabled': !!d.forensicAILoading || typeof callGemini !== 'function', onClick: function(event) { explainForensicEvidence(event.currentTarget); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-700 to-blue-600 text-white shadow-md' }, t('stem.dna.ai_explain_evidence', '\u2728 AI: Explain the Evidence'))
                 )
               )
+            ),
+            h('p', { id: 'dna-forensic-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-bold ' + (forensicResult === 'correct' ? 'text-emerald-800' : 'text-red-800') }, forensicResult === 'correct' ? 'Correct. Your choice is consistent with this teaching dataset.' : forensicResult === 'wrong' ? 'Incorrect. Compare the fragment sizes and case instructions.' : ''),
+            h('p', { id: 'dna-forensic-ai-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs font-bold text-cyan-900' }, d.forensicAILoading ? 'Explaining this case. You can stop waiting; your current work is kept.' : d.forensicAIStatus || ''),
+            d.forensicAILoading && h('button', { id: 'dna-forensic-ai-stop', type: 'button', onClick: function(event) { stopForensicExplanation(event.currentTarget); }, className: 'px-3 py-2 rounded-lg border border-slate-500 bg-white text-slate-700 text-xs font-bold' }, 'Stop waiting'),
+            h('section', { id: 'dna-forensic-explanation', role: 'region', 'aria-labelledby': 'dna-forensic-explanation-title', 'aria-busy': !!d.forensicAILoading, hidden: !d.forensicAILoading && !d.forensicAI, className: 'p-3 bg-cyan-50 rounded-xl border border-cyan-300 text-xs text-cyan-900 leading-relaxed' },
+              h('h4', { id: 'dna-forensic-explanation-title', className: 'text-[0.6875rem] font-bold text-cyan-800 uppercase tracking-wider mb-1' }, t('stem.dna.forensic_analysis', '\uD83E\uDDE0 Forensic Analysis')),
+              h('p', { className: 'whitespace-pre-wrap' }, d.forensicAI || (d.forensicAILoading ? 'Preparing an explanation of this case.' : ''))
             )
           )
         ),
@@ -5554,74 +5896,54 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // CHALLENGE TAB (Enhanced)
         // ═══════════════════════════════════════════
-        tab === 'challenge' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-challenge", "data-dna-workspace": "challenge" },
-          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-4" },
-            h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
-              h("h4", { className: "text-sm font-bold text-slate-700" }, t('stem.dna.dna_challenge', "\uD83C\uDFAF DNA Challenge")),
-              h("div", { className: "flex items-center gap-2" },
-                h("span", { className: "text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + score + " pts"),
-                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[0.6875rem] font-bold rounded-full shadow-sm" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
+        tab === 'challenge' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-challenge", "data-dna-workspace": "challenge", 'data-dna-quiz': 'challenge' },
+          h('section', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-4', 'aria-labelledby': 'dna-challenge-title' },
+            h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+              h('h4', { id: 'dna-challenge-title', className: 'text-sm font-bold text-slate-700' }, t('stem.dna.dna_challenge', '\uD83C\uDFAF DNA Challenge')),
+              h('div', { className: 'flex items-center flex-wrap gap-2' },
+                h('span', { className: 'text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-full' }, '\u2B50 ' + score + ' pts'),
+                (d.challengeStreak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[0.6875rem] font-bold rounded-full shadow-sm' + (reducedMotion ? '' : ' animate-pulse') }, '\uD83D\uDD25 ' + d.challengeStreak + ' streak!')
               )
             ),
-
-            // Tier selector
-            h("div", { className: "flex gap-1" },
+            h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Difficulty for next question' },
               [{ l: '\uD83C\uDF3F Easy', t: 0 }, { l: '\u26A1 Medium', t: 1 }, { l: '\uD83D\uDD25 Hard', t: 2 }].map(function(tier) {
-                return h("button", { key: tier.t, onClick: function() { upd('challengeTier', tier.t); },
-                  className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all " + (challengeTier === tier.t ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
+                return h('button', { key: tier.t, type: 'button', 'data-dna-challenge-tier': tier.t, 'aria-pressed': challengeTier === tier.t,
+                  onClick: function() { cancelDnaQuizRequest('challenge'); updMulti({ challengeTier: tier.t, aiChallengeLoading: false }); },
+                  className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold ' + (challengeTier === tier.t ? 'bg-violet-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-violet-50')
                 }, tier.l);
               })
             ),
-
-            !challengeQ ? h("div", { className: "text-center py-6 space-y-3" },
-              h("div", { className: "text-4xl mb-2" }, "\uD83E\uDDEC"),
-              h("p", { className: "text-xs text-slate-600 mb-3" }, t('stem.dna.test_your_genetics_knowledge', "Test your genetics knowledge!")),
-              h("div", { className: "flex gap-2 justify-center flex-wrap" },
-                h("button", { onClick: generateChallenge, className: "px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-xl shadow-lg transition-all hover:shadow-xl" }, t('stem.dna.start_challenge', "\uD83C\uDFAF Start Challenge")),
-                callGemini && h("button", { onClick: function() {
-                  if (d.aiChallengeLoading) return;
-                  upd('aiChallengeLoading', true);
-                  var gradeCtx = gradeText('kindergarten (ages 5-7), very simple', '3rd-5th grade', '6th-8th grade', '9th-12th grade AP Biology level');
-                  var prompt = 'Generate a genetics/DNA quiz question for ' + gradeCtx + ' students. DNA: ' + dnaSeq.substring(0, 15) + '... Return ONLY valid JSON: {"question":"...","answer":"...","hint":"..."}. Topics: DNA structure, base pairing, replication, transcription, translation, mutations, codons, amino acids, genetic disorders. Answer should be 1-3 words.';
-                  callGemini(prompt, true, false, 0.7).then(function(resp) {
-                    try {
-                      var clean = (typeof resp === 'string' ? resp : '').replace(/```json\s*/gi, '').replace(/```/g, '').trim();
-                      var parsed = JSON.parse(clean);
-                      if (parsed.question && parsed.answer) {
-                        updMulti({ challengeQ: { type: 'ai', question: parsed.question, answer: parsed.answer, hint: parsed.hint || '', isAI: true }, challengeAnswer: '', challengeFeedback: '', aiChallengeLoading: false });
-                      } else { throw new Error('bad'); }
-                    } catch (e) {
-                      addToast('\u26A0\uFE0F AI quiz failed, using static', 'error');
-                      upd('aiChallengeLoading', false);
-                      generateChallenge();
-                    }
-                  }).catch(function() { addToast('\u26A0\uFE0F AI unavailable', 'error'); upd('aiChallengeLoading', false); generateChallenge(); });
-                }, disabled: d.aiChallengeLoading, className: "px-5 py-2.5 text-sm font-bold transition-all rounded-xl shadow-lg " + (d.aiChallengeLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl') }, d.aiChallengeLoading ? '\u23F3 Generating...' : '\u2728 AI Challenge')
+            h('div', { id: 'dna-challenge-body', 'aria-busy': !!d.aiChallengeLoading },
+              !challengeQ ? h('div', { className: 'text-center py-6 space-y-3' },
+                h('div', { className: 'text-4xl mb-2', 'aria-hidden': true }, '\uD83E\uDDEC'),
+                h('p', { className: 'text-xs text-slate-600 mb-3' }, t('stem.dna.test_your_genetics_knowledge', 'Test your genetics knowledge!')),
+                h('div', { className: 'flex gap-2 justify-center flex-wrap' },
+                  h('button', { id: 'dna-challenge-start', type: 'button', onClick: generateChallenge, className: 'px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-xl shadow-lg' }, t('stem.dna.start_challenge', '\uD83C\uDFAF Start Challenge')),
+                  callGemini && h('button', { id: 'dna-challenge-ai-start', type: 'button', 'aria-disabled': !!d.aiChallengeLoading, onClick: function(e) { generateAIChallenge(false, e.currentTarget); }, className: 'px-5 py-2.5 text-sm font-bold rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white' }, t('stem.dna.ai_challenge', '\u2728 AI Challenge'))
+                )
+              ) : h('div', { className: 'space-y-3' },
+                challengeQ.isAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-800 text-[0.6875rem] font-bold rounded-full' }, t('stem.dna.ai_generated', '\uD83E\uDDE0 AI-GENERATED')),
+                h('h3', { id: 'dna-challenge-question', tabIndex: -1, className: 'text-sm font-medium text-slate-700' }, challengeQ.question),
+                h('label', { htmlFor: 'dna-challenge-answer', className: 'block text-xs font-bold text-slate-700' }, 'Your answer'),
+                h('input', { id: 'dna-challenge-answer', type: 'text', value: challengeAnswer, readOnly: challengeSolved || !!d.aiChallengeLoading,
+                  onChange: function(e) { if (!challengeSolved && !d.aiChallengeLoading) upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { quizEnter(e, checkChallenge); },
+                  'aria-describedby': 'dna-challenge-question dna-challenge-help', placeholder: t('stem.dna.type_your_answer', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-500 rounded-xl text-sm font-mono' }),
+                h('p', { id: 'dna-challenge-help', className: 'text-xs text-slate-600' }, challengeSolved ? 'Answer checked. Choose Next for another question.' : 'Press Enter or choose Check. Difficulty applies to the next question.'),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { id: 'dna-challenge-check', type: 'button', onClick: checkChallenge, 'aria-disabled': challengeSolved || !!d.aiChallengeLoading || !challengeAnswer.trim(), className: 'px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl' }, t('stem.dna.check', '\u2713 Check')),
+                  h('button', { id: 'dna-challenge-hint', type: 'button', 'aria-disabled': !!d.aiChallengeLoading, onClick: function() { if (!d.aiChallengeLoading) updMulti({ challengeFeedback: '\uD83D\uDCA1 ' + (challengeQ.hint || 'No hint available'), challengeSolved: challengeSolved }); }, className: 'px-4 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl' }, t('stem.dna.hint', '\uD83D\uDCA1 Hint')),
+                  h('button', { id: 'dna-challenge-next', type: 'button', onClick: generateChallenge, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-700 rounded-xl' }, t('stem.dna.next', '\u21BB Next')),
+                  callGemini && h('button', { id: 'dna-challenge-ai-next', type: 'button', 'aria-disabled': !!d.aiChallengeLoading, onClick: function(e) { generateAIChallenge(true, e.currentTarget); }, className: 'px-3 py-2 text-sm font-bold rounded-xl bg-purple-50 text-purple-800' }, t('stem.dna.ai_next', '\u2728 AI Next'))
+                )
               )
-            ) : h("div", { className: "space-y-3" },
-              challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full" }, t('stem.dna.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
-              h("p", { className: "text-sm font-medium text-slate-700" }, challengeQ.question),
-              h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: t('stem.dna.type_your_answer', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-violet-400", 'aria-label': t('stem.dna.answer', 'Answer') }),
-              h("div", { className: "flex gap-2 flex-wrap" },
-                h("button", { onClick: checkChallenge, className: "px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all active:scale-[0.97]" }, t('stem.dna.check', "\u2713 Check")),
-                h("button", { onClick: function() { updMulti({ challengeFeedback: '\uD83D\uDCA1 ' + (challengeQ.hint || 'No hint available') }); }, className: "px-4 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl" }, t('stem.dna.hint', "\uD83D\uDCA1 Hint")),
-                h("button", { onClick: generateChallenge, className: "px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl" }, t('stem.dna.next', "\u21BB Next")),
-                callGemini && h("button", { onClick: function() {
-                  upd('aiChallengeLoading', true);
-                  var gradeCtx = gradeText('kindergarten', '3rd-5th grade', '6th-8th grade', '9th-12th grade AP Bio');
-                  var prompt = 'Generate a genetics quiz question for ' + gradeCtx + '. DNA: ' + dnaSeq.substring(0, 12) + '. Return ONLY JSON: {"question":"...","answer":"...","hint":"..."}. Answer 1-3 words.';
-                  callGemini(prompt, true, false, 0.7).then(function(r) {
-                    try { var p = JSON.parse((typeof r === 'string' ? r : '').replace(/```json\s*/gi, '').replace(/```/g, '').trim()); updMulti({ challengeQ: { type: 'ai', question: p.question, answer: p.answer, hint: p.hint || '', isAI: true }, challengeAnswer: '', challengeFeedback: '', aiChallengeLoading: false }); }
-                    catch (e) { addToast('\u26A0\uFE0F Parse error', 'error'); upd('aiChallengeLoading', false); generateChallenge(); }
-                  }).catch(function() { upd('aiChallengeLoading', false); generateChallenge(); });
-                }, disabled: d.aiChallengeLoading, className: "px-3 py-2 text-sm font-bold rounded-xl ml-auto transition-all " + (d.aiChallengeLoading ? 'bg-purple-200 text-purple-800 cursor-wait' : 'transition-colors bg-purple-50 text-purple-600 hover:bg-purple-100 active:scale-[0.97]') }, d.aiChallengeLoading ? '\u23F3...' : '\u2728 AI Next')
-              ),
-              challengeFeedback && h("p", { className: "text-sm font-bold p-2 rounded-lg " + (challengeFeedback[0] === '\u2705' ? "bg-green-50 text-green-700" : challengeFeedback[0] === '\u274c' ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"), role: "alert" }, challengeFeedback)
-            )
+            ),
+            h('p', { id: 'dna-challenge-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-bold rounded-lg ' + (challengeFeedback.indexOf('\u2705') === 0 ? 'text-green-800' : challengeFeedback.indexOf('\u274c') === 0 ? 'text-red-800' : 'text-amber-800') },
+              d.aiChallengeLoading ? 'Generating a question. You can stop waiting or choose an authored question.' : challengeFeedback + (challengeFeedback.indexOf('\u274c') === 0 ? ' Attempt ' + (d.challengeAttempts || 1) + '.' : '')),
+            d.aiChallengeLoading && h('button', { id: 'dna-challenge-ai-stop', type: 'button', onClick: function(e) { stopChallengeAI(e.currentTarget); }, className: 'px-3 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 text-sm font-bold' }, 'Stop waiting')
           ),
           h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "transition-colors px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50 active:scale-[0.97]" }, t('stem.dna.codon_reference_table', "\uD83D\uDCD6 Codon Reference Table")),
-            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[0.6875rem] font-mono max-h-60 overflow-y-auto", tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.dna.a11y_codon_reference_table', 'Codon reference table') },
+            h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[0.6875rem] font-mono max-h-60 overflow-y-auto", 'data-dna-challenge-reference': true, tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.dna.a11y_codon_reference_table', 'Codon reference table') },
               Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: ({ '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#3b82f6': '#1d4ed8', '#22c55e': '#15803d', '#a855f7': '#7e22ce', '#888': '#525252' })[pr2.color] || pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-700" }, "\u2192 " + aa2)); })
             )
           )
@@ -5630,77 +5952,64 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // BATTLE TAB (NEW - Gene Defense)
         // ═══════════════════════════════════════════
-        tab === 'battle' && h("div", { className: "space-y-4", id: "dna-workspace", role: "tabpanel", 'aria-labelledby': "dna-tab-battle", "data-dna-workspace": "battle" },
-          h("div", { className: "bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border-2 border-red-200 p-4 space-y-4" },
-            h("div", { className: "flex items-center gap-2 mb-1" },
-              h("span", { className: "text-lg" }, "\u2694\uFE0F"),
-              h("h4", { className: "text-sm font-bold text-red-800" }, t('stem.dna.gene_defense_battle', "Gene Defense Battle")),
-              !battleDone && battleOrder.length > 0 && h("span", { className: "px-2 py-0.5 bg-red-200 text-red-800 text-[0.6875rem] font-bold rounded-full" + (reducedMotion ? '' : ' animate-pulse') }, "Round " + (battleRound + 1) + "/" + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
+        tab === 'battle' && h('div', { className: 'space-y-4', id: 'dna-workspace', role: 'tabpanel', 'aria-labelledby': 'dna-tab-battle', 'data-dna-workspace': 'battle', 'data-dna-quiz': 'battle' },
+          h('section', { className: 'bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border-2 border-red-200 p-4 space-y-4', 'aria-labelledby': 'dna-battle-title' },
+            h('div', { className: 'flex items-center flex-wrap gap-2 mb-1' },
+              h('span', { className: 'text-lg', 'aria-hidden': true }, '\u2694\uFE0F'),
+              h('h4', { id: 'dna-battle-title', className: 'text-sm font-bold text-red-800' }, t('stem.dna.gene_defense_battle', 'Gene Defense Battle')),
+              !battleDone && battleOrder.length > 0 && h('span', { className: 'px-2 py-0.5 bg-red-200 text-red-800 text-[0.6875rem] font-bold rounded-full' + (reducedMotion ? '' : ' animate-pulse') }, 'Round ' + (battleRound + 1) + '/' + (battleUseAI ? 10 : BATTLE_QS.length) + (battleUseAI ? ' \uD83E\uDDE0' : ''))
             ),
-            h("p", { className: "text-xs text-slate-600" }, gradeText(
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(
               'A virus is attacking the cell! Answer genetics questions to fight it off!',
               'Defend the cell against an invading virus! Correct answers deal damage, wrong answers let the virus strike back.',
               'Use your genetics knowledge to defend against a viral pathogen. Each correct answer activates your immune response.',
               'Defend the cell against viral infection. Demonstrate mastery of molecular biology to mount an effective immune response.'
             )),
-
-            // HP bars
-            (battleOrder.length > 0 && !battleDone) && h("div", { className: "space-y-2" },
-              h("div", { className: "flex items-center gap-2" },
-                h("span", { className: "text-xs font-bold text-emerald-600 w-20" }, t('stem.dna.you', "\uD83D\uDEE1\uFE0F You")),
-                h("div", { className: "flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden" },
-                  h("div", { className: "bg-gradient-to-r from-emerald-500 to-green-400 h-4 rounded-full transition-all duration-500", style: { width: battlePlayerHP + '%' } }),
-                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[0.6875rem] font-bold text-white drop-shadow" }, battlePlayerHP + ' HP')
+            battleOrder.length > 0 && !battleDone && h('div', { className: 'space-y-2' },
+              [{ id: 'player', label: '\uD83D\uDEE1\uFE0F You', name: 'Your health', value: battlePlayerHP, tone: 'from-emerald-500 to-green-400', ink: 'text-emerald-700' },
+               { id: 'enemy', label: '\uD83E\uDDA0 Virus', name: 'Virus health', value: battleEnemyHP, tone: 'from-red-500 to-orange-400', ink: 'text-red-700' }].map(function(health) {
+                var value = Math.max(0, Math.min(100, health.value));
+                return h('div', { key: health.id, className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-xs font-bold w-20 shrink-0 ' + health.ink, 'aria-hidden': true }, health.label),
+                  h('div', { role: 'meter', 'data-dna-battle-health': health.id, 'aria-label': health.name, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': value, 'aria-valuetext': value + ' health points out of 100', className: 'flex-1 min-w-0 bg-slate-100 rounded-full h-6 relative overflow-hidden' },
+                    h('div', { className: 'bg-gradient-to-r h-full rounded-full transition-all duration-500 ' + health.tone, style: { width: value + '%' }, 'aria-hidden': true }),
+                    h('span', { 'data-dna-battle-health-text': health.id, className: 'absolute inset-0 flex items-center justify-center text-[0.6875rem] font-bold text-slate-900', 'aria-hidden': true }, value + ' HP')
+                  )
+                );
+              })
+            ),
+            h('div', { id: 'dna-battle-body', 'aria-busy': !!d.battleAILoading },
+              battleOrder.length === 0 ? h('div', { className: 'text-center py-6 space-y-3' },
+                h('div', { className: 'text-4xl mb-2', 'aria-hidden': true }, '\u2694\uFE0F'),
+                h('div', { className: 'flex gap-2 justify-center flex-wrap' },
+                  h('button', { id: 'dna-battle-start', type: 'button', onClick: function(e) { startBattle(false, e.currentTarget); }, className: 'px-6 py-3 text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white rounded-xl shadow-lg' }, t('stem.dna.start_battle', '\u2694\uFE0F Start Battle')),
+                  callGemini && h('button', { id: 'dna-battle-ai-start', type: 'button', onClick: function(e) { startBattle(true, e.currentTarget); }, className: 'px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl' }, t('stem.dna.ai_battle', '\u2728 AI Battle'))
                 )
-              ),
-              h("div", { className: "flex items-center gap-2" },
-                h("span", { className: "text-xs font-bold text-red-600 w-20" }, t('stem.dna.virus', "\uD83E\uDDA0 Virus")),
-                h("div", { className: "flex-1 bg-slate-100 rounded-full h-4 relative overflow-hidden" },
-                  h("div", { className: "bg-gradient-to-r from-red-500 to-orange-400 h-4 rounded-full transition-all duration-500", style: { width: battleEnemyHP + '%' } }),
-                  h("span", { className: "absolute inset-0 flex items-center justify-center text-[0.6875rem] font-bold text-white drop-shadow" }, battleEnemyHP + ' HP')
+              ) : battleDone ? h('div', { className: 'text-center py-6 space-y-3' },
+                h('div', { className: 'text-4xl', 'aria-hidden': true }, battleWon ? '\uD83C\uDFC6' : '\uD83D\uDC80'),
+                h('h3', { id: 'dna-battle-result', tabIndex: -1, 'aria-describedby': 'dna-battle-result-summary', className: 'text-lg font-bold tracking-tight ' + (battleWon ? 'text-emerald-800' : 'text-red-800') }, battleWon ? 'Victory! Cell Defended!' : 'Defeated! Virus Won!'),
+                h('p', { id: 'dna-battle-result-summary', className: 'text-xs text-slate-700' }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
+                h('div', { className: 'flex gap-2 justify-center flex-wrap mt-2' },
+                  h('button', { id: 'dna-battle-rematch', type: 'button', onClick: function(e) { startBattle(false, e.currentTarget); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, t('stem.dna.play_again', '\u21BA Play Again')),
+                  callGemini && h('button', { id: 'dna-battle-ai-rematch', type: 'button', onClick: function(e) { startBattle(true, e.currentTarget); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, t('stem.dna.ai_rematch', '\u2728 AI Rematch'))
+                )
+              ) : h('div', { className: 'space-y-3' },
+                d.battleAILoading && h('div', { className: 'text-2xl' + (reducedMotion ? '' : ' animate-pulse'), 'aria-hidden': true }, '\uD83E\uDDE0'),
+                battleUseAI && battleAIQ && !d.battleAILoading && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-800 text-[0.6875rem] font-bold rounded-full' }, t('stem.dna.ai_generated_2', '\uD83E\uDDE0 AI-GENERATED')),
+                h('h3', { id: 'dna-battle-question', tabIndex: -1, className: 'text-sm font-medium text-slate-700' }, d.battleAILoading ? 'Preparing round ' + (battleRound + 1) + ' of 10...' : 'Round ' + (battleRound + 1) + ' of ' + (battleUseAI ? 10 : BATTLE_QS.length) + ': ' + (dnaBattleQuestion ? dnaBattleQuestion.q : 'Choose a new battle to continue.')),
+                h('label', { htmlFor: 'dna-battle-answer', className: 'block text-xs font-bold text-slate-700' }, 'Your battle answer'),
+                h('input', { id: 'dna-battle-answer', type: 'text', value: battleAnswer, readOnly: !!d.battleAILoading,
+                  onChange: function(e) { if (!d.battleAILoading) upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { quizEnter(e, battleAttack); },
+                  'aria-describedby': 'dna-battle-question dna-battle-help', placeholder: t('stem.dna.type_your_answer_2', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-500 rounded-xl text-sm font-mono' }),
+                h('p', { id: 'dna-battle-help', className: 'text-xs text-slate-600' }, 'Press Enter or choose Attack. Each answer advances one round; the result and next question are announced below.'),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { id: 'dna-battle-attack', type: 'button', 'aria-disabled': !!d.battleAILoading || !battleAnswer.trim() || !dnaBattleQuestion, onClick: function(e) { battleAttack(e.currentTarget); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, t('stem.dna.attack', '\u2694\uFE0F Attack!')),
+                  h('button', { id: 'dna-battle-hint', type: 'button', 'aria-disabled': !!d.battleAILoading || !dnaBattleQuestion, onClick: function() { if (!d.battleAILoading && dnaBattleQuestion) updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (dnaBattleQuestion.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl' }, t('stem.dna.hint_2', '\uD83D\uDCA1 Hint'))
                 )
               )
             ),
-
-            // Start / question / done
-            battleOrder.length === 0 ? h("div", { className: "text-center py-6 space-y-3" },
-              h("div", { className: "text-4xl mb-2" }, "\u2694\uFE0F"),
-              h("div", { className: "flex gap-2 justify-center flex-wrap" },
-                h("button", { onClick: function() { startBattle(false); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.start_battle', "\u2694\uFE0F Start Battle")),
-                callGemini && h("button", { onClick: function() { startBattle(true); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.ai_battle', "\u2728 AI Battle"))
-              )
-            ) : battleDone ? h("div", { className: "text-center py-6 space-y-3" },
-              h("div", { className: "text-4xl" }, battleWon ? '\uD83C\uDFC6' : '\uD83D\uDC80'),
-              h("p", { className: "text-lg font-bold  tracking-tight" + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'Victory! Cell Defended!' : 'Defeated! Virus Won!'),
-              h("p", { className: "text-xs text-slate-600" }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
-              battleFeedback && h("p", { className: "text-xs font-bold mt-1 " + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
-              h("div", { className: "flex gap-2 justify-center mt-2" },
-                h("button", { onClick: function() { startBattle(false); }, className: "px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all active:scale-[0.97]" }, t('stem.dna.play_again', "\u21BA Play Again")),
-                callGemini && h("button", { onClick: function() { startBattle(true); }, className: "px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all active:scale-[0.97]" }, t('stem.dna.ai_rematch', "\u2728 AI Rematch"))
-              )
-            ) : h("div", { className: "space-y-3" },
-              // Current question (static or AI)
-              (function() {
-                if (battleUseAI && d.battleAILoading) {
-                  return h("div", { className: "text-center py-4" },
-                    h("div", { className: "text-2xl mb-2" + (reducedMotion ? '' : ' animate-pulse') }, "\uD83E\uDDE0"),
-                    h("p", { className: "text-xs text-purple-600 font-bold" }, t('stem.dna.ai_generating_question', "AI generating question..."))
-                  );
-                }
-                var q = getCurrentBattleQ();
-                if (!q) return null;
-                return h("div", { className: "space-y-3" },
-                  battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full" }, t('stem.dna.ai_generated_2', "\uD83E\uDDE0 AI-GENERATED")),
-                  h("p", { className: "text-sm font-medium text-slate-700" }, q.q),
-                  h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: t('stem.dna.type_your_answer_2', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400", 'aria-label': t('stem.dna.battle_answer', 'Battle answer') }),
-                  h("div", { className: "flex gap-2" },
-                    h("button", { onClick: battleAttack, className: "px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all active:scale-[0.97]" }, t('stem.dna.attack', "\u2694\uFE0F Attack!")),
-                    h("button", { onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: "px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl" }, t('stem.dna.hint_2', "\uD83D\uDCA1 Hint"))
-                  ),
-                  battleFeedback && h("p", { className: "text-sm font-bold p-2 rounded-lg " + (battleFeedback[0] === '\u2705' ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700") }, battleFeedback)
-                );
-              })()
-            )
+            h('p', { id: 'dna-battle-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-bold rounded-lg ' + (battleFeedback.indexOf('\u2705') === 0 ? 'text-emerald-800' : battleFeedback.indexOf('\u274c') === 0 ? 'text-red-800' : 'text-amber-800') }, dnaBattleStatus),
+            d.battleAILoading && h('button', { id: 'dna-battle-ai-stop', type: 'button', onClick: function(e) { stopBattleAI(e.currentTarget); }, className: 'px-3 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 text-sm font-bold' }, 'Stop waiting')
           )
         ),
 
@@ -5915,99 +6224,130 @@ window.StemLab = window.StemLab || {
         { term: 'Centromere', def: 'Constricted region where sister chromatids attach. Site of kinetochore + spindle attachment during cell division.' }
       ];
 
+      var DNA_REFERENCE_GROUPS = [
+        { id: 'dna', label: t('stem.dna.dna_basics', 'DNA Basics'), color: 'emerald', tabs: [
+          { id: 'bases', label: t('stem.dna.base_pairs', 'Base pairs'), icon: '🅰🅣' },
+          { id: 'code', label: t('stem.dna.genetic_code', 'Genetic code'), icon: '🔡' },
+          { id: 'replication', label: t('stem.dna.dna_replication_2', 'DNA replication'), icon: '🔄' },
+          { id: 'transcription', label: t('stem.dna.transcription', 'Transcription'), icon: '✍' },
+          { id: 'translation', label: t('stem.dna.translation', 'Translation'), icon: '🏭' },
+          { id: 'dnarna', label: t('stem.dna.dna_vs_rna', 'DNA vs RNA'), icon: '⇌' },
+          { id: 'mutations', label: t('stem.dna.mutations_2', 'Mutations'), icon: '⚠' },
+          { id: 'amino', label: t('stem.dna.amino_acids', 'Amino acids'), icon: '⚕' },
+          { id: 'mutInquiry', label: t('stem.dna.mutation_inquiry', 'Mutation Inquiry'), icon: '🔬' }
+        ] },
+        { id: 'cell', label: t('stem.dna.cell_organelles', 'Cell & Organelles'), color: 'teal', tabs: [
+          { id: 'organelles', label: t('stem.dna.cell_organelles_2', 'Cell organelles'), icon: '🔬' },
+          { id: 'celltypes', label: t('stem.dna.cell_types', 'Cell types'), icon: '🧫' },
+          { id: 'pathways', label: t('stem.dna.cell_pathways', 'Cell pathways'), icon: '⇄' },
+          { id: 'periodtable_bio', label: t('stem.dna.bio_elements', 'Bio elements'), icon: '⌬' },
+          { id: 'devel', label: t('stem.dna.embryology', 'Embryology'), icon: '🥚' }
+        ] },
+        { id: 'genetics', label: t('stem.dna.genetics_inheritance', 'Genetics & Inheritance'), color: 'lime', tabs: [
+          { id: 'chromosomes', label: t('stem.dna.chromosomes', 'Chromosomes'), icon: '🧬' },
+          { id: 'meiosis', label: t('stem.dna.meiosis_vs_mitosis', 'Meiosis vs mitosis'), icon: '⊞' },
+          { id: 'mendel', label: t('stem.dna.mendelian_genetics', 'Mendelian genetics'), icon: '🫛' },
+          { id: 'epigenetics', label: t('stem.dna.epigenetics', 'Epigenetics'), icon: '✎' },
+          { id: 'genomes', label: t('stem.dna.genome_sizes', 'Genome sizes'), icon: '📏' },
+          { id: 'famousgenes', label: t('stem.dna.famous_genes', 'Famous genes'), icon: '⌬' }
+        ] },
+        { id: 'biotech', label: t('stem.dna.biotech_lab', 'Biotech & Lab'), color: 'cyan', tabs: [
+          { id: 'biotech', label: t('stem.dna.biotech_tools', 'Biotech tools'), icon: '🔬' },
+          { id: 'biotech2', label: t('stem.dna.biotech_apps', 'Biotech apps'), icon: '💉' },
+          { id: 'pcr', label: t('stem.dna.pcr_lab', 'PCR + lab'), icon: '🧪' },
+          { id: 'crispr', label: t('stem.dna.crispr_detail', 'CRISPR detail'), icon: '✂' },
+          { id: 'sequencing', label: t('stem.dna.sequencing_tech', 'Sequencing tech'), icon: '📊' },
+          { id: 'modelorg', label: t('stem.dna.model_organisms', 'Model organisms'), icon: '🧫' },
+          { id: 'ethics', label: t('stem.dna.bioethics', 'Bioethics'), icon: '⚖' }
+        ] },
+        { id: 'health', label: t('stem.dna.disease_health', 'Disease & Health'), color: 'rose', tabs: [
+          { id: 'diseases', label: t('stem.dna.disease_genes', 'Disease genes'), icon: '🏥' },
+          { id: 'cancer', label: t('stem.dna.cancer_biology', 'Cancer biology'), icon: '⚕' },
+          { id: 'immunity', label: t('stem.dna.immune_system', 'Immune system'), icon: '🛡' },
+          { id: 'viruses', label: t('stem.dna.virus_families', 'Virus families'), icon: '🦠' },
+          { id: 'microbiome', label: t('stem.dna.microbiome', 'Microbiome'), icon: '🦠' },
+          { id: 'organ_systems', label: t('stem.dna.organ_systems', 'Organ systems'), icon: '🫀' },
+          { id: 'hormones', label: t('stem.dna.hormones', 'Hormones'), icon: '⚛' },
+          { id: 'vitamins', label: t('stem.dna.vitamins', 'Vitamins'), icon: '💊' },
+          { id: 'neuro', label: t('stem.dna.neuroscience', 'Neuroscience'), icon: '🧠' }
+        ] },
+        { id: 'life', label: t('stem.dna.life_on_earth', 'Life on Earth'), color: 'amber', tabs: [
+          { id: 'evolution', label: t('stem.dna.evolution', 'Evolution'), icon: '🌳' },
+          { id: 'tree', label: t('stem.dna.tree_of_life', 'Tree of life'), icon: '🌳' },
+          { id: 'ecology', label: t('stem.dna.ecology', 'Ecology'), icon: '🌍' },
+          { id: 'animals2', label: t('stem.dna.animal_facts', 'Animal facts'), icon: '🐾' },
+          { id: 'animal_groups', label: t('stem.dna.animal_groups', 'Animal groups'), icon: '🦁' },
+          { id: 'famous_orgs', label: t('stem.dna.wild_dog_dna', 'Wild + dog DNA'), icon: '🐕' },
+          { id: 'plants', label: t('stem.dna.plant_biology', 'Plant biology'), icon: '🌿' },
+          { id: 'extinct', label: t('stem.dna.extinct_species', 'Extinct species'), icon: '🦕' }
+        ] },
+        { id: 'reference', label: t('stem.dna.reference', 'Reference'), color: 'slate', tabs: [
+          { id: 'famous', label: t('stem.dna.history', 'History'), icon: '🕰' },
+          { id: 'glossary', label: t('stem.dna.glossary', 'Glossary'), icon: '📖' }
+        , { id: 'traceTrait', label: t('stem.dna.trace_trait', 'Trace trait'), icon: '🧬' }] }
+      ];
+      var dnaReferenceTopics = [];
+      DNA_REFERENCE_GROUPS.forEach(function(group) { group.tabs.forEach(function(topic) { dnaReferenceTopics.push(topic); }); });
+      var activeReferenceTopic = dnaReferenceTopics.find(function(topic) { return topic.id === expSection; }) || null;
+      if (!activeReferenceTopic) expSection = null;
+      function queueReferenceFocus(id, origin, section) {
+        if (typeof document !== 'undefined' && origin && document.activeElement === origin) dnaReferenceFocusRef.current = { id: id, origin: origin, section: section };
+      }
+      function closeReferenceSection(event) {
+        if (!activeReferenceTopic) return;
+        queueReferenceFocus('dna-reference-topic-' + activeReferenceTopic.id, event && event.currentTarget, null);
+        setExp({ expSection: null });
+      }
+      function backToReferenceTopic(event) {
+        if (!activeReferenceTopic || typeof document === 'undefined' || document.activeElement !== event.currentTarget) return;
+        var target = document.getElementById('dna-reference-topic-' + activeReferenceTopic.id);
+        if (target) target.focus();
+      }
+
       function expHeader() {
         return h('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200' },
           h('div', null,
-            h('h3', { className: 'text-base font-black text-emerald-900' }, t('stem.dna.genetics_reference_library', '🧬 Genetics Reference Library')),
+            h('h3', { id: 'dna-reference-heading', className: 'text-base font-black text-emerald-900' }, t('stem.dna.genetics_reference_library', '🧬 Genetics Reference Library')),
             h('div', { className: 'text-[0.6875rem] text-emerald-700 mt-0.5' }, t('stem.dna.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && h('button', {
-            onClick: function() { setExp({ expSection: null }); },
+            id: 'dna-reference-close', type: 'button', onClick: closeReferenceSection,
             className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 active:scale-[0.97]'
           }, t('stem.dna.close_section', '✕ Close section'))
         );
       }
 
       function expTabBar() {
-        // 45 DNA/biology sections grouped into 7 cohesive domains. All IDs
+        // Biology sections grouped into 7 domains. The count is derived; all IDs
         // preserved. Groups: DNA Basics · Cell & Organelles · Genetics &
         // Inheritance · Biotech & Lab · Disease & Health · Life on Earth ·
         // Reference.
-        var TAB_GROUPS = [
-          { id: 'dna', label: t('stem.dna.dna_basics', 'DNA Basics'), color: 'emerald', tabs: [
-            { id: 'bases', label: t('stem.dna.base_pairs', 'Base pairs'), icon: '🅰🅣' },
-            { id: 'code', label: t('stem.dna.genetic_code', 'Genetic code'), icon: '🔡' },
-            { id: 'replication', label: t('stem.dna.dna_replication_2', 'DNA replication'), icon: '🔄' },
-            { id: 'transcription', label: t('stem.dna.transcription', 'Transcription'), icon: '✍' },
-            { id: 'translation', label: t('stem.dna.translation', 'Translation'), icon: '🏭' },
-            { id: 'dnarna', label: t('stem.dna.dna_vs_rna', 'DNA vs RNA'), icon: '⇌' },
-            { id: 'mutations', label: t('stem.dna.mutations_2', 'Mutations'), icon: '⚠' },
-            { id: 'amino', label: t('stem.dna.amino_acids', 'Amino acids'), icon: '⚕' },
-            { id: 'mutInquiry', label: t('stem.dna.mutation_inquiry', 'Mutation Inquiry'), icon: '🔬' }
-          ] },
-          { id: 'cell', label: t('stem.dna.cell_organelles', 'Cell & Organelles'), color: 'teal', tabs: [
-            { id: 'organelles', label: t('stem.dna.cell_organelles_2', 'Cell organelles'), icon: '🔬' },
-            { id: 'celltypes', label: t('stem.dna.cell_types', 'Cell types'), icon: '🧫' },
-            { id: 'pathways', label: t('stem.dna.cell_pathways', 'Cell pathways'), icon: '⇄' },
-            { id: 'periodtable_bio', label: t('stem.dna.bio_elements', 'Bio elements'), icon: '⌬' },
-            { id: 'devel', label: t('stem.dna.embryology', 'Embryology'), icon: '🥚' }
-          ] },
-          { id: 'genetics', label: t('stem.dna.genetics_inheritance', 'Genetics & Inheritance'), color: 'lime', tabs: [
-            { id: 'chromosomes', label: t('stem.dna.chromosomes', 'Chromosomes'), icon: '🧬' },
-            { id: 'meiosis', label: t('stem.dna.meiosis_vs_mitosis', 'Meiosis vs mitosis'), icon: '⊞' },
-            { id: 'mendel', label: t('stem.dna.mendelian_genetics', 'Mendelian genetics'), icon: '🫛' },
-            { id: 'epigenetics', label: t('stem.dna.epigenetics', 'Epigenetics'), icon: '✎' },
-            { id: 'genomes', label: t('stem.dna.genome_sizes', 'Genome sizes'), icon: '📏' },
-            { id: 'famousgenes', label: t('stem.dna.famous_genes', 'Famous genes'), icon: '⌬' }
-          ] },
-          { id: 'biotech', label: t('stem.dna.biotech_lab', 'Biotech & Lab'), color: 'cyan', tabs: [
-            { id: 'biotech', label: t('stem.dna.biotech_tools', 'Biotech tools'), icon: '🔬' },
-            { id: 'biotech2', label: t('stem.dna.biotech_apps', 'Biotech apps'), icon: '💉' },
-            { id: 'pcr', label: t('stem.dna.pcr_lab', 'PCR + lab'), icon: '🧪' },
-            { id: 'crispr', label: t('stem.dna.crispr_detail', 'CRISPR detail'), icon: '✂' },
-            { id: 'sequencing', label: t('stem.dna.sequencing_tech', 'Sequencing tech'), icon: '📊' },
-            { id: 'modelorg', label: t('stem.dna.model_organisms', 'Model organisms'), icon: '🧫' },
-            { id: 'ethics', label: t('stem.dna.bioethics', 'Bioethics'), icon: '⚖' }
-          ] },
-          { id: 'health', label: t('stem.dna.disease_health', 'Disease & Health'), color: 'rose', tabs: [
-            { id: 'diseases', label: t('stem.dna.disease_genes', 'Disease genes'), icon: '🏥' },
-            { id: 'cancer', label: t('stem.dna.cancer_biology', 'Cancer biology'), icon: '⚕' },
-            { id: 'immunity', label: t('stem.dna.immune_system', 'Immune system'), icon: '🛡' },
-            { id: 'viruses', label: t('stem.dna.virus_families', 'Virus families'), icon: '🦠' },
-            { id: 'microbiome', label: t('stem.dna.microbiome', 'Microbiome'), icon: '🦠' },
-            { id: 'organ_systems', label: t('stem.dna.organ_systems', 'Organ systems'), icon: '🫀' },
-            { id: 'hormones', label: t('stem.dna.hormones', 'Hormones'), icon: '⚛' },
-            { id: 'vitamins', label: t('stem.dna.vitamins', 'Vitamins'), icon: '💊' },
-            { id: 'neuro', label: t('stem.dna.neuroscience', 'Neuroscience'), icon: '🧠' }
-          ] },
-          { id: 'life', label: t('stem.dna.life_on_earth', 'Life on Earth'), color: 'amber', tabs: [
-            { id: 'evolution', label: t('stem.dna.evolution', 'Evolution'), icon: '🌳' },
-            { id: 'tree', label: t('stem.dna.tree_of_life', 'Tree of life'), icon: '🌳' },
-            { id: 'ecology', label: t('stem.dna.ecology', 'Ecology'), icon: '🌍' },
-            { id: 'animals2', label: t('stem.dna.animal_facts', 'Animal facts'), icon: '🐾' },
-            { id: 'animal_groups', label: t('stem.dna.animal_groups', 'Animal groups'), icon: '🦁' },
-            { id: 'famous_orgs', label: t('stem.dna.wild_dog_dna', 'Wild + dog DNA'), icon: '🐕' },
-            { id: 'plants', label: t('stem.dna.plant_biology', 'Plant biology'), icon: '🌿' },
-            { id: 'extinct', label: t('stem.dna.extinct_species', 'Extinct species'), icon: '🦕' }
-          ] },
-          { id: 'reference', label: t('stem.dna.reference', 'Reference'), color: 'slate', tabs: [
-            { id: 'famous', label: t('stem.dna.history', 'History'), icon: '🕰' },
-            { id: 'glossary', label: t('stem.dna.glossary', 'Glossary'), icon: '📖' }
-          , { id: 'traceTrait', label: t('stem.dna.trace_trait', 'Trace trait'), icon: '🧬' }] }
-        ];
-        function renderBtn(s, accent) {
-          var active = expSection === s.id;
+
+        var colors = {
+          emerald: { fill: '#065f46', hover: '#ecfdf5' }, teal: { fill: '#115e59', hover: '#f0fdfa' },
+          lime: { fill: '#3f6212', hover: '#f7fee7' }, cyan: { fill: '#155e75', hover: '#ecfeff' },
+          rose: { fill: '#9f1239', hover: '#fff1f2' }, amber: { fill: '#92400e', hover: '#fffbeb' },
+          slate: { fill: '#1e293b', hover: '#f8fafc' }
+        };
+        function renderBtn(topic, accent) {
+          var active = expSection === topic.id;
+          var palette = colors[accent] || colors.slate;
           return h('button', {
-            key: s.id,
-            onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
-          }, s.icon + ' ' + s.label);
+            key: topic.id, type: 'button', id: 'dna-reference-topic-' + topic.id, 'data-dna-reference-topic': topic.id,
+            'aria-expanded': active, 'aria-controls': 'dna-reference-topic-panel',
+            onClick: function(event) {
+              if (!active) queueReferenceFocus('dna-reference-topic-panel', event.currentTarget, topic.id);
+              setExp({ expSection: active ? null : topic.id });
+            },
+            style: { background: active ? palette.fill : '#fff', color: active ? '#fff' : '#334155', borderColor: active ? palette.fill : '#64748b', '--dna-reference-hover': palette.hover },
+            className: 'dna-reference-topic px-2 py-1 rounded-md text-[0.6875rem] font-bold border'
+          }, h('span', { 'aria-hidden': true }, topic.icon + ' '), h('span', null, topic.label), active && h('span', { 'aria-hidden': true }, ' · Open'));
         }
-        return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
-          TAB_GROUPS.map(function(g) {
-            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[0.625rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
-              g.tabs.map(function(s) { return renderBtn(s, g.color); })
+        return h('nav', { id: 'dna-reference-topics', 'aria-label': 'Biology reference topics', className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
+          DNA_REFERENCE_GROUPS.map(function(group) {
+            return h('div', { key: group.id, role: 'group', 'aria-labelledby': 'dna-reference-group-' + group.id, className: 'dna-reference-topic-group flex items-center gap-2 flex-wrap' },
+              h('span', { id: 'dna-reference-group-' + group.id, className: 'dna-reference-group-label text-[0.625rem] font-extrabold tracking-widest uppercase min-w-[120px] text-right pr-1 border-r border-slate-300 shrink-0', style: { color: (colors[group.color] || colors.slate).fill } }, group.label),
+              group.tabs.map(function(topic) { return renderBtn(topic, group.color); })
             );
           })
         );
@@ -6287,122 +6627,134 @@ window.StemLab = window.StemLab || {
       ];
       function renderTraceTraitSection() {
         var state = d2.traceTrait || { puzzles: {}, score: 0 };
-        function setTT(patch) {
-          setLabToolData(function(prev) {
-            var prior = (prev && prev.dna) || {};
-            var st = Object.assign({}, prior.traceTrait || state, patch);
-            return Object.assign({}, prev, { dna: Object.assign({}, prior, { traceTrait: st }) });
+        function puzzleState(puzzle, puzzles) {
+          var saved = (puzzles || {})[puzzle.id] || {};
+          return Object.assign({ pick: null, revealed: false }, saved, {
+            ranking: Array.isArray(saved.ranking) ? saved.ranking : puzzle.explanations.map(function(e) { return e.id; })
           });
         }
-        function reorderExplanations(puzzleId, fromIdx, toIdx) {
-          var ps = state.puzzles[puzzleId];
-          if (!ps || !ps.ranking) return;
-          var ranking = ps.ranking.slice();
-          var item = ranking.splice(fromIdx, 1)[0];
-          ranking.splice(toIdx, 0, item);
-          var newPuzzles = Object.assign({}, state.puzzles);
-          newPuzzles[puzzleId] = Object.assign({}, ps, { ranking: ranking });
-          setTT({ puzzles: newPuzzles });
+        // Derive defaults without writing during render. Each explicit action
+        // reads fresh saved state so edits to another family cannot be overwritten.
+        function updatePuzzle(puzzle, change) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.dna) || {};
+            var latest = prior.traceTrait || { puzzles: {}, score: 0 };
+            var current = puzzleState(puzzle, latest.puzzles);
+            var patch = change(current, latest);
+            if (!patch) return prev;
+            var next = Object.assign({}, latest, {
+              puzzles: Object.assign({}, latest.puzzles || {}, { [puzzle.id]: Object.assign({}, current, patch.puzzle) })
+            });
+            if (patch.score !== undefined) next.score = patch.score;
+            return Object.assign({}, prev, { dna: Object.assign({}, prior, { traceTrait: next }) });
+          });
         }
-        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.dna.trace_the_trait', '🧬 Trace the trait')),
+        function reorderExplanations(puzzle, explanationId, direction) {
+          updatePuzzle(puzzle, function(current) {
+            if (current.revealed) return null;
+            var from = current.ranking.indexOf(explanationId);
+            var to = from + direction;
+            if (from < 0 || to < 0 || to >= current.ranking.length) return null;
+            var ranking = current.ranking.slice();
+            ranking.splice(to, 0, ranking.splice(from, 1)[0]);
+            var explanation = puzzle.explanations.find(function(e) { return e.id === explanationId; });
+            return { puzzle: { ranking: ranking, moveFeedback: explanation.text + ' Moved to position ' + (to + 1) + ' of ' + ranking.length + '.' } };
+          });
+        }
+        function revealPuzzle(puzzle) {
+          updatePuzzle(puzzle, function(current, latest) {
+            if (current.revealed || current.pick == null || current.ranking.length !== 4) return null;
+            var bonus = current.pick === puzzle.correctPattern ? 1 : 0;
+            return { puzzle: { revealed: true, moveFeedback: '' }, score: (latest.score || 0) + bonus };
+          });
+        }
+        return h('section', { id: 'dna-trace-trait-panel', 'data-dna-trace-trait': true, role: 'region', 'aria-labelledby': 'dna-trace-trait-title', className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+          h('h4', { id: 'dna-trace-trait-title', className: 'text-sm font-black text-slate-800 mb-1' }, t('stem.dna.trace_the_trait', '🧬 Trace the trait')),
           h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
             t('stem.dna.inheritance_pattern_reasoning_ranking_', 'Inheritance pattern + reasoning ranking — both must be committed before reveal. The reveal grades your ranking position-by-position, not just your final answer. Real inquiry requires you to know WHY, not just WHAT.')),
           PEDIGREE_PUZZLES.map(function(puzzle, pIdx) {
-            var defaultRanking = puzzle.explanations.map(function(e) { return e.id; });
-            var st = state.puzzles[puzzle.id] || { pick: null, ranking: defaultRanking, revealed: false };
-            if (!state.puzzles[puzzle.id]) {
-              setTimeout(function() {
-                var newP = Object.assign({}, state.puzzles);
-                newP[puzzle.id] = st;
-                setTT({ puzzles: newP });
-              }, 0);
-            }
-            var canReveal = st.pick != null && Array.isArray(st.ranking) && st.ranking.length === 4 && !st.revealed;
+            var st = puzzleState(puzzle, state.puzzles);
+            var canReveal = st.pick != null && st.ranking.length === 4 && !st.revealed;
             var diagnosisCorrect = st.revealed && st.pick === puzzle.correctPattern;
-            var positionMatches = st.revealed ? (st.ranking || []).map(function(id, i) { return id === puzzle.expertRanking[i]; }) : [];
+            var positionMatches = st.revealed ? st.ranking.map(function(id, i) { return id === puzzle.expertRanking[i]; }) : [];
             var rankingScore = positionMatches.filter(Boolean).length;
-            return h('div', { key: puzzle.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+            var prefix = 'dna-trait-' + puzzle.id;
+            var correctOption = PATTERN_OPTIONS.find(function(opt) { return opt.id === puzzle.correctPattern; });
+            var verdict = st.revealed ? (diagnosisCorrect ? 'Pattern correct. ' : 'Pattern off. Correct pattern: ' + correctOption.label + '. ') + 'Ranking match: ' + rankingScore + '/4 positions.' : '';
+            return h('section', { key: puzzle.id, 'data-dna-trait-puzzle': puzzle.id, 'aria-labelledby': prefix + '-title', className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 font-bold' }, '#' + (pIdx + 1)),
-                h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, puzzle.title)
+                h('span', { className: 'text-[0.625rem] font-mono text-emerald-700 font-bold', 'aria-hidden': true }, '#' + (pIdx + 1)),
+                h('h5', { id: prefix + '-title', className: 'text-[0.75rem] font-black text-slate-800' }, puzzle.title)
               ),
               h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2 italic' }, puzzle.description),
-              h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.1_inheritance_pattern', '1. Inheritance pattern:')),
-              h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+              h('div', { id: prefix + '-pattern-label', className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.1_inheritance_pattern', '1. Inheritance pattern:')),
+              h('div', { 'data-dna-trait-patterns': puzzle.id, role: 'group', 'aria-labelledby': prefix + '-title ' + prefix + '-pattern-label', className: 'flex flex-wrap gap-1 mb-2' },
                 PATTERN_OPTIONS.map(function(opt) {
                   var picked = st.pick === opt.id;
-                  var revealed = st.revealed;
                   var correct = opt.id === puzzle.correctPattern;
-                  var bg = revealed
-                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
-                    : (picked ? 'bg-emerald-200 text-emerald-900 border-emerald-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-emerald-50 active:scale-[0.97]');
+                  var bg = st.revealed
+                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300' : 'bg-white text-slate-500 border-slate-200'))
+                    : (picked ? 'bg-emerald-200 text-emerald-900 border-emerald-400' : 'bg-white text-slate-600 border-slate-200 hover:bg-emerald-50');
                   return h('button', {
-                    key: opt.id,
-                    disabled: revealed,
+                    key: opt.id, type: 'button', 'data-dna-trait-pattern': opt.id,
+                    'aria-disabled': !!st.revealed, tabIndex: st.revealed ? -1 : 0,
                     onClick: function() {
-                      var newP = Object.assign({}, state.puzzles);
-                      newP[puzzle.id] = Object.assign({}, st, { pick: opt.id });
-                      setTT({ puzzles: newP });
+                      updatePuzzle(puzzle, function(current) { return current.revealed ? null : { puzzle: { pick: opt.id } }; });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
-                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-emerald-400 focus:outline-none ' + bg
-                  }, opt.label);
+                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors ' + bg
+                  }, h('span', null, opt.label),
+                    picked && h('span', { className: 'block text-[0.625rem] font-black' }, st.revealed && correct ? 'Your choice — correct pattern' : 'Your choice'),
+                    st.revealed && correct && !picked && h('span', { className: 'block text-[0.625rem] font-black' }, 'Correct pattern')
+                  );
                 })
               ),
-              h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most → least supporting):')),
-              h('ol', { className: 'space-y-1 mb-2', style: { listStyle: 'none', padding: 0 } },
-                (st.ranking || defaultRanking).map(function(eId, rIdx) {
+              h('div', { id: prefix + '-ranking-label', className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.dna.2_rank_these_explanations_most_least_s', '2. Rank these explanations (most → least supporting):')),
+              h('ol', { id: prefix + '-ranking', role: 'list', 'aria-labelledby': prefix + '-title ' + prefix + '-ranking-label', className: 'space-y-1 mb-2', style: { listStyle: 'none', padding: 0 } },
+                st.ranking.map(function(eId, rIdx) {
                   var expl = puzzle.explanations.find(function(e) { return e.id === eId; });
                   if (!expl) return null;
                   var expertPos = puzzle.expertRanking.indexOf(eId);
                   var positionMatch = st.revealed && rIdx === expertPos;
-                  return h('li', { key: eId, className: 'flex items-center gap-2 p-2 rounded border ' +
-                    (st.revealed
-                      ? (positionMatch ? 'bg-green-100 border-green-300' : 'bg-amber-50 border-amber-300')
-                      : 'bg-white border-slate-300')
+                  return h('li', { key: eId, 'data-dna-trait-explanation': eId, className: 'dna-trait-row p-2 rounded border ' +
+                    (st.revealed ? (positionMatch ? 'bg-green-100 border-green-300' : 'bg-amber-50 border-amber-300') : 'bg-white border-slate-300')
                   },
-                    h('span', { className: 'font-mono font-bold text-[0.6875rem] text-slate-500', style: { minWidth: 24 } }, '#' + (rIdx + 1)),
-                    h('span', { className: 'flex-1 text-[0.6875rem] text-slate-700' }, expl.text),
-                    !st.revealed && rIdx > 0 && h('button', {
-                      'aria-label': t('stem.dna.move_up', 'Move up'),
-                      onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx - 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[0.6875rem] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
-                    }, '▲'),
-                    !st.revealed && rIdx < (st.ranking || []).length - 1 && h('button', {
-                      'aria-label': t('stem.dna.move_down', 'Move down'),
-                      onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx + 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[0.6875rem] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
-                    }, '▼'),
-                    st.revealed && h('span', { className: 'text-[0.625rem] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
-                      positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
+                    h('span', { className: 'font-mono font-bold text-[0.6875rem] text-slate-700', 'aria-hidden': true }, '#' + (rIdx + 1)),
+                    h('span', { className: 'dna-trait-reason text-[0.6875rem] text-slate-700' }, expl.text),
+                    h('span', { id: prefix + '-position-' + eId, className: 'sr-only' }, 'Position ' + (rIdx + 1) + ' of ' + st.ranking.length + '.'),
+                    h('span', { className: 'dna-trait-moves' },
+                      [{ id: 'up', delta: -1, label: t('stem.dna.move_up', 'Move up'), icon: '▲' }, { id: 'down', delta: 1, label: t('stem.dna.move_down', 'Move down'), icon: '▼' }].map(function(move) {
+                        var unavailable = st.revealed || rIdx + move.delta < 0 || rIdx + move.delta >= st.ranking.length;
+                        return h('button', { key: move.id, type: 'button', 'data-dna-trait-move': move.id,
+                          'aria-label': move.label + ': ' + puzzle.title + ': ' + expl.text,
+                          'aria-describedby': prefix + '-position-' + eId,
+                          'aria-disabled': !!unavailable, tabIndex: unavailable ? -1 : 0,
+                          onClick: function() { reorderExplanations(puzzle, eId, move.delta); },
+                          className: 'px-2 py-0.5 rounded text-[0.6875rem] bg-slate-100 hover:bg-slate-200'
+                        }, move.icon);
+                      })
+                    ),
+                    st.revealed && h('span', { className: 'dna-trait-rank-result text-[0.625rem] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') }, positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
                   );
                 })
               ),
+              h('p', { id: prefix + '-move-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, st.moveFeedback || ''),
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
                 h('button', {
-                  disabled: !canReveal,
-                  onClick: function() {
-                    var newP = Object.assign({}, state.puzzles);
-                    newP[puzzle.id] = Object.assign({}, st, { revealed: true });
-                    var bonus = st.pick === puzzle.correctPattern ? 1 : 0;
-                    setTT({ puzzles: newP, score: (state.score || 0) + bonus });
-                  },
-                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.97]'
+                  type: 'button', 'data-dna-trait-reveal': puzzle.id,
+                  'aria-disabled': !canReveal, 'aria-describedby': st.revealed ? prefix + '-verdict' : !canReveal ? prefix + '-reveal-hint' : undefined,
+                  onClick: function() { revealPuzzle(puzzle); },
+                  className: 'px-3 py-1 rounded text-[0.6875rem] font-bold bg-emerald-700 text-white'
                 }, st.revealed ? '✓ Revealed' : 'Reveal verdict'),
-                !canReveal && !st.revealed && h('span', { className: 'text-[0.625rem] text-slate-500 italic' },
-                  st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations'),
-                st.revealed && h('span', { className: 'text-[0.6875rem] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') },
-                  diagnosisCorrect ? '✓ Pattern correct' : '✗ Pattern off'),
-                st.revealed && h('span', { className: 'text-[0.6875rem] text-slate-600' },
-                  'Ranking match: ' + rankingScore + '/4 positions')
-              )
+                !canReveal && !st.revealed && h('span', { id: prefix + '-reveal-hint', className: 'text-[0.625rem] text-slate-500 italic' }, st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations')
+              ),
+              h('p', { id: prefix + '-verdict', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mt-2 text-[0.6875rem] font-bold ' + (diagnosisCorrect ? 'text-green-700' : 'text-rose-700') }, verdict)
             );
           }),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2 flex-wrap' },
-            h('span', null, '🎯'),
-            h('strong', null, 'Pattern score: ' + (state.score || 0) + ' / ' + PEDIGREE_PUZZLES.length),
-            h('span', { className: 'text-slate-500 ml-2 italic' }, t('stem.dna.notice_the_ranking_grade_is_independen', 'Notice: the ranking grade is independent of the pattern grade — you can identify the WHAT correctly but rank the WHY out of order.'))
+            h('span', { 'aria-hidden': true }, '🎯'),
+            h('strong', { 'data-dna-trait-score': true }, 'Pattern score: ' + (state.score || 0) + ' / ' + PEDIGREE_PUZZLES.length),
+            h('span', { className: 'text-slate-600 ml-2 italic' }, t('stem.dna.notice_the_ranking_grade_is_independen', 'Notice: the ranking grade is independent of the pattern grade — you can identify the WHAT correctly but rank the WHY out of order.'))
           )
         );
       }
@@ -6794,9 +7146,12 @@ window.StemLab = window.StemLab || {
       }
 
       function renderMutInquirySection() {
-        var iq = d2.mutInquiry || { mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { setExp({ mutInquiry: Object.assign({}, iq, patch) }); }
-        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        // Defaults are a read-only view of older saved inquiries. Deliberate actions
+        // merge against the latest store so independent drafts and observations survive.
+        function readIQ(saved) {
+          return Object.assign({ mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, saved || {});
+        }
+        function analyzeIQ(iq) {
         // expected number of beneficial mutations: μ * N * G * f_beneficial (≈1%)
         var totalMuts = iq.mutRate * iq.popSize * iq.generations;
         var beneficial = totalMuts * 0.01;
@@ -6824,85 +7179,147 @@ window.StemLab = window.StemLab || {
         fixProb = Math.min(0.95, Math.max(0, fixProb));
         var expectedFixed = beneficial * fixProb;
         var state = expectedFixed < 0.01 ? 'static' : expectedFixed < 0.5 ? 'driftdom' : expectedFixed < 5 ? 'slowevo' : expectedFixed < 50 ? 'fastevo' : 'runaway';
-        var sm = ({
+          return { totalMuts: totalMuts, beneficial: beneficial, fixProb: fixProb, expectedFixed: expectedFixed, state: state };
+        }
+        var iq = readIQ(d2.mutInquiry);
+        function setIQ(patch) {
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.dna) || {};
+            var current = readIQ(prior.mutInquiry);
+            var change = typeof patch === 'function' ? patch(current) : patch;
+            return Object.assign({}, prev, { dna: Object.assign({}, prior, { mutInquiry: Object.assign({}, current, change) }) });
+          });
+        }
+        function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
+        var analysis = analyzeIQ(iq);
+        var totalMuts = analysis.totalMuts, beneficial = analysis.beneficial, fixProb = analysis.fixProb, expectedFixed = analysis.expectedFixed;
+        var regimes = {
           static: { label: t('stem.dna.static', 'Static'), color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: t('stem.dna.essentially_no_beneficial_fixation_exp', 'Essentially no beneficial fixation expected. Population is in mutation-selection balance or drift-only.') },
           driftdom: { label: 'Drift-dominated', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.dna.drift_dominates_few_expected_fixations', 'Drift dominates: few expected fixations even though mutations occur. Common in small populations.') },
           slowevo: { label: t('stem.dna.slow_evolution', 'Slow evolution'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.dna.a_handful_of_beneficial_mutations_expe', 'A handful of beneficial mutations expected to fix. Standard for most natural populations.') },
           fastevo: { label: t('stem.dna.fast_evolution', 'Fast evolution'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dna.many_fixations_expected_strong_selecti', 'Many fixations expected — strong selection, large population, or both. E.g., bacterial antibiotic resistance.') },
           runaway: { label: t('stem.dna.runaway_adaptation', 'Runaway adaptation'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dna.extreme_regime_viruses_cancer_cell_lin', 'Extreme regime: viruses, cancer cell lines, asexual lab populations. Many simultaneous adaptive sweeps.') }
-        })[state];
-        // SVG: log-log mutation×population scatter with current point
-        function logX(v) { return 30 + (Math.log10(Math.max(1, v)) / 9) * 270; }
+        };
+        var sm = regimes[analysis.state];
+        function scientificSpoken(value) {
+          var parts = value.toExponential(1).split('e');
+          var exponent = parseInt(parts[1], 10);
+          return parts[0] + t('stem.dna.times_ten_power', ' times 10 to the power ') + (exponent < 0 ? t('stem.dna.minus_word', 'minus ') : '') + Math.abs(exponent);
+        }
+        var resultText = sm.label + ' · ~' + expectedFixed.toFixed(2) + t('stem.dna.fixations_expected_suffix', ' fixations expected');
+        // The plotted x domain includes the full population control, including 10^10.
+        function logX(v) { return 36 + (Math.log10(Math.max(1, v)) / 10) * 260; }
         function logY(v) { return 130 - Math.min(110, (Math.log10(Math.max(1e-12, v)) + 12) / 12 * 110); }
-        return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-          h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.dna.mutation_inquiry_drift_selection_fixat', '🔬 Mutation Inquiry — Drift, Selection, Fixation')),
-          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.dna.set_per_base_mutation_rate_population_', 'Set mutation rate, population size, generations, and selection coefficient, then observe how the fixation estimate changes. The result updates live; record a hypothesis or pattern you notice.')),
-          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ~' + expectedFixed.toFixed(2) + ' fixations expected'),
-          h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+        function slider(key, label, min, max, step, value, display, spoken, help, parse) {
+          var id = 'dna-inquiry-' + key;
+          return h('div', { key: key, className: 'dna-inquiry-control' },
+            h('div', { className: 'dna-inquiry-control-heading' },
+              h('label', { htmlFor: id }, label),
+              h('output', { htmlFor: id, 'aria-live': 'off', style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, display)),
+            h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value,
+              'aria-valuetext': spoken, 'aria-describedby': id + '-help',
+              onChange: function(e) { setKey(key, parse(e.target.value)); } }),
+            h('p', { id: id + '-help', className: 'dna-inquiry-help' }, help));
+        }
+        var fieldStyle = { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #94a3b8', background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' };
+        var buttonStyle = { padding: '8px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #94a3b8', background: '#0a0a1a', color: sm.color, cursor: 'pointer' };
+        return h('section', { 'data-dna-inquiry': '', 'aria-labelledby': 'dna-inquiry-heading', className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          h('style', null, [
+            '[data-dna-inquiry]{min-width:0;overflow-wrap:anywhere}',
+            '[data-dna-inquiry] :is(button,input,textarea){box-sizing:border-box;max-width:100%}',
+            '[data-dna-inquiry] :is(button,input[type=range],textarea,.dna-inquiry-check){min-height:44px}',
+            '[data-dna-inquiry] button{min-width:44px;white-space:normal}',
+            '[data-dna-inquiry] input[type=range]{display:block;width:100%;accent-color:#e8f0f5;cursor:pointer}',
+            '[data-dna-inquiry] .dna-inquiry-control-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;font-size:12px}',
+            '[data-dna-inquiry] .dna-inquiry-control-heading label{color:#e8f0f5;font-weight:700}',
+            '[data-dna-inquiry] .dna-inquiry-help{margin:0 0 8px;font-size:12px;color:#cbd5e1;line-height:1.5}',
+            '[data-dna-inquiry] .dna-inquiry-controls,[data-dna-inquiry] .dna-inquiry-metrics{display:grid;gap:8px 12px;margin:0 0 12px}',
+            '[data-dna-inquiry] .dna-inquiry-controls{grid-template-columns:repeat(2,minmax(0,1fr))}',
+            '[data-dna-inquiry] .dna-inquiry-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}',
+            '[data-dna-inquiry] .dna-inquiry-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}',
+            '[data-dna-inquiry] :is(button,input,textarea,[tabindex]):focus-visible{outline:3px solid #fff!important;outline-offset:-4px!important;box-shadow:inset 0 0 0 7px #0a0a1a!important;transition:none!important}',
+            '[data-dna-inquiry] [hidden]{display:none!important}',
+            '@media(max-width:560px){[data-dna-inquiry] .dna-inquiry-controls,[data-dna-inquiry] .dna-inquiry-metrics{grid-template-columns:minmax(0,1fr)}[data-dna-inquiry] .dna-inquiry-actions>button{flex-basis:100%}}',
+            '@media(forced-colors:active){[data-dna-inquiry] :is(button,input,textarea,[tabindex]):focus-visible{outline-color:Highlight!important;box-shadow:none!important}[data-dna-inquiry] :is(button,textarea){border-color:ButtonText!important}}'
+          ].join('')),
+          h('h3', { id: 'dna-inquiry-heading', style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.dna.mutation_inquiry_drift_selection_fixat', '🔬 Mutation Inquiry — Drift, Selection, Fixation')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.5 } }, t('stem.dna.set_per_base_mutation_rate_population_', 'Set mutation rate, population size, generations, and selection coefficient, then observe how the fixation estimate changes. The result updates live; record a hypothesis or pattern you notice.')),
+          h('div', { id: 'dna-inquiry-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'inline-block', padding: '6px 10px', borderRadius: 12, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, resultText),
+          h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.8 } }, sm.desc),
+          h('dl', { className: 'dna-inquiry-metrics' },
             [
-              { label: t('stem.dna.total_mutations', 'Total mutations'), val: totalMuts.toExponential(2) },
-              { label: '~Beneficial', val: beneficial.toExponential(2) },
-              { label: t('stem.dna.fix_prob_kimura', 'Fix prob (Kimura)'), val: (fixProb * 100).toFixed(2) + '%' }
+              { id: 'total', label: t('stem.dna.total_mutations', 'Total mutations'), val: totalMuts.toExponential(2) },
+              { id: 'beneficial', label: '~Beneficial', val: beneficial.toExponential(2) },
+              { id: 'fixProb', label: t('stem.dna.fix_prob_kimura', 'Fix prob (Kimura)'), val: (fixProb * 100).toFixed(2) + '%' }
             ].map(function(m) {
-              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
-                h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
-              );
+              return h('div', { key: m.id, 'data-dna-inquiry-metric': m.id, style: { minWidth: 0, padding: 8, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+                h('dt', { style: { fontSize: 12, color: '#cbd5e1' } }, m.label),
+                h('dd', { style: { margin: 0, fontSize: 12, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val));
             })
           ),
           h('svg', {
             width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img',
             'aria-label': t('stem.dna.population_mutation_chart', 'Population size and mutation rate chart comparing genetic drift and selection regimes.'),
-            style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 }
+            'aria-describedby': 'dna-inquiry-chart-description',
+            style: { display: 'block', background: '#0a0a1a', borderRadius: 6, marginBottom: 10 }
           },
-            h('line', { x1: 30, y1: 130, x2: 300, y2: 130, stroke: '#1e293b' }),
-            h('line', { x1: 30, y1: 20, x2: 30, y2: 130, stroke: '#1e293b' }),
-            [1, 1000, 1e6, 1e9].map(function(p, i) { return h('text', { key: 'nx' + i, x: logX(p), y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, '10^' + Math.log10(p).toFixed(0)); }),
-            [1e-10, 1e-7, 1e-4, 1e-1].map(function(r, i) { return h('text', { key: 'ry' + i, x: 24, y: logY(r), fill: '#64748b', fontSize: 8, textAnchor: 'end' }, '10^' + Math.log10(r).toFixed(0)); }),
-            // background zones (drift vs selection regimes for human, bacterial, virus)
+            h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: '#94a3b8' }),
+            h('line', { x1: 36, y1: 20, x2: 36, y2: 130, stroke: '#94a3b8' }),
+            [1, 100, 1e4, 1e6, 1e8, 1e10].map(function(p, i) { return h('text', { key: 'nx' + i, x: logX(p), y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, '10^' + Math.log10(p).toFixed(0)); }),
+            [1e-10, 1e-7, 1e-4, 1e-1].map(function(r, i) { return h('text', { key: 'ry' + i, x: 30, y: logY(r), fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, '10^' + Math.log10(r).toFixed(0)); }),
             h('circle', { cx: logX(1e4), cy: logY(1e-8), r: 14, fill: '#22d3ee', opacity: 0.2 }),
             h('text', { x: logX(1e4) + 18, y: logY(1e-8) + 3, fill: '#22d3ee', fontSize: 8, fontWeight: 700 }, t('stem.dna.human_drift', 'human (drift)')),
             h('circle', { cx: logX(1e9), cy: logY(1e-9), r: 14, fill: '#4ade80', opacity: 0.2 }),
             h('text', { x: logX(1e9) - 5, y: logY(1e-9) + 3, fill: '#4ade80', fontSize: 8, fontWeight: 700, textAnchor: 'end' }, 'bacterial'),
             h('circle', { cx: logX(1e8), cy: logY(1e-5), r: 14, fill: '#f87171', opacity: 0.2 }),
             h('text', { x: logX(1e8) + 18, y: logY(1e-5) + 3, fill: '#f87171', fontSize: 8, fontWeight: 700 }, 'virus'),
-            h('circle', { cx: logX(iq.popSize), cy: logY(iq.mutRate), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
+            h('circle', { 'data-dna-inquiry-point': '', cx: logX(iq.popSize), cy: logY(iq.mutRate), r: 6, fill: sm.color, stroke: '#fff', strokeWidth: 1.5 }),
             h('text', { x: 160, y: 158, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, t('stem.dna.log_n_vs_log_circles_typical_regimes', 'log₁₀(N) vs log₁₀(μ) — circles = typical regimes'))
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
-            h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.mutation_rate_log', 'Mutation rate μ (log)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mutRate.toExponential(1))),
-              h('input', { type: 'range', min: -10, max: -2, step: 0.5, value: Math.log10(iq.mutRate), onChange: function(e) { setKey('mutRate', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
-            ),
-            h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.population_size_n_log', 'Population size N (log)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.popSize.toExponential(1))),
-              h('input', { type: 'range', min: 1, max: 10, step: 0.5, value: Math.log10(iq.popSize), onChange: function(e) { setKey('popSize', Math.pow(10, parseFloat(e.target.value))); }, style: { width: '100%' } })
-            ),
-            h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.generations', 'Generations')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.generations)),
-              h('input', { type: 'range', min: 1, max: 10000, step: 1, value: iq.generations, onChange: function(e) { setKey('generations', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
-            ),
-            h('label', null,
-              h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.dna.selection_coef_s', 'Selection coef s')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.selection.toFixed(3))),
-              h('input', { type: 'range', min: 0, max: 0.5, step: 0.005, value: iq.selection, onChange: function(e) { setKey('selection', parseFloat(e.target.value)); }, style: { width: '100%' } })
-            )
+          h('p', { id: 'dna-inquiry-chart-description', className: 'dna-inquiry-help' },
+            t('stem.dna.inquiry_chart_axes', 'Horizontal axis: population size N, 1 to 10 billion. Vertical axis: mutation rate μ. Both axes use logarithmic scales. The outlined point marks your settings: '),
+            'N = ' + iq.popSize.toExponential(1) + ', μ = ' + iq.mutRate.toExponential(1) + '. ' + resultText + '. ',
+            t('stem.dna.inquiry_chart_examples', 'Faded circles are illustrative reference points: human N = 1.0e+4, μ = 1.0e-8; bacterial N = 1.0e+9, μ = 1.0e-9; viral N = 1.0e+8, μ = 1.0e-5.')),
+          h('div', { className: 'dna-inquiry-controls' },
+            slider('mutRate', t('stem.dna.mutation_rate_log', 'Mutation rate μ (log)'), -10, -2, 0.5, Math.log10(iq.mutRate), iq.mutRate.toExponential(1),
+              scientificSpoken(iq.mutRate) + t('stem.dna.mutation_rate_units', ' mutations per base per generation'),
+              t('stem.dna.mutation_rate_log_help', 'Logarithmic scale: each step multiplies the mutation rate by about 3.16. Units: mutations per base per generation.'),
+              function(v) { return Math.pow(10, parseFloat(v)); }),
+            slider('popSize', t('stem.dna.population_size_n_log', 'Population size N (log)'), 1, 10, 0.5, Math.log10(iq.popSize), iq.popSize.toExponential(1),
+              scientificSpoken(iq.popSize) + t('stem.dna.individuals_suffix', ' individuals'),
+              t('stem.dna.population_log_help', 'Logarithmic scale: each step multiplies population size by about 3.16. Units: individuals.'),
+              function(v) { return Math.pow(10, parseFloat(v)); }),
+            slider('generations', t('stem.dna.generations', 'Generations'), 1, 10000, 1, iq.generations, iq.generations,
+              iq.generations + t('stem.dna.generations_suffix', ' generations'),
+              t('stem.dna.generations_help', 'Number of generations over which mutations are counted.'),
+              function(v) { return parseInt(v, 10); }),
+            slider('selection', t('stem.dna.selection_coef_s', 'Selection coef s'), 0, 0.5, 0.005, iq.selection, iq.selection.toFixed(3),
+              iq.selection.toFixed(3) + t('stem.dna.selection_coefficient_suffix', ' selection coefficient'),
+              t('stem.dna.selection_help', 'Selection coefficient: 0 is neutral; larger values increase the advantage of a beneficial mutation.'),
+              function(v) { return parseFloat(v); })
           ),
-          h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
-              var t = new Date().toISOString().slice(11, 19);
-              setIQ({ log: iq.log.concat([{ t: t, mu: iq.mutRate.toExponential(1), N: iq.popSize.toExponential(1), g: iq.generations, s: iq.selection.toFixed(3), fix: expectedFixed.toFixed(2), state: sm.label }]) });
-            }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.dna.log_this_evolutionary_regime', '📋 Log this evolutionary regime')),
-            h('button', { onClick: function() { setIQ({ mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.dna.reset_5', 'Reset'))
+          h('div', { className: 'dna-inquiry-actions' },
+            h('button', { id: 'dna-inquiry-record', type: 'button', 'aria-controls': 'dna-inquiry-log', onClick: function() {
+              var timestamp = new Date().toISOString().slice(11, 19);
+              setIQ(function(current) {
+                var currentAnalysis = analyzeIQ(current);
+                return { log: current.log.concat([{ t: timestamp, mu: current.mutRate.toExponential(1), N: current.popSize.toExponential(1), g: current.generations, s: current.selection.toFixed(3), fix: currentAnalysis.expectedFixed.toFixed(2), state: regimes[currentAnalysis.state].label }]) };
+              });
+            }, style: Object.assign({ flex: 1 }, buttonStyle) }, t('stem.dna.log_this_evolutionary_regime', '📋 Log this evolutionary regime')),
+            h('button', { id: 'dna-inquiry-reset', type: 'button', onClick: function() { setIQ({ mutRate: 1e-7, popSize: 1e6, generations: 100, selection: 0 }); }, style: buttonStyle }, t('stem.dna.reset_5', 'Reset'))
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
-            iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · μ' + e.mu + ' N' + e.N + ' g' + e.g + ' s' + e.s + ' → ' + e.fix); })
-          ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.dna.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage on fixation rate? Why?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.hypothesis_input', 'Evolutionary fixation hypothesis'), placeholder: t('stem.dna.e_g_selection_has_more_leverage_than_o', 'e.g., selection has more leverage than μ once N is large enough...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.dna.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
-            h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.dna.open_questions_no_answer_key', 'Open questions (no answer key)')),
+          h('h4', { id: 'dna-inquiry-log-heading', style: { fontSize: 12, margin: '0 0 4px' } }, t('stem.dna.inquiry_log_heading', 'Recorded observations')),
+          h('p', { id: 'dna-inquiry-log-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'dna-inquiry-help' }, iq.log.length ? iq.log.length + t('stem.dna.inquiry_log_count', ' observations saved. Showing the latest five; times are UTC.') : ''),
+          h('div', { id: 'dna-inquiry-log', role: 'region', tabIndex: 0, 'aria-labelledby': 'dna-inquiry-log-heading', style: { maxHeight: 120, overflow: 'auto', padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px solid #94a3b8', marginBottom: 10, fontSize: 12, fontFamily: 'monospace', lineHeight: 1.5 } },
+            iq.log.length ? h('ol', { start: Math.max(1, iq.log.length - 4), style: { paddingLeft: 24, margin: 0 } },
+              iq.log.slice(-5).map(function(e, i) { return h('li', { key: iq.log.length - 5 + i }, e.t + '  ' + e.state + ' · μ' + e.mu + ' N' + e.N + ' g' + e.g + ' s' + e.s + ' → ' + e.fix); })) :
+              h('p', { style: { margin: 0 } }, t('stem.dna.inquiry_log_empty', 'No observations recorded yet. Adjust the sliders, then log a regime to compare.'))),
+          h('label', { htmlFor: 'dna-inquiry-hypothesis', style: { display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 4 } }, t('stem.dna.hypothesis_input', 'Evolutionary fixation hypothesis')),
+          h('p', { id: 'dna-inquiry-hypothesis-help', className: 'dna-inquiry-help' }, t('stem.dna.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage on fixation rate? Why?)')),
+          h('textarea', { id: 'dna-inquiry-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.hypothesis_input', 'Evolutionary fixation hypothesis'), 'aria-describedby': 'dna-inquiry-hypothesis-help', placeholder: t('stem.dna.e_g_selection_has_more_leverage_than_o', 'e.g., selection has more leverage than μ once N is large enough...'), style: fieldStyle }),
+          h('button', { id: 'dna-inquiry-questions-toggle', type: 'button', 'aria-expanded': !!iq.stuckRevealed, 'aria-controls': 'dna-inquiry-questions', onClick: function() { setIQ(function(current) { return { stuckRevealed: !current.stuckRevealed }; }); }, style: Object.assign({ marginBottom: 10 }, buttonStyle) }, iq.stuckRevealed ? t('stem.dna.hide_open_questions', 'Hide open questions') : t('stem.dna.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          h('div', { id: 'dna-inquiry-questions', hidden: !iq.stuckRevealed, role: 'region', 'aria-labelledby': 'dna-inquiry-questions-heading', style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed #94a3b8', fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
+            h('h4', { id: 'dna-inquiry-questions-heading', style: { fontSize: 12, fontWeight: 700, color: sm.color, margin: '0 0 4px' } }, t('stem.dna.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, t('stem.dna.when_does_the_regime_move_from_drift_d', 'When does the regime move from drift-dominated to selection-dominated? What does N·s tell you?')),
               h('li', null, t('stem.dna.why_are_antibiotic_resistance_and_vira', 'Why are antibiotic resistance and viral evolution so fast — which sliders are at their extreme?')),
@@ -6910,12 +7327,14 @@ window.StemLab = window.StemLab || {
               h('li', null, t('stem.dna.could_the_same_population_size_be_drif', 'Could the same population size be "drift-dominated" for weak mutations and "selection-dominated" for strong ones simultaneously?'))
             )
           ),
-          h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
-            h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+          h('label', { htmlFor: 'dna-inquiry-understood', className: 'dna-inquiry-check', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('input', { id: 'dna-inquiry-understood', type: 'checkbox', checked: !!iq.understood, 'aria-controls': 'dna-inquiry-explanation-panel', onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, t('stem.dna.i_can_explain_why_this_n_g_s_combinati', 'I can explain why this μ × N × g × s combination yields this regime.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.explanation_input', 'Evolutionary fixation explanation'), placeholder: t('stem.dna.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.dna.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Uses the full Kimura (1962) diploid fixation formula (1−e^(−2s))/(1−e^(−4Ns)), which interpolates between Haldane\'s ~2s in the strong-selection limit (Ns≫1) and the neutral 1/(2N) in the drift limit (Ns≪1 or s=0).'))
+          h('div', { id: 'dna-inquiry-explanation-panel', hidden: !iq.understood },
+            h('label', { htmlFor: 'dna-inquiry-explanation', style: { display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 4 } }, t('stem.dna.explanation_input', 'Evolutionary fixation explanation')),
+            h('textarea', { id: 'dna-inquiry-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.dna.explanation_input', 'Evolutionary fixation explanation'), placeholder: t('stem.dna.explain_in_your_own_words', 'Explain in your own words...'), style: fieldStyle })),
+          h('p', { style: { margin: 0, fontSize: 11, fontStyle: 'italic', opacity: 0.6 } }, t('stem.dna.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Uses the full Kimura (1962) diploid fixation formula (1−e^(−2s))/(1−e^(−4Ns)), which interpolates between Haldane\'s ~2s in the strong-selection limit (Ns≫1) and the neutral 1/(2N) in the drift limit (Ns≪1 or s=0).'))
         );
       }
 
@@ -8016,16 +8435,29 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      var __dnaExpansions = h('details', { className: 'dna-reference-library mt-4 max-w-4xl mx-auto' },
-        h('summary', null,
+      var __dnaExpansions = h('details', { className: 'dna-reference-library mt-4 max-w-4xl mx-auto',
+        onToggle: function(event) {
+          var library = event.currentTarget;
+          if (!library.open && typeof document !== 'undefined' && library.contains(document.activeElement)) {
+            var summary = library.querySelector('summary');
+            if (document.activeElement !== summary && summary) summary.focus();
+          }
+        }
+      },
+        h('summary', { id: 'dna-reference-summary', 'aria-labelledby': 'dna-reference-summary-label', 'aria-describedby': 'dna-reference-summary-note' },
           h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDA'),
-          h('span', null, 'Biology reference library'),
-          h('span', { className: 'text-[0.625rem] font-medium text-slate-500' }, expSection ? 'Selection saved' : '45 topics · optional')
+          h('span', { id: 'dna-reference-summary-label' }, 'Biology reference library'),
+          h('span', { id: 'dna-reference-summary-note', className: 'text-[0.625rem] font-medium text-slate-600' }, (expSection ? 'Selection saved · ' : '') + dnaReferenceTopics.length + ' topics' + (expSection ? '' : ' · optional'))
         ),
         h('div', { className: 'px-3 pb-3' },
           expHeader(),
           expTabBar(),
-          expSection && h('div', { className: 'mt-2' }, renderActiveSection())
+          h('section', { id: 'dna-reference-topic-panel', role: 'region', tabIndex: -1, hidden: !expSection,
+            'aria-labelledby': expSection ? 'dna-reference-topic-' + expSection : undefined,
+            'aria-label': !expSection ? 'Selected biology topic' : undefined, className: 'mt-2 min-w-0 rounded-xl p-1' },
+            expSection && h('button', { id: 'dna-reference-back', type: 'button', onClick: backToReferenceTopic, className: 'mb-2 px-3 py-2 rounded-lg border border-slate-500 bg-white text-slate-700 text-xs font-bold' }, 'Back to topics'),
+            expSection && renderActiveSection()
+          )
         )
       );
 

@@ -79,7 +79,7 @@ describe('optional mixed recall-card order', () => {
     expect(toggleOrder(t).getAttribute('aria-pressed')).toBe('false');
     await click(recall(t).querySelector('[data-practice-recall-reveal]'));
     await click(toggleOrder(t));
-    expect(document.activeElement).toBe(toggleOrder(t));
+    expect(document.activeElement).toBe(recall(t).querySelector('[data-practice-recall-count]'));
     expect(recall(t).dataset.practiceRecallOrder).toBe('mixed');
     expect(toggleOrder(t).getAttribute('aria-pressed')).toBe('true');
     expect(card(t).dataset.practiceRecallCard).not.toBe(ids[0]);

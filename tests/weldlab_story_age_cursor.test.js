@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -152,7 +153,7 @@ describe('Career Stories same-age comparison probe', () => {
   });
 
   it('reverses only this round’s additions to recover all original career prose, profiles, chart children, pay functions and gates exactly', () => {
-    const region = sourceRegion(), restored = stripStoryAgeProbe(region);
+    const region = stripWeldlabWcagFixes(sourceRegion()), restored = stripStoryAgeProbe(region);
     expect(restored).not.toBe(region); expect(createHash('sha256').update(restored).digest('hex')).toBe('46595a07c907e3cb9ba4a5e8277d105f54673e28c502454778dd5d3491e2f057');
     const helpers = region.slice(region.indexOf('        function storyAgeStage('), region.indexOf('        function renderCompare() {'));
     expect(helpers).not.toMatch(/usePersisted|\bupd\(|\bsetCmp\(|\bsetQWant\(|\bsetQSchool\(|\bsetQPlace\(|\bsetMilestones\(|\bsetReflect\(|requestAnimationFrame|setTimeout|setInterval|car2SegK\(/);

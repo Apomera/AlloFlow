@@ -27,9 +27,9 @@ async function finish(t) { const id = target(t); await click(query(t, '[data-pra
 describe('practice from the current guide selection', () => {
   it('defaults to the filtered guide collection and asks only its living organisms', async () => {
     const t = await mount({ guideGroupFilter: 'coral', speciesLog: { green_turtle: { firstSeen: 1 } } }), expected = visible(t);
-    expect(expected).toHaveLength(7); await openPractice(t);
-    expect(collection(t).value).toBe('selection'); expect(collection(t).selectedOptions[0].textContent).toBe('This guide selection (7)');
-    expect(query(t, '[data-practice-count]').textContent).toContain('7 available. 5 in this round.');
+    expect(expected).toHaveLength(window.__RR_TEST_EXPORTS__.coralReef.SPECIES_META.filter(m => m.group === 'coral').length); await openPractice(t);
+    expect(collection(t).value).toBe('selection'); expect(collection(t).selectedOptions[0].textContent).toBe('This guide selection (' + expected.length + ')');
+    expect(query(t, '[data-practice-count]').textContent).toContain(expected.length + ' available. 5 in this round.');
     expect(query(t, '[data-practice-count]').textContent).toContain('stays the same during this practice visit');
     await click(query(t, '[data-practice-start]')); const asked = [];
     for (let i = 0; i < 5; i++) asked.push(await finish(t));

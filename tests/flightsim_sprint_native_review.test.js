@@ -49,7 +49,7 @@ async function question(index = 1) {
 }
 beforeEach(() => {
   vi.useFakeTimers(); resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim'); FS = window.__RR_TEST_EXPORTS__.flightSim;
+  tool = loadTool(process.env.SKYSCHOOL_MISSION_PROGRESS_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim'); FS = window.__RR_TEST_EXPORTS__.flightSim;
   errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   const context = new Proxy({ measureText: text => ({ width: String(text).length * 6 }),
     createLinearGradient: () => ({ addColorStop() {} }), createRadialGradient: () => ({ addColorStop() {} }),
@@ -157,6 +157,27 @@ describe('SkySchool native sprint and honest travel evidence', () => {
     await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent.includes('Back to Menu')).click());
     await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
     expect(hooks().getOceanDistance()).toBe(0);
+  });
+  it('advances the new sprint after native replay and saves that attempt with Escape', async () => {
+    await mount(); const completed = await question();
+    await act(async () => host.querySelector('[data-sprint-answer="1"]').click());
+    Object.assign(completed, { active: false, phase: 'result' }); await frame();
+    await act(async () => host.querySelector('[data-sprint-replay]').click());
+    const priorAttempt = latest.lastDebrief.attemptId, replayed = sprint();
+    const initialTime = hooks().timeRef.current, initialTimer = replayed.timer;
+    expect(latest.view).toBe('flying'); expect(replayed).not.toBe(completed);
+    expect(hooks().flyingRef.current).toBe(true); expect(hooks().pausedRef.current).toBe(false);
+    await frame();
+    expect(hooks().timeRef.current).toBeGreaterThan(initialTime);
+    expect(replayed.timer).toBeLessThan(initialTimer);
+    const replayAttempt = latest.flightSprint.attemptId;
+    expect(replayAttempt).not.toBe(priorAttempt); expect(replayAttempt).toMatch(/^sprint_/);
+    key('keydown', 'Escape'); key('keyup', 'Escape'); await frame();
+    expect(latest.view).toBe('debrief'); expect(hooks().flyingRef.current).toBe(false);
+    expect(latest.lastDebrief).toMatchObject({ attemptId: replayAttempt, activityId: 'geography_sprint',
+      sprint: { status: 'ended', score: 0 } });
+    expect(latest.flightSprint).toBeNull();
+    expect(latest.flightPracticeHistory.some(record => record.attemptId === priorAttempt && record.sprint.score === 1)).toBe(true);
   });
   it('saves readable results, preserves them through replay, and leaves fresh controls', async () => {
     await mount(); const sp = await question();

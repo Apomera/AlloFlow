@@ -20036,7 +20036,7 @@ test('no a11y violations', async () => {
       var _pgTab = useState('html'); var pgTab = _pgTab[0]; var setPgTab = _pgTab[1];
 
       var renderPlayground = function() {
-        var combined = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + pgCss + '</style></head><body>' + pgHtml + '<script>try{' + pgJs + '}catch(e){document.body.innerHTML += "<pre style=color:red>" + e.message + "</pre>";}<\/script></body></html>';
+        var combined = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="UTF-8"><style>' + pgCss + '</style></head><body>' + pgHtml + '<script>try{' + pgJs + '}catch(e){document.body.innerHTML += "<pre style=color:red>" + e.message + "</pre>";}<\/script></body></html>';
         var blob = 'data:text/html;charset=utf-8,' + encodeURIComponent(combined);
         var tabBtn = function(id, label) {
           var act = pgTab === id;

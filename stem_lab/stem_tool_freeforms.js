@@ -129,7 +129,9 @@ window.StemLab = window.StemLab || {
     if (check()) { cb(true); return; }
     var b = _cdnBase();
     try {
-      var el = document.createElement('script'); el.src = b.base + file + b.q; el.async = true;
+      var el = document.createElement('script');
+      if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
+      window.__alloConfigureTrustedScript(el, b.base + file + b.q); el.async = true;
       el.onload = function() { cb(!!check()); };
       el.onerror = function() { cb(false); };
       document.head.appendChild(el);

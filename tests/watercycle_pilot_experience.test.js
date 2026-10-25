@@ -791,11 +791,11 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('return Math.hypot(b.x - a.x, b.y - a.y);');
     expect(source).toContain('function pilotZoomBase()');
     expect(source).toContain("formCamDist(sim && sim.form ? sim.form : 'liquid')");
-    expect(source).toContain("if (input.cameraMode === 'water') return;");
+    expect(source).toContain("if (input.cameraMode === 'water' || e.deltaY === 0) return;");
     expect(source).toContain('var remainingIds = pilotPointerIds();');
     expect(source).not.toContain('(userZoom || camDist) -');
     expect(source).not.toContain('(userZoom || camDist) +');
-    expect(source).toContain('canvasEl.dataset.pilotZoom = String(Math.round(userZoom));');
+    expect(source).toContain('canvasEl.dataset.pilotZoom = String(Math.round(pilotZoomBase()));');
     expect(source).toContain('onClick: impulse, onBlur: directOff');
     expect(source).toContain('directActivation || (e && e.detail > 0)');
     expect(source).toContain('setTimeout(function() { target[key] = 0; }, 180);');
@@ -833,7 +833,10 @@ describe('Be the Water guided comparison render', () => {
     expect(html).toMatch(/id="wcPilotSnowHumidity"[^>]*value="35"/);
     const rendered = document.createElement('div');
     rendered.innerHTML = html;
-    const alternative = rendered.querySelector('#wcPilotCanvas').getAttribute('aria-label');
+    const canvas = rendered.querySelector('#wcPilotCanvas');
+    expect(canvas.getAttribute('aria-label')).toBe('Be the Water interactive scene');
+    const alternative = canvas.getAttribute('aria-describedby').split(/\s+/)
+      .map(id => rendered.querySelector('#' + id)?.textContent || '').join(' ');
     expect(alternative).toContain('solid water stored as snow on land');
     expect(alternative).toContain('Air above the snow is 6 degrees Celsius, humidity 35 percent.');
     expect(alternative).toContain('Melt exposure is 0 of 100 and sublimation exposure is 25 of 100.');

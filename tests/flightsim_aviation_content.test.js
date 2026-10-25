@@ -59,7 +59,7 @@ describe('Sky School aviation content accuracy', () => {
   });
 
   it('briefs current Part 107 night, registration, and airspace requirements', () => {
-    const text = textFor({ view: 'menu', droneBriefing: true });
+    const text = textFor({ view: 'menu', droneBriefing: true, selectedChallenge: 'drone_survey' });
     expect(text).toContain('Night flight can qualify without a waiver');
     expect(text).toContain('current Part 107 training requirements');
     expect(text).toContain('at least 3 statute miles');

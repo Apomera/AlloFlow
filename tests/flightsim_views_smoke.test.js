@@ -119,7 +119,8 @@ describe('every view renders real content', () => {
     expect(html).toContain('data-flight-configuration="true"');
     expect(html).toContain('aria-label="Retract flaps one detent"');
     expect(html).toContain('aria-label="Extend flaps one detent"');
-    expect(html).toContain('aria-label="Set wheel brakes"');
+    expect(html).toContain('data-flight-brakes="true"');
+    expect(html).toContain('title="Set wheel brakes"');
     expect(SRC).toContain('FLAPS OVERSPEED');
     expect(html).toContain('data-world-environment="true"');
     expect(SRC).toContain('getWorldEnvironment(scanLat, scanLon, elev, water)');
@@ -197,7 +198,8 @@ describe('every view renders real content', () => {
   it('learn view exposes the searchable responsive library contract', () => {
     const html = renderTool('flightSim', { flightSim: { view: 'learn', learnTopic: 'forces', learnQuery: 'weather' } });
     expect(html).toContain('data-flightsim-learn-library="true"');
-    expect(html).toContain('aria-label="Search SkySchool Learn topics"');
+    expect(html).toContain('aria-label="Search aviation topics…"');
+    expect(html).toContain('title="Search SkySchool Learn topics"');
     expect(html).toContain('type="search"');
     expect(html).toContain('data-learn-result-count="true"');
     expect(html).toContain('Search results:');

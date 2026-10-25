@@ -1,3 +1,5 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
+import { restorePostureStudy } from './helpers/weldlab_posture_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -208,8 +210,9 @@ describe('Noise exchange-rate reference', () => {
   });
 
   it('restores every old SafetyHealth model, passage, task, audit and HOC gate by removing only the additive hook/helper/call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8'));
     let region = source.slice(source.indexOf('function SafetyHealthDeepDive('), source.indexOf('function MathBlueprintLab('));
+    region = restorePostureStudy(region);
     const hook = '        var noiseExchangeState = useState(0);\n', call = '            renderNoiseExchangeExplorer(),\n';
     expect(region.split(hook)).toHaveLength(2); region = region.replace(hook, '');
     const a = region.indexOf('        function renderNoiseExchangeExplorer() {'), b = region.indexOf('        function renderNoiseCalc() {', a);

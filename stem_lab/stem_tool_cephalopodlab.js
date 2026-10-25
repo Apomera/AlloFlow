@@ -9902,6 +9902,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         t = Math.max(0, Math.min(1, t));
         return zone.realMinM + t * (zone.realMaxM - zone.realMinM);
       }
+      // Fraction of surface daylight that reaches a REAL depth. Lighting used to
+      // fall off with raw scene units (exp(-y*0.065)), so a vampire squid the HUD
+      // placed at 723 m swam through 68% daylight and the 2950 m bathypelagic
+      // still showed a sunlit cliff and light shafts. The reef band (to 30 m)
+      // keeps full downwelling, so the tuned shallow scene is unchanged; below it
+      // light decays to ~20% at 200 m (where the zone card says the twilight zone
+      // starts), under 1% by ~550 m, and effectively none past 1000 m, where the
+      // only light left is bioluminescence.
+      function sunlightFractionAt(realM) {
+        var sunlitReefM = 30, falloffM = 110;
+        return realM <= sunlitReefM ? 1 : Math.exp(-(realM - sunlitReefM) / falloffM);
+      }
       // Hydrostatic pressure at a real depth: 1 atm of air above, plus 1 atm
       // per 10 m of seawater — the rule the warm-up demonstrates with a syringe.
       function pressureAtmFor(y) {
@@ -10979,6 +10991,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         return h('div', null,
           panelHeader(__alloT('stem.cephalopodlab.hdr_hunter_sim_3d_underwater', '🎯 Hunter Sim — 3D Underwater'),
             __alloT('stem.cephalopodlab.hunt_intro_v2', 'Choose a cephalopod and explore an underwater world. Read the reef, conserve energy, and learn how your animal moves, feeds, and hides. Keyboard and touch controls are available.')),
+          // Native selects and number fields keep the browser's WHITE field while
+          // inheriting this tool's light ink (1.23:1), so they get a dark ground.
+          // Inline-styled controls (HUD palette etc.) are untouched: inline wins.
+          h('style', null, '#cephalopod-section-panel-hunt select,#cephalopod-section-panel-hunt input[type=number]{background-color:#0f172a;color:#f1f5f9;border:1px solid rgba(148,163,184,0.6);border-radius:7px;padding:6px 10px;font-size:14px;font-family:inherit;color-scheme:dark}'),
 
           !active ? h('div',{style:cardStyle()},
             h('div',{style:subheaderStyle()},'Start your dive'),
@@ -12984,7 +13000,7 @@ function createCLHuntAnimal(T, species) {
   }
   update(0,0,{substrate:'sand',camo:0,reducedMotion:true});
   root.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-  return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){siphonMat.color.copy(skin.color).lerp(siphonTint,0.28);armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
+  return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){siphonMat.color.copy(skin.color).lerp(siphonTint,0.28);armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,selfLight:function(k){[skin,armMat,web&&web.material].concat(fins.map(function(f){return f.mesh.material;})).forEach(function(m){if(m&&m.emissive)m.emissive.copy(skin.color).multiplyScalar(k);});},bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
 }
 
 // Soft ink billows share one draw and one material. Fixed local lobes never consume
@@ -14462,6 +14478,28 @@ function createCLHuntFish(T,index){
         var octopusStrikeVisual=null,octopusStrikeAimLocal=new THREE.Vector3(),octopusStrikeAimOffset=new THREE.Vector3();
         var isCuttlefish=species.id==='cuttlefish', warningRings=animal.warningRings, dumboFins=animal.dumboFins;
         var vampirePhotophores=animal.vampirePhotophores,bobtailGlow=animal.bobtailGlow;
+        // Where no sunlight is left a photophore is how this animal is seen at all,
+        // so each carries a soft additive halo. They live in their own SCENE group
+        // (never under the player, whose rig and bounds stay exactly as built) and
+        // follow the photophores' world positions; opacity tracks darkness, so they
+        // are invisible on the reef.
+        var photophoreHalo=null,photophoreHalos=[];
+        if(vampirePhotophores.length){
+          var haloCv=document.createElement('canvas');haloCv.width=haloCv.height=64;var haloCx=haloCv.getContext('2d');
+          if(haloCx){
+            var haloGrad=haloCx.createRadialGradient(32,32,0,32,32,32);haloGrad.addColorStop(0,'rgba(255,255,255,1)');haloGrad.addColorStop(0.22,'rgba(255,255,255,0.6)');haloGrad.addColorStop(0.55,'rgba(255,255,255,0.16)');haloGrad.addColorStop(1,'rgba(255,255,255,0)');
+            haloCx.fillStyle=haloGrad;haloCx.fillRect(0,0,64,64);
+            var haloTex=new THREE.CanvasTexture(haloCv);
+            photophoreHalo=new THREE.SpriteMaterial({map:haloTex,color:0x5cc8ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+            photophoreHalo.name='cl-photophore-halo-material';photophoreHalo.addEventListener('dispose',function(){haloTex.dispose();});
+            var haloGroup=new THREE.Group();haloGroup.name='cl-photophore-halos';scene.add(haloGroup);
+            vampirePhotophores.forEach(function(){var halo=new THREE.Sprite(photophoreHalo);halo.name='cl-photophore-halo';halo.scale.setScalar(0.4);halo.frustumCulled=false;haloGroup.add(halo);photophoreHalos.push(halo);});
+          }
+        }
+        function syncPhotophoreHalos(opacity){
+          if(!photophoreHalo)return;photophoreHalo.opacity=opacity;
+          for(var hi=0;hi<photophoreHalos.length;hi++)vampirePhotophores[hi].getWorldPosition(photophoreHalos[hi].position);
+        }
         var cuttleTentacles=animal.cuttleTentacles,cuttleFins=animal.cuttleFins,passingCloudOverlay=animal.passingCloudOverlay;
         var mimicSpikes=animal.mimicSpikes,nautilusShell=animal.nautilusShell;
         octopus.position.set(0,floorRestY,0); scene.add(octopus);
@@ -17169,7 +17207,12 @@ function createCLHuntFish(T,index){
             mmCtx.textBaseline = 'alphabetic';
           });
           // Dens (green)
-          dens.forEach(function(d2,i) { plot(d2.x, d2.z, '#22c55e', 4, true);if(i===0){mmCtx.fillStyle='#b6fbd2';mmCtx.font='bold 8px system-ui';mmCtx.textAlign='center';mmCtx.fillText('HOME',(d2.x-octopus.position.x)*scale+cx,(d2.z-octopus.position.z)*scale+cy-7);} });
+          // HOME gets a dark halo so it reads over the dots beside it, and steps
+          // below its marker when it would overprint the REFUGE label drawn next.
+          function mmLabel(text,x,y,color){mmCtx.font='bold 9px system-ui';mmCtx.textAlign='center';mmCtx.lineJoin='round';mmCtx.lineWidth=3;var hw=mmCtx.measureText(text).width/2;x=Math.max(hw+3,Math.min(W-hw-3,x));y=Math.max(11,Math.min(H-3,y));mmCtx.strokeStyle='rgba(6,14,32,0.92)';mmCtx.strokeText(text,x,y);mmCtx.fillStyle=color;mmCtx.fillText(text,x,y);return {x0:x-hw,x1:x+hw,y0:y-9,y1:y+2};}
+          var refugeLabelBox=null;
+          if(reefRefuge){var rlx=(reefRefuge.x-octopus.position.x)*scale+cx,rlz=(reefRefuge.z-octopus.position.z)*scale+cy;if(rlx>20&&rlx<W-20&&rlz>12&&rlz<H-5)refugeLabelBox={x0:rlx-17,x1:rlx+17,y0:rlz-15,y1:rlz-5};}
+          dens.forEach(function(d2,i) { plot(d2.x, d2.z, '#22c55e', 4, true);if(i===0){var hx=(d2.x-octopus.position.x)*scale+cx,hz=(d2.z-octopus.position.z)*scale+cy,hy=hz-7;if(refugeLabelBox&&hx+14>refugeLabelBox.x0&&hx-14<refugeLabelBox.x1&&hy+2>refugeLabelBox.y0&&hy-9<refugeLabelBox.y1)hy=hz+14;if(hx>2&&hx<W-2&&hz>2&&hz<H-2)mmLabel('HOME',hx,hy,'#b6fbd2');} });
           // Two amber bars denote real passages, distinct from the HOME den.
           if(reefRefuge){var refugeX=(reefRefuge.x-octopus.position.x)*scale+cx,refugeZ=(reefRefuge.z-octopus.position.z)*scale+cy;
             if(refugeX>20&&refugeX<W-20&&refugeZ>12&&refugeZ<H-5){mmCtx.fillStyle='#ffd49a';mmCtx.fillRect(refugeX-4,refugeZ-3,2,6);mmCtx.fillRect(refugeX+2,refugeZ-3,2,6);mmCtx.font='bold 8px system-ui';mmCtx.textAlign='center';mmCtx.fillText('REFUGE',refugeX,refugeZ-7);}
@@ -18391,10 +18434,15 @@ function createCLHuntFish(T,index){
             var zoneR = ((zone.fogColor >> 16) & 0xff) / 255;
             var zoneG = ((zone.fogColor >> 8) & 0xff) / 255;
             var zoneB = (zone.fogColor & 0xff) / 255;
-            var lightMix=0.24+dayMix*0.76,depthLight=Math.exp(-Math.max(0,-gameState.verticalY)*0.065),waterBlend=1-Math.exp(-2*dt);
-            scene.background.r+=(zoneR*lightMix-scene.background.r)*waterBlend;
-            scene.background.g+=(zoneG*lightMix-scene.background.g)*waterBlend;
-            scene.background.b+=(zoneB*lightMix-scene.background.b)*waterBlend;
+            var lightMix=0.24+dayMix*0.76,depthLight=sunlightFractionAt(realDepthFor(gameState.verticalY)),waterBlend=1-Math.exp(-2*dt);
+            // The zone tints are authored as display colours but reach the screen
+            // through the sRGB output, so the deep bands rendered several stops too
+            // bright. Below the reef the open water now darkens with the sunlight
+            // that is actually left (unchanged at 1.0 through the reef band).
+            var waterTone=lightMix*(0.45+0.55*Math.sqrt(depthLight));
+            scene.background.r+=(zoneR*waterTone-scene.background.r)*waterBlend;
+            scene.background.g+=(zoneG*waterTone-scene.background.g)*waterBlend;
+            scene.background.b+=(zoneB*waterTone-scene.background.b)*waterBlend;
             scene.fog.color.copy(scene.background);
             scene.fog.far+=(Math.min(zone.fogFar,24+dayMix*18)-scene.fog.far)*waterBlend;
             updateCLHuntWaterLighting(sun,ambient,fillLight,dayMix,depthLight,waterBlend);
@@ -18842,6 +18890,7 @@ function createCLHuntFish(T,index){
                 vampirePhotophores.forEach(function(vp) {
                   vp.material.opacity = 0.2 + flashIntensity * 0.8;
                 });
+                syncPhotophoreHalos(0.3 + flashIntensity * 0.7);
               } else {
                 vampirePhotophores.forEach(function(vp) {
                   vp.material.opacity = Math.max(0.15, vp.material.opacity - dt);
@@ -18879,9 +18928,18 @@ function createCLHuntFish(T,index){
 
             // ─── Vampire squid arm photophore subtle base glow ────
             if (species.id === 'vampireSquid' && gameState.burglarAlarmActive <= 0) {
+              // Photophores are how this animal is seen at all where sunlight has
+              // run out, so their resting glow rises as the water darkens.
+              var photophoreDark = 1 - depthLight;
               vampirePhotophores.forEach(function(vp, vpi) {
-                vp.material.opacity = gameState.a11y.reducedMotion?0.18:0.18 + Math.sin(now * 0.003 + vpi * 0.5) * 0.08;
+                vp.material.opacity = 0.18 + 0.42 * photophoreDark + (gameState.a11y.reducedMotion ? 0 : Math.sin(now * 0.003 + vpi * 0.5) * 0.08);
               });
+              syncPhotophoreHalos(0.7 * photophoreDark);
+              // A wine-black animal under the last blue ambient renders as a void.
+              // The scene keeps its three-light budget, so the observer's light a
+              // real deep-sea camera would bring is stood in for by letting the
+              // body show its own colour as the water darkens (none on the reef).
+              animal.selfLight(0.9 * photophoreDark);
             }
 
             // ─── Nautilus shell rotation (subtle) ─────────────────
@@ -27711,7 +27769,7 @@ function createCLHuntFish(T,index){
                   display: 'flex', alignItems: 'center', gap: 6 } },
                 h('span', { 'aria-hidden': 'true' }, s.icon),
                 s.label,
-                s.count != null ? h('span', { style: { fontSize: 10, color: active ? '#a78bfa' : '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
+                s.count != null ? h('span', { style: { fontSize: 10, color: active ? '#c4b5fd' : '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
             })),
 
           // ─── GLOSSARY ───

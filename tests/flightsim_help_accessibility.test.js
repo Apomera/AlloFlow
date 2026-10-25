@@ -22,12 +22,17 @@ async function openHelp() {
   await act(async () => { button('Controls and help').click(); });
   expect(help()).toBeTruthy();
 }
+async function returnToMenu() {
+  await act(async () => { button('✕ Exit').click(); });
+  await act(async () => { button('🏠 Back to Menu').click(); });
+  expect(latest.view).toBe('menu');
+}
 
 beforeEach(async () => {
   vi.useFakeTimers();
   resetStemLab();
   window.__testHooks = {};
-  const tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  const tool = loadTool(process.env.SKYSCHOOL_HELP_ACCESSIBILITY_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   fullscreen = null;
   Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => fullscreen });
@@ -265,6 +270,7 @@ describe('Accessible flight controls reference', () => {
   });
 
   it('opens the drone briefing at its heading and traps reverse Tab before returning to its launcher', async () => {
+    await returnToMenu();
     await act(async () => { setData(previous => ({ ...previous, flightSim: {
       ...previous.flightSim, view: 'menu', menuSections: { challenges: true },
     } })); });
@@ -293,14 +299,15 @@ describe('Accessible flight controls reference', () => {
   });
 
   it('teaches how to release a Deck-latched brake before a challenge takeoff', async () => {
+    await returnToMenu();
     await act(async () => { hooks().startFlightChallenge('first_flight'); });
-    await act(async () => { host.querySelector('button[aria-label="Set wheel brakes"]').click(); });
+    await act(async () => { host.querySelector('button[data-flight-brakes][aria-pressed="false"]').click(); });
     await frame();
     const cue = host.querySelector('[data-flight-challenge-cue]');
     expect(hooks().controlsRef.current.brake).toBe(1);
     expect(cue.textContent).toContain('Release X and turn off Wheel Brakes in Deck before adding power.');
     expect(cue.textContent).not.toContain('Press X to release');
-    await act(async () => { host.querySelector('button[aria-label="Release wheel brakes"]').click(); });
+    await act(async () => { host.querySelector('button[data-flight-brakes][aria-pressed="true"]').click(); });
     await frame();
     expect(hooks().controlsRef.current.brake).toBe(0);
     expect(host.querySelector('[data-flight-challenge-cue]').textContent).not.toContain('turn off Wheel Brakes');

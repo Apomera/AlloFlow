@@ -156,7 +156,6 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     expect(source).not.toMatch(/stem\.galaxy\.control_group_'\s*\+\s*panel\.key/);
     expect(source).not.toMatch(/stem\.galaxy\.control_panel_'\s*\+\s*panel\.key/);
     expect(source).toContain('maxLength: REAL_SKY_NOTE_MAX_LENGTH');
-    expect(source).toContain('autoFocus: true');
     expect(source).toContain('stem.galaxy.real_sky_observation_edit_aria');
     expect(source).toContain('data-galaxy-real-sky-active-observation');
     expect(source).toContain('data-galaxy-real-sky-observation-comparison');

@@ -371,11 +371,11 @@ describe('optional guide specimen inspection', () => {
     expect(renderers).toHaveLength(1); expect(models[0].update).not.toHaveBeenCalled(); controller.dispose(); expect(renderer.dispose).toHaveBeenCalledTimes(1); expect(models[0].dispose).toHaveBeenCalledTimes(1);
   });
 
-  it('offers five named views and fits either new view without losing lighting, expanded layout, notes or field marks', async () => {
+  it('offers six named views and fits the opposite side or underside without losing lighting, expanded layout, notes or field marks', async () => {
     const t = await mount(), records = JSON.stringify(t.data), portrait = staticState(t); await click(q(t, '[data-study-mark="next"]')); const mark = q(t, '[data-study-mark-text]').textContent;
     await click(q(t, '[data-study-specimen-toggle]')); await click(q(t, '[data-specimen-expand]')); await click(q(t, '[data-specimen-light-button="studio"]'));
     const canvas = q(t, '[data-specimen-canvas]'), specimen = q(t, '[data-specimen-view]'), buttons = [...t.host.querySelectorAll('[data-specimen-angle-button]')];
-    expect(buttons.map(button => button.textContent)).toEqual(['Side', 'Other side', 'Front', 'Above', 'Below']); expect(buttons[0].parentElement.getAttribute('aria-label')).toBe('View angle');
+    expect(buttons.map(button => button.textContent)).toEqual(['Side', 'Other side', 'Front', 'Rear', 'Above', 'Below']); expect(buttons[0].parentElement.getAttribute('aria-label')).toBe('View angle');
     for (const name of ['opposite', 'below']) {
       for (let i = 0; i < 8; i++) await click(q(t, '[data-specimen-zoom="in"]'));
       await click(q(t, '[data-specimen-mode-button="move"]')); await click(q(t, '[data-specimen-pan-button="right"]'));

@@ -126,9 +126,11 @@ describe('SkySchool measured flight challenges', () => {
     expect(FS.haversineNm(nav.lat, nav.lon, jfk.lat, jfk.lon)).toBeCloseTo(10, 0);
     expect(nav).toMatchObject({ altitude: 3000, onGround: false });
     expect(nav.speed * 0.5924838).toBeCloseTo(110);
+    await mount();
     await start('mountain_flying');
     const denver = FS.WAYPOINTS.find(item => item.id === 'kden');
     expect(hooks().flightRef.current).toMatchObject({ altitude: denver.alt, fieldElev: denver.alt, onGround: true, speed: 0 });
+    await mount();
     await start('energy_management');
     expect(hooks().flightRef.current).toMatchObject({ altitude: 5000, onGround: false });
     expect(hooks().flightRef.current.speed * 0.5924838).toBeCloseTo(110);

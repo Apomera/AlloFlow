@@ -388,7 +388,10 @@ window.StemLab = window.StemLab || {
         }
         window._areaModelKbHandler = function(e) {
           // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
-          if (!document.querySelector('[data-areamodel-root]')) return;
+          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+          var amRoot = document.querySelector('[data-areamodel-root]');
+          if (!amRoot || !e.target || !amRoot.contains(e.target)) return;
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
           else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }

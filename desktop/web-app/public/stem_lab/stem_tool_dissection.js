@@ -257,7 +257,30 @@
 .diss-directory-item__state[data-tone="hidden"] { border-color: #d3a35c; background: #fff6df; color: #78350f; }
 .diss-directory-item__state[data-tone="prior"] { border-color: #9db8d4; background: #eaf2fb; color: #234b73; }
 [data-dissection-root][data-text-size="large"] .diss-directory-browser :is(.diss-directory-item__name, .diss-directory-search-label) { font-size: 1rem !important; }
-.diss-directory-browser .diss-directory-item[aria-disabled="true"] { background: #f8fafc; cursor: help; }
+.diss-directory-browser .diss-directory-item[data-directory-action="recover"] { background: #f8fafc; cursor: help; }
+/* Keep control text and its authored surface together when the host changes theme. */
+[data-dissection-root][data-high-contrast] .diss-toolbar { background: #f8fafc !important; }
+[data-dissection-root][data-high-contrast] .diss-zoom-bar { background: #f3f7fc !important; }
+[data-dissection-root][data-high-contrast] :is(.diss-directory-browser, .diss-directory-browser .diss-directory-item) { background: #fff !important; }
+[data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #203e52 !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: #92400e; --diss-fact-button-surface: #fff; --diss-fact-button-focus: #1766d2; background: linear-gradient(90deg, #fffbeb, #fff7ed) !important; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: #92400e !important; }
+[data-dissection-root] .diss-biology-fact__position { margin: 0 0 .35rem; font-weight: 700; }
+[data-dissection-root] .diss-biology-fact__nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+[data-dissection-root][data-high-contrast] .diss-biology-fact__nav button { flex: 1; min-width: 0; min-height: 2.75rem; padding: .5rem .65rem; border: 1px solid var(--diss-fact-button-ink); border-color: var(--diss-fact-button-ink) !important; border-radius: .5rem; background: var(--diss-fact-button-surface) !important; color: var(--diss-fact-button-ink) !important; font: inherit; font-weight: 700; line-height: 1.4; cursor: pointer; }
+[data-dissection-root] .diss-biology-fact__nav button:focus-visible { outline: 3px solid var(--diss-fact-button-focus); outline-offset: -5px; box-shadow: none !important; }
+[data-dissection-root] .diss-evidence-metric-heading { flex-wrap: wrap; }
+[data-dissection-root] .diss-evidence-metric-heading > span { min-width: 0; overflow-wrap: anywhere; }
+[data-dissection-root] .diss-evidence-metric-heading > span:last-child { flex: 0 0 auto; }
+[data-dissection-root][data-high-contrast="true"] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-biology-fact) { background: #fff !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title) { color: #000 !important; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact { --diss-fact-button-ink: #000; --diss-fact-button-focus: #111827; }
+[data-dissection-root][data-high-contrast="true"] .diss-biology-fact :is(summary, p, span) { color: #000 !important; }
+@media (forced-colors: active) {
+  [data-dissection-root][data-high-contrast] :is(.diss-toolbar, .diss-zoom-bar, .diss-directory-browser, .diss-directory-browser .diss-directory-item, .diss-biology-fact) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+  [data-dissection-root][data-high-contrast] .diss-biology-fact { --diss-fact-button-ink: CanvasText; --diss-fact-button-surface: Canvas; --diss-fact-button-focus: Highlight; }
+  [data-dissection-root][data-high-contrast] .diss-directory-browser :is(.diss-directory-item, #diss-directory-title), [data-dissection-root][data-high-contrast] .diss-biology-fact :is(summary, p, span) { color: CanvasText !important; }
+}
 .diss-directory-browser .diss-directory-item:hover { border-color: #1766d2; background: #eff6ff; }
 .diss-directory-browser .diss-directory-item:focus-visible { outline: 3px solid #1766d2; outline-offset: 1px; }
 .diss-directory-browser .diss-directory-empty { padding: .85rem; font-size: .875rem; line-height: 1.55; }
@@ -2494,12 +2517,13 @@
 [data-dissection-root] .diss-protocol > div[data-aligned="false"] .diss-protocol__state { color: #92400e; }
 [data-dissection-root] .diss-protocol__help { margin: .65rem 0 0; }
 [data-dissection-root] .diss-protocol .diss-protocol__align { min-height: 3rem !important; max-width: 100%; margin: 0; padding: .6rem .85rem; border: 2px solid #0f766e; border-radius: .55rem; background: #0f766e; color: #fff; white-space: normal; text-align: start; }
-[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
-[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }
+[data-dissection-root] .diss-protocol .diss-protocol__align[aria-disabled="true"] { --diss-protocol-focus: #1766d2; border-style: dashed; background: #fff; color: #0f6656; cursor: default; }
+[data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline: 3px solid var(--diss-protocol-focus, #fff) !important; outline-offset: -5px !important; box-shadow: none !important; }
 [data-dissection-root] .diss-protocol__landmarks { margin: 0; padding-left: 1.25rem; list-style: disc; }
 [data-dissection-root] .diss-protocol__landmarks li + li { margin-top: .35rem; }
 [data-dissection-root][data-text-size="large"] .diss-protocol :is(dt, dd, p, span, strong, li, button) { font-size: 1.125rem !important; }
 [data-dissection-root][data-high-contrast="true"] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: #000 !important; background: #fff !important; border-color: #111827 !important; }
+[data-dissection-root][data-high-contrast="true"] #diss-protocol-align { --diss-protocol-focus: #111827; }
 @container dissection (max-width: 760px) { [data-dissection-root] .diss-protocol, [data-dissection-root] .diss-protocol__views { grid-template-columns: minmax(0, 1fr); } }
 @media (forced-colors: active) { [data-dissection-root] .diss-protocol :is(div, dt, dd, p, span, strong, li, button) { color: CanvasText !important; background: Canvas !important; border-color: CanvasText !important; } [data-dissection-root] #diss-protocol-align:is(:focus, :focus-visible) { outline-color: Highlight !important; } }
 .diss-selection-header { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .55rem .75rem; margin-bottom: .5rem; }
@@ -2705,6 +2729,12 @@
     clearDissectionCanvasTimer(canvas, 'layerPeel');
     clearDissectionCanvasTimer(canvas, 'layerTransition');
   }
+  function dissectionEvidenceImageFormat(image) {
+    if (typeof image !== 'string') return null;
+    var match = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.exec(image);
+    return match && match[0] === image ? match[1].toLowerCase() : null;
+  }
+
   function isPlainDissectionRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
@@ -2984,7 +3014,7 @@
     if (Array.isArray(data.annotations) && data.annotations.some(function (annotation) { return !isPlainDissectionRecord(annotation); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'annotations', raw: raw };
     }
-    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry); })) {
+    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry) || (entry.image && !dissectionEvidenceImageFormat(entry.image)); })) {
       return { ok: false, kind: 'unsafe-shape', field: 'visualEvidence', raw: raw };
     }
     var procedureLayers = data.procedureByLayer || {};
@@ -3150,7 +3180,7 @@
     // Image data is the largest part of a lab record. If the origin is near its
     // storage limit, preserve all text/procedure evidence before giving up on
     // the entire record, and tell the learner exactly what was retained.
-    var evidence = data && Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && entry.image; }) : [];
+    var evidence = data && Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }) : [];
     if (evidence.length > 1) {
       var newestEvidence = evidence[evidence.length - 1];
       var reducedData = Object.assign({}, data, {
@@ -4574,7 +4604,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Plume-like gills lie in branchial chambers beneath the carapace. Each has a central axis bearing many fine, tubular filaments. Mouthpart gill bailers move water over these exchange surfaces, where gases pass between water and hemolymph.', clinical: 'Four representative gills are shown per side; count and spacing are simplified. Distinguish the gill exchange surface from the mouthpart gill bailer that moves water.' },
 
-                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
+                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: 'Three main cuticular grinding teeth, one median and two lateral, work inside the cardiac stomach. The mineralized teeth are supported by ossicles and grind swallowed food.', clinical: 'This opened-stomach teaching view separates the main grinding surfaces. Ridges are representative; their shape and number vary between species. Gastroliths are separate calcium stores associated with molting.' },
 
                   { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Paired antennal excretory organs near the bases of the antennae. They filter hemolymph and form urine, helping regulate water and salts.', clinical: 'Freshwater crayfish conserve salts while removing excess water in dilute urine. The gills also help excrete ammonia.' },
 
@@ -5424,7 +5454,7 @@ var d = labToolData.dissection || {};
           var parallaxDepth = workspaceSettings.parallaxDepth;
           var evidenceFrameLimit = 6;
           var evidenceCaptureContents = d.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen';
-          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
+          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
           var splitComparison = workspaceSettings.splitComparison;
           var lightDirection = workspaceSettings.lightDirection;
           var variationSeed = Number(d.variationSeed) || 1;
@@ -6327,6 +6357,135 @@ var d = labToolData.dissection || {};
                   });
                 } finally { context.restore(); }
               }
+              return true;
+            } finally { context.restore(); }
+          }
+
+          function crayfishGastricMillGeometry(width, height) {
+            width = width == null ? 500 : Number(width); height = height == null ? 600 : Number(height);
+            if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+            var x = width * 0.5 - width * 0.12, y = height * 0.45;
+            function point(dx, dy) { return { x: (x + width * dx) / width, y: (y + height * dy) / height }; }
+            function region(first, commands) {
+              var start = point(first[0], first[1]);
+              var segments = commands.map(function (command) {
+                var points = [];
+                for (var index = 1; index < command.length; index += 2) points.push(point(command[index], command[index + 1]));
+                return { kind: command[0], points: points };
+              });
+              var points = [start]; segments.forEach(function (segment) { points = points.concat(segment.points); });
+              var xs = points.map(function (p) { return p.x; }), ys = points.map(function (p) { return p.y; });
+              return { start: start, segments: segments, bounds: { minX: Math.min.apply(Math, xs), maxX: Math.max.apply(Math, xs),
+                minY: Math.min.apply(Math, ys), maxY: Math.max.apply(Math, ys) } };
+            }
+            var teeth = [-1, 1].map(function (side) {
+              var tooth = region([side * 0.022, -0.006], [
+                ['C', side * 0.019, -0.012, side * 0.010, -0.009, side * 0.007, -0.003],
+                ['C', side * 0.004, 0.002, side * 0.006, 0.010, side * 0.011, 0.014],
+                ['C', side * 0.014, 0.017, side * 0.020, 0.015, side * 0.021, 0.010],
+                ['Q', side * 0.024, 0.002, side * 0.022, -0.006]
+              ]);
+              var ridges = [];
+              for (var index = 0; index < 3; index++) {
+                var ridgeY = -0.003 + index * 0.006;
+                ridges.push(region([side * 0.008, ridgeY], [['Q', side * 0.015, ridgeY + 0.002, side * 0.022, ridgeY - 0.001]]));
+              }
+              return { id: side < 0 ? 'lateral-left' : 'lateral-right', side: side, region: tooth, ridges: ridges,
+                color: '#d6c29a', center: point(side * 0.014, 0.003), radiusX: width * 0.010, radiusY: height * 0.015 };
+            });
+            teeth.push({ id: 'median', side: 0, color: '#e6d6b5', center: point(0, -0.015), radiusX: width * 0.011, radiusY: height * 0.012,
+              region: region([-0.009, -0.023], [
+                ['Q', 0, -0.026, 0.009, -0.023],
+                ['C', 0.011, -0.018, 0.008, -0.010, 0.006, -0.006],
+                ['Q', 0, -0.002, -0.006, -0.006],
+                ['C', -0.008, -0.010, -0.011, -0.018, -0.009, -0.023]
+              ]), ridges: [] });
+            return { width: width, height: height, center: point(0, 0), target: point(0, 0), radiusX: width * 0.025,
+              radiusY: height * 0.030, teeth: teeth,
+              bounds: { minX: (x - width * 0.025 - 0.35) / width, maxX: (x + width * 0.025 + 0.35) / width,
+                minY: (y - height * 0.030 - 0.35) / height, maxY: (y + height * 0.030 + 0.35) / height } };
+          }
+
+          function traceCrayfishGastricMillRegion(context, region, width, height, open) {
+            if (!context || !region || !region.start || !region.segments) return false;
+            context.beginPath(); context.moveTo(region.start.x * width, region.start.y * height);
+            region.segments.forEach(function (segment) {
+              var p = segment.points;
+              if (segment.kind === 'C') context.bezierCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height, p[2].x * width, p[2].y * height);
+              else context.quadraticCurveTo(p[0].x * width, p[0].y * height, p[1].x * width, p[1].y * height);
+            });
+            if (!open) context.closePath();
+            return true;
+          }
+
+          function drawCrayfishGastricMill(context, options) {
+            options = options || {};
+            var width = Number(options.width), height = Number(options.height), geometry = crayfishGastricMillGeometry(width, height);
+            if (!context || !geometry) return false;
+            var detailed = options.detailed === true && !options.accessible && !options.highContrast;
+            var lamp = { overhead: [-0.12, -1], left: [-1, -0.14], right: [1, -0.14], raking: [-0.72, 0.70] }[options.lightDirection] || [-0.12, -1];
+            var length = Math.hypot(lamp[0], lamp[1]) || 1, lx = lamp[0] / length, ly = lamp[1] / length;
+            var moistureValue = Number(options.moisture), intensityValue = Number(options.lightIntensity);
+            var moisture = Number.isFinite(moistureValue) ? Math.max(0, Math.min(1, moistureValue / 100)) : 0.76;
+            var intensity = Number.isFinite(intensityValue) ? Math.max(0.2, Math.min(1, intensityValue / 100)) : 0.68;
+            var condition = options.condition === 'dehydrated' ? 0.30 : (options.condition === 'preserved' ? 0.76 : (options.condition === 'cloudy' ? 0.64 : 1));
+            var gloss = (0.22 + moisture * 0.78) * (0.45 + intensity * 0.55) * condition;
+            var x = geometry.center.x * width, y = geometry.center.y * height;
+            context.save();
+            try {
+              context.beginPath(); context.ellipse(x, y, geometry.radiusX, geometry.radiusY, 0, 0, Math.PI * 2);
+              context.fillStyle = options.accessible ? '#78350f' : '#655346'; context.fill();
+              context.strokeStyle = '#a48b67'; context.lineWidth = 0.7; context.stroke();
+              context.save();
+              try {
+                context.clip();
+                if (typeof options.finishCavity === 'function') {
+                  context.save();
+                  try { options.finishCavity(x, y, geometry.radiusX, geometry.radiusY); } finally { context.restore(); }
+                }
+                geometry.teeth.forEach(function (tooth) {
+                  var tx = tooth.center.x * width, ty = tooth.center.y * height, fill = tooth.color;
+                  traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                  if (detailed) {
+                    // These are mineralized cuticular grinding surfaces. Color and gentle
+                    // edge relief are illustrative, without exposed microscopic layers.
+                    fill = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    fill.addColorStop(0, tooth.side ? '#eadbb9' : '#f0e5c9');
+                    fill.addColorStop(0.32, tooth.side ? '#d7c39c' : '#dfd0ad');
+                    fill.addColorStop(0.74, tooth.side ? '#b5a07c' : '#bfae89');
+                    fill.addColorStop(1, '#8e795a');
+                  }
+                  context.fillStyle = fill; context.fill(); context.strokeStyle = '#80694b'; context.lineWidth = 0.5; context.stroke();
+                  if (!detailed) return;
+                  context.save();
+                  try {
+                    context.clip(); context.shadowBlur = 0; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+                    context.setLineDash([]); context.lineCap = 'round'; context.lineJoin = 'round';
+                    // A thin light-facing rim stays clipped to the original tooth contour.
+                    var edge = context.createLinearGradient(tx + lx * tooth.radiusX, ty + ly * tooth.radiusY,
+                      tx - lx * tooth.radiusX, ty - ly * tooth.radiusY);
+                    edge.addColorStop(0, 'rgba(255,246,216,' + (0.30 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.40, 'rgba(244,226,187,' + (0.07 * gloss).toFixed(3) + ')');
+                    edge.addColorStop(0.66, 'rgba(105,80,51,0.03)'); edge.addColorStop(1, 'rgba(82,60,37,0.20)');
+                    traceCrayfishGastricMillRegion(context, tooth.region, width, height);
+                    context.strokeStyle = edge; context.lineWidth = 1.35; context.stroke();
+                    tooth.ridges.forEach(function (ridge) {
+                      // Retain the established representative ridges. Their count is not
+                      // a species-specific cusp count or an additional set of teeth.
+                      traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                      context.strokeStyle = 'rgba(117,88,58,0.58)'; context.lineWidth = 0.35; context.stroke();
+                      context.save();
+                      try {
+                        context.translate(lx * 0.24, ly * 0.24);
+                        traceCrayfishGastricMillRegion(context, ridge, width, height, true);
+                        context.strokeStyle = 'rgba(255,242,207,' + (0.24 * gloss).toFixed(3) + ')';
+                        context.lineWidth = 0.22; context.stroke();
+                      } finally { context.restore(); }
+                    });
+                  } finally { context.restore(); }
+                });
+              } finally { context.restore(); }
               return true;
             } finally { context.restore(); }
           }
@@ -11816,6 +11975,32 @@ var d = labToolData.dissection || {};
             ? 'Diagram location clue: which structure is in the ' + targetDiagramRegion + ' region of this view?'
             : 'Function clue: "' + dissectionStructureCue(quizQ, 'function') + '"') : '';
 
+          var assessmentPromptId = 'diss-quiz-prompt-' + dissectionSaveOwner;
+          var assessmentFeedbackId = 'diss-quiz-feedback-' + dissectionSaveOwner;
+          function preserveAssessmentFocus(panelId, targetId) {
+            var focusRoot = currentDissectionRootNode();
+            var panel = scopedDissectionQuery(focusRoot, '#' + panelId);
+            var origin = typeof document !== 'undefined' ? document.activeElement : null;
+            if (!panel || !origin || !panel.contains(origin) || origin.tagName !== 'BUTTON') return;
+            var attemptsRemaining = 2;
+            function focusAfterAssessmentUpdate() {
+              if (!focusRoot || !focusRoot.isConnected) return;
+              var active = document.activeElement;
+              if (active !== origin && active !== document.body && active !== document.documentElement) return;
+              if (origin.isConnected && !origin.disabled) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              var target = scopedDissectionQuery(focusRoot, '#' + targetId);
+              if (!target) {
+                if (attemptsRemaining-- > 0) setTimeout(focusAfterAssessmentUpdate, 0);
+                return;
+              }
+              if (!target.disabled && target.focus) target.focus();
+            }
+            setTimeout(focusAfterAssessmentUpdate, 0);
+          }
+
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
             if (d.practicalMode && (!Number(d.practicalEndsAt) || Date.now() >= Number(d.practicalEndsAt))) {
@@ -11864,6 +12049,7 @@ var d = labToolData.dissection || {};
             if (supported && !d.quizReviewMode) supportedCount += 1;
             var nextScore = d.practicalMode || d.quizReviewMode ? (Number(d.quizScore) || 0) + (correct ? 1 : 0) : firstAttemptScore;
             var nextTotal = (d.quizTotal || 0) + 1;
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: correct, chosen: answerId, supported: supported },
               quizScore: nextScore,
@@ -11887,6 +12073,7 @@ var d = labToolData.dissection || {};
             if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
             var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
             if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
+            preserveAssessmentFocus('diss-quiz-panel', 'diss-quiz-continue');
             updMany({
               quizFeedback: { correct: false, chosen: d.quizRetry.chosen, supported: true },
               quizTotal: (Number(d.quizTotal) || 0) + 1,
@@ -12551,7 +12738,7 @@ var d = labToolData.dissection || {};
               livingFunctionEnabled = !!d.livingFunctionEnabled;
               livingFunctionPaused = !!d.livingFunctionPaused;
               livingFunctionSpeed = ['slow', 'normal', 'fast'].indexOf(d.livingFunctionSpeed) >= 0 ? d.livingFunctionSpeed : 'normal';
-              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
+              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-evidenceFrameLimit) : [];
               splitComparison = !!d.splitComparison;
               procedureByLayer = d.procedureByLayer || {};
               var liveProcedureState = ((d.procedureByLayer || {})[activeLayer]) || {};
@@ -16068,48 +16255,12 @@ var d = labToolData.dissection || {};
                   paintCurrentOrganContact(crayStomachRX, crayStomachRY);
                   ctx.fillStyle = crayAccessible ? '#fcd34d' : '#c6b590'; ctx.fill();
                   finishCurrentTissuePath(crayStomachX, crayStomachY, crayStomachRX, crayStomachRY, 'serosa', 'cray-stomach');
-                  // The mill remains an opened cardiac-stomach view. All three grinding surfaces
-                  // fit the original window and remain short, rounded plates rather than fangs.
-                  ctx.beginPath(); ctx.ellipse(crayStomachX, crayStomachY, W * 0.025, H * 0.030, 0, 0, Math.PI * 2);
-                  ctx.fillStyle = crayAccessible ? '#78350f' : '#655346'; ctx.fill(); ctx.strokeStyle = '#a48b67'; ctx.lineWidth = 0.7; ctx.stroke();
-                  ctx.save();
-                  try {
-                    ctx.clip();
-                    finishCurrentCavityPath(crayStomachX, crayStomachY, W * 0.025, H * 0.030);
-                    [-1, 1].forEach(function (toothSide) {
-                      ctx.beginPath(); ctx.moveTo(crayStomachX + toothSide * W * 0.022, cy - H * 0.006);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.019, cy - H * 0.012,
-                        crayStomachX + toothSide * W * 0.010, cy - H * 0.009, crayStomachX + toothSide * W * 0.007, cy - H * 0.003);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.004, cy + H * 0.002,
-                        crayStomachX + toothSide * W * 0.006, cy + H * 0.010, crayStomachX + toothSide * W * 0.011, cy + H * 0.014);
-                      ctx.bezierCurveTo(crayStomachX + toothSide * W * 0.014, cy + H * 0.017,
-                        crayStomachX + toothSide * W * 0.020, cy + H * 0.015, crayStomachX + toothSide * W * 0.021, cy + H * 0.010);
-                      ctx.quadraticCurveTo(crayStomachX + toothSide * W * 0.024, cy + H * 0.002,
-                        crayStomachX + toothSide * W * 0.022, cy - H * 0.006); ctx.closePath();
-                      ctx.fillStyle = '#d6c29a'; ctx.fill(); ctx.strokeStyle = '#80694b'; ctx.lineWidth = 0.5; ctx.stroke();
-                      if (crayStomachDetail) {
-                        ctx.save();
-                        try {
-                          ctx.clip(); ctx.strokeStyle = 'rgba(117,88,58,0.58)'; ctx.lineWidth = 0.35;
-                          // Representative gross grinding ridges, not a species-specific cusp count.
-                          for (var millRidge = 0; millRidge < 3; millRidge++) {
-                            var millRidgeY = cy + H * (-0.003 + millRidge * 0.006);
-                            ctx.beginPath(); ctx.moveTo(crayStomachX + toothSide * W * 0.008, millRidgeY);
-                            ctx.quadraticCurveTo(crayStomachX + toothSide * W * 0.015, millRidgeY + H * 0.002,
-                              crayStomachX + toothSide * W * 0.022, millRidgeY - H * 0.001); ctx.stroke();
-                          }
-                        } finally { ctx.restore(); }
-                      }
-                    });
-                    ctx.beginPath(); ctx.moveTo(crayStomachX - W * 0.009, cy - H * 0.023);
-                    ctx.quadraticCurveTo(crayStomachX, cy - H * 0.026, crayStomachX + W * 0.009, cy - H * 0.023);
-                    ctx.bezierCurveTo(crayStomachX + W * 0.011, cy - H * 0.018, crayStomachX + W * 0.008, cy - H * 0.010,
-                      crayStomachX + W * 0.006, cy - H * 0.006);
-                    ctx.quadraticCurveTo(crayStomachX, cy - H * 0.002, crayStomachX - W * 0.006, cy - H * 0.006);
-                    ctx.bezierCurveTo(crayStomachX - W * 0.008, cy - H * 0.010, crayStomachX - W * 0.011, cy - H * 0.018,
-                      crayStomachX - W * 0.009, cy - H * 0.023); ctx.closePath();
-                    ctx.fillStyle = '#e6d6b5'; ctx.fill(); ctx.strokeStyle = '#80694b'; ctx.lineWidth = 0.5; ctx.stroke();
-                  } finally { ctx.restore(); }
+                  // Opened cardiac-stomach teaching view, with the original three grinding surfaces.
+                  drawCrayfishGastricMill(ctx, {
+                    width: W, height: H, detailed: crayStomachDetail, accessible: crayAccessible, highContrast: highContrastEnabled,
+                    lightDirection: lightDirection, moisture: liveTissueState && liveTissueState.moisture,
+                    lightIntensity: d.lightIntensity, condition: specimenCondition, finishCavity: finishCurrentCavityPath
+                  });
                   // The paired antennal complexes sit within the existing anterior opening.
                   ctx.save();
                   try {
@@ -17526,6 +17677,22 @@ var d = labToolData.dissection || {};
                     plannedMarkerBoxes.push(retinalBox);
                   });
                 }
+                // Keep nearby depth captions off the complete opened gastric mill.
+                if (!d.quizMode && spec.bodyShape === 'crayfish' && activeLayer === 'organs') {
+                  var captionMillGeometry = crayfishGastricMillGeometry(W, H);
+                  if (captionMillGeometry) {
+                    var millBounds = captionMillGeometry.bounds;
+                    var millBox = canvasScreenBox(millBounds.minX * W, millBounds.minY * H,
+                      (millBounds.maxX - millBounds.minX) * W, (millBounds.maxY - millBounds.minY) * H);
+                    if (millBox) {
+                      var millPadding = 3 * canvasUiScale;
+                      millBox.x -= millPadding; millBox.y -= millPadding;
+                      millBox.width += millPadding * 2; millBox.height += millPadding * 2;
+                      millBox.priority = 10; millBox.keepClear = true;
+                      plannedMarkerBoxes.push(millBox);
+                    }
+                  }
+                }
                 // The digestive-gland caption leaves both intact masses unobscured.
                 if (spec.bodyShape === 'crayfish' && org && org.id === 'hepato') {
                   var captionDigestiveGeometry = crayfishHepatopancreaticGeometry(W, H);
@@ -18288,9 +18455,12 @@ var d = labToolData.dissection || {};
                 });
               }
               // Keep cards, compact badges, and their hit rectangles off both leaflet groups.
-              if (!d.quizMode && spec.bodyShape === 'heart' && semilunarLabelGeometry) {
-                var semilunarCardBoxes = semilunarLabelGeometry.valves.map(function (valve) {
-                  var bounds = valve.bounds;
+              // The gastric mill uses the same placement repair to expose its small grinding plates.
+              var protectedCalloutBounds = spec.bodyShape === 'heart' && semilunarLabelGeometry
+                ? semilunarLabelGeometry.valves.map(function (valve) { return valve.bounds; })
+                : (spec.bodyShape === 'crayfish' && activeLayer === 'organs' ? [crayfishGastricMillGeometry(W, H).bounds] : null);
+              if (!d.quizMode && protectedCalloutBounds) {
+                var semilunarCardBoxes = protectedCalloutBounds.map(function (bounds) {
                   var box = canvasScreenBox(bounds.minX * W, bounds.minY * H,
                     (bounds.maxX - bounds.minX) * W, (bounds.maxY - bounds.minY) * H);
                   if (!box) return null;
@@ -23249,7 +23419,7 @@ var d = labToolData.dissection || {};
                 focusMode: data.focusMode !== false,
                 parallaxDepth: data.parallaxDepth !== false,
                 evidenceCaptureContents: data.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen',
-                visualEvidence: Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-6) : [],
+                visualEvidence: Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && dissectionEvidenceImageFormat(entry.image); }).slice(-6) : [],
                 splitComparison: !!data.splitComparison,
                 referenceEvidenceId: data.referenceEvidenceId || null,
                 evidenceNotebookOpen: !!data.splitComparison,
@@ -23561,7 +23731,11 @@ var d = labToolData.dissection || {};
               if (cancelActiveCanvasGesture('Instrument gesture canceled with Escape; no action was recorded.', target, e)) return;
               if (d.resetConfirmPending) cancelSpecimenReset();
               else if (d.annotateMode || d.rulerMode) setObservationPointMode(null, !isCanvas);
-              else upd('selectedOrgan', null);
+              else {
+                var directoryReturnId = !isCanvas && d.selectedOrgan && target.closest('[data-dissection-selection]') ? d.selectedOrgan : null;
+                upd('selectedOrgan', null);
+                if (directoryReturnId) focusStructureDirectoryItem(directoryReturnId);
+              }
             } else if (e.key === '0' || e.key === 'r' || e.key === 'R') {
               e.preventDefault();
               applyCanvasZoom(target, 1, null, null, true);
@@ -24450,7 +24624,7 @@ var d = labToolData.dissection || {};
                 return false;
               }
               if (!target) return false;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
               return true;
             }
@@ -24504,7 +24678,7 @@ var d = labToolData.dissection || {};
                 return;
               }
               if (!target) return;
-              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: physiologyMotionReduced ? 'auto' : 'smooth' });
               if (target.focus) target.focus();
             }
             setTimeout(focusWhenRendered, 0);
@@ -25263,13 +25437,17 @@ var d = labToolData.dissection || {};
           }
 
           function downloadEvidence(evidence) {
-            if (!evidence || !evidence.image) return;
+            var image = evidence && evidence.image;
+            var imageFormat = dissectionEvidenceImageFormat(image);
+            if (!imageFormat) {
+              setProcedureFeedback('Evidence download blocked: this frame is not an inline PNG, JPEG, or WebP image.', 'caution');
+              return false;
+            }
             try {
               var link = document.createElement('a');
-              var imageFormat = /^data:image\/(png|jpeg|webp);/i.exec(String(evidence.image));
-              var imageExtension = imageFormat && imageFormat[1].toLowerCase() !== 'jpeg' ? imageFormat[1].toLowerCase() : 'jpg';
+              var imageExtension = imageFormat === 'jpeg' ? 'jpg' : imageFormat;
               link.download = evidenceFileToken(specimen, 'specimen') + '_' + evidenceFileToken(evidence.layer, 'evidence') + '_' + evidenceFileToken(evidence.id, 'frame') + '.' + imageExtension;
-              link.href = evidence.image; link.click();
+              link.href = image; link.click();
               setProcedureFeedback('Evidence frame downloaded as ' + link.download + '.');
               if (addToast) addToast('Evidence frame downloaded.', 'success');
             } catch (error) {
@@ -25333,10 +25511,11 @@ var d = labToolData.dissection || {};
 
           function selectSpecimen(sk) {
             var sp = SPECIMENS[sk];
-            if (!sp || sk === specimen) return;
+            if (!sp) return false;
+            if (sk === specimen) return true;
             if (d.quizMode) {
               setProcedureFeedback('Specimen selection is locked during an assessment. Return to the lab before changing specimens.', 'caution');
-              return;
+              return false;
             }
             // Persist the departing specimen synchronously so the incoming
             // specimen's debounced save cannot supersede its latest evidence.
@@ -25345,13 +25524,13 @@ var d = labToolData.dissection || {};
             if (departureSaveAccess.state !== 'writable') {
               setProcedureFeedback('The current ' + spec.name + ' save is protected or unavailable, so the specimen was not changed. Reload the protected record, restore browser storage, or confirm a reset before switching specimens.', 'caution');
               focusResetControl('diss-protected-save-retry');
-              return;
+              return false;
             }
             var departureHadPendingSave = !!_disSaveQueue[dissectionSaveSlot(departureSaveKey, dissectionSaveOwner)];
             var departureSaved = flushDissectionSave(departureSaveKey, true, dissectionSaveOwner);
             if (departureHadPendingSave && !departureSaved) {
               setProcedureFeedback('Could not save the latest ' + spec.name + ' work, so the specimen was not changed. Restore browser storage or copy your report, then try again.', 'caution');
-              return;
+              return false;
             }
             clearAllDissectionCanvasTimers(canvasRefNode);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
@@ -25362,6 +25541,7 @@ var d = labToolData.dissection || {};
             updMany({ specimen: sk, _comparisonFocus: null, _observationReviewFilter: null, _observationReviewSearch: '', _eyeStudyReturnPart: null, eyeStudyMode: false, flashcardMode: false, _flashcardPractice: null, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', directoryFilter: 'all', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: false, evidenceReturnFocusId: null, evidenceRemovePendingId: null, evidenceClearPending: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null, _procedureDemo: null, _procedureReplay: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
+            return true;
           }
           function focusResetControl(controlId) {
             var focusRoot = currentDissectionRootNode();
@@ -25677,9 +25857,14 @@ var d = labToolData.dissection || {};
           }
 
           function onCompositeToolbarKeyDown(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             var keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
             if (keys.indexOf(e.key) < 0) return;
-            var controls = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button:not([disabled])'));
+            var controls = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button:not([disabled])')).filter(function (control) {
+              if (control.closest('[hidden], [inert], [aria-hidden="true"]') || !control.getClientRects().length) return false;
+              var visibility = window.getComputedStyle(control).visibility;
+              return visibility !== 'hidden' && visibility !== 'collapse';
+            });
             if (!controls.length) return;
             var currentIndex = controls.indexOf(e.target);
             if (currentIndex < 0) return;
@@ -25689,6 +25874,7 @@ var d = labToolData.dissection || {};
           }
 
           function onSpecimenKeyDown(e, sk) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             var specimenRoot = e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('[data-dissection-root]') : null;
             var idx = SPEC_KEYS.indexOf(sk);
             var nextIdx = idx;
@@ -25699,7 +25885,7 @@ var d = labToolData.dissection || {};
             else return;
             e.preventDefault();
             var nextKey = SPEC_KEYS[nextIdx];
-            selectSpecimen(nextKey);
+            if (!selectSpecimen(nextKey)) return;
             setTimeout(function () {
               var target = scopedDissectionQuery(specimenRoot, '#diss-specimen-tab-' + nextKey);
               if (target) target.focus();
@@ -26010,6 +26196,7 @@ var d = labToolData.dissection || {};
               return false;
             }
             clearAssessmentTeachingTimers();
+            preserveAssessmentFocus('diss-assessment-summary', 'diss-quiz-panel');
             updMany({ eyeStudyMode: false, flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
               quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
               quizFirstAttemptScore: reviewOnly ? assessmentRecordedScore : 0,
@@ -27883,8 +28070,8 @@ var d = labToolData.dissection || {};
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": __alloT('stem.dissection.a11y_compare_the_current_technique_with_the_previous', 'Compare the current technique with the previous saved attempt') }, '\u21C4 Compare attempts'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
-                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": "diss-layer-review", onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: physiologyMotionReduced ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
+                      !d.quizMode && !d.practicalMode && React.createElement("button", { type: "button", "aria-controls": layerReviewAvailable() ? "diss-layer-review" : undefined, onClick: function () { updMany({ showProcedureDebrief: true, _layerReviewRequested: specimen + '|' + activeLayer }); focusDissectionTarget('diss-layer-review-title'); } }, 'Review layer'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
                       React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
@@ -28659,7 +28846,6 @@ var d = labToolData.dissection || {};
 
                         type: "button",
                         "aria-pressed": d.selectedOrgan === org.id,
-                        "aria-disabled": directoryVisible || isExplored ? undefined : true,
                         "data-exposure-state": directoryExposureState,
                         "aria-describedby": "diss-record-" + org.id + (directoryContextOrgan && directoryContextOrgan.id === org.id ? " diss-directory-context-detail" : ""),
                         "data-directory-action": directoryAction,
@@ -28711,7 +28897,7 @@ var d = labToolData.dissection || {};
 
                 // Quiz card
 
-                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title" },
+                d.quizMode && quizQ && React.createElement("section", { id: "diss-quiz-panel", tabIndex: -1, className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4", "data-dissection-quiz": true, "aria-labelledby": "diss-quiz-title", "aria-describedby": assessmentPromptId },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
@@ -28723,7 +28909,7 @@ var d = labToolData.dissection || {};
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, quizPrompt),
+                  React.createElement("p", { id: assessmentPromptId, className: "text-xs text-amber-700 mb-2" }, quizPrompt),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.dissection.a11y_answer_method', 'Answer method') },
                     React.createElement("button", { type: "button", "aria-pressed": effectiveQuizAnswerMode === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, d.practicalMode ? 'Accessible choices' : 'Multiple choice'),
                     React.createElement("button", { type: "button", disabled: !hotspotQuizAvailable, title: hotspotQuizAvailable ? 'Answer directly on the visible specimen' : 'The current question is not visible on the specimen; use multiple choice', "aria-pressed": effectiveQuizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, hotspotQuizAvailable ? 'Select on specimen' : 'Specimen answer unavailable')
@@ -28765,17 +28951,19 @@ var d = labToolData.dissection || {};
                   ),
 
                   !d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 p-2.5 rounded-lg border " + (d.quizFeedback.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'),
                     role: "status",
                     "aria-live": "assertive"
                   }, d.quizFeedback.correct ? ((d.quizFeedback.supported ? 'Correct with support — ' : 'Correct — ') + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
                   d.practicalMode && d.quizFeedback && React.createElement("div", {
+                    id: assessmentFeedbackId,
                     className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
                     role: "status",
                     "aria-live": "assertive"
                   }, 'Response recorded. Correctness and the running score stay hidden while the timed practical is active.'),
 
-                  d.quizFeedback && React.createElement("button", { type: "button", "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
+                  d.quizFeedback && React.createElement("button", { id: "diss-quiz-continue", type: "button", "aria-describedby": assessmentFeedbackId, "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
 
                     onClick: function () {
                       var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
@@ -28884,24 +29072,31 @@ var d = labToolData.dissection || {};
 
 
 
-                // "Did You Know?" rotating trivia panel
+                // Learner-controlled biology facts
                 (function () {
                   var facts = SPECIMEN_TRIVIA[specimen] || [];
                   if (facts.length === 0) return null;
-                  var factIdx = Math.floor((Date.now() / 8000)) % facts.length;
-                  return React.createElement("details", { className: "diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
+                  var factIndices = d.biologyFactIndexBySpecimen && typeof d.biologyFactIndexBySpecimen === 'object' && !Array.isArray(d.biologyFactIndexBySpecimen) ? d.biologyFactIndexBySpecimen : {};
+                  var savedFactIndex = Object.prototype.hasOwnProperty.call(factIndices, specimen) ? factIndices[specimen] : 0;
+                  var factIdx = typeof savedFactIndex === 'number' && isFinite(savedFactIndex) && Math.floor(savedFactIndex) === savedFactIndex && savedFactIndex >= 0 && savedFactIndex < facts.length ? savedFactIndex : 0;
+                  var factReadingId = 'diss-biology-fact-reading-' + dissectionSaveOwner;
+                  function browseFact(direction) {
+                    var nextIndices = Object.assign({}, factIndices);
+                    nextIndices[specimen] = (factIdx + direction + facts.length) % facts.length;
+                    upd('biologyFactIndexBySpecimen', nextIndices);
+                  }
+                  return React.createElement("details", { className: "diss-biology-fact diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
                     React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                      React.createElement("span", { className: "text-sm" }, '\uD83D\uDCA1'),
+                      React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, '\uD83D\uDCA1'),
                       React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, 'Did You Know?')
                     ),
-                    React.createElement("p", { className: "text-[11px] text-amber-600 leading-relaxed" }, facts[factIdx]),
-                    React.createElement("div", { className: "flex gap-0.5 mt-1.5 justify-center" },
-                      facts.map(function (_, fi) {
-                        return React.createElement("div", {
-                          key: fi,
-                          className: "w-1 h-1 rounded-full " + (fi === factIdx ? 'bg-amber-500' : 'bg-amber-200')
-                        });
-                      })
+                    React.createElement("div", { id: factReadingId, role: "status", "aria-live": "polite", "aria-atomic": "true" },
+                      React.createElement("p", { className: "diss-biology-fact__position text-[11px]" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
+                      React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx])
+                    ),
+                    facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": "Biology fact navigation" },
+                      React.createElement("button", { type: "button", "aria-label": "Previous biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
+                      React.createElement("button", { type: "button", "aria-label": "Next biology fact", "aria-controls": factReadingId, onClick: function () { browseFact(1); } }, 'Next')
                     )
                   );
                 })(),
@@ -28928,7 +29123,7 @@ var d = labToolData.dissection || {};
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": __alloT('stem.dissection.a11y_learning_evidence_dimensions', 'Learning evidence dimensions') },
                     masteryDimensions.map(function (dimension) {
                       return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
-                        React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px]" },
+                        React.createElement("div", { className: "diss-evidence-metric-heading flex items-center justify-between gap-2 text-[11px]" },
                           React.createElement("span", { className: "font-semibold text-slate-700" }, dimension.label),
                           React.createElement("span", { className: "font-bold text-blue-800" }, dimension.value + '%')
                         ),

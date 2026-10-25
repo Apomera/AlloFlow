@@ -510,14 +510,33 @@
   // Route through the shell's alloCopyText first: Gemini Canvas refuses
   // navigator.clipboard by permissions policy. Resolves false so the UI can
   // offer the text for manual copying instead of failing silently.
-  function copyReportText(text){
+  function copyReportText(text,canContinue){
+    function legacyCopyPreservingSelection(){
+      if(canContinue&&!canContinue())return false;
+      var active=document.activeElement,selection=window.getSelection(),ranges=[],control=null,anchor=selection&&selection.anchorNode?{node:selection.anchorNode,offset:selection.anchorOffset,focus:selection.focusNode,focusOffset:selection.focusOffset}:null;
+      if(selection)for(var i=0;i<selection.rangeCount;i++)ranges.push(selection.getRangeAt(i).cloneRange());
+      try{if(active&&typeof active.selectionStart==='number')control={start:active.selectionStart,end:active.selectionEnd,direction:active.selectionDirection};}catch(_){}
+      var area=document.createElement('textarea'),ok=false,scrollX=window.scrollX,scrollY=window.scrollY;
+      area.value=text;area.setAttribute('readonly','');area.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(area);
+      try{area.select();ok=!!document.execCommand('copy');}catch(_){ok=false;}
+      finally{
+        // The temporary selection must not take keyboard focus or replace the
+        // learner's selection when the clipboard succeeds or is denied.
+        var ownsFocus=document.activeElement===area||document.activeElement===active;area.remove();
+        if(ownsFocus&&active&&active.isConnected){
+          try{active.focus({preventScroll:true});}catch(_){}
+          try{if(selection){selection.removeAllRanges();ranges.forEach(function(range){if(range.startContainer.isConnected&&range.endContainer.isConnected)selection.addRange(range);});if(ranges.length===1&&anchor&&anchor.node.isConnected&&anchor.focus&&anchor.focus.isConnected&&typeof selection.setBaseAndExtent==='function')selection.setBaseAndExtent(anchor.node,anchor.offset,anchor.focus,anchor.focusOffset);}}catch(_){}
+          try{if(control)active.setSelectionRange(control.start,control.end,control.direction);}catch(_){}
+          window.scrollTo(scrollX,scrollY);
+        }
+      }
+      return ok;
+    }
     return Promise.resolve().then(function(){
+      if(canContinue&&!canContinue())return false;
       if(typeof window.alloCopyText==='function')return Promise.resolve(window.alloCopyText(text)).then(function(ok){return ok!==false;});
-      if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text).then(function(){return true;},function(){return false;});
-      var area=document.createElement('textarea');area.value=text;area.setAttribute('readonly','');
-      area.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(area);area.select();
-      var ok=false;try{ok=document.execCommand('copy');}catch(_){ok=false;}
-      area.remove();return ok;
+      if(navigator.clipboard&&navigator.clipboard.writeText)return Promise.resolve().then(function(){return navigator.clipboard.writeText(text);}).then(function(){return true;},legacyCopyPreservingSelection);
+      return legacyCopyPreservingSelection();
     }).catch(function(){return false;});
   }
   function fieldReport(s){return reportLines(s).join("\n");}
@@ -1249,6 +1268,13 @@
     result.leftWing=flight.leftWing+(-leftRest-flight.leftWing)*wingPerch;result.rightWing=flight.rightWing+(rightRest-flight.rightWing)*wingPerch;
     result.hindLag=flight.hindLag*(1-wingPerch)+restHindLag*wingPerch;result.bank=flight.bank*(1-weight);result.pitch=flight.pitch+(dip-flight.pitch)*weight;
     return result;
+  }
+  // Airborne visitors draw their long legs in a little, then reach for the
+  // blossom before touching down. The original contact pose stays exact.
+  function visitorLegTuck(pose,reduced){
+    if(reduced||!pose||!Number.isFinite(pose.perch)||pose.phase==='feeding')return 0;
+    var release=clamp(pose.perch/.65,0,1);
+    return 1-release*release*(3-2*release);
   }
   // Quiet antenna sweeps belong only to feeding meadow visitors.
   function visitorAntennaPose(index,clock,reduced,pose){
@@ -2288,9 +2314,9 @@ function createMonarch(T, kit, feeding, lowDetail) {
       var x=p[0], z=p[1], c=color(hex), depth=butterflyWingDepth(x,z,fore,1), dx=(.34+.08*Math.sin((z+1)*.75))*Math.PI/7*Math.cos(x*Math.PI/7)+depth[1], dz=.06*Math.cos((z+1)*.75)*Math.sin(x*Math.PI/7)+.03825*Math.cos(z*.85)+depth[2];
       if(!lift&&hex!==ink){
         // Continuous colour through the membrane avoids concentric painted
-        // bands. Warm dorsal amber and muted ventral ochre remain distinct.
+        // bands. Ventral forewings retain orange while hindwings stay paler.
         var warmth=Math.max(0,Math.min(1,.12+(x-.25)/6.7*.83+.08*Math.sin(z*.68+x*.37)+.045*Math.cos(z*.35)));
-        c=color(face===1?0xa65124:0xaf7a49).clone().lerp(color(face===1?0xe99f4a:0xdcb67f),warmth);
+        c=color(face===1?0xa65124:(fore?0xb15c28:0xaf7a49)).clone().lerp(color(face===1?0xe99f4a:(fore?0xe9a65a:0xdcb67f)),warmth);
       }
       // The underside keeps the same cell pattern in a quieter, warm pigment.
       if(face<0&&hex===ink)c=color(0x3c3529);
@@ -2484,10 +2510,10 @@ function meadowPathX(z){return -7+Math.sin(z*.029)*12+Math.sin(z*.009)*4;}
   // A few windborne seeds and airborne motes give still viewing a sense of air.
   // They are depth-tested, softly lit points, never additive sparks or a screen overlay.
   function createMeadowAtmosphere(T,scene){
-    var count=96,positions=new Float32Array(count*3),normals=new Float32Array(count*3),particles=new Float32Array(count*4);
+    var moteCount=96,count=moteCount+2,positions=new Float32Array(count*3),normals=new Float32Array(count*3),particles=new Float32Array(count*4);
     function hash(n){var value=Math.sin(n*127.1+311.7)*43758.5453;return value-Math.floor(value);}
     var centers=[[-42,-28],[38,-54],[0,6],[-42,38]];
-    for(var i=0;i<count;i++){
+    for(var i=0;i<moteCount;i++){
       var center=centers[i%4],angle=hash(i+7501)*Math.PI*2,radius=Math.sqrt(hash(i+7601))*25,seed=i%5===0;
       positions[i*3]=center[0]+Math.cos(angle)*radius;
       positions[i*3+1]=1.6+hash(i+7701)*8.2;
@@ -2497,6 +2523,15 @@ function meadowPathX(z){return -7+Math.sin(z*.029)*12+Math.sin(z*.009)*4;}
       particles[i*4+1]=seed?.22+hash(i+7901)*.22:.055+hash(i+7901)*.075;
       particles[i*4+2]=.12+hash(i+8001)*.16;
       particles[i*4+3]=seed?1:0;
+    }
+    // Two small distant birds share the existing point draw and clock. Their
+    // short bodies, swept wings and bank are projected from a world-space frame;
+    // none of the original floating seeds or motes changes its authored record.
+    for(var bird=0;bird<2;bird++){
+      var at=moteCount+bird;
+      positions[at*3]=bird?204:183;positions[at*3+1]=bird?40:34;positions[at*3+2]=bird?176:156;
+      normals[at*3+1]=1;
+      particles[at*4]=bird?.63:.14;particles[at*4+1]=bird?2.55:2.8;particles[at*4+2]=bird?.024:.029;particles[at*4+3]=2;
     }
     var geometry=new T.BufferGeometry();geometry.name='meadow-airborne-seeds';
     geometry.setAttribute('position',new T.BufferAttribute(positions,3));
@@ -2513,6 +2548,7 @@ function meadowPathX(z){return -7+Math.sin(z*.029)*12+Math.sin(z*.009)*4;}
         'attribute vec4 bfParticle;',
         'uniform float bfAirClock;uniform float bfParticlePixelScale;',
         'varying float bfSeed;varying float bfAirFade;varying float bfTurn;',
+        'varying vec4 bfBirdFrame;varying vec3 bfBirdUp;',
         '#include <fog_pars_vertex>',
         'void main(){',
         // Motion follows the same prevailing +x / +z breeze as the vegetation.
@@ -2523,21 +2559,64 @@ function meadowPathX(z){return -7+Math.sin(z*.029)*12+Math.sin(z*.009)*4;}
         'p.x+=drift+.7*sin(bfAirClock*.19+phase);',
         'p.z+=drift*.46+.6*sin(bfAirClock*.16+phase*1.7);',
         'p.y+=.35*sin(bfAirClock*.27+phase)+.12*sin(bfAirClock*.61+phase*2.);',
+        'bfBirdFrame=vec4(0.);bfBirdUp=vec3(0.);',
+        'if(bfParticle.w>1.5){',
+        // The ellipse is continuous: neither bird wraps, reverses or teleports.
+        'float flight=phase+bfAirClock*bfParticle.z;',
+        'p=vec3(cos(flight)*position.x,position.y+2.3*sin(bfAirClock*.105+phase),sin(flight)*position.z);',
+        'vec3 forward=normalize(vec3(-sin(flight)*position.x*bfParticle.z,.2415*cos(bfAirClock*.105+phase),cos(flight)*position.z*bfParticle.z));',
+        'vec3 right=normalize(cross(forward,vec3(0.,1.,0.)));vec3 up=cross(right,forward);',
+        'float bank=.12+.10*sin(bfAirClock*.13+phase);float bankCos=cos(bank),bankSin=sin(bank);',
+        'vec3 bankRight=right*bankCos+up*bankSin;vec3 bankUp=up*bankCos-right*bankSin;',
+        'bfBirdFrame=vec4((mat3(modelViewMatrix)*bankRight).xy,(mat3(modelViewMatrix)*forward).xy);',
+        'bfBirdUp.xy=(mat3(modelViewMatrix)*bankUp).xy;',
+        '}',
         'vec4 mvPosition=modelViewMatrix*vec4(p,1.);',
         'gl_Position=projectionMatrix*mvPosition;',
         'gl_PointSize=clamp(bfParticle.y*bfParticlePixelScale*projectionMatrix[1][1]/max(1.,-mvPosition.z),1.,14.);',
         'bfSeed=bfParticle.w;bfTurn=phase+.18*sin(bfAirClock*.42+phase);',
         'bfAirFade=smoothstep(0.,.09,cycle)*(1.-smoothstep(.88,1.,cycle))*(1.-smoothstep(90.,155.,-mvPosition.z));',
+        'if(bfParticle.w>1.5){',
+        // Smooth, asynchronous flap bursts last about two seconds per seven.
+        // Most of the flight is a quiet glide with softly flexed wing tips.
+        'float burst=.5+.5*sin(bfAirClock*.89+phase);burst=smoothstep(.69,.93,burst);',
+        'bfTurn=-.045+.035*sin(bfAirClock*1.2+phase)+burst*.84*sin(bfAirClock*18.8+phase*2.3);',
+        'bfBirdUp.z=2./gl_PointSize;',
+        'bfAirFade=smoothstep(80.,125.,length(mvPosition.xyz))*(1.-smoothstep(255.,350.,-mvPosition.z));',
+        '}',
         '#include <fog_vertex>',
         '}'
       ].join('\n'),
       fragmentShader:[
         'uniform float bfAirGolden;uniform vec3 bfMoteColor;uniform vec3 bfSeedColor;uniform vec3 bfWarmColor;',
         'varying float bfSeed;varying float bfAirFade;varying float bfTurn;',
+        'varying vec4 bfBirdFrame;varying vec3 bfBirdUp;',
+        // A taper remains soft below a pixel and never divides by a vanishing
+        // foreshortened span when a bird flies directly toward the camera.
+        'float birdStroke(vec2 p,vec2 a,vec2 b,float ra,float rb,float aa){vec2 span=b-a;float t=clamp(dot(p-a,span)/max(.00001,dot(span,span)),0.,1.);float r=mix(ra,rb,t);return 1.-smoothstep(r-aa*.5,r+aa*.5,length(p-a-span*t));}',
         '#include <fog_pars_fragment>',
         'void main(){',
         'vec2 p=gl_PointCoord*2.-1.;float radius=length(p);',
         'if(radius>1.)discard;',
+        'if(bfSeed>1.5){',
+        'vec2 right=bfBirdFrame.xy,forward=bfBirdFrame.zw,up=bfBirdUp.xy;float aa=bfBirdUp.z;',
+        'float shape=birdStroke(p,-forward*.16,forward*.19,.095,.085,aa);',
+        'shape=max(shape,birdStroke(p,forward*.19,forward*.29,.085,.02,aa));',
+        'shape=max(shape,birdStroke(p,-forward*.16,-forward*.38+right*.055,.052,.06,aa));',
+        'shape=max(shape,birdStroke(p,-forward*.16,-forward*.38-right*.055,.052,.06,aa));',
+        'vec2 shoulder=forward*.04;',
+        'vec2 lift=up*sin(bfTurn),spread=right*cos(bfTurn);',
+        'vec2 elbowLeft=-spread*.36+lift*.36,elbowRight=spread*.36+lift*.36;',
+        'vec2 tipLeft=-spread*.78+lift*.78-forward*.20,tipRight=spread*.78+lift*.78-forward*.20;',
+        'shape=max(shape,birdStroke(p,shoulder,elbowLeft,.105,.105,aa));shape=max(shape,birdStroke(p,elbowLeft,tipLeft,.105,.018,aa));',
+        'shape=max(shape,birdStroke(p,shoulder,elbowRight,.105,.105,aa));shape=max(shape,birdStroke(p,elbowRight,tipRight,.105,.018,aa));',
+        'float alpha=shape*.72*bfAirFade;if(alpha<.003)discard;',
+        'vec3 color=mix(bfMoteColor*.30,bfWarmColor*.29,bfAirGolden*.3);gl_FragColor=vec4(color,alpha);',
+        '#include <tonemapping_fragment>',
+        '#include <encodings_fragment>',
+        '#include <fog_fragment>',
+        'return;',
+        '}',
         'float soft=exp(-4.8*dot(p,p))*(1.-smoothstep(.65,1.,radius));',
         // A muted downy tuft with a small hanging seed, rather than a shiny dot.
         'float c=cos(bfTurn),s=sin(bfTurn);vec2 q=mat2(c,-s,s,c)*p;',
@@ -2588,9 +2667,12 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
       'uniform float bfMeadowDetail;varying vec3 bfWingPoint;varying float bfKind;varying float bfFace;varying float bfEdge;',
       'float bfHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
       'float bfNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(bfHash(i),bfHash(i+vec2(1.,0.)),f.x),mix(bfHash(i+vec2(0.,1.)),bfHash(i+1.),f.x),f.y);}',
+      'float bfPigmentFringe(float signedDistance,vec2 p,float aa,float span){vec2 uv=p*vec2(23.,31.);float fine=1.-smoothstep(.4,1.15,max(fwidth(uv.x),fwidth(uv.y)));float edgeResolve=1.-smoothstep(.055,.18,aa);float width=max(aa,.012)+span*edgeResolve;float coverage=1.-smoothstep(-width,width,signedDistance);uv.x+=mod(floor(uv.y),2.)*.5;float scales=bfHash(floor(uv));return clamp(coverage+(scales-.5)*.34*coverage*(1.-coverage)*4.*fine,0.,1.);}',
       'float bfLine(vec2 p,vec2 a,vec2 b,float width,float aa){vec2 v=b-a;float span=length(v),h=clamp(dot(p-a,v)/dot(v,v),0.,1.);vec2 across=vec2(-v.y,v.x)/span;float bend=sin(h*3.141593)*span*.024*sin(a.x*1.7+a.y*.8);float radius=width*(1.-.18*h)*(1.+.055*sin(h*10.+a.x));float softness=max(aa,.007);return 1.-smoothstep(radius-softness,radius+softness,length(p-a-v*h-across*bend));}',
-      'float bfBand(vec2 p,vec2 a,vec2 b,float width,float aa){vec2 v=b-a;float span=length(v),h=clamp(dot(p-a,v)/dot(v,v),0.,1.);vec2 across=vec2(-v.y,v.x)/span;float bend=(sin(h*3.141593)*.065+sin(h*6.283185)*.014)*span;float radius=width*(1.25-.98*pow(h,.8))*(1.+.10*sin(h*9.+a.x)+.045*sin(h*19.7+a.y));float softness=max(aa,.012);return 1.-smoothstep(radius-softness,radius+softness,length(p-a-v*h-across*bend));}',
+      'float bfPigmentLine(vec2 p,vec2 a,vec2 b,float width,float aa){vec2 v=b-a;float span=length(v),h=clamp(dot(p-a,v)/dot(v,v),0.,1.);vec2 across=vec2(-v.y,v.x)/span;float bend=sin(h*3.141593)*span*.024*sin(a.x*1.7+a.y*.8);float radius=width*(1.-.18*h)*(1.+.055*sin(h*10.+a.x));float softness=max(aa,.007);return bfPigmentFringe(length(p-a-v*h-across*bend)-radius,p,aa,.045);}',
+      'float bfBand(vec2 p,vec2 a,vec2 b,float width,float aa){vec2 v=b-a;float span=length(v),h=clamp(dot(p-a,v)/dot(v,v),0.,1.);vec2 across=vec2(-v.y,v.x)/span;float bend=(sin(h*3.141593)*.065+sin(h*6.283185)*.014)*span;float radius=width*(1.25-.98*pow(h,.8))*(1.+.10*sin(h*9.+a.x)+.045*sin(h*19.7+a.y));float softness=max(aa,.012);return bfPigmentFringe(length(p-a-v*h-across*bend)-radius,p,aa,.04);}',
       'float bfOval(vec2 p,vec2 c,vec2 size,float angle,float aa){vec2 q=p-c;float ca=cos(angle),sa=sin(angle);q=vec2(ca*q.x+sa*q.y,-sa*q.x+ca*q.y)/size;float radius=length(q);vec2 d=q/max(radius,.0001);float seed=sin(c.x*2.73+c.y*4.11);float contour=1.+.065*d.x+.045*d.y*seed+.075*(d.x*d.x*d.x-3.*d.x*d.y*d.y)*seed+.035*(2.*d.x*d.y);float edge=max(aa,.008)/min(size.x,size.y);return 1.-smoothstep(contour-edge,contour+edge,radius);}',
+      'float bfPigmentOval(vec2 p,vec2 c,vec2 size,float angle,float aa){vec2 q=p-c;float ca=cos(angle),sa=sin(angle);q=vec2(ca*q.x+sa*q.y,-sa*q.x+ca*q.y)/size;float radius=length(q);vec2 d=q/max(radius,.0001);float seed=sin(c.x*2.73+c.y*4.11);float contour=1.+.065*d.x+.045*d.y*seed+.075*(d.x*d.x*d.x-3.*d.x*d.y*d.y)*seed+.035*(2.*d.x*d.y);float edge=max(aa,.008)/min(size.x,size.y);return bfPigmentFringe((radius-contour)*min(size.x,size.y),p,aa,min(.045,min(size.x,size.y)*.19));}',
       'float bfVeins(vec2 p,bool fore,float aa){float v=0.;',
       'if(fore){v=max(v,bfLine(p,vec2(.35,-.55),vec2(2.05,-2.0),.022,aa));v=max(v,bfLine(p,vec2(2.05,-2.),vec2(3.65,-2.65),.021,aa));v=max(v,bfLine(p,vec2(3.65,-2.65),vec2(3.8,-1.25),.018,aa));v=max(v,bfLine(p,vec2(3.8,-1.25),vec2(1.4,.05),.018,aa));v=max(v,bfLine(p,vec2(1.4,.05),vec2(.35,-.55),.022,aa));v=max(v,bfLine(p,vec2(2.05,-2.),vec2(3.15,-4.2),.017,aa));v=max(v,bfLine(p,vec2(3.65,-2.65),vec2(5.7,-4.45),.018,aa));v=max(v,bfLine(p,vec2(3.65,-2.65),vec2(6.5,-3.0),.016,aa));v=max(v,bfLine(p,vec2(3.8,-1.25),vec2(5.6,-1.25),.016,aa));v=max(v,bfLine(p,vec2(1.4,.05),vec2(3.8,.55),.016,aa));}',
       'else{v=max(v,bfLine(p,vec2(.4,.5),vec2(2.0,1.5),.02,aa));v=max(v,bfLine(p,vec2(2.,1.5),vec2(3.1,2.4),.018,aa));v=max(v,bfLine(p,vec2(2.,1.5),vec2(4.7,1.3),.016,aa));v=max(v,bfLine(p,vec2(3.1,2.4),vec2(4.95,2.55),.016,aa));v=max(v,bfLine(p,vec2(3.1,2.4),vec2(4.1,3.7),.016,aa));v=max(v,bfLine(p,vec2(3.1,2.4),vec2(2.6,4.0),.016,aa));v=max(v,bfLine(p,vec2(.4,.5),vec2(1.35,3.2),.018,aa));}return v;}',
@@ -2605,16 +2687,24 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
       paint.push('else{float yellow=0.,blue=0.;yellow=max(yellow,bfOval(p,vec2(5.06,1.98),vec2(.20,.16),.8,aa));yellow=max(yellow,bfOval(p,vec2(4.75,2.95),vec2(.22,.14),.4,aa));yellow=max(yellow,bfOval(p,vec2(3.95,3.68),vec2(.23,.14),.0,aa));yellow=max(yellow,bfOval(p,vec2(2.5,3.99),vec2(.20,.14),-.3,aa));yellow=max(yellow,bfOval(p,vec2(1.67,3.68),vec2(.18,.13),-.5,aa));c=mix(c,'+rgb(0xf0d77f)+',yellow);blue=max(blue,bfOval(p,vec2(1.65,3.2),vec2(.17,.12),-.2,aa));blue=max(blue,bfOval(p,vec2(2.2,3.55),vec2(.22,.13),-.2,aa));blue=max(blue,bfOval(p,vec2(3.9,3.2),vec2(.18,.12),.2,aa));c=mix(c,dorsal?'+rgb(0x7899a0)+':'+rgb(0x8ea4a1)+',blue*.9);float orange=bfOval(p,vec2(1.24,3.02),vec2(.18,.22),-.35,aa);c=mix(c,'+rgb(0xd8954b)+',orange);}');
     }else if(lady){
       paint.push('c=mix(dorsal?'+rgb(0xb16e3c)+':'+rgb(0x9b684c)+',dorsal?'+rgb(0xe0a064)+':'+rgb(0xd89361)+',smoothstep(.45,4.7,p.x));float border=(1.-smoothstep(.19-aa,.19+aa,edge))*smoothstep(.65,1.1,p.x);');
-      paint.push('if(fore){float apex=smoothstep(5.45-aa,5.65+aa,p.x-p.y*.48+.20*sin(p.y*2.6)+.08*sin(p.x*5.1));mark=max(apex,border);mark=max(mark,bfOval(p,vec2(1.64,-2.14),vec2(.47,.28),-.5,aa));mark=max(mark,bfOval(p,vec2(2.65,-2.45),vec2(.42,.27),.4,aa));mark=max(mark,bfLine(p,vec2(1.27,-.32),vec2(2.31,-1.5),.22,aa));mark=max(mark,bfLine(p,vec2(2.31,-1.5),vec2(3.53,-.87),.25,aa));c=mix(c,dorsal?'+rgb(0x38302b)+':'+rgb(0x6b6256)+',mark);float pale=0.;pale=max(pale,bfOval(p,vec2(4.38,-3.48),vec2(.56,.19),-.45,aa));pale=max(pale,bfOval(p,vec2(5.24,-3.53),vec2(.19,.17),0.,aa));pale=max(pale,bfOval(p,vec2(5.62,-2.84),vec2(.18,.19),0.,aa));pale=max(pale,bfOval(p,vec2(5.4,-2.03),vec2(.15,.20),.4,aa));pale=max(pale,bfOval(p,vec2(4.92,-1.42),vec2(.13,.16),.5,aa));c=mix(c,'+rgb(0xf0e4cc)+',pale);if(!dorsal)c=mix(c,'+rgb(0xc8bda2)+',bfOval(p,vec2(1.1,-.6),vec2(.65,.55),0.,aa)*.65);}');
-      paint.push('else{if(!dorsal){float marble=bfNoise(p*3.4)+.22*sin(p.x*8.+sin(p.y*6.));c=mix('+rgb(0x746c5d)+','+rgb(0xc5b594)+',smoothstep(.18,.83,marble));float band=1.-smoothstep(.10-aa,.17+aa,abs(p.y-1.7-.3*sin(p.x*2.1)));c=mix(c,'+rgb(0xe0d3b6)+',max(band*.6,vein*.65));}else{c=mix(c,'+rgb(0x73503d)+',bfOval(p,vec2(1.15,1.0),vec2(.9,.65),.3,aa)*.7);c=mix(c,'+rgb(0x41332a)+',border);c=mix(c,'+rgb(0x5e4432)+',bfLine(p,vec2(1.45,2.4),vec2(3.9,1.0),.13,aa)*.5);}');
+      paint.push('if(fore){float apex=smoothstep(5.45-aa,5.65+aa,p.x-p.y*.48+.20*sin(p.y*2.6)+.08*sin(p.x*5.1));mark=max(apex,border);mark=max(mark,bfPigmentOval(p,vec2(1.64,-2.14),vec2(.47,.28),-.5,aa));mark=max(mark,bfPigmentOval(p,vec2(2.65,-2.45),vec2(.42,.27),.4,aa));mark=max(mark,bfPigmentLine(p,vec2(1.27,-.32),vec2(2.31,-1.5),.22,aa));mark=max(mark,bfPigmentLine(p,vec2(2.31,-1.5),vec2(3.53,-.87),.25,aa));c=mix(c,dorsal?'+rgb(0x38302b)+':'+rgb(0x6b6256)+',mark);float pale=0.;pale=max(pale,bfOval(p,vec2(4.38,-3.48),vec2(.56,.19),-.45,aa));pale=max(pale,bfOval(p,vec2(5.24,-3.53),vec2(.19,.17),0.,aa));pale=max(pale,bfOval(p,vec2(5.62,-2.84),vec2(.18,.19),0.,aa));pale=max(pale,bfOval(p,vec2(5.4,-2.03),vec2(.15,.20),.4,aa));pale=max(pale,bfOval(p,vec2(4.92,-1.42),vec2(.13,.16),.5,aa));c=mix(c,'+rgb(0xf0e4cc)+',pale);if(!dorsal)c=mix(c,'+rgb(0xc8bda2)+',bfOval(p,vec2(1.1,-.6),vec2(.65,.55),0.,aa)*.65);}');
+      paint.push('else{if(!dorsal){float marble=bfNoise(p*3.4)+.22*sin(p.x*8.+sin(p.y*6.));c=mix('+rgb(0x746c5d)+','+rgb(0xc5b594)+',smoothstep(.18,.83,marble));float webPhase=p.y-1.15-.28*sin(p.x*2.1)-.07*sin(p.x*6.7);float band=(1.-smoothstep(max(0.,.025-aa),.065+aa,min(abs(webPhase),abs(webPhase-.8))))*smoothstep(.5,1.,p.x)*(1.-smoothstep(4.,4.7,p.x));c=mix(c,'+rgb(0xe0d3b6)+',max(band*.78,vein*.85));}else{c=mix(c,'+rgb(0x73503d)+',bfOval(p,vec2(1.15,1.0),vec2(.9,.65),.3,aa)*.7);c=mix(c,'+rgb(0x41332a)+',border);c=mix(c,'+rgb(0x5e4432)+',bfLine(p,vec2(1.45,2.4),vec2(3.9,1.0),.13,aa)*.5);}');
+      // Painted lady: five dorsal spots and four separate ventral eyespots.
+      // References: Wisconsin Horticulture and Missouri Conservation field guides.
+      paint.push('if(dorsal){');
       [[4.48,1.35,.16],[4.67,2.22,.23],[4.15,3.15,.21],[3.26,3.73,.23],[2.24,3.64,.19]].forEach(function(s){
-        var center='vec2('+s[0]+','+s[1]+')',r=s[2];
-        paint.push('if(!dorsal){c=mix(c,'+rgb(0x574e43)+',bfOval(p,'+center+',vec2('+(r+.105)+','+(r+.09)+'),0.,aa));c=mix(c,'+rgb(0xd5c6a2)+',bfOval(p,'+center+',vec2('+(r+.065)+','+(r+.05)+'),0.,aa));c=mix(c,'+rgb(0x766849)+',bfOval(p,'+center+',vec2('+r+','+(r*.92)+'),0.,aa));c=mix(c,'+rgb(0x343934)+',bfOval(p,'+center+',vec2('+(r*.61)+','+(r*.56)+'),0.,aa));c=mix(c,'+rgb(0x849fa0)+',bfOval(p,'+center+',vec2('+(r*.27)+','+(r*.23)+'),0.,aa));}else{c=mix(c,'+rgb(0x3b332c)+',bfOval(p,'+center+',vec2('+r+','+(r*.91)+'),0.,aa));}');
+        paint.push('c=mix(c,'+rgb(0x3b332c)+',bfOval(p,vec2('+s[0]+','+s[1]+'),vec2('+s[2]+','+(s[2]*.91)+'),0.,aa));');
       });
+      paint.push('}else{');
+      [[4.55,1.45,.18],[4.68,2.42,.22],[3.95,3.4,.22],[2.65,3.8,.20]].forEach(function(s){
+        var center='vec2('+s[0]+','+s[1]+')',r=s[2];
+        paint.push('c=mix(c,'+rgb(0x574e43)+',bfOval(p,'+center+',vec2('+(r+.105)+','+(r+.09)+'),0.,aa));c=mix(c,'+rgb(0xd5c6a2)+',bfOval(p,'+center+',vec2('+(r+.065)+','+(r+.05)+'),0.,aa));c=mix(c,'+rgb(0x766849)+',bfOval(p,'+center+',vec2('+r+','+(r*.92)+'),0.,aa));c=mix(c,'+rgb(0x343934)+',bfOval(p,'+center+',vec2('+(r*.61)+','+(r*.56)+'),0.,aa));c=mix(c,'+rgb(0x849fa0)+',bfOval(p,'+center+',vec2('+(r*.27)+','+(r*.23)+'),0.,aa));');
+      });
+      paint.push('}');
       paint.push('}c=mix(c,'+rgb(0x6c5340)+',vein*(dorsal?.17:.05));');
     }else{
       paint.push('c=fore||dorsal?'+rgb(0xf1eee0)+':'+rgb(0xd1d2a0)+';c=mix('+rgb(0xd9d7c7)+',c,smoothstep(.1,2.1,p.x));if(!dorsal)c=mix(c,'+rgb(0xc3c995)+',bfNoise(p*6.)*.14);');
-      paint.push('if(fore){if(dorsal){float cap=smoothstep(6.08-aa,6.32+aa,p.x-p.y*.39+.12*sin(p.y*2.1));c=mix(c,'+rgb(0x55564c)+',cap);}else{c=mix(c,'+rgb(0xd6d69f)+',smoothstep(5.1,6.6,p.x-p.y*.4));}float spots=max(bfOval(p,vec2(3.94,-1.92),vec2(.31,.30),-.15,aa),bfOval(p,vec2(3.08,-.56),vec2(.30,.28),.1,aa));c=mix(c,'+rgb(0x54554a)+',spots);}else if(dorsal){c=mix(c,'+rgb(0x66675a)+',bfOval(p,vec2(3.35,.54),vec2(.25,.18),.2,aa));}');
+      paint.push('if(fore){if(dorsal){float cap=smoothstep(6.08-aa,6.32+aa,p.x-p.y*.39+.12*sin(p.y*2.1));c=mix(c,'+rgb(0x55564c)+',cap);}else{c=mix(c,'+rgb(0xd6d69f)+',smoothstep(5.1,6.6,p.x-p.y*.4));}float spots=max(bfPigmentOval(p,vec2(3.94,-1.92),vec2(.31,.30),-.15,aa),bfPigmentOval(p,vec2(3.08,-.56),vec2(.30,.28),.1,aa));c=mix(c,'+rgb(0x54554a)+',spots);}else if(dorsal){c=mix(c,'+rgb(0x66675a)+',bfOval(p,vec2(3.35,.54),vec2(.25,.18),.2,aa));}');
       paint.push('c=mix(c,'+rgb(0xabb193)+',vein*(dorsal?.14:.28));');
     }
     paint.push('return c;}');
@@ -2678,7 +2768,7 @@ function createMeadowButterfly(T,kit,speciesId,lowDetail){
       'reflectedLight.indirectDiffuse*=1.-.12*bfRootMask;'
     ].join('\n'));
   };
-  material.customProgramCacheKey=function(){return 'meadow-butterfly-'+speciesId+'-wing-root-depth-v8';};
+  material.customProgramCacheKey=function(){return 'meadow-butterfly-'+speciesId+'-wing-root-depth-v8-pigment-fringes-v1'+(lady?'-ventral-cells-v1':'');};
   refineButterflyAnatomySurface(material,'bfWingPoint','step(.5,bfKind)');
   var outlines=tiger?[
     [[.25,-.55],[1.2,-2.45],[3.45,-4.15],[5.95,-5.15],[7.05,-4.75],[6.7,-3.6],[5.8,-2.0],[4.55,-.35],[2.65,.75],[.27,.7]],
@@ -2768,18 +2858,48 @@ function buildWorld(T,kit) {
       material.onBeforeCompile=function(shader){
         surface.call(material,shader);
         shader.uniforms.bfBreeze=breeze;shader.uniforms.bfWindStrength=windStrength;shader.uniforms.bfPlantWind=plantWind;
-        shader.vertexShader=windGLSL+'uniform float bfPlantWind;\n'+shader.vertexShader;
+        shader.vertexShader=windGLSL+[
+          "uniform float bfPlantWind;",
+          "vec2 bfMeadowGustGradient(vec2 p){",
+          "float bfPhase=bfBreeze*.78-p.x*.035-p.y*.022;",
+          "float bfSwellPhase=bfBreeze*.23-p.x*.009+p.y*.013;",
+          "float bfSwell=.72+.28*sin(bfSwellPhase);",
+          "float bfFirst=cos(bfPhase)*bfSwell;",
+          "float bfSwellSlope=.28*sin(bfPhase)*cos(bfSwellPhase);",
+          "float bfSecond=.22*cos(bfBreeze*1.67-p.x*.061+p.y*.047);",
+          "return vec2((-.035*bfFirst-.009*bfSwellSlope-.061*bfSecond)*bfWindStrength,(-.022*bfFirst+.013*bfSwellSlope+.047*bfSecond)*bfWindStrength);",
+          "}",
+          "vec3 bfMeadowWindNormal(vec3 n,vec3 gradient,vec3 direction){",
+          "float bfProjection=dot(direction,n)/(1.+dot(direction,gradient));",
+          "return vec3(n.x-gradient.x*bfProjection,n.y-gradient.y*bfProjection,n.z-gradient.z*bfProjection);",
+          "}",
+          "vec3 bfMeadowFlutterGradient(vec3 p,float height){",
+          "float bfFlutterPhase=bfBreeze*2.7+p.x*.4-p.z*.32;",
+          "float bfFlutterEnvelope=smoothstep(0.,2.,height);",
+          "float bfFlutterSlope=clamp(height*.5,0.,1.);",
+          "float bfFlutterCos=cos(bfFlutterPhase)*bfWindStrength*bfFlutterEnvelope;",
+          "return vec3(.4*bfFlutterCos,sin(bfFlutterPhase)*bfWindStrength*3.*bfFlutterSlope*(1.-bfFlutterSlope),-.32*bfFlutterCos);",
+          "}"
+        ].join('\n')+'\n'+shader.vertexShader;
         // Bending in world space keeps stems, attached leaves and flower heads
         // continuous, including instanced parts, without per-frame matrix uploads.
         var bend=kind==='plant'?'float bfBend=.009*bfHeight*bfHeight*bfGust*bfPlantWind;':
           'float bfBend=.0016*bfHeight*bfHeight*bfGust;';
         var flutter=kind==='canopy'?'bfWorld.xz+=vec2(.025,.018)*sin(bfBreeze*2.7+bfWorld.x*.4-bfWorld.z*.32)*bfWindStrength*smoothstep(0.,2.,bfHeight);':'';
+        // Each wind step is a rank-one warp. Its inverse transpose transports
+        // the already transformed normal, including the leaf's own local flex.
+        var normalMask=kind==='plant'?'bfWindStrength>0.&&bfPlantWind>0.':'bfWindStrength>0.';
+        var normalAnchor='\n#ifndef FLAT_SHADED\nvec3 bfWindBase=bfWorld.xyz;\n#endif\n';
+        var normalLoad=kind==='plant'?'.009*bfPlantWind':'.0016';
+        var normalFlutter=kind==='canopy'?'vec3 bfFlutterBase=bfWindBase+vec3(bfBend,0.,bfBend*.46);bfWindNormal=bfMeadowWindNormal(bfWindNormal,bfMeadowFlutterGradient(bfFlutterBase,bfHeight),vec3(.025,0.,.018));':'';
+        var windNormal='\n#ifndef FLAT_SHADED\nif('+normalMask+'){vec3 bfWindNormal=(vec4(transformedNormal,0.)*viewMatrix).xyz;vec2 bfWindSlope=bfMeadowGustGradient(bfWindBase.xz);float bfWindLoad='+normalLoad+';vec3 bfBendGradient=vec3(bfWindLoad*bfHeight*bfHeight*bfWindSlope.x,bfWindLoad*2.*bfHeight*bfGust,bfWindLoad*bfHeight*bfHeight*bfWindSlope.y);bfWindNormal=bfMeadowWindNormal(bfWindNormal,bfBendGradient,vec3(1.,0.,.46));'+normalFlutter+'transformedNormal=mat3(viewMatrix)*bfWindNormal;vNormal=normalize(transformedNormal);}\n#endif\n';
         shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',
-          'vec4 mvPosition=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nmvPosition=instanceMatrix*mvPosition;\n#endif\nvec4 bfWorld=modelMatrix*mvPosition;float bfHeight=max(0.,bfWorld.y);float bfGust=bfMeadowGust(bfWorld.xz);'+bend+'bfWorld.xz+=vec2(bfBend,bfBend*.46);'+flutter+'mvPosition=viewMatrix*bfWorld;gl_Position=projectionMatrix*mvPosition;');
+          'vec4 mvPosition=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nmvPosition=instanceMatrix*mvPosition;\n#endif\nvec4 bfWorld=modelMatrix*mvPosition;float bfHeight=max(0.,bfWorld.y);float bfGust=bfMeadowGust(bfWorld.xz);'+normalAnchor+bend+'bfWorld.xz+=vec2(bfBend,bfBend*.46);'+flutter+windNormal+'mvPosition=viewMatrix*bfWorld;gl_Position=projectionMatrix*mvPosition;');
       };
-      material.customProgramCacheKey=function(){return cacheKey+'-meadow-breeze-'+kind+'-v1';};
+      material.customProgramCacheKey=function(){return cacheKey+'-meadow-breeze-'+kind+'-normals-v2';};
       return material;
     }
+
     function dataGeometry(data){var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(data.positions,3));
       var colors=data.colors;if(data.tones){colors=[];data.tones.forEach(function(t){var c=linear(t);colors.push(c.r,c.g,c.b);});}
       if(colors)g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;}
@@ -2792,7 +2912,7 @@ function buildWorld(T,kit) {
       uniforms:Object.assign(T.UniformsUtils.merge([T.UniformsLib.fog]),{bfBreeze:breeze,bfWindStrength:windStrength,bfPlantWind:plantWind,bfShadowCast:shadowCast,bfShadowStrength:shadowStrength,bfShadowColor:shadowColor}),
       vertexShader:[windGLSL,
         'uniform float bfPlantWind;uniform vec2 bfShadowCast;',
-        'varying vec2 vShadePoint;varying vec2 vShadeCast;varying vec2 vShadeSeed;varying float vShadeCanopy;varying float vShadeRustle;',
+        'varying vec2 vShadePoint;varying vec2 vShadeCast;varying vec2 vShadeSeed;varying float vShadeCanopy;varying float vShadeRustle;varying vec2 vShadeRootPoint;varying vec2 vShadeTrunkCast;',
         '#include <fog_pars_vertex>',
         'void main(){mat4 shadowMatrix=modelMatrix;',
         '#ifdef USE_INSTANCING',
@@ -2809,6 +2929,8 @@ function buildWorld(T,kit) {
         // rectangle, defines every soft edge visible on the meadow floor.
         'vec2 corner=vec2(sign(position.x),-sign(position.y));p.xz+=shadowOffset*.5+corner*abs(shadowOffset)*.5;',
         'vShadePoint=(p.xz-anchor.xz)/size*2.;vShadeCast=shadowOffset/size*2.;vShadeSeed=anchor.xz*.071;',
+        // Root contact follows the actual trunk flare rather than crown width.
+        'float rootRadius=max(.01,(.49+height/.78*.011)*1.18);vShadeRootPoint=(p.xz-anchor.xz)/rootRadius;vShadeTrunkCast=shadowOffset*.78/rootRadius;',
         'vShadeRustle=gust*.045*mix(bfPlantWind,1.,vShadeCanopy);',
         'vec4 mvPosition=viewMatrix*p;gl_Position=projectionMatrix*mvPosition;',
         '#include <fog_vertex>',
@@ -2816,7 +2938,7 @@ function buildWorld(T,kit) {
       ].join('\n'),
       fragmentShader:[
         'uniform float bfShadowStrength;uniform vec3 bfShadowColor;',
-        'varying vec2 vShadePoint;varying vec2 vShadeCast;varying vec2 vShadeSeed;varying float vShadeCanopy;varying float vShadeRustle;',
+        'varying vec2 vShadePoint;varying vec2 vShadeCast;varying vec2 vShadeSeed;varying float vShadeCanopy;varying float vShadeRustle;varying vec2 vShadeRootPoint;varying vec2 vShadeTrunkCast;',
         'float shadeHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
         'float shadeNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(shadeHash(i),shadeHash(i+vec2(1.,0.)),f.x),mix(shadeHash(i+vec2(0.,1.)),shadeHash(i+vec2(1.,1.)),f.x),f.y);}',
         '#include <fog_pars_fragment>',
@@ -2829,8 +2951,18 @@ function buildWorld(T,kit) {
         'float canopyDapple=mix(.86,.43+.86*smoothstep(.25,.75,dappleNoise),canopyResolve);',
         'float dapple=mix(.72+.28*dappleNoise,canopyDapple,vShadeCanopy);',
         'float root=exp(-58.*dot(p,p))*.17;',
+        'float treeContact=.3*(1.-smoothstep(.4,1.8,length(vShadeRootPoint)));',
+        'root=mix(root,treeContact,vShadeCanopy);',
         'float crown=lobes*dapple*mix(.16,.25,vShadeCanopy)*(1.-smoothstep(.82,1.,length(q)));',
-        'float alpha=(root+crown)*bfShadowStrength;',
+        // A tapered shaft bridges the rooted contact and projected crown.
+        // Root-space distances keep its width tied to the trunk, while
+        // the increasing penumbra makes the upper shade gentler.
+        'float trunkT=clamp(dot(vShadeRootPoint,vShadeTrunkCast)/max(.001,dot(vShadeTrunkCast,vShadeTrunkCast)),0.,1.);',
+        'float trunkDistance=length(vShadeRootPoint-vShadeTrunkCast*trunkT);',
+        'float trunkPixel=length(fwidth(vShadeRootPoint));',
+        'float trunkRadius=mix(.91,.46,trunkT),trunkSoftness=.12+.36*trunkT+min(.6,trunkPixel*.5);',
+        'float trunk=.18*(1.-smoothstep(max(0.,trunkRadius-trunkSoftness),trunkRadius+trunkSoftness,trunkDistance))*(1.-smoothstep(.72,1.,trunkT))*min(1.,2.*trunkRadius/max(.001,trunkPixel))*vShadeCanopy;',
+        'float alpha=(root+crown+trunk*(1.-clamp(root+crown,0.,1.)))*bfShadowStrength;',
         'if(alpha<.001)discard;gl_FragColor=vec4(bfShadowColor,alpha);',
         '#include <tonemapping_fragment>',
         '#include <encodings_fragment>',
@@ -2841,7 +2973,8 @@ function buildWorld(T,kit) {
     // Filtered woodland dapple opens soft light gaps and settles to its mean in the distance.
     shadeMaterial.extensions={derivatives:true};
     shadeMaterial.name='meadow-soft-shadows';
-    function contactShade(x,z,width,depth,parent,height){var shade=mesh(plane,shadeMaterial,x,.031,z,width*1.28,depth*1.28,height||.5,parent);shade.rotation.x=-Math.PI/2;return shade;}
+    // Woodland shadows sit just above their ground; flower beds retain their raised level.
+    function contactShade(x,z,width,depth,parent,height){var shadeY=width*1.28>=12?-.055:.031,shade=mesh(plane,shadeMaterial,x,shadeY,z,width*1.28,depth*1.28,height||.5,parent);shade.rotation.x=-Math.PI/2;return shade;}
     // A texture-free sky retains a soft horizon at every camera angle.
     var sky=new T.Mesh(new T.SphereGeometry(470,32,16),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,
       uniforms:{zenith:{value:linear(0x75b6d9)},horizon:{value:linear(0xeee6d1)},cloud:{value:linear(0xfff8e7)},sunDirection:{value:new T.Vector3(-90,115,-55).normalize()},skyClock:breeze},
@@ -2980,18 +3113,20 @@ function buildWorld(T,kit) {
     // Only the selected shoot is evaluated at a fragment: the eleven-leaf
     // loop, geometry, canopy wind and branch positions remain unchanged.
     // Thin leaf surfaces retain independent tilts without rounded pad shading.
-    // Ovate canopy blades keep their existing centers, tips and coverage.
+    // Broadleaf blades taper into short petioles along the existing branch sprays.
     // Stable leaf pigment variation and pale-sage undersides use existing leaf seeds.
     // Oval and pointed canopy blades keep full shoulders beneath acuminate tips.
+    // Crown sunlight depth: soft directional shade inside the existing leaf lobes.
     function canopyMaterial(hex){
       var m=mat(hex,{vertexColors:true,side:T.DoubleSide,alphaTest:.06,alphaToCoverage:true});
       m.extensions={derivatives:true};m.alphaToCoverage=true;
       if(m.userData.meadowWind)return m;
       m.onBeforeCompile=function(shader){
-        shader.vertexShader='attribute float bfFoliageSeed;attribute float bfFoliageDensity;attribute float bfCanopyExposure;varying vec2 bfLeafUV;varying float bfLeafSeed;varying float bfLeafDensity;varying float bfLeafExposure;varying vec3 bfCanopyUp;\n'+shader.vertexShader;
-        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbfLeafUV=uv;bfLeafSeed=bfFoliageSeed;bfLeafDensity=bfFoliageDensity;bfLeafExposure=bfCanopyExposure;bfCanopyUp=mat3(viewMatrix)*vec3(0.,1.,0.);');
+        shader.uniforms.bfCrownSunDirection=sky.material.uniforms.sunDirection;
+        shader.vertexShader='attribute vec4 bfCrownRadial;uniform vec3 bfCrownSunDirection;varying float bfCrownSunAccess;attribute float bfFoliageSeed;attribute float bfFoliageDensity;attribute float bfCanopyExposure;varying vec2 bfLeafUV;varying float bfLeafSeed;varying float bfLeafDensity;varying float bfLeafExposure;varying vec3 bfCanopyUp;\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nbfLeafUV=uv;bfLeafSeed=floor(bfFoliageSeed*64.+.5);bfLeafDensity=bfFoliageDensity;bfLeafExposure=bfCanopyExposure;bfCanopyUp=mat3(viewMatrix)*vec3(0.,1.,0.);\nvec3 bfCrownLocalRadial=bfCrownRadial.xyz;\n#ifdef USE_INSTANCING\nmat3 bfCrownInstance=mat3(instanceMatrix);bfCrownLocalRadial/=vec3(dot(bfCrownInstance[0],bfCrownInstance[0]),dot(bfCrownInstance[1],bfCrownInstance[1]),dot(bfCrownInstance[2],bfCrownInstance[2]));bfCrownLocalRadial=bfCrownInstance*bfCrownLocalRadial;\n#endif\nvec3 bfCrownViewRadial=normalMatrix*bfCrownLocalRadial;bfCrownViewRadial/=max(.00001,length(bfCrownViewRadial));float bfCrownFacing=dot(bfCrownViewRadial,mat3(viewMatrix)*bfCrownSunDirection);float bfCrownShelter=(1.-smoothstep(-.35,.65,bfCrownFacing))*(.68+.32*(1.-bfLeafExposure));bfCrownSunAccess=1.-.28*bfCrownRadial.w*bfCrownShelter;');
         shader.fragmentShader=[
-          'varying vec2 bfLeafUV;varying float bfLeafSeed;varying float bfLeafDensity;varying float bfLeafExposure;varying vec3 bfCanopyUp;',
+          'varying float bfCrownSunAccess;varying vec2 bfLeafUV;varying float bfLeafSeed;varying float bfLeafDensity;varying float bfLeafExposure;varying vec3 bfCanopyUp;',
           // The existing eleven masks also supply independent cupping and
           // tilt. Their virtual slopes vary across each individual leaf,
           // while the supporting spray keeps the same four vertices.
@@ -3022,13 +3157,22 @@ function buildWorld(T,kit) {
           "float t=.12+rank*mix(.255,.33,leader)+(uneven-.5)*.105;",
           "vec2 direction=normalize(branchDirection*(.40+.34*variation)+branchAcross*side*(.74+.22*uneven));",
           "direction=normalize(mix(direction,branchDirection+branchAcross*(variation-.5)*.18,terminal*.86));",
-          "vec2 center=mix(base,tip,t)+direction*(.095+.025*variation);",
+          // Separate each blade base from the branch, then bridge the small
+          // gap with its petiole so neighboring leaves no longer merge at the stem.
+          "vec2 bfLeafAttachment=mix(base,tip,t);",
+          "vec2 center=bfLeafAttachment+direction*(.185+.035*variation);",
           "float centerRadius=length(center);center*=min(1.,.655/max(.001,centerRadius));",
+          "vec2 bfPetioleDirection=center-bfLeafAttachment;float bfLeafAttachmentLength=length(bfPetioleDirection);",
+          "direction=bfPetioleDirection/max(.0001,bfLeafAttachmentLength);",
           "vec2 offset=p-center,q=vec2(dot(offset,direction),dot(offset,vec2(-direction.y,direction.x)));",
           "float pointed=step(1.5,habit),oval=step(.5,habit)*(1.-pointed);",
           "float leafLength=(.267+.064*variation)*(1.+pointed*.025)*(1.-terminal*.07);",
-          "float leafWidth=(.196+.062*uneven)*(1.07-oval*.13-pointed*.20)*(1.-terminal*.055);",
-          "float along=q.x/leafLength;",
+          "float leafWidth=(.196+.062*uneven)*(1.07-oval*.13-pointed*.20)*(1.-terminal*.055)*.94;",
+          "float bfLeafBaseLength=max(.04,min(leafLength*.72,bfLeafAttachmentLength-.022));",
+          "vec2 bfBladeBase=center-direction*bfLeafBaseLength;",
+          "float bfPetiole=bfTwigCover(p,bfLeafAttachment,bfBladeBase+direction*.035,pixel)*detail;",
+          "spray.x=max(spray.x,bfPetiole);",
+          "float along=q.x/(q.x<0.?bfLeafBaseLength:leafLength);",
           "q.y-=.035*max(0.,1.-along*along)*(variation-.35);",
           "float margin=1.+(.015+pointed*.015)*sin(along*7.3+variation*6.2)*detail;",
           "float bfLeafAxial=clamp(along,-1.,1.),bfLeafTipBias=.22-.05*oval-.12*pointed;",
@@ -3058,12 +3202,14 @@ function buildWorld(T,kit) {
           "}",
           shader.fragmentShader
         ].join('\n');
-        shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nvec2 bfLeafUnwrapped=(bfLeafUV*bfLeafDensity-.5)*2.;vec2 bfShootTile=floor(min(bfLeafUV*bfLeafDensity,vec2(bfLeafDensity-.00001)));float bfTreeShoots=step(1.5,bfLeafDensity);float bfShootSeed=floor(bfLeafSeed/2048.)*2048.+mod(mod(bfLeafSeed,2048.)+dot(bfShootTile,vec2(211.,557.)),2048.);vec2 bfShootJitter=vec2(fract(sin(bfShootSeed*.073)*437.58),fract(sin(bfShootSeed*.131)*159.7))-.5;vec2 bfLeafPoint=(bfLeafUnwrapped-bfShootTile*2.)*(1.+.02*bfTreeShoots)+bfShootJitter*(.016*bfTreeShoots);float bfLeafPixel=length(fwidth(bfLeafUnwrapped))*(1.+.02*bfTreeShoots);float bfLeafDetail=1.-smoothstep(.035,.13,bfLeafPixel);vec3 bfLeafSurface;vec4 bfSpray=bfLeafSpray(bfLeafPoint,bfShootSeed,bfLeafPixel,bfLeafDetail,bfLeafSurface);diffuseColor.a*=bfSpray.x;float bfLeafOverlap=clamp((bfSpray.w-1.)*.16,0.,.35);float bfLeafPresence=smoothstep(.08,.58,bfSpray.w);float bfCrownShade=.77+.23*bfLeafExposure;diffuseColor.rgb*=mix(vec3(1.12,.72,.64),vec3(bfSpray.y*(1.-bfLeafOverlap*.18)*bfCrownShade),bfLeafPresence);float bfLeafPigment=clamp(bfLeafSurface.z,0.,1.)-.5;vec3 bfLeafPigmentTint=vec3(1.+bfLeafPigment*.12,1.+bfLeafPigment*.014,1.-bfLeafPigment*.096);diffuseColor.rgb*=mix(vec3(1.),bfLeafPigmentTint,bfLeafPresence);if(!gl_FrontFacing)diffuseColor.rgb*=mix(vec3(1.),vec3(1.09,1.08,1.14),bfLeafPresence);float bfLeafRelief=bfSpray.z;');
-        shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>","#include <normal_fragment_maps>\nvec3 bfCanopySurfaceBase=normalize(normal*.90+bfCanopyUp*.16);\nvec3 bfCanopySurfaceDx=dFdx(-vViewPosition),bfCanopySurfaceDy=dFdy(-vViewPosition);\nvec2 bfCanopyUvDx=dFdx(bfLeafUnwrapped),bfCanopyUvDy=dFdy(bfLeafUnwrapped);\nfloat bfCanopyUvDet=bfCanopyUvDx.x*bfCanopyUvDy.y-bfCanopyUvDx.y*bfCanopyUvDy.x;\nfloat bfCanopyUvSign=bfCanopyUvDet<0.?-1.:1.;\nvec3 bfCanopyTangentRaw=(bfCanopySurfaceDx*bfCanopyUvDy.y-bfCanopySurfaceDy*bfCanopyUvDx.y)*bfCanopyUvSign;\nvec3 bfCanopyBitangentRaw=(bfCanopySurfaceDy*bfCanopyUvDx.x-bfCanopySurfaceDx*bfCanopyUvDy.x)*bfCanopyUvSign;\nvec3 bfCanopyTangent=bfCanopyTangentRaw/max(.000001,length(bfCanopyTangentRaw));\nvec3 bfCanopyBitangent=bfCanopyBitangentRaw/max(.000001,length(bfCanopyBitangentRaw));\nfloat bfCanopyFacing=gl_FrontFacing?1.:-1.;\nvec3 bfCanopyLeafNormal=normalize(bfCanopySurfaceBase-bfCanopyFacing*(bfCanopyTangent*bfLeafSurface.x+bfCanopyBitangent*bfLeafSurface.y)*bfLeafPresence*bfLeafDetail);\nvec3 bfCanopySurfaceBx=cross(bfCanopySurfaceDy,bfCanopyLeafNormal),bfCanopySurfaceBy=cross(bfCanopyLeafNormal,bfCanopySurfaceDx);\nfloat bfCanopySurfaceDet=dot(bfCanopySurfaceDx,bfCanopySurfaceBx);\nvec3 bfCanopySurfaceBump=abs(bfCanopySurfaceDet)*bfCanopyLeafNormal-sign(bfCanopySurfaceDet)*(dFdx(bfLeafRelief)*bfCanopySurfaceBx+dFdy(bfLeafRelief)*bfCanopySurfaceBy);\nnormal=normalize(mix(bfCanopyLeafNormal,normalize(bfCanopySurfaceBump+bfCanopyLeafNormal*.000001),.22));");
+        shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat bfStableLeafSeed=floor(bfLeafSeed+.5)/64.;vec2 bfLeafUnwrapped=(bfLeafUV*bfLeafDensity-.5)*2.;vec2 bfShootTile=floor(min(bfLeafUV*bfLeafDensity,vec2(bfLeafDensity-.00001)));float bfTreeShoots=step(1.5,bfLeafDensity);float bfShootSeed=floor(bfStableLeafSeed/2048.)*2048.+mod(mod(bfStableLeafSeed,2048.)+dot(bfShootTile,vec2(211.,557.)),2048.);vec2 bfShootJitter=vec2(fract(sin(bfShootSeed*.073)*437.58),fract(sin(bfShootSeed*.131)*159.7))-.5;vec2 bfLeafPoint=(bfLeafUnwrapped-bfShootTile*2.)*(1.+.02*bfTreeShoots)+bfShootJitter*(.016*bfTreeShoots);float bfLeafPixel=length(fwidth(bfLeafUnwrapped))*(1.+.02*bfTreeShoots);float bfLeafDetail=1.-smoothstep(.035,.13,bfLeafPixel);float bfLeafShapeResolve=1.-smoothstep(.12,.35,bfLeafPixel);vec3 bfLeafSurface;vec4 bfSpray=bfLeafSpray(bfLeafPoint,bfShootSeed,bfLeafPixel,bfLeafDetail,bfLeafSurface);diffuseColor.a*=bfSpray.x;float bfLeafOverlap=clamp((bfSpray.w-1.)*.16,0.,.35);float bfLeafPresence=smoothstep(.08,.58,bfSpray.w);float bfCrownShade=.77+.23*bfLeafExposure;diffuseColor.rgb*=mix(vec3(1.12,.72,.64),vec3(bfSpray.y*(1.-bfLeafOverlap*.18)*bfCrownShade),bfLeafPresence);float bfLeafPigment=clamp(bfLeafSurface.z,0.,1.)-.5;vec3 bfLeafPigmentTint=vec3(1.+bfLeafPigment*.12,1.+bfLeafPigment*.014,1.-bfLeafPigment*.096);diffuseColor.rgb*=mix(vec3(1.),bfLeafPigmentTint,bfLeafPresence);if(!gl_FrontFacing)diffuseColor.rgb*=mix(vec3(1.),vec3(1.09,1.08,1.14),bfLeafPresence);float bfLeafRelief=bfSpray.z;');
+        // Broad leaf cupping remains readable after the finer veins fade.
+        // It too fades once an individual leaf becomes smaller than a pixel.
+        shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>","#include <normal_fragment_maps>\nvec3 bfCanopySurfaceBase=normalize(normal*.90+bfCanopyUp*.16);\nvec3 bfCanopySurfaceDx=dFdx(-vViewPosition),bfCanopySurfaceDy=dFdy(-vViewPosition);\nvec2 bfCanopyUvDx=dFdx(bfLeafUnwrapped),bfCanopyUvDy=dFdy(bfLeafUnwrapped);\nfloat bfCanopyUvDet=bfCanopyUvDx.x*bfCanopyUvDy.y-bfCanopyUvDx.y*bfCanopyUvDy.x;\nfloat bfCanopyUvSign=bfCanopyUvDet<0.?-1.:1.;\nvec3 bfCanopyTangentRaw=(bfCanopySurfaceDx*bfCanopyUvDy.y-bfCanopySurfaceDy*bfCanopyUvDx.y)*bfCanopyUvSign;\nvec3 bfCanopyBitangentRaw=(bfCanopySurfaceDy*bfCanopyUvDx.x-bfCanopySurfaceDx*bfCanopyUvDy.x)*bfCanopyUvSign;\nvec3 bfCanopyTangent=bfCanopyTangentRaw/max(.000001,length(bfCanopyTangentRaw));\nvec3 bfCanopyBitangent=bfCanopyBitangentRaw/max(.000001,length(bfCanopyBitangentRaw));\nfloat bfCanopyFacing=gl_FrontFacing?1.:-1.;\nvec3 bfCanopyLeafNormal=normalize(bfCanopySurfaceBase-bfCanopyFacing*(bfCanopyTangent*bfLeafSurface.x+bfCanopyBitangent*bfLeafSurface.y)*bfLeafPresence*bfLeafShapeResolve);\nvec3 bfCanopySurfaceBx=cross(bfCanopySurfaceDy,bfCanopyLeafNormal),bfCanopySurfaceBy=cross(bfCanopyLeafNormal,bfCanopySurfaceDx);\nfloat bfCanopySurfaceDet=dot(bfCanopySurfaceDx,bfCanopySurfaceBx);\nvec3 bfCanopySurfaceBump=abs(bfCanopySurfaceDet)*bfCanopyLeafNormal-sign(bfCanopySurfaceDet)*(dFdx(bfLeafRelief)*bfCanopySurfaceBx+dFdy(bfLeafRelief)*bfCanopySurfaceBy);\nnormal=normalize(mix(bfCanopyLeafNormal,normalize(bfCanopySurfaceBump+bfCanopyLeafNormal*.000001),.22));");
         shader.fragmentShader=shader.fragmentShader.replace("#include <roughnessmap_fragment>","#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor-(.035+.07*bfLeafSurface.z)*bfLeafDetail,.80,.98);");
-        shader.fragmentShader=shader.fragmentShader.replace("#include <lights_fragment_end>","#include <lights_fragment_end>\nvec3 bfCanopyLightThrough=vec3(0.);float bfCanopyLightBack=0.;\n#if NUM_DIR_LIGHTS > 0\n#pragma unroll_loop_start\nfor ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {\nbfCanopyLightBack=max(0.,-dot(geometry.normal,directionalLights[i].direction));\nbfCanopyLightThrough+=directionalLights[i].color*bfCanopyLightBack*bfCanopyLightBack;\n}\n#pragma unroll_loop_end\n#endif\nreflectedLight.indirectDiffuse*=.82+.18*smoothstep(.36,.88,bfLeafExposure);\nreflectedLight.directDiffuse+=diffuseColor.rgb*bfCanopyLightThrough*(.035+.025/max(1.,bfSpray.w))*(.72+.28*bfLeafExposure)*vec3(.92,1.,.76);");
+        shader.fragmentShader=shader.fragmentShader.replace("#include <lights_fragment_end>","#include <lights_fragment_end>\nvec3 bfCanopyLightThrough=vec3(0.);float bfCanopyLightBack=0.;\n#if NUM_DIR_LIGHTS > 0\n#pragma unroll_loop_start\nfor ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {\nbfCanopyLightBack=max(0.,-dot(geometry.normal,directionalLights[i].direction));\nbfCanopyLightThrough+=directionalLights[i].color*bfCanopyLightBack*bfCanopyLightBack;\n}\n#pragma unroll_loop_end\n#endif\nreflectedLight.directDiffuse*=bfCrownSunAccess;\nreflectedLight.indirectDiffuse*=.82+.18*smoothstep(.36,.88,bfLeafExposure);\nreflectedLight.directDiffuse+=diffuseColor.rgb*bfCanopyLightThrough*(.035+.025/max(1.,bfSpray.w))*(.72+.28*bfLeafExposure)*vec3(.92,1.,.76);");
       };
-      m.customProgramCacheKey=function(){return 'butterfly-canopy-skylight-depth-v15';};return vegetationWind(m,'canopy');
+      m.customProgramCacheKey=function(){return 'butterfly-canopy-crown-sunlight-v19';};return vegetationWind(m,'canopy');
     }
     // Three growth habits each receive two individual branching outlines.
     // Uneven shoulders and a wandering leader give each habit a different
@@ -3095,7 +3241,7 @@ function buildWorld(T,kit) {
     // More small sprays replace oversized leaves without moving the branch
     // nodes or changing the hedgerow's established geometry and shading.
     function foliageGeometry(variant,shrub){
-      var positions=[],colors=[],uv=[],seeds=[],exposures=[],densities=[],indices=[],count=shrub?60:256,nodes=crownNodes[variant%crownNodes.length];
+      var positions=[],colors=[],uv=[],seeds=[],exposures=[],densities=[],crownRadials=[],indices=[],count=shrub?60:256,nodes=crownNodes[variant%crownNodes.length];
       var normal=new T.Vector3(),across=new T.Vector3(),along=new T.Vector3();
       for(var card=0;card<count;card++){
         // Each former four-triangle card becomes two smaller two-triangle
@@ -3139,6 +3285,10 @@ function buildWorld(T,kit) {
           var foliageReach=.75+.10*hash(key+17);
           cx-=node.x*(1-foliageReach);cy-=(node.y-node.attach)*(1-foliageReach);cz-=node.z*(1-foliageReach);
         }
+        // Ellipsoid gradients distinguish the sun-facing shell from sheltered leaves.
+        // Store one constant direction per spray; its actual geometry stays unchanged.
+        var crownRx=.35*node.spanX,crownRy=.18*node.spanY,crownRz=.32*node.spanZ;
+        var crownDx=shrub?0:(cx-node.x)/(crownRx*crownRx),crownDy=shrub?1:(cy-node.y)/(crownRy*crownRy),crownDz=shrub?0:(cz-node.z)/(crownRz*crownRz);
         for(var row=0;row<2;row++){
           var y=row;
           for(var side=0;side<2;side++){
@@ -3147,12 +3297,12 @@ function buildWorld(T,kit) {
             // retaining a smooth shared edge and avoiding a sharp paper fold.
             var fold=width*(.022*(side===row?1:-1)+.012*(y-.5)*(hash(sprayKey+13)-.5));
             positions.push(cx+across.x*lx+along.x*ly+normal.x*fold,cy+across.y*lx+along.y*ly+normal.y*fold,cz+across.z*lx+along.z*ly+normal.z*fold);
-            var shade=tone*(.96+y*.04);colors.push(shade*.97,shade,shade*.89);uv.push(side,y);seeds.push(seed);densities.push(shrub?1:(r<.66&&cluster%nodes.length!==5?3:2));exposures.push(Math.max(.2,Math.min(1,exposure+(y-.5)*.055)));
+            var shade=tone*(.96+y*.04);colors.push(shade*.97,shade,shade*.89);uv.push(side,y);seeds.push(seed);densities.push(shrub?1:(r<.66&&cluster%nodes.length!==5?3:2));exposures.push(Math.max(.2,Math.min(1,exposure+(y-.5)*.055)));crownRadials.push(crownDx,crownDy,crownDz,shrub?0:1);
           }
         }
         indices.push(start,start+2,start+1,start+1,start+2,start+3);
       }
-      var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('bfFoliageSeed',new T.Float32BufferAttribute(seeds,1));g.setAttribute('bfFoliageDensity',new T.Float32BufferAttribute(densities,1));g.setAttribute('bfCanopyExposure',new T.Float32BufferAttribute(exposures,1));g.setIndex(indices);g.computeVertexNormals();g.name=shrub?'hedgerow-leaf-sprays':'woodland-branch-leaf-sprays';return g;
+      var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('bfFoliageSeed',new T.Float32BufferAttribute(seeds,1));g.setAttribute('bfFoliageDensity',new T.Float32BufferAttribute(densities,1));g.setAttribute('bfCanopyExposure',new T.Float32BufferAttribute(exposures,1));g.setAttribute('bfCrownRadial',new T.Float32BufferAttribute(crownRadials,4));g.setIndex(indices);g.computeVertexNormals();g.name=shrub?'hedgerow-leaf-sprays':'woodland-branch-leaf-sprays';return g;
     }
     var crowns=[foliageGeometry(0,false),foliageGeometry(1,false),foliageGeometry(2,false),foliageGeometry(3,false),foliageGeometry(4,false),foliageGeometry(5,false)],shrubGeometries=[foliageGeometry(3,true),foliageGeometry(4,true),foliageGeometry(5,true)];
     // Open branch ends leave more of the wood budget for smooth bends.
@@ -3165,7 +3315,10 @@ function buildWorld(T,kit) {
         centers.push([cx,t-.5,cz]);
         for(var side=0;side<=sides;side++){
           var angle=side*Math.PI*2/sides,radius=radii[row]*(row===0&&rootFlare?1+.09*Math.cos(angle*3):1),tone=.85+t*.15+.025*Math.cos(angle*3+.7);
-          positions.push(cx+Math.cos(angle)*radius,t-.5,cz+Math.sin(angle)*radius);uv.push(side/sides,t);colors.push(tone,tone*.99,tone*.94);
+          // butterfly-buried-trunk-feet-v1: tuck open wood below the ground.
+          // Only the trunk foot moves; its centerline and branch anchors stay exact.
+          var footDrop=name==='woodland-curved-trunk'&&row===0?.015:0;
+          positions.push(cx+Math.cos(angle)*radius,t-.5-footDrop,cz+Math.sin(angle)*radius);uv.push(side/sides,t);colors.push(tone,tone*.99,tone*.94);
           if(row<rows.length-1&&side<sides){var a=row*(sides+1)+side,b=a+1,c=a+sides+1,d=c+1;indices.push(a,c,b,b,c,d);}
         }
       }
@@ -3179,12 +3332,35 @@ function buildWorld(T,kit) {
         }
       }
       var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();
-      // UVs wrap around the bark. Join only the duplicate side normals at the
-      // seam, keeping the buried trunk foot and its small tip caps separate.
-      var n=g.attributes.normal;
-      for(var row=0;row<rows.length;row++){
-        var first=row*(sides+1),last=first+sides,nx=n.getX(first)+n.getX(last),ny=n.getY(first)+n.getY(last),nz=n.getZ(first)+n.getZ(last),length=Math.sqrt(nx*nx+ny*ny+nz*nz);
-        n.setXYZ(first,nx/length,ny/length,nz/length);n.setXYZ(last,nx/length,ny/length,nz/length);
+      // Smooth shaft lighting follows the existing taper and bent centerline.
+      // Circular tangents remove the diagonal bias of the coarse side faces;
+      // duplicate UV seam vertices receive exactly the same normal.
+      var n=g.attributes.normal,p=g.attributes.position,sideFaces={};
+      for(var face=0;face<(rows.length-1)*sides*6;face+=3){
+        var a=new T.Vector3().fromBufferAttribute(p,indices[face]),b=new T.Vector3().fromBufferAttribute(p,indices[face+1]),c=new T.Vector3().fromBufferAttribute(p,indices[face+2]);
+        var faceNormal=b.sub(a).cross(c.sub(a)).normalize();
+        for(var corner=0;corner<3;corner++){var vertex=indices[face+corner],key=vertex%(sides+1)===sides?vertex-sides:vertex;(sideFaces[key]||(sideFaces[key]=[])).push(faceNormal);}
+      }
+      for(var row=0;row<rows.length;row++)for(var side=0;side<=sides;side++){
+        var wrap=side===sides?0:side,angle=wrap*Math.PI*2/sides,index=row*(sides+1)+side;
+        var radius=radii[row]*(row===0&&rootFlare?1+.09*Math.cos(angle*3):1),radiusSlope=row===0&&rootFlare?-radii[row]*.27*Math.sin(angle*3):0;
+        var aroundX=Math.cos(angle)*radiusSlope-Math.sin(angle)*radius,aroundZ=Math.sin(angle)*radiusSlope+Math.cos(angle)*radius;
+        var center=row*(sides+1)+wrap,alongX=0,alongZ=0,samples=0;
+        if(row>0){var previous=(row-1)*(sides+1)+wrap,dy=p.getY(center)-p.getY(previous);alongX+=(p.getX(center)-p.getX(previous))/dy;alongZ+=(p.getZ(center)-p.getZ(previous))/dy;samples++;}
+        if(row<rows.length-1){var next=(row+1)*(sides+1)+wrap,dy=p.getY(next)-p.getY(center);alongX+=(p.getX(next)-p.getX(center))/dy;alongZ+=(p.getZ(next)-p.getZ(center))/dy;samples++;}
+        alongX/=samples;alongZ/=samples;
+        var radialLength=Math.sqrt(aroundX*aroundX+aroundZ*aroundZ),nx=aroundZ/radialLength,ny=(alongZ*aroundX-alongX*aroundZ)/radialLength,nz=-aroundX/radialLength;
+        // At a sharp sampled bend, constrain only the axial tilt to face every
+        // incident side outward. The smooth circumferential direction stays exact.
+        var faces=sideFaces[center],low=-Infinity,high=Infinity;
+        for(var neighbor=0;neighbor<faces.length;neighbor++){
+          var facing=faces[neighbor],horizontal=nx*facing.x+nz*facing.z;
+          if(facing.y>.0000001)low=Math.max(low,(.0001-horizontal)/facing.y);
+          else if(facing.y<-.0000001)high=Math.min(high,(.0001-horizontal)/facing.y);
+        }
+        ny=Math.max(low,Math.min(high,ny));
+        var length=Math.sqrt(nx*nx+ny*ny+nz*nz);
+        n.setXYZ(index,nx/length,ny/length,nz/length);
       }
       g.name=name;g.userData.woodCenters=centers;g.userData.woodRows=rows;return g;
     }
@@ -3192,7 +3368,7 @@ function buildWorld(T,kit) {
     // Main branches and twigs taper almost to a point inside their leaf sprays;
     // open ends keep the bend samples within the meadow's shared budget.
     // Reassign hidden trunk caps to a fifth bend sample.
-    // Root spread, existing rings and branch tips retain their exact positions.
+    // Root spread, upper rings and branch tips retain their exact positions.
     var trunkGeometry=woodShaftGeometry(8,[0,.30,.47,.64,1],[1.18,.8,.615,.43,.105],1.15,false,'woodland-curved-trunk');
     // Supple main limbs sample three-dimensional bends with four shared rings.
     var woodGeometry=woodShaftGeometry(5,[0,1/3,2/3,1],[1,.7,.39666666666666667,.09],2.05,false,'woodland-curved-branch');
@@ -3207,10 +3383,14 @@ function buildWorld(T,kit) {
       shader.fragmentShader='varying vec2 bfBarkUV;varying float bfBarkSeed;\n'+shader.fragmentShader;
       // Integer circumferential frequencies meet continuously at the shaft
       // seam. Long, irregular furrows vary between individual wood instances.
-      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat bfBarkPhase=bfBarkUV.x*113.097336+sin(bfBarkUV.y*8.7+bfBarkSeed)*.65+.24*sin(bfBarkUV.y*19.3+bfBarkSeed*.7);float bfBarkDetail=1.-smoothstep(.65,2.8,fwidth(bfBarkPhase));float bfBarkFiber=sin(bfBarkPhase*.5+bfBarkSeed);float bfBarkGroove=pow(.5+.5*sin(bfBarkPhase),6.);float bfBarkBroad=sin(bfBarkUV.x*37.699112+sin(bfBarkUV.y*5.1+bfBarkSeed)*.7);float bfBarkBroadDetail=1.-smoothstep(.8,3.,fwidth(bfBarkUV.x)*37.699112);diffuseColor.rgb*=.93+(.045*bfBarkFiber-.11*bfBarkGroove)*bfBarkDetail+.025*bfBarkBroad*bfBarkBroadDetail;float bfBarkWeatherPhaseA=bfBarkUV.x*12.566370614359+sin(bfBarkUV.y*6.3+bfBarkSeed*.61)*.85+bfBarkSeed*.37;float bfBarkWeatherPhaseB=bfBarkUV.x*6.283185307179-sin(bfBarkUV.y*11.7+bfBarkSeed*.43)*.6+bfBarkSeed*.91;float bfBarkWeather=.5+.32*sin(bfBarkWeatherPhaseA)+.18*sin(bfBarkWeatherPhaseB);float bfBarkWeatherDetail=1.-smoothstep(.55,2.2,max(fwidth(bfBarkWeatherPhaseA),fwidth(bfBarkWeatherPhaseB)));vec3 bfBarkWeatherTint=mix(vec3(.965,.95,.91),vec3(1.035,1.05,1.09),smoothstep(.15,.85,bfBarkWeather));diffuseColor.rgb*=mix(vec3(1.),bfBarkWeatherTint,bfBarkWeatherDetail);diffuseColor.rgb*=.95+.05*smoothstep(0.,.25,clamp(bfBarkUV.y,0.,1.));float bfBarkRelief=(-.004*bfBarkGroove+.0012*bfBarkFiber)*bfBarkDetail;');
+      // Short staggered cross fissures join the lengthwise furrows into bark
+      // plates. Each join fades to zero at its furrow boundary, so changing
+      // the neighboring plate seed cannot open a shading seam. The structure
+      // resolves only nearby and fades back to the original broad grooves.
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat bfBarkPhase=bfBarkUV.x*113.097336+sin(bfBarkUV.y*8.7+bfBarkSeed)*.65+.24*sin(bfBarkUV.y*19.3+bfBarkSeed*.7);float bfBarkDetail=1.-smoothstep(.65,2.8,fwidth(bfBarkPhase));float bfBarkFiber=sin(bfBarkPhase*.5+bfBarkSeed);float bfBarkGrooveBase=.5+.5*sin(bfBarkPhase);float bfBarkPlateColumn=mod(floor((bfBarkPhase-1.570796326795)/6.28318530718),18.);float bfBarkPlateSeed=.5+.5*sin(bfBarkPlateColumn*2.17+bfBarkSeed*.73);float bfBarkFissurePhase=bfBarkUV.y*(150.+55.*bfBarkPlateSeed)+bfBarkPlateSeed*6.28318530718;float bfBarkFissureDetail=1.-smoothstep(.45,2.2,fwidth(bfBarkFissurePhase));float bfBarkPlateWave=.5+.5*cos(bfBarkFissurePhase);float bfBarkFissureWidth=5.1+2.2*bfBarkPlateWave;float bfBarkPlateJoin=pow(bfBarkPlateWave,18.)*(1.-bfBarkGrooveBase);float bfBarkGroove=mix(pow(bfBarkGrooveBase,6.),pow(bfBarkGrooveBase,bfBarkFissureWidth)+.68*bfBarkPlateJoin,bfBarkFissureDetail);float bfBarkBroad=sin(bfBarkUV.x*37.699112+sin(bfBarkUV.y*5.1+bfBarkSeed)*.7);float bfBarkBroadDetail=1.-smoothstep(.8,3.,fwidth(bfBarkUV.x)*37.699112);diffuseColor.rgb*=.93+(.045*bfBarkFiber-.11*bfBarkGroove)*bfBarkDetail+.025*bfBarkBroad*bfBarkBroadDetail;float bfBarkWeatherPhaseA=bfBarkUV.x*12.566370614359+sin(bfBarkUV.y*6.3+bfBarkSeed*.61)*.85+bfBarkSeed*.37;float bfBarkWeatherPhaseB=bfBarkUV.x*6.283185307179-sin(bfBarkUV.y*11.7+bfBarkSeed*.43)*.6+bfBarkSeed*.91;float bfBarkWeather=.5+.32*sin(bfBarkWeatherPhaseA)+.18*sin(bfBarkWeatherPhaseB);float bfBarkWeatherDetail=1.-smoothstep(.55,2.2,max(fwidth(bfBarkWeatherPhaseA),fwidth(bfBarkWeatherPhaseB)));vec3 bfBarkWeatherTint=mix(vec3(.965,.95,.91),vec3(1.035,1.05,1.09),smoothstep(.15,.85,bfBarkWeather));diffuseColor.rgb*=mix(vec3(1.),bfBarkWeatherTint,bfBarkWeatherDetail);diffuseColor.rgb*=.95+.05*smoothstep(0.,.25,clamp(bfBarkUV.y,0.,1.));float bfBarkRelief=(-.004*bfBarkGroove+.0012*bfBarkFiber)*bfBarkDetail;');
       shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>","#include <normal_fragment_maps>\nvec3 bfBarkSurfaceBase=normalize(normal);\nvec3 bfBarkSurfaceDx=dFdx(-vViewPosition),bfBarkSurfaceDy=dFdy(-vViewPosition);\nvec3 bfBarkSurfaceBx=cross(bfBarkSurfaceDy,bfBarkSurfaceBase),bfBarkSurfaceBy=cross(bfBarkSurfaceBase,bfBarkSurfaceDx);\nfloat bfBarkSurfaceDet=dot(bfBarkSurfaceDx,bfBarkSurfaceBx);\nvec3 bfBarkSurfaceBump=abs(bfBarkSurfaceDet)*bfBarkSurfaceBase-sign(bfBarkSurfaceDet)*(dFdx(bfBarkRelief)*bfBarkSurfaceBx+dFdy(bfBarkRelief)*bfBarkSurfaceBy);\nnormal=normalize(mix(bfBarkSurfaceBase,normalize(bfBarkSurfaceBump+bfBarkSurfaceBase*.000001),.22));");
     };
-    woodMaterial.customProgramCacheKey=function(){return 'butterfly-weathered-bark-v3';};vegetationWind(woodMaterial,'wood');
+    woodMaterial.customProgramCacheKey=function(){return 'butterfly-bark-plates-v5';};vegetationWind(woodMaterial,'wood');
     function treeBranch(ax,ay,az,bx,by,bz,radius,kind,twist){
       branchDirection.set(bx-ax,by-ay,bz-az);var length=branchDirection.length(),geometry=kind==='trunk'?trunkGeometry:kind==='twig'?twigGeometry:woodGeometry;
       var wood=mesh(geometry,woodMaterial,(ax+bx)*.5,(ay+by)*.5,(az+bz)*.5,radius,length,radius);wood.quaternion.setFromUnitVectors(branchUp,branchDirection.normalize());wood.rotateY(twist||0);wood.updateMatrix();
@@ -3297,18 +3477,36 @@ function buildWorld(T,kit) {
     var grassMaterial=mat(0xffffff,{side:T.DoubleSide,vertexColors:true,alphaTest:.025,alphaToCoverage:true,emissive:linear(0x344922),emissiveIntensity:.065});grassMaterial.extensions={derivatives:true};
     grassMaterial.onBeforeCompile=function(shader){
       shader.uniforms.bfBreeze=breeze;shader.uniforms.bfWindStrength=windStrength;
-      shader.vertexShader=windGLSL+'attribute float bfGrassCard;varying vec2 bfGrassUV;varying float bfGrassSeed;varying float bfGrassWidth;varying vec3 bfGrassUp;\n'+shader.vertexShader;
-      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec3 bfRoot=vec3(0.);bfGrassWidth=1.;\n#ifdef USE_INSTANCING\nbfRoot=instanceMatrix[3].xyz;bfGrassWidth=clamp(sqrt(length(instanceMatrix[1].xyz)),.45,1.);\n#endif\nbfGrassUV=uv;bfGrassSeed=dot(bfRoot.xz,vec2(.37,.61))+bfGrassCard*4.13;bfGrassUp=mat3(viewMatrix)*vec3(0.,1.,0.);');
-      shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','vec4 mvPosition=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nmvPosition=instanceMatrix*mvPosition;\n#endif\nvec4 bfWorld=modelMatrix*mvPosition;vec3 bfWindRoot=(modelMatrix*vec4(bfRoot,1.)).xyz;float bfBladeHeight=max(0.,bfWorld.y-bfWindRoot.y);float bfWave=bfMeadowGust(bfWindRoot.xz);float bfRustle=sin(bfBreeze*2.9+bfGrassSeed)*.025*bfWindStrength;bfWorld.xz+=vec2(bfWave*.14+bfRustle,bfWave*.064-bfRustle*.3)*bfBladeHeight*bfBladeHeight;mvPosition=viewMatrix*bfWorld;gl_Position=projectionMatrix*mvPosition;');
-      shader.fragmentShader='uniform float bfBreeze;uniform float bfWindStrength;varying vec2 bfGrassUV;varying float bfGrassSeed;varying float bfGrassWidth;varying vec3 bfGrassUp;\n'+shader.fragmentShader;
+      // Each tuft samples wind at its root. Only height varies over the blade,
+      // so this shear's inverse transpose changes the surface normal's Y term.
+      // The upward skylight bias remains unchanged under the same transform.
+      shader.vertexShader=windGLSL+[
+        'attribute float bfGrassCard;varying vec2 bfGrassUV;varying float bfGrassShapeSeed;varying float bfGrassSeed;varying float bfGrassWidth;varying vec3 bfGrassUp;',
+        'vec3 bfGrassWindNormal(vec3 n,vec2 bend,float height){return vec3(n.x,n.y-2.*height*(bend.x*n.x+bend.y*n.z),n.z);}'
+      ].join('\n')+'\n'+shader.vertexShader;
+      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec3 bfRoot=vec3(0.);bfGrassWidth=1.;\n#ifdef USE_INSTANCING\nbfRoot=instanceMatrix[3].xyz;bfGrassWidth=clamp(sqrt(length(instanceMatrix[1].xyz)),.45,1.);\n#endif\nbfGrassUV=uv;bfGrassSeed=dot(bfRoot.xz,vec2(.37,.61))+bfGrassCard*4.13;bfGrassShapeSeed=floor(bfGrassSeed*64.+.5);bfGrassUp=mat3(viewMatrix)*vec3(0.,1.,0.);');
+      shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',[
+        'vec4 mvPosition=vec4(transformed,1.);',
+        '#ifdef USE_INSTANCING',
+        'mvPosition=instanceMatrix*mvPosition;',
+        '#endif',
+        'vec4 bfWorld=modelMatrix*mvPosition;vec3 bfWindRoot=(modelMatrix*vec4(bfRoot,1.)).xyz;float bfBladeHeight=max(0.,bfWorld.y-bfWindRoot.y);float bfWave=bfMeadowGust(bfWindRoot.xz);float bfRustle=sin(bfBreeze*2.9+bfGrassSeed)*.025*bfWindStrength;bfWorld.xz+=vec2(bfWave*.14+bfRustle,bfWave*.064-bfRustle*.3)*bfBladeHeight*bfBladeHeight;',
+        '#ifndef FLAT_SHADED',
+        'if(bfWindStrength>0.){vec3 bfGrassNormal=(vec4(transformedNormal,0.)*viewMatrix).xyz;bfGrassNormal=bfGrassWindNormal(bfGrassNormal,vec2(bfWave*.14+bfRustle,bfWave*.064-bfRustle*.3),bfBladeHeight);transformedNormal=mat3(viewMatrix)*bfGrassNormal;vNormal=normalize(transformedNormal);}',
+        '#endif',
+        'mvPosition=viewMatrix*bfWorld;gl_Position=projectionMatrix*mvPosition;'
+      ].join('\n'));
+      shader.fragmentShader='uniform float bfBreeze;uniform float bfWindStrength;varying vec2 bfGrassUV;varying float bfGrassShapeSeed;varying float bfGrassSeed;varying float bfGrassWidth;varying vec3 bfGrassUp;\n'+shader.fragmentShader;
       shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
         '#include <color_fragment>',
-        'float bfBlade=floor(bfGrassUV.x*7.);',
-        'float bfRandom=fract(sin(bfBlade*17.17+bfGrassSeed)*437.58),bfGrowth=fract(sin(bfBlade*5.87+bfGrassSeed*.47)*159.7);',
-        'float bfHabit=fract(sin(bfBlade*1.73+bfGrassSeed*.417)*813.7);',
+        // Restore a constant card key before the shape hashes. Raw wind phase
+        // stays separate, so interpolation cannot roughen the blade silhouette.
+        'float bfStableGrassSeed=floor(bfGrassShapeSeed+.5)/64.;float bfBlade=floor(bfGrassUV.x*7.);',
+        'float bfRandom=fract(sin(bfBlade*17.17+bfStableGrassSeed)*437.58),bfGrowth=fract(sin(bfBlade*5.87+bfStableGrassSeed*.47)*159.7);',
+        'float bfHabit=fract(sin(bfBlade*1.73+bfStableGrassSeed*.417)*813.7);',
         'float bfArch=smoothstep(.61,.76,bfHabit),bfStraw=smoothstep(.965,.997,bfHabit)*smoothstep(.65,.9,bfGrassWidth);',
         'float bfTall=(.34+.61*bfRandom+.05*bfGrowth)*(1.-bfArch*.10-bfStraw*.12),bfT=bfGrassUV.y/bfTall;',
-        'float bfNaturalLean=fract(sin(bfBlade*8.31+bfGrassSeed*1.7)*713.1)-.5;',
+        'float bfNaturalLean=fract(sin(bfBlade*8.31+bfStableGrassSeed*1.7)*713.1)-.5;',
         'float bfLeanSide=bfNaturalLean<0.?-1.:1.;',
         // The centerline stays in its own cell all the way to the tapered tip.
         // An arched blade therefore bends smoothly instead of being cut off at
@@ -3316,7 +3514,7 @@ function buildWorld(T,kit) {
         'float bfLean=mix(bfNaturalLean*.44,bfLeanSide*(.27+.105*bfGrowth),bfArch);',
         'float bfRustle=(.018*sin(bfBreeze*1.4+bfBlade*1.2+bfGrassSeed)+.009*sin(bfBreeze*2.7-bfGrassSeed*.6+bfBlade))*bfWindStrength*(1.+bfArch*.28-bfStraw*.22);',
         'float bfCurve=bfLean*(.24*bfT+(.52+.16*bfGrowth)*bfT*bfT)+bfRustle*bfT*bfT;',
-        'float bfBase=(fract(sin(bfBlade*13.9+bfGrassSeed*.8)*173.3)-.5)*.13;',
+        'float bfBase=(fract(sin(bfBlade*13.9+bfStableGrassSeed*.8)*173.3)-.5)*.13;',
         'float bfAcross=fract(bfGrassUV.x*7.)-.5-bfBase-bfCurve;',
         // A slender shaft keeps its width before a soft, pointed final taper.
         // Sparse dry straw retains its original finer silhouette.
@@ -3337,10 +3535,13 @@ function buildWorld(T,kit) {
       ].join('\n'));
       // A blade's thin, curved surface scatters skylight. Lifting the shading
       // normal avoids the alternating bright/dark strips of crossed flat cards.
-      shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>","#include <normal_fragment_maps>\nvec3 bfGrassSurfaceBase=normalize(normal*.48+bfGrassUp*.76);\nvec3 bfGrassSurfaceDx=dFdx(-vViewPosition),bfGrassSurfaceDy=dFdy(-vViewPosition);\nvec3 bfGrassSurfaceBx=cross(bfGrassSurfaceDy,bfGrassSurfaceBase),bfGrassSurfaceBy=cross(bfGrassSurfaceBase,bfGrassSurfaceDx);\nfloat bfGrassSurfaceDet=dot(bfGrassSurfaceDx,bfGrassSurfaceBx);\nvec3 bfGrassSurfaceBump=abs(bfGrassSurfaceDet)*bfGrassSurfaceBase-sign(bfGrassSurfaceDet)*(dFdx(bfGrassRelief)*bfGrassSurfaceBx+dFdy(bfGrassRelief)*bfGrassSurfaceBy);\nnormal=normalize(mix(bfGrassSurfaceBase,normalize(bfGrassSurfaceBump+bfGrassSurfaceBase*.000001),.26));");
+      // A resolved blade cups around its own rib, with a small individual twist.
+      // Derivative tangents follow the wind-bent card; subpixel blades retain
+      // the broad skylight response instead of sparkling at their margins.
+      shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>","#include <normal_fragment_maps>\nvec3 bfGrassSurfaceBase=normalize(normal*.48+bfGrassUp*.76);\nvec3 bfGrassSurfaceDx=dFdx(-vViewPosition),bfGrassSurfaceDy=dFdy(-vViewPosition);\nvec2 bfGrassUvDx=dFdx(bfGrassUV),bfGrassUvDy=dFdy(bfGrassUV);\nfloat bfGrassUvHand=sign(bfGrassUvDx.x*bfGrassUvDy.y-bfGrassUvDx.y*bfGrassUvDy.x);\nvec3 bfGrassAcross=(bfGrassSurfaceDx*bfGrassUvDy.y-bfGrassSurfaceDy*bfGrassUvDx.y)*bfGrassUvHand;\nbfGrassAcross-=bfGrassSurfaceBase*dot(bfGrassSurfaceBase,bfGrassAcross);\nbfGrassAcross*=inversesqrt(max(dot(bfGrassAcross,bfGrassAcross),.00000001));\nfloat bfGrassShapeResolve=1.-smoothstep(.035,.22,bfAA);\nfloat bfGrassCup=(-.48*bfBladeRoll+(.5-bfGrowth)*.26)*(.65+.35*bfBladeRise);\nbfGrassSurfaceBase=normalize(bfGrassSurfaceBase+bfGrassAcross*bfGrassCup*bfGrassShapeResolve*(gl_FrontFacing?1.:-1.));\nvec3 bfGrassSurfaceBx=cross(bfGrassSurfaceDy,bfGrassSurfaceBase),bfGrassSurfaceBy=cross(bfGrassSurfaceBase,bfGrassSurfaceDx);\nfloat bfGrassSurfaceDet=dot(bfGrassSurfaceDx,bfGrassSurfaceBx);\nvec3 bfGrassSurfaceBump=abs(bfGrassSurfaceDet)*bfGrassSurfaceBase-sign(bfGrassSurfaceDet)*(dFdx(bfGrassRelief)*bfGrassSurfaceBx+dFdy(bfGrassRelief)*bfGrassSurfaceBy);\nnormal=normalize(mix(bfGrassSurfaceBase,normalize(bfGrassSurfaceBump+bfGrassSurfaceBase*.000001),.26));");
       shader.fragmentShader=shader.fragmentShader.replace("#include <lights_fragment_end>","#include <lights_fragment_end>\nvec3 bfGrassLightThrough=vec3(0.);float bfGrassLightBack=0.;\n#if NUM_DIR_LIGHTS > 0\n#pragma unroll_loop_start\nfor ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {\nbfGrassLightBack=max(0.,-dot(geometry.normal,directionalLights[i].direction));\nbfGrassLightThrough+=directionalLights[i].color*bfGrassLightBack*bfGrassLightBack;\n}\n#pragma unroll_loop_end\n#endif\nreflectedLight.directDiffuse+=diffuseColor.rgb*bfGrassLightThrough*(.035*(.4+.6*clamp(bfT,0.,1.)))*vec3(.92,1.,.74);");
     };
-    grassMaterial.customProgramCacheKey=function(){return 'butterfly-meadow-ribbon-grass-v10';};
+    grassMaterial.customProgramCacheKey=function(){return 'butterfly-meadow-cupped-grass-v13';};
     var transform=new T.Object3D(),grassTransforms=[],grassColors=[],grassBeds=[[-42,-28],[38,-54],[-42,38]];
     function grassMargin(distance,radius){var t=Math.max(0,Math.min(1,(radius+2.8-distance)/5.6));return t*t*(3-2*t);}
     // Broader arching blades keep the field full with fewer crossed cards,
@@ -3623,14 +3824,14 @@ function buildWorld(T,kit) {
     });
     var botanicalStem=new T.BufferGeometry();botanicalStem.setAttribute('position',new T.Float32BufferAttribute(stemPositions,3));botanicalStem.setIndex(stemIndices);botanicalStem.computeVertexNormals();botanicalStem.name='meadow-botanical-stem';
     function petalBuilder(){
-      var positions=[],tones=[],groups=[],frames={},group=0,bloomAnchors=[],bloomAxes=[],bloomAnchor=[0,0,0,0],bloomAxis=[0,1,0,0];
+      var positions=[],tones=[],groups=[],frames={},partNormals={},group=0,bloomAnchors=[],bloomAxes=[],bloomAnchor=[0,0,0,0],bloomAxis=[0,1,0,0];
       return {bloom:function(anchor,axis,index,kind){
         // Index zero pins the feeding flower, the top milkweed contact cap,
         // and neutral bracts against the instance's botanical variation.
         bloomAnchor=anchor?[anchor[0],anchor[1],anchor[2],index]:[0,0,0,0];
         bloomAxis=axis?[axis[0],axis[1],axis[2],kind]:[0,1,0,0];
-      },part:function(map,pigmented){
-        group++;
+      },part:function(map,pigmented,surfaceNormals){
+        group++;if(surfaceNormals)partNormals[group]=surfaceNormals;
         if(map){
           // Each petal carries its own surface frame. Veins follow the actual
           // lobe, rather than slicing all flowers along the same object axis.
@@ -3668,6 +3869,10 @@ function buildWorld(T,kit) {
             for(var face=0;face<item.faces.length;face++)if(normal.dot(item.faces[face])<=.000001){normal.copy(item.equalNormal).normalize();break;}
             item.surfaceNormal=normal;
           }
+          // A tube's circular cross sections provide smooth normals without
+          // letting the unequal ring counts bias the light along triangle diagonals.
+          var curvedNormals=partNormals[groups[i]],curvedNormal=curvedNormals&&curvedNormals[p.getX(i)+':'+p.getY(i)+':'+p.getZ(i)];
+          if(curvedNormal)normal=curvedNormal;
           n.setXYZ(i,normal.x,normal.y,normal.z);var partColor=partColors[groups[i]];c.setXYZ(i,.82*item.color.x/item.count+.18*partColor.r/partColor.count,.82*item.color.y/item.count+.18*partColor.g/partColor.count,.82*item.color.z/item.count+.18*partColor.b/partColor.count);
           var frame=frames[groups[i]];
           if(frame){
@@ -3688,16 +3893,52 @@ function buildWorld(T,kit) {
     // Reflexed milkweed blades open and twist individually beneath untouched corona rims.
     // Outer bergamot lower lips sweep gently away from fixed roots and mouth frames.
     // Outer bergamot tube color follows continuous authored axial rings.
+    // Outer hoods grow from the actual polygonal corolla rim. Only the short
+    // rooted margin moves; its offset fades toward the unchanged tip.
+    function bergamotHoodRootAlong(along,side,radius,softness,reach,sides){
+      var end=.045*reach,across=side*softness;
+      // Surface-frame probes outside the petal must retain a finite affine basis.
+      if(along<-.0230001||along>end||Math.abs(across)>=radius)return along;
+      var back=Infinity;
+      for(var edge=0;edge<sides;edge++){
+        var a=.17+edge*Math.PI*2/sides,b=.17+(edge+1)*Math.PI*2/sides;
+        var ax=Math.cos(a)*radius,ay=Math.sin(a)*radius,bx=Math.cos(b)*radius,by=Math.sin(b)*radius;
+        if(Math.abs(by-ay)>.000001&&across>=Math.min(ay,by)&&across<=Math.max(ay,by))back=Math.min(back,ax+(bx-ax)*(across-ay)/(by-ay));
+      }
+      if(!Number.isFinite(back))return along;
+      var t=Math.max(0,Math.min(1,(along+.023)/(end+.023)));
+      return along+(back+.023)*(1-t*t*(3-2*t));
+    }
     // Organic bergamot bracts keep the rooted fan but vary reach, spread and gentle cup.
     // Both levels use the same eighteen triangles; flower contacts stay untouched.
     function bergamotBractFan(builder,emit){
       var triangle=emit||function(a,b,c,tone){builder.tri(a,b,c,tone);};
       for(var bract=0;bract<9;bract++){
         var ba=bract*Math.PI*2/9+.065*Math.sin(bract*1.71),bx=Math.cos(ba),bz=Math.sin(ba);
-        var reach=.86+.12*(.5+.5*Math.sin(bract*2.17+.4)),breadth=.82+.12*(.5+.5*Math.cos(bract*1.91)),roll=.016*Math.sin(bract*1.37+.7);
-        var root=[0,-.07,0],left=[bx*.42*reach-bz*.13*breadth,-.04+roll,bz*.42*reach+bx*.13*breadth],tip=[bx*.72*reach,-.14+.024*(.5+.5*Math.sin(bract*1.31)),bz*.72*reach],right=[bx*.42*reach+bz*.13*breadth,-.04-roll,bz*.42*reach-bx*.13*breadth];
-        builder.part();triangle(root,left,tip,0x738354);triangle(root,tip,right,0x64784a);
+        var reach=.86+.12*(.5+.5*Math.sin(bract*2.17+.4)),breadth=.82+.12*(.5+.5*Math.cos(bract*1.91)),roll=.008*Math.sin(bract*1.37+.7);
+        // Compact leaf-like bracts cup beneath the corollas. A shallow raised
+        // midrib and drooping tips replace the broad, nearly horizontal collar.
+        var tipDrop=-.16+.024*(.5+.5*Math.sin(bract*1.31)),shoulderDrop=-.07+(tipDrop+.07)*.55-.012;
+        var root=[0,-.07,0],left=[bx*.29*reach-bz*.09*breadth,shoulderDrop+roll,bz*.29*reach+bx*.09*breadth],tip=[bx*.53*reach,tipDrop,bz*.53*reach],right=[bx*.29*reach+bz*.09*breadth,shoulderDrop-roll,bz*.29*reach-bx*.09*breadth];
+        var bractTipTone=bract%3===1?0x9b8793:0x8c9274;
+        builder.part();triangle(root,left,tip,[0x697b50,0x7c885c,bractTipTone]);triangle(root,tip,right,[0x697b50,bractTipTone,0x728053]);
       }
+    }
+    // Outer rose petals fold twenty-eight degrees toward their pedicels around the
+    // existing basal hinge. Their cup and twist rotate intact below fixed coronas.
+    function reflexMilkweedCorolla(point,center,u,v,axis,ca,sa){
+      var fx=u.x*ca+v.x*sa,fy=u.y*ca+v.y*sa,fz=u.z*ca+v.z*sa;
+      var dx=point[0]-center.x,dy=point[1]-center.y,dz=point[2]-center.z;
+      var along=dx*fx+dy*fy+dz*fz-.026,lift=dx*axis.x+dy*axis.y+dz*axis.z-.024;
+      var cosine=.882947592858927,sine=.4694715627858908;
+      var foldAlong=(cosine-1)*along+sine*lift,foldLift=-sine*along+(cosine-1)*lift;
+      return [point[0]+fx*foldAlong+axis.x*foldLift,point[1]+fy*foldAlong+axis.y*foldLift,point[2]+fz*foldAlong+axis.z*foldLift];
+    }
+    // Shorter outer pedicels bring whole florets into a denser rounded umbel.
+    // The upper transition leaves the three teaching flowers exactly authored.
+    function milkweedUmbelRadius(f){
+      var radius=.46+.035*Math.sin(f*1.8),t=Math.max(0,Math.min(1,(f-2)/3));
+      return radius*(1-.10*t*t*(3-2*t));
     }
     function flowerHead(milkweed,detail){
       if(detail){
@@ -3734,7 +3975,7 @@ function buildWorld(T,kit) {
         }
         if(milkweed){
           for(var f=0;f<19;f++){
-            var ny=1-2*(f+.5)/19,fa=f*2.39996,rr=Math.sqrt(1-ny*ny),normal=new T.Vector3(Math.cos(fa)*rr,ny,Math.sin(fa)*rr),u=new T.Vector3(-Math.sin(fa),0,Math.cos(fa)),v=new T.Vector3().crossVectors(normal,u),center=normal.clone().multiplyScalar(.46+.035*Math.sin(f*1.8));center.y+=.15;
+            var ny=1-2*(f+.5)/19,fa=f*2.39996,rr=Math.sqrt(1-ny*ny),normal=new T.Vector3(Math.cos(fa)*rr,ny,Math.sin(fa)*rr),u=new T.Vector3(-Math.sin(fa),0,Math.cos(fa)),v=new T.Vector3().crossVectors(normal,u),center=normal.clone().multiplyScalar(milkweedUmbelRadius(f));center.y+=.15;
             close.bloom([0,.015,0],normal.toArray(),f>2?f:0,1);
             function hdFlower(along,side,lift){return center.clone().addScaledVector(u,along).addScaledVector(v,side).addScaledVector(normal,lift).toArray();}
             close.part();tri([0,.015,0],hdFlower(-.009,0,-.01),hdFlower(.009,0,-.01),0x78865a);tri([0,.015,0],hdFlower(0,-.009,-.01),hdFlower(0,.009,-.01),0x8c9569);
@@ -3744,11 +3985,12 @@ function buildWorld(T,kit) {
               // interpolation can dip below .03 and must use hdPetal directly.
               function hdReflexedPetal(along,side,lift){
                 if(f>2){var originalSide=side,t=Math.max(0,Math.min(1,(along-.026)/.151)),shape=Math.sin(Math.PI*t)*Math.sin(f*1.37+petal*2.11);side*=1+.12*shape;lift+=.18*originalSide*shape;}
-                return hdPetal(along,side,lift);
+                var point=hdPetal(along,side,lift);
+                return f>2?reflexMilkweedCorolla(point,center,u,v,normal,ca,sa):point;
               }
               function hdPetal(along,side,lift){if(f>2&&lift<.03)lift+=.012*Math.sin(Math.PI*Math.max(0,Math.min(1,along/.19)))*Math.pow(Math.abs(side)/.06,2);return hdFlower(ca*along-sa*side,sa*along+ca*side,lift);}
-              // Passing through the established margin landmarks retains the
-              // reflexed silhouette while the intermediate sections roll softly.
+              // The curved margins retain their cup and central fold as each
+              // outer rose petal turns beneath its unchanged pale corona.
               ribbon([[.026,0,.024],[.095,.057,.008],[.149,.043,-.036],[.177,0,-.074]],[[.026,0,.024],[.092,-.054,.006],[.149,-.041,-.039],[.177,0,-.074]],hdReflexedPetal,.009,[f%3===0?0xc28ba3:0xbc809b,0xd49db2,0xca90a8],true);
               // The eight-sided rim curls around a recessed corona cup. Both
               // original upper contact points remain explicit rim vertices.
@@ -3790,7 +4032,7 @@ function buildWorld(T,kit) {
             // in the unchanged opening plane shared by the lip and dark throat.
             var path=new T.QuadraticBezierCurve3(new T.Vector3(x,.025,z),new T.Vector3(middle.x*2-(x+mx)*.5,middle.y*2-(.025+height)*.5,middle.z*2-(z+mz)*.5),new T.Vector3(mx,height,mz)),rings=[],tubeSides=f===0?16:12;
             for(var row=1;row<=3;row++){
-              var t=f===0?row/3:row===1?.15:row===2?.82:1,c=path.getPoint(t),ringAxis=new T.Vector3(axis.x*t,1-(1-axis.y)*t,axis.z*t).normalize(),rf=new T.Vector3(ux,0,uz).addScaledVector(ringAxis,-(ux*ringAxis.x+uz*ringAxis.z)).normalize(),rs=new T.Vector3().crossVectors(rf,ringAxis).normalize(),r=radius*(f===0?(.27+.73*Math.pow(t,.7)):(row===1?.30:row===2?.58:1)),ring=[];
+              var t=f===0?row/3:row===1?.15:row===2?.82:1,c=path.getPoint(t),ringAxis=new T.Vector3(axis.x*t,1-(1-axis.y)*t,axis.z*t).normalize(),rf=new T.Vector3(ux,0,uz).addScaledVector(ringAxis,-(ux*ringAxis.x+uz*ringAxis.z)).normalize(),rs=new T.Vector3().crossVectors(rf,ringAxis).normalize(),r=radius*(f===0?(.27+.73*Math.pow(t,.7)):(row===1?.26:row===2?.50:1)),ring=[];
               for(var side=0;side<tubeSides;side++){var a=.17+side*Math.PI/(tubeSides*.5);ring.push(c.clone().addScaledVector(rf,Math.cos(a)*r).addScaledVector(rs,Math.sin(a)*r).toArray());}rings.push(ring);
             }
             // Keep the short basal fan at its root tone; subsequent rings
@@ -3812,10 +4054,12 @@ function buildWorld(T,kit) {
               return softHdLip(along,side,lift);
             }
             // The upper hood tapers separately from the broader lower lip.
-            // Its rooted margin and the reserved feeding floret remain exact.
+            // The reserved feeding floret retains its original hood and opening.
             function softHdHoodLip(along,side,lift){
               if(f>0){var t=Math.max(0,Math.min(1,(along+.023)/(.088*reach+.023)));side*=1-.45*t*t*(3-2*t);}
-              return softHdLip(along,side,lift);
+              var point=softHdLip(along,side,lift);
+              if(f>0){var shift=bergamotHoodRootAlong(along,side,radius,softness,reach,12)-along;point[0]+=forward.x*shift;point[1]+=forward.y*shift;point[2]+=forward.z*shift;}
+              return point;
             }
             function softHdLip(along,side,lift){
               // Rolled margins and a lightly hollow center soften the sheet
@@ -3823,7 +4067,7 @@ function buildWorld(T,kit) {
               if(f>0){var bowl=Math.sin(Math.PI*Math.max(0,Math.min(1,(along+.023)/.2)));lift+=bowl*(.017*Math.pow(Math.abs(side)/.08,2)-.004)*opening;}
               return hdLip(along,side,lift);
             }
-            ribbon([[-.023,-.044*wide,0],[.024*reach,-.053*wide,hoodLift*.75],[.078*reach,-.023*wide,hoodLift],[.088*reach,-.006*wide,hoodLift*.94]],[[-.023,.041*wide,0],[.029*reach,.048*wide,hoodLift*.77],[.088*reach,.016*wide,hoodLift*.92],[.088*reach,.006*wide,hoodLift*.94]],softHdHoodLip,.012,[0xbe9ec9,0xd0b6d7,0xcbb0d2],false);
+            ribbon([[-.023,-.044*wide,0],[.024*reach,-.053*wide,hoodLift*.75],[.078*reach,-.023*wide,hoodLift],[.088*reach,-.006*wide,hoodLift*.94]],[[-.023,.041*wide,0],[.029*reach,.048*wide,hoodLift*.77],[(f>0&&opening>.5?.080:.088)*reach,.016*wide,hoodLift*.92],[.088*reach,.006*wide,hoodLift*.94]],softHdHoodLip,f>0&&opening>.5?.024:.012,[0xbe9ec9,0xd0b6d7,0xcbb0d2],false);
             var lowerLeft=f===0?[[.008,-.04*wide,-.005],[.077*reach,-.076*wide,-.014*opening],[.143*reach,-.034*wide,-.058*opening],[.15*reach,-.005*wide,-.069*opening]]:[[.008,-.04*wide,-.005],[.082*reach,-.078*wide,-.017*opening],[.14*reach,-.042*wide,-.055*opening],[.158*reach,-.014*wide,-.067*opening]];
             var lowerRight=f===0?[[.008,.037*wide,-.005],[.091*reach,.069*wide,-.018*opening],[.148*reach,.024*wide,-.061*opening],[.15*reach,.005*wide,-.069*opening]]:[[.008,.037*wide,-.005],[.094*reach,.073*wide,-.021*opening],[.147*reach,.036*wide,-.058*opening],[.158*reach,.014*wide,-.067*opening]];
             ribbon(lowerLeft,lowerRight,softHdLowerLip,-.019*opening,[rose?0xc3a0c1:0xc5a6d0,0xc9acd2,0xc5a6d0],false);
@@ -3844,7 +4088,7 @@ function buildWorld(T,kit) {
         // Fewer, fuller flowers leave room for round, reflexed petals while
         // retaining the five pale hoods that distinguish a milkweed umbel.
         for(var f=0;f<19;f++){
-          var ny=1-2*(f+.5)/19,fa=f*2.39996,rr=Math.sqrt(1-ny*ny),normal=new T.Vector3(Math.cos(fa)*rr,ny,Math.sin(fa)*rr),u=new T.Vector3(-Math.sin(fa),0,Math.cos(fa)),v=new T.Vector3().crossVectors(normal,u),center=normal.clone().multiplyScalar(.46+.035*Math.sin(f*1.8));center.y+=.15;
+          var ny=1-2*(f+.5)/19,fa=f*2.39996,rr=Math.sqrt(1-ny*ny),normal=new T.Vector3(Math.cos(fa)*rr,ny,Math.sin(fa)*rr),u=new T.Vector3(-Math.sin(fa),0,Math.cos(fa)),v=new T.Vector3().crossVectors(normal,u),center=normal.clone().multiplyScalar(milkweedUmbelRadius(f));center.y+=.15;
           out.bloom([0,.015,0],normal.toArray(),f>2?f:0,1);
           function fp(along,across,height){return center.clone().addScaledVector(u,along).addScaledVector(v,across).addScaledVector(normal,height).toArray();}
           out.part();
@@ -3855,7 +4099,8 @@ function buildWorld(T,kit) {
             // pointed tip, pale corona, pollen or protected contact florets.
             function reflexedPetal(along,across,height){
               if(f>2){var originalSide=across,t=Math.max(0,Math.min(1,(along-.026)/.151)),shape=Math.sin(Math.PI*t)*Math.sin(f*1.37+petal*2.11);across*=1+.12*shape;height+=.18*originalSide*shape;}
-              return pp(along,across,height);
+              var point=pp(along,across,height);
+              return f>2?reflexMilkweedCorolla(point,center,u,v,normal,ca,sa):point;
             }
             function pp(along,across,height){if(f>2&&height<.03)height+=.012*Math.sin(Math.PI*Math.max(0,Math.min(1,along/.19)))*Math.pow(Math.abs(across)/.06,2);return fp(ca*along-sa*across,sa*along+ca*across,height);}
             var base=reflexedPetal(.026,0,.024),left=reflexedPetal(.095,.057,.008),shoulderLeft=reflexedPetal(.149,.043,-.036),tip=reflexedPetal(.177,0,-.074),shoulderRight=reflexedPetal(.149,-.041,-.039),right=reflexedPetal(.092,-.054,.006);
@@ -3895,8 +4140,8 @@ function buildWorld(T,kit) {
           // along the corolla. The slim basal neck keeps the same triangle cost.
           // Outer corollas keep a longer slender neck before their late trumpet flare.
           // Tube-only rings move; lip, throat and pollen frames stay authored.
-          var tubeMiddle=f===0?middle:{x:middle.x+(mx-middle.x)*.35,y:middle.y+(height-middle.y)*.35,z:middle.z+(mz-middle.z)*.35,r:radius*.50};
-          var rings=[{x:x,y:.025,z:z,r:.023},tubeMiddle,{x:mx,y:height,z:mz,r:radius}];
+          var tubeMiddle=f===0?middle:{x:middle.x+(mx-middle.x)*.35,y:middle.y+(height-middle.y)*.35,z:middle.z+(mz-middle.z)*.35,r:radius*.43};
+          var rings=[{x:x,y:.025,z:z,r:f===0?.023:.020},tubeMiddle,{x:mx,y:height,z:mz,r:radius}];
           function rp(ring,angle,top){
             if(f===0)return [ring.x+Math.cos(angle)*ring.r,ring.y,ring.z+Math.sin(angle)*ring.r];
             var tilt=top?1:.5,ringAxis=new T.Vector3(axis.x*tilt,1-(1-axis.y)*tilt,axis.z*tilt).normalize();
@@ -3916,7 +4161,22 @@ function buildWorld(T,kit) {
           }else{
             // A narrow basal ring replaces the old pointed cone. Four-sided
             // neck rings meet the unchanged six-sided mouth in eighteen faces.
-            var rootRing=[],neckRing=[],mouthRing=[];
+            // butterfly-rounded-tube-normals-v1: the existing neck and mouth
+            // keep their exact vertices. Tangents follow continuous circular
+            // rings and the bowed tube, independently of the triangle zipper.
+            var rootRing=[],neckRing=[],mouthRing=[],tubeNormals={};
+            function ringNormal(ringIndex,angle){
+              var point=new T.Vector3().fromArray(rp(rings[ringIndex],angle,ringIndex===2));
+              var around=new T.Vector3().fromArray(rp(rings[ringIndex],angle+Math.PI*.5,ringIndex===2)).sub(new T.Vector3(rings[ringIndex].x,rings[ringIndex].y,rings[ringIndex].z)).normalize();
+              var along;
+              if(ringIndex===0)along=new T.Vector3().fromArray(rp(rings[1],angle,false)).sub(point).normalize();
+              else if(ringIndex===2)along=point.clone().sub(new T.Vector3().fromArray(rp(rings[1],angle,false))).normalize();
+              else along=new T.Vector3().fromArray(rp(rings[2],angle,true)).sub(point).normalize().add(point.clone().sub(new T.Vector3().fromArray(rp(rings[0],angle,false))).normalize()).normalize();
+              var key=point.toArray().map(Math.fround).join(':');tubeNormals[key]=along.cross(around).normalize();
+            }
+            for(var ringSide=0;ringSide<4;ringSide++){var ringAngle=fa+.17+ringSide*Math.PI*.5;ringNormal(0,ringAngle);ringNormal(1,ringAngle);}
+            for(var ringSide=0;ringSide<6;ringSide++)ringNormal(2,fa+.17+ringSide*Math.PI/3);
+            out.part(null,false,tubeNormals);
             for(var side=0;side<4;side++){
               var angle=fa+.17+side*Math.PI*.5;
               rootRing.push(rp(rings[0],angle,false));neckRing.push(rp(rings[1],angle,false));
@@ -3949,14 +4209,22 @@ function buildWorld(T,kit) {
             if(f>0){var originalSide=side,t=Math.max(0,Math.min(1,(along-.008)/(.15*reach-.008))),turn=Math.sin(f*1.31+.6)*opening*t*t*(3-2*t);side+=.018*turn;lift+=.16*originalSide*turn;}
             return softLip(along,side,lift);
           }
-          // Match the close hood taper without changing its rooted edge.
+          // Match the close hood taper and attach its base to the mouth rim.
           function softHoodLip(along,side,lift){
             if(f>0){var t=Math.max(0,Math.min(1,(along+.023)/(.088*reach+.023)));side*=1-.45*t*t*(3-2*t);}
-            return softLip(along,side,lift);
+            var point=softLip(along,side,lift);
+            if(f>0){var shift=bergamotHoodRootAlong(along,side,radius,softness,reach,6)-along;point[0]+=forward.x*shift;point[1]+=forward.y*shift;point[2]+=forward.z*shift;}
+            return point;
           }
           function softLip(along,side,lift){if(f>0){var bowl=Math.sin(Math.PI*Math.max(0,Math.min(1,(along+.023)/.2)));lift+=bowl*(.017*Math.pow(Math.abs(side)/.08,2)-.004)*opening;}return tp(along,side,lift);}
-          var upperLeft=softHoodLip(-.023,-.044*wide,0),upperShoulderLeft=softHoodLip(.024*reach,-.053*wide,hoodLift*.75),upperTipLeft=softHoodLip(.078*reach,-.023*wide,hoodLift),upperTipRight=softHoodLip(.088*reach,.016*wide,hoodLift*.92),upperShoulderRight=softHoodLip(.029*reach,.048*wide,hoodLift*.77),upperRight=softHoodLip(-.023,.041*wide,0);
-          out.part(softHoodLip);out.tri(upperLeft,upperShoulderLeft,upperRight,0xbe9ec9);out.tri(upperRight,upperShoulderLeft,upperShoulderRight,0xc9add2);out.tri(upperShoulderLeft,upperTipLeft,upperShoulderRight,0xd0b6d7);out.tri(upperShoulderRight,upperTipLeft,upperTipRight,0xcbb0d2);
+          var upperLeft=softHoodLip(-.023,-.044*wide,0),upperShoulderLeft=softHoodLip(.024*reach,-.053*wide,hoodLift*.75),upperTipLeft=softHoodLip(.078*reach,-.023*wide,hoodLift),upperTipRight=softHoodLip((f>0&&opening>.5?.080:.088)*reach,.016*wide,hoodLift*.92),upperShoulderRight=softHoodLip(.029*reach,.048*wide,hoodLift*.77),upperRight=softHoodLip(-.023,.041*wide,0);
+          out.part(softHoodLip);
+          if(f>0&&opening>.5){
+            // Six existing lip faces form a curved hood over the opening. The
+            // raised crown softens the cross-section without widening its rim.
+            var hoodCrown=softHoodLip(.030*reach,0,hoodLift*.98),hoodRim=[upperLeft,upperShoulderLeft,upperTipLeft,upperTipRight,upperShoulderRight,upperRight],hoodTones=[0xbe9ec9,0xc9add2,0xd0b6d7,0xcbb0d2,0xc9add2,0xbe9ec9];
+            for(var edge=0;edge<hoodRim.length;edge++)out.tri(hoodCrown,hoodRim[edge],hoodRim[(edge+1)%hoodRim.length],[0xd0b6d7,hoodTones[edge],hoodTones[(edge+1)%hoodRim.length]]);
+          }else{out.tri(upperLeft,upperShoulderLeft,upperRight,0xbe9ec9);out.tri(upperRight,upperShoulderLeft,upperShoulderRight,0xc9add2);out.tri(upperShoulderLeft,upperTipLeft,upperShoulderRight,0xd0b6d7);out.tri(upperShoulderRight,upperTipLeft,upperTipRight,0xcbb0d2);}
           // A lifted rim and a darker center form a shallow cup. The offset
           // rounded tip rolls down and sideways rather than ending in a shelf.
           var lip=f===0?[tp(.008,-.04*wide,-.005),tp(.077*reach,-.076*wide,-.014*opening),tp(.143*reach,-.034*wide,-.058*opening),tp(.15*reach,.019*wide,-.069*opening),tp(.091*reach,.069*wide,-.018*opening),tp(.008,.037*wide,-.005)]:[softLowerLip(.008,-.04*wide,-.005),softLowerLip(.082*reach,-.078*wide,-.017*opening),softLowerLip(.14*reach,-.042*wide,-.055*opening),softLowerLip(.158*reach,.026*wide,-.067*opening),softLowerLip(.094*reach,.073*wide,-.021*opening),softLowerLip(.008,.037*wide,-.005)],cup=f===0?tp(.071*reach,-.006*wide,-.043*opening):softLowerLip(.079*reach,-.005*wide,-.036*opening);
@@ -3969,7 +4237,9 @@ function buildWorld(T,kit) {
             function lipMargin(points){return new T.CatmullRomCurve3(points.map(function(p){return new T.Vector3(p[0],p[1],p[2]);}),false,'catmullrom',.34);}
             var leftMargin=lipMargin(roundedLeft),rightMargin=lipMargin(roundedRight),leftEnd=roundedLeft[3],rightEnd=roundedRight[3],endAlong=(leftEnd[0]+rightEnd[0])*.5,endLift=(leftEnd[2]+rightEnd[2])*.5;
             function roundedLipPoint(curve,t){var point=curve.getPoint(t);return softLowerLip(point.x,point.y,point.z);}
-            lip=[roundedLipPoint(leftMargin,0),roundedLipPoint(leftMargin,.5),roundedLipPoint(leftMargin,1),softLowerLip(endAlong+.004,leftEnd[1]*.65,endLift-.002),softLowerLip(endAlong+.004,rightEnd[1]*.65,endLift-.002),roundedLipPoint(rightMargin,1),roundedLipPoint(rightMargin,.5),roundedLipPoint(rightMargin,0)];
+            // The rounded lower lip keeps two separate tip corners. Two former
+            // tip-arc faces now give the upper hood its curved crown.
+            lip=[roundedLipPoint(leftMargin,0),roundedLipPoint(leftMargin,.5),roundedLipPoint(leftMargin,1),roundedLipPoint(rightMargin,1),roundedLipPoint(rightMargin,.5),roundedLipPoint(rightMargin,0)];
           }
           // One continuous cup-to-rim pigment avoids a brighter triangular sector.
           // The reserved feeding lip keeps its original vertex colors exactly.
@@ -4202,9 +4472,10 @@ function buildWorld(T,kit) {
         part.frustumCulled=false;
       });
     }
-    // The anatomy is one existing mesh. Bend only the upper, forward antennae;
-    // their roots, eyes, head, feet and the separate drinking tube remain fixed.
-    function installVisitorAntennaFlex(root,uniform){
+    // Bend antenna tips while feeding and draw distal legs inward during flight.
+    // Roots, eyes, head and the drinking tube stay fixed; feet return to their
+    // exact contact pose before landing. Both bends reuse the existing anatomy mesh.
+    function installVisitorAntennaFlex(root,uniform,legUniform){
       var materials=new Map();
       root.traverse(function(part){
         if(!part.isMesh||!/^(monarch|butterfly)-body$/.test(part.name))return;
@@ -4212,12 +4483,23 @@ function buildWorld(T,kit) {
         if(!material){
           material=original.clone();materials.set(original,material);
           var surface=original.onBeforeCompile,cacheKey=original.customProgramCacheKey();
-          material.userData.visitorAntennaFlex=uniform;
+          material.userData.visitorAntennaFlex=uniform;material.userData.visitorLegTuck=legUniform;
           material.onBeforeCompile=function(shader){
-            surface.call(material,shader);shader.uniforms.bfVisitorAntennaFlex=uniform;
+            surface.call(material,shader);shader.uniforms.bfVisitorAntennaFlex=uniform;shader.uniforms.bfVisitorLegTuck=legUniform;
             // Return the x displacement and its exact y/z surface derivatives.
             // Clamped cubic masks have zero slopes beyond either endpoint.
             shader.vertexShader=[
+              'uniform float bfVisitorLegTuck;',
+              // The body never extends below this mask; only distal legs move.
+              // Return the envelope and its exact x/y derivatives.
+              'vec3 bfVisitorLegEnvelope(vec3 p){',
+              'float bfSide=p.x<0.?-1.:1.;',
+              'float bfOut=clamp((abs(p.x)-.42)/.36,0.,1.);',
+              'float bfDown=clamp((-p.y-.42)/.44,0.,1.);',
+              'float bfOutEase=bfOut*bfOut*(3.-2.*bfOut);',
+              'float bfDownEase=bfDown*bfDown*(3.-2.*bfDown);',
+              'return bfVisitorLegTuck*vec3(bfOutEase*bfDownEase,bfSide*6.*bfOut*(1.-bfOut)/.36*bfDownEase,-6.*bfDown*(1.-bfDown)/.44*bfOutEase);',
+              '}',
               'uniform vec2 bfVisitorAntennaFlex;',
               'vec3 bfVisitorAntennaWarp(vec3 p){',
               'float bfSweep=p.x<0.?bfVisitorAntennaFlex.x:bfVisitorAntennaFlex.y;',
@@ -4230,10 +4512,10 @@ function buildWorld(T,kit) {
               'return vec3(bfSweep*bfEnvelope*bfMask,bfSweep*bfEnvelope*bfSlopeY,bfSweep*bfSlopeZ*bfMask);',
               '}'
             ].join('\n')+'\n'+shader.vertexShader;
-            shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nvec3 bfAntennaNormal=bfVisitorAntennaWarp(position);objectNormal=normalize(vec3(objectNormal.x,objectNormal.y-bfAntennaNormal.y*objectNormal.x,objectNormal.z-bfAntennaNormal.z*objectNormal.x));');
-            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x+=bfVisitorAntennaWarp(position).x;');
+            shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nvec3 bfAntennaNormal=bfVisitorAntennaWarp(position);objectNormal=normalize(vec3(objectNormal.x,objectNormal.y-bfAntennaNormal.y*objectNormal.x,objectNormal.z-bfAntennaNormal.z*objectNormal.x));\nvec3 bfLegEnvelope=bfVisitorLegEnvelope(position);vec3 bfLegDirection=vec3(position.x<0.?.14:-.14,.18,0.);vec3 bfLegGradient=vec3(bfLegEnvelope.y,bfLegEnvelope.z,0.);objectNormal=normalize(objectNormal-bfLegGradient*(dot(bfLegDirection,objectNormal)/(1.+dot(bfLegDirection,bfLegGradient))));');
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x+=bfVisitorAntennaWarp(position).x;transformed+=vec3(position.x<0.?.14:-.14,.18,0.)*bfVisitorLegEnvelope(position).x;');
           };
-          material.customProgramCacheKey=function(){return cacheKey+'-visitor-feeding-antennae-v1';};
+          material.customProgramCacheKey=function(){return cacheKey+'-visitor-feeding-antennae-v1-flight-legs-v1';};
         }
         part.material=material;
         // Only these private visitor bodies bypass their static shader bounds.
@@ -4263,14 +4545,14 @@ function buildWorld(T,kit) {
       var species=meadowSpecies(VISITOR_SPECIES[b]),visitor=species.id==='monarch'?butterfly(.12,true,true):createMeadowButterfly(T,kit,species.id,true);
       if(species.id!=='monarch'){visitor.root.scale.setScalar(.12*species.scale);scene.add(visitor.root);}
       visitor.speciesId=species.id;visitor.root.userData.speciesId=species.id;visitor.root.userData.commonName=species.name;visitor.root.userData.scientificName=species.latin;
-      visitor.root.name='visitor-monarch-'+b;visitor.proboscis=new T.Mesh(visitorTube,visitorTubeMaterial);visitor.proboscis.name='visitor-proboscis';visitor.proboscis.frustumCulled=false;visitor.root.add(visitor.proboscis);visitor.wingFlex={value:new T.Vector4()};installButterflyWingFlex(visitor.root,visitor.wingFlex);visitor.antennaFlex={value:new T.Vector2()};installVisitorAntennaFlex(visitor.root,visitor.antennaFlex);visitors.push(visitor);}
+      visitor.root.name='visitor-monarch-'+b;visitor.proboscis=new T.Mesh(visitorTube,visitorTubeMaterial);visitor.proboscis.name='visitor-proboscis';visitor.proboscis.frustumCulled=false;visitor.root.add(visitor.proboscis);visitor.wingFlex={value:new T.Vector4()};installButterflyWingFlex(visitor.root,visitor.wingFlex);visitor.antennaFlex={value:new T.Vector2()};visitor.legTuck={value:0};installVisitorAntennaFlex(visitor.root,visitor.antennaFlex,visitor.legTuck);visitors.push(visitor);}
     function animateVisitors(clock,reduced,patches,hidden){
       visitors.forEach(function(visitor,i){
-        var site=visitorPatch(patches,i);visitor.root.visible=!hidden&&!!site;visitor.root.userData.flowerKey=null;visitor.root.userData.flowerAnchor=null;if(!site){visitor.wingFlex.value.set(0,0,0,0);visitor.antennaFlex.value.set(0,0);return;}
+        var site=visitorPatch(patches,i);visitor.root.visible=!hidden&&!!site;visitor.root.userData.flowerKey=null;visitor.root.userData.flowerAnchor=null;if(!site){visitor.wingFlex.value.set(0,0,0,0);visitor.antennaFlex.value.set(0,0);visitor.legTuck.value=0;return;}
         var pose=visitorVisitPose(site,i,clock,reduced,visitor.speciesId),wind=pose.flower?plantDisplacement(pose.flower.x,pose.flower.y,pose.flower.z):{x:0,z:0};
         visitor.root.position.set(pose.x+wind.x*pose.perch,pose.y,pose.z+wind.z*pose.perch);visitor.root.rotation.set(pose.pitch,pose.yaw,pose.bank,'YXZ');
         updateVisitorWingFlex(visitor,i,site,pose,clock,reduced,hidden);
-        var antenna=visitorAntennaPose(i,clock,reduced||hidden,pose);visitor.antennaFlex.value.set(antenna.left,antenna.right);
+        var antenna=visitorAntennaPose(i,clock,reduced||hidden,pose);visitor.antennaFlex.value.set(antenna.left,antenna.right);visitor.legTuck.value=visitorLegTuck(pose,reduced||hidden);
         visitor.wings[0].rotation.z=pose.leftWing;visitor.wings[1].rotation.z=pose.rightWing;
         visitor.hindWings.forEach(function(wing,j){wing.rotation.z=(j?1:-1)*pose.hindLag;});
         visitor.proboscis.morphTargetInfluences[0]=pose.feeding;
@@ -4446,7 +4728,7 @@ function buildWorld(T,kit) {
     }
     var speciesTemplates={monarch:feeding.root.getObjectByName('feeding-monarch').clone(true)},visitorTemplates=new T.Group();visitorTemplates.name='meadow-species-detail-templates';visitorTemplates.visible=false;speciesTemplates.monarch.name='detail-monarch';visitorTemplates.add(speciesTemplates.monarch);scene.add(visitorTemplates);
     MEADOW_SPECIES.forEach(function(species){if(species.id==='monarch')return;var template=createMeadowButterfly(T,kit,species.id,false);template.root.name='detail-'+species.id;visitorTemplates.add(template.root);speciesTemplates[species.id]=template.root;});
-    visitors.forEach(function(visitor){var detailModel=speciesTemplates[visitor.speciesId],parts=[];installButterflyWingFlex(detailModel,visitor.wingFlex);installVisitorAntennaFlex(detailModel,visitor.antennaFlex);visitor.root.traverse(function(part){if(!part.isMesh)return;var detail=detailModel.getObjectByName(part.name);if(detail&&detail.isMesh)parts.push({mesh:part,geometry:part.geometry,material:part.material,detail:detail});});visitorSurfaces.push(parts);});
+    visitors.forEach(function(visitor){var detailModel=speciesTemplates[visitor.speciesId],parts=[];installButterflyWingFlex(detailModel,visitor.wingFlex);installVisitorAntennaFlex(detailModel,visitor.antennaFlex,visitor.legTuck);visitor.root.traverse(function(part){if(!part.isMesh)return;var detail=detailModel.getObjectByName(part.name);if(detail&&detail.isMesh)parts.push({mesh:part,geometry:part.geometry,material:part.material,detail:detail});});visitorSurfaces.push(parts);});
     function watchVisitor(visitor,view,aspect){
       watchFlower(visitor,view,aspect);
       if(detailedVisitor===visitor)return;
@@ -4470,7 +4752,7 @@ function buildWorld(T,kit) {
     .bf-larval-observation{margin-top:14px;padding:14px;border:1px solid var(--bf-line);border-left:4px solid #6b8745;border-radius:11px;background:var(--bf-bg)}.bf-larval-readout{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bf-larval-readout span{display:block;font-size:12px;color:var(--bf-muted)}.bf-larval-readout strong{font-size:14px}.bf-larval-observation>p{font-size:13px}.bf-larval-observation .bf-life-watch-actions{margin-top:12px}@media(max-width:580px){.bf-larval-observation{padding:11px}.bf-larval-readout{grid-template-columns:1fr;gap:8px}}@media(forced-colors:active){.bf-larval-observation{border-color:CanvasText}.bf-larval-readout span{color:CanvasText}}
     .bfl{--bf-bg:#f4f3e9;--bf-panel:#fffcf3;--bf-ink:#24382e;--bf-muted:#526356;--bf-line:#c6cdb9;--bf-accent:#245c43;color:var(--bf-ink);background:var(--bf-bg);font:15px/1.5 system-ui,sans-serif;padding:22px;border-radius:20px;max-width:1450px;margin:auto;width:100%;box-sizing:border-box}
     .bfl[data-dark="true"]{--bf-bg:#172d26;--bf-panel:#203a30;--bf-ink:#f2f4df;--bf-muted:#c4d3bf;--bf-line:#60816b;--bf-accent:#b1dec2}
-    .bfl *{box-sizing:border-box}.bfl h2,.bfl h3,.bfl p{margin:0}.bfl h2{font:600 clamp(27px,4vw,42px)/1.15 Georgia,serif;letter-spacing:-.025em}.bfl h3{font:600 22px/1.2 Georgia,serif}.bfl p{margin-top:8px}.bfl button,.bfl summary{font:inherit}.bfl button{min-height:44px;border:1px solid var(--bf-line);border-radius:10px;padding:9px 14px;background:var(--bf-panel);color:var(--bf-ink);cursor:pointer;font-weight:650}.bfl button:hover{border-color:var(--bf-accent)}.bfl button:disabled{opacity:.55;cursor:default}.bfl button[aria-pressed="true"],.bfl .bf-primary{background:#245c43;color:#fff;border-color:#245c43}.bfl button:focus-visible,.bfl summary:focus-visible,.bfl a:focus-visible,.bfl [tabindex]:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bfl a{color:var(--bf-accent);text-decoration:underline}.bf-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--bf-muted)}.bf-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}.bf-header p{max-width:720px;color:var(--bf-muted)}.bf-mark{font-size:44px;flex-shrink:0}.bf-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}.bf-stage{position:relative;height:520px;overflow:hidden;border-radius:16px;background:#c8e0d6;border:1px solid var(--bf-line);isolation:isolate}.bf-stage canvas{display:block;width:100%;height:100%;position:absolute;inset:0}.bf-stage .bf-map{z-index:0}.bf-stage .bf-gl{z-index:1}.bf-overlay{position:absolute;z-index:2;pointer-events:none;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between}.bf-scene-badge{align-self:flex-start;background:#203b30ed;color:#fff8e6;border:1px solid #70967c;padding:7px 12px;border-radius:50px;font-size:12px;letter-spacing:.04em}.bf-scene-bottom{background:#fffcf3ed;color:#24382e;align-self:flex-start;max-width:100%;border-radius:10px;padding:10px 14px;border:1px solid #c6cdb9}.bf-scene-bottom strong{display:block}.bf-scene-bottom small{display:block;color:#526356}.bf-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.bf-toolbar .bf-spacer{flex:1}.bf-status{padding:12px 14px;background:var(--bf-panel);border:1px solid var(--bf-line);border-radius:12px;min-height:70px}.bf-status p{margin:0}.bf-help{font-size:12px;color:var(--bf-muted);margin:8px 0!important}.bf-panel{background:var(--bf-panel);border:1px solid var(--bf-line);border-radius:15px;padding:17px}.bf-panel+.bf-panel{margin-top:14px}.bf-destination{display:block;text-align:left;width:100%;margin-top:10px;padding:12px!important}.bf-destination span,.bf-destination small{display:block}.bf-destination small{font-weight:400;margin-top:4px}.bf-progress{display:flex;gap:5px;margin:12px 0 5px}.bf-progress i{height:5px;background:var(--bf-line);flex:1;border-radius:5px}.bf-progress i[data-done="true"]{background:var(--bf-accent)}.bf-journal{list-style:none;padding:0;margin:12px 0 0}.bf-journal li{border-top:1px solid var(--bf-line);padding:10px 0}.bf-journal strong{display:block}.bf-journal p{font-size:13px;color:var(--bf-muted);margin:4px 0}.bf-bottom{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.bf-bottom>.bf-panel{margin-top:0}.bf-life{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.bf-life span{flex:1;min-width:85px;border:1px solid var(--bf-line);border-radius:9px;padding:9px;font-size:13px}.bf-life b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-touch{display:flex;flex-wrap:wrap;gap:6px}.bf-touch button{touch-action:none;min-width:46px}.bf-sources{margin-top:18px;font-size:13px;color:var(--bf-muted)}.bf-sources summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:650}.bf-sources ul{padding-left:20px}.bf-question button{display:block;width:100%;text-align:left;margin-top:9px}.bf-question [role="status"]{font-size:13px;margin-top:10px}.bf-meter{font-size:12px;color:var(--bf-muted);margin-top:12px}.bf-meter meter{width:100%;height:10px;display:block;margin-top:4px;accent-color:#245c43}
+    .bfl *{box-sizing:border-box}.bfl h2,.bfl h3,.bfl p{margin:0}.bfl h2{font:600 clamp(27px,4vw,42px)/1.15 Georgia,serif;letter-spacing:-.025em}.bfl h3{font:600 22px/1.2 Georgia,serif}.bfl p{margin-top:8px}.bfl button,.bfl summary{font:inherit}.bfl button{min-height:44px;border:1px solid var(--bf-line);border-radius:10px;padding:9px 14px;background:var(--bf-panel);color:var(--bf-ink);cursor:pointer;font-weight:650}.bfl button:hover{border-color:var(--bf-accent)}.bfl button:disabled,.bfl .bf-playback-command[aria-disabled="true"]{opacity:.55;cursor:default}.bfl .bf-playback-command[aria-disabled="true"]:focus-visible{opacity:1}.bfl button[aria-pressed="true"],.bfl .bf-primary{background:#245c43;color:#fff;border-color:#245c43}.bfl button:focus-visible,.bfl summary:focus-visible,.bfl a:focus-visible,.bfl [tabindex]:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bfl a{color:var(--bf-accent);text-decoration:underline}.bf-eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--bf-muted)}.bf-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}.bf-header p{max-width:720px;color:var(--bf-muted)}.bf-mark{font-size:44px;flex-shrink:0}.bf-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}.bf-stage{position:relative;height:520px;overflow:hidden;border-radius:16px;background:#c8e0d6;border:1px solid var(--bf-line);isolation:isolate}.bf-stage canvas{display:block;width:100%;height:100%;position:absolute;inset:0}.bf-stage .bf-map{z-index:0}.bf-stage .bf-gl{z-index:1}.bf-overlay{position:absolute;z-index:2;pointer-events:none;inset:0;padding:16px;display:flex;flex-direction:column;justify-content:space-between}.bf-scene-badge{align-self:flex-start;background:#203b30ed;color:#fff8e6;border:1px solid #70967c;padding:7px 12px;border-radius:50px;font-size:12px;letter-spacing:.04em}.bf-scene-bottom{background:#fffcf3ed;color:#24382e;align-self:flex-start;max-width:100%;border-radius:10px;padding:10px 14px;border:1px solid #c6cdb9}.bf-scene-bottom strong{display:block}.bf-scene-bottom small{display:block;color:#526356}.bf-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.bf-toolbar .bf-spacer{flex:1}.bf-status{padding:12px 14px;background:var(--bf-panel);border:1px solid var(--bf-line);border-radius:12px;min-height:70px}.bf-status p{margin:0}.bf-help{font-size:12px;color:var(--bf-muted);margin:8px 0!important}.bf-panel{background:var(--bf-panel);border:1px solid var(--bf-line);border-radius:15px;padding:17px}.bf-panel+.bf-panel{margin-top:14px}.bf-destination{display:block;text-align:left;width:100%;margin-top:10px;padding:12px!important}.bf-destination span,.bf-destination small{display:block}.bf-destination small{font-weight:400;margin-top:4px}.bf-progress{display:flex;gap:5px;margin:12px 0 5px}.bf-progress i{height:5px;background:var(--bf-line);flex:1;border-radius:5px}.bf-progress i[data-done="true"]{background:var(--bf-accent)}.bf-journal{list-style:none;padding:0;margin:12px 0 0}.bf-journal li{border-top:1px solid var(--bf-line);padding:10px 0}.bf-journal strong{display:block}.bf-journal p{font-size:13px;color:var(--bf-muted);margin:4px 0}.bf-bottom{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.bf-bottom>.bf-panel{margin-top:0}.bf-life{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.bf-life span{flex:1;min-width:85px;border:1px solid var(--bf-line);border-radius:9px;padding:9px;font-size:13px}.bf-life b{display:block;color:var(--bf-muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase}.bf-touch{display:flex;flex-wrap:wrap;gap:6px}.bf-touch button{touch-action:none;min-width:46px}.bf-sources{margin-top:18px;font-size:13px;color:var(--bf-muted)}.bf-sources summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:650}.bf-sources ul{padding-left:20px}.bf-question button{display:block;width:100%;text-align:left;margin-top:9px}.bf-question [role="status"]{font-size:13px;margin-top:10px}.bf-meter{font-size:12px;color:var(--bf-muted);margin-top:12px}.bf-meter meter{width:100%;height:10px;display:block;margin-top:4px;accent-color:#245c43}
     .bf-design{margin-top:18px!important;border-top:4px solid #b87532}.bf-design-head{display:flex;gap:16px;justify-content:space-between;align-items:start}.bf-design-head p{max-width:780px}.bf-design-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}.bf-design fieldset{border:0;margin:0;padding:0;min-width:0}.bf-design legend,.bf-design label{display:block;font-weight:750;margin-bottom:8px}.bf-design-choices{display:grid;gap:8px}.bf-design-choices button{text-align:left}.bf-design-choices small{display:block;font-weight:400;margin-top:3px}.bf-design select{display:block;width:100%;min-height:46px;margin:8px 0 12px;padding:10px;border:1px solid var(--bf-line);border-radius:9px;background:var(--bf-panel);color:var(--bf-ink);font:inherit}.bf-design select:focus-visible{outline:3px solid #b45b0c;outline-offset:3px}.bf-design-actions{display:flex;flex-wrap:wrap;gap:8px}.bf-comparison{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:15px;font-size:13px}.bf-comparison th,.bf-comparison td{border-bottom:1px solid var(--bf-line);text-align:left;padding:10px 8px;overflow-wrap:anywhere;vertical-align:top}.bf-comparison caption{text-align:left;font-weight:750;font-size:15px;padding-bottom:7px}.bf-comparison th:first-child{width:35%}.bf-comparison td span{display:block;color:var(--bf-muted);font-size:12px}.bf-design-feedback{min-height:50px;margin-top:12px;font-size:14px}.bf-design-current{font-size:12px;font-weight:700;color:var(--bf-muted);border:1px solid var(--bf-line);border-radius:30px;padding:7px 12px;flex-shrink:0}.bfl[data-contrast="true"]{--bf-bg:#000;--bf-panel:#111;--bf-ink:#fff;--bf-muted:#fff;--bf-line:#fff;--bf-accent:#a7f3d0}
     @media(max-width:580px){.bf-design-steps{grid-template-columns:1fr}.bf-design-head{display:block}.bf-design-current{display:inline-block;margin-top:10px}.bf-comparison th,.bf-comparison td{padding:9px 4px}}
     .bf-lens-tools{position:absolute;z-index:3;top:62px;left:16px;right:16px;display:flex;gap:6px;flex-wrap:wrap}.bf-lens-tools button{font-size:13px;padding:8px 12px;background:#fffcf3;color:#24382e;border-color:#64745d;box-shadow:0 2px 6px #203b3020}.bf-lens-tools button[aria-pressed="true"]{background:#245c43;color:white;border-color:#245c43}.bf-field-card{margin-top:12px;border:1px solid var(--bf-line);border-left:4px solid #b87532;border-radius:12px;background:var(--bf-panel);padding:15px}.bf-field-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.bf-resource-tag{font-size:12px;font-weight:750;border:1px solid var(--bf-line);padding:3px 8px;border-radius:20px}.bf-field-card h3{font-size:21px}.bf-field-card p{font-size:14px}.bf-field-card .bf-help{margin-bottom:0!important}.bf-lens-caption{border-left:4px solid #b87532}.bf-lens-caption .bf-eyebrow{color:#526356;font-size:10px;margin-bottom:3px}
@@ -4623,6 +4905,26 @@ function buildWorld(T,kit) {
     @media(prefers-reduced-motion:reduce){.bfl button{transition:none}.bfl .bf-badges li,.bfl .bf-mission-stamp{animation:none}}
     @media(forced-colors:active){.bfl{--bf-wash:Canvas;--bf-gold:CanvasText;background:Canvas;box-shadow:none}.bfl .bf-botanical-plate{display:none}.bfl .bf-header{grid-template-columns:1fr}.bfl button,.bfl .bf-stage,.bfl .bf-panel,.bfl .bf-guide{box-shadow:none}.bfl button[aria-pressed="true"],.bfl .bf-primary{background:Highlight;color:HighlightText;border-color:Highlight}.bfl .bf-visit-direct,.bfl .bf-header .bf-eyebrow{color:CanvasText}.bfl .bf-header-tools .bf-guide-link{color:LinkText;background:Canvas}.bfl .bf-guide-steps button[aria-current="step"]{border-color:Highlight}.bfl .bf-destination-row:focus-within{outline-color:Highlight}}
 
+    /* Accessible form boundaries and focus indicators follow every theme. */
+    .bfl{--bf-control-border:var(--bf-muted);--bf-focus:var(--bf-gold)}
+    .bfl :is(select,textarea,input:not([type="range"]):not([type="checkbox"]):not([type="radio"])){border-color:var(--bf-control-border)}
+    .bfl :is(button,summary,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--bf-focus);outline-offset:3px}
+    .bfl .bf-destination:focus-visible,.bfl .bf-visit-direct:focus-visible{outline-offset:-4px}
+    .bfl .bf-destination[aria-pressed="true"]:focus-visible{outline-color:#fffdf6}
+    @media(forced-colors:active){.bfl{--bf-control-border:ButtonText;--bf-focus:Highlight}.bfl .bf-destination[aria-pressed="true"]:focus-visible{outline-color:HighlightText}}
+    /* System-color buttons need no automatic text backplate: in Chromium it
+       can otherwise cover HighlightText with a same-colored rectangle. */
+    @media(forced-colors:active){
+      .bfl :is(button[aria-pressed="true"],button.bf-primary),.bfl :is(button[aria-pressed="true"],button.bf-primary):not(:disabled):hover{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:Highlight;box-shadow:none}
+      .bfl :is(button[aria-pressed="true"],button.bf-primary) :is(span,small,strong,em,b){color:inherit}
+    }
+
+    /* Keep the guide progress inside the page when learners enlarge text. */
+    .bfl .bf-guide-head{flex-wrap:wrap}
+    .bfl .bf-guide-steps button{overflow-wrap:anywhere}
+    @media(max-width:580px){.bfl .bf-guide-steps{grid-template-columns:repeat(auto-fit,minmax(min(100%,8em),1fr))}}
+
+
   `;
 
   // An optional, locally synthesized soundscape. Its clock belongs to Web Audio,
@@ -4715,6 +5017,7 @@ function buildWorld(T,kit) {
     var stateRef=R.useRef(null);if(!stateRef.current)stateRef.current=freshState((ctx.toolData||{}).butterfly);
     var s=stateRef.current,api=R.useRef(null),stage=R.useRef(null),map=R.useRef(null),keys=R.useRef({});
     var flightPad=R.useRef({node:null,pointer:null,cx:0,cy:0,radius:1});
+    var holdBlockedClicks=R.useRef(new WeakSet());
     // Ambient motion is presentation only: it never spends flight energy or
     // advances the learner's saved flight clock, visits, or observations.
     var sceneMotion=R.useRef({clock:0,paused:false,reset:false});
@@ -4722,6 +5025,7 @@ function buildWorld(T,kit) {
     R.useEffect(function(){return function(){var sound=meadowSound.current;if(sound.engine){sound.engine.dispose();sound.engine=null;}};},[]);
     var pair=R.useState(0),refresh=pair[1];
     var statusPair=R.useState(__alloT('stem.butterfly.ui_status_intro','Take flight, or choose a habitat for guided travel. Land and examine each patch to build your field journal.')),message=statusPair[0],setMessage=statusPair[1];
+    var statusRevision=R.useRef(0);
     var rendererPair=R.useState('loading'),renderer=rendererPair[0],setRenderer=rendererPair[1];
     var mapPair=R.useState(false),mapMode=mapPair[0],setMapMode=mapPair[1],mapModeRef=R.useRef(false);mapModeRef.current=mapMode;
     var viewPair=R.useState('follow'),view=viewPair[0],setView=viewPair[1],viewRef=R.useRef(view);viewRef.current=view;
@@ -4738,6 +5042,24 @@ function buildWorld(T,kit) {
     var feedMotion=R.useRef({phase:'sip',progress:1,playing:false,signature:'',contact:true,focus:'whole',speed:1}),feedLabels=R.useRef({});
     var feedLabelRefs=R.useMemo(function(){var callbacks={};['tube','pollen','surface'].forEach(function(id){callbacks[id]=function(node){feedLabels.current[id]=node;if(node&&api.current)api.current.draw();};});return callbacks;},[]);
     var miniRef=R.useRef(null),placeLabels=R.useRef({});
+    var citationTarget=R.useRef(null),citationFocus=R.useRef(false);
+    // The cleanup button disappears; continue at the named evidence group after commit.
+    R.useEffect(function(){if(!citationFocus.current)return;citationFocus.current=false;var node=citationTarget.current;if(node){node.focus({preventScroll:true});node.scrollIntoView({block:'nearest',behavior:'instant'});}});
+    var lifeActionFocus=R.useRef(null);
+    // A keyboard or assistive-technology activation can disable its own button.
+    // Move only that explicit action, and only after its replacement is committed.
+    R.useEffect(function(){var pending=lifeActionFocus.current;if(!pending)return;lifeActionFocus.current=null;var scope=pending.scope;if(!scope||!scope.isConnected||pending.action==='next'&&!pending.trigger.disabled)return;var target=pending.action==='next'?scope.querySelector('[data-bf-record-generation]'):pending.action==='restart'?scope.querySelector('#bf-egg-site'):scope;if(target&&!target.disabled){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',behavior:'instant'});}});
+    function lifecycleActionTarget(event){return event&&event.detail===0&&event.currentTarget===document.activeElement?event.currentTarget.closest('.bf-life-watch,.bf-cycle'):null;}
+    var workflowFocus=R.useRef(null);
+    R.useEffect(function(){var pending=workflowFocus.current;if(!pending)return;workflowFocus.current=null;var target=pending.target,active=document.activeElement;if(target&&target.isConnected&&(active===pending.trigger||active===document.body)){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',behavior:'instant'});}});
+    function queueWorkflowFocus(event,scopeSelector,targetSelector){var trigger=event&&event.detail===0&&event.currentTarget===document.activeElement&&event.currentTarget.tagName==='BUTTON'?event.currentTarget:null,scope=trigger&&trigger.closest(scopeSelector),target=scope&&scope.querySelector(targetSelector);if(target)workflowFocus.current={trigger:trigger,target:target};}
+    var caseNodes=R.useRef({}),caseFocus=R.useRef(null);
+    // Follow the result or renewed question when a case replaces its controls.
+    R.useEffect(function(){
+      var pending=caseFocus.current;if(!pending)return;
+      var card=caseNodes.current[pending.id],target=card&&card.querySelector(pending.result?'.bf-case-result':'select');
+      caseFocus.current=null;if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',behavior:'instant'});}
+    });
     // Simpler words starts on for grade 4 and below, and remembers a learner's
     // own choice on this device. Not 5: the host passes "5th Grade" when no grade
     // was set, so 5 cannot tell a real fifth grader from an unset class.
@@ -4764,21 +5086,48 @@ function buildWorld(T,kit) {
     var seasonGuessPair=R.useState(s.season.prediction||''),seasonGuess=seasonGuessPair[0],setSeasonGuess=seasonGuessPair[1];
     var seasonFeedbackPair=R.useState(''),seasonFeedback=seasonFeedbackPair[0],setSeasonFeedback=seasonFeedbackPair[1];
     var copyPair=R.useState(''),copyState=copyPair[0],setCopyState=copyPair[1];
+    var copyPendingPair=R.useState(false),copyPending=copyPendingPair[0],setCopyPending=copyPendingPair[1],copyJob=R.useRef({pending:false});
+    // Once offered, keep the manual-copy field mounted while its feedback changes.
+    var manualCopyPair=R.useState(false),manualCopy=manualCopyPair[0],setManualCopy=manualCopyPair[1];
+    function choosePlan(id){
+      if(id===plan)return;var hadPrediction=!!guess;setPlan(id);setGuess('');
+      var message=__alloFill(hadPrediction?__alloT('stem.butterfly.ui_plan_prediction_cleared','Planting plan selected: {value1}. Previous prediction cleared. Choose a prediction for this plan before applying it.'):__alloT('stem.butterfly.ui_plan_selected','Planting plan selected: {value1}. Choose a prediction for this plan before applying it.'),{value1:design(id).name});setDesignFeedback(message);announce(message);
+    }
     function applyDesign(){var result=applyPlan(s,plan,guess);if(result.ok){closeFeed();closeLens();lifeMotion.current.playing=false;if(!lifecycleVisual(s))closeLife();clearFlightInput();persist();setCycleFeedback('');}setDesignFeedback(result.message);announce(result.message);}
     function startBrood(){var result=layEggs(s,eggSite,broodGuess);if(result.ok){persist();showLife(true,true);}setCycleFeedback(result.message);announce(result.message);}
-    function nextStage(){var result=advanceStage(s);if(result.ok){persist();showLife(true,false);}setCycleFeedback(result.message);announce(result.message);}
-    function recordBrood(){var result=broodResult(s);if(result.ok){lifeMotion.current.playing=false;lifeMotion.current.progress=1;persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
-    function dropBrood(){var result=abandonBrood(s);if(result.ok){lifeMotion.current.playing=false;lifeMotion.current.progress=1;if(!lifecycleVisual(s))closeLife();persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
+    function nextStage(event){var origin=lifecycleActionTarget(event),result=advanceStage(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,trigger:event.currentTarget,action:'next'};persist();showLife(true,false);}setCycleFeedback(result.message);announce(result.message);}
+    function recordBrood(event){var origin=lifecycleActionTarget(event),result=broodResult(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,action:'record'};lifeMotion.current.playing=false;lifeMotion.current.progress=1;persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
+    function dropBrood(event){var origin=lifecycleActionTarget(event),result=abandonBrood(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,action:'restart'};lifeMotion.current.playing=false;lifeMotion.current.progress=1;if(!lifecycleVisual(s))closeLife();persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
+    function reportCopyFeedback(state){
+      if(state==='pending')return __alloT('stem.butterfly.ui_report_copy_pending','Copying your field report. You can keep working.');
+      if(state==='changed')return __alloT('stem.butterfly.ui_report_copy_changed','An earlier version of your report was copied. Your latest changes are not included.');
+      if(state==='partial')return __alloT('stem.butterfly.ui_report_copy_partial','Selected report text copied. Select all of the report to copy it completely.');
+      if(state==='select')return __alloT('stem.butterfly.ui_report_copy_select','Select the report text you want to copy.');
+      if(state==='ok')return __alloT('stem.butterfly.ui_report_copied','Field report copied. Paste it wherever you keep your notes.');
+      if(state==='fail')return __alloT('stem.butterfly.ui_report_copy_blocked','Copying was blocked here. The report is shown below so you can select and copy it.');
+      return '';
+    }
+    // Browser textareas normalize line endings in restored notes.
+    function isCurrentReport(text){return text.replace(/\r\n?/g,'\n')===fieldReport(s).replace(/\r\n?/g,'\n');}
+    function copyIsActive(){return !!(stage.current&&stage.current.isConnected);}
     function copyReport(){
-      var text=fieldReport(s);
-      copyReportText(text).then(function(ok){
-        setCopyState(ok?'ok':'fail');
-        announce(ok?__alloT('stem.butterfly.ui_report_copied','Field report copied. Paste it wherever you keep your notes.'):__alloT('stem.butterfly.ui_report_copy_blocked','Copying was blocked here. The report is shown below so you can select and copy it.'));
+      var job=copyJob.current;if(job.pending||!copyIsActive()||reportIsEmpty(s))return;
+      var text=fieldReport(s);job.pending=true;setCopyPending(true);setCopyState('');announce(reportCopyFeedback('pending'));
+      copyReportText(text,copyIsActive).then(function(ok){
+        job.pending=false;if(!copyIsActive())return;
+        var result=ok?(isCurrentReport(text)?'ok':'changed'):'fail';
+        setCopyPending(false);setCopyState(result);if(!ok)setManualCopy(true);announce(reportCopyFeedback(result));
       });
     }
+    function manualReportCopied(event){
+      var node=event.currentTarget,length=node.selectionEnd-node.selectionStart;
+      if(!length){event.preventDefault();setCopyState('select');announce(reportCopyFeedback('select'));return;}
+      var result=length===node.value.length?(isCurrentReport(node.value)?'ok':'changed'):'partial';
+      setCopyState(result);announce(reportCopyFeedback(result));
+    }
     function draftCase(id,key,value){var next=Object.assign({},caseDraft),row=Object.assign({},next[id]);row[key]=value;next[id]=row;setCaseDraft(next);}
-    function submitCase(id){var d=caseDraft[id]||{},result=checkCase(s,id,d.stop,d.reason);if(result.ok)persist();announce(result.message);}
-    function retryCase(id){s.cases=cleanCases(s.cases);delete s.cases.answers[id];var next=Object.assign({},caseDraft);delete next[id];setCaseDraft(next);persist();announce(__alloT('stem.butterfly.ui_case_cleared','Case cleared. Make a new prediction.'));}
+    function submitCase(id){var d=caseDraft[id]||{},result=checkCase(s,id,d.stop,d.reason);if(result.ok){caseFocus.current={id:id,result:true};persist();}announce(result.message);}
+    function retryCase(id){caseFocus.current={id:id,result:false};s.cases=cleanCases(s.cases);delete s.cases.answers[id];var next=Object.assign({},caseDraft);delete next[id];setCaseDraft(next);persist();announce(__alloT('stem.butterfly.ui_case_cleared','Case cleared. Make a new prediction.'));}
     var canSpeak=typeof ctx.callTTS==='function'||!!(typeof window!=='undefined'&&window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function');
     function speak(text){
       if(!text)return;
@@ -4787,10 +5136,10 @@ function buildWorld(T,kit) {
     }
     function listen(text,what){return canSpeak?button(h(R.Fragment,null,h('span',{'aria-hidden':true},'🔊 '),__alloT('stem.butterfly.ui_listen','Listen'),h('span',{className:'bf-sr'},__alloFill(__alloT('stem.butterfly.ui_listen_sr_suffix',' · {value1}'),{value1:what}))),function(){speak(typeof text==='function'?text():text);},{className:'bf-listen'}):null;}
     function missionIntro(){return plain(__alloT('stem.butterfly.ui_mission_intro','The plot beside the path is mown grass today. Find out what monarchs need at every stage of life, then decide what to plant there and when to mow it. Back your plan with your own records.'),__alloT('stem.butterfly.ui_mission_intro_simple','The plot by the path is short, mown grass. Find out what monarchs need. Then choose what to plant there and when to mow it. Use your own records to show your plan works.'));}
-    function startSeason(){
+    function startSeason(event){
       s.season.mowing=mowPlan;s.season.prediction=seasonGuess||null;
       var result=runSeason(s,seasonSite,mowPlan,seasonGuess);
-      if(result.ok){persist();setSeasonGuess('');}
+      if(result.ok){queueWorkflowFocus(event,'.bf-season','.bf-weeks');persist();setSeasonGuess('');}
       setSeasonFeedback(result.message);announce(result.message);
     }
 
@@ -4822,14 +5171,19 @@ function buildWorld(T,kit) {
     }
     function endFlightPad(event){if(flightPad.current.pointer===event.pointerId)resetPointerSteering();}
     function cancelFlightPad(event){if(flightPad.current.pointer!==event.pointerId)return;clearFlightInput();if(!sceneMotion.current.paused)stopFlight(s);}
+    // Leave browser, assistive-technology and composition shortcuts to their owner.
+    function flightShortcut(event){var native=event.nativeEvent||event;return !event.altKey&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!native.isComposing&&native.keyCode!==229;}
+    function focusMeadow(){if(!stage.current)return;stage.current.focus({preventScroll:true});stage.current.scrollIntoView({block:'nearest',behavior:'instant'});}
     function keyFlightPad(event){
       var directions={ArrowUp:'forward',KeyW:'forward',ArrowDown:'back',KeyS:'back',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyE:'rise',KeyQ:'lower'},key=directions[event.code];
-      if(key){event.preventDefault();event.stopPropagation();if(event.type==='keyup')delete keys.current[key];else if(padCanFly())keys.current[key]=true;}
+      if(event.type==='keyup'){if(key)delete keys.current[key];return;}
+      if(!flightShortcut(event))return;
+      if(key){event.preventDefault();event.stopPropagation();if(padCanFly())keys.current[key]=true;}
       else if(event.code==='Space'&&!event.repeat){event.preventDefault();event.stopPropagation();if(event.type==='keydown'){toggleSceneMotion();if(stage.current)stage.current.focus({preventScroll:true});}}
       else if(event.code==='KeyG'&&event.type==='keydown'&&!event.repeat){event.preventDefault();event.stopPropagation();toggleGlide();}
     }
     function update(){refresh(function(n){return n+1;});if(api.current)api.current.draw();}
-    function announce(text){setMessage(text);update();}
+    function announce(text){statusRevision.current++;setMessage(text);update();}
     function syncMeadowSound(){var sound=meadowSound.current;if(sound.engine)sound.engine.set(sound.enabled&&!sound.muted&&!sceneMotion.current.paused&&!document.hidden,sound.volume/100);}
     function toggleMeadowSound(){
       var sound=meadowSound.current;
@@ -4844,8 +5198,13 @@ function buildWorld(T,kit) {
       resetPointerSteering();closeFeed();closeLife();closeLens();viewRef.current=id;setView(id);
       if(id==='pollinators'){s.paused=true;s.target=null;stopFlight(s);clearFlightInput();announce(__alloT('stem.butterfly.watch_opened','Watching a meadow visitor. Your butterfly stays where you left it. Pause all motion freezes the view and the meadow together.'));}else update();
     }
-    function chooseWatchPatch(id){watchSpeciesRef.current='auto';setWatchSpecies('auto');watchPatchRef.current=id;setWatchPatch(id);update();}
-    function chooseWatchSpecies(id){watchSpeciesRef.current=id;setWatchSpecies(id);update();}
+    // Resolve the same visitor as the scene: choosing a species can also change its flower patch.
+    function announceWatchedVisitor(){
+      var patches=habitats(s).filter(function(p){return p.nectar;}),index=watchedVisitorIndex(patches,watchPatchRef.current,watchSpeciesRef.current),species=meadowSpecies(VISITOR_SPECIES[index]),site=visitorPatch(patches,index);
+      if(site)announce(__alloFill(__alloT('stem.butterfly.ui_watch_selected','Watching {value1} at {value2}.'),{value1:species.name,value2:site.name}));else update();
+    }
+    function chooseWatchPatch(id){watchSpeciesRef.current='auto';setWatchSpecies('auto');watchPatchRef.current=id;setWatchPatch(id);announceWatchedVisitor();}
+    function chooseWatchSpecies(id){watchSpeciesRef.current=id;setWatchSpecies(id);announceWatchedVisitor();}
     function chooseLight(id){lightRef.current=id;setLight(id);update();}
     function chooseFlightControls(id){s.controlMode=id;clearFlightInput();s.target=null;stopFlight(s);announce(id==='steer'?__alloT('stem.butterfly.controls_direct_on','Butterfly steering: turn with A / D or left / right. Hold W or up to fly forward; S or down brakes. E / Q change height.'):__alloT('stem.butterfly.controls_map_on','Map directions: W A S D or arrows move north, west, south, and east. E / Q change height.'));}
     function leavePollinatorView(){if(viewRef.current==='pollinators'){viewRef.current='follow';setView('follow');}}
@@ -4857,7 +5216,7 @@ function buildWorld(T,kit) {
     }
     function persist(){setCopyState('');if(ctx.updateMulti)ctx.updateMulti('butterfly',save(s));else if(ctx.setToolData)ctx.setToolData(function(prev){return Object.assign({},prev,{butterfly:save(s)});});}
     function writeNotebook(changes){s.notebook=cleanNotebook(Object.assign({},s.notebook,changes));if(Object.prototype.hasOwnProperty.call(changes,'claim'))setPickedClaim(s.notebook.claim);persist();update();}
-    function jumpTo(id){var node=sections.current[id];if(!node)return;feedMotion.current.playing=false;s.paused=true;s.target=null;stopFlight(s);lifeMotion.current.playing=false;clearFlightInput();update();node.focus({preventScroll:true});node.scrollIntoView({block:'start',behavior:'auto'});}
+    function jumpTo(id){var node=id==='explore'?stage.current:sections.current[id];if(!node)return;feedMotion.current.playing=false;s.paused=true;s.target=null;stopFlight(s);lifeMotion.current.playing=false;clearFlightInput();update();node.focus({preventScroll:true});node.scrollIntoView({block:'start',behavior:'auto'});}
     function closeLens(){lensRef.current=null;setLens(null);}
     function closeFeed(){feedRef.current=false;setFeedWatch(false);feedMotion.current.playing=false;}
     function showFeed(phase,focusScene,restart){leavePollinatorView();
@@ -4869,18 +5228,18 @@ function buildWorld(T,kit) {
       announce(__alloFill(__alloT('stem.butterfly.ui_feed_opened','{value1}. Read the observation and controls below the scene.'),{value1:feedingPhase(phase,feedMotion.current.contact).title}));
       if(focusScene&&stage.current){stage.current.focus({preventScroll:true});stage.current.scrollIntoView({block:'center',behavior:'auto'});}
     }
-    function stillFeed(){feedMotion.current.progress=1;feedMotion.current.playing=false;update();}
+    function stillFeed(){var motion=feedMotion.current;motion.progress=1;motion.playing=false;announce(feedingOutcome(feedingVisual(s),motion.phase,1,motion.contact).summary);}
     function pauseFeed(){feedMotion.current.playing=false;update();}
     function seekFeed(event){feedMotion.current.progress=clamp(Number(event.target.value)/100,0,1);feedMotion.current.playing=false;update();}
     function continueFeed(){if(!feedRef.current||window.matchMedia('(prefers-reduced-motion: reduce)').matches||feedMotion.current.progress>=1)return;resumeMotion();feedMotion.current.playing=true;update();}
     function focusFeed(focus){feedMotion.current.focus=focus;update();}
     function contactFeed(contact){feedMotion.current.contact=contact;feedMotion.current.playing=false;announce(contact?__alloT('stem.butterfly.ui_feed_contact_on','The receptive surface is in the pollen path. Inspect the transfer.'):__alloT('stem.butterfly.ui_feed_contact_off','The receptive surface is outside the pollen path. The butterfly can still feed.'));}
     function speedFeed(event){var speed=Number(event.target.value);if([.5,1,2].indexOf(speed)<0)return;feedMotion.current.speed=speed;update();}
-    function recordFeed(){
+    function recordFeed(event){
       var visual=feedingVisual(s),motion=feedMotion.current;
       if(!feedRef.current||!visual||motion.signature!==visual.patch+':'+(visual.plan||'')){announce(__alloT('stem.butterfly.ui_feed_open_visit_first','Open a flower visit at this patch before recording it.'));return;}
       var result=recordPollination(s,motion.phase,motion.progress,motion.contact);
-      if(result.ok)persist();announce(result.message);
+      if(result.ok){queueWorkflowFocus(event,'.bf-feed-watch','.bf-feed-contact');persist();}announce(result.message);
     }
     function explainPollination(){writeNotebook({claim:'feeding-always-pollinates'});jumpTo('notebook');}
     function closeLife(){lifeRef.current=false;setLifeWatch(false);lifeMotion.current.playing=false;lifeMotion.current.progress=1;}
@@ -4894,7 +5253,17 @@ function buildWorld(T,kit) {
     function replayLife(){if(lifecycleVisual(s)){resumeMotion();showLife(true,false);}}
     function pauseLife(){lifeMotion.current.playing=false;update();}
     function seekLife(event){var progress=Number(event.target.value);lifeMotion.current.progress=clamp(Number.isFinite(progress)?progress/100:1,0,1);lifeMotion.current.playing=false;update();}
-    function stillLife(){lifeMotion.current.progress=1;lifeMotion.current.playing=false;update();}
+    // Explicit comparison choices describe their result once; playback and scrubbing stay quiet.
+    function larvalTissueLabel(meal){return meal.completedBites>0||meal.notches.some(function(n){return n.radius>0;})?__alloT('stem.butterfly.lw_meal_marks','Feeding marks at the edge'):__alloT('stem.butterfly.lw_meal_unbitten','Unbitten leaf edge');}
+    function larvalObservationNote(meal){return meal.phase==='complete'?__alloT('stem.butterfly.lw_meal_complete','The sample feeding sequence is complete. Compare the scalloped edge with the unbitten leaf.'):meal.phase==='bite'?__alloT('stem.butterfly.lw_meal_bite','The mouthparts meet the leaf edge. Watch the missing tissue grow as the bite closes.'):__alloT('stem.butterfly.lw_meal_follow','Follow the mouthparts along the margin. The feeding marks stay where leaf tissue was removed.');}
+    function showLifeMoment(progress){
+      var motion=lifeMotion.current,visual=lifecycleVisual(s);motion.progress=progress;motion.playing=false;
+      var meal=larvalFeeding(visual,progress),maturity=chrysalisMaturation(visual,progress);
+      if(motion.focus==='feeding'&&meal.active)announce(larvalTissueLabel(meal)+'. '+larvalObservationNote(meal));
+      else if(motion.focus==='maturation'&&maturity.active)announce(maturity.label+'. '+maturity.note);
+      else update();
+    }
+    function stillLife(){showLifeMoment(1);}
     function continueLife(){var visual=lifecycleVisual(s);if(!lifeRef.current||!visual||visual.blocked||(['caterpillar','adult'].indexOf(visual.stage)<0&&!(visual.stage==='chrysalis'&&lifeMotion.current.focus==='maturation'))||window.matchMedia('(prefers-reduced-motion: reduce)').matches||lifeMotion.current.progress>=1)return;resumeMotion();lifeMotion.current.playing=true;update();}
     function focusLife(focus){if(['context','specimen','detail','feeding','maturation'].indexOf(focus)<0)return;var visual=lifecycleVisual(s);if(focus==='feeding'&&!larvalFeeding(visual,lifeMotion.current.progress).active||focus==='maturation'&&!chrysalisMaturation(visual,lifeMotion.current.progress).active)return;if(visual&&visual.stage==='chrysalis'&&focus!=='maturation')lifeMotion.current.playing=false;lifeMotion.current.focus=focus;update();}
     function speedLife(event){var speed=Number(event.target.value);if([.5,1,2].indexOf(speed)<0)return;lifeMotion.current.speed=speed;update();}
@@ -4913,6 +5282,7 @@ function buildWorld(T,kit) {
       var alive=true,world=null,gl=null,camera=null,raf=0,last=0,lastUI=0,lastAmbientDraw=0,observer=null;
       var node=stage.current,cv=map.current,reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
       var width=1,height=1,lastMapMode=mapModeRef.current,lastView=viewRef.current,lastLens=lensRef.current,lastLifeWatch=lifeRef.current,lastFeedWatch=feedRef.current;
+      var lastMotionReduced=reduced.matches;
       var tracking={id:'',clock:0,x:0,y:0,z:0};
       function paintMap(){
         var g=cv.getContext('2d');if(!g)return;
@@ -5025,15 +5395,21 @@ function buildWorld(T,kit) {
         if(world){if(world.watchVisitor)world.watchVisitor(null);var geometries=new Set(),materials=new Set();world.scene.traverse(function(o){if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){materials.add(m);});});geometries.forEach(function(g){g.dispose();});materials.forEach(function(m){m.dispose();});world=null;}
         if(gl){var old=gl;gl=null;old.domElement.removeEventListener('webglcontextlost',lost);old.dispose();if(window.StemLab.releaseGl)window.StemLab.releaseGl(old);old.domElement.remove();}
       }
-      function fallback(){disposeWorld();wayfinding(null,false);if(alive){Object.keys(feedLabels.current).forEach(function(id){var label=feedLabels.current[id];if(label)label.style.visibility='hidden';});setRenderer('map');paintMap();cv.style.visibility='visible';}}
+      function fallback(){
+        // These controls disappear or become unavailable in the illustrated view.
+        // Recover their focus before changing renderer, without disturbing notes.
+        var active=document.activeElement,owner=node.closest('.bfl');
+        if(active&&owner&&owner.contains(active)&&(active.closest('.bf-camera-tools,.bf-light-controls:not(.bf-flight-controls),.bf-watch-panel')||(s.paused||sceneMotion.current.paused)&&active.closest('.bf-pilot,.bf-touch')))focusMeadow();
+        disposeWorld();wayfinding(null,false);if(alive){Object.keys(feedLabels.current).forEach(function(id){var label=feedLabels.current[id];if(label)label.style.visibility='hidden';});setRenderer('map');paintMap();cv.style.visibility='visible';}}
       function lost(e){e.preventDefault();sceneMotion.current.paused=true;sceneMotion.current.reset=true;syncMeadowSound();feedMotion.current.playing=false;s.paused=true;stopFlight(s);lifeMotion.current.playing=false;clearFlightInput();fallback();setMessage(__alloT('stem.butterfly.ui_3d_interrupted','The 3D view was interrupted. Motion is paused and your journal is intact. Continue with the illustrated view.'));refresh(function(n){return n+1;});}
       function pauseForFocus(){sceneMotion.current.paused=true;sceneMotion.current.reset=true;syncMeadowSound();lifeMotion.current.playing=false;feedMotion.current.playing=false;s.paused=true;s.target=null;stopFlight(s);setMessage(__alloT('stem.butterfly.ui_all_paused_while_away','All motion paused while you were away. Resume motion when you are ready.'));refresh(function(n){return n+1;});clearFlightInput();last=0;draw();}
       function hidden(){if(document.hidden)pauseForFocus();}
-      function motionPreferenceChanged(){sceneMotion.current.reset=true;if(reduced.matches){lifeMotion.current.playing=false;feedMotion.current.playing=false;feedMotion.current.progress=1;}draw();refresh(function(n){return n+1;});}
+      function motionPreferenceChanged(){if(lastMotionReduced===reduced.matches)return;lastMotionReduced=reduced.matches;sceneMotion.current.reset=true;if(reduced.matches){lifeMotion.current.playing=false;feedMotion.current.playing=false;feedMotion.current.progress=1;}draw();refresh(function(n){return n+1;});}
       var keyMap={ArrowUp:'forward',KeyW:'forward',ArrowDown:'back',KeyS:'back',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyE:'rise',KeyQ:'lower'};
-      function keydown(e){if(!node.contains(document.activeElement)||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName))return;if(keyMap[e.code]){e.preventDefault();if(!sceneMotion.current.paused&&!lifeRef.current&&!feedRef.current)keys.current[keyMap[e.code]]=true;}if(e.code==='Space'&&!e.repeat){e.preventDefault();toggleSceneMotion();}if(e.code==='KeyG'&&!e.repeat){e.preventDefault();toggleGlide();}}
+      function keydown(e){if(!flightShortcut(e)||!node.contains(document.activeElement)||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName))return;if(keyMap[e.code]){e.preventDefault();if(!sceneMotion.current.paused&&!lifeRef.current&&!feedRef.current)keys.current[keyMap[e.code]]=true;}if(e.code==='Space'&&!e.repeat){e.preventDefault();toggleSceneMotion();}if(e.code==='KeyG'&&!e.repeat){e.preventDefault();toggleGlide();}}
       function keyup(e){if(keyMap[e.code])delete keys.current[keyMap[e.code]];}
-      function frame(now){if(!alive)return;var wasPaused=s.paused,scenery=sceneMotion.current,halted=scenery.paused||document.hidden,dt=last&&!scenery.reset?Math.max(0,(now-last)/1000):0,motion=lifeMotion.current,wasMoving=motion.playing,feedingMotion=feedMotion.current,wasFeeding=feedingMotion.playing;
+      // Keep idle controls current even when a browser delays the preference notification.
+      function frame(now){if(!alive)return;if(lastMotionReduced!==reduced.matches)motionPreferenceChanged();var wasPaused=s.paused,scenery=sceneMotion.current,halted=scenery.paused||document.hidden,dt=last&&!scenery.reset?Math.max(0,(now-last)/1000):0,motion=lifeMotion.current,wasMoving=motion.playing,feedingMotion=feedMotion.current,wasFeeding=feedingMotion.playing;
         if(!halted&&motion.playing){if(!lifeRef.current||reduced.matches){motion.playing=false;}else{motion.progress=Math.min(1,motion.progress+dt*motion.speed/3.6);if(motion.progress>=1)motion.playing=false;}}
         if(!halted&&feedingMotion.playing){if(!feedRef.current||reduced.matches){feedingMotion.playing=false;feedingMotion.progress=1;}else{feedingMotion.progress=Math.min(1,feedingMotion.progress+dt*feedingMotion.speed/5);if(feedingMotion.progress>=1)feedingMotion.playing=false;}}
         if(!halted)advanceFrame(s,dt,keys.current);
@@ -5070,7 +5446,7 @@ function buildWorld(T,kit) {
     var lifeDetail=specimen?lifecycleInspection(specimen,lifeMotion.current.focus,lifeMotion.current.progress,motionReduced):null,lifeCanAnimate=!!(specimen&&!specimen.blocked&&(specimen.stage==='caterpillar'||specimen.stage==='adult'||specimen.stage==='chrysalis'&&lifeMotion.current.focus==='maturation'));
     var larvalMeal=larvalFeeding(specimen,lifeMotion.current.progress),watchingMeal=!!(watching&&larvalMeal.active&&lifeMotion.current.focus==='feeding');
     var maturity=chrysalisMaturation(specimen,lifeMotion.current.progress),watchingMaturation=!!(watching&&maturity.active&&lifeMotion.current.focus==='maturation');
-    var reportEmpty=reportIsEmpty(s),reportText=reportEmpty?'':fieldReport(s);
+    var reportEmpty=reportIsEmpty(s),reportText=reportEmpty?'':fieldReport(s),reportCopyNote=reportCopyFeedback(copyPending?'pending':copyState);
     var seasonPatch=seasonSite?patch(seasonSite,s):null;
     var seasonView=seasonPatch?seasonOutcome(seasonPatch,mowPlan):null;
     var cycleSite=patch(s.lifecycle.patch,s),cycleIndex=STAGES.findIndex(function(st){return st.id===s.lifecycle.stage;});
@@ -5080,6 +5456,9 @@ function buildWorld(T,kit) {
     var seasonRevealed=!!(seasonPatch&&seasonRunFor(s,seasonSite,mowPlan)),practice=casesSummary(s),caseAnswers=cleanCases(s.cases).answers;
     var watchHabitats=habitats(s).filter(function(p){return p.nectar;}),watchIndex=watchedVisitorIndex(watchHabitats,watchPatch,watchSpecies),watchedSpecies=meadowSpecies(VISITOR_SPECIES[watchIndex]),watchSite=visitorPatch(watchHabitats,watchIndex);
     function button(label,onClick,extra){return h('button',Object.assign({type:'button',onClick:onClick},extra||{}),label);}
+    // Playback availability changes while a learner may still be on the button.
+    // Keep that focus, omit unavailable commands from Tab order, and guard all activation.
+    function playbackButton(label,onClick,extra){var attrs=Object.assign({},extra),unavailable=!!attrs.disabled;delete attrs.disabled;attrs.className=(attrs.className?attrs.className+' ':'')+'bf-playback-command';attrs['aria-disabled']=unavailable;attrs.tabIndex=unavailable?-1:0;return button(label,function(event){if(unavailable){event.preventDefault();event.stopPropagation();return;}onClick(event);},attrs);}
     var padVisible=s.controlMode==='steer'&&!observing&&!watchingPollinators&&!detail&&!landed;
     function flightPadControls(){
       if(!padVisible)return null;
@@ -5095,10 +5474,19 @@ function buildWorld(T,kit) {
         h('span',{className:'bf-pilot-hint'},allMotionPaused?__alloT('stem.butterfly.pad_paused','Motion paused'):disabled?__alloT('stem.butterfly.pad_ready','Take flight to steer'):__alloT('stem.butterfly.pad_release','Release to hover')));
     }
     function returnToGuide(){return h('div',{className:'bf-return'},button(__alloT('stem.butterfly.ui_back_to_guide','Back to investigation guide'),function(){jumpTo('guide');}));}
-    function hold(label,key,spoken){return button(label,function(){},{'aria-label':spoken||label,'data-direction':key,disabled:allMotionPaused||s.paused||!!s.landed,
+    // Assistive activation does not include the pointer/key hold sequence.
+    // Give it one bounded step; native holds keep their existing input path.
+    function activateFlightStep(event,key,spoken){
+      if(holdBlockedClicks.current.has(event.currentTarget))return;
+      if(event.detail!==0||!flightShortcut(event)||s.paused||s.landed||sceneMotion.current.paused||document.hidden||lifeRef.current||feedRef.current||lensRef.current||viewRef.current==='pollinators')return;
+      clearFlightInput();stopFlight(s);var input={};input[key]=true;
+      advanceFrame(s,.25,input);stopFlight(s);announce(__alloFill(__alloT('stem.butterfly.hold_step_done','{value1}: one short step. Hovering.'),{value1:spoken}));
+    }
+    function hold(label,key,spoken){return button(label,function(event){activateFlightStep(event,key,spoken||label);},{'aria-label':spoken||label,'data-direction':key,disabled:allMotionPaused||s.paused||!!s.landed,
       onPointerDown:function(e){if(sceneMotion.current.paused||s.paused||s.landed||e.button!==0)return;e.preventDefault();try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){return;}keys.current[key]=true;},
       onPointerUp:function(){delete keys.current[key];},onPointerCancel:function(){clearFlightInput();stopFlight(s);update();},onLostPointerCapture:function(){delete keys.current[key];},
-      onKeyDown:function(e){if((e.key===' '||e.key==='Enter')&&!sceneMotion.current.paused&&!s.paused&&!s.landed){e.preventDefault();keys.current[key]=true;}},onKeyUp:function(){delete keys.current[key];},onBlur:function(){delete keys.current[key];if(!sceneMotion.current.paused)stopFlight(s);}});}
+      onKeyDown:function(e){if(e.key!==' '&&e.key!=='Enter')return;if(e.repeat&&holdBlockedClicks.current.has(e.currentTarget))return;if(!flightShortcut(e)){holdBlockedClicks.current.add(e.currentTarget);return;}holdBlockedClicks.current.delete(e.currentTarget);if(!sceneMotion.current.paused&&!s.paused&&!s.landed){e.preventDefault();keys.current[key]=true;}},
+      onKeyUp:function(e){if(e.key!==' '&&e.key!=='Enter')return;delete keys.current[key];var node=e.currentTarget;if(holdBlockedClicks.current.has(node))setTimeout(function(){holdBlockedClicks.current.delete(node);},0);},onBlur:function(event){holdBlockedClicks.current.delete(event.currentTarget);delete keys.current[key];if(!sceneMotion.current.paused)stopFlight(s);}});}
     return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':!!ctx.isDark,'data-contrast':!!ctx.isContrast,'aria-label':__alloT('stem.butterfly.a11y_butterfly_habitat_lab',"Butterfly Habitat Lab")},
       h('style',null,CSS),
       h('header',{className:'bf-header'},h('div',{className:'bf-header-copy'},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.top_eyebrow','Field study 01 · Mid-Atlantic, North America · Summer')),h('h2',null,__alloT('stem.butterfly.top_title','A meadow through butterfly eyes')),h('p',null,plain(__alloT('stem.butterfly.top_intro_diverse','Fly as a monarch, meet three other meadow butterflies, and discover how flowers and leaves support different stages of life.'),__alloT('stem.butterfly.top_intro_diverse_simple','Fly as a monarch and meet other butterflies. Visit flowers and look at leaves to find out what a monarch needs as it grows.'))),h('div',{className:'bf-header-tools'},button(h(R.Fragment,null,h('span',{'aria-hidden':true},__alloT('stem.butterfly.top_simpler_icon','Aa')+' '),__alloT('stem.butterfly.top_simpler_words','Simpler words')),toggleSimpler,{'aria-pressed':simpler,className:'bf-simpler'}),button(__alloT('stem.butterfly.top_guide_eyebrow','Your field investigation'),function(){jumpTo('guide');},{className:'bf-guide-link'}))),bfBotanicalPlate(h)),
@@ -5117,44 +5505,44 @@ function buildWorld(T,kit) {
           h('p',null,feedingStep.note),
           h('p',{className:'bf-help'},feeding.species==='milkweed'?__alloT('stem.butterfly.fw_help_milkweed','Milkweed packages its pollen in paired pollinia. A packet can catch on a leg and enter a receptive slit in another milkweed flower. Compare contact and missed contact in the final step.'):__alloT('stem.butterfly.fw_help_bergamot','Bergamot has tubular flowers. Loose pollen grains can brush onto the butterfly and reach a receptive stigma on another bergamot flower. Compare contact and missed contact in the final step.')),
           h('div',{className:'bf-feed-inspect',role:'group','aria-label':__alloT('stem.butterfly.a11y_flower_visit_views', 'Flower visit views')},h('span',{className:'bf-eyebrow'},__alloT('stem.butterfly.fw_look_closer','Look closer')),['whole','tube','pollen'].map(function(focus){return button(focus==='whole'?__alloT('stem.butterfly.fw_focus_whole','Whole visit'):focus==='tube'?__alloT('stem.butterfly.fw_focus_tube','Drinking tube close-up'):__alloT('stem.butterfly.fw_focus_pollen','Pollen close-up'),function(){focusFeed(focus);},{key:focus,'aria-pressed':feedMotion.current.focus===focus});})),
-          h('div',{className:'bf-feed-playback'},h('label',{className:'bf-feed-scrub'},h('span',null,__alloT('stem.butterfly.fw_visit_progress','Visit progress'),h('output',{'aria-live':'off'},Math.floor(feedMotion.current.progress*100+1e-6)+'%')),h('input',{type:'range',min:0,max:100,step:1,value:Math.floor(feedMotion.current.progress*100+1e-6),'aria-label':__alloT('stem.butterfly.a11y_visit_progress', 'Visit progress'),'aria-valuetext':__alloFill(__alloT('stem.butterfly.fw_progress_valuetext','{value1}% of {value2}'),{value1:Math.floor(feedMotion.current.progress*100+1e-6),value2:feedingStep.title}),onChange:seekFeed,onPointerDown:pauseFeed})),
-            h('label',{className:'bf-feed-speed'},__alloT('stem.butterfly.fw_playback_speed','Playback speed'),h('select',{'aria-label':__alloT('stem.butterfly.a11y_playback_speed', 'Playback speed'),value:feedMotion.current.speed,onChange:speedFeed,disabled:motionReduced},h('option',{value:.5},__alloT('stem.butterfly.fw_speed_half','Half speed')),h('option',{value:1},__alloT('stem.butterfly.fw_speed_normal','Normal speed')),h('option',{value:2},__alloT('stem.butterfly.fw_speed_double','Double speed'))))),
-          feedingStep.id==='deposit'?h('fieldset',{className:'bf-feed-contact'},h('legend',null,__alloT('stem.butterfly.fw_contact_legend','Does the pollen make contact?')),h('p',{className:'bf-help'},__alloT('stem.butterfly.fw_contact_help','Compare the receptive surface in or outside the pollen path. Both flowers are the same plant species.')),h('div',null,button(__alloT('stem.butterfly.fw_contact_touches','Touches receptive surface'),function(){contactFeed(true);},{'aria-pressed':feedMotion.current.contact}),button(__alloT('stem.butterfly.fw_contact_misses','Misses receptive surface'),function(){contactFeed(false);},{'aria-pressed':!feedMotion.current.contact}))):null,
+          h('div',{className:'bf-feed-playback'},h('label',{className:'bf-feed-scrub'},h('span',null,__alloT('stem.butterfly.fw_visit_progress','Visit progress'),h('output',{'aria-live':'off'},Math.floor(feedMotion.current.progress*100+1e-6)+'%')),h('input',{type:'range',min:0,max:100,step:1,value:Math.floor(feedMotion.current.progress*100+1e-6),'aria-label':__alloT('stem.butterfly.a11y_visit_progress', 'Visit progress'),'aria-describedby':'bf-feed-progress-help','aria-valuetext':__alloFill(__alloT('stem.butterfly.fw_progress_valuetext','{value1}% of {value2}'),{value1:Math.floor(feedMotion.current.progress*100+1e-6),value2:feedingStep.title}),onChange:seekFeed,onPointerDown:pauseFeed})),
+            h('label',{className:'bf-feed-speed'},__alloT('stem.butterfly.fw_playback_speed','Playback speed'),h('select',{'aria-label':__alloT('stem.butterfly.a11y_playback_speed', 'Playback speed'),value:feedMotion.current.speed,onChange:speedFeed},h('option',{value:.5},__alloT('stem.butterfly.fw_speed_half','Half speed')),h('option',{value:1},__alloT('stem.butterfly.fw_speed_normal','Normal speed')),h('option',{value:2},__alloT('stem.butterfly.fw_speed_double','Double speed'))))),
+          feedingStep.id==='deposit'?h('fieldset',{className:'bf-feed-contact',tabIndex:-1,'aria-describedby':'bf-pollination-saved-summary'},h('legend',null,__alloT('stem.butterfly.fw_contact_legend','Does the pollen make contact?')),h('p',{className:'bf-help'},__alloT('stem.butterfly.fw_contact_help','Compare the receptive surface in or outside the pollen path. Both flowers are the same plant species.')),h('div',null,button(__alloT('stem.butterfly.fw_contact_touches','Touches receptive surface'),function(){contactFeed(true);},{'aria-pressed':feedMotion.current.contact}),button(__alloT('stem.butterfly.fw_contact_misses','Misses receptive surface'),function(){contactFeed(false);},{'aria-pressed':!feedMotion.current.contact}))):null,
           h('section',{className:'bf-feed-result','aria-label':__alloT('stem.butterfly.a11y_pollen_transfer_result', 'Pollen transfer result')},h('div',{className:'bf-feed-ledger'},h('p',null,h('span',null,__alloT('stem.butterfly.fw_ledger_butterfly','On the butterfly')),h('strong',null,feedResult.carriedLabel)),h('p',null,h('span',null,__alloT('stem.butterfly.fw_ledger_next_flower','On the next flower')),h('strong',null,feedResult.receivedLabel))),h('p',{className:'bf-help'},feedResult.summary)),
           h('div',{className:'bf-feed-key'},h('span',null,h('i',{'data-cue':'nectar','aria-hidden':true}),__alloT('stem.butterfly.fw_key_nectar','Nectar: liquid food')),h('span',null,h('i',{'data-cue':'pollen','aria-hidden':true}),__alloT('stem.butterfly.fw_key_pollen','Pollen: carried outside')),h('span',null,h('i',{'data-cue':'surface','aria-hidden':true}),__alloT('stem.butterfly.fw_key_surface','Receptive flower surface'))),
-          h('div',{className:'bf-life-watch-actions'},feedingStep.id!=='deposit'?button(feedingStep.id==='sip'?__alloT('stem.butterfly.fw_fly_next','Fly to next flower'):__alloT('stem.butterfly.fw_step_transfer','Transfer pollen'),function(){showFeed(feedingStep.id==='sip'?'carry':'deposit',false);},{className:'bf-primary',disabled:feedMotion.current.progress<1}):null,
-            button(__alloT('stem.butterfly.fw_continue_motion','Continue feeding motion'),continueFeed,{disabled:motionReduced||(!allMotionPaused&&feedMotion.current.playing)||feedMotion.current.progress>=1}),button(__alloT('stem.butterfly.fw_replay_motion','Replay feeding motion'),function(){resumeMotion();showFeed(feedingStep.id,false);},{disabled:motionReduced||(!allMotionPaused&&feedMotion.current.playing)}),button(__alloT('stem.butterfly.fw_pause_motion','Pause feeding motion'),pauseFeed,{disabled:motionReduced||allMotionPaused||!feedMotion.current.playing}),button(__alloT('stem.butterfly.fw_show_still','Show step still'),stillFeed,{disabled:feedMotion.current.progress>=1}),
-            button(__alloT('stem.butterfly.fw_restart','Restart flower visit'),function(){showFeed('sip',false,true);}),button(__alloT('stem.butterfly.fw_return_habitat','Return to habitat view'),function(){closeFeed();update();})),
-          h('p',{className:'bf-help'},motionReduced?__alloT('stem.butterfly.fw_motion_help_reduced','Reduced motion: each step opens still. Drag Visit progress or use its arrow keys to inspect any moment without playback.'):__alloT('stem.butterfly.fw_motion_help','Drag Visit progress to pause at any moment. Continue resumes there; Replay starts the current step again. Each step stops at its endpoint.')),
+          h('div',{className:'bf-life-watch-actions'},feedingStep.id!=='deposit'?button(feedingStep.id==='sip'?__alloT('stem.butterfly.fw_fly_next','Fly to next flower'):__alloT('stem.butterfly.fw_step_transfer','Transfer pollen'),function(event){var keyboard=event.detail===0&&event.currentTarget===document.activeElement,next=feedingStep.id==='sip'?'carry':'deposit';showFeed(next,false);if(next==='deposit'||keyboard)focusMeadow();},{className:'bf-primary',disabled:feedMotion.current.progress<1}):null,
+            playbackButton(__alloT('stem.butterfly.fw_continue_motion','Continue feeding motion'),continueFeed,{disabled:motionReduced||(!allMotionPaused&&feedMotion.current.playing)||feedMotion.current.progress>=1}),playbackButton(__alloT('stem.butterfly.fw_replay_motion','Replay feeding motion'),function(){resumeMotion();showFeed(feedingStep.id,false);},{disabled:motionReduced||(!allMotionPaused&&feedMotion.current.playing)}),playbackButton(__alloT('stem.butterfly.fw_pause_motion','Pause feeding motion'),pauseFeed,{disabled:motionReduced||allMotionPaused||!feedMotion.current.playing}),playbackButton(__alloT('stem.butterfly.fw_show_still','Show step still'),stillFeed,{disabled:feedMotion.current.progress>=1}),
+            button(__alloT('stem.butterfly.fw_restart','Restart flower visit'),function(){showFeed('sip',false,true);}),button(__alloT('stem.butterfly.fw_return_habitat','Return to habitat view'),function(){closeFeed();update();focusMeadow();})),
+          h('p',{className:'bf-help',id:'bf-feed-progress-help'},motionReduced?__alloT('stem.butterfly.fw_motion_help_reduced','Reduced motion: each step opens still. Drag Visit progress or use its arrow keys to inspect any moment without playback.'):__alloT('stem.butterfly.fw_motion_help','Drag Visit progress to pause at any moment. Continue resumes there; Replay starts the current step again. Each step stops at its endpoint.')),
           feedingStep.id==='deposit'?h('section',{className:'bf-pollination-comparison','aria-label':__alloT('stem.butterfly.a11y_pollination_comparison', 'Pollination comparison')},
             h('div',{className:'bf-pollination-head'},h('div',null,h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.fw_note_eyebrow','Keep a field note')),h('h4',null,__alloT('stem.butterfly.fw_note_title','Same flowers. Different contact.'))),button(feedSaved?__alloT('stem.butterfly.fw_visit_recorded','Visit recorded'):__alloT('stem.butterfly.fw_record_visit','Record this flower visit'),recordFeed,{className:'bf-primary',disabled:feedSaved||feedMotion.current.progress!==1})),
-            h('p',{className:'bf-help'},feedPairReady?__alloT('stem.butterfly.fw_record_help_pair','Both contact cases are saved. Replay them or explain your comparison.'):feedSaved?__alloT('stem.butterfly.fw_record_help_saved','This case is saved. Switch contact to inspect and record the other case.'):feedMotion.current.progress!==1?__alloT('stem.butterfly.fw_record_help_finish','Finish this step before recording: move Visit progress to 100% or choose Show step still.'):__alloT('stem.butterfly.fw_record_help_record','Record the completed visit you inspected. Watching and switching contact do not save observations automatically.')),
+            h('p',{className:'bf-help',id:'bf-pollination-saved-summary'},feedPairReady?__alloT('stem.butterfly.fw_record_help_pair','Both contact cases are saved. Replay them or explain your comparison.'):feedSaved?__alloT('stem.butterfly.fw_record_help_saved','This case is saved. Switch contact to inspect and record the other case.'):feedMotion.current.progress!==1?__alloT('stem.butterfly.fw_record_help_finish','Finish this step before recording: move Visit progress to 100% or choose Show step still.'):__alloT('stem.butterfly.fw_record_help_record','Record the completed visit you inspected. Watching and switching contact do not save observations automatically.')),
             h('div',{className:'bf-pollination-cases'},[true,false].map(function(contact){var saved=feedVisits.some(function(row){return row.contact===contact;});return h('div',{key:String(contact),'data-bf-pollination-case':contact?'contact':'miss','data-recorded':String(saved)},h('strong',null,contact?__alloT('stem.butterfly.fw_case_contact','Contact'):__alloT('stem.butterfly.fw_case_miss','Missed contact')),h('span',{className:'bf-pollination-saved'},saved?__alloT('stem.butterfly.fw_case_recorded','Recorded'):__alloT('stem.butterfly.fw_case_not_recorded','Not recorded yet')),h('p',null,saved?(contact?__alloT('stem.butterfly.fw_case_contact_result','Nectar feeding + pollen transfer'):__alloT('stem.butterfly.fw_case_miss_result','Nectar feeding; no pollen transfer')):__alloT('stem.butterfly.fw_case_inspect','Inspect this case, then record what happened.')));})),
             feedPairReady?h('div',{className:'bf-pollination-conclusion'},h('p',null,__alloT('stem.butterfly.fw_conclusion','Both visits included nectar feeding. Only contact transferred pollen to the receptive surface. Feeding and pollination are different events.')),button(__alloT('stem.butterfly.fw_explain','Explain this comparison'),explainPollination)):h('p',{className:'bf-help'},__alloFill(__alloT('stem.butterfly.fw_cases_count','{value1} of 2 cases recorded at this patch. Keep the flowers the same and change only contact.'),{value1:feedVisits.length})),
             h('p',{className:'bf-help'},__alloT('stem.butterfly.fw_model_note','These are observations of a teaching model. Pollen transfer does not establish whether fertilization or seed development followed.')),
             h('p',{className:'bf-help bf-pollen-fact'},__alloT('stem.butterfly.fw_pollen_fact','Did you know? Butterflies stand high on long, thin legs, so less pollen sticks to them than to bees, which gather pollen on purpose. Contact is never guaranteed. (USDA Forest Service)'))):null,
           h('p',{className:'bf-help'},__alloT('stem.butterfly.fw_scale_note','Flower structures, pollen, and time are enlarged or simplified so you can follow them. The contact comparison illustrates one cause of transfer; it does not predict seed production. Nectar is shown turquoise; yellow pollen stays outside the drinking tube. Use Record this flower visit to save a pollination observation, or Examine patch to record habitat evidence.'))):null,
-        watching?h('section',{className:'bf-life-watch','aria-label':__alloT('stem.butterfly.a11y_life_cycle_observation', 'Life cycle observation'),'data-life-stage':specimen.stage},
+        watching?h('section',{className:'bf-life-watch',tabIndex:-1,'aria-label':__alloT('stem.butterfly.a11y_life_cycle_observation', 'Life cycle observation'),'data-life-stage':specimen.stage},
           h('div',{className:'bf-life-watch-head'},h('div',null,h('div',{className:'bf-eyebrow'},specimen.recorded?__alloT('stem.butterfly.lw_eyebrow_review','Reviewing a recorded generation'):__alloT('stem.butterfly.lw_eyebrow_watch','Watch metamorphosis')),h('h3',null,specimen.title)),h('span',{className:'bf-life-stage-label'},specimenStage.ordinal+' / 04')),
           !specimen.host?h('p',{className:'bf-life-caution'},__alloT('stem.butterfly.lw_caution','This is a model experiment on a non-host patch. Wild monarchs normally lay their eggs on milkweed. The model lets you compare what happens when that food is absent.')):null,
           h('div',{className:'bf-feed-inspect bf-life-inspect',role:'group','aria-label':__alloT('stem.butterfly.a11y_life_cycle_views', 'Life cycle views')},h('span',{className:'bf-eyebrow'},__alloT('stem.butterfly.fw_look_closer','Look closer')),
             button(__alloT('stem.butterfly.lw_focus_context','Plant context'),function(){focusLife('context');},{'aria-pressed':lifeMotion.current.focus==='context'}),button(__alloT('stem.butterfly.lw_focus_specimen','Specimen close-up'),function(){focusLife('specimen');},{'aria-pressed':lifeMotion.current.focus==='specimen'}),button(lifeDetail.detailLabel,function(){focusLife('detail');},{'aria-pressed':lifeMotion.current.focus==='detail'}),larvalMeal.active?button(__alloT('stem.butterfly.lw_focus_feeding','Leaf feeding close-up'),function(){focusLife('feeding');},{'aria-pressed':lifeMotion.current.focus==='feeding'}):null,maturity.active?button(__alloT('stem.butterfly.lw_focus_maturation','Chrysalis maturation close-up'),function(){focusLife('maturation');},{'aria-pressed':lifeMotion.current.focus==='maturation'}):null),
-          lifeCanAnimate?h('div',{className:'bf-feed-playback bf-life-playback'},h('label',{className:'bf-feed-scrub'},h('span',null,__alloT('stem.butterfly.lw_progress_label','Stage illustration progress'),h('output',{'aria-live':'off'},Math.floor(lifeMotion.current.progress*100+1e-6)+'%')),h('input',{type:'range',min:0,max:100,step:1,value:Math.floor(lifeMotion.current.progress*100+1e-6),'aria-label':__alloT('stem.butterfly.a11y_stage_illustration_progress', 'Stage illustration progress'),'aria-valuetext':__alloFill(watchingMeal?__alloT('stem.butterfly.lw_valuetext_feeding','{value1}% of the leaf feeding illustration'):watchingMaturation?__alloT('stem.butterfly.lw_valuetext_maturation','{value1}% of the chrysalis appearance illustration'):specimen.stage==='adult'?__alloT('stem.butterfly.lw_valuetext_wings','{value1}% of the wing expansion illustration'):__alloT('stem.butterfly.lw_valuetext_growth','{value1}% of the caterpillar growth illustration'),{value1:Math.floor(lifeMotion.current.progress*100+1e-6)}),onChange:seekLife,onPointerDown:pauseLife})),
-            h('label',{className:'bf-feed-speed'},__alloT('stem.butterfly.lw_playback_speed','Stage playback speed'),h('select',{'aria-label':__alloT('stem.butterfly.a11y_stage_playback_speed', 'Stage playback speed'),value:lifeMotion.current.speed,onChange:speedLife,disabled:motionReduced},h('option',{value:.5},__alloT('stem.butterfly.fw_speed_half','Half speed')),h('option',{value:1},__alloT('stem.butterfly.fw_speed_normal','Normal speed')),h('option',{value:2},__alloT('stem.butterfly.fw_speed_double','Double speed'))))):null,
+          lifeCanAnimate?h('div',{className:'bf-feed-playback bf-life-playback'},h('label',{className:'bf-feed-scrub'},h('span',null,__alloT('stem.butterfly.lw_progress_label','Stage illustration progress'),h('output',{'aria-live':'off'},Math.floor(lifeMotion.current.progress*100+1e-6)+'%')),h('input',{type:'range',min:0,max:100,step:1,value:Math.floor(lifeMotion.current.progress*100+1e-6),'aria-label':__alloT('stem.butterfly.a11y_stage_illustration_progress', 'Stage illustration progress'),'aria-describedby':'bf-life-progress-help','aria-valuetext':__alloFill(watchingMeal?__alloT('stem.butterfly.lw_valuetext_feeding','{value1}% of the leaf feeding illustration'):watchingMaturation?__alloT('stem.butterfly.lw_valuetext_maturation','{value1}% of the chrysalis appearance illustration'):specimen.stage==='adult'?__alloT('stem.butterfly.lw_valuetext_wings','{value1}% of the wing expansion illustration'):__alloT('stem.butterfly.lw_valuetext_growth','{value1}% of the caterpillar growth illustration'),{value1:Math.floor(lifeMotion.current.progress*100+1e-6)}),onChange:seekLife,onPointerDown:pauseLife})),
+            h('label',{className:'bf-feed-speed'},__alloT('stem.butterfly.lw_playback_speed','Stage playback speed'),h('select',{'aria-label':__alloT('stem.butterfly.a11y_stage_playback_speed', 'Stage playback speed'),value:lifeMotion.current.speed,onChange:speedLife},h('option',{value:.5},__alloT('stem.butterfly.fw_speed_half','Half speed')),h('option',{value:1},__alloT('stem.butterfly.fw_speed_normal','Normal speed')),h('option',{value:2},__alloT('stem.butterfly.fw_speed_double','Double speed'))))):null,
           h('section',{className:'bf-life-detail','aria-label':__alloT('stem.butterfly.a11y_stage_inspection_notes', 'Stage inspection notes')},h('strong',null,watchingMaturation?__alloT('stem.butterfly.lw_detail_maturation_title','Watch the chrysalis change'):lifeMotion.current.focus==='detail'||watchingMeal?lifeDetail.title:__alloT('stem.butterfly.lw_detail_notice','What to notice')),h('p',null,watchingMaturation?__alloT('stem.butterfly.lw_detail_maturation_note','Follow changes visible from outside the chrysalis. The folded wing pattern gradually shows through the casing; the rebuilding inside is not shown.'):lifeDetail.note)),
           watchingMeal?h('section',{className:'bf-larval-observation','aria-label':__alloT('stem.butterfly.a11y_caterpillar_feeding_observation', 'Caterpillar feeding observation')},
-            h('div',{className:'bf-larval-readout'},h('div',null,h('span',null,__alloT('stem.butterfly.lw_meal_food_source','Food source')),h('strong',null,__alloT('stem.butterfly.lw_meal_milkweed_leaf','Milkweed leaf'))),h('div',null,h('span',null,__alloT('stem.butterfly.lw_meal_leaf_tissue','Leaf tissue')),h('strong',null,larvalMeal.completedBites>0||larvalMeal.notches.some(function(n){return n.radius>0;})?__alloT('stem.butterfly.lw_meal_marks','Feeding marks at the edge'):__alloT('stem.butterfly.lw_meal_unbitten','Unbitten leaf edge')))),
-            h('p',null,larvalMeal.phase==='complete'?__alloT('stem.butterfly.lw_meal_complete','The sample feeding sequence is complete. Compare the scalloped edge with the unbitten leaf.'):larvalMeal.phase==='bite'?__alloT('stem.butterfly.lw_meal_bite','The mouthparts meet the leaf edge. Watch the missing tissue grow as the bite closes.'):__alloT('stem.butterfly.lw_meal_follow','Follow the mouthparts along the margin. The feeding marks stay where leaf tissue was removed.')),
-            h('div',{className:'bf-life-watch-actions'},button(__alloT('stem.butterfly.lw_meal_before','Before feeding'),function(){lifeMotion.current.progress=0;lifeMotion.current.playing=false;update();}),button(__alloT('stem.butterfly.lw_meal_after','After feeding'),stillLife)),
+            h('div',{className:'bf-larval-readout'},h('div',null,h('span',null,__alloT('stem.butterfly.lw_meal_food_source','Food source')),h('strong',null,__alloT('stem.butterfly.lw_meal_milkweed_leaf','Milkweed leaf'))),h('div',null,h('span',null,__alloT('stem.butterfly.lw_meal_leaf_tissue','Leaf tissue')),h('strong',null,larvalTissueLabel(larvalMeal)))),
+            h('p',null,larvalObservationNote(larvalMeal)),
+            h('div',{className:'bf-life-watch-actions'},button(__alloT('stem.butterfly.lw_meal_before','Before feeding'),function(){showLifeMoment(0);}),button(__alloT('stem.butterfly.lw_meal_after','After feeding'),stillLife)),
             h('p',{className:'bf-help'},__alloT('stem.butterfly.lw_meal_help','Use Continue or Replay to watch feeding, or scrub to compare moments. These enlarged sample bites are separate from the growth view: they do not measure food intake, feeding rate, or development time. Rewinding restores the illustration, not a real leaf.'))):null,
           watchingMaturation?h('section',{className:'bf-maturation-observation','aria-label':__alloT('stem.butterfly.a11y_chrysalis_maturation_observation', 'Chrysalis maturation observation')},
             h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.lw_maturation_eyebrow','An outward change')),h('strong',{className:'bf-maturation-cue'},maturity.label),h('p',null,maturity.note),
-            h('div',{className:'bf-life-watch-actions',role:'group','aria-label':__alloT('stem.butterfly.a11y_chrysalis_appearance_comparisons', 'Chrysalis appearance comparisons')},[{label:__alloT('stem.butterfly.lw_moment_green','Green chrysalis'),progress:0},{label:__alloT('stem.butterfly.lw_moment_markings','Wing markings appear'),progress:.6},{label:__alloT('stem.butterfly.lw_moment_before_emergence','Before emergence'),progress:1}].map(function(moment){return button(moment.label,function(){lifeMotion.current.progress=moment.progress;lifeMotion.current.playing=false;update();},{key:moment.label,'aria-pressed':Math.abs(lifeMotion.current.progress-moment.progress)<.001});})),
+            h('div',{className:'bf-life-watch-actions',role:'group','aria-label':__alloT('stem.butterfly.a11y_chrysalis_appearance_comparisons', 'Chrysalis appearance comparisons')},[{label:__alloT('stem.butterfly.lw_moment_green','Green chrysalis'),progress:0},{label:__alloT('stem.butterfly.lw_moment_markings','Wing markings appear'),progress:.6},{label:__alloT('stem.butterfly.lw_moment_before_emergence','Before emergence'),progress:1}].map(function(moment){return button(moment.label,function(){showLifeMoment(moment.progress);},{key:moment.label,'aria-pressed':Math.abs(lifeMotion.current.progress-moment.progress)<.001});})),
             h('p',{className:'bf-help'},__alloT('stem.butterfly.lw_maturation_help','These sample appearances compress time. The percentage locates a moment in this illustration; it is not a measurement of development. Reaching the last view does not hatch or record the butterfly. Choose Watch next stage to continue the model.'))):null,
-          h('div',{className:'bf-life-watch-actions'},button(__alloT('stem.butterfly.lw_next_stage','Watch next stage'),nextStage,{className:'bf-primary',disabled:!canAdvance}),button(__alloT('stem.butterfly.lw_record_generation','Record this generation'),recordBrood,{disabled:!s.lifecycle.stage||canAdvance}),
-            lifeCanAnimate?h(R.Fragment,null,button(__alloT('stem.butterfly.lw_continue_motion','Continue stage motion'),continueLife,{disabled:motionReduced||(!allMotionPaused&&lifeMotion.current.playing)||lifeMotion.current.progress>=1}),button(__alloT('stem.butterfly.lw_replay_motion','Replay stage motion'),replayLife,{disabled:motionReduced||(!allMotionPaused&&lifeMotion.current.playing)}),button(__alloT('stem.butterfly.lw_pause_motion','Pause stage motion'),pauseLife,{disabled:motionReduced||allMotionPaused||!lifeMotion.current.playing}),button(__alloT('stem.butterfly.lw_show_still','Show stage still'),stillLife,{disabled:lifeMotion.current.progress>=1})):null,
-            button(__alloT('stem.butterfly.lw_return_flight','Return to flight view'),function(){closeLife();update();})),
-          h('p',{className:'bf-help'},lifeCanAnimate?(motionReduced?(watchingMeal?__alloT('stem.butterfly.lw_help_reduced_feeding','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect leaf feeding without automatic playback.'):watchingMaturation?__alloT('stem.butterfly.lw_help_reduced_maturation','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect chrysalis appearance without automatic playback.'):__alloT('stem.butterfly.lw_help_reduced_growth','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect growth and wing expansion without automatic playback.')):(watchingMeal?__alloT('stem.butterfly.lw_help_motion_feeding','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this feeding sequence again. The slider illustrates changes, not elapsed time.'):watchingMaturation?__alloT('stem.butterfly.lw_help_motion_maturation','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this appearance sequence again. The slider illustrates changes, not elapsed time.'):__alloT('stem.butterfly.lw_help_motion_stage','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this stage again. The slider illustrates changes, not elapsed time.'))):specimen.blocked?__alloT('stem.butterfly.lw_help_blocked','This caterpillar stays small because it has no milkweed food. Close-ups remain available; there is no growth playback.'):__alloT('stem.butterfly.lw_help_still','This stage is shown still. Use the close-ups to inspect its visible structure; development inside the egg or chrysalis is not shown.')),
+          h('div',{className:'bf-life-watch-actions'},button(__alloT('stem.butterfly.lw_next_stage','Watch next stage'),nextStage,{className:'bf-primary',disabled:!canAdvance}),button(__alloT('stem.butterfly.lw_record_generation','Record this generation'),recordBrood,{'data-bf-record-generation':'true',disabled:!s.lifecycle.stage||canAdvance}),
+            lifeCanAnimate?h(R.Fragment,null,playbackButton(__alloT('stem.butterfly.lw_continue_motion','Continue stage motion'),continueLife,{disabled:motionReduced||(!allMotionPaused&&lifeMotion.current.playing)||lifeMotion.current.progress>=1}),playbackButton(__alloT('stem.butterfly.lw_replay_motion','Replay stage motion'),replayLife,{disabled:motionReduced||(!allMotionPaused&&lifeMotion.current.playing)}),playbackButton(__alloT('stem.butterfly.lw_pause_motion','Pause stage motion'),pauseLife,{disabled:motionReduced||allMotionPaused||!lifeMotion.current.playing}),playbackButton(__alloT('stem.butterfly.lw_show_still','Show stage still'),stillLife,{disabled:lifeMotion.current.progress>=1})):null,
+            button(__alloT('stem.butterfly.lw_return_flight','Return to flight view'),function(){closeLife();update();focusMeadow();})),
+          h('p',{className:'bf-help',id:'bf-life-progress-help'},lifeCanAnimate?(motionReduced?(watchingMeal?__alloT('stem.butterfly.lw_help_reduced_feeding','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect leaf feeding without automatic playback.'):watchingMaturation?__alloT('stem.butterfly.lw_help_reduced_maturation','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect chrysalis appearance without automatic playback.'):__alloT('stem.butterfly.lw_help_reduced_growth','Reduced motion: this illustration stays still. Drag Stage illustration progress or use its arrow keys to inspect growth and wing expansion without automatic playback.')):(watchingMeal?__alloT('stem.butterfly.lw_help_motion_feeding','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this feeding sequence again. The slider illustrates changes, not elapsed time.'):watchingMaturation?__alloT('stem.butterfly.lw_help_motion_maturation','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this appearance sequence again. The slider illustrates changes, not elapsed time.'):__alloT('stem.butterfly.lw_help_motion_stage','Drag Stage illustration progress to pause at any moment. Continue resumes there; Replay starts this stage again. The slider illustrates changes, not elapsed time.'))):specimen.blocked?__alloT('stem.butterfly.lw_help_blocked','This caterpillar stays small because it has no milkweed food. Close-ups remain available; there is no growth playback.'):__alloT('stem.butterfly.lw_help_still','This stage is shown still. Use the close-ups to inspect its visible structure; development inside the egg or chrysalis is not shown.')),
           h('p',{className:'bf-help'},__alloT('stem.butterfly.lw_model_note','One specimen represents the generation; sizes are enlarged. Development takes days to weeks, not seconds. Inspection controls do not advance the generation. Next stage changes the model; only Record saves the result.')),
           button(__alloT('stem.butterfly.lw_back','Back to life cycle investigation'),function(){lifeMotion.current.playing=false;jumpTo('cycle');},{className:'bf-life-back'})):null,
         h('div',{className:'bf-toolbar'},button(s.paused||allMotionPaused?__alloT('stem.butterfly.bar_take_flight','Take flight'):__alloT('stem.butterfly.bar_pause_flight','Pause flight'),toggle,{className:'bf-primary','data-bf-play':true}),button(allMotionPaused?__alloT('stem.butterfly.bar_resume_motion','Resume motion'):__alloT('stem.butterfly.bar_pause_all_motion','Pause all motion'),toggleSceneMotion,{'data-bf-motion-toggle':true}),button(__alloT('stem.butterfly.bar_glide','Glide'),toggleGlide,{'aria-pressed':s.gliding,disabled:allMotionPaused||s.paused||!!landed}),button(landed?__alloT('stem.butterfly.bar_lift_off','Lift off'):__alloT('stem.butterfly.bar_land_here','Land here'),landing,{disabled:observing||(!landed&&near.distance>14)}),button(__alloT('stem.butterfly.bar_examine_patch','Examine patch'),examine,{disabled:observing||!landed}),h('span',{className:'bf-spacer'}),button(__alloT('stem.butterfly.bar_map','Map'),function(){setMapMode(!mapMode);},{'aria-pressed':mapMode})),
@@ -5163,8 +5551,8 @@ function buildWorld(T,kit) {
         watchingPollinators?h('div',{className:'bf-watch-panel',role:'group','aria-label':__alloT('stem.butterfly.watch_group','Pollinator watching')},
           h('div',{className:'bf-watch-heading'},h('span',{className:'bf-eyebrow'},__alloT('stem.butterfly.watch_eyebrow','Life among the flowers')),h('strong',{ref:visitorReadout,'aria-live':'off'},__alloT('stem.butterfly.watch_caption','A quiet moment with a meadow visitor'))),
           h('div',{className:'bf-watch-patches'},['milkweed','bergamot'].map(function(id){return button(id==='milkweed'?__alloT('stem.butterfly.watch_milkweed','Milkweed visitors'):__alloT('stem.butterfly.watch_bergamot','Bergamot visitors'),function(){chooseWatchPatch(id);},{key:id,'aria-pressed':!!watchSite&&watchSite.id===id});})),
-          h('div',{className:'bf-species-buttons',role:'group','aria-label':__alloT('stem.butterfly.species_picker','Butterfly species')},MEADOW_SPECIES.map(function(species){return button(h(R.Fragment,null,species.name,h('small',null,species.latin)),function(){chooseWatchSpecies(species.id);},{key:species.id,'aria-label':species.name,'aria-pressed':watchedSpecies.id===species.id});})),
-          h('div',{className:'bf-species-notes','data-bf-species-card':watchedSpecies.id},h('p',null,h('strong',null,watchedSpecies.name+' · '),h('em',null,watchedSpecies.latin)),h('p',null,watchedSpecies.marks),h('p',null,h('strong',null,__alloT('stem.butterfly.species_host_label','Caterpillar food: ')),watchedSpecies.hosts),h('a',{href:watchedSpecies.source,target:'_blank',rel:'noopener noreferrer'},__alloT('stem.butterfly.species_source','Species field guide'))),
+          h('div',{className:'bf-species-buttons',role:'group','aria-label':__alloT('stem.butterfly.species_picker','Butterfly species')},MEADOW_SPECIES.map(function(species){return button(h(R.Fragment,null,species.name,h('small',null,species.latin)),function(){chooseWatchSpecies(species.id);},{key:species.id,'aria-pressed':watchedSpecies.id===species.id});})),
+          h('section',{className:'bf-species-notes','data-bf-species-card':watchedSpecies.id,'aria-labelledby':'bf-species-card-title'},h('p',{id:'bf-species-card-title'},h('strong',null,watchedSpecies.name+' · '),h('em',null,watchedSpecies.latin)),h('p',null,watchedSpecies.marks),h('p',null,h('strong',null,__alloT('stem.butterfly.species_host_label','Caterpillar food: ')),watchedSpecies.hosts),h('a',{href:watchedSpecies.source,target:'_blank',rel:'noopener noreferrer'},__alloT('stem.butterfly.species_source','Species field guide'))),
           h('p',null,motionReduced?__alloT('stem.butterfly.watch_reduced','A still close view of a wild visitor. Your butterfly stays where you left it.'):__alloT('stem.butterfly.watch_help','Follow a wild visitor as it flutters, lands, and sips nectar. Your butterfly stays where you left it.'))):null,
         h('div',{className:'bf-light-controls',role:'group','aria-label':__alloT('stem.butterfly.light_group','Meadow lighting')},h('span',null,__alloT('stem.butterfly.light_label','Light')),button(__alloT('stem.butterfly.light_day','Soft daylight'),function(){chooseLight('daylight');},{'aria-pressed':light==='daylight',disabled:mapMode||renderer!=='three'}),button(__alloT('stem.butterfly.light_golden','Golden hour'),function(){chooseLight('golden');},{'aria-pressed':light==='golden',disabled:mapMode||renderer!=='three'})),
         h('div',{className:'bf-sound-controls',role:'group','aria-label':__alloT('stem.butterfly.sound_group','Meadow sounds')},
@@ -5173,13 +5561,14 @@ function buildWorld(T,kit) {
           h('label',{className:'bf-sound-volume'},h('span',null,__alloT('stem.butterfly.sound_volume_label','Volume')),h('input',{type:'range',min:0,max:100,step:1,value:sound.volume,onChange:changeMeadowVolume,disabled:!soundSupported,'aria-label':__alloT('stem.butterfly.sound_volume','Meadow volume'),'aria-valuetext':sound.volume+'%'}),h('span',{'aria-hidden':true},sound.volume+'%'))),
         h('p',{className:'bf-help'},motionReduced?__alloT('stem.butterfly.bar_meadow_reduced','Reduced motion keeps the meadow still. Flight and inspection remain available.'):__alloT('stem.butterfly.bar_meadow_motion','The meadow moves even while you rest. Pause all motion or press Space in the scene to freeze everything; press again to resume.')),
         !observing?h('div',{className:'bf-feed-invite bf-life-invite'},h('p',null,landed?(landed.nectar?__alloT('stem.butterfly.fw_invite_nectar','Follow a monarch from a nectar sip to pollen transfer between flowers.'):__alloT('stem.butterfly.fw_invite_mown','This mown patch has no flowers to feed from. Visit milkweed or bergamot to watch pollination.')):__alloT('stem.butterfly.fw_invite_land','Land on milkweed or bergamot to watch feeding and pollination.')),button(__alloT('stem.butterfly.fw_invite_button','Watch feeding & pollination'),function(){showFeed('sip',true);},{disabled:!landed||!landed.nectar})):null,
-        h('div',{className:'bf-status-row'},h('div',{className:'bf-status',role:'status','aria-live':'polite'},h('p',null,message)),listen(function(){return message;},__alloT('stem.butterfly.bar_listen_latest_message','latest message'))),
+        h('div',{className:'bf-status-row'},h('div',{className:'bf-status',role:'status','aria-live':'polite'},h('p',{key:statusRevision.current},message)),listen(function(){return message;},__alloT('stem.butterfly.bar_listen_latest_message','latest message'))),
         detail?h('section',{className:'bf-field-card','aria-label':__alloT('stem.butterfly.a11y_field_lens_reading',"Field lens reading")},h('div',{className:'bf-field-head'},h('div',{className:'bf-eyebrow'},detail.kind==='flowers'?__alloT('stem.butterfly.bar_card_flower_lens','Flower lens · Adult stage'):__alloT('stem.butterfly.bar_card_leaf_lens','Leaf lens · Caterpillar stage')),h('span',{className:'bf-resource-tag'},detail.present?__alloT('stem.butterfly.hud_resource_present','Resource present'):__alloT('stem.butterfly.hud_resource_absent','Resource absent'))),h('h3',null,detail.title),h('p',null,detail.note),h('p',{className:'bf-help'},(mapMode||renderer==='map'?__alloT('stem.butterfly.bar_card_map_note','The outlined map patch is the habitat being studied.'):__alloT('stem.butterfly.bar_card_model_note','The ring points to a part of the illustrative plant model.'))+' '+(recorded?__alloT('stem.butterfly.bar_card_recorded','Evidence is already in your journal or planting comparisons.'):__alloT('stem.butterfly.bar_card_examine','Use Examine patch to record this visit.')))):null,
         h('p',{className:'bf-help'},s.controlMode==='steer'?__alloT('stem.butterfly.bar_direct_keys_help','Drag the flight pad up to fly, sideways to turn, or down to brake. Release to hover. Or hold W / ↑ to flap forward, A / D or ← / → to turn, and S / ↓ to brake. Release forward to hover. E / Q change height, G glides, and Space pauses everything. The follow camera stays behind you; reduced motion keeps the camera steady.'):__alloT('stem.butterfly.bar_keys_help','Focus the scene: W A S D or arrows steer, E / Q change height, G glides, and Space pauses. Hold a direction to accelerate; release to slow. Directions follow the map in every camera view. Reduced motion keeps a steady camera and still vegetation.')),
+        h('p',{className:'bf-help'},__alloT('stem.butterfly.hold_activation_help','Hold a direction button to keep moving. Activating it with voice or switch controls takes one short step, then returns to a hover.')),
         h('div',{className:'bf-touch',role:'group','aria-label':__alloT('stem.butterfly.a11y_flight_direction_controls',"Flight direction controls")},hold(s.controlMode==='steer'?__alloT('stem.butterfly.hold_turn_left','← Turn left'):__alloT('stem.butterfly.bar_hold_left','← Left'),'left',s.controlMode==='steer'?__alloT('stem.butterfly.turn_left_spoken','Turn left'):__alloT('stem.butterfly.bar_hold_left_spoken','Fly left')),hold(s.controlMode==='steer'?__alloT('stem.butterfly.hold_flap_forward','↑ Flap forward'):__alloT('stem.butterfly.bar_hold_forward','↑ Forward'),'forward',s.controlMode==='steer'?__alloT('stem.butterfly.flap_forward_spoken','Flap forward'):__alloT('stem.butterfly.bar_hold_forward_spoken','Fly forward')),hold(s.controlMode==='steer'?__alloT('stem.butterfly.hold_brake','↓ Brake'):__alloT('stem.butterfly.bar_hold_back','↓ Back'),'back',s.controlMode==='steer'?__alloT('stem.butterfly.brake_spoken','Brake'):__alloT('stem.butterfly.bar_hold_back_spoken','Fly back')),hold(s.controlMode==='steer'?__alloT('stem.butterfly.hold_turn_right','→ Turn right'):__alloT('stem.butterfly.bar_hold_right','→ Right'),'right',s.controlMode==='steer'?__alloT('stem.butterfly.turn_right_spoken','Turn right'):__alloT('stem.butterfly.bar_hold_right_spoken','Fly right')),hold(__alloT('stem.butterfly.bar_hold_rise','Rise'),'rise'),hold(__alloT('stem.butterfly.bar_hold_lower','Lower'),'lower')),
-        renderer==='map'?h('p',{className:'bf-help'},__alloT('stem.butterfly.bar_3d_unavailable','3D is unavailable. All habitat visits and journal activities work on this map.')+' ',button(__alloT('stem.butterfly.bar_retry_3d','Retry 3D'),function(){setRetry(retry+1);})):null
+        renderer==='map'?h('p',{className:'bf-help'},__alloT('stem.butterfly.bar_3d_unavailable','3D is unavailable. All habitat visits and journal activities work on this map.')+' ',button(__alloT('stem.butterfly.bar_retry_3d','Retry 3D'),function(event){if(event.detail===0&&event.currentTarget===document.activeElement)focusMeadow();setRetry(retry+1);})):null
       ),h('aside',{className:'bf-aside'},
-        h('section',{className:'bf-panel','aria-label':__alloT('stem.butterfly.a11y_habitat_destinations',"Habitat destinations")},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.side_dest_eyebrow','Choose a place to explore')),h('h3',null,__alloT('stem.butterfly.side_dest_title','Explore, then redesign.')),h('p',{className:'bf-help'},__alloT('stem.butterfly.side_dest_help','Choose a patch for guided flight, or visit without flying. Both routes use the same Land here and Examine patch actions.')),habitats(s).map(function(p,i){return h('div',{key:p.id,className:'bf-destination-row','data-habitat':p.id},h('button',{type:'button',className:'bf-destination','aria-pressed':s.target===p.id,onClick:function(){travel(p.id);}},bfIcon(h,p.id==='milkweed'?'host':p.id==='bergamot'?'nectar':p.id==='lawn'?'cut':'plot',44),h('span',null,(evidenceRecorded(s,p)?'✓ ':('0'+(i+1)+' · '))+p.name),h('small',null,p.latin)),button(__alloT('stem.butterfly.side_visit_direct','Visit without flying'),function(){visitDirect(p.id);},{className:'bf-visit-direct','aria-label':__alloFill(__alloT('stem.butterfly.side_visit_direct_aria','Visit {value1} without flying'),{value1:p.name})}));}),h('div',{className:'bf-meter'},h('label',null,__alloFill(__alloT('stem.butterfly.side_energy_label','Flight energy · {value1}%'),{value1:Math.round(s.energy)}),h('meter',{min:0,max:100,value:s.energy})),h('p',null,__alloT('stem.butterfly.side_energy_note','A simplified activity meter. Examine a flowering patch to replenish it.')))),
+        h('section',{className:'bf-panel','aria-label':__alloT('stem.butterfly.a11y_habitat_destinations',"Habitat destinations")},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.side_dest_eyebrow','Choose a place to explore')),h('h3',null,__alloT('stem.butterfly.side_dest_title','Explore, then redesign.')),h('p',{className:'bf-help'},__alloT('stem.butterfly.side_dest_help','Choose a patch for guided flight, or visit without flying. Both routes use the same Land here and Examine patch actions.')),habitats(s).map(function(p,i){return h('div',{key:p.id,className:'bf-destination-row','data-habitat':p.id},h('button',{type:'button',className:'bf-destination','aria-pressed':s.target===p.id,onClick:function(){travel(p.id);}},bfIcon(h,p.id==='milkweed'?'host':p.id==='bergamot'?'nectar':p.id==='lawn'?'cut':'plot',44),h('span',null,(evidenceRecorded(s,p)?'✓ ':('0'+(i+1)+' · '))+p.name),h('small',null,p.latin)),button(__alloT('stem.butterfly.side_visit_direct','Visit without flying'),function(){visitDirect(p.id);},{className:'bf-visit-direct','aria-label':__alloT('stem.butterfly.side_visit_direct','Visit without flying')+' · '+p.name}));}),h('div',{className:'bf-meter'},h('label',{htmlFor:'bf-flight-energy',id:'bf-flight-energy-label'},__alloFill(__alloT('stem.butterfly.side_energy_label','Flight energy · {value1}%'),{value1:Math.round(s.energy)})),h('meter',{id:'bf-flight-energy','aria-labelledby':'bf-flight-energy-label',min:0,max:100,value:s.energy,'aria-valuetext':Math.round(s.energy)+'%','aria-describedby':'bf-flight-energy-help'}),h('p',{id:'bf-flight-energy-help'},__alloT('stem.butterfly.side_energy_note','A simplified activity meter. Examine a flowering patch to replenish it.')))),
         h('section',{className:'bf-panel','aria-label':__alloT('stem.butterfly.a11y_field_journal',"Field journal")},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.side_journal_eyebrow','Reference field journal')),h('h3',null,__alloFill(__alloT('stem.butterfly.side_journal_count','{value1} of 3 patches investigated'),{value1:remaining})),h('div',{className:'bf-progress','aria-hidden':true},PLANTS.map(function(p){return h('i',{key:p.id,'data-done':s.observations.indexOf(p.id)>=0});})),
           remaining?h('ul',{className:'bf-journal'},s.observations.map(function(id){var p=patch(id);return h('li',{key:id},h('strong',null,p.name),h('p',null,p.note));})):h('p',{className:'bf-help'},__alloT('stem.butterfly.side_journal_empty','Record the three reference patches here. Your restoration comparisons appear in the design activity below.'))),
         h('section',{className:'bf-panel bf-pollination-notes','aria-label':__alloT('stem.butterfly.a11y_pollination_field_notes', 'Pollination field notes')},h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.side_poll_eyebrow','Nectar visits · saved observations')),h('h3',null,__alloFill(flowerVisits.length===1?__alloT('stem.butterfly.side_poll_count_one','{value1} flower visit recorded'):__alloT('stem.butterfly.side_poll_count_other','{value1} flower visits recorded'),{value1:flowerVisits.length})),
@@ -5197,8 +5586,8 @@ function buildWorld(T,kit) {
         h('p',{className:'bf-guide-note'},__alloT('stem.butterfly.top_guide_note','Follow the suggested path or open any investigation. Progress reflects records you made, not a score.'))),
       h('section',{className:'bf-panel bf-design',ref:function(node){sections.current.design=node;},tabIndex:-1,'aria-label':__alloT('stem.butterfly.a11y_habitat_design_activity',"Habitat design activity")},
         h('div',{className:'bf-design-head'},h('div',null,h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.dsg_eyebrow','Your next investigation · Predict → Plant → Observe')),h('h3',null,__alloT('stem.butterfly.dsg_heading','What could this patch become?')),h('p',{className:'bf-help'},plain(__alloT('stem.butterfly.dsg_intro','Redesign the fourth patch and test what it offers a monarch. Each plan shows an established summer planting in bloom; real plants need time to grow.'),__alloT('stem.butterfly.dsg_intro_simple','Choose what to grow in the fourth patch, then go and check what it gives a monarch. (Real plants take time to grow.)')))),h('span',{className:'bf-design-current'},__alloFill(__alloT('stem.butterfly.dsg_in_the_meadow','In the meadow: {value1}'),{value1:design(s.restoration.design).short}))),
-        h('div',{className:'bf-design-steps'},h('fieldset',null,h('legend',null,__alloT('stem.butterfly.dsg_step1_choose_plan','1. Choose a planting plan')),h('div',{className:'bf-design-choices'},DESIGNS.map(function(d){return button(h(R.Fragment,null,d.name,h('small',null,d.detail)),function(){setPlan(d.id);setGuess('');},{key:d.id,'aria-pressed':plan===d.id});}))),
-          h('div',null,h('label',null,__alloT('stem.butterfly.dsg_step2_predict_resources','2. Predict the resources available'),h('select',{value:guess,onChange:function(e){setGuess(e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.dsg_choose_your_prediction','Choose your prediction')),PREDICTIONS.map(function(p){return h('option',{key:p.id,value:p.id},p.label);}))),
+        h('div',{className:'bf-design-steps'},h('fieldset',null,h('legend',null,__alloT('stem.butterfly.dsg_step1_choose_plan','1. Choose a planting plan')),h('div',{className:'bf-design-choices'},DESIGNS.map(function(d){return button(h(R.Fragment,null,d.name,h('small',null,d.detail)),function(){choosePlan(d.id);},{key:d.id,id:'bf-design-plan-'+d.id,'aria-pressed':plan===d.id});}))),
+          h('div',null,h('label',null,__alloT('stem.butterfly.dsg_step2_predict_resources','2. Predict the resources available'),h('select',{id:'bf-design-guess','aria-describedby':'bf-design-plan-'+plan,value:guess,onChange:function(e){setGuess(e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.dsg_choose_your_prediction','Choose your prediction')),PREDICTIONS.map(function(p){return h('option',{key:p.id,value:p.id},p.label);}))),
             h('div',{className:'bf-design-actions'},button(__alloT('stem.butterfly.dsg_apply_plan','Apply habitat plan'),applyDesign,{className:'bf-primary',disabled:!guess}),button(__alloT('stem.butterfly.dsg_visit_restoration_plot','Visit restoration plot'),function(){travel('restoration');stage.current.focus({preventScroll:true});stage.current.scrollIntoView({block:'center',behavior:'auto'});})),
             h('p',{className:'bf-help'},s.restoration.prediction?__alloT('stem.butterfly.dsg_help_prediction_saved','Prediction saved. Land at the restoration plot and examine it to record a result.'):__alloT('stem.butterfly.dsg_help_apply_then_visit','Apply a plan, then visit and examine it. Changing plants alone does not count as evidence.')))),
         h('p',{className:'bf-design-feedback'},designFeedback),
@@ -5210,10 +5599,10 @@ function buildWorld(T,kit) {
         h('div',{className:'bf-life-invite'},h('p',null,specimen?__alloFill(__alloT('stem.butterfly.cyc_invite_look_closely','Look closely at the {value1} on {value2}. The camera follows this generation, wherever your flying adult is.'),{value1:specimenStage.inline,value2:specimen.name}):__alloT('stem.butterfly.cyc_invite_after_laying','After you lay eggs, a close-up will show the followed specimen on its plant. Watch it hatch, grow, pupate, and emerge one step at a time.')),button(__alloT('stem.butterfly.cyc_watch_on_plant','Watch on plant'),function(){showLife(false,true);},{disabled:!specimen})),
         h('div',{className:'bf-cycle-steps'},
           h('div',null,h('label',{htmlFor:'bf-egg-site'},__alloT('stem.butterfly.cyc_step1_where_to_lay','1. Choose where to lay eggs')),
-            h('select',{id:'bf-egg-site',value:eggSite,onChange:function(e){setEggSite(e.target.value);},disabled:!!s.lifecycle.stage},
+            h('select',{id:'bf-egg-site','aria-describedby':'bf-egg-site-help',value:eggSite,onChange:function(e){setEggSite(e.target.value);},disabled:!!s.lifecycle.stage},
               h('option',{value:''},__alloT('stem.butterfly.cyc_choose_a_patch','Choose a patch')),
               habitats(s).map(function(p){return h('option',{key:p.id,value:p.id,disabled:!evidenceRecorded(s,p)},evidenceRecorded(s,p)?p.name:__alloFill(__alloT('stem.butterfly.cyc_patch_examine_first','{value1} · examine first'),{value1:p.name}));})),
-            h('p',{className:'bf-help'},__alloT('stem.butterfly.cyc_help_only_recorded','Only patches with recorded evidence are available. Examine a patch to unlock it.'))),
+            h('p',{className:'bf-help',id:'bf-egg-site-help'},__alloT('stem.butterfly.cyc_help_only_recorded','Only patches with recorded evidence are available. Examine a patch to unlock it.'))),
           h('div',null,h('label',{htmlFor:'bf-brood-guess'},__alloT('stem.butterfly.cyc_step2_predict_how_far','2. Predict how far it gets')),
             h('select',{id:'bf-brood-guess',value:broodGuess,onChange:function(e){setBroodGuess(e.target.value);},disabled:!!s.lifecycle.stage},
               h('option',{value:''},__alloT('stem.butterfly.dsg_choose_your_prediction','Choose your prediction')),
@@ -5221,7 +5610,7 @@ function buildWorld(T,kit) {
             h('div',{className:'bf-cycle-actions'},
               button(__alloT('stem.butterfly.cyc_lay_eggs_here','Lay eggs here'),startBrood,{className:'bf-primary',disabled:!eggSite||!broodGuess||!!s.lifecycle.stage}),
               button(__alloT('stem.butterfly.cyc_next_stage','Next stage'),nextStage,{disabled:!s.lifecycle.stage||!canAdvance}),
-              button(__alloT('stem.butterfly.cyc_record_result','Record result'),recordBrood,{disabled:!s.lifecycle.stage||canAdvance}),
+              button(__alloT('stem.butterfly.cyc_record_result','Record result'),recordBrood,{'data-bf-record-generation':'true',disabled:!s.lifecycle.stage||canAdvance}),
               button(__alloT('stem.butterfly.cyc_start_over','Start over'),dropBrood,{disabled:!s.lifecycle.stage})),
             h('p',{className:'bf-help'},s.lifecycle.stage?__alloT('stem.butterfly.cyc_help_follow_to_end','Follow the generation to the end, then record what happened.'):__alloT('stem.butterfly.cyc_help_laying_no_change','Laying eggs does not change the plants. What the generation can do depends on what is already growing there.')))),
         h('ol',{className:'bf-track'},STAGES.map(function(st,i){
@@ -5236,7 +5625,7 @@ function buildWorld(T,kit) {
             h('small',null,cycleSite&&reached?(stageStatus(cycleSite,i)==='thriving'?st.thriving:st.failing):st.caption),
             state==='current'?h('span',{className:'bf-track-tag'},__alloT('stem.butterfly.cyc_track_now','Now')):null);
         })),
-        h('p',{className:'bf-cycle-feedback',role:'status','aria-live':'polite'},cycleFeedback),
+        h('p',{className:'bf-cycle-feedback'},cycleFeedback),
         h('table',{className:'bf-broods'},h('caption',null,__alloFill(__alloT('stem.butterfly.cyc_broods_caption','Generations you have followed · {value1} recorded'),{value1:s.lifecycle.broods.length})),
           h('thead',null,h('tr',null,h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_patch','Patch')),h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_you_predicted','You predicted')),h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_what_happened','What happened')))),
           h('tbody',null,habitats(s).map(function(p){var b=broodFor(s,p.id);
@@ -5254,7 +5643,7 @@ function buildWorld(T,kit) {
           h('span',{className:'bf-season-current'},__alloFill(__alloT('stem.butterfly.ssn_current_plan','Plan: {value1}'),{value1:mowing(mowPlan).short}))),
         h('div',{className:'bf-season-steps'},
           h('div',null,h('label',{htmlFor:'bf-season-site'},__alloT('stem.butterfly.ssn_step1_choose_examined_patch','1. Choose a patch you have examined')),
-            h('select',{id:'bf-season-site',value:seasonSite,onChange:function(e){setSeasonSite(e.target.value);setSeasonFeedback('');}},
+            h('select',{id:'bf-season-site','aria-describedby':'bf-season-site-help',value:seasonSite,onChange:function(e){setSeasonSite(e.target.value);setSeasonFeedback('');}},
               h('option',{value:''},__alloT('stem.butterfly.cyc_choose_a_patch','Choose a patch')),
               habitats(s).filter(function(p){return evidenceRecorded(s,p);}).map(function(p){return h('option',{key:p.id,value:p.id},p.name);})),
             h('label',{htmlFor:'bf-season-mow'},__alloT('stem.butterfly.ssn_step2_when_mown','2. Choose when it gets mown')),
@@ -5267,18 +5656,18 @@ function buildWorld(T,kit) {
               h('option',{value:'stop'},__alloT('stem.butterfly.ssn_opt_stops_before_adult','It stops before an adult'))),
             h('div',{className:'bf-season-actions'},
               button(__alloT('stem.butterfly.ssn_run_the_season','Run the season'),startSeason,{className:'bf-primary',disabled:!seasonSite||!seasonGuess})),
-            h('p',{className:'bf-help'},seasonSite?__alloT('stem.butterfly.ssn_help_run_no_change','Running a season does not change the plants. It only asks whether the plot is still standing when each stage needs it.'):__alloT('stem.butterfly.ssn_help_examine_first','Examine a patch in the meadow first. You can only run a season where you know what is growing.')))),
+            h('p',{className:'bf-help',id:'bf-season-site-help'},seasonSite?__alloT('stem.butterfly.ssn_help_run_no_change','Running a season does not change the plants. It only asks whether the plot is still standing when each stage needs it.'):__alloT('stem.butterfly.ssn_help_examine_first','Examine a patch in the meadow first. You can only run a season where you know what is growing.')))),
         seasonTimeline(h,seasonPatch,mowPlan,seasonRevealed),
         // Before a run the track shows only the plan (is the plot still standing
         // that week?). Whether each stage found what it needed is the RESULT, so
         // it appears once the learner has predicted and run this exact season.
-        seasonView?h('ol',{className:'bf-weeks','aria-label':__alloT('stem.butterfly.a11y_stage_by_stage_through_the_season',"Stage by stage through the season")},seasonView.steps.map(function(x){
+        seasonView?h('ol',{className:'bf-weeks',tabIndex:-1,'aria-describedby':'bf-season-result-feedback','aria-label':__alloT('stem.butterfly.a11y_stage_by_stage_through_the_season',"Stage by stage through the season")},seasonView.steps.map(function(x){
           var state=!seasonRevealed?'pending':x.cleared?'cleared':!x.standing?'cut':'missing';
           return h('li',{key:x.id,'data-state':state,'data-stage':x.id},
             bfIcon(h,x.id,40),h('b',null,__alloFill(__alloT('stem.butterfly.ssn_days_range','Days {value1}–{value2}'),{value1:x.start,value2:x.end})),h('strong',null,x.name),
             h('small',null,!seasonRevealed?(x.standing?__alloT('stem.butterfly.ssn_week_still_standing','Still standing through this stage. Run the season to see whether this stage finds what it needs.'):__alloT('stem.butterfly.ssn_week_cut_before_finished','The plot is cut before this stage is finished.')):x.cleared?__alloT('stem.butterfly.ssn_week_cleared','What this stage needs is here and still standing.'):!x.standing?__alloT('stem.butterfly.ssn_week_already_cut','The plot was already cut before this stage finished.'):__alloT('stem.butterfly.ssn_week_nothing_to_use','Nothing here for this stage to use.')));
         })):null,
-        h('p',{className:'bf-season-feedback',role:'status','aria-live':'polite'},seasonFeedback),
+        h('p',{className:'bf-season-feedback',id:'bf-season-result-feedback'},seasonFeedback),
         h('table',{className:'bf-seasons'},h('caption',null,__alloFill(__alloT('stem.butterfly.ssn_seasons_caption','Seasons you have run · {value1} recorded'),{value1:s.season.runs.length})),
           h('thead',null,h('tr',null,h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_patch','Patch')),h('th',{scope:'col'},__alloT('stem.butterfly.ssn_col_mowing','Mowing')),h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_you_predicted','You predicted')),h('th',{scope:'col'},__alloT('stem.butterfly.cyc_col_what_happened','What happened')))),
           h('tbody',null,s.season.runs.length?s.season.runs.map(function(r){var rp=patch(r.patch,s);
@@ -5320,16 +5709,16 @@ function buildWorld(T,kit) {
           h('label',{htmlFor:'bf-notebook-interpretation'},__alloT('stem.butterfly.nb_step2_records_suggest','2. What do your records suggest?')),
           h('select',{id:'bf-notebook-interpretation',value:notebook.interpretation,onChange:function(e){writeNotebook({interpretation:e.target.value});}},h('option',{value:''},__alloT('stem.butterfly.nb_choose_interpretation','Choose your interpretation')),INTERPRETATIONS.map(function(item){return h('option',{key:item.id,value:item.id},item.label);})),
           verdict?h('div',{className:'bf-notebook-check'},h('strong',null,verdict.tested?__alloT('stem.butterfly.nb_check_model_evidence_available','Model evidence is available for this claim'):__alloT('stem.butterfly.nb_check_keep_investigating','Keep investigating this claim')),h('p',null,verdict.why)):null,
-          h('fieldset',null,h('legend',null,__alloT('stem.butterfly.nb_step3_cite_records','3. Cite records from your investigation')),h('p',{className:'bf-help'},__alloT('stem.butterfly.nb_help_cite_records','Select at least two records to compare (up to eight). Only evidence you actually recorded is offered.')),
+          h('fieldset',{ref:citationTarget,tabIndex:-1,'aria-describedby':'bf-citation-help'},h('legend',null,__alloT('stem.butterfly.nb_step3_cite_records','3. Cite records from your investigation')),h('p',{className:'bf-help',id:'bf-citation-help'},__alloT('stem.butterfly.nb_help_cite_records','Select at least two records to compare (up to eight). Only evidence you actually recorded is offered.')),
             citations.available.length?h('div',{className:'bf-citation-list'},citations.available.map(function(line){var checked=notebook.evidence.indexOf(line.id)>=0;return h('label',{className:'bf-citation',key:line.id},h('input',{type:'checkbox',checked:checked,disabled:!checked&&notebook.evidence.length>=8,'data-bf-citation':line.id,onChange:function(e){writeNotebook({evidence:e.target.checked?notebook.evidence.concat([line.id]):notebook.evidence.filter(function(id){return id!==line.id;})});}}),h('span',null,h('small',null,line.kind==='patch'?__alloT('stem.butterfly.nb_kind_patch_observation','Patch observation'):line.kind==='brood'?__alloT('stem.butterfly.nb_kind_generation_result','Generation result'):line.kind==='season'?__alloT('stem.butterfly.nb_kind_season_result','Season result'):line.kind==='pollination'?__alloT('stem.butterfly.nb_kind_model_flower_visit','Model flower visit'):__alloT('stem.butterfly.nb_kind_timing_comparison','Timing comparison')),line.text));})):h('p',{className:'bf-help'},__alloT('stem.butterfly.nb_no_records_yet','No records yet. Examine a patch or record a completed flower visit to begin.')),
-            citations.missing.length?h('div',{className:'bf-notebook-review',role:'status'},citations.missing.length===1?__alloT('stem.butterfly.nb_missing_citations_one','1 cited record no longer describes the current planting. Earlier results remain in your field report; choose current records for this explanation.'):__alloFill(__alloT('stem.butterfly.nb_missing_citations_other','{value1} cited records no longer describe the current planting. Earlier results remain in your field report; choose current records for this explanation.'),{value1:citations.missing.length}),button(__alloT('stem.butterfly.nb_remove_unavailable_citations','Remove unavailable citations'),function(){writeNotebook({evidence:citations.selected.map(function(line){return line.id;})});})):null)),
+            citations.missing.length?h('div',{className:'bf-notebook-review',role:'status'},citations.missing.length===1?__alloT('stem.butterfly.nb_missing_citations_one','1 cited record no longer describes the current planting. Earlier results remain in your field report; choose current records for this explanation.'):__alloFill(__alloT('stem.butterfly.nb_missing_citations_other','{value1} cited records no longer describe the current planting. Earlier results remain in your field report; choose current records for this explanation.'),{value1:citations.missing.length}),button(__alloT('stem.butterfly.nb_remove_unavailable_citations','Remove unavailable citations'),function(){citationFocus.current=true;writeNotebook({evidence:citations.selected.map(function(line){return line.id;})});})):null)),
           h('div',null,h('label',{htmlFor:'bf-notebook-reasoning'},__alloT('stem.butterfly.nb_step4_connect_evidence','4. How does the evidence connect to your claim?')),
             h('p',{className:'bf-help',id:'bf-notebook-writing-help'},__alloT('stem.butterfly.nb_writing_frame','Try: “When I compared … with …, I noticed … . This supports / challenges my claim because … .”')),
-            h('textarea',{id:'bf-notebook-reasoning',rows:7,maxLength:1600,value:notebook.reasoning,'aria-describedby':'bf-notebook-writing-help',onChange:function(e){writeNotebook({reasoning:e.target.value});}}),
-            h('p',{className:'bf-writing-count'},__alloFill(__alloT('stem.butterfly.nb_count_reasoning','{value1} / 1600 characters'),{value1:notebook.reasoning.length})),
+            h('textarea',{id:'bf-notebook-reasoning',rows:7,maxLength:1600,value:notebook.reasoning,'aria-describedby':'bf-notebook-writing-help bf-notebook-reasoning-count',onChange:function(e){writeNotebook({reasoning:e.target.value});}}),
+            h('p',{className:'bf-writing-count',id:'bf-notebook-reasoning-count'},__alloFill(__alloT('stem.butterfly.nb_count_reasoning','{value1} / 1600 characters'),{value1:notebook.reasoning.length})),
             h('label',{htmlFor:'bf-notebook-question'},__alloT('stem.butterfly.nb_step5_next_question','5. What would you investigate next? (optional)')),
-            h('textarea',{id:'bf-notebook-question',rows:3,maxLength:600,value:notebook.question,onChange:function(e){writeNotebook({question:e.target.value});}}),
-            h('p',{className:'bf-writing-count'},__alloFill(__alloT('stem.butterfly.nb_count_question','{value1} / 600 characters'),{value1:notebook.question.length})),
+            h('textarea',{id:'bf-notebook-question','aria-describedby':'bf-notebook-question-count',rows:3,maxLength:600,value:notebook.question,onChange:function(e){writeNotebook({question:e.target.value});}}),
+            h('p',{className:'bf-writing-count',id:'bf-notebook-question-count'},__alloFill(__alloT('stem.butterfly.nb_count_question','{value1} / 600 characters'),{value1:notebook.question.length})),
             h('p',{className:'bf-help'},__alloT('stem.butterfly.nb_help_completed_notebook','A completed notebook means you have assembled an explanation, not that the model has proved your idea. Include what your comparison can and cannot show.')),
             button(__alloT('stem.butterfly.nb_review_field_report','Review my field report'),function(){jumpTo('report');},{className:'bf-primary'}))),returnToGuide()),
       h('section',{className:'bf-panel bf-cases',ref:function(node){sections.current.cases=node;},tabIndex:-1,'aria-labelledby':'bf-cases-title','data-bf-cases-checked':String(practice.checked)},
@@ -5338,11 +5727,11 @@ function buildWorld(T,kit) {
           h('span',{className:'bf-cases-score'},__alloFill(__alloT('stem.butterfly.cs_score','{value1} of {value2} checked · {value3} matched'),{value1:practice.checked,value2:practice.total,value3:practice.matched}))),
         h('div',{className:'bf-case-grid'},CASES.map(function(c){
           var a=caseAnswers[c.id],d=caseDraft[c.id]||{},fb=a?caseFeedback(c,a):null;
-          return h('article',{key:c.id,className:'bf-case','data-case':c.id,'data-checked':String(!!a),'data-matched':fb?String(fb.matched):''},
-            h('h4',null,c.title),h('p',null,c.scene),listen(__alloFill(__alloT('stem.butterfly.cs_listen_case','{value1}. {value2} Mowing plan: {value3}.'),{value1:c.title,value2:c.scene,value3:mowing(c.mowing).label}),c.title),
+          return h('article',{key:c.id,className:'bf-case','aria-labelledby':'bf-case-title-'+c.id,ref:function(node){caseNodes.current[c.id]=node;},'data-case':c.id,'data-checked':String(!!a),'data-matched':fb?String(fb.matched):''},
+            h('h4',{id:'bf-case-title-'+c.id},c.title),h('p',null,c.scene),listen(__alloFill(__alloT('stem.butterfly.cs_listen_case','{value1}. {value2} Mowing plan: {value3}.'),{value1:c.title,value2:c.scene,value3:mowing(c.mowing).label}),c.title),
             h('div',{className:'bf-case-species'},caseSpecies(c).map(function(name){return h('span',{key:name},name);}),h('span',{key:'mow'},mowing(c.mowing).label)),
             a?h(R.Fragment,null,
-              h('div',{className:'bf-case-result','data-matched':String(fb.matched)},h('strong',null,fb.matched?__alloT('stem.butterfly.cs_result_matches_model','✓ Your reasoning matches the model'):fb.stopRight?__alloT('stem.butterfly.cs_result_right_stage_different_reason','Right stage, different reason'):__alloT('stem.butterfly.cs_result_model_differs','The model shows something different')),
+              h('div',{className:'bf-case-result',tabIndex:-1,role:'region','aria-label':__alloFill(__alloT('stem.butterfly.cs_result_name','Model feedback · {value1}'),{value1:c.title}),'data-matched':String(fb.matched)},h('strong',null,fb.matched?__alloT('stem.butterfly.cs_result_matches_model','✓ Your reasoning matches the model'):fb.stopRight?__alloT('stem.butterfly.cs_result_right_stage_different_reason','Right stage, different reason'):__alloT('stem.butterfly.cs_result_model_differs','The model shows something different')),
                 h('p',null,__alloFill(__alloT('stem.butterfly.cs_you_said','You said: {value1} — {value2}.'),{value1:caseStop(a.stop).inline,value2:caseReason(a.reason).inline})),h('p',null,fb.stopRight?fb.explain:(function(stop){
                   // One whole sentence per model outcome, so translators never see a bare stage id.
                   var whole={complete:__alloT('stem.butterfly.cs_model_whole_cycle_runs','In the model the whole cycle runs. {value1}'),egg:__alloT('stem.butterfly.cs_model_stops_at_egg','In the model it stops at the egg stage. {value1}'),caterpillar:__alloT('stem.butterfly.cs_model_stops_at_caterpillar','In the model it stops at the caterpillar stage. {value1}'),chrysalis:__alloT('stem.butterfly.cs_model_stops_at_chrysalis','In the model it stops at the chrysalis stage. {value1}'),adult:__alloT('stem.butterfly.cs_model_stops_at_adult','In the model it stops at the adult stage. {value1}')};
@@ -5351,8 +5740,8 @@ function buildWorld(T,kit) {
               seasonTimeline(h,caseHabitat(c),c.mowing,true,true),
               h('div',{className:'bf-case-actions'},button(h(R.Fragment,null,__alloT('stem.butterfly.cs_try_case_again','Try this case again'),h('span',{className:'bf-sr'},' · '+c.title)),function(){retryCase(c.id);})))
             :h(R.Fragment,null,
-              h('label',null,__alloT('stem.butterfly.cs_where_does_it_stop','Where does the generation stop?'),h('select',{value:d.stop||'',onChange:function(e){draftCase(c.id,'stop',e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.cs_choose_a_stage','Choose a stage')),CASE_STOPS.map(function(x){return h('option',{key:x.id,value:x.id},x.label);}))),
-              h('label',null,__alloT('stem.butterfly.cs_why','Why?'),h('select',{value:d.reason||'',onChange:function(e){draftCase(c.id,'reason',e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.cs_choose_a_reason','Choose a reason')),CASE_REASONS.map(function(x){return h('option',{key:x.id,value:x.id},x.label);}))),
+              h('label',null,h('span',{id:'bf-case-stop-label-'+c.id},__alloT('stem.butterfly.cs_where_does_it_stop','Where does the generation stop?')),h('select',{'aria-labelledby':'bf-case-stop-label-'+c.id+' bf-case-title-'+c.id,value:d.stop||'',onChange:function(e){draftCase(c.id,'stop',e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.cs_choose_a_stage','Choose a stage')),CASE_STOPS.map(function(x){return h('option',{key:x.id,value:x.id},x.label);}))),
+              h('label',null,h('span',{id:'bf-case-reason-label-'+c.id},__alloT('stem.butterfly.cs_why','Why?')),h('select',{'aria-labelledby':'bf-case-reason-label-'+c.id+' bf-case-title-'+c.id,value:d.reason||'',onChange:function(e){draftCase(c.id,'reason',e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.cs_choose_a_reason','Choose a reason')),CASE_REASONS.map(function(x){return h('option',{key:x.id,value:x.id},x.label);}))),
               h('div',{className:'bf-case-actions'},button(h(R.Fragment,null,__alloT('stem.butterfly.cs_check_with_model','Check with the model'),h('span',{className:'bf-sr'},' · '+c.title)),function(){submitCase(c.id);},{className:'bf-primary',disabled:!d.stop||!d.reason}))));
         })),
         h('p',{className:'bf-help'},__alloT('stem.butterfly.cs_help_same_model','The check uses the same stage-by-stage model as the timing investigation: it shows whether each stage finds what it needs in time, not how many monarchs would survive.')),returnToGuide()),
@@ -5365,14 +5754,15 @@ function buildWorld(T,kit) {
             h('dd',null,g.definition),
             h('dd',{className:'bf-gloss-here'},g.here));
         }))),
-      h('section',{className:'bf-panel bf-report',ref:function(node){sections.current.report=node;},tabIndex:-1,'aria-label':__alloT('stem.butterfly.a11y_field_report',"Field report"),'data-bf-report-copied':copyState||''},
+      h('section',{className:'bf-panel bf-report',ref:function(node){sections.current.report=node;},tabIndex:-1,'aria-label':__alloT('stem.butterfly.a11y_field_report',"Field report"),'data-bf-report-copied':copyPending?'pending':copyState||''},
         h('div',{className:'bf-report-head'},h('div',null,h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.rpt_eyebrow','Take your evidence with you')),h('h3',null,__alloT('stem.butterfly.rpt_heading','Field report')),
           h('p',{className:'bf-help'},reportEmpty?__alloT('stem.butterfly.rpt_help_empty','Your observations, experiments, and notebook writing collect here as text you can copy.'):__alloT('stem.butterfly.rpt_help_filled','Your recorded results and learner notes, together as plain text. Your interpretation is labeled separately from the model evidence.'))),
           h('div',{className:'bf-report-actions'},
-            button(copyState==='ok'?__alloT('stem.butterfly.rpt_copied','✓ Report copied'):__alloT('stem.butterfly.rpt_copy_button','Copy my field report'),copyReport,{className:'bf-primary',disabled:reportEmpty}))),
+            button(copyPending?__alloT('stem.butterfly.rpt_copying','Copying field report…'):copyState==='ok'?__alloT('stem.butterfly.rpt_copied','✓ Report copied'):__alloT('stem.butterfly.rpt_copy_button','Copy my field report'),copyReport,{className:'bf-primary',disabled:reportEmpty&&!copyPending,'aria-disabled':copyPending||reportEmpty,'aria-busy':copyPending}))),
+        reportCopyNote?h('p',{className:'bf-help',id:'bf-report-copy-feedback'},reportCopyNote):null,
         reportEmpty?null:h('pre',{'data-bf-report':'1',tabIndex:0,'aria-label':__alloT('stem.butterfly.a11y_field_report_text',"Field report text")},reportText),
-        copyState==='fail'?h('textarea',{readOnly:true,value:reportText,rows:10,'aria-label':__alloT('stem.butterfly.a11y_field_report_text_to_copy_manually',"Field report text to copy manually"),
-          onFocus:function(e){e.target.select();},onCopy:function(){setCopyState('ok');}}):null,returnToGuide()),
+        manualCopy?h('textarea',{readOnly:true,value:reportText,rows:10,'aria-label':__alloT('stem.butterfly.a11y_field_report_text_to_copy_manually',"Field report text to copy manually"),
+          onFocus:function(e){e.target.select();},onCopy:manualReportCopied}):null,returnToGuide()),
       h('details',{className:'bf-sources'},h('summary',null,__alloT('stem.butterfly.src_summary','Science notes & sources')),h('p',null,__alloT('stem.butterfly.src_note_diverse_model_scope','The learner and life-cycle investigation follow the monarch (Danaus plexippus). Adult meadow visitors also include eastern tiger swallowtail, painted lady, and introduced cabbage white. Nectar use does not imply a shared caterpillar host plant; cabbage whites visit milkweed here, while the other visitors can use both flower patches. This summer scene represents a Mid-Atlantic habitat investigation. Plants and wing patterns are illustrative and enlarged. Guided routes, flight speed, distances, and energy are teaching choices, not field measurements. The generation you follow is a teaching model of one outcome, not a population simulation: it turns on whether milkweed is present, and it deliberately leaves out weather, predators, parasites, disease, how many eggs are laid, and how many survive — all of which matter in a real meadow, where most eggs do not reach adulthood even on good milkweed. Real development also takes weeks and depends on temperature; the stages here advance when you choose, in a fixed order. Other butterfly species can have different host plants.')),
         h('p',null,__alloT('stem.butterfly.src_note_experiments','In these experiments you place model eggs on any examined patch to test what happens; real female monarchs choose milkweed. An egg does not feed, so a patch without host leaves first blocks the feeding caterpillar stage. The mowing experiment keeps the chrysalis inside the patch and assumes cutting removes its support. Real caterpillars often leave their milkweed plant to find a secure place to pupate.')),h('ul',null,
         h('li',null,h('a',{href:'https://www.monarchwatch.org/milkweed/',target:'_blank',rel:'noopener noreferrer'},__alloT('stem.butterfly.src_link_monarch_watch_pollen','Monarch Watch · Milkweed pollen packets and transfer'))),
@@ -5402,5 +5792,5 @@ function buildWorld(T,kit) {
     cases:CASES,caseStops:CASE_STOPS,caseReasons:CASE_REASONS,caseHabitat:caseHabitat,caseAnswer:caseAnswer,caseFeedback:caseFeedback,checkCase:checkCase,cleanCases:cleanCases,casesSummary:casesSummary,
     missionStatus:missionStatus,seasonNote:seasonNote,setPlain:function(on){bfPlain=!!on;},fieldFacts:FIELD_FACTS,stageUses:STAGE_USES,paintHabitatMap:paintHabitatMap,meadowPathX:meadowPathX,stemPose:stemPose,paintFeedingDiagram:paintFeedingDiagram,paintLifecycleDiagram:paintLifecycleDiagram,
     cleanPollination:cleanPollination,recordPollination:recordPollination,pollinationIsCurrent:pollinationIsCurrent,currentPollinationVisits:currentPollinationVisits,pollinationPairs:pollinationPairs,
-    feedingVisual:feedingVisual,feedingPhase:feedingPhase,feedingMoment:feedingMoment,feedingOutcome:feedingOutcome,feedingCamera:feedingCamera,stopFlight:stopFlight,flightPose:flightPose,flightResponse:flightResponse,playerWingFlex:playerWingFlex,visitorFlightPose:visitorFlightPose,visitorVisitPose:visitorVisitPose,visitorWingFlex:visitorWingFlex,visitorAntennaPose:visitorAntennaPose,cameraPose:cameraPose,pollinatorCamera:pollinatorCamera,landingPose:landingPose,lifecycleVisual:lifecycleVisual,lifecyclePose:lifecyclePose,lifecycleInspection:lifecycleInspection,monarchWingHeight:monarchWingHeight,lifecycleCamera:lifecycleCamera,createLifecycleModels:createLifecycleModels};
+    feedingVisual:feedingVisual,feedingPhase:feedingPhase,feedingMoment:feedingMoment,feedingOutcome:feedingOutcome,feedingCamera:feedingCamera,stopFlight:stopFlight,flightPose:flightPose,flightResponse:flightResponse,playerWingFlex:playerWingFlex,visitorFlightPose:visitorFlightPose,visitorVisitPose:visitorVisitPose,visitorWingFlex:visitorWingFlex,visitorAntennaPose:visitorAntennaPose,visitorLegTuck:visitorLegTuck,cameraPose:cameraPose,pollinatorCamera:pollinatorCamera,landingPose:landingPose,lifecycleVisual:lifecycleVisual,lifecyclePose:lifecyclePose,lifecycleInspection:lifecycleInspection,monarchWingHeight:monarchWingHeight,lifecycleCamera:lifecycleCamera,createLifecycleModels:createLifecycleModels};
 })();

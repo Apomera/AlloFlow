@@ -2014,7 +2014,10 @@ window.StemLab = window.StemLab || {
       }
       window._volumeKeyHandler = function(e) {
         // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
-        if (!document.querySelector('[data-volume-root]')) return;
+        // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+        var vRoot = document.querySelector('[data-volume-root]');
+        if (!vRoot || !e.target || !vRoot.contains(e.target)) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if (key === 's' && mode !== 'slider') { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null, wpFeedback: null }); }

@@ -1735,7 +1735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                         style: {
                           fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
                           padding: '2px 6px', borderRadius: 4,
-                          background: isDark ? '#0f172a' : '#f1f5f9',
+                          background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f1f5f9'),
                           border: '1px solid ' + (isDark ? '#475569' : '#cbd5e1'),
                           color: isDark ? '#fbbf24' : '#92400e'
                         }
@@ -1757,7 +1757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             )
           ),
           // Three.js not loaded
-          !threeReady && h('div', { className: 'text-center p-8 ' + (isContrast ? 'text-white' : 'text-slate-600') },
+          !threeReady && h('div', { className: 'text-center p-8 ' + (isContrast ? 'text-white' : isDark ? 'text-slate-300' : 'text-slate-600') },
             h('p', null, threeLoadError
               ? t('stem.echolocation.three_js_failed_to_load', 'The 3D engine could not be loaded.')
               : t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
@@ -3371,7 +3371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-lg' }, app.icon),
                       h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, app.title)),
-                    h('span', { className: 'text-[0.6875rem] px-2 py-0.5 rounded-full ' + (isDark ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-100 text-indigo-600') }, app.year)),
+                    h('span', { className: 'text-[0.6875rem] px-2 py-0.5 rounded-full ' + (isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-600') }, app.year)),
                   h('p', { className: 'text-[0.6875rem] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, app.desc));
               })
             ),
@@ -5367,7 +5367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           return h('div', { className: 'p-4 rounded-xl bg-white border border-purple-300' },
             h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, t('stem.echolocation.sonar_sweep_discovery', '🎵 Sonar sweep discovery')),
             h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.echolocation.adjust_min_max_frequency_and_sweep_dur', 'Adjust min/max frequency and sweep duration. Widget classifies call type into 4 discrete categories used by real bats. No score, no reveal.')),
-            h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: cMeta.bg, border: '2px solid ' + cMeta.border } },
+            h('div', { className: 'mb-3 p-3 rounded text-center', style: { background: isContrast ? '#000000' : cMeta.bg, border: '2px solid ' + cMeta.border } },
               h('div', { className: 'text-base font-black', style: { color: cMeta.color } }, cMeta.label),
               h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, cMeta.desc),
               h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, 'BW = ' + bandwidth + ' kHz, dur = ' + iq.sweepMs + ' ms')

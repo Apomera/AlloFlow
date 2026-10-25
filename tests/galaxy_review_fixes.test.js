@@ -442,7 +442,7 @@ describe('galaxy visuals', () => {
     expect(source).toContain('min: 0.1, max: 13.8, step: 0.1, value: cosmicAge');
     expect(source).not.toContain('max: 14, step: 0.1');
     expect(source).toContain('"13.8 Gyr"');
-    expect(source).toContain('var pct = (m.age / 13.8) * 100;');
+    expect(source).toContain("left: ((age / 13.8) * 100) + '%'");
     expect(source).toContain('if (age > 13.85) { clearInterval(window._galaxyTimeLapse);');
     expect(source).toContain('Math.min(13.8, Math.max(0.1, d.cosmicAge))');
     expect(source).not.toContain('" billion years old. "');
@@ -455,7 +455,10 @@ describe('galaxy visuals', () => {
     // tool's own EPOCH_NARRATION puts the first stars at 0.1 and the first galaxies
     // at 0.4. Structural, not a string match: every milestone age must name an epoch.
     const epochAges = [...source.matchAll(/\{ age: ([\d.]+), title: t\('stem\.galaxy\./g)].map((m) => Number(m[1]));
-    const milestoneAges = [...source.matchAll(/\{ age: ([\d.]+), row: \d, label:/g)].map((m) => Number(m[1]));
+    const choicesAt = source.indexOf('"data-galaxy-epoch-choices":');
+    expect(choicesAt).toBeGreaterThan(0);
+    const choices = source.slice(choicesAt, source.indexOf('].map(function (m)', choicesAt));
+    const milestoneAges = [...choices.matchAll(/\{ age: ([\d.]+), label:/g)].map((m) => Number(m[1]));
     expect(epochAges.length).toBeGreaterThanOrEqual(8);
     expect(milestoneAges).toEqual([0.1, 0.4, 4.6, 9.2, 13.8]);
     for (const age of milestoneAges) expect(epochAges, `milestone ${age} Gyr has no epoch`).toContain(age);

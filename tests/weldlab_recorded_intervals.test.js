@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -203,7 +204,7 @@ describe('Recorded quarter-inch interval inspection', () => {
   });
 
   it('removes only the new local hook/helper/call to recover the exact original Bead Lab and unchanged trace', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n'); const start = source.indexOf('      function WeldBeadLab() {'), end = source.indexOf('      function WeldBeadLab3D(props) {', start); let region = source.slice(start, end);
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8')); const start = source.indexOf('      function WeldBeadLab() {'), end = source.indexOf('      function WeldBeadLab3D(props) {', start); let region = source.slice(start, end);
     const hook = '        var arcIntervalState = useState(0);\n', call = ',\n                renderRecordedIntervals()'; expect(region.split(hook)).toHaveLength(2); expect(region.split(call)).toHaveLength(2);
     const hs = region.indexOf('        function renderRecordedIntervals() {'), he = region.indexOf('        function renderSpeedTrace() {', hs); expect(hs).toBeGreaterThan(0); expect(he).toBeGreaterThan(hs);
     const helper = region.slice(hs, he); expect(helper).not.toMatch(/\bupd\(|usePersisted|requestAnimationFrame|setTimeout|setInterval|\bsetRun\(|\bcommitRun\(|\bsetMissions\(|\bsaveMissions\(|\bchoosePrediction\(|\bcheckMission\(|\bstrike\(|\brelease\(|\bkick\(/);

@@ -86,17 +86,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     universeFlightLoad = new Promise(function(resolve, reject) {
       var url = universeFlightResource('universe_flight_scene.js');
       var script = document.createElement('script');
+      try {
+        if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
+        window.__alloConfigureTrustedScript(script, url);
+      } catch (error) { reject(error); return; }
       var timer = setTimeout(function() { finish(new Error('The 3D explorer took too long to load. Please retry.')); }, 15000);
       function finish(error) {
         clearTimeout(timer); script.onload = script.onerror = null;
         if (error) { script.remove(); universeFlightLoad = null; reject(error); }
         else resolve(window.UniverseFlight);
       }
-      script.src = url;
       script.onload = function() { finish(window.UniverseFlight ? null : new Error('The 3D explorer could not start. Please retry.')); };
       script.onerror = function() { finish(new Error('The 3D explorer could not load. Please retry.')); };
       document.head.appendChild(script);
-    });
+    }).catch(function(error) { universeFlightLoad = null; throw error; });
     return universeFlightLoad;
   }
 

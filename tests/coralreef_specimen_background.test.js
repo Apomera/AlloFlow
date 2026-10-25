@@ -1,0 +1,96 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { loadTool, resetStemLab, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const mounted = [];
+let X, namespace, api, renderers, models, observers;
+beforeEach(() => {
+  resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; renderers = []; models = []; observers = [];
+  class Renderer {
+    constructor(options) { this.canvas = options.canvas; this.capabilities = { isWebGL2: true }; this.ratio = 1; this.info = { programs: [] }; this.getContext = () => ({ isContextLost: () => false }); this.render = vi.fn(); this.dispose = vi.fn(); this.forceContextLoss = vi.fn(); renderers.push(this); }
+    setPixelRatio(n) { this.ratio = n; } getPixelRatio() { return this.ratio; }
+    setSize(w, h) { this.canvas.width = Math.round(w * this.ratio); this.canvas.height = Math.round(h * this.ratio); }
+  }
+  namespace = { ...THREE, WebGLRenderer: Renderer };
+  api = { version: '1.0.0', info: () => ({ group: 'fish', portrait: { dir: [.3, .5, 3.2], lookY: 0 } }), create: vi.fn(() => { const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.BoxGeometry(.4, .2, .1), new THREE.MeshBasicMaterial()); mesh.position.y = .1; root.add(mesh); const model = { root, radius: .25, dispose: vi.fn(), update: vi.fn() }; models.push(model); return model; }) };
+  window.THREE = namespace; window.Reef3DSpecies = api;
+  vi.stubGlobal('ResizeObserver', class { constructor(callback) { this.callback = callback; this.disconnect = vi.fn(); observers.push(this); } observe() {} });
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addListener() {}, removeListener() {} })));
+  loadTool('stem_lab/stem_tool_coralreef.js', 'coralReef'); X = window.__RR_TEST_EXPORTS__.coralReef;
+});
+afterEach(async () => { while (mounted.length) { const t = mounted.pop(); await React.act(async () => t.root.unmount()); t.host.remove(); } delete window.THREE; delete window.Reef3DSpecies; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+const q = (t, s) => t.host.querySelector(s), dataView = t => ({ ...q(t, '[data-specimen-view]').dataset });
+async function click(el) { expect(el, 'control exists').toBeTruthy(); await React.act(async () => { el.focus(); el.click(); await new Promise(resolve => setTimeout(resolve, 0)); }); }
+async function mount(kind = 'study') {
+  let data = { coralReef: { section: 'guide', guideSpeciesId: kind === 'study' ? 'clownfish' : null, speciesBookmarks: { clownfish: true, blue_tang: true }, speciesFieldNotes: { clownfish: 'Keep this note' }, speciesLog: { green_turtle: { firstSeen: 1 } } } };
+  const host = document.createElement('div'); document.body.appendChild(host); const root = ReactDOMClient.createRoot(host), cfg = window.StemLab._registry.coralReef;
+  function Shell() { const [state, setState] = React.useState(data); data = state; t.setData = setState; return cfg.render({ React, toolData: state, setToolData: setState, t: (k, v) => v || k, reduceMotion: true }); }
+  const t = { host, root, get data() { return data.coralReef; } }; mounted.push(t); await React.act(async () => root.render(React.createElement(Shell)));
+  if (kind === 'study') { await click(q(t, '[data-open-study]')); await click(q(t, '[data-study-specimen-toggle]')); }
+  else { await click(q(t, '[data-start-practice]')); await React.act(async () => { const select = q(t, '[data-practice-collection-select]'); select.value = 'saved'; select.dispatchEvent(new Event('change', { bubbles: true })); }); await click(q(t, '[data-practice-start]')); await click(q(t, '[data-practice-specimen-toggle]')); }
+  return t;
+}
+
+const frames = () => renderers[0].render.mock.calls.length;
+const centered = state => ({ ...state, specimenPanX: '0', specimenPanY: '0' });
+const logical = state => { const next = { ...state }; delete next.specimenMode; return next; };
+const description = el => (el.getAttribute('aria-describedby') || '').split(/\s+/).map(id => document.getElementById(id)?.textContent || '').join(' ');
+async function magnify(t, count = 8) { for (let i = 0; i < count; i++) await click(q(t, '[data-specimen-zoom="in"]')); }
+async function pointer(t, type, values = {}) { let event; await React.act(async () => { event = new Event(type, { bubbles: true, cancelable: true }); Object.assign(event, { pointerId: 7, button: 0, clientX: 100, clientY: 100, shiftKey: false, altKey: false, ctrlKey: false, metaKey: false, ...values }); q(t, '[data-specimen-canvas]').dispatchEvent(event); }); return event; }
+function pointerCanvas(t) { const canvas = q(t, '[data-specimen-canvas]'); canvas.getBoundingClientRect = () => ({ width: 400, height: 240, left: 0, top: 0 }); canvas.setPointerCapture = vi.fn(); canvas.hasPointerCapture = vi.fn(() => true); canvas.releasePointerCapture = vi.fn(); return canvas; }
+async function key(target, values) { const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...values }); await React.act(async () => target.dispatchEvent(event)); return event; }
+async function moveDetail(t) { await click(q(t, '[data-specimen-mode-button="move"]')); await click(q(t, '[data-specimen-pan-button="right"]')); await click(q(t, '[data-specimen-pan-button="up"]')); }
+
+
+async function touch(t,type,id,x,y=100,extra={}){return pointer(t,type,{pointerType:'touch',pointerId:id,clientX:x,clientY:y,...extra})}
+async function start(t){await touch(t,'pointerdown',31,100);await touch(t,'pointerdown',32,200)}
+async function end(t){await touch(t,'pointerup',31,100);await touch(t,'pointerup',32,200)}
+async function shift(t,dx,dy=0){await touch(t,'pointermove',31,100+dx,100+dy);await touch(t,'pointermove',32,200+dx,100+dy)}
+function pose(t){const s=dataView(t);delete s.specimenScale;delete s.specimenPanX;delete s.specimenPanY;return s}
+
+function controller(){const canvas=document.createElement('canvas');Object.defineProperty(canvas,'clientWidth',{value:390});Object.defineProperty(canvas,'clientHeight',{value:260});return X.createMarineSpecimenController(namespace,canvas,'clownfish',vi.fn())}
+function scene(){return renderers[0].render.mock.calls.at(-1)[0]}
+function camera(){return renderers[0].render.mock.calls.at(-1)[1]}
+function light(){return scene().children.find(n=>n.isDirectionalLight)}
+function camState(){return [...camera().position.toArray(),...camera().quaternion.toArray(),...camera().projectionMatrix.elements]}
+function lightState(){const s=scene(),h=s.children.find(n=>n.isHemisphereLight),l=light();return{background:s.background.uuid||s.background.getHex(),sky:h.color.getHex(),ground:h.groundColor.getHex(),fill:h.intensity,key:l.intensity,position:l.position.toArray(),target:l.target.position.toArray()}}
+function localLight(){return light().position.clone().sub(light().target.position).normalize().applyQuaternion(camera().quaternion.clone().invert()).toArray()}
+function sameVector(a,b){a.forEach((n,i)=>expect(n).toBeCloseTo(b[i],12))}
+
+async function chooseBackground(t,value){const select=q(t,'[data-specimen-background-select]');await React.act(async()=>{select.focus();select.value=value;select.dispatchEvent(new Event('change',{bubbles:true}))})}
+function illumination(){const s=lightState();delete s.background;return s}
+function noBackground(s){const copy={...s};delete copy.specimenBackground;return copy}
+describe('independent specimen background contrast',()=>{
+ it('changes only the backdrop in one frame and remains idle for repeated or invalid choices without new resources',()=>{
+  const c=controller();c.turn(.3,-.2);c.zoom(1);c.pan(.05,-.04);c.setLighting('detail');const initial=c.getView(),cam=camState(),lit=illumination(),children=[...scene().children],n=frames(),material=models[0].root.children[0].material;
+  expect(c.setBackground('light')).toEqual({...initial,background:'light'});expect(frames()).toBe(n+1);expect(camState()).toEqual(cam);expect(illumination()).toEqual(lit);expect(scene().background.getHex()).toBe(0xdbe3e5);expect(scene().children).toEqual(children);expect(models[0].root.children[0].material).toBe(material);expect(renderers).toHaveLength(1);expect(api.create).toHaveBeenCalledTimes(1);expect(models[0].update).not.toHaveBeenCalled();
+  const count=frames();for(const invalid of ['light','LIGHT','',null,undefined,{},1])c.setBackground(invalid);expect(frames()).toBe(count);expect(camState()).toEqual(cam);c.setBackground('dark');expect(scene().background.getHex()).toBe(0x17252d);c.dispose();const dead=frames();c.setBackground('match');expect(frames()).toBe(dead);
+ });
+ it.each(['reef','studio','detail'])('preserves the %s default and keeps explicit contrast through lighting and viewpoint changes',name=>{
+  const c=controller();c.setLighting(name);const original=scene().background,lit=illumination();expect(c.getView().background).toBe('match');for(const bg of ['light','dark']){c.setBackground(bg);const chosen=scene().background;expect(illumination()).toEqual(lit);c.setLighting(name==='studio'?'reef':'studio');expect(scene().background).toBe(chosen);c.setAngle('below');c.zoom(1);c.pan(.1,-.1);c.reset();expect(c.getView().background).toBe(bg);expect(scene().background).toBe(chosen);c.setLighting(name)}c.setBackground('match');expect(scene().background).toBe(original);c.dispose();
+ });
+ it('restores the background atomically and accepts legacy snapshots as Match lighting without mutating them',()=>{
+  const c=controller();c.setAngle('above');c.zoom(1.5);c.pan(.1,-.1);c.setLighting('detail');const legacy=c.getView();delete legacy.background;const original={...legacy},cam=camState(),bg=scene().background;c.setBackground('light');c.setAngle('front');c.setLighting('studio');const n=frames();expect(c.restoreView(legacy)).toEqual({...legacy,background:'match'});expect(frames()).toBe(n+1);sameVector(camState(),cam);expect(scene().background).toBe(bg);expect(legacy).toEqual(original);c.restoreView(legacy);expect(frames()).toBe(n+1);
+  c.setBackground('dark');const saved=c.getView(),dark=scene().background;c.setBackground('light');const count=frames();expect(c.restoreView(saved)).toEqual(saved);expect(frames()).toBe(count+1);expect(scene().background).toBe(dark);expect(c.restoreView(saved)).toEqual(saved);expect(frames()).toBe(count+1);c.dispose();
+ });
+ it('rejects invalid or accessor background snapshots without partial changes or getter execution',()=>{
+  const c=controller();c.setLighting('detail');c.zoom(1);c.setBackground('dark');const saved=c.getView(),cam=camState(),lit=lightState(),n=frames(),getter=vi.fn(()=>{throw Error('must not read')});const accessor={...saved};Object.defineProperty(accessor,'background',{get:getter});for(const background of [null,undefined,1,{},'contrast','LIGHT']){expect(c.restoreView({...saved,turn:saved.turn+.3,background})).toEqual(saved)}expect(c.restoreView(accessor)).toEqual(saved);expect(getter).not.toHaveBeenCalled();expect(camState()).toEqual(cam);expect(lightState()).toEqual(lit);expect(frames()).toBe(n);c.dispose();
+ });
+ it('offers one labeled native select and swaps identical poses with different backgrounds while preserving preferences and records',async()=>{
+  const t=await mount(),records=JSON.stringify(t.data),select=q(t,'[data-specimen-background-select]');expect(select.tagName).toBe('SELECT');expect([...select.options].map(o=>[o.value,o.textContent])).toEqual([['match','Match lighting'],['light','Light neutral'],['dark','Dark neutral']]);expect(q(t,'label[for="'+select.id+'"]').textContent).toContain('Background');expect(description(select)).toContain("specimen's outline");expect(select.value).toBe('match');await click(q(t,'[data-specimen-fine]'));await magnify(t,4);await moveDetail(t);await click(q(t,'[data-specimen-light-button="detail"]'));const before=dataView(t),cam=camState(),lit=illumination();await chooseBackground(t,'dark');expect(noBackground(dataView(t))).toEqual(noBackground(before));expect(camState()).toEqual(cam);expect(illumination()).toEqual(lit);await React.act(async()=>{q(t,'[data-specimen-memory]').open=true});await click(q(t,'[data-specimen-remember]'));await chooseBackground(t,'light');expect(q(t,'[data-specimen-swap]').getAttribute('aria-disabled')).toBeNull();
+  for(let i=0;i<4;i++){const count=frames();await click(q(t,'[data-specimen-swap]'));expect(dataView(t).specimenBackground).toBe(i%2?'light':'dark');expect(q(t,'[data-specimen-background-select]').value).toBe(i%2?'light':'dark');expect(frames()).toBe(count+1);expect(camState()).toEqual(cam);expect(illumination()).toEqual(lit);expect(dataView(t).specimenPrecision).toBe('fine')}await click(q(t,'[data-specimen-restore]'));expect(dataView(t).specimenBackground).toBe('dark');const count=frames();await React.act(async()=>{await new Promise(r=>setTimeout(r,35))});expect(frames()).toBe(count);expect(JSON.stringify(t.data)).toBe(records);
+ });
+ it('can swap with a legacy remembered view and treats omitted background as Match lighting for equality',async()=>{
+  const refs=[],original=React.useRef,refSpy=vi.spyOn(React,'useRef').mockImplementation(v=>{const ref=original(v);refs.push(ref);return ref}),t=await mount();refSpy.mockRestore();const ctl=refs.find(r=>r.current&&typeof r.current.setBackground==='function').current;const legacy=ctl.getView();delete legacy.background;await React.act(async()=>{q(t,'[data-specimen-memory]').open=true});const spy=vi.spyOn(ctl,'getView').mockImplementation(()=>({...legacy}));await click(q(t,'[data-specimen-remember]'));spy.mockRestore();expect(q(t,'[data-specimen-swap]').getAttribute('aria-disabled')).toBe('true');await chooseBackground(t,'light');expect(q(t,'[data-specimen-swap]').getAttribute('aria-disabled')).toBeNull();await click(q(t,'[data-specimen-swap]'));expect(dataView(t).specimenBackground).toBe('match');await click(q(t,'[data-specimen-swap]'));expect(dataView(t).specimenBackground).toBe('light');
+ });
+ it('cancels both active touches on a background change, then retains contrast through Fit, reset and fresh turning',async()=>{
+  const t=await mount(),canvas=pointerCanvas(t);await start(t);await touch(t,'pointermove',32,250);await chooseBackground(t,'light');expect(canvas.releasePointerCapture.mock.calls.map(c=>c[0])).toEqual([31,32]);const before=dataView(t),n=frames();await shift(t,40,20);expect(dataView(t)).toEqual(before);expect(frames()).toBe(n);await end(t);await click(q(t,'[data-specimen-fit]'));await click(q(t,'[data-specimen-reset]'));expect(dataView(t).specimenBackground).toBe('light');await touch(t,'pointerdown',45,100);await touch(t,'pointermove',45,130);expect(dataView(t).specimenTurn).not.toBe('0');await touch(t,'pointerup',45,130);
+ });
+ it.each(['render','context'])('returns owned select focus safely after a %s failure',async failure=>{
+  const t=await mount();if(failure==='render'){renderers[0].render.mockImplementationOnce(()=>{throw Error('render failed')});await chooseBackground(t,'dark')}else{await chooseBackground(t,'dark');await React.act(async()=>q(t,'[data-specimen-canvas]').dispatchEvent(new Event('webglcontextlost',{cancelable:true})))}expect(q(t,'[data-specimen-status="error"]')).toBeTruthy();expect(document.activeElement).toBe(q(t,'[data-study-specimen-toggle]'));expect(models[0].dispose).toHaveBeenCalledTimes(1);expect(renderers[0].dispose).toHaveBeenCalledTimes(1);
+ });
+ it('keeps mystery contrast anonymous and ungraded and reopens with the lighting-matched background',async()=>{
+  const t=await mount('mystery'),records=JSON.stringify(t.data);await chooseBackground(t,'light');await click(q(t,'[data-specimen-light-button="detail"]'));expect(dataView(t).specimenBackground).toBe('light');expect(q(t,'[data-specimen-canvas]').getAttribute('aria-label')).toBe('Interactive 3D model of the mystery organism');expect(q(t,'[data-specimen-view]').textContent).not.toMatch(/clownfish|tang|Amphiprion|Paracanthurus/i);expect(JSON.stringify(t.data)).toBe(records);await click(q(t,'[data-practice-specimen-toggle]'));await click(q(t,'[data-practice-specimen-toggle]'));expect(dataView(t).specimenBackground).toBe('match');expect(renderers).toHaveLength(2);
+ });
+});

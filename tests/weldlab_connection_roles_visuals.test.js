@@ -1,3 +1,5 @@
+import { restorePostureStudy } from './helpers/weldlab_posture_restore.js';
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -84,7 +86,7 @@ describe('Conceptual welding connection roles',()=>{
   });
 
   it('restores the exact entire pre-enhancement SafetyHealth function after removing only the local inspector and approved row correction',()=>{
-    const source=readFileSync(SRC,'utf8').replace(/\r\n/g,'\n');let safety=source.slice(source.indexOf('function SafetyHealthDeepDive('),source.indexOf('function MathBlueprintLab('));
+    const source=restorePostureStudy(stripWeldlabWcagFixes(readFileSync(SRC,'utf8')));let safety=source.slice(source.indexOf('function SafetyHealthDeepDive('),source.indexOf('function MathBlueprintLab('));
     // Reverse only the later exchange-rate addition before this historical baseline.
     const exchangeAt=safety.indexOf('        function renderNoiseExchangeExplorer() {');
     if(exchangeAt>=0){const exchangeEnd=safety.indexOf('        function renderNoiseCalc() {',exchangeAt);expect(exchangeEnd).toBeGreaterThan(exchangeAt);safety=safety.slice(0,exchangeAt)+safety.slice(exchangeEnd);for(const line of ['        var noiseExchangeState = useState(0);\n','            renderNoiseExchangeExplorer(),\n']){expect(safety.split(line)).toHaveLength(2);safety=safety.replace(line,'');}}

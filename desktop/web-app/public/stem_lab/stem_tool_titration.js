@@ -1424,9 +1424,14 @@ function titrAnimCanvasRef(cvEl) {
 // calculation so a removed option, malformed trial, or stale result cannot crash the
 // lab or reveal the answer for a different unknown.
 var TITRATION_SUBSTRATE_CSS =
-  '.theme-dark [data-titration-instance]{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:18px}' +
+  '[data-titration-instance]{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:18px}' +
   '.theme-contrast [data-titration-instance]{background:#000000;color:#ffffff;padding:14px;border-radius:18px}' +
-  '.theme-dark [data-titration-instance] .titr-back{color:#22d3ee}';
+  '[data-titration-instance] .titr-back{color:#22d3ee!important}' +
+  '.theme-contrast [data-titration-instance] .titr-back{color:#ffffff!important}' +
+  '[data-stem-theme=light] [data-titration-instance] .text-slate-400.text-slate-400,[data-stem-theme=light] [data-titration-instance] .text-slate-500.text-slate-500{color:#94a3b8!important}' +
+  '[data-stem-theme=light] [data-titration-instance] .text-cyan-400.text-cyan-400{color:#22d3ee!important}' +
+  '[data-stem-theme=light] [data-titration-instance] .text-amber-400.text-amber-400{color:#fbbf24!important}' +
+  '[data-stem-theme=light] [data-titration-instance] .text-rose-400.text-rose-400{color:#fb7185!important}';
 
 function titrationReferencePH(progress) {
   var p = Math.max(0, Math.min(1, Number(progress) || 0));
@@ -5174,11 +5179,8 @@ if (!safetyChecked) {
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back', "Back"),
       onClick: function() { setStemLabTool(null); },
       className: "text-xs font-bold transition-colors titr-back",
-      // #22d3ee (cyan-400) is a DARK-ground ink, but this tool only paints a dark
-      // substrate under .theme-dark / .theme-contrast (TITRATION_SUBSTRATE_CSS).
-      // In the default light theme the button sat on white at 1.8:1. cyan-700
-      // clears 4.5:1 on white; the dark theme restores the bright ink via CSS,
-      // so each ground keeps the ink that actually reads on it.
+      // Fallback ink for a host without TITRATION_SUBSTRATE_CSS (white ground);
+      // the substrate CSS paints the dark ground in every theme and swaps in #22d3ee.
       style: { color: ctx.isContrast ? '#ffffff' : '#0e7490' }
     }, __alloT('stem.titration.back_2', "\u2190 Back")),
 
@@ -5963,7 +5965,7 @@ return React.createElement("div", {
         );
       })
     ),
-    React.createElement("div", { className: "text-[0.6875rem] text-amber-300/50 mt-1" },
+    React.createElement("div", { className: "text-[0.6875rem] text-amber-300/80 mt-1" },
       __alloT('stem.titration.eyewash_10_second_rule_fire_extinguish', "\uD83D\uDEBF Eyewash located; flush immediately after exposure \u2022 \uD83D\uDEA8 Alarm and exit route known \u2022 \uD83D\uDCCB Exact SDS reviewed"))
   ),
 
@@ -6139,7 +6141,7 @@ return React.createElement("div", {
       React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
       React.createElement('div', { style: { flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' } },
         React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-        React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
       )
     );
   })(),
@@ -7200,7 +7202,7 @@ return React.createElement("div", {
         onClick: function () { if (typeof sfxTitrClick === 'function') sfxTitrClick(); upd('chMode', mo.id); },
         title: mo.hint,
         className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 " +
-          (on ? "bg-amber-500 text-slate-900 border-amber-300"
+          (on ? "bg-amber-500 text-black border-amber-300"
               : "bg-slate-800/60 text-slate-200 border-slate-600 hover:bg-slate-700/80")
       }, mo.label);
     })
@@ -7691,7 +7693,7 @@ return React.createElement("div", {
               disabled: includedTrials.length < 2 || !concordant,
               className: "min-h-[44px] px-4 py-2 rounded-xl text-xs font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 " +
                 (includedTrials.length < 2 || !concordant ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
-                                    : "bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-[0.98]")
+                                    : "bg-amber-500 text-black hover:bg-amber-400 active:scale-[0.98]")
             }, __alloT('stem.titration.finish_and_report', '\u2705 Finish and report the mean')),
             (!concordant) && React.createElement("span", { className: "text-[0.625rem] text-slate-400 self-center" },
               __alloT('stem.titration.need_two', 'Select at least two concordant titres before reporting.'))
@@ -7766,7 +7768,7 @@ return React.createElement("div", {
           React.createElement("button", {
             type: "button",
             onClick: function () { updMulti({ gRun: gRun + 1, gInitialTrue: initialBuretteReading(gRun + 1, 0), gInitialLocked: false, gInitialRecorded: null, gInitialEyeCm: null, gVb: 0, gEndpointReachedAt: null, gResult: null, gStartMs: 0, gEyeCm: 0, gTrials: [] }); focusTitrationRegion('titration-graded-run'); },
-            className: "min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-900 hover:bg-amber-400"
+            className: "min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-black hover:bg-amber-400"
           }, __alloT('stem.titration.next_unknown', '\u2192 Next unknown'))
         );
       })(),
@@ -8117,7 +8119,7 @@ return React.createElement("div", {
               key: g.id, type: "button", onClick: function () { upd('benchSel', g.id); },
               "aria-pressed": on ? 'true' : 'false',
               className: "min-h-[44px] px-3 py-2 rounded-lg text-[0.625rem] font-bold border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 " +
-                (on ? "bg-emerald-500 text-slate-900 border-emerald-300"
+                (on ? "bg-emerald-500 text-black border-emerald-300"
                     : "bg-slate-800/60 text-slate-300 border-slate-600 hover:bg-slate-700/70")
             }, g.label);
           })

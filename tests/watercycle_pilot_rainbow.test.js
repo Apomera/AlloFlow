@@ -105,16 +105,9 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water double-rainbow optics (%s)', (fil
 
   it('wires the visual, causal controls, accessibility, challenge ledger, and report', () => {
     const required = [
-      "className: 'wc-pilot-rainbow-visual'",
       "className: 'wc-pilot-rainbow-challenge'",
       "className: 'wc-pilot-rainbow-geometry'",
       "'data-optics-stage': String(rainbowOptics.stage)",
-      "className: 'wc-pilot-rainbow-veil'",
-      "className: 'wc-pilot-rain-curtain'",
-      "className: 'wc-pilot-antisolar-marker'",
-      "className: 'wc-pilot-optics-seal'",
-      "className: 'wc-pilot-prism-sweep'",
-      "pilot_rainbow_double_found",
       "wc-pilot-rainbow-challenge[data-stage=\"4\"]::after",
       "className: 'wc-pilot-rainbow-raylab'",
       "className: 'wc-pilot-rainbow-receipt', role: 'note'",
@@ -122,8 +115,10 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water double-rainbow optics (%s)', (fil
       "role: 'img'",
       "function focusPilotRainbowNotebook()",
       "pilot_rainbow_raylab_note",
-      "className: 'wc-pilot-alexander-band'",
-      'pilotRainbowPrimaryColors.slice().reverse()',
+      "sky.userData.rainbowModel = 'antisolar-sky-bands'",
+      'rainbowSpectrum(angle,42.0,-1.8)',
+      'rainbowSpectrum(angle,51.0,2.1)',
+      'function updateRainbowPresentation()',
       "input.rainbowAlign = fineTune ? 2 : 1",
       "canvasEl.dataset.rainbowStage",
       "canvasEl.dataset.weatherOptics",
@@ -138,6 +133,8 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water double-rainbow optics (%s)', (fil
     ];
     required.forEach((contract) => expect(source).toContain(contract));
     expect(source.match(/className: 'wc-pilot-ray-bounce'/g)).toHaveLength(3);
+    expect(source).not.toContain("className: 'wc-pilot-rainbow-visual'");
+    expect(source).not.toContain('function pilotRainbowArcPath');
   });
 });
 

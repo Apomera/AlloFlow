@@ -101,10 +101,10 @@ describe('choosing from candidate evidence', () => {
     expect(JSON.stringify(t.data)).not.toMatch(/detailIndex|guessDetailIndex|pendingChoice|comparison/);
   });
 
-  it('does not change ordinary answer-button or reveal focus behavior', async () => {
+  it('uses the same result focus for ordinary answers and retains reveal focus behavior', async () => {
     const t = await mount(); await openComparison(t);
     const main = q(t, '[data-practice-choice="clownfish"]'); await click(main);
-    expect(document.activeElement).toBe(main); expect(scroll).not.toHaveBeenCalled(); expect(q(t, '[data-practice-candidate-choose]')).toBeNull();
+    expect(document.activeElement).toBe(q(t, '[data-practice-feedback]')); expect(scroll.mock.contexts).toEqual([q(t, '[data-practice-feedback]')]); expect(q(t, '[data-practice-candidate-choose]')).toBeNull();
     await click(q(t, '[data-practice-next]')); await click([...t.host.querySelectorAll('button')].find(el => el.textContent === 'Meet another collection'));
     scroll.mockClear(); await openComparison(t); await click(q(t, '[data-practice-skip]'));
     expect(document.activeElement).toBe(q(t, '[data-practice-feedback]')); expect(scroll).not.toHaveBeenCalled(); expect(q(t, '[data-practice-candidate-choose]')).toBeNull();

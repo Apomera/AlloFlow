@@ -3811,7 +3811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     var parts = [];
-    parts.push('<!doctype html><html><head><meta charset="utf-8"><title>Renewables Lab — Print Pack</title>');
+    parts.push('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>Renewables Lab — Print Pack</title>');
     parts.push('<style>');
     parts.push('body{font-family:Georgia,serif;line-height:1.5;color:#111;max-width:740px;margin:24px auto;padding:0 20px;}');
     parts.push('h1{border-bottom:3px solid #16a34a;padding-bottom:6px;font-size:24px;}');

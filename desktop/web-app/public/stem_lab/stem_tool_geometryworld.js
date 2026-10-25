@@ -8188,7 +8188,7 @@
     var m = enrichMeasurement(measurement);
     var physicalPieces = m.hasFractions ? m.formattedOccupiedVolume + ' cubic units of pieces' : m.count + ' unit cubes';
     var materialPieces = Object.keys(m.materialCounts || {}).map(function(type) { return m.materialCounts[type] + ' ' + type; }).join(', ');
-    var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
+    var h = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="UTF-8"><title>Build This! \u2014 Physical Manipulative Card</title>'
       + '<style>'
       + 'body{font-family:Arial,sans-serif;max-width:500px;margin:24px auto;color:#1a1a1a}'
       + '.card{border:3px solid #7c3aed;border-radius:16px;padding:24px;background:linear-gradient(135deg,#faf5ff,#ede9fe)}'
@@ -14740,7 +14740,7 @@
           // Also open printable MTSS report for teacher's RTI binder
           var r = report;
           var tierColor = r.rtiTierSuggestion.indexOf('Tier 1') >= 0 ? '#22c55e' : r.rtiTierSuggestion.indexOf('Tier 2') >= 0 ? '#f59e0b' : '#ef4444';
-          var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MTSS Progress Report</title>'
+          var h = '<!DOCTYPE html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="UTF-8"><title>MTSS Progress Report</title>'
             + '<style>body{font-family:Arial,sans-serif;max-width:700px;margin:24px auto;color:#1e293b;line-height:1.5}'
             + 'h1{font-size:20px;border-bottom:2px solid #334155;padding-bottom:8px}'
             + 'h2{font-size:15px;color:#475569;margin:18px 0 6px}'

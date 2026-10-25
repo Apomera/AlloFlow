@@ -69,7 +69,7 @@ describe('galaxy WCAG interaction contracts', () => {
     expect(source).toContain('"aria-disabled": realSkyViewportControlsReady ? "false" : "true"');
     expect(source).toContain('stem.galaxy.real_sky_keyboard_controls');
     expect(source).toContain('id: "galaxy-real-sky-status"');
-    expect(source).toContain('d.quizFeedback && React.createElement("div", { role: "status"');
+    expect(source).toContain('"data-galaxy-quiz-feedback-status": "true", role: "status", "aria-live": "polite", "aria-atomic": "true"');
     expect(source).toContain('"aria-atomic": "true"');
   });
 });

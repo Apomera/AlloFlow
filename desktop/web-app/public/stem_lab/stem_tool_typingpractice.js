@@ -18163,7 +18163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Minimal print-friendly CSS: monospace so alignment of the line-based
       // report is preserved.
       var html = [
-        '<!doctype html><html><head><meta charset="utf-8"><title>' +
+        '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' +
           title.replace(/[<>&]/g, function(c) { return ({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]; }) +
           '</title>',
         '<style>',

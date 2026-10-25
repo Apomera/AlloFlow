@@ -755,10 +755,28 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       }
       var hit = hitTest(pt);
       if (hit) {
-        update({ dragging: hit });
+        // Pressing a point also selects it, so a later click on the map can place it.
+        update({ dragging: hit, keyboardTarget: hit });
         if (typeof announceToSR === 'function') {
           announceToSR(hit === 'epicenter' ? __alloT('stem.platetectonics.epi_dragging_epicenter', 'Dragging epicenter') : __alloT('stem.platetectonics.epi_dragging_station', 'Dragging station {id}').replace('{id}', hit));
         }
+        return;
+      }
+      // WCAG 2.5.7: clicking empty map moves the selected point there, no drag needed.
+      var target = sRef.current.keyboardTarget || 'epicenter';
+      var px = Math.max(8, Math.min(W_CANVAS - 8, pt.x));
+      var py = Math.max(8, Math.min(H_CANVAS - 8, pt.y));
+      if (target === 'epicenter') { update({ epicenter: { x: px, y: py } }); }
+      else {
+        var stn = stationsRef.current.filter(function (st) { return st.id === target; })[0];
+        if (!stn) return;
+        stn.x = px; stn.y = py;
+        update({});
+      }
+      if (typeof announceToSR === 'function') {
+        var placedEpi = target === 'epicenter' ? { x: px, y: py } : sRef.current.epicenter;
+        var placedMsg = stationsRef.current.map(function (st) { return st.id + ' ' + spTime(st, placedEpi).toFixed(1) + ' seconds'; }).join(', ');
+        announceToSR(__alloT('stem.platetectonics.epi_target_moved', '{target} moved. S-P readings: {readings}.').replace('{target}', target === 'epicenter' ? __alloT('stem.platetectonics.epi_target_star', 'Epicenter') : target).replace('{readings}', placedMsg));
       }
     }
     function onMove(e) {

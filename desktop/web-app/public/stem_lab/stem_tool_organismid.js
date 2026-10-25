@@ -446,6 +446,15 @@
       if (announcement && typeof ctx.announceToSR === 'function') ctx.announceToSR(announcement);
     }
 
+    function focusObservation(id) {
+      var focus = function () {
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      };
+      if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focus);
+      else window.setTimeout(focus, 0);
+    }
+
     function selectView(view) {
       // Announce the human label, not the internal id -- 'Hazard Tiers view
       // selected', not 'groups view selected'.
@@ -847,28 +856,44 @@
         var row={exampleId:example.id,context:d.observationContext||'',nextEvidence:d.observationNextEvidence||'',reviewed:reviewVisible,id:now+'-'+Math.random().toString(36).slice(2,9),date:now,subject:example.id==='field'?String(d.observationSubject||'Field observation').slice(0,100):example.name,note:String(d.observationNote).trim(),claim:route.result||'Key unfinished',path:route.path,previousId:d.observationPreviousId||'',reason:d.observationReason||''};
         patchState({observationJournal:observationJournal(journal.concat([row])),observationPreviousId:'',observationReason:'',observationNote:'',observationNextEvidence:'',observationNotice:'Observation saved in this project. Export a copy for your field notebook.'},'Observation saved.');
       }
-      return h('div',{'data-taxonomy-observation':true,style:{maxWidth:1000,margin:'auto',padding:16}},
+      return h('div',{'data-taxonomy-observation':true,style:{maxWidth:1000,minWidth:0,margin:'auto',padding:16,overflowWrap:'anywhere'}},
         h('section',{style:box},
           h('h2',null,'Observe before naming'),
           h('p',null,'Practice a branching key on six teaching examples. Each answer must come from the description. The key groups these examples; it cannot identify a wild organism. Choose “Not sure” when evidence is missing.'),
           h('label',{htmlFor:'oid-observation-example'},'Teaching example'),
-          h('select',{id:'oid-observation-example',value:example.id,style:inputStyle,onChange:function(e){patchState({observationExample:e.target.value,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:'',observationContext:'',observationNextEvidence:'',observationReviewKey:null});}},
+          h('select',{id:'oid-observation-example',value:example.id,style:inputStyle,onChange:function(e){
+            var nextExample=OBSERVATION_EXAMPLES.find(function(item){return item.id===e.target.value;})||OBSERVATION_EXAMPLES[1];
+            var prompt=nextExample.id==='field'?'Tentative teaching group: Unclassified field observation.':observationRoute([]).question;
+            patchState({observationExample:nextExample.id,observationAnswers:[],observationNote:'',observationPreviousId:'',observationReason:'',observationNotice:'',observationContext:'',observationNextEvidence:'',observationReviewKey:null},
+              __alloT('stem.organismid.observation_example_changed','{example} selected. {prompt}').replace('{example}',nextExample.name).replace('{prompt}',prompt));
+          }},
             OBSERVATION_EXAMPLES.map(function(e){return h('option',{key:e.id,value:e.id},e.name);})),
-          h('p',{'data-example-evidence':true},example.evidence),
+          h('p',{id:'oid-observation-example-evidence','data-example-evidence':true},example.evidence),
           example.id==='field'?h('label',null,'Observation title',h('input',{type:'text',maxLength:100,value:d.observationSubject||'',style:inputStyle,onChange:function(e){patchState({observationSubject:e.target.value});}})):null,
           h('ol',null,route.path.map(function(step,i){return h('li',{key:i},step.question+' '+(step.answer==='unsure'?'Not sure':step.answer));})),
-          route.question?h('div',null,h('h3',null,route.question),['yes','no','unsure'].map(function(choice){
-            return h('button',{key:choice,type:'button',style:{padding:12,minHeight:44,margin:4,background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7},onClick:function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,route.path.length).concat([choice]),observationReviewKey:null});}},choice==='unsure'?'Not sure':choice==='yes'?'Yes':'No');
-          })):h('p',{role:'status','data-key-result':true},'Tentative teaching group: '+route.result+'. '+(route.result==='Unresolved'?'Gather another observation; a missing feature is not evidence that it is absent.':'Check every decision against the example before saving your claim.')),
-          action('Back one decision',function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,-1),observationReviewKey:null});},!route.path.length),
+          h('section',{id:'oid-observation-step',role:'region',tabIndex:-1,'data-oid-focus':true,
+            'aria-labelledby':'oid-observation-step-title','aria-describedby':'oid-observation-example-evidence oid-observation-step-help'},
+            h('h3',{id:'oid-observation-step-title','data-key-result':route.question?undefined:true},route.question||('Tentative teaching group: '+route.result+'.')),
+            h('p',{id:'oid-observation-step-help'},route.question
+              ?__alloT('stem.organismid.observation_answer_help','Choose an answer using the teaching example description.')
+              :(route.result==='Unresolved'?'Gather another observation; a missing feature is not evidence that it is absent.':'Check every decision against the example before saving your claim.')),
+            route.question?h('div',{role:'group','aria-labelledby':'oid-observation-step-title'},['yes','no','unsure'].map(function(choice){
+              return h('button',{key:choice,type:'button',style:{padding:12,minHeight:44,margin:4,background:C.raised,color:C.text,border:'1px solid '+C.border,borderRadius:7},onClick:function(){
+                patchState({observationAnswers:(d.observationAnswers||[]).slice(0,route.path.length).concat([choice]),observationReviewKey:null});
+                focusObservation('oid-observation-step');
+              }},choice==='unsure'?'Not sure':choice==='yes'?'Yes':'No');
+            })):null),
+          action('Back one decision',function(){patchState({observationAnswers:(d.observationAnswers||[]).slice(0,-1),observationReviewKey:null});focusObservation('oid-observation-step');},!route.path.length),
 
-          action('Restart key',function(){patchState({observationAnswers:[],observationReviewKey:null});}),
-          example.id!=='field' ? action('Review my evidence',function(){patchState({observationReviewKey:reviewKey},evidenceReview.detail);},!route.path.length) : null,
-          reviewVisible && example.id!=='field' ? h('section',{'data-observation-evidence-review':evidenceReview.status,style:box},
-            h('h3',null,'Evidence check'),
-            h('p',{role:'status'},evidenceReview.detail),
+          action('Restart key',function(){patchState({observationAnswers:[],observationReviewKey:null});focusObservation('oid-observation-step');}),
+          example.id!=='field' ? action('Review my evidence',function(){patchState({observationReviewKey:reviewKey});focusObservation('oid-observation-review');},!route.path.length) : null,
+          reviewVisible && example.id!=='field' ? h('section',{id:'oid-observation-review',role:'region',tabIndex:-1,'data-oid-focus':true,
+            'aria-labelledby':'oid-observation-review-title','aria-describedby':'oid-observation-review-detail','data-observation-evidence-review':evidenceReview.status,style:box},
+            h('h3',{id:'oid-observation-review-title'},'Evidence check'),
+            h('p',{id:'oid-observation-review-detail'},evidenceReview.detail),
             typeof evidenceReview.decision==='number' ? action('Return to this decision',function(){
-              patchState({observationAnswers:(d.observationAnswers||[]).slice(0,evidenceReview.decision),observationReviewKey:null},'Returned to decision '+(evidenceReview.decision+1)+'.');
+              patchState({observationAnswers:(d.observationAnswers||[]).slice(0,evidenceReview.decision),observationReviewKey:null});
+              focusObservation('oid-observation-step');
             }) : null
           ) : null,
           h('label',{htmlFor:'oid-observation-context'},'Observation context (optional: habitat, conditions, or lesson setting)'),
@@ -977,17 +1002,18 @@
       '.organism-id-lab{min-height:100%;padding:18px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}',
       '.organism-id-lab *{box-sizing:border-box}',
       '.organism-id-lab button{font:inherit;cursor:pointer}',
-      '.organism-id-lab button:focus-visible,.organism-id-lab a:focus-visible{outline:3px solid var(--oid-focus);outline-offset:3px}',
+      '.organism-id-lab :is(button,a,input,select,textarea,summary):focus-visible,.organism-id-lab [data-oid-focus]:focus{outline:3px solid var(--oid-focus);outline-offset:3px}',
+      '@media(forced-colors:active){.organism-id-lab :is(button,a,input,select,textarea,summary):focus-visible,.organism-id-lab [data-oid-focus]:focus{outline-color:Highlight}}',
       '.organism-id-lab .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '.organism-id-lab .is-latin{font-family:Georgia,"Iowan Old Style",Palatino,serif;font-style:italic}',
-      '.oid-hero{display:flex;gap:16px;align-items:center;padding:20px;border-radius:18px;background:linear-gradient(135deg,#14532d,#2f6b57 55%,#155e75);color:#fff;box-shadow:0 14px 30px rgba(20,83,45,.22)}',
+      '.oid-hero{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:20px;border-radius:18px;background:linear-gradient(135deg,#14532d,#2f6b57 55%,#155e75);color:#fff;box-shadow:0 14px 30px rgba(20,83,45,.22)}',
       // The gradient makes axe mark the three hero text nodes INCOMPLETE, so the
       // contrast is verified by hand instead (2026-08-23): white text against every
       // stop, at the lowest opacity used, is 5.05:1 at worst (#fff@.85 on #2f6b57,
       // the lightest stop) and 9.11:1 at best -- all clear AA. The other 28
       // "incomplete" nodes are the caret/dot glyphs, which axe skips as non-text.
       '.oid-hero-icon{display:grid;place-items:center;width:64px;height:64px;flex:0 0 64px;border:1px solid rgba(255,255,255,.4);border-radius:16px;background:rgba(255,255,255,.14);font-size:34px}',
-      '.oid-hero-copy{min-width:0}.oid-kicker{margin:0;font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.85}',
+      '.oid-hero-copy{flex:1 1 14em;min-width:0;overflow-wrap:anywhere}.oid-kicker{margin:0;font-size:11px;font-weight:900;letter-spacing:.14em;opacity:.85}',
       '.oid-hero h1{margin:2px 0 4px;font-size:clamp(24px,4vw,38px);line-height:1.1}',
       '.oid-hero p{margin:0;max-width:720px;font-size:14px;opacity:.93}',
       '.oid-safety{display:block;margin:14px 0 0;padding:11px 13px;border:1px solid;border-left-width:5px;border-radius:10px;font-size:13px}',

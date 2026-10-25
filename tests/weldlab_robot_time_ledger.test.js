@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { stripRobotReference } from './helpers/weldlab_robot_reference_restore.js';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
@@ -226,7 +227,7 @@ describe('Robot whole-program time ledger', () => {
   });
 
   it('restores every original robot lesson byte by removing only the one local hook, one helper and one render call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripRobotReference(readFileSync(resolve(SRC), 'utf8'));
     let region = source.slice(source.indexOf('function RoboticAutomated('), source.indexOf('function InspectionCWIPrep('));
     const hook = "        var robBudgetState = useState({ view: 'sequence', move: 0 });\n", call = '            renderRobTimeLedger(),\n';
     expect(region.split(hook)).toHaveLength(2); expect(region.split(call)).toHaveLength(2);

@@ -135,7 +135,10 @@
     spotted_seahorse: ['fish', 'bottom', 0.12, 0, 55],
     bennetts_feather_star: ['invertebrate', 'bottom', 0.32, 0, 50],
     peacock_mantis_shrimp: ['invertebrate', 'bottom', 0.14, 0, 100],
-    ribbon_eel: ['fish', 'crevice', 1.0, 1, 57]
+    ribbon_eel: ['fish', 'crevice', 1.0, 1, 57],
+    leaf_scorpionfish: ['fish', 'bottom', 0.10, 1, 135],
+    longnose_hawkfish: ['fish', 'bottom', 0.12, 10, 100],
+    chocolate_chip_sea_star: ['invertebrate', 'bottom', 0.28, 0, 30]
   };
   var SPECIAL = {
     whitetip_reef_shark: 'cruise', reef_manta: 'manta', green_turtle: 'turtle', hawksbill_turtle: 'turtle', giant_moray: 'moray',
@@ -157,7 +160,7 @@
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
-    firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand'
+    firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand'
   };
   function speciesInfo(Species, id) {
     var raw = null, fb = INFO[id] || null;
@@ -5977,12 +5980,38 @@
       updateLens(); animateDiver(0); updateCamera(0, true); notify(true); refresh();
     }
     function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; settle = 0; notify(true); refresh(); }
+    function setReducedMotion(value) {
+      if (disposed || reducedMotion === !!value) return;
+      reducedMotion = !!value;
+      // A changed preference stops the current dive without rebuilding its reef.
+      // Disabling the preference leaves the learner in control of resuming.
+      if (reducedMotion) paused = true;
+      lastStamp = null; settle = 0;
+      if (loaded) updateCamera(0, true);
+      notify(true); refresh();
+    }
     function setInput(input) {
       if (disposed) return;
       if (!input) { ext.forward = ext.turn = ext.rise = 0; return; }
       ['forward', 'turn', 'rise'].forEach(function (k) { if (input[k] !== undefined) ext[k] = clamp(num(input[k], 0), -1, 1); });
       if ((ext.forward || ext.turn || ext.rise) && autopilot) autopilot = null;
       refresh();
+    }
+    // Button equivalents of drag-look and wheel-zoom. Camera-only changes stay available while paused.
+    function lookCamera(dx, dy) {
+      if (disposed || !loaded) return false;
+      lookBy(clamp(num(dx, 0), -1000, 1000), clamp(num(dy, 0), -1000, 1000));
+      updateCamera(0, true); return true;
+    }
+    function zoomCamera(amount) {
+      if (disposed || !loaded || view !== 'third') return false;
+      zoomBy(clamp(num(amount, 0), -1, 1));
+      updateCamera(0, true); return true;
+    }
+    function resetCamera() {
+      if (disposed || !loaded) return false;
+      look.yaw = 0; look.pitch = 0; camDist = 4.2;
+      updateCamera(0, true); refresh(); return true;
     }
     function resize() {
       if (disposed || !renderer) return;
@@ -5995,7 +6024,8 @@
       refresh();
     }
     controller = {
-      setView: setView, setPaused: setPaused, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
+      lookCamera: lookCamera, zoomCamera: zoomCamera, resetCamera: resetCamera,
+      setView: setView, setPaused: setPaused, setReducedMotion: setReducedMotion, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
       focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
     };
 

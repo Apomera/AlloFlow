@@ -79,7 +79,7 @@ afterEach(async () => {
 
 describe('SkySchool fullscreen Escape ownership', () => {
   it('leaves CSS fullscreen on the first Escape and ends flight only on a later Escape', async () => {
-    await click(host.querySelector('[aria-label="Toggle fullscreen flight view"]'));
+    await click(host.querySelector('[data-flight-fullscreen]'));
     expect(deck().getAttribute('data-allo-fullscreen-active')).toBe('true');
     const flight = { ...hooks().flightRef.current };
     cockpit().focus();
@@ -95,7 +95,7 @@ describe('SkySchool fullscreen Escape ownership', () => {
   });
 
   it('exits fullscreen before dismissing Help and keeps the flight paused', async () => {
-    await click(host.querySelector('[aria-label="Toggle fullscreen flight view"]'));
+    await click(host.querySelector('[data-flight-fullscreen]'));
     await click([...host.querySelectorAll('button')].find(item => item.textContent.trim() === 'Controls and help'));
     const close = host.querySelector('#skyschool-close-help');
     await escape(close); await frame();

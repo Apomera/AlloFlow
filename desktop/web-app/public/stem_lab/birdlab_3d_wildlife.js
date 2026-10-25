@@ -431,6 +431,52 @@
         {start:32.4,end:33.6,x:0,z:0,kind:'flight'}
       ]);
     }
+    // Soft contact shadows. A songbird is far below the shadow map's texel, so
+    // without these the residents float. One batched mesh keeps a single draw
+    // call; each footprint follows its bird and fades as the bird takes off.
+    var shadowBirds = birds.concat(sharedBirds), shadowSizes = [];
+    root.updateMatrixWorld(true);
+    shadowBirds.forEach(function (bird) {
+      var box = new THREE.Box3().setFromObject(bird.root), size = box.getSize(new THREE.Vector3());
+      shadowSizes.push({ halfWidth: Math.max(.012, size.x * .58), halfLength: Math.max(.02, size.z * .40) });
+    });
+    var shadowCount = shadowBirds.length, shadowPositions = new Float32Array(shadowCount * 12);
+    var shadowAlpha = new Float32Array(shadowCount * 4), shadowUv = new Float32Array(shadowCount * 8), shadowIndex = [];
+    for (var shadowQuad = 0; shadowQuad < shadowCount; shadowQuad++) {
+      shadowUv.set([-1, -1, 1, -1, 1, 1, -1, 1], shadowQuad * 8);
+      var corner = shadowQuad * 4; shadowIndex.push(corner, corner + 2, corner + 1, corner, corner + 3, corner + 2);
+    }
+    var shadowGeometry = keep(new THREE.BufferGeometry());
+    shadowGeometry.setAttribute('position', new THREE.BufferAttribute(shadowPositions, 3).setUsage(THREE.DynamicDrawUsage));
+    shadowGeometry.setAttribute('uv', new THREE.BufferAttribute(shadowUv, 2));
+    shadowGeometry.setAttribute('blShadowAlpha', new THREE.BufferAttribute(shadowAlpha, 1).setUsage(THREE.DynamicDrawUsage));
+    shadowGeometry.setIndex(shadowIndex);
+    var shadowMaterial = keep(new THREE.MeshBasicMaterial({ color: 0x1b130c, transparent: true, depthWrite: false,
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    shadowMaterial.onBeforeCompile = function (shader) {
+      shader.vertexShader = 'attribute float blShadowAlpha; varying float vBlShadowAlpha; varying vec2 vBlShadowUv;\n' +
+        shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlShadowAlpha = blShadowAlpha; vBlShadowUv = uv;');
+      shader.fragmentShader = 'varying float vBlShadowAlpha; varying vec2 vBlShadowUv;\n' +
+        shader.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\nfloat blShadowFall = 1. - smoothstep(.0, 1., length(vBlShadowUv));\ndiffuseColor.a *= pow(blShadowFall, 1.25) * vBlShadowAlpha;');
+    };
+    shadowMaterial.customProgramCacheKey = function () { return 'birdlab-resident-contact-shadow-v1'; };
+    var contactShadows = new THREE.Mesh(shadowGeometry, shadowMaterial);
+    contactShadows.name = 'resident-contact-shadows'; contactShadows.frustumCulled = false; contactShadows.renderOrder = 1;
+    root.add(contactShadows);
+    function updateContactShadows() {
+      shadowBirds.forEach(function (bird, index) {
+        var size = shadowSizes[index], x = bird.root.position.x, z = bird.root.position.z, y = height(x, z) + .003;
+        var altitude = Math.max(0, bird.altitude || 0), spread = 1 + altitude * 2.2;
+        var w = size.halfWidth * spread, l = size.halfLength * spread, yaw = bird.root.rotation.y, c = Math.cos(yaw), sn = Math.sin(yaw);
+        var corners = [[-w, -l], [w, -l], [w, l], [-w, l]];
+        for (var k = 0; k < 4; k++) {
+          var cx = corners[k][0], cz = corners[k][1], at = index * 12 + k * 3;
+          shadowPositions[at] = x + cx * c + cz * sn; shadowPositions[at + 1] = y; shadowPositions[at + 2] = z - cx * sn + cz * c;
+          shadowAlpha[index * 4 + k] = .78 * Math.exp(-altitude / .16);
+        }
+      });
+      shadowGeometry.attributes.position.needsUpdate = true; shadowGeometry.attributes.blShadowAlpha.needsUpdate = true;
+    }
     function sampleCardinalHop(bird,move,u,startX,startZ) {
       var out=bird.hopSample,hops=move.hops||2,index=Math.min(hops-1,Math.floor(u*hops));
       var local=clamp(u*hops-index),air=clamp((local-.18)/.47);
@@ -1073,6 +1119,7 @@
           else if(state.kind==='forage')bird.behavior='Searching for food';
         }
       });
+      updateContactShadows();
     }
     function snapshot() {
       return birds.concat(sharedBirds).map(function (bird) { return { id: bird.id, name: bird.name, scientificName: bird.scientificName,

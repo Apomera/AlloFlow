@@ -8453,27 +8453,27 @@ function EcoPairMeasurement(props) {
         'aria-labelledby': 'ecosystem-tutorial-title',
         'aria-describedby': 'ecosystem-tutorial-description',
         tabIndex: -1,
-        className: 'w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-2 border-emerald-400 bg-white p-5 shadow-2xl dark:bg-slate-800'
+        className: 'w-full max-w-sm max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border-2 border-emerald-400 bg-white p-5 shadow-2xl'
       },
         h('div', { className: 'flex items-start justify-between gap-3 mb-3' },
-          h('h2', { id: 'ecosystem-tutorial-title', className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' }, props.stepLabel),
+          h('h2', { id: 'ecosystem-tutorial-title', className: 'text-sm font-bold text-emerald-700' }, props.stepLabel),
           h('button', {
             ref: dismissRef,
             type: 'button',
             'aria-label': props.dismissLabel,
-            className: 'min-h-11 min-w-11 shrink-0 rounded text-sm text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200',
+            className: 'min-h-11 min-w-11 shrink-0 rounded text-sm text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500',
             onClick: function() { dismissHandlerRef.current(); }
           }, '\u2715')
         ),
         h('p', {
           id: 'ecosystem-tutorial-description',
-          className: 'mb-4 text-sm leading-relaxed text-slate-700 dark:text-slate-200'
+          className: 'mb-4 text-sm leading-relaxed text-slate-700'
         }, props.description),
         h('div', { className: 'flex gap-2' },
           props.step > 0 && h('button', {
             type: 'button',
             'aria-label': props.backLabel,
-            className: 'min-h-11 rounded-lg px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.97] dark:text-slate-200 dark:hover:bg-slate-700',
+            className: 'min-h-11 rounded-lg px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 active:scale-[0.97]',
             onClick: props.onBack
           }, '\u2190 ' + props.backLabel),
           h('button', {
@@ -8498,11 +8498,11 @@ function EcoPairMeasurement(props) {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      // This tool leans on Tailwind `dark:` variants, which fire only under a
-      // .dark ancestor - the contrast theme has none, so all of them resolved
-      // to their LIGHT values on that theme's black host surface (1.4-3.0:1).
-      // Only chrome that lands on the host ground is corrected here; text on
-      // the tool's own tinted cards reads as authored.
+      // No Tailwind `dark:` variants here: they follow the OS, not the app
+      // theme, and the host draws this tool on a light card in dark theme.
+      // The contrast theme keeps a black host surface, so its LIGHT values
+      // land on black (1.4-3.0:1). Only chrome that lands on the host ground
+      // is corrected here; text on the tool's own tinted cards reads as authored.
       var isContrast = !!ctx.isContrast;
       var onHostInk = isContrast ? ' text-white' : '';
       // Colour-name utilities (amber/green/orange) can sort AFTER `text-white`
@@ -9434,7 +9434,7 @@ function EcoPairMeasurement(props) {
         var summary = report.currentSummary;
         var popup = window.open('', '_blank', 'noopener,noreferrer');
         if (!popup) { if (addToast) addToast('Allow pop-ups to print the teacher report.', 'warn'); return; }
-        popup.document.write('<!doctype html><html><head><title>Ecosystem teacher report</title><style>body{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 20px;color:#172033}h1{color:#0f766e}h2{margin-top:24px;border-bottom:1px solid #cbd5e1;padding-bottom:5px}li{margin:5px 0}.key{font:12px monospace;background:#f1f5f9;padding:8px;word-break:break-all}</style></head><body>' +
+        popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Ecosystem teacher report</title><style>body{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 20px;color:#172033}h1{color:#0f766e}h2{margin-top:24px;border-bottom:1px solid #cbd5e1;padding-bottom:5px}li{margin:5px 0}.key{font:12px monospace;background:#f1f5f9;padding:8px;word-break:break-all}</style></head><body>' +
           '<h1>Ecosystem experiment report</h1>' +
           '<p><strong>Question:</strong> ' + escapeHtml(report.prompt || 'No guiding question entered.') + '</p>' +
           '<h2>Outcome</h2><p>' + escapeHtml(summary ? summary.label + '. ' + summary.detail : 'No completed analytical run yet.') + '</p>' +
@@ -9637,8 +9637,8 @@ function EcoPairMeasurement(props) {
         var descId = 'eco-system-comparison-desc-' + record.id;
         return h('figure', { key: record.id, className: 'min-w-0 space-y-1', 'data-eco-system-comparison': record.id },
           h('figcaption', { className: 'space-y-0.5' },
-            h('div', { className: 'text-sm font-bold text-slate-900 dark:text-slate-100' }, record.scenario.emoji + ' ' + record.scenario.name),
-            h('div', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, record.scenario.producer.label + ' \u2192 ' + record.scenario.prey.label + ' \u2192 ' + record.scenario.predator.label)
+            h('div', { className: 'text-sm font-bold text-slate-900' }, record.scenario.emoji + ' ' + record.scenario.name),
+            h('div', { className: 'text-[0.625rem] text-slate-600' }, record.scenario.producer.label + ' \u2192 ' + record.scenario.prey.label + ' \u2192 ' + record.scenario.predator.label)
           ),
           h('svg', { viewBox: '0 0 ' + sw + ' ' + sh, className: 'w-full', role: 'img', 'aria-labelledby': titleId + ' ' + descId },
             h('title', { id: titleId }, record.scenario.name + ' synchronized population trajectory'),
@@ -9655,7 +9655,7 @@ function EcoPairMeasurement(props) {
             h('text', { x: sw / 2, y: sh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, 'Modeled time'),
             h('text', { x: 9, y: sh / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 9, transform: 'rotate(-90, 9, ' + (sh / 2) + ')' }, 'Population index')
           ),
-          h('div', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+          h('div', { className: 'text-[0.6875rem] text-slate-700' },
             'Time ' + (selectedIndex * ECO_MODEL_TIME_STEP).toFixed(1) + ': ' + record.scenario.prey.label + ' ' + Math.round(Number(selectedPoint.prey) || 0) + '; ' + record.scenario.predator.label + ' ' + Math.round(Number(selectedPoint.pred) || 0) + '. Outcome: ' + record.summary.label + '.'
           )
         );
@@ -9681,7 +9681,7 @@ function EcoPairMeasurement(props) {
         var replay = replayPointFor(runData);
         var cursorX = rsx(replay.index);
         return h('figure', { className: 'min-w-0 space-y-1' },
-          h('figcaption', { className: 'text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, label),
+          h('figcaption', { className: 'text-[0.6875rem] font-bold text-slate-700' }, label),
           h('svg', { viewBox: '0 0 ' + rw + ' ' + rh, className: 'w-full', role: 'img', 'aria-label': label + ' population trajectory at shared replay step ' + replayCursor },
             h('rect', { x: rp, y: rp, width: rw - 2 * rp, height: rh - 2 * rp, fill: 'none', stroke: '#94a3b8', strokeWidth: 1 }),
             h('line', { x1: rp, y1: rh - rp, x2: rw - rp, y2: rh - rp, stroke: '#64748b', strokeWidth: 1 }),
@@ -9694,7 +9694,7 @@ function EcoPairMeasurement(props) {
             h('text', { x: rw - rp, y: 18, textAnchor: 'end', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, 'Predator dashed \u2014 ' + activeScenario.predator.label),
             h('text', { x: rw / 2, y: rh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, 'Modeled time')
           ),
-          h('div', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' },
+          h('div', { className: 'text-[0.6875rem] text-slate-600' },
             'Step ' + replay.index + ': ' + activeScenario.prey.label + ' (prey) ' + Math.round(Number(replay.point.prey) || 0) + ', ' + activeScenario.predator.label + ' (predators) ' + Math.round(Number(replay.point.pred) || 0)
           )
         );
@@ -12415,7 +12415,7 @@ function EcoPairMeasurement(props) {
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true', 'data-ecosystem-profile': displayProfile },
         h('style', null,
           '.eco-header{flex-wrap:wrap}.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool]{--eco-choice-ink:#14532d;--eco-choice-soft:#166534}[data-ecosystem-tool] #eco-live-telemetry .grid{gap:8px}[data-ecosystem-tool] #eco-live-telemetry .grid>div{padding:10px 4px;border-radius:8px}' +
-          "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:36px}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
+          "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool],.theme-dark [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:36px}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
           '[data-ecosystem-profile="beginner"] [data-eco-advanced="true"]{display:none!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-panel="true"]{padding:16px!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-text="true"]{font-size:14px!important;line-height:1.55!important;}' +
@@ -12425,7 +12425,7 @@ function EcoPairMeasurement(props) {
         // ── Header ──
         h('div', { className: 'eco-header flex items-center gap-2 mb-2' },
           h('button', {
-            className: 'transition-colors p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]',
+            className: 'transition-colors p-1 rounded hover:bg-slate-200 active:scale-[0.97]',
             onClick: function() {
               var canvasEl = document.querySelector('canvas[data-eco-canvas]');
               if (canvasEl && canvasEl._ecoCleanup) canvasEl._ecoCleanup();
@@ -12434,24 +12434,24 @@ function EcoPairMeasurement(props) {
             'aria-label': __alloT('stem.ecosystem.back', 'Back')
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, activeScenario.emoji + ' ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
-          h('span', { className: 'ml-auto px-2 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full animate-pulse motion-reduce:animate-none' }, tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
-          h('span', { className: 'text-xs font-bold text-amber-800 dark:text-amber-300 ml-1', style: onHostStyle }, '\u2B50 ' + researchPoints + ' RP'),
+          h('span', { className: 'ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full' }, h('span', { 'aria-hidden': 'true', className: 'h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none' }), tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
+          h('span', { className: 'text-xs font-bold text-amber-800 ml-1', style: onHostStyle }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
         // ── Grade intro ──
-        h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 italic' + onHostInk }, tab === 'foodweb' ? 'Follow feeding relationships through a whole community, then test a change against an undisturbed baseline.' : getGradeIntro(gradeBand, activeScenario)),
+        h('p', { className: 'text-xs text-slate-600 italic' + onHostInk }, tab === 'foodweb' ? 'Follow feeding relationships through a whole community, then test a change against an undisturbed baseline.' : getGradeIntro(gradeBand, activeScenario)),
 
 
         // ── Display profile and study scenario ──
-        h('section', { className: 'rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 p-3 space-y-2', 'aria-labelledby': 'eco-display-profile-title' },
+        h('section', { className: 'rounded-xl border border-slate-300 bg-white/80 p-3 space-y-2', 'aria-labelledby': 'eco-display-profile-title' },
           h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
-            h('strong', { id: 'eco-display-profile-title', className: 'text-xs text-slate-800 dark:text-slate-100' }, 'Display profile'),
-            h('span', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, activeDisplayProfile.hint)
+            h('strong', { id: 'eco-display-profile-title', className: 'text-xs text-slate-800' }, 'Display profile'),
+            h('span', { className: 'text-[0.6875rem] text-slate-600' }, activeDisplayProfile.hint)
           ),
           h('div', { role: 'group', 'aria-label': __alloT('stem.ecosystem.a11y_display_profile', 'Display profile'), className: 'grid grid-cols-3 gap-1' },
             DISPLAY_PROFILES.map(function(profile) {
               var selected = displayProfile === profile.id;
-              return h('button', { key: profile.id, type: 'button', 'aria-pressed': selected, onClick: function() { upd('displayProfile', profile.id); }, className: 'min-h-9 rounded-lg border px-2 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500') }, profile.label);
+              return h('button', { key: profile.id, type: 'button', 'aria-pressed': selected, onClick: function() { upd('displayProfile', profile.id); }, className: 'min-h-9 rounded-lg border px-2 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, profile.label);
             })
           )
         ),
@@ -12502,29 +12502,29 @@ function EcoPairMeasurement(props) {
           )
         ),
 
-        tab !== 'foodweb' && h('section', { className: 'rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20 p-3 space-y-2', 'aria-labelledby': 'eco-scenario-picker-title', 'data-eco-scenario-picker': 'true' },
+        tab !== 'foodweb' && h('section', { className: 'rounded-xl border border-emerald-300 bg-emerald-50/60 p-3 space-y-2', 'aria-labelledby': 'eco-scenario-picker-title', 'data-eco-scenario-picker': 'true' },
           h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
-            h('strong', { id: 'eco-scenario-picker-title', className: 'text-xs text-emerald-900 dark:text-emerald-100' }, 'Study scenario'),
-            h('span', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Switching loads that scenario\'s calibrated baseline.')
+            h('strong', { id: 'eco-scenario-picker-title', className: 'text-xs text-emerald-900' }, 'Study scenario'),
+            h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Switching loads that scenario\'s calibrated baseline.')
           ),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.ecosystem.a11y_choose_an_ecosystem_study_scenario', 'Choose an ecosystem study scenario') },
             Object.keys(ECO_SCENARIOS).map(function(nextScenarioId) {
               var option = ECO_SCENARIOS[nextScenarioId];
               var selected = scenarioId === nextScenarioId;
-              return h('button', { key: option.id, type: 'button', 'data-eco-scenario-id': option.id, 'aria-pressed': selected, onClick: function() { changeScenario(option.id); }, className: 'min-h-16 rounded-lg border p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-emerald-500') },
+              return h('button', { key: option.id, type: 'button', 'data-eco-scenario-id': option.id, 'aria-pressed': selected, onClick: function() { changeScenario(option.id); }, className: 'min-h-16 rounded-lg border p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') },
                 h('span', { className: 'block text-xs font-bold' }, option.emoji + ' ' + option.name),
-                h('span', { className: 'block mt-1 text-[0.625rem] leading-snug ' + (selected ? 'text-emerald-50' : 'text-slate-600 dark:text-slate-300') }, option.producer.label + ' \u2192 ' + option.prey.label + ' \u2192 ' + option.predator.label)
+                h('span', { className: 'block mt-1 text-[0.625rem] leading-snug ' + (selected ? 'text-emerald-50' : 'text-slate-600') }, option.producer.label + ' \u2192 ' + option.prey.label + ' \u2192 ' + option.predator.label)
               );
             })
           ),
-          h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-600 dark:text-slate-300' },
+          h('p', { className: 'text-[0.625rem] leading-relaxed text-slate-600' },
             'Species, visuals, events, and baseline values change by scenario. The same two-population equations remain underneath so comparisons isolate interpretation rather than model structure.'
           )
         ),
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { style: { gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }, className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
+        h('div', { style: { gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))' }, className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 bg-slate-100 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
           ECO_TAB_ORDER.map(function(t2, tabIndex) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F ' + __alloT('stem.ecosystem.explore', 'Explore');
@@ -12541,7 +12541,7 @@ function EcoPairMeasurement(props) {
               tabIndex: tab === t2 ? 0 : -1,
               onKeyDown: function(e) { ecoTabKeyDown(e, tabIndex); },
               className: 'w-full min-w-0 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
-                (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
+                (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'transition-colors text-slate-600 hover:bg-slate-200 active:scale-[0.97]'),
               onClick: function() {
                 upd('tab', t2);
                 // When switching to sandbox, set sandbox tool on canvas
@@ -12609,61 +12609,61 @@ function EcoPairMeasurement(props) {
             __alloT('stem.ecosystem.explore_goal_body', 'compare settings that produce cycles, damping, or collapse in these teaching models. Predator peaks often lag prey peaks, but the amount of lag depends on the parameters. The animated canvas uses separate stochastic rules; the graph below uses a deterministic logistic predator-prey equation.')
           ),
 
-          h('section', { className: 'rounded-xl border border-sky-300 dark:border-sky-700 bg-sky-50/70 dark:bg-sky-950/20 p-3 space-y-2', 'aria-labelledby': 'eco-active-scenario-title', 'data-eco-scenario-brief': scenarioId },
+          h('section', { className: 'rounded-xl border border-sky-300 bg-sky-50/70 p-3 space-y-2', 'aria-labelledby': 'eco-active-scenario-title', 'data-eco-scenario-brief': scenarioId },
             h('div', { className: 'flex items-start gap-2' },
               h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, activeScenario.emoji),
               h('div', { className: 'min-w-0' },
-                h('h3', { id: 'eco-active-scenario-title', className: 'text-sm font-bold text-sky-900 dark:text-sky-100' }, activeScenario.name + ' investigation'),
-                h('p', { className: 'text-[0.6875rem] font-semibold text-sky-800 dark:text-sky-200' }, activeScenario.question)
+                h('h3', { id: 'eco-active-scenario-title', className: 'text-sm font-bold text-sky-900' }, activeScenario.name + ' investigation'),
+                h('p', { className: 'text-[0.6875rem] font-semibold text-sky-800' }, activeScenario.question)
               )
             ),
             h('div', { className: 'flex items-center justify-center gap-2 flex-wrap text-center', role: 'img', 'aria-label': activeScenario.producer.label + ' support ' + activeScenario.prey.label + ', which are consumed by ' + activeScenario.predator.label },
-              h('span', { className: 'rounded-lg bg-white/80 dark:bg-slate-900/70 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.producer.emoji + ' ' + activeScenario.producer.label),
+              h('span', { className: 'rounded-lg bg-white/80 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.producer.emoji + ' ' + activeScenario.producer.label),
               h('span', { 'aria-hidden': 'true' }, '\u2192'),
-              h('span', { className: 'rounded-lg bg-white/80 dark:bg-slate-900/70 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.prey.emoji + ' ' + preySeriesLabel),
+              h('span', { className: 'rounded-lg bg-white/80 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.prey.emoji + ' ' + preySeriesLabel),
               h('span', { 'aria-hidden': 'true' }, '\u2192'),
-              h('span', { className: 'rounded-lg bg-white/80 dark:bg-slate-900/70 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.predator.emoji + ' ' + predatorSeriesLabel)
+              h('span', { className: 'rounded-lg bg-white/80 px-3 py-1 text-[0.6875rem] font-bold' }, activeScenario.predator.emoji + ' ' + predatorSeriesLabel)
             ),
-            h('p', { className: 'text-[0.6875rem] leading-relaxed text-slate-700 dark:text-slate-200' }, activeScenario.context),
-            h('details', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' },
-              h('summary', { className: 'cursor-pointer font-bold text-sky-800 dark:text-sky-200' }, 'What the model represents'),
+            h('p', { className: 'text-[0.6875rem] leading-relaxed text-slate-700' }, activeScenario.context),
+            h('details', { className: 'text-[0.6875rem] text-slate-700' },
+              h('summary', { className: 'cursor-pointer font-bold text-sky-800' }, 'What the model represents'),
               h('p', { className: 'mt-1 leading-relaxed' }, activeScenario.modelBridge + ' Parameters are illustrative teaching values, not fitted field estimates or forecasts.')
             ),
-            h('button', { type: 'button', 'data-eco-scenario-comparison-toggle': 'true', 'aria-expanded': scenarioCompareOpen, 'aria-controls': 'eco-scenario-comparison-lab', onClick: function() { upd('scenarioCompareOpen', !scenarioCompareOpen); }, className: 'w-full rounded-lg border border-sky-600 dark:border-sky-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] font-bold text-sky-900 dark:text-sky-100 hover:border-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, scenarioCompareOpen ? 'Close across-ecosystems lab' : 'Compare ecosystem scenarios')
+            h('button', { type: 'button', 'data-eco-scenario-comparison-toggle': 'true', 'aria-expanded': scenarioCompareOpen, 'aria-controls': 'eco-scenario-comparison-lab', onClick: function() { upd('scenarioCompareOpen', !scenarioCompareOpen); }, className: 'w-full rounded-lg border border-sky-600 bg-white/80 px-3 py-2 text-[0.6875rem] font-bold text-sky-900 hover:border-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, scenarioCompareOpen ? 'Close across-ecosystems lab' : 'Compare ecosystem scenarios')
           ),
 
-          scenarioCompareOpen && h('section', { id: 'eco-scenario-comparison-lab', className: 'rounded-xl border border-cyan-300 dark:border-cyan-700 bg-cyan-50/60 dark:bg-cyan-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-scenario-comparison-title', 'data-eco-scenario-comparison-lab': scenarioCompareProtocol },
+          scenarioCompareOpen && h('section', { id: 'eco-scenario-comparison-lab', className: 'rounded-xl border border-cyan-300 bg-cyan-50/60 p-3 space-y-3', 'aria-labelledby': 'eco-scenario-comparison-title', 'data-eco-scenario-comparison-lab': scenarioCompareProtocol },
             h('div', { className: 'space-y-1' },
-              h('h3', { id: 'eco-scenario-comparison-title', className: 'text-sm font-bold text-cyan-900 dark:text-cyan-100' }, 'Across ecosystems: what actually changes?'),
-              h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, 'Run Meadow and Kelp Forest through the same two-population model. Predict first, then use a synchronized timeline and shared vertical scale to separate mathematical causes from visual context.')
+              h('h3', { id: 'eco-scenario-comparison-title', className: 'text-sm font-bold text-cyan-900' }, 'Across ecosystems: what actually changes?'),
+              h('p', { className: 'text-[0.6875rem] text-slate-700' }, 'Run Meadow and Kelp Forest through the same two-population model. Predict first, then use a synchronized timeline and shared vertical scale to separate mathematical causes from visual context.')
             ),
             h('fieldset', { className: 'space-y-2' },
-              h('legend', { className: 'text-[0.6875rem] font-bold text-slate-800 dark:text-slate-100' }, '1. Choose a comparison protocol'),
+              h('legend', { className: 'text-[0.6875rem] font-bold text-slate-800' }, '1. Choose a comparison protocol'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
-                h('label', { htmlFor: 'eco-scenario-protocol-shared', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 cursor-pointer' },
+                h('label', { htmlFor: 'eco-scenario-protocol-shared', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 bg-white/80 p-2 cursor-pointer' },
                   h('input', { id: 'eco-scenario-protocol-shared', type: 'radio', name: 'eco-scenario-compare-protocol', value: 'shared', checked: scenarioCompareProtocol === 'shared', onChange: function() { updMulti({ scenarioCompareProtocol: 'shared', scenarioComparePrediction: '', scenarioCompareRevealed: false }); } }),
                   h('span', null,
-                    h('strong', { className: 'block text-[0.6875rem] text-slate-800 dark:text-slate-100' }, 'Same numeric inputs'),
-                    h('span', { className: 'block text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Use the current Explore settings for both species stories.')
+                    h('strong', { className: 'block text-[0.6875rem] text-slate-800' }, 'Same numeric inputs'),
+                    h('span', { className: 'block text-[0.625rem] text-slate-600' }, 'Use the current Explore settings for both species stories.')
                   )
                 ),
-                h('label', { htmlFor: 'eco-scenario-protocol-baselines', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 cursor-pointer' },
+                h('label', { htmlFor: 'eco-scenario-protocol-baselines', className: 'flex items-start gap-2 rounded-lg border border-cyan-300 bg-white/80 p-2 cursor-pointer' },
                   h('input', { id: 'eco-scenario-protocol-baselines', type: 'radio', name: 'eco-scenario-compare-protocol', value: 'baselines', checked: scenarioCompareProtocol === 'baselines', onChange: function() { updMulti({ scenarioCompareProtocol: 'baselines', scenarioComparePrediction: '', scenarioCompareRevealed: false }); } }),
                   h('span', null,
-                    h('strong', { className: 'block text-[0.6875rem] text-slate-800 dark:text-slate-100' }, 'Each calibrated baseline'),
-                    h('span', { className: 'block text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Use each scenario\'s illustrative starting values and rates.')
+                    h('strong', { className: 'block text-[0.6875rem] text-slate-800' }, 'Each calibrated baseline'),
+                    h('span', { className: 'block text-[0.625rem] text-slate-600' }, 'Use each scenario\'s illustrative starting values and rates.')
                   )
                 )
               )
             ),
             h('fieldset', { className: 'space-y-2' },
-              h('legend', { className: 'text-[0.6875rem] font-bold text-slate-800 dark:text-slate-100' }, '2. Predict: will the two numerical trajectories be identical?'),
+              h('legend', { className: 'text-[0.6875rem] font-bold text-slate-800' }, '2. Predict: will the two numerical trajectories be identical?'),
               h('div', { className: 'flex flex-wrap gap-2' },
-                h('label', { htmlFor: 'eco-scenario-predict-same', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] cursor-pointer' },
+                h('label', { htmlFor: 'eco-scenario-predict-same', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 bg-white/80 px-3 py-2 text-[0.6875rem] cursor-pointer' },
                   h('input', { id: 'eco-scenario-predict-same', type: 'radio', name: 'eco-scenario-compare-prediction', value: 'same', checked: scenarioComparePrediction === 'same', onChange: function() { updMulti({ scenarioComparePrediction: 'same', scenarioCompareRevealed: false }); } }),
                   'Yes, identical'
                 ),
-                h('label', { htmlFor: 'eco-scenario-predict-different', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] cursor-pointer' },
+                h('label', { htmlFor: 'eco-scenario-predict-different', className: 'inline-flex items-center gap-2 rounded-lg border border-cyan-300 bg-white/80 px-3 py-2 text-[0.6875rem] cursor-pointer' },
                   h('input', { id: 'eco-scenario-predict-different', type: 'radio', name: 'eco-scenario-compare-prediction', value: 'different', checked: scenarioComparePrediction === 'different', onChange: function() { updMulti({ scenarioComparePrediction: 'different', scenarioCompareRevealed: false }); } }),
                   'No, different'
                 ),
@@ -12671,28 +12671,28 @@ function EcoPairMeasurement(props) {
               )
             ),
             scenarioCompareRevealed && h('div', { className: 'space-y-3', 'data-eco-scenario-comparison-results': 'true' },
-              h('label', { htmlFor: 'eco-scenario-comparison-time', className: 'block text-[0.6875rem] font-bold text-slate-800 dark:text-slate-100' },
-                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, '3. Inspect the shared timeline'), h('span', { className: 'font-mono text-cyan-800 dark:text-cyan-200' }, 'Time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1))),
+              h('label', { htmlFor: 'eco-scenario-comparison-time', className: 'block text-[0.6875rem] font-bold text-slate-800' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, '3. Inspect the shared timeline'), h('span', { className: 'font-mono text-cyan-800' }, 'Time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1))),
                 h('input', { id: 'eco-scenario-comparison-time', type: 'range', min: 0, max: scenarioComparisonMaxStep, step: 1, value: scenarioComparisonCursor, 'aria-valuetext': 'Modeled time ' + (scenarioComparisonCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (scenarioComparisonMaxStep * ECO_MODEL_TIME_STEP).toFixed(1), onChange: function(e) { upd('scenarioCompareStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-cyan-700' })
               ),
               h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-3' }, scenarioComparisonRecords.map(function(record) { return buildScenarioComparisonSVG(record); })),
-              h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.625rem] text-slate-700 dark:text-slate-200', 'aria-label': __alloT('stem.ecosystem.a11y_scenario_comparison_chart_legend', 'Scenario comparison chart legend') },
+              h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.625rem] text-slate-700', 'aria-label': __alloT('stem.ecosystem.a11y_scenario_comparison_chart_legend', 'Scenario comparison chart legend') },
                 h('span', null, 'Solid line + circle: prey'),
                 h('span', null, 'Dashed line + square: predators'),
                 h('span', null, 'Purple guide: shared time'),
                 h('span', null, 'Both charts use one y-axis scale')
               ),
-              h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-cyan-300 dark:border-cyan-700 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] leading-relaxed text-slate-700 dark:text-slate-200', 'data-eco-scenario-comparison-feedback': scenarioComparisonPredictionMatched ? 'matched' : 'differed' },
+              h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-cyan-300 bg-white/80 p-2 text-[0.6875rem] leading-relaxed text-slate-700', 'data-eco-scenario-comparison-feedback': scenarioComparisonPredictionMatched ? 'matched' : 'differed' },
                 h('strong', null, scenarioComparisonPredictionMatched ? 'Prediction matched. ' : 'Prediction differed. '),
                 scenarioComparisonIdentical
                   ? 'The trajectories are identical at every step because the same equations with the same numeric inputs produce the same output. Species names and scene artwork shape interpretation, not calculation; this does not mean the real ecosystems are identical.'
                   : 'The trajectories differ because the illustrative baseline parameters and starting indices differ. The pictures and labels do not cause the difference; r, a, b, d, K, and the starting values do.'
               ),
-              h('button', { type: 'button', onClick: function() { addCEREvidence('systems'); }, className: 'rounded-lg border border-cyan-600 dark:border-cyan-500 bg-white/80 dark:bg-slate-900/70 px-3 py-2 text-[0.6875rem] font-bold text-cyan-900 dark:text-cyan-100 hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500', 'data-eco-add-system-evidence': 'true' }, 'Add this comparison to CER evidence'),
+              h('button', { type: 'button', onClick: function() { addCEREvidence('systems'); }, className: 'rounded-lg border border-cyan-600 bg-white/80 px-3 py-2 text-[0.6875rem] font-bold text-cyan-900 hover:border-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500', 'data-eco-add-system-evidence': 'true' }, 'Add this comparison to CER evidence'),
               h('div', { className: 'overflow-x-auto' },
                 h('table', { className: 'w-full min-w-[620px] text-[0.625rem] border-collapse', 'data-eco-scenario-parameter-table': 'true' },
-                  h('caption', { className: 'text-left text-[0.6875rem] font-bold text-slate-800 dark:text-slate-100 mb-1' }, 'Numeric inputs used in this comparison'),
-                  h('thead', null, h('tr', { className: 'text-left text-slate-700 dark:text-slate-200' }, ['Scenario', 'Prey start', 'Predator start', 'r', 'a', 'b', 'd', 'K', 'Outcome'].map(function(label) { return h('th', { key: label, scope: 'col', className: 'p-1.5 border-b border-cyan-300 dark:border-cyan-700' }, label); }))),
+                  h('caption', { className: 'text-left text-[0.6875rem] font-bold text-slate-800 mb-1' }, 'Numeric inputs used in this comparison'),
+                  h('thead', null, h('tr', { className: 'text-left text-slate-700' }, ['Scenario', 'Prey start', 'Predator start', 'r', 'a', 'b', 'd', 'K', 'Outcome'].map(function(label) { return h('th', { key: label, scope: 'col', className: 'p-1.5 border-b border-cyan-300' }, label); }))),
                   h('tbody', null, scenarioComparisonRecords.map(function(record) {
                     return h('tr', { key: 'scenario-parameters-' + record.id },
                       h('th', { scope: 'row', className: 'p-1.5 text-left font-semibold' }, record.scenario.name),
@@ -12708,8 +12708,8 @@ function EcoPairMeasurement(props) {
                   }))
                 )
               ),
-              h('p', { className: 'text-[0.6875rem] font-semibold text-cyan-900 dark:text-cyan-100' }, scenarioComparisonIdentical ? 'Explain: if the equations cannot see species names, what ecological information is missing from this two-variable model?' : 'Explain: which changed input best accounts for the first visible divergence, and what evidence in the trajectories supports your claim?'),
-              h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Comparison boundary: these are deterministic teaching runs, not field measurements, fitted forecasts, or evidence that one real ecosystem is inherently more stable.')
+              h('p', { className: 'text-[0.6875rem] font-semibold text-cyan-900' }, scenarioComparisonIdentical ? 'Explain: if the equations cannot see species names, what ecological information is missing from this two-variable model?' : 'Explain: which changed input best accounts for the first visible divergence, and what evidence in the trajectories supports your claim?'),
+              h('p', { className: 'text-[0.625rem] text-slate-600' }, 'Comparison boundary: these are deterministic teaching runs, not field measurements, fitted forecasts, or evidence that one real ecosystem is inherently more stable.')
             )
           ),
 
@@ -12749,11 +12749,11 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
-          h('div', { className: 'eco-scene-controls flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
+          h('div', { className: 'eco-scene-controls flex items-center gap-3 bg-slate-100 rounded-lg px-3 py-2' },
             h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]'
-                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
+                  : 'transition-colors bg-slate-300 text-slate-700 hover:bg-slate-200 active:scale-[0.97]'),
               onClick: function() {
                 var newPaused = !simPaused;
                 playSound('pause');
@@ -12765,7 +12765,7 @@ function EcoPairMeasurement(props) {
             // Start/stop ambient on pause/resume — first button triggers on click above
             !simPaused && !_ecoAmbient && (function() { setTimeout(function() { if (!_ecoAmbient) startEcoAmbient(true, 30); }, 0); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[0.6875rem] font-semibold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.speed_label', 'Speed:')),
+              h('span', { className: 'text-[0.6875rem] font-semibold text-slate-700' }, __alloT('stem.ecosystem.speed_label', 'Speed:')),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': __alloT('stem.ecosystem.aria_sim_speed', 'Simulation speed'),
@@ -12790,7 +12790,7 @@ function EcoPairMeasurement(props) {
                   }
                 }
               }),
-              h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 dark:text-emerald-400 min-w-[28px] text-right' }, speedLabel(simSpeed))
+              h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700 min-w-[28px] text-right' }, speedLabel(simSpeed))
             )
           ),
 
@@ -12807,8 +12807,8 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── NEW: Event history log ──
-          eventHistory.length > 0 && h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-2 border border-slate-400 dark:border-slate-700' },
-            h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 dark:text-slate-300 mb-1' }, '\uD83D\uDCDC ' + __alloT('stem.ecosystem.event_history', 'Event History')),
+          eventHistory.length > 0 && h('div', { className: 'bg-slate-50 rounded-lg p-2 border border-slate-400' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 mb-1' }, '\uD83D\uDCDC ' + __alloT('stem.ecosystem.event_history', 'Event History')),
             h('div', { className: 'space-y-0.5 max-h-20 overflow-y-auto' },
               eventHistory.slice(-5).reverse().map(function(ev, idx) {
                 var eventDefinition = activeScenario.events[ev.id || ev.name] || {};
@@ -12818,7 +12818,7 @@ function EcoPairMeasurement(props) {
                 var timeLabel = timeAgo < 60 ? timeAgo + __alloT('stem.ecosystem.secs_ago', 's ago') : Math.round(timeAgo / 60) + __alloT('stem.ecosystem.mins_ago', 'm ago');
                 return h('div', {
                   key: 'eh' + idx,
-                  className: 'flex items-center gap-2 text-[0.6875rem] text-slate-700 dark:text-slate-200'
+                  className: 'flex items-center gap-2 text-[0.6875rem] text-slate-700'
                 },
                   h('span', null, eventIcon),
                   h('span', { className: 'font-semibold' }, eventDisplayName),
@@ -12826,7 +12826,7 @@ function EcoPairMeasurement(props) {
                 );
               })
             ),
-            h('div', { className: 'flex items-center gap-2 mt-1 pt-1 border-t border-slate-200 dark:border-slate-500' },
+            h('div', { className: 'flex items-center gap-2 mt-1 pt-1 border-t border-slate-200' },
               h('span', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.total_events_label', 'Total events: ') + eventHistory.length),
               h('span', { className: 'text-[0.6875rem] text-slate-600 ml-auto' },
                 __alloT('stem.ecosystem.unique_label', 'Unique: ') + Object.keys(eventsTriggered).length + '/5'
@@ -12849,50 +12849,50 @@ function EcoPairMeasurement(props) {
                 animation: 'none'
               }
             }),
-            h('span', { className: 'text-emerald-700 dark:text-emerald-300' }, lastObservation)
+            h('span', { className: 'text-emerald-700' }, lastObservation)
           ),
-          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
             h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
             h('span', null, livePhaseExplain)
           ),
 
 
-          h('div', { id: 'eco-live-telemetry', role: 'region', 'aria-labelledby': 'eco-live-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 dark:bg-sky-900/20 dark:border-sky-700 px-3 py-2 space-y-1' },
-            h('strong', { id: 'eco-live-telemetry-title', className: 'text-[0.6875rem] text-sky-800 dark:text-sky-200' }, 'Live population telemetry'),
+          h('div', { id: 'eco-live-telemetry', role: 'region', 'aria-labelledby': 'eco-live-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 px-3 py-2 space-y-1' },
+            h('strong', { id: 'eco-live-telemetry-title', className: 'text-[0.6875rem] text-sky-800' }, 'Live population telemetry'),
             h('div', { className: 'flex items-center gap-2 rounded-md px-2 py-1', style: { background: livePhaseVisual.soft, color: livePhaseVisual.accent } },
               h('span', { className: 'text-base', 'aria-hidden': 'true' }, livePhaseVisual.icon),
               h('span', { className: 'text-[0.6875rem] font-bold' }, livePhaseVisual.tag),
               h('span', { className: 'ml-auto text-[0.625rem] font-semibold' }, livePhaseLabel)
             ),            h('div', { className: 'grid grid-cols-3 gap-1 text-center' },
-              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, preySeriesLabel), h('div', { className: 'font-bold text-green-700 dark:text-green-300' }, liveTelemetry.prey)),
-              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, predatorSeriesLabel), h('div', { className: 'font-bold text-red-700 dark:text-red-300' }, liveTelemetry.pred)),
-              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Prey:predator ratio'), h('div', { className: 'font-bold text-purple-700 dark:text-purple-300' }, liveTelemetry.ratio))
+              h('div', { className: 'rounded bg-white/70 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600' }, preySeriesLabel), h('div', { className: 'font-bold text-green-700' }, liveTelemetry.prey)),
+              h('div', { className: 'rounded bg-white/70 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600' }, predatorSeriesLabel), h('div', { className: 'font-bold text-red-700' }, liveTelemetry.pred)),
+              h('div', { className: 'rounded bg-white/70 p-1' }, h('div', { className: 'text-[0.625rem] text-slate-600' }, 'Prey:predator ratio'), h('div', { className: 'font-bold text-purple-700' }, liveTelemetry.ratio))
             ),
             h('div', { className: 'space-y-1.5' },
-              h('div', { className: 'flex items-center justify-between text-[0.625rem] text-slate-600 dark:text-slate-300' },
+              h('div', { className: 'flex items-center justify-between text-[0.625rem] text-slate-600' },
                 h('span', null, activeScenario.prey.label + ' \u2014 Prey relative to K'),
                 h('strong', null, livePreyPercent + '%')
               ),
-              h('div', { role: 'progressbar', 'aria-label': activeScenario.prey.label + ' relative to carrying capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePreyPercent, className: 'h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden' },
+              h('div', { role: 'progressbar', 'aria-label': activeScenario.prey.label + ' relative to carrying capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePreyPercent, className: 'h-2 rounded-full bg-slate-200 overflow-hidden' },
                 h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: livePreyPercent + '%', background: '#16a34a' } })
               ),
-              h('div', { className: 'flex items-center justify-between text-[0.625rem] text-slate-600 dark:text-slate-300' },
+              h('div', { className: 'flex items-center justify-between text-[0.625rem] text-slate-600' },
                 h('span', null, activeScenario.predator.label + ' (predator) level'),
                 h('strong', null, livePredPercent + '%')
               ),
-              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.ecosystem.a11y_predator_level_relative_to_initial_prey_scale', 'Predator level relative to initial prey scale'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePredPercent, className: 'h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden' },
+              h('div', { role: 'progressbar', 'aria-label': __alloT('stem.ecosystem.a11y_predator_level_relative_to_initial_prey_scale', 'Predator level relative to initial prey scale'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePredPercent, className: 'h-2 rounded-full bg-slate-200 overflow-hidden' },
                 h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: livePredPercent + '%', background: '#dc2626' } })
               ),
               h('div', { className: 'flex gap-1 flex-wrap' },
-                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-semibold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' }, '\u2191\u2193 Prey ' + liveTelemetry.preyTrend),
-                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-semibold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200' }, '\u2191\u2193 Predators ' + liveTelemetry.predTrend)
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-semibold bg-green-100 text-green-800' }, '\u2191\u2193 Prey ' + liveTelemetry.preyTrend),
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-semibold bg-red-100 text-red-800' }, '\u2191\u2193 Predators ' + liveTelemetry.predTrend)
               )
-            ),            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, liveTelemetry.narrative),
-            h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Trend: prey ' + liveTelemetry.preyTrend + '; predators ' + liveTelemetry.predTrend + '. Vegetation ' + liveTelemetry.veg + '%.')
+            ),            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700' }, liveTelemetry.narrative),
+            h('p', { className: 'text-[0.625rem] text-slate-600' }, 'Trend: prey ' + liveTelemetry.preyTrend + '; predators ' + liveTelemetry.predTrend + '. Vegetation ' + liveTelemetry.veg + '%.')
           ),
           // ── NEW: Carrying Capacity slider ──
           h('div', { className: 'space-y-1' },
-            h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+            h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
               h('span', null, '\uD83C\uDF31 ' + __alloT('stem.ecosystem.carrying_capacity_k', 'Carrying Capacity (K)')),
               h('span', { className: 'text-amber-800 font-bold', style: onHostStyle }, carryingCapacity)
             ),
@@ -12915,8 +12915,8 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── Live Population Graph Panel ──
-          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-400 dark:border-slate-700 overflow-hidden' },
-            h('button', { 'aria-expanded': ecoGraphOpen, 'aria-controls': 'eco-live-graph-panel', className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
+          h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 overflow-hidden' },
+            h('button', { 'aria-expanded': ecoGraphOpen, 'aria-controls': 'eco-live-graph-panel', className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:scale-[0.97]',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
               h('span', null, '\uD83D\uDCCA ' + __alloT('stem.ecosystem.live_pop_graph', 'Live Population Graph')),
@@ -12927,12 +12927,12 @@ function EcoPairMeasurement(props) {
               h('div', { className: 'flex gap-1' },
                 h('button', { 'aria-label': __alloT('stem.ecosystem.populations', 'Populations'), 'aria-pressed': ecoGraphView === 'population',
                   className: 'flex-1 px-2 py-1 text-[0.6875rem] font-semibold rounded ' +
-                    (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' + onHostInk),
+                    (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600' + onHostInk),
                   onClick: function() { switchGraphView('population'); }
                 }, __alloT('stem.ecosystem.populations', 'Populations')),
                 h('button', { 'aria-label': __alloT('stem.ecosystem.environment', 'Environment'), 'aria-pressed': ecoGraphView === 'environment',
                   className: 'flex-1 px-2 py-1 text-[0.6875rem] font-semibold rounded ' +
-                    (ecoGraphView === 'environment' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300' + onHostInk),
+                    (ecoGraphView === 'environment' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-600' + onHostInk),
                   onClick: function() { switchGraphView('environment'); }
                 }, __alloT('stem.ecosystem.environment', 'Environment'))
               ),
@@ -13027,19 +13027,19 @@ function EcoPairMeasurement(props) {
                   var last = livePopHistory[livePopHistory.length - 1];
                   if (last.pred > 0) lRatio = (last.prey / last.pred).toFixed(1) + ':1';
                   return [
-                    h('div', { key: 'sp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1' },
+                    h('div', { key: 'sp', className: 'bg-green-50 rounded p-1' },
                       h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.peak_prey', 'Peak Prey')),
                       h('div', { className: 'text-sm font-bold text-green-700' }, lpMax)
                     ),
-                    h('div', { key: 'sd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1' },
+                    h('div', { key: 'sd', className: 'bg-red-50 rounded p-1' },
                       h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.peak_pred', 'Peak Pred')),
                       h('div', { className: 'text-sm font-bold text-red-700' }, ldMax)
                     ),
-                    h('div', { key: 'sr', className: 'bg-purple-50 dark:bg-purple-900/20 rounded p-1' },
+                    h('div', { key: 'sr', className: 'bg-purple-50 rounded p-1' },
                       h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.ratio', 'Ratio')),
                       h('div', { className: 'text-sm font-bold text-purple-600' }, lRatio)
                     ),
-                    h('div', { key: 'ss', className: 'bg-slate-50 dark:bg-slate-800 rounded p-1' },
+                    h('div', { key: 'ss', className: 'bg-slate-50 rounded p-1' },
                       h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.samples', 'Samples')),
                       h('div', { className: 'text-sm font-bold text-slate-600' }, livePopHistory.length)
                     )
@@ -13050,30 +13050,30 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── Food Web Diagram ──
-          h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-3 border border-emerald-200 dark:border-emerald-700' },
-            h('p', { className: 'text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-2' }, activeScenario.emoji + ' ' + activeScenario.name + ' food web context'),
+          h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200' },
+            h('p', { className: 'text-xs font-bold text-emerald-700 mb-2' }, activeScenario.emoji + ' ' + activeScenario.name + ' food web context'),
             h('div', { className: 'flex items-center justify-center gap-1 flex-wrap text-center' },
-              h('div', { className: 'bg-yellow-100 dark:bg-yellow-900/30 rounded-lg px-2 py-1' },
+              h('div', { className: 'bg-yellow-100 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, '\u2600\uFE0F'),
                 h('div', { className: 'text-[0.6875rem] font-semibold' }, 'Sunlight')
               ),
               h('span', { className: 'text-slate-600 text-sm' }, '\u2192'),
-              h('div', { className: 'bg-green-100 dark:bg-green-900/30 rounded-lg px-2 py-1' },
+              h('div', { className: 'bg-green-100 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, activeScenario.producer.emoji),
                 h('div', { className: 'text-[0.6875rem] font-semibold' }, activeScenario.producer.label)
               ),
               h('span', { className: 'text-slate-600 text-sm' }, '\u2192'),
-              h('div', { className: 'bg-emerald-100 dark:bg-emerald-900/30 rounded-lg px-2 py-1' },
+              h('div', { className: 'bg-emerald-100 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, activeScenario.prey.emoji),
                 h('div', { className: 'text-[0.6875rem] font-semibold' }, preySeriesLabel)
               ),
               h('span', { className: 'text-slate-600 text-sm' }, '\u2192'),
-              h('div', { className: 'bg-orange-100 dark:bg-orange-900/30 rounded-lg px-2 py-1' },
+              h('div', { className: 'bg-orange-100 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, activeScenario.predator.emoji),
                 h('div', { className: 'text-[0.6875rem] font-semibold' }, predatorSeriesLabel)
               ),
               h('span', { className: 'text-slate-600 text-sm' }, '\u2192'),
-              h('div', { className: 'bg-amber-100 dark:bg-amber-900/30 rounded-lg px-2 py-1' },
+              h('div', { className: 'bg-amber-100 rounded-lg px-2 py-1' },
                 h('div', { className: 'text-lg' }, activeScenario.decomposer.emoji),
                 h('div', { className: 'text-[0.6875rem] font-semibold' }, activeScenario.decomposer.label)
               )
@@ -13082,11 +13082,11 @@ function EcoPairMeasurement(props) {
 
           // ── Description ──
           h('div', { className: 'flex items-start gap-2' },
-            h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 flex-1' + onHostInk },
+            h('p', { className: 'text-xs text-slate-600 flex-1' + onHostInk },
               'Explore a logistic extension of the Lotka-Volterra predator-prey model for the ' + activeScenario.name + ' scenario. The deterministic graph uses fourth-order Runge-Kutta integration; the animated scene uses separate stochastic teaching rules.'
             ),
             callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
-              className: 'transition-colors p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 active:scale-[0.97]',
+              className: 'transition-colors p-1 rounded hover:bg-slate-200 text-slate-600 active:scale-[0.97]',
               onClick: function() { speakText(activeScenario.question + ' Adjust starting ' + activeScenario.prey.plural + ', starting ' + activeScenario.predator.plural + ', and interaction rates to compare model outcomes.'); },
               title: __alloT('stem.ecosystem.read_aloud', 'Read aloud')
             }, '\uD83D\uDD0A')
@@ -13094,33 +13094,33 @@ function EcoPairMeasurement(props) {
 
           // ── Preset buttons ──
           h('div', { className: 'flex gap-1 flex-wrap' },
-            h('p', { className: 'w-full text-[0.625rem] text-slate-600 dark:text-slate-300' + onHostInk }, 'Guided cases are outcome-labeled examples for learning the model, not blind inquiry trials. Set your own values for an open investigation.'),
+            h('p', { className: 'w-full text-[0.625rem] text-slate-600' + onHostInk }, 'Guided cases are outcome-labeled examples for learning the model, not blind inquiry trials. Set your own values for an open investigation.'),
             presetNames.map(function(name, idx) {
               return h('button', { 'aria-label': __alloT('stem.ecosystem.aria_apply_pre', 'Apply ') + presetLabels[idx] + __alloT('stem.ecosystem.aria_preset_suffix', ' preset'),
                 key: name,
                 disabled: experimentControlsLocked,
                 className: 'flex-1 px-2 py-1.5 text-[0.6875rem] font-semibold rounded-lg border transition-all disabled:opacity-60 ' +
                   (presetsUsed[name]
-                    ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
-                    : 'transition-colors border-slate-300 dark:border-slate-500 text-slate-600 dark:text-slate-300 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.97]' + onHostInk),
+                    ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                    : 'transition-colors border-slate-300 text-slate-600 hover:border-emerald-400 hover:bg-emerald-50 active:scale-[0.97]' + onHostInk),
                 style: { minWidth: 100 },
                 onClick: function() { applyPreset(name); }
               }, presetLabels[idx]);
             })
           ),
-          h('fieldset', { className: 'rounded-lg border border-emerald-200 dark:border-emerald-800 p-2' },
-            h('legend', { className: 'px-1 text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' + onHostInk }, 'Parameter range'),
+          h('fieldset', { className: 'rounded-lg border border-emerald-200 p-2' },
+            h('legend', { className: 'px-1 text-[0.6875rem] font-bold text-slate-700' + onHostInk }, 'Parameter range'),
             h('div', { className: 'flex gap-2 flex-wrap', role: 'radiogroup', 'aria-label': __alloT('stem.ecosystem.a11y_model_parameter_range', 'Model parameter range') },
               [{ id: 'guided', label: 'Guided range', hint: 'Calibrated for readable coexistence and cause-and-effect experiments.' }, { id: 'full', label: 'Full range', hint: 'Includes collapse and numerical-edge combinations for advanced investigation.' }].map(function(option) {
-                return h('label', { key: option.id, className: 'flex-1 min-w-[150px] rounded border px-2 py-1.5 cursor-pointer ' + (modelRangeMode === option.id ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-500') },
-                  h('span', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' + onHostInk },
+                return h('label', { key: option.id, className: 'flex-1 min-w-[150px] rounded border px-2 py-1.5 cursor-pointer ' + (modelRangeMode === option.id ? 'border-emerald-600 bg-emerald-50' : 'border-slate-300') },
+                  h('span', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-slate-700' + onHostInk },
                     h('input', { type: 'radio', name: 'eco-model-range', value: option.id, checked: modelRangeMode === option.id, disabled: experimentControlsLocked, onChange: function() {
                       var nextRanges = ECO_MODEL_RANGES[option.id];
                       updMulti({ modelRangeMode: option.id, prey0: ecoClamp(prey0, nextRanges.prey0.min, nextRanges.prey0.max), pred0: ecoClamp(pred0, nextRanges.pred0.min, nextRanges.pred0.max), preyBirth: ecoClamp(preyBirth, nextRanges.preyBirth.min, nextRanges.preyBirth.max), preyDeath: ecoClamp(preyDeath, nextRanges.preyDeath.min, nextRanges.preyDeath.max), predBirth: ecoClamp(predBirth, nextRanges.predBirth.min, nextRanges.predBirth.max), predDeath: ecoClamp(predDeath, nextRanges.predDeath.min, nextRanges.predDeath.max), carryingCapacity: ecoClamp(carryingCapacity, nextRanges.carryingCapacity.min, nextRanges.carryingCapacity.max), data: [], steps: 0, runPrediction: '', runPredictionReason: '', committedRunPrediction: null, completedRunCommitment: null, predictionFeedback: '', experimentReflection: '', poeStage: 'predict', uncertaintyResult: null, interventionResult: null });
                     } }),
                     option.label
                   ),
-                  h('span', { className: 'block pl-5 text-[0.625rem] text-slate-600 dark:text-slate-300' + onHostInk }, option.hint)
+                  h('span', { className: 'block pl-5 text-[0.625rem] text-slate-600' + onHostInk }, option.hint)
                 );
               })
             )
@@ -13130,7 +13130,7 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'grid grid-cols-2 gap-2' },
             // Prey Start
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ' \u2014 Prey Start'),
                 h('span', { className: 'text-emerald-700 font-bold' }, prey0)
               ),
@@ -13144,7 +13144,7 @@ function EcoPairMeasurement(props) {
             ),
             // Predators
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, activeScenario.predator.emoji + ' ' + activeScenario.predator.label + ' \u2014 Predators'),
                 h('span', { className: 'text-red-600 font-bold' }, pred0)
               ),
@@ -13158,7 +13158,7 @@ function EcoPairMeasurement(props) {
             ),
             // Prey Birth Rate
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, activeScenario.prey.label + ' \u2014 Prey intrinsic growth (r)'),
                 h('span', { className: 'text-green-800 font-bold', style: onHostStyle }, preyBirth.toFixed(3))
               ),
@@ -13171,7 +13171,7 @@ function EcoPairMeasurement(props) {
             ),
             // Pred Death Rate
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, activeScenario.predator.label + ' \u2014 Predator mortality (d)'),
                 h('span', { className: 'text-red-600 font-bold' }, predDeath.toFixed(3))
               ),
@@ -13184,7 +13184,7 @@ function EcoPairMeasurement(props) {
             ),
             // Prey Death Rate (interaction)
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, __alloT('stem.ecosystem.predation_coeff_a', 'Predation coefficient (a)')),
                 h('span', { className: 'text-orange-800 font-bold', style: onHostStyle }, preyDeath.toFixed(3))
               ),
@@ -13197,7 +13197,7 @@ function EcoPairMeasurement(props) {
             ),
             // Pred Birth Rate (interaction)
             h('div', { className: 'space-y-1' },
-              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+              h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
                 h('span', null, __alloT('stem.ecosystem.pred_conversion_b', 'Predator conversion (b)')),
                 h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
@@ -13217,99 +13217,99 @@ function EcoPairMeasurement(props) {
 
           // ── Run Graph Simulation button ──
           // ── Lotka-Volterra graph (post-simulation) ──
-          h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50/70 dark:bg-cyan-900/20 dark:border-cyan-700 p-3 space-y-2', 'aria-labelledby': 'eco-notebook-title', 'data-ecosystem-committed-inquiry': 'true' },
-            h('h3', { id: 'eco-notebook-title', className: 'text-sm font-bold text-cyan-800 dark:text-cyan-200' }, '\uD83E\uDDEA ' + __alloT('stem.ecosystem.notebook_title', 'Prediction & evidence notebook')),
-            h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, 'Before running this graph setup, choose the whole-system outcome you expect. Commit locks your choice, optional rationale, and exact model settings. The comparison is descriptive and ungraded.'),
+          h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50/70 p-3 space-y-2', 'aria-labelledby': 'eco-notebook-title', 'data-ecosystem-committed-inquiry': 'true' },
+            h('h3', { id: 'eco-notebook-title', className: 'text-sm font-bold text-cyan-800' }, '\uD83E\uDDEA ' + __alloT('stem.ecosystem.notebook_title', 'Prediction & evidence notebook')),
+            h('p', { className: 'text-[0.6875rem] text-slate-700' }, 'Before running this graph setup, choose the whole-system outcome you expect. Commit locks your choice, optional rationale, and exact model settings. The comparison is descriptive and ungraded.'),
             h('div', { className: 'grid grid-cols-3 gap-1', role: 'list', 'aria-label': __alloT('stem.ecosystem.a11y_predict_observe_explain_workflow', 'Predict, observe, explain workflow') },
               POE_STAGES.map(function(stage) {
                 var active = poeStage === stage.id;
                 var reached = (stage.id === 'predict' && !!(committedRunPrediction || completedRunCommitment)) || (stage.id === 'observe' && (poeStage === 'observe' || poeStage === 'explain')) || (stage.id === 'explain' && poeStage === 'explain');
-                return h('div', { key: stage.id, role: 'listitem', 'aria-current': active ? 'step' : undefined, className: 'rounded px-2 py-1 text-center text-[0.6875rem] font-bold ' + (active ? 'bg-cyan-700 text-white' : reached ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400') }, (reached ? '\u2713 ' : '') + stage.label);
+                return h('div', { key: stage.id, role: 'listitem', 'aria-current': active ? 'step' : undefined, className: 'rounded px-2 py-1 text-center text-[0.6875rem] font-bold ' + (active ? 'bg-cyan-700 text-white' : reached ? 'bg-cyan-100 text-cyan-800' : 'bg-slate-100 text-slate-600') }, (reached ? '\u2713 ' : '') + stage.label);
               })
             ),
-            h('div', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' },
+            h('div', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-600' },
               committedRunPrediction ? 'Prediction and model settings are locked before evidence. Run this graph setup when ready.' : poeStage === 'predict' ? 'Choose an outcome, optionally explain why, then commit before revealing this graph.' : poeStage === 'observe' ? (completedRunCommitment ? 'Observe the curves, compare them with your committed thinking, then explain the evidence.' : 'This existing result has no verified pre-run commitment. Plan a new run to use the full inquiry cycle.') : 'Explanation complete: your reflection connects the outcome to evidence.'
             ),
             h('div', { role: 'group', 'aria-labelledby': 'eco-prediction-label', className: 'space-y-1' },
-              h('span', { id: 'eco-prediction-label', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'My ungraded prediction for this modeled system'),
+              h('span', { id: 'eco-prediction-label', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'My ungraded prediction for this modeled system'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-1' }, RUN_PREDICTIONS.map(function(option) {
-                return h('button', { key: option.id, type: 'button', disabled: experimentControlsLocked, 'aria-pressed': runPrediction === option.id, 'aria-label': option.label + '. ' + option.detail, className: 'min-h-14 px-2 py-1.5 rounded border text-left text-[0.6875rem] transition-colors disabled:opacity-70 ' + (runPrediction === option.id ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-500 dark:border-slate-500'), onClick: function() { updMulti({ runPrediction: option.id, poeStage: 'predict', predictionFeedback: '' }); } },
+                return h('button', { key: option.id, type: 'button', disabled: experimentControlsLocked, 'aria-pressed': runPrediction === option.id, 'aria-label': option.label + '. ' + option.detail, className: 'min-h-14 px-2 py-1.5 rounded border text-left text-[0.6875rem] transition-colors disabled:opacity-70 ' + (runPrediction === option.id ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white text-slate-700 border-slate-500'), onClick: function() { updMulti({ runPrediction: option.id, poeStage: 'predict', predictionFeedback: '' }); } },
                   h('span', { className: 'block font-bold' }, option.label),
                   h('span', { className: 'block mt-0.5 text-[0.625rem] leading-snug opacity-90' }, option.detail)
                 );
               }))
             ),
-            h('label', { htmlFor: 'eco-prediction-reason', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Why do you expect that outcome? (optional)'),
-            h('textarea', { id: 'eco-prediction-reason', value: runPredictionReason, disabled: experimentControlsLocked, onChange: function(e) { upd('runPredictionReason', e.target.value); }, rows: 2, maxLength: 600, placeholder: __alloT('stem.ecosystem.because_the_starting_populations_or_rates_su','Because the starting populations or rates suggest...'), className: 'w-full rounded border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100 disabled:opacity-70' }),
-            (committedRunPrediction || completedRunCommitment) && h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Locked rationale: ' + ((committedRunPrediction || completedRunCommitment).reason || 'No rationale recorded.')),
+            h('label', { htmlFor: 'eco-prediction-reason', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Why do you expect that outcome? (optional)'),
+            h('textarea', { id: 'eco-prediction-reason', value: runPredictionReason, disabled: experimentControlsLocked, onChange: function(e) { upd('runPredictionReason', e.target.value); }, rows: 2, maxLength: 600, placeholder: __alloT('stem.ecosystem.because_the_starting_populations_or_rates_su','Because the starting populations or rates suggest...'), className: 'w-full rounded border border-slate-500 bg-white p-2 text-[0.6875rem] text-slate-800 disabled:opacity-70' }),
+            (committedRunPrediction || completedRunCommitment) && h('p', { className: 'text-[0.625rem] text-slate-600' }, 'Locked rationale: ' + ((committedRunPrediction || completedRunCommitment).reason || 'No rationale recorded.')),
             h('div', { className: 'flex gap-2 flex-wrap' },
               !data.length && !committedRunPrediction && h('button', { type: 'button', disabled: !runPrediction, 'data-ecosystem-commit-prediction': 'true', onClick: commitPredictionForRun, className: 'px-3 py-1.5 rounded bg-cyan-700 text-white text-[0.6875rem] font-bold disabled:opacity-50' }, 'Commit prediction & settings'),
-              !data.length && committedRunPrediction && h('button', { type: 'button', 'data-ecosystem-change-prediction': 'true', onClick: changeCommittedPrediction, className: 'px-3 py-1.5 rounded border border-cyan-700 text-cyan-900 dark:text-cyan-100 text-[0.6875rem] font-bold' }, 'Change before run'),
+              !data.length && committedRunPrediction && h('button', { type: 'button', 'data-ecosystem-change-prediction': 'true', onClick: changeCommittedPrediction, className: 'px-3 py-1.5 rounded border border-cyan-700 text-cyan-900 text-[0.6875rem] font-bold' }, 'Change before run'),
               !data.length && committedRunPrediction && h('button', { type: 'button', 'data-ecosystem-run-committed': 'true', 'aria-label': __alloT('stem.ecosystem.run_graph_sim', 'Run Graph Simulation'), onClick: simulate, className: 'px-3 py-1.5 rounded bg-gradient-to-r from-emerald-700 to-teal-700 text-white text-[0.6875rem] font-bold shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400' }, '\u25B6 Run committed graph setup'),
-              data && data.length > 1 && h('button', { type: 'button', 'data-ecosystem-plan-next': 'true', onClick: planNextRun, className: 'px-3 py-1.5 rounded border border-violet-600 text-violet-900 dark:text-violet-100 text-[0.6875rem] font-bold' }, 'Plan next run (clears current graph)')
+              data && data.length > 1 && h('button', { type: 'button', 'data-ecosystem-plan-next': 'true', onClick: planNextRun, className: 'px-3 py-1.5 rounded border border-violet-600 text-violet-900 text-[0.6875rem] font-bold' }, 'Plan next run (clears current graph)')
             ),
-            h('label', { htmlFor: 'eco-run-name', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Optional run name for branching'),
-            h('input', { id: 'eco-run-name', value: runName, onChange: function(e) { upd('runName', e.target.value); }, maxLength: 80, placeholder: __alloT('stem.ecosystem.example_fewer_predators','Example: fewer predators'), className: 'w-full rounded border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' }),
-            data && data.length > 1 && h('label', { htmlFor: 'eco-run-reflection', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Post-run evidence explanation'),
-            data && data.length > 1 && h('textarea', { id: 'eco-run-reflection', value: experimentReflection, onChange: function(e) { upd('experimentReflection', e.target.value); }, rows: 2, maxLength: 3200, placeholder: __alloT('stem.ecosystem.what_did_the_curves_show_why_might_the_outco','What did the curves show? Why might the outcome align with or differ from your committed prediction?'), className: 'w-full rounded border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' }),
-            predictionFeedback && h('div', { role: 'status', 'aria-live': 'polite', 'data-ecosystem-prediction-comparison': 'descriptive-ungraded', className: 'rounded border border-cyan-300 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200' }, predictionFeedback),
+            h('label', { htmlFor: 'eco-run-name', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Optional run name for branching'),
+            h('input', { id: 'eco-run-name', value: runName, onChange: function(e) { upd('runName', e.target.value); }, maxLength: 80, placeholder: __alloT('stem.ecosystem.example_fewer_predators','Example: fewer predators'), className: 'w-full rounded border border-slate-500 bg-white p-2 text-[0.6875rem] text-slate-800' }),
+            data && data.length > 1 && h('label', { htmlFor: 'eco-run-reflection', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Post-run evidence explanation'),
+            data && data.length > 1 && h('textarea', { id: 'eco-run-reflection', value: experimentReflection, onChange: function(e) { upd('experimentReflection', e.target.value); }, rows: 2, maxLength: 3200, placeholder: __alloT('stem.ecosystem.what_did_the_curves_show_why_might_the_outco','What did the curves show? Why might the outcome align with or differ from your committed prediction?'), className: 'w-full rounded border border-slate-500 bg-white p-2 text-[0.6875rem] text-slate-800' }),
+            predictionFeedback && h('div', { role: 'status', 'aria-live': 'polite', 'data-ecosystem-prediction-comparison': 'descriptive-ungraded', className: 'rounded border border-cyan-300 bg-white/80 p-2 text-[0.6875rem] text-slate-700' }, predictionFeedback),
             h('div', { className: 'flex gap-2 flex-wrap' },
-              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: setBaselineRun, className: 'px-2 py-1 rounded border border-cyan-600 text-cyan-800 dark:text-cyan-200 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.set_baseline', 'Set current run as baseline')),
+              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: setBaselineRun, className: 'px-2 py-1 rounded border border-cyan-600 text-cyan-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.set_baseline', 'Set current run as baseline')),
               h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveExperimentEvidence, className: 'px-2 py-1 rounded bg-cyan-700 text-white text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.save_evidence', 'Save evidence')),
-              h('button', { type: 'button', disabled: !data || data.length < 2 || !String(experimentReflection || '').trim(), onClick: markExplanationComplete, className: 'px-2 py-1 rounded border border-indigo-600 text-indigo-800 dark:text-indigo-200 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Complete explanation'),
-              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveBranchRun, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Save named branch'),
-              baselineRun && h('button', { type: 'button', onClick: clearBaselineRun, className: 'px-2 py-1 rounded border border-slate-400 text-slate-700 dark:text-slate-200 text-[0.6875rem] font-semibold' }, __alloT('stem.ecosystem.clear_baseline', 'Clear baseline'))
+              h('button', { type: 'button', disabled: !data || data.length < 2 || !String(experimentReflection || '').trim(), onClick: markExplanationComplete, className: 'px-2 py-1 rounded border border-indigo-600 text-indigo-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Complete explanation'),
+              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveBranchRun, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Save named branch'),
+              baselineRun && h('button', { type: 'button', onClick: clearBaselineRun, className: 'px-2 py-1 rounded border border-slate-400 text-slate-700 text-[0.6875rem] font-semibold' }, __alloT('stem.ecosystem.clear_baseline', 'Clear baseline'))
             ),
             baselineRun && data && data.length > 1 && (function() {
               var base = baselineRun.summary || classifyRun(baselineRun.data || []);
               var current = classifyRun(data);
-              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded border border-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/20 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded border border-indigo-300 bg-indigo-50/80 p-2 text-[0.6875rem] text-slate-700' },
                 h('strong', null, __alloT('stem.ecosystem.comparison_label', 'Run comparison: ')),
                 'Baseline ' + base.label + ' (prey min ' + base.minPrey + ', peak ' + base.maxPrey + ') -> Current ' + current.label + ' (prey min ' + current.minPrey + ', peak ' + current.maxPrey + ').'
               );
             })(),
             experimentLog.length > 0 && h('details', { className: 'text-[0.6875rem]' },
-              h('summary', { className: 'cursor-pointer font-semibold text-cyan-800 dark:text-cyan-200' }, __alloT('stem.ecosystem.evidence_history', 'Saved evidence history (') + experimentLog.length + ')'),
-              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700 dark:text-slate-200' }, experimentLog.slice(-3).reverse().map(function(entry) {
+              h('summary', { className: 'cursor-pointer font-semibold text-cyan-800' }, __alloT('stem.ecosystem.evidence_history', 'Saved evidence history (') + experimentLog.length + ')'),
+              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700' }, experimentLog.slice(-3).reverse().map(function(entry) {
                 return h('li', { key: entry.id }, entry.summary.label + (entry.reflection ? ': ' + entry.reflection : ''));
               }))
             ),
             branchRuns.length > 0 && h('details', { className: 'text-[0.6875rem]' },
-              h('summary', { className: 'cursor-pointer font-semibold text-violet-800 dark:text-violet-200' }, 'Named branches (' + branchRuns.length + ')'),
-              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700 dark:text-slate-200' }, branchRuns.slice().reverse().map(function(record) {
+              h('summary', { className: 'cursor-pointer font-semibold text-violet-800' }, 'Named branches (' + branchRuns.length + ')'),
+              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700' }, branchRuns.slice().reverse().map(function(record) {
                 return h('li', { key: record.id, className: 'flex items-center gap-2' },
                   h('span', { className: 'flex-1' }, record.label + ' — ' + (record.summary ? record.summary.label : 'saved run')),
-                  h('button', { type: 'button', onClick: function() { loadBranchRun(record); }, className: 'px-2 py-0.5 rounded border border-violet-500 text-violet-800 dark:text-violet-200 font-semibold' }, 'Load')
+                  h('button', { type: 'button', onClick: function() { loadBranchRun(record); }, className: 'px-2 py-0.5 rounded border border-violet-500 text-violet-800 font-semibold' }, 'Load')
                 );
               }))
             ),
-            h('div', { className: 'rounded-lg border border-violet-300 bg-violet-50/70 dark:bg-violet-900/20 dark:border-violet-600 p-2 space-y-2', 'data-eco-advanced': 'true' },
+            h('div', { className: 'rounded-lg border border-violet-300 bg-violet-50/70 p-2 space-y-2', 'data-eco-advanced': 'true' },
               h('div', { className: 'flex items-center justify-between gap-2' },
-                h('strong', { className: 'text-[0.6875rem] text-violet-900 dark:text-violet-200' }, 'Teacher / report mode'),
-                h('button', { type: 'button', 'aria-pressed': teacherMode, 'aria-controls': 'eco-teacher-tools', onClick: function() { upd('teacherMode', !teacherMode); }, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[0.6875rem] font-semibold' }, teacherMode ? 'Hide tools' : 'Show tools')
+                h('strong', { className: 'text-[0.6875rem] text-violet-900' }, 'Teacher / report mode'),
+                h('button', { type: 'button', 'aria-pressed': teacherMode, 'aria-controls': 'eco-teacher-tools', onClick: function() { upd('teacherMode', !teacherMode); }, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold' }, teacherMode ? 'Hide tools' : 'Show tools')
               ),
               h('div', { id: 'eco-teacher-tools', hidden: !teacherMode, className: 'space-y-2' },
-                h('label', { htmlFor: 'eco-teacher-prompt', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Guiding question or class prompt'),
-                h('textarea', { id: 'eco-teacher-prompt', value: teacherPrompt, onChange: function(e) { upd('teacherPrompt', e.target.value); }, rows: 2, maxLength: 400, placeholder: __alloT('stem.ecosystem.example_how_does_reducing_predator_pressure','Example: How does reducing predator pressure change the prey trajectory?'), className: 'w-full rounded border border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' }),
-                h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, data && data.length > 1 ? 'Report ready: ' + classifyRun(data).label : 'Run the model to populate the report.'),
-                h('p', { className: 'text-[0.625rem] font-mono break-all text-violet-800 dark:text-violet-200' }, 'Replay key: ' + replayKeyFor(getModelParameters())),
+                h('label', { htmlFor: 'eco-teacher-prompt', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Guiding question or class prompt'),
+                h('textarea', { id: 'eco-teacher-prompt', value: teacherPrompt, onChange: function(e) { upd('teacherPrompt', e.target.value); }, rows: 2, maxLength: 400, placeholder: __alloT('stem.ecosystem.example_how_does_reducing_predator_pressure','Example: How does reducing predator pressure change the prey trajectory?'), className: 'w-full rounded border border-slate-500 bg-white p-2 text-[0.6875rem] text-slate-800' }),
+                h('p', { className: 'text-[0.6875rem] text-slate-700' }, data && data.length > 1 ? 'Report ready: ' + classifyRun(data).label : 'Run the model to populate the report.'),
+                h('p', { className: 'text-[0.625rem] font-mono break-all text-violet-800' }, 'Replay key: ' + replayKeyFor(getModelParameters())),
                 h('div', { className: 'flex gap-2 flex-wrap' },
                   h('button', { type: 'button', onClick: exportTeacherReport, className: 'px-2 py-1 rounded bg-violet-700 text-white text-[0.6875rem] font-semibold' }, 'Export teacher report'),
-                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: exportTeacherCSV, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Export run CSV'),
-                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: printTeacherReport, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Print report')
+                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: exportTeacherCSV, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Export run CSV'),
+                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: printTeacherReport, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Print report')
                 )
               )
             )
           ),
-          data && data.length > 1 && h('section', { className: 'rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-workspace-title' },
+          data && data.length > 1 && h('section', { className: 'rounded-xl border border-slate-300 bg-white/80 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-workspace-title' },
             h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
-              h('h2', { id: 'eco-analysis-workspace-title', className: 'text-sm font-bold text-slate-900 dark:text-slate-100' }, 'Analysis workspace'),
-              h('span', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300', 'data-eco-projection-text': 'true' }, activeAnalysisView.hint)
+              h('h2', { id: 'eco-analysis-workspace-title', className: 'text-sm font-bold text-slate-900' }, 'Analysis workspace'),
+              h('span', { className: 'text-[0.6875rem] text-slate-600', 'data-eco-projection-text': 'true' }, activeAnalysisView.hint)
             ),
             h('div', { role: 'tablist', 'aria-label': __alloT('stem.ecosystem.a11y_ecosystem_analysis_views', 'Ecosystem analysis views'), className: 'flex flex-wrap gap-1' },
               analysisViews.map(function(view, index) {
                 var selected = effectiveAnalysisView === view.id;
-                return h('button', { key: view.id, id: 'eco-analysis-tab-' + view.id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'eco-analysis-panel-' + view.id, onClick: function() { upd('analysisView', view.id); }, onKeyDown: function(e) { onAnalysisTabKeyDown(e, index); }, className: 'min-h-9 rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500') }, view.label);
+                return h('button', { key: view.id, id: 'eco-analysis-tab-' + view.id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'eco-analysis-panel-' + view.id, onClick: function() { upd('analysisView', view.id); }, onKeyDown: function(e) { onAnalysisTabKeyDown(e, index); }, className: 'min-h-9 rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, view.label);
               })
             ),
             analysisViews.filter(function(view) { return view.id !== effectiveAnalysisView; }).map(function(view) {
@@ -13317,30 +13317,30 @@ function EcoPairMeasurement(props) {
             })
           ),
 
-          effectiveAnalysisView === 'compare' && data && data.length > 1 && comparedRun && comparedRun.data && comparedRun.data.length > 1 && h('section', { id: 'eco-analysis-panel-compare', role: 'tabpanel', className: 'rounded-xl border border-violet-300 dark:border-violet-600 bg-violet-50/70 dark:bg-violet-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-compare', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'compare' && data && data.length > 1 && comparedRun && comparedRun.data && comparedRun.data.length > 1 && h('section', { id: 'eco-analysis-panel-compare', role: 'tabpanel', className: 'rounded-xl border border-violet-300 bg-violet-50/70 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-compare', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'flex flex-col md:flex-row md:items-end md:justify-between gap-2' },
               h('div', { className: 'min-w-0' },
-                h('h3', { id: 'eco-comparison-title', className: 'text-sm font-bold text-violet-900 dark:text-violet-100' }, 'Run comparison workspace'),
-                h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Compare the same relative moment in the current run and a saved branch. Prey use a solid line and circle; predators use a dashed line and square.')
+                h('h3', { id: 'eco-comparison-title', className: 'text-sm font-bold text-violet-900' }, 'Run comparison workspace'),
+                h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, 'Compare the same relative moment in the current run and a saved branch. Prey use a solid line and circle; predators use a dashed line and square.')
               ),
               h('div', { className: 'w-full md:w-64' },
-                h('label', { htmlFor: 'eco-compare-run', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Saved run'),
-                h('select', { id: 'eco-compare-run', value: String(comparedRun.id), onChange: function(e) { upd('compareRunId', e.target.value); }, className: 'w-full rounded border border-violet-500 dark:border-violet-600 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' },
+                h('label', { htmlFor: 'eco-compare-run', className: 'block text-[0.6875rem] font-bold text-slate-700' }, 'Saved run'),
+                h('select', { id: 'eco-compare-run', value: String(comparedRun.id), onChange: function(e) { upd('compareRunId', e.target.value); }, className: 'w-full rounded border border-violet-500 bg-white p-2 text-[0.6875rem] text-slate-800' },
                   branchRuns.map(function(record) { return h('option', { key: record.id, value: String(record.id) }, record.label); })
                 )
               )
             ),
-            h('div', { className: 'rounded-lg border border-violet-200 dark:border-violet-800 bg-white/80 dark:bg-slate-900/70 p-2 space-y-2' },
+            h('div', { className: 'rounded-lg border border-violet-200 bg-white/80 p-2 space-y-2' },
               h('div', { className: 'flex items-center justify-between gap-2' },
-                h('label', { htmlFor: 'eco-replay-step', className: 'text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' }, 'Shared replay timeline'),
-                h('strong', { className: 'text-[0.6875rem] text-violet-800 dark:text-violet-200' }, 'Time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (replayMax * ECO_MODEL_TIME_STEP).toFixed(1))
+                h('label', { htmlFor: 'eco-replay-step', className: 'text-[0.6875rem] font-bold text-slate-700' }, 'Shared replay timeline'),
+                h('strong', { className: 'text-[0.6875rem] text-violet-800' }, 'Time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (replayMax * ECO_MODEL_TIME_STEP).toFixed(1))
               ),
               h('input', { id: 'eco-replay-step', type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-valuetext': 'Output step ' + replayCursor + ', modeled time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (replayMax * ECO_MODEL_TIME_STEP).toFixed(1), onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-violet-600' }),
               h('div', { className: 'grid grid-cols-4 gap-1' },
-                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', 0); }, className: 'rounded border border-violet-300 dark:border-violet-600 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Start'),
-                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', Math.max(0, replayCursor - 1)); }, className: 'rounded border border-violet-300 dark:border-violet-600 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Previous'),
-                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', Math.min(replayMax, replayCursor + 1)); }, className: 'rounded border border-violet-300 dark:border-violet-600 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Next'),
-                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', replayMax); }, className: 'rounded border border-violet-300 dark:border-violet-600 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'End')
+                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', 0); }, className: 'rounded border border-violet-300 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Start'),
+                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', Math.max(0, replayCursor - 1)); }, className: 'rounded border border-violet-300 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Previous'),
+                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', Math.min(replayMax, replayCursor + 1)); }, className: 'rounded border border-violet-300 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'Next'),
+                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', replayMax); }, className: 'rounded border border-violet-300 px-2 py-1 text-[0.6875rem] font-semibold disabled:opacity-40' }, 'End')
               )
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-3' },
@@ -13352,7 +13352,7 @@ function EcoPairMeasurement(props) {
               var savedReplay = replayPointFor(comparedRun.data);
               var currentOutcome = classifyRun(data);
               var savedOutcome = comparedRun.summary || classifyRun(comparedRun.data);
-              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-violet-200 dark:border-violet-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-violet-200 bg-white/80 p-2 text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' },
                 'At the shared moment, current prey ' + Math.round(Number(currentReplay.point.prey) || 0) + ' and predators ' + Math.round(Number(currentReplay.point.pred) || 0) + '; ' + comparedRun.label + ' prey ' + Math.round(Number(savedReplay.point.prey) || 0) + ' and predators ' + Math.round(Number(savedReplay.point.pred) || 0) + '. Outcomes: current ' + currentOutcome.label + '; saved ' + savedOutcome.label + '.'
               );
             })(),
@@ -13360,18 +13360,18 @@ function EcoPairMeasurement(props) {
               h('table', { className: 'w-full min-w-[520px] text-[0.6875rem] border-collapse' },
                 h('caption', { className: 'sr-only' }, 'Current and saved run parameter comparison'),
                 h('thead', null,
-                  h('tr', { className: 'text-left text-slate-700 dark:text-slate-200' },
-                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Parameter'),
-                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Current'),
-                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Saved'),
-                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Delta')
+                  h('tr', { className: 'text-left text-slate-700' },
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200' }, 'Parameter'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200' }, 'Current'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200' }, 'Saved'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200' }, 'Delta')
                   )
                 ),
                 h('tbody', null, comparisonParameterRows(comparedRun).map(function(row) {
                   var delta = (Number(row.current) || 0) - (Number(row.saved) || 0);
                   var deltaText = (delta > 0 ? '+' : '') + formatComparisonValue(row.key, delta);
-                  return h('tr', { key: row.key, className: 'odd:bg-violet-100/50 dark:odd:bg-violet-950/30' },
-                    h('th', { scope: 'row', className: 'p-1.5 text-left font-semibold text-slate-700 dark:text-slate-200' }, row.label),
+                  return h('tr', { key: row.key, className: 'odd:bg-violet-100/50' },
+                    h('th', { scope: 'row', className: 'p-1.5 text-left font-semibold text-slate-700' }, row.label),
                     h('td', { className: 'p-1.5' }, formatComparisonValue(row.key, row.current)),
                     h('td', { className: 'p-1.5' }, formatComparisonValue(row.key, row.saved)),
                     h('td', { className: 'p-1.5 font-mono' }, deltaText)
@@ -13381,31 +13381,31 @@ function EcoPairMeasurement(props) {
             )
           ),
 
-          effectiveAnalysisView === 'population' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-population', role: 'tabpanel', className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-population' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' + onHostInk }, '\uD83D\uDCC8 ' + __alloT('stem.ecosystem.logistic_pp_approx', 'Logistic Predator-Prey Approximation')),
+          effectiveAnalysisView === 'population' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-population', role: 'tabpanel', className: 'bg-white rounded-xl border border-slate-400 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-population' },
+            h('p', { className: 'text-xs font-bold text-slate-700' + onHostInk }, '\uD83D\uDCC8 ' + __alloT('stem.ecosystem.logistic_pp_approx', 'Logistic Predator-Prey Approximation')),
             buildPopSVG(),
             // Legend
             h('div', { className: 'flex gap-4 justify-center text-[0.6875rem]' },
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), __alloT('stem.ecosystem.prey', 'Prey') + ' (\uD83D\uDC07)'),
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), __alloT('stem.ecosystem.predators', 'Predators') + ' (\uD83E\uDD8A)'),
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-3 h-0.5 bg-amber-500', style: { borderBottom: '1px dashed #f59e0b' } }), 'K'),
-              h('span', { className: 'flex items-center gap-1 text-violet-700 dark:text-violet-300' }, '\u25C6 Replay')
+              h('span', { className: 'flex items-center gap-1 text-violet-700' }, '\u25C6 Replay')
             ),
             // Stats
             h('div', { className: 'grid grid-cols-4 gap-1 text-center' },
-              h('div', { className: 'bg-green-50 dark:bg-green-900/20 rounded p-1' },
+              h('div', { className: 'bg-green-50 rounded p-1' },
                 h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.peak_prey', 'Peak Prey')),
                 h('div', { className: 'text-sm font-bold text-green-700' }, peakPrey)
               ),
-              h('div', { className: 'bg-red-50 dark:bg-red-900/20 rounded p-1' },
+              h('div', { className: 'bg-red-50 rounded p-1' },
                 h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.peak_pred', 'Peak Pred')),
                 h('div', { className: 'text-sm font-bold text-red-700' }, peakPred)
               ),
-              h('div', { className: 'bg-purple-50 dark:bg-purple-900/20 rounded p-1' },
+              h('div', { className: 'bg-purple-50 rounded p-1' },
                 h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.ratio', 'Ratio')),
                 h('div', { className: 'text-sm font-bold text-purple-600' }, finalRatio)
               ),
-              h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded p-1' },
+              h('div', { className: 'bg-slate-50 rounded p-1' },
                 h('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.steps_label', 'Steps')),
                 h('div', { className: 'text-sm font-bold text-slate-600' }, steps)
               )
@@ -13413,15 +13413,15 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── Phase Portrait (post-simulation) ──
-          effectiveAnalysisView === 'moments' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-moments', role: 'tabpanel', className: 'rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50/70 dark:bg-amber-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-moments', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'moments' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-moments', role: 'tabpanel', className: 'rounded-xl border border-amber-300 bg-amber-50/70 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-moments', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'space-y-1' },
-              h('h3', { id: 'eco-key-moments-title', className: 'text-sm font-bold text-amber-900 dark:text-amber-100' }, 'Key moments in this run'),
-              h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, keyMomentAnalysis.lagLabel)
+              h('h3', { id: 'eco-key-moments-title', className: 'text-sm font-bold text-amber-900' }, 'Key moments in this run'),
+              h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, keyMomentAnalysis.lagLabel)
             ),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'list', 'aria-label': __alloT('stem.ecosystem.a11y_jump_to_a_key_modeled_moment', 'Jump to a key modeled moment') },
               keyMomentAnalysis.moments.map(function(moment) {
                 var selectedMoment = replayCursor === moment.index;
-                return h('button', { key: moment.id, type: 'button', role: 'listitem', 'aria-pressed': selectedMoment, 'aria-label': 'Jump to ' + moment.label + ' at modeled step ' + moment.step, onClick: function() { upd('replayStep', moment.index); if (announceToSR) announceToSR(moment.label + ', step ' + moment.step + '. Prey ' + moment.prey + ', predators ' + moment.pred + '.'); }, className: 'min-h-[68px] rounded-lg border p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selectedMoment ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-amber-600') },
+                return h('button', { key: moment.id, type: 'button', role: 'listitem', 'aria-pressed': selectedMoment, 'aria-label': 'Jump to ' + moment.label + ' at modeled step ' + moment.step, onClick: function() { upd('replayStep', moment.index); if (announceToSR) announceToSR(moment.label + ', step ' + moment.step + '. Prey ' + moment.prey + ', predators ' + moment.pred + '.'); }, className: 'min-h-[68px] rounded-lg border p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selectedMoment ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-white text-slate-700 hover:border-amber-600') },
                   h('span', { className: 'block text-[0.6875rem] font-bold' }, moment.label),
                   h('span', { className: 'block text-[0.625rem] opacity-85' }, 'Step ' + moment.step),
                   h('span', { className: 'block text-[0.625rem] opacity-85' }, 'Prey ' + moment.prey + ' | Pred ' + moment.pred)
@@ -13434,18 +13434,18 @@ function EcoPairMeasurement(props) {
                 if (keyMomentAnalysis.moments[emi].index === replayCursor) exactMoment = keyMomentAnalysis.moments[emi];
               }
               var replaySample = data[replayCursor] || data[0];
-              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-amber-200 dark:border-amber-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-amber-200 bg-white/80 p-2 text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' },
                 exactMoment
                   ? h('span', null, h('strong', null, exactMoment.label + ': '), exactMoment.explanation)
                   : 'Step ' + replayCursor + ': prey ' + Math.round(Number(replaySample.prey) || 0) + ', predators ' + Math.round(Number(replaySample.pred) || 0) + '. Choose a key moment to inspect a turning point.'
               );
             })(),
-            h('p', { className: 'text-[0.6875rem] font-semibold text-amber-900 dark:text-amber-100' }, 'Evidence prompt: What changes between the prey peak and predator peak, and how does the measured lag support your explanation?')
+            h('p', { className: 'text-[0.6875rem] font-semibold text-amber-900' }, 'Evidence prompt: What changes between the prey peak and predator peak, and how does the measured lag support your explanation?')
           ),
-          effectiveAnalysisView === 'cer' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-cer', role: 'tabpanel', className: 'rounded-xl border border-sky-300 dark:border-sky-700 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-4', 'aria-labelledby': 'eco-analysis-tab-cer', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'cer' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-cer', role: 'tabpanel', className: 'rounded-xl border border-sky-300 bg-sky-50/60 p-3 space-y-4', 'aria-labelledby': 'eco-analysis-tab-cer', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'space-y-1' },
-              h('h3', { className: 'text-sm font-bold text-sky-900 dark:text-sky-100' }, 'Claim\u2013Evidence\u2013Reasoning'),
-              h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Make a testable claim, collect synchronized evidence from the model, then explain why that evidence supports the claim.')
+              h('h3', { className: 'text-sm font-bold text-sky-900' }, 'Claim\u2013Evidence\u2013Reasoning'),
+              h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, 'Make a testable claim, collect synchronized evidence from the model, then explain why that evidence supports the claim.')
             ),
             h('ol', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2', 'aria-label': __alloT('stem.ecosystem.a11y_cer_progress', 'CER progress') },
               [
@@ -13453,51 +13453,51 @@ function EcoPairMeasurement(props) {
                 { label: 'Evidence', ready: cerEvidenceReady },
                 { label: 'Reasoning', ready: cerReasoningReady }
               ].map(function(item, index) {
-                return h('li', { key: item.label, className: 'rounded-lg border p-2 text-[0.6875rem] ' + (item.ready ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100' : 'border-slate-300 dark:border-slate-500 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200') },
+                return h('li', { key: item.label, className: 'rounded-lg border p-2 text-[0.6875rem] ' + (item.ready ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-slate-300 bg-white/80 text-slate-700') },
                   h('span', { className: 'font-bold' }, (item.ready ? '\u2713 ' : (index + 1) + '. ') + item.label),
                   h('span', { className: 'block mt-0.5' }, item.ready ? 'Ready' : 'Needs work')
                 );
               })
             ),
             h('label', { htmlFor: 'eco-cer-claim', className: 'block space-y-1' },
-              h('span', { className: 'block text-[0.6875rem] font-bold text-sky-900 dark:text-sky-100' }, 'Claim'),
-              h('span', { className: 'block text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'State what you think the model shows. Make it specific enough to test against a run.'),
-              h('textarea', { id: 'eco-cer-claim', value: cerClaim, onChange: function(e) { upd('cerClaim', e.target.value); }, rows: 2, maxLength: 600, placeholder: __alloT('stem.ecosystem.example_predator_abundance_responds_after_pr','Example: Predator abundance responds after prey abundance changes.'), className: 'w-full rounded-lg border border-sky-600 dark:border-sky-700 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' })
+              h('span', { className: 'block text-[0.6875rem] font-bold text-sky-900' }, 'Claim'),
+              h('span', { className: 'block text-[0.6875rem] text-slate-600' }, 'State what you think the model shows. Make it specific enough to test against a run.'),
+              h('textarea', { id: 'eco-cer-claim', value: cerClaim, onChange: function(e) { upd('cerClaim', e.target.value); }, rows: 2, maxLength: 600, placeholder: __alloT('stem.ecosystem.example_predator_abundance_responds_after_pr','Example: Predator abundance responds after prey abundance changes.'), className: 'w-full rounded-lg border border-sky-600 bg-white p-2 text-[0.6875rem] text-slate-800' })
             ),
             h('fieldset', { className: 'space-y-2' },
-              h('legend', { className: 'text-[0.6875rem] font-bold text-sky-900 dark:text-sky-100' }, 'Evidence snapshots'),
-              h('p', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Move the shared replay cursor to a meaningful moment, then capture one or more sources. Up to eight snapshots are kept.'),
+              h('legend', { className: 'text-[0.6875rem] font-bold text-sky-900' }, 'Evidence snapshots'),
+              h('p', { className: 'text-[0.6875rem] text-slate-600' }, 'Move the shared replay cursor to a meaningful moment, then capture one or more sources. Up to eight snapshots are kept.'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
-                h('button', { type: 'button', onClick: function() { addCEREvidence('current'); }, className: 'min-h-10 rounded-lg border border-sky-400 dark:border-sky-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[0.6875rem] font-semibold text-sky-900 dark:text-sky-100' }, 'Add current-step evidence'),
-                h('button', { type: 'button', disabled: !comparedRun, onClick: function() { addCEREvidence('comparison'); }, className: 'min-h-10 rounded-lg border border-violet-400 dark:border-violet-600 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[0.6875rem] font-semibold text-violet-900 dark:text-violet-100 disabled:opacity-45' }, comparedRun ? 'Add saved-run comparison' : 'Save a branch to compare'),
-                h('button', { type: 'button', disabled: !uncertaintyResult, onClick: function() { addCEREvidence('uncertainty'); }, className: 'min-h-10 rounded-lg border border-teal-400 dark:border-teal-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[0.6875rem] font-semibold text-teal-900 dark:text-teal-100 disabled:opacity-45' }, uncertaintyResult ? 'Add repeated-trial evidence' : 'Run uncertainty trials first'),
-                h('button', { type: 'button', disabled: !interventionResult, onClick: function() { addCEREvidence('intervention'); }, className: 'min-h-10 rounded-lg border border-orange-400 dark:border-orange-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[0.6875rem] font-semibold text-orange-900 dark:text-orange-100 disabled:opacity-45' }, interventionResult ? 'Add intervention evidence' : 'Run an intervention first')
+                h('button', { type: 'button', onClick: function() { addCEREvidence('current'); }, className: 'min-h-10 rounded-lg border border-sky-400 bg-white px-3 py-2 text-left text-[0.6875rem] font-semibold text-sky-900' }, 'Add current-step evidence'),
+                h('button', { type: 'button', disabled: !comparedRun, onClick: function() { addCEREvidence('comparison'); }, className: 'min-h-10 rounded-lg border border-violet-400 bg-white px-3 py-2 text-left text-[0.6875rem] font-semibold text-violet-900 disabled:opacity-45' }, comparedRun ? 'Add saved-run comparison' : 'Save a branch to compare'),
+                h('button', { type: 'button', disabled: !uncertaintyResult, onClick: function() { addCEREvidence('uncertainty'); }, className: 'min-h-10 rounded-lg border border-teal-400 bg-white px-3 py-2 text-left text-[0.6875rem] font-semibold text-teal-900 disabled:opacity-45' }, uncertaintyResult ? 'Add repeated-trial evidence' : 'Run uncertainty trials first'),
+                h('button', { type: 'button', disabled: !interventionResult, onClick: function() { addCEREvidence('intervention'); }, className: 'min-h-10 rounded-lg border border-orange-400 bg-white px-3 py-2 text-left text-[0.6875rem] font-semibold text-orange-900 disabled:opacity-45' }, interventionResult ? 'Add intervention evidence' : 'Run an intervention first')
               ),
               cerEvidence.length > 0
                 ? h('ol', { className: 'space-y-2', 'aria-label': __alloT('stem.ecosystem.a11y_collected_cer_evidence', 'Collected CER evidence') },
                     cerEvidence.map(function(entry, index) {
-                      return h('li', { key: entry.id, className: 'rounded-lg border border-sky-200 dark:border-sky-800 bg-white/80 dark:bg-slate-900/70 p-2' },
+                      return h('li', { key: entry.id, className: 'rounded-lg border border-sky-200 bg-white/80 p-2' },
                         h('div', { className: 'flex items-start justify-between gap-3' },
                           h('div', { className: 'min-w-0' },
-                            h('p', { className: 'text-[0.6875rem] font-bold text-sky-900 dark:text-sky-100' }, (index + 1) + '. ' + entry.source),
-                            h('p', { className: 'mt-1 text-[0.6875rem] text-slate-700 dark:text-slate-200' }, entry.text),
-                            h('p', { className: 'mt-1 text-[0.625rem] font-mono break-all text-slate-500 dark:text-slate-400' }, 'Replay key: ' + entry.replayKey)
+                            h('p', { className: 'text-[0.6875rem] font-bold text-sky-900' }, (index + 1) + '. ' + entry.source),
+                            h('p', { className: 'mt-1 text-[0.6875rem] text-slate-700' }, entry.text),
+                            h('p', { className: 'mt-1 text-[0.625rem] font-mono break-all text-slate-500' }, 'Replay key: ' + entry.replayKey)
                           ),
-                          h('button', { type: 'button', onClick: function() { removeCEREvidence(entry.id); }, 'aria-label': 'Remove evidence ' + (index + 1), className: 'shrink-0 rounded border border-slate-300 dark:border-slate-500 px-2 py-1 text-[0.625rem] font-semibold text-slate-700 dark:text-slate-200' }, 'Remove')
+                          h('button', { type: 'button', onClick: function() { removeCEREvidence(entry.id); }, 'aria-label': 'Remove evidence ' + (index + 1), className: 'shrink-0 rounded border border-slate-300 px-2 py-1 text-[0.625rem] font-semibold text-slate-700' }, 'Remove')
                         )
                       );
                     })
                   )
-                : h('p', { className: 'rounded-lg border border-dashed border-sky-400 p-3 text-center text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'No evidence collected yet. Start with the current replay step.')
+                : h('p', { className: 'rounded-lg border border-dashed border-sky-400 p-3 text-center text-[0.6875rem] text-slate-600' }, 'No evidence collected yet. Start with the current replay step.')
             ),
             h('label', { htmlFor: 'eco-cer-reasoning', className: 'block space-y-1' },
-              h('span', { className: 'block text-[0.6875rem] font-bold text-sky-900 dark:text-sky-100' }, 'Reasoning'),
-              h('span', { className: 'block text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Connect the evidence to an ecological mechanism, such as resource limits, predation, reproduction, or response lag.'),
-              h('textarea', { id: 'eco-cer-reasoning', value: cerReasoning, onChange: function(e) { upd('cerReasoning', e.target.value); }, rows: 3, maxLength: 1000, placeholder: __alloT('stem.ecosystem.explain_how_and_why_the_evidence_supports_yo','Explain how and why the evidence supports your claim.'), className: 'w-full rounded-lg border border-sky-600 dark:border-sky-700 bg-white dark:bg-slate-900 p-2 text-[0.6875rem] text-slate-800 dark:text-slate-100' })
+              h('span', { className: 'block text-[0.6875rem] font-bold text-sky-900' }, 'Reasoning'),
+              h('span', { className: 'block text-[0.6875rem] text-slate-600' }, 'Connect the evidence to an ecological mechanism, such as resource limits, predation, reproduction, or response lag.'),
+              h('textarea', { id: 'eco-cer-reasoning', value: cerReasoning, onChange: function(e) { upd('cerReasoning', e.target.value); }, rows: 3, maxLength: 1000, placeholder: __alloT('stem.ecosystem.explain_how_and_why_the_evidence_supports_yo','Explain how and why the evidence supports your claim.'), className: 'w-full rounded-lg border border-sky-600 bg-white p-2 text-[0.6875rem] text-slate-800' })
             ),
             h('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2' },
               h('button', { type: 'button', disabled: !cerComplete, onClick: applyCERToNotebook, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-sky-800 disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500', 'aria-describedby': 'eco-cer-status' }, 'Use CER in notebook'),
-              h('p', { id: 'eco-cer-status', role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+              h('p', { id: 'eco-cer-status', role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700' },
                 cerComplete
                   ? 'CER complete. It is ready to transfer to the Explain stage.'
                   : 'Complete ' + [cerClaimReady ? '' : 'claim', cerEvidenceReady ? '' : 'evidence', cerReasoningReady ? '' : 'reasoning'].filter(Boolean).join(', ') + '.'
@@ -13505,37 +13505,37 @@ function EcoPairMeasurement(props) {
             )
           ),
 
-          effectiveAnalysisView === 'intervention' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-intervention', role: 'tabpanel', className: 'rounded-xl border border-orange-300 dark:border-orange-700 bg-orange-50/60 dark:bg-orange-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-intervention', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'intervention' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-intervention', role: 'tabpanel', className: 'rounded-xl border border-orange-300 bg-orange-50/60 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-intervention', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'space-y-1' },
-              h('h3', { className: 'text-sm font-bold text-orange-900 dark:text-orange-100' }, 'Controlled intervention timeline'),
-              h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Schedule one simplified event, then compare a fresh no-event baseline with the event scenario using the same model parameters.')
+              h('h3', { className: 'text-sm font-bold text-orange-900' }, 'Controlled intervention timeline'),
+              h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, 'Schedule one simplified event, then compare a fresh no-event baseline with the event scenario using the same model parameters.')
             ),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end' },
-              h('label', { htmlFor: 'eco-intervention-type', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
+              h('label', { htmlFor: 'eco-intervention-type', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'block mb-1' }, 'Event'),
-                h('select', { id: 'eco-intervention-type', value: interventionType, onChange: function(e) { updMulti({ interventionType: e.target.value, interventionResult: null }); }, className: 'w-full rounded border border-orange-600 dark:border-orange-700 bg-white dark:bg-slate-900 p-2 text-[0.6875rem]' },
+                h('select', { id: 'eco-intervention-type', value: interventionType, onChange: function(e) { updMulti({ interventionType: e.target.value, interventionResult: null }); }, className: 'w-full rounded border border-orange-600 bg-white p-2 text-[0.6875rem]' },
                   INTERVENTION_TYPES.map(function(eventType) { return h('option', { key: eventType.id, value: eventType.id }, eventType.label); })
                 )
               ),
-              h('label', { htmlFor: 'eco-intervention-step', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Event step'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, interventionStep)),
+              h('label', { htmlFor: 'eco-intervention-step', className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Event step'), h('span', { className: 'font-mono text-orange-800' }, interventionStep)),
                 h('input', { id: 'eco-intervention-step', type: 'range', min: 5, max: 95, step: 5, value: interventionStep, onChange: function(e) { updMulti({ interventionStep: parseInt(e.target.value, 10), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
               ),
-              h('label', { htmlFor: 'eco-intervention-intensity', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Intensity'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, Math.round(interventionIntensity * 100) + '%')),
+              h('label', { htmlFor: 'eco-intervention-intensity', className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Intensity'), h('span', { className: 'font-mono text-orange-800' }, Math.round(interventionIntensity * 100) + '%')),
                 h('input', { id: 'eco-intervention-intensity', type: 'range', min: 0.1, max: 0.7, step: 0.1, value: interventionIntensity, onChange: function(e) { updMulti({ interventionIntensity: parseFloat(e.target.value), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
               ),
               h('button', { type: 'button', onClick: runInterventionScenario, className: 'min-h-10 rounded-lg bg-orange-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500' }, 'Run event scenario')
             ),
-            h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, h('strong', null, activeInterventionDefinition.label + ': '), activeInterventionDefinition.description),
+            h('p', { className: 'text-[0.6875rem] text-slate-700' }, h('strong', null, activeInterventionDefinition.label + ': '), activeInterventionDefinition.description),
             interventionResult
               ? h('div', { className: 'space-y-3' },
-                  h('label', { htmlFor: 'eco-intervention-replay', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                    h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Scenario replay'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, replayCursor + ' / ' + replayMax)),
+                  h('label', { htmlFor: 'eco-intervention-replay', className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                    h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Scenario replay'), h('span', { className: 'font-mono text-orange-800' }, replayCursor + ' / ' + replayMax)),
                     h('input', { id: 'eco-intervention-replay', type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-valuetext': 'Output step ' + replayCursor + ', modeled time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1), onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-orange-600' })
                   ),
                   buildInterventionSVG(),
-                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700' },
                     h('span', null, 'Faint dotted: fresh baseline'),
                     h('span', null, 'Green solid: scenario prey'),
                     h('span', null, 'Red dashed: scenario predators'),
@@ -13548,73 +13548,73 @@ function EcoPairMeasurement(props) {
                     var scenarioPoint = interventionResult.scenarioData[scenarioIndex];
                     var preyDifference = Math.round((Number(scenarioPoint.prey) || 0) - (Number(baselinePoint.prey) || 0));
                     var predatorDifference = Math.round((Number(scenarioPoint.pred) || 0) - (Number(baselinePoint.pred) || 0));
-                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-orange-200 dark:border-orange-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-orange-200 bg-white/80 p-2 text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' },
                       'Step ' + scenarioPoint.step + ': event scenario differs from baseline by ' + (preyDifference >= 0 ? '+' : '') + preyDifference + ' prey and ' + (predatorDifference >= 0 ? '+' : '') + predatorDifference + ' predators. Outcome shifts from ' + interventionResult.baselineSummary.label + ' to ' + interventionResult.scenarioSummary.label + '.'
                     );
                   })(),
-                  h('p', { className: 'text-[0.6875rem] font-semibold text-orange-900 dark:text-orange-100' }, 'Evidence prompt: Compare the trajectories immediately before and after the event. Which population responds first, and what evidence supports that claim?'),
-                  h('p', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'This isolates one simplified event. The response is a consequence of this teaching model, not a field forecast or management recommendation.')
+                  h('p', { className: 'text-[0.6875rem] font-semibold text-orange-900' }, 'Evidence prompt: Compare the trajectories immediately before and after the event. Which population responds first, and what evidence supports that claim?'),
+                  h('p', { className: 'text-[0.6875rem] text-slate-600' }, 'This isolates one simplified event. The response is a consequence of this teaching model, not a field forecast or management recommendation.')
                 )
-              : h('p', { className: 'rounded-lg border border-dashed border-orange-400 p-3 text-center text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Choose an event, timing, and intensity, then run the scenario to create a matched baseline comparison.')
+              : h('p', { className: 'rounded-lg border border-dashed border-orange-400 p-3 text-center text-[0.6875rem] text-slate-600' }, 'Choose an event, timing, and intensity, then run the scenario to create a matched baseline comparison.')
           ),
-          effectiveAnalysisView === 'uncertainty' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-uncertainty', role: 'tabpanel', className: 'rounded-xl border border-teal-300 dark:border-teal-700 bg-teal-50/60 dark:bg-teal-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-uncertainty', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'uncertainty' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-uncertainty', role: 'tabpanel', className: 'rounded-xl border border-teal-300 bg-teal-50/60 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-uncertainty', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'space-y-1' },
-              h('h3', { className: 'text-sm font-bold text-teal-900 dark:text-teal-100' }, 'Repeated-trial uncertainty'),
-              h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Repeat the same model with seeded, persistent environmental variation. Shaded bands show the middle 80% of simulated outcomes.')
+              h('h3', { className: 'text-sm font-bold text-teal-900' }, 'Repeated-trial uncertainty'),
+              h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, 'Repeat the same model with seeded, persistent environmental variation. Shaded bands show the middle 80% of simulated outcomes.')
             ),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end' },
-              h('label', { htmlFor: 'eco-uncertainty-trials', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
+              h('label', { htmlFor: 'eco-uncertainty-trials', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'block mb-1' }, 'Number of trials'),
-                h('select', { id: 'eco-uncertainty-trials', value: String(uncertaintyTrials), onChange: function(e) { updMulti({ uncertaintyTrials: parseInt(e.target.value, 10), uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-600 dark:border-teal-700 bg-white dark:bg-slate-900 p-2 text-[0.6875rem]' },
+                h('select', { id: 'eco-uncertainty-trials', value: String(uncertaintyTrials), onChange: function(e) { updMulti({ uncertaintyTrials: parseInt(e.target.value, 10), uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-600 bg-white p-2 text-[0.6875rem]' },
                   [10, 30, 50, 100].map(function(count) { return h('option', { key: count, value: String(count) }, count + ' trials'); })
                 )
               ),
-              h('label', { htmlFor: 'eco-uncertainty-variation', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Environmental variability'), h('span', { className: 'font-mono text-teal-800 dark:text-teal-200' }, Math.round(uncertaintyVariation * 100) + '%')),
+              h('label', { htmlFor: 'eco-uncertainty-variation', className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Environmental variability'), h('span', { className: 'font-mono text-teal-800' }, Math.round(uncertaintyVariation * 100) + '%')),
                 h('input', { id: 'eco-uncertainty-variation', type: 'range', min: 0, max: 0.5, step: 0.05, value: uncertaintyVariation, onChange: function(e) { updMulti({ uncertaintyVariation: parseFloat(e.target.value), uncertaintyResult: null }); }, className: 'w-full h-2 accent-teal-600' })
               ),
-              h('label', { htmlFor: 'eco-uncertainty-seed', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
+              h('label', { htmlFor: 'eco-uncertainty-seed', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'block mb-1' }, 'Reproducible seed'),
-                h('input', { id: 'eco-uncertainty-seed', type: 'number', min: 0, max: 4294967295, step: 1, value: uncertaintySeed, onChange: function(e) { updMulti({ uncertaintySeed: parseInt(e.target.value, 10) || 0, uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-600 dark:border-teal-700 bg-white dark:bg-slate-900 p-2 text-[0.6875rem]' })
+                h('input', { id: 'eco-uncertainty-seed', type: 'number', min: 0, max: 4294967295, step: 1, value: uncertaintySeed, onChange: function(e) { updMulti({ uncertaintySeed: parseInt(e.target.value, 10) || 0, uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-600 bg-white p-2 text-[0.6875rem]' })
               ),
               h('button', { type: 'button', onClick: runUncertaintyTrials, className: 'min-h-10 rounded-lg bg-teal-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500' }, 'Run repeated trials')
             ),
             uncertaintyResult
               ? h('div', { className: 'space-y-3' },
                   buildUncertaintySVG(),
-                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700' },
                     h('span', null, 'Prey: solid median + green band'),
                     h('span', null, 'Predators: dashed median + red band'),
                     h('span', null, '\u25C6 Shared replay step')
                   ),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 text-center' },
-                    h('div', { className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2' },
-                      h('div', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Trials with prey below 1'),
-                      h('div', { className: 'text-lg font-bold text-green-700 dark:text-green-300' }, uncertaintyResult.summary.preyExtinctionPercent + '%')
+                    h('div', { className: 'rounded-lg border border-teal-200 bg-white/80 p-2' },
+                      h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Trials with prey below 1'),
+                      h('div', { className: 'text-lg font-bold text-green-700' }, uncertaintyResult.summary.preyExtinctionPercent + '%')
                     ),
-                    h('div', { className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2' },
-                      h('div', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Trials with predators below 1'),
-                      h('div', { className: 'text-lg font-bold text-red-700 dark:text-red-300' }, uncertaintyResult.summary.predatorExtinctionPercent + '%')
+                    h('div', { className: 'rounded-lg border border-teal-200 bg-white/80 p-2' },
+                      h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Trials with predators below 1'),
+                      h('div', { className: 'text-lg font-bold text-red-700' }, uncertaintyResult.summary.predatorExtinctionPercent + '%')
                     ),
-                    h('div', { className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2' },
-                      h('div', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Trials with numerical warnings'),
-                      h('div', { className: 'text-lg font-bold text-slate-700 dark:text-slate-200' }, (uncertaintyResult.summary.numericalWarningPercent || 0) + '%')
+                    h('div', { className: 'rounded-lg border border-teal-200 bg-white/80 p-2' },
+                      h('div', { className: 'text-[0.6875rem] text-slate-600' }, 'Trials with numerical warnings'),
+                      h('div', { className: 'text-lg font-bold text-slate-700' }, (uncertaintyResult.summary.numericalWarningPercent || 0) + '%')
                     )
                   ),
                   (function() {
                     var uncertaintySeries = uncertaintyResult.series;
                     var uncertaintyIndex = Math.min(uncertaintySeries.length - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (uncertaintySeries.length - 1))));
                     var uncertaintyPoint = uncertaintySeries[uncertaintyIndex];
-                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-teal-200 bg-white/80 p-2 text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' },
                       'Step ' + uncertaintyPoint.step + ': prey median ' + Math.round(uncertaintyPoint.preyMedian) + ' (middle 80% ' + Math.round(uncertaintyPoint.preyP10) + '\u2013' + Math.round(uncertaintyPoint.preyP90) + '); predator median ' + Math.round(uncertaintyPoint.predMedian) + ' (middle 80% ' + Math.round(uncertaintyPoint.predP10) + '\u2013' + Math.round(uncertaintyPoint.predP90) + ').'
                     );
                   })(),
-                  h('p', { className: 'text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'These are scenario ranges from this teaching model, not confidence intervals, fitted forecasts, or field-data estimates. Seed ' + uncertaintyResult.seed + ' reproduces the same trials.')
+                  h('p', { className: 'text-[0.6875rem] text-slate-600' }, 'These are scenario ranges from this teaching model, not confidence intervals, fitted forecasts, or field-data estimates. Seed ' + uncertaintyResult.seed + ' reproduces the same trials.')
                 )
-              : h('p', { className: 'rounded-lg border border-dashed border-teal-400 p-3 text-center text-[0.6875rem] text-slate-600 dark:text-slate-300' }, 'Choose settings and run repeated trials to reveal the range of possible model outcomes.')
+              : h('p', { className: 'rounded-lg border border-dashed border-teal-400 p-3 text-center text-[0.6875rem] text-slate-600' }, 'Choose settings and run repeated trials to reveal the range of possible model outcomes.')
           ),
-          effectiveAnalysisView === 'phase' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-phase', role: 'tabpanel', className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-phase', 'data-eco-advanced': 'true' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' + onHostInk }, '\uD83D\uDD04 ' + __alloT('stem.ecosystem.phase_portrait', 'Phase Portrait')),
+          effectiveAnalysisView === 'phase' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-phase', role: 'tabpanel', className: 'bg-white rounded-xl border border-slate-400 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-phase', 'data-eco-advanced': 'true' },
+            h('p', { className: 'text-xs font-bold text-slate-700' + onHostInk }, '\uD83D\uDD04 ' + __alloT('stem.ecosystem.phase_portrait', 'Phase Portrait')),
             buildPhaseSVG(),
             h('div', { className: 'flex gap-3 justify-center text-[0.6875rem]' },
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), __alloT('stem.ecosystem.start', 'Start')),
@@ -13624,35 +13624,35 @@ function EcoPairMeasurement(props) {
 
 
           // ── Ecology Challenges ──
-          effectiveAnalysisView === 'trajectory' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-trajectory', role: 'tabpanel', className: 'rounded-xl border border-indigo-300 dark:border-indigo-700 bg-indigo-50/60 dark:bg-indigo-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-trajectory', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
+          effectiveAnalysisView === 'trajectory' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-trajectory', role: 'tabpanel', className: 'rounded-xl border border-indigo-300 bg-indigo-50/60 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-trajectory', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
             h('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2' },
               h('div', { className: 'min-w-0' },
-                h('h3', { id: 'eco-trajectory-heading', className: 'text-sm font-bold text-indigo-900 dark:text-indigo-100' }, '3D population trajectory'),
-                h('p', { className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Use the 2D graph for exact values. Open 3D to see how prey, predators, and time combine into one evolving path.')
+                h('h3', { id: 'eco-trajectory-heading', className: 'text-sm font-bold text-indigo-900' }, '3D population trajectory'),
+                h('p', { className: 'text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' }, 'Use the 2D graph for exact values. Open 3D to see how prey, predators, and time combine into one evolving path.')
               ),
-              h('button', { type: 'button', 'aria-expanded': trajectory3dOpen, 'aria-controls': 'eco-trajectory-3d-tools', onClick: function() { upd('trajectory3dOpen', !trajectory3dOpen); }, className: 'shrink-0 rounded-lg border border-indigo-600 px-3 py-1.5 text-[0.6875rem] font-bold text-indigo-800 dark:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500' }, trajectory3dOpen ? 'Hide 3D view' : 'Show 3D view')
+              h('button', { type: 'button', 'aria-expanded': trajectory3dOpen, 'aria-controls': 'eco-trajectory-3d-tools', onClick: function() { upd('trajectory3dOpen', !trajectory3dOpen); }, className: 'shrink-0 rounded-lg border border-indigo-600 px-3 py-1.5 text-[0.6875rem] font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500' }, trajectory3dOpen ? 'Hide 3D view' : 'Show 3D view')
             ),
             trajectory3dOpen && h('div', { id: 'eco-trajectory-3d-tools', className: 'space-y-3' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
-                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Rotate view'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, Math.round(trajectoryAzimuth) + '\u00B0')),
+                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Rotate view'), h('span', { className: 'font-mono text-indigo-700' }, Math.round(trajectoryAzimuth) + '\u00B0')),
                   h('input', { type: 'range', min: -70, max: 70, step: 5, value: trajectoryAzimuth, 'aria-label': __alloT('stem.ecosystem.a11y_rotate_3d_trajectory_view', 'Rotate 3D trajectory view'), onChange: function(e) { upd('trajectoryAzimuth', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
                 ),
-                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'View elevation'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, Math.round(trajectoryElevation) + '\u00B0')),
+                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'View elevation'), h('span', { className: 'font-mono text-indigo-700' }, Math.round(trajectoryElevation) + '\u00B0')),
                   h('input', { type: 'range', min: 10, max: 50, step: 2, value: trajectoryElevation, 'aria-label': __alloT('stem.ecosystem.a11y_change_3d_trajectory_elevation', 'Change 3D trajectory elevation'), onChange: function(e) { upd('trajectoryElevation', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
                 ),
-                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-200' },
-                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Trajectory time'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, replayCursor + ' / ' + replayMax)),
+                h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Trajectory time'), h('span', { className: 'font-mono text-indigo-700' }, replayCursor + ' / ' + replayMax)),
                   h('input', { type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-label': __alloT('stem.ecosystem.a11y_move_through_the_3d_trajectory_over_modeled_tim', 'Move through the 3D trajectory over modeled time'), 'aria-valuetext': 'Output step ' + replayCursor + ', modeled time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ' of ' + (replayMax * ECO_MODEL_TIME_STEP).toFixed(1), onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-indigo-600' })
                 )
               ),
               h('div', { className: 'flex justify-end' },
-                h('button', { type: 'button', onClick: function() { updMulti({ trajectoryAzimuth: -35, trajectoryElevation: 24 }); }, className: 'rounded border border-slate-400 dark:border-slate-500 px-2 py-1 text-[0.6875rem] font-semibold text-slate-700 dark:text-slate-200' }, 'Reset view')
+                h('button', { type: 'button', onClick: function() { updMulti({ trajectoryAzimuth: -35, trajectoryElevation: 24 }); }, className: 'rounded border border-slate-400 px-2 py-1 text-[0.6875rem] font-semibold text-slate-700' }, 'Reset view')
               ),
               h('figure', { className: 'min-w-0' },
                 buildTrajectory3DSVG(),
-                h('figcaption', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700 dark:text-slate-200' },
+                h('figcaption', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.6875rem] text-slate-700' },
                   h('span', null, '\u25CF Start'),
                   h('span', null, '\u25A0 End'),
                   h('span', null, '\u25C6 Replay position')
@@ -13660,7 +13660,7 @@ function EcoPairMeasurement(props) {
               ),
               (function() {
                 var selected3d = data[Math.min(data.length - 1, replayCursor)] || data[0];
-                return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-indigo-200 bg-white/80 p-2 text-[0.6875rem] text-slate-700', 'data-eco-projection-text': 'true' },
                   'Time ' + (replayCursor * ECO_MODEL_TIME_STEP).toFixed(1) + ': prey ' + Math.round(Number(selected3d.prey) || 0) + ', predators ' + Math.round(Number(selected3d.pred) || 0) + '. Predator abundance is height; modeled time extends into depth.'
                 );
               })()
@@ -13709,14 +13709,14 @@ function EcoPairMeasurement(props) {
 
           // ── Snapshot button ──
           h('button', { 'aria-label': __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot'),
-            className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 dark:border-slate-500 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-[0.97]' + onHostInk,
+            className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 text-slate-600 hover:bg-slate-100 transition-all active:scale-[0.97]' + onHostInk,
             onClick: takeSnapshot
           }, '\uD83D\uDCF7 ' + __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot')),
           h('button', { 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
 
           // ── AI Tutor ──
-          callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
-            h('button', { className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
+          callGemini && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200 space-y-2' },
+            h('button', { className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700',
               onClick: function() { upd('showAI', !showAI); }
             },
               h('span', null, '\uD83E\uDD16 ' + __alloT('stem.ecosystem.ai_ecology_tutor', 'AI Ecology Tutor')),
@@ -13726,14 +13726,14 @@ function EcoPairMeasurement(props) {
               h('div', { className: 'flex gap-1 flex-wrap' },
                 [__alloT('stem.ecosystem.q_what_lotka_volterra', 'What is Lotka-Volterra?'), __alloT('stem.ecosystem.q_why_oscillate', 'Why do populations oscillate?'), __alloT('stem.ecosystem.q_what_carrying_capacity', 'What is carrying capacity?'), __alloT('stem.ecosystem.q_explain_food_webs', 'Explain food webs')].map(function(question) {
                   return h('button', { key: question,
-                    className: 'transition-colors px-2 py-1 text-[0.6875rem] rounded-full border border-indigo-600 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]',
+                    className: 'transition-colors px-2 py-1 text-[0.6875rem] rounded-full border border-indigo-600 text-indigo-600 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]',
                     onClick: function() { askAI(question); },
                     disabled: aiLoading
                   }, question);
                 })
               ),
               aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
-              aiResponse && h('div', { className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
+              aiResponse && h('div', { className: 'bg-white rounded-lg p-2 text-xs text-slate-700 border border-indigo-100' },
                 h('p', null, aiResponse),
                 callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
                   className: 'transition-colors mt-1 text-[0.6875rem] text-indigo-500 hover:text-indigo-700',
@@ -13753,10 +13753,10 @@ function EcoPairMeasurement(props) {
               padding: '10px 14px', borderRadius: 12, marginBottom: 4,
               background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
               borderTop: '1px solid rgba(14,165,233,0.5)', borderRight: '1px solid rgba(14,165,233,0.5)', borderBottom: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
-              color: '#bae6fd', fontSize: 13, lineHeight: 1.55
+              color: isContrast ? '#bae6fd' : 'var(--eco-copy)', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('strong', { style: { color: '#0ea5e9' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
+            h('strong', { style: { color: isContrast ? '#0ea5e9' : '#0369a1' } }, __alloT('stem.ecosystem.goal_label', 'Goal: ')),
             'design controlled experiments in the ' + activeScenario.name + '. Start with a small prey-predator system, then change one factor at a time. Removing predators can release prey until resource limits slow growth; events let you test resilience. This animated scene uses separate stochastic teaching rules, and Carrying Capacity (K) limits placed entities.'
           ),
 
@@ -13787,7 +13787,7 @@ function EcoPairMeasurement(props) {
                 + 'hold Shift for larger steps, press Enter or Space to apply the tool, and press '
                 + 'Escape to hide the cursor.')),
             // Bottom info bar
-            h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
+            h('div', { className: 'absolute bottom-0 left-0 right-0 bg-black/70 px-3 py-1.5 flex items-center gap-2' },
               h('span', { className: 'text-[0.6875rem] text-white/90 font-bold' }, activeScenario.emoji + ' ' + activeScenario.name + ' Sandbox'),
               h('span', { className: 'text-[0.6875rem] text-white/90 ml-auto' }, 'Click or use the placement buttons')
             )
@@ -13799,8 +13799,8 @@ function EcoPairMeasurement(props) {
               return h('button', { key: tool.id,
                 className: 'flex-1 px-1.5 py-2 text-[0.6875rem] font-bold rounded-lg border-2 transition-all text-center ' +
                   (sandboxTool === tool.id
-                    ? 'border-teal-400 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 shadow'
-                    : 'transition-colors border-slate-200 dark:border-slate-500 text-slate-600 dark:text-slate-300 hover:border-teal-600' + onHostInk),
+                    ? 'border-teal-400 bg-teal-50 text-teal-700 shadow'
+                    : 'transition-colors border-slate-200 text-slate-600 hover:border-teal-600' + onHostInk),
                 onClick: function() {
                   upd('sandboxTool', tool.id);
                   var canvasEl = document.querySelector('canvas[data-eco-canvas]');
@@ -13814,31 +13814,31 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── Placement count display ──
-          h('div', { role: 'group', 'aria-labelledby': 'eco-keyboard-actions-title', className: 'rounded-lg border border-blue-300 bg-blue-50/70 dark:bg-blue-900/20 dark:border-blue-700 p-2 space-y-1' },
-            h('strong', { id: 'eco-keyboard-actions-title', className: 'text-[0.6875rem] text-blue-800 dark:text-blue-200' }, 'Keyboard-friendly sandbox actions'),
-            h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'These buttons place entities in consistent zones without requiring canvas clicking.'),
+          h('div', { role: 'group', 'aria-labelledby': 'eco-keyboard-actions-title', className: 'rounded-lg border border-blue-300 bg-blue-50/70 p-2 space-y-1' },
+            h('strong', { id: 'eco-keyboard-actions-title', className: 'text-[0.6875rem] text-blue-800' }, 'Keyboard-friendly sandbox actions'),
+            h('p', { className: 'text-[0.625rem] text-slate-600' }, 'These buttons place entities in consistent zones without requiring canvas clicking.'),
             h('div', { className: 'flex gap-1 flex-wrap' },
-              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('rabbit'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-green-600 text-green-800 dark:text-green-200 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.prey.singular + ' left'),
-              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('fox'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-red-600 text-red-800 dark:text-red-200 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.predator.singular + ' right'),
-              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('tree'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-emerald-600 text-emerald-800 dark:text-emerald-200 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.producer.singular + ' center'),
-              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('reset'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-slate-500 text-slate-700 dark:text-slate-200 text-[0.6875rem] font-semibold' }, 'Reset sandbox')
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('rabbit'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-green-600 text-green-800 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.prey.singular + ' left'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('fox'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-red-600 text-red-800 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.predator.singular + ' right'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('tree'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-emerald-600 text-emerald-800 text-[0.6875rem] font-semibold' }, 'Add ' + activeScenario.producer.singular + ' center'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('reset'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-slate-500 text-slate-700 text-[0.6875rem] font-semibold' }, 'Reset sandbox')
             )
           ),
-          h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
-            h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, __alloT('stem.ecosystem.entities_placed', 'Entities Placed:')),
-            h('span', { className: 'text-sm font-bold text-teal-700 dark:text-teal-300' }, sandboxPlaceCount),
+          h('div', { className: 'flex items-center justify-between bg-teal-50 rounded-lg px-3 py-2' },
+            h('span', { className: 'text-xs font-semibold text-teal-700' }, __alloT('stem.ecosystem.entities_placed', 'Entities Placed:')),
+            h('span', { className: 'text-sm font-bold text-teal-700' }, sandboxPlaceCount),
             h('button', { 'aria-label': __alloT('stem.ecosystem.sync_count', 'Sync Count'),
-              className: 'transition-colors text-[0.6875rem] text-teal-700 hover:text-teal-800 dark:text-teal-300 dark:hover:text-teal-200 underline',
+              className: 'transition-colors text-[0.6875rem] text-teal-700 hover:text-teal-800 underline',
               onClick: syncSandboxCount
             }, __alloT('stem.ecosystem.sync_count', 'Sync Count'))
           ),
 
           // ── Pause/Speed controls (shared) ──
-          h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
+          h('div', { className: 'flex items-center gap-3 bg-slate-100 rounded-lg px-3 py-2' },
             h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-teal-700 text-white hover:bg-teal-800 active:scale-[0.97]'
-                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
+                  : 'transition-colors bg-slate-300 text-slate-700 hover:bg-slate-200 active:scale-[0.97]'),
               onClick: function() {
                 var newPaused = !simPaused;
                 playSound('pause');
@@ -13848,7 +13848,7 @@ function EcoPairMeasurement(props) {
               }
             }, simPaused ? '\u25B6 ' + __alloT('stem.ecosystem.resume', 'Resume') : '\u23F8 ' + __alloT('stem.ecosystem.pause', 'Pause')),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[0.6875rem] font-semibold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.speed_label', 'Speed:')),
+              h('span', { className: 'text-[0.6875rem] font-semibold text-slate-700' }, __alloT('stem.ecosystem.speed_label', 'Speed:')),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': __alloT('stem.ecosystem.aria_sandbox_speed', 'Sandbox simulation speed'),
@@ -13867,7 +13867,7 @@ function EcoPairMeasurement(props) {
 
           // ── Event injection (sandbox version) ──
           h('div', { className: 'space-y-1' },
-            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700 dark:text-teal-300' }, '\u26A1 ' + __alloT('stem.ecosystem.inject_events', 'Inject Events')),
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, '\u26A1 ' + __alloT('stem.ecosystem.inject_events', 'Inject Events')),
             h('div', { className: 'flex gap-1 flex-wrap' },
               eventDefs.map(function(ev) {
                 return h('button', { 'aria-label': __alloT('stem.ecosystem.trigger_event', 'Trigger Event'),
@@ -13882,7 +13882,7 @@ function EcoPairMeasurement(props) {
 
           // ── Carrying Capacity slider (sandbox version) ──
           h('div', { className: 'space-y-1' },
-            h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' + onHostInk },
+            h('label', { className: 'text-[0.6875rem] font-semibold text-slate-600 flex justify-between' + onHostInk },
               h('span', null, '\uD83C\uDF31 ' + __alloT('stem.ecosystem.carrying_capacity_k', 'Carrying Capacity (K)')),
               h('span', { className: 'text-amber-800 font-bold', style: onHostStyle }, carryingCapacity)
             ),
@@ -13908,15 +13908,15 @@ function EcoPairMeasurement(props) {
               var predNow = lastPop ? lastPop.pred : 0;
               var vegNow = lastPop && lastPop.vegHealth !== undefined ? Math.round(lastPop.vegHealth * 100) : 50;
               return [
-                h('div', { key: 'sbp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1.5' },
+                h('div', { key: 'sbp', className: 'bg-green-50 rounded p-1.5' },
                   h('div', { className: 'text-[0.6875rem] text-slate-600' }, activeScenario.prey.emoji + ' ' + preySeriesLabel),
                   h('div', { className: 'text-sm font-bold text-green-700' }, preyNow)
                 ),
-                h('div', { key: 'sbd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1.5' },
+                h('div', { key: 'sbd', className: 'bg-red-50 rounded p-1.5' },
                   h('div', { className: 'text-[0.6875rem] text-slate-600' }, activeScenario.predator.emoji + ' ' + predatorSeriesLabel),
                   h('div', { className: 'text-sm font-bold text-red-700' }, predNow)
                 ),
-                h('div', { key: 'sbv', className: 'bg-emerald-50 dark:bg-emerald-900/20 rounded p-1.5' },
+                h('div', { key: 'sbv', className: 'bg-emerald-50 rounded p-1.5' },
                   h('div', { className: 'text-[0.6875rem] text-slate-600' }, activeScenario.producer.emoji + ' ' + activeScenario.producer.label + ' resource'),
                   h('div', { className: 'text-sm font-bold text-emerald-700' }, vegNow + '%')
                 )
@@ -13925,26 +13925,26 @@ function EcoPairMeasurement(props) {
           ),
 
           // ── Instructions text ──
-          h('div', { id: 'eco-sandbox-telemetry', role: 'region', 'aria-labelledby': 'eco-sandbox-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 dark:bg-sky-900/20 dark:border-sky-700 px-3 py-2 space-y-1' },
-            h('strong', { id: 'eco-sandbox-telemetry-title', className: 'text-[0.6875rem] text-sky-800 dark:text-sky-200' }, 'What the counts suggest'),
-            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700 dark:text-slate-200' }, liveTelemetry.narrative),
-            h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, activeScenario.prey.label + ' (prey) ' + liveTelemetry.preyTrend + '; ' + activeScenario.predator.label + ' (predators) ' + liveTelemetry.predTrend + '; ' + activeScenario.producer.label + ' resource index ' + liveTelemetry.veg + '%.')
+          h('div', { id: 'eco-sandbox-telemetry', role: 'region', 'aria-labelledby': 'eco-sandbox-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 px-3 py-2 space-y-1' },
+            h('strong', { id: 'eco-sandbox-telemetry-title', className: 'text-[0.6875rem] text-sky-800' }, 'What the counts suggest'),
+            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.6875rem] text-slate-700' }, liveTelemetry.narrative),
+            h('p', { className: 'text-[0.625rem] text-slate-600' }, activeScenario.prey.label + ' (prey) ' + liveTelemetry.preyTrend + '; ' + activeScenario.predator.label + ' (predators) ' + liveTelemetry.predTrend + '; ' + activeScenario.producer.label + ' resource index ' + liveTelemetry.veg + '%.')
           ),
-          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-300 space-y-1' },
-            h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 ' + __alloT('stem.ecosystem.sandbox_instructions', 'Sandbox Instructions')),
+          h('div', { className: 'bg-slate-50 rounded-lg p-3 text-xs text-slate-600 space-y-1' },
+            h('p', { className: 'font-bold text-slate-700' }, '\uD83D\uDCA1 ' + __alloT('stem.ecosystem.sandbox_instructions', 'Sandbox Instructions')),
             h('p', null, __alloT('stem.ecosystem.select_tool_intro', 'Select a tool above, then click on the canvas to interact:')),
             h('ul', { className: 'list-disc pl-4 space-y-0.5' },
               h('li', null, 'Place ' + activeScenario.prey.singular + '/' + activeScenario.predator.singular + '/' + activeScenario.producer.singular + ': click anywhere to spawn'),
               h('li', null, __alloT('stem.ecosystem.instr_erase', 'Erase: Click near an entity to remove it')),
               h('li', null, __alloT('stem.ecosystem.instr_move', 'Move: Click and drag an entity to reposition it'))
             ),
-            h('p', { className: 'text-[0.6875rem] italic text-slate-600 dark:text-slate-400' }, __alloT('stem.ecosystem.instr_tip', 'Tip: Pause the simulation first for precise placement!'))
+            h('p', { className: 'text-[0.6875rem] italic text-slate-600' }, __alloT('stem.ecosystem.instr_tip', 'Tip: Pause the simulation first for precise placement!'))
           ),
 
           // ── Sandbox experiment suggestions ──
-          h('div', { className: 'bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-200 dark:border-teal-700 space-y-1' },
-            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700 dark:text-teal-300' }, '\uD83E\uDD14 ' + __alloT('stem.ecosystem.experiment_ideas', 'Experiment Ideas')),
-            h('ul', { className: 'list-disc pl-4 text-[0.6875rem] text-slate-600 dark:text-slate-200 space-y-0.5' },
+          h('div', { className: 'bg-teal-50 rounded-lg p-3 border border-teal-200 space-y-1' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, '\uD83E\uDD14 ' + __alloT('stem.ecosystem.experiment_ideas', 'Experiment Ideas')),
+            h('ul', { className: 'list-disc pl-4 text-[0.6875rem] text-slate-600 space-y-0.5' },
               h('li', null, 'Remove all ' + activeScenario.predator.plural + ' and watch ' + activeScenario.prey.plural + ' plus the resource index'),
               h('li', null, 'Create a dense patch of ' + activeScenario.producer.plural + ' and inspect hunting encounters'),
               h('li', null, 'Add many ' + activeScenario.predator.plural + ', then trigger ' + activeScenario.events.foodBoom.label),
@@ -13961,10 +13961,10 @@ function EcoPairMeasurement(props) {
               animation: 'none'
             }
           },
-            h('span', { className: 'text-teal-700 dark:text-teal-300' }, lastObservation)
+            h('span', { className: 'text-teal-700' }, lastObservation)
           ),
 
-          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[0.6875rem] text-slate-700', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border, color: '#1e293b' } },
             h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
             h('span', null, livePhaseExplain)
           ),
@@ -14553,7 +14553,7 @@ function EcoPairMeasurement(props) {
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🌲'),
                   h('div', null,
-                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, __alloT('stem.ecosystem.cons_manager_maine', 'Conservation Manager: Maine')),
+                    h('h3', { style: { margin: 0, color: isContrast ? T_GREEN_HI : '#166534', fontSize: 22 } }, __alloT('stem.ecosystem.cons_manager_maine', 'Conservation Manager: Maine')),
                     h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, __alloT('stem.ecosystem.steward_intro', 'Steward six species across 10 years of fieldwork.'))
                   )
                 ),
@@ -14907,9 +14907,9 @@ function EcoPairMeasurement(props) {
             if (announceToSR) announceToSR('Selected parameter-map cell applied to Explore for ' + activeScenario.name + ': ' + inquiryPrey + ' ' + activeScenario.prey.plural + ' as prey, ' + inquiryPred + ' ' + activeScenario.predator.plural + ' as predators, carrying capacity ' + inquiryCapacity + '.');
           }
           return h('div', { className: 'space-y-3' },
-            h('div', { className: 'p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm' },
-              h('h4', { className: 'text-sm font-black text-slate-800 dark:text-slate-200 mb-1' }, '❔ ' + activeScenario.name + ' predator-prey parameter lab'),
-              h('p', { className: 'text-[0.75rem] text-slate-700 dark:text-slate-300 mb-3 leading-relaxed' },
+            h('div', { className: 'p-4 rounded-xl bg-white border border-slate-200 shadow-sm' },
+              h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '❔ ' + activeScenario.name + ' predator-prey parameter lab'),
+              h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
                 'This map displays evidence from 121 completed runs of the same logistic predator-prey model used in Explore. Prey represent ' + activeScenario.prey.label + ' and predators represent ' + activeScenario.predator.label + '. Inspect the visible outcomes, select cells, and explain the pattern you find. Open a setup in Explore to begin a separate pre-run prediction cycle.'),
               // Selected-cell outcome
               h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', 'data-ecosystem-post-evidence': 'selected-cell', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
@@ -14924,17 +14924,17 @@ function EcoPairMeasurement(props) {
                   { key: 'resScarcity', label: __alloT('stem.ecosystem.iq_slider_res_scarcity', 'Resource scarcity'), val: iqScarcityPercent, mapped: 'K = ' + inquiryCapacity }
                 ].map(function(s) {
                   return h('div', { key: s.key },
-                    h('label', { htmlFor: 'eq-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-300 mb-1' },
-                      s.label + ': ', h('span', { className: 'font-mono text-emerald-700 dark:text-emerald-400' }, s.mapped + ' (' + s.val + '%)')),
+                    h('label', { htmlFor: 'eq-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
+                      s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.mapped + ' (' + s.val + '%)')),
                     h('input', { id: 'eq-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
                       onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
                       className: 'w-full', 'aria-label': s.label }));
                 })
               ),
               h('figure', { className: 'mb-3 space-y-2', 'aria-labelledby': 'eco-sweep-map-title' },
-                h('figcaption', { id: 'eco-sweep-map-title', className: 'text-[0.75rem] font-black text-slate-800 dark:text-slate-100' }, 'Outcome map: initial prey × initial predators \u2014 ' + activeScenario.prey.label + ' × ' + activeScenario.predator.label),
-                h('p', { className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Each cell is one 10-time-unit run. Fixed for this map: K=' + inquiryCapacity + ', r=' + preyBirth.toFixed(3) + ', a=' + preyDeath.toFixed(3) + ', b=' + predBirth.toFixed(3) + ', d=' + predDeath.toFixed(3) + '.'),
-                h('div', { className: 'flex justify-between text-[0.625rem] font-semibold text-slate-600 dark:text-slate-300' },
+                h('figcaption', { id: 'eco-sweep-map-title', className: 'text-[0.75rem] font-black text-slate-800' }, 'Outcome map: initial prey × initial predators \u2014 ' + activeScenario.prey.label + ' × ' + activeScenario.predator.label),
+                h('p', { className: 'text-[0.625rem] text-slate-600' }, 'Each cell is one 10-time-unit run. Fixed for this map: K=' + inquiryCapacity + ', r=' + preyBirth.toFixed(3) + ', a=' + preyDeath.toFixed(3) + ', b=' + predBirth.toFixed(3) + ', d=' + predDeath.toFixed(3) + '.'),
+                h('div', { className: 'flex justify-between text-[0.625rem] font-semibold text-slate-600' },
                   h('span', null, activeScenario.predator.label + ' (predators): 80'),
                   h('span', null, 'Select any cell')
                 ),
@@ -14942,84 +14942,84 @@ function EcoPairMeasurement(props) {
                   sweepCells.map(function(cell) {
                     var meta = OUTCOME_META[cell.outcome] || OUTCOME_META.numerical;
                     var selected = cell.x === selectedGridX && cell.y === selectedGridY;
-                    return h('button', { key: cell.x + '-' + cell.y, type: 'button', 'aria-pressed': selected, 'aria-label': cell.prey + ' initial prey, ' + cell.pred + ' initial predators, carrying capacity ' + inquiryCapacity + ': ' + cell.summary.label, onClick: function() { setIQ({ preyLife: cell.x * 10, predBirth: cell.y * 10 }); }, className: 'min-h-6 rounded-sm border text-[0.5rem] font-black leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ' + meta.cellClass + (selected ? ' ring-2 ring-offset-1 ring-slate-900 dark:ring-white border-white' : ' border-transparent') }, meta.symbol);
+                    return h('button', { key: cell.x + '-' + cell.y, type: 'button', 'aria-pressed': selected, 'aria-label': cell.prey + ' initial prey, ' + cell.pred + ' initial predators, carrying capacity ' + inquiryCapacity + ': ' + cell.summary.label, onClick: function() { setIQ({ preyLife: cell.x * 10, predBirth: cell.y * 10 }); }, className: 'min-h-6 rounded-sm border text-[0.5rem] font-black leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ' + meta.cellClass + (selected ? ' ring-2 ring-offset-1 ring-slate-900 border-white' : ' border-transparent') }, meta.symbol);
                   })
                 ),
-                h('div', { className: 'flex justify-between text-[0.625rem] font-semibold text-slate-600 dark:text-slate-300' },
+                h('div', { className: 'flex justify-between text-[0.625rem] font-semibold text-slate-600' },
                   h('span', null, activeScenario.predator.label + ': 0 / ' + activeScenario.prey.label + ': 5'),
                   h('span', null, activeScenario.prey.label + ' (prey): 150')
                 ),
-                h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[0.625rem] text-slate-700 dark:text-slate-200', 'aria-label': __alloT('stem.ecosystem.a11y_outcome_map_legend', 'Outcome map legend') },
+                h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[0.625rem] text-slate-700', 'aria-label': __alloT('stem.ecosystem.a11y_outcome_map_legend', 'Outcome map legend') },
                   ['coexist', 'oscillation', 'prey_collapse', 'predator_collapse', 'both_low', 'numerical'].map(function(key) {
                     var meta = OUTCOME_META[key];
                     return h('span', { key: key, className: 'inline-flex items-center gap-1' }, h('span', { className: 'inline-flex min-w-5 h-5 items-center justify-center rounded-sm text-[0.5rem] font-black ' + meta.cellClass, 'aria-hidden': 'true' }, meta.symbol), meta.label.replace(meta.symbol + ' ', ''));
                   })
                 ),
-                h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.625rem] text-slate-600 dark:text-slate-300' }, 'Map summary: ' + sweepCounts.coexist + ' coexistence, ' + sweepCounts.oscillation + ' oscillation, ' + sweepCounts.prey_collapse + ' prey collapse, ' + sweepCounts.predator_collapse + ' predator collapse, ' + sweepCounts.both_low + ' both near zero, and ' + sweepCounts.numerical + ' numerical warning cells.'),
+                h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[0.625rem] text-slate-600' }, 'Map summary: ' + sweepCounts.coexist + ' coexistence, ' + sweepCounts.oscillation + ' oscillation, ' + sweepCounts.prey_collapse + ' prey collapse, ' + sweepCounts.predator_collapse + ' predator collapse, ' + sweepCounts.both_low + ' both near zero, and ' + sweepCounts.numerical + ' numerical warning cells.'),
                 h('button', { type: 'button', onClick: applyInquirySelection, className: 'w-full rounded-lg bg-cyan-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500' }, 'Open selected setup in Explore \u2014 ' + activeScenario.name)
               ),
               // Log + reset
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[0.6875rem] font-bold text-slate-700 dark:text-slate-300 border border-slate-500 dark:border-slate-500 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
+                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-500 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
                 h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[0.6875rem] font-semibold text-slate-600 dark:text-slate-400 border border-slate-500 dark:border-slate-500 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
+                  className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.ecosystem.observations_logged_suffix', ' observations logged'))
               ),
               // Log table
               (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
-                h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700 dark:text-slate-300' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100 dark:bg-slate-700' },
+                h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' },
                     ['Initial ' + activeScenario.predator.label + ' (predators)', 'Initial ' + activeScenario.prey.label + ' (prey)', __alloT('stem.ecosystem.th_res_scarcity', 'Carrying capacity'), __alloT('stem.ecosystem.th_outcome', 'Model outcome')].map(function(c, i) {
-                      return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 dark:border-slate-500 text-left' }, c);
+                      return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
                     }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     var rowBg = o.outcomeKey === 'coexist' ? 'rgba(16,185,129,0.08)' : (o.outcomeKey === 'oscillation' ? 'rgba(6,182,212,0.08)' : 'rgba(244,63,94,0.08)');
                     return h('tr', { key: 'lr' + idx, style: { background: rowBg } },
-                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-500 font-mono' }, o.pb),
-                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-500 font-mono' }, o.pl),
-                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-500 font-mono' }, o.rs),
-                      h('td', { className: 'px-2 py-1 border border-slate-200 dark:border-slate-500' }, o.out));
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.pb),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.pl),
+                      h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.rs),
+                      h('td', { className: 'px-2 py-1 border border-slate-200' }, o.out));
                   })))
               ),
               // Post-evidence pattern note (legacy hypothesis key retained for persistence)
               h('div', { className: 'mb-3', 'data-ecosystem-post-evidence-explanation': 'true' },
-                h('label', { htmlFor: 'eq-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 dark:text-slate-300 mb-1' },
+                h('label', { htmlFor: 'eq-hypo', className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
                   'Your evidence-based pattern explanation (not a prediction):'),
                 h('textarea', { id: 'eq-hypo', value: iq.hypothesis || '',
                   onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                   placeholder: __alloT('stem.ecosystem.where_does_the_prey_collapse_boundary_appear','Where does the prey-collapse boundary appear in the visible map? What evidence suggests how lower carrying capacity changes it?'),
-                  className: 'w-full text-[0.75rem] border border-slate-500 dark:border-slate-500 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
               ),
               // Opt-in
               h('div', { className: 'mb-3' },
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900 text-[0.6875rem] font-bold text-amber-800 dark:text-amber-300 border border-amber-700 dark:border-amber-700 active:scale-[0.97]' },
+                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-700 active:scale-[0.97]' },
                   '🤔 ' + __alloT('stem.ecosystem.iq_stuck_btn', 'I\'m stuck — show me questions to think about (no answers)')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[0.6875rem] text-slate-700 dark:text-slate-300 leading-relaxed' },
-                  h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, __alloT('stem.ecosystem.open_questions', 'Open questions — investigate by manipulating:')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
+                  h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.ecosystem.open_questions', 'Open questions — investigate by manipulating:')),
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
                     h('li', null, __alloT('stem.ecosystem.iq_q1', 'Move across one map row from fewer to more initial prey. Where does the outcome first change, and why?')),
                     h('li', null, 'Hold initial predators constant and increase resource scarcity. How does the observed boundary move, and what evidence explains that change?'),
                     h('li', null, __alloT('stem.ecosystem.iq_q3', 'Find two very different cells that both coexist. What trade-off between initial prey and predators do they show?')),
                     h('li', null, __alloT('stem.ecosystem.iq_q4', 'Log cells on both sides of a boundary. Is there one universal threshold, or do the two starting populations interact?')),
                     h('li', null, __alloT('stem.ecosystem.iq_q5', 'The map holds interaction rates fixed. Which additional rate would you sweep next, and what pattern do you expect?'))),
-                  h('div', { className: 'text-[0.625rem] italic text-amber-700 dark:text-amber-400 mt-2' }, 'These prompts add no new model results; use the outcomes already visible in the map as evidence.'))
+                  h('div', { className: 'text-[0.625rem] italic text-amber-700 mt-2' }, 'These prompts add no new model results; use the outcomes already visible in the map as evidence.'))
               ),
               // Self-mark
-              h('div', { className: 'p-3 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700' },
+              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('input', { type: 'checkbox', id: 'eq-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  h('label', { htmlFor: 'eq-und', className: 'text-[0.75rem] font-bold text-emerald-800 dark:text-emerald-300 cursor-pointer' },
+                  h('label', { htmlFor: 'eq-und', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
                     __alloT('stem.ecosystem.iq_understand_label', 'I think I understand the trade-offs — let me explain them in my own words'))),
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
                   'aria-label': __alloT('stem.ecosystem.explanation_input', 'Ecosystem trade-off explanation'),
                   placeholder: __alloT('stem.ecosystem.iq_explain_placeholder', 'Explain how initial prey, initial predators, and carrying capacity interact. Cite at least two cells or logged observations as evidence.'),
-                  className: 'w-full text-[0.75rem] border border-emerald-600 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
-                iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700 dark:text-emerald-400' },
+                  className: 'w-full text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 4 }),
+                iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
                   '✓ ' + __alloT('stem.ecosystem.iq_saved_note', 'Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
               ),
-              h('div', { className: 'mt-3 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[0.625rem] italic text-slate-600 dark:text-slate-400' },
+              h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] italic text-slate-600' },
                 'Model limit: every cell runs the same deterministic logistic predator-prey equations for 10 modeled time units. ' + activeScenario.modelBridge + ' Categories use a quasi-extinction threshold of one population-index unit and trajectory-shape rules; they are teaching summaries, not measured probabilities or ecological forecasts. The map varies starting populations while holding r, a, b, d, and K fixed.')
             )
           );
@@ -15033,11 +15033,11 @@ function EcoPairMeasurement(props) {
               padding: '10px 14px', borderRadius: 12,
               background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)',
               borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
-              color: '#e9d5ff', fontSize: 13, lineHeight: 1.55
+              color: isContrast ? '#e9d5ff' : '#581c87', fontSize: 13, lineHeight: 1.55
             }
           },
-            h('summary', { style: { fontWeight: 700, color: '#a855f7', cursor: 'pointer', fontSize: 14 } }, '📜 ' + __alloT('stem.ecosystem.quiz_covers_title', 'What this quiz covers')),
-            h('div', { style: { marginTop: 8, color: '#f3e8ff' } },
+            h('summary', { style: { fontWeight: 700, color: isContrast ? '#a855f7' : '#6b21a8', cursor: 'pointer', fontSize: 14 } }, '📜 ' + __alloT('stem.ecosystem.quiz_covers_title', 'What this quiz covers')),
+            h('div', { style: { marginTop: 8, color: isContrast ? '#f3e8ff' : '#581c87' } },
               h('div', null, __alloT('stem.ecosystem.quiz_covers_intro', '6 multiple-choice questions on foundational ecology concepts:')),
               h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
                 h('li', null, __alloT('stem.ecosystem.quiz_topic_1', 'Predator response after prey availability increases')),
@@ -15050,12 +15050,12 @@ function EcoPairMeasurement(props) {
               h('div', { style: { marginTop: 8 } }, __alloT('stem.ecosystem.quiz_covers_footer', 'Each question links back to behavior you can produce in Explore or Sandbox. If a concept feels abstract, swap to Sandbox and rebuild the scenario.'))
             )
           ),
-          h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-4 space-y-3' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
             h('div', { className: 'flex justify-between items-center' },
-              h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.question_prefix', 'Question ') + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + __alloT('stem.ecosystem.of_mid', ' of ') + QUIZ_QUESTIONS.length),
+              h('span', { className: 'text-xs font-bold text-slate-700' }, __alloT('stem.ecosystem.question_prefix', 'Question ') + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + __alloT('stem.ecosystem.of_mid', ' of ') + QUIZ_QUESTIONS.length),
               h('span', { className: 'text-xs text-emerald-700 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
-            h('p', { className: 'text-sm font-semibold text-slate-800 dark:text-slate-100' }, currentQ.q),
+            h('p', { className: 'text-sm font-semibold text-slate-800' }, currentQ.q),
             callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_question', 'Read question'),
               className: 'transition-colors text-[0.6875rem] text-slate-600 hover:text-slate-700',
               onClick: function() { speakText(currentQ.q); }
@@ -15065,13 +15065,13 @@ function EcoPairMeasurement(props) {
                 var isSelected = quizAnswer === idx;
                 var isCorrectChoice = idx === currentQ.answer;
                 var showResult = quizAnswer !== -1;
-                var bgClass = 'transition-colors border-slate-500 dark:border-slate-500 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.97]';
+                var bgClass = 'transition-colors border-slate-500 hover:border-emerald-400 hover:bg-emerald-50 active:scale-[0.97]';
                 if (showResult && isSelected && isCorrectChoice) {
-                  bgClass = 'border-green-500 bg-green-50 dark:bg-green-900/30';
+                  bgClass = 'border-green-500 bg-green-50';
                 } else if (showResult && isSelected && !isCorrectChoice) {
-                  bgClass = 'border-red-500 bg-red-50 dark:bg-red-900/30';
+                  bgClass = 'border-red-500 bg-red-50';
                 } else if (showResult && isCorrectChoice) {
-                  bgClass = 'border-green-400 bg-green-50/50 dark:bg-green-900/20';
+                  bgClass = 'border-green-400 bg-green-50/50';
                 }
                 return h('button', { 'aria-label': __alloT('stem.ecosystem.answer_prefix', 'Answer ') + String.fromCharCode(65 + idx) + ': ' + choice,
                   key: idx,
@@ -15127,9 +15127,9 @@ function EcoPairMeasurement(props) {
             )
           ),
           // Quiz progress
-          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl p-3' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200 mb-1' }, __alloT('stem.ecosystem.quiz_progress', 'Quiz Progress')),
-            h('div', { className: 'w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden' },
+          h('div', { className: 'bg-slate-50 rounded-xl p-3' },
+            h('p', { className: 'text-xs font-bold text-slate-700 mb-1' }, __alloT('stem.ecosystem.quiz_progress', 'Quiz Progress')),
+            h('div', { className: 'w-full h-2 bg-slate-200 rounded-full overflow-hidden' },
               h('div', {
                 className: 'h-full bg-emerald-500 rounded-full transition-all',
                 style: { width: (quizTotal > 0 ? Math.round((quizCorrect / quizTotal) * 100) : 0) + '%' }
@@ -15145,10 +15145,10 @@ function EcoPairMeasurement(props) {
 
         // ═══ BADGES TAB (14 badges) ═══
         tab === 'badges' && h('div', { className: 'space-y-2' },
-          h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' + onHostInk },
+          h('p', { className: 'text-xs font-bold text-slate-700' + onHostInk },
             '\uD83C\uDFC5 ' + __alloT('stem.ecosystem.badges_earned', 'Badges Earned: ') + badgeCount + ' / ' + BADGES.length
           ),
-          h('div', { className: 'w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2' },
+          h('div', { className: 'w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2' },
             h('div', {
               className: 'h-full bg-emerald-500 rounded-full transition-all',
               style: { width: Math.round((badgeCount / BADGES.length) * 100) + '%' }
@@ -15161,14 +15161,14 @@ function EcoPairMeasurement(props) {
                 key: b.id,
                 className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' +
                   (earned
-                    ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800')
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : 'border-slate-200 bg-slate-50')
               },
                 h('span', { className: 'text-lg', style: { filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 h('div', null,
-                  h('p', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300') }, b.label),
+                  h('p', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-emerald-700' : 'text-slate-700') }, b.label),
                   h('p', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.ecosystem.' + (b.id) + '_desc', b.desc)),
-                  earned && h('span', { className: 'text-[0.6875rem] text-emerald-700 dark:text-emerald-400 font-bold' }, '\u2714 ' + __alloT('stem.ecosystem.earned', 'EARNED'))
+                  earned && h('span', { className: 'text-[0.6875rem] text-emerald-700 font-bold' }, '\u2714 ' + __alloT('stem.ecosystem.earned', 'EARNED'))
                 )
               );
             })

@@ -8,7 +8,7 @@ let FS, tool, root, host, latest, frameCallback, wallTime, errors, autopilotWrit
 const hooks = () => window.__testHooks.flightSim;
 const canvas = () => host.querySelector('canvas[role="application"]');
 const assistance = () => host.querySelector('[data-flight-assistance]');
-const brakes = () => host.querySelector('[aria-label="Set wheel brakes"], [aria-label="Release wheel brakes"]');
+const brakes = () => host.querySelector('[data-flight-brakes]');
 const live = () => document.getElementById('skyschool-a11y-live').textContent;
 const active = () => !!(latest.autopilot?.hdg || latest.autopilot?.alt || latest.autopilot?.spd);
 const manualLabel = 'Autopilot disengaged by manual input.';

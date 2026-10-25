@@ -463,6 +463,10 @@ window.StemLab = window.StemLab || {
           // ═══ KEYBOARD SHORTCUTS ═══
           React.useEffect(function() {
             var handler = function(e) {
+              // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+              var nlRoot = document.querySelector('[data-numberline-root]');
+              if (!nlRoot || !e.target || !nlRoot.contains(e.target)) return;
+              if (e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
               var key = e.key;
               if (key === '1') { sfxClick(); upd({ tab: 'explore' }); }
@@ -2135,7 +2139,7 @@ window.StemLab = window.StemLab || {
             if (nextTab) { nextTab.focus(); nextTab.click(); }
           };
 
-          return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+          return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-numberline-root': 'true' },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back') },

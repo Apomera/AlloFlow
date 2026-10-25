@@ -11,7 +11,7 @@ beforeEach(() => {
   resetStemLab();
   window.__RR_TEST_EXPORTS__ = {};
   window.__testHooks = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  tool = loadTool(process.env.SKYSCHOOL_DISCLOSURE_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
 });
 
 afterEach(async () => {
@@ -151,7 +151,7 @@ describe('Flight notices share one transient slot', () => {
   });
 });
 
-async function mount(seed = {}) {
+async function mount(seed = {}, launch = true) {
   vi.useFakeTimers();
   widthDescriptor = Object.getOwnPropertyDescriptor(window, 'innerWidth');
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
@@ -188,7 +188,7 @@ async function mount(seed = {}) {
     }));
   }
   await act(async () => root.render(React.createElement(App)));
-  await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
+  if (launch) await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
 }
 async function paintFrame(state = {}, controls = {}, viewport = {}) {
   Object.assign(hooks().flightRef.current, state);
@@ -277,8 +277,13 @@ describe('Cockpit progressive disclosure', () => {
   });
 
   it('keeps the challenge checklist folded during flight and open in its debrief', async () => {
-    await mount();
-    await act(async () => hooks().startFlightChallenge('first_flight'));
+    // Departures belong to menu/lesson/review controls; a running free flight
+    // deliberately rejects a later retained launch action.
+    await mount({}, false);
+    expect(latest.view).toBe('menu');
+    await act(async () => hooks().startFlightChallenge('first_climb'));
+    expect(latest.view).toBe('flying');
+    expect(latest.selectedChallenge).toBe('first_climb');
     const flightChallenge = host.querySelector('section[aria-label="Flight challenge"]');
     expect(flightChallenge).toBeTruthy();
     const checklist = [...flightChallenge.querySelectorAll('details')].find(element => element.querySelector('summary')?.textContent === 'Objective checklist');

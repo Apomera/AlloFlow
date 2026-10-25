@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -261,7 +262,7 @@ describe('Career Fit contribution evidence', () => {
   });
 
   it('restores all original CareerStories profiles, prose, ranking, result cards and saved fields by removing only the additive hook/helper/call', () => {
-    const source = readFileSync(resolve(SRC), 'utf8').replace(/\r\n/g, '\n');
+    const source = stripWeldlabWcagFixes(readFileSync(resolve(SRC), 'utf8'));
     const start = source.indexOf('function CareerStories('), end = source.indexOf('      // overlay so the toast', start);
     let region = source.slice(start, end);
     // Reverse only the later shared-age additions before the original Fit proof.

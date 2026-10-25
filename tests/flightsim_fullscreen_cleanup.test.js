@@ -8,7 +8,7 @@ let host, root, latest, patchSaved, previousHelper, previousOverflow, previousOv
 let fullscreenDescriptors, scrollDescriptors;
 const deck = () => host.querySelector('#skyschool-flight-container');
 const button = text => [...host.querySelectorAll('button')].find(node => node.textContent.trim() === text);
-const fullButton = () => host.querySelector('[aria-label="Toggle fullscreen flight view"]');
+const fullButton = () => host.querySelector('[data-flight-fullscreen], [aria-label="Toggle fullscreen flight view"]');
 
 function loadSharedFullscreen() {
   const source = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
@@ -58,7 +58,7 @@ afterEach(async () => {
 });
 
 async function mount(guided = false) {
-  const tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  const tool = loadTool(process.env.SKYSCHOOL_FULLSCREEN_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   host = document.createElement('div'); document.body.appendChild(host); root = ReactDOMClient.createRoot(host);
   function App() {
     const [data, setData] = React.useState({ flightSim: { view: guided ? 'stallHunt' : 'menu',
@@ -113,7 +113,7 @@ describe('flight fullscreen cleanup', () => {
     const debrief = host.querySelector('#skyschool-debrief');
     expect(debrief).toBeTruthy();
     expect(debrief.style.position).not.toBe('fixed');
-    expect(debrief.style.minHeight).toBe('400px');
+    expect(debrief.style.minHeight).toBe('min(400px, calc(100vh - 80px))');
     expect(debrief.style.overflow).toBe('auto');
     expectBodyRestored(); expect(window.scrollTo).toHaveBeenLastCalledWith(7, 123);
   });
@@ -133,10 +133,13 @@ describe('flight fullscreen cleanup', () => {
       else { await act(async () => root.unmount()); root = null; }
       if (leave === 'tool unmount') expect(stage.isConnected).toBe(false);
       else {
-        const menu = host.querySelector('#skyschool-menu');
-        expect(menu).toBeTruthy();
-        expect(menu.style.position).toBe('relative');
-        expect(menu.style.overflow).toBe('auto');
+        // Replacing an active flight with the menu recovers its checkpoint
+        // into a debrief. That replacement must release the fullscreen lock.
+        const debrief = host.querySelector('#skyschool-debrief');
+        expect(latest.view).toBe('debrief');
+        expect(debrief).toBeTruthy();
+        expect(debrief.style.position).not.toBe('fixed');
+        expect(debrief.style.overflow).toBe('auto');
       }
       expect(stage.__alloFsOn).toBe(false);
       expect(stage.hasAttribute('data-allo-fullscreen-active')).toBe(false);

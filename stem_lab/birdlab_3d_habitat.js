@@ -176,6 +176,130 @@
     soilRelief.putImageData(reliefPixels, 0, 0);
     var groundReliefMap = texture(reliefCanvas, 30); groundReliefMap.encoding = THREE.LinearEncoding;
     groundReliefMap.name = 'birdlab-ground-soil-moss-height';
+    // Close-range litter: the 5 m soil tile paints ~1 px per cm, which smears
+    // under a songbird's feet. A 0.8 m tile of crisp leaf fragments, needles,
+    // seed husks and crumbs fades in only where the screen resolves it. It has
+    // its own seed so no tree, stone or plant in the clearing moves.
+    var litterSize = detailed ? 1024 : 512, litterScale = litterSize / 512, litterSeed = 77291;
+    function litterRandom() { litterSeed = (Math.imul(litterSeed, 1664525) + 1013904223) >>> 0; return litterSeed / 4294967296; }
+    var litterCanvas = canvas(litterSize), litterCtx = litterCanvas.getContext('2d');
+    var litterHeightCanvas = canvas(litterSize), litterHeightCtx = litterHeightCanvas.getContext('2d');
+    litterHeightCtx.fillStyle = '#404040'; litterHeightCtx.fillRect(0, 0, litterSize, litterSize);
+    litterCtx.scale(litterScale, litterScale); litterHeightCtx.scale(litterScale, litterScale);
+    function wrapped(x, y, reach, draw) {
+      // Repeat an item across the tile edge so the 0.8 m repeat stays seamless.
+      for (var ox = -1; ox <= 1; ox++) for (var oy = -1; oy <= 1; oy++) {
+        var px = x + ox * 512, py = y + oy * 512;
+        if (px + reach < 0 || px - reach > 512 || py + reach < 0 || py - reach > 512) continue;
+        draw(px, py);
+      }
+    }
+    function litterLeaf(surface, length, width, curl) {
+      surface.beginPath(); surface.moveTo(-length, 0);
+      surface.bezierCurveTo(-length * 0.25, -width * (1.1 + curl), length * 0.55, -width * 0.9, length, 0);
+      surface.bezierCurveTo(length * 0.45, width * (0.95 - curl), -length * 0.4, width * 1.05, -length, 0);
+    }
+    // Soil crumbs and grit carry the finest relief between the larger pieces.
+    for (var crumb = 0; crumb < 5200; crumb++) {
+      var cx = litterRandom() * 512, cy = litterRandom() * 512, cr = 0.35 + Math.pow(litterRandom(), 3) * 1.6;
+      var dark = litterRandom() < 0.55, crumbTone = dark ? 46 + litterRandom() * 30 : 120 + litterRandom() * 60;
+      litterCtx.fillStyle = 'rgba(' + Math.round(crumbTone * 1.05) + ',' + Math.round(crumbTone * 0.93) + ',' + Math.round(crumbTone * 0.74) + ',' + (dark ? .55 : .45) + ')';
+      litterCtx.beginPath(); litterCtx.arc(cx, cy, cr, 0, Math.PI * 2); litterCtx.fill();
+      litterHeightCtx.fillStyle = dark ? 'rgba(40,40,40,.5)' : 'rgba(110,110,110,.7)';
+      litterHeightCtx.beginPath(); litterHeightCtx.arc(cx, cy, cr, 0, Math.PI * 2); litterHeightCtx.fill();
+    }
+    // Small pebbles: a lit crown, a darker skirt and a raised dome.
+    for (var pebble = 0; pebble < 70; pebble++) {
+      (function (px0, py0, pr, tone, squash, turn) {
+        wrapped(px0, py0, pr * 2, function (px, py) {
+          litterCtx.save(); litterCtx.translate(px, py); litterCtx.rotate(turn); litterCtx.scale(1, squash);
+          var pebbleFill = litterCtx.createRadialGradient(-pr * 0.3, -pr * 0.35, pr * 0.1, 0, 0, pr);
+          pebbleFill.addColorStop(0, 'rgba(' + (tone + 50) + ',' + (tone + 46) + ',' + (tone + 36) + ',.95)');
+          pebbleFill.addColorStop(1, 'rgba(' + (tone - 20) + ',' + (tone - 24) + ',' + (tone - 30) + ',.95)');
+          litterCtx.fillStyle = pebbleFill; litterCtx.beginPath(); litterCtx.arc(0, 0, pr, 0, Math.PI * 2); litterCtx.fill();
+          litterCtx.restore();
+          litterHeightCtx.save(); litterHeightCtx.translate(px, py); litterHeightCtx.rotate(turn); litterHeightCtx.scale(1, squash);
+          var dome = litterHeightCtx.createRadialGradient(0, 0, 0, 0, 0, pr);
+          dome.addColorStop(0, '#f0f0f0'); dome.addColorStop(0.7, '#b0b0b0'); dome.addColorStop(1, 'rgba(64,64,64,0)');
+          litterHeightCtx.fillStyle = dome; litterHeightCtx.beginPath(); litterHeightCtx.arc(0, 0, pr, 0, Math.PI * 2); litterHeightCtx.fill();
+          litterHeightCtx.restore();
+        });
+      })(litterRandom() * 512, litterRandom() * 512, 1.6 + litterRandom() * 3.4, Math.round(100 + litterRandom() * 60), 0.6 + litterRandom() * 0.35, litterRandom() * Math.PI);
+    }
+    // Pine needles and fine twigs: thin dark lines that cross the leaves.
+    function needlesAndTwigs(count, twigs) {
+      for (var item = 0; item < count; item++) {
+        (function (nx, ny, turn, length, bend, tone, width) {
+          wrapped(nx, ny, length + 2, function (px, py) {
+            var ex = px + Math.cos(turn) * length, ey = py + Math.sin(turn) * length;
+            var mx = (px + ex) / 2 - Math.sin(turn) * bend, my = (py + ey) / 2 + Math.cos(turn) * bend;
+            litterCtx.strokeStyle = 'rgba(' + tone + ',' + Math.round(tone * 0.8) + ',' + Math.round(tone * 0.55) + ',.92)'; litterCtx.lineWidth = width; litterCtx.lineCap = 'round';
+            litterCtx.beginPath(); litterCtx.moveTo(px, py); litterCtx.quadraticCurveTo(mx, my, ex, ey); litterCtx.stroke();
+            if (twigs) {
+              // A pale upper edge reads as a round stem in raking light.
+              litterCtx.strokeStyle = 'rgba(178,152,118,.42)'; litterCtx.lineWidth = width * 0.35;
+              litterCtx.beginPath(); litterCtx.moveTo(px, py - width * 0.25); litterCtx.quadraticCurveTo(mx, my - width * 0.25, ex, ey - width * 0.25); litterCtx.stroke();
+            }
+            litterHeightCtx.strokeStyle = twigs ? '#d8d8d8' : '#a8a8a8'; litterHeightCtx.lineWidth = width; litterHeightCtx.lineCap = 'round';
+            litterHeightCtx.beginPath(); litterHeightCtx.moveTo(px, py); litterHeightCtx.quadraticCurveTo(mx, my, ex, ey); litterHeightCtx.stroke();
+          });
+        })(litterRandom() * 512, litterRandom() * 512, litterRandom() * Math.PI * 2,
+          twigs ? 18 + litterRandom() * 60 : 14 + litterRandom() * 26, (litterRandom() - 0.5) * (twigs ? 10 : 4),
+          Math.round(twigs ? 70 + litterRandom() * 40 : 112 + litterRandom() * 60), twigs ? 1.6 + litterRandom() * 2.2 : 0.7 + litterRandom() * 0.5);
+      }
+    }
+    // Fallen leaves in three generations: dark decaying, russet, and fresh tan.
+    var leafTones = [[88, 70, 52], [118, 88, 60], [142, 110, 76], [164, 138, 102], [118, 100, 70], [94, 86, 62]];
+    for (var fallen = 0; fallen < 230; fallen++) {
+      (function (fx, fy, turn, length, ratio, curl, toneIndex, broken) {
+        var width = length * ratio, leafTone = leafTones[toneIndex], vein = 'rgba(' + Math.round(leafTone[0] * 0.62) + ',' + Math.round(leafTone[1] * 0.6) + ',' + Math.round(leafTone[2] * 0.58) + ',.75)';
+        wrapped(fx, fy, length + 2, function (px, py) {
+          litterCtx.save(); litterCtx.translate(px, py); litterCtx.rotate(turn);
+          // Soft contact shadow sits under the leaf's lifted downwind edge.
+          litterCtx.fillStyle = 'rgba(28,20,12,.30)'; litterCtx.save(); litterCtx.translate(1.2, 1.6); litterLeaf(litterCtx, length, width, curl); litterCtx.fill(); litterCtx.restore();
+          var blade = litterCtx.createLinearGradient(0, -width, 0, width);
+          blade.addColorStop(0, 'rgba(' + Math.round(leafTone[0] * 1.14) + ',' + Math.round(leafTone[1] * 1.12) + ',' + Math.round(leafTone[2] * 1.1) + ',.97)');
+          blade.addColorStop(1, 'rgba(' + Math.round(leafTone[0] * 0.82) + ',' + Math.round(leafTone[1] * 0.8) + ',' + Math.round(leafTone[2] * 0.8) + ',.97)');
+          litterCtx.fillStyle = blade; litterLeaf(litterCtx, length, width, curl); litterCtx.fill();
+          if (broken) { litterCtx.globalCompositeOperation = 'destination-out'; litterCtx.beginPath(); litterCtx.arc(length * 0.55, width * 0.4, width * 0.75, 0, Math.PI * 2); litterCtx.fill(); litterCtx.globalCompositeOperation = 'source-over'; }
+          litterCtx.strokeStyle = vein; litterCtx.lineWidth = 0.7;
+          litterCtx.beginPath(); litterCtx.moveTo(-length * 1.12, 0.3); litterCtx.lineTo(length * 0.9, 0); litterCtx.stroke();
+          litterCtx.lineWidth = 0.4;
+          for (var rib = 1; rib < 6; rib++) {
+            var ribX = -length * 0.75 + rib * length * 0.3;
+            litterCtx.beginPath(); litterCtx.moveTo(ribX - length * 0.12, 0); litterCtx.lineTo(ribX + length * 0.05, -width * 0.75);
+            litterCtx.moveTo(ribX - length * 0.12, 0); litterCtx.lineTo(ribX + length * 0.05, width * 0.72); litterCtx.stroke();
+          }
+          litterCtx.restore();
+          litterHeightCtx.save(); litterHeightCtx.translate(px, py); litterHeightCtx.rotate(turn);
+          var lift = litterHeightCtx.createLinearGradient(0, -width, 0, width);
+          lift.addColorStop(0, '#c4c4c4'); lift.addColorStop(0.5, '#a2a2a2'); lift.addColorStop(1, '#d0d0d0');
+          litterHeightCtx.fillStyle = lift; litterLeaf(litterHeightCtx, length, width, curl); litterHeightCtx.fill();
+          if (broken) { litterHeightCtx.fillStyle = '#404040'; litterHeightCtx.beginPath(); litterHeightCtx.arc(length * 0.55, width * 0.4, width * 0.75, 0, Math.PI * 2); litterHeightCtx.fill(); }
+          litterHeightCtx.strokeStyle = '#8c8c8c'; litterHeightCtx.lineWidth = 0.8;
+          litterHeightCtx.beginPath(); litterHeightCtx.moveTo(-length, 0); litterHeightCtx.lineTo(length * 0.9, 0); litterHeightCtx.stroke();
+          litterHeightCtx.restore();
+        });
+      })(litterRandom() * 512, litterRandom() * 512, litterRandom() * Math.PI * 2, 9 + litterRandom() * 18,
+        0.34 + litterRandom() * 0.24, (litterRandom() - 0.5) * 0.5, Math.floor(litterRandom() * leafTones.length), litterRandom() < 0.3);
+    }
+    needlesAndTwigs(260, false);
+    needlesAndTwigs(26, true);
+    // Seed husks and acorn caps: small, dark, cupped shapes.
+    for (var husk = 0; husk < 90; husk++) {
+      (function (hx0, hy0, hr0, turn) {
+        wrapped(hx0, hy0, hr0 * 2, function (px, py) {
+          litterCtx.save(); litterCtx.translate(px, py); litterCtx.rotate(turn); litterCtx.scale(1, 0.62);
+          litterCtx.fillStyle = 'rgba(64,44,28,.95)'; litterCtx.beginPath(); litterCtx.arc(0, 0, hr0, 0, Math.PI * 2); litterCtx.fill();
+          litterCtx.fillStyle = 'rgba(142,108,70,.8)'; litterCtx.beginPath(); litterCtx.arc(-hr0 * 0.25, -hr0 * 0.25, hr0 * 0.45, 0, Math.PI * 2); litterCtx.fill();
+          litterCtx.restore();
+          litterHeightCtx.fillStyle = '#c8c8c8'; litterHeightCtx.beginPath(); litterHeightCtx.arc(px, py, hr0 * 0.8, 0, Math.PI * 2); litterHeightCtx.fill();
+        });
+      })(litterRandom() * 512, litterRandom() * 512, 1.4 + litterRandom() * 2.2, litterRandom() * Math.PI);
+    }
+    var litterMap = texture(litterCanvas, 1); litterMap.name = 'birdlab-ground-close-litter';
+    var litterHeightMap = texture(litterHeightCanvas, 1); litterHeightMap.encoding = THREE.LinearEncoding;
+    litterHeightMap.name = 'birdlab-ground-close-litter-height';
     var groundGeo = geometry(new THREE.PlaneGeometry(150, 150, detailed ? 128 : 80, detailed ? 128 : 80));
     groundGeo.rotateX(-Math.PI / 2);
     var groundPos = groundGeo.attributes.position;
@@ -204,9 +328,10 @@
     var groundMat = material({ color: 0xffffff, map: soilMap, bumpMap: groundReliefMap, bumpScale: 0.020, vertexColors: true, roughness: 1 });
     groundMat.onBeforeCompile = function (shader) {
       shader.uniforms.blMossMap = { value: mossMap };
+      shader.uniforms.blLitterMap = { value: litterMap }; shader.uniforms.blLitterHeight = { value: litterHeightMap };
       shader.vertexShader = 'attribute float blMossCoverage; varying float blMossCover;\n' + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nblMossCover = blMossCoverage;');
-      shader.fragmentShader = 'uniform sampler2D blMossMap; varying float blMossCover;\n' + shader.fragmentShader;
+      shader.fragmentShader = 'uniform sampler2D blMossMap; uniform sampler2D blLitterMap; uniform sampler2D blLitterHeight; varying float blMossCover;\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', [
         '#ifdef USE_MAP',
         'vec4 blSoilAlbedo = mapTexelToLinear(texture2D(map, vUv));',
@@ -216,6 +341,18 @@
         'float blSoilHeight = texture2D(bumpMap, vUv).r;',
         'float blMossHeight = texture2D(bumpMap, vUv * 2.13).g;',
         'float blSurfaceHeight = mix(blSoilHeight, blMossHeight, blColony);',
+        // vUv already carries the soil's 30x repeat. Two rotated samples of the
+        // 0.8 m litter tile hide its repeat. The fade
+        // follows screen footprint, so a zoomed lens keeps detail a wide view drops.
+        'vec2 blLitterUvA = vUv * 6.25;',
+        'vec2 blLitterUvB = mat2(.81, -.59, .59, .81) * vUv * 4.37 + vec2(.37, .71);',
+        'float blLitterFade = (1. - smoothstep(.008, .055, sqrt(length(dFdx(blLitterUvA)) * length(dFdy(blLitterUvA))))) * (1. - blColony * .78);',
+        'vec4 blLitterA = mapTexelToLinear(texture2D(blLitterMap, blLitterUvA));',
+        'vec4 blLitterB = mapTexelToLinear(texture2D(blLitterMap, blLitterUvB));',
+        'vec3 blLitterRel = mix(blLitterB.rgb, blLitterA.rgb, blLitterA.a) / vec3(.402, .366, .288);',
+        'float blLitterCover = max(blLitterA.a, blLitterB.a * .6) * blLitterFade;',
+        'diffuseColor.rgb = mix(diffuseColor.rgb, blLitterRel, blLitterCover);',
+        'blSurfaceHeight += (max(texture2D(blLitterHeight, blLitterUvA).r, texture2D(blLitterHeight, blLitterUvB).r * .8) - .25) * .16 * blLitterFade;',
         '#endif'
       ].join('\n'));
       shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
@@ -225,7 +362,7 @@
         THREE.ShaderChunk.normal_fragment_maps.replace('dHdxy_fwd()', 'blSurfaceSlope')
       ].join('\n'));
     };
-    groundMat.customProgramCacheKey = function () { return 'birdlab-moss-litter-surface-v2'; };
+    groundMat.customProgramCacheKey = function () { return 'birdlab-moss-litter-surface-v3'; };
     var ground = new THREE.Mesh(groundGeo, groundMat);
     ground.name = 'continuous-woodland-ground'; ground.receiveShadow = true; root.add(ground);
 

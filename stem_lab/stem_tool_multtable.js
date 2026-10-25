@@ -698,6 +698,10 @@ window.StemLab = window.StemLab || {
         // this, Q/S/? kept firing quizzes, speed runs, and AI calls from OTHER
         // STEM tools after leaving the table.
         if (!document.querySelector('[data-multtable-command]')) return;
+        // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+        var mtRoot = document.querySelector('[data-multtable-root]');
+        if (!mtRoot || !e.target || !mtRoot.contains(e.target)) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if (key === 'q') { e.preventDefault(); nextProblem(); }
@@ -1097,7 +1101,7 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-multtable-root': 'true' },
 
         // ── Header ──
         h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl' },

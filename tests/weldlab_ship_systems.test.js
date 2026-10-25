@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -65,6 +66,6 @@ describe('BIW conceptual ship systems',()=>{
   });
 
   it('restores the entire original Maine function exactly after removing only the local state, helper and rendering call',()=>{
-    const source=readFileSync(SRC,'utf8').replace(/\r\n/g,'\n');let maine=source.slice(source.indexOf('function MaineEcosystem('),source.indexOf('function SafetyHealthDeepDive('));const helperAt=maine.indexOf('        function renderShipSystems() {'),contentAt=maine.indexOf('        var content;',helperAt);expect(helperAt).toBeGreaterThan(0);expect(contentAt).toBeGreaterThan(helperAt);maine=maine.slice(0,helperAt)+maine.slice(contentAt);maine=maine.replace("        var shipSystemState = useState('hull');\n",'').replace('            renderShipSystems(),\n','');expect(createHash('sha256').update(maine).digest('hex')).toBe('4c36bf6079d7fae850d9caa3aa59ed7c37874f57e413f686c65dc464ede3b0b3');
+    const source=stripWeldlabWcagFixes(readFileSync(SRC,'utf8'));let maine=source.slice(source.indexOf('function MaineEcosystem('),source.indexOf('function SafetyHealthDeepDive('));const helperAt=maine.indexOf('        function renderShipSystems() {'),contentAt=maine.indexOf('        var content;',helperAt);expect(helperAt).toBeGreaterThan(0);expect(contentAt).toBeGreaterThan(helperAt);maine=maine.slice(0,helperAt)+maine.slice(contentAt);maine=maine.replace("        var shipSystemState = useState('hull');\n",'').replace('            renderShipSystems(),\n','');expect(createHash('sha256').update(maine).digest('hex')).toBe('4c36bf6079d7fae850d9caa3aa59ed7c37874f57e413f686c65dc464ede3b0b3');
   });
 });

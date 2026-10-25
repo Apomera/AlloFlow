@@ -20,7 +20,7 @@ const savedWrites = () => writes.filter(patch => patch.flightMission != null);
 
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; window.__testHooks = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim'); api = window.__RR_TEST_EXPORTS__.flightSim;
+  tool = loadTool(process.env.SKYSCHOOL_MISSION_PROGRESS_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim'); api = window.__RR_TEST_EXPORTS__.flightSim;
   portland = api.WAYPOINTS.find(item => item.id === 'kpwm');
   const context = new Proxy({ measureText: text => ({ width: String(text).length * 6 }),
     createLinearGradient: () => ({ addColorStop() {} }), createRadialGradient: () => ({ addColorStop() {} }),
@@ -43,15 +43,27 @@ async function mount(seed = {}) {
   host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host); frameCallback = null;
   function App() {
-    const [data, setData] = React.useState({ flightSim: { view: 'menu', aircraft: 'cessna172', railCollapsed: true,
+    const [saved, setSaved] = React.useState({ data: { flightSim: { view: 'menu', aircraft: 'cessna172', railCollapsed: true,
       menuSections: { challenges: true, sprints: true }, takeoffTutorialDismissed: true, landingTutorialDismissed: true,
-      earnedBadges: Object.fromEntries(api.ACHIEVEMENTS.map(item => [item.id, true])), ...seed } });
+      earnedBadges: Object.fromEntries(api.ACHIEVEMENTS.map(item => [item.id, true])), ...seed } }, patches: [] });
+    const { data } = saved, recorded = React.useRef(0);
+    React.useLayoutEffect(() => {
+      writes.push(...saved.patches.slice(recorded.current)); recorded.current = saved.patches.length;
+    }, [saved.patches]);
+    const setData = (update, record = true) => setSaved(previous => {
+      const next = typeof update === 'function' ? update(previous.data) : update;
+      if (next === previous.data) return previous;
+      const before = previous.data.flightSim || {}, after = next.flightSim || {};
+      const patch = Object.fromEntries([...new Set([...Object.keys(before), ...Object.keys(after)])]
+        .filter(key => !Object.is(before[key], after[key])).map(key => [key, after[key]]));
+      return { data: next, patches: record && Object.keys(patch).length ? [...previous.patches, patch] : previous.patches };
+    });
     latest = data.flightSim;
-    updateSaved = patch => setData(old => ({ ...old, flightSim: { ...old.flightSim, ...patch } }));
+    updateSaved = patch => setData(old => ({ ...old, flightSim: { ...old.flightSim, ...patch } }), false);
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
       awardXP: (...args) => xp.push(args), addToast: (...args) => toasts.push(args),
-      update: (id, key, value) => { writes.push({ [key]: value }); setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })); },
-      updateMulti: (id, patch) => { writes.push(patch); setData(old => ({ ...old, [id]: { ...old[id], ...patch } })); },
+      update: (id, key, value) => setData(old => ({ ...old, [id]: { ...old[id], [key]: value } })),
+      updateMulti: (id, patch) => setData(old => ({ ...old, [id]: { ...old[id], ...patch } })),
     }));
   }
   await act(async () => root.render(React.createElement(App)));

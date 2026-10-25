@@ -4361,13 +4361,12 @@ window.StemLab = window.StemLab || {
                       key: 'col-h-' + c.id, role: 'columnheader',
                       style: {
                         width: 38, flexShrink: 0, textAlign: 'center', fontSize: 9,
-                        // The matchup matrix lives in a WHITE <details> panel, so
-                        // its headers need light-ground inks: slate-300 row labels
-                        // measured 1.48:1 and amber-400 about 1.9:1 on white.
-                        // ★ That white panel is NOT white in the contrast theme:
-                        // app_styles_module.js rewrites inline light backgrounds to
-                        // #000 !important there, so these inks needed the other end.
-                        color: ctx.isContrast ? (c.id === activeColId ? '#ffff00' : '#ffffff') : (c.id === activeColId ? '#b45309' : '#475569'),
+                        // The matrix panel paints --allo-stem-canvas: white in light,
+                        // #0f172a in dark, so the header inks follow the theme too
+                        // (#475569 / #b45309 measured 2.35:1 / 3.55:1 on the dark panel).
+                        // ★ In the contrast theme app_styles_module.js rewrites inline
+                        // light backgrounds to #000 !important, so these inks needed the other end.
+                        color: ctx.isContrast ? (c.id === activeColId ? '#ffff00' : '#ffffff') : (c.id === activeColId ? tint('#fbbf24') : 'var(--allo-stem-text-soft, #475569)'),
                         fontWeight: c.id === activeColId ? 700 : 500,
                         padding: '2px 0'
                       }
@@ -4384,7 +4383,7 @@ window.StemLab = window.StemLab || {
                       key: 'row-h-' + r.id, role: 'rowheader',
                       style: {
                         width: 90, flexShrink: 0, textAlign: 'right', fontSize: 10,
-                        color: ctx.isContrast ? (r.id === activeRowId ? '#ffff00' : '#ffffff') : (r.id === activeRowId ? '#b45309' : '#475569'),
+                        color: ctx.isContrast ? (r.id === activeRowId ? '#ffff00' : '#ffffff') : (r.id === activeRowId ? tint('#fbbf24') : 'var(--allo-stem-text-soft, #475569)'),
                         fontWeight: r.id === activeRowId ? 700 : 500,
                         paddingRight: 4
                       }

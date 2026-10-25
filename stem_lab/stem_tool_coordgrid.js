@@ -654,7 +654,10 @@ window.StemLab = window.StemLab || {
       }
       window._coordGridKeyHandler = function(e) {
         // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
-        if (!document.querySelector('[data-coordinate-theme]')) return;
+        // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+        var cgRoot = document.querySelector('[data-coordinate-theme]');
+        if (!cgRoot || !e.target || !cgRoot.contains(e.target)) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 'c' || e.key === 'C') {
           sfxClick();

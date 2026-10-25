@@ -4677,6 +4677,363 @@
   // Chelidonura varians Eliot, 1903: a headshield slug, not a nudibranch.
   // Broad shield, rolled parapodia and unequal posterior lobes follow the
   // Australian Museum Sea Slug Forum and Lizard Island Field Guide photos.
+  // Ascarosepion latimanus (formerly Sepia latimanus): a representative,
+  // unsexed brown/cream animal. The nominal .30 m includes mantle, head and
+  // posed arm crown; it is not mantle length or a species maximum.
+  function buildBroadclubCuttlefish(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(389),L=.30*(.98+.04*rng()),phase=rng()*TAU;
+    var body=new Geo(),fins=new Geo(),ranges={},arms=[],cups=[],finParts=[],eyes=[],papillae=[];
+    var white=[1,1,1],cream=hex(0xc7ab86),brown=hex(0x70533c),umber=hex(0x65503e),pale=hex(0xe5d6b7),gold=hex(0xbba261),ink=hex(0x172321);
+    function mark(name,first){ranges[name]={first:first,count:body.count()-first};}
+    function neutral(g,first){for(var j=first;j<g.count();j++){g.t[j*2]=1;g.t[j*2+1]=1;}}
+    function skin(t,a,x,y,z,out){mixc(brown,cream,.30+.22*smooth(-.045,.09,y),out);mixc(out,pale,(1-smooth(-.065,-.02,y))*.48,out);}
+    var rows=[[.132,.045,-.037,.075],[.095,.087,-.070,.132],[.00,.119,-.086,.182],[-.16,.125,-.079,.196],[-.31,.101,-.064,.165],[-.43,.055,-.032,.095],[-.49,.008,-.006,.012]],prof=profile(rows),sample=[0,0,0],first=body.count();
+    body.loft(rows,high?18:7,high?20:10,skin);mark('oval-mantle',first);
+    first=body.count();blob(T,body,.178,.003,0,.105,.070,.126,lin(cream),high?14:6,high?8:4);mark('head',first);
+    // The mantle collar overlaps the head, while a pale rolled funnel opens
+    // beneath it. The lumen is recessed geometry rather than a black decal.
+    first=body.count();var funnelSides=high?10:4,frings=[[.09,-.060,.023],[.135,-.072,.022],[.170,-.075,.019],[.190,-.071,.017],[.198,-.068,.016],[.201,-.067,.0145],[.200,-.067,.012],[.191,-.069,.010]];
+    for(var r=0;r<frings.length;r++)for(var j=0;j<funnelSides;j++){var a=j/funnelSides*TAU,q=frings[r],col=lin(r<6?cream:r===6?umber:ink);body.v(q[0],q[1]+Math.cos(a)*q[2],Math.sin(a)*q[2],col,1,1);if(r){var b=first+(r-1)*funnelSides+j,d=first+(r-1)*funnelSides+(j+1)%funnelSides;body.i.push(b,d,b+funnelSides,d,d+funnelSides,b+funnelSides);}}
+    var end=body.v(.187,-.069,0,lin(ink),1,1);for(j=0;j<funnelSides;j++)body.i.push(first+7*funnelSides+j,first+7*funnelSides+(j+1)%funnelSides,end);mark('recessed-funnel',first);
+    // Low rounded skin papillae, including elongated ones beside each fin.
+    // These are one calm texture state, not a diagnostic count or a display.
+    first=body.count();for(var p=0;p<22;p++){var side=p%2?-1:1,u=Math.floor(p/2)/10,x=lerp(-.40,.065,u)+.008*(rng()-.5),z=side*(p<16?.10:.044)*(1-.35*Math.abs(x+.10))+.012*(rng()-.5),rr=.010+.004*rng(),height=.006+.007*rng();prof(x,sample);var y=(sample[0]+sample[1])*.5+(sample[0]-sample[1])*.5*Math.sqrt(Math.max(0,1-z*z/(sample[2]*sample[2])))-.002,at=body.count(),n=high?7:3;
+      for(var ring=0;ring<2;ring++){var f=ring?.42:1;for(j=0;j<n;j++){a=j/n*TAU;body.v(x+Math.cos(a)*rr*f*(p<16?1.45:1),y+ring*height*.76,z+Math.sin(a)*rr*f,lin(mixc(cream,brown,ring?.10:.25,[0,0,0])),.5+.3*x,.5+.8*z);}}
+      var tip=body.v(x,y+height,z,lin(cream),.5+.3*x,.5+.8*z);for(j=0;j<n;j++){var b=at+j,d=at+(j+1)%n;body.i.push(b,d,b+n,d,d+n,b+n,b+n,d+n,tip);}papillae.push({first:at,count:body.count()-at,root:[x,y,z],height:height});
+    }mark('rounded-skin-papillae',first);
+    // Each lateral eye has a pale olive iris, warm ventral rim and an actual
+    // W-shaped pupil. The pupil is a softly bent slit, not a round fish pupil.
+    [-1,1].forEach(function(side){var at=body.count(),cx=.185,cy=.028,cz=side*.112;
+      blob(T,body,cx,cy,cz,.051,.040,.029,lin(mixc(cream,brown,.46,[0,0,0])),high?14:6,high?8:4);
+      var iris=body.count();blob(T,body,cx+.004,cy,side*.137,.035,.026,.011,function(x,y){return lin(mixc(hex(0x7d8b70),gold,1-smooth(cy-.018,cy+.004,y),[0,0,0]));},high?12:8,high?6:3);neutral(body,iris);
+      var controls=[[-.90,.06],[-.75,.16],[-.54,-.12],[-.30,.11],[-.10,.14],[.12,-.11],[.38,.10],[.66,.15],[.88,.04],[.76,-.06],[.40,-.07],[.13,-.31],[-.10,-.06],[-.30,-.09],[-.54,-.31],[-.75,-.04]],outline=[],samples=high?3:2;
+      for(var q=0;q<controls.length;q++)for(var j=0;j<samples;j++){var A=controls[(q+controls.length-1)%controls.length],B=controls[q],C=controls[(q+1)%controls.length],D=controls[(q+2)%controls.length],u=j/samples;outline.push([catmull(A[0],B[0],C[0],D[0],u),catmull(A[1],B[1],C[1],D[1],u)]);}
+      var points=outline.map(function(q){return new T.Vector2(q[0],q[1]);}),faces=T.ShapeUtils.triangulateShape(points,[]),pupil=body.count();
+      outline.forEach(function(q){var xx=q[0]*.033,yy=q[1]*.030;body.v(cx+.004+xx,cy+yy,side*(.138+.011*Math.sqrt(Math.max(.02,1-xx*xx/(.035*.035)-yy*yy/(.026*.026)))),lin(ink),1,1);});faces.forEach(function(f){body.i.push(pupil+f[0],pupil+f[1],pupil+f[2]);});
+      var brow=[];for(var k=0;k<= (high?8:4);k++){var u=k/(high?8:4),a=PI*(.10+.80*u);brow.push([cx+.039*Math.cos(a),cy+.029*Math.sin(a),side*(.132+.009*Math.sin(a))]);}body.tube(brow,function(u){return .0015+.0025*Math.sin(PI*u);},high?5:3,function(){return lin(mixc(cream,brown,.2,[0,0,0]));});neutral(body,body.count()-brow.length*(high?5:3)-1);
+      eyes.push({side:side,first:at,count:body.count()-at,center:[cx+.004,cy,side*.137],pupilFirst:pupil,pupilCount:outline.length,pupilShape:'W',yellowLowerRim:true});
+    });
+    // Eight arms surround the mouth. Both longer feeding tentacles remain
+    // stored in their pockets; no extra permanent arms or exposed clubs.
+    var segs=high?13:5,sides=high?6:4;
+    function armPoint(i,u){var side=i<4?-1:1,pair=i%4,a=(pair-.5)*PI/3.25,ry=Math.cos(a)*.049,rz=side*(.046+.029*Math.sin(a)),reach=.280-(pair===3?.025:0),curl=clamp((u-.62)/.38,0,1),bend=curl*curl;return[.244+reach*(u-.22*bend),.002+ry*(1+1.05*u)+(.020+.012*pair)*Math.sin(PI*u)-.043*bend*(pair<2?-1:1),rz*(1+.60*u)+side*(.020*Math.sin(PI*u)+.012*bend*Math.sin(pair+phase))];}
+    function armRadius(u){return .025*Math.pow(1-u,1.12)+.0011;}
+    for(var i=0;i<8;i++){var pts=[],at=body.count();for(j=0;j<=segs;j++)pts.push(armPoint(i,j/segs));body.tube(pts,armRadius,sides,function(u,s){var edge=Math.pow(Math.max(0,Math.cos(s*TAU)),12);return lin(mixc(brown,pale,.26+.60*edge+.16*u,[0,0,0]));});for(j=0;j<=segs;j++)for(var k=0;k<sides;k++){body.t[(at+j*sides+k)*2]=j/segs;body.t[(at+j*sides+k)*2+1]=k/sides;}arms.push({index:i,side:i<4?-1:1,pair:i%4,first:at,count:body.count()-at,root:pts[0],tip:pts[segs],points:pts});}
+    // Tiny recessed suction cups are arranged in FOUR rows along the inner
+    // arm surface. The low tier samples fewer stations, preserving all rows.
+    var stations=high?8:3,cupSides=high?6:3,ac=new T.Vector3(),tan=new T.Vector3(),normal=new T.Vector3(),across=new T.Vector3();
+    first=body.count();for(i=0;i<8;i++)for(var st=0;st<stations;st++){var station=high?st:st*3,u=.13+.72*station/7,P=armPoint(i,u),A=armPoint(i,Math.max(0,u-.006)),B=armPoint(i,Math.min(1,u+.006)),rad=armRadius(u);tan.set(B[0]-A[0],B[1]-A[1],B[2]-A[2]).normalize();normal.set(0,-P[1],-P[2]).normalize();normal.addScaledVector(tan,-normal.dot(tan)).normalize();across.crossVectors(tan,normal).normalize();
+      for(var row=0;row<4;row++){var offset=(row-1.5)*.47,rr=rad*.205,at=body.count();ac.set(P[0],P[1],P[2]).addScaledVector(normal,rad*Math.sqrt(Math.max(.1,1-offset*offset))).addScaledVector(across,rad*offset);
+        for(j=0;j<cupSides;j++){a=j/cupSides*TAU;body.v(ac.x+tan.x*Math.cos(a)*rr+across.x*Math.sin(a)*rr+normal.x*rr*.23,ac.y+tan.y*Math.cos(a)*rr+across.y*Math.sin(a)*rr+normal.y*rr*.23,ac.z+tan.z*Math.cos(a)*rr+across.z*Math.sin(a)*rr+normal.z*rr*.23,lin(pale),1,1);}
+        var center=body.v(ac.x-normal.x*rr*.12,ac.y-normal.y*rr*.12,ac.z-normal.z*rr*.12,lin(hex(0x957b62)),1,1);for(j=0;j<cupSides;j++)body.i.push(at+j,at+(j+1)%cupSides,center);cups.push({arm:i,row:row,station:station,first:at,count:cupSides+1,radius:rr});
+      }
+    }mark('four-row-suction-cups',first);
+    // Two sheltered pocket folds between the ventral arm roots. The tentacle
+    // clubs are retracted and deliberately have no exposed geometry.
+    first=body.count();[-1,1].forEach(function(side){blob(T,body,.253,-.036,side*.032,.020,.006,.010,lin(umber),high?8:4,high?4:2);});neutral(body,first);mark('retracted-tentacle-pocket-folds',first);
+    // The thin fin skirt joins the whole mantle side, with a subtle travelling
+    // wave. The attachment row and both ends are immobile in world space.
+    [-1,1].forEach(function(side){var at=fins.count(),n=high?32:20,nw=high?3:1;
+      for(var q=0;q<=n;q++)for(var j=0;j<=nw;j++){var u=q/n,v=j/nw,x=lerp(-.48,.112,u);prof(x,sample);var width=.055*Math.pow(Math.max(0,Math.sin(PI*u)),.65),envelope=Math.sin(PI*u)*v*v,angle=phase+u*PI*4.2+side*.6,y=(sample[0]+sample[1])*.5-.007+.009*envelope*Math.sin(angle),z=side*(sample[2]*.985+width*v);fins.v(x,y,z,lin(mixc(cream,pale,smooth(.70,1,v)*.74,[0,0,0])),u,.55+.43*v);if(q&&j){var a=at+(q-1)*(nw+1)+j-1,b=a+nw+1;fins.i.push(a,b,a+1,a+1,b,b+1);}}
+      finParts.push({side:side,first:at,count:fins.count()-at,longitudinalSegments:n,widthSegments:nw});
+    });
+    var map=kit.baked(c.key('cuttlefish-mottled-skin'),high?512:256,high?256:128,function(u,v,out){setc(out,white);if(u>.98&&v>.98)return;var n=fbm2(u*13+phase,v*11,3),small=noise2(u*87+phase,v*63),grain=noise2(u*301+phase,v*199),flecks=(1-smooth(.22,.38,small))*.22,shade=smooth(.49,.72,n)*.39;mixc(white,hex(0x78634f),shade,out);mixc(out,hex(0xb3a38d),smooth(.66,.81,grain)*.13,out);mixc(out,white,flecks,out);},false,false);
+    var bump=kit.baked(c.key('cuttlefish-papillose-skin'),high?256:128,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.4+.17*noise2(u*151+phase,v*99)+.13*smooth(.54,.77,noise2(u*41+phase,v*29));},false,false,true);
+    scaleGeo(body,L);scaleGeo(fins,L);var bg=kit.geo(body,1),fg=kit.geo(fins,1);
+    bg.userData.broadclubCuttlefish={ranges:ranges,scaleM:L,nominalPosedLengthM:.30,approximateMantleLengthM:.19,appearance:'unsexed-brown-cream-example',arms:arms,visibleArms:8,retractedFeedingTentacles:2,exposedTentacleClubs:0,suckerRows:4,cups:cups,eyes:eyes,papillae:papillae};
+    fg.userData.broadclubCuttlefish={fins:finParts,maximumDisplacementM:.0181*L,rootMotion:false};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00075*L,roughness:.43,side:T.DoubleSide});kit.mesh(bg,mat,'fixed-mantle-head-arm-crown',c.root);kit.mesh(fg,mat,'continuous-lateral-fin-skirt',c.root);
+    var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.0181*L);fg.boundingSphere.radius+=.0181*L;
+    c.anim(function(t){var out=fg.attributes.position.array;finParts.forEach(function(f){for(var q=1;q<f.longitudinalSegments;q++)for(var j=1;j<=f.widthSegments;j++){var u=q/f.longitudinalSegments,v=j/f.widthSegments,k=(f.first+q*(f.widthSegments+1)+j)*3,a=phase+u*PI*4.2+f.side*.6,weight=.009*L*Math.sin(PI*u)*v*v;out[k+1]=rest[k+1]+weight*(Math.sin(a-t*1.45)-Math.sin(a));}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+  }
+
+
+  // Phyllidia varicosa: representative 60 mm animal with five tuberculate
+  // blue-grey ridges. The sole stripe and lateral underside gills distinguish
+  // this phyllidiid from a dorid with an exposed dorsal gill plume.
+  function buildVaricosePhyllidia(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(367),L=.06*(.98+.04*rng()),phase=rng()*TAU;
+    var body=new Geo(),sensory=new Geo(),ranges={},ridges=[],tubercles=[],gills=[],rhinophores=[],white=[1,1,1],blue=hex(0x829fb2),pale=hex(0xb2c7cf),ink=hex(0x171f2b),gold=hex(0xe6bb39),yellow=hex(0xf5d15a),sole=hex(0x9cabb8);
+    function mark(name,start){ranges[name]={first:start,count:body.count()-start};}
+    function neutral(g,first){for(var k=first;k<g.count();k++){g.t[k*2]=.02+.46*clamp(g.p[k*3]+.5,0,1);g.t[k*2+1]=.52+.46*clamp((g.p[k*3+2]+.225)/.45,0,1);}}
+    function width(x){return .225*Math.pow(Math.max(0,1-Math.pow(x/.5,2)),.55);}
+    function topY(x,z){var u=clamp(Math.sqrt(Math.pow(x/.5,2)+Math.pow(z/.225,2)),0,1);return .043+.105*Math.pow(Math.max(0,1-u*u),.78);}
+    function ridgeZ(row,x){return row*.087+.010*Math.sin(x*9+phase+row*.7)*(1-Math.abs(row)*.12);}
+    var nr=high?5:3,ns=high?56:20,first=body.count();
+    body.polar(nr,ns,function(r,a,out){var x=.5*r*Math.cos(a),z=.225*r*Math.sin(a),fold=1-.035*smooth(.87,1,r);x*=fold;z*=fold;setc(out,white);return[x,topY(x,z),z,.02+.46*(x+.5),.02+.46*(z+.225)/.45];});body.t[first*2]=.25;body.t[first*2+1]=.25;mark('rounded-mantle',first);
+    first=body.count();body.polar(high?2:1,ns,function(r,a,out){var fold=1-.035*smooth(.87,1,r),x=.5*r*Math.cos(a)*fold,z=.225*r*Math.sin(a)*fold;setc(out,lin(mixc(blue,pale,.20,[0,0,0])));return[x,.043-.016*Math.sin(PI*r)+(topY(x,z)-.043)*Math.pow(r,12),z,.5,.5];},true);mark('curled-mantle-underside',first);
+    // Soft foot, with a flat contact sole. Its black longitudinal stripe is
+    // painted only on the true ventral surface, not around the mantle edge.
+    first=body.count();var fn=high?2:1,fs=high?40:24,top=body.count();
+    body.polar(fn,fs,function(r,a,out){setc(out,lin(sole));return[.455*r*Math.cos(a),.018+.032*Math.pow(Math.max(0,1-r*r),.7),.156*r*Math.sin(a),.5,.5];});
+    var bottom=body.count();body.polar(fn,fs,function(r,a,out){var x=.455*r*Math.cos(a),z=.156*r*Math.sin(a);setc(out,white);return[x,0,z,.52+.46*(x+.455)/.91,.02+.46*(z+.156)/.312];},true);body.t[bottom*2]=.75;body.t[bottom*2+1]=.25;
+    for(var j=0;j<fs;j++){var a=top+1+(fn-1)*fs+j,b=top+1+(fn-1)*fs+(j+1)%fs,d=bottom+1+(fn-1)*fs+j,e=bottom+1+(fn-1)*fs+(j+1)%fs;body.i.push(a,d,b,b,d,e);}mark('foot-and-striped-sole',first);
+    // Three strong ridges, including the diagnostic midline ridge, and two
+    // quieter, shorter lateral ridges. Shape and tubercle stations are seeded
+    // once and remain identical between detail tiers.
+    first=body.count();
+    for(var row=-2;row<=2;row++){var outer=Math.abs(row)===2,from=outer?-.30:-.41,to=outer?.24:.32,segments=high?(outer?10:14):(outer?4:6),pts=[],w=outer?.023:.035;
+      for(j=0;j<=segments;j++){var u=j/segments,x=lerp(from,to,u),z=ridgeZ(row,x),y=topY(x,z)-.007;pts.push([x,y,z]);}
+      var start=body.count();body.tube(pts,function(u){return w*Math.pow(Math.max(0,Math.sin(PI*u)),.43)*(1+.07*Math.sin(u*PI*7+phase+row));},high?7:3,function(u){return lin(mixc(blue,pale,.08+.10*Math.sin(PI*u),[0,0,0]));});neutral(body,start);ridges.push({row:row,first:start,count:body.count()-start,from:from,to:to,width:w});
+      var count=outer?7:8;for(j=0;j<count;j++){var u=(j+.25)/(count-.5),x=lerp(from+.025,to-.025,u)+.012*(rng()-.5),z=ridgeZ(row,x)+.004*(rng()-.5),variation=.80+.40*rng(),radius=(outer?.024:.033)*variation,height=(outer?.029:.038)*variation;tubercles.push({row:row,station:j,x:x,z:z,base:topY(x,z)+w*.25,radius:radius,height:height,yellow:outer?(j%3===1?.23:.04):.94});}
+    }mark('five-longitudinal-ridges',first);
+    // Small marginal nodules follow the rounded head and tail, rather than
+    // adding a uniform yellow outer ring. Counts depict one animal only.
+    for(j=0;j<16;j++){var a=j/16*TAU+.08,x=.46*Math.cos(a),z=.205*Math.sin(a);if(Math.abs(x)<.18)continue;tubercles.push({row:3,station:j,x:x,z:z,base:topY(x,z)-.001,radius:.018+.004*rng(),height:.021+.007*rng(),yellow:j%4===0?.40:.06});}
+    first=body.count();tubercles.forEach(function(q){var sides=high?8:5,levels=high?[0,.40,.72,.93]:[0,.82],at=body.count();q.first=at;
+      for(var r=0;r<levels.length;r++){var u=levels[r],rr=q.radius*Math.sqrt(Math.max(0,1-u*u));for(var k=0;k<sides;k++){var a=k/sides*TAU,x=q.x+Math.cos(a)*rr,z=q.z+Math.sin(a)*rr,base=topY(x,z)+.005,col=lin(mixc(mixc(blue,pale,.11,[0,0,0]),mixc(gold,yellow,u*.4,[0,0,0]),q.yellow*smooth(.45,.85,u),[0,0,0]));body.v(x,lerp(base,q.base+q.height,u),z,col,.5,.5);}}
+      for(r=0;r<levels.length-1;r++)for(k=0;k<sides;k++){var a=at+r*sides+k,b=at+r*sides+(k+1)%sides;body.i.push(a,b,a+sides,b,b+sides,a+sides);}var tip=body.v(q.x,q.base+q.height,q.z,lin(mixc(pale,yellow,q.yellow,[0,0,0])),.5,.5),last=at+(levels.length-1)*sides;for(k=0;k<sides;k++)body.i.push(last+k,last+(k+1)%sides,tip);q.count=body.count()-at;
+    });neutral(body,first);mark('yellow-capped-tubercles',first);
+    // Short secondary gill leaflets sit in the groove between mantle and
+    // foot on both sides. They do not form a crown on the back.
+    first=body.count();[-1,1].forEach(function(side){var count=high?20:10;for(var q=0;q<count;q++){var station=high?q:q*2,u=(station+.5)/20,x=lerp(-.37,.36,u),z=side*(.158*Math.pow(1-Math.pow(x/.47,2),.55)),at=body.count(),w=(high?.009:.014)*(1+.12*Math.sin(station*2.3+phase)),rootY=.036+.0015*Math.sin(station*1.7+phase);
+      body.v(x-w,rootY,z,lin(blue),.5,.5);body.v(x+w,rootY,z,lin(blue),.5,.5);body.v(x+w*.35,.021,z+side*.024,lin(mixc(blue,pale,.16,[0,0,0])),.5,.5);body.v(x-w*.45,.020,z+side*.025,lin(mixc(blue,pale,.16,[0,0,0])),.5,.5);body.v(x,.028,z+side*.028,lin(sole),.5,.5);body.i.push(at,at+1,at+4,at+1,at+2,at+4,at+2,at+3,at+4,at+3,at,at+4);gills.push({side:side,station:station,first:at,count:5,root:[x,rootY,z]});}});mark('lateral-secondary-gills',first);
+    first=body.count();blob(T,body,.414,.027,0,.012,.007,.017,lin(blue),high?8:4,high?4:2);neutral(body,first);mark('ventral-oral-area',first);
+    // Two yellow sensory clubs. The high tier models 28 lamellar collars;
+    // the low tier samples alternate collars without changing the club form.
+    [-1,1].forEach(function(side){var root=[.352,topY(.352,side*.085),side*.085],height=.145,at=sensory.count(),sides=high?7:3,n=high?6:3,pts=[];for(var k=0;k<=n;k++){var u=k/n;pts.push([root[0]+.016*u,root[1]+height*u,root[2]+side*.009*u]);}
+      sensory.tube(pts,function(u){return .012+.009*Math.sin(PI*u);},sides,function(u){return lin(mixc(gold,yellow,.25+.50*u,[0,0,0]));});
+      var collars=high?28:14;for(var q=0;q<collars;q++){var station=high?q:q*2,u=.20+.70*station/27,radius=.022*(.62+.38*Math.sin(PI*u)),y=root[1]+height*u,cx=root[0]+.016*u,cz=root[2]+side*.009*u,start=sensory.count();for(k=0;k<sides;k++){var a=k/sides*TAU,ca=Math.cos(a),sa=Math.sin(a);sensory.v(cx+ca*radius,y-.002*ca,cz+sa*radius,lin(mixc(gold,yellow,.55,[0,0,0])),.5,.5);sensory.v(cx+ca*radius*.70,y+.0015-.0014*ca,cz+sa*radius*.70,lin(gold),.5,.5);}for(k=0;k<sides;k++){var a=start+k*2,b=start+(k+1)%sides*2;sensory.i.push(a,b,a+1,b,b+1,a+1);}}
+      neutral(sensory,at);rhinophores.push({side:side,first:at,count:sensory.count()-at,root:root,height:height,renderedLamellae:collars,sourceLamellaeRange:[27,30],rootVertices:sides});
+    });
+    var map=kit.baked(c.key('phyllidia-pigment'),high?256:128,high?256:128,function(u,v,out){setc(out,white);var left=u>=.02&&u<=.48,right=u>=.52&&u<=.98,inside=v>=.02&&v<=.48;if((!left&&!right)||!inside)return;var x=(u-(left?.02:.52))/.46,z=(v-.02)/.46;if(right){var stripe=(1-smooth(.018,.030,Math.abs(z-.5+.009*Math.sin(x*11+phase))))*smooth(.025,.10,x)*(1-smooth(.90,.98,x));mixc(sole,ink,stripe,out);return;}
+      var px=x-.5,pz=(z-.5)*.45,edge=Math.sqrt(Math.pow(px/.5,2)+Math.pow(pz/.225,2)),near=9;for(var row=-2;row<=2;row++){var d=Math.abs(pz-ridgeZ(row,px));near=Math.min(near,d);}var ridge=1-smooth(.025,.042,near);mixc(ink,blue,ridge*.77,out);mixc(out,pale,(1-smooth(.10,.24,noise2(x*93+phase,z*71)))*.075,out);mixc(out,blue,smooth(.94,1.03,edge)*.6,out);
+    },false,false);
+    var bump=kit.baked(c.key('phyllidia-skin'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.5+.055*(noise2(u*137+phase,v*127)-.5);},false,false,true);
+    scaleGeo(body,L);scaleGeo(sensory,L);var bg=kit.geo(body,1),sg=kit.geo(sensory,1);bg.userData.varicosePhyllidia={ranges:ranges,nominalBodyLengthM:.06,scaleM:L,ridges:ridges,tubercles:tubercles,gills:gills,lateralGillBands:2,dorsalGillPlume:false,soleStripe:true,rhinotubercles:tubercles.filter(function(q){return Math.abs(q.row)===1&&q.station===7;}).map(function(q){return{x:q.x,z:q.z};}),appearance:'blue-grey-yellow-example'};sg.userData.varicosePhyllidia={rhinophores:rhinophores,maximumDisplacementM:.007*L};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0007*L,roughness:.54,side:T.DoubleSide});kit.mesh(bg,mat,'fixed-mantle-foot-gills',c.root);kit.mesh(sg,mat,'paired-lamellate-rhinophores',c.root);var rest=sg.attributes.position.array.slice();sg.boundingBox.expandByScalar(.007*L);sg.boundingSphere.radius+=.007*L;
+    c.anim(function(t){var out=sg.attributes.position.array;rhinophores.forEach(function(r){var sway=.030*Math.sin(t*.62+phase+r.side*.65),ca=Math.cos(sway),sa=Math.sin(sway),x=r.root[0]*L,y=r.root[1]*L;for(var k=r.rootVertices;k<r.count;k++){var a=(r.first+k)*3,dx=rest[a]-x,dy=rest[a+1]-y;out[a]=x+dx*ca+dy*sa;out[a+1]=y+dy*ca-dx*sa;out[a+2]=rest[a+2];}});sg.computeVertexNormals();sg.attributes.position.needsUpdate=true;});
+  }
+
+
+  // Neopetrolisthes maculatus: an unsexed, finely red-spotted example.
+  // This isolated study specimen omits its living anemone host. The .04 m
+  // convention is posed leg/claw span, excluding the long slender antennae.
+  function buildPorcelainAnemoneCrab(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(347),L=.04*(.98+.04*rng()),phase=rng()*TAU;
+    var body=new Geo(),fans=new Geo(),ranges={},legs=[],fanParts=[],antennae=[],white=[1,1,1],cream=hex(0xe8dfca),shade=hex(0xbab49c),wine=hex(0x843b38),ink=linHex(0x252e2b);
+    function mark(name,first){ranges[name]={first:first,count:body.count()-first};}
+    function neutral(g,first){for(var i=first;i<g.count();i++){g.t[i*2]=.5;g.t[i*2+1]=.5;}}
+    // A low convex shield, slightly longer than broad; the three shallow
+    // frontal lobes are small shell contours, not a shrimp-like rostrum.
+    var nr=high?6:3,ns=high?48:24,first=body.count();
+    [-1,1].forEach(function(face){body.polar(nr,ns,function(r,a,out){var ca=Math.cos(a),sa=Math.sin(a),front=Math.max(0,ca),x=.15*ca*r,z=.13*sa*r;
+      x+=.008*Math.cos(sa*PI*3)*Math.pow(front,8)*r;var y=.102+face*(face>0?.051:.033)*Math.pow(Math.max(0,1-r*r),.68);setc(out,face>0?white:lin(mixc(shade,cream,.65,[0,0,0])));return[x,y,z,face>0?.02+.46*(x+.17)/.34:.5,face>0?.02+.46*(z+.15)/.30:.5];},face<0);});
+    var faceN=1+nr*ns;body.t[(first+faceN)*2]=.25;body.t[(first+faceN)*2+1]=.25;for(var j=0;j<ns;j++)body.seams.push([first+1+(nr-1)*ns+j,first+faceN+1+(nr-1)*ns+j]);mark('convex-carapace',first);
+    // Segmented walking legs: three full pairs, with their tapered dactyls
+    // resting on the same plane. The tiny fourth pair is folded beside the body.
+    [-1,1].forEach(function(side){for(var leg=0;leg<3;leg++){var x=.045-leg*.075,z=side*.105,reach=.38-.018*leg,tipX=.02-leg*.165;
+      var pts=[[x,.088,z],[x-.03,.105,side*.215],[tipX+.015,.064,side*(reach-.095)],[tipX+.035,.024,side*(reach-.035)],[tipX,0,side*reach]],start=body.count();
+      body.tube(pts,function(u){return u===1?0:.026*Math.pow(1-u,.60)*(1-.12*Math.cos(u*PI*6));},high?7:4,function(u){return lin(mixc(cream,shade,.14*Math.sin(u*PI*4)*Math.sin(u*PI*4),[0,0,0]));});
+      for(var k=start;k<body.count();k++){var sides=high?7:4,ring=Math.min(4,Math.floor((k-start)/sides));body.t[k*2]=.52+.46*ring/4;body.t[k*2+1]=.52+.46*((k-start)%sides)/sides;}
+      legs.push({side:side,pair:leg,first:start,count:body.count()-start,root:pts[0],contact:pts[4]});
+    }});mark('three-walking-leg-pairs',first+faceN*2);
+    first=body.count();[-1,1].forEach(function(side){body.tube([[-.095,.078,side*.105],[-.14,.065,side*.145],[-.10,.055,side*.12]],function(u){return .008*(1-.55*u);},high?5:3,function(){return lin(cream);});});neutral(body,first);mark('reduced-folded-fourth-pair',first);
+    // A closed, softly inflated paddle. The genuinely open cleft separates
+    // fixed and movable fingers; cream fingertips stay free of painted spots.
+    var outline=[[0,0],[.025,-.050],[.10,-.078],[.22,-.073],[.31,-.040],[.355,-.014],[.342,-.004],[.292,-.025],[.235,-.004],[.293,.012],[.342,.015],[.347,.035],[.29,.061],[.19,.075],[.09,.069],[.020,.034]];
+    var clawStations=[];
+    [-1,1].forEach(function(side){var start=body.count(),yaw=side*.42,cx=.065,cz=side*.31;
+      body.tube([[.055,.090,side*.095],[.075,.108,side*.235],[.08,.095,side*.335]],function(u){return .036-.010*u;},high?8:4,function(){return lin(cream);});neutral(body,start);
+      var at=body.count(),radial=high?4:2,around=high?48:24;
+      function edge(a){var q=a/TAU*outline.length,k=Math.floor(q)%outline.length,t=q-Math.floor(q),A=outline[(k+outline.length-1)%outline.length],B=outline[k],C=outline[(k+1)%outline.length],D=outline[(k+2)%outline.length];return[catmull(A[0],B[0],C[0],D[0],t),catmull(A[1],B[1],C[1],D[1],t)];}
+      [-1,1].forEach(function(face){body.polar(radial,around,function(r,a,out){var e=edge(a),x=lerp(.145,e[0],r),z=lerp(0,e[1],r),y=.095+.015*x+face*(.006+.026*Math.pow(Math.max(0,1-r*r),.62)),wx=cx+x*Math.cos(yaw)-z*Math.sin(yaw),wz=cz+x*Math.sin(yaw)+side*z*Math.cos(yaw);setc(out,face>0?white:lin(cream));return[wx,y,wz,face>0?.52+.46*x/.37:.5,face>0?.02+.46*(z+.09)/.18:.5];},face<0);});
+      var fn=1+radial*around;body.t[(at+fn)*2]=.52+.46*.145/.37;body.t[(at+fn)*2+1]=.25;for(j=0;j<around;j++){var lo=at+1+(radial-1)*around+j,ln=at+1+(radial-1)*around+(j+1)%around,up=lo+fn,un=ln+fn;body.i.push(lo,ln,up,ln,un,up);}clawStations.push({side:side,first:start,count:body.count()-start,openCleft:true,cleftProbe:[cx+.31*Math.cos(yaw),.10,cz+.31*Math.sin(yaw)],palmProbe:[cx+.14*Math.cos(yaw),.10,cz+.14*Math.sin(yaw)]});
+    });ranges['flattened-chelae']={first:clawStations[0].first,count:body.count()-clawStations[0].first};
+    // Folded abdominal plates and a compact retained tail fan belong below
+    // the shield. They are not an exposed swimming tail in this resting pose.
+    first=body.count();for(j=0;j<3;j++)blob(T,body,-.07+j*.043,.065-j*.003,0,.036,.009,.071-j*.013,lin(mixc(cream,shade,j*.10,[0,0,0])),high?10:6,high?4:2);
+    for(j=-1;j<=1;j++)blob(T,body,-.115,.062,j*.027,.026,.006,.021,lin(cream),high?8:4,high?4:2);neutral(body,first);mark('folded-abdomen-tail-fan',first);
+    first=body.count();blob(T,body,.146,.091,0,.013,.010,.017,lin(shade),high?10:6,high?5:3);neutral(body,first);mark('oral-centre',first);
+    first=body.count();[-1,1].forEach(function(side){body.tube([[.12,.117,side*.066],[.162,.135,side*.085]],function(u){return .012-.003*u;},high?7:4,function(){return lin(cream);});blob(T,body,.170,.137,side*.088,.018,.016,.016,ink,high?12:6,high?7:4);});neutral(body,first);mark('paired-stalked-eyes',first);
+    // Two bristled third maxillipeds, distinct from the claws. Their sparse
+    // setae are real geometry and leave open water between the feather combs.
+    [-1,1].forEach(function(side){var root=[.153,.089,side*.027],at=fans.count(),stalk=[root.slice(),[.192,.135,side*.055],[.22,.205,side*.092],[.222,.239,side*.103]];
+      fans.tube(stalk,function(u){return .007*(1-.65*u);},high?6:3,function(){return lin(cream);});
+      var bristleCount=high?32:14;
+      for(var b=0;b<bristleCount;b++){var u=(b+.5)/bristleCount,a=lerp(-1.18,1.28,u),length=.095+.044*Math.sin(PI*u),base=[.218,.208+u*.026,side*(.089+u*.015)],tip=[.222+Math.sin(a)*.025,.218+Math.cos(a)*length,side*(.100+Math.sin(a)*length)],mid=[lerp(base[0],tip[0],.55)+.008,lerp(base[1],tip[1],.55),lerp(base[2],tip[2],.55)],q=fans.count(),w=high?.0014:.0018,col=lin(mixc(shade,cream,.68,[0,0,0]));
+        var wy=-Math.sin(a)*w,wz=side*Math.cos(a)*w;fans.v(base[0],base[1]-wy,base[2]-wz,col,.5,.5);fans.v(base[0],base[1]+wy,base[2]+wz,col,.5,.5);fans.v(mid[0],mid[1]-wy*.6,mid[2]-wz*.6,lin(cream),.5,.5);fans.v(mid[0],mid[1]+wy*.6,mid[2]+wz*.6,lin(cream),.5,.5);fans.v(tip[0],tip[1],tip[2],lin(cream),.5,.5);fans.i.push(q,q+1,q+2,q+1,q+3,q+2,q+2,q+3,q+4);
+        // Fine side setules suggest the filtering mesh without an opaque fan.
+        if(high&&b%2===0){var q=fans.count(),p=[lerp(mid[0],tip[0],.4),lerp(mid[1],tip[1],.4),lerp(mid[2],tip[2],.4)];fans.v(p[0],p[1],p[2],col,.5,.5);fans.v(p[0]+.0006,p[1]+.0007,p[2],col,.5,.5);fans.v(p[0]+.002,p[1]+.006,p[2]+side*.004,col,.5,.5);fans.i.push(q,q+1,q+2);}
+      }
+      neutral(fans,at);fanParts.push({side:side,first:at,count:fans.count()-at,root:root,bristles:bristleCount});
+    });
+    // Long fine antennae are separate from the filtering mouthparts. Only
+    // their distal ends flex; the seated bases and all walking contacts stay put.
+    [-1,1].forEach(function(side){var at=fans.count(),pts=[],n=high?12:5;for(var q=0;q<=n;q++){var u=q/n;pts.push([.12+.51*u,.116+.040*Math.sin(PI*u)-.035*u,side*(.09+.40*u+.025*Math.sin(PI*u))]);}fans.tube(pts,function(u){return .0032*Math.pow(1-u,.8)+.00025;},3,function(u){return lin(mixc(cream,wine,.25+.12*u,[0,0,0]));});neutral(fans,at);antennae.push({side:side,first:at,count:fans.count()-at,root:pts[0],segments:n});});
+    function dots(u,v,out,kind){var cells=kind==='carapace'?13:kind==='claw'?12:10,x=u*cells,y=v*cells,ix=Math.floor(x),iy=Math.floor(y),d=9,radius=.2;
+      for(var i=-1;i<=1;i++)for(var j=-1;j<=1;j++){var xx=ix+i,yy=iy+j,r=noise2(xx*3.17+phase,yy*5.63),dx=x-xx-(.18+.64*noise2(xx*7.2+phase,yy*3.9)),dy=y-yy-(.18+.64*noise2(xx*4.3,yy*8.1+phase)),dd=Math.hypot(dx,dy)/(.13+.15*r);if(dd<d){d=dd;radius=r;}}
+      var coverage=kind==='carapace'?1-smooth(.71,1,Math.hypot((u-.5)/.45,(v-.5)/.45)):kind==='claw'?(1-smooth(.65,.83,u))*smooth(.02,.16,v)*(1-smooth(.86,.98,v)):(1-smooth(.28,.60,u))*smooth(.02,.15,u);
+      mixc(cream,hex(0xc6ac89),coverage*(1-smooth(1.1,2.5,d))*.24,out);mixc(out,wine,coverage*(1-smooth(.85,1.05,d))*.96,out);mixc(out,hex(0x5b2930),coverage*(1-smooth(.25,.68,d))*(.40+.15*radius),out);
+    }
+    var map=kit.baked(c.key('porcelain-crab-spots'),high?512:256,high?512:256,function(u,v,out){setc(out,white);var left=u>=.02&&u<=.48,right=u>=.52&&u<=.98,bottom=v>=.02&&v<=.48,top=v>=.52&&v<=.98;if((!left&&!right)||(!bottom&&!top))return;if(left&&top)return;dots((u-(left?.02:.52))/.46,(v-(bottom?.02:.52))/.46,out,left?'carapace':bottom?'claw':'leg');},false,false);
+    var bump=kit.baked(c.key('porcelain-crab-shell'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.5+.035*(noise2(u*111+phase,v*109)-.5);},false,false,true);
+    scaleGeo(body,L);scaleGeo(fans,L);var bg=kit.geo(body,1),fg=kit.geo(fans,1);
+    bg.userData.porcelainCrab={ranges:ranges,nominalLegClawSpanM:.04,nominalCarapaceLengthM:.012,antennaeExcludedFromSpan:true,scaleM:L,appearance:'finely-red-spotted-unsexed',walkingPairs:3,reducedPair:1,legs:legs,claws:clawStations,hostOmitted:true};
+    fg.userData.porcelainCrab={fans:fanParts,antennae:antennae,maximumDisplacementM:.050*L};
+    var material=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00045*L,roughness:.46,side:T.DoubleSide});
+    kit.mesh(bg,material,'fixed-shell-chelae-legs',c.root);kit.mesh(fg,material,'feeding-fans-antennae',c.root);
+    var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.050*L);fg.boundingSphere.radius+=.050*L;
+    c.anim(function(t){var out=fg.attributes.position.array;fanParts.forEach(function(f){var angle=.16*Math.sin(t*.73+phase+f.side*.8),ca=Math.cos(angle),sa=Math.sin(angle),rx=f.root[0]*L,ry=f.root[1]*L,rz=f.root[2]*L;for(var j=high?6:3;j<f.count;j++){var k=(f.first+j)*3,x=rest[k]-rx,y=rest[k+1]-ry,z=rest[k+2]-rz;out[k]=rx+x*ca+y*sa;out[k+1]=ry+y*ca-x*sa;out[k+2]=rz+z;}});antennae.forEach(function(a){for(var j=3;j<a.count;j++){var k=(a.first+j)*3,weight=Math.pow(clamp((rest[k]/L-a.root[0])/.51,0,1),2);out[k]=rest[k];out[k+1]=rest[k+1]+.008*L*weight*Math.sin(t*.55+phase+a.side);out[k+2]=rest[k+2]+a.side*.007*L*weight*Math.sin(t*.43+phase);}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+  }
+
+
+  // Protoreaster nodosus: illustrative cream/ochre Western Pacific example.
+  // Five heavy arms join a single inflated body. Variable dark conical knobs
+  // are distinct from the fine granules and the underside's ambulacral grooves.
+  function buildChocolateChipSeaStar(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(331),L=.28*(.97+.06*rng()),phase=rng()*TAU,angle=.30;
+    var body=new Geo(),feet=new Geo(),ranges={},cream=hex(0xc8ae7d),ochre=hex(0xa17945),pale=hex(0xe8d8b9),brown=hex(0x4c3026),tip=hex(0x241e1a),groove=hex(0x92745f),lilac=hex(0xb394a5),white=[1,1,1];
+    var radius=.5/Math.sin(PI*.4),knobs=[],footStations=[];
+    function outline(a){return .22+(radius-.22)*Math.pow(.5+.5*Math.cos((a-angle)*5),1.45);}
+    function topY(r,a){var u=clamp(r/outline(a),0,1);return .026+.115*Math.pow(Math.max(0,1-u*u),.85);}
+    function channel(r,a){var delta=Math.atan2(Math.sin((a-angle)*5),Math.cos((a-angle)*5))/5,side=Math.abs(Math.sin(delta)*r);return (1-smooth(.012,.028,side))*smooth(.025,.07,r)*(1-smooth(.46,.515,r));}
+    function bottomY(r,a){var u=clamp(r/outline(a),0,1);return .026+.008*(1-u)+.012*channel(r,a)*(1-smooth(.90,1,u));}
+    function mark(name,start){ranges[name]={first:start,count:body.count()-start};}
+    var nr=high?6:4,ns=high?100:50,first=body.count();
+    body.polar(nr,ns,function(u,a,out){var r=outline(a)*u,x=Math.cos(a)*r,z=Math.sin(a)*r;mixc(cream,ochre,.16+.24*noise2(x*15+phase,z*17),out);mixc(out,pale,.13*(1-u),out);setc(out,lin(out));return[x,topY(r,a),z,.02+.46*(x+radius)/(2*radius),.02+.46*(z+radius)/(2*radius)];});mark('aboral-body',first);
+    first=body.count();body.polar(nr,ns,function(u,a,out){var r=outline(a)*u,x=Math.cos(a)*r,z=Math.sin(a)*r;mixc(pale,groove,.70*channel(r,a),out);setc(out,lin(out));return[x,bottomY(r,a),z,.5,.5];},true);mark('oral-body-five-grooves',first);
+    // Matching outer rings close the seamless body without open arm ends.
+    var outerA=1+(nr-1)*ns,outerB=first+1+(nr-1)*ns;for(var i=0;i<ns;i++)body.seams.push([outerA+i,outerB+i]);
+    // Single radial rows of knobs plus five on the central disc. Their count
+    // and colour are an example, not a universal diagnostic for every animal.
+    for(i=0;i<5;i++){var a=angle+i*TAU/5;knobs.push({r:.085,a:a+.18,height:.046,width:.030});for(var j=0;j<4;j++){var r=.19+j*.078;knobs.push({r:r,a:a,height:.045-.007*j,width:.029-.0035*j});}}
+    first=body.count();knobs.forEach(function(k,index){var x=Math.cos(k.a)*k.r,z=Math.sin(k.a)*k.r,base=topY(k.r,k.a)-.003,h=k.height*(.94+.12*rng()),sides=high?8:7,levels=high?[0,.36,.73]:[0],at=body.count();k.position=[x,base,z];k.actualHeight=h;
+      for(var row=0;row<levels.length;row++)for(var q=0;q<sides;q++){var u=levels[row],b=q/sides*TAU,w=k.width*Math.pow(1-u,.80),xp=x+Math.cos(b)*w,zp=z+Math.sin(b)*w,seat=topY(Math.hypot(xp,zp),Math.atan2(zp,xp))-.001,col=lin(mixc(mixc(ochre,brown,.76,[0,0,0]),tip,smooth(.02,.90,u),[0,0,0]));body.v(xp,lerp(seat,base+h,u),zp,col,.5,.5);}for(row=0;row<levels.length-1;row++)for(q=0;q<sides;q++){var v=at+row*sides+q,n=at+row*sides+(q+1)%sides;body.i.push(v,n,v+sides,n,n+sides,v+sides);}var apex=body.v(x,base+h,z,lin(tip),.5,.5),last=at+(levels.length-1)*sides;for(q=0;q<sides;q++)body.i.push(last+q,last+(q+1)%sides,apex);
+    });mark('dark-conical-knobs',first);
+    // One small off-centre madreporite, plus an inconspicuous central mouth
+    // on the oral surface. Neither is an eye or a second upper mouth.
+    first=body.count();var ma=angle+PI/5,mr=.105,mx=Math.cos(ma)*mr,mz=Math.sin(ma)*mr;blob(T,body,mx,topY(mr,ma)+.001,mz,.013,.0025,.010,lin(pale),high?10:5,high?4:2);mark('madreporite',first);
+    first=body.count();body.polar(high?2:1,high?20:10,function(u,a,out){var r=.015*u*(1+.10*Math.cos(a*5));setc(out,lin(mixc(hex(0x58413b),groove,smooth(.40,1,u),[0,0,0])));return[Math.cos(a)*r,.035-.001*u,Math.sin(a)*r,.5,.5];},true);mark('central-oral-mouth',first);
+    // Paired tube feet in all five real, recessed oral grooves. The sparse
+    // low tier samples the same stations; count is a rendering simplification.
+    var pairs=high?12:6,sides=high?4:3;
+    for(i=0;i<5;i++){var a=angle+i*TAU/5,ca=Math.cos(a),sa=Math.sin(a);for(j=0;j<pairs;j++){var station=high?j:j*2,r=.065+.375*station/11;[-1,1].forEach(function(side){var across=.0095*(1-.3*station/11),x=ca*r-sa*across*side,z=sa*r+ca*across*side,ry=bottomY(Math.hypot(x,z),Math.atan2(z,x))+.001,start=feet.count(),levels=high?[[ry,.0020],[.004,.0018],[.001,.0038]]:[[ry,.0020],[.001,.0038]];
+        for(var row=0;row<levels.length;row++)for(var q=0;q<sides;q++){var aa=q/sides*TAU,col=lin(mixc(lilac,pale,row/(levels.length-1)*.45,[0,0,0]));feet.v(x+Math.cos(aa)*levels[row][1],levels[row][0],z+Math.sin(aa)*levels[row][1],col,.5,.5);}for(row=0;row<levels.length-1;row++)for(q=0;q<sides;q++){var v=start+row*sides+q,n=start+row*sides+(q+1)%sides;feet.i.push(v,n,v+sides,n,n+sides,v+sides);}var sole=feet.v(x,0,z,lin(lilac),.5,.5),last=start+(levels.length-1)*sides;for(q=0;q<sides;q++)feet.i.push(last+q,sole,last+(q+1)%sides);footStations.push({arm:i,station:station,side:side,first:start,count:feet.count()-start,root:[x,ry,z],contact:[x,0,z],probing:station%3===1});
+      });}}
+    var map=kit.baked(c.key('chip-granules'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u<.02||u>.48||v<.02||v>.48)return;var n=noise2(u*370+phase,v*390),grit=smooth(.54,.80,n);mulc(out,.93+.10*noise2(u*80,v*86)-.09*grit);},false,false);
+    var bump=kit.baked(c.key('chip-relief'),high?256:128,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=u>=.02&&u<=.48&&v>=.02&&v<=.48?.5+.22*(noise2(u*370+phase,v*390)-.5):.5;},false,false,true);
+    scaleGeo(body,L);scaleGeo(feet,L);var bg=kit.geo(body,1),fg=kit.geo(feet,1);bg.userData.chocolateChipStar={ranges:ranges,arms:5,knobs:knobs,nominalTipSpanM:.28,scaleM:L,appearance:'cream-ochre-unsexed',oralGrooves:5,armAngle:angle,armRadiusUnit:radius};fg.userData.chocolateChipStar={feet:footStations,pairsPerArm:pairs,renderedTubeFeet:footStations.length,maximumProbeDisplacementM:.0033*L};
+    kit.mesh(bg,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0011*L,roughness:.81,side:T.DoubleSide}),'fixed-body-knobs',c.root);
+    kit.mesh(fg,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0001*L,roughness:.56,side:T.DoubleSide}),'paired-tube-feet',c.root);
+    var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.0033*L);fg.boundingSphere.radius+=.0033*L;
+    // Quiet local probing, not locomotion: two thirds remain attached. Foot
+    // roots stay seated in the grooves; body and placement root never sway.
+    c.anim(function(t){var out=fg.attributes.position.array;footStations.forEach(function(f){if(!f.probing)return;var ph=phase+f.arm*1.3+f.station*.9+f.side*.6,wave=Math.sin(t*.8+ph),lift=.0015*(1+Math.sin(t*.62+ph));for(var j=0;j<f.count;j++){var at=(f.first+j)*3,weight=Math.pow(clamp(1-rest[at+1]/(f.root[1]*L),0,1),2);out[at]=rest[at]+Math.cos(angle+f.arm*TAU/5)*.0012*L*wave*weight;out[at+1]=rest[at+1]+lift*L*weight;out[at+2]=rest[at+2]+Math.sin(angle+f.arm*TAU/5)*.0012*L*wave*weight;}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+  }
+
+
+  // Oxycirrhites typus: an unsexed red/white example on a small illustrative
+  // branch perch. Anatomy follows Australian Museum and Smithsonian STRI:
+  // long pointed snout, dorsal cirri, stout lower pectoral rays, truncate tail.
+  function buildLongnoseHawkfish(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(317),L=.12*(.97+.06*rng()),phase=rng()*TAU;
+    var g=new Geo(),ranges={},white=[1,1,1],ivory=hex(0xf1e6da),red=hex(0xbc3e3a),dark=hex(0x692e2d),pink=hex(0xd77a66),perch=hex(0x70685a);
+    var rows=[[.50,.337,.321,.006],[.43,.343,.318,.010],[.33,.358,.312,.017],[.24,.386,.292,.030],[.17,.403,.236,.055],[.065,.393,.210,.063],[-.065,.362,.212,.054],[-.21,.325,.236,.029],[-.34,.297,.268,.010]],prof=profile(rows);
+    function mark(name,f){ranges[name]={first:f,count:g.count()-f};}
+    function guard(f){for(var k=f;k<g.count();k++){g.t[k*2]=.5;g.t[k*2+1]=.5;}}
+    g.loft(rows,high?46:17,high?22:8,function(u,a,x,y,z,out){setc(out,white);});
+    for(var i=0;i<g.count();i++){g.t[i*2]=.02+.46*clamp((.5-g.p[i*3])/.84,0,1);g.t[i*2+1]=.02+.46*clamp((g.p[i*3+1]-.20)/.21,0,1);}mark('long-snouted-body',0);
+    // Pale fin webs with crimson rays, retaining a fine irregular net pattern.
+    function finColor(u,v,out){mixc(ivory,pink,.08+.13*v,out);var stripe=1-smooth(.05,.12,Math.abs(Math.sin((u*9+.035*Math.sin(v*8))*PI)));mixc(out,red,stripe*(.25+.35*v),out);}
+    var dorsal=[],roots=[],edges=[],first=g.count();
+    for(i=0;i<23;i++){var u=i/22,x=.12-.46*u,y=prof(x)[0]-.004,h=i<10?.080+.033*Math.sin(i/9*PI):.074+.025*Math.sin((i-10)/12*PI);dorsal.push({root:[x,y,0],tip:[x-.015,y+h,0],spine:i<10});}
+    var sub=high?2:1;for(i=0;i<=22*sub;i++){var q=i/sub,j=Math.min(21,Math.floor(q)),u=q-j,a=dorsal[j],b=dorsal[j+1];roots.push([lerp(a.root[0],b.root[0],u),lerp(a.root[1],b.root[1],u),0]);edges.push([lerp(a.tip[0],b.tip[0],u),lerp(a.tip[1],b.tip[1],u)-.013*Math.sin(u*PI),0]);}
+    g.membrane(roots,edges,high?4:2,finColor);guard(first);mark('continuous-dorsal',first);
+    first=g.count();for(i=0;i<dorsal.length;i++){var ray=dorsal[i];if(high)g.tube([ray.root,ray.tip],function(u){return .0023*(1-.65*u);},4,function(u){return lin(mixc(red,ivory,.2+.2*u,[0,0,0]));});else{var at=g.count(),col=lin(pink);g.v(ray.root[0]-.002,ray.root[1],.0005,col);g.v(ray.root[0]+.002,ray.root[1],.0005,col);g.v(ray.tip[0],ray.tip[1],.0005,col);g.i.push(at,at+1,at+2);}}guard(first);mark('dorsal-rays',first);
+    // Three small tapered cirri at each of the ten hard dorsal spine tips.
+    first=g.count();var tufts=[];for(i=0;i<10;i++){var tip=dorsal[i].tip,pts=[];for(var j=-1;j<=1;j++){var p=[[tip[0],tip[1]-.002,0],[tip[0]+j*.006,tip[1]+.010-Math.abs(j)*.002,j*.002],[tip[0]+j*.011,tip[1]+.020-Math.abs(j)*.005,j*.004]];g.tube(high?p:[p[0],p[2]],function(u){return .0015*(1-.9*u);},3,function(u){return lin(mixc(red,ivory,.2+.65*u,[0,0,0]));});pts.push(p[2]);}tufts.push(pts);}guard(first);mark('ten-cirrus-tufts',first);
+    // The tail has a blunt trailing edge, with only its outer corners rounded.
+    roots=[];edges=[];first=g.count();var n=high?20:10;
+    for(i=0;i<=n;i++){var u=i/n,v=2*u-1;roots.push([-.332,.282+.012*v,0]);edges.push([-.50+.018*Math.pow(Math.abs(v),5),.282+.095*v,0]);}
+    g.membrane(roots,edges,high?5:2,finColor);guard(first);mark('truncate-caudal',first);
+    first=g.count();for(i=0;i<11;i++){var v=-1+2*i/10;g.tube([[-.332,.282+.012*v,0],[-.50+.018*Math.pow(Math.abs(v),5),.282+.095*v,0]],function(u){return .0019*(1-.6*u);},high?4:3,function(){return lin(pink);});}guard(first);mark('caudal-rays',first);
+    roots=[];edges=[];first=g.count();n=high?16:8;for(i=0;i<=n;i++){var u=i/n,x=-.02-.29*u;roots.push([x,prof(x)[1]+.004,0]);edges.push([x-.016,prof(x)[1]-.053*Math.sin(u*PI),0]);}g.membrane(roots,edges,high?3:2,finColor);guard(first);mark('anal-fin',first);
+    // Upper pectoral webs remain above six thick lower, unbranched rays.
+    // The supporting ray ends are planted on the integral transverse branch.
+    var supports=[],pectorals=[];function branchPoint(u,side){return [.062+.068*Math.sin(u*PI)-.075*u,.123+.006*Math.sin(u*PI*.5),side*.17*u];}
+    [-1,1].forEach(function(side){var start=g.count(),rs=[],es=[],n=high?14:7;for(var j=0;j<=n;j++){var u=j/n;rs.push([.08,.292-.04*u,side*.052]);es.push([.02-.13*u,.290-.040*u,side*(.07+.10*Math.sin(.3+u*PI*.65))]);}g.membrane(rs,es,high?4:2,finColor);guard(start);pectorals.push({side:side,first:start,count:g.count()-start});var f=g.count();for(j=0;j<6;j++){var u=j/5,end=branchPoint(.44+.50*u,side);end[1]+=.012*(1-.22*(.44+.50*u));var attached=end.slice();end[1]+=.055;var start=[.08,.264-.020*u,side*.049],mid=[.060-.025*u,.244-.012*u,side*(.065+.038*u)],ps=[start,mid,[lerp(mid[0],end[0],.6),lerp(mid[1],end[1],.65)+.004*Math.sin(u*PI),lerp(mid[2],end[2],.6)],end];g.tube(high?ps:[start,mid,end],function(v){return .0063*(1-.58*v);},high?5:3,function(v){return lin(mixc(red,ivory,.24+.48*v,[0,0,0]));});if(j>0){var prev=1/5,oldU=u-prev;g.membrane([[.08,.264-.020*oldU,side*.049],start],[[.060-.025*oldU,.244-.012*oldU,side*(.065+.038*oldU)],mid],1,function(a,v,out){mixc(pink,ivory,.28+.2*v,out);});}supports.push({side:side,end:attached});}guard(f);});
+    first=g.count();[-1,1].forEach(function(side){g.membrane([[.075,.223,side*.018],[.02,.218,side*.018]],[[.08,.195,side*.04],[-.04,.205,side*.057]],high?3:2,finColor);});guard(first);mark('pelvic-supports',first);
+    // Terminal mouth seam follows both narrow jaws; small opercular folds
+    // and nostrils sit on the head instead of adding a blunt separate snout.
+    first=g.count();[-1,1].forEach(function(side){var ps=[];for(var j=0;j<=7;j++){var u=j/7,x=.499-.21*u,y=.327-.009*u;ps.push([x,y,side*(surfZ(prof,2,x,y)+.0005)]);}g.tube(ps,.00085,3,function(){return lin(dark);});var ps=[];for(j=0;j<=5;j++){var u=j/5,x=.070-.028*Math.sin(u*PI),y=.35-.10*u;ps.push([x,y,side*(surfZ(prof,2,x,y)+.0007)]);}g.tube(ps,.0011,3,function(){return lin(pink);});blob(T,g,.252,.367,side*surfZ(prof,2,.252,.367),.003,.0017,.0017,lin(dark),high?7:4,3);});guard(first);mark('mouth-gills-nostrils',first);
+    first=g.count();[-1,1].forEach(function(side){addEye(T,g,prof,2,[.190,.365,.024],side,hex(0xc98065),high,.13,!high);});mark('eyes',first);
+    // Lower the whole fish toward its support without changing its anatomy.
+    for(i=1;i<g.p.length;i+=3)g.p[i]-=.055;
+    // A compact neutral branch is a placement support, not another identified
+    // coral species. All its vertices lie below the animation envelope.
+    first=g.count();var branchPaths=[[[.05,.014,0],[.058,.040,.005],[.073,.071,.010],[.070,.098,.006],[.062,.123,0]]];[-1,1].forEach(function(side){var ps=[];for(var j=0;j<=6;j++)ps.push(branchPoint(j/6,side));branchPaths.push(ps);});
+    branchPaths.forEach(function(ps,b){g.tube(high?ps:ps.filter(function(p,i){return i===0||i===ps.length-1||i%2===0;}),function(u){return (b?.012:.014)*(1-.22*u)*(1+.10*Math.sin(u*13+b));},high?7:4,function(u,s){return lin(mixc(hex(0x514f40),hex(0x9c9077),.16+.40*noise2(u*14+b,s*7+phase),[0,0,0]));});});
+    blob(T,g,.072,.086,.010,.016,.017,.014,lin(perch),high?8:5,high?4:3);blob(T,g,.062,.121,0,.019,.014,.016,lin(perch),high?8:5,high?4:3);blob(T,g,.05,.007,0,.032,.007,.025,lin(perch),high?12:6,high?5:3);guard(first);mark('illustrative-perch',first);
+    var map=kit.baked(c.key('hawk-crosshatch'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u<.02||u>.48||v<.02||v>.48)return;var x=.5-.84*(u-.02)/.46,y=.20+.21*(v-.02)/.46,wx=x+.004*Math.sin(y*55+phase)+.0015*Math.sin(y*120+x*47),wy=y+.003*Math.sin(x*42+phase),vertical=1-smooth(.13,.24,Math.abs(Math.sin((wx+.04)*PI/ .055))),horizontal=1-smooth(.10,.19,Math.abs(Math.sin((wy-.20)*PI/.045))),net=Math.max(vertical*.88,horizontal*.94);mixc(ivory,red,net,out);mulc(out,.96+.04*noise2(x*160+phase,y*170));},false,false);
+    var bump=kit.baked(c.key('hawk-skin'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=u>=.02&&u<=.48&&v>=.02&&v<=.48?.5+.045*(noise2(u*350,v*370)-.5):.5;},false,false,true);
+    g.map(0,function(p){var x=p[0],y=p[1];p[0]=-y*L;p[1]=x*L;p[2]*=L;});var geo=kit.geo(g,1),frame=kit.node('perched-frame',c.root);frame.rotation.z=-PI/2;
+    var swim={value:new T.Vector4(phase,0,14/L,0)},shape={value:new T.Vector4(-.16*L,-.51*L,1,0)};
+    geo.userData.longnoseHawkfish={ranges:ranges,nominalTotalLengthM:.12,scaleM:L,appearance:'red-white-unsexed',bodyPoseOffsetUnit:-.055,bodyRows:rows,dorsalRays:dorsal,spines:10,softRays:13,cirrusTufts:tufts,supportRays:supports,pectorals:pectorals,branchPaths:branchPaths,staticEnvelopeHeightM:.16*L};
+    kit.mesh(geo,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.00007*L,roughness:.48,side:T.DoubleSide},{swim:swim,swimShape:shape,eye:true,iris:hex(0xc98065)}),'fish-and-perch',frame);geo.boundingBox.expandByScalar(.009*L);geo.boundingSphere.radius+=.009*L;
+    var flow={x:0,z:0,pulse:0};c.anim(function(t,dt,motion){currentAt(c.root,motion,t,phase,flow);swim.value.set(phase+t*.62,L*(.002+.004*Math.min(1,Math.hypot(flow.x,flow.z)))*flow.pulse,14/L,t);});
+  }
+
+
+  // Taenianotus triacanthus: a cream/pink, unsexed example following the
+  // Australian Museum and Museums Victoria photographs. Its papillae, high
+  // sail and low supporting fins are distinct from a scaled schooling fish.
+  function buildLeafScorpionfish(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(307), L = .10 * (.97 + .06 * rng()), phase = rng() * TAU;
+    var g = new Geo(), ranges = {}, cream = hex(0xe6d9be), rose = hex(0xb36d79), pale = hex(0xf0e4cf), ink = hex(0x67504b), white = [1,1,1];
+    var rows = [[.50,.315,.286,.008],[.43,.352,.220,.035],[.32,.415,.145,.057],[.16,.400,.080,.060],[-.02,.340,.080,.044],[-.19,.252,.118,.024],[-.33,.205,.155,.010]], prof = profile(rows);
+    function mark(name, first) { ranges[name] = {first:first,count:g.count()-first}; }
+    function skinUV(first) { for(var i=first;i<g.count();i++){g.t[i*2]=.02+.46*clamp((.50-g.p[i*3])/.84,0,1);g.t[i*2+1]=.02+.46*clamp(g.p[i*3+1]/.43,0,1);} }
+    function guard(first) { for(var i=first;i<g.count();i++){g.t[i*2]=.5;g.t[i*2+1]=.5;} }
+    g.loft(rows,high?42:13,high?22:8,function(u,a,x,y,z,out){setc(out,white);});skinUV(0);mark('compressed-body',0);
+    // A continuous scalloped sail: the third/fourth spines are the tallest.
+    // Twelve anterior spines transition to nine soft rays, adjoining the tail.
+    var tips=[.52,.66,.78,.80,.76,.71,.65,.60,.55,.50,.46,.43,.41,.40,.39,.38,.36,.34,.31,.28,.245], dorsal=[], roots=[], edges=[], first=g.count(), subdivisions=high?2:1;
+    for(var i=0;i<tips.length;i++){var x=.31-.68*i/20, p=prof(Math.max(-.33,x));dorsal.push({root:[x,p[0]-.008,0],tip:[x-.018,tips[i],0],spine:i<12});}
+    for(i=0;i<20*subdivisions+1;i++){var f=i/subdivisions,j=Math.min(19,Math.floor(f)),u=f-j,a=dorsal[j],b=dorsal[j+1],y=lerp(a.tip[1],b.tip[1],u)-.020*Math.sin(u*PI);roots.push([lerp(a.root[0],b.root[0],u),lerp(a.root[1],b.root[1],u),0]);edges.push([lerp(a.tip[0],b.tip[0],u),y,.004*Math.sin(i*.7)*Math.sin(u*PI)]);}
+    function finColor(u,v,out){var mottling=smooth(.42,.76,noise2(u*13+phase,v*11)),rib=.5+.5*Math.cos(u*TAU*20);mixc(cream,rose,.12+.42*mottling+.13*smooth(.85,1,v),out);mulc(out,.95+.05*rib);}
+    g.membrane(roots,edges,high?5:2,finColor);guard(first);mark('dorsal-sail',first);
+    first=g.count();for(i=0;i<dorsal.length;i++){var q=dorsal[i];g.tube(high?[q.root,[lerp(q.root[0],q.tip[0],.58),lerp(q.root[1],q.tip[1],.58),.001],q.tip]:[q.root,q.tip],function(u){return .003*(1-.80*u);},high?4:3,function(u){return lin(mixc(rose,pale,.3+.5*u,[0,0,0]));});}guard(first);mark('dorsal-rays',first);
+    // Rounded caudal joins the soft dorsal margin rather than a forked tail.
+    var tailR=[],tailE=[],n=high?22:10;first=g.count();
+    for(i=0;i<=n;i++){var u=i/n,angle=(u-.5)*PI*.95;tailR.push([-.305,.184,0]);tailE.push([-.31-.19*Math.cos(angle),.184+.16*Math.sin(angle),.003*Math.sin(u*PI)]);}
+    g.membrane(tailR,tailE,high?5:2,finColor);guard(first);mark('rounded-caudal',first);
+    first=g.count();for(i=0;i<=8;i++){var u=i/8,a=(u-.5)*PI*.95;g.tube([[-.305,.184,0],[-.31-.19*Math.cos(a),.184+.16*Math.sin(a),.003*Math.sin(u*PI)]],function(t){return .0025*(1-.65*t);},high?4:3,function(){return lin(cream);});}guard(first);mark('caudal-rays',first);
+    // A shallow anal web remains anatomically separate from the pectoral pair.
+    roots=[];edges=[];first=g.count();n=high?16:8;
+    for(i=0;i<=n;i++){var u=i/n,x=.01-.35*u;roots.push([x,prof(Math.max(-.33,x))[1]+.004,0]);edges.push([x-.016,.025+.11*u-.035*Math.sin(u*PI),0]);}
+    g.membrane(roots,edges,high?3:2,finColor);guard(first);mark('anal-fin',first);
+    var pectorals=[],contacts=[];
+    [-1,1].forEach(function(side){var rs=[],es=[],n=high?20:10,start=g.count();for(var j=0;j<=n;j++){var u=j/n,angle=-.85+1.9*u,reach=.17+.05*Math.sin(u*PI),x=.16-Math.sin(angle)*reach,y=.014+.065*Math.pow(Math.abs(u-.60)*1.8,2),z=side*(.053+Math.cos(angle)*reach);if(j===Math.round(n*.6))y=0;rs.push([.14,.19-.08*u,side*.040]);es.push([x,y,z]);if(y===0)contacts.push([x,y,z]);}g.membrane(rs,es,high?5:2,function(u,v,out){finColor(u,v,out);mixc(out,pale,v*.18,out);});guard(start);pectorals.push({side:side,first:start,count:g.count()-start,root:rs,edge:es});
+      var f=g.count();for(var j=0;j<=8;j++){var u=j/8,a=-.85+1.9*u,r=.17+.05*Math.sin(u*PI),tip=[.16-Math.sin(a)*r,.014+.065*Math.pow(Math.abs(u-.60)*1.8,2),side*(.053+Math.cos(a)*r)];g.tube([[.14,.19-.08*u,side*.040],tip],function(v){return .0033*(1-.7*v);},high?4:3,function(v){return lin(mixc(rose,pale,.3+.6*v,[0,0,0]));});}guard(f);
+    });
+    // Low paired pelvic supports finish at the same substrate plane.
+    first=g.count();[-1,1].forEach(function(side){g.membrane([[.18,.11,side*.025],[.11,.09,side*.025]],[[.24,0,side*.08],[.065,.012,side*.105]],high?3:2,finColor);});mark('pelvic-supports',first);
+    // Oblique mouth seam and seated opercular folds, never a painted smile.
+    first=g.count();[-1,1].forEach(function(side){var path=[];for(var j=0;j<=5;j++){var u=j/5,x=.494-.16*u,y=.302-.103*u;path.push([x,y,side*(surfZ(prof,2,x,y)+.001)]);}g.tube(path,function(u){return .0008+.0006*Math.sin(u*PI);},high?4:3,function(){return lin(ink);});var pts=[];for(j=0;j<=5;j++){var u=j/5,x=.205-.035*Math.sin(u*PI),y=.30-.15*u;pts.push([x,y,side*(surfZ(prof,2,x,y)+.001)]);}g.tube(pts,.0012,3,function(){return lin(rose);});});guard(first);mark('mouth-gill-folds',first);
+    first=g.count();[-1,1].forEach(function(side){addEye(T,g,prof,2,[.337,.352,.026],side,hex(0x9f8a6d),high,.18,!high);});mark('eyes',first);
+    // Flat leafy brow cirri plus a fine, irregular beard around the lower jaw.
+    first=g.count();var cirri=[];
+    [-1,1].forEach(function(side){for(var j=0;j<7;j++){var u=j/6,x=.45-.19*u,y=.242-.065*u,z=side*(surfZ(prof,2,x,y)+.002),len=.022+.018*(.5+.5*Math.sin(j*2.7+phase)),pts=[[x,y,z],[x+.006,y-len*.55,z+side*.004],[x+.014,y-len,z+side*.006]];g.tube(pts,function(v){return .0023*(1-.85*v);},high?4:3,function(v){return lin(mixc(rose,pale,.45+.4*v,[0,0,0]));});cirri.push(pts);}
+      var z=side*surfZ(prof,2,.335,.38);g.membrane([[.319,.379,z],[.331,.389,z],[.348,.386,z]],[[.305,.441,z+side*.010],[.327,.418,z+side*.008],[.343,.435,z+side*.010]],high?3:2,function(u,v,out){mixc(cream,rose,v*.45,out);});
+    });guard(first);mark('facial-cirri',first);
+    // Small epidermal papillae with seeded stations shared by both tiers.
+    first=g.count();var papillae=[];for(i=0;i<48;i++){var x=.37-.65*rng(),q=prof(x),y=lerp(q[1]+.025,q[0]-.02,rng()),side=i%2?1:-1,z=side*surfZ(prof,2,x,y),r=.0025+.002*rng(),h=.003+.004*rng();papillae.push([x,y,z,r,h]);if(high||i%3===0)g.tube([[x,y,z],[x+.001,y+.001,z+side*h]],function(u){return r*(1-.95*u);},high?5:3,function(u){return lin(mixc(rose,pale,.45+.4*u,[0,0,0]));});}guard(first);mark('papillae',first);
+    // Only body UVs address this mottled skin island; fine anatomy stays in
+    // the flat white atlas guard, so eye corneas and fin ribs keep their hue.
+    var map=kit.baked(c.key('leaf-pigment'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u<.02||u>.48||v<.02||v>.48)return;var x=(u-.02)/.46,y=(v-.02)/.46,n=fbm2(x*8+phase,y*7,3),spot=smooth(.53,.73,n)*(1-.75*smooth(.85,1,x));mixc(cream,rose,.12+.65*spot,out);mulc(out,.96+.04*noise2(x*140,y*137));},false,false);
+    var bump=kit.baked(c.key('leaf-papillae'),high?128:64,high?128:64,function(u,v,out){var active=u>=.02&&u<=.48&&v>=.02&&v<=.48;out[0]=out[1]=out[2]=active?.5+.06*(noise2(u*340+phase,v*310)-.5):.5;},false,false,true);
+    // Rotate into the existing longitudinal swim shader, making its envelope
+    // height-based. The lowest fins are immobile; the sail rocks with flow.
+    g.map(0,function(p){var x=p[0],y=p[1];p[0]=-y*L;p[1]=x*L;p[2]*=L;});var geo=kit.geo(g,1),frame=kit.node('leaf-frame',c.root);frame.rotation.z=-PI/2;
+    var swim={value:new T.Vector4(phase,0,12/L,0)},shape={value:new T.Vector4(-.04*L,-.80*L,1,0)};
+    geo.userData.leafScorpionfish={ranges:ranges,nominalTotalLengthM:.10,scaleM:L,appearance:'cream-pink-unsexed',dorsalRays:dorsal,spines:12,softRays:9,pectorals:pectorals,contacts:contacts,papillae:papillae,cirri:cirri,staticEnvelopeHeightM:.04*L};
+    kit.mesh(geo,kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.000055*L,roughness:.57,side:T.DoubleSide},{swim:swim,swimShape:shape,eye:true,iris:hex(0x9f8a6d)}),'leaf-body-and-fins',frame);
+    geo.boundingBox.expandByScalar(.025*L);geo.boundingSphere.radius+=.025*L;
+    var flow={x:0,z:0,pulse:0};c.anim(function(t,dt,motion){currentAt(c.root,motion,t,phase,flow);var strength=Math.min(1,Math.hypot(flow.x,flow.z));swim.value.set(phase+t*.53,L*(.009+.015*strength)*flow.pulse,12/L,t);});
+  }
+
+
   // Rhinomuraena quaesita: an unsexed blue/yellow appearance, emerging from
   // a small illustrative rubble burrow. The nominal 1 m is TOTAL length;
   // only a curved forebody is visible and the unseen tail is not fabricated.
@@ -5111,6 +5468,452 @@
     });
   }
 
+  // Arothron nigropunctatus: relaxed, uninflated grey-brown example. Dark
+  // irregular spots and the doglike eye/muzzle mask are pigment; the skin has
+  // only fine spinules, never the long erected spines of a porcupinefish.
+  function buildBlackspottedPuffer(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(419),L=.25*(.98+.04*rng()),phase=rng()*TAU;
+    var body=new Geo(),detail=new Geo(),fins=new Geo(),finParts=[],ranges={},white=[1,1,1],ivory=hex(0xdedbc6),grey=hex(0x918d78),dark=hex(0x272c28),finColor=hex(0xc1b894);
+    var rows=[[.485,.015,-.055,.035],[.43,.085,-.09,.100],[.32,.16,-.13,.175],[.18,.205,-.185,.215],[.00,.20,-.215,.220],[-.15,.14,-.17,.165],[-.26,.063,-.075,.084],[-.35,.028,-.030,.030]],prof=profile(rows);
+    body.loft(rows,high?40:20,high?32:18,function(u,a,x,y,z,out){setc(out,white);},2.15);
+    // A small stable set of irregular marks is sampled identically by both
+    // tiers; angle distance wraps so the belly seam cannot split a spot.
+    var spots=[];for(var i=0;i<48;i++)spots.push([-.29+.73*rng(),rng()*TAU,.018+.021*rng(),.075+.07*rng(),rng()*TAU]);
+    var pigment=kit.baked(c.key('dogface-pigment'),high?512:256,high?256:128,function(u,v,out){
+      var x=lerp(.485,-.35,u),a=-PI/2+TAU*v,up=Math.sin(a),side=Math.abs(Math.cos(a)),mask=0;
+      mixc(grey,ivory,1-smooth(-.32,.38,up),out);mulc(out,.93+.09*noise2(x*17+phase,Math.cos(a)*9));
+      for(var k=0;k<spots.length;k++){var s=spots[k],da=Math.atan2(Math.sin(a-s[1]),Math.cos(a-s[1])),dx=(x-s[0])/s[2],dy=da/s[3],r=Math.sqrt(dx*dx+dy*dy),edge=1+.16*Math.sin(Math.atan2(dy,dx)*3+s[4]);mask=Math.max(mask,1-smooth(edge-.16,edge+.16,r));}
+      // Eye patch and snout patch separated by a pale transverse nose bar.
+      var eye=Math.exp(-Math.pow((x-.317)/.09,4))*smooth(.35,.82,side)*smooth(-.1,.4,up);
+      var muzzle=smooth(.411,.449,x)*(1-smooth(.03,.40,up));
+      mixc(out,dark,Math.max(mask*.94,Math.max(eye*.97,muzzle*.93)),out);
+    },false,true);
+    var micro=kit.baked(c.key('dogface-fine-skin'),high?256:128,high?128:64,function(u,v,out){var n=noise2(u*177+phase,v*123);out[0]=out[1]=out[2]=.43+.15*n+.04*Math.pow(n,5);},false,true,true);
+    var bg=kit.geo(body,L);bg.userData.blackspottedPuffer={nominalTotalLengthM:.25,scaleM:L,appearance:'relaxed-grey-brown-example',inflated:false,longSpines:0,spots:spots};
+    kit.mesh(bg,kit.std({map:pigment,bumpMap:micro,bumpScale:L*.0006,roughness:.57}), 'rounded-body',c.root);
+    [-1,1].forEach(function(side){
+      addEye(T,detail,prof,2.15,[.318,.102,.035],side,hex(0xb4a16f),high,.63,!high);
+      // Short branched nasal papillae sit ahead of each eye, with a small
+      // aperture. The gill opening stays just in front of the pectoral root.
+      var z=side*surfZ(prof,2.15,.397,.066);blob(T,detail,.397,.066,z,.015,.012,.008,lin(grey),high?8:5,high?5:3);
+      detail.tube([[.397,.07,z],[.404,.084,z+side*.005],[.413,.086,z+side*.007]],function(u){return .004*(1-.45*u);},high?5:3,function(){return lin(grey);});
+      detail.tube([[.404,.080,z+side*.005],[.398,.086,z+side*.012]],.0027,high?5:3,function(){return lin(grey);});
+      var gill=[];for(var j=0;j<= (high?8:4);j++){var v=j/(high?8:4),gy=.021-.073*v;gill.push([.205-.012*Math.sin(PI*v),gy,side*(surfZ(prof,2.15,.205,gy)+.001)]);}detail.tube(gill,.0023,high?5:3,function(){return lin(dark);});
+    });
+    blob(T,detail,.486,-.010,0,.012,.012,.032,lin(hex(0x777968)),high?12:6,high?6:3);
+    blob(T,detail,.487,-.039,0,.011,.012,.030,lin(hex(0xbcbba6)),high?12:6,high?6:3);
+    detail.tube([[.494,-.025,-.027],[.498,-.022,0],[.494,-.025,.027]],.0025,high?5:3,function(){return lin(dark);});
+    var dg=kit.geo(detail,L);kit.mesh(dg,kit.std({vertexColors:true,roughness:.33,side:T.DoubleSide},{eye:1}), 'eyes-nostrils-mouth-gills',c.root);
+    function fin(name,roots,edges,mode,side){var first=fins.count(),columns=roots.length,across=high?4:2;fins.membrane(roots,edges,across,function(u,v,out){mixc(finColor,ivory,.22+.35*v,out);mulc(out,.82+.18*Math.pow(.5+.5*Math.cos(u*TAU*10),4));});finParts.push({name:name,first:first,count:fins.count()-first,columns:columns,across:across,mode:mode,side:side||0});}
+    [-1,1].forEach(function(side){var rs=[],es=[],n=high?12:7;for(var j=0;j<=n;j++){var u=j/n;rs.push([.177-.020*u,.008-.046*u,side*.202]);es.push([.10-.16*u,.025-.105*u,side*(.215+.14*Math.pow(Math.sin(PI*u),.5))]);}fin(side<0?'pectoral-left':'pectoral-right',rs,es,'pectoral',side);});
+    [-1,1].forEach(function(side){var rs=[],es=[],n=high?12:7;for(var j=0;j<=n;j++){var u=j/n,x=lerp(-.205,-.315,u),s=prof(x),y=side>0?s[0]:s[1];rs.push([x,y,0]);es.push([x-.065*Math.sin(PI*u),y+side*.09*Math.pow(Math.sin(PI*u),.65),0]);}fin(side>0?'dorsal':'anal',rs,es,'median',side);});
+    var rs=[],es=[],n=high?14:8;for(var j=0;j<=n;j++){var v=j/n,yy=(v-.5)*2;rs.push([-.35,yy*.026,0]);es.push([-.50+.020*yy*yy,yy*.093,0]);}fin('rounded-tail',rs,es,'tail');
+    var fg=kit.geo(fins,L);fg.userData.blackspottedPuffer={fins:finParts,maximumDisplacementM:.037*L,locomotion:'alternating-pectoral-synchronous-median',rootMotion:false};
+    kit.mesh(fg,kit.std({vertexColors:true,roughness:.55,side:T.DoubleSide}), 'sculling-fins',c.root);
+    var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.037*L);fg.boundingSphere.radius+=.037*L;
+    c.anim(function(t,dt,motion){var p=fg.attributes.position.array,power=.78+.22*Math.min(1,effort(motion,L));finParts.forEach(function(f){for(var i=0;i<f.count;i++){var row=i%(f.across+1),u=Math.floor(i/(f.across+1))/(f.columns-1),v=row/f.across,at=(f.first+i)*3,weight=v*v*Math.sin(PI*u),a=t*5.2+phase,dy=0,dz=0;if(f.mode==='pectoral'){var beat=Math.sin(a+(f.side<0?0:PI));dy=.026*L*weight*beat*power;dz=f.side*.021*L*weight*Math.cos(a+(f.side<0?0:PI))*power;}else if(f.mode==='median')dz=.025*L*weight*Math.sin(a)*power;else dz=.012*L*v*v*Math.sin(t*1.6+phase);p[at+1]=rest[at+1]+dy;p[at+2]=rest[at+2]+dz;}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+  }
+
+  // Aetobatus ocellatus: a 1.5 m disc-width example with an intact whip tail.
+  // The ~4.2 m snout-to-tip length is deliberately not called wingspan. The
+  // detached projecting head, pointed wings and absence of cephalic lobes
+  // distinguish an eagle ray from both the manta and round-disc stingray.
+  function buildOcellatedEagleRay(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(421),W=1.5*(.98+.04*rng()),phase=rng()*TAU;
+    var discGeo=new Geo(),detail=new Geo(),tail=new Geo(),white=[1,1,1],top=hex(0x52665f),shade=hex(0x344943),cream=hex(0xe2e3d4),ink=hex(0x162824),NZ=high?48:24,NC=high?16:8;
+    function lead(f){return .18-.25*Math.pow(f,1.35);}
+    function trail(f){return -.29+.22*Math.pow(f,.65);}
+    function thick(f,u){return (.066*Math.exp(-Math.pow(f/.23,2))+.012*Math.pow(1-f,1.3))*Math.pow(Math.max(0,Math.sin(PI*u)),.55);}
+    for(var side=0;side<2;side++)for(var i=0;i<=NZ;i++)for(var j=0;j<=NC;j++){
+      var z=.5*Math.sin((i/NZ*2-1)*PI/2),f=Math.abs(z)*2,u=.5-.5*Math.cos(j/NC*PI),x=lerp(lead(f),trail(f),u),h=thick(f,u),y=(side?-.4:.6)*h+.012*f*f;
+      discGeo.v(x,y,z,white,(x+.30)/.50,(z+.5)*.46+(side?.52:.01));
+      if(i&&j){var a=side*(NZ+1)*(NC+1)+(i-1)*(NC+1)+j-1,b=a+NC+1;if(side)discGeo.i.push(a,b,a+1,a+1,b,b+1);else discGeo.i.push(a,a+1,b,a+1,b+1,b);}
+    }
+    var cell=[0,0,0,0,0],spotRecords=[];
+    var pigment=kit.baked(c.key('eagle-ray-dorsal-ventral'),high?512:256,high?512:256,function(u,v,out){var x=u*.50-.30,below=v>.5,z=((v-(below?.52:.01))/.46)-.5;if(below){setc(out,cream);var gills=0;for(var g=0;g<5;g++){var center=.116-.035*g,az=Math.abs(z),curve=center+.075*Math.pow(az-.065,2);gills=Math.max(gills,band(x-curve,.0025,.0018)*smooth(.044,.055,az)*(1-smooth(.105,.12,az)));}mixc(out,hex(0x616e63),gills*.85,out);mulc(out,.96+.04*noise2(x*29,z*31));return;}
+      mixc(top,shade,.22+.32*noise2(x*11+phase,z*13),out);cells(x*22+phase,z*23,43,cell);var rr=.18+.10*cell[2],edge=1-smooth(rr-.035,rr+.035,cell[0]),center=cell[2]>.78?smooth(.055,.12,cell[0]):1;mixc(out,cream,edge*center*.94,out);mulc(out,.94+.06*noise2(x*117,z*127));
+    },false,false);
+    var skin=kit.baked(c.key('eagle-ray-denticles'),high?256:128,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=.4+.20*noise2(u*149+phase,v*157);},false,false,true);
+    var dg=kit.geo(discGeo,W);dg.userData.ocellatedEagleRay={nominalDiscWidthM:1.5,nominalTotalLengthM:4.2,scaleM:W,spanRows:NZ,chordColumns:NC,gillSlitsPerSide:5,cephalicLobes:0,maximumDisplacementM:.181*W};
+    kit.mesh(dg,kit.std({map:pigment,bumpMap:skin,bumpScale:W*.0003,roughness:.61}), 'spotted-disc',c.root);
+    // A narrow neck frees the head from the pectoral leading edge; the broad
+    // rounded bill projects in front of the eyes and is flattened vertically.
+    var headRows=[[.302,.012,-.008,.043],[.283,.023,-.018,.063],[.252,.037,-.019,.059],[.218,.051,-.017,.068],[.18,.045,-.015,.061],[.13,.033,-.016,.069]],hp=profile(headRows);
+    detail.loft(headRows,high?20:10,high?20:10,function(u,a,x,y,z,out){mixc(top,cream,1-smooth(-.005,.008,y),out);mulc(out,.92+.08*noise2(x*83,z*71));},2.35);
+    [-1,1].forEach(function(s){
+      addEye(T,detail,hp,2.35,[.225,.026,.011],s,hex(0xb9ab70),high,.55,!high);
+      // Spiracles immediately behind each eye; two small pale rolled lips
+      // border a dark recess, integrated into the head rather than floating.
+      var zz=s*surfZ(hp,2.35,.194,.023);blob(T,detail,.193,.027,zz,.013,.007,.004,lin(shade),high?8:5,high?5:3);blob(T,detail,.195,.028,zz+s*.002,.009,.004,.002,lin(ink),high?8:5,high?4:3);
+      var mouth=[];for(var k=0;k<= (high?8:4);k++){var v=k/(high?8:4),z=s*.032*v;mouth.push([.267+.008*v*v,-.020,z]);}detail.tube(mouth,.0016,high?4:3,function(){return lin(ink);});
+      blob(T,detail,.282,-.015,s*.024,.005,.002,.003,lin(shade),high?6:4,high?4:3);
+      // Small paired pelvic fins sit aft of the diamond disc, not beside the
+      // head. No sex-specific claspers are added to this unsexed specimen.
+      detail.membrane([[-.225,-.004,s*.041],[-.265,-.004,s*.032]],[[-.31,-.008,s*.095],[-.32,-.009,s*.052]],high?3:1,function(u,v,out){mixc(shade,cream,.25+.22*v,out);});
+    });
+    detail.membrane([[-.25,.01,0],[-.30,.006,0]],[[-.27,.070,0],[-.33,.012,0]],high?3:1,function(u,v,out){setc(out,shade);});
+    var detailG=kit.geo(detail,W);detailG.userData.ocellatedEagleRay={duckbillSnout:true,lateralEyePair:true,spiraclePair:true,ventralMouth:true,pelvicFinPair:true};
+    kit.mesh(detailG,kit.std({vertexColors:true,roughness:.47,side:T.DoubleSide},{eye:1}), 'duckbill-head-pelvic-fins',c.root);
+    var pts=[],n=high?40:22;for(var i=0;i<=n;i++){var u=i/n;pts.push([-.265-2.235*u,.004+.010*Math.sin(PI*u),.035*Math.sin(PI*u)*Math.sin(u*PI+phase)]);}
+    tail.tube(pts,function(u){return .011*Math.pow(1-u,1.9)+.0007;},high?7:4,function(u,s){return lin(mixc(shade,ink,.25+.6*u,[0,0,0]));});
+    // Two short barbs at the proximal tail; the distal tail remains a thin
+    // uninterrupted whip, without a caudal fin or a manta's short tail.
+    for(var b=0;b<2;b++)tail.spike([-.34-b*.020,.012,0],[-.99,.14,0],.061-b*.008,.0032,lin(hex(0xa5ad97)),lin(cream));
+    var tg=kit.geo(tail,W);tg.userData.ocellatedEagleRay={whipTail:true,tailBaseX:-.265*W,nominalTotalLengthM:4.2,maximumDisplacementM:.037*W};
+    kit.mesh(tg,kit.std({vertexColors:true,roughness:.59}), 'long-whip-tail',c.root);
+    var rest=dg.attributes.position.array.slice(),tailRest=tg.attributes.position.array.slice();dg.boundingBox.expandByVector(new T.Vector3(0,.181*W,.025*W));dg.boundingSphere.radius+=.19*W;tg.boundingBox.expandByScalar(.037*W);tg.boundingSphere.radius+=.037*W;
+    c.anim(function(t,dt,motion){var p=dg.attributes.position.array,power=.85+.15*Math.min(1,effort(motion,W)),turn=turning(motion),beat=t*1.55+phase;for(var i=0;i<p.length;i+=3){var z=rest[i+2],f=Math.abs(z)/(.5*W),x=rest[i]/W,chord=clamp((lead(f)-x)/Math.max(.001,lead(f)-trail(f)),0,1),side=z<0?-1:1,weight=Math.pow(f,1.8),dy=.165*W*weight*Math.sin(beat-f*.85-chord*.65+side*turn*.10)*power;p[i+1]=rest[i+1]+dy;p[i+2]=z*(1-.045*weight*Math.pow(Math.sin(beat-f*.85-chord*.65),2));}dg.computeVertexNormals();dg.attributes.position.needsUpdate=true;
+      var q=tg.attributes.position.array;for(var k=0;k<q.length;k+=3){var u=clamp((-tailRest[k]/W-.265)/2.235,0,1),w=u*u;q[k+1]=tailRest[k+1]+.010*W*w*Math.sin(t*.60-u*2+phase);q[k+2]=tailRest[k+2]+.032*W*w*Math.sin(t*.48-u*2.5+phase);}tg.computeVertexNormals();tg.attributes.position.needsUpdate=true;
+    });
+  }
+
+
+  // Conus textile: a representative 9 cm shell, with a narrow, genuinely open
+  // aperture. The fixed shell carries the triangular textile pattern; only
+  // the soft sensory appendages move (University of Michigan Conus catalogue).
+  function buildTextileCone(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(433), k = 0.97 + 0.06 * rng(), phase = rng() * TAU;
+    var shell = new Geo(), foot = new Geo(), feelers = new Geo(), ranges = {}, appendages = [];
+    var ivory = hex(0xd7ceb3), ochre = hex(0x9c692e), brown = hex(0x4f341e), cream = hex(0xb3a183), skinBrown = hex(0x55442e), white = [1, 1, 1];
+    var rows = [[-0.032, 0.017], [-0.027, 0.022], [-0.020, 0.023], [-0.010, 0.0215], [0.004, 0.018], [0.018, 0.013], [0.032, 0.0075], [0.042, 0.0033]];
+    var opening = 1.97, gap = 0.34, nx = high ? 22 : 10, ns = high ? 32 : 18;
+    function radius(x) { var j = 1; while (j < rows.length - 1 && x > rows[j][0]) j++; return lerp(rows[j - 1][1], rows[j][1], clamp((x - rows[j - 1][0]) / (rows[j][0] - rows[j - 1][0]), 0, 1)); }
+    function centre(x) { return 0.026 + 0.002 * smooth(-0.03, 0.042, x); }
+    function point(x, a, inside) { var r = radius(x) * (inside ? 0.96 : 1); return [x, centre(x) + Math.cos(a) * r, Math.sin(a) * r]; }
+    function surface(columns, sides, inside, name) {
+      var first = shell.count(); ranges[name] = { first: first, columns: columns + 1, sides: sides + 1 };
+      for (var i = 0; i <= columns; i++) for (var j = 0; j <= sides; j++) {
+        var u = i / columns, a = opening + gap / 2 + j / sides * (TAU - gap), x = lerp(-0.032, 0.042, u), p = point(x, a, inside);
+        var color = inside ? lin(mixc(cream, hex(0x5b4a36), 0.25 + 0.5 * Math.sin(j / sides * PI), [0, 0, 0])) : white;
+        shell.v(p[0], p[1], p[2], color, inside ? 0.5 : u, inside ? 0.95 : j / sides * 0.8);
+      }
+      for (i = 0; i < columns; i++) for (j = 0; j < sides; j++) { var a0 = first + i * (sides + 1) + j, a1 = a0 + sides + 1; if (inside) shell.i.push(a0, a1, a0 + 1, a0 + 1, a1, a1 + 1); else shell.i.push(a0, a0 + 1, a1, a0 + 1, a1 + 1, a1); }
+    }
+    surface(nx, ns, false, 'outer'); surface(high ? 14 : 6, high ? 20 : 12, true, 'inner');
+    // Rounded cream lips join the outside to the recessed lining. No flat
+    // ellipse fills the opening: the shadowed interior remains visible.
+    [-1, 1].forEach(function (side) {
+      var first = shell.count(), a = opening + side * gap / 2;
+      for (var i = 0; i <= nx; i++) for (var j = 0; j < 3; j++) { var x = lerp(-0.032, 0.042, i / nx), r = radius(x) * lerp(0.96, 1, j / 2), bump = 0.0001 * Math.sin(j / 2 * PI); shell.v(x, centre(x) + Math.cos(a) * (r + bump), Math.sin(a) * (r + bump), lin(mixc(cream, ivory, 0.32, [0, 0, 0])), 0.5, 0.95); }
+      for (i = 0; i < nx; i++) for (j = 0; j < 2; j++) { var a0 = first + i * 3 + j, a1 = a0 + 3; shell.i.push(a0, a1, a0 + 1, a0 + 1, a1, a1 + 1); }
+    });
+    // A short stepped spire contrasts with the giant triton's long whorls.
+    var first = shell.count(), nr = high ? 20 : 8, nv = high ? 26 : 12;
+    ranges.spire = { first: first, rows: nr + 1, sides: nv + 1 };
+    for (var i = 0; i <= nr; i++) for (var j = 0; j <= nv; j++) {
+      var u = i / nr, a = j / nv * TAU, turn = fract(u * 4.2 - a / TAU), suture = Math.exp(-Math.pow((turn - 0.5) / 0.10, 2));
+      var r = (0.0002 + 0.0182 * Math.pow(u, 0.82)) * (1 - 0.065 * suture), x = -0.050 + 0.020 * u;
+      shell.v(x, centre(x) + r * Math.cos(a), r * Math.sin(a), white, 0.06 + u * 0.29, j / nv * 0.8);
+    }
+    for (i = 0; i < nr; i++) for (j = 0; j < nv; j++) { var a0 = first + i * (nv + 1) + j, a1 = a0 + nv + 1; shell.i.push(a0, a0 + 1, a1, a0 + 1, a1 + 1, a1); }
+    for (i = 0; i <= nr; i++) shell.seams.push([first + i * (nv + 1), first + i * (nv + 1) + nv]);
+    var apex = shell.v(-0.0503, centre(-0.05), 0, lin(ivory), 0.5, 0.95);
+    for (j = 0; j < nv; j++) shell.i.push(apex, first + j + 1, first + j);
+    // Independently offset and warped pale triangles form islands in a warm
+    // reticulate ground. They never share straight edges like a wireframe.
+    var islands = [];
+    for (var iy = -2; iy < 23; iy++) for (var ix = -2; ix < 29; ix++) { var rand = hash2(ix + c.seed * 13, iy * 7), theta = (hash2(ix + 77, iy + c.seed) - 0.5) * 0.7; islands.push({ x: ix + 0.5 + (rand - 0.5) * 0.58, y: iy + 0.5 + (hash2(ix + c.seed, iy + 31) - 0.5) * 0.58, size: 0.62 + 0.65 * hash2(ix - 11, iy + c.seed * 3), cs: Math.cos(theta), sn: Math.sin(theta), sign: rand > 0.5 ? 1 : -1 }); }
+    var pigment = kit.baked(c.key('textile-network-organic-v2'), high ? 768 : 384, high ? 384 : 192, function (u, v, out) {
+      if (v > 0.82) { setc(out, white); return; }
+      var a = v / 0.8 * TAU, warp = noise2(u * 8 + phase, a * 1.4) - 0.5, xx = u * 25 + 0.8 * warp + 0.5 * Math.sin(a * 2), yy = v / 0.8 * 19 + 0.65 * (noise2(u * 9, a * 2 + phase) - 0.5), bx = Math.floor(xx), by = Math.floor(yy), pale = 0;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var island = islands[(by + dy + 2) * 31 + bx + dx + 2]; if (!island) continue; var px = (xx - island.x) / island.size, py = (yy - island.y) / island.size, tx = px * island.cs - py * island.sn, ty = (px * island.sn + py * island.cs) * island.sign, d = Math.min((0.63 - ty) * 0.69 - Math.abs(tx), ty + 0.42); pale = Math.max(pale, smooth(-0.025, 0.035, d)); }
+      var banding = smooth(0.37, 0.75, noise2(u * 7.0 + 0.8 * Math.sin(a), a * 0.75 + phase));
+      mixc(brown, ochre, 0.24 + 0.65 * banding, out); mixc(out, ivory, pale * (0.86 + 0.14 * noise2(xx * 2, yy * 2)), out);
+      mixc(out, ochre, banding * 0.20, out); mulc(out, 0.95 + 0.05 * noise2(u * 180, a * 24));
+    }, false, false);
+    var relief = kit.baked(c.key('textile-growth-lines'), high ? 512 : 256, high ? 256 : 128, function (u, v, out) {
+      var h = v > 0.82 ? 0.5 : 0.5 + 0.035 * Math.sin(u * 540 + 0.8 * Math.sin(v * 12)) + 0.012 * noise2(u * 230, v * 210); out[0] = out[1] = out[2] = h;
+    }, false, false, true);
+    var sg = kit.geo(shell, k); sg.userData.textileCone = { ranges: ranges, nominalShellLengthM: 0.09, openAperture: true, apertureAngularWidth: gap };
+    kit.mesh(sg, kit.std({ vertexColors: true, map: pigment, bumpMap: relief, bumpScale: 0.00015 * k, roughness: 0.39, side: T.DoubleSide }), 'shell', c.root);
+    foot.loft([[0.050, 0.007, 0, 0.004], [0.040, 0.012, 0, 0.012], [0.018, 0.014, 0, 0.016], [-0.008, 0.011, 0, 0.018], [-0.027, 0.008, 0, 0.012], [-0.039, 0.003, 0, 0.002]], high ? 18 : 7, high ? 12 : 8, function (u, a, x, y, z, out) { var patch = smooth(0.48, 0.68, noise2(x * 245 + phase, z * 260)); mixc(cream, skinBrown, patch * smooth(0.002, 0.010, y) * 0.85, out); }, 2.8);
+    blob(T, foot, 0.023, 0.014, 0.009, 0.014, 0.005, 0.004, lin(cream), high ? 10 : 6, high ? 6 : 4);
+    for (var f = 0; f < foot.count(); f++) { var x = foot.p[f * 3], y = foot.p[f * 3 + 1], z = foot.p[f * 3 + 2], patch = smooth(0.40, 0.58, noise2(x * 230 + phase, z * 265 + y * 120)), skin = lin(mixc(cream, skinBrown, patch * smooth(0.001, 0.009, y) * 0.87, [0, 0, 0])); foot.c[f * 3] = skin[0]; foot.c[f * 3 + 1] = skin[1]; foot.c[f * 3 + 2] = skin[2]; }
+    [-1, 1].forEach(function (side) { blob(T, foot, 0.041, 0.0135, side * 0.0065, 0.0010, 0.0008, 0.0008, linHex(0x201d15), high ? 7 : 4, high ? 5 : 3); });
+    kit.mesh(kit.geo(foot, k), kit.std({ vertexColors: true, roughness: 0.53, side: T.DoubleSide }), 'foot-head', c.root);
+    function appendage(name, pts, radius, color, phaseOffset) { var at = feelers.count(), sides = high ? 6 : 4; feelers.tube(pts, radius, sides, color); appendages.push({ name: name, first: at, count: feelers.count() - at, sides: sides, root: pts[0].slice(), phase: phaseOffset }); }
+    [-1, 1].forEach(function (side) { var pts = [], n = high ? 7 : 3; for (var j = 0; j <= n; j++) { var u = j / n; pts.push([0.041 + 0.014 * u, 0.014 + 0.004 * u + 0.002 * Math.sin(PI * u), side * (0.006 + 0.006 * u)]); } appendage('tentacle-' + side, pts, function (u) { return 0.0011 * (1 - 0.80 * u); }, function (u) { return lin(mixc(cream, skinBrown, 0.12 + 0.22 * u, [0, 0, 0])); }, side * 1.8); });
+    var pts = [], n = high ? 10 : 5;
+    for (i = 0; i <= n; i++) { var u = i / n; pts.push([0.022 + 0.036 * u, 0.014 + 0.013 * Math.sin(u * 1.1), 0.016 + 0.003 * Math.sin(u * PI)]); }
+    appendage('siphon', pts, function (u) { return 0.0014 - 0.00065 * u; }, function (u) { var col = mixc(cream, hex(0x302921), smooth(0.37, 0.44, u) * (1 - smooth(0.67, 0.74, u)), [0, 0, 0]); mixc(col, hex(0xa54e37), smooth(0.85, 0.98, u), col); return lin(col); }, 0.5);
+    var fg = kit.geo(feelers, k), rest = new Float32Array(fg.attributes.position.array); fg.userData.textileCone = { appendages: appendages };
+    fg.boundingBox.expandByScalar(0.0014 * k); fg.boundingSphere.radius += 0.002 * k;
+    kit.mesh(fg, kit.std({ vertexColors: true, roughness: 0.44, side: T.DoubleSide }), 'sensory-appendages', c.root);
+    c.anim(function (t) { var p = fg.attributes.position.array; appendages.forEach(function (a) { for (var j = a.sides; j < a.count; j++) { var at = (a.first + j) * 3, u = clamp((rest[at] / k - a.root[0]) / (a.name === 'siphon' ? 0.036 : 0.014), 0, 1), w = u * u; p[at + 1] = rest[at + 1] + 0.0008 * k * w * Math.sin(t * 0.42 + phase + a.phase); p[at + 2] = rest[at + 2] + 0.0009 * k * w * Math.sin(t * 0.31 + phase + a.phase); } }); fg.computeVertexNormals(); fg.attributes.position.needsUpdate = true; });
+  }
+
+  // Tubastraea coccinea: an illustrative small colony of fixed skeletal cups
+  // with yellow feeding tentacles. It has no symbiotic algae (Smithsonian / USGS),
+  // so a living colony never receives an invented heat-bleached state.
+  function buildOrangeCupCoral(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(437), k = (0.97 + 0.06 * rng()) * lerp(0.22, 1, Math.pow(c.growth, 0.78)), phase = rng() * TAU, dead = c.health === 'dead';
+    var skeleton = new Geo(), oral = new Geo(), tentacles = new Geo(), cups = [], strands = [], orange = hex(0xb43c12), rim = hex(0xdf6c21), amber = hex(0xed9b22), yellow = hex(0xffcf54), bone = hex(0xa8a28b), shade = hex(0x6d705c);
+    // Four central calices and ten offset outer calices share their stations
+    // between quality tiers; no cup changes position during close inspection.
+    for (var i = 0; i < 14; i++) {
+      var a = i < 4 ? i * TAU / 4 + 0.28 : (i - 4) * TAU / 10 + 0.08, rad = i < 4 ? 0.009 : 0.024 + 0.0015 * (rng() - 0.5);
+      var x = Math.cos(a) * rad, z = Math.sin(a) * rad * 0.9, r = 0.0047 + rng() * 0.0008, h = (i < 4 ? 0.014 : 0.009) + rng() * 0.009, lean = 0.07 + rng() * 0.24;
+      cups.push({ x: x, z: z, radius: r, height: h, base: 0.003 + 0.009 * (1 - Math.pow(rad / 0.032, 2)), leanX: Math.cos(a + 0.4 * Math.sin(i)) * lean, leanZ: Math.sin(a + 0.4 * Math.sin(i)) * lean, phase: rng() * TAU });
+    }
+    // Rounded coalescing tissue replaces a flat display plate. Its asymmetric
+    // humps rise into the cup bases and settle gently back onto the substrate.
+    var nr = high ? 4 : 2, ns = high ? 40 : 24;
+    skeleton.polar(nr, ns, function (r, a, out) { var lobes = 1 + 0.07 * Math.sin(a * 5 + phase) + 0.035 * Math.sin(a * 9), x = r * 0.033 * Math.cos(a) * lobes, z = r * 0.029 * Math.sin(a) * lobes, y = 0.010 * Math.sqrt(Math.max(0, 1 - r * r)) * (0.82 + 0.18 * Math.sin(a * 4 + r * 8 + phase)), grain = noise2(x * 160 + phase, z * 180); setc(out, lin(dead ? mixc(bone, shade, 0.3 + 0.2 * grain, [0, 0, 0]) : mixc(orange, hex(0x762b18), 0.18 + 0.40 * grain, [0, 0, 0]))); return [x, y, z, a / TAU, r]; });
+    cups.forEach(function (cup, index) {
+      var sides = high ? 10 : 6, rows = high ? 5 : 3, first = skeleton.count(), hue = 0.15 + 0.20 * rng();
+      function centre(y) { return [cup.x + cup.leanX * y, y + cup.base, cup.z + cup.leanZ * y]; }
+      for (var i = 0; i <= rows; i++) for (var j = 0; j < sides; j++) { var u = i / rows, a = j / sides * TAU, cp = centre(cup.height * u), r = cup.radius * (0.83 + 0.17 * Math.pow(u, 0.7) + 0.08 * Math.sin(u * PI)) * (1 + 0.055 * Math.cos(a * 5 + cup.phase)), grain = noise2(a * 1.6 + cup.phase, u * 4), col = dead ? mixc(shade, bone, 0.45 + 0.45 * u, [0, 0, 0]) : mixc(orange, rim, hue + u * 0.24, [0, 0, 0]); if (!dead) mixc(col, hex(0x8b2c12), 0.20 + 0.36 * grain * (1 - u * 0.4), col); skeleton.v(cp[0] + Math.cos(a) * r, cp[1] + 0.00025 * Math.sin(a * 3 + cup.phase) * u, cp[2] + Math.sin(a) * r, lin(col), j / sides, u); }
+      for (i = 0; i < rows; i++) for (j = 0; j < sides; j++) { var a0 = first + i * sides + j, a1 = first + i * sides + (j + 1) % sides; skeleton.i.push(a0, a0 + sides, a1, a1, a0 + sides, a1 + sides); }
+      var top = centre(cup.height), rimFirst = skeleton.count();
+      for (j = 0; j < sides; j++) { var a = j / sides * TAU; skeleton.v(top[0] + Math.cos(a) * cup.radius * 0.94, top[1] - 0.0013, top[2] + Math.sin(a) * cup.radius * 0.94, lin(dead ? bone : rim), j / sides, 1); }
+      for (j = 0; j < sides; j++) { var outer = first + rows * sides + j, next = first + rows * sides + (j + 1) % sides, inner = rimFirst + j, nextInner = rimFirst + (j + 1) % sides; skeleton.i.push(outer, inner, next, next, inner, nextInner); }
+      var discFirst = oral.count();
+      // A recessed oral disc and central slit keep every cup readable from
+      // above. Fine radial septa are exposed on the dead skeletal illustration.
+      for (i = 0; i < 2; i++) for (j = 0; j < sides; j++) { var a = j / sides * TAU, r = cup.radius * (i ? 0.14 : 0.90), y = top[1] - (i ? 0.0023 : 0.0013); var col = dead ? mixc(shade, bone, j % 2 ? 0.35 : 0.88, [0, 0, 0]) : mixc(rim, amber, (i ? 0.18 : 0.70) + 0.12 * Math.sin(j * 2 + cup.phase), [0, 0, 0]); oral.v(top[0] + Math.cos(a) * r, y, top[2] + Math.sin(a) * r * (i ? 0.4 : 1), lin(col), j / sides, i ? 0.15 : 1); }
+      for (j = 0; j < sides; j++) { var a0 = discFirst + j, a1 = discFirst + (j + 1) % sides; oral.i.push(a0, a0 + sides, a1, a1, a0 + sides, a1 + sides); }
+      var mouth = oral.v(top[0], top[1] - 0.0022, top[2], lin(dead ? shade : hex(0x98401b)), 0, 0);
+      for (j = 0; j < sides; j++) oral.i.push(mouth, discFirst + sides + j, discFirst + sides + (j + 1) % sides);
+      if (dead) return;
+      var count = high ? 24 : 12, segments = high ? 4 : 2;
+      for (j = 0; j < count; j++) {
+        var a = j / count * TAU + cup.phase * 0.08, length = (0.007 + 0.0020 * Math.sin(j * 2.2 + cup.phase)) * (j % 2 ? 0.82 : 1), pts = [];
+        for (var s = 0; s <= segments; s++) { var u = s / segments, radial = cup.radius * (j % 2 ? 0.79 : 0.94) + length * (0.48 * u + 0.40 * u * u), y = top[1] + length * ((0.75 + 0.17 * Math.sin(j + cup.phase)) * u - 0.15 * u * u + 0.15 * Math.sin(PI * u)); pts.push([top[0] + Math.cos(a) * radial + 0.0010 * Math.sin(PI * u + cup.phase + j) * u, y, top[2] + Math.sin(a) * radial + 0.0007 * Math.sin(PI * u + j) * u]); }
+        var at = tentacles.count(); tentacles.tube(pts, function (u) { return 0.00044 * (1 - 0.78 * u); }, 3, function (u) { return lin(mixc(amber, yellow, 0.20 + 0.78 * u, [0, 0, 0])); }); strands.push({ first: at, count: tentacles.count() - at, root: pts[0].slice(), segments: segments, phase: cup.phase + j * 0.7, length: length });
+      }
+    });
+    var relief = kit.baked(c.key('cup-corallite-ridges-v2'), 256, 128, function (u, v, out) { var ridges = Math.pow(0.5 + 0.5 * Math.cos(u * TAU * 36 + 0.35 * Math.sin(v * 13)), 3), grain = noise2(u * 35, v * 55); out[0] = out[1] = out[2] = 0.35 + 0.22 * ridges + 0.07 * grain; }, true, false, true);
+    var sg = kit.geo(skeleton, k); sg.userData.orangeCupCoral = { cups: cups, nominalColonyWidthM: 0.075, photosynthetic: false, fixedSkeletalCups: true };
+    kit.mesh(sg, kit.std({ vertexColors: true, roughness: dead ? 0.88 : 0.66, bumpMap: relief, bumpScale: 0.00042 * k, side: T.DoubleSide }), 'skeletal-cups', c.root);
+    kit.mesh(kit.geo(oral, k), kit.std({ vertexColors: true, roughness: dead ? 0.86 : 0.53, bumpMap: relief, bumpScale: 0.00018 * k, side: T.DoubleSide }), 'oral-discs', c.root);
+    if (dead) return;
+    var tg = kit.geo(tentacles, k), rest = new Float32Array(tg.attributes.position.array), flow = { x: 0, z: 0, pulse: 0 };
+    tg.userData.orangeCupCoral = { strands: strands, tentaclesPerCup: high ? 24 : 12 };
+    tg.boundingBox.expandByScalar(0.0026 * k); tg.boundingSphere.radius += 0.004 * k;
+    kit.mesh(tg, kit.std({ vertexColors: true, roughness: 0.43, side: T.DoubleSide }), 'feeding-tentacles', c.root);
+    c.anim(function (t, dt, motion) { currentAt(c.root, motion, t, phase, flow); var p = tg.attributes.position.array; strands.forEach(function (s) { for (var j = 3; j < s.count; j++) { var at = (s.first + j) * 3, u = clamp(Math.floor(j / 3) / s.segments, 0, 1), w = u * u, flutter = 0.00035 * Math.sin(t * 0.57 + s.phase); p[at] = rest[at] + k * w * (0.0016 * flow.x * flow.pulse + flutter); p[at + 2] = rest[at + 2] + k * w * (0.0016 * flow.z * flow.pulse + 0.00030 * Math.sin(t * 0.43 + s.phase)); } }); tg.computeVertexNormals(); tg.attributes.position.needsUpdate = true; });
+  }
+
+  // Laticauda colubrina: a representative 1.2 m animal. The tail is flattened
+  // vertically, rather than furnished with an eel's continuous dorsal fin.
+  function buildBandedSeaKrait(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(443), k = 0.97 + 0.06 * rng(), phase = rng() * TAU;
+    var body = new Geo(), head = new Geo(), ns = high ? 12 : 8, nr = high ? 116 : 54, blue = hex(0x829eab), pale = hex(0xd6cca0), ink = hex(0x18232a), yellow = hex(0xdbbd59), ranges = {};
+    // A gentle S lies in a tilted plane so its curvature remains legible in
+    // the side portrait. Shortening its X projection preserves a 1.2 m
+    // centreline length (including the head), rather than stretching the animal.
+    function centre(u) { var bend = Math.sin(u * TAU * 1.08) * Math.sin(u * PI); return [0.53 - 1.0213 * u, -0.055 * bend, 0.12 * bend]; }
+    function radii(u) { var girth = (0.013 + 0.008 * Math.pow(Math.sin(PI * u), 0.6)) * (1 - smooth(0.93, 1, u)), paddle = smooth(0.77, 0.86, u); return [lerp(girth, 0.034 * Math.pow(Math.max(0, Math.sin((u - 0.77) / 0.23 * PI)), 0.65), paddle), lerp(girth * 0.88, 0.0037 * (1 - smooth(0.94, 1, u)), paddle)]; }
+    for (var i = 0; i <= nr; i++) for (var j = 0; j <= ns; j++) {
+      var u = i / nr, a = j / ns * TAU, p = centre(u), r = radii(u), before = centre(Math.max(0, u - 0.001)), after = centre(Math.min(1, u + 0.001)), tx = after[0] - before[0], tz = after[2] - before[2], length = Math.sqrt(tx * tx + tz * tz) || 1, nz = -tx / length, nx = tz / length;
+      body.v(p[0] + nx * Math.sin(a) * r[1], p[1] + Math.cos(a) * r[0], p[2] + nz * Math.sin(a) * r[1], [1, 1, 1], u, j / ns);
+    }
+    for (i = 0; i < nr; i++) for (j = 0; j < ns; j++) { var a0 = i * (ns + 1) + j, a1 = a0 + ns + 1; body.i.push(a0, a1, a0 + 1, a0 + 1, a1, a1 + 1); }
+    for (i = 0; i <= nr; i++) body.seams.push([i * (ns + 1), i * (ns + 1) + ns]);
+    var pigment = kit.baked(c.key('krait-bands'), high ? 1024 : 512, high ? 192 : 96, function (u, v, out) {
+      var a = v * TAU, underside = smooth(0.05, 0.65, -Math.cos(a)), warp = 0.047 * Math.sin(a * 3 + u * 17) + 0.05 * (noise2(u * 13 + phase, Math.cos(a) * 2 + Math.sin(a) * 2) - 0.5), q = fract(u * 33.8 + warp), ring = 1 - smooth(0.20, 0.235, Math.abs(q - 0.5));
+      mixc(blue, pale, underside * 0.85, out); mixc(out, ink, ring * (0.95 + 0.05 * noise2(u * 98, Math.cos(a) * 23)), out);
+      var scales = Math.pow(0.5 + 0.5 * Math.sin(u * 810 + Math.floor(v * 22) % 2 * PI), 12) * Math.pow(0.5 + 0.5 * Math.cos(v * TAU * 22), 7);
+      mulc(out, 0.93 + 0.055 * noise2(u * 290, Math.cos(a) * 44) + 0.035 * scales);
+    }, false, true);
+    var relief = kit.baked(c.key('krait-scale-relief'), high ? 768 : 384, 128, function (u, v, out) { var row = Math.floor(v * 22), f = fract(u * 128 + (row % 2) * 0.5), edge = Math.pow(Math.sin(PI * f), 1.5) * Math.pow(Math.sin(PI * fract(v * 22)), 0.6); out[0] = out[1] = out[2] = 0.38 + 0.24 * edge; }, false, true, true);
+    var bg = kit.geo(body, k); bg.userData.bandedSeaKrait = { rings: nr + 1, sides: ns + 1, nominalTotalLengthM: 1.2, verticalPaddleTail: true, paddleStartsAt: 0.77 };
+    kit.mesh(bg, kit.std({ vertexColors: true, map: pigment, bumpMap: relief, bumpScale: 0.00013 * k, roughness: 0.47, side: T.DoubleSide }), 'banded-body-paddle', c.root);
+    var start = head.count();
+    head.loft([[0.601, 0.004, -0.005, 0.006], [0.590, 0.012, -0.010, 0.014], [0.568, 0.017, -0.012, 0.018], [0.549, 0.014, -0.012, 0.015], [0.521, 0.013, -0.013, 0.012]], high ? 18 : 8, high ? 16 : 8, function (u, a, x, y, z, out) { var lip = Math.max(smooth(0.564, 0.583, x), 1 - smooth(-0.006, 0.001, y)); mixc(ink, yellow, lip * 0.97, out); mulc(out, 0.89 + 0.11 * noise2(x * 880 + phase, z * 870)); }, 2.5);
+    ranges.head = { first: start, count: head.count() - start };
+    [-1, 1].forEach(function (side) {
+      blob(T, head, 0.571, 0.0065, side * 0.0168, 0.0034, 0.0037, 0.0019, linHex(0x050b0c), high ? 10 : 5, high ? 6 : 3);
+      blob(T, head, 0.572, 0.0078, side * 0.0181, 0.0008, 0.0009, 0.00045, linHex(0x8bacae), high ? 6 : 4, 3);
+      blob(T, head, 0.592, 0.0070, side * 0.0088, 0.0010, 0.0007, 0.0006, lin(ink), high ? 6 : 4, 3);
+      var mouth = []; for (var j = 0; j <= (high ? 7 : 3); j++) { var u = j / (high ? 7 : 3); mouth.push([0.597 - 0.042 * u, -0.004 - 0.002 * u, side * (0.008 + 0.0083 * Math.sin(u * PI * 0.72))]); }
+      head.tube(mouth, 0.00045, 3, function () { return lin(ink); });
+    });
+    var hg = kit.geo(head, k); hg.userData.bandedSeaKrait = { ranges: ranges, yellowUpperLip: true };
+    kit.mesh(hg, kit.std({ vertexColors: true, roughness: 0.42, side: T.DoubleSide }), 'yellow-lipped-head', c.root);
+    [bg, hg].forEach(function (g) {
+      g.boundingBox.expandByScalar(0.031 * k); g.boundingSphere.radius += 0.042 * k;
+      deform(c, g, function (rest, out, t, motion) {
+        var e = effort(motion, 1.2), speed = 0.64 + 0.10 * e;
+        for (var j = 0; j < rest.length; j += 3) { var u = clamp((0.53 - rest[j] / k) / 1.0213, 0, 1), w = 0.09 + 0.91 * u, wave = t * speed - u * 8.3 + phase; out[j + 2] = rest[j + 2] + k * (0.014 + 0.006 * e) * w * Math.sin(wave); out[j + 1] = rest[j + 1] + k * 0.003 * w * Math.sin(wave * 0.63); }
+      }, true);
+    });
+  }
+
+  // Dardanus megistos: two pairs of walking legs, a larger left cheliped and
+  // black-rimmed white spots. The shell is a borrowed, weathered illustration,
+  // not a species-specific shell or an exposed soft abdomen.
+  function buildWhiteSpottedHermitCrab(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(449), k = 0.97 + 0.06 * rng(), phase = rng() * TAU;
+    var shell = new Geo(), animal = new Geo(), fine = new Geo(), limbs = [], hairs = [], sensory = [], ranges = {}, red = hex(0xa74328), rust = hex(0x702d1d), ivory = hex(0xe8dcc1), dark = hex(0x201a16), white = [1, 1, 1];
+    var rows = [[-0.086, 0.0008], [-0.075, 0.008], [-0.061, 0.015], [-0.048, 0.022], [-0.032, 0.028], [-0.012, 0.034], [0.013, 0.028]], nx = high ? 28 : 12, ns = high ? 32 : 16;
+    function radius(x) { var j = 1; while (j < rows.length - 1 && x > rows[j][0]) j++; return lerp(rows[j - 1][1], rows[j][1], clamp((x - rows[j - 1][0]) / (rows[j][0] - rows[j - 1][0]), 0, 1)); }
+    function shellY(x) { return 0.045 + 0.010 * (1 - smooth(-0.086, 0.013, x)); }
+    for (var i = 0; i <= nx; i++) for (var j = 0; j <= ns; j++) {
+      var u = i / nx, a = j / ns * TAU, x = lerp(-0.086, 0.013, u), turn = fract(u * 3.8 - a / TAU), seam = Math.exp(-Math.pow((turn - 0.50) / 0.075, 2)), r = radius(x) * (1 - 0.075 * seam), grain = noise2(u * 17 + phase, Math.cos(a) * 5 + Math.sin(a) * 5), streak = smooth(0.42, 0.76, noise2(u * 13 + a * 0.55, a * 1.5 + phase)), color = mixc(hex(0xc2ac86), hex(0x68503b), 0.20 + 0.5 * streak + 0.12 * grain, [0, 0, 0]);
+      shell.v(x, shellY(x) + r * Math.cos(a), r * Math.sin(a), lin(color), u, j / ns);
+    }
+    for (i = 0; i < nx; i++) for (j = 0; j < ns; j++) { var a0 = i * (ns + 1) + j, a1 = a0 + ns + 1; shell.i.push(a0, a0 + 1, a1, a0 + 1, a1 + 1, a1); }
+    for (i = 0; i <= nx; i++) shell.seams.push([i * (ns + 1), i * (ns + 1) + ns]);
+    var first = shell.count(), innerRows = high ? 5 : 2;
+    for (i = 0; i <= innerRows; i++) for (j = 0; j <= ns; j++) { var u = i / innerRows, a = j / ns * TAU, x = 0.013 - 0.040 * u, r = 0.026 - 0.007 * u; shell.v(x, 0.045 + Math.cos(a) * r, Math.sin(a) * r, lin(mixc(hex(0x9d7b55), dark, 0.2 + 0.75 * u, [0, 0, 0])), 0.5, 0.5); }
+    for (i = 0; i < innerRows; i++) for (j = 0; j < ns; j++) { var a0 = first + i * (ns + 1) + j, a1 = a0 + ns + 1; shell.i.push(a0, a0 + 1, a1, a0 + 1, a1 + 1, a1); }
+    for (j = 0; j < ns; j++) { var outer = nx * (ns + 1) + j, inner = first + j; shell.i.push(outer, inner, outer + 1, outer + 1, inner, inner + 1); }
+    var relief = kit.baked(c.key('borrowed-shell-growth'), 256, 128, function (u, v, out) { out[0] = out[1] = out[2] = 0.43 + 0.06 * Math.sin(u * 230 + Math.sin(v * TAU * 3)) + 0.07 * noise2(u * 180, v * 160); }, false, true, true);
+    var sg = kit.geo(shell, k); sg.userData.whiteSpottedHermitCrab = { borrowedShell: true, openAperture: true, apertureRadiusM: 0.026, illustrativeShellLengthM: 0.099 };
+    kit.mesh(sg, kit.std({ vertexColors: true, bumpMap: relief, bumpScale: 0.00043 * k, roughness: 0.76, side: T.DoubleSide }), 'borrowed-shell', c.root);
+    var pigment = kit.baked(c.key('hermit-white-spots'), high ? 512 : 256, high ? 256 : 128, function (u, v, out) {
+      if (v > 0.84) { setc(out, white); return; }
+      var cell = [0, 0, 0, 0, 0]; cells(u * 8.5 + phase, v / 0.8 * 6.0, c.seed & 7, cell); var size = (0.12 + 0.08 * cell[2]) * (1 - 0.30 * u), spot = 1 - smooth(size - 0.025, size + 0.025, cell[0]), rim = 1 - smooth(size + 0.055, size + 0.10, cell[0]), grain = noise2(u * 85, v * 98 + phase);
+      mixc(red, rust, 0.12 + 0.40 * noise2(u * 17, v * 14 + phase), out); mixc(out, dark, rim * 0.86, out); mixc(out, ivory, spot * 0.99, out); mulc(out, 0.92 + 0.08 * grain);
+    }, false, false);
+    function neutral(geo, first) { for (var j = first; j < geo.count(); j++) { geo.t[j * 2] = 0.5; geo.t[j * 2 + 1] = 0.95; } }
+    function spottedTube(name, pts, radii, sides, role, side) {
+      var at = animal.count(); animal.tube(pts, radii, sides, function () { return white; });
+      for (var j = 0; j < animal.count() - at; j++) { animal.t[(at + j) * 2] = Math.min(1, Math.floor(j / sides) / (pts.length - 1)); animal.t[(at + j) * 2 + 1] = j % sides / sides * 0.8; }
+      var range = { name: name, first: at, count: animal.count() - at, root: pts[0].slice(), tip: pts[pts.length - 1].slice(), role: role, side: side }; limbs.push(range);
+      var count = high ? 27 : 8;
+      for (var n = 0; n < count; n++) { var u = 0.15 + 0.78 * rng(), step = Math.min(pts.length - 2, Math.floor(u * (pts.length - 1))), f = u * (pts.length - 1) - step, p = pts[step], q = pts[step + 1], a = rng() * TAU, r = typeof radii === 'function' ? radii(u) : radii, x = lerp(p[0], q[0], f), y = lerp(p[1], q[1], f) + Math.cos(a) * r, z = lerp(p[2], q[2], f) + Math.sin(a) * r, len = 0.0017 + 0.0024 * rng(), width = high ? 0.00018 : 0.00028, h0 = fine.count();
+        var col = lin(mixc(rust, hex(0xc77a43), 0.3 + 0.55 * rng(), [0, 0, 0]));
+        fine.v(x - width, y, z, col); fine.v(x + width, y, z, col); fine.v(x + 0.0006, y + Math.cos(a) * len, z + Math.sin(a) * len, col); fine.i.push(h0, h0 + 1, h0 + 2); hairs.push({ first: h0, count: 3, limb: range });
+      }
+      return range;
+    }
+    first = animal.count(); blob(T, animal, 0.022, 0.034, 0, 0.026, 0.0145, 0.0195, white, high ? 16 : 8, high ? 10 : 4);
+    // The exposed shield has the same irregular pigmentation as the limbs,
+    // with a little grain and relief instead of a featureless glossy oval.
+    for (var j = first; j < animal.count(); j++) { var at = j * 3, x = animal.p[at], y = animal.p[at + 1], z = animal.p[at + 2], grain = noise3(x * 430 + phase, y * 490, z * 460); animal.p[at + 1] += 0.00035 * (grain - 0.5); animal.t[j * 2] = 0.10 + (x + 0.004) / 0.052 * 0.77; animal.t[j * 2 + 1] = (z + 0.0195) / 0.039 * 0.8; animal.c[at] = animal.c[at + 1] = animal.c[at + 2] = 0.88 + 0.12 * grain; }
+    ranges.carapace = { first: first, count: animal.count() - first };
+    [-1, 1].forEach(function (side) {
+      for (var pair = 0; pair < 2; pair++) { var x = 0.021 - pair * 0.018, pts = [[x, 0.032, side * 0.014], [x + 0.012, 0.038, side * 0.039], [x + 0.024 - pair * 0.008, 0.023, side * 0.060], [x + 0.019 - pair * 0.023, 0.0025, side * (0.066 + pair * 0.004)]]; spottedTube('walking-leg-' + side + '-' + pair, pts, function (u) { return 0.0062 * (1 - 0.80 * u); }, high ? 7 : 4, 'walking', side); }
+      var big = side < 0 ? 1.36 : 1, claw = [[0.035, 0.030, side * 0.014], [0.049, 0.021, side * 0.033], [0.067, 0.020, side * 0.038], [0.080, 0.021, side * 0.034]];
+      spottedTube(side < 0 ? 'left-cheliped' : 'right-cheliped', claw, function (u) { return big * (0.0050 + 0.0040 * Math.sin(PI * u)); }, high ? 10 : 5, 'claw', side);
+      var palm = [0.077, 0.021, side * 0.034], fixed = [[palm[0], palm[1], palm[2] + side * 0.003], [0.093, 0.019, side * 0.036], [0.101, 0.020, side * 0.029]], moving = [[palm[0] - 0.002, palm[1] + 0.004, palm[2] - side * 0.004], [0.089, 0.027, side * 0.024], [0.098, 0.022, side * 0.027]];
+      spottedTube('fixed-finger-' + side, fixed, function (u) { return big * (0.0045 * (1 - 0.90 * u)); }, high ? 7 : 4, 'claw', side); spottedTube('moving-finger-' + side, moving, function (u) { return big * (0.0041 * (1 - 0.90 * u)); }, high ? 7 : 4, 'claw', side);
+      first = fine.count(); var stalk = [[0.040, 0.041, side * 0.008], [0.047, 0.051, side * 0.011], [0.050, 0.058, side * 0.014]]; fine.tube(stalk, function (u) { return 0.0025 * (1 - u * 0.25); }, high ? 7 : 4, function (u) { return lin(mixc(red, ivory, (1 - smooth(0.08, 0.24, u)) * 0.72, [0, 0, 0])); });
+      blob(T, fine, 0.050, 0.059, side * 0.014, 0.0034, 0.0031, 0.0037, linHex(0x161b16), high ? 10 : 5, high ? 6 : 3); blob(T, fine, 0.051, 0.060, side * 0.0165, 0.0007, 0.0008, 0.0006, linHex(0x8da49b), high ? 6 : 4, 3); ranges['eye-' + side] = { first: first, count: fine.count() - first };
+      for (var ant = 0; ant < 2; ant++) { var pts = [], count = high ? 9 : 4, length = ant ? 0.036 : 0.074; for (var j = 0; j <= count; j++) { var u = j / count; pts.push([0.046 + length * u, 0.045 + 0.012 * Math.sin(u * PI * 0.82) - 0.005 * u, side * (0.009 + (ant ? 0.012 : 0.028) * u)]); }
+        first = fine.count(); fine.tube(pts, function (u) { return (ant ? 0.0009 : 0.00065) * (1 - 0.8 * u); }, 3, function (u) { return lin(ant ? mixc(red, rust, 0.18 + 0.15 * Math.sin(u * PI * 7), [0, 0, 0]) : mixc(ivory, hex(0xc4c0a8), 0.18 + 0.12 * Math.sin(u * PI * 7), [0, 0, 0])); }); sensory.push({ first: first, count: fine.count() - first, sides: 3, segments: count, side: side, phase: ant * 2.2 });
+      }
+    });
+    var ag = kit.geo(animal, k), fg = kit.geo(fine, k); ag.userData.whiteSpottedHermitCrab = { limbs: limbs, walkingLegCount: 4, largerClaw: 'left', illustrativeSpanM: 0.20, carapace: ranges.carapace }; fg.userData.whiteSpottedHermitCrab = { sensory: sensory, hairCount: hairs.length, ranges: ranges };
+    var cuticleRelief = kit.baked(c.key('hermit-cuticle-grain'), 256, 128, function (u, v, out) { var grain = noise2(u * 93 + phase, v * 78), pits = Math.pow(noise2(u * 150, v * 120 + phase), 3); out[0] = out[1] = out[2] = 0.40 + 0.19 * grain - 0.09 * pits; }, false, false, true);
+    kit.mesh(ag, kit.std({ vertexColors: true, map: pigment, bumpMap: cuticleRelief, bumpScale: 0.00028 * k, roughness: 0.65, side: T.DoubleSide }), 'spotted-legs-claws', c.root); kit.mesh(fg, kit.std({ vertexColors: true, roughness: 0.55, side: T.DoubleSide }), 'eyes-antennae-setae', c.root);
+    var restA = new Float32Array(ag.attributes.position.array), restF = new Float32Array(fg.attributes.position.array);
+    [ag, fg].forEach(function (g) { g.boundingBox.expandByScalar(0.0035 * k); g.boundingSphere.radius += 0.005 * k; });
+    function moveLimb(rest, out, first, count, limb, t) { for (var j = first; j < first + count; j++) { var at = j * 3, dx = (rest[at] / k - limb.root[0]), dz = (rest[at + 2] / k - limb.root[2]), full = Math.hypot(limb.tip[0] - limb.root[0], limb.tip[2] - limb.root[2]) || 1, u = clamp(Math.hypot(dx, dz) / full, 0, 1), w = limb.role === 'walking' ? Math.pow(Math.sin(PI * u), 2) : u * u; out[at + 1] = rest[at + 1] + k * 0.00085 * w * Math.sin(t * 0.51 + phase + limb.side * 1.1); } }
+    c.anim(function (t) {
+      var a = ag.attributes.position.array, f = fg.attributes.position.array; limbs.forEach(function (limb) { moveLimb(restA, a, limb.first, limb.count, limb, t); }); hairs.forEach(function (hair) { moveLimb(restF, f, hair.first, hair.count, hair.limb, t); });
+      sensory.forEach(function (s) { for (var j = s.sides; j < s.count; j++) { var at = (s.first + j) * 3, u = clamp(Math.floor(j / s.sides) / s.segments, 0, 1), w = u * u; f[at + 1] = restF[at + 1] + k * 0.0015 * w * Math.sin(t * 0.77 + phase + s.phase + s.side); f[at + 2] = restF[at + 2] + k * 0.0021 * w * Math.sin(t * 0.57 + phase + s.phase + s.side); } });
+      ag.attributes.position.needsUpdate = true; fg.attributes.position.needsUpdate = true; ag.computeVertexNormals(); fg.computeVertexNormals();
+    });
+  }
+
+  // Heniochus acuminatus: a representative 15 cm total-length animal. The
+  // broad white body, two oblique bands, yellow tail and white dorsal banner
+  // are intentionally distinct from the existing Zanclus model.
+  function buildLongfinBannerfish(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(457), k = .98 + .04 * rng(), phase = rng() * TAU;
+    var body = new Geo(), fins = new Geo(), detail = new Geo(), parts = [], dorsalRays = [], white = hex(0xf0ede0), ink = hex(0x182321), gold = hex(0xe3b82f), pearl = hex(0xf4e9b8);
+    var rows = [[.060,.003,-.003,.0018],[.050,.016,-.012,.005],[.035,.034,-.029,.009],[.010,.045,-.043,.012],[-.020,.038,-.040,.011],[-.042,.018,-.017,.006],[-.050,.007,-.007,.003]], prof = profile(rows), sample = [0,0,0];
+    function pigment(x,y,out) { var front = band(x - (.026 + .30*y), .0135, .0018), rear = band(x - (-.027 + .32*y), .012, .0018); mixc(white, ink, Math.max(front, rear), out); }
+    body.loft(rows, high ? 28 : 12, high ? 24 : 12, function (u,a,x,y,z,out) { setc(out, [1,1,1]); }, 2.25);
+    var map = kit.baked(c.key('bannerfish-oblique-bands'), high ? 512 : 256, high ? 256 : 128, function (u,v,out) {
+      var x = lerp(.060,-.050,u), a = -PI/2 + v*TAU; prof(x,sample); var y = (sample[0]+sample[1])*.5 + sp(Math.sin(a),2/2.25)*(sample[0]-sample[1])*.5;
+      pigment(x,y,out); var scales = Math.pow(Math.sin(PI*fract(u*57 + (Math.floor(v*36)%2)*.5)),6) * Math.pow(Math.sin(PI*fract(v*36)),3);
+      mulc(out,.94+.035*noise2(u*211+phase,v*143)+.025*scales);
+    },false,true);
+    var relief = kit.baked(c.key('bannerfish-fine-scales'),high?512:256,128,function(u,v,out){var f=fract(u*57+(Math.floor(v*36)%2)*.5);out[0]=out[1]=out[2]=.36+.24*Math.pow(Math.sin(PI*f),.8)*Math.pow(Math.sin(PI*fract(v*36)),.6);},false,true,true);
+    function membrane(name,roots,edges,width,paint) { var first=fins.count(); fins.membrane(roots,edges,width,paint); parts.push({name:name,first:first,count:fins.count()-first,rows:roots.length,widthSegments:width}); }
+    var roots=[],edges=[],n=high?24:10;
+    // Eleven low spiny rays lead into the long fourth dorsal ray. The white
+    // filament is a tapering membrane, not a floating disconnected ribbon.
+    for(var j=0;j<=n;j++){var u=j/n,x=lerp(.035,-.043,u);prof(x,sample);roots.push([x,sample[0]*.98,0]);var h=.014*Math.pow(Math.sin(PI*u),.6);edges.push([x-.009*Math.sin(PI*u),sample[0]+h,0]);}
+    membrane('dorsal-base',roots,edges,high?3:1,function(u,v,out){var x=lerp(.035,-.043,u)-.009*Math.sin(PI*u)*v;prof(lerp(.035,-.043,u),sample);pigment(x,sample[0]+.014*v,out);mixc(out,gold,smooth(.62,.78,u),out);});
+    roots=[];edges=[];n=high?25:12;
+    for(j=0;j<=n;j++){var u=j/n,x=.027-.083*u*u,y=.044+.084*Math.sin(u*PI*.50),w=(.008*(1-u)+.00045)*(1-.45*u);roots.push([x-w*.42,y,0]);edges.push([x+w*.58,y+.003*(1-u),.0015*Math.sin(PI*u)]);}
+    membrane('white-dorsal-banner',roots,edges,high?2:1,function(u,v,out){mixc(white,pearl,.10*(1-u),out);});
+    roots=[];edges=[];n=high?20:8;
+    for(j=0;j<=n;j++){var u=j/n,x=lerp(.018,-.044,u);prof(x,sample);roots.push([x,sample[1]*.97,0]);edges.push([x-.010*Math.sin(PI*u),sample[1]-.025*Math.pow(Math.sin(PI*u),.75),0]);}
+    membrane('anal-fin',roots,edges,high?3:1,function(u,v,out){var x=lerp(.018,-.044,u)-.010*Math.sin(PI*u)*v;prof(lerp(.018,-.044,u),sample);pigment(x,sample[1]-.025*v,out);});
+    roots=[];edges=[];n=high?18:8;
+    for(j=0;j<=n;j++){var u=j/n,w=u*2-1;roots.push([-.049,.006*w,0]);edges.push([-.085-.005*Math.pow(Math.abs(w),1.3),.024*w,0]);}
+    membrane('yellow-caudal-fin',roots,edges,high?4:2,function(u,v,out){mixc(gold,pearl,smooth(.81,1,v)*.36,out);mulc(out,.92+.08*Math.pow(Math.sin(u*PI*14),2));});
+    [-1,1].forEach(function(side){
+      var rr=[],ee=[],n=high?12:5;for(var j=0;j<=n;j++){var u=j/n;rr.push([.023,-.007+.006*u,side*.010]);ee.push([.003-.007*Math.sin(PI*u),-.013+.023*u,side*(.011+.019*Math.sin(PI*u))]);}
+      membrane('pectoral-'+side,rr,ee,high?3:1,function(u,v,out){mixc(pearl,gold,.28+.32*(1-v),out);});
+      rr=[[.017,-.036,side*.003],[.010,-.041,side*.003],[-.001,-.044,side*.002]];ee=[[.010,-.040,side*.004],[-.008,-.068,side*.007],[-.004,-.049,side*.003]];membrane('pelvic-'+side,rr,ee,high?2:1,function(u,v,out){setc(out,ink);});
+      addEye(T,detail,prof,2.25,[.041,.013,.0042],side,hex(0xafa98c),high,.50,false);
+      var mouth=[];for(var j=0;j<= (high?7:3);j++){var u=j/(high?7:3);mouth.push([.060-.007*u,-.0012-.0015*Math.sin(PI*u),side*(.0018+.0016*u)]);}detail.tube(mouth,.00028,3,function(){return lin(ink);});
+      var gill=[];for(j=0;j<= (high?12:5);j++){var u=j/(high?12:5),x=.026-.005*Math.sin(PI*u),y=.018-.043*u;gill.push([x,y,side*(surfZ(prof,2.25,x,y)+.0003)]);}detail.tube(gill,.00027,3,function(){return lin(hex(0x62655a));});
+    });
+    for(var ray=0;ray<11;ray++){var at=detail.count(),pts=[],x=.038-ray*.004,steps=ray===3?(high?18:8):2;prof(x,sample);for(j=0;j<=steps;j++){var u=j/steps;pts.push(ray===3?[.027-.083*u*u,.044+.084*Math.sin(u*PI*.5),.0002]:[x-.007*u,sample[0]+.010*u,.0002]);}detail.tube(pts,function(u){return .00018*(1-.70*u);},3,function(u){var col=[0,0,0];if(ray===3)setc(col,white);else pigment(x-.007*u,sample[0]+.010*u,col);return lin(col);});dorsalRays.push({index:ray,first:at,count:detail.count()-at,extended:ray===3});}
+    var bg=kit.geo(body,k),fg=kit.geo(fins,k),dg=kit.geo(detail,k);
+    bg.userData.longfinBannerfish={nominalTotalLengthM:.15,bodyBands:2,projectingSnout:true,scale:k};fg.userData.longfinBannerfish={parts:parts,dorsalSpines:11,whiteBanner:true,yellowTail:true};dg.userData.longfinBannerfish={dorsalRays:dorsalRays};
+    kit.mesh(bg,kit.std({vertexColors:true,map:map,bumpMap:relief,bumpScale:.00012*k,roughness:.53,side:T.DoubleSide},{sheen:sheenOf(T,0x8da99a,0xe9d8a0,.10)}),'banded-compressed-body',c.root);
+    kit.mesh(fg,kit.std({vertexColors:true,roughness:.56,side:T.DoubleSide},{rays:true,finRelief:.12}),'banner-and-fins',c.root);
+    kit.mesh(dg,kit.std({vertexColors:true,roughness:.42,side:T.DoubleSide},{eye:true,iris:hex(0xafa98c)}),'eyes-mouth-operculum',c.root);
+    [bg,fg,dg].forEach(function(g){g.boundingBox.expandByScalar(.009*k);g.boundingSphere.radius+=.012*k;deform(c,g,function(rest,out,t,motion){var e=effort(motion,.15),a=(.0019+.0011*e)*k;for(var j=0;j<rest.length;j+=3){var x=rest[j]/k,w=clamp((.025-x)/.115,0,1);out[j+2]=rest[j+2]+a*w*w*Math.sin(t*(2.2+.55*e)+phase-x*30);}},true);});
+    c.anim(function(t,dt,motion){var out=fg.attributes.position.array,e=effort(motion,.15);parts.forEach(function(p){for(var j=0;j<p.count;j++){var at=(p.first+j)*3,u=Math.floor(j/(p.widthSegments+1))/(p.rows-1),v=(j%(p.widthSegments+1))/p.widthSegments;if(p.name==='white-dorsal-banner')out[at+2]+=.0045*k*u*u*Math.sin(t*.94+phase-u*5.4);else if(p.name.indexOf('pectoral')===0)out[at+2]+=.003*k*v*Math.sin(t*(2.5+.5*e)+phase+u*2);}});fg.attributes.position.needsUpdate=true;fg.computeVertexNormals();var ray=dorsalRays[3],outD=dg.attributes.position.array;for(var j=0;j<ray.count;j++){var u=Math.min(1,Math.floor(j/3)/(high?18:8));outD[(ray.first+j)*3+2]+=.0045*k*u*u*Math.sin(t*.94+phase-u*5.4);}dg.attributes.position.needsUpdate=true;dg.computeVertexNormals();});
+  }
+
+  // Sepioteuthis lessoniana species complex: a calm bronze/pearl example.
+  // The representative .40 m posed length includes a .25 m mantle, head and
+  // partly extended feeding tentacles. Colour is variable, not diagnostic.
+  function buildBigfinReefSquid(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(463),k=.98+.04*rng(),phase=rng()*TAU,body=new Geo(),fins=new Geo(),armsGeo=new Geo(),ranges={},finParts=[],arms=[],cups=[];
+    var pearl=hex(0xbaab8e),bronze=hex(0x88674a),rust=hex(0x825238),pale=hex(0xcec9b6),ink=hex(0x101c23),white=[1,1,1];
+    var rows=[[.080,.025,-.025,.032],[.054,.037,-.036,.044],[.005,.041,-.038,.049],[-.060,.034,-.029,.042],[-.120,.022,-.017,.029],[-.158,.010,-.007,.014],[-.170,.002,-.001,.003]],prof=profile(rows),sample=[0,0,0];
+    function baseSkin(u,a,x,y,z,out){mixc(pearl,bronze,smooth(-.020,.026,y)*.54,out);mixc(out,pale,(1-smooth(-.029,-.004,y))*.50,out);}
+    var first=body.count();body.loft(rows,high?32:10,high?24:10,baseSkin,2);ranges.mantle={first:first,count:body.count()-first};
+    first=body.count();blob(T,body,.103,.000,0,.035,.023,.030,function(x,y,z){return lin(mixc(pearl,bronze,.22+.30*smooth(-.015,.02,y)+.10*noise3(x*175+phase,y*180,z*180),[0,0,0]));},high?14:7,high?8:4);ranges.head={first:first,count:body.count()-first};
+    // Chromatophore pigment lies over pearl skin. Fine flecks and softer
+    // dorsal mottling produce a calm illustrative state without emission.
+    var pigment=kit.baked(c.key('squid-chromatophores'),high?512:256,high?256:128,function(u,v,out){setc(out,white);if(u>.98&&v>.98)return;var a=-PI/2+v*TAU,dorsal=.30+.70*smooth(-.6,.35,Math.sin(a)),grain=noise2(u*187+phase,v*113),cells0=[0,0,0,0,0];cells(u*47+phase,v*24,c.seed&7,cells0);var spot=1-smooth(.055,.13,cells0[0]),patch=smooth(.48,.78,fbm2(u*13+phase,v*9,3)),bands=Math.pow(.5+.5*Math.cos(u*TAU*5+Math.sin(a)*.8),4)*.15;mixc(out,hex(0x7d472c),dorsal*(.31*patch+bands+.48*spot),out);mulc(out,.965+.035*grain);},false,true);
+    var relief=kit.baked(c.key('squid-skin-microtexture'),high?256:128,128,function(u,v,out){out[0]=out[1]=out[2]=.45+.10*noise2(u*139+phase,v*101);},false,true,true);
+    function neutral(g,at){for(var q=at;q<g.count();q++){g.t[q*2]=.995;g.t[q*2+1]=.995;}}
+    // Each lateral eye has a smooth silvery iris surrounding a large circular
+    // pupil. The lid and head overlap, avoiding separate ball-like eyes.
+    var eyes=[];
+    [-1,1].forEach(function(side){var at=body.count();blob(T,body,.108,.005,side*.023,.018,.017,.010,lin(mixc(bronze,pearl,.18,[0,0,0])),high?10:6,high?6:3);var e0=body.count(),ns=high?24:10;
+      body.v(.111,.005,side*.0343,lin(ink),.995,.995);
+      var radii=[.67,.74,.89,1];for(var r=0;r<radii.length;r++)for(var j=0;j<ns;j++){var a=j/ns*TAU,rr=radii[r],color=r===0?ink:mixc(hex(0x617570),hex(0xbac0ae),.35+.22*Math.cos(a*9)*Math.sin(a*7),[0,0,0]);body.v(.111+Math.cos(a)*.0147*rr,.005+Math.sin(a)*.0155*rr,side*(.029+.0052*Math.sqrt(Math.max(.08,1-rr*rr))),lin(color),.995,.995);}
+      for(j=0;j<ns;j++)body.i.push(e0,e0+1+j,e0+1+(j+1)%ns);for(r=0;r<radii.length-1;r++)for(j=0;j<ns;j++){var a0=e0+1+r*ns+j,b0=e0+1+r*ns+(j+1)%ns;body.i.push(a0,b0,a0+ns,b0,b0+ns,a0+ns);}
+      var lid=[];for(var j=0;j<= (high?10:5);j++){var a=PI*(.08+.84*j/(high?10:5));lid.push([.111+.016*Math.cos(a),.005+.0166*Math.sin(a),side*(.0285+.0038*Math.sin(a))]);}body.tube(lid,.0010,3,function(u){return lin(mixc(bronze,pearl,.16+.16*Math.sin(u*PI),[0,0,0]));});eyes.push({side:side,first:at,count:body.count()-at,pupilShape:'round',seatedDome:true});neutral(body,at);
+    });
+    // Recessed funnel opens beneath the collar, including a dark lumen.
+    first=body.count();var fn=high?10:5,fr=[[.074,-.025,.011],[.091,-.031,.011],[.111,-.033,.010],[.124,-.030,.008],[.126,-.029,.007],[.125,-.029,.005],[.116,-.031,.004]];
+    for(var r=0;r<fr.length;r++)for(var j=0;j<fn;j++){var a=j/fn*TAU,q=fr[r];body.v(q[0],q[1]+Math.cos(a)*q[2],Math.sin(a)*q[2],lin(r<5?pearl:r===5?bronze:ink),.995,.995);if(r){var a0=first+(r-1)*fn+j,b0=first+(r-1)*fn+(j+1)%fn;body.i.push(a0,b0,a0+fn,b0,b0+fn,a0+fn);}}
+    var tip=body.v(.113,-.031,0,lin(ink),.995,.995);for(j=0;j<fn;j++)body.i.push(first+6*fn+j,first+6*fn+(j+1)%fn,tip);ranges.funnel={first:first,count:body.count()-first};
+    // The fins span almost the whole mantle and broaden behind its midpoint.
+    // They have no fish-like rays: the continuous edges carry a gentle wave.
+    [-1,1].forEach(function(side){var at=fins.count(),n=high?44:18,nw=high?4:1;for(var q=0;q<=n;q++)for(var j=0;j<=nw;j++){var u=q/n,v=j/nw,x=lerp(-.168,.075,u);prof(x,sample);var breadth=.048*Math.pow(Math.sin(PI*u),.70)*(1.80-1.65*u),angle=phase-u*PI*3.4+side*.35,w=Math.sin(PI*u)*v*v,y=(sample[0]+sample[1])*.5+.0038*w*Math.sin(angle),z=side*(sample[2]*.98+breadth*v),color=mixc(pearl,bronze,.12+.48*(1-v),[0,0,0]);mixc(color,pale,smooth(.74,1,v)*.22,color);fins.v(x,y,z,lin(color),1-u,.50+.34*v);if(q&&j){var a0=at+(q-1)*(nw+1)+j-1,b0=a0+nw+1;fins.i.push(a0,b0,a0+1,a0+1,b0,b0+1);}}finParts.push({side:side,first:at,count:fins.count()-at,longitudinalSegments:n,widthSegments:nw});});
+    function point(index,u,tentacle){var a=index/8*TAU+PI/8,reach=.068+.009*Math.sin(index*1.7),curl=smooth(.72,1,u);if(tentacle){var side=Math.sin(a)>0?1:-1;return[.126+.108*u-.008*smooth(.78,1,u)+.002*Math.sin(PI*u),.020*Math.cos(a)-.009*Math.sin(PI*u)+.005*u*u,.021*Math.sin(a)+side*(.012*Math.sin(PI*u*.8)+.004*u)];}var radial=.020*(1+.40*u)+.009*Math.sin(PI*u);return[.126+reach*(u-.12*curl)+.003*Math.sin(PI*u)*Math.sin(index),radial*Math.cos(a)+.004*Math.sin(PI*u)*Math.sin(index+phase)+.005*u*u*Math.sin(index+2),radial*Math.sin(a)+.006*Math.sin(PI*u)*Math.cos(index+phase)];}
+    function armRadius(u,tentacle){return tentacle?.0034*(1-.35*u):.0073*Math.pow(1-u,1.08)+.0006;}
+    // Eight arms, two sucker rows per arm, and two longer club-ended feeding
+    // tentacles. Tentacles occupy the gaps beside the ventral arm pair.
+    for(var i=0;i<10;i++){var tentacle=i>=8,index=tentacle?(i===8?2.8:4.2):i,segments=high?(tentacle?14:12):(tentacle?6:5),sides=high?6:4,pts=[],at=armsGeo.count();for(j=0;j<=segments;j++)pts.push(point(index,j/segments*(tentacle?.84:1),tentacle));armsGeo.tube(pts,function(u){return armRadius(u,tentacle);},sides,function(u,s){return lin(mixc(bronze,pale,.24+.32*(.5+.5*Math.cos(s*TAU))+.12*u,[0,0,0]));});
+      for(j=0;j<armsGeo.count()-at;j++){armsGeo.t[(at+j)*2]=Math.min(1,Math.floor(j/sides)/segments);armsGeo.t[(at+j)*2+1]=(j%sides)/sides;}
+      var arm={index:i,tentacle:tentacle,first:at,count:armsGeo.count()-at,root:pts[0],tip:pts[pts.length-1],segments:segments,sides:sides};arms.push(arm);
+      if(tentacle){var start=armsGeo.count(),cn=high?10:5,cs=high?8:4;for(var q=0;q<=cn;q++){var u=.79+.24*q/cn,P=point(index,u,true),A=point(index,u-.004,true),B=point(index,u+.004,true),tangent=new T.Vector3(B[0]-A[0],B[1]-A[1],B[2]-A[2]).normalize(),normal=new T.Vector3(0,-P[1],-P[2]).normalize();normal.addScaledVector(tangent,-normal.dot(tangent)).normalize();var across=new T.Vector3().crossVectors(tangent,normal).normalize(),w=Math.pow(Math.max(0,Math.sin(PI*(.08+.92*q/cn))),.65),rr=.001+.004*w;for(var j=0;j<cs;j++){var a=j/cs*TAU,ca=Math.cos(a),sa=Math.sin(a),ww=rr*ca,hh=(.00065+.0016*w)*sa;armsGeo.v(P[0]+across.x*ww+normal.x*hh,P[1]+across.y*ww+normal.y*hh,P[2]+across.z*ww+normal.z*hh,lin(mixc(bronze,pale,.32+.23*Math.max(0,sa),[0,0,0])),q/cn,j/cs);if(q){var a0=start+(q-1)*cs+j,b0=start+(q-1)*cs+(j+1)%cs;armsGeo.i.push(a0,b0,a0+cs,b0,b0+cs,a0+cs);}}}var P=point(index,1.032,true),end=armsGeo.v(P[0],P[1],P[2],lin(pearl),.995,.995);for(j=0;j<cs;j++)armsGeo.i.push(start+cn*cs+j,start+cn*cs+(j+1)%cs,end);arm.club={first:start,count:armsGeo.count()-start,flattened:true};arm.tip=P;arm.count=armsGeo.count()-at;}
+      var stations=high?(tentacle?4:7):(tentacle?2:3),cupSides=high?5:3,rowCount=tentacle?4:2;
+      for(var st=0;st<stations;st++){var u=tentacle?.86+.12*st/(stations-1):.16+.70*st/(stations-1),P=point(index,u,tentacle),A=point(index,Math.max(0,u-.006),tentacle),B=point(index,Math.min(1,u+.006),tentacle),tangent=new T.Vector3(B[0]-A[0],B[1]-A[1],B[2]-A[2]).normalize(),normal=new T.Vector3(0,-P[1],-P[2]).normalize();normal.addScaledVector(tangent,-normal.dot(tangent)).normalize();var across=new T.Vector3().crossVectors(tangent,normal).normalize(),rad=tentacle?.0032:armRadius(u,false);
+        for(var row=0;row<rowCount;row++){var offset=(row-(rowCount-1)*.5)*(tentacle?.42:.72),rr=rad*(tentacle?.19:.29),center=new T.Vector3(P[0],P[1],P[2]).addScaledVector(normal,tentacle?(.00065+.0016*Math.pow(Math.max(0,Math.sin(PI*(.08+.92*(u-.79)/.24))),.65))*.98:rad*.92).addScaledVector(across,rad*offset),firstCup=armsGeo.count();for(j=0;j<cupSides;j++){var a=j/cupSides*TAU;armsGeo.v(center.x+tangent.x*Math.cos(a)*rr+across.x*Math.sin(a)*rr,center.y+tangent.y*Math.cos(a)*rr+across.y*Math.sin(a)*rr,center.z+tangent.z*Math.cos(a)*rr+across.z*Math.sin(a)*rr,lin(pale),.995,.995);}var cupCenter=armsGeo.v(center.x-normal.x*rr*.24,center.y-normal.y*rr*.24,center.z-normal.z*rr*.24,lin(bronze),.995,.995);for(j=0;j<cupSides;j++)armsGeo.i.push(firstCup+j,firstCup+(j+1)%cupSides,cupCenter);cups.push({arm:i,row:row,station:st,first:firstCup,count:cupSides+1});}
+      }arm.count=armsGeo.count()-at;
+    }
+    var bg=kit.geo(body,k),fg=kit.geo(fins,k),ag=kit.geo(armsGeo,k);
+    bg.userData.bigfinReefSquid={ranges:ranges,eyes:eyes,nominalPosedLengthM:.40,nominalMantleLengthM:.25,scale:k,appearance:'illustrative-bronze-pearl'};
+    fg.userData.bigfinReefSquid={fins:finParts,mantleCoverage:.972,rootMotion:false};ag.userData.bigfinReefSquid={arms:arms,armCount:8,feedingTentacleCount:2,armSuckerRows:2,clubSuckerRows:4,cups:cups};
+    kit.mesh(bg,kit.std({vertexColors:true,map:pigment,bumpMap:relief,bumpScale:.00009*k,roughness:.39,side:T.DoubleSide},{sheen:sheenOf(T,0x759994,0xcaa878,.18)}),'mantle-head-eyes-funnel',c.root);
+    kit.mesh(fg,kit.std({vertexColors:true,map:pigment,roughness:.43,side:T.DoubleSide},{sheen:sheenOf(T,0x9dbcb6,0xd7bd96,.17)}),'broad-oval-fins',c.root);
+    kit.mesh(ag,kit.std({vertexColors:true,map:pigment,bumpMap:relief,bumpScale:.00006*k,roughness:.44,side:T.DoubleSide}),'eight-arms-two-feeding-tentacles',c.root);
+    var restB=bg.attributes.position.array.slice(),restF=fg.attributes.position.array.slice(),restA=ag.attributes.position.array.slice();[bg,fg,ag].forEach(function(g){g.boundingBox.expandByScalar(.009*k);g.boundingSphere.radius+=.013*k;});
+    c.anim(function(t,dt,motion){var out=bg.attributes.position.array,e=effort(motion,.40),rate=1.10+.23*e,pump=.007*Math.sin(t*1.32+phase);for(var j=ranges.mantle.first;j<ranges.mantle.first+ranges.mantle.count;j++){var at=j*3,x=restB[at]/k,u=clamp((x+.170)/.25,0,1),w=Math.sin(PI*u)*pump;prof(x,sample);var yc=(sample[0]+sample[1])*.5*k;out[at+1]=restB[at+1]+(restB[at+1]-yc)*w;out[at+2]=restB[at+2]*(1+w);}bg.attributes.position.needsUpdate=true;bg.computeVertexNormals();
+      out=fg.attributes.position.array;finParts.forEach(function(f){for(var q=0;q<=f.longitudinalSegments;q++)for(var j=0;j<=f.widthSegments;j++){var u=q/f.longitudinalSegments,v=j/f.widthSegments,at=(f.first+q*(f.widthSegments+1)+j)*3,a=phase-u*PI*3.4+f.side*.35,x=restF[at]/k;prof(x,sample);out[at+1]=restF[at+1]+.0038*k*Math.sin(PI*u)*v*v*(Math.sin(a+t*rate)-Math.sin(a));out[at+2]=restF[at+2]+f.side*sample[2]*.98*k*Math.sin(PI*clamp((x+.170)/.25,0,1))*pump;}});fg.attributes.position.needsUpdate=true;fg.computeVertexNormals();
+      out=ag.attributes.position.array;arms.forEach(function(arm){for(var j=arm.first+arm.sides;j<arm.first+arm.count;j++){var at=j*3,u=clamp((restA[at]/k-arm.root[0])/(arm.tip[0]-arm.root[0]),0,1),w=u*u;out[at+1]=restA[at+1]+.0024*k*w*Math.sin(t*.84+phase+arm.index*.54);out[at+2]=restA[at+2]+.0020*k*w*Math.sin(t*.63+phase+arm.index*.57);}});ag.attributes.position.needsUpdate=true;ag.computeVertexNormals();
+    });
+  }
+
   // ---- Registry -----------------------------------------------------------------------------
   function I(group, habit, lengthM, depth, school, origin) { return { group: group, habit: habit, lengthM: lengthM, depthM: depth, schoolSize: school, origin: origin }; }
   var INFO = {
@@ -5177,8 +5980,36 @@
     ,bennetts_feather_star: I('invertebrate', 'bottom', 0.32, [0, 50], null, 'base')
     ,peacock_mantis_shrimp: I('invertebrate', 'bottom', 0.14, [0, 100], null, 'base')
     ,ribbon_eel: I('fish', 'crevice', 1.0, [1, 57], null, 'base')
+    ,leaf_scorpionfish: I('fish', 'bottom', 0.10, [1, 135], null, 'base')
+    ,longnose_hawkfish: I('fish', 'bottom', 0.12, [10, 100], null, 'base')
+    ,chocolate_chip_sea_star: I('invertebrate', 'bottom', 0.28, [0, 30], null, 'base')
+    ,porcelain_anemone_crab: I('invertebrate', 'bottom', 0.04, [1, 10], null, 'base')
+    ,varicose_phyllidia: I('invertebrate', 'bottom', 0.06, [4, 25], null, 'base')
+    ,broadclub_cuttlefish: I('invertebrate', 'hover', 0.30, [5, 30], null, 'centre')
+    ,blackspotted_puffer: I('fish', 'hover', 0.25, [3, 25], null, 'centre')
+    ,ocellated_eagle_ray: I('fish', 'solitary', 4.2, [0, 60], null, 'centre')
+    ,textile_cone: I('invertebrate', 'bottom', 0.09, [0, 50], null, 'base')
+    ,orange_cup_coral: I('coral', 'sessile', 0.075, [1, 60], null, 'base')
+    ,banded_sea_krait: I('reptile', 'solitary', 1.2, [0, 60], null, 'centre')
+    ,white_spotted_hermit_crab: I('invertebrate', 'bottom', 0.20, [0, 50], null, 'base')
+    ,longfin_bannerfish: I('fish', 'pair', 0.15, [2, 75], null, 'centre')
+    ,bigfin_reef_squid: I('invertebrate', 'hover', 0.40, [0, 100], null, 'centre')
   };
   var BUILDERS = {
+    longfin_bannerfish: buildLongfinBannerfish,
+    bigfin_reef_squid: buildBigfinReefSquid,
+    banded_sea_krait: buildBandedSeaKrait,
+    white_spotted_hermit_crab: buildWhiteSpottedHermitCrab,
+    textile_cone: buildTextileCone,
+    orange_cup_coral: buildOrangeCupCoral,
+    blackspotted_puffer: buildBlackspottedPuffer,
+    ocellated_eagle_ray: buildOcellatedEagleRay,
+    broadclub_cuttlefish: buildBroadclubCuttlefish,
+    varicose_phyllidia: buildVaricosePhyllidia,
+    porcelain_anemone_crab: buildPorcelainAnemoneCrab,
+    chocolate_chip_sea_star: buildChocolateChipSeaStar,
+    longnose_hawkfish: buildLongnoseHawkfish,
+    leaf_scorpionfish: buildLeafScorpionfish,
     ribbon_eel: buildRibbonEel,
     peacock_mantis_shrimp: buildPeacockMantisShrimp,
     bennetts_feather_star: buildBennettsFeatherStar,
@@ -5205,7 +6036,8 @@
   // live in. The soft coral (Dendronephthya) and the sea fan (Annella) have no
   // algae partners, and heat bleaching is not documented for the barrel sponge.
   var BLEACHES = { magnificent_anemone: true, giant_clam: true, christmas_tree_worm: true };
-  function healthStates(id) { return INFO[id].group === 'coral' ? ['healthy', 'bleached', 'dead'] : BLEACHES[id] ? ['healthy', 'bleached'] : ['healthy']; }
+  // Tubastraea coccinea has no algal symbionts (Smithsonian / USGS).
+  function healthStates(id) { return id === 'orange_cup_coral' ? ['healthy', 'dead'] : INFO[id].group === 'coral' ? ['healthy', 'bleached', 'dead'] : BLEACHES[id] ? ['healthy', 'bleached'] : ['healthy']; }
   function options(THREE, id, opts) {
     if (!THREE || typeof THREE.BufferGeometry !== 'function' || typeof THREE.Mesh !== 'function') throw new Error('Reef3DSpecies needs the THREE namespace (three.js r128) passed in.');
     if (!Object.prototype.hasOwnProperty.call(INFO, id)) throw new RangeError('Unknown reef species: ' + id);
@@ -5230,6 +6062,20 @@
   // and look-at height (lookY) in model radii, for a 360 x 240 picture.
   function V(x, y, z, lookY) { return { dir: [x, y, z], lookY: lookY }; }
   var PORTRAIT = {
+    longfin_bannerfish: V(0.25, 0.30, 2.7, 0.24),
+    bigfin_reef_squid: V(1.2, 1.4, 2.7, 0),
+    banded_sea_krait: V(0.45, 0.8, 2.7, 0),
+    white_spotted_hermit_crab: V(1.8, 1.5, -2.7, 0.20),
+    textile_cone: V(0.8, 1.1, 2.7, 0.24),
+    orange_cup_coral: V(1.3, 1.8, 2.7, 0.36),
+    blackspotted_puffer: V(1.0, 0.45, 2.7, 0),
+    ocellated_eagle_ray: V(5.5, 1.6, 1.0, 0),
+    broadclub_cuttlefish: V(2.1, 1.4, 2.7, 0.02),
+    varicose_phyllidia: V(0.9, 2.0, 2.7, 0.06),
+    porcelain_anemone_crab: V(2.7, 2.1, 2.2, 0.04),
+    chocolate_chip_sea_star: V(0.7, 2.4, 2.7, 0.28),
+    longnose_hawkfish: V(0.8, 0.35, 2.7, 0.12),
+    leaf_scorpionfish: V(0.8, 0.35, 2.7, 0.10),
     ribbon_eel: V(1.4, 0.6, 2.7, 0.4),
     peacock_mantis_shrimp: V(1.05, 1.15, 2.7, 0.15),
     bennetts_feather_star: V(0.8, 1.15, 2.7, 0.42),

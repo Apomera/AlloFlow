@@ -136,7 +136,9 @@ describe('Galaxy guided comparison rendering', () => {
     expect(workbench.querySelector('[data-galaxy-evidence-mission="dust"]').getAttribute('aria-pressed')).toBe('true');
     expect(workbench.querySelectorAll('[data-galaxy-evidence-prediction] input[type="radio"]')).toHaveLength(3);
     expect(workbench.querySelector('[data-galaxy-evidence-check]').disabled).toBe(true);
-    expect(workbench.querySelector('[data-galaxy-evidence-feedback]')).toBeNull();
+    const feedback = workbench.querySelector('[data-galaxy-evidence-feedback]');
+    expect(feedback.textContent).toBe(''); expect(feedback.getAttribute('role')).toBe('status');
+    expect(feedback.getAttribute('aria-live')).toBe('polite'); expect(feedback.getAttribute('aria-atomic')).toBe('true');
     expect(workbench.querySelector('[data-galaxy-evidence-progress]').textContent).toContain('0/2');
     for (const field of workbench.querySelectorAll('textarea')) {
       expect(field.maxLength).toBe(600);

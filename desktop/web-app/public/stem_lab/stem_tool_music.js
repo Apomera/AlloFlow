@@ -3853,7 +3853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Drum rows
                 BEAT_PAD_SOUNDS.slice(0, 8).map(function (sound, row) {
                   return React.createElement("div", { key: sound.type, className: "flex items-center gap-1 mb-0.5" },
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 text-right pr-1 truncate", style: { color: isDark ? sound.color : ({ '#ef4444': '#b91c1c', '#f97316': '#c2410c', '#eab308': '#a16207', '#84cc16': '#4d7c0f', '#22c55e': '#15803d', '#06b6d4': '#0e7490', '#3b82f6': '#1d4ed8', '#8b5cf6': '#6d28d9' })[sound.color] || sound.color } }, sound.label),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 text-right pr-1 truncate", style: { color: isDark ? (({ '#ef4444': '#f87171', '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa' })[sound.color] || sound.color) : ({ '#ef4444': '#b91c1c', '#f97316': '#c2410c', '#eab308': '#a16207', '#84cc16': '#4d7c0f', '#22c55e': '#15803d', '#06b6d4': '#0e7490', '#3b82f6': '#1d4ed8', '#8b5cf6': '#6d28d9' })[sound.color] || sound.color } }, sound.label),
                     Array.from({ length: 16 }, function (_, col) {
                       var gKey = row + '_' + col; var grid = d.seqGrid || {}; var isOn = grid[gKey];
                       var isCur = d.seqPlaying && d.seqCurrentStep === col;

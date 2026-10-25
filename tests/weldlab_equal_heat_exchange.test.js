@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -133,7 +134,7 @@ describe('Explicitly captured equal-heat voltage/current exchange', () => {
   });
 
   it('restores the complete original Heat Input function after removing only the one local snapshot hook/helper/call', () => {
-    const source = readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n'); const start = source.indexOf('      function HeatInputCalculator() {'), end = source.indexOf('      function WeldBeadLab() {', start); let region = source.slice(start, end);
+    const source = stripWeldlabWcagFixes(readFileSync(SRC, 'utf8')).replace(/\r\n/g, '\n'); const start = source.indexOf('      function HeatInputCalculator() {'), end = source.indexOf('      function WeldBeadLab() {', start); let region = source.slice(start, end);
     const helperAt = region.indexOf('        function renderEqualHeatExchange() {'), helperEnd = region.indexOf('        function renderEnergyRun() {', helperAt); expect(helperAt).toBeGreaterThan(0); expect(helperEnd).toBeGreaterThan(helperAt); const helper = region.slice(helperAt, helperEnd); expect(helper).not.toMatch(/usePersisted|\bupd\(|setNotebook\(|setV\(|setA\(|setTS\(|setP\(|setHiTH\(|setInterval|setTimeout|requestAnimationFrame/); region = region.slice(0, helperAt) + region.slice(helperEnd);
     for (const line of ['        var hiExchangeState = useState(null);', '            renderEqualHeatExchange(),']) { expect(region.split(line)).toHaveLength(2); region = region.replace(line + '\n', ''); }
     expect(createHash('sha256').update(region).digest('hex')).toBe('305938d88148bf9e9720edb8719171ee445604fa768d9c8e68866fd0f71d6a14');

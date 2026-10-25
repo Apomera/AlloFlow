@@ -173,7 +173,7 @@ describe('SkySchool finite camera runway projection', () => {
   });
 });
 
-async function mountFlight(webgl = false, details = false, width = 320, height = 763) {
+async function mountFlight(webgl = false, details = false, width = 320, height = 763, challengeId = 'first_flight', airportId) {
   commands = []; wallTime = 1000; frame = null;
   const context = new Proxy({ measureText:text=>({width:String(text).length*6}),
     createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}}),
@@ -197,7 +197,7 @@ async function mountFlight(webgl = false, details = false, width = 320, height =
       update:(id,key,value)=>setData(old=>({...old,[id]:{...old[id],[key]:value}})),
       updateMulti:(id,patch)=>setData(old=>({...old,[id]:{...old[id],...patch}}))}));}
   await React.act(async()=>root.render(React.createElement(App)));
-  await React.act(async()=>window.__testHooks.flightSim.startFlightChallenge('first_flight'));
+  await React.act(async()=>window.__testHooks.flightSim.startFlightChallenge(challengeId, airportId));
   for(const canvas of host.querySelectorAll('canvas')){Object.defineProperty(canvas,'clientWidth',{value:width,configurable:true});Object.defineProperty(canvas,'clientHeight',{value:height,configurable:true});}
   return window.__testHooks.flightSim;
 }
@@ -263,8 +263,7 @@ describe('SkySchool production runway integration',()=>{
       expect(errors).not.toHaveBeenCalled();
     });
   it('starts each airport tour leg on a modeled final instead of aiming at the airport center from the east',async()=>{
-    const hooks=await mountFlight(false);
-    await React.act(async()=>hooks.startFlightChallenge('world_tour','kden'));
+    const hooks=await mountFlight(false,false,320,763,'world_tour','kden');
     const airport=api.WAYPOINTS.find(item=>item.id==='kden'),model=api.getFlightRunway(airport),approach=api.getFlightRunwayApproach(hooks.flightRef.current,airport);
     expect(hooks.flightRef.current).toMatchObject({onGround:false,heading:model.ends[0].headingDeg,altitude:airport.alt+1800});
     expect(approach.distanceFt).toBeCloseTo(8*6076.12,6);expect(approach.crossFt).toBeCloseTo(0,6);

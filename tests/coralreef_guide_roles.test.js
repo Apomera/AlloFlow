@@ -84,7 +84,7 @@ describe('featured reef roles in the species guide', () => {
     expect(t.data).toMatchObject({ guideFilter: 'all', guideGroupFilter: 'all', speciesFieldNotes: { parrotfish: 'A note to preserve' }, speciesLog: { green_turtle: { firstSeen: 1 } } });
   });
 
-  it('preserves role browsing through profiles, reveals out-of-role look-alikes, and keeps practice independent', async () => {
+  it('preserves role browsing through profiles, reveals out-of-role look-alikes, and practises the selected role', async () => {
     const t = await mount(); await select(role(t), 'grazers');
     await click(t.host.querySelector('[data-open-profile="parrotfish"]'));
     expect(t.host.querySelector('[data-marine-profile="parrotfish"]')).toBeTruthy();
@@ -97,10 +97,11 @@ describe('featured reef roles in the species guide', () => {
     expect(role(t).value).toBe('all'); expect(ids(t)).toContain(other);
     expect(document.activeElement).toBe(t.host.querySelector('[data-species="' + other + '"] .cr-sp-name'));
     await select(role(t), 'cleaners'); await click(t.host.querySelector('[data-start-practice]'));
-    const available = X.SPECIES_META.filter(m => m.group !== 'structure').length;
-    expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(available);
+    expect(t.host.querySelector('[data-practice-collection-select]').value).toBe('selection');
+    expect(Number(t.host.querySelector('[data-practice-count]').dataset.practiceCount)).toBe(featured.cleaners.length);
     await click(t.host.querySelector('[data-practice-start]'));
-    expect(t.host.querySelector('.cr-dxp-heading').textContent).toBe('Organism 1 of 5');
+    expect(t.host.querySelector('.cr-dxp-heading').textContent).toBe('Organism 1 of 2');
+    expect(featured.cleaners).toContain(t.host.querySelector('.cr-dxp-portrait img').getAttribute('src').split('/').pop().replace(/\.webp.*$/, ''));
     await click(named(t, 'Back to the field guide'));
     expect(role(t).value).toBe('cleaners'); expect(ids(t).sort()).toEqual(featured.cleaners.slice().sort());
     expect(t.data.speciesPractice).toBeUndefined();

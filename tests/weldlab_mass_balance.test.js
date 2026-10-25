@@ -1,3 +1,4 @@
+import { stripWeldlabWcagFixes } from './helpers/weldlab_wcag_restore.js';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -150,7 +151,7 @@ describe('Consumables representative filler-mass balance bench', () => {
   });
 
   it('restores the entire prior Consumables lesson by removing only two local hooks, one helper and one cost-section call', () => {
-    const source = readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n'); const start = source.indexOf('      function ConsumablesDeepDive() {'), end = source.indexOf('      function MaineEcosystem() {', start); let region = source.slice(start, end);
+    const source = stripWeldlabWcagFixes(readFileSync(SRC, 'utf8')); const start = source.indexOf('      function ConsumablesDeepDive() {'), end = source.indexOf('      function MaineEcosystem() {', start); let region = source.slice(start, end);
     // Reverse only the later optional classification comparison before this historical baseline.
     const comparisonAt = region.indexOf('        function renderCodeComparison(current, pinned) {');
     if (comparisonAt >= 0) {

@@ -8,7 +8,7 @@ const hooks = () => window.__testHooks.flightSim;
 
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; window.__testHooks = {};
-  tool = loadTool('stem_lab/stem_tool_flightsim.js', 'flightSim');
+  tool = loadTool(process.env.SKYSCHOOL_DRONE_BATTERY_SOURCE || 'stem_lab/stem_tool_flightsim.js', 'flightSim');
   api = window.__RR_TEST_EXPORTS__.flightSim;
   canvasText = vi.fn();
   const context = new Proxy({
@@ -41,6 +41,7 @@ afterEach(async () => {
 async function mount() {
   function App() {
     const [data, update] = React.useState({ flightSim: { view: 'menu', aircraft: 'drone', railCollapsed: true,
+      menuSections: { challenges: true },
       takeoffTutorialDismissed: true, landingTutorialDismissed: true,
       earnedBadges: Object.fromEntries(api.ACHIEVEMENTS.map(a => [a.id, true])) } });
     latest = data.flightSim;
@@ -54,8 +55,15 @@ async function mount() {
     forces: { lift: api.Physics.WEIGHT, weight: api.Physics.WEIGHT, thrust: 0, drag: 0 } }));
 }
 
-async function start(battery = 100) {
-  await act(async () => host.querySelector('button[aria-label="Free Flight from Portland, ME"]').click());
+async function start(battery = 100, mode = 'aerial') {
+  // Establish the actual mission session before replacing observations for the
+  // deterministic battery/target fixture. A free flight does not own a survey.
+  const missionId = mode === 'powerline' ? 'drone_powerline' : 'drone_survey';
+  const launcher = host.querySelector('[data-flight-challenge-id="' + missionId + '"]');
+  expect(launcher).toBeTruthy(); await act(async () => launcher.click());
+  const begin = [...host.querySelectorAll('button')].find(button => button.textContent.includes('I Understand — Begin Flight'));
+  expect(begin).toBeTruthy(); await act(async () => begin.click());
+  expect(latest.flightMission.mission.missionId).toBe(missionId);
   for (const canvas of host.querySelectorAll('canvas')) {
     Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 1280 });
     Object.defineProperty(canvas, 'clientHeight', { configurable: true, value: 720 });
@@ -66,7 +74,7 @@ async function start(battery = 100) {
   Object.assign(hooks().flightRef.current, { lat: airport.lat, lon: airport.lon,
     altitude: airport.alt + 50, fieldElev: airport.alt, speed: 0, vsi: 0, onGround: false,
     stalling: false, lowAirspeed: false, groundContact: null });
-  await act(async () => updateSaved({ survey: { active: true, completed: false, mode: 'aerial', battery,
+  await act(async () => updateSaved({ survey: { active: true, completed: false, mode, battery,
     capturedCount: 0, captureProgress: 0, launchLat: airport.lat, launchLon: airport.lon,
     photos: [{ name: 'Distant target', lat: airport.lat + 0.01, lon: airport.lon + 0.01, captured: false }] } }));
 }
@@ -86,7 +94,7 @@ async function finish() {
 
 describe('drone mission battery follows active simulation time', () => {
   it.each(['aerial', 'powerline'])('keeps %s hold time with its own target when the nearest target changes', async mode => {
-    await mount(); await start();
+    await mount(); await start(100, mode);
     const initial = { ...hooks().flightRef.current };
     const secondLat = initial.lat + 0.0001;
     await act(async () => updateSaved({ survey: { ...latest.survey, mode,
@@ -227,10 +235,22 @@ describe('drone mission battery follows active simulation time', () => {
   });
 
   it('switches rescue guidance from the survivor to PWM after recovery', async () => {
-    await mount(); await start();
+    await mount();
+    // Rescue observations belong to an actual rescue attempt. Replacing a
+    // running drone's aircraft correctly retires that unrelated mission.
+    await act(async () => host.querySelector('[data-flight-challenge-id="coastal_rescue"]').click());
+    for (const canvas of host.querySelectorAll('canvas')) {
+      Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 1280 });
+      Object.defineProperty(canvas, 'clientHeight', { configurable: true, value: 720 });
+    }
+    Object.assign(hooks().getWeatherRef().current, { wind: 0, turbulence: 0, type: 'clear' });
+    Object.assign(hooks().controlsRef.current, { throttle: 1, pitch: 0, bank: 0 });
+    const airport = api.WAYPOINTS.find(w => w.id === 'kpwm');
+    Object.assign(hooks().flightRef.current, { lat: airport.lat, lon: airport.lon,
+      altitude: airport.alt + 50, fieldElev: airport.alt, speed: 0, vsi: 0, onGround: false,
+      stalling: false, lowAirspeed: false, groundContact: null });
     const state = hooks().flightRef.current;
-    await act(async () => updateSaved({ aircraft: 'rescue_heli', survey: null,
-      rescue: { active: true, completed: false, recovered: false,
+    await act(async () => updateSaved({ rescue: { active: true, completed: false, recovered: false,
         survivorLat: state.lat + 0.1, survivorLon: state.lon + 0.1, hoistTime: 0, startedAt: 0.1 } }));
     await frames(3);
     expect(host.querySelector('[data-mission-route]').textContent).toContain('SURVIVOR');
@@ -238,6 +258,7 @@ describe('drone mission battery follows active simulation time', () => {
     await act(async () => updateSaved({ rescue: { ...latest.rescue, recovered: true, recoveredAt: 1 } }));
     await frames(3);
     expect(host.querySelector('[data-mission-route]').textContent).toContain('PWM');
+    expect(host.querySelector('[data-mission-title]').textContent).toBe('✅ SURVIVOR ABOARD — RTB PWM');
     expect(host.querySelector('[data-mission-criterion]').textContent).toContain('0.5 nm');
     expect(hooks().getMissionGuidance().destination.code).toBe('PWM');
     expect(latest.rescue.completed).toBe(false);

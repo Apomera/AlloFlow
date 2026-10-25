@@ -2954,7 +2954,9 @@ window.StemLab = window.StemLab || {
     window._fracKbHandler = function(e) {
       // Window-level handler; the Back button removes it, but hub navigation that
       // bypasses Back does not — refuse to act once the tool left the DOM.
-      if (!document.querySelector('[data-fractions-root]')) return;
+      // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+      var frRoot = document.querySelector('[data-fractions-root]');
+      if (!frRoot || !e.target || !frRoot.contains(e.target)) return;
       if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       var key = e.key;
       if (key === '1') { upd({ navMode: 'learn', tab: 'practice' }); trackTab('practice'); }
@@ -6133,7 +6135,7 @@ window.StemLab = window.StemLab || {
 
       var printWorksheet = function() {
         if (!generated || typeof window === 'undefined' || !window.print) return;
-        var html = '<html><head><title>Fraction Worksheet — ' + new Date().toLocaleDateString() + '</title>';
+        var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Fraction Worksheet — ' + new Date().toLocaleDateString() + '</title>';
         html += '<style>body{font-family:sans-serif;margin:40px;}h1{color:#9f1239;}ol{font-size:14pt;line-height:2.5;}li{margin-bottom:8px;}.answer-key{page-break-before:always;color:#16a34a;}svg{vertical-align:middle;}.q{display:inline-block;margin-right:20px;}</style></head><body>';
         html += '<h1>Fraction Worksheet</h1>';
         html += '<p>Name: ____________________________  Date: __________  Score: ___ / ' + generated.length + '</p>';
@@ -6995,7 +6997,7 @@ window.StemLab = window.StemLab || {
             probs.push({ q: mn1 + '/' + md1 + ' × ' + mn2 + '/' + md2 + ' = ?', answer: msimp[0] + '/' + msimp[1] });
           }
         }
-        var html = '<html><head><title>Exit Ticket</title>';
+        var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Exit Ticket</title>';
         html += '<style>body{font-family:sans-serif;margin:30px;}h2{color:#9f1239;}.q{margin:15px 0;padding:8px;border-bottom:1px solid #ccc;}@media print{}</style></head><body>';
         html += '<h2>Fraction Exit Ticket — ' + etTopic + '</h2>';
         html += '<p>Name: ____________________ Date: ________</p><hr>';
@@ -7863,7 +7865,7 @@ window.StemLab = window.StemLab || {
 
       var printFractionStripsTemplate = function() {
         if (typeof window === 'undefined' || !window.print) return;
-        var html = '<html><head><title>Fraction Strips Template</title>';
+        var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Fraction Strips Template</title>';
         html += '<style>body{font-family:sans-serif;margin:30px;}h1{color:#9f1239;}.strip{display:flex;border:2px solid #0f172a;margin-bottom:10px;height:40px;}.seg{flex:1;border-right:1px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:11pt;}.strip-label{margin-right:10px;font-weight:bold;font-size:14pt;width:60px;display:inline-block;}</style></head><body>';
         html += '<h1>Fraction Strips Template</h1>';
         html += '<p>Cut out each strip. Use them to compare fractions, find equivalences, and add or subtract visually.</p>';
@@ -8618,7 +8620,7 @@ window.StemLab = window.StemLab || {
       var cardFractions = _f.cardFractions || ['1/2', '1/3', '2/3', '1/4', '3/4', '1/5', '2/5', '3/5', '4/5'];
       var printCard = function() {
         if (typeof window === 'undefined' || !window.print) return;
-        var html = '<html><head><title>Fraction Reference Card</title>';
+        var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Fraction Reference Card</title>';
         html += '<style>body{font-family:sans-serif;margin:30px;}.card{border:2px solid #9f1239;border-radius:12px;padding:16px;max-width:600px;}h1{color:#9f1239;}.row{display:flex;align-items:center;gap:12px;padding:6px;border-bottom:1px solid #ddd;}.frac{font-family:monospace;font-size:18pt;font-weight:bold;width:60px;}.dec{color:#2563eb;width:80px;}.pct{color:#9333ea;width:80px;}@media print{.no-print{display:none;}}</style></head><body>';
         html += '<div class="card"><h1>Fraction Reference Card</h1>';
         html += '<p style="font-size:11pt;color:#666;">Common fractions with decimal and percent equivalents.</p>';
@@ -9539,7 +9541,7 @@ window.StemLab = window.StemLab || {
       var printProbe = function() {
         if (!generatedProbe || typeof window === 'undefined') return;
         var pt = probeTypes.find(function(p) { return p.id === probeType; }) || probeTypes[0];
-        var html = '<html><head><title>Fraction CBM Probe — ' + new Date().toLocaleDateString() + '</title>';
+        var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Fraction CBM Probe — ' + new Date().toLocaleDateString() + '</title>';
         html += '<style>body{font-family:sans-serif;margin:30px;line-height:1.6;}h1{color:#9f1239;border-bottom:2px solid #9f1239;padding-bottom:8px;}.probe-item{display:inline-block;margin:5px 15px 5px 0;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;}@media print{.no-print{display:none;}}</style></head><body>';
         html += '<h1>Fraction CBM Probe</h1>';
         html += '<p>Name: ____________________________  Date: __________</p>';

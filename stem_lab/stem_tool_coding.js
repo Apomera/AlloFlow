@@ -77,13 +77,18 @@
       var script = document.createElement('script');
       script.id = 'allo-coding-blockly-runtime';
       script.async = true;
+      var runtimeUrl;
       try {
-        script.src = _codingToolScriptUrl
+        runtimeUrl = _codingToolScriptUrl
           ? new URL('blockly_runtime.bundle.js', _codingToolScriptUrl).href
           : new URL('stem_lab/blockly_runtime.bundle.js', document.baseURI).href;
       } catch (e) {
-        script.src = './stem_lab/blockly_runtime.bundle.js';
+        runtimeUrl = './stem_lab/blockly_runtime.bundle.js';
       }
+      try {
+        if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
+        window.__alloConfigureTrustedScript(script, runtimeUrl);
+      } catch (error) { reject(error); return; }
       script.onload = finish;
       script.onerror = function() {
         _codingBlocklyPromise = null;
@@ -91,7 +96,7 @@
         reject(new Error('The Visual Blocks runtime could not be loaded.'));
       };
       document.head.appendChild(script);
-    });
+    }).catch(function(error) { _codingBlocklyPromise = null; throw error; });
     return _codingBlocklyPromise;
   }
 

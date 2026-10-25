@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { findUnfilled } from './helpers/flightsim_template_scan.js';
 
 /**
  * Every templated string must have its placeholders filled.
@@ -21,34 +22,7 @@ import { readFileSync } from 'node:fs';
  * An earlier version of this check reported 54 findings, all false, by trying
  * to match the .replace chain with a regex anchored to the __alloT call.
  */
-const SRC = 'stem_lab/stem_tool_flightsim.js';
-
-const findUnfilled = (src) => {
-  const statements = src.split(';');
-  const unfilled = [];
-  const callRe = /__alloT\(\s*'stem\.flightsim\.([A-Za-z0-9_]+)'\s*,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*\)/g;
-  let checked = 0;
-  for (const stmt of statements) {
-    let m;
-    callRe.lastIndex = 0;
-    while ((m = callRe.exec(stmt))) {
-      let text;
-      // eslint-disable-next-line no-eval
-      try { text = eval(m[2]); } catch (e) { continue; }
-      if (typeof text !== 'string') continue;
-      const tokens = Array.from(new Set(text.match(/\{[A-Za-z0-9_]+\}/g) || []));
-      if (!tokens.length) continue;
-      checked++;
-      for (const tok of tokens) {
-        if (stmt.includes(`replace('${tok}'`) || stmt.includes(`replace("${tok}"`)) continue;
-        const assign = /(?:var\s+)?([A-Za-z_$][\w$]*)\s*=\s*(?:[^;=]*\?[\s\S]*)?$/.exec(stmt.slice(0, m.index));
-        if (assign && new RegExp(`${assign[1]}\\.replace\\(\\s*'${tok.replace(/[{}]/g, '\\$&')}'`).test(src)) continue;
-        unfilled.push(`${m[1]}  ${tok}`);
-      }
-    }
-  }
-  return { checked, unfilled: Array.from(new Set(unfilled)) };
-};
+const SRC = process.env.SKYSCHOOL_TEMPLATE_SOURCE || 'stem_lab/stem_tool_flightsim.js';
 
 describe('flightsim template placeholders', () => {
   const src = readFileSync(SRC, 'utf8');
@@ -69,6 +43,54 @@ describe('flightsim template placeholders', () => {
     expect(findUnfilled(conditional).unfilled).toEqual([]);
     expect(findUnfilled(conditional.replace("message.replace('{field}', field)", 'message')).unfilled)
       .toContain('radio_rotor_start  {field}');
+  });
+
+  it('follows nested conditional assignments through both later replacements', () => {
+    const code = "var turn = direction === 'left' ? __alloT('stem.flightsim.sample_left', '{degrees} toward {airport}') : direction === 'right' ? __alloT('stem.flightsim.sample_right', '{degrees} toward {airport}') : __alloT('stem.flightsim.sample_aligned', 'Toward {airport}'); turn = turn.replace('{degrees}', Math.round(Math.abs(error))).replace('{airport}', airport.code);";
+    expect(findUnfilled(code).unfilled).toEqual([]);
+    expect(findUnfilled(code.replace(".replace('{airport}', airport.code)", '')).unfilled).toEqual([
+      'sample_left  {airport}', 'sample_right  {airport}', 'sample_aligned  {airport}',
+    ]);
+  });
+
+  it('keeps semicolons inside strings, comments and replacement callbacks intact', () => {
+    const code = "__alloT('stem.flightsim.sample_progress', '{done} complete; {total} total').replace('{done}', rows.filter(function(row) { /* ; */ return row.done; }).length).replace('{total}', rows.length);";
+    expect(findUnfilled(code).unfilled).toEqual([]);
+    expect(findUnfilled(code.replace(".replace('{total}', rows.length)", '')).unfilled).toEqual(['sample_progress  {total}']);
+  });
+
+  it('follows every replacement in a later chain on an assigned template', () => {
+    const code = "var message = __alloT('stem.flightsim.sample_counts', '{cards} in {topics}'); var output = message.replace('{cards}', count()).replace('{topics}', topics.length);";
+    expect(findUnfilled(code).unfilled).toEqual([]);
+    expect(findUnfilled(code.replace(".replace('{topics}', topics.length)", '')).unfilled).toEqual(['sample_counts  {topics}']);
+  });
+
+  it('does not borrow a fill from another template in the same statement', () => {
+    const code = "render(__alloT('stem.flightsim.sample_missing', '{n}'), __alloT('stem.flightsim.sample_filled', '{n}').replace('{n}', count));";
+    expect(findUnfilled(code).unfilled).toEqual(['sample_missing  {n}']);
+  });
+
+  it('keeps identically named variables in different functions separate', () => {
+    const code = "function first() { var message = __alloT('stem.flightsim.sample_missing', '{n}'); return message; } function second() { var message = __alloT('stem.flightsim.sample_filled', '{n}'); return message.replace('{n}', count); }";
+    expect(findUnfilled(code).unfilled).toEqual(['sample_missing  {n}']);
+  });
+
+  it('does not treat a shadowed callback parameter as the assigned template', () => {
+    const code = "var message = __alloT('stem.flightsim.sample_missing', '{n}'); rows.map(function(message) { return message.replace('{n}', count); });";
+    expect(findUnfilled(code).unfilled).toEqual(['sample_missing  {n}']);
+    expect(findUnfilled(code + "message.replace('{n}', count);").unfilled).toEqual([]);
+  });
+
+  it('follows aliases, double-quoted literals and computed replacement methods', () => {
+    const code = 'const message = __alloT("stem.flightsim.sample_alias", "{n}"); const alias = message; alias["replaceAll"]("{n}", count);';
+    expect(findUnfilled(code).unfilled).toEqual([]);
+    expect(findUnfilled(code.replace('alias["replaceAll"]("{n}", count)', 'alias')).unfilled).toEqual(['sample_alias  {n}']);
+  });
+
+  it('ignores replacement-shaped text in comments and unrelated strings', () => {
+    const code = "var message = __alloT('stem.flightsim.sample_missing', '{n}'); // message.replace('{n}', count);\n render(\"message.replace('{n}', count)\");";
+    expect(findUnfilled(code).unfilled).toEqual(['sample_missing  {n}']);
+    expect(findUnfilled(code + "message.replace('{n}', count);").unfilled).toEqual([]);
   });
 
   it('would catch a removed .replace (the check can fail)', () => {

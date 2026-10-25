@@ -760,8 +760,8 @@ describe('WeldLab radiogroups honour the keyboard contract', () => {
   it('gives every radiogroup an accessible name', () => {
     const src = read();
     const groups = src.split('\n').filter((l) => /'?role'?:\s*'radiogroup'/.test(l));
-    const unnamed = groups.filter((l) => !/'aria-label':/.test(l));
-    expect(unnamed.map((l) => l.trim().slice(0, 80)), 'radiogroups with no aria-label').toEqual([]);
+    const unnamed = groups.filter((l) => !/'aria-label(?:ledby)?':/.test(l));
+    expect(unnamed.map((l) => l.trim().slice(0, 80)), 'radiogroups with no accessible name').toEqual([]);
   });
 
   it('handles both arrow axes plus Home and End', () => {
@@ -779,12 +779,13 @@ describe('WeldLab radiogroups honour the keyboard contract', () => {
     // Both quiz modules set `disabled: <answered>` on every radio. Disabling the
     // focused element blurs it and focus falls to <body>, stranding a keyboard
     // user at the top of the document — confirmed in Chromium at HEAD.
-    ['psFeedbackRef', 'ddFeedbackRef'].forEach((ref) => {
+    [['psFeedbackRef', 'psAns'], ['ddFeedbackRef', 'ddAns2']].forEach(([ref, answered]) => {
       expect(src, ref + ' is missing').toContain('var ' + ref + ' = useRef(null)');
       expect(src).toContain('ref: ' + ref);
       expect(src).toContain(ref + '.current.focus()');
       // Edge-guarded, so re-entering an answered question does not steal focus.
-      expect(src).toContain('var ' + ref + 'Prev = useRef(false)');
+      expect(src).toContain('var ' + ref + 'Prev = useRef(' + answered + ')');
+      expect(src).toContain('if (!was && ' + answered + ' && ' + ref + '.current)');
     });
   });
 });
@@ -977,7 +978,9 @@ describe('WeldLab print stylesheet keeps its promises', () => {
   it('tags the back button as chrome, not content', () => {
     const src = read();
     // The bar itself carries the module title, which a printed page wants.
-    expect(src).toMatch(/className: 'weldlab-no-print px-3 py-1\.5 rounded-lg bg-white\/20/);
+    const bar = src.slice(src.indexOf('function BackBar('), src.indexOf('function StatCard('));
+    expect(bar).toMatch(/className: 'weldlab-no-print px-3 py-1\.5 rounded-lg/);
+    expect(bar).toContain("bg-white hover:bg-slate-100 text-orange-900");
   });
 });
 

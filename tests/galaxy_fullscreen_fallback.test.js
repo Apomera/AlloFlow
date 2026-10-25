@@ -42,7 +42,8 @@ describe('Galaxy Explorer fullscreen', () => {
         expect(tool).toContain("data-galaxy-exit-immersive");
         expect(tool).toContain('Exit fullscreen (Esc)');
         expect(tool).toContain('function galaxyFsOnKey(event)');
-        expect(tool).toContain("event.key !== 'Escape' || !galaxyCssFullscreen");
+        expect(tool).toMatch(/function galaxyFsOnKey\(event\)[\s\S]{0,300}if \(!galaxyCssFullscreen\) return;/);
+        expect(tool).toContain("if (event.key !== 'Escape') return;");
         // Escape must not fall through to the shell's close-the-tool handler.
         expect(tool).toMatch(/event\.stopPropagation\(\);\s*galaxyFsExitCss\(\);/);
       });

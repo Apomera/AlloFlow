@@ -612,10 +612,97 @@ window.StemLab = window.StemLab || {
       vacuumWidth: scaleMax > 0 ? (vacuum / scaleMax) * 100 : 0,
       dragWidth: scaleMax > 0 ? (drag / scaleMax) * 100 : 0 });
   }
+  // Range explorer: every whole angle the Angle slider allows, flown by the
+  // same integrator as a launch, plus each model's continuous best angle.
+  var physSweepCache = { keys: [], values: {} };
+  function physSweepRange(angle, vel, grav, dragOn, mass, height) {
+    var r = dragOn ? physSimulate(angle, vel, grav, true, mass, height) : physVacuum(angle, vel, grav, height);
+    return r.status === 'landed' ? r : null;
+  }
+  function physRangeSweep(vel, grav, dragOn, mass, height) {
+    mass = mass == null ? 1 : mass;
+    height = height === undefined ? 0 : height;
+    dragOn = !!dragOn;
+    if (!physValidLaunch(45, vel, grav, mass, height) || !(vel > 0) || !(grav > 0)) return null;
+    var key = [vel, grav, dragOn, mass, height].join('|');
+    if (physSweepCache.values[key]) return physSweepCache.values[key];
+    var lo = height > 0 ? 0 : 5, hi = 85, points = [];
+    for (var a = lo; a <= hi; a++) {
+      var vac = physSweepRange(a, vel, grav, false, mass, height);
+      var air = dragOn ? physSweepRange(a, vel, grav, true, mass, height) : vac;
+      if (!vac || !air) return null;
+      points.push(Object.freeze({ angle: a, range: air.range, vacuumRange: vac.range, time: air.time, maxH: air.maxH }));
+    }
+    // Range is single-peaked in angle for both models, so a ternary search
+    // finds the maximum between the whole-degree samples.
+    function best(drag) {
+      var l = lo, u = hi;
+      for (var i = 0; i < 60; i++) {
+        var m1 = l + (u - l) / 3, m2 = u - (u - l) / 3;
+        var r1 = physSweepRange(m1, vel, grav, drag, mass, height), r2 = physSweepRange(m2, vel, grav, drag, mass, height);
+        if (!r1 || !r2) return null;
+        if (r1.range < r2.range) l = m1; else u = m2;
+      }
+      var angle = (l + u) / 2, r = physSweepRange(angle, vel, grav, drag, mass, height);
+      return r ? Object.freeze({ angle: angle, range: r.range }) : null;
+    }
+    var vacuumBest = best(false), dragBest = dragOn ? best(true) : vacuumBest;
+    if (!vacuumBest || !dragBest) return null;
+    var result = Object.freeze({ vel: vel, grav: grav, drag: dragOn, mass: mass, launchHeight: height, min: lo, max: hi,
+      points: Object.freeze(points), best: dragBest, vacuumBest: vacuumBest,
+      groundVacuumBest: Object.freeze({ angle: 45, range: vel * vel / grav }) });
+    physSweepCache.keys.push(key);
+    physSweepCache.values[key] = result;
+    if (physSweepCache.keys.length > 24) delete physSweepCache.values[physSweepCache.keys.shift()];
+    return result;
+  }
+  // Angles whose range stays within `fraction` of the sweep's maximum.
+  function physRangeBand(sweep, fraction) {
+    if (!sweep || !physFinite(fraction) || fraction <= 0 || fraction > 1) return null;
+    var floor = sweep.best.range * fraction;
+    var inside = sweep.points.filter(function(p) { return p.range >= floor; });
+    return inside.length ? { from: inside[0].angle, to: inside[inside.length - 1].angle } : null;
+  }
+  // R = v²·sin(2θ)/g holds only without drag and with landing at launch
+  // height, so the gravity fit uses only flights that meet those conditions.
+  // A line through the origin fits R against v²·sin(2θ): slope = 1/g.
+  function physFitGravity(rows) {
+    var runs = physEvidenceRuns(rows), excluded = [], candidates = [];
+    runs.forEach(function(r) {
+      var x = r.vel * r.vel * Math.sin(2 * r.angle * Math.PI / 180);
+      var point = { n: r.n, x: x, y: r.range, angle: r.angle, vel: r.vel, grav: r.grav };
+      if (r.modelVersion !== PHYS_MODEL_VERSION) excluded.push(Object.assign(point, { reason: 'model' }));
+      else if (r.drag) excluded.push(Object.assign(point, { reason: 'drag' }));
+      else if (r.launchHeight > 0) excluded.push(Object.assign(point, { reason: 'height' }));
+      else candidates.push(point);
+    });
+    var groups = {};
+    candidates.forEach(function(p) { (groups[p.grav] = groups[p.grav] || []).push(p); });
+    var gravity = null;
+    Object.keys(groups).forEach(function(g) {
+      var group = groups[g], current = gravity == null ? null : groups[gravity];
+      var latest = function(list) { return Math.max.apply(null, list.map(function(p) { return p.n; })); };
+      if (!current || group.length > current.length || (group.length === current.length && latest(group) > latest(current))) gravity = g;
+    });
+    var used = gravity == null ? [] : groups[gravity];
+    candidates.forEach(function(p) { if (used.indexOf(p) < 0) excluded.push(Object.assign(p, { reason: 'gravity' })); });
+    excluded.sort(function(a, b) { return a.n - b.n; });
+    var distinct = used.map(function(p) { return p.x.toFixed(6); }).filter(function(x, i, all) { return all.indexOf(x) === i; }).length;
+    var base = { points: used, excluded: excluded, gravity: gravity == null ? null : Number(gravity), needed: Math.max(0, 3 - used.length) };
+    if (used.length < 3 || distinct < 2) return Object.freeze(Object.assign(base, { status: 'need-more' }));
+    var sxy = 0, sxx = 0;
+    used.forEach(function(p) { sxy += p.x * p.y; sxx += p.x * p.x; });
+    var slope = sxy / sxx;
+    if (!(slope > 0) || !physFinite(slope)) return Object.freeze(Object.assign(base, { status: 'need-more' }));
+    var gFit = 1 / slope;
+    return Object.freeze(Object.assign(base, { status: 'ok', slope: slope, gFit: gFit,
+      errorPct: (gFit - base.gravity) / base.gravity * 100 }));
+  }
   try {
     window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, recordedMoments: physRecordedMoments, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
       RECORDED_FLIGHT_LIMITS: PHYS_RECORDED_FLIGHT_LIMITS, captureRecordedFlight: physCaptureRecordedFlight, normalizeRecordedFlights: physNormalizeRecordedFlights, restoreRecordedFlight: physRestoreRecordedFlight,
-      findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport };
+      findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport,
+      rangeSweep: physRangeSweep, rangeBand: physRangeBand, fitGravity: physFitGravity };
   } catch (e) {}
 
   // One reference run anchors every notebook comparison, including archived
@@ -740,7 +827,8 @@ window.StemLab = window.StemLab || {
       { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetsHit || 0) >= 3; }, progress: function(d) { return (d.targetsHit || 0) + '/3 targets'; } },
       { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
       { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } },
-      { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } }
+      { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } },
+      { id: 'range_predict_2', label: 'Predict the farthest angle twice in the Range explorer', icon: '\uD83D\uDCC8', check: function(d) { return ((d.rangeExplorer && d.rangeExplorer.predictions) || 0) >= 2; }, progress: function(d) { return Math.min(2, (d.rangeExplorer && d.rangeExplorer.predictions) || 0) + '/2 predictions'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -901,6 +989,16 @@ window.StemLab = window.StemLab || {
             state.investigations = physNormalizeInvestigations(raw.investigations);
             state.investigationDraft = physNormalizeInvestigationDraft(raw.investigationDraft, state.runLog);
             state.investigationOpen = raw.investigationOpen === true;
+            state.showRangeExplorer = raw.showRangeExplorer === true;
+            var rx = isRecord(raw.rangeExplorer) ? raw.rangeExplorer : {};
+            var rxKey = function(v) { return typeof v === 'string' && v ? v.slice(0, 80) : null; };
+            state.rangeExplorer = {
+              draft: typeof rx.draft === 'string' ? rx.draft.slice(0, 8) : '',
+              prediction: finite(rx.prediction) && rx.prediction >= 0 && rx.prediction <= 85 ? rx.prediction : null,
+              predictedFor: rxKey(rx.predictedFor), revealedFor: rxKey(rx.revealedFor),
+              inspect: finite(rx.inspect) ? Math.round(num(rx.inspect, 0, 85, 45)) : null,
+              fitOpen: rx.fitOpen === true, predictions: counter(rx.predictions)
+            };
             var selectedInvestigation = state.investigations.find(function(item) { return String(item.id) === String(raw.selectedInvestigationId); });
             state.selectedInvestigationId = selectedInvestigation ? selectedInvestigation.id : null;
             state.investigations.forEach(function(item) { item.runs.forEach(function(r) { state.runCount = Math.max(state.runCount, r.n); }); });
@@ -4750,6 +4848,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-controls] legend{font-size:14px;color:var(--phys-ink)}
               @container(max-width:900px){#physics-fs-outer [data-physics-workbench]{grid-template-columns:minmax(0,1fr)}#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(5,minmax(0,1fr))}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:auto}#physics-fs-outer [data-physics-controls]>:is([data-physics-display-controls],[data-physics-playback]){grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
               @container(max-width:620px){#physics-fs-outer [data-physics-sliders]{grid-template-columns:repeat(2,minmax(0,1fr));padding:13px}#physics-fs-outer [data-physics-parameter-card="launchHeight"]{grid-column:1/-1}#physics-fs-outer [data-physics-display-controls] .phys-view-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-controls] [data-physics-playback]{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-playback]>:is([data-physics-step],[data-physics-inspect]){grid-column:span 1}#physics-fs-outer .phys-gravity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]{padding:10px;min-height:88px}#physics-fs-outer .phys-view-title{display:flex;font-size:12px;gap:6px}#physics-fs-outer .phys-view-title svg{width:16px;height:16px;margin:1px 0 0}#physics-fs-outer [data-physics-display-controls] button[data-physics-view]:last-child{grid-column:1/-1;min-height:68px;flex-direction:row;align-items:center}#physics-fs-outer [data-physics-view]:last-child .phys-view-title{display:flex;align-items:center;gap:8px}#physics-fs-outer [data-physics-view]:last-child svg{margin:0}}
+              @container(max-width:620px){#physics-fs-outer :is([data-physics-range-chart],[data-physics-range-fit-chart]) text{font-size:25px}}
               #physics-fs-outer .phys-graph-moments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
               #physics-fs-outer .phys-graph-moments button{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:5px;min-width:0;min-height:72px;padding:10px;border-radius:10px;font:inherit;text-align:left}
               #physics-fs-outer .phys-graph-moments button span{font-size:12px;line-height:1.5}
@@ -5109,7 +5208,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   { id: 'data', key: 'showFlightData', label: __alloT('stem.physics.label_data', 'Flight data ').trim(), aria: __alloT('stem.physics.aria_data_currently', 'Flight data, currently '), path: 'M3 4h18v16H3V4Zm0 5h18M9 4v16M15 4v16M3 14h18' },
                   { id: 'formulas', key: 'showFormulas', label: __alloT('stem.physics.label_show_work', 'Show your work ').trim(), aria: __alloT('stem.physics.aria_show_work_currently', 'Show your work formulas panel, currently '), path: 'M18 5H6l7 7-7 7h12M18 5v3m0 8v3' },
                   { id: 'overlay', key: 'showOverlay', label: __alloT('stem.physics.view_compare_paths', 'Compare paths'), aria: __alloT('stem.physics.aria_compare_currently', 'Trajectory comparison overlay, currently '), path: 'M3 20h18M4 17C8 2 15 2 20 17M4 17C7 7 11 7 14 17' },
-                  { id: 'graphs', key: 'showGraphs', label: __alloT('stem.physics.view_motion_graphs', 'Motion graphs').trim(), aria: __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently '), path: 'M4 3v17h17M6 14l4-5 4 3 5-7' }
+                  { id: 'graphs', key: 'showGraphs', label: __alloT('stem.physics.view_motion_graphs', 'Motion graphs').trim(), aria: __alloT('stem.physics.aria_motion_currently', 'Motion component graphs (Vx vs t and Vy vs t), currently '), path: 'M4 3v17h17M6 14l4-5 4 3 5-7' },
+                  { id: 'range', key: 'showRangeExplorer', label: __alloT('stem.physics.view_range_explorer', 'Range vs angle'), aria: __alloT('stem.physics.aria_range_explorer_currently', 'Range explorer: range at every launch angle, currently '), path: 'M3 20h18M4 20C7 5 15 5 19 20M11 9v11' }
                 ].map(function(view) {
                   var analysisEntry = view.id === 'graphs' || view.id === 'data';
                   var enabled = analysisEntry ? analysisOpen && analysisView === (view.id === 'data' ? 'data' : 'motion') : !!d[view.key];
@@ -5119,6 +5219,12 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       if (view.id === 'graphs' || view.id === 'data') {
                         physOpenAnalysisView(view.id === 'data' ? 'data' : 'motion');
                       } else upd(view.key, !d[view.key]);
+                      // The explorer renders below the results: scroll it into view, but leave focus on this card.
+                      if (view.id === 'range' && !d[view.key]) setTimeout(function() {
+                        var panel = document.querySelector('[data-physics-range-explorer]');
+                        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+                      }, 60);
                     } },
                     React.createElement('span', { className: 'phys-view-title' },
                       React.createElement('svg', { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false }, React.createElement('path', { d: view.path })),
@@ -5792,6 +5898,276 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     : '🔬 ' + __alloT('stem.physics.runlog_none_comparable', 'No comparable single-setting trial yet. Use the current model and change one launch setting between runs.')
                 )
               );
+            })(),
+
+            // ── Range explorer: predict the best angle, then read the whole
+            // range-angle curve and fit g from the student's own flights ──
+            d.showRangeExplorer && (function() {
+              var h = React.createElement;
+              var P = window.StemLab._physics;
+              var rx = d.rangeExplorer;
+              var height = d.launchHeight || 0;
+              var mass = d.airResist ? d.mass : 1;
+              var sweep = P.rangeSweep(d.velocity, d.gravity, d.airResist, mass, height);
+              var pal = isContrast
+                ? { surface: '#000000', panel: '#000000', ink: '#ffffff', muted: '#ffffff', accent: '#ffff00', border: '#ffffff', vacuum: '#ffffff', drag: '#ffff00', mark: '#00ffff', grid: '#ffffff', good: '#ffff00' }
+                : isDark
+                  ? { surface: '#142438', panel: '#1a3046', ink: '#eef5fb', muted: '#c3d3e2', accent: '#8bdcf0', border: '#526e87', vacuum: '#93c5fd', drag: '#fdba74', mark: '#e9b8ff', grid: '#3b556d', good: '#86efac' }
+                  : { surface: '#ffffff', panel: '#f3f7fa', ink: '#172c40', muted: '#3f5468', accent: '#086d89', border: '#c4d2de', vacuum: '#1d4ed8', drag: '#b45309', mark: '#7e22ce', grid: '#dbe4ec', good: '#166534' };
+              function fill(s, map) { return s.replace(/\{(\w+)\}/g, function(m, k) { return map[k] != null ? String(map[k]) : m; }); }
+              function deg(a) { return (Math.round(a * 10) / 10).toFixed(1) + '°'; }
+              function m1(v) { return v.toFixed(1) + ' m'; }
+              function setRX(patch) {
+                setLabToolData(function(prev) {
+                  var cur = physNormalizeState(prev.physics).rangeExplorer;
+                  return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { rangeExplorer: Object.assign({}, cur, patch) }) });
+                });
+              }
+              var cardStyle = { background: pal.panel, color: pal.ink, border: '1px solid ' + pal.border, borderRadius: 12, padding: 14, minWidth: 0, overflowWrap: 'anywhere' };
+              var actionStyle = { minHeight: 44, padding: '9px 13px', borderRadius: 9, border: '1px solid ' + pal.border, background: pal.surface, color: pal.accent, fontSize: 13, fontWeight: 700 };
+              var primaryStyle = Object.assign({}, actionStyle, { background: pal.accent, color: pal.surface, borderColor: pal.accent });
+              var helpStyle = { margin: '0 0 8px', fontSize: 13, color: pal.muted, lineHeight: 1.45 };
+              var shell = function(children) {
+                return h('section', { 'data-physics-range-explorer': true, 'aria-labelledby': 'physics-range-title', className: 'mb-3', style: { background: pal.surface, color: pal.ink, border: '1px solid ' + pal.border, borderRadius: 14, padding: 14, display: 'grid', gap: 12, minWidth: 0 } },
+                  h('div', null,
+                    h('h4', { id: 'physics-range-title', style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: pal.ink } }, '📈 ' + __alloT('stem.physics.range_title', 'Range explorer: which angle flies farthest?')),
+                    h('p', { style: helpStyle }, __alloT('stem.physics.range_intro', 'Every point on this curve is a full simulated flight with your current speed, gravity, launch height and air setting. Only the angle changes.'))),
+                  children);
+              };
+              if (!sweep) return shell(h('p', { role: 'status', style: helpStyle }, __alloT('stem.physics.range_unavailable', 'The range curve is not available for these settings.')));
+              var settingsKey = [d.velocity, d.gravity, d.airResist ? 'drag' : 'vacuum', d.airResist ? d.mass : '', height].join('|');
+              var revealed = rx.revealedFor === settingsKey;
+              var predicted = rx.predictedFor === settingsKey && rx.prediction != null;
+              var settingsLine = fill(__alloT('stem.physics.range_settings', 'Settings: {vel} m/s, g = {grav} m/s², launch height {height} m, {air}.'), {
+                vel: d.velocity, grav: d.gravity, height: height,
+                air: d.airResist ? fill(__alloT('stem.physics.range_air_on', 'air drag on, {mass} kg'), { mass: d.mass }) : __alloT('stem.physics.range_air_off', 'no air drag') });
+              function rangeAt(angle) {
+                var r = d.airResist ? P.simulate(angle, d.velocity, d.gravity, true, mass, height) : P.vacuum(angle, d.velocity, d.gravity, height);
+                return r.status === 'landed' ? r : null;
+              }
+
+              // Step 1: commit to a prediction (or choose to skip) before the curve appears.
+              if (!revealed) {
+                var draftValue = rx.draft.trim() === '' ? NaN : Number(rx.draft);
+                var draftValid = isFinite(draftValue) && draftValue >= sweep.min && draftValue <= sweep.max;
+                var submit = function() {
+                  if (!draftValid) return;
+                  var rewarded = rx.predictions < 5;
+                  setRX({ prediction: draftValue, predictedFor: settingsKey, revealedFor: settingsKey, predictions: rx.predictions + 1, inspect: Math.round(draftValue) });
+                  if (rewarded && awardStemXP) awardStemXP('physicsRange', 5, 'Range explorer prediction');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.physics.range_revealed_sr', 'Prediction saved. The range curve and your result are shown below.'));
+                };
+                return shell(h('div', { 'data-physics-range-predict': true, style: cardStyle },
+                  h('p', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 700 } }, settingsLine),
+                  rx.predictedFor && rx.predictedFor !== settingsKey && h('p', { style: helpStyle }, __alloT('stem.physics.range_settings_changed', 'Your settings changed since the last prediction, so the curve changed too. Predict again.')),
+                  h('label', { htmlFor: 'physics-range-prediction', style: { display: 'block', fontSize: 14, fontWeight: 700, margin: '4px 0 6px' } }, __alloT('stem.physics.range_predict_label', 'Before you look: which launch angle will land farthest? (degrees)')),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
+                    h('input', { id: 'physics-range-prediction', 'data-physics-range-prediction': true, type: 'number', inputMode: 'decimal', min: sweep.min, max: sweep.max, step: 1, value: rx.draft,
+                      'aria-describedby': 'physics-range-prediction-help',
+                      onChange: function(e) { setRX({ draft: String(e.target.value).slice(0, 8) }); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
+                      style: { width: 110, minHeight: 44, background: pal.surface, color: pal.ink, border: '1px solid ' + (isContrast ? '#ffffff' : pal.muted), borderRadius: 9, padding: '8px 10px', fontSize: 15 } }),
+                    h('button', { type: 'button', 'data-physics-range-submit': true, disabled: !draftValid, 'aria-disabled': !draftValid, onClick: submit, style: Object.assign({}, primaryStyle, draftValid ? {} : { opacity: .6, cursor: 'not-allowed' }) }, __alloT('stem.physics.range_predict_submit', 'Lock in my prediction')),
+                    h('button', { type: 'button', 'data-physics-range-skip': true, onClick: function() { setRX({ revealedFor: settingsKey, inspect: Math.round(sweep.best.angle) }); }, style: actionStyle }, __alloT('stem.physics.range_skip', 'Show the curve without predicting'))),
+                  h('p', { id: 'physics-range-prediction-help', style: Object.assign({}, helpStyle, { margin: '6px 0 0' }) }, fill(__alloT('stem.physics.range_predict_help', 'Enter an angle from {min}° to {max}°. Think about what changes when the launch is higher or the air pushes back.'), { min: sweep.min, max: sweep.max }))));
+              }
+
+              // Step 2: the curve, read from the sweep.
+              var pts = sweep.points, best = sweep.best, vacBest = sweep.vacuumBest;
+              var inspectAngle = Math.max(sweep.min, Math.min(sweep.max, rx.inspect == null ? Math.round(best.angle) : rx.inspect));
+              var inspectPoint = pts[inspectAngle - sweep.min];
+              var W = 640, H = 300, L = 64, R = 18, T = 18, B = 56, plotW = W - L - R, plotH = H - T - B;
+              function niceCeil(v) { var p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-9)))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+              // Axis top: the first whole tick above the data, ticks about a fifth apart.
+              function niceMax(v) { var step = niceCeil(v / 5); return { max: Math.ceil(v / step) * step, step: step }; }
+              var yAxis = niceMax(Math.max.apply(null, pts.map(function(p) { return p.vacuumRange; })) * 1.05);
+              var yMax = yAxis.max, yStep = yAxis.step;
+              function X(a) { return L + (a - sweep.min) / (sweep.max - sweep.min) * plotW; }
+              function Y(r) { return T + plotH - r / yMax * plotH; }
+              function curve(field) { return pts.map(function(p, i) { return (i ? 'L' : 'M') + X(p.angle).toFixed(1) + ' ' + Y(p[field]).toFixed(1); }).join(' '); }
+              var xTicks = [0, 15, 30, 45, 60, 75, 85].filter(function(a) { return a >= sweep.min && a <= sweep.max; });
+              if (xTicks[0] !== sweep.min) xTicks.unshift(sweep.min);
+              var yTicks = [];
+              for (var yt = 0; yt <= yMax + 1e-9; yt += yStep) yTicks.push(yt);
+              var currentAngle = d.angle;
+              var matchingRuns = (Array.isArray(d.runLog) ? d.runLog : []).filter(function(r) {
+                return r.modelVersion === P.MODEL_VERSION && r.vel === d.velocity && r.grav === d.gravity && r.drag === !!d.airResist &&
+                  (!d.airResist || r.mass === d.mass) && (r.launchHeight || 0) === height && r.angle >= sweep.min && r.angle <= sweep.max;
+              });
+              var mainColor = d.airResist ? pal.drag : pal.vacuum;
+              var chartLabel = fill(__alloT('stem.physics.range_chart_aria', 'Range versus launch angle from {min}° to {max}°. Farthest: {best} at {angle}.'), { min: sweep.min, max: sweep.max, best: m1(best.range), angle: deg(best.angle) }) +
+                (d.airResist ? ' ' + fill(__alloT('stem.physics.range_chart_aria_vacuum', 'Without air drag the farthest would be {best} at {angle}.'), { best: m1(vacBest.range), angle: deg(vacBest.angle) }) : '');
+              var chart = h('svg', { 'data-physics-range-chart': true, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': chartLabel, style: { width: '100%', height: 'auto', display: 'block', background: pal.surface, borderRadius: 10 } },
+                yTicks.map(function(v) { return h('g', { key: 'y' + v },
+                  h('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: pal.grid, strokeWidth: 1, 'aria-hidden': true }),
+                  h('text', { x: L - 8, y: Y(v) + 5, fill: pal.ink, fontSize: 15, textAnchor: 'end' }, String(Math.round(v * 10) / 10))); }),
+                xTicks.map(function(a, i) { return h('text', { key: 'x' + a, x: X(a), y: T + plotH + 22, fill: pal.ink, fontSize: 15, textAnchor: i === 0 ? 'start' : i === xTicks.length - 1 ? 'end' : 'middle' }, a + '°'); }),
+                h('line', { x1: L, x2: L, y1: T, y2: T + plotH, stroke: pal.ink, strokeWidth: 1.5 }),
+                h('line', { x1: L, x2: W - R, y1: T + plotH, y2: T + plotH, stroke: pal.ink, strokeWidth: 1.5 }),
+                h('text', { x: L + plotW / 2, y: H - 8, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.physics.range_axis_angle', 'Launch angle')),
+                h('text', { x: 16, y: T + plotH / 2, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle', transform: 'rotate(-90 16 ' + (T + plotH / 2) + ')' }, __alloT('stem.physics.range_axis_range', 'Range (m)')),
+                d.airResist && h('path', { 'data-physics-range-curve': 'vacuum', d: curve('vacuumRange'), fill: 'none', stroke: pal.vacuum, strokeWidth: 2.5, strokeDasharray: '9 6' }),
+                h('path', { 'data-physics-range-curve': d.airResist ? 'drag' : 'vacuum', d: curve('range'), fill: 'none', stroke: mainColor, strokeWidth: 3.5 }),
+                h('line', { 'data-physics-range-now': true, x1: X(currentAngle), x2: X(currentAngle), y1: T, y2: T + plotH, stroke: pal.muted, strokeWidth: 2, strokeDasharray: '2 5' }),
+                predicted && h('line', { 'data-physics-range-guess': true, x1: X(rx.prediction), x2: X(rx.prediction), y1: T, y2: T + plotH, stroke: pal.mark, strokeWidth: 2.5, strokeDasharray: '12 4 2 4' }),
+                h('line', { x1: X(inspectAngle), x2: X(inspectAngle), y1: T, y2: T + plotH, stroke: pal.accent, strokeWidth: 2 }),
+                d.airResist && h('circle', { cx: X(vacBest.angle), cy: Y(vacBest.range), r: 7, fill: pal.surface, stroke: pal.vacuum, strokeWidth: 3 }),
+                h('circle', { 'data-physics-range-best': true, cx: X(best.angle), cy: Y(best.range), r: 8, fill: mainColor, stroke: pal.surface, strokeWidth: 2 }),
+                h('circle', { cx: X(inspectAngle), cy: Y(inspectPoint.range), r: 5.5, fill: pal.accent, stroke: pal.surface, strokeWidth: 2 }),
+                matchingRuns.map(function(r) { return h('rect', { key: 'run' + r.n, 'data-physics-range-run': r.n, x: X(r.angle) - 6, y: Y(r.range) - 6, width: 12, height: 12, fill: 'none', stroke: pal.ink, strokeWidth: 2.5 }); }));
+
+              var legendItem = function(key, swatch, text) { return h('li', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, minWidth: 0 } },
+                h('svg', { width: 34, height: 14, viewBox: '0 0 34 14', 'aria-hidden': true, focusable: false, style: { flex: '0 0 auto' } }, swatch), h('span', null, text)); };
+              var legend = h('ul', { 'data-physics-range-legend': true, style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))', gap: 6 } },
+                legendItem('main', h('line', { x1: 2, x2: 32, y1: 7, y2: 7, stroke: mainColor, strokeWidth: 3.5 }), d.airResist ? __alloT('stem.physics.range_key_drag', 'Simulated range through air') : __alloT('stem.physics.range_key_vacuum_only', 'Simulated range (no air drag)')),
+                d.airResist && legendItem('vac', h('line', { x1: 2, x2: 32, y1: 7, y2: 7, stroke: pal.vacuum, strokeWidth: 2.5, strokeDasharray: '9 6' }), __alloT('stem.physics.range_key_vacuum', 'Same launches without air drag')),
+                legendItem('best', h('circle', { cx: 17, cy: 7, r: 6, fill: mainColor }), fill(__alloT('stem.physics.range_key_best', 'Farthest: {range} at {angle}'), { range: m1(best.range), angle: deg(best.angle) })),
+                legendItem('now', h('line', { x1: 17, x2: 17, y1: 0, y2: 14, stroke: pal.muted, strokeWidth: 2, strokeDasharray: '2 3' }), fill(__alloT('stem.physics.range_key_now', 'Launcher now: {angle}'), { angle: currentAngle + '°' })),
+                predicted && legendItem('guess', h('line', { x1: 17, x2: 17, y1: 0, y2: 14, stroke: pal.mark, strokeWidth: 2.5, strokeDasharray: '5 2 1 2' }), fill(__alloT('stem.physics.range_key_guess', 'Your prediction: {angle}'), { angle: rx.prediction + '°' })),
+                matchingRuns.length > 0 && legendItem('runs', h('rect', { x: 11, y: 1, width: 12, height: 12, fill: 'none', stroke: pal.ink, strokeWidth: 2.5 }), fill(__alloT('stem.physics.range_key_runs', 'Your logged flights with these settings ({n})'), { n: matchingRuns.length })));
+
+              // Prediction feedback, measured on the same curve.
+              var feedback = null;
+              if (predicted) {
+                var atGuess = rangeAt(rx.prediction);
+                var off = Math.abs(rx.prediction - best.angle);
+                var pct = atGuess ? atGuess.range / best.range * 100 : null;
+                // Judge the angle and the range separately: near the flat top a
+                // wrong angle can still land almost as far.
+                var verdict = off <= 2 ? __alloT('stem.physics.range_verdict_spot', '🎯 Right on the peak.')
+                  : off <= 6 ? __alloT('stem.physics.range_verdict_close', '✅ Close to the peak.')
+                  : pct != null && pct >= 95 ? __alloT('stem.physics.range_verdict_flat', '📏 Not the peak angle, but almost the full range. The top of the curve is flat.')
+                  : __alloT('stem.physics.range_verdict_far', '🔍 The curve peaks somewhere else. Compare your angle with the dot.');
+                feedback = h('div', { 'data-physics-range-feedback': true, role: 'status', style: cardStyle },
+                  h('p', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800 } }, verdict),
+                  h('p', { style: { margin: 0, fontSize: 14 } }, fill(__alloT('stem.physics.range_feedback', 'You predicted {guess}°. The farthest angle for these settings is {best} ({range}). Your angle lands at {yours}, which is {pct}% of the maximum.'), {
+                    guess: rx.prediction, best: deg(best.angle), range: m1(best.range), yours: atGuess ? m1(atGuess.range) : '—', pct: pct == null ? '—' : pct.toFixed(pct > 99 ? 1 : 0) })));
+              }
+
+              // What the curve shows. Each sentence is computed from the sweep.
+              var findings = [];
+              var dragShift = best.angle - vacBest.angle;
+              if (!d.airResist && height === 0) findings.push(__alloT('stem.physics.range_find_45', 'With no air drag and landing at launch height, the peak is exactly 45°. Range = v₀²·sin(2θ)/g, and sin(2θ) is largest when 2θ = 90°.'));
+              if (height > 0) findings.push(fill(__alloT('stem.physics.range_find_height', 'Launching {height} m above the ground moves the no-drag peak from 45° to {angle}. The ball already has extra time to fall, so a flatter launch that keeps more horizontal speed wins.'), { height: height, angle: deg(vacBest.angle) }));
+              if (d.airResist) findings.push(fill(__alloT('stem.physics.range_find_drag', 'Air drag moves the peak {dir} by {shift}, to {angle}, and costs {loss} at the peak. High arcs stay in the air longer, so drag has more time to slow them.'), {
+                dir: dragShift < 0 ? __alloT('stem.physics.range_lower', 'lower') : __alloT('stem.physics.range_higher', 'higher'), shift: Math.abs(dragShift).toFixed(1) + '°', angle: deg(best.angle), loss: m1(vacBest.range - best.range) }));
+              var p30 = pts[30 - sweep.min], p60 = pts[60 - sweep.min];
+              if (p30 && p60) {
+                var pairDiff = p30.range - p60.range, pairSame = Math.abs(pairDiff) <= Math.max(p30.range, p60.range) * 0.005;
+                findings.push(pairSame
+                  ? fill(__alloT('stem.physics.range_find_pair_same', 'Complementary angles match: 30° lands at {a} and 60° at {b}. Their sin(2θ) values are equal.'), { a: m1(p30.range), b: m1(p60.range) })
+                  : fill(__alloT('stem.physics.range_find_pair_diff', 'Complementary angles no longer match: 30° lands at {a} and 60° at {b}. The {winner} angle goes {diff} farther.'), {
+                      a: m1(p30.range), b: m1(p60.range), winner: pairDiff > 0 ? __alloT('stem.physics.range_lower_angle', 'lower') : __alloT('stem.physics.range_higher_angle', 'higher'), diff: m1(Math.abs(pairDiff)) }));
+              }
+              var band = P.rangeBand(sweep, 0.95);
+              if (band) findings.push(fill(__alloT('stem.physics.range_find_flat', 'The top of the curve is flat: every angle from {from}° to {to}° reaches at least 95% of the maximum, so near the peak small aiming errors cost little range.'), { from: band.from, to: band.to }));
+
+              var busyLock = d.targetMode && d.targetConstraint && d.targetConstraint.type === 'fixedAngle';
+              var setDisabled = !!busyLock || currentAngle === inspectAngle;
+              var inspector = h('div', { 'data-physics-range-inspect': true, style: cardStyle },
+                h('label', { htmlFor: 'physics-range-inspect', style: { display: 'block', fontSize: 14, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.physics.range_inspect_label', 'Read the curve at an angle')),
+                h('input', { id: 'physics-range-inspect', 'data-physics-range-inspect-slider': true, type: 'range', min: sweep.min, max: sweep.max, step: 1, value: inspectAngle,
+                  'aria-valuetext': inspectAngle + '°: ' + m1(inspectPoint.range),
+                  onChange: function(e) { setRX({ inspect: Math.round(Number(e.target.value)) }); }, style: { width: '100%', accentColor: pal.accent } }),
+                h('p', { 'data-physics-range-reading': true, style: { margin: '6px 0 8px', fontSize: 14 } },
+                  fill(__alloT('stem.physics.range_reading', 'At {angle}: range {range}, flight time {time} s, highest point {maxH} above the ground.'), { angle: inspectAngle + '°', range: m1(inspectPoint.range), time: inspectPoint.time.toFixed(2), maxH: m1(inspectPoint.maxH) }) +
+                  (d.airResist ? ' ' + fill(__alloT('stem.physics.range_reading_vacuum', 'Without air drag: {range}.'), { range: m1(inspectPoint.vacuumRange) }) : '')),
+                h('button', { type: 'button', 'data-physics-range-apply': true, disabled: setDisabled, 'aria-disabled': setDisabled, style: Object.assign({}, actionStyle, setDisabled ? { opacity: .6, cursor: 'not-allowed' } : {}),
+                  title: busyLock ? __alloT('stem.physics.range_apply_locked', 'This mission fixes the angle.') : undefined,
+                  onClick: function() {
+                    if (setDisabled) return;
+                    upd('angle', inspectAngle);
+                    if (typeof announceToSR === 'function') announceToSR(fill(__alloT('stem.physics.range_apply_done', 'Launcher set to {angle}. Launch to test the curve.'), { angle: inspectAngle + '°' }));
+                  } }, fill(currentAngle === inspectAngle ? __alloT('stem.physics.range_apply_same', 'The launcher is already at {angle}') : __alloT('stem.physics.range_apply', 'Set the launcher to {angle} and test it'), { angle: inspectAngle + '°' })));
+
+              var table = h('details', { 'data-physics-range-table': true, style: cardStyle },
+                h('summary', { style: { cursor: 'pointer', fontSize: 14, fontWeight: 700, minHeight: 24 } }, __alloT('stem.physics.range_table_summary', 'Show the numbers (every 5°)')),
+                h('div', { style: { overflowX: 'auto', marginTop: 8 } },
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, overflowWrap: 'normal' } },
+                    h('caption', { className: 'sr-only' }, __alloT('stem.physics.range_table_caption', 'Simulated range at each launch angle')),
+                    h('thead', null, h('tr', null, [__alloT('stem.physics.range_col_angle', 'Angle'), d.airResist ? __alloT('stem.physics.range_col_drag', 'Range through air (m)') : __alloT('stem.physics.range_col_range', 'Range (m)')].concat(d.airResist ? [__alloT('stem.physics.range_col_vacuum', 'Without drag (m)')] : []).concat([__alloT('stem.physics.range_col_time', 'Flight time (s)')]).map(function(c, i) {
+                      return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: '4px 8px', borderBottom: '2px solid ' + pal.border } }, c); }))),
+                    h('tbody', null, pts.filter(function(p) { return p.angle % 5 === 0 || p.angle === sweep.max; }).map(function(p) {
+                      return h('tr', { key: p.angle },
+                        h('th', { scope: 'row', style: { textAlign: 'left', padding: '3px 8px', fontWeight: 700 } }, p.angle + '°'),
+                        h('td', { style: { padding: '3px 8px' } }, p.range.toFixed(1)),
+                        d.airResist && h('td', { style: { padding: '3px 8px' } }, p.vacuumRange.toFixed(1)),
+                        h('td', { style: { padding: '3px 8px' } }, p.time.toFixed(2))); })))));
+
+              // High-school extension: linearize the student's own flights to measure g.
+              var fitSection;
+              if (physBand !== '9-12' && !rx.fitOpen) {
+                fitSection = h('button', { type: 'button', 'data-physics-range-fit-open': true, onClick: function() { setRX({ fitOpen: true }); }, style: actionStyle }, '🧮 ' + __alloT('stem.physics.range_fit_open', 'Extension: measure gravity from your own flights'));
+              } else {
+                var fit = P.fitGravity(d.runLog);
+                var reasons = {
+                  drag: __alloT('stem.physics.range_ex_drag', 'air drag was on. Drag shortens the flight, so this point sits below the line'),
+                  height: __alloT('stem.physics.range_ex_height', 'launched above the ground. It falls farther than launch height, so it flies past the formula'),
+                  model: __alloT('stem.physics.range_ex_model', 'recorded with an older version of the simulation'),
+                  gravity: __alloT('stem.physics.range_ex_gravity', 'used a different gravity setting')
+                };
+                var fitBody;
+                if (fit.status !== 'ok') {
+                  fitBody = h('p', { 'data-physics-range-fit-need': true, style: Object.assign({}, helpStyle, { color: pal.ink }) }, fit.points.length >= 3
+                    ? __alloT('stem.physics.range_fit_spread', 'Your qualifying flights all have the same v₀²·sin(2θ). Change the speed or the angle so the points spread along the line.')
+                    : fill(__alloT('stem.physics.range_fit_need', 'Log {n} more flight(s) with air drag off, launched from the ground, at the same gravity. Change the speed (for example 15, 25 and 35 m/s) between flights.'), { n: fit.needed }));
+                } else {
+                  var shown = fit.points.concat(fit.excluded.filter(function(p) { return (p.reason === 'drag' || p.reason === 'height') && p.grav === fit.gravity; }));
+                  var fxAxis = niceMax(Math.max.apply(null, shown.map(function(p) { return Math.max(p.x, 1); })) * 1.08);
+                  var fyAxis = niceMax(Math.max.apply(null, shown.map(function(p) { return p.y; }).concat([fit.slope * fxAxis.max])) * 1.04);
+                  var fxMax = fxAxis.max, fyMax = fyAxis.max;
+                  var FW = 640, FH = 280, FL = 64, FR = 18, FT = 16, FB = 56, fw = FW - FL - FR, fh = FH - FT - FB;
+                  var fX = function(v) { return FL + v / fxMax * fw; }, fY = function(v) { return FT + fh - v / fyMax * fh; };
+                  var lineEndX = Math.min(fxMax, fyMax / fit.slope);
+                  var fxStep = fxAxis.step, fyStep = fyAxis.step, fxT = [], fyT = [];
+                  for (var fx = 0; fx <= fxMax + 1e-9; fx += fxStep) fxT.push(fx);
+                  for (var fy = 0; fy <= fyMax + 1e-9; fy += fyStep) fyT.push(fy);
+                  var fitChart = h('svg', { 'data-physics-range-fit-chart': true, viewBox: '0 0 ' + FW + ' ' + FH, role: 'img', style: { width: '100%', height: 'auto', display: 'block', background: pal.surface, borderRadius: 10 },
+                    'aria-label': fill(__alloT('stem.physics.range_fit_aria', 'Range plotted against v₀²·sin(2θ) for {n} flights. The best line through the origin has slope {slope} s²/m, so g = {g} m/s².'), { n: fit.points.length, slope: fit.slope.toFixed(4), g: fit.gFit.toFixed(2) }) },
+                    fyT.map(function(v) { return h('g', { key: 'fy' + v }, h('line', { x1: FL, x2: FW - FR, y1: fY(v), y2: fY(v), stroke: pal.grid, strokeWidth: 1 }), h('text', { x: FL - 8, y: fY(v) + 5, fill: pal.ink, fontSize: 15, textAnchor: 'end' }, String(Math.round(v)))); }),
+                    fxT.map(function(v, i) { return h('text', { key: 'fx' + v, x: fX(v), y: FT + fh + 22, fill: pal.ink, fontSize: 15, textAnchor: i === fxT.length - 1 ? 'end' : 'middle' }, String(Math.round(v))); }),
+                    h('line', { x1: FL, x2: FL, y1: FT, y2: FT + fh, stroke: pal.ink, strokeWidth: 1.5 }),
+                    h('line', { x1: FL, x2: FW - FR, y1: FT + fh, y2: FT + fh, stroke: pal.ink, strokeWidth: 1.5 }),
+                    h('text', { x: FL + fw / 2, y: FH - 8, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.physics.range_fit_axis_x', 'v₀²·sin(2θ) (m²/s²)')),
+                    h('text', { x: 16, y: FT + fh / 2, fill: pal.ink, fontSize: 15, fontWeight: 700, textAnchor: 'middle', transform: 'rotate(-90 16 ' + (FT + fh / 2) + ')' }, __alloT('stem.physics.range_axis_range', 'Range (m)')),
+                    h('line', { 'data-physics-range-fit-line': true, x1: fX(0), y1: fY(0), x2: fX(lineEndX), y2: fY(fit.slope * lineEndX), stroke: pal.vacuum, strokeWidth: 3 }),
+                    shown.map(function(p) {
+                      var inFit = fit.points.indexOf(p) >= 0;
+                      return h('circle', { key: 'fp' + p.n, 'data-physics-range-fit-point': p.n, 'data-in-fit': String(inFit), cx: fX(p.x), cy: fY(p.y), r: 7, fill: inFit ? pal.ink : pal.surface, stroke: inFit ? pal.surface : pal.drag, strokeWidth: inFit ? 2 : 3 });
+                    }));
+                  fitBody = h('div', { style: { display: 'grid', gap: 8 } },
+                    fitChart,
+                    h('p', { 'data-physics-range-fit-result': true, role: 'status', style: { margin: 0, fontSize: 15, fontWeight: 800 } }, fill(__alloT('stem.physics.range_fit_result', 'Slope = {slope} s²/m, so g = 1 ÷ slope = {g} m/s². Gravity setting for these flights: {set} m/s² ({diff}% difference).'), {
+                      slope: fit.slope.toFixed(4), g: fit.gFit.toFixed(2), set: fit.gravity, diff: Math.abs(fit.errorPct) < 0.05 ? '0.0' : fit.errorPct.toFixed(1) })),
+                    h('p', { style: helpStyle }, __alloT('stem.physics.range_fit_note', 'Filled dots are in the fit. Hollow dots are flights the formula does not describe. The simulation has no measuring error, so the fit recovers g almost exactly. In a real lab, random measurement error scatters points on both sides of the line, while air drag pulls every point below it: that is a systematic error, and more trials cannot average it away.')),
+                    h('div', { style: { overflowX: 'auto' } }, h('table', { 'data-physics-range-fit-table': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, overflowWrap: 'normal' } },
+                      h('caption', { className: 'sr-only' }, __alloT('stem.physics.range_fit_caption', 'Flights used to measure gravity')),
+                      h('thead', null, h('tr', null, [__alloT('stem.physics.runlog_col_run', '#'), __alloT('stem.physics.range_col_angle', 'Angle'), __alloT('stem.physics.range_fit_col_speed', 'Speed (m/s)'), 'v₀²·sin(2θ)', __alloT('stem.physics.range_col_range', 'Range (m)')].map(function(c, i) {
+                        return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: '4px 8px', borderBottom: '2px solid ' + pal.border } }, c); }))),
+                      h('tbody', null, fit.points.map(function(p) { return h('tr', { key: p.n },
+                        h('th', { scope: 'row', style: { textAlign: 'left', padding: '3px 8px' } }, p.n), h('td', { style: { padding: '3px 8px' } }, p.angle + '°'),
+                        h('td', { style: { padding: '3px 8px' } }, p.vel), h('td', { style: { padding: '3px 8px' } }, p.x.toFixed(1)), h('td', { style: { padding: '3px 8px' } }, p.y.toFixed(2))); })))));
+                }
+                fitSection = h('div', { 'data-physics-range-fit': true, style: cardStyle },
+                  h('h5', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800 } }, '🧮 ' + __alloT('stem.physics.range_fit_title', 'Measure gravity from your own flights')),
+                  h('p', { style: helpStyle }, __alloT('stem.physics.range_fit_intro', 'With no air drag and landing at launch height, R = v₀²·sin(2θ)/g. Plot each logged flight\'s range against v₀²·sin(2θ): the points fall on a straight line through the origin, and its slope is 1/g.')),
+                  fitBody,
+                  fit.excluded.length > 0 && h('ul', { 'data-physics-range-fit-excluded': true, style: { margin: '8px 0 0', paddingLeft: 20, listStyle: 'disc', fontSize: 13, color: pal.ink } },
+                    fit.excluded.map(function(p) { return h('li', { key: 'ex' + p.n }, fill(__alloT('stem.physics.range_ex_row', 'Run {n} is not in the fit: {reason}.'), { n: p.n, reason: reasons[p.reason] })); })));
+              }
+
+              return shell([
+                h('p', { key: 'set', style: { margin: 0, fontSize: 14, fontWeight: 700 } }, settingsLine),
+                feedback && h('div', { key: 'fb' }, feedback),
+                h('div', { key: 'chart', style: { display: 'grid', gap: 8, minWidth: 0 } }, chart, legend),
+                h('div', { key: 'insp' }, inspector),
+                h('div', { key: 'find', 'data-physics-range-findings': true, style: cardStyle },
+                  h('h5', { style: { margin: '0 0 6px', fontSize: 15, fontWeight: 800 } }, __alloT('stem.physics.range_findings_title', 'What the curve shows')),
+                  h('ul', { style: { margin: 0, paddingLeft: 20, listStyle: 'disc', display: 'grid', gap: 4, fontSize: 14 } }, findings.map(function(f, i) { return h('li', { key: i }, f); })),
+                  h('p', { style: Object.assign({}, helpStyle, { margin: '8px 0 0' }) }, __alloT('stem.physics.range_try_next', 'Try next: turn air drag on, raise the launcher, or change the mass with drag on, then come back. The prediction step resets whenever the settings change.'))),
+                h('div', { key: 'table' }, table),
+                h('div', { key: 'fit' }, fitSection)
+              ]);
             })(),
 
             d.showFormulas && (function() {

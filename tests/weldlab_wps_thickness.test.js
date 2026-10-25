@@ -1,3 +1,4 @@
+import { stripClauseTrace } from './helpers/weldlab_clause_trace_restore.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -53,7 +54,7 @@ describe('Bounded illustrative WPS thickness comparison',()=>{
   expect(baseline.fields).toHaveLength(11);for(const field of baseline.fields){const node=render({insp2_wpsField:field.id});for(const text of [field.label,field.value,field.ex])expect(node.textContent).toContain(text);expect(node.querySelector('[data-wps-field-label="'+field.id+'"]').textContent).toContain(field.label);expect(node.querySelector('[data-wps-field-value="'+field.id+'"]').textContent).toBe(field.value);}
  });
  it('preserves all pre-existing Codes source exactly after removing its three additive changes',()=>{
-  const source=readFileSync(resolve(SRC),'utf8');const begin=source.indexOf('function CodesAndStandards('),end=source.indexOf('function WelderQualPrep(',begin);let region=source.slice(begin,end).replace(/\r\n/g,'\n');
+  const source=stripClauseTrace(readFileSync(resolve(SRC),'utf8'));const begin=source.indexOf('function CodesAndStandards('),end=source.indexOf('function WelderQualPrep(',begin);let region=source.slice(begin,end).replace(/\r\n/g,'\n');
   const hook="        var wpsThicknessState = useState('upper');\n";expect(region.split(hook)).toHaveLength(2);region=region.replace(hook,'');const helperStart=region.indexOf('        function renderWpsThicknessComparator() {'),helperEnd=region.indexOf('        function renderWpsWorkbench(f) {',helperStart);expect(helperStart).toBeGreaterThan(0);expect(helperEnd).toBeGreaterThan(helperStart);region=region.slice(0,helperStart)+region.slice(helperEnd);
   const site="                h('p', { className: 'text-sm text-slate-800' }, f.ex)\n              ),\n              f.id === 'base' && renderWpsThicknessComparator()\n";expect(region.split(site)).toHaveLength(2);region=region.replace(site,"                h('p', { className: 'text-sm text-slate-800' }, f.ex)\n              )\n");expect(createHash('sha256').update(region).digest('hex')).toBe(baseline.codesRegionSha256);
  });

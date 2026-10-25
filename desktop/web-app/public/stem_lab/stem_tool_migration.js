@@ -4,7 +4,7 @@
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-stem-motion-reduce-css';
-  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important; } }';
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -47,6 +47,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     migrationStyle.textContent = [
       '.migration-tool-shell{--mg-sky:#0ea5e9;--mg-green:#16a34a;--mg-text:var(--allo-stem-text,#e2e8f0);--mg-muted:var(--allo-stem-text-soft,#94a3b8);--mg-panel:var(--allo-stem-panel,#1e293b);--mg-canvas:var(--allo-stem-canvas,#0f172a);--mg-border:var(--allo-stem-border,#334155);max-width:1120px;margin:0 auto;padding:4px!important;color:var(--mg-text);}',
       '.migration-tool-shell *{box-sizing:border-box;}',
+      ".migration-formation-figure{margin:0;min-width:0;border:1px solid var(--mg-border);border-radius:12px;background:var(--mg-panel);}",
+      ".migration-journey{color:var(--mg-text);overflow-wrap:anywhere;}",
+      ".migration-journey-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}",
+      ".migration-journey-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0;}",
+      ".migration-journey-metrics>div{min-width:0;border:1px solid var(--mg-border);border-radius:10px;padding:10px;background:var(--mg-canvas);}",
+      ".migration-journey-metrics dt{font-size:.75rem;color:var(--mg-muted);}.migration-journey-metrics dd{font-size:.875rem;font-weight:750;margin:6px 0 0;}",
+      ".migration-journey-summary{border:1px solid var(--mg-border);border-radius:12px;padding:16px;background:var(--mg-panel);scroll-margin-block:18px;}",
+      ".migration-journey-summary h4{font-size:1rem;font-weight:800;margin:0 0 8px;}.migration-journey-summary p{font-size:.875rem;line-height:1.6;margin:8px 0 0;}",
+      ".migration-journey-choice{display:block;width:100%;min-width:0;min-height:44px;text-align:start;padding:14px;border:1px solid var(--mg-border);border-radius:10px;background:var(--mg-canvas);color:var(--mg-text);font-family:inherit;line-height:1.6;overflow-wrap:anywhere;}",
+      ".migration-journey-choice-label{display:block;font-size:.875rem;font-weight:750;}.migration-journey-effects{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;font-size:.75rem;color:var(--mg-muted);}.migration-journey-effects>span{min-width:0;max-width:100%;}",
+      "@media(max-width:600px){.migration-journey-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}",
+      "@media(max-width:360px){.migration-journey-metrics{grid-template-columns:minmax(0,1fr);}}",
+      "@media(forced-colors:active){.migration-journey-summary,.migration-journey-metrics>div{background:Canvas;color:CanvasText;border-color:CanvasText;}.migration-journey-choice{background:ButtonFace;color:ButtonText;border-color:ButtonText;}.migration-journey-effects,.migration-journey-metrics dt{color:CanvasText;}}",
+      ".migration-formation-readout{padding:14px;border-bottom:1px solid var(--mg-border);color:var(--mg-text);line-height:1.5;overflow-wrap:anywhere;}",
+      ".migration-formation-readout h3{margin:0 0 10px;font-size:1rem;font-weight:800;}",
+      ".migration-formation-readout dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0;}",
+      ".migration-formation-metric{min-width:0;padding:10px;border:1px solid var(--mg-border);border-radius:9px;background:var(--mg-canvas);}",
+      ".migration-formation-metric dt{font-size:.8125rem;font-weight:650;color:var(--mg-muted);}",
+      ".migration-formation-metric dd{margin:4px 0 0;font-size:1.5rem;line-height:1.3;font-weight:800;font-variant-numeric:tabular-nums;}",
+      ".migration-formation-metric meter{display:block;width:100%;min-width:0;height:.75rem;margin-top:8px;accent-color:var(--mg-accent,#0e8490);}",
+      ".migration-formation-model-note{margin:10px 0;font-size:.8125rem;color:var(--mg-muted);}",
+      ".migration-formation-wake-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;list-style:none;padding:0;margin:0;}",
+      ".migration-formation-wake-key li{display:flex;align-items:flex-start;gap:10px;min-width:0;padding:10px;border:1px solid var(--mg-border);border-radius:9px;}",
+      ".migration-formation-wake-key li>div{min-width:0;}.migration-formation-wake-key strong{font-size:.875rem;}.migration-formation-wake-key p{margin:3px 0 0;font-size:.8125rem;color:var(--mg-muted);}",
+      ".migration-formation-wake-symbol{display:grid;place-items:center;flex:0 0 30px;min-height:30px;border:2px solid currentColor;border-radius:6px;font-size:1.25rem;font-weight:900;line-height:1;}.migration-formation-wake-symbol[data-wake=upwash]{color:#15803d;}.migration-formation-wake-symbol[data-wake=downwash]{color:#b91c1c;}",
+      ".migration-tool-shell[data-migration-theme=dark] .migration-formation-wake-symbol[data-wake=upwash]{color:#86efac;}.migration-tool-shell[data-migration-theme=dark] .migration-formation-wake-symbol[data-wake=downwash]{color:#fca5a5;}",
+      ".migration-formation-figure canvas{border-radius:0 0 11px 11px;}",
+      "@media(max-width:520px){.migration-formation-readout dl,.migration-formation-wake-key{grid-template-columns:minmax(0,1fr);}}",
+      "@media(forced-colors:active){.migration-formation-readout,.migration-formation-metric,.migration-formation-wake-key li{background:Canvas;color:CanvasText;border-color:CanvasText;}.migration-tool-shell .migration-formation-wake-symbol[data-wake]{color:CanvasText;}}",
       '.migration-tool-shell button:focus-visible,.migration-tool-shell input:focus-visible,.migration-tool-shell select:focus-visible,.migration-tool-shell textarea:focus-visible,.migration-tool-shell canvas:focus-visible,.migration-flight-stage:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
       '.migration-command{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 18px;border:1px solid rgba(14,165,233,.38);border-radius:18px;background:radial-gradient(circle at 88% 12%,rgba(14,165,233,.2),transparent 34%),linear-gradient(135deg,rgba(8,47,73,.94),rgba(15,23,42,.97));box-shadow:0 18px 42px rgba(15,23,42,.2);}',
       '.migration-command-main{display:flex;align-items:center;gap:12px;min-width:0;}',
@@ -70,6 +99,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '.migration-flight-deck{display:grid;grid-template-columns:minmax(0,1fr) 250px;min-height:560px;border:1px solid #075985;border-radius:18px;background:#020617;box-shadow:0 24px 58px rgba(2,6,23,.34);overflow:hidden;isolation:isolate;}',
       '.migration-flight-stage{position:relative;min-width:0;min-height:560px;background:radial-gradient(circle at 50% 22%,#1d4ed8 0,#075985 34%,#082f49 66%,#020617 100%);overflow:hidden;}',
       '.migration-flight-stage canvas{width:100%!important;height:100%!important;max-width:none!important;border-radius:0!important;box-shadow:none!important;touch-action:none;}',
+      ".migration-scene-guide{min-width:0;flex-shrink:0;padding:16px;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;overflow-wrap:anywhere;}",
+      ".migration-scene-guide-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}.migration-scene-guide h3{font-size:1rem;line-height:1.5;margin:0;font-weight:800;color:#f1f9fc;}",
+      ".migration-scene-guide button{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font-family:inherit;font-size:.75rem;line-height:1.5;font-weight:750;overflow-wrap:anywhere;}",
+      ".migration-scene-guide p{font-size:.8125rem;line-height:1.65;margin:10px 0 0;}.migration-scene-guide .migration-scene-guide-scope{color:#c4dde9;font-size:.75rem;}",
+      ".migration-scene-guide details{margin-top:10px;}.migration-scene-guide summary{min-height:44px;display:list-item;padding:10px 4px;cursor:pointer;font-size:.8125rem;font-weight:750;}",
+      "@media(forced-colors:active){.migration-scene-guide,.migration-scene-guide h3,.migration-scene-guide .migration-scene-guide-scope{background:Canvas;color:CanvasText;border-color:CanvasText;}.migration-scene-guide button{background:ButtonFace;color:ButtonText;border-color:ButtonText;}}",
       '.migration-flight-stage-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;color:#e0f2fe;font-size:13px;font-weight:800;text-align:center;background:radial-gradient(circle at 50% 30%,rgba(14,116,144,.76),rgba(2,6,23,.96));}',
       '.migration-flight-stage[data-flight-ready="true"] .migration-flight-stage-status{display:none;}',
       '.migration-flight-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:14px;}',
@@ -141,7 +176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       '.migration-marked-pose{border-top:1px solid #426174;margin-top:4px;padding-top:10px;}.migration-marked-pose-key{display:inline-block;width:25px;margin:0 7px 3px 0;border-top:2px dashed #c4b5fd;vertical-align:middle;}.migration-marked-pose-count{display:block;margin-top:6px;color:#e0e7ff;}.migration-checked-breakdown{display:flex;flex-direction:column;gap:7px;margin:9px 0;min-width:0;}.migration-checked-breakdown>div{min-width:0;padding:9px;border:1px solid #426174;border-radius:8px;background:#0b2a3d;color:#e9f7fb;}.migration-checked-breakdown dt{font-weight:750;line-height:1.5;}.migration-checked-breakdown dd{margin:4px 0 0;min-width:0;line-height:1.5;overflow-wrap:anywhere;}.migration-checked-breakdown dd>small{display:block;margin-top:6px;color:#c4dde9;}.migration-checked-breakdown dd>span{display:block;margin-top:4px;}.migration-comparison-result{display:inline-block;padding:2px 7px;border:1px solid #7ad7d4;border-radius:999px;color:#c8faf3;font-size:10px;}.migration-checked-breakdown [data-comparison-result="changed"] .migration-comparison-result{border-color:#d5ab4e;color:#fff0c2;}.migration-view-components{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:5px;min-width:0;}.migration-view-components li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;}.migration-view-components li>span{min-width:0;overflow-wrap:anywhere;}.migration-view-component-result{font-size:10px;border:1px solid #7ad7d4;color:#c8faf3;border-radius:999px;padding:2px 7px;}.migration-view-components [data-component-result="changed"] .migration-view-component-result{border-color:#d5ab4e;color:#fff0c2;}',
       '.migration-flight-layer-key{z-index:2;pointer-events:none;}.migration-flight-layer-key .migration-key-speed-air{height:5px;background:#67e8f9;}.migration-flight-layer-key .migration-key-speed-wind{height:5px;background:#fbbf24;}.migration-flight-layer-key .migration-key-speed-ground{height:5px;background:#86efac;}',
       '.migration-scene-tools{position:absolute;z-index:2;top:18px;right:18px;display:flex;gap:6px;max-width:45%;}.migration-scene-tools button{min-height:36px;padding:7px 10px;border:1px solid #8bb3bf;border-radius:9px;background:#0b293c;color:#eaf7ff;font-size:11px;font-weight:750;box-shadow:0 5px 15px #051a2d33;cursor:pointer;}.migration-scene-tools button[aria-pressed="true"]{border-color:#9df0d6;background:#105f68;color:#fff;}.migration-scene-tools button:disabled{opacity:.65;cursor:default;}.migration-flight-layer-key{position:absolute;top:83px;left:18px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;max-width:calc(100% - 36px);border:1px solid #7a9daf;border-radius:8px;padding:7px 10px;background:#08283de6;color:#effaff;font-size:10px;}.migration-flight-layer-key span{display:flex;align-items:center;gap:6px;}.migration-flight-layer-key i{width:16px;height:3px;border-radius:3px;background:#60a5fa;}.migration-flight-layer-key .migration-key-upwash{background:#86efac;}.migration-flight-layer-key small{font-size:9px;color:#c4dde9;}',
-      '.migration-experiment{margin-top:16px;border:1px solid var(--mg-border);border-radius:16px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}.migration-experiment-header{padding:20px 22px;border-bottom:1px solid var(--mg-border);background:linear-gradient(110deg,var(--mg-panel),var(--mg-canvas));}.migration-experiment-header h3{margin:4px 0 6px;font-size:22px;font-weight:800;letter-spacing:-.025em;line-height:1.25;}.migration-experiment-header p{margin:0;font-size:13px;line-height:1.6;color:var(--mg-muted);}.migration-experiment-eyebrow{color:var(--mg-accent)!important;font-size:10px!important;font-weight:850;letter-spacing:.11em;text-transform:uppercase;}.migration-experiment-steps{display:flex;gap:7px 18px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--mg-muted);}.migration-experiment-steps span{display:inline-flex;align-items:center;gap:7px;}.migration-experiment-steps b{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--mg-border);border-radius:50%;background:var(--mg-canvas);color:var(--mg-accent);}',
+      '.migration-experiment{margin-top:16px;border:1px solid var(--mg-border);border-radius:16px;background:var(--mg-canvas);color:var(--mg-text);overflow:hidden;}.migration-experiment-header{padding:20px 22px;border-bottom:1px solid var(--mg-border);background:linear-gradient(110deg,var(--mg-panel),var(--mg-canvas));}.migration-experiment-header h3{margin:4px 0 6px;font-size:22px;font-weight:800;letter-spacing:-.025em;line-height:1.25;}.migration-experiment-header p{margin:0;font-size:13px;line-height:1.6;color:var(--mg-muted);}.migration-experiment-eyebrow{color:var(--mg-accent)!important;font-size:10px!important;font-weight:850;letter-spacing:.11em;text-transform:uppercase;}.migration-experiment-steps{display:flex;gap:7px 18px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--mg-muted);}.migration-experiment-steps span{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;}.migration-experiment-steps small{font-size:inherit;line-height:1.4;color:var(--mg-muted);}.migration-experiment-steps b{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--mg-border);border-radius:50%;background:var(--mg-canvas);color:var(--mg-accent);}',
       '.migration-experiment-setup{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;padding:18px 22px;}.migration-experiment-variable,.migration-experiment-prediction,.migration-experiment-notes{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:750;}.migration-experiment select,.migration-experiment textarea{width:100%;min-width:0;border:1px solid var(--mg-border);border-radius:8px;padding:9px 10px;background:var(--mg-canvas);color:var(--mg-text);font:inherit;font-size:13px;font-weight:400;}.migration-experiment textarea{min-height:68px;resize:vertical;}.migration-experiment select{min-height:40px;}.migration-experiment-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 22px 18px;}.migration-experiment button{min-height:40px;border:1px solid var(--mg-border);border-radius:8px;padding:9px 13px;background:var(--mg-panel);color:var(--mg-text);font-size:12px;font-weight:750;cursor:pointer;}.migration-experiment button:disabled{opacity:.6;cursor:default;}.migration-experiment-actions button:first-child{background:#075c70;border-color:#247f8e;color:#fff;}',
       '.migration-experiment-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 22px 18px;}.migration-experiment-snapshot{min-width:0;border:1px solid var(--mg-border);border-radius:12px;padding:15px;background:var(--mg-panel);}.migration-experiment-snapshot h4{margin:0 0 8px;font-size:14px;font-weight:800;}.migration-experiment-snapshot p{font-size:12px;color:var(--mg-muted);margin:5px 0;line-height:1.55;}.migration-experiment-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;}.migration-experiment-metric{padding-top:10px;border-top:1px solid var(--mg-border);}.migration-experiment-metric span{display:block;color:var(--mg-muted);font-size:10px;}.migration-experiment-metric strong{display:block;margin-top:2px;font-size:20px;font-weight:800;color:var(--mg-accent);}.migration-experiment-empty{color:var(--mg-muted);font-size:12px;line-height:1.6;}.migration-experiment-feedback{margin:0 22px 18px;padding:13px 15px;border:1px solid var(--mg-border);border-inline-start:4px solid var(--mg-accent);border-radius:10px;background:var(--mg-panel);font-size:13px;line-height:1.6;}.migration-experiment-feedback h4{font-size:14px;font-weight:800;margin:0 0 5px;}.migration-experiment-feedback p{margin:3px 0;}.migration-experiment-help{font-size:11px;color:var(--mg-muted);line-height:1.65;}',
       '.migration-experiment-comparison,.migration-experiment-history,.migration-experiment-notes{margin:0 22px 18px;}.migration-experiment-history h4{font-size:14px;font-weight:800;margin:0 0 8px;}.migration-experiment-table-wrap{overflow:auto;max-height:300px;border:1px solid var(--mg-border);border-radius:10px;}.migration-experiment-table{width:100%;border-collapse:collapse;font-size:12px;text-align:start;}.migration-experiment-table th,.migration-experiment-table td{text-align:start;padding:10px 12px;border-bottom:1px solid var(--mg-border);white-space:nowrap;}.migration-experiment-table th{position:sticky;top:0;z-index:1;background:var(--mg-panel);color:var(--mg-muted);font-size:10px;letter-spacing:.03em;}.migration-experiment-table tr:last-child td{border-bottom:0;}.migration-experiment-table button{min-height:30px;padding:4px 8px;font-size:11px;}.migration-experiment-notes small{font-size:11px;font-weight:400;color:var(--mg-muted);}',
@@ -158,13 +193,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       ".migration-anatomy-key li{display:block;min-width:0;}.migration-anatomy-key button{width:100%;min-height:44px;display:flex;align-items:center;gap:7px;padding:7px;border:1px solid #426174;border-radius:10px;background:#102f41;color:#e9f7fb;text-align:left;font-size:11px;line-height:1.4;}.migration-anatomy-key button[aria-pressed=\"true\"]{border-color:#67e8f9;background:#1a4054;box-shadow:inset 0 0 0 1px #67e8f9;}.migration-anatomy-key button>span{display:grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border-radius:50%;color:#082437;font-size:10px;font-weight:850;}.migration-study-observation{margin-top:12px;border-top:1px solid #426174;padding-top:10px;}.migration-study-observation summary{cursor:pointer;font-size:12px;font-weight:750;min-height:44px;}.migration-study-observation summary>span{display:block;font-size:11px;font-weight:500;color:#b9d8e7;margin:4px 0 0;}.migration-study-observation-body{display:flex;flex-direction:column;gap:10px;font-size:12px;color:#e9f7fb;}.migration-study-observation-body>p,.migration-study-saved p{margin:0;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap;}.migration-study-observation-body>label{display:flex;flex-direction:column;gap:6px;font-weight:650;}.migration-study-observation textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:84px;border:1px solid #7996a6;border-radius:8px;background:#082638;color:#f1f9fc;padding:9px;font:inherit;line-height:1.5;}.migration-study-record-actions{display:flex;gap:7px;flex-wrap:wrap;}.migration-study-record-actions button{min-height:44px;border:1px solid #7996a6;border-radius:8px;background:#163c50;color:#f1f9fc;padding:8px 10px;font:inherit;}.migration-study-record-actions button:disabled{opacity:.55;cursor:not-allowed;}.migration-study-observation [role=\"status\"]:empty{display:none;}.migration-study-observation-body small{font-size:11px;line-height:1.5;color:#b9d8e7;}.migration-study-saved{display:flex;flex-direction:column;gap:7px;padding:10px;border:1px solid #426174;border-radius:8px;background:#0b2a3d;}.migration-study-unsaved{color:#fde68a;}.migration-study-comparison{border-top:1px solid #426174;padding-top:10px;min-width:0;}.migration-study-comparison-body{display:flex;flex-direction:column;gap:10px;min-width:0;}.migration-study-comparison-selects{display:grid;grid-template-columns:1fr;gap:9px;}.migration-study-comparison label{display:flex;flex-direction:column;gap:6px;font-weight:650;}.migration-study-comparison select{width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid #7996a6;border-radius:8px;background:#082638;color:#f1f9fc;padding:9px;font:inherit;}.migration-study-comparison-table{overflow-x:auto;max-width:100%;}.migration-study-comparison table{border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed;}.migration-study-comparison th,.migration-study-comparison td{border:1px solid #426174;padding:8px;text-align:start;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap;}.migration-study-comparison th{background:#12384b;}.migration-study-comparison tbody th{width:25%;}.migration-study-comparison-body>p{margin:0;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;}.migration-study-comparison [role=\"status\"]:empty{display:none;}",
       '.migration-study-comparison{container-type:inline-size;}.migration-study-comparison-cell-label{display:none;}@container(max-width:280px){.migration-study-comparison table,.migration-study-comparison tbody,.migration-study-comparison tr,.migration-study-comparison td,.migration-study-comparison tbody th{display:block;width:auto;}.migration-study-comparison thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}.migration-study-comparison tbody tr{margin:0 0 10px;border:1px solid #426174;border-radius:8px;overflow:hidden;}.migration-study-comparison tbody th,.migration-study-comparison td{border:0;padding:9px;font-size:12px;line-height:1.55;}.migration-study-comparison td{border-top:1px solid #426174;}.migration-study-comparison-cell-label{display:block;font-weight:750;color:#e9f7fb;margin-bottom:4px;}}',
       '@media(max-width:760px){.migration-study-controls{grid-column:1/-1;}}@media(max-width:520px){[data-flight-notebook-exports]{margin-inline:16px;}}',
-      '.migration-study-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}.migration-study-presets button,.migration-study-focus{border:1px solid #5a7e8f;border-radius:8px;background:#123a4d;color:#effaff;min-height:38px;padding:7px 5px;font-size:11px;font-weight:750;cursor:pointer;}.migration-study-presets button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;}.migration-study-focus{width:100%;}.migration-flight-controls .migration-motion-note{padding:9px 10px;border-inline-start:3px solid #8ee5df;border-radius:4px;background:#09283a;color:#d5edf4;font-size:11px;}.migration-flight-stage[data-flight-error="true"] .migration-flight-stage-status{display:flex;z-index:10;}',
+      '.migration-study-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;}.migration-study-presets button,.migration-study-focus{border:1px solid #5a7e8f;border-radius:8px;background:#123a4d;color:#effaff;min-height:44px;padding:7px 5px;font-size:11px;font-weight:750;cursor:pointer;}.migration-study-presets button[aria-pressed="true"]{background:#156773;border-color:#8ee5df;}.migration-study-focus{width:100%;}.migration-flight-controls .migration-motion-note{padding:9px 10px;border-inline-start:3px solid #8ee5df;border-radius:4px;background:#09283a;color:#d5edf4;font-size:11px;}.migration-flight-stage[data-flight-error="true"] .migration-flight-stage-status{display:flex;z-index:10;}',
       '@media(max-width:520px){.migration-flight-stage[data-study-view="true"] .migration-flight-route{padding:7px 10px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-label{font-size:9px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-places{font-size:11px;line-height:1.25;margin-top:3px;}.migration-flight-stage[data-study-view="true"] .migration-flight-route-places>b{font-size:15px;}}',
       '.migration-flight-stage[data-study-view="true"][data-flight-ready="true"]{cursor:grab;touch-action:none;user-select:none;}.migration-flight-stage[data-study-dragging="true"]{cursor:grabbing;}.migration-flight-stage .migration-scene-tools{cursor:default;}',
       ".migration-pair-review-comparison{margin:12px 0;padding:10px 12px;border:1px solid #547b8c;border-radius:9px;background:#0b2a3d;}.migration-pair-review-comparison p{margin:0;color:#c4dde9;font-size:11px;line-height:1.6;overflow-wrap:anywhere;}.migration-pair-review-comparison strong{color:#f1f9fc;}.migration-pair-review-comparison-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 10px;}.migration-pair-review-comparison-deltas{display:flex;flex-wrap:wrap;gap:3px 16px;margin-top:5px!important;}.migration-pair-review-comparison-scope{margin-top:4px!important;}",
-      ".migration-study-scene-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px;flex-shrink:0;min-width:0;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-study-scene-context{display:flex;flex:1 1 190px;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere;}.migration-study-scene-context strong{font-size:12px;line-height:1.5;}.migration-study-scene-context>[data-scene-study-species]{font-size:13px;color:#f1f9fc;}.migration-flight-stage[data-study-view=true] .migration-flight-overlay{justify-content:flex-end;}.migration-study-scene-context span{font-size:11px;line-height:1.5;color:#c4dde9;}.migration-study-scene-buttons{display:flex;flex:1 1 240px;flex-wrap:wrap;gap:8px;min-width:0;}.migration-study-scene-buttons button{flex:1 1 140px;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}.migration-study-scene-buttons button:disabled{opacity:.55;cursor:not-allowed;}@media(min-width:761px){.migration-flight-deck[data-study-strip=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-study-strip=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}",
+      ".migration-study-scene-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px;flex-shrink:0;min-width:0;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-study-scene-context{display:flex;flex:1 1 190px;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere;}.migration-study-clean-toggle{display:flex;align-items:center;gap:9px;min-height:44px;cursor:pointer;}.migration-study-clean-toggle input{width:20px;height:20px;flex-shrink:0;accent-color:#67e8f9;}.migration-study-clean-toggle input:focus-visible{outline:3px solid #67e8f9;outline-offset:3px;}.migration-study-clean-toggle span{font-weight:700;color:#effaff;}.migration-study-scene-context strong{font-size:12px;line-height:1.5;}.migration-study-scene-context>[data-scene-study-species]{font-size:13px;color:#f1f9fc;}.migration-flight-stage[data-study-view=true] .migration-flight-overlay{justify-content:flex-end;}.migration-study-scene-context span{font-size:11px;line-height:1.5;color:#c4dde9;}.migration-study-fit-help{flex:1 1 100%;margin:0;font-size:11px;line-height:1.5;color:#c4dde9;overflow-wrap:anywhere;}.migration-study-scene-buttons{display:flex;flex:1 1 240px;flex-wrap:wrap;gap:8px;min-width:0;}.migration-study-scene-buttons button{flex:1 1 140px;min-width:0;min-height:44px;padding:8px 10px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer;}.migration-study-scene-buttons button:disabled{opacity:.55;cursor:not-allowed;}@media(min-width:761px){.migration-flight-deck[data-study-strip=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-study-strip=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}",
       '@media(min-width:761px){.migration-flight-deck[data-challenge-inspection-open="true"]{height:auto;align-items:start;}.migration-flight-deck[data-challenge-inspection-open="true"] .migration-flight-controls{height:678px;max-height:678px;}}',
       ".migration-flight-view{display:flex;flex-direction:column;min-width:0;min-height:0;}.migration-flight-view>.migration-flight-stage{flex:1 0 auto;}.migration-pair-review{flex-shrink:0;min-width:0;padding:16px;border-top:1px solid #426174;background:#09283a;color:#e9f7fb;}.migration-pair-review h3{margin:0 0 5px;font-size:17px;font-weight:800;color:#f1f9fc;}.migration-pair-review-state{margin:0 0 10px;font-size:12px;line-height:1.5;color:#c4dde9;}.migration-pair-review-actions{display:flex;flex-wrap:wrap;gap:8px;}.migration-pair-review button{min-height:44px;min-width:0;padding:8px 12px;border:1px solid #7996a6;border-radius:8px;background:#123a4d;color:#effaff;font:inherit;font-size:12px;font-weight:750;cursor:pointer;}.migration-pair-review-actions button[aria-pressed=\"true\"]{background:#156773;border-color:#8ee5df;}.migration-pair-review-prediction{margin:12px 0;border-top:1px solid #426174;padding-top:8px;}.migration-pair-review-prediction summary{min-height:36px;cursor:pointer;font-size:12px;font-weight:750;}.migration-pair-review summary:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}.migration-pair-review-prediction p{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.6;}.migration-pair-review-flights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card{min-width:0;padding:12px;border:1px solid #426174;border-radius:9px;background:#0b2a3d;}.migration-pair-review-card h4{font-size:13px;font-weight:800;margin:0 0 5px;}.migration-pair-review-card p{font-size:11px;line-height:1.5;color:#c4dde9;overflow-wrap:anywhere;margin:0 0 10px;}.migration-pair-review-card dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.migration-pair-review-card dt{font-size:10px;line-height:1.45;color:#c4dde9;}.migration-pair-review-card dd{font-size:12px;font-weight:750;margin:3px 0 0;line-height:1.5;overflow-wrap:anywhere;}.migration-pair-review-help{margin:10px 0 0;color:#c4dde9;font-size:11px;line-height:1.6;}@media(min-width:761px){.migration-flight-view>.migration-flight-stage{height:678px;min-height:0;flex:0 0 678px;}.migration-flight-deck[data-pair-review-open=\"true\"]{height:auto;align-items:start;}.migration-flight-deck[data-pair-review-open=\"true\"] .migration-flight-controls{height:678px;max-height:678px;}}.migration-flight-deck:fullscreen,.migration-flight-deck:-webkit-full-screen,.migration-flight-deck[data-allo-fullscreen-active=\"true\"]{height:100vh;align-items:stretch;}.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:100vh;overflow:auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:100vh;min-height:0;flex:0 0 100vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:100vh;max-height:none;}@media(max-width:760px){.migration-flight-deck:fullscreen .migration-flight-view,.migration-flight-deck:-webkit-full-screen .migration-flight-view,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view{height:auto;overflow:visible;flex:0 0 auto;}.migration-flight-deck:fullscreen .migration-flight-view>.migration-flight-stage,.migration-flight-deck:-webkit-full-screen .migration-flight-view>.migration-flight-stage,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-view>.migration-flight-stage{height:58vh;min-height:58vh;flex:0 0 58vh;}.migration-flight-deck:fullscreen .migration-flight-controls,.migration-flight-deck:-webkit-full-screen .migration-flight-controls,.migration-flight-deck[data-allo-fullscreen-active=\"true\"] .migration-flight-controls{height:auto;max-height:none;}}@media(max-width:520px){.migration-pair-review{padding:14px;}.migration-pair-review-card{padding:10px;}.migration-pair-review-card dl{grid-template-columns:1fr;gap:7px;}}.migration-pair-review-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.migration-pair-review-heading h3{padding-top:8px;}.migration-pair-review-heading button{max-width:58%;font-size:11px;line-height:1.4;}",
+      ".migration-tool-shell .migration-route-tab[aria-selected=\"false\"]{color:var(--mg-muted)!important;}.migration-tool-shell .migration-route-tab[aria-selected=\"true\"]{color:#fff!important;}.migration-tool-shell .migration-route-tab>span{color:inherit!important;}",
+      "/* WCAG focus remains visible on light surfaces and inside clipped panels. */",
+      ".migration-tool-shell [data-migration-workspace=\"navigate\"] canvas{--mg-focus:#67e8f9;}.migration-tool-shell[data-migration-theme=\"contrast\"] [data-migration-workspace=\"navigate\"] canvas{--mg-focus:#ffff00;}",
+      ".migration-tool-shell{--mg-focus:#036875;}.migration-tool-shell[data-migration-theme=\"dark\"],.migration-tool-shell .migration-flight-deck,.migration-tool-shell .migration-command{--mg-focus:#67e8f9;}.migration-tool-shell[data-migration-theme=\"contrast\"],.migration-tool-shell[data-migration-theme=\"contrast\"] .migration-flight-deck,.migration-tool-shell[data-migration-theme=\"contrast\"] .migration-command{--mg-focus:#ffff00;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] :is(a,button,input,select,textarea,summary,canvas,[tabindex]):focus-visible{outline:3px solid var(--mg-focus);outline-offset:3px;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] :is(summary,canvas,[role=\"region\"],[role=\"tabpanel\"],.migration-flight-stage,.migration-disclosure-trigger,.migration-journey-summary,.migration-journey-choice):focus-visible{outline-offset:-4px;}",
+      ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{content:\"\";position:absolute;inset:3px;z-index:11;border:3px solid var(--mg-focus);border-radius:10px;box-shadow:0 0 0 2px #071827;pointer-events:none;}",
+      ".migration-disclosure-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:44px;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;}.migration-disclosure-content{margin:0;padding:0 12px 12px;overflow-wrap:anywhere;}",
+      "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] :is(a,button,input,select,textarea,summary,canvas,[tabindex]):focus-visible{outline-color:Highlight;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{border-color:Highlight;box-shadow:none;}.migration-tool-shell[data-migration-tool=\"true\"] :is(button,[role=\"tab\"]):is([aria-pressed=\"true\"],[aria-selected=\"true\"],[aria-current=\"step\"]){border:3px double ButtonText!important;}.migration-tool-shell .migration-route-tab[aria-selected=\"true\"]:not(:focus-visible){outline:none;}}",
       // Touch sizing. Measured on an iPhone 12 viewport, this tool's buttons
       // came out at 25-28px and its range sliders at 16px tall. 16px is below
       // even the WCAG 2.5.8 (AA) floor of 24x24, and a 16px slider is close to
@@ -181,6 +225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Labels that wrap a slider carry the hit area with it.
         '.migration-tool-shell label{touch-action:manipulation;}' +
       '}',
+      '@media(forced-colors:active){.migration-tool-shell .migration-command{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none;}.migration-tool-shell .migration-command :is(h2,p,.migration-eyebrow){color:CanvasText;}.migration-tool-shell .migration-command-main>button{background:ButtonFace;color:ButtonText;border-color:ButtonText;}}',
       '.theme-contrast .migration-command,.theme-contrast .migration-active-band,.theme-contrast .migration-workspace canvas,.theme-contrast .migration-flight-deck{box-shadow:none;}.theme-contrast .migration-flight-controls{background:#000;}.theme-contrast .migration-flight-control select,.theme-contrast .migration-flight-camera button,.theme-contrast .migration-flight-actions button,.theme-contrast .migration-flight-stat{border-color:#fff;background:#000;color:#fff;}'
     ].join('\n');
     document.head.appendChild(migrationStyle);
@@ -193,7 +238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
   function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
+  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0s!important}}";document.head.appendChild(_s);}
 
 
   // ── Colour helpers ─────────────────────────────────────────────────────────
@@ -759,6 +804,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // used to hold something else. `x || fallback` takes anything truthy and
   // `typeof x === 'number'` still admits NaN and Infinity, so both let bad
   // values reach arithmetic, SVG attributes and React children.
+  // Each mounted scene owns its announcement state. Updating it must not
+  // rerender the tool and replace live camera/phase values awaiting a host save.
+  function MigrationSceneFeedback(props) {
+    var React = props.React, h = React.createElement;
+    var feedback = React.useState({ serial: 0, text: '' });
+    var owner = props.owner;
+    var writer = {
+      node: null,
+      report: function(message) {
+        if (!writer.node || !writer.node.isConnected || owner.current !== writer) return;
+        feedback[1](function(previous) { return { serial: previous.serial + 1, text: message }; });
+      }
+    };
+    return h('div', { className: 'sr-only', 'data-scene-feedback': props.context ? undefined : '', 'data-learning-feedback': props.context || undefined, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+      ref: function(node) {
+        writer.node = node;
+        // Only a committed DOM node may publish a writer. An older cleanup
+        // cannot clear the writer belonging to a newer committed status.
+        if (node) owner.current = writer;
+        else if (owner.current === writer) owner.current = null;
+      }
+    }, h('span', { key: feedback[0].serial }, feedback[0].text));
+  }
+
   function MigrationStudyContextReadout(props) {
     var React = props.React;
     var context = props.readContext();
@@ -898,7 +967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     return {
       speciesId: speciesId, region: region, note: saved.note.slice(0, 1000).trim(),
       bird: Math.floor(migrNum(saved.bird, 0, 0, 31)),
-      yaw: migrNum(saved.yaw, 35, -180, 180), pitch: migrNum(saved.pitch, 15, -10, 60),
+      yaw: migrNum(saved.yaw, 35, -180, 180), pitch: migrNum(saved.pitch, 15, -60, 60),
       zoom: migrNum(saved.zoom, 1, 0.65, 1.6), wingStep: Math.floor(migrNum(saved.wingStep, 0, 0, 1000000)),
       paused: saved.paused === true, motionReduced: saved.motionReduced === true
     };
@@ -2370,8 +2439,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var useRef = React.useRef;
       var useCallback = React.useCallback;
       var d = (ctx.toolData && ctx.toolData['migration']) || {};
-      var upd = function(key, val) { ctx.update('migration', key, val); };
-      var updMulti = function(obj) { ctx.updateMulti('migration', obj); };
+      function supersedeMigrationHalfTurn(values) {
+        var engine = _f3dEngineRef && _f3dEngineRef.current;
+        if (!engine || (!engine.studyHalfTurnIntent && !engine.studyHalfTurnSource)) return;
+        if (['flightStudyYaw', 'flightCamera', 'flightSpecies', 'flightStudyBird', 'flightFormation', 'flightSeason', 'tab'].some(function(key) {
+          return Object.prototype.hasOwnProperty.call(values, key);
+        })) { engine.studyHalfTurnIntent = null; engine.studyHalfTurnSource = null; }
+      }
+      function supersedeMigrationStudyGuides(values) {
+        var engine = _f3dEngineRef && _f3dEngineRef.current;
+        if (engine && engine.studyGuidesOwner && ['flightCamera', 'flightSpecies', 'flightStudyBird', 'flightFormation', 'flightSeason', 'tab'].some(function(key) {
+          return Object.prototype.hasOwnProperty.call(values, key);
+        })) engine.studyGuidesOwner = null;
+      }
+      var upd = function(key, val, keepHalfTurn) {
+        var values = {}; values[key] = val;
+        supersedeMigrationStudyGuides(values);
+        if (!keepHalfTurn) supersedeMigrationHalfTurn(values);
+        ctx.update('migration', key, val);
+      };
+      var updMulti = function(obj) { supersedeMigrationStudyGuides(obj); supersedeMigrationHalfTurn(obj); ctx.updateMulti('migration', obj); };
+      // Removal controls own one explicit action in their committed view.
+      // Keep their last node on ref cleanup so retained handlers cannot become
+      // anonymous actions after unmount or after an index-keyed row is reused.
+      function attachRemovalControl(control, node) {
+        if (!node || (node._migrationRemovalControl === control && control.node === node)) return;
+        control.node = node; node._migrationRemovalControl = control;
+      }
+      function currentRemovalControl(control, event) {
+        var node = control.node;
+        if (!node) return !(event && event.currentTarget);
+        return node.isConnected && node._migrationRemovalControl === control &&
+          !(node.disabled || (node.matches && node.matches(':disabled'))) &&
+          !(event && event.currentTarget && event.currentTarget !== node);
+      }
+      function beginRemovalControl(control, event) {
+        if (control.used || !currentRemovalControl(control, event)) return false;
+        control.used = true;
+        return true;
+      }
+      function exposedRemovalTarget(node) {
+        for (var parent = node; parent; parent = parent.parentElement) {
+          if (parent.hidden || parent.hasAttribute('inert') || parent.getAttribute('aria-hidden') === 'true') return false;
+          if (parent.tagName === 'DETAILS' && !parent.open) {
+            var summary = parent.querySelector('summary');
+            if (!summary || !summary.contains(node)) return false;
+          }
+          var style = window.getComputedStyle(parent);
+          if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+        }
+        return true;
+      }
+      function focusBeforeRemoval(control, panel, target) {
+        var action = control.node;
+        if (!action || !panel || !panel.isConnected || !panel.contains(action) || !target ||
+            !target.isConnected || !panel.contains(target) || target.disabled ||
+            (target.matches && target.matches(':disabled')) || !exposedRemovalTarget(action) || !exposedRemovalTarget(target)) return;
+        if (document.activeElement !== action && document.activeElement !== document.body) return;
+        target.focus();
+      }
+      // A return request owns focus only until another interaction supersedes it.
+      // Fullscreen completion and reflection commits share this transient owner.
+      function fullscreenAllowsFocus(target) {
+        var nativeRoot = document.fullscreenElement || document.webkitFullscreenElement;
+        if (nativeRoot && !nativeRoot.contains(target)) return false;
+        var customRoots = document.querySelectorAll('.migration-flight-deck[data-allo-fullscreen-active="true"]');
+        for (var i = 0; i < customRoots.length; i++) if (!customRoots[i].contains(target)) return false;
+        return true;
+      }
+      function beginFocusIntent(action, scope, allowDetachedOrigin, ownerCurrent) {
+        if (!action || !action.isConnected || !scope || !scope.isConnected || !scope.contains(action) || !exposedRemovalTarget(action)) return null;
+        var initialFocus = document.activeElement;
+        if (initialFocus && initialFocus !== document.body && !scope.contains(initialFocus)) return null;
+        if (_migrationFocusIntentRef.current) _migrationFocusIntentRef.current.cancel();
+        var active = true, cleanups = [];
+        var intent = {
+          cancel: function() {
+            if (!active) return;
+            active = false;
+            if (_migrationFocusIntentRef.current === intent) _migrationFocusIntentRef.current = null;
+            cleanups.splice(0).forEach(function(cleanup) { cleanup(); });
+          },
+          addCleanup: function(cleanup) { if (active) cleanups.push(cleanup); else cleanup(); },
+          current: function() {
+            if (!active || _migrationFocusIntentRef.current !== intent || !scope.isConnected) return false;
+            if (action.isConnected ? !scope.contains(action) : !allowDetachedOrigin) return false;
+            var focused = document.activeElement;
+            if (focused !== document.body && focused !== initialFocus && focused !== action && !action.contains(focused)) return false;
+            try { return !!ownerCurrent(); } catch (ignore) { return false; }
+          },
+          defer: function(callback) {
+            var timer = window.setTimeout(function() {
+              if (!intent.current()) { intent.cancel(); return; }
+              callback();
+            }, 0);
+            intent.addCleanup(function() { window.clearTimeout(timer); });
+          },
+          focus: function(target) {
+            var ready = intent.current() && target && target.isConnected && scope.contains(target) &&
+              !target.disabled && !(target.matches && target.matches(':disabled')) &&
+              exposedRemovalTarget(target) && fullscreenAllowsFocus(target);
+            // Remove listeners before our own focus event can fire.
+            intent.cancel();
+            if (!ready) return false;
+            target.focus({ preventScroll: true });
+            if (target.isConnected && document.activeElement === target && target.scrollIntoView) target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+            return document.activeElement === target;
+          }
+        };
+        function focusChanged(event) {
+          if (event.target !== action && event.target !== document.body && !action.contains(event.target)) intent.cancel();
+        }
+        function pointerChanged(event) { if (!action.contains(event.target)) intent.cancel(); }
+        function interactionChanged() { intent.cancel(); }
+        document.addEventListener('focusin', focusChanged, true);
+        document.addEventListener('pointerdown', pointerChanged, true);
+        document.addEventListener('keydown', interactionChanged, true);
+        window.addEventListener('blur', interactionChanged);
+        cleanups.push(function() {
+          document.removeEventListener('focusin', focusChanged, true);
+          document.removeEventListener('pointerdown', pointerChanged, true);
+          document.removeEventListener('keydown', interactionChanged, true);
+          window.removeEventListener('blur', interactionChanged);
+        });
+        _migrationFocusIntentRef.current = intent;
+        return intent;
+      }
+      function leaveFullscreenForFocus(intent, action, target, complete) {
+        function finish() {
+          if (!intent.current() || !target || !target.isConnected || !fullscreenAllowsFocus(target)) { intent.cancel(); return; }
+          complete();
+        }
+        var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        if (fullscreen && !fullscreen.contains(target)) {
+          if (!fullscreen.contains(action)) { intent.cancel(); return; }
+          var exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (!exit) { intent.cancel(); return; }
+          function exited() {
+            if (!intent.current()) { intent.cancel(); return; }
+            if (fullscreenAllowsFocus(target)) finish();
+          }
+          document.addEventListener('fullscreenchange', exited);
+          document.addEventListener('webkitfullscreenchange', exited);
+          intent.addCleanup(function() {
+            document.removeEventListener('fullscreenchange', exited);
+            document.removeEventListener('webkitfullscreenchange', exited);
+          });
+          try {
+            var pending = exit.call(document);
+            if (pending && typeof pending.then === 'function') pending.then(finish, function() { intent.cancel(); });
+            else intent.defer(exited);
+          } catch (ignore) { intent.cancel(); }
+          return;
+        }
+        var deck = action.closest('.migration-flight-deck');
+        if (deck && deck.getAttribute('data-allo-fullscreen-active') === 'true' && !deck.contains(target)) {
+          if (typeof window.__alloStemFS !== 'function') { intent.cancel(); return; }
+          try {
+            var result = window.__alloStemFS(deck);
+            if (result && typeof result.then === 'function') result.then(finish, function() { intent.cancel(); });
+            else finish();
+          } catch (ignore) { intent.cancel(); }
+          return;
+        }
+        finish();
+      }
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var t = ctx.t;
@@ -2539,12 +2771,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _vfBirdsRef = useRef(null);
       var _vfDragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
       var _vfTimeRef = useRef(0);
+      // Selection, pause and repaint requests belong to this activity, not saved learner work.
+      var formationControlState = useState({ selected: 0, paused: false, revision: 0, feedback: '' });
+      var _vfSizeRef = useRef(null);
+      var _vfModelBoundsRef = useRef(null);
+      var formationControlId = React.useId();
+      var _vfControlRef = useRef(formationControlState[0]);
+      _vfControlRef.current = formationControlState[0];
       // Synchronous gate for "perfect V" XP award — prevents animation frames from
       // re-firing awardXP while the async toolData write propagates.
       var _vfPerfectRef = useRef(false);
+      // Announce explicit scene actions, never animation frames or saved learner work.
+      var _sceneFeedbackRef = useRef(null);
+      var _challengeFeedbackRef = useRef(null);
+      var _investigationFeedbackRef = useRef(null);
       var _f3dHostRef = useRef(null);
       var _f3dEngineRef = useRef(null);
       var _f3dBootRef = useRef(0);
+      var _f3dFullscreenRequestRef = useRef(null);
+      useEffect(function() {
+        return function() { if (_f3dFullscreenRequestRef.current) _f3dFullscreenRequestRef.current.cancel(); };
+      }, []);
+      useEffect(function() {
+        var request = _f3dFullscreenRequestRef.current;
+        if (request && !request.current()) request.cancel();
+      });
       var _f3dStudyDragRef = useRef(null);
       var _f3dStudyRevisitRef = useRef(null);
       var studyRevisitStatus = useState(null);
@@ -2556,6 +2807,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var studyWingtipFollowState = useState(null);
       // A selected illustrative cycle position is a temporary viewing aid.
       var studyCyclePositionState = useState(null);
+      // Refresh local guidance without writing temporary visibility into learner data.
+      var studyGuideRevision = useState(0);
       var _f3dStudyCyclePauseRef = useRef(null);
       var _f3dStudyStepAckRef = useRef({ serial: 0, paused: false, pending: null });
       // Focus requests are transient UI state, never recorded learner work.
@@ -2577,17 +2830,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var flightChallengeReflectionState = useState(null);
       var _flightChallengeReflectionOwnerRef = useRef(null);
       var _flightChallengeReflectionFocusRef = useRef(null);
+      var _flightTrialFocusReturnRef = useRef(null);
+      var _migrationFocusIntentRef = useRef(null);
+      useEffect(function() {
+        return function() { if (_migrationFocusIntentRef.current) _migrationFocusIntentRef.current.cancel(); };
+      }, []);
+      useEffect(function() {
+        var intent = _migrationFocusIntentRef.current;
+        if (intent && !intent.current()) intent.cancel();
+      });
       useEffect(function() {
         var request = _flightChallengeReflectionFocusRef.current;
         if (!request) return;
         _flightChallengeReflectionFocusRef.current = null;
-        var owner = _flightChallengeReflectionOwnerRef.current;
-        if (!owner || owner.draft || owner.panel !== request.panel || !owner.panel.isConnected || owner.goalId !== request.goalId) return;
+        var intent = request.intent, owner = _flightChallengeReflectionOwnerRef.current;
+        if (!intent || !intent.current() || !owner) { if (intent) intent.cancel(); return; }
         var attempt = owner.attempts[request.index];
         var target = attempt && migrFlightChallengeAttemptIdentity(attempt) === request.attemptSignature
           ? owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"] [data-flight-reflection-action="edit"]') : null;
         if (!target && request.fallback) target = owner.panel.querySelector('[data-flight-challenge="' + owner.goalId + '"]');
-        if (target && target.isConnected && !target.disabled && target.focus) target.focus();
+        intent.focus(target);
       });
       // Tab 2: Wind Currents refs
       var _wcCanvasRef = useRef(null);
@@ -2596,6 +2858,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _wcObjectsRef = useRef(null);
       var _wcBirdsRef = useRef([]);
       var _wcTimeRef = useRef(0);
+      // Placement coordinates are a transient input aid, not saved learner work.
+      var windPlacementState = useState({ x: 50, y: 50, feedback: '' });
+      var _wcPlacementRef = useRef(windPlacementState[0]);
+      _wcPlacementRef.current = windPlacementState[0];
       // Synchronous one-shot for the thermal award. The state write is async, so
       // between the award and the re-render every qualifying frame would fire
       // again — the same ~60-XP-per-second shape _vfPerfectRef guards against.
@@ -2613,6 +2879,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _nvCanvasRef = useRef(null);
       var _nvAnimRef = useRef(null);
       var _nvTimeRef = useRef(0);
+      // Submission ownership and focus belong to this mounted activity, never saved work.
+      var _nvChallengeRef = useRef({ request: null, submitted: null, starting: false, view: null, panel: null });
+      var _nvChallengeSummaryRef = useRef(null);
+      useEffect(function() {
+        return function() { _nvChallengeRef.current.request = null; };
+      }, []);
       // Live values ref — updated every render so animation loops read fresh state
       var _liveVals = useRef({});
       var flightValues = migrFlightInvestigationSnapshot(d);
@@ -2621,12 +2893,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var studyView = {
         bird: Math.round(migrNum(d.flightStudyBird, 0, 0, studyBirdCount - 1)),
         yaw: Math.round(migrNum(d.flightStudyYaw, 35, -180, 180) / 5) * 5,
-        pitch: Math.round(migrNum(d.flightStudyPitch, 15, -10, 60) / 5) * 5,
+        pitch: Math.round(migrNum(d.flightStudyPitch, 15, -60, 60) / 5) * 5,
         zoom: Math.round(migrNum(d.flightStudyZoom, 1, 0.65, 1.6) * 20) / 20,
         step: Math.floor(migrNum(d.flightWingStep, 0, 0, 1000000))
       };
       _liveVals.current = {
-        birdCount: migrNum(d.vBirdCount, 9, 2, 30), simSpeed: migrNum(d.vSpeed, 1, 0.25, 4),
+        birdCount: Math.round(migrNum(d.vBirdCount, 9, 2, 30)), simSpeed: migrNum(d.vSpeed, 1, 0.25, 4),
         windDir: migrNum(d.windDir, 0, -360, 360), windSpeed: migrNum(d.windSpeed, 15, 0, 50),
         showStreamlines: d.showStreamlines, placingObj: d.placingObj,
         selectedSpecies: d.selectedSpecies, aoa: migrNum(d.aoa, 5, 0, 20),
@@ -2652,6 +2924,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // there, and thermalRidden gates a one-shot XP award.
         vLeaderRotations: d.vLeaderRotations || 0, thermalRidden: !!d.thermalRidden
       };
+      var guideEngine = _f3dEngineRef.current;
+      if (guideEngine && guideEngine.studyGuidesOwner && !migrationStudyGuidesHidden(guideEngine, _liveVals.current)) guideEngine.studyGuidesOwner = null;
+      // An explicit half-turn owns this transient view until another view
+      // action supersedes it. Host writes may be delayed or coalesced, and an
+      // older turn can have the same angle as the latest request. A matching
+      // angle alone cannot identify the latest acknowledgement.
+      var turnEngine = _f3dEngineRef.current;
+      var turnIntent = turnEngine && turnEngine.studyHalfTurnIntent;
+      if (turnIntent) {
+        var turnContext = migrationStudyPhaseContext(turnEngine, _liveVals.current, false);
+        if (!turnContext || turnEngine.contextLost || turnContext.uuid !== turnIntent.sourceUuid ||
+            turnIntent.angles.indexOf(studyView.yaw) === -1) {
+          turnEngine.studyHalfTurnIntent = null; turnEngine.studyHalfTurnSource = null;
+        } else {
+          studyView.yaw = _liveVals.current.flightStudyYaw = turnIntent.yaw;
+        }
+      }
       _f3dStudyStepAckRef.current.serial = studyView.step;
       _f3dStudyStepAckRef.current.paused = _liveVals.current.flightPaused;
       applyMigrationStudyPendingStepAcknowledgement(_f3dEngineRef.current, _liveVals.current, _f3dStudyStepAckRef.current);
@@ -3176,27 +3465,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return geometry;
       }
 
-      function createMigrationChinstrapGeometry(THREE) {
-        // One shallow ribbon wraps both cheeks and the underside. It follows
-        // the head surface instead of leaving two disconnected white blobs.
-        var vertices = [], indices = [], arcs = 16, depths = 4;
-        for (var arc = 0; arc <= arcs; arc++) {
-          var angle = (-110 + 220 * arc / arcs) * Math.PI / 180;
-          var width = 0.045 + 0.025 * Math.cos(angle * 0.55);
-          for (var depth = 0; depth <= depths; depth++) {
-            var z = 0.035 + (depth / depths * 2 - 1) * width;
-            var radius = Math.sqrt(0.204 * 0.204 - z * z);
-            vertices.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, z);
-            if (arc < arcs && depth < depths) {
-              var a = arc * (depths + 1) + depth, b = a + depths + 1;
-              indices.push(a, b, a + 1, a + 1, b, b + 1);
-            }
-          }
+      function createMigrationCanadaHeadGeometry(THREE) {
+        // The white cheeks meet beneath the chin on the same head surface.
+        // Black crown, bill-side face and nape frame this stylized pattern;
+        // no detached ribbon edge or separate marking material is needed.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position, colors = new Float32Array(position.count * 3);
+        var dark = new THREE.Color(0x111a24), pale = new THREE.Color(0xf8fafc), shade = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
         }
-        var geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-        geometry.setIndex(indices);
-        geometry.computeVertexNormals();
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var y = position.getY(vertex) / 0.2, z = position.getZ(vertex) / 0.2;
+          // The cheek band broadens toward the nape at the sides, then wraps
+          // continuously under the chin while leaving the back of the head dark.
+          var front = -0.26 + 0.10 * ramp(-0.85, -0.20, y);
+          var back = 0.46 + 0.06 * ramp(-0.80, -0.15, y);
+          var chinstrap = (1 - ramp(0.12, 0.32, y)) * ramp(front - 0.08, front + 0.08, z) *
+            (1 - ramp(back - 0.08, back + 0.08, z));
+          shade.copy(dark).lerp(pale, chinstrap);
+          colors[vertex * 3] = shade.r; colors[vertex * 3 + 1] = shade.g; colors[vertex * 3 + 2] = shade.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         return geometry;
       }
 
@@ -3362,6 +3653,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return geometry;
       }
 
+      function createMigrationTernHeadGeometry(THREE) {
+        // Breeding-adult cap and pale lower face share one continuous surface.
+        // The cap reaches the forehead and nape without a floating helmet edge.
+        // Colors are stylized; changing migration season does not molt plumage.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position, colors = new Float32Array(position.count * 3);
+        var pale = new THREE.Color(0xf3f5f8), dark = new THREE.Color(0x111827), shade = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var y = position.getY(vertex) / 0.2, z = position.getZ(vertex) / 0.2;
+          // The cap dips down at the back while its front edge sits just above
+          // the bill; the cheeks and throat remain pale below that boundary.
+          var edge = 0.14 - 0.60 * ramp(0.20, 0.80, z) - 0.10 * (1 - ramp(-0.90, -0.55, z));
+          shade.copy(pale).lerp(dark, ramp(edge - 0.06, edge + 0.06, y));
+          colors[vertex * 3] = shade.r; colors[vertex * 3 + 1] = shade.g; colors[vertex * 3 + 2] = shade.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+      }
+
+      function createMigrationCraneHeadGeometry(THREE) {
+        // Adult identification markings share one continuous head surface.
+        // The red bare crown, pale cheeks/throat and gray nape are stylized;
+        // juveniles do not have this adult pattern.
+        var geometry = new THREE.SphereGeometry(0.2, 24, 16);
+        var position = geometry.attributes.position, colors = new Float32Array(position.count * 3);
+        var gray = new THREE.Color(0x9aa0a6), pale = new THREE.Color(0xe3e0d8), red = new THREE.Color(0xb91c1c);
+        var shade = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var vertex = 0; vertex < position.count; vertex++) {
+          var x = Math.abs(position.getX(vertex)) / 0.2;
+          var y = position.getY(vertex) / 0.2, z = position.getZ(vertex) / 0.2;
+          var cheek = ramp(0.25, 0.58, x) * (1 - ramp(0.20, 0.55, y)) *
+            ramp(-0.75, -0.45, y) * (1 - ramp(0.45, 0.72, z)) * ramp(-0.85, -0.50, z);
+          var throat = (1 - ramp(-0.25, -0.05, y)) * (1 - ramp(0.20, 0.55, z));
+          shade.copy(gray).lerp(pale, Math.max(cheek, throat));
+          // The crown continues toward the forehead while the rear of the
+          // head stays gray. These weights mirror across the head midline.
+          var crown = ramp(0.48, 0.72, y) * (1 - ramp(0.35, 0.65, z));
+          var forehead = ramp(0.05, 0.28, y) * (1 - ramp(-0.65, -0.35, z));
+          shade.lerp(red, Math.max(crown, forehead));
+          colors[vertex * 3] = shade.r; colors[vertex * 3 + 1] = shade.g; colors[vertex * 3 + 2] = shade.b;
+        }
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        return geometry;
+      }
+
+      function createMigrationGodwitBillGeometry(THREE) {
+        // A long, subtly upturned bill with a pink base and dark tip. These
+        // nonbreeding identification cues are stylized, not measured anatomy.
+        // Keep the original bill's local long axis, placement and forward extent.
+        var sections = [[-0.31, 0, 0.085, 0.060], [-0.20, 0.002, 0.068, 0.049],
+          [-0.08, 0.006, 0.052, 0.038], [0.04, 0.015, 0.037, 0.028],
+          [0.15, 0.029, 0.024, 0.019], [0.24, 0.046, 0.012, 0.010],
+          [0.31, 0.064, 0, 0]];
+        var vertices = [], colors = [], indices = [], sides = 12;
+        var pink = new THREE.Color(0xd9a194), dark = new THREE.Color(0x25272b), shade = new THREE.Color();
+        for (var ring = 0; ring < sections.length - 1; ring++) {
+          var section = sections[ring];
+          var blend = Math.max(0, Math.min(1, ((section[0] + 0.31) / 0.62 - 0.34) / 0.27));
+          shade.copy(pink).lerp(dark, blend * blend * (3 - 2 * blend));
+          for (var side = 0; side < sides; side++) {
+            var angle = side / sides * Math.PI * 2;
+            vertices.push(Math.cos(angle) * section[2], section[0], section[1] + Math.sin(angle) * section[3]);
+            colors.push(shade.r, shade.g, shade.b);
+            if (ring > 0) {
+              var a = (ring - 1) * sides + side, b = (ring - 1) * sides + (side + 1) % sides;
+              var c = ring * sides + side, d = ring * sides + (side + 1) % sides;
+              indices.push(a, c, b, b, c, d);
+            }
+          }
+        }
+        var base = vertices.length / 3;
+        vertices.push(0, sections[0][0], sections[0][1]); colors.push(pink.r, pink.g, pink.b);
+        var point = vertices.length / 3, last = sections[sections.length - 1];
+        vertices.push(0, last[0], last[1]); colors.push(dark.r, dark.g, dark.b);
+        for (var cap = 0; cap < sides; cap++) {
+          indices.push(base, cap, (cap + 1) % sides);
+          var end = (sections.length - 2) * sides;
+          indices.push(end + cap, point, end + (cap + 1) % sides);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
+      function createMigrationGooseBillGeometry(THREE, snowGoose) {
+        // Rounded, flattened sections replace the generic pointed cone. The
+        // Snow Goose's pink bill and dark lateral grin patch are stylized
+        // identification cues, not measured anatomy or an opening jaw.
+        // Preserve the previous local length, placement and goose-only scale.
+        var sections = [[-0.15, 0, 0.085, 0.085], [-0.10, 0, 0.085, 0.078],
+          [-0.06, 0, 0.082, 0.069], [0.005, 0, 0.075, 0.055],
+          [0.065, 0, 0.063, 0.042], [0.11, 0, 0.045, 0.029],
+          [0.138, 0, 0.025, 0.017], [0.15, 0, 0, 0]];
+        var vertices = [], colors = [], indices = [], sides = 16;
+        var pink = new THREE.Color(0xe9a09c), dark = new THREE.Color(0x30252a), shade = new THREE.Color();
+        function ramp(a, b, value) {
+          var x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+          return x * x * (3 - 2 * x);
+        }
+        for (var ring = 0; ring < sections.length - 1; ring++) {
+          var section = sections[ring];
+          var along = ramp(-0.11, -0.055, section[0]) * (1 - ramp(0.065, 0.125, section[0]));
+          for (var side = 0; side < sides; side++) {
+            var angle = side / sides * Math.PI * 2, across = Math.cos(angle), up = Math.sin(angle);
+            vertices.push(across * section[2], section[0], section[1] + up * section[3]);
+            // Keep the marking on both sides, below the upper ridge and away
+            // from the base and rounded nail. No extra mesh or texture.
+            var flank = ramp(0.72, 0.94, Math.abs(across)) * (1 - ramp(0.16, 0.56, Math.abs(up + 0.10)));
+            shade.copy(pink).lerp(dark, along * flank);
+            colors.push(shade.r, shade.g, shade.b);
+            if (ring > 0) {
+              var a = (ring - 1) * sides + side, b = (ring - 1) * sides + (side + 1) % sides;
+              var c = ring * sides + side, d = ring * sides + (side + 1) % sides;
+              indices.push(a, c, b, b, c, d);
+            }
+          }
+        }
+        var base = vertices.length / 3;
+        vertices.push(0, sections[0][0], sections[0][1]); colors.push(pink.r, pink.g, pink.b);
+        var point = vertices.length / 3, last = sections[sections.length - 1];
+        vertices.push(0, last[0], last[1]); colors.push(pink.r, pink.g, pink.b);
+        for (var cap = 0; cap < sides; cap++) {
+          indices.push(base, cap, (cap + 1) % sides);
+          var end = (sections.length - 2) * sides;
+          indices.push(end + cap, point, end + (cap + 1) % sides);
+        }
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        if (snowGoose) geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices); geometry.computeVertexNormals();
+        return geometry;
+      }
+
       function createMigrationFlyer(THREE, species, index) {
         var flyer = new THREE.Group();
         var isMonarch = species.id === 'monarch';
@@ -3374,7 +3808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           arctic_tern:      { body: 0xeef2f7, belly: 0xffffff, head: 0xf3f5f8, cheek: null,     wing: 0xd7dee7, tip: 0x475569, bill: 0xdc2626 },
           ruby_hummingbird: { body: 0x15803d, belly: 0xe7e5e4, head: 0x14532d, cheek: null, wing: 0x166534, tip: 0x14532d, bill: 0x1f2937 },
           peregrine:        { body: 0x3f4a5a, belly: 0xe4e0d6, head: 0x1e293b, cheek: null,     wing: 0x36404e, tip: 0x1e293b, bill: 0xfbbf24 },
-          sandhill_crane:   { body: 0x9aa0a6, belly: 0xb9b2a4, head: 0x9aa0a6, cheek: 0xb91c1c, wing: 0x8d939a, tip: 0x4b5563, bill: 0x44403c },
+          sandhill_crane:   { body: 0x9aa0a6, belly: 0xb9b2a4, head: 0x9aa0a6, cheek: null,     wing: 0x8d939a, tip: 0x4b5563, bill: 0x44403c },
           bartailed_godwit: { body: 0xa9793f, belly: 0xe8dcc6, head: 0x8b5e2f, cheek: null,     wing: 0x96682f, tip: 0x57432a, bill: 0x1f2937 }
         };
         var sp3d = palette[species.id] || palette.canada_goose;
@@ -3416,10 +3850,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           flyer.add(neck);
         }
 
-        var coloredHead = species.id === 'peregrine' || species.id === 'ruby_hummingbird';
+        var coloredHead = species.id === 'peregrine' || species.id === 'ruby_hummingbird' || isCrane || species.id === 'arctic_tern' || species.id === 'canada_goose';
         var head = new THREE.Mesh(
           species.id === 'peregrine' ? createMigrationPeregrineHeadGeometry(THREE) : species.id === 'ruby_hummingbird'
-            ? createMigrationHummingbirdHeadGeometry(THREE) : new THREE.SphereGeometry(isMonarch ? 0.105 : 0.2, 12, 8),
+            ? createMigrationHummingbirdHeadGeometry(THREE) : isCrane ? createMigrationCraneHeadGeometry(THREE) : species.id === 'arctic_tern'
+            ? createMigrationTernHeadGeometry(THREE) : species.id === 'canada_goose' ? createMigrationCanadaHeadGeometry(THREE)
+            : new THREE.SphereGeometry(isMonarch ? 0.105 : 0.2, 12, 8),
           isMonarch ? bodyMat : new THREE.MeshStandardMaterial({ color: coloredHead ? 0xffffff : sp3d.head,
             roughness: species.id === 'ruby_hummingbird' ? 0.46 : 0.66,
             metalness: species.id === 'ruby_hummingbird' ? 0.12 : 0, vertexColors: coloredHead })
@@ -3500,37 +3936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         if (!isMonarch) {
-          if (species.id === 'canada_goose') {
-            var chinstrap = new THREE.Mesh(createMigrationChinstrapGeometry(THREE),
-              new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.80, side: THREE.DoubleSide }));
-            chinstrap.name = 'migration-goose-chinstrap';
-            chinstrap.position.copy(head.position);
-            chinstrap.scale.copy(head.scale);
-            flyer.add(chinstrap);
-          } else if (isCrane) {
-            var crown = new THREE.Mesh(new THREE.SphereGeometry(0.204, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.30),
-              new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.85 }));
-            crown.name = 'migration-crane-crown';
-            crown.position.copy(head.position);
-            crown.scale.copy(head.scale);
-            flyer.add(crown);
-            var craneCheekGeometry = new THREE.SphereGeometry(0.1, 8, 6);
-            var craneCheekMat = new THREE.MeshStandardMaterial({ color: 0xe3e0d8, roughness: 0.82 });
-            for (var craneSide = -1; craneSide <= 1; craneSide += 2) {
-              var craneCheek = new THREE.Mesh(craneCheekGeometry, craneCheekMat);
-              craneCheek.name = 'migration-crane-cheek';
-              craneCheek.scale.set(0.24, 0.68, 0.85);
-              craneCheek.position.set(craneSide * 0.143, headY - 0.017, headZ + 0.025);
-              flyer.add(craneCheek);
-            }
-          } else if (species.id === 'arctic_tern') {
-            var cap = new THREE.Mesh(new THREE.SphereGeometry(0.204, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.49),
-              new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.80 }));
-            cap.name = 'migration-tern-cap';
-            cap.position.copy(head.position);
-            cap.scale.copy(head.scale);
-            flyer.add(cap);
-          } else if (sp3d.cheek) {
+          if (sp3d.cheek && species.id !== 'canada_goose') {
             var cheekMat = new THREE.MeshStandardMaterial({ color: sp3d.cheek, roughness: 0.7 });
             var cheekGeometry = new THREE.SphereGeometry(0.1, 8, 6);
             for (var ck = -1; ck <= 1; ck += 2) {
@@ -3542,8 +3948,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
           var billLength = species.id === 'bartailed_godwit' ? 0.62 : (species.id === 'ruby_hummingbird' ? 0.54 : (isCrane ? 0.46 : (isGoose || species.id === 'arctic_tern' ? 0.30 : 0.32)));
           var billRadius = species.id === 'ruby_hummingbird' ? 0.035 : (isCrane ? 0.055 : (species.id === 'arctic_tern' ? 0.045 : 0.085));
-          var beak = new THREE.Mesh(species.id === 'peregrine' ? createMigrationPeregrineBillGeometry(THREE) : new THREE.ConeGeometry(billRadius, billLength, 10),
-            new THREE.MeshStandardMaterial({ color: species.id === 'peregrine' ? 0xffffff : sp3d.bill, roughness: 0.65, vertexColors: species.id === 'peregrine' }));
+          var coloredBill = species.id === 'peregrine' || species.id === 'bartailed_godwit' || species.id === 'snow_goose';
+          var beak = new THREE.Mesh(species.id === 'peregrine' ? createMigrationPeregrineBillGeometry(THREE) : species.id === 'bartailed_godwit'
+            ? createMigrationGodwitBillGeometry(THREE) : isGoose ? createMigrationGooseBillGeometry(THREE, species.id === 'snow_goose') : new THREE.ConeGeometry(billRadius, billLength, 10),
+            new THREE.MeshStandardMaterial({ color: coloredBill ? 0xffffff : sp3d.bill, roughness: 0.65, vertexColors: coloredBill }));
           beak.name = 'migration-bird-bill';
           if (species.id === 'peregrine') beak.position.copy(head.position);
           else {
@@ -5995,6 +6403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           };
 
           engine.rebuildFlock = function(speciesId, formationMode, season) {
+            engine.studyGuidesOwner = null;
             _f3dStudyStepAckRef.current.pending = null;
             if (typeof engine.updateAnatomy === 'function') engine.updateAnatomy(false, 0, '');
             engine.markedWingPose.clearPose();
@@ -6046,6 +6455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           renderer.domElement.addEventListener('webglcontextlost', function(event) {
             event.preventDefault();
             engine.contextLost = true;
+            engine.studyGuidesOwner = null;
             _f3dStudyStepAckRef.current.pending = null;
             if (typeof engine.updateAnatomy === 'function') engine.updateAnatomy(false, 0, '');
             cancelMigrationStudyPreview();
@@ -6158,13 +6568,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           engineNow.flockRoot.rotation.y = Math.sin(engineNow.time * 0.18) * 0.045;
           engineNow.routeOverlay.visible = live.flightShowRoute !== false && live.flightCamera !== 'study';
           engineNow.updateStudyBackdrop(live.flightCamera === 'study');
-          engineNow.updateAirflow(live.flightShowAirflow);
+          var guidesHidden = migrationStudyGuidesHidden(engineNow, live);
+          if (!guidesHidden) engineNow.studyGuidesOwner = null;
+          engineNow.updateAirflow(live.flightShowAirflow && !guidesHidden);
 
           var desired = engineNow.cameraViews[live.flightCamera] || engineNow.cameraViews.chase;
           if (live.flightCamera === 'study' && engineNow.flyers.length) {
             engineNow.flyers[studyBirdIndex].getWorldPosition(engineNow.studyTarget);
             var yaw = migrNum(live.flightStudyYaw, 35, -180, 180) * Math.PI / 180;
-            var pitch = migrNum(live.flightStudyPitch, 15, -10, 60) * Math.PI / 180;
+            var pitch = migrNum(live.flightStudyPitch, 15, -60, 60) * Math.PI / 180;
             var radius = migrationStudyDistance(engineNow.flyers[studyBirdIndex], engineNow.camera, live.flightStudyZoom);
             engineNow.studyOrbit.set(Math.sin(yaw) * Math.cos(pitch) * radius,
               Math.sin(pitch) * radius, Math.cos(yaw) * Math.cos(pitch) * radius);
@@ -6173,19 +6585,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           } else engineNow.studyTarget.set(0, 0, -5);
           // Cached vectors and time-based damping keep orbit controls smooth
           // on tablets. Reduced motion responds immediately to explicit input.
-          var cameraBlend = reducedMotionRef.current ? 1 : 1 - Math.exp(-4.7 * delta);
+          var halfTurnSnap = live.flightCamera === 'study' && engineNow.studyHalfTurnSource &&
+            engineNow.studyHalfTurnSource === engineNow.flyers[studyBirdIndex].uuid;
+          engineNow.studyHalfTurnSource = null;
+          var cameraBlend = reducedMotionRef.current || halfTurnSnap ? 1 : 1 - Math.exp(-4.7 * delta);
+          var previousStudyDistance = engineNow.camera.position.distanceTo(engineNow.cameraTarget);
+          var targetStudyDistance = desired.distanceTo(engineNow.studyTarget);
+          var studyDirectionDot = (engineNow.camera.position.x - engineNow.cameraTarget.x) * (desired.x - engineNow.studyTarget.x) +
+            (engineNow.camera.position.y - engineNow.cameraTarget.y) * (desired.y - engineNow.studyTarget.y) +
+            (engineNow.camera.position.z - engineNow.cameraTarget.z) * (desired.z - engineNow.studyTarget.z);
+          var opposedStudyView = studyDirectionDot < -0.9999 * previousStudyDistance * targetStudyDistance;
           engineNow.camera.position.lerp(desired, cameraBlend);
           engineNow.cameraTarget.lerp(engineNow.studyTarget, cameraBlend);
+          if (live.flightCamera === 'study') {
+            // Follow the fitted sphere when changing elevation or heading.
+            // Interpolate radius separately so intentional zoom stays smooth.
+            var orbitDistance = previousStudyDistance + (targetStudyDistance - previousStudyDistance) * cameraBlend;
+            engineNow.camera.position.sub(engineNow.cameraTarget);
+            // Opposite directions need an explicit turn; normalized blending
+            // would otherwise return the same direction on every small frame.
+            if (opposedStudyView || engineNow.camera.position.lengthSq() < 0.0000000001) engineNow.camera.position.copy(desired).sub(engineNow.studyTarget);
+            engineNow.camera.position.setLength(orbitDistance).add(engineNow.cameraTarget);
+          }
           engineNow.camera.lookAt(engineNow.cameraTarget);
           if (engineNow.studyLighting) engineNow.studyLighting.update(live.flightCamera === 'study', engineNow.camera, engineNow.studyTarget);
-          engineNow.updateAnatomy(live.flightCamera === 'study' && live.flightShowAnatomy && host.getAttribute('data-flight-ready') === 'true', studyBirdIndex, live.flightStudyRegion,
+          engineNow.updateAnatomy(live.flightCamera === 'study' && live.flightShowAnatomy && !guidesHidden && host.getAttribute('data-flight-ready') === 'true', studyBirdIndex, live.flightStudyRegion,
             live.flightWingtipFollowSourceUuid === engineNow.flyers[studyBirdIndex].uuid ? live.flightWingtipFollowSide : undefined, live.isDark);
           engineNow.speedVectors.updateValues(live.flightShowSpeedVectors, live.flightCamera, speedValues, engineNow.camera);
           if (engineNow.sunGlow) engineNow.sunGlow.quaternion.copy(engineNow.camera.quaternion);
           var followedTipSide = live.flightWingtipFollowSourceUuid === engineNow.flyers[studyBirdIndex].uuid
             ? live.flightWingtipFollowSide : undefined;
-          engineNow.markedWingPose.updatePose(engineNow.flyers[studyBirdIndex], live.flightCamera, live.isDark, live.flightShowWingtipPath, engineNow.camera, engineNow.viewHeight, followedTipSide, engineNow.viewWidth);
-          engineNow.wingtipPath.updatePath(live.flightShowWingtipPath && host.getAttribute('data-flight-ready') === 'true', live.flightCamera, engineNow.flyers[studyBirdIndex],
+          engineNow.markedWingPose.updatePose(engineNow.flyers[studyBirdIndex], guidesHidden ? 'chase' : live.flightCamera, live.isDark, live.flightShowWingtipPath, engineNow.camera, engineNow.viewHeight, followedTipSide, engineNow.viewWidth);
+          engineNow.wingtipPath.updatePath(live.flightShowWingtipPath && !guidesHidden && host.getAttribute('data-flight-ready') === 'true', live.flightCamera, engineNow.flyers[studyBirdIndex],
             engineNow.speciesId, studyBirdIndex, engineNow.camera, live.isDark, engineNow.viewHeight,
             engineNow.time * engineNow.flyers[studyBirdIndex].userData.flapRate +
               engineNow.flyers[studyBirdIndex].userData.phase + engineNow.wingStepPhase, live.flightStudyCyclePosition, followedTipSide, engineNow.viewWidth);
@@ -6337,6 +6768,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return flyer;
       }
 
+      function migrationStudyGuidesHidden(engine, live) {
+        var owner = engine && engine.studyGuidesOwner;
+        var flyer = owner && !engine.contextLost && migrationStudyPhaseContext(engine, live, false);
+        return !!(flyer && owner.sourceUuid === flyer.uuid && owner.speciesId === live.flightSpecies &&
+          owner.individual === live.flightStudyBird && owner.formationMode === live.flightFormation && owner.season === live.flightSeason);
+      }
+
       function migrationStudyWingtipFollowContext(engine, live) {
         var flyer = migrationStudyPhaseContext(engine, live, true);
         return flyer ? { speciesId: live.flightSpecies, individual: live.flightStudyBird,
@@ -6441,6 +6879,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           live && live.flightShowWingtipPath === true && migrationStudyPhaseIntentMatches(selection, engine, live, allowPauseIntent));
       }
 
+      function migrationStudyAdjacentCycleTarget(engine, live, selection, direction) {
+        if ((direction !== -1 && direction !== 1) || !engine || engine.contextLost ||
+            !migrationStudyCyclePositionMatches(selection, engine, live)) return null;
+        return (selection.index + direction + 8) % 8;
+      }
+
       function migrationStudyOppositeCycleTarget(engine, live, selection) {
         if (!engine || engine.contextLost || !migrationStudyCyclePositionMatches(selection, engine, live)) return null;
         return (selection.index + 4) % 8;
@@ -6512,7 +6956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
       function migrationStudyComparisonViewValid(view) {
         return !!(view && Number.isFinite(view.yaw) && view.yaw >= -180 && view.yaw <= 180 &&
-          Number.isFinite(view.pitch) && view.pitch >= -10 && view.pitch <= 60 &&
+          Number.isFinite(view.pitch) && view.pitch >= -60 && view.pitch <= 60 &&
           Number.isFinite(view.zoom) && view.zoom >= 0.65 && view.zoom <= 1.6);
       }
 
@@ -6662,10 +7106,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var resolvedFormation = flightValues.formation;
         var flightWind = flightValues.wind;
         var cameraMode = _liveVals.current.flightCamera;
+        var studyGuidesHidden = migrationStudyGuidesHidden(_f3dEngineRef.current, _liveVals.current);
         var flightPaused = _liveVals.current.flightPaused;
         var followedAnatomySide = migrationStudyFollowedAnatomySide(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection);
         var studyRegions = [
-          { id: 'head', color: '#fbbf24', label: t('stem.migration.anatomy_head', 'Head & bill'), prompt: species.id === 'ruby_hummingbird' ? t('stem.migration.observe_hummingbird_head_prompt', 'Adult male head markings are shown. Use Profile, then orbit toward the bill to locate the red throat patch below the dark face. Describe what changes with your view. Colors are stylized; females and young birds can have pale throats.') : t('stem.migration.observe_head_prompt', 'Use Profile and step the wings. Describe the bill shape and the head position relative to the body. Separate what you can see from what you infer about feeding.') },
+          { id: 'head', color: '#fbbf24', label: t('stem.migration.anatomy_head', 'Head & bill'), prompt: species.id === 'ruby_hummingbird' ? t('stem.migration.observe_hummingbird_head_prompt', 'Adult male head markings are shown. Use Profile, then orbit toward the bill to locate the red throat patch below the dark face. Describe what changes with your view. Colors are stylized; females and young birds can have pale throats.') : species.id === 'bartailed_godwit' ? t('stem.migration.observe_godwit_head_prompt', 'Predict how the long, slightly upturned bill will look from the front and in Profile. Switch between those views, then describe which view makes its curve easier to see. Apparent length changes with the view; the model does not change size. The pink base and dark tip are stylized nonbreeding bill colors, not a cue shared by every bird.') : species.id === 'snow_goose' ? t('stem.migration.observe_snow_goose_head_prompt', 'Pause flight and choose Profile. Predict whether the dark side patch on the pink bill will still be visible after Turn view 180°. Compare both views, then describe the shape and markings in your note. These are stylized adult bill markings.') : species.id === 'canada_goose' ? t('stem.migration.observe_canada_goose_head_prompt', 'Predict which parts of the white cheek and chinstrap will be visible from below. Compare Profile with From below, then orbit toward the bill. Describe what the head hides or reveals. These are stylized Canada Goose markings.') : species.id === 'sandhill_crane' ? t('stem.migration.observe_crane_head_prompt', 'Predict which parts of the red crown and pale cheeks will remain visible from Profile and From above. Compare those views, then describe what the view reveals or hides in your note. Stylized adult markings are shown; young cranes lack this red crown and pale cheek pattern.') : species.id === 'arctic_tern' ? t('stem.migration.observe_tern_head_prompt', 'Predict how the black cap and pale lower face will look from Profile and From above. Compare those views, then describe where the dark marking continues down the back of the head. Stylized breeding-adult markings are shown; changing migration season changes the route, not the plumage.') : t('stem.migration.observe_head_prompt', 'Use Profile and step the wings. Describe the bill shape and the head position relative to the body. Separate what you can see from what you infer about feeding.') },
           { id: 'inner-wing', color: '#67e8f9', label: t('stem.migration.anatomy_inner_wing', 'Inner wing'), prompt: t('stem.migration.observe_inner_wing_prompt', 'Pause and step the wings twice. Describe how the inner and outer wing sections change angle at their joint. What stays connected?') },
           { id: 'primaries', color: '#86efac', label: t('stem.migration.anatomy_primaries', 'Primary feathers'), prompt: t('stem.migration.observe_primaries_prompt', 'Use From above and step the wings. Describe the outer feather spacing and wingtip shape. Choose another bird species and compare what you can see.') },
           { id: 'tail', color: '#f9a8d4', label: t('stem.migration.anatomy_tail', 'Tail'), prompt: t('stem.migration.observe_tail_prompt', 'Compare Profile with From above. Describe the tail shape and its position relative to the body as the wings change. Can you see any tail motion in this stylized model?') }
@@ -6694,9 +7139,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { id: 'ground', label: t('stem.migration.stat_ground_speed', 'Ground speed'), value: speedValues.groundSpeed }
         ];
         var speedVectorSummary = speedVectorLabels.map(function(item) { return item.label + ': ' + item.value + ' ' + t('stem.migration.mph_unit', 'mph'); }).join('. ');
-        var stageLabel = t('stem.migration.aria_stage_intro', 'Interactive 3D migration flight for') + ' ' + species.name + '. ' + formationLabel + ', ' + groundSpeed + ' ' + t('stem.migration.mph_ground_speed', 'miles per hour ground speed') + ', ' + t('stem.migration.traveling_word', 'traveling') + ' ' + direction + '. ' + t('stem.migration.aria_stage_orbit_keys', 'Press 1 for chase, 2 for aerial, 3 for side, 4 for study camera, or Space to pause. In Study, use arrow keys to orbit and plus or minus to zoom.');
-
+        var sceneGuideId = formationControlId + '-scene';
+        var cameraName = cameraMode === 'study' ? t('stem.migration.cam_study', 'Study')
+          : cameraMode === 'aerial' ? t('stem.migration.cam_aerial', 'Aerial')
+          : cameraMode === 'side' ? t('stem.migration.cam_side', 'Side') : t('stem.migration.cam_chase', 'Chase');
+        var scenePlayback = motionReduced
+          ? t('stem.migration.scene_playback_reduced', 'Playback stays still while Reduce motion is enabled.')
+          : flightPaused ? t('stem.migration.scene_playback_paused', 'Playback paused.')
+          : t('stem.migration.scene_playback_running', 'Playback running.');
+        function sceneAngleText(value) { return t('stem.migration.scene_angle_value', 'Angle {value} degrees.').replace('{value}', value); }
+        function sceneElevationText(value) { return t('stem.migration.scene_elevation_value', 'Elevation {value} degrees.').replace('{value}', value); }
+        function sceneZoomText(value) { return t('stem.migration.scene_zoom_value', 'Zoom {value} percent.').replace('{value}', Math.round(value * 100)); }
+        var sceneSummary = t('stem.migration.scene_camera_selected', 'Selected camera: {camera}.').replace('{camera}', cameraName) + ' ' + scenePlayback;
+        if (cameraMode === 'study') sceneSummary += ' ' +
+          t('stem.migration.scene_individual_selected', 'Selected individual {number} of {count}.').replace('{number}', studyView.bird + 1).replace('{count}', studyBirdCount) + ' ' +
+          sceneAngleText(studyView.yaw) + ' ' + sceneElevationText(studyView.pitch) + ' ' + sceneZoomText(studyView.zoom) + ' ' +
+          t('stem.migration.scene_observation_focus', 'Observation focus: {region}.').replace('{region}', species.id === 'monarch'
+            ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : studyRegion.label);
+        var sceneRoute = t('stem.migration.scene_selected_route', 'Selected route: {route}.').replace('{route}', direction);
+        var sceneHelp = t('stem.migration.scene_camera_shortcuts', 'Camera shortcuts: 1 Chase, 2 Aerial, 3 Side, 4 Study.') + ' ' +
+          t('stem.migration.scene_keyboard_help', 'Focus the 3D scene first. Space pauses or resumes playback. In Study, arrow keys change angle and elevation; plus and minus change zoom. The controls beside the scene offer the same actions.');
+        var stageLabel = t('stem.migration.aria_stage_intro', 'Interactive 3D migration flight for') + ' ' + species.name + '. ' + formationLabel + ', ' +
+          groundSpeed + ' ' + t('stem.migration.mph_ground_speed', 'miles per hour ground speed') + '. ' + sceneRoute;
         if (showSpeedVectors && cameraMode !== 'study') stageLabel += ' ' + speedVectorSummary + '.';
+
+        function reportSceneAction(message) {
+          var writer = _sceneFeedbackRef.current;
+          if (writer && typeof writer.report === 'function') writer.report(message);
+        }
+
+        // Resolve only the committed scene belonging to the activated control.
+        var focusSceneControl = { node: null }, fullscreenSceneControl = { node: null };
+        function attachSceneControl(control, node) {
+          if (!node || (node._migrationSceneControl === control && control.node === node)) return;
+          control.node = node; node._migrationSceneControl = control;
+        }
+        function currentSceneControl(control, event) {
+          var action = control.node, stage = _f3dHostRef.current;
+          var deck = stage && stage.closest('.migration-flight-deck');
+          if (!action || !event || event.currentTarget !== action || !action.isConnected ||
+              action._migrationSceneControl !== control || action.disabled ||
+              (action.matches && action.matches(':disabled')) || !stage || !stage.isConnected ||
+              !deck || action.closest('.migration-flight-deck') !== deck || !deck.contains(stage) ||
+              _liveVals.current.tab !== 'flight3d' || !exposedRemovalTarget(action) || !exposedRemovalTarget(stage)) return null;
+          return { action: action, stage: stage, deck: deck };
+        }
+        function focusOwnScene(event) {
+          var owner = currentSceneControl(focusSceneControl, event);
+          if (!owner || !fullscreenAllowsFocus(owner.stage)) return;
+          owner.stage.focus({ preventScroll: true });
+          if (document.activeElement === owner.stage) reportSceneAction(t('stem.migration.scene_focused_feedback', '3D scene focused. Use the camera keyboard instructions or the controls beside the scene.'));
+        }
+        function toggleOwnSceneFullscreen(event) {
+          var owner = currentSceneControl(fullscreenSceneControl, event);
+          if (!owner || !fullscreenAllowsFocus(owner.action)) return;
+          var deck = owner.deck, nativeRoot = document.fullscreenElement || document.webkitFullscreenElement;
+          var customActive = deck.getAttribute('data-allo-fullscreen-active') === 'true';
+          var hook = typeof window.__alloStemFS === 'function' ? window.__alloStemFS : null;
+          var exiting = nativeRoot === deck || customActive;
+          var method = hook || (exiting ? document.exitFullscreen || document.webkitExitFullscreen : deck.requestFullscreen || deck.webkitRequestFullscreen);
+          if (_f3dFullscreenRequestRef.current) _f3dFullscreenRequestRef.current.cancel();
+          // Do not exit another component's fullscreen root, including an ancestor.
+          if ((nativeRoot && nativeRoot !== deck) || (!hook && customActive) || typeof method !== 'function') {
+            reportSceneAction(t('stem.migration.fullscreen_unavailable_feedback', 'Fullscreen is unavailable. Continue using the 3D view on this page.'));
+            return;
+          }
+          var active = true, timer = null, observer = null;
+          var request = {
+            current: function() {
+              var current = currentSceneControl(fullscreenSceneControl, { currentTarget: owner.action });
+              return active && _f3dFullscreenRequestRef.current === request && current && current.deck === deck && current.stage === owner.stage;
+            },
+            cancel: function() {
+              if (!active) return;
+              active = false;
+              if (timer !== null) window.clearTimeout(timer);
+              if (observer) observer.disconnect();
+              document.removeEventListener('fullscreenchange', changed);
+              document.removeEventListener('webkitfullscreenchange', changed);
+              document.removeEventListener('fullscreenerror', failed);
+              document.removeEventListener('webkitfullscreenerror', failed);
+              if (_f3dFullscreenRequestRef.current === request) _f3dFullscreenRequestRef.current = null;
+            }
+          };
+          function finish(outcome) {
+            if (!request.current()) { request.cancel(); return true; }
+            var currentNative = document.fullscreenElement || document.webkitFullscreenElement;
+            var currentCustom = deck.getAttribute('data-allo-fullscreen-active') === 'true';
+            var verified = exiting ? !currentNative && !currentCustom : currentNative === deck || (!currentNative && currentCustom);
+            var message = verified
+              ? exiting ? t('stem.migration.fullscreen_left_feedback', '3D flight deck left fullscreen.') : t('stem.migration.fullscreen_entered_feedback', '3D flight deck entered fullscreen.')
+              : outcome === 'settled' || outcome === 'rejected'
+                ? t('stem.migration.fullscreen_failed_feedback', 'Fullscreen could not be changed. Continue using the 3D view on this page.')
+                : outcome === 'timeout'
+                  ? t('stem.migration.fullscreen_unconfirmed_feedback', 'Fullscreen change has not been confirmed. Continue using the 3D view on this page.') : '';
+            if (!message) return false;
+            request.cancel();
+            reportSceneAction(message);
+            return true;
+          }
+          function changed() { finish('changed'); }
+          function failed(event) { if (!event || event.target === deck) finish('rejected'); }
+          _f3dFullscreenRequestRef.current = request;
+          document.addEventListener('fullscreenchange', changed);
+          document.addEventListener('webkitfullscreenchange', changed);
+          document.addEventListener('fullscreenerror', failed);
+          document.addEventListener('webkitfullscreenerror', failed);
+          if (typeof MutationObserver === 'function') {
+            observer = new MutationObserver(changed);
+            observer.observe(deck, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+          }
+          timer = window.setTimeout(function() { finish('timeout'); }, 2000);
+          try {
+            var pending = hook ? method(deck) : method.call(exiting ? document : deck);
+            if (pending && typeof pending.then === 'function') pending.then(function() { finish('settled'); }, function() { finish('rejected'); });
+            if (finish('changed')) return;
+            reportSceneAction(t('stem.migration.fullscreen_pending_feedback', 'Changing fullscreen view. You can keep using the 3D controls.'));
+          } catch (ignore) { finish('rejected'); }
+        }
 
         function chooseCamera(next) {
           endStudyDrag(null, false);
@@ -6706,7 +7266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             studyWingtipFollowState[1](null);
           }
           upd('flightCamera', next);
-          if (announceToSR) announceToSR(t('stem.migration.camera_selected', 'Camera selected') + ': ' + (next === 'study' ? t('stem.migration.cam_study', 'Study') : next === 'aerial' ? t('stem.migration.cam_aerial', 'Aerial') : next === 'side' ? t('stem.migration.cam_side', 'Side') : t('stem.migration.cam_chase', 'Chase')));
+          reportSceneAction(t('stem.migration.camera_selected', 'Camera selected') + ': ' + (next === 'study' ? t('stem.migration.cam_study', 'Study') : next === 'aerial' ? t('stem.migration.cam_aerial', 'Aerial') : next === 'side' ? t('stem.migration.cam_side', 'Side') : t('stem.migration.cam_chase', 'Chase')));
         }
 
         function toggleFlightPause() {
@@ -6718,7 +7278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           _liveVals.current.flightStudyCyclePosition = undefined;
           _liveVals.current.flightPaused = !wasPaused;
           upd('flightPaused', !wasPaused);
-          if (announceToSR) announceToSR(wasPaused && motionReduced ? t('stem.migration.motion_reduced_resume', 'Flight stays still while Reduce motion is enabled. Study camera controls and wingbeat stepping remain available.') : wasPaused ? t('stem.migration.flight_resumed_announcement', '3D migration resumed') : t('stem.migration.flight_paused_announcement', '3D migration paused'));
+          reportSceneAction(motionReduced ? t('stem.migration.motion_reduced_resume', 'Flight stays still while Reduce motion is enabled. Study camera controls and wingbeat stepping remain available.') : wasPaused ? t('stem.migration.flight_resumed_announcement', '3D migration resumed') : t('stem.migration.flight_paused_announcement', '3D migration paused'));
         }
 
         function endStudyDrag(event, commit) {
@@ -6731,7 +7291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var isTap = commit && !drag.moved && sameView && event &&
             Math.abs(event.clientX - drag.x) + Math.abs(event.clientY - drag.y) < 4;
           var pickEngine = _f3dEngineRef.current;
-          var pickedRegion = isTap && _liveVals.current.flightShowAnatomy && pickEngine && pickEngine.speciesId === drag.speciesId
+          var pickedRegion = isTap && _liveVals.current.flightShowAnatomy && pickEngine && !migrationStudyGuidesHidden(pickEngine, _liveVals.current) && pickEngine.speciesId === drag.speciesId
             ? migrationAnatomyAtPoint(pickEngine, event.clientX, event.clientY) : '';
           if (sameView) {
             _liveVals.current.flightStudyYaw = save ? drag.yaw : drag.startYaw;
@@ -6773,7 +7333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           drag.moved = true;
           var yaw = ((drag.startYaw - dx * 0.4 + 180) % 360 + 360) % 360 - 180;
           drag.yaw = Math.max(-180, Math.min(180, Math.round(yaw / 5) * 5));
-          drag.pitch = Math.max(-10, Math.min(60, Math.round((drag.startPitch + dy * 0.3) / 5) * 5));
+          drag.pitch = Math.max(-60, Math.min(60, Math.round((drag.startPitch + dy * 0.3) / 5) * 5));
           _liveVals.current.flightStudyYaw = drag.yaw;
           _liveVals.current.flightStudyPitch = drag.pitch;
           event.preventDefault();
@@ -7023,6 +7583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         function renderStudyObservation() {
           if (cameraMode !== 'study') return null;
+          var observationRemoval = { node: null, used: false };
           var wholeInsect = species.id === 'monarch';
           var partLabel = wholeInsect ? t('stem.migration.observe_monarch_label', 'Whole-insect wing motion') : studyRegion.label;
           var draftChanged = !!studySavedObservation && studyObservationDraft.trim() !== studySavedObservation.note;
@@ -7032,7 +7593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             marked.individual === studyView.bird && marked.formationMode === formationMode && marked.season === season;
           var pathVisible = d.flightShowWingtipPath === true;
           var wingRegion = wholeInsect || studyRegion.id === 'inner-wing' || studyRegion.id === 'primaries';
-          var motionEvidence = wingRegion && (pathVisible || markedVisible)
+          var motionEvidence = studyGuidesHidden ? 'clean-view' : wingRegion && (pathVisible || markedVisible)
             ? pathVisible && markedVisible ? 'path-and-pose' : pathVisible ? 'path' : 'pose' : '';
           return h('details', {
             className: 'migration-study-observation', 'data-study-observation': '',
@@ -7047,7 +7608,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ? t('stem.migration.observe_monarch_prompt', 'Use Profile and From above. Step through the illustrative wing cycle and describe how the patterned wings change position relative to the insect body. These are butterfly wings; bird feather anatomy and drafting do not apply.')
                 : studyRegion.prompt),
               motionEvidence && h('p', { id: 'migration-study-motion-evidence-prompt', 'data-study-motion-evidence': motionEvidence },
-                species.id !== 'monarch' && d.flightShowAnatomy === true && wingRegion && (followedAnatomySide === 0 || followedAnatomySide === 1)
+                motionEvidence === 'clean-view'
+                  ? t('stem.migration.motion_evidence_clean_view', 'Predict the outline, then inspect without guides. Keep the view fixed and describe the shape you see. Restore the guides to check your prediction; note what helped you confirm or revise it. These are illustrative models, not measurements.')
+                  : species.id !== 'monarch' && d.flightShowAnatomy === true && wingRegion && (followedAnatomySide === 0 || followedAnatomySide === 1)
                   ? t('stem.migration.motion_evidence_followed_anatomy', 'Predict which segment will appear to move more. Keep the camera fixed, compare cycle positions 3 and 7, and inspect Inner wing (2) and Primary feathers (3). Name the followed left or right side and the cycle positions in your note; describe what stays connected and what changes angle. This illustrative model does not establish a biological cause.')
                   : (_liveVals.current.flightWingtipFollowSide === 0 || _liveVals.current.flightWingtipFollowSide === 1)
                   ? t('stem.migration.motion_evidence_follow', 'Predict where the followed tip will appear on screen. Hold the wing pose still, compare Front with From above, and describe how the same individual’s left or right tip changes screen position. Distinguish anatomical side from screen side; this illustrative model does not establish a biological cause.')
@@ -7160,7 +7723,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('label', null, t('stem.migration.study_observation_note', 'My observation'),
                 h('textarea', {
                   id: 'migration-study-observation-note', 'data-study-observation-key': studyObservationKey,
-                  'aria-label': t('stem.migration.study_observation_aria', 'Shape and motion observation'),
                   'aria-describedby': 'migration-study-observation-prompt migration-study-observation-caveat migration-study-current-context' + (motionEvidence ? ' migration-study-motion-evidence-prompt' : ''),
                   rows: 3, maxLength: 1000, value: studyObservationDraft,
                   onChange: function(event) {
@@ -7183,17 +7745,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   next.feedback = { key: studyObservationKey, action: 'recorded' };
                   upd('flightStudyObservations', next);
                 } }, t('stem.migration.record_study_observation', 'Record observation')),
-                studySavedObservation && h('button', { type: 'button', onClick: function() {
-                  var next = migrReadStudyObservations(d.flightStudyObservations);
-                  if (!Object.prototype.hasOwnProperty.call(next.drafts, studyObservationKey)) next.drafts[studyObservationKey] = studySavedObservation.note;
-                  delete next.records[studyObservationKey];
-                  next.feedback = { key: studyObservationKey, action: 'removed' };
-                  upd('flightStudyObservations', next);
-                  setTimeout(function() {
-                    var observationInput = document.querySelector('[data-study-observation] textarea');
-                    if (observationInput) observationInput.focus();
-                  }, 0);
-                } }, t('stem.migration.remove_study_observation', 'Remove recorded observation'))
+                studySavedObservation && h('button', {
+                  type: 'button', 'data-study-remove': '',
+                  ref: function(node) { attachRemovalControl(observationRemoval, node); },
+                  onClick: function(event) {
+                    if (!beginRemovalControl(observationRemoval, event)) return;
+                    var panel = observationRemoval.node && observationRemoval.node.closest('[data-study-observation]');
+                    focusBeforeRemoval(observationRemoval, panel, panel && panel.querySelector('[data-study-observation-key]'));
+                    // A focus listener may synchronously replace this view.
+                    if (!currentRemovalControl(observationRemoval, event)) return;
+                    var next = migrReadStudyObservations(d.flightStudyObservations);
+                    if (!Object.prototype.hasOwnProperty.call(next.drafts, studyObservationKey)) next.drafts[studyObservationKey] = studySavedObservation.note;
+                    delete next.records[studyObservationKey];
+                    next.feedback = { key: studyObservationKey, action: 'removed' };
+                    upd('flightStudyObservations', next);
+                  }
+                }, t('stem.migration.remove_study_observation', 'Remove recorded observation'))
               ),
               h('p', { role: 'status', 'data-study-observation-status': '' }, feedback === 'recorded'
                 ? t('stem.migration.study_observation_recorded', 'Observation recorded. Your words count as evidence; they are not graded.')
@@ -7234,13 +7801,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             if (check.status === 'waiting' && check.waitingForView) return t('stem.migration.comparison_check_view_wait', 'Wait for the marked view settings to finish updating, then check again.');
             if (check.status === 'waiting') return t('stem.migration.comparison_check_wait', 'Wait for the wings to finish updating, then check again.');
             if (check.kind === 'view-only') return t('stem.migration.comparison_check_view_only', 'Selected view settings changed; the illustrative wing-cycle position still matches the mark. Compare how the same pose appears.');
-            if (check.kind === 'wing-only') return t('stem.migration.comparison_check_wing_only', 'The illustrative wing-cycle position changed; selected view settings still match the mark. Describe a visible difference against the outline.');
+            if (check.kind === 'wing-only') return migrationStudyGuidesHidden(_f3dEngineRef.current, _liveVals.current)
+              ? t('stem.migration.comparison_check_wing_only_hidden', 'The illustrative wing-cycle position changed; selected view settings still match the mark. Restore the guides to compare with the marked outline.')
+              : t('stem.migration.comparison_check_wing_only', 'The illustrative wing-cycle position changed; selected view settings still match the mark. Describe a visible difference against the outline.');
             if (check.kind === 'both') return t('stem.migration.comparison_check_both', 'Both selected view settings and illustrative wing-cycle position changed. Return the wings to hold the pose fixed, or choose Restore marked view settings to hold the view settings fixed, then check again.');
             return t('stem.migration.comparison_check_same', 'Selected view settings and illustrative wing-cycle position match the mark. Change one, then check again.');
           }
           return h('div', { id: 'migration-marked-comparison-controls', className: 'migration-marked-pose', 'data-study-marked-pose': 'true' },
             h('p', { className: 'migration-study-help', id: 'migration-marked-pose-help' },
-              t('stem.migration.marked_pose_intro', 'Predict what will change, mark a wing pose, then step away or change the view. Check what changed compares selected view settings with the illustrative wing-cycle position. Return the wings or choose Restore marked view settings to hold one fixed. Describe your evidence in the existing notes. With Show wingtip path on, diamonds keep the marked tip positions visible, including when the live tips overlap them. Straight links appear only where tip positions differ; they do not show motion.')),
+              studyGuidesHidden ? t('stem.migration.marked_pose_intro_hidden', 'Mark a wing pose, step or change the view, and predict what differs. Check what changed compares view settings and wing-cycle position while guides are hidden. Restore the guides to compare the marked outline with the live wings. With Show wingtip path selected, you can also compare tip positions.')
+                : t('stem.migration.marked_pose_intro', 'Predict what will change, mark a wing pose, then step away or change the view. Check what changed compares selected view settings with the illustrative wing-cycle position. Return the wings or choose Restore marked view settings to hold one fixed. Describe your evidence in the existing notes. With Show wingtip path on, diamonds keep the marked tip positions visible, including when the live tips overlap them. Straight links appear only where tip positions differ; they do not show motion.')),
             h('div', { className: 'migration-study-actions' },
               h('button', {
                 type: 'button', 'data-marked-pose-action': 'mark', 'aria-describedby': 'migration-marked-pose-help migration-marked-pose-status',
@@ -7291,7 +7861,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   _f3dStudyCyclePauseRef.current = intent;
                   studyMarkedPoseState[1](Object.assign({}, marked, { returnIntent: intent, comparisonCheck: null }));
                   upd('flightPaused', true);
-                  if (announceToSR) announceToSR(t('stem.migration.marked_return_selected', 'Marked wing pose selected. Compare the live wings with the dashed outline from another view.'));
+                  if (announceToSR) announceToSR(migrationStudyGuidesHidden(_f3dEngineRef.current, _liveVals.current)
+                    ? t('stem.migration.marked_return_selected_hidden', 'Marked wing pose selected. Guides are temporarily hidden; restore them to compare with the marked outline.')
+                    : t('stem.migration.marked_return_selected', 'Marked wing pose selected. Compare the live wings with the dashed outline from another view.'));
                 }
               }, t('stem.migration.return_marked_wing_pose', 'Return wings to marked pose')),
               h('button', {
@@ -7488,7 +8060,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return h(MigrationStudyContextReadout, { React: React,
             getHost: function() { return _f3dHostRef.current; },
             readContext: function() {
-              return migrationStudyCurrentContext(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
+              var context = migrationStudyCurrentContext(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
+              return context && Object.assign({}, context, { guidesHidden: migrationStudyGuidesHidden(_f3dEngineRef.current, _liveVals.current) });
             },
             renderContext: function(context) {
               var partIndex = context ? studyRegions.findIndex(function(part) { return part.id === context.region; }) : -1;
@@ -7497,6 +8070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 role: 'group', 'aria-label': d.flightShowWingtipPath === true || d.flightStudyObservationOpen === true
                   ? t('stem.migration.scene_study_actions', 'Scene study actions') : t('stem.migration.scene_study_context', 'Study scene context') },
                 h('div', { className: 'migration-study-scene-context', 'data-scene-study-context': context ? 'ready' : 'unavailable' },
+                  h('span', { 'data-scene-study-zoom': studyView.zoom }, t('stem.migration.study_fit_zoom', 'Zoom') + ': ' + Math.round(studyView.zoom * 100) + '% ' + t('stem.migration.study_fit_zoom_unit', 'of fitted view')),
                   h('strong', { 'data-scene-study-species': species.id }, species.emoji + ' ' + species.name),
                   h('span', { 'data-scene-study-individual': context ? context.individual : studyView.bird },
                     (context ? context.individual : studyView.bird) === 0 && resolvedFormation === 'v'
@@ -7504,7 +8078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       : t('stem.migration.individual_word', 'Individual') + ' ' + ((context ? context.individual : studyView.bird) + 1) + ' \u00b7 ' + t('stem.migration.isolated_for_study', 'isolated for study')),
                   context ? h(React.Fragment, null,
                     h('strong', { 'data-scene-study-region': context.region }, part
-                      ? (_liveVals.current.flightShowAnatomy === true ? (partIndex + 1) + ' \u00b7 ' + part.label : t('stem.migration.current_region', 'Region') + ': ' + part.label)
+                      ? (_liveVals.current.flightShowAnatomy === true && !context.guidesHidden ? (partIndex + 1) + ' \u00b7 ' + part.label : t('stem.migration.current_region', 'Region') + ': ' + part.label)
                       : t('stem.migration.observe_monarch_label', 'Whole-insect wing motion')),
                     h('span', { 'data-scene-study-cycle': context.cyclePosition === null ? 'none' : String(context.cyclePosition),
                       'data-study-stage-cycle-position': context.cyclePosition === null ? undefined : context.cyclePosition },
@@ -7515,9 +8089,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       context.followedSide === 0 ? t('stem.migration.current_follow_left', 'Followed wingtip: individual’s left.')
                         : context.followedSide === 1 ? t('stem.migration.current_follow_right', 'Followed wingtip: individual’s right.')
                         : t('stem.migration.current_follow_none', 'No wingtip followed.'))
-                  ) : h('span', null, t('stem.migration.scene_study_wait', 'Study selection is unavailable until the scene is ready.'))
+                  ) : h('span', null, t('stem.migration.scene_study_wait', 'Study selection is unavailable until the scene is ready.')),
+                  h('label', { className: 'migration-study-clean-toggle' },
+                    h('input', { type: 'checkbox', 'data-study-guides-hidden': '', checked: !!(context && context.guidesHidden), disabled: !context,
+                      'aria-label': t('stem.migration.study_clean_view', 'Inspect without guides'),
+                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-clean-help',
+                      onChange: function(event) {
+                        var host = _f3dHostRef.current, input = event && event.currentTarget;
+                        var engine = _f3dEngineRef.current, live = _liveVals.current;
+                        var flyer = engine && !engine.contextLost && migrationStudyPhaseContext(engine, live, false);
+                        if (!host || !host.isConnected || !input || !input.isConnected || input.disabled || !flyer ||
+                            engine.host !== host || !host.nextElementSibling || !host.nextElementSibling.contains(input)) return;
+                        endStudyDrag(null, false);
+                        engine.studyGuidesOwner = input.checked ? { sourceUuid: flyer.uuid, speciesId: live.flightSpecies,
+                          individual: live.flightStudyBird, formationMode: live.flightFormation, season: live.flightSeason } : null;
+                        studyGuideRevision[1](function(revision) { return revision + 1; });
+                      }
+                    }),
+                    h('span', null, t('stem.migration.study_clean_view', 'Inspect without guides'))
+                  ),
+                  context && context.guidesHidden && h('span', { role: 'status', 'data-study-guides-status': '' },
+                    t('stem.migration.study_guides_hidden', 'Guides temporarily hidden.'))
                 ),
-                (d.flightShowWingtipPath === true || (d.flightStudyObservationOpen === true && context)) && h('div', { className: 'migration-study-scene-buttons' },
+                h('div', { className: 'migration-study-scene-buttons' },
+                  h('button', { type: 'button', 'data-scene-study-action': 'fit', disabled: !context,
+                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-fit-help',
+                    onClick: function(event) {
+                      var host = _f3dHostRef.current, button = event && event.currentTarget;
+                      var live = _liveVals.current, engine = _f3dEngineRef.current;
+                      // A retained control may not act on another deck or a removed scene.
+                      if (!host || !host.isConnected || !button || !button.isConnected ||
+                          !host.nextElementSibling || !host.nextElementSibling.contains(button) ||
+                          !migrationStudyCurrentContext(engine, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection)) return;
+                      endStudyDrag(null, false);
+                      clearMigrationMarkedViewRestoreIntent();
+                      if (live.flightStudyZoom !== 1) {
+                        live.flightStudyZoom = 1;
+                        upd('flightStudyZoom', 1);
+                      }
+                      reportSceneAction(t('stem.migration.study_fit_done', 'Whole model fitted. Study angle and wing pose are unchanged.'));
+                    }
+                  }, t('stem.migration.study_fit_model', 'Fit whole model')),
+                  h('button', { type: 'button', 'data-scene-study-action': 'half-turn', disabled: !context,
+                    'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-turn-help',
+                    onClick: function(event) {
+                      var host = _f3dHostRef.current, button = event && event.currentTarget;
+                      var live = _liveVals.current;
+                      if (!host || !host.isConnected || !button || !button.isConnected ||
+                          !host.nextElementSibling || !host.nextElementSibling.contains(button) ||
+                          !migrationStudyCurrentContext(_f3dEngineRef.current, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection)) return;
+                      endStudyDrag(null, false);
+                      clearMigrationMarkedViewRestoreIntent();
+                      var yaw = ((live.flightStudyYaw + 360) % 360 + 360) % 360 - 180;
+                      live.flightStudyYaw = yaw;
+                      // Snap this explicit half-turn on the next rendered frame.
+                      // A Cartesian blend would travel through the model.
+                      var engine = _f3dEngineRef.current;
+                      var sourceUuid = engine.flyers[live.flightStudyBird].uuid;
+                      var previousTurn = engine.studyHalfTurnIntent;
+                      var observedYaw = Math.round(migrNum(d.flightStudyYaw, 35, -180, 180) / 5) * 5;
+                      var angles = previousTurn && previousTurn.sourceUuid === sourceUuid ? previousTurn.angles.slice() : [observedYaw];
+                      if (angles.indexOf(yaw) === -1) angles.push(yaw);
+                      engine.studyHalfTurnIntent = { sourceUuid: sourceUuid, yaw: yaw, angles: angles };
+                      engine.studyHalfTurnSource = sourceUuid;
+                      upd('flightStudyYaw', yaw, true);
+                      reportSceneAction(t('stem.migration.study_half_turn_done', 'View turned 180 degrees. Elevation and zoom are unchanged.') + ' ' + t('stem.migration.study_angle', 'Study angle') + ': ' + yaw + '°.');
+                    }
+                  }, t('stem.migration.study_half_turn', 'Turn view 180°')),
+                  d.flightShowWingtipPath === true && [
+                    { action: 'previous', direction: -1, label: t('stem.migration.study_cycle_previous', 'Previous cycle position') },
+                    { action: 'next', direction: 1, label: t('stem.migration.study_cycle_next', 'Next cycle position') }
+                  ].map(function(move) {
+                    return h('button', { key: move.action, type: 'button', 'data-scene-study-action': move.action,
+                      disabled: !context || context.cyclePosition === null,
+                      'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-adjacent-help',
+                      onClick: function(event) {
+                        var host = _f3dHostRef.current, button = event && event.currentTarget;
+                        var engine = _f3dEngineRef.current, live = _liveVals.current;
+                        if (!host || !host.isConnected || !button || !button.isConnected ||
+                            !host.nextElementSibling || !host.nextElementSibling.contains(button) ||
+                            !migrationStudyCurrentContext(engine, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection)) return;
+                        // Resolve from the latest explicit selection, including rapid clicks
+                        // while the host is still acknowledging the pause request.
+                        var target = migrationStudyAdjacentCycleTarget(engine, live, _f3dStudyCyclePauseRef.current, move.direction);
+                        if (target === null || !commitStudyCyclePosition(target)) {
+                          reportSceneAction(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
+                          return;
+                        }
+                        reportSceneAction(t('stem.migration.study_adjacent_selected', 'Selected cycle position') + ' ' + (target + 1) + '/8. ' +
+                          t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
+                      }
+                    }, move.label);
+                  }),
                   d.flightShowWingtipPath === true && h('button', { type: 'button',
                     'data-scene-study-action': 'opposite', disabled: !context || context.cyclePosition === null,
                     'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-study-cycle-help',
@@ -7526,14 +8189,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       var current = migrationStudyCurrentContext(engine, live, _f3dStudyCyclePauseRef.current, studyWingtipFollowSelection);
                       var target = current ? migrationStudyOppositeCycleTarget(engine, live, _f3dStudyCyclePauseRef.current) : null;
                       if (target === null || !commitStudyCyclePosition(target)) {
-                        if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
+                        reportSceneAction(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
                         return;
                       }
-                      if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
+                      reportSceneAction(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
                     }
                   }, t('stem.migration.scene_compare_opposite', 'Compare opposite wings')),
                   renderStudySceneNoteAction(context)
-                )
+                ),
+                h('p', { id: 'migration-study-clean-help', className: 'migration-study-fit-help' },
+                  t('stem.migration.study_clean_help', 'Predict the outline, hide the guides, then restore them to check. Your view, wing pose, layer choices and notes stay in place.')),
+                h('p', { id: 'migration-study-fit-help', className: 'migration-study-fit-help' },
+                  t('stem.migration.study_fit_help', '100% fits the whole model at this angle. Fitted models do not share a physical size scale.')),
+                h('p', { id: 'migration-study-turn-help', className: 'migration-study-fit-help' },
+                  t('stem.migration.study_turn_help', 'Pause and choose Profile to compare both sides. Turn again to return; elevation, zoom and your notes stay unchanged.')),
+                d.flightShowWingtipPath === true && h('p', { id: 'migration-study-adjacent-help', className: 'migration-study-fit-help' },
+                  t('stem.migration.study_adjacent_help', 'Choose a numbered position below. Predict how the wingtip will move, then step forward and back with the view fixed. Equal cycle intervals can look uneven in this view; these are illustrative positions, not measured flight times.'))
               );
             }
           });
@@ -7544,6 +8215,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var followContext = migrationStudyWingtipFollowContext(_f3dEngineRef.current, _liveVals.current) ||
             { speciesId: species.id, individual: studyView.bird, formationMode: formationMode, season: season };
           function followMessage(side) {
+            if (migrationStudyGuidesHidden(_f3dEngineRef.current, _liveVals.current)) return side === 0
+              ? t('stem.migration.wingtip_follow_left_hidden', 'Individual’s left wingtip selected. Guides are temporarily hidden.')
+              : side === 1 ? t('stem.migration.wingtip_follow_right_hidden', 'Individual’s right wingtip selected. Guides are temporarily hidden.')
+              : t('stem.migration.wingtip_follow_both_hidden', 'Both wingtip guides selected. Guides are temporarily hidden.');
             return side === 0 ? t('stem.migration.wingtip_follow_left', 'Following the individual’s left wingtip guides.')
               : side === 1 ? t('stem.migration.wingtip_follow_right', 'Following the individual’s right wingtip guides.')
               : t('stem.migration.wingtip_follow_both', 'Showing both wingtip guides.');
@@ -7560,17 +8235,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'migration-study-presets', role: 'group', 'aria-label': t('stem.migration.study_viewpoints', 'Study viewpoints') }, [
               { id: 'front', yaw: 180, pitch: 10, label: t('stem.migration.study_front', 'Front') },
               { id: 'profile', yaw: 90, pitch: 10, label: t('stem.migration.study_profile', 'Profile') },
-              { id: 'above', yaw: 0, pitch: 60, label: t('stem.migration.study_above', 'From above') }
+              { id: 'above', yaw: 0, pitch: 60, label: t('stem.migration.study_above', 'From above') },
+              { id: 'below', yaw: 0, pitch: -60, label: t('stem.migration.study_below', 'From below') }
             ].map(function(viewpoint) {
-              return h('button', { key: viewpoint.id, type: 'button', 'data-study-viewpoint': viewpoint.id, 'aria-pressed': studyView.yaw === viewpoint.yaw && studyView.pitch === viewpoint.pitch ? 'true' : 'false', onClick: function() {
+              return h('button', { key: viewpoint.id, type: 'button', 'data-study-viewpoint': viewpoint.id, 'aria-describedby': 'migration-study-surface-help', 'aria-pressed': studyView.yaw === viewpoint.yaw && studyView.pitch === viewpoint.pitch ? 'true' : 'false', onClick: function() {
+                endStudyDrag(null, false);
                 clearMigrationMarkedViewRestoreIntent();
                 updMulti({ flightStudyYaw: viewpoint.yaw, flightStudyPitch: viewpoint.pitch });
-                if (announceToSR) announceToSR(t('stem.migration.study_viewpoint_selected', 'Study viewpoint') + ': ' + viewpoint.label);
+                reportSceneAction(t('stem.migration.study_viewpoint_selected', 'Study viewpoint') + ': ' + viewpoint.label + '. ' + sceneAngleText(viewpoint.yaw) + ' ' + sceneElevationText(viewpoint.pitch));
               } }, viewpoint.label);
             })),
+            h('p', { id: 'migration-study-surface-help', className: 'migration-study-help' },
+              t('stem.migration.study_surface_activity', 'Predict which surfaces will become visible. Pause flight or choose a cycle position, compare From above with From below, and keep zoom fixed. Describe what the view reveals or hides; apparent shape changes do not mean the model changed.')),
             [
               { key: 'flightStudyYaw', label: t('stem.migration.study_angle', 'Study angle'), aria: t('stem.migration.study_angle_aria', 'Study angle in degrees'), min: -180, max: 180, step: 5, value: studyView.yaw, suffix: '\u00b0' },
-              { key: 'flightStudyPitch', label: t('stem.migration.study_elevation', 'Study elevation'), aria: t('stem.migration.study_elevation_aria', 'Study elevation in degrees'), min: -10, max: 60, step: 5, value: studyView.pitch, suffix: '\u00b0' },
+              { key: 'flightStudyPitch', label: t('stem.migration.study_elevation', 'Study elevation'), aria: t('stem.migration.study_elevation_aria', 'Study elevation in degrees'), min: -60, max: 60, step: 5, value: studyView.pitch, suffix: '\u00b0' },
               { key: 'flightStudyZoom', label: t('stem.migration.study_zoom', 'Study zoom'), aria: t('stem.migration.study_zoom_aria', 'Study zoom percent'), min: 65, max: 160, step: 5, value: Math.round(studyView.zoom * 100), suffix: '%' }
             ].map(function(control) {
               return h('label', { key: control.key, className: 'migration-study-slider' },
@@ -7579,7 +8258,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               );
             }),
             h('div', { className: 'migration-study-actions' },
-              h('button', { type: 'button', onClick: function() { clearMigrationMarkedViewRestoreIntent(); updMulti({ flightStudyYaw: 35, flightStudyPitch: 15, flightStudyZoom: 1 }); } }, t('stem.migration.reset_study_view', 'Reset study view')),
+              h('button', { type: 'button', onClick: function() {
+                clearMigrationMarkedViewRestoreIntent();
+                updMulti({ flightStudyYaw: 35, flightStudyPitch: 15, flightStudyZoom: 1 });
+                reportSceneAction(t('stem.migration.study_reset_feedback', 'Study view reset.') + ' ' + sceneAngleText(35) + ' ' + sceneElevationText(15) + ' ' + sceneZoomText(1));
+              } }, t('stem.migration.reset_study_view', 'Reset study view')),
               h('button', { type: 'button', onClick: function() {
                 // Retain each explicit click even when React batches events before
                 // the next render, then let RAF consume the full serial delta.
@@ -7601,6 +8284,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 _liveVals.current.flightWingStep = nextStep;
                 _liveVals.current.flightPaused = true;
                 updMulti({ flightPaused: true, flightWingStep: nextStep });
+                reportSceneAction(t('stem.migration.study_step_feedback', 'Selected manual wing step {step}. Playback paused.').replace('{step}', nextStep) +
+                  (motionReduced ? ' ' + t('stem.migration.study_step_reduced_feedback', 'Reduce motion stays enabled; automatic playback remains still.') : ''));
               } }, t('stem.migration.step_wingbeat', 'Step wingbeat'))
             ),
             renderMarkedWingPoseControls(),
@@ -7623,12 +8308,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 [0, 1].map(function(side) {
                   return h('button', { key: side, type: 'button', className: 'migration-wingtip-follow-button', 'data-wingtip-follow-side': side,
                     disabled: !!(_f3dEngineRef.current && _f3dEngineRef.current.host && _f3dEngineRef.current.host.getAttribute('data-flight-error') === 'true'), 'aria-pressed': _liveVals.current.flightWingtipFollowSide === side ? 'true' : 'false',
-                    'aria-label': side === 0 ? t('stem.migration.wingtip_follow_left_action', 'Follow individual’s left wingtip') : t('stem.migration.wingtip_follow_right_action', 'Follow individual’s right wingtip'),
                     'aria-controls': 'migration-flight-stage', 'aria-describedby': 'migration-wingtip-follow-help',
                     onClick: function() {
                       var target = migrationStudyWingtipFollowTarget(_f3dEngineRef.current, _liveVals.current, side, followContext);
                       if (!target) {
-                        if (announceToSR) announceToSR(t('stem.migration.wingtip_follow_wait', 'Wait for a ready Study view with Show wingtip path on, then choose a guide again.'));
+                        reportSceneAction(t('stem.migration.wingtip_follow_wait', 'Wait for a ready Study view with Show wingtip path on, then choose a guide again.'));
                         return;
                       }
                       followContext = target.context;
@@ -7649,12 +8333,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ),
               d.flightShowWingtipPath === true && h('div', { 'data-wingtip-follow-activity': 'true' },
                 h('p', { className: 'migration-study-help', id: 'migration-wingtip-follow-help' },
-                  t('stem.migration.wingtip_follow_activity', 'Predict where one tip will appear on screen. Choose its left or right guide; choose it again to show both. Hold the pose with Pause or a cycle position, compare Front with From above, then use Describe wing motion to explain the individual’s side versus its screen position. Both wings and the marked outline stay visible.')),
+                  studyGuidesHidden ? t('stem.migration.wingtip_follow_activity_hidden', 'Choose which wingtip to follow when guides return. Both wings remain visible; paths and the marked outline are temporarily hidden. Restore the guides to compare your prediction with the selected side.')
+                    : t('stem.migration.wingtip_follow_activity', 'Predict where one tip will appear on screen. Choose its left or right guide; choose it again to show both. Hold the pose with Pause or a cycle position, compare Front with From above, then use Describe wing motion to explain the individual’s side versus its screen position. Both wings and the marked outline stay visible.')),
                 h('p', { className: 'migration-study-help', role: 'status', 'data-wingtip-follow-status': _liveVals.current.flightWingtipFollowSide === 0 ? 'left' : _liveVals.current.flightWingtipFollowSide === 1 ? 'right' : 'both' },
                   followMessage(_liveVals.current.flightWingtipFollowSide)),
                 (followedAnatomySide === 0 || followedAnatomySide === 1) && h('div', { 'data-followed-anatomy-activity': 'true' },
                   h('p', { className: 'migration-study-help', id: 'migration-followed-anatomy-help' },
-                    t('stem.migration.followed_anatomy_activity', 'Predict which wing segment will appear to move more. Hold the camera fixed and compare cycle positions 3 and 7. Inspect Inner wing (2) and Primary feathers (3) with the existing region buttons, then name the followed left or right side and cycle positions in your observation note.')),
+                    studyGuidesHidden ? t('stem.migration.followed_anatomy_activity_hidden', 'Anatomy guides are temporarily hidden. Keep the camera fixed, compare cycle positions 3 and 7, and describe the visible wing shape. Restore the guides to inspect the selected segment.')
+                      : t('stem.migration.followed_anatomy_activity', 'Predict which wing segment will appear to move more. Hold the camera fixed and compare cycle positions 3 and 7. Inspect Inner wing (2) and Primary feathers (3) with the existing region buttons, then name the followed left or right side and cycle positions in your observation note.')),
                   h('button', { type: 'button', className: 'migration-wingtip-follow-button', 'data-followed-anatomy-toggle': 'true',
                     'aria-pressed': _liveVals.current.flightShowAnatomy ? 'true' : 'false', 'aria-controls': 'migration-flight-stage',
                     'aria-describedby': 'migration-followed-anatomy-help',
@@ -7668,9 +8354,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       var show = !live.flightShowAnatomy;
                       live.flightShowAnatomy = show;
                       upd('flightShowAnatomy', show);
-                      if (announceToSR) announceToSR(show
-                        ? t('stem.migration.followed_anatomy_shown', 'Anatomy guides shown on the followed wing.')
-                        : t('stem.migration.followed_anatomy_hidden', 'Anatomy guides hidden.'));
+                      if (announceToSR) announceToSR(migrationStudyGuidesHidden(_f3dEngineRef.current, live)
+                        ? show ? t('stem.migration.followed_anatomy_selected_hidden', 'Anatomy selected for the followed wing. Guides remain temporarily hidden.')
+                          : t('stem.migration.followed_anatomy_deselected_hidden', 'Anatomy deselected. Guides remain temporarily hidden.')
+                        : show ? t('stem.migration.followed_anatomy_shown', 'Anatomy guides shown on the followed wing.')
+                          : t('stem.migration.followed_anatomy_hidden', 'Anatomy guides hidden.'));
                     }
                   }, t('stem.migration.followed_anatomy_toggle', 'Show anatomy on followed wing')),
                   migrationStudySegmentNoteMatches(_f3dEngineRef.current, _liveVals.current, studyWingtipFollowSelection, studyRegion.id) &&
@@ -7699,7 +8387,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ),
               d.flightShowWingtipPath === true && h('div', { 'data-study-cycle-controls': 'true' },
                 h('p', { className: 'migration-study-help', id: 'migration-study-cycle-help' },
-                  t('stem.migration.cycle_position_activity', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally use Mark wing pose. Keep the view fixed and use Compare opposite position to switch between 3 and 7. With Show wingtip path on, predict whether live dots will meet marked diamonds when you return to 3. Inspect the followed wing or selected segment, then describe your evidence in the existing notes. Choosing a position pauses the illustrative cycle.')),
+                  studyGuidesHidden ? t('stem.migration.cycle_position_activity_hidden', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally mark a wing pose. Keep the view fixed and compare positions while guides are hidden. Restore the guides to check your prediction against the selected paths and marked tips. Describe your evidence in the existing notes.')
+                    : t('stem.migration.cycle_position_activity', 'Predict how positions 3 and 7 will differ. Choose 3 and optionally use Mark wing pose. Keep the view fixed and use Compare opposite position to switch between 3 and 7. With Show wingtip path on, predict whether live dots will meet marked diamonds when you return to 3. Inspect the followed wing or selected segment, then describe your evidence in the existing notes. Choosing a position pauses the illustrative cycle.')),
                 h('div', { className: 'migration-cycle-positions', role: 'group', 'aria-label': t('stem.migration.cycle_positions', 'Wing cycle positions') },
                   Array.from({ length: 8 }, function(_, index) {
                     return h('button', { key: index, type: 'button', 'data-study-cycle-position': index,
@@ -7731,10 +8420,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                           // even before React or the host acknowledges the last one.
                           var target = migrationStudyOppositeCycleTarget(_f3dEngineRef.current, _liveVals.current, _f3dStudyCyclePauseRef.current);
                           if (target === null || !commitStudyCyclePosition(target)) {
-                            if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
+                            reportSceneAction(t('stem.migration.opposite_cycle_wait', 'Choose a numbered cycle position in a ready Study view first.'));
                             return;
                           }
-                          if (announceToSR) announceToSR(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
+                          reportSceneAction(t('stem.migration.opposite_cycle_selected', 'Selected opposite cycle position') + ' ' + (target + 1) + '. ' + t('stem.migration.opposite_cycle_paused', 'Flight paused. Keep the view fixed and describe what you see.'));
                         }
                       }, t('stem.migration.compare_opposite_cycle', 'Compare opposite position'));
                     }
@@ -7762,10 +8451,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 : t('stem.migration.describe_bird_motion_help', 'Opens Primary feathers notes and keeps your existing draft. This does not record an observation or change playback.')),
               h('p', { className: 'migration-study-help' }, t('stem.migration.wingtip_path_scope', 'The paths show one stylized wing cycle relative to the body. They are not a flight track, distance scale, or measured wingbeat rate.'))
             ),
-            h('button', { className: 'migration-study-focus', type: 'button', onClick: function() {
-              var stage = document.getElementById('migration-flight-stage');
-              if (stage) stage.focus();
-            } }, t('stem.migration.focus_scene', 'Focus 3D scene')),
+            h('button', { className: 'migration-study-focus', type: 'button', 'data-scene-focus': '',
+              ref: function(node) { attachSceneControl(focusSceneControl, node); }, onClick: focusOwnScene
+            }, t('stem.migration.focus_scene', 'Focus 3D scene')),
             h('p', { className: 'migration-study-help' }, t('stem.migration.study_camera_help', 'Drag the scene to orbit, or focus it and use arrow keys; + / \u2212 zoom. Step wingbeat pauses flight and advances one eighth of the illustrative wing cycle.') + ' ' + t('stem.migration.study_lighting_help', 'Study lighting follows your view so surfaces stay readable.')),
             h('p', { className: 'migration-study-help' }, t('stem.migration.study_backdrop_help', 'Study fits the individual to your screen and hides the landscape and route corridor. Return to Chase to follow the migration.'))
           );
@@ -7790,6 +8478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             role: 'group',
             tabIndex: 0,
             'aria-label': stageLabel,
+            'aria-describedby': sceneGuideId + '-summary ' + sceneGuideId + '-help ' + sceneGuideId + '-scope',
             onPointerDown: beginStudyDrag,
             onPointerMove: moveStudyDrag,
             onPointerUp: function(event) { endStudyDrag(event, true); },
@@ -7798,19 +8487,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             onKeyDown: function(event) {
               if (event.target !== event.currentTarget) return;
               if (event.ctrlKey || event.metaKey || event.altKey) return;
+              if (event.repeat && ['1', '2', '3', '4', ' '].indexOf(event.key) !== -1) {
+                event.preventDefault();
+                return;
+              }
               endStudyDrag(null, false);
               if (event.key === '1') { event.preventDefault(); chooseCamera('chase'); }
               else if (event.key === '2') { event.preventDefault(); chooseCamera('aerial'); }
               else if (event.key === '3') { event.preventDefault(); chooseCamera('side'); }
               else if (event.key === '4') { event.preventDefault(); chooseCamera('study'); }
               else if (cameraMode === 'study' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
-                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyYaw', ((studyView.yaw + (event.key === 'ArrowLeft' ? -10 : 10) + 180) % 360 + 360) % 360 - 180);
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent();
+                var nextAngle = ((studyView.yaw + (event.key === 'ArrowLeft' ? -10 : 10) + 180) % 360 + 360) % 360 - 180;
+                upd('flightStudyYaw', nextAngle); reportSceneAction(sceneAngleText(nextAngle));
               }
               else if (cameraMode === 'study' && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
-                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyPitch', Math.max(-10, Math.min(60, studyView.pitch + (event.key === 'ArrowUp' ? 5 : -5))));
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent();
+                var nextElevation = Math.max(-60, Math.min(60, studyView.pitch + (event.key === 'ArrowUp' ? 5 : -5)));
+                upd('flightStudyPitch', nextElevation); reportSceneAction(sceneElevationText(nextElevation));
               }
               else if (cameraMode === 'study' && ['+', '=', '-', '_'].indexOf(event.key) !== -1) {
-                event.preventDefault(); clearMigrationMarkedViewRestoreIntent(); upd('flightStudyZoom', Math.max(0.65, Math.min(1.6, Math.round((studyView.zoom + (event.key === '+' || event.key === '=' ? 0.1 : -0.1)) * 20) / 20)));
+                event.preventDefault(); clearMigrationMarkedViewRestoreIntent();
+                var nextZoom = Math.max(0.65, Math.min(1.6, Math.round((studyView.zoom + (event.key === '+' || event.key === '=' ? 0.1 : -0.1)) * 20) / 20));
+                upd('flightStudyZoom', nextZoom); reportSceneAction(sceneZoomText(nextZoom));
               }
               else if (event.key === ' ') { event.preventDefault(); toggleFlightPause(); }
             }
@@ -7820,12 +8519,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('button', { type: 'button', 'aria-pressed': cameraMode === 'study' ? 'true' : 'false', onClick: function() { chooseCamera(cameraMode === 'study' ? 'chase' : 'study'); } }, t('stem.migration.study_view', 'Study view')),
               h('button', { type: 'button', disabled: species.id === 'monarch', 'aria-pressed': showAirflow ? 'true' : 'false', onClick: function() { upd('flightShowAirflow', !showAirflow); } }, t('stem.migration.airflow_view', 'Airflow'))
             ),
-            ((showAirflow && species.id !== 'monarch') || (showSpeedVectors && cameraMode !== 'study')) && h('div', {
+            ((showAirflow && !studyGuidesHidden && species.id !== 'monarch') || (showSpeedVectors && cameraMode !== 'study')) && h('div', {
               className: 'migration-flight-layer-key', role: 'group',
               'aria-label': t('stem.migration.scene_layer_key', 'Scene layer key'),
               'data-speed-vectors': showSpeedVectors && cameraMode !== 'study' ? 'true' : 'false'
             },
-              showAirflow && species.id !== 'monarch' && h(React.Fragment, null,
+              showAirflow && !studyGuidesHidden && species.id !== 'monarch' && h(React.Fragment, null,
                 h('span', null, h('i', { className: 'migration-key-wake', 'aria-hidden': 'true' }), t('stem.migration.wake_key', 'Wingtip wake')),
                 h('span', null, h('i', { className: 'migration-key-upwash', 'aria-hidden': 'true' }), t('stem.migration.upwash_key', 'Outside upwash')),
                 h('small', null, t('stem.migration.schematic_layer', 'Schematic airflow'))
@@ -7870,6 +8569,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             )
           ),
           renderStudySceneActions(),
+          h('section', { className: 'migration-scene-guide', 'data-scene-guide': '', 'aria-labelledby': sceneGuideId + '-title' },
+            h('div', { className: 'migration-scene-guide-header' },
+              h('h3', { id: sceneGuideId + '-title' }, t('stem.migration.scene_guide_title', '3D scene guide')),
+              h('button', { type: 'button', 'data-scene-announce': '', onClick: function() { reportSceneAction(species.name + '. ' + sceneSummary + ' ' + sceneRoute); } },
+                t('stem.migration.scene_announce_settings', 'Announce view settings'))
+            ),
+            h('p', { id: sceneGuideId + '-summary', 'data-scene-summary': '' }, sceneSummary),
+            h('p', { id: sceneGuideId + '-route', 'data-scene-route': '' }, sceneRoute),
+            h('details', { 'data-scene-instructions': '' },
+              h('summary', null, t('stem.migration.scene_keyboard_instructions', 'Keyboard instructions')),
+              h('p', { id: sceneGuideId + '-help', 'data-scene-help': '' }, sceneHelp)
+            ),
+            h('p', { id: sceneGuideId + '-scope', className: 'migration-scene-guide-scope' },
+              t('stem.migration.scene_guide_scope', 'These settings describe the stylized model. Check the message in the 3D view if the scene is still loading or unavailable.')),
+            h(MigrationSceneFeedback, { React: React, owner: _sceneFeedbackRef })
+          ),
           renderFlightChallengeInspection(),
           renderFlightTrialReview()
           ),
@@ -7882,23 +8597,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'migration-flight-actions' },
               h('button', { type: 'button', onClick: toggleFlightPause, 'aria-pressed': flightPaused ? 'true' : 'false' }, flightPaused ? t('stem.migration.resume_flight', 'Resume flight') : t('stem.migration.pause_flight', 'Pause flight')),
               h('button', {
-                type: 'button',
-                onClick: function() {
-                  var deck = document.getElementById('migration-flight-deck');
-                  if (!deck) return;
-                  if (typeof window.__alloStemFS === 'function') {
-                    window.__alloStemFS(deck);
-                    return;
-                  }
-                  var active = document.fullscreenElement || document.webkitFullscreenElement;
-                  if (active) {
-                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
-                    if (exit) exit.call(document);
-                  } else {
-                    var enter = deck.requestFullscreen || deck.webkitRequestFullscreen;
-                    if (enter) enter.call(deck);
-                  }
-                },
+                type: 'button', 'data-scene-fullscreen': '',
+                ref: function(node) { attachSceneControl(fullscreenSceneControl, node); }, onClick: toggleOwnSceneFullscreen,
                 'aria-label': t('stem.migration.aria_flight_fullscreen', 'Toggle fullscreen for the 3D migration flight deck')
               }, t('stem.migration.fullscreen_label', 'Fullscreen'))
             ),
@@ -8015,12 +8715,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('input', { type: 'checkbox', checked: d.flightShowAnatomy === true, onChange: function(event) { upd('flightShowAnatomy', event.target.checked); } }),
                 h('span', null, t('stem.migration.show_bird_anatomy', 'Show bird anatomy'))
               ),
-              h('p', null, species.id === 'monarch' && (showAirflow || d.flightShowAnatomy)
+              h('p', null, studyGuidesHidden ? t('stem.migration.study_guides_hidden_hint', 'Guides are temporarily hidden. Turn off Inspect without guides to see your selected layers again.') : species.id === 'monarch' && (showAirflow || d.flightShowAnatomy)
                 ? t('stem.migration.bird_layers_monarch_scope', 'Bird wing airflow and feather anatomy are hidden for Monarchs.')
                 : d.flightShowAnatomy
                   ? t('stem.migration.anatomy_study_pick_hint', 'Select a numbered marker in the scene, or use the buttons below, to observe that region. Drag between markers to orbit the model.')
                   : t('stem.migration.airflow_observe_hint', 'Use Study or Aerial to inspect the wings and the space behind them.')),
-              cameraMode === 'study' && species.id !== 'monarch' && d.flightShowAnatomy === true && h('p', { role: 'status', 'data-study-anatomy-side': followedAnatomySide === 0 ? 'left' : 'right', 'data-study-anatomy-focus': studyRegion.id },
+              cameraMode === 'study' && !studyGuidesHidden && species.id !== 'monarch' && d.flightShowAnatomy === true && h('p', { role: 'status', 'data-study-anatomy-side': followedAnatomySide === 0 ? 'left' : 'right', 'data-study-anatomy-focus': studyRegion.id },
                 followedAnatomySide === 0 ? t('stem.migration.anatomy_side_left', 'Wing markers 2 and 3: individual’s left wing.') : t('stem.migration.anatomy_side_right', 'Wing markers 2 and 3: individual’s right wing.'),
                 ' ', t('stem.migration.anatomy_selected_outline', 'Highlighted outline') + ': ' + studyRegion.label + '. ',
                 t('stem.migration.anatomy_outline_context', 'Other outlines are softened. All four numbered markers remain available.')),
@@ -8036,7 +8736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               ),
               renderStudyObservation()
             ),
-            h('div', { className: 'migration-flight-stat-grid', 'aria-label': t('stem.migration.aria_flight_metrics', 'Current flight metrics') },
+            h('div', { className: 'migration-flight-stat-grid', role: 'group', 'aria-label': t('stem.migration.aria_flight_metrics', 'Current flight metrics') },
               [
                 { label: t('stem.migration.stat_ground_speed', 'Ground speed'), value: groundSpeed + ' ' + t('stem.migration.mph_unit', 'mph') },
                 { label: t('stem.migration.stat_pattern_benefit', 'Pattern benefit'), value: benefit ? '~' + benefit + '% ' + t('stem.migration.less_drag', 'less drag') : t('stem.migration.no_drafting_credit', 'No drafting credit') },
@@ -8053,7 +8753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('strong', null, t('stem.migration.monarch_relay_heading', 'Monarch relay migration: ')),
               t('stem.migration.monarch_relay_note', 'The fall super generation reaches central Mexico in one journey. Spring return unfolds across multiple generations, so the simulation uses a swarm rather than bird-style drafting.')
             ),
-            h('div', { className: 'migration-flight-keys', 'aria-label': t('stem.migration.camera_shortcuts', 'Camera keyboard shortcuts') },
+            h('div', { className: 'migration-flight-keys', role: 'group', 'aria-label': t('stem.migration.camera_shortcuts', 'Camera keyboard shortcuts') },
               [
                 { key: '1', label: t('stem.migration.cam_chase', 'Chase') },
                 { key: '2', label: t('stem.migration.cam_aerial', 'Aerial') },
@@ -8140,34 +8840,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 },
                 onClick: function(event) {
                   var action = event && event.currentTarget;
-                  function returnToReflection() {
+                  function contextNow() {
                     var context = currentFlightChallengeInspection(request);
-                    if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action ||
-                        !action || !action.isConnected || action.closest('.migration-flight-deck') !== context.deck ||
-                        context.deck.querySelector('[data-flight-challenge-return]') !== action) return;
+                    return context && _flightChallengeInspectionReturnRef.current === navigation && navigation.node === action &&
+                      action && action.isConnected && action.closest('.migration-flight-deck') === context.deck &&
+                      context.deck.querySelector('[data-flight-challenge-return]') === action ? context : null;
+                  }
+                  function destination(context) {
                     var owner = context.owner, row = owner.panel.querySelector('[data-flight-challenge-attempt="' + (request.index + 1) + '"]');
                     var disclosure = row && row.querySelector('[data-flight-challenge-reflection]');
-                    var target = owner.editor && owner.editor.index === request.index ? row.querySelector('[data-flight-reflection-input]') :
-                      row && row.querySelector('[data-flight-reflection-action="edit"]');
+                    var target = row && (owner.editor && owner.editor.index === request.index ? row.querySelector('[data-flight-reflection-input]') :
+                      row.querySelector('[data-flight-reflection-action="edit"]'));
                     if (target && (target.disabled || target.hidden)) target = disclosure && disclosure.querySelector('summary');
-                    if (!target || !target.isConnected || !disclosure) return;
-                    owner.panel.open = true;
-                    var history = owner.panel.querySelector('[data-flight-challenge-history]');
+                    return { disclosure: disclosure, target: target };
+                  }
+                  var context = contextNow();
+                  if (!context) return;
+                  var workspace = context.deck.closest('.migration-flight-workspace');
+                  var intent = beginFocusIntent(action, workspace, false, function() { return !!contextNow(); });
+                  if (!intent) return;
+                  var initial = destination(context);
+                  if (!initial.target || !initial.disclosure) { intent.cancel(); return; }
+                  leaveFullscreenForFocus(intent, action, initial.target, function() {
+                    var current = contextNow();
+                    if (!current || !intent.current()) { intent.cancel(); return; }
+                    var next = destination(current);
+                    if (!next.target || !next.disclosure) { intent.cancel(); return; }
+                    current.owner.panel.open = true;
+                    var history = current.owner.panel.querySelector('[data-flight-challenge-history]');
                     if (history) history.open = true;
-                    disclosure.open = true;
-                    target.focus({ preventScroll: true });
-                    if (document.activeElement === target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
-                  }
-                  var context = currentFlightChallengeInspection(request);
-                  if (!context || _flightChallengeInspectionReturnRef.current !== navigation || navigation.node !== action || !action || !action.isConnected) return;
-                  var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-                  if (fullscreen && fullscreen === context.deck && !fullscreen.contains(context.owner.panel)) {
-                    var exit = document.exitFullscreen || document.webkitExitFullscreen;
-                    if (exit) { try { var pending = exit.call(document); if (pending && pending.then) pending.then(returnToReflection, function() {}); else window.setTimeout(returnToReflection, 0); } catch (ignore) {} }
-                    return;
-                  }
-                  if (context.deck.getAttribute('data-allo-fullscreen-active') === 'true' && typeof window.__alloStemFS === 'function') window.__alloStemFS(context.deck);
-                  returnToReflection();
+                    next.disclosure.open = true;
+                    intent.focus(next.target);
+                  });
                 }
               }, t('stem.migration.mission_inspection_return', 'Return to this reflection'))
             );
@@ -8223,8 +8927,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               !owner.attempts[index] || editor.attemptSignature !== migrFlightChallengeAttemptIdentity(owner.attempts[index]))) return null;
           return owner;
         }
-        function reflectionFocus(owner, index, attemptSignature, fallback) {
-          _flightChallengeReflectionFocusRef.current = { panel: owner.panel, goalId: owner.goalId, index: index, attemptSignature: attemptSignature, fallback: !!fallback };
+        function reflectionFocus(owner, index, attemptSignature, fallback, event, savedSequence) {
+          var request = { panel: owner.panel, goalId: owner.goalId, index: index, attemptSignature: attemptSignature,
+            fallback: !!fallback, sequences: [owner.sequence, savedSequence || owner.sequence] };
+          var intent = beginFocusIntent(event && event.currentTarget, owner.panel, true, function() {
+            var current = _flightChallengeReflectionOwnerRef.current;
+            if (!current || current.panel !== request.panel || current.goalId !== request.goalId || current.draft ||
+                !current.panel.isConnected || request.sequences.indexOf(current.sequence) === -1) return false;
+            var attempt = current.attempts[request.index];
+            return request.fallback || !!attempt && migrFlightChallengeAttemptIdentity(attempt) === request.attemptSignature;
+          });
+          _flightChallengeReflectionFocusRef.current = intent ? Object.assign(request, { intent: intent }) : null;
         }
         function beginReflection(event, index) {
           var owner = reflectionOwner(event, index, 'edit');
@@ -8248,7 +8961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var next = Object.assign({}, owner.challenges, { work: nextGoals });
           delete next.repaired;
           owner.locked = true;
-          reflectionFocus(owner, index, reflectionEditing.attemptSignature);
+          reflectionFocus(owner, index, reflectionEditing.attemptSignature, false, event, JSON.stringify(rows));
           flightChallengeReflectionState[1](null);
           upd('flightChallenges', next);
           announce(t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1) + '. ' +
@@ -8259,7 +8972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var owner = reflectionOwner(event, stale ? -1 : index, stale ? 'cancel-stale' : 'cancel', stale ? null : reflectionEditing);
           if (!owner || !owner.draft || (stale ? owner.editor : owner.editor !== reflectionEditing)) return;
           owner.locked = true;
-          reflectionFocus(owner, index, owner.draft.attemptSignature, stale);
+          reflectionFocus(owner, index, owner.draft.attemptSignature, stale, event);
           flightChallengeReflectionState[1](null);
           announce(t('stem.migration.mission_reflection_cancelled', 'Unsaved reflection closed. Saved work is unchanged.'));
         }
@@ -8320,7 +9033,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         function outcome(check) {
           return check.met ? t('stem.migration.mission_met', 'Model condition met') : t('stem.migration.mission_not_met', 'Model condition not met');
         }
-        function announce(message) { if (announceToSR) announceToSR(message); }
+        function announce(message) {
+          var writer = _challengeFeedbackRef.current;
+          if (writer) writer.report(message);
+        }
         function saveChallenge(patch) {
           var next = Object.assign({}, challenges, patch);
           delete next.repaired;
@@ -8388,6 +9104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', { className: 'migration-missions-summary-count' }, t('stem.migration.mission_three_goals', '3 goals to investigate'))
           ),
           h('div', { className: 'migration-missions-body' },
+            h(MigrationSceneFeedback, { React: React, owner: _challengeFeedbackRef, context: 'challenge' }),
             h('p', { className: 'migration-missions-intro' }, t('stem.migration.mission_intro', 'Solve a flight problem with the real controls. Predict, test, and explain. Each challenge keeps its own work and up to four attempts.')),
             challenges.repaired && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.mission_recovered', 'Some saved challenge data could not be read. Readable predictions, explanations, and attempts are still available.')),
             h('div', { className: 'migration-mission-goals', role: 'group', 'aria-label': t('stem.migration.mission_choose', 'Choose a flight challenge') }, MIGR_FLIGHT_GOALS.map(function(item, index) {
@@ -8417,11 +9134,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', { className: 'migration-mission-writing' },
                 h('label', { htmlFor: 'migration-mission-prediction' },
                   h('span', null, t('stem.migration.mission_prediction_label', 'My prediction: which control will I change, and why?')),
-                  h('textarea', { id: 'migration-mission-prediction', rows: 2, maxLength: 1000, value: work.prediction, 'aria-label': t('stem.migration.mission_prediction_aria', 'Flight challenge prediction'), onChange: function(event) { saveWork({ prediction: event.target.value.slice(0, 1000) }); } })
+                  h('textarea', { id: 'migration-mission-prediction', rows: 2, maxLength: 1000, value: work.prediction, onChange: function(event) { saveWork({ prediction: event.target.value.slice(0, 1000) }); } })
                 ),
                 h('label', { htmlFor: 'migration-mission-notes' },
                   h('span', null, t('stem.migration.mission_notes_label', 'My explanation: what numbers or route changes support my claim?')),
-                  h('textarea', { id: 'migration-mission-notes', rows: 2, maxLength: 2000, value: work.notes, 'aria-label': t('stem.migration.mission_notes_aria', 'Flight challenge explanation'), onChange: function(event) { saveWork({ notes: event.target.value.slice(0, 2000) }); } })
+                  h('textarea', { id: 'migration-mission-notes', rows: 2, maxLength: 2000, value: work.notes, onChange: function(event) { saveWork({ notes: event.target.value.slice(0, 2000) }); } })
                 )
               ),
               h('div', { className: 'migration-mission-actions' },
@@ -8462,6 +9179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 work.attempts.map(function(attempt, index) {
                   var checked = migrCheckFlightGoal(goal, attempt.baseline, attempt.snapshot);
                   var attemptLabel = t('stem.migration.mission_attempt_word', 'Attempt') + ' ' + (index + 1);
+                  var attemptRemoval = { node: null, used: false };
                   return h('article', { key: index, className: 'migration-mission-attempt', 'data-flight-challenge-attempt': index + 1, 'data-model-condition': checked.met ? 'met' : 'not-met' },
                     h('div', { className: 'migration-mission-attempt-heading' }, h('h4', null, attemptLabel), h('strong', null, outcome(checked))),
                     measurements(attempt.baseline, attempt.snapshot),
@@ -8504,18 +9222,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       })
                     ),
                     renderReflection(attempt, index),
-                    h('button', { type: 'button', className: 'migration-mission-remove', 'aria-label': t('stem.migration.mission_remove_attempt', 'Remove challenge attempt') + ' ' + (index + 1), onClick: function() {
-                      saveWork({ attempts: work.attempts.filter(function(row, rowIndex) { return rowIndex !== index; }) });
-                      announce(attemptLabel + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
-                      setTimeout(function() {
-                        var panel = document.getElementById('migration-flight-challenges');
-                        if (!panel || !panel.querySelectorAll) return;
-                        var buttons = panel.querySelectorAll('[data-flight-challenge-attempt] .migration-mission-remove');
-                        var target = buttons[Math.min(index, buttons.length - 1)] || panel.querySelector('[data-flight-challenge-action="check"]');
-                        if (target && target.disabled) target = panel.querySelector('#migration-mission-prediction');
-                        if (target && target.focus) target.focus();
-                      }, 0);
-                    } }, t('stem.migration.experiment_remove', 'Remove'))
+                    h('button', {
+                      type: 'button', className: 'migration-mission-remove', 'data-challenge-remove': index + 1,
+                      ref: function(node) { attachRemovalControl(attemptRemoval, node); },
+                      'aria-label': t('stem.migration.mission_remove_attempt', 'Remove challenge attempt') + ' ' + (index + 1),
+                      onClick: function(event) {
+                        if (!beginRemovalControl(attemptRemoval, event)) return;
+                        var panel = attemptRemoval.node && attemptRemoval.node.closest('[data-migration-flight-challenges]');
+                        if (panel) {
+                          var buttons = panel.querySelectorAll('[data-flight-challenge-attempt] .migration-mission-remove');
+                          // Index-keyed rows retain this button for the next item.
+                          // The previous button survives removal of the last row.
+                          var target = buttons[index < buttons.length - 1 ? index : index - 1] || panel.querySelector('[data-flight-challenge-action="check"]');
+                          if (target && target.disabled) target = panel.querySelector('#migration-mission-prediction');
+                          focusBeforeRemoval(attemptRemoval, panel, target);
+                        }
+                        if (!currentRemovalControl(attemptRemoval, event)) return;
+                        saveWork({ attempts: work.attempts.filter(function(row, rowIndex) { return rowIndex !== index; }) });
+                        announce(attemptLabel + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
+                      }
+                    }, t('stem.migration.experiment_remove', 'Remove'))
                   );
                 })
               ),
@@ -8564,34 +9290,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return { trial: trial, index: revisit.index, active: active };
       }
 
-      function focusFlightInvestigationEvidence() {
-        var field = document.getElementById('migration-experiment-evidence');
-        if (!field) return;
-        function focusField() {
-          field.focus();
-          if (field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: 'auto' });
+      function focusFlightInvestigationEvidence(event, navigation) {
+        var action = event && event.currentTarget;
+        var panel = _flightTrialEvidenceReviewRef.current.panel;
+        var workspace = action && action.closest('.migration-flight-workspace');
+        var notebook = workspace && workspace.querySelector('[id="migration-flight-experiment"]');
+        var field = notebook && notebook.querySelector('[id="migration-experiment-evidence"]');
+        function current() {
+          return _liveVals.current.tab === 'flight3d' && _flightTrialFocusReturnRef.current === navigation && navigation.node === action &&
+            action && action.isConnected && panel && panel.isConnected && panel === _flightTrialEvidenceReviewRef.current.panel &&
+            panel.contains(action) && panel.querySelector('[data-trial-evidence-return]') === action &&
+            workspace && workspace.isConnected && notebook && notebook.isConnected && workspace.contains(notebook) &&
+            field && field.isConnected && notebook.querySelector('[id="migration-experiment-evidence"]') === field;
         }
-        var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-        if (fullscreen && !fullscreen.contains(field)) {
-          var exit = document.exitFullscreen || document.webkitExitFullscreen;
-          if (exit) {
-            try {
-              var pending = exit.call(document);
-              if (pending && pending.then) pending.then(focusField, function() {});
-              else window.setTimeout(focusField, 0);
-            } catch (error) {}
-          }
-          return;
-        }
-        var deck = document.getElementById('migration-flight-deck');
-        if (deck && deck.getAttribute('data-allo-fullscreen-active') === 'true' && typeof window.__alloStemFS === 'function') window.__alloStemFS(deck);
-        focusField();
+        if (!current()) return;
+        var intent = beginFocusIntent(action, workspace, false, current);
+        if (!intent) return;
+        leaveFullscreenForFocus(intent, action, field, function() { intent.focus(field); });
       }
 
       function renderFlightTrialReview() {
         var review = currentFlightTrialReview();
         if (!review) return null;
         var trial = review.trial;
+        var navigation = { node: null };
         var title = t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (review.index + 1);
         // Assess this recorded pair, independently of today's baseline or live
         // controls. A numerical change alone cannot isolate its cause.
@@ -8640,7 +9362,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'migration-pair-review-actions', role: 'group', 'aria-label': t('stem.migration.pair_review_choose', 'Choose a saved flight') },
             h('button', { type: 'button', 'data-pair-review': 'baseline', 'aria-pressed': review.active === 'baseline' ? 'true' : 'false', onClick: function() { revisitFlightTrial(trial, review.index, true); } }, t('stem.migration.pair_review_baseline', 'Saved baseline')),
             h('button', { type: 'button', 'data-pair-review': 'trial', 'aria-pressed': review.active === 'trial' ? 'true' : 'false', onClick: function() { revisitFlightTrial(trial, review.index, false); } }, t('stem.migration.pair_review_trial', 'Saved trial')),
-            h('button', { type: 'button', 'data-pair-review': 'evidence', onClick: focusFlightInvestigationEvidence }, t('stem.migration.pair_review_evidence', 'Add evidence'))
+            h('button', { type: 'button', 'data-pair-review': 'evidence', 'data-trial-evidence-return': '',
+              ref: function(node) {
+                if (node) { navigation.node = node; _flightTrialFocusReturnRef.current = navigation; }
+                else if (_flightTrialFocusReturnRef.current === navigation) _flightTrialFocusReturnRef.current = null;
+              },
+              onClick: function(event) { focusFlightInvestigationEvidence(event, navigation); }
+            }, t('stem.migration.pair_review_evidence', 'Add evidence'))
           ),
           h('div', { className: 'migration-pair-review-comparison', role: 'note',
             'aria-label': t('stem.migration.pair_review_comparison', 'Saved pair model comparison'),
@@ -8680,7 +9408,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           delete next.repaired;
           upd('flightInvestigation', next);
         }
-        function announce(message) { if (announceToSR) announceToSR(message); }
+        function announce(message) {
+          var writer = _investigationFeedbackRef.current;
+          if (writer) writer.report(message);
+        }
         function currentFlightTrialRevisitMessage() {
           var revisit = flightTrialRevisitStatus[0];
           if (!revisit || !study.trials[revisit.index] || JSON.stringify(study.trials[revisit.index]) !== revisit.trial) return '';
@@ -8824,6 +9555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         return h('section', { id: 'migration-flight-experiment', className: 'migration-experiment', 'data-migration-flight-investigation': 'true', 'aria-labelledby': 'migration-experiment-heading' },
+          h(MigrationSceneFeedback, { React: React, owner: _investigationFeedbackRef, context: 'investigation' }),
           h('header', { className: 'migration-experiment-header' },
             h('div', null,
               h('p', { className: 'migration-experiment-eyebrow' }, t('stem.migration.experiment_eyebrow', 'Flight investigation')),
@@ -8833,9 +9565,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', { className: 'migration-experiment-count' }, study.trials.length + '/6 ' + t('stem.migration.experiment_trials_saved', 'trials saved'))
           ),
           h('ol', { className: 'migration-experiment-steps', 'aria-label': t('stem.migration.experiment_steps', 'Flight investigation steps') },
-            h('li', { 'data-complete': study.prediction.trim() ? 'true' : 'false' }, h('b', null, '1'), h('span', null, t('stem.migration.experiment_step_predict', 'Choose & predict'))),
-            h('li', { 'data-complete': study.baseline ? 'true' : 'false' }, h('b', null, '2'), h('span', null, t('stem.migration.experiment_step_compare', 'Capture & change'))),
-            h('li', { 'data-complete': study.trials.length && study.evidence.trim() && study.explanation.trim() ? 'true' : 'false' }, h('b', null, '3'), h('span', null, t('stem.migration.experiment_step_explain', 'Record & explain')))
+            h('li', { 'data-experiment-progress': 'predict', 'data-complete': study.prediction.trim() ? 'true' : 'false' }, h('b', { 'aria-hidden': 'true' }, '1'), h('span', null, t('stem.migration.experiment_step_predict', 'Choose & predict'), h('small', { 'data-experiment-progress-status': '' }, study.prediction.trim() ? t('stem.migration.experiment_progress_prediction_saved', 'Prediction saved') : t('stem.migration.experiment_step_incomplete', 'Not yet complete')))),
+            h('li', { 'data-experiment-progress': 'capture', 'data-complete': study.baseline ? 'true' : 'false' }, h('b', { 'aria-hidden': 'true' }, '2'), h('span', null, t('stem.migration.experiment_step_compare', 'Capture & change'), h('small', { 'data-experiment-progress-status': '' }, study.baseline ? t('stem.migration.experiment_progress_baseline_captured', 'Baseline captured') : t('stem.migration.experiment_step_incomplete', 'Not yet complete')))),
+            h('li', { 'data-experiment-progress': 'explain', 'data-complete': study.trials.length && study.evidence.trim() && study.explanation.trim() ? 'true' : 'false' }, h('b', { 'aria-hidden': 'true' }, '3'), h('span', null, t('stem.migration.experiment_step_explain', 'Record & explain'), h('small', { 'data-experiment-progress-status': '' }, study.trials.length && study.evidence.trim() && study.explanation.trim() ? t('stem.migration.experiment_progress_evidence_saved', 'Evidence saved') : t('stem.migration.experiment_step_incomplete', 'Not yet complete'))))
           ),
           study.repaired && h('p', { className: 'migration-experiment-help', role: 'status' }, t('stem.migration.experiment_recovered', 'Some saved observations could not be read. Your readable trials and notes are still available.')),
           h('div', { className: 'migration-experiment-setup' },
@@ -8848,7 +9580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             ),
             h('label', { className: 'migration-experiment-prediction', htmlFor: 'migration-experiment-prediction' },
               h('span', null, t('stem.migration.experiment_prediction_label', 'What do you predict, and why?')),
-              h('textarea', { id: 'migration-experiment-prediction', rows: 3, maxLength: 1000, value: study.prediction, 'aria-label': t('stem.migration.experiment_prediction_aria', 'Flight investigation prediction'), placeholder: t('stem.migration.experiment_prediction_placeholder', 'If I change this condition, I think… because…'), onChange: function(event) { saveStudy({ prediction: event.target.value.slice(0, 1000) }); } })
+              h('textarea', { id: 'migration-experiment-prediction', rows: 3, maxLength: 1000, value: study.prediction, placeholder: t('stem.migration.experiment_prediction_placeholder', 'If I change this condition, I think… because…'), onChange: function(event) { saveStudy({ prediction: event.target.value.slice(0, 1000) }); } })
             )
           ),
           h('div', { className: 'migration-experiment-actions' },
@@ -8890,6 +9622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'migration-experiment-history' }, study.trials.map(function(trial, index) {
               var result = migrCompareFlightInvestigation(trial.baseline, trial.snapshot, trial.variable);
               var trialTitle = t('stem.migration.experiment_trial_word', 'Trial') + ' ' + (index + 1);
+              var trialRemoval = { node: null, used: false };
               return h('article', { key: index, className: 'migration-experiment-trial', 'data-experiment-trial': index + 1, 'data-comparison': result.status },
                 h('div', { className: 'migration-experiment-trial-heading' }, h('h5', null, trialTitle + ' · ' + (trial.variable === 'wind' ? t('stem.migration.experiment_wind', 'Wind') : t('stem.migration.experiment_formation', 'Formation'))), h('span', null, statusLabel(result.status))),
                 h('p', null, speciesName(trial.baseline) + ' → ' + speciesName(trial.snapshot) + ' · ' + seasonName(trial.baseline) + ' → ' + seasonName(trial.snapshot)),
@@ -8903,18 +9636,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('button', { type: 'button', 'data-experiment-revisit-baseline': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, true); } }, t('stem.migration.experiment_revisit_trial_baseline', 'Revisit baseline for trial') + ' ' + (index + 1)),
                   h('button', { type: 'button', 'data-experiment-revisit': index + 1, 'aria-label': t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1), 'aria-describedby': 'migration-experiment-revisit-help', onClick: function() { revisitFlightTrial(trial, index, false); } }, t('stem.migration.experiment_revisit_trial', 'Revisit trial') + ' ' + (index + 1))
                 ),
-                h('button', { className: 'migration-experiment-remove', type: 'button', 'aria-label': t('stem.migration.experiment_remove_trial', 'Remove trial') + ' ' + (index + 1), onClick: function() {
-                  saveStudy({ trials: study.trials.filter(function(row, rowIndex) { return rowIndex !== index; }) });
-                  announce(trialTitle + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
-                  window.setTimeout(function() {
-                    var notebook = document.getElementById('migration-flight-experiment');
-                    if (!notebook) return;
-                    var buttons = notebook.querySelectorAll('.migration-experiment-remove');
-                    var target = buttons[Math.min(index, buttons.length - 1)] || notebook.querySelector('[data-experiment-action="record"]');
-                    if (target && target.disabled) target = notebook.querySelector('#migration-experiment-prediction');
-                    if (target && target.focus) target.focus();
-                  }, 0);
-                } }, t('stem.migration.experiment_remove', 'Remove'))
+                h('button', {
+                  className: 'migration-experiment-remove', type: 'button', 'data-trial-remove': index + 1,
+                  ref: function(node) { attachRemovalControl(trialRemoval, node); },
+                  'aria-label': t('stem.migration.experiment_remove_trial', 'Remove trial') + ' ' + (index + 1),
+                  onClick: function(event) {
+                    if (!beginRemovalControl(trialRemoval, event)) return;
+                    var notebook = trialRemoval.node && trialRemoval.node.closest('.migration-experiment');
+                    if (notebook) {
+                      var buttons = notebook.querySelectorAll('.migration-experiment-remove');
+                      var target = buttons[index < buttons.length - 1 ? index : index - 1] || notebook.querySelector('[data-experiment-action="record"]');
+                      if (target && target.disabled) target = notebook.querySelector('#migration-experiment-prediction');
+                      focusBeforeRemoval(trialRemoval, notebook, target);
+                    }
+                    if (!currentRemovalControl(trialRemoval, event)) return;
+                    saveStudy({ trials: study.trials.filter(function(row, rowIndex) { return rowIndex !== index; }) });
+                    announce(trialTitle + ' ' + t('stem.migration.experiment_trial_removed', 'removed'));
+                  }
+                }, t('stem.migration.experiment_remove', 'Remove'))
               );
             }))
           ),
@@ -8959,8 +9698,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }, t('stem.migration.inspect_saved_comparison', 'Inspect saved trial comparison')),
               h('small', { id: 'migration-trial-evidence-help' }, t('stem.migration.trial_evidence_scope', 'Compare your recorded prediction with your own evidence. Your prediction and explanation are ungraded.'))
             ),
-            h('label', { htmlFor: 'migration-experiment-evidence' }, h('span', null, t('stem.migration.experiment_evidence_label', 'Evidence I noticed')), h('textarea', { id: 'migration-experiment-evidence', rows: 3, maxLength: 2000, value: study.evidence, 'aria-label': t('stem.migration.experiment_evidence_aria', 'Flight investigation evidence notes'), placeholder: t('stem.migration.experiment_evidence_placeholder', 'Use the saved numbers and describe a change you saw in the 3D scene.'), onChange: function(event) { saveStudy({ evidence: event.target.value.slice(0, 2000) }); } })),
-            h('label', { htmlFor: 'migration-experiment-explanation' }, h('span', null, t('stem.migration.experiment_explanation_label', 'How does the evidence support or challenge my prediction?')), h('textarea', { id: 'migration-experiment-explanation', rows: 3, maxLength: 2000, value: study.explanation, 'aria-label': t('stem.migration.experiment_explanation_aria', 'Flight investigation explanation'), placeholder: t('stem.migration.experiment_explanation_placeholder', 'My evidence suggests… A limitation of this model is…'), onChange: function(event) { saveStudy({ explanation: event.target.value.slice(0, 2000) }); } }))
+            h('label', { htmlFor: 'migration-experiment-evidence' }, h('span', null, t('stem.migration.experiment_evidence_label', 'Evidence I noticed')), h('textarea', { id: 'migration-experiment-evidence', rows: 3, maxLength: 2000, value: study.evidence, placeholder: t('stem.migration.experiment_evidence_placeholder', 'Use the saved numbers and describe a change you saw in the 3D scene.'), onChange: function(event) { saveStudy({ evidence: event.target.value.slice(0, 2000) }); } })),
+            h('label', { htmlFor: 'migration-experiment-explanation' }, h('span', null, t('stem.migration.experiment_explanation_label', 'How does the evidence support or challenge my prediction?')), h('textarea', { id: 'migration-experiment-explanation', rows: 3, maxLength: 2000, value: study.explanation, placeholder: t('stem.migration.experiment_explanation_placeholder', 'My evidence suggests… A limitation of this model is…'), onChange: function(event) { saveStudy({ explanation: event.target.value.slice(0, 2000) }); } }))
           ),
           h('p', { className: 'migration-experiment-model-note', role: 'note' }, flightModelNote),
           h('div', { className: 'migration-experiment-actions', 'data-flight-notebook-exports': 'true' },
@@ -8981,7 +9720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var dragRef = _vfDragRef;
         var timeRef = _vfTimeRef;
 
-        var birdCount = migrNum(d.vBirdCount, 9, 2, 30);
+        var birdCount = Math.round(migrNum(d.vBirdCount, 9, 2, 30));
         var simSpeed = migrNum(d.vSpeed, 1, 0.25, 4);
         var leaderRotations = d.vLeaderRotations || 0;
 
@@ -8992,29 +9731,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Initialize birds
         function getVCanvasSize() {
           var cv = canvasRef && canvasRef.current;
+          return cv && cv._vfLogicalSize ? { W: cv._vfLogicalSize.width, H: cv._vfLogicalSize.height } : { W: 620, H: 380 };
+        }
+        function formationBounds() {
+          var size = getVCanvasSize();
+          var left = Math.min(28, size.W / 2), top = Math.min(92, size.H / 2);
+          return { left: left, right: Math.max(left, size.W - 28), top: top, bottom: Math.max(top, size.H - 40) };
+        }
+        function updateFormationControls(values) {
+          var next = Object.assign({}, _vfControlRef.current, values);
+          next.revision = _vfControlRef.current.revision + 1;
+          _vfControlRef.current = next;
+          formationControlState[1](next);
+        }
+        function ensureFormationBirds() {
+          var count = Math.round(migrNum(_liveVals.current.birdCount, 9, 2, 30));
+          if (!birdsRef.current || birdsRef.current.length !== count) {
+            birdsRef.current = makeFlock(count);
+            dragRef.current.active = false;
+            updateFormationControls({ selected: Math.min(_vfControlRef.current.selected, count - 1) });
+          }
+          return birdsRef.current;
+        }
+        function formationPosition(bird) {
+          var bounds = formationBounds();
           return {
-            W: (cv && cv.clientWidth) || 620,
-            H: (cv && cv.clientHeight) || 380
+            x: bird ? Math.round(clamp((bird.x - bounds.left) / Math.max(1, bounds.right - bounds.left) * 100, 0, 100)) : 50,
+            y: bird ? Math.round(clamp((bird.y - bounds.top) / Math.max(1, bounds.bottom - bounds.top) * 100, 0, 100)) : 50
           };
+        }
+        function formationDisplayScale() {
+          var bounds = formationBounds();
+          var reference = _vfModelBoundsRef.current || { width: bounds.right - bounds.left, height: bounds.bottom - bounds.top };
+          return { x: Math.max(1, bounds.right - bounds.left) / Math.max(1, reference.width), y: Math.max(1, bounds.bottom - bounds.top) / Math.max(1, reference.height) };
+        }
+        function formationPartner(birds, index) {
+          if (!birds[index] || birds[index].role === 'leader') return -1;
+          var scale = formationDisplayScale();
+          for (var k = 0; k < birds.length; k++) {
+            if (k === index) continue;
+            var dx = (birds[index].x - birds[k].x) / scale.x, dy = (birds[index].y - birds[k].y) / scale.y;
+            var distance = Math.sqrt(dx * dx + dy * dy), angle = Math.abs(Math.atan2(Math.abs(dy), Math.abs(dx)));
+            if (distance >= 5 && distance <= 80 && dx < -10 && angle > 0.3 && angle < 0.8) return k;
+          }
+          return -1;
+        }
+        function formationDescription(birds, index) {
+          var bird = birds && birds[index];
+          if (!bird) return t('stem.migration.formation_preparing', 'Preparing the flock.');
+          var position = formationPosition(bird), partner = formationPartner(birds, index);
+          var positionText = t('stem.migration.formation_position_description', 'Bird {bird}: {x}% from the left, {y}% from the top of the flight area.').replace('{bird}', index + 1).replace('{x}', position.x).replace('{y}', position.y);
+          var roleText = bird.role === 'leader'
+            ? t('stem.migration.formation_selected_leader', 'Leader: pays the full flight cost.')
+            : partner >= 0
+              ? t('stem.migration.formation_selected_upwash', 'Follower: in the upwash of bird {bird}.').replace('{bird}', partner + 1)
+              : t('stem.migration.formation_selected_no_upwash', 'Follower: outside the model’s upwash zones.');
+          return positionText + ' ' + roleText + ' ' + t('stem.migration.formation_efficiency_readout', 'Formation efficiency: {efficiency}%.').replace('{efficiency}', calcFormationEfficiency(birds));
+        }
+        function selectFormationBird(index, feedback) {
+          var birds = ensureFormationBirds();
+          index = Math.round(clamp(migrNum(index, 0), 0, birds.length - 1));
+          updateFormationControls({ selected: index, feedback: feedback === false ? _vfControlRef.current.feedback : formationDescription(birds, index) });
+        }
+        function positionFormationBird(index, x, y, feedback) {
+          var birds = ensureFormationBirds(), bounds = formationBounds();
+          index = Math.round(clamp(migrNum(index, 0), 0, birds.length - 1));
+          var bird = birds[index];
+          bird.x = clamp(x, bounds.left, bounds.right); bird.y = clamp(y, bounds.top, bounds.bottom);
+          updateFormationControls({ selected: index, feedback: feedback === false ? _vfControlRef.current.feedback : formationDescription(birds, index) });
+        }
+        function setFormationAxis(axis, value) {
+          var birds = ensureFormationBirds(), index = _vfControlRef.current.selected, bird = birds[index], bounds = formationBounds();
+          var percent = clamp(migrNum(value, 50), 0, 100) / 100;
+          dragRef.current.active = false;
+          positionFormationBird(index, axis === 'x' ? bounds.left + percent * (bounds.right - bounds.left) : bird.x,
+            axis === 'y' ? bounds.top + percent * (bounds.bottom - bounds.top) : bird.y);
+        }
+        function moveFormationBird(direction, fine) {
+          var birds = ensureFormationBirds(), index = _vfControlRef.current.selected, position = formationPosition(birds[index]);
+          var axis = direction === 'left' || direction === 'right' ? 'x' : 'y';
+          setFormationAxis(axis, position[axis] + (direction === 'left' || direction === 'up' ? -1 : 1) * (fine ? 1 : 5));
+        }
+        function arrangeFormation(mode) {
+          var count = Math.round(migrNum(_liveVals.current.birdCount, 9, 2, 30));
+          birdsRef.current = mode === 'v' ? makeVFormation(count) : makeFlock(count);
+          dragRef.current.active = false;
+          var index = Math.min(_vfControlRef.current.selected, count - 1);
+          updateFormationControls({ selected: index, feedback: (mode === 'v'
+            ? t('stem.migration.sr_v_formation_formed_automatically', 'V formation formed automatically')
+            : t('stem.migration.sr_birds_scattered_randomly', 'Birds scattered randomly')) + '. ' + formationDescription(birdsRef.current, index) });
         }
 
         function makeFlock(count) {
           var birds = [];
           var size = getVCanvasSize();
-          var cx = size.W * 0.54;
-          var cy = size.H * 0.54;
+          var bounds = formationBounds();
+          var cx = (bounds.left + bounds.right) / 2;
+          var cy = (bounds.top + bounds.bottom) / 2;
           var spreadX = Math.min(200, Math.max(96, size.W * 0.48));
           var spreadY = Math.min(150, Math.max(88, size.H * 0.38));
           for (var i = 0; i < count; i++) {
             birds.push({
-              x: Math.max(28, Math.min(size.W - 28, cx + (Math.random() - 0.5) * spreadX)),
-              y: Math.max(34, Math.min(size.H - 34, cy + (Math.random() - 0.5) * spreadY)),
+              x: clamp(cx + (Math.random() - 0.5) * spreadX, bounds.left, bounds.right),
+              y: clamp(cy + (Math.random() - 0.5) * spreadY, bounds.top, bounds.bottom),
               vx: 0, vy: 0,
               energy: 80 + Math.random() * 20,
               flapPhase: Math.random() * Math.PI * 2,
               role: i === 0 ? 'leader' : 'follower'
             });
           }
+          _vfModelBoundsRef.current = { width: bounds.right - bounds.left, height: bounds.bottom - bounds.top };
           return birds;
         }
 
@@ -9023,10 +9849,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var angle = Math.PI / 6; // 30 deg
           var size = getVCanvasSize();
           var maxRank = Math.max(1, Math.ceil((count - 1) / 2));
-          var spacing = Math.max(26, Math.min(42, size.W / 9));
-          var neededLeft = 42 + maxRank * spacing * Math.cos(angle);
-          var cx = Math.min(size.W - 34, Math.max(neededLeft, size.W * 0.62));
-          var cy = Math.max(86, Math.min(size.H - 86, size.H * 0.56));
+          var bounds = formationBounds();
+          var spacing = Math.min(42, (bounds.right - bounds.left) / (maxRank * Math.cos(angle)),
+            (bounds.bottom - bounds.top) / (2 * maxRank * Math.sin(angle)));
+          var neededLeft = bounds.left + maxRank * spacing * Math.cos(angle);
+          var cx = Math.min(bounds.right, Math.max(neededLeft, size.W * 0.62));
+          var cy = (bounds.top + bounds.bottom) / 2;
           birds.push({ x: cx, y: cy, vx: 0, vy: 0, energy: 100, flapPhase: 0, role: 'leader' });
           for (var i = 1; i < count; i++) {
             var side = (i % 2 === 0) ? 1 : -1;
@@ -9040,39 +9868,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               role: 'follower'
             });
           }
+          _vfModelBoundsRef.current = { width: bounds.right - bounds.left, height: bounds.bottom - bounds.top };
           return birds;
         }
 
         // Check if formation is good
         function calcFormationEfficiency(birds) {
           if (!birds || birds.length < 2) return 0;
-          var leaderIdx = -1;
-          for (var i = 0; i < birds.length; i++) {
-            if (birds[i].role === 'leader') { leaderIdx = i; break; }
-          }
-          if (leaderIdx < 0) leaderIdx = 0;
-          var leader = birds[leaderIdx];
           var inUpwash = 0;
-          for (var j = 0; j < birds.length; j++) {
-            if (j === leaderIdx) continue;
-            // Check if in upwash zone of any bird ahead
-            var hasUpwash = false;
-            for (var k = 0; k < birds.length; k++) {
-              if (k === j) continue;
-              var dx = birds[j].x - birds[k].x;
-              var dy = birds[j].y - birds[k].y;
-              var d2 = Math.sqrt(dx * dx + dy * dy);
-              if (d2 < 5 || d2 > 80) continue;
-              // Bird j is behind bird k and offset to side
-              if (dx < -10) {
-                var absAngle = Math.abs(Math.atan2(Math.abs(dy), Math.abs(dx)));
-                if (absAngle > 0.3 && absAngle < 0.8) {
-                  hasUpwash = true;
-                  break;
-                }
-              }
-            }
-            if (hasUpwash) inUpwash++;
+          for (var index = 0; index < birds.length; index++) {
+            if (formationPartner(birds, index) >= 0) inUpwash++;
           }
           return Math.round((inUpwash / (birds.length - 1)) * 100);
         }
@@ -9087,16 +9892,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
           var H = 380;
-          canvas.width = W * dpr;
-          canvas.height = H * dpr;
-          canvas.style.width = W + 'px';
-          canvas.style.height = H + 'px';
-          c.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-          if (!birdsRef.current || birdsRef.current.length !== birdCount) {
-            birdsRef.current = makeFlock(birdCount);
+          function resizeFormationCanvas(nextWidth) {
+            var previousSize = _vfSizeRef.current;
+            W = Math.max(1, Math.round(nextWidth));
+            canvas.width = W * dpr;
+            canvas.height = H * dpr;
+            canvas.style.width = '100%';
+            canvas.style.height = H + 'px';
+            canvas._vfLogicalSize = { width: W, height: H };
+            _vfSizeRef.current = canvas._vfLogicalSize;
+            c.setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (previousSize && (previousSize.width !== W || previousSize.height !== H) && birdsRef.current) {
+              var previousLeft = Math.min(28, previousSize.width / 2), previousTop = Math.min(92, previousSize.height / 2);
+              var previousWidth = Math.max(1, previousSize.width - 28 - previousLeft), previousHeight = Math.max(1, previousSize.height - 40 - previousTop);
+              var newBounds = formationBounds();
+              birdsRef.current.forEach(function(bird) {
+                bird.x = newBounds.left + clamp((bird.x - previousLeft) / previousWidth, 0, 1) * (newBounds.right - newBounds.left);
+                bird.y = newBounds.top + clamp((bird.y - previousTop) / previousHeight, 0, 1) * (newBounds.bottom - newBounds.top);
+              });
+              updateFormationControls({});
+            }
           }
-          var birds = birdsRef.current;
+          resizeFormationCanvas(W);
+
+          var birds = ensureFormationBirds();
 
           // Vortex particles
           var vortices = [];
@@ -9110,44 +9929,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             windParts.push({ x: Math.random() * W, y: Math.random() * H, speed: 0.5 + Math.random() * 1.5, size: 1 + Math.random() });
           }
 
-          var _vfStillSig = null;
+          var _vfStillSig = null, _vfStillBirds = null;
+          var _vfFrameId = null, _vfDisposed = false;
           function frame() {
-            // Always read birds from the ref so Auto-Form V / Scatter take effect immediately
-            birds = birdsRef.current || birds;
-            // Read fresh values from live ref (updated every React render)
-            var lv = _liveVals.current;
-            if (reducedMotionRef.current) {
-              // Keep the loop's slot and stop the clock. This used to return
-              // outright, which killed the loop: the canvas never repainted
-              // again, so every control on the tab went inert for precisely
-              // the people who asked for less motion.
-              var _vfSig = [lv.isDark, lv.birdCount, lv.simSpeed].join('|');
-              if (_vfStillSig !== _vfSig) {
-                _vfStillSig = _vfSig;
-                if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
-                  birdsRef.current = makeFlock(lv.birdCount);
-                  birds = birdsRef.current;
-                }
+            if (_vfDisposed || !document.contains(canvas)) return;
+            var displayedWidth = Math.max(1, Math.round(canvas.clientWidth || W));
+            if (displayedWidth !== W) {
+              resizeFormationCanvas(displayedWidth);
+              _vfStillSig = null; _vfStillBirds = null;
+            }
+            birds = ensureFormationBirds();
+            var lv = _liveVals.current, controls = _vfControlRef.current;
+            var still = reducedMotionRef.current || controls.paused;
+            if (still) {
+              var signature = [lv.isDark, lv.birdCount, lv.simSpeed, controls.revision, controls.selected].join('|');
+              if (_vfStillSig !== signature || _vfStillBirds !== birds) {
+                _vfStillSig = signature; _vfStillBirds = birds;
                 c.clearRect(0, 0, W, H);
-                renderFrame(c, W, H, birds, vortices, windParts, 0);
+                renderFrame(c, W, H, birds, vortices, windParts, timeRef.current, false);
               }
-              animRef.current = requestAnimationFrame(frame);
-              return;
+            } else {
+              _vfStillSig = null; _vfStillBirds = null;
+              timeRef.current += 0.016 * lv.simSpeed;
+              c.clearRect(0, 0, W, H);
+              renderFrame(c, W, H, birds, vortices, windParts, timeRef.current, true);
             }
-            var simSpeed = lv.simSpeed;
-            var isDark = lv.isDark;
-            // Dynamically update bird count if changed
-            if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
-              birdsRef.current = makeFlock(lv.birdCount);
-              birds = birdsRef.current;
-            }
-            timeRef.current += 0.016 * lv.simSpeed;
-            c.clearRect(0, 0, W, H);
-            renderFrame(c, W, H, birds, vortices, windParts, timeRef.current);
-            animRef.current = requestAnimationFrame(frame);
+            _vfFrameId = requestAnimationFrame(frame);
+            animRef.current = _vfFrameId;
           }
 
-          function renderFrame(c, W, H, birds, vortices, windParts, time) {
+          function renderFrame(c, W, H, birds, vortices, windParts, time, advance) {
             // Sibling of frame() inside the same guarded init: it needs its own
             // alias, because a var declared in frame() does not reach here.
             var lv = _liveVals.current;
@@ -9188,8 +9999,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillStyle = isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.15)';
             for (var wp = 0; wp < windParts.length; wp++) {
               var p = windParts[wp];
-              p.x -= p.speed * simSpeed;
-              if (p.x < -5) { p.x = W + 5; p.y = Math.random() * H; }
+              if (advance) {
+                p.x -= p.speed * simSpeed;
+                if (p.x < -5) { p.x = W + 5; p.y = Math.random() * H; }
+              }
               c.beginPath();
               c.moveTo(p.x, p.y);
               c.lineTo(p.x + p.size * 6, p.y);
@@ -9204,25 +10017,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (birds[bi].role === 'leader') { leaderIdx = bi; break; }
             }
 
-            for (var bi2 = 0; bi2 < birds.length; bi2++) {
+            for (var bi2 = 0; advance && bi2 < birds.length; bi2++) {
               var b = birds[bi2];
               b.flapPhase += (0.06 + simSpeed * 0.03);
 
               // Energy depletion
-              var inUpwash = false;
-              if (b.role !== 'leader') {
-                for (var k = 0; k < birds.length; k++) {
-                  if (k === bi2) continue;
-                  var ddx = b.x - birds[k].x;
-                  var ddy = b.y - birds[k].y;
-                  var dd = Math.sqrt(ddx * ddx + ddy * ddy);
-                  if (dd < 5 || dd > 80) continue;
-                  if (ddx < -10) {
-                    var ang = Math.abs(Math.atan2(Math.abs(ddy), Math.abs(ddx)));
-                    if (ang > 0.3 && ang < 0.8) { inUpwash = true; break; }
-                  }
-                }
-              }
+              var inUpwash = formationPartner(birds, bi2) >= 0;
 
               var depletionRate = b.role === 'leader' ? 0.012 : (inUpwash ? 0.004 : 0.012);
               b.energy = Math.max(0, b.energy - depletionRate * simSpeed);
@@ -9271,8 +10071,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // downstream, plus chevrons that point the way the air is actually
             // moving, make the upwash a student can aim for and the downwash one
             // they can see they are stuck in.
+            var wakeScale = formationDisplayScale();
             for (var uzi = 0; uzi < birds.length; uzi++) {
-              var uzb = birds[uzi];
+              c.save();
+              c.translate(birds[uzi].x, birds[uzi].y);
+              c.scale(wakeScale.x, wakeScale.y);
+              var uzb = { x: 0, y: 0 };
               // Downwash directly astern: the air the leader pushes DOWN
               var dwGrad = c.createLinearGradient(uzb.x - 5, uzb.y, uzb.x - 66, uzb.y);
               dwGrad.addColorStop(0, 'rgba(239,68,68,0.20)');
@@ -9285,6 +10089,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.lineTo(uzb.x - 4, uzb.y + 8);
               c.closePath();
               c.fill();
+              // Falling chevrons distinguish downwash without relying on red/green.
+              c.strokeStyle = isDark ? '#fca5a5' : '#991b1b';
+              c.lineWidth = 1.5;
+              for (var dc = 0; dc < 2; dc++) {
+                var dx = -26 - dc * 20;
+                c.beginPath(); c.moveTo(dx - 4, -4); c.lineTo(dx, 3); c.lineTo(dx + 4, -4); c.stroke();
+              }
               // Upwash off each wingtip, at roughly 30 degrees to the side
               for (var side2 = -1; side2 <= 1; side2 += 2) {
                 var uwGrad = c.createLinearGradient(uzb.x - 5, uzb.y, uzb.x - 74, uzb.y + side2 * 34);
@@ -9316,6 +10127,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 }
                 c.lineCap = 'butt';
               }
+              c.restore();
             }
 
             // Draw birds
@@ -9340,6 +10152,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 c.beginPath();
                 c.arc(db.x, db.y, 26, 0, Math.PI * 2);
                 c.fill();
+              }
+              if (di === _vfControlRef.current.selected) {
+                c.save();
+                c.beginPath(); c.arc(db.x, db.y, 23, 0, Math.PI * 2);
+                c.strokeStyle = '#ffffff'; c.lineWidth = 5; c.stroke();
+                c.strokeStyle = '#0f172a'; c.lineWidth = 2; c.stroke();
+                c.font = 'bold 12px system-ui'; c.textAlign = 'center';
+                migrHaloText(c, String(di + 1), db.x, db.y + 37, '#0f172a', false, 3);
+                c.restore();
               }
               drawBird(c, db.x, db.y, 11, db.flapPhase, 1, birdColor, isDark, 'goose');
 
@@ -9374,51 +10195,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               }
             }
 
-            // ── Instrument panel ──
+            // Readouts and the wake key are semantic HTML outside the drawing.
+            // Keep the achievement gate on the same model-derived efficiency.
             var eff = calcFormationEfficiency(birds);
-            var effCol = eff >= 85 ? '#22c55e' : eff >= 55 ? '#eab308' : '#ef4444';
-            migrPanel(c, 8, 8, 186, 72, isDark, effCol);
-            c.textAlign = 'left';
-            c.textBaseline = 'alphabetic';
-            c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.font = 'bold 8px system-ui';
-            c.fillText(t('stem.migration.formation_efficiency_label', 'FORMATION EFFICIENCY').toUpperCase(), 18, 23);
-            c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
-            c.font = 'bold 20px system-ui';
-            c.fillText(eff + '%', 18, 43);
-            // Meter, so the number has a scale behind it
-            migrRoundPath(c, 18, 50, 160, 6, 3);
-            c.fillStyle = isDark ? 'rgba(148,163,184,0.25)' : 'rgba(148,163,184,0.35)';
-            c.fill();
-            if (eff > 1) {
-              migrRoundPath(c, 18, 50, 160 * clamp(eff / 100, 0, 1), 6, 3);
-              c.fillStyle = effCol;
-              c.fill();
-            }
-            c.font = '9px system-ui';
-            c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            // Was `eff * 0.3`, a bare constant that made a perfect formation
-            // claim 30% saved -- the top of the documented range, where every
-            // other surface in this tool says 22%. Scaled from the one savings
-            // table instead, so a perfect V reads 22% here too. (The leader
-            // itself saves nothing; this is the figure for the birds that are
-            // actually drafting, which is what the readout is about.)
-            c.fillText(t('stem.migration.energy_saved_short', 'Energy saved') + ' ' +
-              Math.round((eff / 100) * migrFormationSaving('v') * 100) + '%  ·  ' +
-              t('stem.migration.rotations_short', 'rotations') + ' ' + (leaderRotations || 0), 18, 70);
-
-            // Wake key — the two colours behind the birds mean opposite things,
-            // and nothing on screen said which was which.
-            migrPanel(c, W - 128, 8, 120, 42, isDark, null);
-            c.fillStyle = 'rgba(34,197,94,0.75)';
-            c.fillRect(W - 120, 18, 12, 7);
-            c.fillStyle = 'rgba(239,68,68,0.6)';
-            c.fillRect(W - 120, 32, 12, 7);
-            c.font = '9px system-ui';
-            c.textAlign = 'left';
-            c.fillStyle = isDark ? '#cbd5e1' : '#334155';
-            c.fillText(t('stem.migration.upwash_lift', 'upwash · free lift'), W - 104, 25);
-            c.fillText(t('stem.migration.downwash_cost', 'downwash · costly'), W - 104, 39);
 
             // Check for perfect V — synchronous ref prevents per-frame re-award
             // while the async setToolData write propagates (previous bug: ~60 XP/sec).
@@ -9432,81 +10211,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
           }
 
-          // Mouse handlers for dragging birds
-          function getMousePos(e) {
+          // Pointer and native controls use the same logical flight area after display resize.
+          function getPointerPos(point) {
             var rect = canvas.getBoundingClientRect();
-            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            return { x: (point.clientX - rect.left) * W / (rect.width || W), y: (point.clientY - rect.top) * H / (rect.height || H) };
           }
-
-          function onMouseDown(e) {
-            var pos = getMousePos(e);
-            var birds2 = birdsRef.current;
-            if (!birds2) return;
-            for (var i = 0; i < birds2.length; i++) {
-              if (dist(pos.x, pos.y, birds2[i].x, birds2[i].y) < 18) {
-                dragRef.current = { active: true, idx: i, offX: birds2[i].x - pos.x, offY: birds2[i].y - pos.y };
-                break;
+          function beginDrag(point, radius) {
+            var pos = getPointerPos(point), flock = ensureFormationBirds();
+            dragRef.current.active = false;
+            for (var i = 0; i < flock.length; i++) {
+              if (dist(pos.x, pos.y, flock[i].x, flock[i].y) < radius) {
+                dragRef.current = { active: true, idx: i, offX: flock[i].x - pos.x, offY: flock[i].y - pos.y };
+                selectFormationBird(i);
+                return true;
               }
             }
+            return false;
           }
-          function onMouseMove(e) {
+          function dragTo(point) {
             if (!dragRef.current.active) return;
-            var pos = getMousePos(e);
-            var birds2 = birdsRef.current;
-            if (birds2 && birds2[dragRef.current.idx]) {
-              birds2[dragRef.current.idx].x = pos.x + dragRef.current.offX;
-              birds2[dragRef.current.idx].y = pos.y + dragRef.current.offY;
-            }
+            var pos = getPointerPos(point), drag = dragRef.current;
+            positionFormationBird(drag.idx, pos.x + drag.offX, pos.y + drag.offY, false);
           }
-          function onMouseUp() {
+          function endDrag() {
+            if (!dragRef.current.active) return;
+            var index = dragRef.current.idx;
             dragRef.current.active = false;
+            selectFormationBird(index);
           }
-
+          function onMouseDown(event) { if (event.button === 0) beginDrag(event, 23); }
+          function onMouseMove(event) { dragTo(event); }
+          function onMouseUp() { endDrag(); }
+          function onTouchStart(event) {
+            if (event.touches.length !== 1) { endDrag(); return; }
+            var touch = event.touches[0];
+            if (touch && beginDrag(touch, 24)) event.preventDefault();
+          }
+          function onTouchMove(event) {
+            if (event.touches.length !== 1) { endDrag(); return; }
+            if (!dragRef.current.active || !event.touches[0]) return;
+            event.preventDefault(); dragTo(event.touches[0]);
+          }
+          function onTouchEnd() { endDrag(); }
           canvas.addEventListener('mousedown', onMouseDown);
           canvas.addEventListener('mousemove', onMouseMove);
           canvas.addEventListener('mouseup', onMouseUp);
           canvas.addEventListener('mouseleave', onMouseUp);
-
-          // Touch support
-          function getTouchPos(e) {
-            var rect = canvas.getBoundingClientRect();
-            var touch = e.touches[0] || e.changedTouches[0];
-            return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-          }
-          function onTouchStart(e) {
-            e.preventDefault();
-            var pos = getTouchPos(e);
-            var birds2 = birdsRef.current;
-            if (!birds2) return;
-            for (var i = 0; i < birds2.length; i++) {
-              if (dist(pos.x, pos.y, birds2[i].x, birds2[i].y) < 24) {
-                dragRef.current = { active: true, idx: i, offX: birds2[i].x - pos.x, offY: birds2[i].y - pos.y };
-                break;
-              }
-            }
-          }
-          function onTouchMove(e) {
-            e.preventDefault();
-            if (!dragRef.current.active) return;
-            var pos = getTouchPos(e);
-            var birds2 = birdsRef.current;
-            if (birds2 && birds2[dragRef.current.idx]) {
-              birds2[dragRef.current.idx].x = pos.x + dragRef.current.offX;
-              birds2[dragRef.current.idx].y = pos.y + dragRef.current.offY;
-            }
-          }
-          function onTouchEnd() { dragRef.current.active = false; }
-
           canvas.addEventListener('touchstart', onTouchStart, { passive: false });
           canvas.addEventListener('touchmove', onTouchMove, { passive: false });
           canvas.addEventListener('touchend', onTouchEnd);
+          canvas.addEventListener('touchcancel', onTouchEnd);
 
           frame();
 
           // Cleanup via MutationObserver (callback refs must not return a function in React 18)
           var obs = new MutationObserver(function() {
             if (!document.contains(canvas)) {
-              if (animRef.current) cancelAnimationFrame(animRef.current);
+              _vfDisposed = true;
+              if (_vfFrameId) cancelAnimationFrame(_vfFrameId);
+              if (animRef.current === _vfFrameId) animRef.current = null;
               canvas.removeEventListener('mousedown', onMouseDown);
               canvas.removeEventListener('mousemove', onMouseMove);
               canvas.removeEventListener('mouseup', onMouseUp);
@@ -9514,6 +10277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               canvas.removeEventListener('touchstart', onTouchStart);
               canvas.removeEventListener('touchmove', onTouchMove);
               canvas.removeEventListener('touchend', onTouchEnd);
+              canvas.removeEventListener('touchcancel', onTouchEnd);
               obs.disconnect();
               canvas._vfInit = false;
             }
@@ -9524,8 +10288,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Read aloud helper
         var vReadAloud = function() {
           if (!callTTS) return;
-          callTTS(t('stem.migration.tts_vformation', 'V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips. Measurements on real flocks put the saving at roughly 10 to 30 percent, and this tool uses 22 percent as a midpoint. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Drag the birds to different positions and see how formation efficiency changes.'));
+          callTTS(t('stem.migration.tts_vformation', 'V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips. Measurements on real flocks put the saving at roughly 10 to 30 percent, and this tool uses 22 percent as a midpoint. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Choose a bird and use the position controls or arrow keys to explore the formation. You can also drag birds. Pause motion to inspect each arrangement and read which bird supplies upwash.'));
         };
+
+        var formationUi = _vfControlRef.current;
+        var visibleBirds = birdsRef.current || [];
+        var selectedBird = Math.min(formationUi.selected, Math.max(0, visibleBirds.length - 1));
+        var selectedPosition = formationPosition(visibleBirds[selectedBird]);
+        var formationEfficiency = calcFormationEfficiency(visibleBirds);
+        var formationSaving = Math.round((formationEfficiency / 100) * migrFormationSaving('v') * 100);
+        var formationRotations = Math.max(0, Math.floor(migrNum(leaderRotations, 0)));
+        var formationReadoutId = 'migration-formation-readout-' + formationControlId;
+        var formationEfficiencyId = 'migration-formation-efficiency-' + formationControlId;
+        var formationWakeId = 'migration-formation-wake-' + formationControlId;
+        var formationButtonStyle = { minHeight: 44, minWidth: 44, padding: '8px 12px' };
 
         return h('div', { className: 'space-y-3' },
           // Read aloud button
@@ -9537,44 +10313,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }, t('stem.migration.read_aloud', '\uD83D\uDD0A Read Aloud'))
           ),
 
-          // Canvas
-          h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
+          // Keep labels in the document so user text settings and translations can reflow.
+          h('figure', { className: 'migration-formation-figure', 'data-formation-figure': 'true', 'aria-labelledby': formationReadoutId },
+            h('figcaption', { className: 'migration-formation-readout', 'data-formation-readout': 'true' },
+              h('h3', { id: formationReadoutId, 'data-formation-readout-title': 'true' }, t('stem.migration.formation_readout_heading', 'Formation readout')),
+              h('dl', null,
+                h('div', { className: 'migration-formation-metric' },
+                  h('dt', { id: formationEfficiencyId }, t('stem.migration.formation_efficiency_heading', 'Formation efficiency')),
+                  h('dd', { 'data-formation-efficiency': 'true' }, formationEfficiency + '%',
+                    h('meter', { 'data-formation-efficiency-meter': 'true', min: 0, max: 100, value: formationEfficiency, 'aria-labelledby': formationEfficiencyId,
+                      'aria-valuetext': t('stem.migration.formation_efficiency_value', '{efficiency}% of followers receiving modeled upwash').replace('{efficiency}', formationEfficiency) })
+                  )
+                ),
+                h('div', { className: 'migration-formation-metric' },
+                  h('dt', null, t('stem.migration.formation_average_saving', 'Average follower saving')),
+                  h('dd', { 'data-formation-saving': 'true' }, formationSaving + '%')
+                ),
+                h('div', { className: 'migration-formation-metric' },
+                  h('dt', null, t('stem.migration.formation_leader_rotations', 'Leader rotations')),
+                  h('dd', { 'data-formation-rotations': 'true' }, formationRotations)
+                )
+              ),
+              h('p', { className: 'migration-formation-model-note' }, t('stem.migration.formation_readout_model_note', 'Saving is averaged across the followers; the leader is excluded. This simplified model gives a follower in upwash a {saving}% saving.').replace('{saving}', Math.round(migrFormationSaving('v') * 100))),
+              h('ul', { id: formationWakeId, className: 'migration-formation-wake-key', 'data-formation-wake-key': 'true' },
+                h('li', { 'data-formation-wake': 'upwash' },
+                  h('span', { className: 'migration-formation-wake-symbol', 'data-wake': 'upwash', 'aria-hidden': 'true' }, '\u2191'),
+                  h('div', null,
+                    h('strong', null, t('stem.migration.formation_upwash_heading', 'Upwash: rising air')),
+                    h('p', null, t('stem.migration.formation_upwash_key', 'Upward chevrons beside the wake mark lift that a following bird can use.'))
+                  )
+                ),
+                h('li', { 'data-formation-wake': 'downwash' },
+                  h('span', { className: 'migration-formation-wake-symbol', 'data-wake': 'downwash', 'aria-hidden': 'true' }, '\u2193'),
+                  h('div', null,
+                    h('strong', null, t('stem.migration.formation_downwash_heading', 'Downwash: sinking air')),
+                    h('p', null, t('stem.migration.formation_downwash_key', 'Downward chevrons directly behind a bird mark air that does not give the modeled saving.'))
+                  )
+                )
+              )
+            ),
             h('canvas', {
               ref: _vfInitCanvas,
               role: 'img',
-              'aria-label': t('stem.migration.v_formation_simulator_canvas_drag_bird', 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.'),
+
+              'data-formation-canvas': 'true',
+              'aria-label': t('stem.migration.v_formation_accessible_canvas', 'V-formation simulator. The numbered outline marks the selected bird. A star marks the leader. The readout and wake key precede the canvas; position controls and a text explanation follow it.'),
+              'aria-describedby': 'migration-formation-help-' + formationControlId + ' migration-formation-position-' + formationControlId + ' ' + formationWakeId,
               tabIndex: 0,
-              onKeyDown: function(e) {
-                if (e.key === 'v' || e.key === 'V') {
-                  birdsRef.current = makeVFormation(birdCount);
-                  if (announceToSR) announceToSR(__alloT('stem.migration.sr_auto_formed_v_formation', 'Auto-formed V formation'));
-                } else if (e.key === 's' || e.key === 'S') {
-                  birdsRef.current = makeFlock(birdCount);
-                  if (announceToSR) announceToSR(__alloT('stem.migration.sr_flock_scattered', 'Flock scattered'));
+              onKeyDown: function(event) {
+                if (event.ctrlKey || event.metaKey || event.altKey) return;
+                var direction = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[event.key];
+                if (direction) { event.preventDefault(); moveFormationBird(direction, event.shiftKey); return; }
+                var key = event.key.toLowerCase();
+                if (key === 'v' || key === 's') {
+                  event.preventDefault();
+                  if (!event.repeat) arrangeFormation(key === 'v' ? 'v' : 'scatter');
                 }
               },
               style: { width: '100%', cursor: 'grab', display: 'block' }
             })
           ),
 
+          h('div', { 'data-formation-controls': 'true', className: 'rounded-xl p-3 border space-y-3 ' + borderCol + ' ' + cardBg },
+            h('h3', { className: 'text-sm font-bold ' + textPrimary }, t('stem.migration.formation_position_heading', 'Explore each bird’s position')),
+            h('p', { id: 'migration-formation-help-' + formationControlId, className: 'text-xs leading-relaxed ' + textSecondary }, t('stem.migration.formation_controls_help', 'Choose a bird, then use the sliders or direction buttons. In the canvas, arrow keys move 5%; Shift + arrow moves 1%. V forms a V and S scatters the flock. Pause motion for a still view. The numbered outline identifies your bird.')),
+            h('div', { className: 'flex flex-wrap items-end gap-3' },
+              h('label', { className: 'text-xs font-bold ' + textPrimary, style: { display: 'grid', gap: 4 } },
+                t('stem.migration.formation_choose_bird', 'Choose bird'),
+                h('select', { 'data-formation-bird-select': 'true', value: selectedBird, style: Object.assign({ maxWidth: '100%', background: 'var(--mg-canvas)', color: 'var(--mg-text)', border: '1px solid var(--mg-border)', borderRadius: 8 }, formationButtonStyle), onChange: function(event) { dragRef.current.active = false; selectFormationBird(Number(event.target.value)); } },
+                  Array.from({ length: birdCount }, function(_, index) { return h('option', { key: index, value: index }, t('stem.migration.formation_bird_number', 'Bird {bird}').replace('{bird}', index + 1)); })
+                )
+              ),
+              ['x', 'y'].map(function(axis) {
+                return h('label', { key: axis, className: 'text-xs font-bold ' + textPrimary, style: { display: 'grid', gap: 4, flex: '1 1 180px', minWidth: 0 } },
+                  (axis === 'x' ? t('stem.migration.formation_horizontal_position', 'Horizontal position') : t('stem.migration.formation_vertical_position', 'Vertical position')) + ': ' + selectedPosition[axis] + '%',
+                  h('input', { type: 'range', min: 0, max: 100, step: 1, value: selectedPosition[axis], 'data-formation-axis': axis, 'aria-describedby': 'migration-formation-position-' + formationControlId, style: { minHeight: 44, width: '100%' }, onChange: function(event) { setFormationAxis(axis, event.target.value); } })
+                );
+              })
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              ['left', 'right', 'up', 'down'].map(function(direction) {
+                var labels = { left: t('stem.migration.formation_move_left', 'Move left'), right: t('stem.migration.formation_move_right', 'Move right'), up: t('stem.migration.formation_move_up', 'Move up'), down: t('stem.migration.formation_move_down', 'Move down') };
+                return h('button', { key: direction, type: 'button', 'data-formation-move': direction, className: 'rounded-lg text-xs font-bold ' + btnSecondary, style: formationButtonStyle, onClick: function() { moveFormationBird(direction, false); } }, labels[direction]);
+              }),
+              h('button', { type: 'button', 'data-formation-focus': 'true', className: 'rounded-lg text-xs font-bold ' + btnSecondary, style: formationButtonStyle, onClick: function() { if (canvasRef.current) canvasRef.current.focus(); } }, t('stem.migration.formation_focus_canvas', 'Focus formation canvas')),
+              h('button', { type: 'button', 'data-formation-pause': 'true', 'aria-pressed': formationUi.paused || motionReduced ? 'true' : 'false', 'aria-disabled': motionReduced ? 'true' : 'false', className: 'rounded-lg text-xs font-bold ' + (formationUi.paused || motionReduced ? btnPrimary : btnSecondary), style: formationButtonStyle, onClick: function() {
+                if (reducedMotionRef.current) return;
+                var paused = !_vfControlRef.current.paused;
+                updateFormationControls({ paused: paused, feedback: (paused ? t('stem.migration.formation_motion_paused', 'Formation motion paused.') : reducedMotionRef.current ? t('stem.migration.formation_reduced_motion_still', 'Reduced motion keeps the formation still.') : t('stem.migration.formation_motion_resumed', 'Formation motion resumed.')) + ' ' + formationDescription(ensureFormationBirds(), _vfControlRef.current.selected) });
+              } }, t('stem.migration.formation_pause_motion', 'Pause motion'))
+            ),
+            motionReduced && h('p', { className: 'text-xs leading-relaxed ' + textSecondary }, t('stem.migration.formation_reduced_motion_note', 'Your reduced-motion preference keeps this scene still. Position controls still update the view.')),
+            h('p', { id: 'migration-formation-position-' + formationControlId, 'data-formation-position': 'true', className: 'text-xs leading-relaxed ' + textSecondary }, formationDescription(visibleBirds, selectedBird)),
+            h('p', { 'data-formation-status': 'true', role: 'status', 'aria-atomic': 'true', className: 'sr-only' }, formationUi.feedback),
+            h('p', { className: 'text-xs leading-relaxed ' + textSecondary }, t('stem.migration.formation_model_note', 'The model counts followers behind and to the side of another bird as receiving upwash. The leader gets no saving. Compare positions and explain why the efficiency changes; this is a simplified model of a flock.'))
+          ),
+
           // Controls
           h('div', { className: 'flex flex-wrap gap-2 items-center' },
             h('button', {
+              type: 'button', style: formationButtonStyle,
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnPrimary,
               'aria-label': t('stem.migration.auto_form_v_formation', 'Auto-form V formation'),
               onClick: function() {
-                birdsRef.current = makeVFormation(birdCount);
+                arrangeFormation('v');
                 if (beep) beep(659, 0.12, 0.12);
-                if (announceToSR) announceToSR(__alloT('stem.migration.sr_v_formation_formed_automatically', 'V formation formed automatically'));
               }
             }, t('stem.migration.auto_form_v', '\uD83E\uDEBF Auto-Form V')),
             h('button', {
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
+              type: 'button', style: formationButtonStyle,
               'aria-label': t('stem.migration.scatter_birds_randomly', 'Scatter birds randomly'),
               onClick: function() {
-                birdsRef.current = makeFlock(birdCount);
+                arrangeFormation('scatter');
                 if (beep) beep(880, 0.06, 0.08);
-                if (announceToSR) announceToSR(__alloT('stem.migration.sr_birds_scattered_randomly', 'Birds scattered randomly'));
               }
             }, t('stem.migration.scatter', '\uD83C\uDF2A\uFE0F Scatter')),
 
@@ -9582,13 +10434,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2 ml-auto' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Birds:'),
               h('input', {
-                type: 'range', min: 5, max: 15, value: birdCount,
+                type: 'range', min: 2, max: 30, value: birdCount, 'data-formation-count': 'true',
                 'aria-label': t('stem.migration.aria_flock_size', 'Number of birds in flock') + ': ' + birdCount,
                 className: 'w-20 accent-sky-500',
                 onChange: function(e) {
                   var n = parseInt(e.target.value, 10);
+                  birdsRef.current = makeFlock(n);
+                  dragRef.current.active = false;
+                  updateFormationControls({ selected: Math.min(_vfControlRef.current.selected, n - 1), feedback: t('stem.migration.formation_count_changed', 'Flock size changed to {count} birds.').replace('{count}', n) });
                   upd('vBirdCount', n);
-                  birdsRef.current = null;
                 }
               }),
               h('span', { className: 'text-xs font-bold ' + textPrimary, 'aria-hidden': 'true' }, birdCount)
@@ -9614,7 +10468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('p', null, t('stem.migration.when_a_bird_flaps_its_wings_it_creates', 'When a bird flaps its wings, it creates a rotating vortex of air off each wingtip. The air immediately behind and below the wingtip pushes '), h('strong', null, t('stem.migration.downward_word', 'downward')), t('stem.migration.downwash_but_the_air_to_the_side_pushe', ' (downwash), but the air to the side pushes '), h('strong', null, t('stem.migration.upward_word', 'upward')), ' (' + t('stem.migration.upwash_word', 'upwash') + ').'),
               h('p', null, t('stem.migration.by_positioning_themselves_in_the_upwas', 'By positioning themselves in the upwash zone \u2014 roughly 30\u00B0 behind and to the side of the bird ahead \u2014 trailing birds get a free boost of rising air. In real flocks this saves roughly '), h('strong', null, '10\u201330%'), t('stem.migration.of_their_energy', ' of their energy ('), h('strong', null, '~65%'), t('stem.migration.is_a_theoretical_maximum', ' is a theoretical maximum).')),
               h('p', null, t('stem.migration.the_leader_gets_no_benefit_and_tires_f', 'The leader gets no benefit and tires faster. When its energy drops below 30%, it falls back and another bird takes the lead. This is called '), h('strong', null, t('stem.migration.leader_rotation', 'leader rotation')), t('stem.migration.in_nature_every_bird_takes_a_turn_at_t', '. In nature, every bird takes a turn at the front.')),
-              h('p', null, h('em', null, t('stem.migration.try_dragging_birds_into_different_posi', 'Try dragging birds into different positions and watch how formation efficiency and energy savings change! Press V to auto-form, S to scatter.')))
+              h('p', null, h('em', null, t('stem.migration.try_dragging_birds_into_different_posi', 'Choose a bird and change its position with the controls or by dragging. Compare the text description with the upwash zones and explain the change in efficiency. In the canvas, press V to auto-form or S to scatter.')))
             )
           ),
 
@@ -9626,21 +10480,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var isExpanded = d.expandedFact === fi;
                 return h('div', {
                   key: fi,
-                  role: 'button',
-                  tabIndex: 0,
-                  'aria-expanded': isExpanded ? 'true' : 'false',
-                  'aria-label': fact.title + '. ' + (isExpanded ? t('stem.migration.collapse_hint', 'Collapse.') : t('stem.migration.expand_hint', 'Expand.')),
-                  className: 'rounded-lg p-3 border cursor-pointer transition-all ' + (isExpanded ? 'ring-1 ring-sky-400 ' + accentBg + ' border-sky-300' : borderCol + ' ' + cardBg + ' hover:border-sky-200'),
-                  onClick: function() { upd('expandedFact', isExpanded ? null : fi); },
-                  onKeyDown: function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('expandedFact', isExpanded ? null : fi); }
-                  }
+                  className: 'rounded-lg border transition-all ' + (isExpanded ? 'ring-1 ring-sky-400 ' + accentBg + ' border-sky-300' : borderCol + ' ' + cardBg + ' hover:border-sky-200')
                 },
-                  h('div', { className: 'flex items-center justify-between' },
+                  h('button', {
+                    type: 'button',
+                    className: 'migration-disclosure-trigger',
+                    id: 'migration-formation-fact-' + fi,
+                    'aria-expanded': isExpanded ? 'true' : 'false',
+                    'aria-controls': 'migration-formation-description-' + fi,
+                    onClick: function() { upd('expandedFact', isExpanded ? null : fi); }
+                  },
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, fact.title),
                     h('span', { className: 'text-[0.6875rem] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
                   ),
-                  isExpanded && h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed ' + textSecondary }, fact.text)
+                  h('p', { id: 'migration-formation-description-' + fi, hidden: !isExpanded, className: 'migration-disclosure-content text-[0.6875rem] leading-relaxed ' + textSecondary }, fact.text)
                 );
               })
             )
@@ -9864,6 +10717,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { label: 'SE', angle: 315 }
         ];
 
+        var placement = windPlacementState[0];
+        var selectedPlacement = PLACEABLE.find(function(item) { return item.id === placingObj; });
+        function windPlacementPosition(position) {
+          return position.x + t('stem.migration.wind_position_left', '% from the left') + ', ' +
+            position.y + t('stem.migration.wind_position_top', '% from the top of the usable field');
+        }
+        function updateWindPlacement(values) {
+          var next = Object.assign({}, _wcPlacementRef.current, values);
+          _wcPlacementRef.current = next;
+          windPlacementState[1](next);
+          return next;
+        }
+        function windPlacementSize() {
+          var canvas = canvasRef.current;
+          // The drawing keeps its initialized logical dimensions even when CSS scales it.
+          // Canvas bitmap dimensions include DPR and must not be used as model coordinates.
+          var logical = canvas && canvas._wcLogicalSize;
+          var width = logical ? logical.width : (canvas && canvas.clientWidth) || 620;
+          var fullHeight = logical ? logical.height : (canvas && canvas.clientHeight) || 380;
+          return { width: width, height: Math.max(1, fullHeight - 35), fullHeight: fullHeight };
+        }
+        function placeWindObject(x, y) {
+          var live = _liveVals.current.placingObj;
+          var item = PLACEABLE.find(function(option) { return option.id === live; });
+          if (!item) return;
+          var size = windPlacementSize();
+          x = Math.max(0, Math.min(size.width, x));
+          y = Math.max(0, Math.min(size.height, y));
+          var position = { x: Math.round(x / size.width * 100), y: Math.round(y / size.height * 100) };
+          var nextObjects = (objectsRef.current || []).concat([{ type: live, x: x, y: y }]);
+          objectsRef.current = nextObjects;
+          // Gate held Enter and stale event closures before the host acknowledges the write.
+          _liveVals.current.placingObj = null;
+          updMulti({ windObjects: nextObjects, placingObj: null });
+          updateWindPlacement({ x: position.x, y: position.y, feedback: item.label + ' ' +
+            t('stem.migration.wind_object_placed', 'placed at') + ' ' + windPlacementPosition(position) + '.' });
+          if (beep) beep(659, 0.12, 0.12);
+        }
+        function placeWindCursor() {
+          var size = windPlacementSize(), position = _wcPlacementRef.current;
+          placeWindObject(size.width * position.x / 100, size.height * position.y / 100);
+        }
+
         var _wcInitCanvas = function(canvas) {
           if (!canvas) return;
           canvasRef.current = canvas;
@@ -9873,6 +10769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
           var H = 380;
+          canvas._wcLogicalSize = { width: W, height: H };
           canvas.width = W * dpr;
           canvas.height = H * dpr;
           canvas.style.width = W + 'px';
@@ -9953,13 +10850,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           var _wcStillSig = null;
+          var _wcStillObjects = null;
           function frame() {
             var lv = _liveVals.current;
             if (reducedMotionRef.current) {
               var _wcSig = [lv.isDark, lv.showStreamlines, lv.windDir, lv.windSpeed,
                 (objectsRef.current || []).length, (_wcBirdsRef.current || []).length].join('|');
-              if (_wcStillSig === _wcSig) { animRef.current = requestAnimationFrame(frame); return; }
+              if (_wcStillSig === _wcSig && _wcStillObjects === objectsRef.current) { animRef.current = requestAnimationFrame(frame); return; }
               _wcStillSig = _wcSig;
+              _wcStillObjects = objectsRef.current;
             } else {
               timeRef.current += 0.016;
             }
@@ -10220,15 +11119,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var live = _liveVals.current.placingObj;
             if (!live) return;
             var rect = canvas.getBoundingClientRect();
-            var mx = e.clientX - rect.left;
-            var my = e.clientY - rect.top;
+            var displayedWidth = rect.width || canvas.clientWidth || W;
+            var displayedHeight = rect.height || canvas.clientHeight || H;
+            var mx = (e.clientX - rect.left) * W / displayedWidth;
+            var my = (e.clientY - rect.top) * H / displayedHeight;
             if (my > H - 35) return; // Don't place on ground
-            var newObjs = (objectsRef.current || []).concat([{ type: live, x: mx, y: my }]);
-            objectsRef.current = newObjs;
-            upd('windObjects', newObjs);
-            upd('placingObj', null);
-            if (beep) beep(659, 0.12, 0.12);
-            if (announceToSR) announceToSR(live + ' placed on wind field');
+            placeWindObject(mx, my);
           }
 
           canvas.addEventListener('click', onClick);
@@ -10248,21 +11144,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         return h('div', { className: 'space-y-3' },
           // Canvas
-          h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
+          h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol, style: { position: 'relative' } },
             h('canvas', {
               ref: _wcInitCanvas,
               role: 'img',
-              'aria-label': t('stem.migration.wind_sandbox_aria', 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction.') + ' ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed, t) + '.',
+              'aria-label': t('stem.migration.wind_sandbox_aria', 'Wind currents sandbox. Place objects to explore wind patterns. Particles show wind speed and direction.') + ' ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed, t) + '.',
+              'aria-describedby': 'migration-wind-placement-help migration-wind-placement-position',
+              'data-wind-placement-canvas': '',
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.key === 'c' || e.key === 'C') {
+                if (e.ctrlKey || e.metaKey || e.altKey || e.target !== e.currentTarget) return;
+                var live = _liveVals.current.placingObj;
+                if (live && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                  e.preventDefault();
+                  var position = _wcPlacementRef.current, step = e.shiftKey ? 1 : 5;
+                  var next = updateWindPlacement({
+                    x: Math.max(0, Math.min(100, position.x + (e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0))),
+                    y: Math.max(0, Math.min(100, position.y + (e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0))), feedback: ''
+                  });
+                  if (announceToSR) announceToSR(windPlacementPosition(next));
+                } else if (live && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  if (!e.repeat) placeWindCursor();
+                } else if (live && e.key === 'Escape') {
+                  e.preventDefault();
+                  _liveVals.current.placingObj = null;
+                  upd('placingObj', null);
+                  updateWindPlacement({ feedback: t('stem.migration.wind_placement_cancelled', 'Object placement cancelled.') });
+                } else if (e.key === 'c' || e.key === 'C') {
                   objectsRef.current = [];
                   upd('windObjects', []);
                   if (announceToSR) announceToSR(__alloT('stem.migration.sr_all_objects_cleared', 'All objects cleared'));
                 }
               },
               style: { width: '100%', cursor: placingObj ? 'crosshair' : 'default', display: 'block' }
-            })
+            }),
+            selectedPlacement && h('span', { 'data-wind-placement-cursor': '', 'aria-hidden': 'true',
+              style: { position: 'absolute', pointerEvents: 'none', left: placement.x + '%', top: (placement.y * windPlacementSize().height / windPlacementSize().fullHeight) + '%',
+                width: 18, height: 18, border: '3px solid #0f172a', outline: '2px solid #fff', borderRadius: '50%', transform: 'translate(-50%, -50%)' } })
           ),
 
           // Controls row
@@ -10276,7 +11195,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   className: 'px-2 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'ring-2 ring-sky-400 ' + btnPrimary : btnSecondary),
                   'aria-label': t('stem.migration.place_word', 'Place') + ' ' + obj.label + ': ' + obj.desc,
                   'aria-pressed': active ? 'true' : 'false',
-                  onClick: function() { upd('placingObj', active ? null : obj.id); }
+                  'aria-describedby': 'migration-wind-placement-help',
+                  onClick: function() {
+                    upd('placingObj', active ? null : obj.id);
+                    updateWindPlacement({ feedback: '' });
+                  }
                 }, obj.emoji + ' ' + obj.label);
               })
             ),
@@ -10315,6 +11238,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }, showStreamlines ? '\u2500 Lines' : '\u2022 Dots')
           ),
 
+          h('section', { className: 'rounded-xl p-3 border ' + borderCol + ' ' + cardBg,
+            'aria-labelledby': 'migration-wind-placement-heading', 'data-wind-placement-controls': '' },
+            h('h3', { id: 'migration-wind-placement-heading', className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.wind_placement_heading', 'Object placement')),
+            h('p', { id: 'migration-wind-placement-help', className: 'text-xs mt-2 ' + textSecondary },
+              t('stem.migration.wind_placement_help', 'Choose an object above, then set its position and choose Place selected object. You can also focus the wind field: arrow keys move 5%, Shift + arrow moves 1%, Enter or Space places, and Escape cancels. Clicking the field still places the selected object.')),
+            h('p', { id: 'migration-wind-placement-position', className: 'text-xs mt-2 ' + textSecondary, 'data-wind-placement-position': '' },
+              (selectedPlacement ? selectedPlacement.label : t('stem.migration.wind_no_object_selected', 'No object selected')) + ' · ' + windPlacementPosition(placement)),
+            h('div', { className: 'flex flex-wrap gap-3 items-center mt-2' },
+              [{ key: 'x', label: t('stem.migration.wind_position_horizontal', 'Horizontal position (% from left)') },
+                { key: 'y', label: t('stem.migration.wind_position_vertical', 'Vertical position (% from top of usable field)') }].map(function(control) {
+                return h('label', { key: control.key, className: 'text-xs ' + textSecondary, style: { flex: '1 1 180px', minWidth: 0 } },
+                  control.label,
+                  h('input', { type: 'range', min: 0, max: 100, step: 1, value: placement[control.key],
+                    'data-wind-placement-axis': control.key, 'aria-describedby': 'migration-wind-placement-position',
+                    style: { width: '100%', minHeight: 44 }, onChange: function(event) {
+                      var values = { feedback: '' }; values[control.key] = Math.max(0, Math.min(100, parseInt(event.target.value, 10) || 0));
+                      updateWindPlacement(values);
+                    } })
+                );
+              }),
+              h('button', { type: 'button', className: 'px-3 py-2 rounded-lg text-xs font-bold ' + btnSecondary,
+                'data-wind-placement-focus': '', style: { minHeight: 44 }, onClick: function() { if (canvasRef.current) canvasRef.current.focus(); } },
+                t('stem.migration.wind_focus_field', 'Focus wind field')),
+              h('button', { type: 'button', className: 'px-3 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
+                'data-wind-placement-place': '', 'aria-disabled': !selectedPlacement ? 'true' : 'false', style: { minHeight: 44 },
+                'aria-describedby': 'migration-wind-placement-position', onClick: placeWindCursor },
+                t('stem.migration.wind_place_selected', 'Place selected object'))
+            ),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs mt-2 ' + textSecondary,
+              'data-wind-placement-status': '' }, placement.feedback)
+          ),
+
           // Wind direction + speed
           h('div', { className: 'flex flex-wrap gap-4 items-center' },
             // Compass
@@ -10323,21 +11278,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               role: 'radiogroup',
               'aria-label': t('stem.migration.wind_direction', 'Wind direction'),
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  var nextAngle = (windDir + 45) % 360;
-                  upd('windDir', nextAngle);
-                  if (announceToSR) announceToSR('Wind direction: ' + nextAngle + ' degrees');
-                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                  e.preventDefault();
-                  var prevAngle = (windDir - 45 + 360) % 360;
-                  upd('windDir', prevAngle);
-                  if (announceToSR) announceToSR('Wind direction: ' + prevAngle + ' degrees');
-                }
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                var radios = e.currentTarget.querySelectorAll('[role="radio"]');
+                var index = Array.prototype.indexOf.call(radios, e.target), nextIndex = index;
+                if (index < 0) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % radios.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + radios.length) % radios.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = radios.length - 1;
+                else return;
+                e.preventDefault();
+                upd('windDir', COMPASS_DIRS[nextIndex].angle);
+                radios[nextIndex].focus();
               }
             },
               COMPASS_DIRS.map(function(cd) {
-                var active = windDir === cd.angle;
+                var active = ((Math.round(windDir / 45) * 45) % 360 + 360) % 360 === cd.angle;
                 return h('button', {
                   key: cd.label,
                   role: 'radio',
@@ -10351,7 +11307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             ),
 
             // Speed slider
-            h('div', { className: 'flex items-center gap-2 flex-1 min-w-[180px]' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 flex-1 min-w-[180px]' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, t('stem.migration.wind_2', '\uD83C\uDF2C\uFE0F Wind:')),
               h('input', {
                 type: 'range', min: 0, max: 50, value: windSpeed,
@@ -12715,9 +13671,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var challengeComplete = d.challengeComplete || false;
         var challengeLog = (Array.isArray(d.challengeLog) ? d.challengeLog : []).filter(function(r) { return r && typeof r === 'object'; });
 
+        var journeyId = formationControlId + '-journey';
+        var journeyView = { used: false };
+        function currentJourneyAction() {
+          var owner = _nvChallengeRef.current;
+          // Static render consumers have no DOM owner. Mounted controls must
+          // belong to the committed view, including when an old handler is replayed.
+          return !journeyView.used && (!owner.panel || (owner.panel.isConnected && owner.view === journeyView));
+        }
+        function focusJourneySummary() {
+          var target = _nvChallengeSummaryRef.current;
+          if (target && target.isConnected) target.focus();
+        }
         function startChallenge() {
+          var owner = _nvChallengeRef.current;
+          if (!currentJourneyAction() || owner.starting || (challengeActive && !challengeComplete)) return;
+          journeyView.used = true;
+          owner.starting = true;
+          owner.request = null;
+          owner.submitted = null;
+          focusJourneySummary();
           updMulti({
             challengeActive: true,
+            challengeLoading: false,
             challengeStep: 0,
             challengeEnergy: 100,
             challengeDistance: 3000,
@@ -12773,19 +13749,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         function generateDecision(step, energy, remaining, weather, flockSize) {
           var weathers = ['Clear', 'Overcast', 'Headwind', 'Tailwind', 'Thunderstorm', 'Fog', 'Crosswind', 'Snow Squall'];
           var newWeather = weathers[Math.floor(Math.random() * weathers.length)];
-          function useOffline() {
-            updMulti({
-              challengeChoices: offlineDecision(step, energy, remaining, newWeather),
-              challengeWeather: newWeather,
-              challengeLoading: false
-            });
+          var owner = _nvChallengeRef.current;
+          var request = { step: step };
+          owner.request = request;
+          function finishDecision(choices) {
+            if (owner.request !== request) return;
+            owner.request = null;
+            owner.starting = false;
+            updMulti({ challengeChoices: choices, challengeWeather: newWeather, challengeLoading: false });
           }
-          // No AI backend is a supported way to run this tool, not a dead end.
+          function useOffline() { finishDecision(offlineDecision(step, energy, remaining, newWeather)); }
+          request.offline = useOffline;
+          // Local decisions remain available, including while an AI reply is pending.
           if (!callGemini) { useOffline(); return; }
-          upd('challengeLoading', true);
+          updMulti({ challengeLoading: true, challengeChoices: null });
           var prompt = 'You are creating a bird migration survival game for a grade ' + (gradeLevel || 5) + ' student. The flock of ' + flockSize + ' Canada Geese is migrating south. Step ' + (step + 1) + ' of the journey. Energy: ' + energy + '%. Distance remaining: ' + remaining + ' miles. Weather: ' + newWeather + '. Create ONE decision point. Format your response EXACTLY as JSON (no markdown): {"scenario": "brief description of what the flock encounters", "choices": [{"label": "choice text", "energy_cost": number, "distance_gain": number, "flock_change": number, "result": "what happens"}]}. Give exactly 3 choices with different risk/reward tradeoffs. Energy costs should be -5 to -30. Distance gains 100-500. Flock changes -5 to +2. Make it educational about bird biology.';
 
-          callGemini(prompt).then(function(result) {
+          var reply;
+          try { reply = callGemini(prompt); } catch (error) { useOffline(); return; }
+          Promise.resolve(reply).then(function(result) {
+            if (owner.request !== request) return;
             try {
               // Try to parse JSON from the response
               var jsonStr = result;
@@ -12803,24 +13786,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 : [];
               if (!okChoices.length) throw new Error('no usable choices');
               parsed.choices = okChoices;
-              updMulti({
-                challengeChoices: parsed,
-                challengeWeather: newWeather,
-                challengeLoading: false
-              });
+              finishDecision(parsed);
             } catch (e) {
               useOffline();
             }
           }).catch(useOffline);
         }
 
+        function continueJourneyOffline() {
+          if (!currentJourneyAction() || !challengeLoading || challengeComplete) return;
+          journeyView.used = true;
+          focusJourneySummary();
+          var owner = _nvChallengeRef.current;
+          if (owner.request) { owner.request.offline(); return; }
+          // A restored loading flag has no in-memory request to await.
+          owner.starting = false;
+          updMulti({ challengeLoading: false, challengeChoices: offlineDecision(challengeStep, challengeEnergy, challengeDistRemaining, challengeWeather) });
+        }
+
         function makeChoice(choiceIdx) {
-          if (!challengeChoices || !Array.isArray(challengeChoices.choices)) return;
+          var owner = _nvChallengeRef.current;
+          if (!currentJourneyAction() || !challengeActive || challengeLoading || challengeComplete ||
+              owner.request || owner.submitted === challengeChoices ||
+              !challengeChoices || !Array.isArray(challengeChoices.choices)) return;
           // Index into the same filtered list the buttons were built from, or
           // the nth button would apply the wrong choice once a hole is dropped.
           var usable = challengeChoices.choices.filter(function(c) { return c && typeof c === 'object'; });
           var choice = usable[choiceIdx];
           if (!choice) return;
+          journeyView.used = true;
+          owner.submitted = challengeChoices;
+          focusJourneySummary();
 
           // Model replies and saved choices may use numeric strings. Coerce
           // before addition, reject non-finite values, and keep each effect
@@ -12886,12 +13882,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             challengeFlockSize: newFlock,
             challengeResult: choice.result,
             challengeScore: newScore,
+            challengeChoices: null,
             challengeLog: newLog
           });
 
           // Generate next decision
           generateDecision(newStep, newEnergy, newRemaining, challengeWeather, newFlock);
         }
+
+        var journeyWon = challengeDistRemaining <= 0 && challengeFlockSize > 0;
+        var journeyTitle = !challengeActive ? t('stem.migration.journey_ready', 'Ready to migrate?')
+          : challengeComplete ? (journeyWon ? t('stem.migration.migration_complete', 'Migration Complete!') : t('stem.migration.migration_failed', 'Migration Failed'))
+          : challengeLoading ? t('stem.migration.scouting_ahead', 'Scouting ahead...')
+          : t('stem.migration.journey_decision_number', 'Decision {step}').replace('{step}', challengeStep + 1);
+        var journeyContext = !challengeActive
+          ? t('stem.migration.guide_a_flock_of_canada_geese_from_the', 'Guide a flock of Canada Geese from their breeding grounds in Northern Canada to their wintering grounds in the Southern US. Make decisions about weather, rest stops, and routes. Can you get your flock home safely?')
+          : challengeComplete ? (journeyWon
+            ? t('stem.migration.journey_arrived', '{birds} of 50 birds arrived safely. Score: {score}.').replace('{birds}', challengeFlockSize).replace('{score}', challengeScore)
+            : (challengeEnergy <= 0 ? t('stem.migration.journey_no_energy', 'The flock ran out of energy.') : t('stem.migration.journey_no_birds', 'Too many birds were lost.')) + ' ' +
+              t('stem.migration.journey_distance_completed', 'You made it {travelled} of {distance} miles.').replace('{travelled}', challengeDistance - challengeDistRemaining).replace('{distance}', challengeDistance))
+          : challengeLoading ? t('stem.migration.journey_loading_help', 'Wait for the next decision, or continue with a local decision now.')
+          : migrStr(challengeChoices && challengeChoices.scenario, '');
+        var journeyStatus = challengeActive ? [challengeResult, journeyTitle, journeyContext].filter(Boolean).join(' ') : '';
 
         return h('div', { className: 'space-y-4' },
           // Night sky navigation canvas
@@ -12918,26 +13930,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var isExpanded = expandedNav === nm.id;
                 return h('div', {
                   key: nm.id,
-                  className: 'rounded-xl border transition-all cursor-pointer ' + (isExpanded ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300'),
-                  role: 'button',
-                  tabIndex: 0,
-                  'aria-expanded': isExpanded ? 'true' : 'false',
-                  'aria-label': nm.name + '. ' + (isExpanded ? t('stem.migration.collapse_hint', 'Collapse.') : t('stem.migration.learn_more_hint', 'Learn more.')),
-                  onClick: function() { upd('expandedNav', isExpanded ? null : nm.id); },
-                  onKeyDown: function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      upd('expandedNav', isExpanded ? null : nm.id);
-                    }
-                  }
+                  className: 'rounded-xl border transition-all ' + (isExpanded ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300')
                 },
-                  h('div', { className: 'p-3' },
-                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('button', {
+                    type: 'button',
+                    className: 'migration-disclosure-trigger',
+                    id: 'migration-navigation-method-' + nm.id,
+                    'aria-expanded': isExpanded ? 'true' : 'false',
+                    'aria-controls': 'migration-navigation-description-' + nm.id,
+                    onClick: function() { upd('expandedNav', isExpanded ? null : nm.id); }
+                  },
+                    h('span', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-xl', 'aria-hidden': 'true' }, nm.icon),
                       h('span', { className: 'text-xs font-bold ' + textPrimary }, nm.name)
                     ),
-                    isExpanded && h('p', { className: 'text-[0.6875rem] leading-relaxed mt-2 ' + textSecondary }, nm.desc)
-                  )
+                    h('span', { className: 'text-[0.6875rem] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
+                  ),
+                  h('p', { id: 'migration-navigation-description-' + nm.id, hidden: !isExpanded, className: 'migration-disclosure-content text-[0.6875rem] leading-relaxed ' + textSecondary }, nm.desc)
                 );
               })
             )
@@ -12946,108 +13955,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Divider
           h('hr', { className: borderCol }),
 
-          // Challenge game
-          h('div', { className: 'space-y-3' },
-            h('div', { className: 'flex items-center justify-between' },
-              h('h3', { className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.navigate_your_flock', '\uD83C\uDFAE Navigate Your Flock')),
+          // Challenge game: the summary stays mounted through every decision.
+          h('section', {
+            className: 'migration-journey space-y-3',
+            'data-journey-challenge': '',
+            'aria-labelledby': journeyId + '-title',
+            ref: function(node) {
+              if (!node) return;
+              var owner = _nvChallengeRef.current;
+              owner.panel = node;
+              owner.view = journeyView;
+              if (challengeActive) owner.starting = false;
+              if (owner.request && (!challengeActive || challengeComplete || owner.request.step !== challengeStep)) owner.request = null;
+            }
+          },
+            h('div', { className: 'migration-journey-header' },
+              h('h3', { id: journeyId + '-title', className: 'font-bold text-sm ' + textPrimary }, t('stem.migration.navigate_your_flock', '\uD83C\uDFAE Navigate Your Flock')),
               !challengeActive && h('button', {
+                type: 'button', 'data-journey-start': '',
                 className: 'px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
                 'aria-label': t('stem.migration.start_challenge_short', 'Start Challenge') + '. ' + t('stem.migration.start_the_navigate_your_flock_challeng', 'Navigate Your Flock'),
                 onClick: startChallenge
               }, t('stem.migration.start_challenge', '\uD83E\uDEBF Start Challenge'))
             ),
-
-            !challengeActive && h('p', { className: 'text-xs ' + textSecondary },
-              t('stem.migration.guide_a_flock_of_canada_geese_from_the', 'Guide a flock of Canada Geese from their breeding grounds in Northern Canada to their wintering grounds in the Southern US. Make decisions about weather, rest stops, and routes. Can you get your flock home safely?')
+            challengeActive && h('dl', { className: 'migration-journey-metrics' },
+              [
+                [t('stem.migration.energy', '\u26A1 Energy'), challengeEnergy + '%'],
+                [t('stem.migration.distance_2', '\uD83D\uDCCD Distance'), t('stem.migration.journey_miles_left', '{miles} miles left').replace('{miles}', challengeDistRemaining)],
+                [t('stem.migration.flock', '\uD83E\uDEBF Flock'), t('stem.migration.journey_bird_count', '{birds} birds').replace('{birds}', challengeFlockSize)],
+                [t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather'), challengeWeather]
+              ].map(function(metric, index) {
+                return h('div', { key: index }, h('dt', null, metric[0]), h('dd', null, metric[1]));
+              })
             ),
-
-            // Active challenge
+            h('div', {
+              className: 'migration-journey-summary',
+              'data-journey-summary': '', role: 'group', tabIndex: -1,
+              ref: _nvChallengeSummaryRef,
+              'aria-labelledby': journeyId + '-heading',
+              'aria-describedby': journeyId + '-context' + (challengeResult ? ' ' + journeyId + '-result' : '')
+            },
+              h('h4', { id: journeyId + '-heading', 'data-journey-heading': '' }, journeyTitle),
+              challengeResult && h('p', { id: journeyId + '-result', 'data-journey-result': '' },
+                h('strong', null, t('stem.migration.last_result', 'Last result: ')), challengeResult),
+              h('p', { id: journeyId + '-context', 'data-journey-context': '' }, journeyContext)
+            ),
+            h('div', { className: 'sr-only', 'data-journey-status': '', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, journeyStatus),
             challengeActive && h('div', { className: 'space-y-3' },
-              // Status bar
-              h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
-                h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.energy', '\u26A1 Energy')),
-                  h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
-                    h('div', { className: 'h-full rounded-full transition-all ' + (challengeEnergy > 50 ? 'bg-green-500' : challengeEnergy > 25 ? 'bg-yellow-500' : 'bg-red-500'), style: { width: challengeEnergy + '%' } })
-                  ),
-                  h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeEnergy + '%')
-                ),
-                h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.distance_2', '\uD83D\uDCCD Distance')),
-                  h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
-                    h('div', { className: 'h-full bg-sky-500 rounded-full transition-all', style: { width: ((challengeDistance - challengeDistRemaining) / challengeDistance * 100) + '%' } })
-                  ),
-                  h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeDistRemaining + ' mi left')
-                ),
-                h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.flock', '\uD83E\uDEBF Flock')),
-                  h('div', { className: 'text-sm font-bold ' + textPrimary }, challengeFlockSize),
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, 'birds')
-                ),
-                h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather')),
-                  h('div', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, challengeWeather),
-                  h('div', { className: 'text-[0.6875rem] ' + textMuted }, 'Step ' + (challengeStep + 1))
-                )
-              ),
-
-              // Last result
-              challengeResult && h('div', { className: 'text-xs p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary, 'aria-live': 'polite', 'aria-atomic': 'true' },
-                h('strong', null, t('stem.migration.last_result', 'Last result: ')), challengeResult
-              ),
-
-              // Decision
-              challengeLoading && h('div', { className: 'text-center py-4 ' + textMuted, role: 'status', 'aria-live': 'polite' },
-                h('span', { className: 'motion-reduce:animate-none animate-spin inline-block text-xl' }, '\uD83C\uDF00'),
-                h('p', { className: 'text-xs mt-2' }, t('stem.migration.scouting_ahead', 'Scouting ahead...'))
-              ),
-
-              challengeChoices && !challengeComplete && h('div', { className: 'space-y-2' },
-                h('div', { className: 'p-3 rounded-xl ' + cardBg + ' border ' + borderCol },
-                  h('p', { className: 'text-xs font-medium ' + textPrimary }, challengeChoices.scenario)
-                ),
-                h('div', { className: 'grid gap-2' },
-                  // Belt and braces: the validation above is new, and a
-                  // browser somewhere still has the old shape in storage.
-                  (Array.isArray(challengeChoices.choices) ? challengeChoices.choices : [])
-                    .filter(function(ch) { return ch && typeof ch === 'object'; })
-                    .map(function(ch, ci) {
+              challengeLoading && !challengeComplete && h('button', {
+                type: 'button', 'data-journey-offline': '',
+                className: 'px-4 py-2 rounded-lg text-xs font-bold ' + btnSecondary,
+                onClick: continueJourneyOffline
+              }, t('stem.migration.journey_continue_local', 'Continue with a local decision')),
+              challengeChoices && !challengeLoading && !challengeComplete && h('div', {
+                className: 'space-y-2', role: 'group',
+                'aria-labelledby': journeyId + '-heading', 'aria-describedby': journeyId + '-context'
+              },
+                (Array.isArray(challengeChoices.choices) ? challengeChoices.choices : [])
+                  .filter(function(ch) { return ch && typeof ch === 'object'; })
+                  .map(function(ch, ci) {
+                    // Show the same clamped effects that makeChoice applies, with
+                    // words and signs so neither color nor emoji carries meaning alone.
+                    var energy = migrNum(ch.energy_cost, 0, -100, 100);
+                    var distance = migrNum(ch.distance_gain, 0, 0, 20000);
+                    var flock = Math.round(migrNum(ch.flock_change, 0, -1000, 1000));
+                    function signed(value) { return (value > 0 ? '+' : '') + value; }
                     return h('button', {
-                      key: ci,
-                      className: 'p-3 rounded-lg border text-left transition-all hover:ring-2 hover:ring-sky-300 ' + borderCol + ' ' + cardBg,
+                      key: ci, type: 'button', 'data-journey-choice': String(ci),
+                      className: 'migration-journey-choice',
                       'aria-label': t('stem.migration.choice_word', 'Choice') + ' ' + (ci + 1) + ': ' + ch.label,
+                      'aria-describedby': journeyId + '-effects-' + ci + ' ' + journeyId + '-context',
                       onClick: function() { makeChoice(ci); }
                     },
-                      h('div', { className: 'text-xs font-bold ' + textPrimary }, ch.label),
-                      h('div', { className: 'flex gap-3 mt-1 text-[0.6875rem]' },
-                        h('span', { className: (ch.energy_cost || 0) > 0 ? goodText + ' font-bold' : dangerText + ' font-bold' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost + (ch.energy_cost > 0 ? ' gain' : ' cost')),
-                        h('span', { className: 'text-sky-700 font-bold' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + ' mi'),
-                        ch.flock_change !== 0 && h('span', { className: (ch.flock_change > 0 ? goodText : dangerText) + ' font-bold' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change + (ch.flock_change > 0 ? ' birds join' : ' birds lost'))
+                      h('span', { className: 'migration-journey-choice-label' }, ch.label),
+                      h('span', { id: journeyId + '-effects-' + ci, className: 'migration-journey-effects' },
+                        h('span', null, t('stem.migration.journey_energy_change', 'Energy: {change} percentage points.').replace('{change}', signed(energy))),
+                        h('span', null, t('stem.migration.journey_distance_change', 'Distance: {miles} miles forward.').replace('{miles}', distance)),
+                        h('span', null, t('stem.migration.journey_flock_change', 'Flock: {change} birds.').replace('{change}', signed(flock)))
                       )
                     );
                   })
-                )
               ),
-
-              // Challenge complete
-              challengeComplete && h('div', { className: 'text-center p-4 rounded-xl border ' + borderCol + ' ' + cardBg },
-                challengeDistRemaining <= 0 && challengeFlockSize > 0 ? h('div', null,
-                  h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83C\uDF89'),
-                  h('h4', { className: 'font-bold ' + textPrimary }, t('stem.migration.migration_complete', 'Migration Complete!')),
-                  h('p', { className: 'text-xs ' + textSecondary + ' mt-1' }, challengeFlockSize + ' of 50 birds arrived safely.'),
-                  h('p', { className: 'text-sm font-bold mt-2 ' + accent }, 'Score: ' + challengeScore)
-                ) : h('div', null,
-                  h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, '\uD83D\uDE22'),
-                  h('h4', { className: 'font-bold ' + textPrimary }, t('stem.migration.migration_failed', 'Migration Failed')),
-                  h('p', { className: 'text-xs ' + textSecondary + ' mt-1' }, challengeEnergy <= 0 ? 'The flock ran out of energy.' : 'Too many birds were lost.'),
-                  h('p', { className: 'text-xs ' + textSecondary }, 'You made it ' + (challengeDistance - challengeDistRemaining) + ' of ' + challengeDistance + ' miles.')
-                ),
-                h('button', {
-                  className: 'mt-3 px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
-                  'aria-label': t('stem.migration.try_the_migration_challenge_again', 'Try the migration challenge again'),
-                  onClick: startChallenge
-                }, t('stem.migration.try_again', '\uD83D\uDD04 Try Again'))
-              ),
+              challengeComplete && h('button', {
+                type: 'button', 'data-journey-restart': '',
+                className: 'px-4 py-2 rounded-lg text-xs font-bold ' + btnPrimary,
+                'aria-label': t('stem.migration.try_the_migration_challenge_again', 'Try the migration challenge again'),
+                onClick: startChallenge
+              }, t('stem.migration.try_again', '\uD83D\uDD04 Try Again')),
 
               // Journey log
               challengeLog.length > 0 && h('details', { className: 'text-xs ' + textSecondary },
@@ -13156,32 +14150,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         t('stem.migration.back', 'Back')
       );
 
-      // Tab bar
+      // Horizontal tabs move focus synchronously within their committed instance.
+      // No delayed callback may pull focus back after the learner has moved on.
+      var migrationNavigationId = 'migration-navigation-' + formationControlId;
       var tabBar = h('div', { className: 'migration-route-board', role: 'tablist', 'aria-label': t('stem.migration.migration_wind_lab_sections', 'Migration & Wind Lab sections') },
         TABS.map(function(tb, ti) {
           var active = tab === tb.id;
+          var tabControl = { node: null };
+          function currentTabAction(event) {
+            var node = tabControl.node;
+            if (!node) return !(event && event.currentTarget);
+            return node.isConnected && node._migrationTabAction === tabControl && !node.disabled &&
+              !(node.matches && node.matches(':disabled')) && exposedRemovalTarget(node) &&
+              !(event && event.currentTarget && event.currentTarget !== node);
+          }
           return h('button', {
             key: tb.id,
-            id: 'migration-tab-' + tb.id,
+            id: migrationNavigationId + '-tab-' + tb.id,
+            'data-migration-tab': tb.id,
+            ref: function(node) { if (node) { tabControl.node = node; node._migrationTabAction = tabControl; } },
             type: 'button',
             role: 'tab',
             className: 'migration-route-tab ' + (active ? 'bg-sky-700 text-white' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
             'aria-selected': active ? 'true' : 'false',
-            'aria-controls': 'migration-active-panel',
+            'aria-controls': migrationNavigationId + '-panel',
             'aria-label': tb.label,
             tabIndex: active ? 0 : -1,
             onKeyDown: function(e) {
+              if (!currentTabAction(e) || e.target !== e.currentTarget || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
               var nextIdx = ti;
-              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (ti + 1) % TABS.length;
-              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (ti - 1 + TABS.length) % TABS.length;
+              if (e.key === 'ArrowRight') nextIdx = (ti + 1) % TABS.length;
+              else if (e.key === 'ArrowLeft') nextIdx = (ti - 1 + TABS.length) % TABS.length;
               else if (e.key === 'Home') nextIdx = 0;
               else if (e.key === 'End') nextIdx = TABS.length - 1;
               else return;
+              var list = e.currentTarget.closest('[role="tablist"]');
+              var target = list && list.querySelector('[data-migration-tab="' + TABS[nextIdx].id + '"]');
+              if (!target || !target.isConnected || target.disabled || !exposedRemovalTarget(target)) return;
               e.preventDefault();
-              upd('tab', TABS[nextIdx].id);
-              setTimeout(function() { var el = document.getElementById('migration-tab-' + TABS[nextIdx].id); if (el) el.focus(); }, 0);
+              target.focus();
+              if (document.activeElement === target) upd('tab', TABS[nextIdx].id);
             },
-            onClick: function() { upd('tab', tb.id); }
+            onClick: function(event) { if (currentTabAction(event)) upd('tab', tb.id); }
           },
             h('span', { 'aria-hidden': 'true' }, tb.icon),
             h('span', { className: 'migration-route-label' }, tb.label)
@@ -13730,7 +14740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', null, t('stem.migration.i_can_explain_why_this_profile_yields_', 'I can explain why this profile yields this energy state.'))
           ),
           iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.explanation_input', 'Migration energy explanation'), placeholder: t('stem.migration.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-          h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, IQ_MODEL_NOTE)
+          h('p', { style: { margin: 0, fontSize: 12, fontStyle: 'italic', color: 'var(--mg-muted)' } }, IQ_MODEL_NOTE)
         );
       }
 
@@ -13806,7 +14816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         tabBar,
         renderGuidedExploration(),
         tabHero,
-        h('section', { id: 'migration-active-panel', className: 'migration-workspace', role: 'tabpanel', 'aria-labelledby': 'migration-tab-' + tab, tabIndex: 0, 'data-migration-workspace': tab }, tabContent)
+        h('section', { id: migrationNavigationId + '-panel', className: 'migration-workspace', role: 'tabpanel', 'aria-labelledby': migrationNavigationId + '-tab-' + tab, tabIndex: 0, 'data-migration-workspace': tab }, tabContent)
       );
     }
   });

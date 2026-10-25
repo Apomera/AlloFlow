@@ -3760,7 +3760,8 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       const hiddenStructure = host.querySelector('#diss-organ-ventral_skin');
       expect(hiddenStructure).not.toBeNull();
       expect(hiddenStructure.querySelector('.diss-directory-index')?.textContent).toBe('2');
-      expect(hiddenStructure.getAttribute('aria-disabled')).toBe('true');
+      expect(hiddenStructure.disabled).toBe(false);
+      expect(hiddenStructure.getAttribute('aria-disabled')).not.toBe('true');
       expect(hiddenStructure.getAttribute('aria-label')).toContain('preview only');
       expect(hiddenStructure.title).toContain('recovery cue');
 

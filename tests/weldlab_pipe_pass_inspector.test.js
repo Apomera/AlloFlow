@@ -94,7 +94,7 @@ describe('Pipe groove pass inspector', () => {
       expect(Number(host.querySelector('progress').value)).toBeCloseTo(occupied, 12);
       expect(host.querySelector('[data-pipe-groove]').getAttribute('aria-label')).toContain(`Pass ${i + 1}`);
       const later = host.querySelector(`[data-pipe-groove-bead="${i + 1}"]`);
-      if (later) expect(later.getAttribute('opacity')).toBe('0.3');
+      if (later) expect(later.querySelector('path').getAttribute('opacity')).toBe('0.3');
     }
     await inspect(0);
     expect(host.querySelector('[data-pipe-pass-detail]').textContent).toContain('Closes the root opening');
