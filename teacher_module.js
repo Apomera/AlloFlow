@@ -3623,11 +3623,20 @@ const ConceptQuestTeacherControlsLoader = React.memo((props) => {
     }
     const script = document.createElement("script");
     script.dataset.alloConceptQuestTeacher = "true";
-    script.src = "https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js";
+    const configure = window.__alloConfigureTrustedScript;
+    if (typeof configure !== "function") return;
+    try {
+      configure(script, "https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js");
+    } catch (_) {
+      return;
+    }
     script.onload = () => setReady(true);
     script.onerror = () => {
       script.onerror = null;
-      script.src = "./concept_quest_teacher_module.js";
+      try {
+        configure(script, "./concept_quest_teacher_module.js");
+      } catch (_) {
+      }
     };
     document.head.appendChild(script);
   }, []);

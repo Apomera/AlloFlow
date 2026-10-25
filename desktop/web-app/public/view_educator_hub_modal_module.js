@@ -42,7 +42,8 @@ function _loadEducatorAlloSheetBridge() {
   if (_educatorAlloSheetBridgePromise) return _educatorAlloSheetBridgePromise;
   _educatorAlloSheetBridgePromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = _educatorAlloSheetBridgeUrl();
+    if (typeof window.__alloConfigureTrustedScript !== "function") throw new Error("Trusted script delivery is unavailable.");
+    window.__alloConfigureTrustedScript(script, _educatorAlloSheetBridgeUrl());
     script.async = true;
     script.dataset.alloSheetBridge = "true";
     script.onload = () => {

@@ -4441,7 +4441,8 @@ function _deviceStorage() {
   if (!window.__alloDeviceStoragePromise) {
     window.__alloDeviceStoragePromise = new Promise(function(resolve, reject) {
       var s = document.createElement("script");
-      s.src = DEVICE_STORAGE_URL;
+      if (typeof window.__alloConfigureTrustedScript !== "function") throw new Error("Trusted script delivery is unavailable.");
+      window.__alloConfigureTrustedScript(s, DEVICE_STORAGE_URL);
       var settled = false;
       var finish = function(fn, arg) {
         if (settled) return;
@@ -4775,7 +4776,10 @@ function _getWhisperPipeline(profileOrLanguage) {
   if (!profile.supported || !profile.modelId) return Promise.reject(new Error("Whisper does not support " + profile.requestedLanguage + "."));
   if (!_whisperPipelinePromise || _whisperPipelineModelId !== profile.modelId) {
     _whisperPipelineModelId = profile.modelId;
-    var loading = import(TRANSFORMERS_URL).then(function(T) {
+    var loading = Promise.resolve().then(function() {
+      if (typeof window === "undefined" || typeof window.__alloLoadVerifiedRuntime !== "function") throw new Error("Verified Whisper runtime delivery is unavailable");
+      return window.__alloLoadVerifiedRuntime("transformers331");
+    }).then(function(T) {
       modelCache.installTransformersCache(T.env);
       return T.pipeline("automatic-speech-recognition", profile.modelId, { device: "wasm", dtype: "q8" });
     });

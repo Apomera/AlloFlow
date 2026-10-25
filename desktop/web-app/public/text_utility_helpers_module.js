@@ -676,7 +676,13 @@ try {
         return;
       }
       const s = document.createElement("script");
-      s.src = "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=" + Date.now();
+      try {
+        if (typeof window.__alloConfigureTrustedScript !== "function") throw new Error("Trusted script delivery is unavailable.");
+        window.__alloConfigureTrustedScript(s, "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=" + Date.now());
+      } catch (error) {
+        console.warn("[DeviceStorage] probe delivery unavailable:", error);
+        return;
+      }
       s.onload = () => {
         if (window.alloDeviceStorage) ready();
         else console.warn("[DeviceStorage] module URL answered but global missing (CDN miss?)");
